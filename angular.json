@@ -17,22 +17,30 @@
         "build": {
           "builder": "@angular/build:application",
           "options": {
-            "browser": "src/main.ts",
+            "outputPath": "dist/fit-track-pro",
+            "index": "src/index.html",         
+            "browser": "src/main.ts",          
+            "polyfills": [                     
+              "zone.js"
+            ],
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "assets": [
               {
                 "glob": "**/*",
-                "input": "public"
-              }
+                "input": "public" 
+              },
+              "src/assets", 
+              "src/favicon.ico", 
+              "src/manifest.webmanifest" 
             ],
             "styles": [
               "src/styles.scss"
             ],
             "server": "src/main.server.ts",
-            "outputMode": "server",
+            "prerender": true,
             "ssr": {
-              "entry": "src/server.ts"
+              "entry": "src/server.ts" 
             }
           },
           "configurations": {
@@ -49,12 +57,14 @@
                   "maximumError": "8kB"
                 }
               ],
-              "outputHashing": "all"
+              "outputHashing": "all",
+              "serviceWorker": "ngsw-config.json"
             },
             "development": {
               "optimization": false,
               "extractLicenses": false,
-              "sourceMap": true
+              "sourceMap": true,
+              "namedChunks": true 
             }
           },
           "defaultConfiguration": "production"
@@ -77,13 +87,20 @@
         "test": {
           "builder": "@angular/build:karma",
           "options": {
+            "polyfills": [ 
+              "zone.js",
+              "zone.js/testing"
+            ],
             "tsConfig": "tsconfig.spec.json",
             "inlineStyleLanguage": "scss",
             "assets": [
               {
                 "glob": "**/*",
                 "input": "public"
-              }
+              },
+              "src/assets",
+              "src/favicon.ico",
+              "src/manifest.webmanifest"
             ],
             "styles": [
               "src/styles.scss"
@@ -92,5 +109,8 @@
         }
       }
     }
+  },
+  "cli": {
+    "analytics": "b630441f-931f-4a27-80b0-f6675d43cadd" 
   }
 }

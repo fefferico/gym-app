@@ -1,0 +1,47 @@
+[
+  {
+    "id": "push-up",
+    "name": "Push-up",
+    "description": "A classic bodyweight exercise that works the chest, shoulders, and triceps. Keep your body straight and core engaged.",
+    "category": "bodyweight",
+    "primaryMuscleGroup": "Chest",
+    "muscleGroups": ["Chest", "Triceps", "Shoulders (Anterior)", "Core"],
+    "equipmentNeeded": [],
+    "imageUrls": ["assets/images/exercises/push-up_1.jpg", "assets/images/exercises/push-up_2.jpg"],
+    "videoUrl": "https://www.youtube.com/watch?v=IODxDxX7oi4",
+    "notes": "Lower your body until your chest nearly touches the floor. Push back up to the starting position."
+  },
+  {
+    "id": "dumbbell-bench-press",
+    "name": "Dumbbell Bench Press",
+    "description": "A compound exercise that targets the chest, shoulders, and triceps using dumbbells on a bench.",
+    "category": "dumbbells",
+    "primaryMuscleGroup": "Chest",
+    "muscleGroups": ["Chest", "Triceps", "Shoulders (Anterior)"],
+    "equipmentNeeded": ["Dumbbells", "Bench"],
+    "imageUrls": ["assets/images/exercises/db-bench-press_1.jpg", "assets/images/exercises/db-bench-press_2.jpg"],
+    "notes": "Keep your feet flat on the floor and maintain a slight arch in your lower back."
+  },
+  {
+    "id": "barbell-squat",
+    "name": "Barbell Squat",
+    "description": "A fundamental compound exercise for lower body strength, targeting quads, hamstrings, glutes, and core.",
+    "category": "barbells",
+    "primaryMuscleGroup": "Quadriceps",
+    "muscleGroups": ["Quadriceps", "Glutes", "Hamstrings", "Core", "Lower Back"],
+    "equipmentNeeded": ["Barbell", "Squat Rack"],
+    "imageUrls": ["assets/images/exercises/barbell-squat_1.jpg", "assets/images/exercises/barbell-squat_2.jpg"],
+    "videoUrl": "https://www.youtube.com/watch?v=ultWZbUMPL8",
+    "notes": "Keep your chest up and back straight. Squat down until your thighs are at least parallel to the floor."
+  },
+  {
+    "id": "pull-up",
+    "name": "Pull-up",
+    "description": "An advanced bodyweight exercise that targets the back and biceps.",
+    "category": "bodyweight",
+    "primaryMuscleGroup": "Lats",
+    "muscleGroups": ["Lats", "Biceps", "Traps", "Rhomboids", "Core"],
+    "equipmentNeeded": ["Pull-up Bar"],
+    "imageUrls": ["assets/images/exercises/pull-up_1.jpg", "assets/images/exercises/pull-up_2.jpg"]
+  }
+]

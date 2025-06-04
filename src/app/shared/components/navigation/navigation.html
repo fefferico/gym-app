@@ -1,0 +1,13 @@
+<nav class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow- ऊपर-md z-40">
+  <div class="container mx-auto flex justify-around items-center h-16">
+    <a *ngFor="let item of navItems"
+      [routerLink]="item.path"
+      routerLinkActive="text-primary dark:text-primary-light"
+      class="flex flex-col items-center justify-center text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary-light transition-colors p-2 w-1/4">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 mb-1">
+        <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="item.iconSvgPath" />
+      </svg>
+      <span class="text-xs">{{ item.label }}</span>
+    </a>
+  </div>
+</nav>
