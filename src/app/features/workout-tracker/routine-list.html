@@ -28,7 +28,7 @@
                         <span class="font-medium">Exercises:</span> {{ routine.exercises.length }}
                     </div>
                     <div *ngIf="routine.lastPerformed" class="text-xs text-gray-500 dark:text-gray-500 mb-4">
-                        <span class="font-medium">Last Performed:</span> {{ routine.lastPerformed | date:'mediumDate' }}
+                        <span class="font-medium">Last Performed:</span> {{ routine.lastPerformed | date:'dd/MM/yyyy HH:mm' }}
                     </div>
                     <div *ngIf="!routine.lastPerformed" class="text-xs text-gray-500 dark:text-gray-500 mb-4 italic">
                         Not performed yet

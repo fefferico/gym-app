@@ -9,8 +9,8 @@ export const APP_ROUTES: Routes = [
   },
   {
     path: 'history',
-    loadComponent: () => import('./features/history-stats/history-placeholder/history-placeholder') // Ensure this file exists
-      .then(c => c.HistoryPlaceholderComponent)
+    loadChildren: () => import('./features/history-stats/history-stats.routes') // Ensure this file exists
+      .then(c => c.HISTORY_STATS_ROUTES)
   },
  {
     path: 'library', // Main path for the library feature

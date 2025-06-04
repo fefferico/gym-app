@@ -10,8 +10,8 @@ import { Routine, WorkoutExercise, ExerciseSetParams } from '../../core/models/w
 import { Exercise } from '../../core/models/exercise.model'; // To fetch full exercise details
 import { WorkoutService } from '../../core/services/workout.service';
 import { ExerciseService } from '../../core/services/exercise.service';
-import { LastPerformanceSummary, TrackingService } from '../../core/services/tracking.service'; // For saving at the end
-import { LoggedSet, LoggedWorkoutExercise, WorkoutLog } from '../../core/models/workout-log.model'; // For constructing the log
+import { TrackingService } from '../../core/services/tracking.service'; // For saving at the end
+import { LoggedSet, LoggedWorkoutExercise, WorkoutLog, LastPerformanceSummary, PersonalBestSet } from '../../core/models/workout-log.model'; // For constructing the log
 
 // Interface to manage the state of the currently active set/exercise
 interface ActiveSetInfo {
@@ -99,6 +99,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
   // Computed signal for the full Exercise details of the current exercise
   currentBaseExercise = signal<Exercise | null | undefined>(undefined);
+  exercisePBs = signal<PersonalBestSet[]>([]); // New signal for PBs
 
   timedSetTimerState = signal<TimedSetState>(TimedSetState.Idle);
   timedSetElapsedSeconds = signal(0);
@@ -223,12 +224,26 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   private loadBaseExerciseDetailsForCurrent(): void {
     const activeInfo = this.activeSetInfo();
     if (activeInfo && activeInfo.exerciseData.exerciseId) {
+      const exerciseId = activeInfo.exerciseData.exerciseId;
       this.currentBaseExercise.set(undefined); // Show loading for base exercise
-      this.exerciseService.getExerciseById(activeInfo.exerciseData.exerciseId).subscribe(ex => {
+      this.exercisePBs.set([]); // Clear PBs while loading new exercise
+
+      // Fetch base exercise details
+      this.exerciseService.getExerciseById(exerciseId).subscribe(ex => {
         this.currentBaseExercise.set(ex || null);
       });
+
+      // Fetch PBs for this exercise
+      this.trackingService.getAllPersonalBestsForExercise(exerciseId)
+        .pipe(take(1)) // We only need the current PBs once per exercise change
+        .subscribe(pbs => {
+          this.exercisePBs.set(pbs);
+          console.log(`PBs for ${exerciseId}:`, pbs);
+        });
+
     } else {
       this.currentBaseExercise.set(null);
+      this.exercisePBs.set([]);
     }
   }
 
@@ -351,7 +366,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     if (this.timerSub) this.timerSub.unsubscribe(); // Stop session timer
     if (this.restTimerSub) this.restTimerSub.unsubscribe(); // Stop rest timer
 
-    const routine = this.routine();
+    let routine = this.routine();
     const endTime = Date.now();
     const durationMinutes = Math.round((endTime - this.workoutStartTime) / (1000 * 60));
 
@@ -366,9 +381,16 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       // overallNotes: get from a form field
     };
 
-    this.trackingService.addWorkoutLog(finalLog);
+    const finishedWorkout = this.trackingService.addWorkoutLog(finalLog);
+
+    // update routine
+    if (routine){
+      routine.lastPerformed = new Date(this.workoutStartTime).toISOString();
+      this.workoutService.updateRoutine(routine);
+    }
+
     alert('Workout Finished and Logged!'); // Replace with better UX
-    this.router.navigate(['/history']); // Or back to /workout
+    this.router.navigate(['/history/log/'+finishedWorkout.id]); // Or back to /workout
   }
 
 
@@ -636,6 +658,21 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   cancelEditTarget(): void {
     this.editingTarget = null;
     this.editingTargetValue = '';
+  }
+
+  formatPbValue(pb: PersonalBestSet): string {
+    let value = '';
+    if (pb.weightUsed !== undefined && pb.weightUsed !== null) {
+      value += `${pb.weightUsed}kg`;
+      if (pb.repsAchieved > 1 && !pb.pbType.includes('RM (Actual)')) { // Don't show reps for actual XRM where reps is implicit
+        value += ` x ${pb.repsAchieved}`;
+      }
+    } else if (pb.repsAchieved > 0 && pb.pbType.includes('Max Reps')) {
+      value = `${pb.repsAchieved} reps`;
+    } else if (pb.durationPerformed && pb.durationPerformed > 0 && pb.pbType.includes('Max Duration')) {
+      value = `${pb.durationPerformed}s`;
+    }
+    return value || 'N/A';
   }
 
   ngOnDestroy(): void {

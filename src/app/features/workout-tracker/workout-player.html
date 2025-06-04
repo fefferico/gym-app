@@ -98,16 +98,38 @@
           <!-- Target Display (same as before) -->
           <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 p-4 bg-gray-100 dark:bg-gray-700 rounded-md">
 
+            <!-- Last Time Performance (Existing Block) -->
             <div
               *ngIf="trackingService.findPreviousSetPerformance(lastPerformanceForCurrentExercise, activeSet.setData, activeSet.setIndex) as prevPerfSet"
-              class="col-span-full mt-2 pt-2 border-t border-dashed border-gray-300 dark:border-gray-600 text-xs">
+              class="col-span-full pt-2 text-xs">
               <p class="font-medium text-gray-500 dark:text-gray-400">Last time ({{
-                lastPerformanceForCurrentExercise?.lastPerformedDate | date:'shortDate' }}):</p>
+                lastPerformanceForCurrentExercise?.lastPerformedDate | date:'dd/MM/yyyy HH:mm' }}):</p>
               <ul class="list-disc list-inside ml-2 text-gray-500 dark:text-gray-400">
                 <li *ngIf="prevPerfSet.repsAchieved !== undefined">Reps: {{ prevPerfSet.repsAchieved }}</li>
-                <li *ngIf="prevPerfSet.weightUsed !== undefined">Weight: {{ prevPerfSet.weightUsed }} kg</li>
+                <li *ngIf="prevPerfSet.weightUsed !== undefined && prevPerfSet.weightUsed !== null">Weight: {{
+                  prevPerfSet.weightUsed }} kg</li>
                 <li *ngIf="prevPerfSet.durationPerformed !== undefined">Time: {{ prevPerfSet.durationPerformed }}s</li>
               </ul>
+            </div>
+
+            <!-- Personal Bests Display (NEW SECTION) -->
+            <div *ngIf="exercisePBs().length > 0"
+              class="col-span-full mt-3 pt-3 border-t border-dashed border-gray-300 dark:border-gray-600 text-xs">
+              <p class="font-medium text-gray-500 dark:text-gray-400 mb-1">Personal Bests for {{
+                currentBaseExercise()?.name || 'this exercise' }}:</p>
+              <div class="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1">
+                <div *ngFor="let pb of exercisePBs()">
+                  <span class="text-gray-500 dark:text-gray-400">{{ pb.pbType }}: </span>
+                  <strong class="text-gray-700 dark:text-gray-300">{{ formatPbValue(pb) }}</strong>
+                  <em class="text-gray-400 dark:text-gray-500 text-2xs ml-1"> ({{ pb.timestamp | date:'shortDate'
+                    }})</em>
+                </div>
+              </div>
+            </div>
+            <div *ngIf="currentBaseExercise() && exercisePBs().length === 0"
+              class="col-span-full mt-3 pt-3 border-t border-dashed border-gray-300 dark:border-gray-600 text-xs">
+              <p class="text-gray-500 dark:text-gray-400 italic">No personal bests recorded yet for {{
+                currentBaseExercise()?.name }}.</p>
             </div>
 
             <!-- Target Reps -->
@@ -175,9 +197,7 @@
             class="space-y-4 mb-6 p-4 border border-gray-200 dark:border-gray-600 rounded-lg">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
               <!-- Actual Reps (show if NOT primarily a timed set, OR if timed set also tracks reps) -->
-              <div
-                *ngIf="activeSet.setData.reps !== undefined"
-                class="md:col-span-1">
+              <div *ngIf="activeSet.setData.reps !== undefined" class="md:col-span-1">
                 <label for="actualReps" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Actual
                   Reps</label>
                 <input type="number" id="actualReps" formControlName="actualReps"
@@ -190,8 +210,7 @@
               </div>
 
               <!-- Actual Weight (show if NOT primarily a timed set OR if timed set also tracks weight) -->
-              <div
-                *ngIf="activeSet.setData.weight !== undefined && activeSet.setData.weight !== null"
+              <div *ngIf="activeSet.setData.weight !== undefined && activeSet.setData.weight !== null"
                 class="md:col-span-1">
                 <label for="actualWeight" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Actual
                   Weight (kg)</label>

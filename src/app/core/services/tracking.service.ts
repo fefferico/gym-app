@@ -4,16 +4,11 @@ import { BehaviorSubject, Observable, of } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
 
-import { LoggedSet, WorkoutLog } from '../models/workout-log.model'; // Ensure path is correct
+import { LastPerformanceSummary, LoggedSet, PersonalBestSet, WorkoutLog } from '../models/workout-log.model'; // Ensure path is correct
 import { StorageService } from './storage.service';       // Ensure path is correct
 import { ExerciseSetParams } from '../models/workout.model';
 // Later, you might import Exercise and Routine models for PB calculations
 
-
-export interface LastPerformanceSummary {
-  lastPerformedDate: string;
-  sets: LoggedSet[]; // The actual sets performed for that exercise in that last session
-}
 
 @Injectable({
   providedIn: 'root',
@@ -23,13 +18,15 @@ export class TrackingService {
   private readonly WORKOUT_LOGS_STORAGE_KEY = 'fitTrackPro_workoutLogs';
   // private readonly PERSONAL_BESTS_STORAGE_KEY = 'fitTrackPro_personalBests'; // For later
 
+  private readonly PERSONAL_BESTS_STORAGE_KEY = 'fitTrackPro_personalBests';
+
   // BehaviorSubject for reactive workout logs
   private workoutLogsSubject = new BehaviorSubject<WorkoutLog[]>(this.loadWorkoutLogsFromStorage());
   public workoutLogs$: Observable<WorkoutLog[]> = this.workoutLogsSubject.asObservable();
 
-  // Placeholder for PBs - to be developed
-  // private personalBestsSubject = new BehaviorSubject<any>({}); // Define PB model later
-  // public personalBests$: Observable<any> = this.personalBestsSubject.asObservable();
+  // Personal Bests: Stored as a Record where key is exerciseId, value is an array of PBs (1RM, 5RM, etc.)
+  private personalBestsSubject = new BehaviorSubject<Record<string, PersonalBestSet[]>>(this.loadPBsFromStorage());
+  public personalBests$: Observable<Record<string, PersonalBestSet[]>> = this.personalBestsSubject.asObservable();
 
 
   constructor() {
@@ -58,20 +55,19 @@ export class TrackingService {
     const newLog: WorkoutLog = {
       ...newLogData,
       id: uuidv4(),
+      date: new Date(newLogData.startTime).toISOString().split('T')[0], // Ensure YYYY-MM-DD
     };
 
-    // Calculate duration if not provided and endTime exists
     if (newLog.startTime && newLog.endTime && !newLog.durationMinutes) {
       newLog.durationMinutes = Math.round((newLog.endTime - newLog.startTime) / (1000 * 60));
     }
 
-    const updatedLogs = [newLog, ...currentLogs]; // Add to the beginning for newest first
+    const updatedLogs = [newLog, ...currentLogs];
     this.saveWorkoutLogsToStorage(updatedLogs);
+
+    this.updateAllPersonalBestsFromLog(newLog); // Call PB update
+
     console.log('Added workout log:', newLog);
-
-    // TODO: Update Personal Bests based on this new log
-    // this.updatePersonalBests(newLog);
-
     return newLog;
   }
 
@@ -115,18 +111,20 @@ export class TrackingService {
   getLastPerformanceForExercise(exerciseId: string): Observable<LastPerformanceSummary | null> {
     return this.workoutLogs$.pipe(
       map(logs => {
-        // Logs are already sorted newest first by date in load/save
-        for (const log of logs) {
-          const foundExerciseInLog = log.exercises.find(ex => ex.exerciseId === exerciseId);
-          if (foundExerciseInLog && foundExerciseInLog.sets.length > 0) {
-            return {
+        for (const log of logs) { // logs are already sorted newest first
+          const performedExercise = log.exercises.find(ex => ex.exerciseId === exerciseId);
+          if (performedExercise && performedExercise.sets.length > 0) {
+            // Construct the LastPerformanceSummary including workoutLogId
+            const summary: LastPerformanceSummary = { // Explicitly type for clarity
               lastPerformedDate: log.date,
-              sets: [...foundExerciseInLog.sets] // Return a copy of the sets array
+              workoutLogId: log.id, // <--- ADD THIS
+              sets: [...performedExercise.sets] // Return a copy of the sets array
             };
+            return summary;
           }
         }
         return null; // No performance found for this exercise
-      }),
+      })
       // tap(summary => console.log(`Last performance for ${exerciseId}:`, summary)) // For debugging
     );
   }
@@ -140,25 +138,142 @@ export class TrackingService {
     lastPerformance: LastPerformanceSummary | null,
     currentSetTarget: ExerciseSetParams, // Target parameters for the set about to be performed
     currentSetIndexInRoutine: number // 0-based index of the current set in the routine
-  ): LoggedSet | null {
+  ): LoggedSet | null { // <--- It correctly returns LoggedSet | null
     if (!lastPerformance || !lastPerformance.sets || lastPerformance.sets.length === 0) {
       return null;
     }
 
-    // Simplistic approach: Try to match by set index if the number of sets was similar.
-    // A more robust approach would be to match based on `plannedSetId` if the `LoggedSet`
-    // stored the `plannedSetId` from the routine it was part of.
-    // For now, let's assume we try to get the set at the same index.
+    // lastPerformance.sets are LoggedSet[] objects because LastPerformanceSummary.sets is LoggedSet[]
     if (currentSetIndexInRoutine < lastPerformance.sets.length) {
-      // Return the logged set from the previous performance at the same set index.
-      // This assumes the structure of the exercise (number of sets) was similar.
-      return lastPerformance.sets[currentSetIndexInRoutine];
+      return lastPerformance.sets[currentSetIndexInRoutine]; // This is a LoggedSet
     }
+    return null;
+  }
 
-    // Fallback: return the last set performed for that exercise if index is out of bounds
-    // but user might be doing more sets this time. This might not always be the desired behavior.
-    // return lastPerformance.sets[lastPerformance.sets.length - 1];
+  // --- Personal Best (PB) Management ---
+  private loadPBsFromStorage(): Record<string, PersonalBestSet[]> {
+    return this.storageService.getItem<Record<string, PersonalBestSet[]>>(this.PERSONAL_BESTS_STORAGE_KEY) || {};
+  }
 
-    return null; // No matching previous set found by this logic
+  private savePBsToStorage(pbs: Record<string, PersonalBestSet[]>): void {
+    this.storageService.setItem(this.PERSONAL_BESTS_STORAGE_KEY, pbs);
+    this.personalBestsSubject.next({ ...pbs }); // Emit a new object reference
+  }
+
+  /**
+   * Updates all relevant PBs based on a newly completed workout log.
+   */
+  private updateAllPersonalBestsFromLog(log: WorkoutLog): void {
+    const currentPBs = { ...this.personalBestsSubject.getValue() }; // Get a mutable copy
+
+    log.exercises.forEach(loggedEx => {
+      if (!currentPBs[loggedEx.exerciseId]) {
+        currentPBs[loggedEx.exerciseId] = [];
+      }
+      const exercisePBsList: PersonalBestSet[] = currentPBs[loggedEx.exerciseId];
+
+      loggedEx.sets.forEach(loggedSet => {
+        if (loggedSet.weightUsed === undefined || loggedSet.weightUsed === null) {
+          // For bodyweight exercises or timed sets without weight, PBs might be max reps/duration
+          if (loggedSet.repsAchieved > 0) {
+            this.updateSpecificPB(exercisePBsList, loggedSet, `Max Reps (Bodyweight)`);
+          }
+          if (loggedSet.durationPerformed && loggedSet.durationPerformed > 0) {
+            this.updateSpecificPB(exercisePBsList, loggedSet, `Max Duration`);
+          }
+          return; // Skip weight-based PBs if no weight
+        }
+
+        // --- Weight-Based PBs ---
+        // 1RM (Actual)
+        if (loggedSet.repsAchieved === 1) {
+          this.updateSpecificPB(exercisePBsList, loggedSet, `1RM (Actual)`);
+        }
+        // 3RM (Actual)
+        if (loggedSet.repsAchieved === 3) {
+          this.updateSpecificPB(exercisePBsList, loggedSet, `3RM (Actual)`);
+        }
+        // 5RM (Actual)
+        if (loggedSet.repsAchieved === 5) {
+          this.updateSpecificPB(exercisePBsList, loggedSet, `5RM (Actual)`);
+        }
+        // Max Reps at a specific weight (more complex to track all weights, so this is a simplification)
+        // For now, let's just track "Heaviest Set" regardless of reps (if weight exists)
+        this.updateSpecificPB(exercisePBsList, loggedSet, `Heaviest Lifted`);
+
+        // Estimated 1RM (Epley Formula: weight * (1 + reps / 30)) - only for reps > 1
+        if (loggedSet.repsAchieved > 1) {
+          const e1RM = loggedSet.weightUsed * (1 + loggedSet.repsAchieved / 30);
+          // Create a pseudo LoggedSet for the E1RM, as weight is estimated for 1 rep
+          const e1RMSet: LoggedSet = {
+            ...loggedSet, // Copy context like exerciseId, timestamp, notes
+            repsAchieved: 1, // It's for 1 rep
+            weightUsed: parseFloat(e1RM.toFixed(2)), // Estimated weight for 1 rep
+          };
+          this.updateSpecificPB(exercisePBsList, e1RMSet, `1RM (Estimated)`);
+        }
+      });
+      currentPBs[loggedEx.exerciseId] = exercisePBsList.sort((a, b) => (b.weightUsed ?? 0) - (a.weightUsed ?? 0)); // Sort PBs for this exercise
+    });
+    this.savePBsToStorage(currentPBs);
+    console.log('Personal Bests updated:', currentPBs);
+  }
+
+  /**
+   * Helper to update or add a specific type of PB for an exercise.
+   * @param existingPBsList The array of PBs for the specific exercise.
+   * @param candidateSet The newly performed set that might be a PB.
+   * @param pbType A string describing the type of PB (e.g., "1RM (Actual)", "5RM (Estimated)").
+   */
+  private updateSpecificPB(existingPBsList: PersonalBestSet[], candidateSet: LoggedSet, pbType: string): void {
+    const newPbData: PersonalBestSet = { ...candidateSet, pbType };
+    const existingPbIndex = existingPBsList.findIndex(pb => pb.pbType === pbType);
+
+    let shouldUpdateOrAdd = false;
+
+    if (existingPbIndex > -1) { // PB of this type already exists
+      const existingPb = existingPBsList[existingPbIndex];
+      // Logic to determine if candidateSet is "better"
+      if (pbType.includes('Max Reps')) { // For max reps PBs, higher reps are better (at same or higher weight if applicable)
+        if (candidateSet.repsAchieved > existingPb.repsAchieved) {
+          shouldUpdateOrAdd = true;
+        } else if (candidateSet.repsAchieved === existingPb.repsAchieved && (candidateSet.weightUsed ?? -1) > (existingPb.weightUsed ?? -1)) {
+          shouldUpdateOrAdd = true; // Same reps but heavier weight
+        }
+      } else if (pbType.includes('Max Duration')) { // For max duration, longer is better
+        if ((candidateSet.durationPerformed ?? 0) > (existingPb.durationPerformed ?? 0)) {
+          shouldUpdateOrAdd = true;
+        }
+      } else { // For weight-based PBs (XRM, Heaviest Lifted), heavier is better
+        if ((candidateSet.weightUsed ?? -1) > (existingPb.weightUsed ?? -1)) {
+          shouldUpdateOrAdd = true;
+        }
+        // Could add a tie-breaker for same weight but more reps if the pbType implies it (e.g. "Heaviest 5RM")
+      }
+
+      if (shouldUpdateOrAdd) {
+        existingPBsList[existingPbIndex] = newPbData;
+      }
+    } else { // No PB of this type exists yet, so add it
+      shouldUpdateOrAdd = true;
+      existingPBsList.push(newPbData);
+    }
+  }
+
+  getPersonalBestForExerciseByType(exerciseId: string, pbType: string): Observable<PersonalBestSet | null> {
+    return this.personalBests$.pipe(
+      map(allPBs => {
+        const exercisePBs = allPBs[exerciseId];
+        return exercisePBs?.find(pb => pb.pbType === pbType) || null;
+      })
+    );
+  }
+
+  getAllPersonalBestsForExercise(exerciseId: string): Observable<PersonalBestSet[]> {
+    return this.personalBests$.pipe(map(allPBs => allPBs[exerciseId] || []));
+  }
+
+  getAllPersonalWorkouts(): Observable<WorkoutLog[]> {
+    return this.workoutLogs$;
   }
 }

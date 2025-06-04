@@ -73,7 +73,7 @@ export class AppComponent implements OnInit {
       startTime: Date.now() - (60 * 60 * 1000), // An hour ago
       endTime: Date.now(),
       exercises: [dummyLoggedExercise],
-      overallNotes: 'Felt good today!',
+      // overa  llNotes: 'Felt good today!',
     };
     this.trackingService.addWorkoutLog(dummyLog);
   }

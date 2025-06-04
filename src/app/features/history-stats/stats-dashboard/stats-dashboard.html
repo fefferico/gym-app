@@ -1,0 +1,158 @@
+<div class="container mx-auto p-4">
+    <header class="mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
+        <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-200">My Statistics</h1>
+    </header>
+
+    <div *ngIf="allLogs().length > 0; else noData">
+        <!-- Overall Stats Cards -->
+        <section class="mb-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+                <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Total Workouts</h2>
+                <p class="text-4xl font-bold text-primary dark:text-primary-light">{{ overallWorkoutCount() }}</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+                <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Total Volume Lifted</h2>
+                <p class="text-4xl font-bold text-primary dark:text-primary-light">
+                    {{ overallTotalVolume() | number:'1.0-0' }} <span class="text-lg">kg</span>
+                </p>
+            </div>
+            <!-- Add more overall stat cards here: e.g., Average Duration, Total Time Training -->
+        </section>
+
+        <!-- CHARTS SECTION -->
+        <section class="mb-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Muscle Group Volume Chart -->
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
+                <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">Volume by Muscle Group</h3>
+                <div *ngIf="muscleGroupChartData().length > 0; else noChartData">
+                    <ngx-charts-bar-vertical [view]="view" [results]="muscleGroupChartData()" [gradient]="gradient"
+                        [xAxis]="showXAxis" [yAxis]="showYAxis" [legend]="false" [showXAxisLabel]="showXAxisLabel"
+                        [showYAxisLabel]="showYAxisLabel" [xAxisLabel]="xAxisLabelMuscle"
+                        [yAxisLabel]="yAxisLabelVolume" [scheme]="colorScheme" (select)="onChartSelect($event)"
+                        class="chart-container">
+                    </ngx-charts-bar-vertical>
+                </div>
+                <ng-template #noChartData>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 italic">Not enough data for muscle group chart.
+                    </p>
+                </ng-template>
+            </div>
+
+            <!-- Weekly Volume Chart -->
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
+                <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">Weekly Volume Trend</h3>
+                <div
+                    *ngIf="weeklyVolumeChartData().length > 0 && weeklyVolumeChartData()[0].series.length > 0; else noChartData">
+                    <ngx-charts-line-chart [view]="view" [results]="weeklyVolumeChartData()" [gradient]="gradient"
+                        [xAxis]="showXAxis" [yAxis]="showYAxis" [legend]="false" [showXAxisLabel]="showXAxisLabel"
+                        [showYAxisLabel]="showYAxisLabel" [xAxisLabel]="xAxisLabelWeek" [yAxisLabel]="yAxisLabelVolume"
+                        [autoScale]="true" [scheme]="colorScheme" (select)="onChartSelect($event)"
+                        class="chart-container">
+                    </ngx-charts-line-chart>
+                </div>
+                <ng-template #noChartData>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 italic">Not enough data for weekly volume chart.
+                    </p>
+                </ng-template>
+            </div>
+        </section>
+
+        <!-- Weekly Summaries -->
+        <section class="mb-8">
+            <h2 class="text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-4">Weekly Summary</h2>
+            <div *ngIf="weeklySummariesTableData().length > 0; else noWeeklyData"
+                class="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg shadow-md">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead class="bg-gray-50 dark:bg-gray-750">
+                        <tr>
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                Week</th>
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                Workouts</th>
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                Total Volume (kg)</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                        <tr *ngFor="let summary of weeklySummariesTableData()">
+                            <td
+                                class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
+                                {{
+                                summary.weekLabel }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{
+                                summary.workoutCount }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{
+                                summary.totalVolume | number:'1.0-0' }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <ng-template #noWeeklyData>
+                <p class="text-gray-500 dark:text-gray-400 italic">No weekly data to display yet.</p>
+            </ng-template>
+        </section>
+
+        <!-- Muscle Group Performance -->
+        <section class="mb-8">
+            <h2 class="text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-4">Volume by Muscle Group</h2>
+            <div *ngIf="muscleGroupPerformanceTableData().length > 0; else noMuscleData"
+                class="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg shadow-md">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead class="bg-gray-50 dark:bg-gray-750">
+                        <tr>
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                Muscle Group</th>
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                Workouts</th>
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                Total Volume (kg)</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                        <tr *ngFor="let perf of muscleGroupPerformanceTableData()">
+                            <td
+                                class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
+                                {{ perf.muscleGroup | titlecase }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{
+                                perf.workoutCount }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{
+                                perf.volume | number:'1.0-0' }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <ng-template #noMuscleData>
+                <p class="text-gray-500 dark:text-gray-400 italic">No muscle group performance data to display yet.</p>
+            </ng-template>
+        </section>
+
+        <!-- Placeholder for future charts -->
+        <!--
+    <section>
+      <h2 class="text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-4">Progress Charts (Coming Soon)</h2>
+      <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md text-center">
+        <p class="text-gray-500 dark:text-gray-400">Charts visualizing your progress per exercise and streaks will appear here.</p>
+      </div>
+    </section>
+    -->
+
+    </div>
+    <ng-template #noData>
+        <div class="text-center py-12 px-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                stroke="currentColor" class="w-16 h-16 mx-auto text-gray-400 dark:text-gray-500 mb-4">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M3.75 3v11.25A2.25 2.25 0 0 0 6 16.5h12M3.75 3h-1.5m1.5 0h16.5M3.75 12H12m0 0V9.75M12 12v3.75m0-3.75H3.75M16.5 3.75h.008v.008H16.5V3.75Zm-3.75 0h.008v.008H12.75V3.75Zm-3.75 0h.008v.008H9V3.75Zm-3.75 0h.008v.008H5.25V3.75Z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+            </svg>
+            <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">No Data for Statistics</h3>
+            <p class="text-gray-500 dark:text-gray-400">Complete some workouts to see your statistics here.</p>
+        </div>
+    </ng-template>
+</div>
