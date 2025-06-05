@@ -15,6 +15,9 @@ import { WorkoutService } from '../../core/services/workout.service';
 import { ExerciseService } from '../../core/services/exercise.service'; // We'll need this soon
 import { UnitsService } from '../../core/services/units.service';
 import { WeightUnitPipe } from '../../shared/pipes/weight-unit-pipe';
+import { SpinnerService } from '../../core/services/spinner.service';
+import { AlertComponent } from '../../shared/components/alert/alert.component';
+import { AlertService } from '../../core/services/alert.service';
 
 @Component({
   selector: 'app-workout-builder',
@@ -33,12 +36,15 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   private workoutService = inject(WorkoutService);
   private exerciseService = inject(ExerciseService); // Inject ExerciseService
   protected unitsService = inject(UnitsService); // Use 'protected' for direct template access
+  protected spinnerService = inject(SpinnerService);
+  protected alertService = inject(AlertService);
 
   @ViewChildren('setRepsInput') setRepsInputs!: QueryList<ElementRef<HTMLInputElement>>;
   private cdr = inject(ChangeDetectorRef); // Inject ChangeDetectorRef
 
   routineForm!: FormGroup;
   isEditMode = false;
+  isNewMode = false;
   isViewMode = false;
   currentRoutineId: string | null = null;
   private routeSub: Subscription | undefined;
@@ -87,16 +93,15 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       switchMap(params => {
         this.currentRoutineId = params.get('routineId');
         const currentPath = this.route.snapshot.url[0]?.path; // e.g., 'edit', 'view', 'new'
-        this.isEditMode = currentPath === 'edit' && !!this.currentRoutineId;
-        this.isViewMode = currentPath === 'view' && !!this.currentRoutineId;
+        this.isNewMode = currentPath === 'new';
+        this.isEditMode = (currentPath === 'edit' && !!this.currentRoutineId) || (!!this.isNewMode);
+        this.isViewMode = currentPath === 'view';
 
         if (this.currentRoutineId) {
           // For both edit and view mode, we load the routine
           return this.workoutService.getRoutineById(this.currentRoutineId);
         }
         // For 'new' mode, or if modes somehow get confused without an ID
-        this.isEditMode = false;
-        this.isViewMode = false;
         this.exercisesFormArray.clear();
         this.routineForm.reset({ goal: 'custom', exercises: [] }); // Reset for new
         return of(null);
@@ -107,7 +112,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
           if (this.isViewMode || this.isEditMode) { // Disable form if in view or edit initially
             this.toggleFormState(this.isViewMode); // Pass true to disable for view mode
           }
-        } else if (this.isEditMode || this.isViewMode) { // If ID was present but routine not found
+        } else if ((this.isEditMode || this.isViewMode) && !this.isNewMode) { // If ID was present but routine not found
           console.error(`Routine with ID ${this.currentRoutineId} not found.`);
           this.errorMessage.set(`Routine with ID ${this.currentRoutineId} not found.`);
           this.router.navigate(['/workout']);
@@ -592,7 +597,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       console.log("In view mode, submission is disabled.");
       return;
     }
-    
+
     this.errorMessage.set(null); // Clear previous errors
 
     // --- IMPORTANT: Recalculate superset orders and validate just before saving ---
@@ -606,7 +611,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     // --- End Superset Validation ---
 
 
-    if (this.routineForm.invalid) {
+    if (this.routineForm.invalid || (!this.exercisesFormArray || this.exercisesFormArray.length === 0)) {
       this.routineForm.markAllAsTouched(); // Show validation errors on form controls
       this.showErrorMessage('Please fill in all required fields and correct any errors.', 10000); // Generic fallback error
       console.log('Form Errors:', this.getFormErrors(this.routineForm));
@@ -638,12 +643,14 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     };
 
 
-    if (this.isEditMode) {
-      this.workoutService.updateRoutine(routinePayload);
-      this.showErrorMessage('Routine updated successfully!', 3000); // Success feedback
-    } else {
+    if (this.isNewMode) {
       this.workoutService.addRoutine(routinePayload);
-      this.showErrorMessage('Routine created successfully!', 3000); // Success feedback
+      this.alertService.showAlert("Info", "Routine added successfully!");
+    } else if (this.isEditMode) {
+      this.workoutService.updateRoutine(routinePayload);
+      this.alertService.showAlert("Info", "Routine updated successfully!");
+    } else {
+      this.alertService.showAlert("Info", "No operation done!");
     }
     this.router.navigate(['/workout']);
   }

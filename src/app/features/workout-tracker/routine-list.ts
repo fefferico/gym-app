@@ -4,6 +4,7 @@ import { Router, RouterLink } from '@angular/router';
 import { Observable } from 'rxjs';
 import { Routine } from '../../core/models/workout.model';
 import { WorkoutService } from '../../core/services/workout.service';
+import { AlertService } from '../../core/services/alert.service';
 // You might want a confirmation dialog service later for delete
 // import { ConfirmationDialogService } from '../../shared/services/confirmation-dialog.service';
 
@@ -17,6 +18,7 @@ import { WorkoutService } from '../../core/services/workout.service';
 export class RoutineListComponent implements OnInit {
   private workoutService = inject(WorkoutService);
   private router = inject(Router);
+  private alertService = inject(AlertService);
   // private confirmationDialogService = inject(ConfirmationDialogService); // For later
 
   routines$: Observable<Routine[]> | undefined;
@@ -51,10 +53,13 @@ export class RoutineListComponent implements OnInit {
     event.stopPropagation(); // Prevent card click
 
     // Basic confirm for now. Replace with a nice modal dialog later.
-    const confirmDelete = confirm('Are you sure you want to delete this routine? This action cannot be undone.');
-    if (confirmDelete) {
-      this.workoutService.deleteRoutine(routineId);
-    }
+    this.alertService.showConfirm("Info", "Are you sure you want to delete this routine? This action cannot be undone.").then((result) => {
+      console.log(result);
+      if (result && (result.data)) {
+        this.workoutService.deleteRoutine(routineId);
+        this.alertService.showAlert("Info","Routine deleted successfully!");
+      }
+    })
   }
 
   startWorkout(routineId: string, event: MouseEvent): void {

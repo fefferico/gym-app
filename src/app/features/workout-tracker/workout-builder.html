@@ -7,7 +7,7 @@
     <header class="mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
         <div class="flex justify-between items-center">
             <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-200">
-                {{ isEditMode ? 'Edit Routine' : 'View Routine' }}
+                {{ isNewMode ? 'New routine' : (isViewMode ? 'View Routine' : 'Edit routine') }}
             </h1>
             <a routerLink="/workout" class="text-sm text-primary dark:text-primary-light hover:underline">
                 ← Back to Routines
@@ -43,7 +43,7 @@
         </div>
 
         <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
-            <div  *ngIf="isEditMode" class="flex justify-between items-center mb-4">
+            <div  *ngIf="isEditMode && exercisesFormArray.length > 0" class="flex justify-between items-center mb-4">
                 <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300">Exercises</h2>
                 <button [disabled]="isViewMode" type="button" (click)="openExerciseSelectionModal()"
                     class="bg-green-500 hover:enabled:bg-green-600 text-white text-sm font-medium py-2 px-3 rounded-md transition-all duration-150 ease-in-out disabled:opacity-50">
