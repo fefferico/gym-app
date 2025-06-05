@@ -1,0 +1,85 @@
+<!-- src/app/features/profile-settings/personal-bests.component.html -->
+<div class="container mx-auto p-4">
+    <div class="mb-6 flex justify-between items-center">
+        <a routerLink="/profile" class="text-primary dark:text-primary-light hover:underline flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 mr-1">
+                <path fill-rule="evenodd"
+                    d="M17 10a.75.75 0 0 1-.75.75H5.612l4.158 3.96a.75.75 0 1 1-1.04 1.08l-5.5-5.25a.75.75 0 0 1 0-1.08l5.5-5.25a.75.75 0 1 1 1.04 1.08L5.612 9.25H16.25A.75.75 0 0 1 17 10Z"
+                    clip-rule="evenodd" />
+            </svg>
+            Back to Profile
+        </a>
+        <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-200">Personal Bests</h1>
+        <div> FILTERS </div>
+    </div>
+
+    <div *ngIf="displayPersonalBests().length > 0; else noPBs">
+        <!-- Example Display: Simple list, sorted by exercise name then PB type -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden mb-6">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead class="bg-gray-50 dark:bg-gray-750">
+                    <tr>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            Exercise</th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            PB Type</th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            Best</th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            Date</th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            Notes</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                    <tr *ngFor="let pb of displayPersonalBests()">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
+                            {{ pb.exerciseName }} <span class="text-xs text-gray-500 dark:text-gray-400">({{
+                                pb.primaryMuscleGroup | titlecase }})</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{ pb.pbType }}
+                        </td>
+                        <td
+                            class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-primary dark:text-primary-light">
+                            {{ formatPbValue(pb) }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ pb.timestamp
+                            | date:'mediumDate' }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 italic">{{ pb.notes | slice:0:50
+                            }}{{ pb && pb.notes && pb.notes.length > 50 ? '...' : '' }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Optional: Grouped display -->
+        <!-- This would require restructuring displayPersonalBests to be grouped in the TS -->
+        <!-- Example: Iterate through exercises, then inner loop through PBs for that exercise -->
+        <!--
+     <div *ngFor="let exercise of exercisesWithPBs()"> // exercisesWithPBs() might be a computed signal grouping PBs
+        <h3>{{ exercise.name }}</h3>
+        <ul>
+           <li *ngFor="let pb of exercise.pbs">{{ pb.pbType }}: {{ formatPbValue(pb) }}</li>
+        </ul>
+     </div>
+     -->
+
+    </div>
+
+    <ng-template #noPBs>
+        <div class="text-center py-10 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                stroke="currentColor" class="w-16 h-16 mx-auto text-gray-400 dark:text-gray-500 mb-4">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M15.983 4.202A1.043 1.043 0 0 1 16.5 4.5c.376 0 .703.246.875.588.081.162.1.344.073.526A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.457-16.184c.027-.182.045-.364.073-.526.172-.342.5-.588.875-.588a1.043 1.043 0 0 1 .517.298V1.5a.75.75 0 0 0-1.5 0v.38a8.05 8.05 0 0 0-4.772 4.192.75.75 0 0 0 .954.954 8.05 8.05 0 0 0 4.192-4.772h.38a1.5 1.5 0 0 0 1.5-1.5ZM12 18.75a6.75 6.75 0 1 0 0-13.5 6.75 6.75 0 0 0 0 13.5Z" />
+            </svg>
+            <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">No Personal Bests Yet!</h2>
+            <p class="text-gray-500 dark:text-gray-400">Keep logging your workouts to track your progress and
+                achievements here.</p>
+        </div>
+    </ng-template>
+</div>

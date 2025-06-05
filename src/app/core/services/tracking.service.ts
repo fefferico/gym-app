@@ -8,7 +8,15 @@ import { LastPerformanceSummary, LoggedSet, PersonalBestSet, WorkoutLog } from '
 import { StorageService } from './storage.service';       // Ensure path is correct
 import { ExerciseSetParams } from '../models/workout.model';
 // Later, you might import Exercise and Routine models for PB calculations
+import { parseISO } from 'date-fns'; // For date handling
 
+// New interface for performance data points
+export interface ExercisePerformanceDataPoint {
+  date: Date;       // The date of the workout log
+  value: number;    // The metric being plotted (e.g., max weight, volume)
+  reps?: number;    // Optional: reps achieved for this data point (if plotting max weight for X reps)
+  logId: string;    // ID of the workout log for potential drill-down
+}
 
 @Injectable({
   providedIn: 'root',
@@ -288,4 +296,95 @@ export class TrackingService {
       console.log("All personal bests cleared.");
     }
   }
+
+
+  /**
+   * Retrieves performance history for a specific exercise.
+   * For each workout log containing the exercise, it finds the set with the maximum weight lifted.
+   * @param exerciseId The ID of the exercise.
+   * @returns An Observable array of performance data points, sorted by date.
+   */
+  getExercisePerformanceHistory(exerciseId: string): Observable<ExercisePerformanceDataPoint[]> {
+    return this.workoutLogs$.pipe(
+      map(logs => {
+        const performanceHistory: ExercisePerformanceDataPoint[] = [];
+
+        // Filter logs that contain the specific exercise and sort them by date ascending
+        const relevantLogs = logs
+          .filter(log => log.exercises.some(ex => ex.exerciseId === exerciseId))
+          .sort((a, b) => parseISO(a.date).getTime() - parseISO(b.date).getTime()); // Oldest first for charting
+
+        relevantLogs.forEach(log => {
+          let maxWeightThisSession: number | undefined = undefined;
+          let repsAtMaxWeight: number | undefined = undefined;
+
+          log.exercises.forEach(loggedEx => {
+            if (loggedEx.exerciseId === exerciseId) {
+              loggedEx.sets.forEach(set => {
+                if (set.weightUsed !== undefined && set.weightUsed !== null) {
+                  if (maxWeightThisSession === undefined || set.weightUsed > maxWeightThisSession) {
+                    maxWeightThisSession = set.weightUsed;
+                    repsAtMaxWeight = set.repsAchieved;
+                  } else if (set.weightUsed === maxWeightThisSession) {
+                    // If weights are equal, prefer higher reps (or could be other logic)
+                    if (repsAtMaxWeight === undefined || set.repsAchieved > repsAtMaxWeight) {
+                      repsAtMaxWeight = set.repsAchieved;
+                    }
+                  }
+                }
+              });
+            }
+          });
+
+          if (maxWeightThisSession !== undefined) {
+            performanceHistory.push({
+              date: parseISO(log.date), // Use the log's date
+              value: maxWeightThisSession,
+              reps: repsAtMaxWeight,
+              logId: log.id
+            });
+          }
+        });
+        // console.log(`Performance history for ${exerciseId}:`, performanceHistory);
+        return performanceHistory;
+      })
+    );
+  }
+
+  /** Returns the current list of workout logs for backup */
+  public getLogsForBackup(): WorkoutLog[] {
+    return this.workoutLogsSubject.getValue();
+  }
+
+  /** Returns the current personal bests data for backup */
+  public getPBsForBackup(): Record<string, PersonalBestSet[]> {
+    return this.personalBestsSubject.getValue();
+  }
+
+
+  /** Replaces the current workout logs with imported data */
+  public replaceLogs(newLogs: WorkoutLog[]): void {
+    if (!Array.isArray(newLogs)) {
+      console.error('TrackingService: Imported data for logs is not an array.');
+      return;
+    }
+    // TODO: More robust validation of array content
+
+    this.saveWorkoutLogsToStorage(newLogs);
+    console.log('TrackingService: Logs replaced with imported data.');
+  }
+
+  /** Replaces the current personal bests with imported data */
+  public replacePBs(newPBs: Record<string, PersonalBestSet[]>): void {
+    // Basic validation: check if it's an object
+    if (typeof newPBs !== 'object' || newPBs === null || Array.isArray(newPBs)) {
+      console.error('TrackingService: Imported data for PBs is not an object.');
+      return;
+    }
+    // TODO: More robust validation of object content
+
+    this.savePBsToStorage(newPBs);
+    console.log('TrackingService: PBs replaced with imported data.');
+  }
+
 }

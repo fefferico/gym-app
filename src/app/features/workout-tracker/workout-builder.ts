@@ -1,6 +1,6 @@
 import { Component, inject, OnInit, OnDestroy, signal, computed, ElementRef, QueryList, ViewChildren, AfterViewInit, ChangeDetectorRef } from '@angular/core';
 
-import { CommonModule } from '@angular/common';
+import { CommonModule, DecimalPipe } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray, AbstractControl, FormsModule } from '@angular/forms'; // Added FormArray, AbstractControl
 import { Subscription, of } from 'rxjs';
@@ -13,13 +13,18 @@ import { Routine, ExerciseSetParams, WorkoutExercise } from '../../core/models/w
 import { Exercise } from '../../core/models/exercise.model'; // For later exercise selection
 import { WorkoutService } from '../../core/services/workout.service';
 import { ExerciseService } from '../../core/services/exercise.service'; // We'll need this soon
+import { UnitsService } from '../../core/services/units.service';
+import { WeightUnitPipe } from '../../shared/pipes/weight-unit-pipe';
 
 @Component({
   selector: 'app-workout-builder',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, FormsModule, DragDropModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, FormsModule, DragDropModule
+    , WeightUnitPipe
+  ],
   templateUrl: './workout-builder.html',
   styleUrl: './workout-builder.scss',
+  providers: [DecimalPipe]
 })
 export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit {
   private fb = inject(FormBuilder);
@@ -27,6 +32,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   private route = inject(ActivatedRoute);
   private workoutService = inject(WorkoutService);
   private exerciseService = inject(ExerciseService); // Inject ExerciseService
+  protected unitsService = inject(UnitsService); // Use 'protected' for direct template access
 
   @ViewChildren('setRepsInput') setRepsInputs!: QueryList<ElementRef<HTMLInputElement>>;
   private cdr = inject(ChangeDetectorRef); // Inject ChangeDetectorRef
@@ -149,7 +155,16 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       supersetId: [exerciseData?.supersetId || null],
       supersetOrder: [exerciseData?.supersetOrder ?? null], // Use ?? for nullish coalescing
       supersetSize: [exerciseData?.supersetSize ?? null],
+      rounds: [exerciseData?.rounds ?? 1, [Validators.min(1)]]
     });
+
+    // When supersetId or supersetOrder changes, we might want to adjust 'rounds' input visibility/disabled state
+    // For example, only enable 'rounds' for the first exercise in a superset.
+    fg.get('supersetId')?.valueChanges.subscribe(() => this.updateRoundsControlability(fg));
+    fg.get('supersetOrder')?.valueChanges.subscribe(() => this.updateRoundsControlability(fg));
+
+    // Initial check
+    this.updateRoundsControlability(fg);
 
     // If exerciseId changes, update exerciseName (example of dynamic field update)
     fg.get('exerciseId')?.valueChanges.subscribe(newExerciseId => {
@@ -187,19 +202,20 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     this.modalSearchTerm.set(inputElement.value);
   }
 
-  // --- Exercise Management (selectExercise, removeExercise methods might need slight tweaks if they affect superset grouping) ---
-  selectExercise(exercise: Exercise): void { // From modal
+  // When adding a new exercise, ensure 'rounds' is enabled by default
+  selectExercise(exercise: Exercise): void {
     const newExerciseFormGroup = this.createExerciseFormGroup({
       id: this.workoutService.generateWorkoutExerciseId(),
       exerciseId: exercise.id,
       exerciseName: exercise.name,
       sets: [{ id: this.workoutService.generateExerciseSetId(), reps: 8, weight: 0, restAfterSet: 60 }],
-      // Initialize superset fields as null for a new, standalone exercise
       supersetId: null,
       supersetOrder: null,
       supersetSize: null,
+      rounds: 1 // Default rounds for a new exercise
     });
     this.exercisesFormArray.push(newExerciseFormGroup);
+    // updateRoundsControlability will be called via createExerciseFormGroup if needed
     this.closeExerciseSelectionModal();
   }
 
@@ -418,9 +434,14 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   groupSelectedAsSuperset(): void {
     const selectedIndices = this.selectedExerciseIndicesForSuperset().sort((a, b) => a - b); // Ensure sorted for contiguous check
     // Basic contiguity check (simplification for now)
+    if (selectedIndices.length < 2) { // Should be caught by canGroupSelectedExercises
+      this.showErrorMessage("Select at least two exercises to form a superset.");
+      return;
+    }
+    // Basic contiguity check for this simplified version
     for (let i = 1; i < selectedIndices.length; i++) {
       if (selectedIndices[i] !== selectedIndices[i - 1] + 1) {
-        alert("For this version, please select contiguous exercises to form a superset. You can drag exercises to make them contiguous first.");
+        this.showErrorMessage("For this version, selected exercises must be contiguous to form a superset. Please reorder them first.");
         return;
       }
     }
@@ -429,6 +450,9 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     // After grouping, clear selection
     const newSupersetId = uuidv4();
     const supersetSize = selectedIndices.length;
+    // Get the 'rounds' value from the first selected exercise to apply to the whole superset
+    const firstExerciseControl = this.exercisesFormArray.at(selectedIndices[0]) as FormGroup;
+    const supersetRounds = firstExerciseControl.get('rounds')?.value ?? 1;
 
     selectedIndices.forEach((exerciseIndexInFormArray, orderInSuperset) => {
       const exerciseControl = this.exercisesFormArray.at(exerciseIndexInFormArray) as FormGroup;
@@ -436,16 +460,20 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         supersetId: newSupersetId,
         supersetOrder: orderInSuperset,
         supersetSize: supersetSize,
+        rounds: supersetRounds // Apply consistent rounds to all in superset
       });
+      this.updateRoundsControlability(exerciseControl); // Update disabled state
+
       const setsArray = exerciseControl.get('sets') as FormArray;
       setsArray.controls.forEach((setControl) => {
-        if (orderInSuperset < supersetSize - 1) {
+        if (orderInSuperset < supersetSize - 1) { // Not the last exercise in the superset
           (setControl as FormGroup).get('restAfterSet')?.setValue(0);
         }
+        // Else, rest after last exercise in superset is user-defined via its last set
       });
     });
+
     this.selectedExerciseIndicesForSuperset.set([]);
-    this.recalculateSupersetOrders(); // Recalculate all orders
   }
 
   ungroupSuperset(exerciseIndex: number): void { // Ungroups the entire superset the clicked exercise belongs to
@@ -464,8 +492,24 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         });
       }
     });
+
+    // After ungrouping, re-enable the 'rounds' control for the now standalone exercises
+    const currentSupersetId = exerciseControl.get('supersetId')?.value; // Get it before it's cleared
+    if (!currentSupersetId) return;
+
+    this.exercisesFormArray.controls.forEach(exCtrl => {
+      const fg = exCtrl as FormGroup;
+      if (fg.get('supersetId')?.value === currentSupersetId) {
+        fg.patchValue({
+          supersetId: null,
+          supersetOrder: null,
+          supersetSize: null,
+          // rounds: 1 // Optionally reset rounds to 1, or leave as is
+        });
+        this.updateRoundsControlability(fg); // Re-enable rounds input
+      }
+    });
     this.selectedExerciseIndicesForSuperset.set([]);
-    this.recalculateSupersetOrders(); // Recalculate (though none should be left for this ID)
   }
 
   // Modified removeExercise to better handle supersets
@@ -514,39 +558,60 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
   // --- Form Submission ---
   onSubmit(): void {
-    this.errorMessage.set(null); // Clear previous errors
-    if (this.routineForm.invalid) {
-      this.routineForm.markAllAsTouched(); // Show validation errors on form controls
-      this.showErrorMessage('Please fill in all required fields and correct any errors.');
-      console.log('Form Errors:', this.getFormErrors(this.routineForm));
-      return;
+      this.errorMessage.set(null); // Clear previous errors
+
+      // --- IMPORTANT: Recalculate superset orders and validate just before saving ---
+      this.recalculateSupersetOrders(); // Ensure final state is correct
+
+      if (!this.validateSupersetIntegrity()) {
+           this.showErrorMessage('Superset configuration is invalid. Please ensure supersets have at least two exercises and are contiguous.', 10000); // More specific message
+           console.error("Superset integrity validation failed during submission.");
+           return;
+       }
+      // --- End Superset Validation ---
+
+
+      if (this.routineForm.invalid) {
+        this.routineForm.markAllAsTouched(); // Show validation errors on form controls
+        this.showErrorMessage('Please fill in all required fields and correct any errors.', 10000); // Generic fallback error
+        console.log('Form Errors:', this.getFormErrors(this.routineForm));
+        return;
+      }
+
+
+      const formValue = this.routineForm.value;
+
+      // Prepare payload, ensuring weight is in KG
+      const routinePayload: Routine = {
+        id: this.isEditMode && this.currentRoutineId ? this.currentRoutineId : uuidv4(),
+        name: formValue.name,
+        description: formValue.description,
+        goal: formValue.goal,
+        // exercises array already contains superset/rounds data
+        exercises: formValue.exercises.map((exInput: any) => ({
+          ...exInput,
+          // For each set within the exercise, convert weight to KG
+          sets: exInput.sets.map((setInput: any) => ({
+             ...setInput,
+             // Convert weight from user's preferred unit (in the form) to KG (for storage)
+             weight: this.unitsService.convertToKg(setInput.weight, this.unitsService.currentUnit()) ?? null, // Handle null/undefined
+             // Ensure restAfterSet is a number and >= 0 if required
+             restAfterSet: setInput.restAfterSet ?? 0, // Default if somehow null from form
+          }))
+        })),
+        // Other routine properties like lastPerformed, estimatedDuration etc.
+      };
+
+
+      if (this.isEditMode) {
+        this.workoutService.updateRoutine(routinePayload);
+        this.showErrorMessage('Routine updated successfully!', 3000); // Success feedback
+      } else {
+        this.workoutService.addRoutine(routinePayload);
+        this.showErrorMessage('Routine created successfully!', 3000); // Success feedback
+      }
+      this.router.navigate(['/workout']);
     }
-
-    // Validate superset integrity before saving (optional but good)
-    if (!this.validateSupersetIntegrity()) {
-      this.showErrorMessage('Superset configuration is invalid. Please ensure supersets have at least two exercises and are ordered correctly.');
-      return;
-    }
-
-
-    const routinePayload: Routine = {
-      id: this.isEditMode && this.currentRoutineId ? this.currentRoutineId : uuidv4(),
-      ...this.routineForm.value,
-    };
-
-    // Ensure supersetOrder is sequential if supersetId exists
-    // This might already be handled by recalculateSupersetOrders
-    // but good to double check or transform data if needed for backend.
-
-    if (this.isEditMode) {
-      this.workoutService.updateRoutine(routinePayload);
-      // Add toast/snackbar: this.feedbackService.showSuccess('Routine updated!');
-    } else {
-      this.workoutService.addRoutine(routinePayload);
-      // Add toast/snackbar: this.feedbackService.showSuccess('Routine created!');
-    }
-    this.router.navigate(['/workout']);
-  }
 
   private validateSupersetIntegrity(): boolean {
     const exercises = this.exercisesFormArray.value as WorkoutExercise[];
@@ -589,6 +654,57 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     }
     return null;
   }
+
+  // Helper to manage 'rounds' input based on superset status
+  private updateRoundsControlability(exerciseFormGroup: FormGroup): void {
+    const supersetId = exerciseFormGroup.get('supersetId')?.value;
+    const supersetOrder = exerciseFormGroup.get('supersetOrder')?.value;
+    const roundsControl = exerciseFormGroup.get('rounds');
+
+    if (supersetId && supersetOrder !== null && supersetOrder > 0) {
+      // If part of a superset AND NOT the first exercise, disable 'rounds' and sync with first exercise's rounds
+      roundsControl?.disable({ emitEvent: false });
+      // Find the first exercise in this superset and get its rounds value
+      const firstInSuperset = this.exercisesFormArray.controls.find(ctrl =>
+        (ctrl as FormGroup).get('supersetId')?.value === supersetId &&
+        (ctrl as FormGroup).get('supersetOrder')?.value === 0
+      ) as FormGroup | undefined;
+
+      if (firstInSuperset) {
+        roundsControl?.setValue(firstInSuperset.get('rounds')?.value ?? 1, { emitEvent: false });
+      }
+    } else {
+      // Standalone or first in superset: enable 'rounds'
+      roundsControl?.enable({ emitEvent: false });
+    }
+  }
+
+  syncSupersetRounds(supersetIdToSync: string | null, newRoundsValue: number | null | undefined, changedExerciseIndex: number): void {
+    if (!supersetIdToSync || newRoundsValue === null || newRoundsValue === undefined || newRoundsValue < 1) {
+      return; // No superset to sync or invalid rounds value
+    }
+
+    // Ensure the change is coming from the first exercise of the superset
+    const changedExerciseControl = this.exercisesFormArray.at(changedExerciseIndex) as FormGroup;
+    if (changedExerciseControl.get('supersetOrder')?.value !== 0) {
+      // If not the first exercise, its rounds value should be driven by the first one,
+      // so we don't propagate from here. The readonly attribute should prevent direct edits anyway.
+      return;
+    }
+
+    this.exercisesFormArray.controls.forEach(control => {
+      const exerciseFg = control as FormGroup;
+      if (exerciseFg.get('supersetId')?.value === supersetIdToSync) {
+        // Don't re-patch the one that triggered the change if it's already correct
+        if (exerciseFg.get('rounds')?.value !== newRoundsValue) {
+          exerciseFg.get('rounds')?.setValue(newRoundsValue, { emitEvent: false }); // Avoid infinite loops
+        }
+        // Ensure controllability is updated (e.g. if it became standalone due to other logic then became superset again)
+        this.updateRoundsControlability(exerciseFg);
+      }
+    });
+  }
+
 
   ngOnDestroy(): void {
     if (this.routeSub) {

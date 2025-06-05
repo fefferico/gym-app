@@ -10,7 +10,7 @@ import { WorkoutService } from '../../core/services/workout.service';
 @Component({
   selector: 'app-routine-list',
   standalone: true,
-  imports: [CommonModule, RouterLink, DatePipe], // Added DatePipe
+  imports: [CommonModule, DatePipe], // Added DatePipe
   templateUrl: './routine-list.html',
   styleUrl: './routine-list.scss',
 })

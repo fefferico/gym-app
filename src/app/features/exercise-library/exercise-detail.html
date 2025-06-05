@@ -107,6 +107,40 @@
             </p>
           </div>
         </ng-container>
+
+        <div *ngIf="exercise() && hasSufficientProgressData"
+          class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+          <h3 class="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-300">Progress: {{ progressChartYAxisLabel // }} Over Time</h3>
+          <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md min-h-[350px]">
+            <ngx-charts-line-chart [view]="progressChartView" [scheme]="progressChartColorScheme"
+              [results]="exerciseProgressChartData()" [legend]="false" [xAxis]="progressChartShowXAxis"
+              [yAxis]="progressChartShowYAxis" [xAxisLabel]="progressChartXAxisLabel"
+              [yAxisLabel]="progressChartYAxisLabel" [timeline]="progressChartTimeline"
+              [showXAxisLabel]="progressChartShowXAxisLabel" [showYAxisLabel]="progressChartShowYAxisLabel"
+              [autoScale]="progressChartAutoScale" (select)="onProgressChartSelect($event)">
+              <!-- Optional: Custom tooltips -->
+              <ng-template #tooltipTemplate let-model="model">
+                <div class="p-2 bg-gray-700 text-white rounded shadow-lg text-xs">
+                  <div><strong>{{ model.name | date:'mediumDate' }}</strong></div>
+                  <div>{{ model.series }}: {{ model.value | number:'1.0-2' }} kg</div>
+                  <div *ngIf="model.extra && model.extra.reps">Reps: {{ model.extra.reps }}</div>
+                </div>
+              </ng-template>
+              <ng-template #seriesTooltipTemplate let-model="model">
+                <!-- For multi-series if legend is on; less relevant for single series weight chart -->
+              </ng-template>
+            </ngx-charts-line-chart>
+          </div>
+        </div>
+        <ng-container *ngIf="exercise() && (trackingService.workoutLogs$ | async) as allLogsGlobally">
+          <div *ngIf="allLogsGlobally && allLogsGlobally.length > 0 && !hasSufficientProgressData"
+            class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+            <p class="text-md text-gray-600 dark:text-gray-400 italic">
+              Not enough history for <strong class="dark:text-gray-200">{{ exercise()?.name }}</strong> to plot a
+              progress trend (need at least 2 workouts for this exercise). Keep logging!
+            </p>
+          </div>
+        </ng-container>
       </div>
     </div>
   </ng-container>

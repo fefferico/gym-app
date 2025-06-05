@@ -14,7 +14,7 @@ export class ExerciseService {
   private readonly exercisesUrl = 'assets/data/exercises.json'; // <--- CORRECTED
   constructor() {
     // Optionally pre-load exercises if you want them immediately available
-    // this.getExercises().subscribe();
+    this.getExercises().subscribe();
   }
 
   // Gets all exercises, caches the result for subsequent calls

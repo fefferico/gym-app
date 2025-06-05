@@ -15,7 +15,7 @@ import { v4 as uuidv4 } from 'uuid'; // Needed for generating IDs if not linking
 @Component({
   selector: 'app-manual-log-entry',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, DatePipe, FormsModule, TitleCasePipe], // Added FormsModule, TitleCasePipe
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, FormsModule, TitleCasePipe], // Added FormsModule, TitleCasePipe
   templateUrl: './manual-log-entry.html',
   styleUrl: './manual-log-entry.scss',
 })

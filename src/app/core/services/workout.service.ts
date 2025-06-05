@@ -174,8 +174,35 @@ export class WorkoutService {
     return suggestedParams;
   }
 
+  /** Returns the current list of routines for backup */
+  public getDataForBackup(): Routine[] {
+    return this.routinesSubject.getValue(); // Get current value from BehaviorSubject
+  }
+
+  /** Replaces the current routines with imported data */
+  public replaceData(newRoutines: Routine[]): void {
+    // Basic validation: check if it's an array
+    if (!Array.isArray(newRoutines)) {
+      console.error('WorkoutService: Imported data for routines is not an array.');
+      // Optionally throw an error or return false
+      return;
+    }
+    // TODO: More robust validation of array content (check if items look like Routines)
+
+    this.saveRoutinesToStorage(newRoutines); // Save the new array and update the subject
+    console.log('WorkoutService: Routines replaced with imported data.');
+  }
+
   clearAllRoutines_DEV_ONLY(): void {
-    const confirmClear = confirm("DEVELOPMENT: Are you sure you want to delete ALL routines logs? This cannot be undone.");
+    const confirmClear = confirm("DEVELOPMENT: Are you sure you want to delete ALL routines? This will delete ALL the routines (not just the logs) and cannot be undone.");
+    if (confirmClear) {
+      this.saveRoutinesToStorage([]); // Save an empty array
+      console.log("All routines cleared.");
+    }
+  }
+
+    clearAllExecutedRoutines_DEV_ONLY(): void {
+    const confirmClear = confirm("DEVELOPMENT: Are you sure you want to delete ALL routines LOGS? This cannot be undone.");
     if (confirmClear) {
       this.getCurrentRoutines().forEach(routine => {
         routine.lastPerformed = undefined;

@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, signal, computed, effect } from '@angular/core'; // effect for debugging
-import { CommonModule, DatePipe, TitleCasePipe } from '@angular/common';
+import { CommonModule, DatePipe, DecimalPipe, TitleCasePipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { Observable, combineLatest } from 'rxjs'; // Added combineLatest
 import { map, startWith, distinctUntilChanged } from 'rxjs/operators'; // Added distinctUntilChanged
@@ -10,6 +10,8 @@ import { WorkoutLog } from '../../../core/models/workout-log.model';
 import { Exercise } from '../../../core/models/exercise.model';
 import { toSignal } from '@angular/core/rxjs-interop'; // Import toSignal
 import { WorkoutService } from '../../../core/services/workout.service';
+import { UnitsService } from '../../../core/services/units.service';
+import { WeightUnitPipe } from '../../../shared/pipes/weight-unit-pipe';
 
 @Component({
   selector: 'app-history-list',
@@ -24,6 +26,7 @@ export class HistoryListComponent implements OnInit {
   private exerciseService = inject(ExerciseService); // Inject
   private router = inject(Router);
   private fb = inject(FormBuilder); // Inject
+  protected unitsService = inject(UnitsService); // Use 'protected' for direct template access
 
   protected allWorkoutLogs = signal<WorkoutLog[]>([]);
   availableExercisesForFilter$: Observable<Exercise[]> | undefined;
@@ -140,8 +143,8 @@ export class HistoryListComponent implements OnInit {
       alert('Clear PBs function not available in TrackingService.');
     }
 
-    if (this.workoutService.clearAllRoutines_DEV_ONLY) {
-      this.workoutService.clearAllRoutines_DEV_ONLY();
+    if (this.workoutService.clearAllExecutedRoutines_DEV_ONLY) {
+      this.workoutService.clearAllExecutedRoutines_DEV_ONLY();
     } else {
       alert('Clear routines function not available in WorkoutService.');
     }

@@ -12,8 +12,11 @@ import { NgxChartsModule } from '@swimlane/ngx-charts';
 import { MuscleGroupPerformance, StatsService, WeeklySummary, DatedVolume, StreakInfo } from '../../../core/services/stats.service';
 import { TrackingService } from '../../../core/services/tracking.service';
 import { WorkoutLog } from '../../../core/models/workout-log.model';
+import { UnitsService } from '../../../core/services/units.service';
 
-export interface ChartDataPoint { name: string; value: number; }
+export interface ChartDataPoint { 
+  name: string | Date; 
+  value: number; extra?: any }
 export interface ChartSeries { name: string; series: ChartDataPoint[]; }
 
 @Component({
@@ -21,7 +24,6 @@ export interface ChartSeries { name: string; series: ChartDataPoint[]; }
   standalone: true,
   imports: [
     CommonModule,
-    RouterLink,
     TitleCasePipe,
     DecimalPipe,
     DatePipe, // Add DatePipe here
@@ -36,6 +38,7 @@ export class StatsDashboardComponent implements OnInit, OnDestroy {
   private trackingService = inject(TrackingService);
   private statsService = inject(StatsService);
   private fb = inject(FormBuilder); // Inject FormBuilder
+  protected unitsService = inject(UnitsService);
 
   allLogs = signal<WorkoutLog[]>([]);
   statsFilterForm!: FormGroup; // For the date filters

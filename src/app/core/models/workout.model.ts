@@ -42,6 +42,13 @@ export interface WorkoutExercise {
   // `lastPerformed` was on WorkoutExercise, but it's usually a Routine-level or global exercise stat.
   // Keeping it here for now if your current logic uses it, but consider if it's truly per WorkoutExercise instance.
   lastPerformed?: Date;
+
+  /**
+   * Number of rounds this exercise (or the superset/block it starts) should be repeated.
+   * Default is 1. Only applies if this exercise is the START of a block
+   * (i.e., not part of a superset OR supersetOrder === 0).
+   */
+  rounds?: number; // e.g., 3 for 3 rounds
 }
 
 export interface Routine {

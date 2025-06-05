@@ -12,6 +12,7 @@ import { WorkoutService } from '../../core/services/workout.service';
 import { ExerciseService } from '../../core/services/exercise.service';
 import { TrackingService } from '../../core/services/tracking.service'; // For saving at the end
 import { LoggedSet, LoggedWorkoutExercise, WorkoutLog, LastPerformanceSummary, PersonalBestSet } from '../../core/models/workout-log.model'; // For constructing the log
+import { WeightUnitPipe } from '../../shared/pipes/weight-unit-pipe';
 
 // Interface to manage the state of the currently active set/exercise
 interface ActiveSetInfo {
@@ -37,7 +38,7 @@ enum TimedSetState {
 @Component({
   selector: 'app-workout-player',
   standalone: true,
-  imports: [CommonModule, RouterLink, TitleCasePipe, DatePipe, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, RouterLink, DatePipe, ReactiveFormsModule, FormsModule, WeightUnitPipe],
   templateUrl: './workout-player.html',
   styleUrl: './workout-player.scss',
 })
@@ -71,6 +72,12 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   sessionTimerDisplay = signal('00:00:00');
   restTimerDisplay = signal<string | null>(null);
   isResting = signal(false);
+
+  // --- NEW Signals for Round Tracking ---
+  /** Current round for the active exercise block (1-indexed for display) */
+  currentBlockRound = signal(1);
+  /** Total rounds planned for the active exercise block */
+  totalBlockRounds = signal(1);
 
   // Computed signal for the currently active set/exercise details
   activeSetInfo = computed<ActiveSetInfo | null>(() => {
@@ -147,6 +154,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     this.initializeCurrentSetForm(); // Initialize the form structure
   }
 
+  // Modify ngOnInit to initialize round trackers when routine is first set
   ngOnInit(): void {
     this.workoutStartTime = Date.now();
     this.startSessionTimer();
@@ -156,8 +164,6 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         this.routineId = params.get('routineId');
         if (this.routineId) {
           return this.workoutService.getRoutineById(this.routineId).pipe(
-            // Create a DEEP COPY of the routine for this session.
-            // All target modifications (suggestions, on-the-fly edits) will happen on this copy.
             map(originalRoutine => originalRoutine ? JSON.parse(JSON.stringify(originalRoutine)) as Routine : null)
           );
         }
@@ -166,7 +172,22 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       tap(sessionRoutineCopy => {
         if (sessionRoutineCopy) {
           this.routine.set(sessionRoutineCopy);
-          this.prepareCurrentSet(); // Prepare the first set with suggestions
+          // Initialize round trackers for the very first block when routine loads
+          if (sessionRoutineCopy.exercises.length > 0) {
+            const firstExerciseOfRoutine = sessionRoutineCopy.exercises[0];
+            // A block is defined by a standalone exercise or the first exercise of a superset
+            if (!firstExerciseOfRoutine.supersetId || firstExerciseOfRoutine.supersetOrder === 0) {
+              this.totalBlockRounds.set(firstExerciseOfRoutine.rounds ?? 1);
+            } else { // Should not happen if routine structure is good, but defensively:
+              // Try to find the actual start of its superset block if it's not the first
+              const actualBlockStart = sessionRoutineCopy.exercises.find(ex => ex.supersetId === firstExerciseOfRoutine.supersetId && ex.supersetOrder === 0);
+              this.totalBlockRounds.set(actualBlockStart?.rounds ?? 1);
+            }
+          } else {
+            this.totalBlockRounds.set(1);
+          }
+          this.currentBlockRound.set(1); // Always start at round 1
+          this.prepareCurrentSet(); // Prepare the first set
         } else {
           this.routine.set(null);
           console.error('WorkoutPlayer: Routine not found or ID missing.');
@@ -227,20 +248,25 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     });
   }
 
+  // Modify `startRestTimer` to potentially show what's next, considering supersets.
   startRestTimer(durationSeconds: number): void {
     if (this.restTimerSub) {
       this.restTimerSub.unsubscribe();
     }
     this.isResting.set(true);
     let remaining = durationSeconds;
-    this.updateRestTimerDisplay(remaining);
+    this.updateRestTimerDisplay(remaining); // Show initial time immediately
 
-    this.restTimerSub = timer(0, 1000).pipe(
+    const currentActiveInfo = this.activeSetInfo(); // Get info about the set JUST COMPLETED
+    const routine = this.routine();
+
+    this.restTimerSub = timer(0, 1000).pipe( // Emit immediately, then every second
       takeWhile(() => remaining >= 0)
     ).subscribe(() => {
       this.updateRestTimerDisplay(remaining);
       if (remaining === 0) {
         this.isResting.set(false);
+        this.restTimerDisplay.set(null); // Clear display when rest ends
         // Optional: Play a sound
       }
       remaining--;
@@ -289,45 +315,44 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   // Ensure finishWorkout uses the latest `this.routine()` for `routineName`
   // and `this.currentWorkoutLogExercises()` for exercises.
   // The logic for updating `routine.lastPerformed` should also use the session copy.
-  finishWorkout(): void {
-    if (this.timerSub) this.timerSub.unsubscribe();
-    if (this.restTimerSub) this.restTimerSub.unsubscribe();
+finishWorkout(): void {
+  if (this.timerSub) this.timerSub.unsubscribe();
+  if (this.restTimerSub) this.restTimerSub.unsubscribe();
 
-    const sessionRoutineValue = this.routine(); // Use the session's routine copy
-    const endTime = Date.now();
-    const durationMinutes = Math.round((endTime - this.workoutStartTime) / (1000 * 60));
+  const sessionRoutineValue = this.routine();
+  const endTime = Date.now();
+  const durationMinutes = Math.round((endTime - this.workoutStartTime) / (1000 * 60));
 
-    const finalLog: Omit<WorkoutLog, 'id'> = {
-      routineId: this.routineId || undefined,
-      routineName: sessionRoutineValue?.name || 'Ad-hoc Workout',
-      // date will be set by TrackingService based on startTime
-      startTime: this.workoutStartTime,
-      endTime: endTime,
-      durationMinutes: durationMinutes,
-      exercises: this.currentWorkoutLogExercises(),
-      date: new Date(this.workoutStartTime).toISOString(),
-    };
+  const finalLog: Omit<WorkoutLog, 'id'> = {
+    routineId: this.routineId || undefined,
+    routineName: sessionRoutineValue?.name || 'Ad-hoc Workout',
+    startTime: this.workoutStartTime,
+    endTime: endTime,
+    durationMinutes: durationMinutes,
+    exercises: this.currentWorkoutLogExercises(),
+    date: new Date(this.workoutStartTime).toISOString().split('T')[0], // Ensure date is set correctly
+    // overallNotes: get from a form field if you add one to player
+  };
 
-    const savedLog = this.trackingService.addWorkoutLog(finalLog);
+  const savedLog = this.trackingService.addWorkoutLog(finalLog);
+  console.log('Workout Finished and Logged! Log ID:', savedLog.id);
 
-    // Update the original routine's lastPerformed date in WorkoutService
-    if (this.routineId && sessionRoutineValue) { // Only if it was based on a saved routine
-      // Fetch the original routine again to avoid saving session-modified targets
+  // Update original routine's lastPerformed date
+  if (this.routineId && sessionRoutineValue) {
       this.workoutService.getRoutineById(this.routineId).pipe(take(1)).subscribe(originalRoutine => {
-        if (originalRoutine) {
-          const updatedOriginalRoutine = {
-            ...originalRoutine,
-            lastPerformed: new Date(this.workoutStartTime).toISOString()
-          };
-          this.workoutService.updateRoutine(updatedOriginalRoutine);
-        }
+          if (originalRoutine) {
+              const updatedOriginalRoutine = {
+                  ...originalRoutine,
+                  lastPerformed: new Date(this.workoutStartTime).toISOString()
+              };
+              this.workoutService.updateRoutine(updatedOriginalRoutine);
+          }
       });
-    }
-
-    alert('Workout Finished and Logged!');
-    // Navigate to a log detail page or history
-    this.router.navigate(['/history/log', savedLog.id]); // Example, adjust route as needed
   }
+
+  // Instead of alert, navigate to the summary page
+  this.router.navigate(['/workout/summary', savedLog.id]); // <<<< MODIFIED NAVIGATION
+}
 
 
   quitWorkout(): void {
@@ -680,21 +705,108 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   // private patchCurrentSetFormWithData(activeInfo: ActiveSetInfo): void { ... }
 
 
-  private navigateToNextStepInWorkout(completedActiveInfo: ActiveSetInfo, currentRoutineState: Routine): void {
-    const currentExercise = currentRoutineState.exercises[completedActiveInfo.exerciseIndex];
+  // --- SIGNIFICANTLY REVISED Navigation Logic ---
+  private navigateToNextStepInWorkout(completedActiveInfo: ActiveSetInfo, currentSessionRoutine: Routine): void {
+    const currentGlobalExerciseIndex = completedActiveInfo.exerciseIndex;
+    const currentGlobalSetIndex = completedActiveInfo.setIndex;
+    const currentPlayedExercise = currentSessionRoutine.exercises[currentGlobalExerciseIndex];
 
-    if (completedActiveInfo.setIndex < currentExercise.sets.length - 1) {
-      this.currentSetIndex.update(s => s + 1);
-    } else if (completedActiveInfo.exerciseIndex < currentRoutineState.exercises.length - 1) {
-      this.currentExerciseIndex.update(e => e + 1);
-      this.currentSetIndex.set(0);
-      this.lastPerformanceForCurrentExercise = null; // Reset for new exercise
-    } else {
-      this.finishWorkout();
-      return;
+    let nextExerciseGlobalIndex = currentGlobalExerciseIndex;
+    let nextSetIndexInExercise = 0; // Set index relative to the *next* exercise
+    let exerciseBlockChanged = false;
+
+    // Case 1: More sets in the current exercise?
+    if (currentGlobalSetIndex < currentPlayedExercise.sets.length - 1) {
+      nextSetIndexInExercise = currentGlobalSetIndex + 1;
+      // nextExerciseGlobalIndex remains the same
+      console.log(`Advancing to Set ${nextSetIndexInExercise + 1} of ${currentPlayedExercise.exerciseName}`);
     }
-    this.prepareCurrentSet(); // Prepare the next set with new suggestions
+    // Case 2: Last set of an exercise completed.
+    else {
+      // Is this exercise part of an ongoing superset?
+      if (currentPlayedExercise.supersetId &&
+        currentPlayedExercise.supersetOrder !== null &&
+        (currentPlayedExercise.supersetSize !== null && currentPlayedExercise.supersetSize !== undefined) &&
+        currentPlayedExercise.supersetOrder < currentPlayedExercise.supersetSize - 1) {
+
+        // Yes, move to the next exercise in the SAME superset group for the CURRENT round
+        nextExerciseGlobalIndex++; // Assumes contiguous superset exercises
+        // Ensure this next exercise is indeed part of the same superset
+        if (nextExerciseGlobalIndex < currentSessionRoutine.exercises.length &&
+          currentSessionRoutine.exercises[nextExerciseGlobalIndex].supersetId === currentPlayedExercise.supersetId) {
+          // nextSetIndexInExercise is already 0 (first set of new exercise)
+          console.log(`Advancing to next Superset Exercise: ${currentSessionRoutine.exercises[nextExerciseGlobalIndex].exerciseName}`);
+        } else {
+          // Should not happen if routine structure is correct - superset broken
+          console.error("Superset structure broken. Attempting to find next block.");
+          const foundBlockIdx = this.findNextExerciseBlockStartIndex(currentGlobalExerciseIndex, currentSessionRoutine);
+          if (foundBlockIdx !== -1) {
+            nextExerciseGlobalIndex = foundBlockIdx;
+            exerciseBlockChanged = true;
+          } else { this.finishWorkout(); return; }
+        }
+      }
+      // Case 3: Last set of a standalone exercise OR last set of the last exercise in a superset group completed.
+      // This marks the end of one pass through the current "exercise block".
+      else {
+        const currentBlockTotalRounds = this.totalBlockRounds(); // From the start of this block
+        if (this.currentBlockRound() < currentBlockTotalRounds) {
+          // More rounds for the current block
+          this.currentBlockRound.update(r => r + 1);
+          console.log(`Starting Round ${this.currentBlockRound()} of ${currentBlockTotalRounds} for current block.`);
+          // Reset to the beginning of the current block
+          if (currentPlayedExercise.supersetId && currentPlayedExercise.supersetOrder !== null) {
+            // It was a superset, find its first exercise (supersetOrder === 0)
+            nextExerciseGlobalIndex = currentGlobalExerciseIndex - currentPlayedExercise.supersetOrder;
+          } else {
+            // It was a standalone exercise, so index remains the same to repeat it
+            // nextExerciseGlobalIndex remains currentGlobalExerciseIndex
+          }
+          // nextSetIndexInExercise is already 0
+        } else {
+          // All rounds for the current block are complete. Find the next block.
+          console.log('All rounds for current block complete. Finding next block.');
+          const foundBlockIdx = this.findNextExerciseBlockStartIndex(currentGlobalExerciseIndex, currentSessionRoutine);
+          if (foundBlockIdx !== -1) {
+            nextExerciseGlobalIndex = foundBlockIdx;
+            // nextSetIndexInExercise is already 0
+            exerciseBlockChanged = true; // Signifies a completely new block is starting
+          } else {
+            // No more blocks in the routine
+            this.finishWorkout();
+            return;
+          }
+        }
+      }
+    }
+
+    // If the exercise block changed, reset round counters for the new block
+    if (exerciseBlockChanged) {
+      this.currentBlockRound.set(1);
+      const newBlockStarterExercise = currentSessionRoutine.exercises[nextExerciseGlobalIndex];
+      // A block's rounds are defined by its first exercise (standalone or supersetOrder 0)
+      if (!newBlockStarterExercise.supersetId || newBlockStarterExercise.supersetOrder === 0) {
+        this.totalBlockRounds.set(newBlockStarterExercise.rounds ?? 1);
+      } else {
+        // This case implies an issue, player should always land on a block starter
+        console.warn("Landed on non-block-starter exercise when expecting new block. Defaulting rounds to 1.");
+        this.totalBlockRounds.set(1);
+      }
+      this.lastPerformanceForCurrentExercise = null; // Reset last performance for the new exercise block
+    }
+
+    // Update signals for the next active set
+    this.currentExerciseIndex.set(nextExerciseGlobalIndex);
+    this.currentSetIndex.set(nextSetIndexInExercise);
+
+    // Start rest timer using the rest period of the set that was JUST COMPLETED
+    if (completedActiveInfo.setData.restAfterSet > 0 && !this.isResting()) {
+      this.startRestTimer(completedActiveInfo.setData.restAfterSet);
+    }
+
+    this.prepareCurrentSet(); // Prepare UI and data for the new active set
   }
+
 
   confirmEditTarget(): void {
     const activeInfoOriginal = this.activeSetInfo(); // Based on current routine() state
@@ -771,5 +883,78 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
     this.resetTimedSet();
     this.navigateToNextStepInWorkout(activeInfo, currentRoutineValue);
+  }
+
+  /**
+   * Finds the index of the start of the next exercise block.
+   * An exercise block is either a standalone exercise or the first exercise of a new superset group.
+   */
+  private findNextExerciseBlockIndex(currentExerciseGlobalIndex: number, routine: Routine): number {
+    for (let i = currentExerciseGlobalIndex + 1; i < routine.exercises.length; i++) {
+      const nextEx = routine.exercises[i];
+      // It's a new block if it's standalone OR the start of a new superset group
+      if (!nextEx.supersetId || nextEx.supersetOrder === 0) {
+        return i;
+      }
+    }
+    return -1; // No more blocks
+  }
+
+  // Update getNextUpText to be round-aware
+  getNextUpText(completedActiveSetInfo: ActiveSetInfo | null, currentSessionRoutine: Routine | null): string {
+    if (!completedActiveSetInfo || !currentSessionRoutine) return 'Next Set/Exercise';
+
+    const curExGlobalIdx = completedActiveSetInfo.exerciseIndex;
+    const curSetIdxInEx = completedActiveSetInfo.setIndex;
+    const curPlayedEx = currentSessionRoutine.exercises[curExGlobalIdx];
+
+    // Case 1: More sets in current exercise of current round?
+    if (curSetIdxInEx < curPlayedEx.sets.length - 1) {
+      return `Set ${curSetIdxInEx + 2} of ${curPlayedEx.exerciseName}`;
+    }
+
+    // Case 2: Last set of current exercise. Is it part of an ongoing superset in the current round?
+    if (curPlayedEx.supersetId && curPlayedEx.supersetOrder !== null && curPlayedEx.supersetSize &&
+      curPlayedEx.supersetOrder < curPlayedEx.supersetSize - 1) {
+      const nextSupersetExIndex = curExGlobalIdx + 1;
+      if (nextSupersetExIndex < currentSessionRoutine.exercises.length &&
+        currentSessionRoutine.exercises[nextSupersetExIndex].supersetId === curPlayedEx.supersetId) {
+        return `SUPERSET: ${currentSessionRoutine.exercises[nextSupersetExIndex].exerciseName}`;
+      }
+    }
+
+    // Case 3: Last set of the exercise block for the current round. Are there more rounds?
+    const currentBlockTotalRounds = this.totalBlockRounds();
+    if (this.currentBlockRound() < currentBlockTotalRounds) {
+      let blockStartIndex = curExGlobalIdx;
+      if (curPlayedEx.supersetId && curPlayedEx.supersetOrder !== null) {
+        blockStartIndex = curExGlobalIdx - curPlayedEx.supersetOrder; // Find start of this superset block
+      }
+      return `Round ${this.currentBlockRound() + 1}: ${currentSessionRoutine.exercises[blockStartIndex].exerciseName}`;
+    }
+
+    // Case 4: All rounds for current block done. Find next block.
+    const nextBlockStartIndex = this.findNextExerciseBlockStartIndex(curExGlobalIdx, currentSessionRoutine);
+    if (nextBlockStartIndex !== -1) {
+      return `Next Exercise: ${currentSessionRoutine.exercises[nextBlockStartIndex].exerciseName}`;
+    }
+
+    return 'Finish Workout!';
+  }
+
+  /**
+   * Finds the index of the start of the NEXT exercise block.
+   * An exercise block is either a standalone exercise or the first exercise of a new superset group.
+   * @param currentCompletedExerciseGlobalIndex The global index of the exercise just finished (or last in its block/round).
+   */
+  private findNextExerciseBlockStartIndex(currentCompletedExerciseGlobalIndex: number, routine: Routine): number {
+    for (let i = currentCompletedExerciseGlobalIndex + 1; i < routine.exercises.length; i++) {
+      const exercise = routine.exercises[i];
+      // A new block starts if it's not part of a superset OR if it's the first in a superset
+      if (!exercise.supersetId || exercise.supersetOrder === 0) {
+        return i;
+      }
+    }
+    return -1; // No more blocks
   }
 }

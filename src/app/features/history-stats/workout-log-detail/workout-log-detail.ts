@@ -1,5 +1,5 @@
 import { Component, inject, Input, OnInit, signal } from '@angular/core';
-import { CommonModule, DatePipe, TitleCasePipe } from '@angular/common';
+import { CommonModule, DatePipe, DecimalPipe, TitleCasePipe } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { forkJoin, Observable, of } from 'rxjs';
 import { map, switchMap, tap } from 'rxjs/operators';
@@ -7,6 +7,7 @@ import { Exercise } from '../../../core/models/exercise.model';
 import { LoggedWorkoutExercise, WorkoutLog } from '../../../core/models/workout-log.model';
 import { TrackingService } from '../../../core/services/tracking.service';
 import { ExerciseService } from '../../../core/services/exercise.service';
+import { WeightUnitPipe } from '../../../shared/pipes/weight-unit-pipe';
 
 interface DisplayLoggedExercise extends LoggedWorkoutExercise {
   baseExercise?: Exercise | null; // To hold image, category etc.
@@ -15,7 +16,7 @@ interface DisplayLoggedExercise extends LoggedWorkoutExercise {
 @Component({
   selector: 'app-workout-log-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, DatePipe, TitleCasePipe],
+  imports: [CommonModule, RouterLink, DatePipe, TitleCasePipe, WeightUnitPipe],
   templateUrl: './workout-log-detail.html',
   styleUrl: './workout-log-detail.scss',
 })

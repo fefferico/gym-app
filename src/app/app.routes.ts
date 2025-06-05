@@ -18,9 +18,9 @@ export const APP_ROUTES: Routes = [
       .then(m => m.EXERCISE_LIBRARY_ROUTES)
   },
   {
-    path: 'profile',
-    loadComponent: () => import('./features/profile-settings/profile-placeholder/profile-placeholder') // Ensure this file exists
-      .then(c => c.ProfilePlaceholderComponent)
+    path: 'profile', // Main path for the profile feature
+    loadChildren: () => import('./features/profile-settings/profile-settings.routes')
+      .then(m => m.PROFILE_SETTINGS_ROUTES)
   },
   { path: '', redirectTo: '/workout', pathMatch: 'full' },
   { path: '**', redirectTo: '/workout' }
