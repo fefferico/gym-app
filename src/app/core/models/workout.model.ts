@@ -1,43 +1,57 @@
 // src/app/core/models/workout.model.ts
 
-// Renamed from 'Set' to 'ExerciseSetParams' to avoid conflict with built-in Set
 export interface ExerciseSetParams {
-  id: string; // UUID for this specific instance of a set in a routine or workout plan
-  reps?: number;         // Target/planned reps
-  weight?: number;       // Target/planned weight
-  duration?: number;     // Target/planned duration for timed sets
-  tempo?: string;        // e.g., "2-0-1-0"
-  restAfterSet: number;  // Seconds of rest planned after this set
-  notes?: string;        // Notes for planning this set
-
-  // These fields can be used by the WorkoutPlayerComponent for temporary UI state during an active workout
-  // They are not part of the persistent LoggedSet data directly, but inform it.
-  _uiIsCompleted?: boolean;  // Has the user marked this set as done in the player?
-  _uiActualReps?: number;    // Reps input by user in player
-  _uiActualWeight?: number;  // Weight input by user in player
-  _uiActualDuration?: number;// Duration input by user in player
+  id: string;
+  reps?: number;
+  weight?: number;
+  duration?: number;
+  tempo?: string;
+  restAfterSet: number; // For the set *within* an exercise. For supersets, this might be 0 for intermediate exercises.
+  notes?: string;
+  _uiIsCompleted?: boolean;
+  _uiActualReps?: number;
+  _uiActualWeight?: number;
+  _uiActualDuration?: number;
 }
 
 export interface WorkoutExercise {
-  id: string; // UUID for this exercise instance within a routine
+  id: string;
+  exerciseId: string; // Foreign key to Exercise.id
   exerciseName?: string;
+  sets: ExerciseSetParams[];
+  notes?: string; // Notes specific to this exercise within the routine
+
+  // --- Superset Properties ---
+  /**
+   * A unique ID grouping exercises in the same superset.
+   * If null or undefined, this exercise is not part of a superset.
+   */
+  supersetId: string | null;
+  /**
+   * The order of this exercise within its superset group (0-indexed).
+   * Relevant only if supersetId is not null.
+   */
+  supersetOrder: number | null;
+  /**
+   * The total number of exercises in this superset group.
+   * Relevant only if supersetId is not null.
+   * Can be derived or explicitly set.
+   */
+  supersetSize?: number | null; // Can be useful for display "Exercise 1 of 2 in Superset"
+
+  // `lastPerformed` was on WorkoutExercise, but it's usually a Routine-level or global exercise stat.
+  // Keeping it here for now if your current logic uses it, but consider if it's truly per WorkoutExercise instance.
   lastPerformed?: Date;
-  exerciseId: string; // Foreign key to Exercise.id from exercise.model.ts
-  sets: ExerciseSetParams[]; // Array of planned sets for this exercise
-  isSupersetStart?: boolean; // Marks the beginning of a superset
-  supersetGroup?: string; // Identifier for exercises in the same superset/giant set
-  notes?: string; // Notes specific to this exercise in the routine (e.g., "Focus on form")
 }
 
 export interface Routine {
-  id: string; // UUID
+  id: string;
   name: string;
   description?: string;
-  exercises: WorkoutExercise[];
-  estimatedDuration?: number; // Calculated or user-defined
+  exercises: WorkoutExercise[]; // This list will be ordered, and superset exercises will be contiguous
+  estimatedDuration?: number;
   lastPerformed?: string;
-  // For intelligent generation
   goal?: 'strength' | 'hypertrophy' | 'endurance' | 'custom';
   targetMuscleGroups?: string[];
-  notes?: string; // General notes for the routine
+  notes?: string;
 }

@@ -1,0 +1,40 @@
+.exercise-list-container {
+  min-height: 60px; // Ensure drop list has some height even when empty for dropping
+}
+
+.exercise-item {
+  transition: box-shadow 0.2s ease-in-out;
+  &:hover {
+    // Slightly lift or indicate hover
+  }
+}
+
+/* When an item is being dragged, its original spot gets this placeholder */
+.cdk-drag-placeholder {
+  opacity: 0.4;
+  background: #ccc;
+  border: dotted 2px #999;
+  min-height: 100px; // Match approximate item height
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+  display: block; // Ensure it takes up space
+  margin-bottom: 0.5rem; /* space-y-2 */
+}
+
+/* The item being dragged */
+.cdk-drag-preview {
+  box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
+              0 8px 10px 1px rgba(0, 0, 0, 0.14),
+              0 3px 14px 2px rgba(0, 0, 0, 0.12);
+  border-radius: 0.5rem; /* rounded-lg */
+  // Ensure its background is solid so content below doesn't show through
+  background-color: var(--card-background-color, white); /* Use CSS variable or actual color */
+}
+ body.dark .cdk-drag-preview {
+     background-color: var(--dark-card-background-color, #1f2937); /* dark:bg-gray-800 */
+ }
+
+
+/* While dragging over the list */
+.cdk-drop-list-dragging .exercise-item:not(.cdk-drag-placeholder) {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}

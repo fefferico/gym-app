@@ -1,3 +1,8 @@
+<div *ngIf="errorMessage()"
+    class="my-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-md dark:bg-red-900/30 dark:border-red-600 dark:text-red-300">
+    {{ errorMessage() }}
+</div>
+
 <div class="container mx-auto p-4">
     <header class="mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
         <div class="flex justify-between items-center">
@@ -12,7 +17,7 @@
 
     <form [formGroup]="routineForm" (ngSubmit)="onSubmit()"
         class="space-y-6 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
-        <!-- Routine Metadata (Name, Description, Goal) - Same as before -->
+        
         <div>
             <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Routine Name</label>
             <input type="text" id="name" formControlName="name"
@@ -24,8 +29,7 @@
             </div>
         </div>
         <div>
-            <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Description
-                (Optional)</label>
+            <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Description (Optional)</label>
             <textarea id="description" formControlName="description" rows="3"
                 class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary"></textarea>
         </div>
@@ -37,182 +41,206 @@
             </select>
         </div>
 
-        <!-- Exercises Section - Now using FormArray -->
         <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300">Exercises</h2>
                 <button type="button" (click)="openExerciseSelectionModal()"
-                    class="bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium py-2 px-3 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
-                        class="w-4 h-4 inline-block mr-1">
-                        <path
-                            d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
-                    </svg>
-                    Add Exercise
+                        class="bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium py-2 px-3 rounded-md transition-colors">
+                    + Add Exercise
                 </button>
             </div>
 
-            <div formArrayName="exercises" class="space-y-6">
-                <div *ngFor="let exerciseControl of exercisesFormArray.controls; let exIndex = index"
-                    [formGroupName]="exIndex"
-                    class="p-4 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 shadow space-y-4">
-                    <!-- Exercise Header and Remove Button -->
-                    <div class="flex justify-between items-center pb-2 border-b border-gray-200 dark:border-gray-600">
-                        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">
-                            {{ exerciseControl.get('exerciseName')?.value || 'Select Exercise' }}
-                        </h3>
-                        <button type="button" (click)="removeExercise(exIndex)"
-                            class="text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 font-medium text-sm p-1 rounded-md hover:bg-red-100 dark:hover:bg-red-900/50">
-                            Remove Exercise
-                        </button>
-                    </div>
+            <div cdkDropList
+                 [cdkDropListData]="exercisesFormArray.controls"
+                 (cdkDropListDropped)="onExerciseDrop($event)"
+                 formArrayName="exercises"
+                 class="exercise-list-container">
 
-                    <!-- Hidden Exercise ID & Exercise Notes (mostly same) -->
-                    <input type="hidden" formControlName="exerciseId">
-                    <div>
-                        <label [for]="'exNotes-' + exIndex"
-                            class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Notes for this
-                            exercise (optional)</label>
-                        <textarea [id]="'exNotes-' + exIndex" formControlName="notes" rows="2"
-                            class="mt-1 block w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700"></textarea>
-                    </div>
-
-
-                    <!-- Sets for this exercise -->
-                    <div class="space-y-3">
-                        <div class="flex justify-between items-center">
-                            <h4 class="text-md font-semibold text-gray-700 dark:text-gray-300">Sets:</h4>
+                <ng-container *ngFor="let exerciseControl of exercisesFormArray.controls; let exIndex = index; let isLastExerciseInForm = last">
+                    <div class="relative group exercise-card-wrapper">
+                        <div *ngIf="selectedExerciseIndicesForSuperset().length >= 2 && exIndex === firstSelectedExerciseIndexForSuperset"
+                             class="absolute left-1/2 -translate-x-1/2 z-20"
+                             style="top: -1.25rem;">
+                            <button type="button"
+                                    (click)="groupSelectedAsSuperset()"
+                                    [disabled]="!canGroupSelectedExercises()"
+                                    class="bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold py-1.5 px-3 rounded-full shadow-lg whitespace-nowrap transition-all duration-150 ease-in-out hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed">
+                                Group Superset ({{ selectedExerciseIndicesForSuperset().length }})
+                            </button>
                         </div>
-                        <div formArrayName="sets" class="space-y-2">
-                            <div *ngFor="let setControl of getSetsFormArray(exerciseControl).controls; let setIndex = index"
-                                [formGroupName]="setIndex"
-                                class="grid grid-cols-12 gap-x-2 gap-y-1 items-center p-2.5 rounded-md bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600">
-                                <span
-                                    class="col-span-12 sm:col-span-1 text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 sm:mb-0">Set
-                                    {{setIndex + 1}}:</span>
-                                <div class="col-span-6 sm:col-span-2">
-                                    <label [for]="'reps-' + exIndex + '-' + setIndex"
-                                        class="block text-xs font-medium text-gray-600 dark:text-gray-400">Reps</label>
-                                    <input #setRepsInput type="number" [id]="'reps-' + exIndex + '-' + setIndex"
-                                        formControlName="reps" placeholder="Reps"
-                                        class="mt-0.5 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md focus:ring-primary focus:border-primary dark:bg-gray-650">
-                                </div>
-                                <div class="col-span-6 sm:col-span-2">
-                                    <label [for]="'weight-' + exIndex + '-' + setIndex"
-                                        class="block text-xs font-medium text-gray-600 dark:text-gray-400">Weight
-                                        (kg)</label>
-                                    <input type="number" [id]="'weight-' + exIndex + '-' + setIndex"
-                                        formControlName="weight" placeholder="kg"
-                                        class="mt-0.5 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md focus:ring-primary focus:border-primary dark:bg-gray-650">
-                                </div>
-                                <div class="col-span-6 sm:col-span-2">
-                                    <label [for]="'duration-' + exIndex + '-' + setIndex"
-                                        class="block text-xs font-medium text-gray-600 dark:text-gray-400">Time
-                                        (s)</label>
-                                    <input type="number" [id]="'duration-' + exIndex + '-' + setIndex"
-                                        formControlName="duration" placeholder="Secs"
-                                        class="mt-0.5 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md focus:ring-primary focus:border-primary dark:bg-gray-650">
-                                </div>
-                                <div class="col-span-6 sm:col-span-2">
-                                    <label [for]="'tempo-' + exIndex + '-' + setIndex"
-                                        class="block text-xs font-medium text-gray-600 dark:text-gray-400">Tempo</label>
-                                    <input type="text" [id]="'tempo-' + exIndex + '-' + setIndex"
-                                        formControlName="tempo" placeholder="e.g. 2010"
-                                        class="mt-0.5 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md focus:ring-primary focus:border-primary dark:bg-gray-650">
-                                </div>
-                                <div class="col-span-10 sm:col-span-2">
-                                    <label [for]="'rest-' + exIndex + '-' + setIndex"
-                                        class="block text-xs font-medium text-gray-600 dark:text-gray-400">Rest
-                                        (s)</label>
-                                    <input type="number" [id]="'rest-' + exIndex + '-' + setIndex"
-                                        formControlName="restAfterSet" placeholder="Rest (s)"
-                                        class="mt-0.5 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md focus:ring-primary focus:border-primary dark:bg-gray-650">
-                                </div>
 
-                                <div class="col-span-2 sm:col-span-1 flex items-end justify-end pb-0.5">
-                                    <button type="button" (click)="removeSet(exerciseControl, setIndex)"
-                                        title="Remove Set"
-                                        class="text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 p-1.5 rounded-full hover:bg-red-100 dark:hover:bg-red-900/50">
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"
-                                            class="w-4 h-4">
-                                            <path fill-rule="evenodd"
-                                                d="M5 3.25A2.25 2.25 0 0 0 2.75 5.5v5A2.25 2.25 0 0 0 5 12.75h6a2.25 2.25 0 0 0 2.25-2.25v-5A2.25 2.25 0 0 0 11 3.25H5Zm.97 3.97a.75.75 0 0 1 1.06 0L8 8.28l.97-.97a.75.75 0 1 1 1.06 1.06L9.06 9.25l.97.97a.75.75 0 1 1-1.06 1.06L8 10.43l-.97.97a.75.75 0 0 1-1.06-1.06L6.94 9.25l-.97-.97a.75.75 0 0 1 0-1.06Z"
-                                                clip-rule="evenodd" />
-                                        </svg>
+                        <div cdkDrag [cdkDragData]="exerciseControl"
+                             [formGroupName]="exIndex"
+                             class="p-4 border rounded-lg shadow space-y-4 exercise-item relative transition-all duration-150 ease-in-out"
+                             [ngClass]="{
+                                'border-purple-500 dark:border-purple-400 bg-purple-50 dark:bg-purple-900/20': exerciseControl.get('supersetId')?.value,
+                                'ring-2 ring-purple-400 dark:ring-purple-300 shadow-lg': selectedExerciseIndicesForSuperset().includes(exIndex),
+                                'dark:bg-purple-900/40': exerciseControl.get('supersetId')?.value && selectedExerciseIndicesForSuperset().includes(exIndex),
+                                'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800': !exerciseControl.get('supersetId')?.value && !selectedExerciseIndicesForSuperset().includes(exIndex),
+                                'rounded-b-none border-b-transparent dark:border-b-transparent': exerciseControl.get('supersetId')?.value && (exerciseControl.get('supersetOrder')?.value ?? -1) < ((exerciseControl.get('supersetSize')?.value ?? 0) - 1),
+                                'rounded-t-none': exerciseControl.get('supersetId')?.value && (exerciseControl.get('supersetOrder')?.value ?? 0) > 0,
+                                'mb-2': (!exerciseControl.get('supersetId')?.value || (exerciseControl.get('supersetOrder')?.value ?? -1) === ((exerciseControl.get('supersetSize')?.value ?? 0) - 1)) && !isLastExerciseInForm,
+                                'mt-4': selectedExerciseIndicesForSuperset().length >= 2 && exIndex === firstSelectedExerciseIndexForSuperset
+                             }">
+                            
+                            <div cdkDragHandle
+                                class="absolute top-2 right-2 cursor-grab p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
+                                title="Drag to reorder">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                                    <path fill-rule="evenodd" d="M10 3a.75.75 0 0 1 .75.75v12.5a.75.75 0 0 1-1.5 0V3.75A.75.75 0 0 1 10 3ZM5.75 6.75a.75.75 0 0 0 0 1.5h8.5a.75.75 0 0 0 0-1.5h-8.5Zm0 5a.75.75 0 0 0 0 1.5h8.5a.75.75 0 0 0 0-1.5h-8.5Z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+
+                            <div class="flex items-start justify-between pb-2"
+                                 [ngClass]="{
+                                    'border-b border-purple-300 dark:border-purple-600': exerciseControl.get('supersetId')?.value && (exerciseControl.get('supersetOrder')?.value ?? -1) < ((exerciseControl.get('supersetSize')?.value ?? 0) -1),
+                                    'border-b border-gray-200 dark:border-gray-600': !exerciseControl.get('supersetId')?.value || (exerciseControl.get('supersetOrder')?.value ?? -1) === ((exerciseControl.get('supersetSize')?.value ?? 0) -1)
+                                 }">
+                                <div class="flex items-center pr-8">
+                                    <input type="checkbox"
+                                           [id]="'superset-select-' + exIndex"
+                                           (change)="toggleExerciseSelectionForSuperset(exIndex, $event)"
+                                           [checked]="selectedExerciseIndicesForSuperset().includes(exIndex)"
+                                           class="h-5 w-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500 mr-3 self-start mt-1">
+                                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">
+                                        <span *ngIf="exerciseControl.get('supersetId')?.value"
+                                              class="text-xs text-purple-600 dark:text-purple-400 font-normal block">
+                                            Superset ({{ (exerciseControl.get('supersetOrder')?.value ?? 0) + 1 }} of {{ exerciseControl.get('supersetSize')?.value }})
+                                        </span>
+                                        {{ exerciseControl.get('exerciseName')?.value || 'Select Exercise' }}
+                                    </h3>
+                                </div>
+                                <div class="flex flex-col items-end space-y-1">
+                                    <button type="button" (click)="removeExercise(exIndex)"
+                                            class="text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 font-medium text-xs p-1 rounded-md">
+                                        Remove Exercise
+                                    </button>
+                                    <button type="button" *ngIf="exerciseControl.get('supersetId')?.value"
+                                            (click)="ungroupSuperset(exIndex)"
+                                            class="text-purple-500 hover:text-purple-600 dark:text-purple-400 dark:hover:text-purple-300 font-medium text-xs p-1 rounded-md">
+                                        Ungroup
                                     </button>
                                 </div>
-
-                                <!-- Set Notes (Optional) -->
-                                <div class="col-span-12 pt-1">
-                                    <label [for]="'setNotes-' + exIndex + '-' + setIndex"
-                                        class="block text-xs font-medium text-gray-600 dark:text-gray-400">Notes for
-                                        this set (optional)</label>
-                                    <input type="text" [id]="'setNotes-' + exIndex + '-' + setIndex"
-                                        formControlName="notes" placeholder="e.g. Drop set, pause reps"
-                                        class="mt-0.5 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md focus:ring-primary focus:border-primary dark:bg-gray-650">
+                            </div>
+                            
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-center">
+                                     <h4 class="text-md font-semibold text-gray-700 dark:text-gray-300">Sets:</h4>
+                                </div>
+                                <div formArrayName="sets" class="space-y-2">
+                                    <div *ngFor="let setControl of getSetsFormArray(exerciseControl).controls; let setIndex = index"
+                                        [formGroupName]="setIndex"
+                                        class="grid grid-cols-12 gap-x-2 gap-y-1 items-center p-2.5 rounded-md bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600">
+                                        
+                                        <span class="col-span-12 sm:col-span-1 text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 sm:mb-0">Set {{setIndex + 1}}:</span>
+                                        <div class="col-span-6 sm:col-span-2">
+                                            <label [for]="'reps-' + exIndex + '-' + setIndex" class="block text-xs font-medium text-gray-600 dark:text-gray-400">Reps</label>
+                                            <input #setRepsInput type="number" [id]="'reps-' + exIndex + '-' + setIndex" formControlName="reps" placeholder="Reps"
+                                                   class="mt-0.5 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md focus:ring-primary focus:border-primary dark:bg-gray-650">
+                                        </div>
+                                        <div class="col-span-6 sm:col-span-2">
+                                            <label [for]="'weight-' + exIndex + '-' + setIndex" class="block text-xs font-medium text-gray-600 dark:text-gray-400">Weight (kg)</label>
+                                            <input type="number" [id]="'weight-' + exIndex + '-' + setIndex" formControlName="weight" placeholder="kg"
+                                                   class="mt-0.5 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md focus:ring-primary focus:border-primary dark:bg-gray-650">
+                                        </div>
+                                        <div class="col-span-6 sm:col-span-2">
+                                            <label [for]="'duration-' + exIndex + '-' + setIndex" class="block text-xs font-medium text-gray-600 dark:text-gray-400">Time (s)</label>
+                                            <input type="number" [id]="'duration-' + exIndex + '-' + setIndex" formControlName="duration" placeholder="Secs"
+                                                   class="mt-0.5 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md focus:ring-primary focus:border-primary dark:bg-gray-650">
+                                        </div>
+                                        <div class="col-span-6 sm:col-span-2">
+                                            <label [for]="'tempo-' + exIndex + '-' + setIndex" class="block text-xs font-medium text-gray-600 dark:text-gray-400">Tempo</label>
+                                            <input type="text" [id]="'tempo-' + exIndex + '-' + setIndex" formControlName="tempo" placeholder="e.g. 2010"
+                                                   class="mt-0.5 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md focus:ring-primary focus:border-primary dark:bg-gray-650">
+                                        </div>
+                                        <div class="col-span-10 sm:col-span-2">
+                                            <label [for]="'rest-' + exIndex + '-' + setIndex" class="block text-xs font-medium text-gray-600 dark:text-gray-400">Rest (s)</label>
+                                            <input type="number" [id]="'rest-' + exIndex + '-' + setIndex" formControlName="restAfterSet" placeholder="Rest (s)"
+                                                   class="mt-0.5 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md focus:ring-primary focus:border-primary dark:bg-gray-650">
+                                        </div>
+                                        <div class="col-span-2 sm:col-span-1 flex items-end justify-end pb-0.5">
+                                            <button type="button" (click)="removeSet(exerciseControl, setIndex)" title="Remove Set"
+                                                    class="text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 p-1.5 rounded-full hover:bg-red-100 dark:hover:bg-red-900/50">
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
+                                                    <path fill-rule="evenodd" d="M5 3.25A2.25 2.25 0 0 0 2.75 5.5v5A2.25 2.25 0 0 0 5 12.75h6a2.25 2.25 0 0 0 2.25-2.25v-5A2.25 2.25 0 0 0 11 3.25H5Zm.97 3.97a.75.75 0 0 1 1.06 0L8 8.28l.97-.97a.75.75 0 1 1 1.06 1.06L9.06 9.25l.97.97a.75.75 0 1 1-1.06 1.06L8 10.43l-.97.97a.75.75 0 0 1-1.06-1.06L6.94 9.25l-.97-.97a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                        <div class="col-span-12 pt-1">
+                                            <label [for]="'setNotes-' + exIndex + '-' + setIndex" class="block text-xs font-medium text-gray-600 dark:text-gray-400">Notes for this set (optional)</label>
+                                            <input type="text" [id]="'setNotes-' + exIndex + '-' + setIndex" formControlName="notes" placeholder="e.g. Drop set, pause reps"
+                                                    class="mt-0.5 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md focus:ring-primary focus:border-primary dark:bg-gray-650">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <button type="button" (click)="addSet(exerciseControl, exIndex)"
+                                            class="mt-1 text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium py-1 px-2 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/50">
+                                        + Add Set to {{ exerciseControl.get('exerciseName')?.value || 'This Exercise' }}
+                                    </button>
                                 </div>
                             </div>
                         </div>
-                        <div class="text-right">
-                            <button type="button" (click)="addSet(exerciseControl, exIndex)"
-                                class="mt-1 text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium py-1 px-2 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/50">
-                                + Add Set to {{ exerciseControl.get('exerciseName')?.value || 'This Exercise' }}
-                            </button>
-                        </div>
                     </div>
-                </div>
-
-                <div *ngIf="exercisesFormArray.length === 0" class="text-center py-4 text-gray-500 dark:text-gray-400">
-                    No exercises added to this routine yet. Click "Add Exercise" to begin.
-                </div>
+                </ng-container>
             </div>
 
+            <div *ngIf="exercisesFormArray.length === 0"
+                class="text-center py-6 text-gray-500 dark:text-gray-400 border border-dashed dark:border-gray-700 rounded-md">
+                <p class="mb-2">No exercises added to this routine yet.</p>
+                <button type="button" (click)="openExerciseSelectionModal()"
+                    class="bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium py-2 px-3 rounded-md transition-colors">
+                    + Add First Exercise
+                </button>
+            </div>
 
-            <!-- Form Actions -->
-            <div class="pt-6 flex justify-end space-x-3">
-                <a routerLink="/workout"
-                    class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
-                    Cancel
-                </a>
-                <button type="submit" [disabled]="routineForm.invalid && routineForm.touched"
-                    class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark disabled:opacity-50">
-                    {{ isEditMode ? 'Save Changes' : 'Create Routine' }}
+            <div *ngIf="exercisesFormArray.length > 0" class="mt-6 text-center">
+                <button type="button" (click)="openExerciseSelectionModal()"
+                    class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-6 rounded-md shadow-md hover:shadow-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 mr-2 inline-block">
+                        <path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
+                    </svg>
+                    Add Another Exercise
                 </button>
             </div>
         </div>
+
+        <div class="pt-6 flex justify-end space-x-3">
+            <a routerLink="/workout"
+                class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700">
+                Cancel
+            </a>
+            <button type="submit" [disabled]="routineForm.invalid && routineForm.touched"
+                class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark disabled:opacity-50">
+                {{ isEditMode ? 'Save Changes' : 'Create Routine' }}
+            </button>
+        </div>
     </form>
 
-
-    <!-- Simple Exercise Selection Modal -->
     <div *ngIf="isExerciseModalOpen()"
         class="fixed inset-0 bg-gray-600 bg-opacity-75 transition-opacity overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4"
-        (click)="closeExerciseSelectionModal()"> <!-- Close on backdrop click -->
+        (click)="closeExerciseSelectionModal()">
         <div class="relative transform overflow-hidden rounded-lg bg-white dark:bg-gray-800 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg"
-            (click)="$event.stopPropagation()"> <!-- Prevent modal close when clicking inside -->
+            (click)="$event.stopPropagation()">
             <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <div class="sm:flex sm:items-start w-full">
                     <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
                         <div class="flex justify-between items-center pb-3">
-                            <h3 class="text-xl font-semibold leading-6 text-gray-900 dark:text-gray-100"
-                                id="modal-title">
+                            <h3 class="text-xl font-semibold leading-6 text-gray-900 dark:text-gray-100" id="modal-title">
                                 Select an Exercise
                             </h3>
                             <button type="button" (click)="closeExerciseSelectionModal()"
                                 class="p-1 rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
                                 </svg>
                             </button>
                         </div>
-
-                        <!-- Modal Search Input -->
                         <div class="my-4">
                             <input type="text" placeholder="Search exercises by name, category, muscle..."
                                 [ngModel]="modalSearchTerm()" (ngModelChange)="modalSearchTerm.set($event)"
                                 class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-gray-200" />
                         </div>
-
                         <div class="mt-2 max-h-80 overflow-y-auto pr-2">
                             <ul class="space-y-1">
                                 <li *ngFor="let ex of filteredAvailableExercises()" (click)="selectExercise(ex)"
@@ -223,19 +251,15 @@
                                             {{ ex.category | titlecase }} - {{ ex.primaryMuscleGroup | titlecase }}
                                         </span>
                                     </div>
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
-                                        class="w-5 h-5 text-primary dark:text-primary-light">
-                                        <path fill-rule="evenodd"
-                                            d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z"
-                                            clip-rule="evenodd" />
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 text-primary dark:text-primary-light">
+                                        <path fill-rule="evenodd" d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
                                     </svg>
                                 </li>
                                 <li *ngIf="filteredAvailableExercises().length === 0 && availableExercises.length > 0"
                                     class="text-gray-500 dark:text-gray-400 text-center p-4">
                                     No exercises match your search.
                                 </li>
-                                <li *ngIf="availableExercises.length === 0"
-                                    class="text-gray-500 dark:text-gray-400 text-center p-4">
+                                <li *ngIf="availableExercises.length === 0" class="text-gray-500 dark:text-gray-400 text-center p-4">
                                     Exercise library is empty or still loading.
                                 </li>
                             </ul>
