@@ -1,11 +1,13 @@
-import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
+import { Injectable, Inject, PLATFORM_ID, inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import { AlertService } from './alert.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class StorageService {
   private isBrowser: boolean;
+  private alertService = inject(AlertService);
 
   constructor(@Inject(PLATFORM_ID) private platformId: Object) {
     this.isBrowser = isPlatformBrowser(this.platformId);
@@ -81,19 +83,17 @@ export class StorageService {
    */
   clearEntireLocalStorage_USE_WITH_CAUTION(): void {
     if (this.isBrowser) {
-      const confirmation = confirm(
-        'WARNING: This will clear ALL data in localStorage for this domain, potentially affecting other applications or settings. Are you sure you want to proceed?'
-      );
-      if (confirmation) {
-        try {
-          localStorage.clear();
-          console.log('Entire localStorage has been cleared.');
-        } catch (e) {
-          console.error('Error clearing entire localStorage:', e);
+      this.alertService.showConfirm("WARNING", "This will clear ALL data in localStorage for this domain, potentially affecting other applications or settings. Are you sure you want to proceed?").then((result) => {
+        if (result && (result.data)) {
+          // --- Import Data ---
+          try {
+            localStorage.clear();
+            console.log('Entire localStorage has been cleared.');
+          } catch (e) {
+            console.error('Error clearing entire localStorage:', e);
+          }
         }
-      } else {
-        console.log('Clear entire localStorage operation cancelled.');
-      }
+      });
     }
   }
 }

@@ -9,6 +9,7 @@ import { StorageService } from './storage.service';       // Ensure path is corr
 import { ExerciseSetParams } from '../models/workout.model';
 // Later, you might import Exercise and Routine models for PB calculations
 import { parseISO } from 'date-fns'; // For date handling
+import { AlertService } from './alert.service';
 
 // New interface for performance data points
 export interface ExercisePerformanceDataPoint {
@@ -23,6 +24,7 @@ export interface ExercisePerformanceDataPoint {
 })
 export class TrackingService {
   private storageService = inject(StorageService);
+  private alertService = inject(AlertService);
   private readonly WORKOUT_LOGS_STORAGE_KEY = 'fitTrackPro_workoutLogs';
   // private readonly PERSONAL_BESTS_STORAGE_KEY = 'fitTrackPro_personalBests'; // For later
 
@@ -104,11 +106,12 @@ export class TrackingService {
 
   // For development: clear logs
   clearAllWorkoutLogs_DEV_ONLY(): void {
-    const confirmClear = confirm("DEVELOPMENT: Are you sure you want to delete ALL workout logs? This cannot be undone.");
-    if (confirmClear) {
-      this.saveWorkoutLogsToStorage([]);
-      console.log("All workout logs cleared.");
-    }
+    this.alertService.showConfirm("Info", "DEVELOPMENT: Are you sure you want to delete ALL workout logs? This cannot be undone.").then((result) => {
+      if (result && (result.data)) {
+        this.saveWorkoutLogsToStorage([]);
+        this.alertService.showAlert("Info", "All workout logs cleared!");
+      }
+    })
   }
 
   /**
@@ -290,11 +293,12 @@ export class TrackingService {
    * Useful for development or user-initiated reset.
    */
   clearAllPersonalBests_DEV_ONLY(): void {
-    const confirmClear = confirm("DEVELOPMENT: Are you sure you want to delete ALL personal bests? This cannot be undone.");
-    if (confirmClear) {
-      this.savePBsToStorage({}); // Save an empty object to clear PBs
-      console.log("All personal bests cleared.");
-    }
+    this.alertService.showConfirm("Info", "DEVELOPMENT: Are you sure you want to delete ALL personal bests? This cannot be undone.").then((result) => {
+      if (result && (result.data)) {
+        this.savePBsToStorage({}); // Save an empty object to clear PBs
+        this.alertService.showAlert("Info", "All personal bests cleared!");
+      }
+    })
   }
 
 

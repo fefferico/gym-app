@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import { Routine } from '../../core/models/workout.model';
 import { WorkoutService } from '../../core/services/workout.service';
 import { AlertService } from '../../core/services/alert.service';
+import { SpinnerService } from '../../core/services/spinner.service';
 // You might want a confirmation dialog service later for delete
 // import { ConfirmationDialogService } from '../../shared/services/confirmation-dialog.service';
 
@@ -19,6 +20,7 @@ export class RoutineListComponent implements OnInit {
   private workoutService = inject(WorkoutService);
   private router = inject(Router);
   private alertService = inject(AlertService);
+  private spinnerService = inject(SpinnerService);
   // private confirmationDialogService = inject(ConfirmationDialogService); // For later
 
   routines$: Observable<Routine[]> | undefined;

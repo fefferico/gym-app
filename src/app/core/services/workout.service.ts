@@ -7,12 +7,14 @@ import { v4 as uuidv4 } from 'uuid'; // For generating unique IDs
 import { ExerciseSetParams, Routine } from '../models/workout.model'; // Ensure this path is correct
 import { StorageService } from './storage.service';
 import { LoggedSet } from '../models/workout-log.model';
+import { AlertService } from './alert.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class WorkoutService {
   private storageService = inject(StorageService);
+  private alertService = inject(AlertService);
   private readonly ROUTINES_STORAGE_KEY = 'fitTrackPro_routines';
 
   // Using a BehaviorSubject to make routines reactively available and to update them
@@ -35,7 +37,7 @@ export class WorkoutService {
 
   private saveRoutinesToStorage(routines: Routine[]): void {
     this.storageService.setItem(this.ROUTINES_STORAGE_KEY, routines);
-    this.routinesSubject.next([...routines].sort((a,b) => a.name.localeCompare(b.name)));
+    this.routinesSubject.next([...routines].sort((a, b) => a.name.localeCompare(b.name)));
   }
 
   public getCurrentRoutines(): Routine[] {
@@ -194,21 +196,23 @@ export class WorkoutService {
   }
 
   clearAllRoutines_DEV_ONLY(): void {
-    const confirmClear = confirm("DEVELOPMENT: Are you sure you want to delete ALL routines? This will delete ALL the routines (not just the logs) and cannot be undone.");
-    if (confirmClear) {
-      this.saveRoutinesToStorage([]); // Save an empty array
-      console.log("All routines cleared.");
-    }
+    this.alertService.showConfirm("Info", "Are you sure you want to delete ALL routines? This will delete ALL the routines (not just the logs) and cannot be undone.").then((result) => {
+      if (result && (result.data)) {
+        this.saveRoutinesToStorage([]); // Save an empty array
+        this.alertService.showAlert("Info", "All routines cleared!");
+      }
+    })
   }
 
-    clearAllExecutedRoutines_DEV_ONLY(): void {
-    const confirmClear = confirm("DEVELOPMENT: Are you sure you want to delete ALL routines LOGS? This cannot be undone.");
-    if (confirmClear) {
-      this.getCurrentRoutines().forEach(routine => {
-        routine.lastPerformed = undefined;
-        this.updateRoutine(routine);
-      });
-      console.log("All routines logs cleared.");
-    }
+  clearAllExecutedRoutines_DEV_ONLY(): void {
+    this.alertService.showConfirm("Info", "Are you sure you want to delete ALL routines LOGS? This cannot be undone.").then((result) => {
+      if (result && (result.data)) {
+        this.getCurrentRoutines().forEach(routine => {
+          routine.lastPerformed = undefined;
+          this.updateRoutine(routine);
+        });
+        this.alertService.showAlert("Info", "All routines logs cleared!");
+      }
+    })
   }
 }

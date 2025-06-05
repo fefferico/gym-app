@@ -1,4 +1,3 @@
-// filepath: /home/ffuser/git-repos/quiz-app/src/app/shared/spinner/spinner.component.ts
 import { Component, OnDestroy } from '@angular/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';

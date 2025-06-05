@@ -1,4 +1,3 @@
-// filepath: /home/ffuser/git-repos/quiz-app/src/app/core/services/spinner.service.ts
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 

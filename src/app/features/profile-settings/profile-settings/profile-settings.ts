@@ -7,6 +7,8 @@ import { WorkoutService } from '../../../core/services/workout.service';
 import { TrackingService } from '../../../core/services/tracking.service';
 import { StorageService } from '../../../core/services/storage.service';
 import { UnitsService, WeightUnit } from '../../../core/services/units.service';
+import { AlertService } from '../../../core/services/alert.service';
+import { SpinnerService } from '../../../core/services/spinner.service';
 
 @Component({
   selector: 'app-profile-settings',
@@ -20,6 +22,8 @@ export class ProfileSettingsComponent {
   private trackingService = inject(TrackingService);
   private storageService = inject(StorageService); // For clearing data
   private unitsService = inject(UnitsService); // Inject UnitsService
+  private alertService = inject(AlertService); // Inject UnitsService
+  private spinnerService = inject(SpinnerService); // Inject UnitsService
 
   // Define a version for your backup format
   private readonly BACKUP_VERSION = 1;
@@ -39,7 +43,7 @@ export class ProfileSettingsComponent {
 
   // --- Export Logic ---
   exportData(): void {
-    console.log('Exporting data...');
+    this.spinnerService.show('Exporting data...');
 
     // 1. Get data from all relevant services
     const backupData = {
@@ -69,6 +73,7 @@ export class ProfileSettingsComponent {
     URL.revokeObjectURL(url);
     console.log('Data export initiated.');
     // Add user feedback (e.g., toast notification)
+    this.spinnerService.hide();
   }
 
   // --- Import Logic ---
@@ -116,24 +121,21 @@ export class ProfileSettingsComponent {
         // TODO: More granular validation of each data section (e.g., are routines items arrays? Do they have expected keys?)
 
         // --- Confirmation ---
-        const confirmImport = confirm(
-          'WARNING: Importing data will OVERWRITE your current workout logs, routines, and personal bests. Are you sure you want to proceed?'
-        );
 
-        if (confirmImport) {
-          // --- Import Data ---
-          this.workoutService.replaceData(importedData.routines);
-          this.trackingService.replaceLogs(importedData.workoutLogs);
-          this.trackingService.replacePBs(importedData.personalBests);
-
-          console.log('Data import successful.');
-          alert('Data imported successfully!'); // Replace with better feedback
-          // Optionally navigate or reload data displays
-        } else {
-          console.log('Data import cancelled by user.');
-          alert('Data import cancelled.'); // Replace with better feedback
-        }
-
+        this.alertService.showConfirm("WARNING", "Importing data will OVERWRITE your current workout logs, routines, and personal bests. Are you sure you want to proceed?").then((result) => {
+          if (result && (result.data)) {
+            // --- Import Data ---
+            this.workoutService.replaceData(importedData.routines);
+            this.trackingService.replaceLogs(importedData.workoutLogs);
+            this.trackingService.replacePBs(importedData.personalBests);
+            console.log('Data import successful.');
+            // Optionally navigate or reload data displays
+            this.alertService.showAlert("Info", "Data imported successfully!");
+          } else {
+            console.log('Data import cancelled by user.');
+            alert('Data import cancelled.'); // Replace with better feedback
+          }
+        })
       } catch (error) {
         console.error('Error processing imported file:', error);
         alert('Error processing backup file. Please ensure it is a valid JSON file.'); // Replace with better feedback
@@ -160,17 +162,17 @@ export class ProfileSettingsComponent {
 
   // Clear All Data (using the dev method from TrackingService/WorkoutService)
   clearAllAppData(): void {
-    // Add a confirmation dialog here before calling the service methods
-    const confirmClearAll = confirm("WARNING: This will delete ALL your workout data (routines, logs, PBs). This cannot be undone. Are you sure?");
-    if (confirmClearAll) {
-      // Call the specific clear methods you added earlier
-      if (this.trackingService.clearAllWorkoutLogs_DEV_ONLY) this.trackingService.clearAllWorkoutLogs_DEV_ONLY();
-      if (this.trackingService.clearAllPersonalBests_DEV_ONLY) this.trackingService.clearAllPersonalBests_DEV_ONLY();
-      // Assuming you added a clearAllRoutines_DEV_ONLY to WorkoutService
-      if (this.workoutService.clearAllRoutines_DEV_ONLY) this.workoutService.clearAllRoutines_DEV_ONLY();
+    this.alertService.showConfirm("WARNING", "This will delete ALL your workout data (routines, logs, PBs). This cannot be undone. Are you sure?").then((result) => {
+      if (result && (result.data)) {
+        // Call the specific clear methods you added earlier
+        if (this.trackingService.clearAllWorkoutLogs_DEV_ONLY) this.trackingService.clearAllWorkoutLogs_DEV_ONLY();
+        if (this.trackingService.clearAllPersonalBests_DEV_ONLY) this.trackingService.clearAllPersonalBests_DEV_ONLY();
+        // Assuming you added a clearAllRoutines_DEV_ONLY to WorkoutService
+        if (this.workoutService.clearAllRoutines_DEV_ONLY) this.workoutService.clearAllRoutines_DEV_ONLY();
 
-      console.log("All application data cleared.");
-      alert("All workout data has been cleared."); // Replace with better feedback
-    }
+        console.log("All application data cleared.");
+        this.alertService.showConfirm("Info","All workout data has been cleared."); // Replace with better feedback
+      }
+    });
   }
 }
