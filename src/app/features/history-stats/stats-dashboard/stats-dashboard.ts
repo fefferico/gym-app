@@ -1,5 +1,5 @@
 // src/app/features/history-stats/stats-dashboard.ts
-import { Component, inject, OnInit, OnDestroy, signal, computed, ChangeDetectionStrategy, effect } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal, computed, ChangeDetectionStrategy, effect, ViewChild, ElementRef, afterNextRender, HostListener } from '@angular/core';
 import { CommonModule, TitleCasePipe, DecimalPipe, DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms'; // Import ReactiveFormsModule
@@ -14,9 +14,10 @@ import { TrackingService } from '../../../core/services/tracking.service';
 import { WorkoutLog } from '../../../core/models/workout-log.model';
 import { UnitsService } from '../../../core/services/units.service';
 
-export interface ChartDataPoint { 
-  name: string | Date; 
-  value: number; extra?: any }
+export interface ChartDataPoint {
+  name: string | Date;
+  value: number; extra?: any
+}
 export interface ChartSeries { name: string; series: ChartDataPoint[]; }
 
 @Component({
@@ -39,6 +40,11 @@ export class StatsDashboardComponent implements OnInit, OnDestroy {
   private statsService = inject(StatsService);
   private fb = inject(FormBuilder); // Inject FormBuilder
   protected unitsService = inject(UnitsService);
+
+  @ViewChild('muscleGroupChartWrapper') muscleGroupChartWrapperRef!: ElementRef<HTMLDivElement>;
+
+  view = signal<[number, number] | undefined>(undefined); // Initialize as undefined or a default mobile size
+  chartHeight = 300; // Keep height constant
 
   allLogs = signal<WorkoutLog[]>([]);
   statsFilterForm!: FormGroup; // For the date filters
@@ -99,7 +105,6 @@ export class StatsDashboardComponent implements OnInit, OnDestroy {
   private filterFormSub?: Subscription; // Subscription for filter form changes
 
   // Chart options (same as before)
-  view: [number, number] = [700, 300]; // ... rest of chart options
   showXAxis = true; showYAxis = true; gradient = false; showXAxisLabel = true;
   xAxisLabelMuscle = 'Muscle Group'; xAxisLabelWeek = 'Week';
   showYAxisLabel = true; yAxisLabelVolume = 'Total Volume (kg)'; colorScheme = 'vivid';
@@ -120,9 +125,14 @@ export class StatsDashboardComponent implements OnInit, OnDestroy {
       await this.preparePeriodChartData(logsToProcess); // Make this async
       this.preparePeriodTableData(logsToProcess);     // Make this async if it contains async calls too
     });
+
+    afterNextRender(() => { // Ensure the view is rendered before accessing ElementRef
+      this.updateChartView();
+    });
   }
 
   ngOnInit(): void {
+    window.scrollTo(0, 0);
     this.logsSub = this.trackingService.workoutLogs$.subscribe(allLogsData => {
       console.log('StatsDashboard: Received allLogsData update - count:', allLogsData.length);
       this.allLogs.set(allLogsData); // This will trigger the effect for initial calculation
@@ -258,6 +268,22 @@ export class StatsDashboardComponent implements OnInit, OnDestroy {
       chartData[0] &&
       chartData[0].series &&
       chartData[0].series.length > 0;
+  }
+
+  @HostListener('window:resize')
+  onResize() {
+    this.updateChartView();
+  }
+
+  private updateChartView(): void {
+    if (this.muscleGroupChartWrapperRef?.nativeElement) {
+      const width = this.muscleGroupChartWrapperRef.nativeElement.offsetWidth;
+      // Subtract some padding/margin if the chart itself shouldn't use the full offsetWidth
+      const chartContentWidth = Math.max(width - 20, 100); // Example: subtract 20px, min width 100
+      this.view.set([chartContentWidth, this.chartHeight]);
+    } else if (!this.view()) { // Set a default if elementRef not ready on init
+      this.view.set([300, this.chartHeight]); // A small default
+    }
   }
 
   ngOnDestroy(): void {

@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "FitTrackPro": {
+    "GymBro": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -73,10 +73,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "FitTrackPro:build:production"
+              "buildTarget": "GymBro:build:production"
             },
             "development": {
-              "buildTarget": "FitTrackPro:build:development"
+              "buildTarget": "GymBro:build:development"
             }
           },
           "defaultConfiguration": "development"

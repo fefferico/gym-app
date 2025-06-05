@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, OnDestroy, signal, computed, ElementRef, QueryList, ViewChildren, AfterViewInit, ChangeDetectorRef } from '@angular/core';
 
 import { CommonModule, DecimalPipe } from '@angular/common';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, ActivatedRouteSnapshot, Router, RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray, AbstractControl, FormsModule } from '@angular/forms'; // Added FormArray, AbstractControl
 import { Subscription, of } from 'rxjs';
 import { switchMap, tap } from 'rxjs/operators';
@@ -39,6 +39,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
   routineForm!: FormGroup;
   isEditMode = false;
+  isViewMode = false;
   currentRoutineId: string | null = null;
   private routeSub: Subscription | undefined;
 
@@ -85,26 +86,46 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     this.routeSub = this.route.paramMap.pipe(
       switchMap(params => {
         this.currentRoutineId = params.get('routineId');
+        const currentPath = this.route.snapshot.url[0]?.path; // e.g., 'edit', 'view', 'new'
+        this.isEditMode = currentPath === 'edit' && !!this.currentRoutineId;
+        this.isViewMode = currentPath === 'view' && !!this.currentRoutineId;
+
         if (this.currentRoutineId) {
-          this.isEditMode = true;
+          // For both edit and view mode, we load the routine
           return this.workoutService.getRoutineById(this.currentRoutineId);
         }
+        // For 'new' mode, or if modes somehow get confused without an ID
         this.isEditMode = false;
-        this.exercisesFormArray.clear(); // Clear exercises for new routine
+        this.isViewMode = false;
+        this.exercisesFormArray.clear();
+        this.routineForm.reset({ goal: 'custom', exercises: [] }); // Reset for new
         return of(null);
       }),
       tap(routine => {
         if (routine) {
           this.patchFormWithRoutineData(routine);
-        } else if (this.isEditMode) {
+          if (this.isViewMode || this.isEditMode) { // Disable form if in view or edit initially
+            this.toggleFormState(this.isViewMode); // Pass true to disable for view mode
+          }
+        } else if (this.isEditMode || this.isViewMode) { // If ID was present but routine not found
           console.error(`Routine with ID ${this.currentRoutineId} not found.`);
+          this.errorMessage.set(`Routine with ID ${this.currentRoutineId} not found.`);
           this.router.navigate(['/workout']);
-        } else {
-          this.routineForm.reset({ goal: 'custom', exercises: [] });
-          this.exercisesFormArray.clear();
         }
       })
     ).subscribe();
+  }
+
+  private toggleFormState(disable: boolean): void {
+    if (disable) {
+      this.routineForm.disable({ emitEvent: false });
+    } else {
+      this.routineForm.enable({ emitEvent: false });
+      // Special handling for rounds in supersets, as enable() might enable them all
+      this.exercisesFormArray.controls.forEach(exCtrl => {
+        this.updateRoundsControlability(exCtrl as FormGroup);
+      });
+    }
   }
 
   // --- FormArray Getters ---
@@ -124,18 +145,27 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     });
   }
 
-  private patchFormWithRoutineData(routine: Routine): void {
+  patchFormWithRoutineData(routine: Routine): void { // Made public for potential re-use
     this.routineForm.patchValue({
       name: routine.name,
       description: routine.description,
       goal: routine.goal,
     });
 
-    this.exercisesFormArray.clear(); // Clear existing exercises before patching
+    this.exercisesFormArray.clear();
     routine.exercises.forEach(exerciseData => {
       const exerciseFormGroup = this.createExerciseFormGroup(exerciseData);
       this.exercisesFormArray.push(exerciseFormGroup);
     });
+
+    // After patching, if in view mode, disable the form
+    if (this.isViewMode) {
+      this.toggleFormState(true);
+    } else {
+      // For edit mode, ensure it's enabled (though it should be by default unless 'new')
+      // and re-apply rounds controllability after form is enabled and patched
+      this.toggleFormState(false);
+    }
   }
 
   // --- Form Group Creation ---
@@ -558,60 +588,65 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
   // --- Form Submission ---
   onSubmit(): void {
-      this.errorMessage.set(null); // Clear previous errors
-
-      // --- IMPORTANT: Recalculate superset orders and validate just before saving ---
-      this.recalculateSupersetOrders(); // Ensure final state is correct
-
-      if (!this.validateSupersetIntegrity()) {
-           this.showErrorMessage('Superset configuration is invalid. Please ensure supersets have at least two exercises and are contiguous.', 10000); // More specific message
-           console.error("Superset integrity validation failed during submission.");
-           return;
-       }
-      // --- End Superset Validation ---
-
-
-      if (this.routineForm.invalid) {
-        this.routineForm.markAllAsTouched(); // Show validation errors on form controls
-        this.showErrorMessage('Please fill in all required fields and correct any errors.', 10000); // Generic fallback error
-        console.log('Form Errors:', this.getFormErrors(this.routineForm));
-        return;
-      }
-
-
-      const formValue = this.routineForm.value;
-
-      // Prepare payload, ensuring weight is in KG
-      const routinePayload: Routine = {
-        id: this.isEditMode && this.currentRoutineId ? this.currentRoutineId : uuidv4(),
-        name: formValue.name,
-        description: formValue.description,
-        goal: formValue.goal,
-        // exercises array already contains superset/rounds data
-        exercises: formValue.exercises.map((exInput: any) => ({
-          ...exInput,
-          // For each set within the exercise, convert weight to KG
-          sets: exInput.sets.map((setInput: any) => ({
-             ...setInput,
-             // Convert weight from user's preferred unit (in the form) to KG (for storage)
-             weight: this.unitsService.convertToKg(setInput.weight, this.unitsService.currentUnit()) ?? null, // Handle null/undefined
-             // Ensure restAfterSet is a number and >= 0 if required
-             restAfterSet: setInput.restAfterSet ?? 0, // Default if somehow null from form
-          }))
-        })),
-        // Other routine properties like lastPerformed, estimatedDuration etc.
-      };
-
-
-      if (this.isEditMode) {
-        this.workoutService.updateRoutine(routinePayload);
-        this.showErrorMessage('Routine updated successfully!', 3000); // Success feedback
-      } else {
-        this.workoutService.addRoutine(routinePayload);
-        this.showErrorMessage('Routine created successfully!', 3000); // Success feedback
-      }
-      this.router.navigate(['/workout']);
+    if (this.isViewMode) {
+      console.log("In view mode, submission is disabled.");
+      return;
     }
+    
+    this.errorMessage.set(null); // Clear previous errors
+
+    // --- IMPORTANT: Recalculate superset orders and validate just before saving ---
+    this.recalculateSupersetOrders(); // Ensure final state is correct
+
+    if (!this.validateSupersetIntegrity()) {
+      this.showErrorMessage('Superset configuration is invalid. Please ensure supersets have at least two exercises and are contiguous.', 10000); // More specific message
+      console.error("Superset integrity validation failed during submission.");
+      return;
+    }
+    // --- End Superset Validation ---
+
+
+    if (this.routineForm.invalid) {
+      this.routineForm.markAllAsTouched(); // Show validation errors on form controls
+      this.showErrorMessage('Please fill in all required fields and correct any errors.', 10000); // Generic fallback error
+      console.log('Form Errors:', this.getFormErrors(this.routineForm));
+      return;
+    }
+
+
+    const formValue = this.routineForm.value;
+
+    // Prepare payload, ensuring weight is in KG
+    const routinePayload: Routine = {
+      id: this.isEditMode && this.currentRoutineId ? this.currentRoutineId : uuidv4(),
+      name: formValue.name,
+      description: formValue.description,
+      goal: formValue.goal,
+      // exercises array already contains superset/rounds data
+      exercises: formValue.exercises.map((exInput: any) => ({
+        ...exInput,
+        // For each set within the exercise, convert weight to KG
+        sets: exInput.sets.map((setInput: any) => ({
+          ...setInput,
+          // Convert weight from user's preferred unit (in the form) to KG (for storage)
+          weight: this.unitsService.convertToKg(setInput.weight, this.unitsService.currentUnit()) ?? null, // Handle null/undefined
+          // Ensure restAfterSet is a number and >= 0 if required
+          restAfterSet: setInput.restAfterSet ?? 0, // Default if somehow null from form
+        }))
+      })),
+      // Other routine properties like lastPerformed, estimatedDuration etc.
+    };
+
+
+    if (this.isEditMode) {
+      this.workoutService.updateRoutine(routinePayload);
+      this.showErrorMessage('Routine updated successfully!', 3000); // Success feedback
+    } else {
+      this.workoutService.addRoutine(routinePayload);
+      this.showErrorMessage('Routine created successfully!', 3000); // Success feedback
+    }
+    this.router.navigate(['/workout']);
+  }
 
   private validateSupersetIntegrity(): boolean {
     const exercises = this.exercisesFormArray.value as WorkoutExercise[];

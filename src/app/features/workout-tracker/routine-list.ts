@@ -26,6 +26,7 @@ export class RoutineListComponent implements OnInit {
   private ADD_DUMMY_DATA_IF_EMPTY = true; // Set to false when builder is ready
 
   ngOnInit(): void {
+    window.scrollTo(0, 0);
     this.routines$ = this.workoutService.routines$;
 
     if (this.ADD_DUMMY_DATA_IF_EMPTY) {
@@ -61,11 +62,11 @@ export class RoutineListComponent implements OnInit {
     this.router.navigate(['/workout/play', routineId]); // Navigate to player
   }
 
-  viewRoutineDetails(routineId: string): void {
+  viewRoutineDetails(routineId: string, event: MouseEvent): void {
     // If you want a separate detail view before editing or playing.
     // For now, clicking the card might go to edit, or you can implement a dedicated detail view.
     // Let's make card click go to edit for now for simplicity.
-    this.router.navigate(['/workout/edit', routineId]);
+    this.router.navigate(['/workout/view', routineId]);
     console.log('Viewing routine details for ID (or navigating to edit):', routineId);
   }
 
@@ -73,60 +74,60 @@ export class RoutineListComponent implements OnInit {
   // --- DUMMY DATA FUNCTION ---
   // Remove or comment out when WorkoutBuilder is functional
   // private addDummyRoutines(): void {
-    // console.log('Adding dummy routines as storage is empty...');
-    // const dummyRoutines: Omit<Routine, 'id'>[] = [
-      // {
-        // name: 'Full Body Strength A',
-        // description: 'A balanced full-body workout focusing on compound movements.',
-        // goal: 'strength',
-        // targetMuscleGroups: ['Full Body'],
-        // exercises: [
-          // {
-            // id: this.workoutService.generateWorkoutExerciseId(),
-            // exerciseId: 'barbell-squat', // Assumes this ID exists in your ExerciseLibrary
-            // exerciseName: 'Barbell Squat',
-            // sets: [
-              // { id: this.workoutService.generateExerciseSetId(), reps: 5, weight: 80, restAfterSet: 90 },
-              // { id: this.workoutService.generateExerciseSetId(), reps: 5, weight: 80, restAfterSet: 90 },
-              // { id: this.workoutService.generateExerciseSetId(), reps: 5, weight: 80, restAfterSet: 120 },
-            // ],
-          // },
-          // {
-            // id: this.workoutService.generateWorkoutExerciseId(),
-            // exerciseId: 'dumbbell-bench-press',
-            // exerciseName: 'Dumbbell Bench Press',
-            // sets: [
-              // { id: this.workoutService.generateExerciseSetId(), reps: 8, weight: 20, restAfterSet: 75 },
-              // { id: this.workoutService.generateExerciseSetId(), reps: 8, weight: 20, restAfterSet: 75 },
-              // { id: this.workoutService.generateExerciseSetId(), reps: 8, weight: 20, restAfterSet: 90 },
-            // ],
-          // },
-        // ],
-        // lastPerformed: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days ago
-      // },
-      // {
-        // name: 'Upper Body Hypertrophy',
-        // description: 'Focus on chest, back, and shoulders for muscle growth.',
-        // goal: 'hypertrophy',
-        // targetMuscleGroups: ['Upper Body'],
-        // exercises: [
-          // {
-            // id: this.workoutService.generateWorkoutExerciseId(),
-            // exerciseId: 'pull-up',
-            // exerciseName: 'Pull-up',
-            // sets: [
-              // { id: this.workoutService.generateExerciseSetId(), reps: 10, restAfterSet: 60 },
-              // { id: this.workoutService.generateExerciseSetId(), reps: 10, restAfterSet: 60 },
-              // { id: this.workoutService.generateExerciseSetId(), reps: 8, restAfterSet: 75 },
-            // ],
-          // },
-        // ],
-      // },
-    // ];
-// 
-    // dummyRoutines.forEach(routineData => {
-      // this.workoutService.addRoutine(routineData);
-    // });
+  // console.log('Adding dummy routines as storage is empty...');
+  // const dummyRoutines: Omit<Routine, 'id'>[] = [
+  // {
+  // name: 'Full Body Strength A',
+  // description: 'A balanced full-body workout focusing on compound movements.',
+  // goal: 'strength',
+  // targetMuscleGroups: ['Full Body'],
+  // exercises: [
+  // {
+  // id: this.workoutService.generateWorkoutExerciseId(),
+  // exerciseId: 'barbell-squat', // Assumes this ID exists in your ExerciseLibrary
+  // exerciseName: 'Barbell Squat',
+  // sets: [
+  // { id: this.workoutService.generateExerciseSetId(), reps: 5, weight: 80, restAfterSet: 90 },
+  // { id: this.workoutService.generateExerciseSetId(), reps: 5, weight: 80, restAfterSet: 90 },
+  // { id: this.workoutService.generateExerciseSetId(), reps: 5, weight: 80, restAfterSet: 120 },
+  // ],
+  // },
+  // {
+  // id: this.workoutService.generateWorkoutExerciseId(),
+  // exerciseId: 'dumbbell-bench-press',
+  // exerciseName: 'Dumbbell Bench Press',
+  // sets: [
+  // { id: this.workoutService.generateExerciseSetId(), reps: 8, weight: 20, restAfterSet: 75 },
+  // { id: this.workoutService.generateExerciseSetId(), reps: 8, weight: 20, restAfterSet: 75 },
+  // { id: this.workoutService.generateExerciseSetId(), reps: 8, weight: 20, restAfterSet: 90 },
+  // ],
+  // },
+  // ],
+  // lastPerformed: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days ago
+  // },
+  // {
+  // name: 'Upper Body Hypertrophy',
+  // description: 'Focus on chest, back, and shoulders for muscle growth.',
+  // goal: 'hypertrophy',
+  // targetMuscleGroups: ['Upper Body'],
+  // exercises: [
+  // {
+  // id: this.workoutService.generateWorkoutExerciseId(),
+  // exerciseId: 'pull-up',
+  // exerciseName: 'Pull-up',
+  // sets: [
+  // { id: this.workoutService.generateExerciseSetId(), reps: 10, restAfterSet: 60 },
+  // { id: this.workoutService.generateExerciseSetId(), reps: 10, restAfterSet: 60 },
+  // { id: this.workoutService.generateExerciseSetId(), reps: 8, restAfterSet: 75 },
+  // ],
+  // },
+  // ],
+  // },
+  // ];
+  // 
+  // dummyRoutines.forEach(routineData => {
+  // this.workoutService.addRoutine(routineData);
+  // });
   // }
   // --- END DUMMY DATA ---
 }

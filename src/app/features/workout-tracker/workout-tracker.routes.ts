@@ -21,6 +21,11 @@ export const WORKOUT_TRACKER_ROUTES: Routes = [
     component: WorkoutBuilderComponent,
     title: 'Edit Routine'
   },
+    {
+    path: 'view/:routineId',
+    component: WorkoutBuilderComponent,
+    title: 'View Routine'
+  },
   {
     path: 'play/:routineId', // Route for the player
     component: WorkoutPlayerComponent,

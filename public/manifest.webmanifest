@@ -1,6 +1,6 @@
 {
-  "name": "FitTrackPro",
-  "short_name": "FitTrackPro",
+  "name": "GymBro",
+  "short_name": "GymBro",
   "display": "standalone",
   "scope": "./",
   "start_url": "./",

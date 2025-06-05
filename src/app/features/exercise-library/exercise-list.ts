@@ -59,6 +59,7 @@ export class ExerciseListComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    window.scrollTo(0, 0);
     this.categories$ = this.exerciseService.getUniqueCategories();
     this.primaryMuscleGroups$ = this.exerciseService.getUniquePrimaryMuscleGroups();
 

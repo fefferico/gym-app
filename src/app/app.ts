@@ -16,7 +16,7 @@ import { LoggedWorkoutExercise, WorkoutLog } from './core/models/workout-log.mod
       <!-- Header/Toolbar Area -->
       <header class="bg-primary dark:bg-primary-dark text-white p-4 shadow-md sticky top-0 z-50">
         <div class="container mx-auto flex justify-between items-center">
-          <h1 class="text-xl font-semibold">FitTrack Pro</h1>
+          <h1 class="text-xl font-semibold">GymBro</h1>
           <button 
             (click)="themeService.toggleTheme()" 
             class="p-2 rounded-full hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white"

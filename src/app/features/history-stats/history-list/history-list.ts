@@ -107,6 +107,7 @@ export class HistoryListComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    window.scrollTo(0, 0);
     this.trackingService.workoutLogs$.subscribe(logs => {
       this.allWorkoutLogs.set(logs);
     });

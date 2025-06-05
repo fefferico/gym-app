@@ -1,0 +1,10 @@
+.bg-white.p-4.rounded-lg.shadow-md { // Be more specific if needed
+  overflow: hidden; // Add this to the chart's direct card parent
+}
+
+.chart-wrapper {
+  width: 100%;
+  height: 300px; // Your desired chart height
+  display: block;
+  // position: relative; // Sometimes helps ngx-charts positioning
+}

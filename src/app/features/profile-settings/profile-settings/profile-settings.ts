@@ -20,15 +20,17 @@ export class ProfileSettingsComponent {
   private trackingService = inject(TrackingService);
   private storageService = inject(StorageService); // For clearing data
   private unitsService = inject(UnitsService); // Inject UnitsService
-  
+
   // Define a version for your backup format
   private readonly BACKUP_VERSION = 1;
   private readonly BACKUP_KEY = 'fitTrackPro_backup'; // A key to store the combined object if needed internally
-                                                    // or just used as a signature
-// Signal to hold the current unit preference for UI binding
+  // or just used as a signature
+  // Signal to hold the current unit preference for UI binding
   currentUnit = this.unitsService.currentUnit;
 
-  constructor() { }
+  constructor() {
+    window.scrollTo(0, 0);
+  }
 
   // --- Unit Preference Logic ---
   selectUnit(unit: WeightUnit): void {
@@ -81,9 +83,9 @@ export class ProfileSettingsComponent {
     }
 
     if (file.type !== 'application/json') {
-       alert('Invalid file type. Please select a JSON file.'); // Replace with better feedback
-       input.value = ''; // Clear the file input
-       return;
+      alert('Invalid file type. Please select a JSON file.'); // Replace with better feedback
+      input.value = ''; // Clear the file input
+      return;
     }
 
     console.log(`Importing file: ${file.name}`);
@@ -102,14 +104,14 @@ export class ProfileSettingsComponent {
           return;
         }
         if (importedData.version !== this.BACKUP_VERSION) {
-           alert(`Invalid backup file version. Expected ${this.BACKUP_VERSION}, got ${importedData.version}. Please use a compatible backup file.`);
-           input.value = '';
-           return;
+          alert(`Invalid backup file version. Expected ${this.BACKUP_VERSION}, got ${importedData.version}. Please use a compatible backup file.`);
+          input.value = '';
+          return;
         }
         if (!importedData.routines || !importedData.workoutLogs || !importedData.personalBests) {
-           alert('Invalid backup file content. Missing essential data sections (routines, workoutLogs, personalBests).');
-           input.value = '';
-           return;
+          alert('Invalid backup file content. Missing essential data sections (routines, workoutLogs, personalBests).');
+          input.value = '';
+          return;
         }
         // TODO: More granular validation of each data section (e.g., are routines items arrays? Do they have expected keys?)
 
@@ -123,20 +125,20 @@ export class ProfileSettingsComponent {
           this.workoutService.replaceData(importedData.routines);
           this.trackingService.replaceLogs(importedData.workoutLogs);
           this.trackingService.replacePBs(importedData.personalBests);
-          
+
           console.log('Data import successful.');
           alert('Data imported successfully!'); // Replace with better feedback
           // Optionally navigate or reload data displays
         } else {
           console.log('Data import cancelled by user.');
-           alert('Data import cancelled.'); // Replace with better feedback
+          alert('Data import cancelled.'); // Replace with better feedback
         }
 
       } catch (error) {
         console.error('Error processing imported file:', error);
         alert('Error processing backup file. Please ensure it is a valid JSON file.'); // Replace with better feedback
       } finally {
-         input.value = ''; // Clear the file input regardless of success/failure
+        input.value = ''; // Clear the file input regardless of success/failure
       }
     };
 
@@ -158,17 +160,17 @@ export class ProfileSettingsComponent {
 
   // Clear All Data (using the dev method from TrackingService/WorkoutService)
   clearAllAppData(): void {
-      // Add a confirmation dialog here before calling the service methods
-      const confirmClearAll = confirm("WARNING: This will delete ALL your workout data (routines, logs, PBs). This cannot be undone. Are you sure?");
-      if (confirmClearAll) {
-          // Call the specific clear methods you added earlier
-          if (this.trackingService.clearAllWorkoutLogs_DEV_ONLY) this.trackingService.clearAllWorkoutLogs_DEV_ONLY();
-          if (this.trackingService.clearAllPersonalBests_DEV_ONLY) this.trackingService.clearAllPersonalBests_DEV_ONLY();
-          // Assuming you added a clearAllRoutines_DEV_ONLY to WorkoutService
-          if (this.workoutService.clearAllRoutines_DEV_ONLY) this.workoutService.clearAllRoutines_DEV_ONLY();
+    // Add a confirmation dialog here before calling the service methods
+    const confirmClearAll = confirm("WARNING: This will delete ALL your workout data (routines, logs, PBs). This cannot be undone. Are you sure?");
+    if (confirmClearAll) {
+      // Call the specific clear methods you added earlier
+      if (this.trackingService.clearAllWorkoutLogs_DEV_ONLY) this.trackingService.clearAllWorkoutLogs_DEV_ONLY();
+      if (this.trackingService.clearAllPersonalBests_DEV_ONLY) this.trackingService.clearAllPersonalBests_DEV_ONLY();
+      // Assuming you added a clearAllRoutines_DEV_ONLY to WorkoutService
+      if (this.workoutService.clearAllRoutines_DEV_ONLY) this.workoutService.clearAllRoutines_DEV_ONLY();
 
-          console.log("All application data cleared.");
-          alert("All workout data has been cleared."); // Replace with better feedback
-      }
+      console.log("All application data cleared.");
+      alert("All workout data has been cleared."); // Replace with better feedback
+    }
   }
 }

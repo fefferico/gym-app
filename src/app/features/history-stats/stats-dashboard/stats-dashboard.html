@@ -63,7 +63,8 @@
                     <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Total Volume <span
                             *ngIf="hasActiveDateFilters()">(Period)</span></h2>
                     <p class="text-4xl font-bold text-primary dark:text-primary-light">
-                        {{ volumeInPeriod() | number:'1.0-0' }} <span class="text-lg font-medium">{{ unitsService.getUnitLabel() }}*kg</span>
+                        {{ volumeInPeriod() | number:'1.0-0' }} <span class="text-lg font-medium">{{
+                            unitsService.getUnitLabel() }}</span>
                     </p>
                 </div>
                 <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md text-center">
@@ -102,15 +103,15 @@
 
             <!-- CHARTS SECTION -->
             <section class="mb-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md min-h-[350px]">
+                <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md min-h-[350px] overflow-hidden">
                     <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">Volume by Muscle Group <span
                             *ngIf="hasActiveDateFilters()">(Period)</span></h3>
                     <div *ngIf="muscleGroupChartDataForPeriod().length > 0; else noChartDataMsg" class="chart-wrapper">
-                        <ngx-charts-bar-vertical [view]="view" [results]="muscleGroupChartDataForPeriod()"
-                            [gradient]="gradient" [xAxis]="showXAxis" [yAxis]="showYAxis" [legend]="false"
-                            [showXAxisLabel]="showXAxisLabel" [showYAxisLabel]="showYAxisLabel"
-                            [xAxisLabel]="xAxisLabelMuscle" [yAxisLabel]="yAxisLabelVolume" [scheme]="colorScheme"
-                            (select)="onChartSelect($event)" class="chart-container">
+                        <ngx-charts-bar-vertical 
+                            [results]="muscleGroupChartDataForPeriod()" [scheme]="colorScheme" [gradient]="gradient"
+                            [xAxis]="showXAxis" [yAxis]="showYAxis" [legend]="false" [showXAxisLabel]="showXAxisLabel"
+                            [showYAxisLabel]="showYAxisLabel" [xAxisLabel]="xAxisLabelMuscle"
+                            [yAxisLabel]="yAxisLabelVolume" (select)="onChartSelect($event)" class="chart-container">
                         </ngx-charts-bar-vertical>
                     </div>
                     <ng-template #noChartDataMsg>
@@ -120,7 +121,7 @@
                 </div>
 
                 <div *ngIf="hasWeeklyVolumeChartData; else noChartDataMsg" class="chart-wrapper">
-                    <ngx-charts-line-chart [view]="view" [results]="weeklyVolumeChartDataForPeriod()"
+                    <ngx-charts-line-chart [results]="weeklyVolumeChartDataForPeriod()"
                         [gradient]="gradient" [xAxis]="showXAxis" [yAxis]="showYAxis" [legend]="false"
                         [showXAxisLabel]="showXAxisLabel" [showYAxisLabel]="showYAxisLabel"
                         [xAxisLabel]="xAxisLabelWeek" [yAxisLabel]="yAxisLabelVolume" [autoScale]="true"
