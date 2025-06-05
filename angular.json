@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "GymBro": {
+    "gym-app": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -17,7 +17,8 @@
         "build": {
           "builder": "@angular/build:application",
           "options": {
-            "outputPath": "dist/fit-track-pro",
+            "baseHref": "/gym-app/",
+            "outputPath": "dist/gym-app",
             "index": "src/index.html",         
             "browser": "src/main.ts",          
             "polyfills": [                     
@@ -73,10 +74,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "GymBro:build:production"
+              "buildTarget": "gym-app:build:production"
             },
             "development": {
-              "buildTarget": "GymBro:build:development"
+              "buildTarget": "gym-app:build:development"
             }
           },
           "defaultConfiguration": "development"
