@@ -9,6 +9,7 @@ import { TrackingService } from '../../../core/services/tracking.service';
 import { WorkoutLog } from '../../../core/models/workout-log.model';
 import { Exercise } from '../../../core/models/exercise.model';
 import { toSignal } from '@angular/core/rxjs-interop'; // Import toSignal
+import { WorkoutService } from '../../../core/services/workout.service';
 
 @Component({
   selector: 'app-history-list',
@@ -19,6 +20,7 @@ import { toSignal } from '@angular/core/rxjs-interop'; // Import toSignal
 })
 export class HistoryListComponent implements OnInit {
   protected trackingService = inject(TrackingService);
+  protected workoutService = inject(WorkoutService);
   private exerciseService = inject(ExerciseService); // Inject
   private router = inject(Router);
   private fb = inject(FormBuilder); // Inject
@@ -130,6 +132,13 @@ export class HistoryListComponent implements OnInit {
       this.trackingService.clearAllWorkoutLogs_DEV_ONLY();
     } else {
       alert('Clear logs function not available in TrackingService.');
+    }
+
+    if (this.workoutService.getCurrentRoutines()) {
+      this.workoutService.getCurrentRoutines().forEach(routine => {
+        routine.lastPerformed = undefined;
+        this.workoutService.updateRoutine(routine);
+      });
     }
   }
 

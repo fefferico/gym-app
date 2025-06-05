@@ -29,11 +29,18 @@
           class="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-gray-200">
       </div>
     </div>
-    <div class="mt-4">
+    <div class="mt-4 flex justify-between items-center">
       <button (click)="clearFilters()"
-        class="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500">
+        class="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500 text-sm">
         Clear Filters
       </button>
+      <div *ngIf="allExercises().length > 0" class="text-sm text-gray-600 dark:text-gray-400">
+        Showing <strong class="text-gray-800 dark:text-gray-200">{{ filteredExercises().length }}</strong>
+        <span *ngIf="searchTerm() || selectedCategory() || selectedMuscleGroup()">
+          of <strong class="text-gray-800 dark:text-gray-200">{{ allExercises().length }}</strong>
+        </span>
+        exercises
+      </div>
     </div>
   </div>
 

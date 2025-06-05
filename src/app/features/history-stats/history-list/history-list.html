@@ -13,7 +13,7 @@
         <span class="sr-only">Toggle Filters</span>
       </button>
 
-      <button *ngIf="true" (click)="clearAllLogsForDev()" title="DEVELOPMENT ONLY: Clear all logs"
+      <button *ngIf="allWorkoutLogs().length !== 0" (click)="clearAllLogsForDev()" title="DEVELOPMENT ONLY: Clear all logs"
         class="text-xs bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-semibold py-1 px-2 rounded-md shadow">
         Clear Logs (Dev)
       </button>
@@ -124,7 +124,7 @@
     <!-- ... (existing loading/no logs template) ... -->
     <div *ngIf="(trackingService.workoutLogs$ | async)?.length === 0 && allWorkoutLogs().length === 0; else loadingLogs"
       class="text-center py-12 px-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
-      <!-- ... SVG and No Workout History Yet! content ... -->
+      There is no data here yet, let's workout a bit!
     </div>
     <ng-template #loadingLogs>
       <div class="text-center py-10">
