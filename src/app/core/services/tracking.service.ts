@@ -276,4 +276,16 @@ export class TrackingService {
   getAllPersonalWorkouts(): Observable<WorkoutLog[]> {
     return this.workoutLogs$;
   }
+
+  /**
+   * Clears all stored personal bests.
+   * Useful for development or user-initiated reset.
+   */
+  clearAllPersonalBests_DEV_ONLY(): void {
+    const confirmClear = confirm("DEVELOPMENT: Are you sure you want to delete ALL personal bests? This cannot be undone.");
+    if (confirmClear) {
+      this.savePBsToStorage({}); // Save an empty object to clear PBs
+      console.log("All personal bests cleared.");
+    }
+  }
 }

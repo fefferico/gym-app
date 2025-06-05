@@ -4,8 +4,9 @@ import { BehaviorSubject, Observable, of } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid'; // For generating unique IDs
 
-import { Routine } from '../models/workout.model'; // Ensure this path is correct
+import { ExerciseSetParams, Routine } from '../models/workout.model'; // Ensure this path is correct
 import { StorageService } from './storage.service';
+import { LoggedSet } from '../models/workout-log.model';
 
 @Injectable({
   providedIn: 'root',
@@ -28,15 +29,15 @@ export class WorkoutService {
 
   private loadRoutinesFromStorage(): Routine[] {
     const routines = this.storageService.getItem<Routine[]>(this.ROUTINES_STORAGE_KEY);
-    return routines ? routines : [];
+    // Sort by name for consistent display, or by lastPerformed if available
+    return routines ? routines.sort((a, b) => a.name.localeCompare(b.name)) : [];
   }
 
   private saveRoutinesToStorage(routines: Routine[]): void {
     this.storageService.setItem(this.ROUTINES_STORAGE_KEY, routines);
-    this.routinesSubject.next([...routines]); // Emit a new array reference to trigger change detection
+    this.routinesSubject.next([...routines].sort((a,b) => a.name.localeCompare(b.name)));
   }
 
-  // Expose the current value if needed synchronously, though observable is preferred
   public getCurrentRoutines(): Routine[] {
     return this.routinesSubject.getValue();
   }
@@ -51,7 +52,7 @@ export class WorkoutService {
     const currentRoutines = this.routinesSubject.getValue();
     const newRoutine: Routine = {
       ...newRoutineData,
-      id: uuidv4(), // Generate a unique ID
+      id: uuidv4(),
     };
     const updatedRoutines = [...currentRoutines, newRoutine];
     this.saveRoutinesToStorage(updatedRoutines);
@@ -62,11 +63,9 @@ export class WorkoutService {
   updateRoutine(updatedRoutine: Routine): Routine | undefined {
     let currentRoutines = this.routinesSubject.getValue();
     const index = currentRoutines.findIndex(r => r.id === updatedRoutine.id);
-
     if (index > -1) {
-      // Create a new array for immutability and to ensure change detection
       const updatedRoutinesArray = [...currentRoutines];
-      updatedRoutinesArray[index] = { ...updatedRoutine }; // Also clone the routine object
+      updatedRoutinesArray[index] = { ...updatedRoutine };
       this.saveRoutinesToStorage(updatedRoutinesArray);
       console.log('Updated routine:', updatedRoutine);
       return updatedRoutine;
@@ -78,7 +77,6 @@ export class WorkoutService {
   deleteRoutine(id: string): void {
     const currentRoutines = this.routinesSubject.getValue();
     const updatedRoutines = currentRoutines.filter(r => r.id !== id);
-
     if (updatedRoutines.length < currentRoutines.length) {
       this.saveRoutinesToStorage(updatedRoutines);
       console.log('Deleted routine with id:', id);
@@ -87,14 +85,103 @@ export class WorkoutService {
     }
   }
 
-  // Utility to create a new WorkoutExercise ID
-  // These could also be part of the WorkoutBuilderComponent logic if preferred
   generateWorkoutExerciseId(): string {
     return uuidv4();
   }
 
-  // Utility to create a new ExerciseSetParams ID
   generateExerciseSetId(): string {
     return uuidv4();
+  }
+
+  // +++ NEW METHOD for Progressive Overload Suggestion +++
+  /**
+   * Suggests parameters for the next set based on last performance and simple progression rules.
+   * @param lastPerformedSet The actual performance of the corresponding set last time. Can be null if no history.
+   * @param plannedSet The originally planned parameters for the current set (from the routine).
+   * @param exerciseGoal The goal of the overall routine/exercise (e.g., 'strength', 'hypertrophy').
+   * @returns Updated ExerciseSetParams with suggested values for the current session.
+   */
+  suggestNextSetParameters(
+    lastPerformedSet: LoggedSet | null, // <<< This line
+    plannedSet: ExerciseSetParams, // This is the target set from the *original* routine plan
+    exerciseGoal?: Routine['goal'] // Optional: goal can influence progression
+  ): ExerciseSetParams {
+    // Start with a copy of the originally planned set parameters for this session
+    // We will modify these based on last performance.
+    const suggestedParams: ExerciseSetParams = JSON.parse(JSON.stringify(plannedSet));
+
+    // If no last performance data, return the original planned set for this session
+    if (!lastPerformedSet) {
+      console.log('No last performance, using original planned set:', plannedSet);
+      return suggestedParams;
+    }
+
+    const lastWeight = lastPerformedSet.weightUsed;
+    const lastReps = lastPerformedSet.repsAchieved;
+    const targetRepsInPlan = plannedSet.reps; // Original target reps for this set
+
+    // --- Basic Progressive Overload Logic ---
+
+    // Rule 1: For weight-based sets
+    if (lastWeight !== undefined && lastWeight !== null && lastWeight >= 0 && targetRepsInPlan !== undefined) {
+      const weightIncrement = 2.5; // Example: 2.5 kg/lbs. Make this configurable later.
+      const minRepsForIncrement = targetRepsInPlan; // Must meet target reps
+
+      // If last time reps met or exceeded target for that weight:
+      if (lastReps >= minRepsForIncrement) {
+        suggestedParams.weight = parseFloat((lastWeight + weightIncrement).toFixed(2));
+        // When increasing weight, often aim for the lower end of the rep range or the original target.
+        suggestedParams.reps = targetRepsInPlan;
+        console.log(`Suggesting weight increase to ${suggestedParams.weight}kg for ${suggestedParams.reps} reps.`);
+      } else {
+        // Did not meet target reps last time, suggest staying at the same weight and trying to hit target reps.
+        suggestedParams.weight = lastWeight;
+        suggestedParams.reps = targetRepsInPlan; // Re-attempt target reps
+        console.log(`Suggesting same weight ${suggestedParams.weight}kg, aiming for ${suggestedParams.reps} reps.`);
+      }
+    }
+    // Rule 2: For bodyweight rep-based sets (where plannedSet.weight is undefined or 0)
+    else if ((plannedSet.weight === undefined || plannedSet.weight === 0) && targetRepsInPlan !== undefined) {
+      const repIncrement = 1; // Example: increase by 1 rep
+      // If last time reps met or exceeded target:
+      if (lastReps >= targetRepsInPlan) {
+        suggestedParams.reps = lastReps + repIncrement; // Suggest more reps
+        console.log(`Suggesting rep increase to ${suggestedParams.reps} for bodyweight exercise.`);
+      } else {
+        // Did not meet target reps, suggest re-attempting target reps.
+        suggestedParams.reps = targetRepsInPlan;
+        console.log(`Suggesting re-attempt of ${suggestedParams.reps} reps for bodyweight exercise.`);
+      }
+    }
+    // Rule 3: For duration-based sets
+    else if (plannedSet.duration !== undefined && lastPerformedSet.durationPerformed !== undefined) {
+      const durationIncrement = 5; // Example: increase by 5 seconds
+      // If last time duration met or exceeded target:
+      if (lastPerformedSet.durationPerformed >= plannedSet.duration) {
+        suggestedParams.duration = plannedSet.duration + durationIncrement;
+        console.log(`Suggesting duration increase to ${suggestedParams.duration}s.`);
+      } else {
+        // Did not meet target duration, suggest re-attempting target duration.
+        suggestedParams.duration = plannedSet.duration;
+        console.log(`Suggesting re-attempt of ${suggestedParams.duration}s duration.`);
+      }
+    }
+
+    // Tempo and Notes are usually carried over from the plan or set by user.
+    // RestAfterSet is also usually from the plan.
+    suggestedParams.id = plannedSet.id; // Keep the same planned set ID
+
+    return suggestedParams;
+  }
+
+  clearAllRoutines_DEV_ONLY(): void {
+    const confirmClear = confirm("DEVELOPMENT: Are you sure you want to delete ALL routines logs? This cannot be undone.");
+    if (confirmClear) {
+      this.getCurrentRoutines().forEach(routine => {
+        routine.lastPerformed = undefined;
+        this.updateRoutine(routine);
+      });
+      console.log("All routines logs cleared.");
+    }
   }
 }

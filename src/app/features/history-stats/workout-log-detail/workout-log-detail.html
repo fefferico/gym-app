@@ -2,7 +2,9 @@
   <div class="mb-6">
     <a routerLink="/history" class="text-primary dark:text-primary-light hover:underline flex items-center">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 mr-1">
-        <path fill-rule="evenodd" d="M17 10a.75.75 0 0 1-.75.75H5.612l4.158 3.96a.75.75 0 1 1-1.04 1.08l-5.5-5.25a.75.75 0 0 1 0-1.08l5.5-5.25a.75.75 0 1 1 1.04 1.08L5.612 9.25H16.25A.75.75 0 0 1 17 10Z" clip-rule="evenodd" />
+        <path fill-rule="evenodd"
+          d="M17 10a.75.75 0 0 1-.75.75H5.612l4.158 3.96a.75.75 0 1 1-1.04 1.08l-5.5-5.25a.75.75 0 0 1 0-1.08l5.5-5.25a.75.75 0 1 1 1.04 1.08L5.612 9.25H16.25A.75.75 0 0 1 17 10Z"
+          clip-rule="evenodd" />
       </svg>
       Back to Workout History
     </a>
@@ -29,24 +31,29 @@
         <h2 class="text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-4">Exercises Performed:</h2>
         <div *ngIf="displayExercises().length > 0; else noLoggedExercises" class="space-y-8">
           <div *ngFor="let loggedEx of displayExercises(); let exIdx = index"
-               class="pb-6 border-b border-gray-200 dark:border-gray-600 last:border-b-0">
+            class="pb-6 border-b border-gray-200 dark:border-gray-600 last:border-b-0">
             <div class="flex items-start mb-3">
               <div *ngIf="loggedEx.baseExercise !== undefined" class="flex-shrink-0 mr-4">
-                <img *ngIf="loggedEx.baseExercise && loggedEx.baseExercise.imageUrls && loggedEx.baseExercise.imageUrls.length > 0"
-                     [src]="loggedEx.baseExercise.imageUrls[0]" [alt]="loggedEx.exerciseName"
-                     class="w-20 h-20 object-contain rounded-md border dark:border-gray-700 bg-gray-100 dark:bg-gray-700">
-                <div *ngIf="!loggedEx.baseExercise || !loggedEx.baseExercise.imageUrls || loggedEx.baseExercise.imageUrls.length === 0"
-                     class="w-20 h-20 bg-gray-200 dark:bg-gray-700 flex items-center justify-center rounded-md text-xs text-gray-500">
-                     No Image
+                <img
+                  *ngIf="loggedEx.baseExercise && loggedEx.baseExercise.imageUrls && loggedEx.baseExercise.imageUrls.length > 0"
+                  [src]="loggedEx.baseExercise.imageUrls[0]" [alt]="loggedEx.exerciseName"
+                  class="w-20 h-20 object-contain rounded-md border dark:border-gray-700 bg-gray-100 dark:bg-gray-700">
+                <div
+                  *ngIf="!loggedEx.baseExercise || !loggedEx.baseExercise.imageUrls || loggedEx.baseExercise.imageUrls.length === 0"
+                  class="w-20 h-20 bg-gray-200 dark:bg-gray-700 flex items-center justify-center rounded-md text-xs text-gray-500">
+                  No Image
                 </div>
               </div>
-              <div *ngIf="loggedEx.baseExercise === undefined" class="w-20 h-20 bg-gray-200 dark:bg-gray-700 animate-pulse rounded-md mr-4"></div> <!-- Placeholder for loading image -->
+              <div *ngIf="loggedEx.baseExercise === undefined"
+                class="w-20 h-20 bg-gray-200 dark:bg-gray-700 animate-pulse rounded-md mr-4"></div>
+              <!-- Placeholder for loading image -->
 
               <div>
-                <h3 class="text-xl font-semibold text-primary dark:text-primary-light hover:cursor-pointer" 
-                [title]="'Click to show the exercise in the library'"
-                (click)="displayExerciseDetails(loggedEx.exerciseId)">{{ loggedEx.exerciseName }}</h3>
-                <p *ngIf="loggedEx.baseExercise?.category" class="text-sm text-gray-500 dark:text-gray-400">{{ loggedEx.baseExercise?.category | titlecase }}</p>
+                <h3 class="text-xl font-semibold text-primary dark:text-primary-light hover:cursor-pointer"
+                  [title]="'Click to show the exercise in the library'"
+                  (click)="displayExerciseDetails(loggedEx.exerciseId)">{{ loggedEx.exerciseName }}</h3>
+                <p *ngIf="loggedEx.baseExercise?.category" class="text-sm text-gray-500 dark:text-gray-400">{{
+                  loggedEx.baseExercise?.category | titlecase }}</p>
               </div>
             </div>
             <p *ngIf="loggedEx.notes" class="text-sm italic text-gray-600 dark:text-gray-400 mb-3">
@@ -55,18 +62,33 @@
 
             <div class="space-y-2 pl-4">
               <div *ngFor="let set of loggedEx.sets; let setIdx = index"
-                   class="p-2 rounded-md bg-gray-50 dark:bg-gray-750 border dark:border-gray-600">
+                class="p-2 rounded-md bg-gray-50 dark:bg-gray-750 border dark:border-gray-600">
                 <p class="text-sm font-medium text-gray-700 dark:text-gray-200">
                   Set {{ setIdx + 1 }}:
                 </p>
                 <ul class="list-disc list-inside pl-4 text-xs text-gray-600 dark:text-gray-400">
-                  <li>Reps: <strong class="dark:text-gray-300">{{ set.repsAchieved }}</strong>
-                      <em *ngIf="set.targetReps !== undefined && set.targetReps !== set.repsAchieved" class="text-gray-400 dark:text-gray-500 ml-1">(Target: {{set.targetReps}})</em></li>
-                  <li *ngIf="set.weightUsed !== undefined && set.weightUsed !== null">Weight: <strong class="dark:text-gray-300">{{ set.weightUsed }} kg</strong>
-                      <em *ngIf="set.targetWeight !== undefined && set.targetWeight !== null && set.targetWeight !== set.weightUsed" class="text-gray-400 dark:text-gray-500 ml-1">(Target: {{set.targetWeight}} kg)</em></li>
-                  <li *ngIf="set.durationPerformed !== undefined">Time: <strong class="dark:text-gray-300">{{ set.durationPerformed }}s</strong>
-                      <em *ngIf="set.targetDuration !== undefined && set.targetDuration !== set.durationPerformed" class="text-gray-400 dark:text-gray-500 ml-1">(Target: {{set.targetDuration}}s)</em></li>
-                  <li *ngIf="set.targetTempo">Target Tempo: <strong class="dark:text-gray-300">{{ set.targetTempo }}</strong></li>
+                  <li>Reps:
+                    <strong [class.text-green-500]="set.repsAchieved >= (set.targetReps || 0)"
+                      [class.dark:text-green-400]="set.repsAchieved >= (set.targetReps || 0)"
+                      [class.dark:text-gray-300]="set.repsAchieved < (set.targetReps || 0)">
+                      {{ set.repsAchieved }}
+                    </strong>
+                    <em *ngIf="set.targetReps !== undefined && set.targetReps !== set.repsAchieved"
+                      class="text-gray-400 dark:text-gray-500 ml-1">(Target: {{set.targetReps}})</em>
+                  </li>
+                  <li *ngIf="set.weightUsed !== undefined && set.weightUsed !== null">Weight: <strong
+                      class="dark:text-gray-300">{{ set.weightUsed }} kg</strong>
+                    <em
+                      *ngIf="set.targetWeight !== undefined && set.targetWeight !== null && set.targetWeight !== set.weightUsed"
+                      class="text-gray-400 dark:text-gray-500 ml-1">(Target: {{set.targetWeight}} kg)</em>
+                  </li>
+                  <li *ngIf="set.durationPerformed !== undefined">Time: <strong class="dark:text-gray-300">{{
+                      set.durationPerformed }}s</strong>
+                    <em *ngIf="set.targetDuration !== undefined && set.targetDuration !== set.durationPerformed"
+                      class="text-gray-400 dark:text-gray-500 ml-1">(Target: {{set.targetDuration}}s)</em>
+                  </li>
+                  <li *ngIf="set.targetTempo">Target Tempo: <strong class="dark:text-gray-300">{{ set.targetTempo
+                      }}</strong></li>
                   <li *ngIf="set.notes" class="italic">Set Notes: {{ set.notes }}</li>
                 </ul>
               </div>

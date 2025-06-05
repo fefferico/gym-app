@@ -134,11 +134,16 @@ export class HistoryListComponent implements OnInit {
       alert('Clear logs function not available in TrackingService.');
     }
 
-    if (this.workoutService.getCurrentRoutines()) {
-      this.workoutService.getCurrentRoutines().forEach(routine => {
-        routine.lastPerformed = undefined;
-        this.workoutService.updateRoutine(routine);
-      });
+    if (this.trackingService.clearAllPersonalBests_DEV_ONLY) {
+      this.trackingService.clearAllPersonalBests_DEV_ONLY();
+    } else {
+      alert('Clear PBs function not available in TrackingService.');
+    }
+
+    if (this.workoutService.clearAllRoutines_DEV_ONLY) {
+      this.workoutService.clearAllRoutines_DEV_ONLY();
+    } else {
+      alert('Clear routines function not available in WorkoutService.');
     }
   }
 

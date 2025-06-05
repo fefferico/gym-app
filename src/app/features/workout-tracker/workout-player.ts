@@ -17,10 +17,11 @@ import { LoggedSet, LoggedWorkoutExercise, WorkoutLog, LastPerformanceSummary, P
 interface ActiveSetInfo {
   exerciseIndex: number;
   setIndex: number;
-  exerciseData: WorkoutExercise; // From the routine
-  setData: ExerciseSetParams;    // From the routine
-  baseExerciseInfo?: Exercise;    // Full details from ExerciseService
-  isCompleted: boolean;
+  exerciseData: WorkoutExercise;
+  setData: ExerciseSetParams; // This will now reflect session-specific suggested targets
+  baseExerciseInfo?: Exercise;
+  isCompleted: boolean; // Based on currentWorkoutLogExercises for this session
+  // Fields for actuals (if re-doing a set within the session)
   actualReps?: number;
   actualWeight?: number;
   actualDuration?: number;
@@ -51,7 +52,10 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   currentSetForm!: FormGroup;
 
   routineId: string | null = null;
-  routine = signal<Routine | null | undefined>(undefined); // undefined: loading, null: not found or error
+
+  // This routine signal will hold the session-specific version of the routine,
+  // with targets potentially modified by progressive overload suggestions or on-the-fly edits.
+  routine = signal<Routine | null | undefined>(undefined);
 
   currentExerciseIndex = signal(0);
   currentSetIndex = signal(0);
@@ -151,35 +155,24 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       switchMap(params => {
         this.routineId = params.get('routineId');
         if (this.routineId) {
-          return this.workoutService.getRoutineById(this.routineId);
+          return this.workoutService.getRoutineById(this.routineId).pipe(
+            // Create a DEEP COPY of the routine for this session.
+            // All target modifications (suggestions, on-the-fly edits) will happen on this copy.
+            map(originalRoutine => originalRoutine ? JSON.parse(JSON.stringify(originalRoutine)) as Routine : null)
+          );
         }
         return of(null);
       }),
-      tap(loadedRoutine => {
-        if (loadedRoutine) {
-          this.routine.set(loadedRoutine);
-          // Initial setup when routine loads
-          this.fetchLastPerformanceAndPatchForm(); // Modified call
-          this.loadBaseExerciseDetailsForCurrent();
+      tap(sessionRoutineCopy => {
+        if (sessionRoutineCopy) {
+          this.routine.set(sessionRoutineCopy);
+          this.prepareCurrentSet(); // Prepare the first set with suggestions
         } else {
           this.routine.set(null);
           console.error('WorkoutPlayer: Routine not found or ID missing.');
         }
       })
     ).subscribe();
-  }
-
-  private initializeCurrentSetForm(): void {
-    this.currentSetForm = this.fb.group({
-      actualReps: [null as number | null, [Validators.min(0)]],
-      actualWeight: [null as number | null, [Validators.min(0)]],
-      actualDuration: [null as number | null, [Validators.min(0)]],
-      setNotes: [''],
-      // Hidden fields to hold target values if needed for display or logic, but not strictly necessary for submission
-      // targetReps: [null],
-      // targetWeight: [null],
-      // targetDuration: [null],
-    });
   }
 
   private resetAndPatchCurrentSetForm(): void {
@@ -218,32 +211,6 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         // You might want to auto-populate actualDuration with targetDuration here.
         this.currentSetForm.get('actualDuration')?.setValue(activeInfo.setData.duration);
       }
-    }
-  }
-
-  private loadBaseExerciseDetailsForCurrent(): void {
-    const activeInfo = this.activeSetInfo();
-    if (activeInfo && activeInfo.exerciseData.exerciseId) {
-      const exerciseId = activeInfo.exerciseData.exerciseId;
-      this.currentBaseExercise.set(undefined); // Show loading for base exercise
-      this.exercisePBs.set([]); // Clear PBs while loading new exercise
-
-      // Fetch base exercise details
-      this.exerciseService.getExerciseById(exerciseId).subscribe(ex => {
-        this.currentBaseExercise.set(ex || null);
-      });
-
-      // Fetch PBs for this exercise
-      this.trackingService.getAllPersonalBestsForExercise(exerciseId)
-        .pipe(take(1)) // We only need the current PBs once per exercise change
-        .subscribe(pbs => {
-          this.exercisePBs.set(pbs);
-          console.log(`PBs for ${exerciseId}:`, pbs);
-        });
-
-    } else {
-      this.currentBaseExercise.set(null);
-      this.exercisePBs.set([]);
     }
   }
 
@@ -294,67 +261,24 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     this.restTimerDisplay.set(null);
   }
 
-  // --- Core Navigation and Completion Logic ---
-  // This will be expanded significantly
-  completeSetAndProceed(): void {
-    const activeInfo = this.activeSetInfo();
-    const routine = this.routine();
-    if (!activeInfo || !routine) return;
-
-    // If the current set was a timed set and the timer was running/paused, stop it.
-    // The actualDuration will be taken from the form.
-    if (activeInfo.setData.duration && (this.timedSetTimerState() === TimedSetState.Running || this.timedSetTimerState() === TimedSetState.Paused)) {
-      this.stopAndLogTimedSet();
-    }
-
-    if (this.currentSetForm.invalid) {
-      this.currentSetForm.markAllAsTouched();
-      alert('Please correct the input values for the current set.');
-      return;
-    }
-    const formValues = this.currentSetForm.value;
-    const loggedSetData: LoggedSet = {
-      id: activeInfo.setData.id,
-      plannedSetId: activeInfo.setData.id,
-      exerciseId: activeInfo.exerciseData.exerciseId,
-      repsAchieved: formValues.actualReps ?? activeInfo.setData.reps ?? 0,
-      weightUsed: formValues.actualWeight ?? activeInfo.setData.weight,
-      durationPerformed: activeInfo.setData.duration ? (formValues.actualDuration ?? 0) : undefined,
-      targetReps: activeInfo.setData.reps,
-      targetWeight: activeInfo.setData.weight,
-      targetDuration: activeInfo.setData.duration,
-      targetTempo: activeInfo.setData.tempo,
-      notes: formValues.setNotes || undefined,
-      timestamp: new Date().toISOString(),
-    };
-    this.addLoggedSetToCurrentLog(activeInfo.exerciseData, loggedSetData);
-
-    if (activeInfo.setData.restAfterSet > 0 && !this.isResting()) {
-      this.startRestTimer(activeInfo.setData.restAfterSet);
-    }
-
-    // Reset timed set state for the next set
-    this.resetTimedSet(); // Important to reset here before form patching
-    this.navigateToNextStepInWorkout(activeInfo, routine); // Use new navigation method
-  }
-
+  // Make sure this method is still present and correct from your version
   private addLoggedSetToCurrentLog(exerciseData: WorkoutExercise, loggedSet: LoggedSet): void {
     const logs = this.currentWorkoutLogExercises();
     let exerciseLog = logs.find(exLog => exLog.exerciseId === exerciseData.exerciseId);
 
     if (exerciseLog) {
-      // Add set to existing logged exercise, ensuring no duplicates by plannedSetId for this session
-      const existingSetIndex = exerciseLog.sets.findIndex(s => s.plannedSetId === loggedSet.plannedSetId);
+      const existingSetIndex = exerciseLog.sets.findIndex(s => s.plannedSetId === loggedSet.plannedSetId); // Or s.id === loggedSet.id if IDs are unique per log attempt
       if (existingSetIndex > -1) {
-        exerciseLog.sets[existingSetIndex] = loggedSet; // Update if re-doing a set
+        exerciseLog.sets[existingSetIndex] = loggedSet;
       } else {
         exerciseLog.sets.push(loggedSet);
       }
+      // To ensure signal updates if nested object changes, re-set the whole array if needed, or ensure deep cloning for exerciseLog
+      this.currentWorkoutLogExercises.set([...logs]); // Simple way to trigger update
     } else {
-      // New exercise for this log
       exerciseLog = {
         exerciseId: exerciseData.exerciseId,
-        exerciseName: exerciseData.exerciseName || 'Unknown Exercise', // Get from baseExercise if available
+        exerciseName: this.currentBaseExercise()?.name || exerciseData.exerciseName || 'Unknown Exercise',
         sets: [loggedSet]
       };
       this.currentWorkoutLogExercises.set([...logs, exerciseLog]);
@@ -362,35 +286,47 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
 
+  // Ensure finishWorkout uses the latest `this.routine()` for `routineName`
+  // and `this.currentWorkoutLogExercises()` for exercises.
+  // The logic for updating `routine.lastPerformed` should also use the session copy.
   finishWorkout(): void {
-    if (this.timerSub) this.timerSub.unsubscribe(); // Stop session timer
-    if (this.restTimerSub) this.restTimerSub.unsubscribe(); // Stop rest timer
+    if (this.timerSub) this.timerSub.unsubscribe();
+    if (this.restTimerSub) this.restTimerSub.unsubscribe();
 
-    let routine = this.routine();
+    const sessionRoutineValue = this.routine(); // Use the session's routine copy
     const endTime = Date.now();
     const durationMinutes = Math.round((endTime - this.workoutStartTime) / (1000 * 60));
 
     const finalLog: Omit<WorkoutLog, 'id'> = {
       routineId: this.routineId || undefined,
-      routineName: routine?.name || 'Ad-hoc Workout',
-      date: new Date(this.workoutStartTime).toISOString(),
+      routineName: sessionRoutineValue?.name || 'Ad-hoc Workout',
+      // date will be set by TrackingService based on startTime
       startTime: this.workoutStartTime,
       endTime: endTime,
       durationMinutes: durationMinutes,
       exercises: this.currentWorkoutLogExercises(),
-      // overallNotes: get from a form field
+      date: new Date(this.workoutStartTime).toISOString(),
     };
 
-    const finishedWorkout = this.trackingService.addWorkoutLog(finalLog);
+    const savedLog = this.trackingService.addWorkoutLog(finalLog);
 
-    // update routine
-    if (routine){
-      routine.lastPerformed = new Date(this.workoutStartTime).toISOString();
-      this.workoutService.updateRoutine(routine);
+    // Update the original routine's lastPerformed date in WorkoutService
+    if (this.routineId && sessionRoutineValue) { // Only if it was based on a saved routine
+      // Fetch the original routine again to avoid saving session-modified targets
+      this.workoutService.getRoutineById(this.routineId).pipe(take(1)).subscribe(originalRoutine => {
+        if (originalRoutine) {
+          const updatedOriginalRoutine = {
+            ...originalRoutine,
+            lastPerformed: new Date(this.workoutStartTime).toISOString()
+          };
+          this.workoutService.updateRoutine(updatedOriginalRoutine);
+        }
+      });
     }
 
-    alert('Workout Finished and Logged!'); // Replace with better UX
-    this.router.navigate(['/history/log/'+finishedWorkout.id]); // Or back to /workout
+    alert('Workout Finished and Logged!');
+    // Navigate to a log detail page or history
+    this.router.navigate(['/history/log', savedLog.id]); // Example, adjust route as needed
   }
 
 
@@ -561,33 +497,6 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     }
   }
 
-  // When moving to a new set/exercise
-  private navigateToNextStepInWorkout(activeInfo: ActiveSetInfo, routine: Routine): void {
-    const currentExercise = routine.exercises[activeInfo.exerciseIndex];
-    let exerciseChanged = false;
-
-    if (activeInfo.setIndex < currentExercise.sets.length - 1) {
-      this.currentSetIndex.update(s => s + 1);
-    } else if (activeInfo.exerciseIndex < routine.exercises.length - 1) {
-      this.currentExerciseIndex.update(e => e + 1);
-      this.currentSetIndex.set(0);
-      exerciseChanged = true; // Exercise has changed
-      this.loadBaseExerciseDetailsForCurrent();
-    } else {
-      this.finishWorkout();
-      return; // Workout is finished, no need to patch form
-    }
-
-    if (exerciseChanged) {
-      this.lastPerformanceForCurrentExercise = null; // Reset to force re-fetch for new exercise
-      this.fetchLastPerformanceAndPatchForm();
-    } else {
-      // Still on the same exercise, just patch for the new set
-      // fetchLastPerformanceAndPatchForm will use cached lastPerformanceForCurrentExercise
-      this.fetchLastPerformanceAndPatchForm();
-    }
-  }
-
   // --- On-the-fly Target Modification ---
   startEditTarget(field: 'reps' | 'weight' | 'duration'): void {
     const activeInfo = this.activeSetInfo();
@@ -608,51 +517,6 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     // We'll need to focus the input field created in the template
     // This can be done with a small delay and a template reference variable or by finding the element.
     // For now, let's rely on the template structure.
-  }
-
-  confirmEditTarget(): void {
-    const activeInfo = this.activeSetInfo();
-    if (!activeInfo || this.editingTarget === null) return;
-
-    const numericValue = parseFloat(this.editingTargetValue as string);
-    if (isNaN(numericValue) || numericValue < 0) {
-      alert(`Invalid value for ${this.editingTarget}. Please enter a non-negative number.`);
-      // Optionally revert editingTargetValue or keep it for user to correct
-      return;
-    }
-
-    // IMPORTANT: We are modifying a copy of the routine's set data for this session.
-    // This does NOT save back to the original Routine object in WorkoutService.
-    const routineSignal = this.routine; // Get the WritableSignal
-    const currentRoutine = routineSignal();
-    if (!currentRoutine) return;
-
-    // Create a deep copy of the routine to modify it safely and trigger signal updates
-    const updatedRoutine = JSON.parse(JSON.stringify(currentRoutine)) as Routine;
-    const exerciseToUpdate = updatedRoutine.exercises[activeInfo.exerciseIndex];
-    const setToUpdate = exerciseToUpdate.sets[activeInfo.setIndex];
-
-    switch (this.editingTarget) {
-      case 'reps':
-        setToUpdate.reps = numericValue;
-        break;
-      case 'weight':
-        setToUpdate.weight = numericValue;
-        break;
-      case 'duration':
-        setToUpdate.duration = numericValue;
-        break;
-    }
-
-    routineSignal.set(updatedRoutine); // Update the routine signal with the modified data
-
-    // After updating the routine signal, activeSetInfo will recompute.
-    // We also need to re-patch the currentSetForm if the user hasn't started inputting actuals.
-    // This part needs careful consideration to avoid overwriting user's actual inputs.
-    // For simplicity now, let's assume if they edit target, the actuals might prefill from this new target.
-    this.resetAndPatchCurrentSetForm(); // This will now use the MODIFIED target
-
-    this.cancelEditTarget(); // Exit editing mode
   }
 
   cancelEditTarget(): void {
@@ -682,5 +546,230 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     if (this.timedSetIntervalSub) {
       this.timedSetIntervalSub.unsubscribe();
     }
+  }
+
+
+
+
+  private initializeCurrentSetForm(): void {
+    this.currentSetForm = this.fb.group({
+      actualReps: [null as number | null, [Validators.min(0)]],
+      actualWeight: [null as number | null, [Validators.min(0)]],
+      actualDuration: [null as number | null, [Validators.min(0)]],
+      setNotes: [''],
+    });
+  }
+
+  // Central method to prepare the current set with suggestions and patch the form
+  private async prepareCurrentSet(): Promise<void> {
+    const sessionRoutine = this.routine(); // Get the current session's routine copy
+    const exIndex = this.currentExerciseIndex();
+    const sIndex = this.currentSetIndex();
+
+    if (!sessionRoutine || !sessionRoutine.exercises[exIndex] || !sessionRoutine.exercises[exIndex].sets[sIndex]) {
+      this.currentSetForm.reset();
+      this.resetTimedSet();
+      this.currentBaseExercise.set(null);
+      this.exercisePBs.set([]);
+      this.lastPerformanceForCurrentExercise = null;
+      console.warn('prepareCurrentSet: Could not find active set data in session routine.');
+      return;
+    }
+
+    const currentExerciseData = sessionRoutine.exercises[exIndex];
+    const originalPlannedSetForThisSet = currentExerciseData.sets[sIndex]; // Targets from routine (potentially already session-adjusted by user)
+
+    // 1. Load base exercise details (image, description, PBs)
+    this.loadBaseExerciseAndPBs(currentExerciseData.exerciseId);
+
+    // 2. Fetch last historical performance for the *current exercise*
+    if (!this.lastPerformanceForCurrentExercise || this.lastPerformanceForCurrentExercise.sets[0]?.exerciseId !== currentExerciseData.exerciseId) {
+      try {
+        this.lastPerformanceForCurrentExercise = await new Promise<LastPerformanceSummary | null>((resolve) => {
+          this.trackingService.getLastPerformanceForExercise(currentExerciseData.exerciseId)
+            .pipe(take(1))
+            .subscribe(perf => resolve(perf));
+        });
+      } catch (error) {
+        console.error("Error fetching last performance:", error);
+        this.lastPerformanceForCurrentExercise = null;
+      }
+    }
+
+    // 3. Get the specific historical set performance corresponding to the current planned set
+    const historicalSetPerformance = this.trackingService.findPreviousSetPerformance(
+      this.lastPerformanceForCurrentExercise,
+      originalPlannedSetForThisSet, // Pass the current set's planned parameters from session routine
+      sIndex
+    );
+
+    // 4. Get suggested parameters from WorkoutService
+    // Pass the originalPlannedSetForThisSet which represents the current target for this session for this set
+    // (It might have been user-edited on-the-fly OR it's the original from the loaded routine)
+    const suggestedSetParams = this.workoutService.suggestNextSetParameters(
+      historicalSetPerformance,
+      originalPlannedSetForThisSet, // This is KEY: use the current session's target as base for suggestion
+      sessionRoutine.goal
+    );
+    console.log(`Original/Current Session Target for Set ${sIndex + 1}:`, originalPlannedSetForThisSet);
+    console.log(`Last Historical Performance for this set:`, historicalSetPerformance);
+    console.log(`Progressive Overload Suggestion for Set ${sIndex + 1}:`, suggestedSetParams);
+
+    // 5. Update the session's routine data with these new suggestions
+    // This ensures activeSetInfo() and the UI reflect these new session targets
+    // We operate on a copy again to ensure the signal updates properly
+    const updatedRoutineForSession = JSON.parse(JSON.stringify(sessionRoutine)) as Routine;
+    updatedRoutineForSession.exercises[exIndex].sets[sIndex] = {
+      ...suggestedSetParams, // Apply all suggested parameters
+      id: originalPlannedSetForThisSet.id, // IMPORTANT: Preserve the original planned set ID
+      notes: suggestedSetParams.notes ?? originalPlannedSetForThisSet.notes, // Keep original notes if suggestion doesn't override
+    };
+    this.routine.set(updatedRoutineForSession); // This will trigger activeSetInfo to recompute
+
+    // 6. Patch the actuals form based on the new session targets or existing log for this session
+    this.patchActualsFormBasedOnSessionTargets();
+  }
+
+  // Renamed to be more specific
+  private patchActualsFormBasedOnSessionTargets(): void {
+    this.currentSetForm.reset();
+    this.resetTimedSet();
+
+    const activeInfo = this.activeSetInfo(); // This now has the latest session-specific suggested targets
+    if (!activeInfo) return;
+
+    const completedExerciseLog = this.currentWorkoutLogExercises().find(logEx => logEx.exerciseId === activeInfo.exerciseData.exerciseId);
+    const completedSetLogThisSession = completedExerciseLog?.sets.find(logSet => logSet.plannedSetId === activeInfo.setData.id);
+
+    if (completedSetLogThisSession) {
+      this.currentSetForm.patchValue({
+        actualReps: completedSetLogThisSession.repsAchieved,
+        actualWeight: completedSetLogThisSession.weightUsed,
+        actualDuration: completedSetLogThisSession.durationPerformed,
+        setNotes: completedSetLogThisSession.notes,
+      });
+    } else {
+      // Pre-fill actuals form with the NEWLY SUGGESTED/SESSION-ADJUSTED targets
+      this.currentSetForm.patchValue({
+        actualReps: activeInfo.setData.reps ?? null,
+        actualWeight: activeInfo.setData.weight ?? null,
+        actualDuration: activeInfo.setData.duration ?? null,
+        setNotes: activeInfo.setData.notes || '',
+      });
+    }
+  }
+
+  private loadBaseExerciseAndPBs(exerciseId: string): void {
+    this.currentBaseExercise.set(undefined);
+    this.exercisePBs.set([]);
+
+    this.exerciseService.getExerciseById(exerciseId).subscribe(ex => {
+      this.currentBaseExercise.set(ex || null);
+    });
+
+    this.trackingService.getAllPersonalBestsForExercise(exerciseId)
+      .pipe(take(1))
+      .subscribe(pbs => {
+        this.exercisePBs.set(pbs);
+      });
+  }
+
+  // This method is no longer needed as its functionality is in prepareCurrentSet
+  // private async fetchLastPerformanceAndPatchForm(): Promise<void> { ... }
+  // This method is no longer needed as its functionality is in patchActualsFormBasedOnSessionTargets
+  // private patchCurrentSetFormWithData(activeInfo: ActiveSetInfo): void { ... }
+
+
+  private navigateToNextStepInWorkout(completedActiveInfo: ActiveSetInfo, currentRoutineState: Routine): void {
+    const currentExercise = currentRoutineState.exercises[completedActiveInfo.exerciseIndex];
+
+    if (completedActiveInfo.setIndex < currentExercise.sets.length - 1) {
+      this.currentSetIndex.update(s => s + 1);
+    } else if (completedActiveInfo.exerciseIndex < currentRoutineState.exercises.length - 1) {
+      this.currentExerciseIndex.update(e => e + 1);
+      this.currentSetIndex.set(0);
+      this.lastPerformanceForCurrentExercise = null; // Reset for new exercise
+    } else {
+      this.finishWorkout();
+      return;
+    }
+    this.prepareCurrentSet(); // Prepare the next set with new suggestions
+  }
+
+  confirmEditTarget(): void {
+    const activeInfoOriginal = this.activeSetInfo(); // Based on current routine() state
+    if (!activeInfoOriginal || this.editingTarget === null) return;
+
+    const numericValue = parseFloat(this.editingTargetValue as string);
+    if (isNaN(numericValue) || numericValue < 0) {
+      alert(`Invalid value for ${this.editingTarget}. Please enter a non-negative number.`);
+      return;
+    }
+
+    const routineSignal = this.routine;
+    const currentRoutineValue = routineSignal();
+    if (!currentRoutineValue) return;
+
+    const updatedRoutineForSession = JSON.parse(JSON.stringify(currentRoutineValue)) as Routine;
+    const exerciseToUpdate = updatedRoutineForSession.exercises[activeInfoOriginal.exerciseIndex];
+    const setToUpdate = exerciseToUpdate.sets[activeInfoOriginal.setIndex];
+
+    switch (this.editingTarget) {
+      case 'reps': setToUpdate.reps = numericValue; break;
+      case 'weight': setToUpdate.weight = numericValue; break;
+      case 'duration': setToUpdate.duration = numericValue; break;
+    }
+    // IMPORTANT: Update the session-specific routine
+    routineSignal.set(updatedRoutineForSession);
+
+    this.cancelEditTarget();
+
+    // Re-patch the actuals form to reflect the manually edited target
+    // The progressive overload suggestion is NOT re-applied here, user's edit takes precedence for this set.
+    this.patchActualsFormBasedOnSessionTargets();
+  }
+
+  completeSetAndProceed(): void {
+    const activeInfo = this.activeSetInfo(); // Uses current (potentially session-modified) routine() state
+    const currentRoutineValue = this.routine();
+    if (!activeInfo || !currentRoutineValue) {
+      console.error("Cannot complete set: activeInfo or routine is not available.");
+      return;
+    }
+
+    if (activeInfo.setData.duration && (this.timedSetTimerState() === TimedSetState.Running || this.timedSetTimerState() === TimedSetState.Paused)) {
+      this.stopAndLogTimedSet();
+    }
+
+    if (this.currentSetForm.invalid) {
+      this.currentSetForm.markAllAsTouched();
+      alert('Please correct the input values for the current set.');
+      return;
+    }
+    const formValues = this.currentSetForm.value;
+    const loggedSetData: LoggedSet = {
+      // Use activeInfo.setData.id as plannedSetId because activeInfo reflects session targets
+      id: activeInfo.setData.id, // Or generate a new unique ID for the logged set if preferred: uuidv4()
+      plannedSetId: activeInfo.setData.id,
+      exerciseId: activeInfo.exerciseData.exerciseId,
+      repsAchieved: formValues.actualReps ?? activeInfo.setData.reps ?? 0,
+      weightUsed: formValues.actualWeight ?? activeInfo.setData.weight,
+      durationPerformed: activeInfo.setData.duration ? (formValues.actualDuration ?? 0) : undefined,
+      // Store the targets that were active for THIS SESSION (could be suggested or user-edited)
+      targetReps: activeInfo.setData.reps,
+      targetWeight: activeInfo.setData.weight,
+      targetDuration: activeInfo.setData.duration,
+      targetTempo: activeInfo.setData.tempo,
+      notes: formValues.setNotes || undefined,
+      timestamp: new Date().toISOString(),
+    };
+    this.addLoggedSetToCurrentLog(activeInfo.exerciseData, loggedSetData);
+
+    if (activeInfo.setData.restAfterSet > 0 && !this.isResting()) {
+      this.startRestTimer(activeInfo.setData.restAfterSet);
+    }
+
+    this.resetTimedSet();
+    this.navigateToNextStepInWorkout(activeInfo, currentRoutineValue);
   }
 }
