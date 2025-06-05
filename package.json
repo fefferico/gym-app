@@ -7,7 +7,8 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "serve:ssr:GymBro": "node dist/GymBro/server/server.mjs"
+    "serve:ssr:GymBro": "node dist/GymBro/server/server.mjs",
+    "deploy:gh": "ng build --configuration production --base-href /gymbro-app/ && npx angular-cli-ghpages --dir=dist/gymbro-app/browser"
   },
   "private": true,
   "dependencies": {
