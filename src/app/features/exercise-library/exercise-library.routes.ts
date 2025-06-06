@@ -2,16 +2,27 @@
 import { Routes } from '@angular/router';
 import { ExerciseListComponent } from './exercise-list';
 import { ExerciseDetailComponent } from './exercise-detail';
+import { ExerciseFormComponent } from './exercise-form/exercise-form';
 
 export const EXERCISE_LIBRARY_ROUTES: Routes = [
   {
     path: '',
     component: ExerciseListComponent,
-    title: 'Exercise Library' // Optional: For browser tab title
+    title: 'Exercise Library'
   },
   {
-    path: ':id', // Route parameter for exercise ID
+    path: 'new', // Route for creating a new exercise
+    component: ExerciseFormComponent,
+    title: 'Add New Exercise'
+  },
+  {
+    path: 'edit/:id', // Route for editing an existing exercise
+    component: ExerciseFormComponent,
+    title: 'Edit Exercise'
+  },
+  {
+    path: ':id',
     component: ExerciseDetailComponent,
-    title: 'Exercise Details' // Can be dynamically set later
+    title: 'Exercise Details'
   }
 ];

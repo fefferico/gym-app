@@ -510,4 +510,49 @@ export class TrackingService {
     }
   }
 
+  /**
+   * Handles the repercussions of an exercise definition being deleted.
+   * It iterates through all workout logs, removes references to the deleted exercise,
+   * and potentially deletes logs if they become empty.
+   * Also, PBs for the deleted exercise are cleared.
+   * @param deletedExerciseId The ID of the exercise definition that was deleted.
+   * @returns A Promise that resolves when processing is complete.
+   */
+  async handleExerciseDeletion(deletedExerciseId: string): Promise<void> {
+    console.log(`Handling deletion repercussions for exercise ID: ${deletedExerciseId}`);
+    let allLogs = this.workoutLogsSubject.getValue();
+    let logsModified = false;
+
+    const updatedLogs = allLogs.map(log => {
+      const originalExerciseCount = log.exercises.length;
+      const exercisesToKeep = log.exercises.filter(loggedEx => loggedEx.exerciseId !== deletedExerciseId);
+
+      if (exercisesToKeep.length < originalExerciseCount) {
+        logsModified = true;
+        if (exercisesToKeep.length === 0) {
+          // Log becomes empty, mark it for removal by returning null (or filter out later)
+          console.log(`Workout log ${log.id} will be deleted as it becomes empty after removing exercise ${deletedExerciseId}.`);
+          return null;
+        }
+        return { ...log, exercises: exercisesToKeep };
+      }
+      return log;
+    }).filter(log => log !== null) as WorkoutLog[]; // Filter out logs marked for deletion
+
+    if (logsModified) {
+      console.log('Some workout logs were modified or deleted due to exercise deletion.');
+      this.saveWorkoutLogsToStorage(updatedLogs); // Save the modified list of logs
+    }
+
+    // Clear Personal Bests for the deleted exercise
+    const currentPBs = this.personalBestsSubject.getValue();
+    if (currentPBs[deletedExerciseId]) {
+      const updatedPBs = { ...currentPBs };
+      delete updatedPBs[deletedExerciseId];
+      this.savePBsToStorage(updatedPBs);
+      console.log(`Personal bests cleared for deleted exercise ID: ${deletedExerciseId}`);
+    }
+    // No need to return explicitly for a Promise<void> if successful
+  }
+  
 }

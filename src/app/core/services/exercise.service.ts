@@ -1,37 +1,143 @@
 // src/app/core/services/exercise.service.ts
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
-import { map, shareReplay, tap } from 'rxjs/operators';
+import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
+import { catchError, first, map, shareReplay, take, tap } from 'rxjs/operators';
 import { Exercise } from '../models/exercise.model';
+import { StorageService } from './storage.service';
+import { TrackingService } from './tracking.service';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ExerciseService {
-  private http = inject(HttpClient);
-  private exercises$: Observable<Exercise[]> | undefined;
-  private readonly exercisesUrl = 'assets/data/exercises.json'; // <--- CORRECTED
+  private http = inject(HttpClient); // Still useful if you ever load initial from JSON
+  private storageService = inject(StorageService);
+  private trackingService = inject(TrackingService); // Inject TrackingService
+
+  private readonly EXERCISES_STORAGE_KEY = 'fitTrackPro_exercises';
+  private exercisesJsonUrl = 'assets/data/exercises.json'; // Initial load
+
+  // Use BehaviorSubject for managing exercises in memory, loaded from storage
+  private exercisesSubject: BehaviorSubject<Exercise[]>;
+  public exercises$: Observable<Exercise[]>;
+
+  private serviceInitializedPromise: Promise<void>; // For ensuring seeding completes
+  private serviceInitializedResolve!: () => void; // Resolver for the promise
+
   constructor() {
-    // Optionally pre-load exercises if you want them immediately available
-    this.getExercises().subscribe();
+    this.serviceInitializedPromise = new Promise(resolve => {
+      this.serviceInitializedResolve = resolve;
+    });
+
+    const initialExercises = this.loadExercisesFromStorage();
+    this.exercisesSubject = new BehaviorSubject<Exercise[]>(initialExercises);
+    this.exercises$ = this.exercisesSubject.asObservable().pipe(
+      shareReplay(1)
+    );
+
+    if (initialExercises.length === 0) {
+      this.seedExercisesFromAssets();
+    } else {
+      this.serviceInitializedResolve(); // Resolve immediately if not seeding
+    }
   }
 
-  // Gets all exercises, caches the result for subsequent calls
+  private loadExercisesFromStorage(): Exercise[] {
+    return this.storageService.getItem<Exercise[]>(this.EXERCISES_STORAGE_KEY) || [];
+  }
+
+  private saveExercisesToStorage(exercises: Exercise[]): void {
+    this.storageService.setItem(this.EXERCISES_STORAGE_KEY, exercises);
+    this.exercisesSubject.next([...exercises].sort((a, b) => a.name.localeCompare(b.name))); // Emit sorted
+  }
+
+  private seedExercisesFromAssets(): void {
+    this.http.get<Exercise[]>(this.exercisesJsonUrl).pipe(
+      take(1),
+      catchError(err => {
+        console.error('ExerciseService: Failed to load seed exercises from JSON file:', err);
+        return of([]);
+      })
+    ).subscribe(exercisesFromJson => {
+      if (exercisesFromJson && exercisesFromJson.length > 0) {
+        const currentExercises = this.exercisesSubject.getValue(); // Check current value again
+        if (currentExercises.length === 0) {
+          this.saveExercisesToStorage(exercisesFromJson);
+        } else {
+        }
+      } else {
+      }
+      this.serviceInitializedResolve(); // Resolve after seeding attempt (success or fail)
+    });
+  }
+
+  // Public method to await initialization if needed externally
+  public ensureInitialized(): Promise<void> {
+    return this.serviceInitializedPromise;
+  }
+
   getExercises(): Observable<Exercise[]> {
-    if (!this.exercises$) {
-      this.exercises$ = this.http.get<Exercise[]>(this.exercisesUrl).pipe(
-        tap(data => console.log('Fetched exercises:', data)), // For debugging
-        shareReplay(1) // Cache the result and replay for new subscribers
-      );
-    }
-    return this.exercises$;
+    return this.exercises$; // Return the observable from BehaviorSubject
   }
 
   getExerciseById(id: string): Observable<Exercise | undefined> {
-    return this.getExercises().pipe(
-      map((exercises: Exercise[]) => exercises.find(exercise => exercise.id === id))
+    return this.exercises$.pipe(
+      first(), // IMPORTANT: Take only the first emission. BehaviorSubject emits immediately.
+      // If exercises$ hasn't emitted (e.g., due to seeding delay and this being called too early),
+      // 'first()' will wait. If 'exercises$' is stuck, 'first()' will also be stuck.
+      map(exercises => {
+        const found = exercises.find(exercise => exercise.id === id);
+        return found;
+      }),
     );
+  }
+
+  addExercise(exerciseData: Omit<Exercise, 'id'>): Observable<Exercise> {
+    const currentExercises = this.exercisesSubject.getValue();
+    const newExercise: Exercise = {
+      ...exerciseData,
+      id: uuidv4(),
+    };
+    const updatedExercises = [...currentExercises, newExercise];
+    this.saveExercisesToStorage(updatedExercises);
+    return of(newExercise); // Return as an observable
+  }
+
+  updateExercise(updatedExercise: Exercise): Observable<Exercise> {
+    const currentExercises = this.exercisesSubject.getValue();
+    const index = currentExercises.findIndex(ex => ex.id === updatedExercise.id);
+    if (index > -1) {
+      const newExercisesArray = [...currentExercises];
+      newExercisesArray[index] = { ...updatedExercise };
+      this.saveExercisesToStorage(newExercisesArray);
+      return of(updatedExercise);
+    }
+    return throwError(() => new Error(`Exercise with id ${updatedExercise.id} not found for update.`));
+  }
+
+  async deleteExercise(exerciseId: string): Promise<void> { // Make it async
+    const currentExercises = this.exercisesSubject.getValue();
+    const exerciseToDelete = currentExercises.find(ex => ex.id === exerciseId);
+
+    if (!exerciseToDelete) {
+      console.warn(`ExerciseService: Exercise with id ${exerciseId} not found for deletion.`);
+      return Promise.reject(new Error('Exercise not found'));
+    }
+
+    // Call TrackingService to handle implications on workout logs BEFORE deleting the exercise definition
+    try {
+      await this.trackingService.handleExerciseDeletion(exerciseId); // This method needs to be created
+
+      // If handleExerciseDeletion is successful, proceed to delete the exercise definition
+      const updatedExercises = currentExercises.filter(ex => ex.id !== exerciseId);
+      this.saveExercisesToStorage(updatedExercises);
+      // No need to return anything for void Promise if successful
+    } catch (error) {
+      console.error(`Error during exercise deletion process for ${exerciseId}:`, error);
+      throw error; // Re-throw the error to be caught by the caller
+    }
   }
 
   getExercisesByCategory(category: string): Observable<Exercise[]> {

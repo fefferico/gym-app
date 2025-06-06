@@ -9,6 +9,8 @@ import { PersonalBestSet } from '../../core/models/workout-log.model';
 
 import { NgxChartsModule, ScaleType } from '@swimlane/ngx-charts'; // Import NgxChartsModule and ScaleType
 import { ChartDataPoint, ChartSeries } from '../../features/history-stats/stats-dashboard/stats-dashboard'; // Reuse chart types if suitable
+import { AlertService } from '../../core/services/alert.service';
+import { AlertButton } from '../../core/models/alert.model';
 
 @Component({
   selector: 'app-exercise-detail',
@@ -22,6 +24,7 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy {
   private router = inject(Router); // Inject Router if you want to navigate from chart clicks
   private exerciseService = inject(ExerciseService);
   protected trackingService = inject(TrackingService); // Inject TrackingService
+  private alertService = inject(AlertService); // Inject AlertService
 
   // Using a signal for the exercise data
   exercise = signal<Exercise | undefined | null>(undefined);
@@ -173,6 +176,48 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy {
       chartData[0] &&
       chartData[0].series &&
       chartData[0].series.length > 1; // Ensure more than 1 point for a line
+  }
+
+  async confirmDeleteExercise(exerciseToDelete: Exercise): Promise<void> {
+    if (!exerciseToDelete) return;
+
+    // Step 1: Check if the exercise is used in any workout logs.
+    // This requires TrackingService to have a method like isExerciseUsedInLogs(exerciseId): Observable<boolean>
+    // For simplicity now, let's assume we always show a detailed warning.
+    // A more advanced check would involve:
+    // const isUsed = await firstValueFrom(this.trackingService.isExerciseUsedInLogs(exerciseToDelete.id));
+
+    const customBtns: AlertButton[] = [{
+          text: 'Cancel',
+          role: 'cancel',
+          data: false,
+          cssClass: 'bg-gray-300 hover:bg-gray-500' // Example custom class
+        } as AlertButton,
+        {
+          text: 'Delete Exercise',
+          role: 'confirm',
+          data: true,
+          cssClass: 'button-danger'
+        } as AlertButton];
+
+    const confirmation = await this.alertService.showConfirmationDialog(
+      'Confirm Deletion',
+      `Are you sure you want to delete the exercise "${exerciseToDelete.name}"? 
+      If this exercise is part of any past workout logs, it will be removed from those logs. 
+      If a log becomes empty as a result, the entire log might be deleted. This action cannot be undone.`,
+      customBtns
+    );
+
+    if (confirmation && confirmation.data === true) {
+      try {
+        await this.exerciseService.deleteExercise(exerciseToDelete.id);
+        this.alertService.showAlert('Success', `Exercise "${exerciseToDelete.name}" deleted successfully.`);
+        this.router.navigate(['/library']);
+      } catch (error) {
+        console.error('Error deleting exercise:', error);
+        this.alertService.showAlert('Error', `Failed to delete exercise: ${(error as Error).message || 'Unknown error'}`);
+      }
+    }
   }
 
   ngOnDestroy(): void {
