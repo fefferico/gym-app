@@ -40,74 +40,152 @@
         </p>
       </header>
 
-      <div class="p-6 space-y-6">
+      <div class="p-6 space-y-2">
         <h2 class="text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-4">Exercises Performed:</h2>
-        <div *ngIf="displayExercises().length > 0; else noLoggedExercises" class="space-y-8">
+        <div *ngIf="displayExercises().length > 0; else noLoggedExercises" class="space-y-1">
+          <!-- ACCORDION CONTAINER -->
+
+          <!-- LOOP THROUGH EXERCISES -->
           <div *ngFor="let loggedEx of displayExercises(); let exIdx = index"
-            class="pb-6 border-b border-gray-200 dark:border-gray-600 last:border-b-0">
-            <div class="flex items-start mb-3">
-              <div *ngIf="loggedEx.baseExercise !== undefined" class="flex-shrink-0 mr-4">
-                <img
-                  *ngIf="loggedEx.baseExercise && loggedEx.baseExercise.imageUrls && loggedEx.baseExercise.imageUrls.length > 0"
-                  [src]="loggedEx.baseExercise.imageUrls[0]" [alt]="loggedEx.exerciseName"
-                  class="w-20 h-20 object-contain rounded-md border dark:border-gray-700 bg-gray-100 dark:bg-gray-700">
+            class="border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden">
+
+            <!-- EXERCISE ACCORDION HEADER -->
+            <button (click)="toggleExerciseAccordion(loggedEx)"
+              class="w-full flex justify-between items-center p-3 text-left bg-gray-100 dark:bg-gray-750 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors focus:outline-none">
+              <div class="flex items-center">
+                <!-- ICON DISPLAY AREA -->
                 <div
-                  *ngIf="!loggedEx.baseExercise || !loggedEx.baseExercise.imageUrls || loggedEx.baseExercise.imageUrls.length === 0"
-                  class="w-20 h-20 bg-gray-200 dark:bg-gray-700 flex items-center justify-center rounded-md text-xs text-gray-500">
-                  No Image
+                  class="flex-shrink-0 mr-3 w-12 h-12 flex items-center justify-center bg-gray-100 dark:bg-gray-700 rounded-sm border border-gray-300 dark:border-gray-600">
+                  <img *ngIf="loggedEx.iconName" [src]="getIconPath(loggedEx.iconName)"
+                    [alt]="loggedEx.exerciseName + ' icon'" class="w-8 h-8 object-contain"
+                    [ngClass]="{'filter dark:invert': loggedEx.iconName !== 'default-exercise'}">
+                  <!-- Optional: Invert for dark mode, except for multi-color default -->
+                  <!-- You might need more specific styling per icon for dark mode -->
+                </div>
+                <!-- END ICON DISPLAY AREA -->
+                <div *ngIf="loggedEx.baseExercise === undefined"
+                  class="w-12 h-12 bg-gray-200 dark:bg-gray-600 animate-pulse rounded-sm mr-3"></div>
+
+                <div>
+                  <h3 class="text-lg font-semibold text-primary dark:text-primary-light">
+                    {{ loggedEx.exerciseName }}
+                  </h3>
+                  <p *ngIf="loggedEx.baseExercise?.category" class="text-xs text-gray-500 dark:text-gray-400">
+                    {{ loggedEx.baseExercise?.category | titlecase }}
+                  </p>
                 </div>
               </div>
-              <div *ngIf="loggedEx.baseExercise === undefined"
-                class="w-20 h-20 bg-gray-200 dark:bg-gray-700 animate-pulse rounded-md mr-4"></div>
-              <!-- Placeholder for loading image -->
+              <!-- Accordion Icon -->
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                class="w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform duration-200"
+                [class.rotate-180]="loggedEx.isExpanded">
+                <path fill-rule="evenodd"
+                  d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z"
+                  clip-rule="evenodd" />
+              </svg>
+            </button>
 
-              <div>
-                <h3 class="text-xl font-semibold text-primary dark:text-primary-light hover:cursor-pointer"
-                  [title]="'Click to show the exercise in the library'"
-                  (click)="displayExerciseDetails(loggedEx.exerciseId)">{{ loggedEx.exerciseName }}</h3>
-                <p *ngIf="loggedEx.baseExercise?.category" class="text-sm text-gray-500 dark:text-gray-400">{{
-                  loggedEx.baseExercise?.category | titlecase }}</p>
-              </div>
-            </div>
-            <p *ngIf="loggedEx.notes" class="text-sm italic text-gray-600 dark:text-gray-400 mb-3">
-              Exercise Notes: {{ loggedEx.notes }}
-            </p>
+            <!-- EXERCISE ACCORDION CONTENT (Sets) -->
+            <div *ngIf="loggedEx.isExpanded" class="p-4 bg-white dark:bg-gray-800 space-y-4">
+              <p *ngIf="loggedEx.notes"
+                class="text-sm italic text-gray-600 dark:text-gray-400 mb-3 border-b dark:border-gray-700 pb-2">
+                <strong>Exercise Notes:</strong> {{ loggedEx.notes }}
+              </p>
 
-            <div class="space-y-2 pl-4">
-              <div *ngFor="let set of loggedEx.sets; let setIdx = index"
-                class="p-2 rounded-md bg-gray-50 dark:bg-gray-750 border dark:border-gray-600">
-                <p class="text-sm font-medium text-gray-700 dark:text-gray-200">
-                  Set {{ setIdx + 1 }}:
-                </p>
-                <ul class="list-disc list-inside pl-4 text-xs text-gray-600 dark:text-gray-400">
-                  <li>Reps:
-                    <strong [class.text-green-500]="set.repsAchieved >= (set.targetReps || 0)"
-                      [class.dark:text-green-400]="set.repsAchieved >= (set.targetReps || 0)"
-                      [class.dark:text-gray-300]="set.repsAchieved < (set.targetReps || 0)">
-                      {{ set.repsAchieved }}
-                    </strong>
-                    <em *ngIf="set.targetReps !== undefined && set.targetReps !== set.repsAchieved"
-                      class="text-gray-400 dark:text-gray-500 ml-1">(Target: {{set.targetReps}})</em>
-                  </li>
-                  <li *ngIf="set.weightUsed !== undefined && set.weightUsed !== null">Weight: <strong
-                      class="dark:text-gray-300">{{ set.weightUsed | weightUnit:'1.0-2' }}</strong>
-                    <em
-                      *ngIf="set.targetWeight !== undefined && set.targetWeight !== null && set.targetWeight !== set.weightUsed"
-                      class="text-gray-400 dark:text-gray-500 ml-1">(Target: {{set.targetWeight | weightUnit:'1.0-2'
-                      }})</em>
-                  </li>
-                  <li *ngIf="set.durationPerformed !== undefined">Time: <strong class="dark:text-gray-300">{{
-                      set.durationPerformed }}s</strong>
-                    <em *ngIf="set.targetDuration !== undefined && set.targetDuration !== set.durationPerformed"
-                      class="text-gray-400 dark:text-gray-500 ml-1">(Target: {{set.targetDuration}}s)</em>
-                  </li>
-                  <li *ngIf="set.targetTempo">Target Tempo: <strong class="dark:text-gray-300">{{ set.targetTempo
-                      }}</strong></li>
-                  <li *ngIf="set.notes" class="italic">Set Notes: {{ set.notes }}</li>
-                </ul>
+              <!-- WARM-UP SETS ACCORDION (Optional, if warmups exist) -->
+              <div *ngIf="loggedEx.warmupSets && loggedEx.warmupSets.length > 0"
+                class="border border-blue-200 dark:border-blue-800 rounded-md">
+                <button (click)="toggleWarmupAccordion(loggedEx)"
+                  class="w-full flex justify-between items-center p-2 text-left bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-700/50 transition-colors focus:outline-none">
+                  <span class="font-medium text-sm text-blue-700 dark:text-blue-300">
+                    Warm-up Sets ({{ loggedEx.warmupSets.length }})
+                  </span>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                    class="w-4 h-4 text-blue-600 dark:text-blue-400 transition-transform duration-200"
+                    [class.rotate-180]="loggedEx.showWarmups">
+                    <path fill-rule="evenodd"
+                      d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z"
+                      clip-rule="evenodd" />
+                  </svg>
+                </button>
+                <div *ngIf="loggedEx.showWarmups" class="p-3 space-y-2 border-t border-blue-200 dark:border-blue-800">
+                  <div *ngFor="let set of loggedEx.warmupSets; let setIdx = index"
+                    class="p-2 rounded-md bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-700/50">
+                    <p class="text-xs font-medium text-blue-700 dark:text-blue-300">
+                      {{ getDisplaySetLabel(loggedEx.warmupSets, setIdx) }}:
+                      <!-- Pass only warmup sets to label func -->
+                    </p>
+                    <!-- Re-use set detail UL, or create a component -->
+                    <ul class="list-disc list-inside pl-3 text-2xs text-gray-500 dark:text-gray-400">
+                      <li *ngIf="set.repsAchieved !== undefined">Reps: <strong class="dark:text-gray-300">{{
+                          set.repsAchieved }}</strong>
+                        <em
+                          *ngIf="set.targetReps !== undefined && set.targetReps > 0 && set.targetReps !== set.repsAchieved"
+                          class="text-gray-400 dark:text-gray-500 ml-1">(T: {{set.targetReps}})</em>
+                      </li>
+                      <li *ngIf="set.weightUsed !== undefined && set.weightUsed !== null">Weight: <strong
+                          class="dark:text-gray-300">{{ set.weightUsed | weightUnit:'1.0-2' }}</strong>
+                        <em
+                          *ngIf="set.targetWeight !== undefined && set.targetWeight !== null && set.targetWeight > 0 && set.targetWeight !== set.weightUsed"
+                          class="text-gray-400 dark:text-gray-500 ml-1">(T: {{set.targetWeight | weightUnit }})</em>
+                      </li>
+                      <li *ngIf="set.durationPerformed !== undefined">Time: <strong class="dark:text-gray-300">{{
+                          set.durationPerformed }}s</strong>
+                        <em
+                          *ngIf="set.targetDuration !== undefined && set.targetDuration > 0 && set.targetDuration !== set.durationPerformed"
+                          class="text-gray-400 dark:text-gray-500 ml-1">(T: {{set.targetDuration}}s)</em>
+                      </li>
+                      <li *ngIf="set.notes" class="italic">Notes: {{ set.notes }}</li>
+                    </ul>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
+
+              <!-- WORKING SETS (Always show if exercise is expanded and working sets exist) -->
+              <div *ngIf="loggedEx.workingSets && loggedEx.workingSets.length > 0" class="space-y-2 pt-2">
+                <h4 class="text-sm font-semibold text-gray-600 dark:text-gray-300"
+                  *ngIf="loggedEx.warmupSets && loggedEx.warmupSets.length > 0">Working Sets:</h4>
+                <div *ngFor="let set of loggedEx.workingSets; let setIdx = index"
+                  class="p-2 rounded-md bg-gray-50 dark:bg-gray-750 border border-gray-200 dark:border-gray-600">
+                  <p class="text-sm font-medium text-gray-700 dark:text-gray-200">
+                    {{ getDisplaySetLabel(loggedEx.workingSets, setIdx) }}:
+                    <!-- Pass only working sets to label func -->
+                  </p>
+                  <!-- Re-use set detail UL -->
+                  <ul class="list-disc list-inside pl-4 text-xs text-gray-600 dark:text-gray-400">
+                    <li *ngIf="set.repsAchieved !== undefined">Reps:
+                      <strong [class.text-green-500]="set.repsAchieved >= (set.targetReps || 0)"
+                        [class.dark:text-green-400]="set.repsAchieved >= (set.targetReps || 0)"
+                        [class.dark:text-gray-300]="set.repsAchieved < (set.targetReps || 0) || set.targetReps === undefined">
+                        {{ set.repsAchieved }}
+                      </strong>
+                      <em *ngIf="set.targetReps !== undefined && set.targetReps !== set.repsAchieved"
+                        class="text-gray-400 dark:text-gray-500 ml-1">(Target: {{set.targetReps}})</em>
+                    </li>
+                    <li *ngIf="set.weightUsed !== undefined && set.weightUsed !== null">Weight: <strong
+                        class="dark:text-gray-300">{{ set.weightUsed | weightUnit:'1.0-2' }}</strong>
+                      <em
+                        *ngIf="set.targetWeight !== undefined && set.targetWeight !== null && set.targetWeight !== set.weightUsed"
+                        class="text-gray-400 dark:text-gray-500 ml-1">(Target: {{set.targetWeight | weightUnit:'1.0-2'
+                        }})</em>
+                    </li>
+                    <li *ngIf="set.durationPerformed !== undefined">Time: <strong class="dark:text-gray-300">{{
+                        set.durationPerformed }}s</strong>
+                      <em *ngIf="set.targetDuration !== undefined && set.targetDuration !== set.durationPerformed"
+                        class="text-gray-400 dark:text-gray-500 ml-1">(Target: {{set.targetDuration}}s)</em>
+                    </li>
+                    <li *ngIf="set.targetTempo">Target Tempo: <strong class="dark:text-gray-300">{{ set.targetTempo
+                        }}</strong></li>
+                    <li *ngIf="set.notes" class="italic">Set Notes: {{ set.notes }}</li>
+                  </ul>
+                </div>
+              </div>
+              <div
+                *ngIf="(!loggedEx.warmupSets || loggedEx.warmupSets.length === 0) && (!loggedEx.workingSets || loggedEx.workingSets.length === 0)">
+                <p class="text-gray-500 dark:text-gray-400 text-sm">No sets were recorded for this exercise.</p>
+              </div>
+            </div> <!-- End EXERCISE ACCORDION CONTENT -->
+          </div> <!-- End LOOP THROUGH EXERCISES -->
         </div>
         <ng-template #noLoggedExercises>
           <p class="text-gray-500 dark:text-gray-400">No specific exercises were logged for this workout.</p>

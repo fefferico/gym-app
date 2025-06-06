@@ -895,7 +895,10 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     this.exercisePBs.set([]);
 
     this.exerciseService.getExerciseById(exerciseId).subscribe(ex => {
-      this.currentBaseExercise.set(ex || null);
+      this.currentBaseExercise.set(ex ? {
+        ...ex,
+        iconName: this.exerciseService.determineExerciseIcon(ex, ex?.name)
+      } : null);
     });
 
     this.trackingService.getAllPersonalBestsForExercise(exerciseId)
@@ -1124,10 +1127,10 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
   // Update getNextUpText to be round-aware
   // Update getNextUpText to be round-aware
-// workout-player.ts
+  // workout-player.ts
 
   // Update getNextUpText to be round-aware and more precise for warmups
-// workout-player.ts
+  // workout-player.ts
 
   // Update getNextUpText to be round-aware and more precise for warmups
   getNextUpText(completedActiveSetInfo: ActiveSetInfo | null, currentSessionRoutine: Routine | null): string {
@@ -1157,7 +1160,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
           // Next set is a working set.
           // Count how many working sets there are up to and including this first working set
           let firstWorkingSetNumber = 0;
-           for (let i = 0; i <= indexOfCompletedSetInExercise + 1; i++) {
+          for (let i = 0; i <= indexOfCompletedSetInExercise + 1; i++) {
             if (!allSetsForCurrentExercise[i].isWarmup) {
               firstWorkingSetNumber++;
             }
@@ -1752,7 +1755,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     // Iterate through sets UP TO the current active set's index.
     // If we encounter any working set *before* the current active set, then we cannot add more warmups before it.
     for (let i = 0; i <= activeInfo.setIndex; i++) {
-      if (!currentExerciseSets[i].isWarmup && this.getTotalWarmupSetsForCurrentExercise()>0) {
+      if (!currentExerciseSets[i].isWarmup && this.getTotalWarmupSetsForCurrentExercise() > 0) {
         return false; // A working set has already passed or is before the current insertion point.
       }
     }
@@ -1762,4 +1765,8 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     // So, we can add a warm-up set (it will be inserted at activeInfo.setIndex).
     return true;
   });
+
+  getIconPath(iconName: string | undefined): string {
+    return this.exerciseService.getIconPath(iconName);
+  }
 }

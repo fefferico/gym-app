@@ -20,4 +20,6 @@ export interface Exercise {
   imageUrls: string[]; // Paths to static images in assets, e.g., ['exercises/push-up_1.jpg', 'exercises/push-up_2.jpg']
   videoUrl?: string; // Optional: Link to a demonstration video (e.g., YouTube)
   notes?: string; // Optional: Tips, common mistakes, variations
+  equipment?: string; // << NEW: e.g., 'Barbell', 'Dumbbell', 'Machine', 'Bodyweight'
+  iconName?: string;
 }

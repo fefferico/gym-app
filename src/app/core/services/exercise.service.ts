@@ -165,4 +165,54 @@ export class ExerciseService {
       map(exercises => [...new Set(exercises.map(ex => ex.primaryMuscleGroup))].sort())
     );
   }
+
+  // Helper function to determine the icon based on exercise details
+  determineExerciseIcon(baseExercise: Exercise | null, exerciseName: string): string {
+    const nameLower = exerciseName.toLowerCase();
+
+    if (baseExercise && baseExercise.equipment) { // Ideal: if you have an equipment field
+      const equipmentLower = baseExercise.equipment.toLowerCase();
+      if (equipmentLower.includes('barbell')) return 'barbell';
+      if (equipmentLower.includes('dumbbell')) return 'dumbbell';
+      if (equipmentLower.includes('machine') || equipmentLower.includes('cable')) return 'machine';
+      if (equipmentLower.includes('body') || equipmentLower.includes('none')) return 'bodyweight';
+      if (equipmentLower.includes('kettlebell')) return 'kettlebell'; // Add more as needed
+      if (equipmentLower.includes('resistance band')) return 'resistance-band';
+    }
+
+    // Fallback to checking name or category if equipment field is not reliable/present
+    if (nameLower.includes('barbell')) return 'barbell';
+    if (nameLower.includes('dumbbell') || nameLower.includes('db ')) return 'dumbbell';
+    if (nameLower.includes('squat') && !nameLower.includes('dumbbell')) return 'barbell'; // Assumption
+    if (nameLower.includes('deadlift')) return 'barbell'; // Assumption
+    if (nameLower.includes('bench press')) return 'barbell'; // Assumption
+    if (nameLower.includes('row') && (nameLower.includes('barbell') || !nameLower.includes('dumbbell'))) return 'barbell';
+    if (nameLower.includes('curl') && nameLower.includes('barbell')) return 'barbell';
+    if (nameLower.includes('curl') && nameLower.includes('dumbbell')) return 'dumbbell';
+    if (nameLower.includes('machine') || nameLower.includes('cable')) return 'machine';
+    if (nameLower.includes('body') || nameLower.includes('none')) return 'bodyweight';
+    if (nameLower.includes('kettlebell')) return 'kettlebell'; // Add more as needed
+    if (nameLower.includes('run') || nameLower.includes('cardio') || nameLower.includes('tapis') || nameLower.includes('jog')) return 'cardio'; // Add more as needed
+    if (nameLower.includes('resistance band')) return 'resistance-band';
+
+
+    if (baseExercise?.category) {
+      const categoryLower = baseExercise.category.toLowerCase();
+      if (categoryLower === 'strength' || categoryLower === 'powerlifting' || categoryLower === 'olympic weightlifting') {
+        // Could infer based on common exercises in these categories
+        if (nameLower.includes('squat') || nameLower.includes('deadlift') || nameLower.includes('bench')) return 'barbell';
+      }
+      if (categoryLower === 'cardio') return 'cardio';
+      if (categoryLower === 'calisthenics' || categoryLower === 'plyometrics') return 'bodyweight';
+    }
+    // Add more keywords as needed: 'cable', 'machine', 'smith machine', 'ez bar'
+    // 'pull-up', 'push-up', 'dip' -> bodyweight
+    // 'run', 'jog', 'cycle', 'elliptical' -> cardio
+
+    return 'default-exercise'; // Fallback icon
+  }
+
+  getIconPath(iconName: string | undefined): string {
+    return `assets/icons/${iconName || 'default-exercise'}.svg`;
+  }
 }

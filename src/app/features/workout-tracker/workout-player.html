@@ -51,9 +51,9 @@
         <div class="mb-2 pb-2 border-b border-gray-300 dark:border-gray-700">
           <div class="flex items-center mb-1">
             <div *ngIf="currentBaseExercise() as baseEx; else loadingBaseEx" class="mr-4">
-              <img *ngIf="baseEx.imageUrls && baseEx.imageUrls.length > 0" [src]="baseEx.imageUrls[0]"
-                [alt]="baseEx.name"
-                class="w-24 h-24 object-contain rounded-md border dark:border-gray-600 bg-gray-100 dark:bg-gray-700">
+              <img *ngIf="baseEx.iconName" [src]="getIconPath(baseEx.iconName)" [alt]="baseEx.name + ' icon'"
+                class="w-8 h-8 object-contain"
+                [ngClass]="{'filter dark:invert': baseEx.iconName !== 'default-exercise'}">
               <div *ngIf="!baseEx.imageUrls || baseEx.imageUrls.length === 0"
                 class="w-24 h-24 bg-gray-200 dark:bg-gray-700 flex items-center justify-center rounded-md text-xs text-gray-500">
                 No Image</div>

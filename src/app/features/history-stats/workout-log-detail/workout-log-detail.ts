@@ -1,26 +1,30 @@
+// workout-log-detail.ts
 import { Component, inject, Input, OnInit, signal } from '@angular/core';
-import { CommonModule, DatePipe, DecimalPipe, TitleCasePipe } from '@angular/common';
+import { CommonModule, DatePipe, DecimalPipe, TitleCasePipe } from '@angular/common'; // Make sure CommonModule is here
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { forkJoin, Observable, of, TimeoutError } from 'rxjs'; // Added TimeoutError
-import { map, switchMap, tap, catchError, defaultIfEmpty, timeout } from 'rxjs/operators'; // Added timeout
+import { forkJoin, Observable, of } from 'rxjs';
+import { map, switchMap, tap, catchError, defaultIfEmpty } from 'rxjs/operators';
 import { Exercise } from '../../../core/models/exercise.model';
-import { LoggedWorkoutExercise, WorkoutLog } from '../../../core/models/workout-log.model';
+import { LoggedWorkoutExercise, WorkoutLog, LoggedSet } from '../../../core/models/workout-log.model';
 import { TrackingService } from '../../../core/services/tracking.service';
 import { ExerciseService } from '../../../core/services/exercise.service';
 import { WeightUnitPipe } from '../../../shared/pipes/weight-unit-pipe';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser'; // Import DomSanitizer
 
 interface DisplayLoggedExercise extends LoggedWorkoutExercise {
   baseExercise?: Exercise | null;
+  isExpanded?: boolean;
+  showWarmups?: boolean;
+  warmupSets?: LoggedSet[];
+  workingSets?: LoggedSet[];
+  iconName?: string; // To store the determined icon name
 }
-
-const SERVICE_CALL_TIMEOUT_MS = 10000; // 10 seconds for service call timeout
 
 @Component({
   selector: 'app-workout-log-detail',
   standalone: true,
   imports: [CommonModule, RouterLink, DatePipe, TitleCasePipe, WeightUnitPipe],
   templateUrl: './workout-log-detail.html',
-  styleUrl: './workout-log-detail.scss',
   providers: [DecimalPipe]
 })
 export class WorkoutLogDetailComponent implements OnInit {
@@ -28,6 +32,7 @@ export class WorkoutLogDetailComponent implements OnInit {
   private router = inject(Router);
   private trackingService = inject(TrackingService);
   private exerciseService = inject(ExerciseService);
+  private sanitizer = inject(DomSanitizer); // Inject DomSanitizer
 
   workoutLog = signal<WorkoutLog | null | undefined>(undefined);
   displayExercises = signal<DisplayLoggedExercise[]>([]);
@@ -35,96 +40,116 @@ export class WorkoutLogDetailComponent implements OnInit {
   @Input() logId?: string;
 
   ngOnInit(): void {
-    const idSource$ = this.logId
-      ? of(this.logId)
-      : this.route.paramMap.pipe(map(params => params.get('logId')));
+    const idSource$ = this.logId ? of(this.logId) : this.route.paramMap.pipe(map(params => params.get('logId')));
 
     idSource$.pipe(
       switchMap(id => {
         if (id) {
-          return this.trackingService.getWorkoutLogById(id).pipe(
-          );
+          return this.trackingService.getWorkoutLogById(id);
         }
         return of(null);
       }),
       tap(log => {
         this.workoutLog.set(log);
-        if (log && log.exercises && log.exercises.length > 0) {
+        if (log && log.exercises) {
           this.prepareDisplayExercises(log.exercises);
         } else {
-          if (!log) {
-          } else if (!log.exercises) {
-            console.warn("WorkoutLogDetailComponent: Outer tap - log exists but log.exercises is undefined/null. Setting displayExercises to [].", JSON.parse(JSON.stringify(log)));
-          } else if (log.exercises.length === 0) {
-          }
           this.displayExercises.set([]);
         }
       })
-    ).subscribe({
-      error: err => console.error("WorkoutLogDetailComponent: ngOnInit - main subscription error:", err),
-    });
+    ).subscribe();
   }
 
   private prepareDisplayExercises(loggedExercises: LoggedWorkoutExercise[]): void {
-    // Using JSON.parse(JSON.stringify(...)) for logging complex objects to ensure they are captured at the moment of logging
-
     if (!loggedExercises || loggedExercises.length === 0) {
       this.displayExercises.set([]);
       return;
     }
 
-    const detailFetchers$: Observable<DisplayLoggedExercise>[] = loggedExercises.map((loggedEx, index) => {
-      if (!loggedEx.exerciseId) {
-        console.warn(`prepareDisplayExercises: Logged exercise at index ${index} encountered without an exerciseId:`, loggedEx);
-        // Still return an observable that emits for forkJoin
-        return of({
-          ...loggedEx,
-          baseExercise: null
-        } as DisplayLoggedExercise);
-      }
+    const detailFetchers$: Observable<DisplayLoggedExercise>[] = loggedExercises.map((loggedEx, index) =>
+      this.exerciseService.getExerciseById(loggedEx.exerciseId).pipe(
+        map(baseEx => { // baseEx here is Exercise | undefined
+          const warmupSets = loggedEx.sets.filter(s => s.isWarmup);
+          const workingSets = loggedEx.sets.filter(s => !s.isWarmup);
+          const exerciseForIcon = baseEx || null; // Convert undefined to null
 
-      return this.exerciseService.getExerciseById(loggedEx.exerciseId).pipe(
-        // timeout(SERVICE_CALL_TIMEOUT_MS), // Add timeout
-        defaultIfEmpty(null as Exercise | null), // Ensure emission even if service completes empty after timeout or normally
-        map(baseEx => {
-          const result = { ...loggedEx, baseExercise: baseEx };
-          return result;
+          return {
+            ...loggedEx,
+            baseExercise: exerciseForIcon, // Use the converted value
+            isExpanded: index === 0,
+            showWarmups: warmupSets.length > 0,
+            warmupSets: warmupSets,
+            workingSets: workingSets,
+            iconName: this.exerciseService.determineExerciseIcon(exerciseForIcon, loggedEx.exerciseName), // Pass the null-coalesced value
+          };
         }),
         catchError(err => {
-          if (err instanceof TimeoutError) {
-            console.error(`prepareDisplayExercises: TIMEOUT fetching base exercise details for ID ${loggedEx.exerciseId} (index: ${index}) after ${SERVICE_CALL_TIMEOUT_MS}ms.`);
-          } else {
-            console.error(`prepareDisplayExercises: Error fetching/processing base exercise details for ID ${loggedEx.exerciseId} (index ${index}):`, err);
-          }
-          // Return a successful observable with baseExercise as null for this specific item
-          return of({ ...loggedEx, baseExercise: null } as DisplayLoggedExercise);
+          console.error(`Error fetching base exercise details for ID ${loggedEx.exerciseId}:`, err);
+          const warmupSets = loggedEx.sets.filter(s => s.isWarmup);
+          const workingSets = loggedEx.sets.filter(s => !s.isWarmup);
+          // In catchError, baseEx is not available, so pass null directly
+          return of({
+            ...loggedEx,
+            baseExercise: null,
+            isExpanded: index === 0,
+            showWarmups: warmupSets.length > 0,
+            warmupSets: warmupSets,
+            workingSets: workingSets,
+            iconName: this.exerciseService.determineExerciseIcon(null, loggedEx.exerciseName),
+          } as DisplayLoggedExercise);
         }),
-      );
-    });
-
-    if (detailFetchers$.length === 0) {
-        // This should only happen if loggedExercises was initially empty, handled above.
-        // But as a safeguard if logic changes:
-        console.warn("prepareDisplayExercises: detailFetchers$ is unexpectedly empty despite loggedExercises having items. Fallback.");
-        this.displayExercises.set(loggedExercises.map(le => ({ ...le, baseExercise: null } as DisplayLoggedExercise)));
-        return;
-    }
+        // defaultIfEmpty is tricky here because getExerciseById might emit `undefined` which is a value.
+        // If getExerciseById *completes* without emitting (which it shouldn't for a BehaviorSubject-backed observable unless empty initially and not yet seeded),
+        // then defaultIfEmpty would kick in.
+        // The primary source of `undefined` is the `find()` method in ExerciseService.
+        // The `baseEx || null` handles this `undefined` from `find()`.
+      )
+    );
 
     forkJoin(detailFetchers$).subscribe({
       next: (exercisesWithDetails) => {
         this.displayExercises.set(exercisesWithDetails);
       },
-      error: (forkJoinError) => {
-        console.error("prepareDisplayExercises (forkJoin ERROR): Critical error in forkJoin operation itself:", forkJoinError);
-        // Fallback: display exercises without base details if forkJoin fails catastrophically
-        this.displayExercises.set(loggedExercises.map(le => ({ ...le, baseExercise: null } as DisplayLoggedExercise)));
-      },
-      complete: () => {
+      error: (err) => {
+        console.error("Error fetching exercise details for log display:", err);
+        this.displayExercises.set(loggedExercises.map((le, index) => {
+          const warmupSets = le.sets.filter(s => s.isWarmup);
+          const workingSets = le.sets.filter(s => !s.isWarmup);
+          return {
+            ...le,
+            baseExercise: null,
+            isExpanded: index === 0,
+            showWarmups: warmupSets.length > 0,
+            warmupSets: warmupSets,
+            workingSets: workingSets,
+            iconName: this.exerciseService.determineExerciseIcon(null, le.exerciseName), // Pass null here
+          };
+        }));
       }
     });
+  }
+
+  getIconPath(iconName: string | undefined): string {
+    return this.exerciseService.getIconPath(iconName);
+  }
+
+  toggleExerciseAccordion(exercise: DisplayLoggedExercise): void {
+    exercise.isExpanded = !exercise.isExpanded;
+  }
+
+  toggleWarmupAccordion(exercise: DisplayLoggedExercise): void {
+    exercise.showWarmups = !exercise.showWarmups;
+  }
+
+  getDisplaySetLabel(setsOfType: LoggedSet[], currentIndexInType: number): string {
+    const currentSet = setsOfType[currentIndexInType];
+    const displayIndex = currentIndexInType + 1;
+    return currentSet.isWarmup ? `Warm-up ${displayIndex}` : `Set ${displayIndex}`;
   }
 
   displayExerciseDetails(id: string): void {
     this.router.navigate(['/library', id]);
   }
+
+  
 }
