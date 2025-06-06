@@ -26,13 +26,13 @@
           Quit Workout
         </button>
         <!-- PAUSE BUTTON - changed from existing example -->
-          <div *ngIf="sessionState() === 'playing'" class="mt-3 text-center sm:text-right">
-            <!-- Only show if playing -->
-            <button (click)="pauseSession()"
-              class="w-full sm:w-auto bg-yellow-500 hover:bg-yellow-600 text-white dark:bg-yellow-600 dark:hover:bg-yellow-500 dark:text-gray-900 font-semibold py-2 px-4 rounded-md text-sm shadow">
-              Pause session
-            </button>
-          </div>
+        <div *ngIf="sessionState() === 'playing'" class="mt-3 text-center sm:text-right">
+          <!-- Only show if playing -->
+          <button (click)="pauseSession()"
+            class="w-full sm:w-auto bg-yellow-500 hover:bg-yellow-600 text-white dark:bg-yellow-600 dark:hover:bg-yellow-500 dark:text-gray-900 font-semibold py-2 px-4 rounded-md text-sm shadow">
+            Pause session
+          </button>
+        </div>
       </div>
       <div class="text-lg text-gray-600 dark:text-gray-400">
         Session Time: <span class="font-semibold">{{ sessionTimerDisplay() }}</span>
@@ -104,7 +104,8 @@
             <div *ngFor="let prevSetLog of allPreviousLoggedSetsForCurrentExercise(); let prevSetDisplayIndex = index"
               class="p-2 border-b border-gray-200 dark:border-gray-600 last:border-b-0">
               <p class="text-xs font-medium text-gray-600 dark:text-gray-200 mb-0.5">
-                Set {{ prevSetDisplayIndex + 1 }}: <!-- Displaying based on order in the array of previous sets -->
+                <span *ngIf="prevSetLog.isWarmup" class="text-blue-500 dark:text-blue-400">(Warm-up) </span>
+                Set {{ prevSetDisplayIndex + 1 }}:
               </p>
               <div class="text-xs text-gray-500 dark:text-gray-400 space-y-px">
                 <span *ngIf="prevSetLog.repsAchieved !== undefined" class="mr-3">
@@ -132,12 +133,38 @@
           </div>
         </div>
 
+        <ng-container *ngIf="activeSetInfo() as activeSet">
+          <div class="my-3 text-right" *ngIf="canAddWarmupSet()">
+            <button (click)="addWarmupSet()" [disabled]="sessionState() === 'paused'"
+              class="bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium py-1 px-3 rounded-md shadow-sm transition-colors">
+              + Add Warm-up Set
+            </button>
+          </div>
+        </ng-container>
+
         <!-- Current Set Info & Inputs -->
         <div class="mb-6" *ngIf="activeSetInfo() as activeSet">
+
+          <ng-container *ngIf="activeSet.isWarmup">
+            Warm-up Set {{ getCurrentWarmupSetNumber() }}
+          </ng-container>
+
           <h3 class="text-xl font-medium mb-1 text-gray-700 dark:text-gray-300">
-            Set {{ activeSet.setIndex + 1 }} of {{ activeSet.exerciseData.sets.length }}
-            <span *ngIf="activeSet.isCompleted" class="ml-2 text-xs text-green-500 font-normal">(Previously Logged This
-              Session)</span>
+            <ng-container *ngIf="activeSetInfo() as activeSet">
+              <ng-container *ngIf="!activeSet.isWarmup">
+                Set {{ getCurrentWorkingSetNumber() }} of {{ getWorkingSetCountForCurrentExercise() }}
+              </ng-container>
+              <ng-container *ngIf="activeSet.isWarmup">
+                Warm-up Set {{ getCurrentWarmupSetNumber() }}
+                <span *ngIf="getTotalWarmupSetsForCurrentExercise() > 1">
+                  of {{ getTotalWarmupSetsForCurrentExercise() }}
+                </span>
+              </ng-container>
+              <span *ngIf="activeSet.isWarmup"
+                class="text-sm font-normal text-blue-500 dark:text-blue-400 ml-2">(Warm-up)</span>
+              <span *ngIf="activeSet.isCompleted" class="ml-2 text-xs text-green-500 font-normal">(Previously
+                Logged)</span>
+            </ng-container>
           </h3>
 
           <!-- Target Display (same as before) -->
@@ -331,13 +358,12 @@
           </form>
 
           <!-- Action Button -->
+
           <button (click)="completeSetAndProceed()" [disabled]="sessionState() === 'paused'"
             class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg shadow-md text-lg transition-colors focus:outline-none focus:ring-2 focus:ring-green-400 disabled:opacity-50">
-            {{ (checkIfLatestSetOfWorkout() ? 'Complete workout' :
-            (checkIfLatestSetOfExercise() ? 'Complete Exercise & Rest' : 'Complete Set & Rest')) }}
-            <!-- {{ activeSet.isCompleted ? 'Mark as Incomplete & Re-do Set' : (!checkIfLatestSetOfLatestExercise() ?
-            'Complete Set & Rest' : 'Complete workout') }} -->
+            {{ nextActionButtonLabel() }} <!-- Note the () for computed signal -->
           </button>
+
         </div>
       </ng-container>
       <ng-template #workoutCompleteOrError>

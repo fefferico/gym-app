@@ -85,7 +85,7 @@ export class AlertService {
         header: string,
         message: string,
         okText: string = 'OK',
-        cancelText: string = 'Annulla'
+        cancelText: string = 'Cancel'
     ): Promise<{ role: 'confirm' | 'cancel', data?: any } | undefined> { // Return type indicates which button was pressed
         const result = await this.present({
             header,
@@ -145,7 +145,7 @@ export class AlertService {
       message: message,
       buttons: customButtons ? customButtons : [
         {
-          text: 'Annulla',
+          text: 'Cancel',
           role: 'cancel',
           cssClass: 'bg-gray-300 hover:bg-gray-500' // Example custom class
         } as AlertButton,

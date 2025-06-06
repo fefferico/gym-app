@@ -28,9 +28,10 @@ interface ActiveSetInfo {
   isCompleted: boolean; // Based on currentWorkoutLogExercises for this session
   // Fields for actuals (if re-doing a set within the session)
   actualReps?: number;
-  actualWeight?: number;
+  actualWeight?: number | null;
   actualDuration?: number;
   notes?: string;
+  isWarmup: boolean; // From setData.isWarmup
 }
 
 interface PausedWorkoutState {
@@ -97,6 +98,62 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   private readonly PAUSED_WORKOUT_KEY = 'fitTrackPro_pausedWorkoutState';
   private readonly PAUSED_STATE_VERSION = '1.0';
 
+  // Replace with a computed signal for the button label
+  nextActionButtonLabel = computed<string>(() => {
+    const activeInfo = this.activeSetInfo();
+    if (!activeInfo) return 'Complete Set'; // Default or error state
+
+    if (activeInfo.isWarmup) {
+      // For warm-up sets
+      const currentExercise = this.routine()?.exercises[activeInfo.exerciseIndex];
+      if (!currentExercise) return 'Complete Warm-up';
+
+      const allWarmupSetsForThisExercise = currentExercise.sets.filter(s => s.isWarmup);
+      const currentWarmupSetInstanceIndex = allWarmupSetsForThisExercise.findIndex(s => s.id === activeInfo.setData.id);
+
+      // Are there more warm-up sets after this one for this exercise?
+      const hasMoreWarmupsInExercise = allWarmupSetsForThisExercise.some((ws, idx) => idx > currentWarmupSetInstanceIndex);
+
+      const warmupSets = this.getWarmUpSets();
+
+      const actualWarmUpSetIndex: number = warmupSets.length > 0
+        ? warmupSets.findIndex(warm => activeInfo?.exerciseData.sets.some(set => set.id === warm.id))
+        : -1; // -1 indicates "not found"
+
+
+      if (hasMoreWarmupsInExercise) {
+        return `Complete Warm-up set ${this.getCurrentWarmupSetNumber()} of ${warmupSets.length} & Proceed`;
+      } else {
+        // This is the last warm-up set for this exercise (or only one)
+        // Check if there are any working sets next
+        const hasWorkingSetsAfter = currentExercise.sets.some((s, idx) => idx > activeInfo.setIndex && !s.isWarmup);
+        if (hasWorkingSetsAfter) {
+          return 'Complete Warm-up & Start Working Sets';
+        } else {
+          // No working sets after this warm-up (might be last exercise or only warmups in exercise)
+          // This case means we move to next exercise or finish workout.
+          // Check if this is the last exercise overall and all its sets (including this one) are done
+          if (this.checkIfLatestSetOfWorkout()) {
+            return 'Complete Workout';
+          } else if (this.checkIfLatestSetOfExercise()) { // Last set (warmup) of current exercise
+            return 'Complete Exercise & Rest';
+          } else { // Should not happen if checks above are correct, but a fallback
+            return 'Complete Warm-up & Next';
+          }
+        }
+      }
+    } else {
+      // For working sets
+      if (this.checkIfLatestSetOfWorkout()) {
+        return 'Complete Workout';
+      } else if (this.checkIfLatestSetOfExercise()) {
+        return 'Complete Exercise & Rest';
+      } else {
+        return 'Complete Set & Rest';
+      }
+    }
+  });
+
   // Signals for rest timer
   isRestTimerVisible = signal(false);
   restDuration = signal(0);
@@ -161,6 +218,55 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     }
   }
 
+  getWorkingSetCountForCurrentExercise = computed<number>(() => {
+    const r = this.routine();
+    const exIndex = this.currentExerciseIndex();
+    if (r && r.exercises[exIndex]) {
+      return r.exercises[exIndex].sets.filter(s => !s.isWarmup).length;
+    }
+    return 0;
+  });
+
+  // Get the 1-based index of the current working set among all working sets for this exercise
+  getCurrentWorkingSetNumber = computed<number>(() => {
+    const activeInfo = this.activeSetInfo();
+    const r = this.routine();
+    if (!activeInfo || !r || activeInfo.isWarmup) { // If it's a warmup or no info, not applicable
+      return 0;
+    }
+    const currentExercise = r.exercises[activeInfo.exerciseIndex];
+    let workingSetCounter = 0;
+    for (let i = 0; i <= activeInfo.setIndex; i++) {
+      if (!currentExercise.sets[i].isWarmup) {
+        workingSetCounter++;
+      }
+      if (i === activeInfo.setIndex) {
+        return workingSetCounter;
+      }
+    }
+    return 0; // Should not be reached if activeInfo.isWarmup is false
+  });
+
+
+  getCurrentWarmupSetNumber = computed<number>(() => {
+    const activeInfo = this.activeSetInfo();
+    const r = this.routine();
+    if (!activeInfo || !r || !activeInfo.isWarmup) {
+      return 0;
+    }
+    const currentExercise = r.exercises[activeInfo.exerciseIndex];
+    let warmupSetCounter = 0;
+    for (let i = 0; i <= activeInfo.setIndex; i++) {
+      if (currentExercise.sets[i].isWarmup) {
+        warmupSetCounter++;
+      }
+      if (i === activeInfo.setIndex) {
+        return warmupSetCounter;
+      }
+    }
+    return 0;
+  });
+
   // Computed signal for the currently active set/exercise details
   activeSetInfo = computed<ActiveSetInfo | null>(() => {
     const r = this.routine();
@@ -169,7 +275,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
     if (r && r.exercises[exIndex] && r.exercises[exIndex].sets[sIndex]) {
       const exerciseData = r.exercises[exIndex];
-      const setData = r.exercises[exIndex].sets[sIndex];
+      const setData = r.exercises[exIndex].sets[sIndex]; // This is the key line
       // Find if this set was already "completed" in the current session attempt
       const completedExerciseLog = this.currentWorkoutLogExercises().find(logEx => logEx.exerciseId === exerciseData.exerciseId);
       const completedSetLog = completedExerciseLog?.sets.find(logSet => logSet.plannedSetId === setData.id);
@@ -179,6 +285,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         setIndex: sIndex,
         exerciseData: exerciseData,
         setData: setData,
+        isWarmup: !!setData.isWarmup, // Add this
         baseExerciseInfo: undefined, // Will be loaded async
         isCompleted: !!completedSetLog, // Check if already logged in this session
         actualReps: completedSetLog?.repsAchieved,
@@ -485,45 +592,54 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
   // ... (other properties and methods) ...
 
-  checkIfLatestSetOfWorkout(): boolean {
-    const routine = this.routine(); // Get the current routine from the signal
-    const activeInfo = this.activeSetInfo(); // Get the current active set info
+  checkIfLatestSetOfExercise(): boolean {
+    const activeInfo = this.activeSetInfo();
+    const routine = this.routine();
+    if (!activeInfo || !routine) return false;
 
-    // 1. Check if routine or activeInfo is available
-    if (!routine || !activeInfo) {
-      // console.log('checkIfLatest: Routine or activeInfo not available');
-      return false; // Cannot determine if routine or active set isn't loaded
+    const currentExercise = routine.exercises[activeInfo.exerciseIndex];
+    // Is this the last set overall for this exercise?
+    if (activeInfo.setIndex === currentExercise.sets.length - 1) return true;
+
+    // If not, are all subsequent sets also warm-ups?
+    for (let i = activeInfo.setIndex + 1; i < currentExercise.sets.length; i++) {
+      if (!currentExercise.sets[i].isWarmup) {
+        return false; // Found a subsequent working set
+      }
     }
-
-    // 2. Check if it's the last exercise
-    const isLastExercise = activeInfo.exerciseIndex === routine.exercises.length - 1;
-    if (!isLastExercise) {
-      // console.log('checkIfLatest: Not the last exercise');
-      return false; // Not the last exercise, so definitely not the last set of the last exercise
-    }
-
-    // 3. If it IS the last exercise, check if it's the last set of that exercise
-    const currentExerciseData = routine.exercises[activeInfo.exerciseIndex];
-    const isLastSetOfCurrentExercise = activeInfo.setIndex === currentExerciseData.sets.length - 1;
-
-    // console.log(`checkIfLatest: LastExercise=${isLastExercise}, LastSet=${isLastSetOfCurrentExercise}`);
-    return isLastSetOfCurrentExercise; // True only if it's the last set of the last exercise
+    return true; // All subsequent sets are warm-ups, so this is effectively the last working set
   }
 
-  checkIfLatestSetOfExercise(): boolean {
-    const routine = this.routine(); // Get the current routine from the signal
-    const activeInfo = this.activeSetInfo(); // Get the current active set info
+  checkIfLatestSetOfWorkout(): boolean {
+    const activeInfo = this.activeSetInfo();
+    const routine = this.routine();
+    if (!activeInfo || !routine) return false;
 
-    // 1. Check if routine or activeInfo is available
-    if (!routine || !activeInfo) {
-      // console.log('checkIfLatest: Routine or activeInfo not available');
-      return false; // Cannot determine if routine or active set isn't loaded
+    // Is this the last exercise overall?
+    if (activeInfo.exerciseIndex === routine.exercises.length - 1) {
+      // And is it effectively the last set of this last exercise?
+      return this.checkIfLatestSetOfExercise();
     }
 
-    // 2. check if it's the last set of that exercise
-    const currentExerciseData = routine.exercises[activeInfo.exerciseIndex];
-    const isLastSetOfCurrentExercise = activeInfo.setIndex === currentExerciseData.sets.length - 1;
-    return isLastSetOfCurrentExercise;
+    // If not the last exercise, are all subsequent exercises AND their sets effectively just warm-ups?
+    // This is more complex. For now, let's simplify: if it's the last exercise, check its sets.
+    // Otherwise, it's not the last set of the workout if there are more exercises.
+    // A more robust check would iterate through remaining exercises.
+
+    // Simplified:
+    if (activeInfo.exerciseIndex === routine.exercises.length - 1) {
+      return this.checkIfLatestSetOfExercise();
+    }
+    // Check if all remaining exercises only contain warm-up sets (or no sets)
+    for (let i = activeInfo.exerciseIndex + 1; i < routine.exercises.length; i++) {
+      const futureExercise = routine.exercises[i];
+      if (futureExercise.sets.some(s => !s.isWarmup)) {
+        return false; // Found a future exercise with working sets
+      }
+    }
+    // If we are here, all future exercises (if any) only have warmups.
+    // So, the determining factor is if the current exercise's last working set is done.
+    return this.checkIfLatestSetOfExercise();
   }
 
   // Renamed and enhanced
@@ -698,30 +814,45 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       sIndex
     );
 
-    // 4. Get suggested parameters from WorkoutService
-    // Pass the originalPlannedSetForThisSet which represents the current target for this session for this set
-    // (It might have been user-edited on-the-fly OR it's the original from the loaded routine)
-    const suggestedSetParams = this.workoutService.suggestNextSetParameters(
-      historicalSetPerformance,
-      originalPlannedSetForThisSet, // This is KEY: use the current session's target as base for suggestion
-      sessionRoutine.goal
-    );
-    console.log(`Original/Current Session Target for Set ${sIndex + 1}:`, originalPlannedSetForThisSet);
-    console.log(`Last Historical Performance for this set:`, historicalSetPerformance);
-    console.log(`Progressive Overload Suggestion for Set ${sIndex + 1}:`, suggestedSetParams);
+    // 4. Get suggested parameters from WorkoutService - BUT ONLY FOR WORKING SETS
+    // For warm-up sets, we don't usually apply progressive overload from previous warm-ups.
+    // We might pre-fill them based on the *first working set's target* or keep them minimal.
 
-    // 5. Update the session's routine data with these new suggestions
-    // This ensures activeSetInfo() and the UI reflect these new session targets
-    // We operate on a copy again to ensure the signal updates properly
+    let finalSetParamsForSession: ExerciseSetParams;
+
+    if (originalPlannedSetForThisSet.isWarmup) {
+      console.log(`Preparing Warm-up Set ${sIndex + 1}:`, originalPlannedSetForThisSet);
+      finalSetParamsForSession = {
+        ...originalPlannedSetForThisSet, // Keep its defined properties
+        // Ensure defaults if they were added ad-hoc and might be sparse
+        reps: originalPlannedSetForThisSet.reps ?? 8,
+        weight: originalPlannedSetForThisSet.weight ?? null, // Allow null for bodyweight
+        restAfterSet: originalPlannedSetForThisSet.restAfterSet ?? 30,
+      };
+    } else {
+      // It's a working set, apply progressive overload suggestion logic
+      const suggestedSetParams = this.workoutService.suggestNextSetParameters(
+        historicalSetPerformance,
+        originalPlannedSetForThisSet,
+        sessionRoutine.goal
+      );
+      console.log(`Original/Current Session Target for Working Set ${sIndex + 1}:`, originalPlannedSetForThisSet);
+      console.log(`Last Historical Performance for this set:`, historicalSetPerformance);
+      console.log(`Progressive Overload Suggestion for Working Set ${sIndex + 1}:`, suggestedSetParams);
+      finalSetParamsForSession = {
+        ...suggestedSetParams,
+        id: originalPlannedSetForThisSet.id,
+        notes: suggestedSetParams.notes ?? originalPlannedSetForThisSet.notes,
+        isWarmup: false, // Ensure it's marked as not a warmup
+      };
+    }
+
+    // 5. Update the session's routine data
     const updatedRoutineForSession = JSON.parse(JSON.stringify(sessionRoutine)) as Routine;
-    updatedRoutineForSession.exercises[exIndex].sets[sIndex] = {
-      ...suggestedSetParams, // Apply all suggested parameters
-      id: originalPlannedSetForThisSet.id, // IMPORTANT: Preserve the original planned set ID
-      notes: suggestedSetParams.notes ?? originalPlannedSetForThisSet.notes, // Keep original notes if suggestion doesn't override
-    };
-    this.routine.set(updatedRoutineForSession); // This will trigger activeSetInfo to recompute
+    updatedRoutineForSession.exercises[exIndex].sets[sIndex] = finalSetParamsForSession;
+    this.routine.set(updatedRoutineForSession);
 
-    // 6. Patch the actuals form based on the new session targets or existing log for this session
+    // 6. Patch the actuals form
     this.patchActualsFormBasedOnSessionTargets();
   }
 
@@ -749,11 +880,12 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       });
     } else {
       // Pre-fill actuals form with the NEWLY SUGGESTED/SESSION-ADJUSTED targets
+      // For warm-ups, notes might be different or pre-filled.
       this.currentSetForm.patchValue({
-        actualReps: activeInfo.setData.reps ?? null,
-        actualWeight: activeInfo.setData.weight ?? null,
+        actualReps: activeInfo.setData.reps ?? (activeInfo.isWarmup ? 8 : null), // Example default for warmup
+        actualWeight: activeInfo.setData.weight ?? (activeInfo.isWarmup ? null : null), // Example default for warmup
         actualDuration: activeInfo.setData.duration ?? null,
-        setNotes: activeInfo.setData.notes || '',
+        setNotes: activeInfo.setData.notes || (activeInfo.isWarmup ? 'Warm-up' : ''),
       });
     }
   }
@@ -869,16 +1001,18 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       this.lastPerformanceForCurrentExercise = null; // Reset last performance for the new exercise block
     }
 
-    // Update signals for the next active set
-    this.currentExerciseIndex.set(nextExerciseGlobalIndex);
-    this.currentSetIndex.set(nextSetIndexInExercise);
-
     // Start rest timer using the rest period of the set that was JUST COMPLETED
     if (completedActiveInfo.setData.restAfterSet > 0) {
       this.startRestPeriod(completedActiveInfo.setData.restAfterSet);
     }
 
+    // Update signals for the next active set
+    this.currentExerciseIndex.set(nextExerciseGlobalIndex);
+    this.currentSetIndex.set(nextSetIndexInExercise);
+
+
     this.prepareCurrentSet(); // Prepare UI and data for the new active set
+
   }
 
 
@@ -943,8 +1077,9 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       id: activeInfo.setData.id, // Or generate a new unique ID for the logged set if preferred: uuidv4()
       plannedSetId: activeInfo.setData.id,
       exerciseId: activeInfo.exerciseData.exerciseId,
-      repsAchieved: formValues.actualReps ?? activeInfo.setData.reps ?? 0,
-      weightUsed: formValues.actualWeight ?? activeInfo.setData.weight,
+      isWarmup: !!activeInfo.setData.isWarmup, // <<<< ADD THIS
+      repsAchieved: formValues.actualReps ?? (activeInfo.setData.isWarmup ? 0 : activeInfo.setData.reps ?? 0), // Default for warmup might be 0
+      weightUsed: formValues.actualWeight ?? (activeInfo.setData.isWarmup ? null : activeInfo.setData.weight), // Default for warmup might be null
       durationPerformed: formValues.actualDuration ?? activeInfo.setData.duration,
       // Store the targets that were active for THIS SESSION (could be suggested or user-edited)
       targetReps: activeInfo.setData.reps,
@@ -963,10 +1098,10 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     }
     // --- END AUTO-SAVE ---
 
-    if (activeInfo.setData.restAfterSet > 0) {
-      this.startRestPeriod(activeInfo.setData.restAfterSet);
-      //this.startRestTimer(activeInfo.setData.restAfterSet);
-    }
+    // if (activeInfo.setData.restAfterSet > 0) {
+    // this.startRestPeriod(activeInfo.setData.restAfterSet);
+    // this.startRestTimer(activeInfo.setData.restAfterSet);
+    // }
 
     this.resetTimedSet();
     this.navigateToNextStepInWorkout(activeInfo, currentRoutineValue);
@@ -988,42 +1123,103 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
   // Update getNextUpText to be round-aware
+  // Update getNextUpText to be round-aware
+// workout-player.ts
+
+  // Update getNextUpText to be round-aware and more precise for warmups
+// workout-player.ts
+
+  // Update getNextUpText to be round-aware and more precise for warmups
   getNextUpText(completedActiveSetInfo: ActiveSetInfo | null, currentSessionRoutine: Routine | null): string {
     if (!completedActiveSetInfo || !currentSessionRoutine) return 'Next Set/Exercise';
 
     const curExGlobalIdx = completedActiveSetInfo.exerciseIndex;
-    const curSetIdxInEx = completedActiveSetInfo.setIndex;
+    const curSetData = completedActiveSetInfo.setData; // The set that was just completed
     const curPlayedEx = currentSessionRoutine.exercises[curExGlobalIdx];
+    const allSetsForCurrentExercise = curPlayedEx.sets;
+    const indexOfCompletedSetInExercise = allSetsForCurrentExercise.findIndex(s => s.id === curSetData.id);
 
-    // Case 1: More sets in current exercise of current round?
-    if (curSetIdxInEx < curPlayedEx.sets.length - 1) {
-      return `Set ${curSetIdxInEx + 2} of ${curPlayedEx.exerciseName}`;
+    // --- Scenario 1: The completed set was a WARM-UP set ---
+    if (curSetData.isWarmup) {
+      // Check if there's another warm-up set immediately following this one
+      if (indexOfCompletedSetInExercise < allSetsForCurrentExercise.length - 1) {
+        const nextSetCandidate = allSetsForCurrentExercise[indexOfCompletedSetInExercise + 1];
+        if (nextSetCandidate.isWarmup) {
+          // Count how many warm-up sets there are up to and including this next warm-up set
+          let nextWarmupSetNumber = 0;
+          for (let i = 0; i <= indexOfCompletedSetInExercise + 1; i++) {
+            if (allSetsForCurrentExercise[i].isWarmup) {
+              nextWarmupSetNumber++;
+            }
+          }
+          return `Warm-up Set ${nextWarmupSetNumber} of ${curPlayedEx.exerciseName}`;
+        } else {
+          // Next set is a working set.
+          // Count how many working sets there are up to and including this first working set
+          let firstWorkingSetNumber = 0;
+           for (let i = 0; i <= indexOfCompletedSetInExercise + 1; i++) {
+            if (!allSetsForCurrentExercise[i].isWarmup) {
+              firstWorkingSetNumber++;
+            }
+          }
+          return `Set ${firstWorkingSetNumber} of ${curPlayedEx.exerciseName}`;
+        }
+      }
+      // If it was the last warm-up set and no working sets follow directly (or last set overall for ex)
+      // Fall through to general "next exercise/round/finish" logic
     }
 
-    // Case 2: Last set of current exercise. Is it part of an ongoing superset in the current round?
+    // --- Scenario 2: The completed set was a WORKING set (or last warm-up followed by non-warmup handling) ---
+    // Check if there are more sets (of any type) in the current exercise for the current round
+    if (indexOfCompletedSetInExercise < allSetsForCurrentExercise.length - 1) {
+      const nextSetInExercise = allSetsForCurrentExercise[indexOfCompletedSetInExercise + 1];
+      const setType = nextSetInExercise.isWarmup ? "Warm-up" : "Set";
+      let typeCounter = 0; // Counts sets of the *same type* as the nextSetInExercise
+
+      for (let i = 0; i <= indexOfCompletedSetInExercise + 1; i++) {
+        if (!!allSetsForCurrentExercise[i].isWarmup === !!nextSetInExercise.isWarmup) {
+          typeCounter++;
+        }
+      }
+      return `${setType} ${typeCounter} of ${curPlayedEx.exerciseName}`;
+    }
+
+    // --- All sets for the current exercise (in this round pass) are done. ---
+    // Now, handle supersets, rounds, or moving to the next block.
+
+    // Is it part of an ongoing superset in the current round?
     if (curPlayedEx.supersetId && curPlayedEx.supersetOrder !== null && curPlayedEx.supersetSize &&
       curPlayedEx.supersetOrder < curPlayedEx.supersetSize - 1) {
       const nextSupersetExIndex = curExGlobalIdx + 1;
       if (nextSupersetExIndex < currentSessionRoutine.exercises.length &&
         currentSessionRoutine.exercises[nextSupersetExIndex].supersetId === curPlayedEx.supersetId) {
-        return `SUPERSET: ${currentSessionRoutine.exercises[nextSupersetExIndex].exerciseName}`;
+        // Determine if the first set of the next superset exercise is warmup or working
+        const firstSetOfNextSupersetEx = currentSessionRoutine.exercises[nextSupersetExIndex].sets[0];
+        const setType = firstSetOfNextSupersetEx.isWarmup ? "Warm-up Set 1" : "Set 1";
+        return `SUPERSET: ${setType} of ${currentSessionRoutine.exercises[nextSupersetExIndex].exerciseName}`;
       }
     }
 
-    // Case 3: Last set of the exercise block for the current round. Are there more rounds?
+    // Last set of the exercise block for the current round. Are there more rounds for this block?
     const currentBlockTotalRounds = this.totalBlockRounds();
     if (this.currentBlockRound() < currentBlockTotalRounds) {
-      let blockStartIndex = curExGlobalIdx;
+      let blockStartIndex = curExGlobalIdx; // Start of the current block
       if (curPlayedEx.supersetId && curPlayedEx.supersetOrder !== null) {
         blockStartIndex = curExGlobalIdx - curPlayedEx.supersetOrder; // Find start of this superset block
       }
-      return `Round ${this.currentBlockRound() + 1}: ${currentSessionRoutine.exercises[blockStartIndex].exerciseName}`;
+      const nextRoundFirstExercise = currentSessionRoutine.exercises[blockStartIndex];
+      const nextRoundFirstSet = nextRoundFirstExercise.sets[0]; // First set of the first exercise in the block
+      const nextRoundSetType = nextRoundFirstSet.isWarmup ? "Warm-up Set 1" : "Set 1";
+      return `Round ${this.currentBlockRound() + 1}: ${nextRoundSetType} of ${nextRoundFirstExercise.exerciseName}`;
     }
 
-    // Case 4: All rounds for current block done. Find next block.
+    // All rounds for current block done. Find next block.
     const nextBlockStartIndex = this.findNextExerciseBlockStartIndex(curExGlobalIdx, currentSessionRoutine);
     if (nextBlockStartIndex !== -1) {
-      return `Next Exercise: ${currentSessionRoutine.exercises[nextBlockStartIndex].exerciseName}`;
+      const nextBlockFirstExercise = currentSessionRoutine.exercises[nextBlockStartIndex];
+      const nextBlockFirstSet = nextBlockFirstExercise.sets[0]; // First set of the first exercise in the new block
+      const nextBlockSetType = nextBlockFirstSet.isWarmup ? "Warm-up Set 1" : "Set 1";
+      return `Next Up: ${nextBlockSetType} of ${nextBlockFirstExercise.exerciseName}`;
     }
 
     return 'Finish Workout!';
@@ -1441,6 +1637,67 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     }
   }
 
+  async addWarmupSet(): Promise<void> {
+    if (this.sessionState() === SessionState.Paused) {
+      this.alertService.showAlert("Info", "Session is paused. Please resume to add a warm-up set.", "warning");
+      return;
+    }
+
+    const currentRoutineVal = this.routine();
+    const activeInfo = this.activeSetInfo(); // Get current state before modification
+
+    if (!currentRoutineVal || !activeInfo) {
+      this.alertService.showAlert("Error", "Cannot add warm-up set: Active routine or set info not available.", "error");
+      return;
+    }
+
+    // Prevent adding warm-up if current set IS already a warm-up or if in the middle of an exercise's sets
+    // Simplification: Allow adding warm-up sets only *before* the first *working* set of an exercise,
+    // or if there are no sets defined yet for an ad-hoc exercise.
+    // More complex logic could allow inserting them anywhere.
+    const currentExercise = currentRoutineVal.exercises[activeInfo.exerciseIndex];
+    const firstWorkingSetIndex = currentExercise.sets.findIndex(s => !s.isWarmup);
+
+    if (activeInfo.setIndex > 0 && activeInfo.setIndex > firstWorkingSetIndex && firstWorkingSetIndex !== -1) {
+      const confirm = await this.alertService.showConfirm(
+        "Add Warm-up Set",
+        "You are past the first working set. Adding a warm-up set now will insert it before the current set. Continue?"
+      );
+      if (!confirm || !confirm.data) return;
+    }
+
+
+    const newWarmupSet: ExerciseSetParams = {
+      id: `warmup-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`, // Unique temporary ID
+      isWarmup: true,
+      reps: 8, // Sensible default, user can change
+      weight: 0, // Sensible default
+      duration: undefined,
+      restAfterSet: 30, // Shorter rest after warmup
+      notes: 'Warm-up set'
+    };
+
+    // Create a deep copy to modify and trigger signal update
+    const updatedRoutineForSession = JSON.parse(JSON.stringify(currentRoutineVal)) as Routine;
+    const exerciseToUpdate = updatedRoutineForSession.exercises[activeInfo.exerciseIndex];
+
+    // Insert the new warm-up set before the current activeSetInfo().setIndex
+    // This means the new warm-up set will become the current set.
+    exerciseToUpdate.sets.splice(activeInfo.setIndex, 0, newWarmupSet);
+
+    // Update the routine signal
+    this.routine.set(updatedRoutineForSession);
+
+    // The currentSetIndex signal itself doesn't need to change here,
+    // because activeSetInfo will recompute based on the modified routine
+    // and the set at the *current* currentSetIndex will now be our new warm-up set.
+
+    this.alertService.showAlert("Success", "Warm-up set added. Fill in the details and complete it.");
+
+    // Re-prepare the current set, which will now be the newly added warm-up set
+    // This will also reset the form.
+    await this.prepareCurrentSet();
+  }
 
   ngOnDestroy(): void {
     // Primary role of ngOnDestroy here is to clean up subscriptions.
@@ -1452,4 +1709,57 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     console.log('WorkoutPlayerComponent destroyed.');
   }
 
+
+
+  getSets(): ExerciseSetParams[] {
+    const activeSet = this.activeSetInfo();
+    const sets = activeSet?.exerciseData.sets || [];
+
+    return activeSet?.setData.isWarmup
+      ? sets.filter(exer => !exer.isWarmup)
+      : sets;
+  }
+
+  getWarmUpSets(): ExerciseSetParams[] {
+    const activeSet = this.activeSetInfo();
+    const sets = activeSet?.exerciseData.sets || [];
+
+    return activeSet?.setData.isWarmup
+      ? sets.filter(exer => exer.isWarmup)
+      : [];
+  }
+
+  getTotalWarmupSetsForCurrentExercise = computed<number>(() => {
+    const r = this.routine();
+    const exIndex = this.currentExerciseIndex();
+    if (r && r.exercises[exIndex]) {
+      return r.exercises[exIndex].sets.filter(s => s.isWarmup).length;
+    }
+    return 0;
+  });
+
+  // workout-player.ts
+  canAddWarmupSet = computed<boolean>(() => {
+    const activeInfo = this.activeSetInfo();
+    const routineVal = this.routine();
+
+    if (!activeInfo || !routineVal || this.sessionState() === 'paused') {
+      return false;
+    }
+
+    const currentExerciseSets = routineVal.exercises[activeInfo.exerciseIndex].sets;
+
+    // Iterate through sets UP TO the current active set's index.
+    // If we encounter any working set *before* the current active set, then we cannot add more warmups before it.
+    for (let i = 0; i <= activeInfo.setIndex; i++) {
+      if (!currentExerciseSets[i].isWarmup && this.getTotalWarmupSetsForCurrentExercise()>0) {
+        return false; // A working set has already passed or is before the current insertion point.
+      }
+    }
+
+    // If we reach here, all sets before the current activeSet (if any) are warmups,
+    // or this is the very first set (index 0).
+    // So, we can add a warm-up set (it will be inserted at activeInfo.setIndex).
+    return true;
+  });
 }

@@ -3,11 +3,12 @@
 export interface ExerciseSetParams {
   id: string;
   reps?: number;
-  weight?: number;
+  weight?: number | null; // Allow null for bodyweight or if weight is not applicable
   duration?: number;
   tempo?: string;
   restAfterSet: number; // For the set *within* an exercise. For supersets, this might be 0 for intermediate exercises.
   notes?: string;
+  isWarmup?: boolean; // <<<< NEW
   _uiIsCompleted?: boolean;
   _uiActualReps?: number;
   _uiActualWeight?: number;

@@ -8,7 +8,7 @@ export interface LoggedSet {
 
   // Actual performance data
   repsAchieved: number;
-  weightUsed?: number;    // Weight used (e.g., kg, lbs). Optional for bodyweight or timed-only.
+  weightUsed?: number | null;
   durationPerformed?: number; // Duration in seconds, if it was a timed set or part of one.
   tempoUsed?: string;     // Actual tempo used, if tracked by user.
   // restTaken?: number;  // Actual rest taken before the next set (more complex to track accurately)
@@ -16,13 +16,14 @@ export interface LoggedSet {
   // Target values (copied from the planned set in the routine at the time of performance)
   // These are useful for seeing if targets were met/exceeded.
   targetReps?: number;
-  targetWeight?: number;
+  targetWeight?: number | null;
   targetDuration?: number;
   targetTempo?: string; // Target tempo from the plan
 
   notes?: string;         // User notes specific to this performed set (e.g., "Felt easy", "Form breakdown on last rep")
   // formRating?: 1 | 2 | 3 | 4 | 5; // Optional: User's perceived form rating for the set
   timestamp: string;       // ISO string of when this set was completed/logged.
+  isWarmup?: boolean; // <<<< NEW
 }
 
 // Describes all sets performed for a specific exercise within a single workout session.
