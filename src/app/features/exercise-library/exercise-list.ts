@@ -49,7 +49,10 @@ export class ExerciseListComponent implements OnInit {
         ex.description.toLowerCase().includes(term)
       );
     }
-    return exercises;
+    return exercises.map(ex => ({
+      ...ex,
+      iconName: this.exerciseService.determineExerciseIcon(ex, ex?.name)
+    }));
   });
 
   constructor() {
@@ -101,5 +104,10 @@ export class ExerciseListComponent implements OnInit {
 
   goToExerciseDetails(id: string): void {
     this.router.navigate(['/library',id]);
+  }
+
+  
+  getIconPath(iconName: string | undefined): string {
+    return this.exerciseService.getIconPath(iconName);
   }
 }

@@ -1,25 +1,14 @@
 <div class="container mx-auto p-4">
   <div class="mb-4">
     <a routerLink="/library" class="text-primary dark:text-primary-light hover:underline">← Back to Library</a>
-
-    <!-- EDIT/DELETE BUTTONS -->
-    <div *ngIf="exercise() as ex" class="space-x-2">
-      <button [routerLink]="['/library/edit', ex.id]"
-        class="bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-medium py-2 px-3 rounded-md shadow-sm">
-        Edit Exercise
-      </button>
-      <button (click)="confirmDeleteExercise(ex)"
-        class="bg-red-500 hover:bg-red-600 text-white text-sm font-medium py-2 px-3 rounded-md shadow-sm">
-        Delete Exercise
-      </button>
-    </div>
   </div>
 </div>
 
 <ng-container *ngIf="exercise() as ex; else loadingOrNotFound">
   <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl overflow-hidden">
     <!-- Image Carousel -->
-    <div *ngIf="ex.imageUrls && ex.imageUrls.length > 0" class="relative">
+    <div *ngIf="false" class="relative">
+      <!-- <div *ngIf="ex.imageUrls && ex.imageUrls.length > 0" class="relative"> -->
       <img [src]="ex.imageUrls[currentImageIndex()]" [alt]="ex.name + ' form ' + (currentImageIndex() + 1)"
         class="w-full h-64 sm:h-80 md:h-96 object-contain bg-gray-200 dark:bg-gray-700">
       <button *ngIf="ex.imageUrls.length > 1" (click)="prevImage()"
@@ -44,7 +33,21 @@
     </div>
 
     <div class="p-6 md:p-8">
-      <h1 class="text-3xl md:text-4xl font-bold mb-3 text-gray-800 dark:text-gray-100">{{ ex.name }}</h1>
+      <div class="flex justify-between pb-1 sm:flex-row">
+        <h1 class="flex text-3xl md:text-4xl font-bold mb-3 text-gray-800 dark:text-gray-100">{{ ex.name }}</h1>
+        <!-- EDIT/DELETE BUTTONS -->
+        <div *ngIf="exercise() as ex" class="space-x-2">
+          <button [routerLink]="['/library/edit', ex.id]"
+            class="bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-medium py-2 px-3 rounded-md shadow-sm">
+            Edit Exercise
+          </button>
+          <button (click)="confirmDeleteExercise(ex)"
+            class="bg-red-500 hover:bg-red-600 text-white text-sm font-medium py-2 px-3 rounded-md shadow-sm">
+            Delete Exercise
+          </button>
+        </div>
+      </div>
+
       <div class="mb-4">
         <span
           class="px-3 py-1 text-xs font-semibold rounded-full bg-primary-light text-primary-dark dark:bg-primary-dark dark:text-primary-light capitalize">

@@ -183,7 +183,8 @@ export class ExerciseService {
     // Fallback to checking name or category if equipment field is not reliable/present
     if (nameLower.includes('barbell')) return 'barbell';
     if (nameLower.includes('dumbbell') || nameLower.includes('db ')) return 'dumbbell';
-    if (nameLower.includes('squat') && !nameLower.includes('dumbbell')) return 'barbell'; // Assumption
+    if (nameLower.includes('squat') && nameLower.includes('barbell')) return 'barbell'; // Assumption
+    if (nameLower.includes('squat') && !nameLower.includes('dumbbell') && !nameLower.includes('dumbbell')) return 'bodyweight'; // Assumption
     if (nameLower.includes('deadlift')) return 'barbell'; // Assumption
     if (nameLower.includes('bench press')) return 'barbell'; // Assumption
     if (nameLower.includes('row') && (nameLower.includes('barbell') || !nameLower.includes('dumbbell'))) return 'barbell';
