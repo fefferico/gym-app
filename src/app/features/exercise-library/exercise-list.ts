@@ -1,6 +1,6 @@
 import { Component, inject, OnInit, signal, computed, effect } from '@angular/core'; // Added computed and effect
 import { AsyncPipe, CommonModule, TitleCasePipe } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { Observable } from 'rxjs';
 import { Exercise } from '../../core/models/exercise.model';
 import { ExerciseService } from '../../core/services/exercise.service';
@@ -14,6 +14,7 @@ import { ExerciseService } from '../../core/services/exercise.service';
 })
 export class ExerciseListComponent implements OnInit {
   private exerciseService = inject(ExerciseService);
+  private router = inject(Router);
 
   // Observables for populating filter dropdowns
   categories$: Observable<string[]> | undefined;
@@ -96,5 +97,9 @@ export class ExerciseListComponent implements OnInit {
     // Also reset the select elements in the template if they are not two-way bound
     // (For simple selects like this, just clearing signals is enough if [value] is bound)
     // If using ngModel, you'd reset the bound properties.
+  }
+
+  goToExerciseDetails(id: string): void {
+    this.router.navigate(['/library',id]);
   }
 }

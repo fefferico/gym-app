@@ -19,17 +19,22 @@ interface DisplayLoggedExercise extends LoggedWorkoutExercise {
   imports: [CommonModule, RouterLink, DatePipe, TitleCasePipe, WeightUnitPipe],
   templateUrl: './workout-log-detail.html',
   styleUrl: './workout-log-detail.scss',
+  providers: [DecimalPipe]
 })
 export class WorkoutLogDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private trackingService = inject(TrackingService);
-  private exerciseService = inject(ExerciseService); // Inject
+  private exerciseService = inject(ExerciseService);
+  // private alertService = inject(AlertService); // Remove if not used elsewhere
 
-  workoutLog = signal<WorkoutLog | null | undefined>(undefined); // undefined: loading, null: not found
-  displayExercises = signal<DisplayLoggedExercise[]>([]);
+  workoutLog = signal<WorkoutLog | null | undefined>(undefined);
+  displayExercises = signal<DisplayLoggedExercise[]>([]); // Back to original DisplayLoggedExercise
 
-  @Input() logId?: string; // For route param binding
+  @Input() logId?: string;
+
+  // Remove isEditMode and editableLogDetails
+  // Remove toggleEditMode, toggleSetEdit, saveSetChanges, cancelSetEdit, saveWorkoutLogChanges
 
   ngOnInit(): void {
     const idSource$ = this.logId ? of(this.logId) : this.route.paramMap.pipe(map(params => params.get('logId')));
@@ -41,10 +46,10 @@ export class WorkoutLogDetailComponent implements OnInit {
         }
         return of(null);
       }),
-      tap(log => {
-        this.workoutLog.set(log);
+      tap(log => { // Keep tap for initial load
+        this.workoutLog.set(log); // No deep copy needed for display only
         if (log) {
-          this.prepareDisplayExercises(log.exercises);
+          this.prepareDisplayExercises(log.exercises); // Original prepareDisplayExercises
         } else {
           this.displayExercises.set([]);
         }
@@ -52,39 +57,39 @@ export class WorkoutLogDetailComponent implements OnInit {
     ).subscribe();
   }
 
+  // Original prepareDisplayExercises (without editable fields)
   private prepareDisplayExercises(loggedExercises: LoggedWorkoutExercise[]): void {
-  if (!loggedExercises || loggedExercises.length === 0) {
-    this.displayExercises.set([]);
-    return;
-  }
-
-  const detailFetchers$: Observable<DisplayLoggedExercise>[] = loggedExercises.map(loggedEx =>
-    this.exerciseService.getExerciseById(loggedEx.exerciseId).pipe(
-      map(baseEx => ({
-        ...loggedEx,
-        baseExercise: baseEx || null
-      }))
-    )
-  );
-
-  if (detailFetchers$.length === 0) { // Should not happen if loggedExercises wasn't empty but good check
-      this.displayExercises.set(loggedExercises.map(le => ({...le, baseExercise: null })));
+    if (!loggedExercises || loggedExercises.length === 0) {
+      this.displayExercises.set([]);
       return;
+    }
+
+    const detailFetchers$: Observable<DisplayLoggedExercise>[] = loggedExercises.map(loggedEx =>
+      this.exerciseService.getExerciseById(loggedEx.exerciseId).pipe(
+        map(baseEx => ({
+          ...loggedEx,
+          baseExercise: baseEx || null
+        }))
+      )
+    );
+
+    if (detailFetchers$.length === 0) {
+      this.displayExercises.set(loggedExercises.map(le => ({ ...le, baseExercise: null })));
+      return;
+    }
+
+    forkJoin(detailFetchers$).subscribe({
+      next: (exercisesWithDetails) => {
+        this.displayExercises.set(exercisesWithDetails);
+      },
+      error: (err) => {
+        console.error("Error fetching exercise details for log display:", err);
+        this.displayExercises.set(loggedExercises.map(le => ({ ...le, baseExercise: null })));
+      }
+    });
   }
 
-  forkJoin(detailFetchers$).subscribe({
-    next: (exercisesWithDetails) => {
-      this.displayExercises.set(exercisesWithDetails);
-    },
-    error: (err) => {
-      console.error("Error fetching exercise details for log display:", err);
-      // Fallback: display logged exercises without baseExercise details
-      this.displayExercises.set(loggedExercises.map(le => ({ ...le, baseExercise: null })));
-    }
-  });
-}
-
-  displayExerciseDetails(id:string): void {
-    this.router.navigate(['/library',id]);
+  displayExerciseDetails(id: string): void {
+    this.router.navigate(['/library', id]);
   }
 }

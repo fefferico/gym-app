@@ -50,10 +50,22 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   private routeSub: Subscription | undefined;
 
   routineGoals: { value: Routine['goal'], label: string }[] = [
-    { value: 'strength', label: 'Strength' },
     { value: 'hypertrophy', label: 'Hypertrophy' },
-    { value: 'endurance', label: 'Endurance' },
-    { value: 'custom', label: 'Custom' },
+    { value: 'strength', label: 'Strength' },
+    { value: 'muscular endurance', label: 'Muscular endurance' },
+    { value: 'cardiovascular endurance', label: 'Cardiovascular endurance' },
+    { value: 'fat loss / body composition', label: 'Fat loss / body composition' },
+    { value: 'mobility & flexibility', label: 'Mobility & flexibility' },
+    { value: 'power / explosiveness', label: 'Power / explosiveness' },
+    { value: 'speed & agility', label: 'Speed & agility' },
+    { value: 'balance & coordination', label: 'Bbalance & coordination' },
+    { value: 'skill acquisition', label: 'Skill acquisition' },
+    { value: 'rehabilitation / injury prevention', label: 'Rehabilitation / injuryStrength' },
+    { value: 'mental health / stress relief', label: 'Mental health' },
+    { value: 'general health & longevity', label: 'General health &Strength' },
+    { value: 'sport-specific performance', label: 'Sport-specific performance' },
+    { value: 'maintenance', label: 'Maintenance'},
+    { value: 'custom', label: 'Custom' }
   ];
 
   // For exercise selection modal (to be implemented)
@@ -592,7 +604,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   // --- Form Submission ---
-  onSubmit(): void {
+onSubmit(): void {
     if (this.isViewMode) {
       console.log("In view mode, submission is disabled.");
       return;
@@ -604,16 +616,87 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     this.recalculateSupersetOrders(); // Ensure final state is correct
 
     if (!this.validateSupersetIntegrity()) {
-      this.showErrorMessage('Superset configuration is invalid. Please ensure supersets have at least two exercises and are contiguous.', 10000); // More specific message
+      // Use AlertService for consistency if you prefer, or keep the signal
+      this.alertService.showAlert('Error', 'Superset configuration is invalid. Please ensure supersets have at least two exercises and are contiguous.');
       console.error("Superset integrity validation failed during submission.");
       return;
     }
     // --- End Superset Validation ---
 
+    // --- START: New Validation for Exercises and Sets ---
+    const exercisesValue = this.exercisesFormArray.value as WorkoutExercise[]; // Get the current value
+
+    for (let i = 0; i < exercisesValue.length; i++) {
+      const exercise = exercisesValue[i];
+      const baseExerciseDetails = this.availableExercises.find(e => e.id === exercise.exerciseId);
+      const exerciseDisplayName = exercise.exerciseName || baseExerciseDetails?.name || `Exercise ${i + 1}`;
+
+      if (!exercise.sets || exercise.sets.length === 0) {
+        this.alertService.showAlert('Validation Error', `The exercise "${exerciseDisplayName}" must have at least one set.`);
+        return;
+      }
+
+      // Check rounds (especially for non-superset or first in superset)
+      // The rounds value on the form group should be authoritative here.
+      const exerciseFormControl = this.exercisesFormArray.at(i) as FormGroup;
+      const roundsValue = exerciseFormControl.get('rounds')?.value;
+      if (roundsValue !== null && roundsValue !== undefined && roundsValue < 1) {
+          this.alertService.showAlert('Validation Error', `The exercise "${exerciseDisplayName}" must have at least 1 round.`);
+          return;
+      }
+
+
+      for (let j = 0; j < exercise.sets.length; j++) {
+        const set = exercise.sets[j];
+        const setDisplayName = `Set ${j + 1} of "${exerciseDisplayName}"`;
+
+        const reps = set.reps ?? 0;
+        const weight = set.weight ?? 0; // Assuming weight comes from form directly in user's unit
+        const duration = set.duration ?? 0;
+
+        // Determine if it's primarily a duration-based set (e.g., cardio, planks)
+        // A simple heuristic: if duration is explicitly set and > 0, or exercise category implies it.
+        // For simplicity, we'll assume if duration > 0, it's a valid timed set.
+        // You might have a more robust way to identify exercise types (e.g., from Exercise.category)
+        let isPrimarilyDurationSet = duration > 0;
+        if (!isPrimarilyDurationSet && baseExerciseDetails) {
+            // Example: Add categories that are typically duration-based
+            const durationCategories = ['cardio', 'stretching', 'plank', 'isometric'];
+            if (durationCategories.includes(baseExerciseDetails.category.toLowerCase())) {
+                isPrimarilyDurationSet = true;
+            }
+        }
+
+
+        if (isPrimarilyDurationSet) {
+          // For a duration-based set, ensure duration is positive. Reps could be 0 or 1 (e.g., 1 rep of "hold for 30s").
+          if (duration <= 0) {
+            this.alertService.showAlert('Validation Error', `${setDisplayName} is a timed set but has no duration specified.`);
+            return;
+          }
+        } else {
+          // For a weight/rep based set
+          if (reps <= 0 && weight <= 0) {
+            this.alertService.showAlert('Validation Error', `${setDisplayName} must have reps or weight specified.`);
+            return;
+          }
+          if (reps <= 0 && weight > 0) {
+            this.alertService.showAlert('Validation Error', `${setDisplayName} must have reps and weight specified.`);
+            return;
+          }
+          // Optional: If reps are 0, weight must be > 0 (e.g. for heavy partials or isometrics with weight)
+          // if (reps <= 0 && weight <= 0) { /* Covered by above */ }
+          // Optional: If weight is 0, reps must be > 0 (bodyweight)
+          // if (weight <= 0 && reps <= 0) { /* Covered by above */ }
+        }
+      }
+    }
+    // --- END: New Validation ---
+
 
     if (this.routineForm.invalid || (!this.exercisesFormArray || this.exercisesFormArray.length === 0)) {
       this.routineForm.markAllAsTouched(); // Show validation errors on form controls
-      this.showErrorMessage('Please fill in all required fields and correct any errors.', 10000); // Generic fallback error
+      this.alertService.showAlert('Validation Error', 'Please fill in all required fields and correct any errors in the routine details [Routine name and at least an exercise with valid parameters].');
       console.log('Form Errors:', this.getFormErrors(this.routineForm));
       return;
     }
@@ -623,7 +706,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
     // Prepare payload, ensuring weight is in KG
     const routinePayload: Routine = {
-      id: this.isEditMode && this.currentRoutineId ? this.currentRoutineId : uuidv4(),
+      id: (this.isEditMode || this.isNewMode) && this.currentRoutineId ? this.currentRoutineId : uuidv4(), // Corrected ID logic for new mode
       name: formValue.name,
       description: formValue.description,
       goal: formValue.goal,
@@ -642,17 +725,31 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       // Other routine properties like lastPerformed, estimatedDuration etc.
     };
 
-
-    if (this.isNewMode) {
-      this.workoutService.addRoutine(routinePayload);
-      this.alertService.showAlert("Info", "Routine added successfully!");
-    } else if (this.isEditMode) {
-      this.workoutService.updateRoutine(routinePayload);
-      this.alertService.showAlert("Info", "Routine updated successfully!");
-    } else {
-      this.alertService.showAlert("Info", "No operation done!");
+    // If it's a truly new routine (not an edit that was navigated to via '/new/:id' pattern)
+    // ensure a new ID is generated if currentRoutineId was null (which it should be for brand new)
+    if (this.isNewMode && !this.currentRoutineId) {
+        routinePayload.id = uuidv4();
     }
-    this.router.navigate(['/workout']);
+
+
+    try {
+        if (this.isNewMode) {
+          this.workoutService.addRoutine(routinePayload);
+          this.alertService.showAlert("Success", "Routine added successfully!");
+        } else if (this.isEditMode && this.currentRoutineId) { // Ensure currentRoutineId for edit
+          this.workoutService.updateRoutine(routinePayload);
+          this.alertService.showAlert("Success", "Routine updated successfully!");
+        } else {
+          // This case should ideally not be reached if modes are set correctly
+          this.alertService.showAlert("Warning", "No save operation performed. Mode is unclear or routine ID is missing for edit.", 'warning');
+          console.warn("Submit called in unexpected state:", {isNewMode: this.isNewMode, isEditMode: this.isEditMode, currentRoutineId: this.currentRoutineId });
+          return; // Prevent navigation if no operation was done
+        }
+        this.router.navigate(['/workout']);
+    } catch (e: any) {
+        console.error("Error saving routine:", e);
+        this.alertService.showAlert("Error", `Failed to save routine: ${e.message || 'Unknown error'}`, 'error');
+    }
   }
 
   private validateSupersetIntegrity(): boolean {

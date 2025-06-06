@@ -1,0 +1,37 @@
+<div *ngIf="isVisible"
+  class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/70 backdrop-blur-sm transition-opacity duration-300 ease-in-out"
+  [class.opacity-100]="isVisible" [class.opacity-0]="!isVisible">
+
+  <div class="relative flex flex-col items-center justify-center text-white">
+    <!-- Circular Timer SVG -->
+    <svg #progressCircleSvg class="w-64 h-64 md:w-80 md:h-80 transform -rotate-90" viewBox="0 0 200 200">
+      <!-- Background Circle -->
+      <circle cx="100" cy="100" [attr.r]="getCircleRadius()" fill="transparent" stroke="rgba(255, 255, 255, 0.2)"
+        stroke-width="12" />
+      <!-- Progress Circle -->
+      <circle cx="100" cy="100" [attr.r]="getCircleRadius()" fill="transparent" stroke="currentColor"
+        class="text-blue-500  dark:text-blue-400" stroke-width="14" [attr.stroke-dasharray]="getCircleCircumference()"
+        [attr.stroke-dashoffset]="strokeDashoffset()" stroke-linecap="round" />
+    </svg>
+
+    <!-- Timer Text Content -->
+    <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+      <div class="text-6xl md:text-7xl font-bold tabular-nums">
+        {{ displayTime() }}
+      </div>
+      <div class="mt-2 text-xl md:text-2xl font-medium uppercase tracking-wider">
+        {{ mainText }}
+      </div>
+      <div *ngIf="nextUpText" class="mt-1 text-sm md:text-base text-gray-300">
+        Next: {{ nextUpText }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Skip Button -->
+  <button (click)="skipTimer()"
+    class="mt-12 py-3 px-8 bg-white/20 hover:bg-white/30 text-white font-semibold rounded-lg shadow-md transition-colors duration-150 text-lg">
+    Skip
+  </button>
+
+</div>

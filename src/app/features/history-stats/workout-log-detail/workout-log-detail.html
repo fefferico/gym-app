@@ -9,12 +9,18 @@
       Back to Workout History
     </a>
 
-    <!-- NEW BUTTON TO VIEW SUMMARY -->
-    <button *ngIf="workoutLog() as log" [routerLink]="['/workout/summary', log.id]"
-      class="bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium py-2 px-4 rounded-md shadow-sm transition-colors">
-      View Session Summary
-    </button>
-    <!-- END NEW BUTTON -->
+    <div>
+      <button *ngIf="workoutLog() as log" [routerLink]="['/workout/summary', log.id]"
+        class="bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium py-2 px-4 rounded-md shadow-sm transition-colors mr-2">
+        View Session Summary
+      </button>
+      <!-- EDIT BUTTON -->
+      <button *ngIf="workoutLog() as log" [routerLink]="['/history/edit', log.id]"
+        class="bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-medium py-2 px-4 rounded-md shadow-sm transition-colors">
+        Edit Log
+      </button>
+      <!-- REMOVE SAVE/CANCEL FROM HERE, MOVED TO MANUAL-LOG-ENTRY -->
+    </div>
   </div>
 
   <ng-container *ngIf="workoutLog() as log; else loadingOrNotFound">

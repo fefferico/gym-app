@@ -6,6 +6,8 @@ import { Routine } from '../../core/models/workout.model';
 import { WorkoutService } from '../../core/services/workout.service';
 import { AlertService } from '../../core/services/alert.service';
 import { SpinnerService } from '../../core/services/spinner.service';
+import { TrackingService } from '../../core/services/tracking.service';
+import { WorkoutLog } from '../../core/models/workout-log.model';
 // You might want a confirmation dialog service later for delete
 // import { ConfirmationDialogService } from '../../shared/services/confirmation-dialog.service';
 
@@ -18,6 +20,7 @@ import { SpinnerService } from '../../core/services/spinner.service';
 })
 export class RoutineListComponent implements OnInit {
   private workoutService = inject(WorkoutService);
+  private trackingService = inject(TrackingService);
   private router = inject(Router);
   private alertService = inject(AlertService);
   private spinnerService = inject(SpinnerService);
@@ -51,17 +54,21 @@ export class RoutineListComponent implements OnInit {
     this.router.navigate(['/workout/edit', routineId]);
   }
 
-  deleteRoutine(routineId: string, event: MouseEvent): void {
+  async deleteRoutine(routineId: string, event: MouseEvent): Promise<void> {
     event.stopPropagation(); // Prevent card click
 
-    // Basic confirm for now. Replace with a nice modal dialog later.
-    this.alertService.showConfirm("Info", "Are you sure you want to delete this routine? This action cannot be undone.").then((result) => {
-      console.log(result);
-      if (result && (result.data)) {
-        this.workoutService.deleteRoutine(routineId);
-        this.alertService.showAlert("Info","Routine deleted successfully!");
-      }
-    })
+
+    const routineLogs$: Observable<WorkoutLog[]> = this.trackingService.getWorkoutLogsByRoutineId(routineId);
+    let routinesLength = 0;
+    routineLogs$.subscribe(result => {
+      routinesLength = result.length
+    }); 
+
+    await this.trackingService.clearWorkoutLogsByRoutineId(routineId);
+    
+    
+
+
   }
 
   startWorkout(routineId: string, event: MouseEvent): void {

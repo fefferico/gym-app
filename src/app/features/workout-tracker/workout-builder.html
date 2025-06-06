@@ -66,7 +66,9 @@
                             </button>
                         </div>
 
-                        <div cdkDrag [cdkDragData]="exerciseControl" [formGroupName]="exIndex"
+                        <div cdkDrag 
+                        [cdkDragDisabled]="isViewMode"
+                        [cdkDragData]="exerciseControl" [formGroupName]="exIndex"
                             class="p-4 border rounded-lg shadow space-y-4 exercise-item relative transition-all duration-150 ease-in-out"
                             [ngClass]="{
                                 'border-orange-500 dark:border-orange-400 bg-orange-100 dark:bg-orange-900/20': exerciseControl.get('supersetId')?.value,
@@ -90,7 +92,7 @@
                                 </svg>
                             </div>
 
-                            <div class="flex items-start justify-between pb-2" [ngClass]="{
+                            <div class="flex-row sm:flex-col md:flex-col lg:flex-row xl:flex-row justify-center h-full pb-1" [ngClass]="{
                                     'border-b border-orange-300 dark:border-orange-600': exerciseControl.get('supersetId')?.value && (exerciseControl.get('supersetOrder')?.value ?? -1) < ((exerciseControl.get('supersetSize')?.value ?? 0) -1),
                                     'border-b border-gray-200 dark:border-gray-600': !exerciseControl.get('supersetId')?.value || (exerciseControl.get('supersetOrder')?.value ?? -1) === ((exerciseControl.get('supersetSize')?.value ?? 0) -1)
                                  }">
@@ -113,7 +115,7 @@
                                         <label [for]="'rounds-' + exIndex"
                                             class="text-xs font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap">Rounds:</label>
                                         <input type="number" [id]="'rounds-' + exIndex" formControlName="rounds" min="1"
-                                            class="w-16 p-1 text-sm border-gray-300 dark:border-gray-600 rounded-md focus:ring-primary focus:border-primary dark:bg-gray-200 disabled:opacity-50 disabled:bg-gray-200 dark:disabled:bg-gray-700"
+                                            class="w-16 p-1 text-sm border-gray-300 dark:border-gray-600 border-2 rounded-md focus:ring-primary focus:border-primary dark:bg-gray-200 disabled:opacity-50 disabled:bg-gray-200 dark:disabled:bg-gray-700"
                                             [readonly]="exerciseControl.get('supersetId')?.value && (exerciseControl.get('supersetOrder')?.value ?? 0) > 0"
                                             (change)="syncSupersetRounds(exerciseControl.get('supersetId')?.value, exerciseControl.get('rounds')?.value, exIndex)">
                                     </div>

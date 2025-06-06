@@ -1,10 +1,10 @@
-import { Component, inject, OnInit, OnDestroy, signal, computed, WritableSignal } from '@angular/core';
-import { CommonModule, TitleCasePipe, DatePipe } from '@angular/common';
+import { Component, inject, OnInit, OnDestroy, signal, computed, WritableSignal, ChangeDetectorRef, HostListener } from '@angular/core';
+import { CommonModule, TitleCasePipe, DatePipe, DecimalPipe } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subscription, Observable, of, timer } from 'rxjs';
 import { switchMap, tap, map, takeWhile, take } from 'rxjs/operators';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms'; // Add FormBuilder, FormGroup, Validators, ReactiveFormsModule
-
+import { FullScreenRestTimerComponent } from '../../shared/components/full-screen-rest-timer/full-screen-rest-timer'; // Adjust path
 
 import { Routine, WorkoutExercise, ExerciseSetParams } from '../../core/models/workout.model';
 import { Exercise } from '../../core/models/exercise.model'; // To fetch full exercise details
@@ -13,6 +13,10 @@ import { ExerciseService } from '../../core/services/exercise.service';
 import { TrackingService } from '../../core/services/tracking.service'; // For saving at the end
 import { LoggedSet, LoggedWorkoutExercise, WorkoutLog, LastPerformanceSummary, PersonalBestSet } from '../../core/models/workout-log.model'; // For constructing the log
 import { WeightUnitPipe } from '../../shared/pipes/weight-unit-pipe';
+import { AlertComponent } from '../../shared/components/alert/alert.component';
+import { AlertService } from '../../core/services/alert.service';
+import { StorageService } from '../../core/services/storage.service';
+import { AlertButton } from '../../core/models/alert.model';
 
 // Interface to manage the state of the currently active set/exercise
 interface ActiveSetInfo {
@@ -29,6 +33,42 @@ interface ActiveSetInfo {
   notes?: string;
 }
 
+interface PausedWorkoutState {
+  version: string; // For future schema changes
+  routineId: string | null;
+  sessionRoutine: Routine; // The potentially modified routine
+  currentExerciseIndex: number;
+  currentSetIndex: number;
+  currentWorkoutLogExercises: LoggedWorkoutExercise[];
+  workoutStartTimeOriginal: number; // The very first start time of this session attempt
+  sessionTimerElapsedSecondsBeforePause: number;
+  currentBlockRound: number;
+  totalBlockRounds: number;
+
+  // Active set timer state
+  timedSetTimerState: TimedSetState;
+  timedSetElapsedSeconds: number; // This is the total elapsed for the active set's timer
+
+  // Rest timer state (for FullScreenRestTimerComponent)
+  isResting: boolean; // Was the player in a general resting phase
+  isRestTimerVisibleOnPause: boolean; // Was the full screen timer specifically visible
+  restTimerRemainingSecondsOnPause: number;
+  restTimerInitialDurationOnPause: number;
+  restTimerMainTextOnPause: string;
+  restTimerNextUpTextOnPause: string | null;
+
+  // Additional data to restore UI accurately
+  lastPerformanceForCurrentExercise: LastPerformanceSummary | null;
+  // Note: currentBaseExercise and exercisePBs are typically re-fetched on load based on exerciseId
+}
+
+enum SessionState {
+  Loading = 'loading', // New initial state
+  Playing = 'playing',
+  Paused = 'paused',
+  Error = 'error', // If routine fails to load initially
+}
+
 enum TimedSetState {
   Idle = 'idle', // Not started or reset
   Running = 'running',
@@ -38,9 +78,10 @@ enum TimedSetState {
 @Component({
   selector: 'app-workout-player',
   standalone: true,
-  imports: [CommonModule, RouterLink, DatePipe, ReactiveFormsModule, FormsModule, WeightUnitPipe],
+  imports: [CommonModule, RouterLink, DatePipe, ReactiveFormsModule, FormsModule, WeightUnitPipe, FullScreenRestTimerComponent],
   templateUrl: './workout-player.html',
   styleUrl: './workout-player.scss',
+  providers: [DecimalPipe]
 })
 export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
@@ -48,7 +89,19 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   private workoutService = inject(WorkoutService);
   private exerciseService = inject(ExerciseService);
   protected trackingService = inject(TrackingService);
+  protected alertService = inject(AlertService);
   private fb = inject(FormBuilder); // Inject FormBuilder
+  private storageService = inject(StorageService); // Inject StorageService
+  private cdr = inject(ChangeDetectorRef); // For manual change detection if needed
+
+  private readonly PAUSED_WORKOUT_KEY = 'fitTrackPro_pausedWorkoutState';
+  private readonly PAUSED_STATE_VERSION = '1.0';
+
+  // Signals for rest timer
+  isRestTimerVisible = signal(false);
+  restDuration = signal(0);
+  restTimerMainText = signal('RESTING');
+  restTimerNextUpText = signal<string | null>(null);
 
   currentSetForm!: FormGroup;
 
@@ -67,17 +120,46 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
   private routeSub: Subscription | undefined;
   private timerSub: Subscription | undefined;
-  private restTimerSub: Subscription | undefined;
+  //private restTimerSub: Subscription | undefined;
 
   sessionTimerDisplay = signal('00:00:00');
   restTimerDisplay = signal<string | null>(null);
-  isResting = signal(false);
+  // isResting = signal(false); // Controlled by rest period logic, FullScreenTimer visibility
 
   // --- NEW Signals for Round Tracking ---
   /** Current round for the active exercise block (1-indexed for display) */
   currentBlockRound = signal(1);
   /** Total rounds planned for the active exercise block */
   totalBlockRounds = signal(1);
+
+  // Rest timer specific pause states - to restore the FullScreenRestTimer
+  private wasRestTimerVisibleOnPause = false;
+  private restTimerRemainingSecondsOnPause = 0;
+  private restTimerInitialDurationOnPause = 0;
+  private restTimerMainTextOnPause = 'RESTING';
+  private restTimerNextUpTextOnPause: string | null = null;
+
+  // Use HostListener for the beforeunload event
+  @HostListener('window:beforeunload', ['$event'])
+  unloadNotification($event: BeforeUnloadEvent): void {
+    if (this.sessionState() === SessionState.Playing && this.routine() && this.currentWorkoutLogExercises().length > 0) {
+      // If a workout is in progress and some sets have been logged
+      // Attempt to save. This is a best-effort.
+      console.log('Attempting to save session state on beforeunload...');
+      this.captureAndSaveStateForUnload();
+
+      // Standard practice for beforeunload to show a browser-native confirmation
+      // $event.returnValue = true; // For older browsers
+      // For modern browsers, you just need to set returnValue, but the message is generic
+      // and controlled by the browser, not by your custom string.
+      // Note: Some browsers might not show the prompt if the user has interacted little with the page.
+      // Comment this out if you don't want the browser's native "leave site?" prompt.
+      // if (this.currentWorkoutLogExercises().length > 0) { // Only prompt if there's progress
+      //   $event.preventDefault(); // Standard way to trigger the prompt
+      //   $event.returnValue = 'Changes you made may not be saved.'; // This message is often ignored by modern browsers
+      // }
+    }
+  }
 
   // Computed signal for the currently active set/exercise details
   activeSetInfo = computed<ActiveSetInfo | null>(() => {
@@ -150,50 +232,31 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   editingTarget: 'reps' | 'weight' | 'duration' | null = null;
   editingTargetValue: number | string = ''; // string to handle potential empty input before parsing
 
+
+  // PAUSE HANDLING
+  sessionState = signal<SessionState>(SessionState.Loading); // Initial state
+
+  // For session timer pausing
+  private sessionTimerElapsedSecondsBeforePause = 0;
+
+  // For active set timer pausing
+  private timedSetElapsedSecondsBeforePause = 0;
+  private wasTimedSetRunningOnPause = false;
+
+  // PAUSE HANDLING
+
   constructor() { // No need to inject FormBuilder here if using inject() for properties
     this.initializeCurrentSetForm(); // Initialize the form structure
   }
 
   // Modify ngOnInit to initialize round trackers when routine is first set
-  ngOnInit(): void {
-    this.workoutStartTime = Date.now();
-    this.startSessionTimer();
-
-    this.routeSub = this.route.paramMap.pipe(
-      switchMap(params => {
-        this.routineId = params.get('routineId');
-        if (this.routineId) {
-          return this.workoutService.getRoutineById(this.routineId).pipe(
-            map(originalRoutine => originalRoutine ? JSON.parse(JSON.stringify(originalRoutine)) as Routine : null)
-          );
-        }
-        return of(null);
-      }),
-      tap(sessionRoutineCopy => {
-        if (sessionRoutineCopy) {
-          this.routine.set(sessionRoutineCopy);
-          // Initialize round trackers for the very first block when routine loads
-          if (sessionRoutineCopy.exercises.length > 0) {
-            const firstExerciseOfRoutine = sessionRoutineCopy.exercises[0];
-            // A block is defined by a standalone exercise or the first exercise of a superset
-            if (!firstExerciseOfRoutine.supersetId || firstExerciseOfRoutine.supersetOrder === 0) {
-              this.totalBlockRounds.set(firstExerciseOfRoutine.rounds ?? 1);
-            } else { // Should not happen if routine structure is good, but defensively:
-              // Try to find the actual start of its superset block if it's not the first
-              const actualBlockStart = sessionRoutineCopy.exercises.find(ex => ex.supersetId === firstExerciseOfRoutine.supersetId && ex.supersetOrder === 0);
-              this.totalBlockRounds.set(actualBlockStart?.rounds ?? 1);
-            }
-          } else {
-            this.totalBlockRounds.set(1);
-          }
-          this.currentBlockRound.set(1); // Always start at round 1
-          this.prepareCurrentSet(); // Prepare the first set
-        } else {
-          this.routine.set(null);
-          console.error('WorkoutPlayer: Routine not found or ID missing.');
-        }
-      })
-    ).subscribe();
+  async ngOnInit(): Promise<void> {
+    const hasPausedSession = await this.checkForPausedSession();
+    if (!hasPausedSession) {
+      // No paused session, or user chose not to resume, so load new workout
+      this.loadNewWorkoutFromRoute();
+    }
+    // If hasPausedSession was true, checkForPausedSession already handled loading it.
   }
 
   private resetAndPatchCurrentSetForm(): void {
@@ -236,40 +299,22 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
   private startSessionTimer(): void {
-    this.timerSub = timer(0, 1000).pipe(
-      map(() => Math.floor((Date.now() - this.workoutStartTime) / 1000))
-    ).subscribe(elapsedSeconds => {
-      const hours = Math.floor(elapsedSeconds / 3600);
-      const minutes = Math.floor((elapsedSeconds % 3600) / 60);
-      const seconds = elapsedSeconds % 60;
-      this.sessionTimerDisplay.set(
-        `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
-      );
-    });
-  }
+    // console.log('Starting session timer. Was paused seconds:', this.sessionTimerElapsedSecondsBeforePause, 'New startTime:', this.workoutStartTime);
+    if (this.sessionState() === SessionState.Paused) return;
+    if (this.timerSub) this.timerSub.unsubscribe(); // Ensure no multiple timers
 
-  // Modify `startRestTimer` to potentially show what's next, considering supersets.
-  startRestTimer(durationSeconds: number): void {
-    if (this.restTimerSub) {
-      this.restTimerSub.unsubscribe();
-    }
-    this.isResting.set(true);
-    let remaining = durationSeconds;
-    this.updateRestTimerDisplay(remaining); // Show initial time immediately
+    this.timerSub = timer(0, 1000).subscribe(() => {
+      if (this.sessionState() === SessionState.Playing) {
+        const currentDeltaSeconds = Math.floor((Date.now() - this.workoutStartTime) / 1000);
+        const totalElapsedSeconds = this.sessionTimerElapsedSecondsBeforePause + currentDeltaSeconds;
 
-    const currentActiveInfo = this.activeSetInfo(); // Get info about the set JUST COMPLETED
-    const routine = this.routine();
-
-    this.restTimerSub = timer(0, 1000).pipe( // Emit immediately, then every second
-      takeWhile(() => remaining >= 0)
-    ).subscribe(() => {
-      this.updateRestTimerDisplay(remaining);
-      if (remaining === 0) {
-        this.isResting.set(false);
-        this.restTimerDisplay.set(null); // Clear display when rest ends
-        // Optional: Play a sound
+        const hours = Math.floor(totalElapsedSeconds / 3600);
+        const minutes = Math.floor((totalElapsedSeconds % 3600) / 60);
+        const seconds = totalElapsedSeconds % 60;
+        this.sessionTimerDisplay.set(
+          `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+        );
       }
-      remaining--;
     });
   }
 
@@ -277,14 +322,6 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     const minutes = Math.floor(seconds / 60);
     const secs = seconds % 60;
     this.restTimerDisplay.set(`${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`);
-  }
-
-  skipRest(): void {
-    if (this.restTimerSub) {
-      this.restTimerSub.unsubscribe();
-    }
-    this.isResting.set(false);
-    this.restTimerDisplay.set(null);
   }
 
   // Make sure this method is still present and correct from your version
@@ -315,51 +352,67 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   // Ensure finishWorkout uses the latest `this.routine()` for `routineName`
   // and `this.currentWorkoutLogExercises()` for exercises.
   // The logic for updating `routine.lastPerformed` should also use the session copy.
-finishWorkout(): void {
-  if (this.timerSub) this.timerSub.unsubscribe();
-  if (this.restTimerSub) this.restTimerSub.unsubscribe();
+  finishWorkout(): void {
+    if (this.sessionState() === SessionState.Paused) {
+      this.alertService.showAlert("Info", "Please resume the workout before finishing.", "warning");
+      return;
+    }
+    if (this.sessionState() === SessionState.Loading) {
+      this.alertService.showAlert("Info", "Workout is still loading.", "warning");
+      return;
+    }
 
-  const sessionRoutineValue = this.routine();
-  const endTime = Date.now();
-  const durationMinutes = Math.round((endTime - this.workoutStartTime) / (1000 * 60));
+    if (this.timerSub) this.timerSub.unsubscribe();
 
-  const finalLog: Omit<WorkoutLog, 'id'> = {
-    routineId: this.routineId || undefined,
-    routineName: sessionRoutineValue?.name || 'Ad-hoc Workout',
-    startTime: this.workoutStartTime,
-    endTime: endTime,
-    durationMinutes: durationMinutes,
-    exercises: this.currentWorkoutLogExercises(),
-    date: new Date(this.workoutStartTime).toISOString().split('T')[0], // Ensure date is set correctly
-    // overallNotes: get from a form field if you add one to player
-  };
+    const sessionRoutineValue = this.routine();
+    const endTime = Date.now();
+    const durationMinutes = Math.round((endTime - this.workoutStartTime) / (1000 * 60));
 
-  const savedLog = this.trackingService.addWorkoutLog(finalLog);
-  console.log('Workout Finished and Logged! Log ID:', savedLog.id);
+    const finalLog: Omit<WorkoutLog, 'id'> = {
+      routineId: this.routineId || undefined,
+      routineName: sessionRoutineValue?.name || 'Ad-hoc Workout',
+      startTime: this.workoutStartTime,
+      endTime: endTime,
+      durationMinutes: durationMinutes,
+      exercises: this.currentWorkoutLogExercises(),
+      date: new Date(this.workoutStartTime).toISOString().split('T')[0], // Ensure date is set correctly
+      // overallNotes: get from a form field if you add one to player
+    };
 
-  // Update original routine's lastPerformed date
-  if (this.routineId && sessionRoutineValue) {
+    const savedLog = this.trackingService.addWorkoutLog(finalLog);
+    console.log('Workout Finished and Logged! Log ID:', savedLog.id);
+
+    // Update original routine's lastPerformed date
+    if (this.routineId && sessionRoutineValue) {
       this.workoutService.getRoutineById(this.routineId).pipe(take(1)).subscribe(originalRoutine => {
-          if (originalRoutine) {
-              const updatedOriginalRoutine = {
-                  ...originalRoutine,
-                  lastPerformed: new Date(this.workoutStartTime).toISOString()
-              };
-              this.workoutService.updateRoutine(updatedOriginalRoutine);
-          }
+        if (originalRoutine) {
+          const updatedOriginalRoutine = {
+            ...originalRoutine,
+            lastPerformed: new Date(this.workoutStartTime).toISOString()
+          };
+          this.workoutService.updateRoutine(updatedOriginalRoutine);
+        }
       });
+    }
+
+    this.storageService.removeItem(this.PAUSED_WORKOUT_KEY); // Clear paused state on successful finish
+    // Instead of alert, navigate to the summary page
+    this.router.navigate(['/workout/summary', savedLog.id]); // <<<< MODIFIED NAVIGATION
   }
 
-  // Instead of alert, navigate to the summary page
-  this.router.navigate(['/workout/summary', savedLog.id]); // <<<< MODIFIED NAVIGATION
-}
 
-
-  quitWorkout(): void {
-    const confirmQuit = confirm('Are you sure you want to quit this workout? Progress will not be saved.');
-    if (confirmQuit) {
+  // Modify quitWorkout to handle paused state
+  async quitWorkout(): Promise<void> {
+    const confirmQuit = await this.alertService.showConfirm(
+      "Quit Workout",
+      'Are you sure you want to quit this workout? Any unsaved progress for this session will be lost if you haven\'t paused it.'
+    ); // Adjusted message
+    if (confirmQuit && confirmQuit.data) {
+      this.sessionState.set(SessionState.Playing); // Effectively end the session conceptually
       if (this.timerSub) this.timerSub.unsubscribe();
-      if (this.restTimerSub) this.restTimerSub.unsubscribe();
+      if (this.timedSetIntervalSub) this.timedSetIntervalSub.unsubscribe();
+      this.isRestTimerVisible.set(false);
+      this.storageService.removeItem(this.PAUSED_WORKOUT_KEY); // Clear any paused state
       this.router.navigate(['/workout']);
     }
   }
@@ -370,6 +423,11 @@ finishWorkout(): void {
   }
 
   toggleTimedSetTimer(): void {
+    if (this.sessionState() === SessionState.Paused) {
+      this.alertService.showAlert("Info", "Session is paused. Please resume to use the timer.", "warning");
+      return;
+    }
+
     const currentState = this.timedSetTimerState();
     if (currentState === TimedSetState.Idle || currentState === TimedSetState.Paused) {
       this.startOrResumeTimedSet();
@@ -427,7 +485,7 @@ finishWorkout(): void {
 
   // ... (other properties and methods) ...
 
-  checkIfLatestSetOfLatestExercise(): boolean {
+  checkIfLatestSetOfWorkout(): boolean {
     const routine = this.routine(); // Get the current routine from the signal
     const activeInfo = this.activeSetInfo(); // Get the current active set info
 
@@ -450,6 +508,22 @@ finishWorkout(): void {
 
     // console.log(`checkIfLatest: LastExercise=${isLastExercise}, LastSet=${isLastSetOfCurrentExercise}`);
     return isLastSetOfCurrentExercise; // True only if it's the last set of the last exercise
+  }
+
+  checkIfLatestSetOfExercise(): boolean {
+    const routine = this.routine(); // Get the current routine from the signal
+    const activeInfo = this.activeSetInfo(); // Get the current active set info
+
+    // 1. Check if routine or activeInfo is available
+    if (!routine || !activeInfo) {
+      // console.log('checkIfLatest: Routine or activeInfo not available');
+      return false; // Cannot determine if routine or active set isn't loaded
+    }
+
+    // 2. check if it's the last set of that exercise
+    const currentExerciseData = routine.exercises[activeInfo.exerciseIndex];
+    const isLastSetOfCurrentExercise = activeInfo.setIndex === currentExerciseData.sets.length - 1;
+    return isLastSetOfCurrentExercise;
   }
 
   // Renamed and enhanced
@@ -564,19 +638,11 @@ finishWorkout(): void {
     return value || 'N/A';
   }
 
-  ngOnDestroy(): void {
-    if (this.routeSub) this.routeSub.unsubscribe();
-    if (this.timerSub) this.timerSub.unsubscribe();
-    if (this.restTimerSub) this.restTimerSub.unsubscribe();
-    if (this.timedSetIntervalSub) {
-      this.timedSetIntervalSub.unsubscribe();
-    }
-  }
-
-
-
-
   private initializeCurrentSetForm(): void {
+    if (this.sessionState() === SessionState.Paused) {
+      console.log("PrepareCurrentSet: Session is paused, deferring preparation.");
+      return;
+    }
     this.currentSetForm = this.fb.group({
       actualReps: [null as number | null, [Validators.min(0)]],
       actualWeight: [null as number | null, [Validators.min(0)]],
@@ -587,6 +653,10 @@ finishWorkout(): void {
 
   // Central method to prepare the current set with suggestions and patch the form
   private async prepareCurrentSet(): Promise<void> {
+    if (this.sessionState() === SessionState.Paused) {
+      console.log("PrepareCurrentSet: Session is paused, deferring preparation.");
+      return;
+    }
     const sessionRoutine = this.routine(); // Get the current session's routine copy
     const exIndex = this.currentExerciseIndex();
     const sIndex = this.currentSetIndex();
@@ -657,6 +727,10 @@ finishWorkout(): void {
 
   // Renamed to be more specific
   private patchActualsFormBasedOnSessionTargets(): void {
+    if (this.sessionState() === SessionState.Paused) {
+      console.log("PrepareCurrentSet: Session is paused, deferring preparation.");
+      return;
+    }
     this.currentSetForm.reset();
     this.resetTimedSet();
 
@@ -800,8 +874,8 @@ finishWorkout(): void {
     this.currentSetIndex.set(nextSetIndexInExercise);
 
     // Start rest timer using the rest period of the set that was JUST COMPLETED
-    if (completedActiveInfo.setData.restAfterSet > 0 && !this.isResting()) {
-      this.startRestTimer(completedActiveInfo.setData.restAfterSet);
+    if (completedActiveInfo.setData.restAfterSet > 0) {
+      this.startRestPeriod(completedActiveInfo.setData.restAfterSet);
     }
 
     this.prepareCurrentSet(); // Prepare UI and data for the new active set
@@ -842,6 +916,11 @@ finishWorkout(): void {
   }
 
   completeSetAndProceed(): void {
+    if (this.sessionState() === SessionState.Paused) {
+      this.alertService.showAlert("Info", "Session is paused. Please resume to continue.", "warning");
+      return;
+    }
+
     const activeInfo = this.activeSetInfo(); // Uses current (potentially session-modified) routine() state
     const currentRoutineValue = this.routine();
     if (!activeInfo || !currentRoutineValue) {
@@ -866,7 +945,7 @@ finishWorkout(): void {
       exerciseId: activeInfo.exerciseData.exerciseId,
       repsAchieved: formValues.actualReps ?? activeInfo.setData.reps ?? 0,
       weightUsed: formValues.actualWeight ?? activeInfo.setData.weight,
-      durationPerformed: activeInfo.setData.duration ? (formValues.actualDuration ?? 0) : undefined,
+      durationPerformed: formValues.actualDuration ?? activeInfo.setData.duration,
       // Store the targets that were active for THIS SESSION (could be suggested or user-edited)
       targetReps: activeInfo.setData.reps,
       targetWeight: activeInfo.setData.weight,
@@ -877,8 +956,16 @@ finishWorkout(): void {
     };
     this.addLoggedSetToCurrentLog(activeInfo.exerciseData, loggedSetData);
 
-    if (activeInfo.setData.restAfterSet > 0 && !this.isResting()) {
-      this.startRestTimer(activeInfo.setData.restAfterSet);
+    // --- AUTO-SAVE CHECKPOINT ---
+    if (this.sessionState() === SessionState.Playing) { // Only save if actively playing
+      this.captureAndSaveStateForUnload(); // Re-use the synchronous save logic
+      console.log('Auto-saved checkpoint after completing a set.');
+    }
+    // --- END AUTO-SAVE ---
+
+    if (activeInfo.setData.restAfterSet > 0) {
+      this.startRestPeriod(activeInfo.setData.restAfterSet);
+      //this.startRestTimer(activeInfo.setData.restAfterSet);
     }
 
     this.resetTimedSet();
@@ -957,4 +1044,412 @@ finishWorkout(): void {
     }
     return -1; // No more blocks
   }
+
+  getDisabled(): boolean {
+    if (this.timedSetTimerState() == 'running') {
+      return true;
+    }
+    return false;
+  }
+
+  // Modify your existing rest logic
+  // Add the isResuming flag to startRestPeriod
+  private startRestPeriod(duration: number, isResumingPausedRest: boolean = false): void {
+    if (this.sessionState() === SessionState.Paused && !isResumingPausedRest) {
+      // If session is globally paused, and this isn't a direct call to resume a paused rest,
+      // then don't start a new rest period.
+      console.log("Session is paused, deferring rest period start.");
+      // Store the intended rest to be started on resume, if necessary
+      this.wasRestTimerVisibleOnPause = true; // Mark that a rest was due
+      this.restTimerRemainingSecondsOnPause = duration;
+      this.restTimerInitialDurationOnPause = duration;
+      this.restTimerMainTextOnPause = (this.activeSetInfo()?.setData?.restAfterSet === 0 && this.activeSetInfo()?.exerciseData?.supersetId) ? 'SUPERSET TRANSITION' : 'RESTING';
+      if (this.routine() !== undefined && this.routine() !== null) {
+        this.restTimerNextUpTextOnPause = this.getNextUpText(this.activeSetInfo(), this.routine() as Routine);
+      }
+      return;
+    }
+
+    //this.isResting.set(true); // isRestTimerVisible signal will control this now
+
+    if (duration > 0) {
+      const currentRoutineValue = this.routine();
+
+      this.restDuration.set(duration); // This is the total duration for this rest
+      if (!isResumingPausedRest) { // If not resuming, set texts normally
+        this.restTimerMainText.set(
+          this.activeSetInfo()?.setData?.restAfterSet === 0 && this.activeSetInfo()?.exerciseData?.supersetId ?
+            'SUPERSET TRANSITION' : 'RESTING'
+        );
+        this.restTimerNextUpText.set(this.getNextUpText(this.activeSetInfo(), currentRoutineValue !== undefined ? currentRoutineValue : null));
+      } else { // If resuming, use the stored texts
+        this.restTimerMainText.set(this.restTimerMainTextOnPause);
+        this.restTimerNextUpText.set(this.restTimerNextUpTextOnPause);
+      }
+      this.isRestTimerVisible.set(true);
+    } else {
+      this.isRestTimerVisible.set(false); // Ensure it's hidden if duration is 0
+      // If duration is 0, FullScreenRestTimerComponent's timerFinished will emit immediately.
+      // Or, we can directly call the logic that endRestPeriod would call.
+      // For simplicity, let FullScreenRestTimer handle the immediate finish.
+      // If FullScreenRestTimer is not shown for 0 duration, then:
+      // this.handleRestTimerFinished(); // Or equivalent logic
+    }
+  }
+
+  handleRestTimerFinished(): void {
+    this.isRestTimerVisible.set(false);
+    // this.isResting.set(false);
+    if (this.sessionState() === SessionState.Playing) {
+      // Proceed to next set/exercise ONLY if the main session is playing.
+      // This check is important if the timer finishes while the session was globally paused
+      // (though ideally, the timer component itself would be paused).
+      // Logic to advance to next set/exercise is now primarily in completeSetAndProceed's call to navigateToNextStep...
+      // This handler's main job is to hide the timer.
+      // If the rest finishing *itself* should trigger next step without 'complete set' button:
+      // const activeInfo = this.activeSetInfo();
+      // const currentRoutineVal = this.routine();
+      // if(activeInfo && currentRoutineVal) {
+      //    this.navigateToNextStepInWorkout(activeInfo, currentRoutineVal);
+      // }
+    }
+  }
+
+  handleRestTimerSkipped(): void {
+    this.isRestTimerVisible.set(false);
+    // this.isResting.set(false);
+    if (this.sessionState() === SessionState.Playing) {
+      // Similar to timer finished, allow user to proceed or auto-proceed.
+      // If skipping implies immediately going to the next thing:
+      // const activeInfo = this.activeSetInfo();
+      // const currentRoutineVal = this.routine();
+      // if(activeInfo && currentRoutineVal) {
+      //    this.navigateToNextStepInWorkout(activeInfo, currentRoutineVal);
+      // }
+    }
+  }
+
+  skipRest(): void { // This method is for a potential button OUTSIDE the FullScreenTimer
+    if (this.sessionState() === SessionState.Paused) {
+      this.alertService.showAlert("Info", "Session is paused. Resume to skip rest.", "warning");
+      return;
+    }
+    if (this.isRestTimerVisible()) {
+      // Command the FullScreenRestTimer to skip
+      // This assumes FullScreenRestTimerComponent might have a public method or another way to be skipped.
+      // For now, we'll just use its output event.
+      this.handleRestTimerSkipped(); // This will hide it.
+    } else {
+      console.log("Skip rest called, but no active rest timer visible.");
+    }
+  }
+
+  // --- PAUSE SESSION ---
+  async pauseSession(): Promise<void> {
+    if (this.sessionState() !== SessionState.Playing) return; // Can only pause if playing
+
+    const customBtns: AlertButton[] = [{
+      text: 'Cancel',
+      role: 'cancel',
+      data: false,
+      cssClass: 'bg-gray-300 hover:bg-gray-500' // Example custom class
+    } as AlertButton,
+    {
+      text: 'Pause Session',
+      role: 'confirm',
+      data: true
+    } as AlertButton];
+
+    const confirmation = await this.alertService.showConfirmationDialog(
+      "Pause Workout",
+      'Do you want to pause the current session? You can resume it later.',
+      customBtns
+    );
+
+    if (!confirmation || confirmation.data !== true) {
+      return;
+    }
+
+    // Capture final elapsed time before setting state to Paused
+    this.sessionTimerElapsedSecondsBeforePause += Math.floor((Date.now() - this.workoutStartTime) / 1000);
+    if (this.timerSub) this.timerSub.unsubscribe();
+
+
+    this.wasTimedSetRunningOnPause = this.timedSetTimerState() === TimedSetState.Running;
+    if (this.timedSetTimerState() === TimedSetState.Running) {
+      this.pauseTimedSet(); // Sets state to Paused and stops interval
+    }
+    // timedSetElapsedSeconds signal already holds the current value.
+
+    this.wasRestTimerVisibleOnPause = this.isRestTimerVisible();
+    if (this.wasRestTimerVisibleOnPause) {
+      // For FullScreenRestTimer, ideally it would take an isPaused input.
+      // For now, we hide it and will restore its state.
+      // The FullScreenRestTimer's internal timer needs to be stopped by itself if we add pause support to it.
+      // Or, we rely on hiding it (isVisible=false) which should make it stop its internal timer.
+      const fullScreenTimer = /* How to get ref to FullScreenRestTimer? If it has a pause method */ null;
+      // If FullScreenRestTimerComponent has a method to get remaining time:
+      // this.restTimerRemainingSecondsOnPause = fullScreenTimer.getRemainingTime();
+      // Otherwise, we approximate or rely on its own state when it's re-shown.
+      // For simplicity, we'll store what we fed into it.
+      this.restTimerRemainingSecondsOnPause = this.isRestTimerVisible() && this.restDuration() > 0 ? this.restDuration() - this.timedSetElapsedSeconds() : 0; // This logic might need refinement based on how FullScreenTimer tracks time
+      this.restTimerInitialDurationOnPause = this.restDuration();
+      this.restTimerMainTextOnPause = this.restTimerMainText();
+      this.restTimerNextUpTextOnPause = this.restTimerNextUpText();
+      this.isRestTimerVisible.set(false); // Hide it
+    }
+
+    this.sessionState.set(SessionState.Paused); // Set state AFTER capturing elapsed times
+    this.savePausedSessionState(); // Save to localStorage
+
+    console.log('Workout Paused. Elapsed Session Time Stored:', this.sessionTimerElapsedSecondsBeforePause);
+    this.alertService.showAlert('Info', 'Workout session paused.');
+  }
+
+  // --- RESUME SESSION ---
+  resumeSession(): void { // This method is primarily for the UI button if user manually pauses/resumes without closing app
+    if (this.sessionState() !== SessionState.Paused) return;
+
+    // The actual loading of state is now handled by loadStateFromPausedSession
+    // This method just transitions the state and restarts timers
+    // It assumes the state is already in the component's signals from a previous pause in THIS app instance.
+
+    this.workoutStartTime = Date.now(); // Reset for delta calculation
+    this.sessionState.set(SessionState.Playing);
+    this.startSessionTimer(); // Resumes session timer
+
+    if (this.wasTimedSetRunningOnPause && this.timedSetTimerState() === TimedSetState.Paused) {
+      this.startOrResumeTimedSet(); // Resume active set timer if it was running
+    }
+    this.wasTimedSetRunningOnPause = false;
+
+    if (this.wasRestTimerVisibleOnPause && this.restTimerRemainingSecondsOnPause > 0) {
+      this.startRestPeriod(this.restTimerRemainingSecondsOnPause, true); // Re-show full screen rest timer
+    }
+    this.wasRestTimerVisibleOnPause = false;
+
+
+    console.log('Workout Resumed. Previously elapsed:', this.sessionTimerElapsedSecondsBeforePause);
+    this.alertService.showAlert('Info', 'Workout session resumed.');
+    // No need to remove from storage here, that's done when checkForPausedSession loads it.
+  }
+
+
+  private async checkForPausedSession(): Promise<boolean> {
+    const pausedState = this.storageService.getItem<PausedWorkoutState>(this.PAUSED_WORKOUT_KEY);
+
+    if (pausedState && pausedState.version === this.PAUSED_STATE_VERSION) {
+      const routineName = pausedState.sessionRoutine?.name || 'a previous session';
+
+      const customBtns: AlertButton[] = [{
+        text: 'Discard',
+        role: 'cancel',
+        data: false,
+        cssClass: 'bg-gray-300 hover:bg-gray-500' // Example custom class
+      } as AlertButton,
+      {
+        text: 'Resume',
+        role: 'confirm',
+        data: true
+      } as AlertButton];
+
+      const confirmation = await this.alertService.showConfirmationDialog(
+        'Resume Workout?',
+        `You have a paused workout session for "${routineName}". Would you like to resume it?`,
+        customBtns
+      );
+
+      if (confirmation && confirmation.data === true) {
+        this.loadStateFromPausedSession(pausedState);
+        this.storageService.removeItem(this.PAUSED_WORKOUT_KEY); // Clear after deciding to resume
+        return true; // Indicates paused session was handled
+      } else {
+        // User chose to discard
+        this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
+        this.alertService.showAlert('Info', 'Paused session discarded.');
+        return false; // Indicates paused session was discarded, proceed with new load
+      }
+    }
+    return false; // No paused session found
+  }
+
+  private loadNewWorkoutFromRoute(): void {
+    this.sessionState.set(SessionState.Loading);
+    this.workoutStartTime = Date.now(); // For a new workout
+    this.sessionTimerElapsedSecondsBeforePause = 0; // Reset for new workout
+
+    this.routeSub = this.route.paramMap.pipe(
+      switchMap(params => {
+        this.routineId = params.get('routineId');
+        if (this.routineId) {
+          return this.workoutService.getRoutineById(this.routineId).pipe(
+            map(originalRoutine => originalRoutine ? JSON.parse(JSON.stringify(originalRoutine)) as Routine : null)
+          );
+        }
+        return of(null);
+      }),
+      tap(async sessionRoutineCopy => {
+        if (sessionRoutineCopy) {
+          this.routine.set(sessionRoutineCopy);
+          if (sessionRoutineCopy.exercises.length > 0) {
+            const firstExerciseOfRoutine = sessionRoutineCopy.exercises[0];
+            if (!firstExerciseOfRoutine.supersetId || firstExerciseOfRoutine.supersetOrder === 0) {
+              this.totalBlockRounds.set(firstExerciseOfRoutine.rounds ?? 1);
+            } else {
+              const actualBlockStart = sessionRoutineCopy.exercises.find(ex => ex.supersetId === firstExerciseOfRoutine.supersetId && ex.supersetOrder === 0);
+              this.totalBlockRounds.set(actualBlockStart?.rounds ?? 1);
+            }
+          } else {
+            this.totalBlockRounds.set(1);
+          }
+          this.currentBlockRound.set(1);
+          this.currentExerciseIndex.set(0);
+          this.currentSetIndex.set(0);
+          this.currentWorkoutLogExercises.set([]); // Fresh log for new workout
+          await this.prepareCurrentSet(); // Prepare the first set
+          this.sessionState.set(SessionState.Playing);
+          this.startSessionTimer();
+        } else {
+          this.routine.set(null);
+          this.sessionState.set(SessionState.Error);
+          console.error('WorkoutPlayer: Routine not found or ID missing for new workout.');
+        }
+      })
+    ).subscribe();
+  }
+
+
+  private loadStateFromPausedSession(state: PausedWorkoutState): void {
+    this.routineId = state.routineId;
+    this.routine.set(state.sessionRoutine); // Restore the session-modified routine
+    this.currentExerciseIndex.set(state.currentExerciseIndex);
+    this.currentSetIndex.set(state.currentSetIndex);
+    this.currentWorkoutLogExercises.set(state.currentWorkoutLogExercises);
+    this.workoutStartTime = Date.now(); // Reset for delta calculation from NOW
+    this.sessionTimerElapsedSecondsBeforePause = state.sessionTimerElapsedSecondsBeforePause;
+    this.currentBlockRound.set(state.currentBlockRound);
+    this.totalBlockRounds.set(state.totalBlockRounds);
+
+    this.timedSetTimerState.set(state.timedSetTimerState);
+    this.timedSetElapsedSeconds.set(state.timedSetElapsedSeconds);
+    // this.wasTimedSetRunningOnPause isn't strictly needed if we directly restore timedSetTimerState
+
+    this.lastPerformanceForCurrentExercise = state.lastPerformanceForCurrentExercise;
+
+    // Restore FullScreenRestTimer state by setting its inputs
+    this.wasRestTimerVisibleOnPause = state.isRestTimerVisibleOnPause;
+    this.restTimerRemainingSecondsOnPause = state.restTimerRemainingSecondsOnPause;
+    this.restTimerInitialDurationOnPause = state.restTimerInitialDurationOnPause;
+    this.restTimerMainTextOnPause = state.restTimerMainTextOnPause;
+    this.restTimerNextUpTextOnPause = state.restTimerNextUpTextOnPause;
+
+    this.prepareCurrentSet().then(() => { // Ensure form is patched based on loaded set
+      this.sessionState.set(SessionState.Playing); // Set to playing *after* state is restored
+      this.startSessionTimer(); // Resume session timer
+
+      // If the timed set timer was running or paused, resume it
+      if (state.timedSetTimerState === TimedSetState.Running) {
+        this.startOrResumeTimedSet();
+      } else if (state.timedSetTimerState === TimedSetState.Paused) {
+        // It was paused, it remains paused. User can click its resume button.
+        // Or, if you want to auto-resume it from its paused state: this.startOrResumeTimedSet();
+      }
+
+      // If the full screen rest timer was visible, re-show it
+      if (this.wasRestTimerVisibleOnPause && this.restTimerRemainingSecondsOnPause > 0) {
+        this.startRestPeriod(this.restTimerRemainingSecondsOnPause, true); // Pass a flag to indicate it's a resume
+      }
+      this.cdr.detectChanges(); // Force UI update
+      this.alertService.showAlert('Info', 'Workout session resumed.');
+    });
+  }
+
+  private savePausedSessionState(): void {
+    if (!this.routine()) {
+      console.warn("Cannot save paused state: routine is not loaded.");
+      return;
+    }
+
+    // Capture the current elapsed session time before "officially" pausing
+    let currentSessionElapsed = this.sessionTimerElapsedSecondsBeforePause;
+    if (this.sessionState() === SessionState.Playing && this.workoutStartTime > 0) { // If it was playing right before pause
+      currentSessionElapsed += Math.floor((Date.now() - this.workoutStartTime) / 1000);
+    }
+
+    const stateToSave: PausedWorkoutState = {
+      version: this.PAUSED_STATE_VERSION,
+      routineId: this.routineId,
+      sessionRoutine: JSON.parse(JSON.stringify(this.routine())), // Deep copy
+      currentExerciseIndex: this.currentExerciseIndex(),
+      currentSetIndex: this.currentSetIndex(),
+      currentWorkoutLogExercises: JSON.parse(JSON.stringify(this.currentWorkoutLogExercises())), // Deep copy
+      workoutStartTimeOriginal: this.workoutStartTime, // Could be original or from last resume
+      sessionTimerElapsedSecondsBeforePause: currentSessionElapsed,
+      currentBlockRound: this.currentBlockRound(),
+      totalBlockRounds: this.totalBlockRounds(),
+      timedSetTimerState: this.timedSetTimerState(),
+      timedSetElapsedSeconds: this.timedSetElapsedSeconds(),
+      isResting: this.isRestTimerVisible(), // Simpler: was the full screen timer visible?
+      isRestTimerVisibleOnPause: this.isRestTimerVisible(),
+      restTimerRemainingSecondsOnPause: this.isRestTimerVisible() ? (this.restDuration() - this.timedSetElapsedSeconds()) : 0, // Approx remaining if visible
+      restTimerInitialDurationOnPause: this.isRestTimerVisible() ? this.restDuration() : 0,
+      restTimerMainTextOnPause: this.restTimerMainText(),
+      restTimerNextUpTextOnPause: this.restTimerNextUpText(),
+      lastPerformanceForCurrentExercise: this.lastPerformanceForCurrentExercise ? JSON.parse(JSON.stringify(this.lastPerformanceForCurrentExercise)) : null,
+    };
+
+    this.storageService.setItem(this.PAUSED_WORKOUT_KEY, stateToSave);
+    console.log('Workout session state saved for pause:', stateToSave);
+  }
+
+  private captureAndSaveStateForUnload(): void {
+    // This method is similar to what savePausedSessionState does, but simplified for synchronous execution.
+    // It directly creates the state and saves it.
+    if (!this.routine()) return;
+
+    let currentSessionElapsed = this.sessionTimerElapsedSecondsBeforePause;
+    if (this.sessionState() === SessionState.Playing && this.workoutStartTime > 0) {
+      currentSessionElapsed += Math.floor((Date.now() - this.workoutStartTime) / 1000);
+    }
+
+    const stateToSave: PausedWorkoutState = {
+      version: this.PAUSED_STATE_VERSION,
+      routineId: this.routineId,
+      sessionRoutine: JSON.parse(JSON.stringify(this.routine())),
+      currentExerciseIndex: this.currentExerciseIndex(),
+      currentSetIndex: this.currentSetIndex(),
+      currentWorkoutLogExercises: JSON.parse(JSON.stringify(this.currentWorkoutLogExercises())),
+      workoutStartTimeOriginal: this.workoutStartTime,
+      sessionTimerElapsedSecondsBeforePause: currentSessionElapsed,
+      currentBlockRound: this.currentBlockRound(),
+      totalBlockRounds: this.totalBlockRounds(),
+      timedSetTimerState: this.timedSetTimerState(), // Capture current state
+      timedSetElapsedSeconds: this.timedSetElapsedSeconds(),
+      isResting: this.isRestTimerVisible(),
+      isRestTimerVisibleOnPause: this.isRestTimerVisible(), // Capture current state
+      restTimerRemainingSecondsOnPause: this.isRestTimerVisible() && this.restDuration() > 0 ? this.restDuration() - this.timedSetElapsedSeconds() : 0, // Approx.
+      restTimerInitialDurationOnPause: this.isRestTimerVisible() ? this.restDuration() : 0,
+      restTimerMainTextOnPause: this.restTimerMainText(),
+      restTimerNextUpTextOnPause: this.restTimerNextUpText(),
+      lastPerformanceForCurrentExercise: this.lastPerformanceForCurrentExercise ? JSON.parse(JSON.stringify(this.lastPerformanceForCurrentExercise)) : null,
+    };
+    try {
+      this.storageService.setItem(this.PAUSED_WORKOUT_KEY, stateToSave);
+      console.log('Session state attempt saved via beforeunload.');
+    } catch (e) {
+      console.error('Error saving state during beforeunload:', e);
+    }
+  }
+
+
+  ngOnDestroy(): void {
+    // Primary role of ngOnDestroy here is to clean up subscriptions.
+    // Saving state for "resume later" is best handled by explicit pause or beforeunload.
+    if (this.routeSub) this.routeSub.unsubscribe();
+    if (this.timerSub) this.timerSub.unsubscribe();
+    if (this.timedSetIntervalSub) this.timedSetIntervalSub.unsubscribe();
+    this.isRestTimerVisible.set(false);
+    console.log('WorkoutPlayerComponent destroyed.');
+  }
+
 }

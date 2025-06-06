@@ -19,6 +19,7 @@ import { WeightUnitPipe } from '../../../shared/pipes/weight-unit-pipe';
   imports: [CommonModule, RouterLink, DatePipe, TitleCasePipe, FormsModule, ReactiveFormsModule], // Added FormsModule, ReactiveFormsModule
   templateUrl: './history-list.html',
   styleUrl: './history-list.scss',
+  providers: [DecimalPipe]
 })
 export class HistoryListComponent implements OnInit {
   protected trackingService = inject(TrackingService);
