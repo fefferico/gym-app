@@ -15,12 +15,11 @@ import { SpinnerComponent } from './shared/components/spinner/spinner.component'
   template: `
     <div class="flex flex-col min-h-screen bg-gray-100 dark:bg-gray-900">
       <!-- Header/Toolbar Area -->
-      <header class="bg-primary dark:bg-primary-dark text-white p-4 shadow-md sticky top-0 z-50">
+      <!-- <header class="bg-primary dark:bg-primary-dark text-white p-4 shadow-md sticky top-0 z-50">
         <div class="container mx-auto flex justify-between items-center">
           <h1 class="text-xl font-semibold">GymBro</h1>
-          <!-- Theme toggle button removed from here -->
         </div>
-      </header>
+      </header> -->
 
       <!-- Main Content Area -->
       <main class="flex-grow container mx-auto p-4 mb-16"> 
