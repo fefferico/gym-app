@@ -9,6 +9,7 @@ import { StorageService } from '../../../core/services/storage.service';
 import { UnitsService, WeightUnit } from '../../../core/services/units.service';
 import { AlertService } from '../../../core/services/alert.service';
 import { SpinnerService } from '../../../core/services/spinner.service';
+import { ThemeService } from '../../../core/services/theme.service'; // Import ThemeService
 
 @Component({
   selector: 'app-profile-settings',
@@ -24,6 +25,7 @@ export class ProfileSettingsComponent {
   private unitsService = inject(UnitsService); // Inject UnitsService
   private alertService = inject(AlertService); // Inject UnitsService
   private spinnerService = inject(SpinnerService); // Inject UnitsService
+  themeService = inject(ThemeService); // Inject ThemeService and make public for template
 
   // Define a version for your backup format
   private readonly BACKUP_VERSION = 1;
