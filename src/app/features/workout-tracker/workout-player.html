@@ -28,12 +28,15 @@
         </svg>
       </button>
       <div class="text-center">
-        <h1 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider truncate max-w-[calc(100vw-120px)]" [title]="currentRoutine.name">
+        <h1
+          class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider truncate max-w-[calc(100vw-120px)]"
+          [title]="currentRoutine.name">
           {{ currentRoutine.name || 'Workout' }}
         </h1>
         <div class="text-xs text-gray-500 dark:text-gray-400">{{ sessionTimerDisplay() }}</div>
       </div>
-      <button (click)="toggleWorkoutMenu()" [disabled]="sessionState() === 'loading' || sessionState() === 'error' || sessionState() === 'paused'"
+      <button (click)="toggleWorkoutMenu()"
+        [disabled]="sessionState() === 'loading' || sessionState() === 'error' || sessionState() === 'paused'"
         class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-light p-2 -mr-1 disabled:opacity-50">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"
           stroke-width="2">
@@ -48,24 +51,26 @@
       <div class="p-4 max-w-md mx-auto" *ngIf="activeSetInfo() as activeSet; else workoutCompleteOrError">
 
         <div class="flex text-center justify-center items-center mb-1">
-            <div *ngIf="currentBaseExercise() as baseEx" class="mr-2 h-8 w-8 flex-shrink-0">
-                <img *ngIf="baseEx.iconName" [src]="getIconPath(baseEx.iconName)" [alt]="baseEx.name + ' icon'"
-                    class="w-full h-full object-contain"
-                    [ngClass]="{'filter dark:invert': baseEx.iconName !== 'default-exercise' && baseEx.iconName !== '' && baseEx.iconName !== null }">
-            </div>
-            <ng-template #loadingBaseExIcon>
-                <div class="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-md animate-pulse mr-2 flex-shrink-0"></div>
-            </ng-template>
-             <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100 truncate" [title]="activeSet.exerciseData.exerciseName">
-                {{ activeSet.exerciseData.exerciseName || 'Loading Exercise...' }}
-            </h2>
+          <div *ngIf="currentBaseExercise() as baseEx" class="mr-2 h-8 w-8 flex-shrink-0">
+            <img *ngIf="baseEx.iconName" [src]="getIconPath(baseEx.iconName)" [alt]="baseEx.name + ' icon'"
+              class="w-full h-full object-contain"
+              [ngClass]="{'filter dark:invert': baseEx.iconName !== 'default-exercise' && baseEx.iconName !== '' && baseEx.iconName !== null }">
+          </div>
+          <ng-template #loadingBaseExIcon>
+            <div class="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-md animate-pulse mr-2 flex-shrink-0"></div>
+          </ng-template>
+          <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100 truncate"
+            [title]="activeSet.exerciseData.exerciseName">
+            {{ activeSet.exerciseData.exerciseName || 'Loading Exercise...' }}
+          </h2>
         </div>
 
         <div class="text-center mb-4">
           <p class="text-sm text-gray-500 dark:text-gray-400">
             <span *ngIf="activeSet.isWarmup" class="text-blue-500 dark:text-blue-400">
               Warm-up Set {{ getCurrentWarmupSetNumber() }}
-              <span *ngIf="getTotalWarmupSetsForCurrentExercise() > 0">/{{ getTotalWarmupSetsForCurrentExercise() }}</span>
+              <span *ngIf="getTotalWarmupSetsForCurrentExercise() > 0">/{{ getTotalWarmupSetsForCurrentExercise()
+                }}</span>
             </span>
             <span *ngIf="!activeSet.isWarmup">
               Set {{ getCurrentWorkingSetNumber() }}/{{ getWorkingSetCountForCurrentExercise() }}
@@ -73,8 +78,9 @@
             <span *ngIf="totalBlockRounds() > 1 && currentBlockRound() > 0" class="ml-2">
               (Round {{currentBlockRound()}}/{{totalBlockRounds()}})
             </span>
-             <span *ngIf="activeSet.exerciseData.supersetId" class="ml-2 text-purple-500 dark:text-purple-400 italic">
-                (Superset {{ (activeSet.exerciseData.supersetOrder ?? 0) + 1 }}/{{activeSet.exerciseData.supersetSize ?? '?'}})
+            <span *ngIf="activeSet.exerciseData.supersetId" class="ml-2 text-purple-500 dark:text-purple-400 italic">
+              (Superset {{ (activeSet.exerciseData.supersetOrder ?? 0) + 1 }}/{{activeSet.exerciseData.supersetSize ??
+              '?'}})
             </span>
           </p>
         </div>
@@ -124,44 +130,47 @@
               </button>
             </div>
           </div>
-          
+
           <!-- Actual Duration (for timed sets or manually entered duration) -->
-            <div *ngIf="activeSet.setData.duration !== undefined"> <!-- Show if duration is a relevant metric for this set -->
-                <label for="timedSetDisplay" class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider text-center mb-2">
-                    Time (seconds) <span *ngIf="activeSet.setData.duration > 0">(Target: {{activeSet.setData.duration}}s)</span>
-                </label>
-                
-                <!-- Display for countdown/countup -->
-                <div id="timedSetDisplay"
-                     class="mt-1 block w-full p-3 border-none text-3xl font-bold text-center bg-transparent focus:ring-0"
-                     [ngClass]="{
+          <div *ngIf="activeSet.setData.duration !== undefined">
+            <!-- Show if duration is a relevant metric for this set -->
+            <label for="timedSetDisplay"
+              class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider text-center mb-2">
+              Time (seconds) <span *ngIf="activeSet.setData.duration > 0">(Target:
+                {{activeSet.setData.duration}}s)</span>
+            </label>
+
+            <!-- Display for countdown/countup -->
+            <div id="timedSetDisplay"
+              class="mt-1 block w-full p-3 border-none text-3xl font-bold text-center bg-transparent focus:ring-0"
+              [ngClass]="{
                         'text-red-500': isTimedSetOvertime(),
                         'animate-pulse': isTimedSetOvertime() && timedSetTimerState() === 'running',
                         'text-green-500 dark:text-green-400': !isTimedSetOvertime() && timedSetTimerState() === 'running' && (activeSetInfo()?.setData?.duration ?? 0) > 0 && timedSetElapsedSeconds() > 0,
                         'text-gray-800 dark:text-gray-100': timedSetTimerState() === 'idle' || timedSetTimerState() === 'paused' || !((activeSetInfo()?.setData?.duration ?? 0) > 0 && timedSetElapsedSeconds() > 0 && !isTimedSetOvertime())
                      }">
-                  {{ timedSetDisplay() }}
-                </div>
-                 <!-- Hidden input to store the actual LOGGED duration (total elapsed) -->
-                <input type="number" formControlName="actualDuration" class="hidden">
+              {{ timedSetDisplay() }}
+            </div>
+            <!-- Hidden input to store the actual LOGGED duration (total elapsed) -->
+            <input type="number" formControlName="actualDuration" class="hidden">
 
-                <div class="flex space-x-2 mt-2 justify-center">
-                    <button type="button" (click)="toggleTimedSetTimer()" [disabled]="getDisabled()" 
-                            [ngClass]="{
+            <div class="flex space-x-2 mt-2 justify-center">
+              <button type="button" (click)="toggleTimedSetTimer()" [disabled]="getDisabled()" [ngClass]="{
                               'bg-green-500 hover:bg-green-600': timedSetTimerState() === 'idle' || timedSetTimerState() === 'paused',
                               'bg-yellow-500 hover:bg-yellow-600 text-black': timedSetTimerState() === 'running'
-                            }" 
-                            class="flex-grow max-w-[150px] text-white font-medium py-2 px-3 rounded-md transition-colors text-sm disabled:opacity-50">
-                      <span *ngIf="timedSetTimerState() === 'idle'">Start Timer</span>
-                      <span *ngIf="timedSetTimerState() === 'running'">Pause Timer</span>
-                      <span *ngIf="timedSetTimerState() === 'paused'">Resume Timer</span>
-                    </button>
-                    <button type="button" (click)="resetTimedSet()" *ngIf="timedSetTimerState() !== 'idle'" [disabled]="getDisabled()"
-                            class="flex-grow max-w-[150px] bg-gray-300 hover:bg-gray-400 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-800 dark:text-gray-200 font-medium py-2 px-3 rounded-md transition-colors text-sm disabled:opacity-50">
-                      Reset
-                    </button>
-                </div>
+                            }"
+                class="flex-grow max-w-[150px] text-white font-medium py-2 px-3 rounded-md transition-colors text-sm disabled:opacity-50">
+                <span *ngIf="timedSetTimerState() === 'idle'">Start Timer</span>
+                <span *ngIf="timedSetTimerState() === 'running'">Pause Timer</span>
+                <span *ngIf="timedSetTimerState() === 'paused'">Resume Timer</span>
+              </button>
+              <button type="button" (click)="resetTimedSet()" *ngIf="timedSetTimerState() !== 'idle'"
+                [disabled]="getDisabled()"
+                class="flex-grow max-w-[150px] bg-gray-300 hover:bg-gray-400 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-800 dark:text-gray-200 font-medium py-2 px-3 rounded-md transition-colors text-sm disabled:opacity-50">
+                Reset
+              </button>
             </div>
+          </div>
 
 
           <div *ngIf="false" class="pt-4">
@@ -205,10 +214,11 @@
             class="mt-6 bg-primary hover:bg-primary-dark text-white font-bold py-3 px-6 rounded-lg shadow-md text-lg transition-colors">
             Confirm & Finish Workout
           </button>
-          <a *ngIf="sessionState() === 'error'" routerLink="/workout"
-            class="mt-6 inline-block text-primary dark:text-primary-light hover:underline">
-            ← Back to Routines
-          </a>
+          <button *ngIf="sessionState() === 'error'" routerLink="/profile"
+            class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-light p-2 -ml-1"><svg
+              fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg></button>
         </div>
       </ng-template>
     </main>
@@ -245,9 +255,11 @@
     <div class="text-center py-20 pt-24">
       <h2 class="text-2xl font-semibold text-red-600 dark:text-red-400 mb-4">Routine Not Found</h2>
       <p class="text-gray-600 dark:text-gray-400">The selected routine could not be loaded.</p>
-      <a routerLink="/workout" class="mt-6 inline-block text-primary dark:text-primary-light hover:underline">
-        ← Back to Routines
-      </a>
+      <button routerLink="/workout"
+        class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-light p-2 -ml-1"><svg
+          fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        </svg></button>
     </div>
   </ng-template>
 </div>
@@ -320,7 +332,8 @@
       <div class="mb-3">
         <button (click)="toggleCompletedSetsInfo()"
           class="text-xs text-primary dark:text-primary-light hover:underline">
-          {{ showCompletedSetsInfo() ? 'Hide' : 'Show' }} Completed Sets ({{allPreviousLoggedSetsForCurrentExercise().length}})
+          {{ showCompletedSetsInfo() ? 'Hide' : 'Show' }} Completed Sets
+          ({{allPreviousLoggedSetsForCurrentExercise().length}})
         </button>
       </div>
       <div *ngIf="allPreviousLoggedSetsForCurrentExercise().length > 0 && showCompletedSetsInfo()"
@@ -406,28 +419,28 @@
             <button (click)="cancelEditTarget()" class="p-1 text-red-500 hover:text-red-700">✕</button>
           </div>
         </div>
-        
+
         <div *ngIf="activeSet.setData.duration !== undefined"
-            class="col-span-2 md:col-span-2 mt-2 pt-2 border-t border-dashed border-gray-300 dark:border-gray-600">
-            <span class="block text-sm text-gray-500 dark:text-gray-400 mb-1">Target Time</span>
-            <div *ngIf="editingTarget !== 'duration'" (click)="startEditTarget('duration')"
-                class="text-2xl font-bold text-gray-800 dark:text-gray-100 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 p-1 rounded">
-                {{ activeSet.setData.duration }}<span class="text-lg">s</span>
-            </div>
-            <div *ngIf="editingTarget === 'duration'" class="flex items-center space-x-1">
-                <input type="number" [(ngModel)]="editingTargetValue" (keyup.enter)="confirmEditTarget()"
-                (keyup.escape)="cancelEditTarget()"
-                class="w-20 p-1 text-xl border-gray-300 dark:border-gray-600 rounded-md focus:ring-primary focus:border-primary dark:bg-gray-600"
-                autofocus>
-                <button (click)="confirmEditTarget()" class="p-1 text-green-500 hover:text-green-700">✓</button>
-                <button (click)="cancelEditTarget()" class="p-1 text-red-500 hover:text-red-700">✕</button>
-            </div>
+          class="col-span-2 md:col-span-2 mt-2 pt-2 border-t border-dashed border-gray-300 dark:border-gray-600">
+          <span class="block text-sm text-gray-500 dark:text-gray-400 mb-1">Target Time</span>
+          <div *ngIf="editingTarget !== 'duration'" (click)="startEditTarget('duration')"
+            class="text-2xl font-bold text-gray-800 dark:text-gray-100 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 p-1 rounded">
+            {{ activeSet.setData.duration }}<span class="text-lg">s</span>
+          </div>
+          <div *ngIf="editingTarget === 'duration'" class="flex items-center space-x-1">
+            <input type="number" [(ngModel)]="editingTargetValue" (keyup.enter)="confirmEditTarget()"
+              (keyup.escape)="cancelEditTarget()"
+              class="w-20 p-1 text-xl border-gray-300 dark:border-gray-600 rounded-md focus:ring-primary focus:border-primary dark:bg-gray-600"
+              autofocus>
+            <button (click)="confirmEditTarget()" class="p-1 text-green-500 hover:text-green-700">✓</button>
+            <button (click)="cancelEditTarget()" class="p-1 text-red-500 hover:text-red-700">✕</button>
+          </div>
         </div>
 
         <div *ngIf="activeSet.setData.tempo"
-            class="col-span-2 md:col-span-2 mt-2 pt-2 border-t border-dashed border-gray-300 dark:border-gray-600">
-            <span class="block text-sm text-gray-500 dark:text-gray-400 mb-1">Target Tempo</span>
-            <span class="text-lg font-semibold text-gray-800 dark:text-gray-100 p-1">{{ activeSet.setData.tempo }}</span>
+          class="col-span-2 md:col-span-2 mt-2 pt-2 border-t border-dashed border-gray-300 dark:border-gray-600">
+          <span class="block text-sm text-gray-500 dark:text-gray-400 mb-1">Target Tempo</span>
+          <span class="text-lg font-semibold text-gray-800 dark:text-gray-100 p-1">{{ activeSet.setData.tempo }}</span>
         </div>
       </div>
     </div>

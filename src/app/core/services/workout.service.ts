@@ -195,24 +195,26 @@ export class WorkoutService {
     console.log('WorkoutService: Routines replaced with imported data.');
   }
 
-  clearAllRoutines_DEV_ONLY(): void {
-    this.alertService.showConfirm("Info", "Are you sure you want to delete ALL routines? This will delete ALL the routines (not just the logs) and cannot be undone.").then((result) => {
-      if (result && (result.data)) {
-        this.saveRoutinesToStorage([]); // Save an empty array
-        this.alertService.showAlert("Info", "All routines cleared!");
-      }
-    })
+  clearAllRoutines_DEV_ONLY(): Promise<void> { // Changed return type
+    return this.alertService.showConfirm("Info", "Are you sure you want to delete ALL routines? This will delete ALL the routines (not just the logs) and cannot be undone.")
+      .then(async (result) => { // Added async for await
+        if (result && result.data) {
+          this.saveRoutinesToStorage([]); // Save an empty array
+          await this.alertService.showAlert("Info", "All routines cleared!"); // await this
+        }
+      });
   }
 
-  clearAllExecutedRoutines_DEV_ONLY(): void {
-    this.alertService.showConfirm("Info", "Are you sure you want to delete ALL routines LOGS? This cannot be undone.").then((result) => {
-      if (result && (result.data)) {
-        this.getCurrentRoutines().forEach(routine => {
-          routine.lastPerformed = undefined;
-          this.updateRoutine(routine);
-        });
-        this.alertService.showAlert("Info", "All routines logs cleared!");
-      }
-    })
+  clearAllExecutedRoutines_DEV_ONLY(): Promise<void> {
+    return this.alertService.showConfirm("Info", "Are you sure you want to reset the 'lastPerformed' property of ALL routines LOGS? This cannot be undone.")
+      .then(async (result) => { // Added async for await
+        if (result && (result.data)) {
+          this.getCurrentRoutines().forEach(routine => {
+            routine.lastPerformed = undefined;
+            this.updateRoutine(routine);
+          });
+          await this.alertService.showAlert("Info", "All routines logs cleared!");
+        }
+      })
   }
 }

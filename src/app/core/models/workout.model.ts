@@ -50,6 +50,7 @@ export interface WorkoutExercise {
    * (i.e., not part of a superset OR supersetOrder === 0).
    */
   rounds?: number; // e.g., 3 for 3 rounds
+  workoutLogId?: string;
 }
 
 export interface Routine {

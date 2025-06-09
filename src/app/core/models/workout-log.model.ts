@@ -19,11 +19,14 @@ export interface LoggedSet {
   targetWeight?: number | null;
   targetDuration?: number;
   targetTempo?: string; // Target tempo from the plan
+  targetRestAfterSet?: number; // Target rest after this set, if applicable
 
   notes?: string;         // User notes specific to this performed set (e.g., "Felt easy", "Form breakdown on last rep")
   // formRating?: 1 | 2 | 3 | 4 | 5; // Optional: User's perceived form rating for the set
   timestamp: string;       // ISO string of when this set was completed/logged.
   isWarmup?: boolean; // <<<< NEW
+  rpe?: number; // Optional: User's perceived exertion for this set (RPE 1-10)
+  workoutLogId?: string; // ID of the WorkoutLog this set belongs to
 }
 
 // Describes all sets performed for a specific exercise within a single workout session.
@@ -32,6 +35,7 @@ export interface LoggedWorkoutExercise {
   exerciseName: string;   // Denormalized name for easier display in logs
   sets: LoggedSet[];      // Array of actual sets performed for this exercise
   notes?: string;         // User notes for this exercise during this specific workout log
+  workoutLogId?: string; // ID of the WorkoutLog this exercise belongs to
 }
 
 // Describes an entire completed workout session.
@@ -53,6 +57,15 @@ export interface WorkoutLog {
 // For displaying personal bests
 export interface PersonalBestSet extends LoggedSet {
   pbType: string; // e.g., "1RM", "5RM (estimated)", "Max Reps @ X kg"
+  exerciseId: string;
+  repsAchieved: number;
+  weightUsed?: number | null;
+  durationPerformed?: number; // In seconds
+  estimatedOneRepMax?: number | null;
+  timestamp: string; // ISO date string of when this PB was achieved
+  workoutLogId?: string; // <<<< ADD THIS if not present
+  notes?: string; // Optional notes from the set that achieved this PB
+  // Potentially routineId and routineName if you want to display that too
 }
 
 export interface LastPerformanceSummary {

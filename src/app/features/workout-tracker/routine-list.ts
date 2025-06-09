@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, signal, WritableSignal } from '@angular/core';
 import { CommonModule, DatePipe, TitleCasePipe } from '@angular/common'; // Added TitleCasePipe
 import { Router, RouterLink } from '@angular/router';
-import { Observable } from 'rxjs';
+import { firstValueFrom, Observable, take } from 'rxjs';
 import { Routine } from '../../core/models/workout.model';
 import { WorkoutService } from '../../core/services/workout.service';
 import { AlertService } from '../../core/services/alert.service';
@@ -74,13 +74,13 @@ export class RoutineListComponent implements OnInit {
     event.stopPropagation();
     this.visibleActionsRutineId.set(null); // Hide actions first
 
-    const routineToDelete = await this.workoutService.getRoutineById(routineId).toPromise();
+    const routineToDelete = await firstValueFrom(this.workoutService.getRoutineById(routineId).pipe(take(1)));
     if (!routineToDelete) {
         this.toastService.error("Routine not found for deletion.", 0, "Error");
         return;
     }
 
-    const associatedLogs = await this.trackingService.getWorkoutLogsByRoutineId(routineId).toPromise() || [];
+    const associatedLogs = await firstValueFrom(this.trackingService.getWorkoutLogsByRoutineId(routineId).pipe(take(1))) || [];
 
     let confirmationMessage = `Are you sure you want to delete the routine "${routineToDelete.name}"?`;
     if (associatedLogs.length > 0) {

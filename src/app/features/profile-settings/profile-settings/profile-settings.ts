@@ -163,18 +163,29 @@ export class ProfileSettingsComponent {
   // setUnits(units: 'kg' | 'lbs'): void { ... }
 
   // Clear All Data (using the dev method from TrackingService/WorkoutService)
-  clearAllAppData(): void {
-    this.alertService.showConfirm("WARNING", "This will delete ALL your workout data (routines, logs, PBs). This cannot be undone. Are you sure?").then((result) => {
-      if (result && (result.data)) {
-        // Call the specific clear methods you added earlier
-        if (this.trackingService.clearAllWorkoutLogs_DEV_ONLY) this.trackingService.clearAllWorkoutLogs_DEV_ONLY();
-        if (this.trackingService.clearAllPersonalBests_DEV_ONLY) this.trackingService.clearAllPersonalBests_DEV_ONLY();
-        // Assuming you added a clearAllRoutines_DEV_ONLY to WorkoutService
-        if (this.workoutService.clearAllRoutines_DEV_ONLY) this.workoutService.clearAllRoutines_DEV_ONLY();
+  async clearAllAppData(): Promise<void> { // Made method async and return Promise<void>
+    const initialConfirmation = await this.alertService.showConfirmationDialog(
+      "WARNING",
+      "This will delete ALL your workout data (routines, logs, PBs). This cannot be undone. Are you sure?"
+    );
 
-        console.log("All application data cleared.");
-        this.alertService.showConfirm("Info","All workout data has been cleared."); // Replace with better feedback
+    if (initialConfirmation && initialConfirmation.data) {
+      // User confirmed the first dialog
+
+      // Call the specific clear methods you added earlier, awaiting each one
+      if (this.trackingService.clearAllWorkoutLogs_DEV_ONLY) {
+        await this.trackingService.clearAllWorkoutLogs_DEV_ONLY();
       }
-    });
+      if (this.trackingService.clearAllPersonalBests_DEV_ONLY) {
+        await this.trackingService.clearAllPersonalBests_DEV_ONLY();
+      }
+      // Assuming you added a clearAllRoutines_DEV_ONLY to WorkoutService
+      if (this.workoutService.clearAllRoutines_DEV_ONLY) {
+        await this.workoutService.clearAllRoutines_DEV_ONLY();
+      }
+
+      // Show a final informational alert after all operations are complete
+      await this.alertService.showAlert("Info", "All workout data has been cleared.");
+    }
   }
 }

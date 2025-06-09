@@ -67,8 +67,36 @@
                             unitsService.getUnitLabel() }}</span>
                     </p>
                 </div>
+
+                <!-- Current Streak Card with Flame Icon -->
                 <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md text-center">
-                    <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Current Streak</h2>
+                    <div class="flex items-center justify-center mb-2">
+                        <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300">Current Streak</h2>
+                        <svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+                            <g fill="orange" stroke="orangered" stroke-width="2">
+                                <!-- Main flame -->
+                                <path d="M32 4c-6 10-10 18-10 26 0 8 8 14 10 14s10-6 10-14c0-8-4-16-10-26z" />
+
+                                <!-- Secondary flame -->
+                                <path
+                                    d="M26 18c-3 5-4 9-2 14 2 5 6 8 8 8s6-3 8-8c2-5 1-9-2-14-3-5-4-6-6-10-2 4-3 5-6 10z"
+                                    fill="orange" stroke="darkorange" />
+
+                                <!-- Inner yellow flame -->
+                                <path d="M32 24c-2 3-3 6-3 9 0 4 3 7 3 7s3-3 3-7c0-3-1-6-3-9z" fill="yellow"
+                                    stroke="gold" stroke-width="1.2" />
+
+                                <!-- Sparks -->
+                                <circle cx="20" cy="18" r="1.5" fill="gold" />
+                                <circle cx="44" cy="14" r="1.2" fill="gold" />
+                                <circle cx="26" cy="8" r="1" fill="yellow" />
+                                <circle cx="38" cy="6" r="1.2" fill="yellow" />
+                                <circle cx="48" cy="22" r="1.4" fill="orange" />
+                                <circle cx="16" cy="24" r="1.2" fill="orange" />
+                            </g>
+                        </svg>
+
+                    </div>
                     <p class="text-4xl font-bold text-primary dark:text-primary-light">
                         {{ currentWorkoutStreakInfo().length }} <span class="text-lg font-medium">{{
                             currentWorkoutStreakInfo().length === 1 ? 'day' : 'days' }}</span>
@@ -84,8 +112,23 @@
                     <p *ngIf="currentWorkoutStreakInfo().length === 0"
                         class="text-xs text-gray-500 dark:text-gray-400 mt-1">No current streak.</p>
                 </div>
+
+                <!-- Longest Streak Card with Cup Icon -->
                 <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md text-center">
-                    <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Longest Streak</h2>
+                    <div class="flex items-center justify-center mb-2">
+                        <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300">Longest Streak</h2>
+                        <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <g stroke="goldenrod" stroke-width="2" fill="gold">
+                                <path d="M24 6h20v8c0 6.627-5.373 12-12 12s-12-5.373-12-12V6z" />
+                                <path d="M32 26v8" />
+                                <path d="M24 40h16v4H24z" />
+                                <path d="M20 44h24v6c0 2.21-1.79 4-4 4H24c-2.21 0-4-1.79-4-4v-6z" />
+                                <path d="M2 12h8c0 8 2 14 8 14v4c-10 0-16-10-16-18z" />
+                                <path d="M62 12h-8c0 8-2 14-8 14v4c10 0 16-10 16-18z" />
+                            </g>
+                        </svg>
+
+                    </div>
                     <p class="text-4xl font-bold text-primary dark:text-primary-light">
                         {{ longestWorkoutStreakInfo().length }} <span class="text-lg font-medium">{{
                             longestWorkoutStreakInfo().length === 1 ? 'day' : 'days' }}</span>
@@ -107,11 +150,11 @@
                     <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">Volume by Muscle Group <span
                             *ngIf="hasActiveDateFilters()">(Period)</span></h3>
                     <div *ngIf="muscleGroupChartDataForPeriod().length > 0; else noChartDataMsg" class="chart-wrapper">
-                        <ngx-charts-bar-vertical 
-                            [results]="muscleGroupChartDataForPeriod()" [scheme]="colorScheme" [gradient]="gradient"
-                            [xAxis]="showXAxis" [yAxis]="showYAxis" [legend]="false" [showXAxisLabel]="showXAxisLabel"
-                            [showYAxisLabel]="showYAxisLabel" [xAxisLabel]="xAxisLabelMuscle"
-                            [yAxisLabel]="yAxisLabelVolume" (select)="onChartSelect($event)" class="chart-container">
+                        <ngx-charts-bar-vertical [results]="muscleGroupChartDataForPeriod()" [scheme]="colorScheme"
+                            [gradient]="gradient" [xAxis]="showXAxis" [yAxis]="showYAxis" [legend]="false"
+                            [showXAxisLabel]="showXAxisLabel" [showYAxisLabel]="showYAxisLabel"
+                            [xAxisLabel]="xAxisLabelMuscle" [yAxisLabel]="yAxisLabelVolume"
+                            (select)="onChartSelect($event)" class="chart-container">
                         </ngx-charts-bar-vertical>
                     </div>
                     <ng-template #noChartDataMsg>
@@ -121,11 +164,11 @@
                 </div>
 
                 <div *ngIf="hasWeeklyVolumeChartData; else noChartDataMsg" class="chart-wrapper">
-                    <ngx-charts-line-chart [results]="weeklyVolumeChartDataForPeriod()"
-                        [gradient]="gradient" [xAxis]="showXAxis" [yAxis]="showYAxis" [legend]="false"
-                        [showXAxisLabel]="showXAxisLabel" [showYAxisLabel]="showYAxisLabel"
-                        [xAxisLabel]="xAxisLabelWeek" [yAxisLabel]="yAxisLabelVolume" [autoScale]="true"
-                        [scheme]="colorScheme" (select)="onChartSelect($event)" class="chart-container">
+                    <ngx-charts-line-chart [results]="weeklyVolumeChartDataForPeriod()" [gradient]="gradient"
+                        [xAxis]="showXAxis" [yAxis]="showYAxis" [legend]="false" [showXAxisLabel]="showXAxisLabel"
+                        [showYAxisLabel]="showYAxisLabel" [xAxisLabel]="xAxisLabelWeek" [yAxisLabel]="yAxisLabelVolume"
+                        [autoScale]="true" [scheme]="colorScheme" (select)="onChartSelect($event)"
+                        class="chart-container">
                     </ngx-charts-line-chart>
                 </div>
                 <ng-template #noChartDataMsg>
@@ -144,24 +187,24 @@
                         <thead class="bg-gray-50 dark:bg-gray-750">
                             <tr>
                                 <th scope="col"
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                    class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                     Week</th>
                                 <th scope="col"
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                    class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                     Workouts</th>
                                 <th scope="col"
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                    class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                     Total Volume (kg)</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                             <tr *ngFor="let summary of weeklySummariesTableDataForPeriod()">
                                 <td
-                                    class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
+                                    class="px-2 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
                                     {{ summary.weekLabel }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{
+                                <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{
                                     summary.workoutCount }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{
+                                <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{
                                     summary.totalVolume | number:'1.0-0' }}</td>
                             </tr>
                         </tbody>
@@ -174,7 +217,7 @@
 
             <!-- Muscle Group Performance Table -->
             <section class="mb-8">
-                <h2 class="text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-4">Volume by Muscle Group <span
+                <h2 class="text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-4 ">Volume by Muscle Group <span
                         *ngIf="hasActiveDateFilters()">(Period)</span></h2>
                 <div *ngIf="muscleGroupPerformanceTableDataForPeriod().length > 0; else noMuscleDataMsg"
                     class="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg shadow-md">
@@ -182,24 +225,24 @@
                         <thead class="bg-gray-50 dark:bg-gray-750">
                             <tr>
                                 <th scope="col"
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                    class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider text-balance">
                                     Muscle Group</th>
                                 <th scope="col"
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                    class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                     Workouts</th>
                                 <th scope="col"
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                    class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                     Total Volume (kg)</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                             <tr *ngFor="let perf of muscleGroupPerformanceTableDataForPeriod()">
                                 <td
-                                    class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
+                                    class="px-2 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100 text-balance">
                                     {{ perf.muscleGroup | titlecase }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{
+                                <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{
                                     perf.workoutCount }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{
+                                <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{
                                     perf.volume | number:'1.0-0' }}</td>
                             </tr>
                         </tbody>

@@ -132,21 +132,21 @@ export class HistoryListComponent implements OnInit {
   }
 
   // For development
-  clearAllLogsForDev(): void {
+  async clearAllLogsForDev(): Promise<void> {
     if (this.trackingService.clearAllWorkoutLogs_DEV_ONLY) {
-      this.trackingService.clearAllWorkoutLogs_DEV_ONLY();
+      await this.trackingService.clearAllWorkoutLogs_DEV_ONLY();
     } else {
       alert('Clear logs function not available in TrackingService.');
     }
 
     if (this.trackingService.clearAllPersonalBests_DEV_ONLY) {
-      this.trackingService.clearAllPersonalBests_DEV_ONLY();
+      await this.trackingService.clearAllPersonalBests_DEV_ONLY();
     } else {
       alert('Clear PBs function not available in TrackingService.');
     }
 
     if (this.workoutService.clearAllExecutedRoutines_DEV_ONLY) {
-      this.workoutService.clearAllExecutedRoutines_DEV_ONLY();
+      await this.workoutService.clearAllExecutedRoutines_DEV_ONLY();
     } else {
       alert('Clear routines function not available in WorkoutService.');
     }

@@ -63,12 +63,26 @@ export class TrackingService {
    * The WorkoutLog object should be fully populated by the WorkoutPlayerComponent before calling this.
    */
   addWorkoutLog(newLogData: Omit<WorkoutLog, 'id'>): WorkoutLog {
+    const newWorkoutLogId: string = uuidv4();
     const currentLogs = this.workoutLogsSubject.getValue();
+
+    const updatedExercises = newLogData.exercises.map(ex => ({
+      ...ex,
+      workoutLogId: newWorkoutLogId,
+      sets: ex.sets.map(set => ({
+        ...set,
+        id: set.id ?? uuidv4(),
+        workoutLogId: newWorkoutLogId,
+      }))
+    }));
+
     const newLog: WorkoutLog = {
       ...newLogData,
-      id: uuidv4(),
-      date: new Date(newLogData.startTime).toISOString().split('T')[0], // Ensure YYYY-MM-DD
+      exercises: updatedExercises,
+      id: newWorkoutLogId,
+      date: new Date(newLogData.startTime).toISOString().split('T')[0], // YYYY-MM-DD
     };
+
 
     if (newLog.startTime && newLog.endTime && !newLog.durationMinutes) {
       newLog.durationMinutes = Math.round((newLog.endTime - newLog.startTime) / (1000 * 60));
@@ -107,13 +121,14 @@ export class TrackingService {
   */
 
   // For development: clear logs
-  clearAllWorkoutLogs_DEV_ONLY(): void {
-    this.alertService.showConfirm("Info", "DEVELOPMENT: Are you sure you want to delete ALL workout logs? This cannot be undone.").then((result) => {
-      if (result && (result.data)) {
-        this.saveWorkoutLogsToStorage([]);
-        this.alertService.showAlert("Info", "All workout logs cleared!");
-      }
-    })
+  clearAllWorkoutLogs_DEV_ONLY(): Promise<void> { // Changed return type
+    return this.alertService.showConfirm("Info", "DEVELOPMENT: Are you sure you want to delete ALL workout logs? This cannot be undone.")
+      .then(async (result) => { // Added async for await
+        if (result && result.data) {
+          this.saveWorkoutLogsToStorage([]);
+          await this.alertService.showAlert("Info", "All workout logs cleared!"); // await this
+        }
+      });
   }
 
   /**
@@ -184,6 +199,7 @@ export class TrackingService {
         currentPBs[loggedEx.exerciseId] = [];
       }
       const exercisePBsList: PersonalBestSet[] = currentPBs[loggedEx.exerciseId];
+      const workoutLogId = loggedEx.workoutLogId || log.id; // Use the log's ID if not set on the exercise
 
       loggedEx.sets.forEach(loggedSet => {
         if (loggedSet.weightUsed === undefined || loggedSet.weightUsed === null || loggedSet.weightUsed === 0) {
@@ -239,7 +255,7 @@ export class TrackingService {
    * @param pbType A string describing the type of PB (e.g., "1RM (Actual)", "5RM (Estimated)").
    */
   private updateSpecificPB(existingPBsList: PersonalBestSet[], candidateSet: LoggedSet, pbType: string): void {
-    const newPbData: PersonalBestSet = { ...candidateSet, pbType };
+    const newPbData: PersonalBestSet = { ...candidateSet, pbType, workoutLogId: candidateSet.workoutLogId };
     const existingPbIndex = existingPBsList.findIndex(pb => pb.pbType === pbType);
 
     let shouldUpdateOrAdd = false;
@@ -294,13 +310,14 @@ export class TrackingService {
    * Clears all stored personal bests.
    * Useful for development or user-initiated reset.
    */
-  clearAllPersonalBests_DEV_ONLY(): void {
-    this.alertService.showConfirm("Info", "DEVELOPMENT: Are you sure you want to delete ALL personal bests? This cannot be undone.").then((result) => {
-      if (result && (result.data)) {
-        this.savePBsToStorage({}); // Save an empty object to clear PBs
-        this.alertService.showAlert("Info", "All personal bests cleared!");
-      }
-    })
+  clearAllPersonalBests_DEV_ONLY(): Promise<void> { // Changed return type
+    return this.alertService.showConfirm("Info", "DEVELOPMENT: Are you sure you want to delete ALL personal bests? This cannot be undone.")
+      .then(async (result) => { // Added async for await
+        if (result && result.data) {
+          this.savePBsToStorage({}); // Save an empty object to clear PBs
+          await this.alertService.showAlert("Info", "All personal bests cleared!"); // await this
+        }
+      });
   }
 
 
@@ -554,5 +571,5 @@ export class TrackingService {
     }
     // No need to return explicitly for a Promise<void> if successful
   }
-  
+
 }

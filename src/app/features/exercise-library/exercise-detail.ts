@@ -51,6 +51,7 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy {
   @Input() id?: string; // For route parameter binding
 
   ngOnInit(): void {
+    window.scrollTo(0, 0);
     const idSource$ = this.id ? of(this.id) : this.route.paramMap.pipe(map(params => params.get('id')));
 
     this.exerciseDetailSub = idSource$.pipe(
