@@ -1,7 +1,11 @@
 // src/app/app.routes.ts
 import { Routes } from '@angular/router';
+import { HomeComponent } from './features/home/home/home';
 
 export const APP_ROUTES: Routes = [
+  { path: '', component: HomeComponent, pathMatch: 'full' },
+  { path: 'home', redirectTo: '', pathMatch: 'full' }, // Optional redirect
+
   {
     path: 'workout',
     loadChildren: () => import('./features/workout-tracker/workout-tracker.routes') // Ensure this file exists
@@ -12,7 +16,7 @@ export const APP_ROUTES: Routes = [
     loadChildren: () => import('./features/history-stats/history-stats.routes') // Ensure this file exists
       .then(c => c.HISTORY_STATS_ROUTES)
   },
- {
+  {
     path: 'library', // Main path for the library feature
     loadChildren: () => import('./features/exercise-library/exercise-library.routes') // Lazy load children routes
       .then(m => m.EXERCISE_LIBRARY_ROUTES)
@@ -22,6 +26,10 @@ export const APP_ROUTES: Routes = [
     loadChildren: () => import('./features/profile-settings/profile-settings.routes')
       .then(m => m.PROFILE_SETTINGS_ROUTES)
   },
-  { path: '', redirectTo: '/workout', pathMatch: 'full' },
-  { path: '**', redirectTo: '/workout' }
+  {
+    path: 'training-programs',
+    loadChildren: () => import('./features/training-programs/training-program.routes').then(m => m.TRAINING_PROGRAM_ROUTES)
+  },
+  { path: '**', redirectTo: '/home' },
+
 ];

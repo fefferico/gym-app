@@ -1,0 +1,56 @@
+// src/app/features/training-programs/training-program-builder/training-program-builder.component.scss
+
+// Styles for CDK Drag and Drop placeholders and previews if needed
+.cdk-drag-preview {
+  box-sizing: border-box;
+  border-radius: 0.5rem; // lg
+  box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.1),
+              0 8px 10px 1px rgba(0, 0, 0, 0.07),
+              0 3px 14px 2px rgba(0, 0, 0, 0.06);
+}
+
+.cdk-drag-placeholder {
+  opacity: 0.2;
+  border: 2px dashed #9ca3af; // gray-400
+  background-color: #f3f4f6; // gray-100
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+  border-radius: 0.5rem; // lg
+}
+
+.dark .cdk-drag-placeholder {
+    border-color: #4b5563; // dark:gray-600
+    background-color: #374151; // dark:gray-700
+}
+
+.cdk-drag-animating {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.scheduled-day-card.cdk-drop-list-dragging .scheduled-day-card:not(.cdk-drag-placeholder) {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+// Custom scrollbar for modal (same as personal-bests)
+.custom-scrollbar {
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: theme('colors.gray.400');
+    border-radius: 3px;
+    &:hover {
+        background: theme('colors.gray.500');
+    }
+  }
+}
+.dark .custom-scrollbar {
+    &::-webkit-scrollbar-thumb {
+        background: theme('colors.gray.600');
+        &:hover {
+            background: theme('colors.gray.500');
+        }
+    }
+}
