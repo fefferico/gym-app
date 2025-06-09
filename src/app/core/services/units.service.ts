@@ -77,7 +77,16 @@ export class UnitsService {
     return value;
   }
 
-  getUnitLabel(): WeightUnit {
-    return this.currentUnit(); // Return the signal's value
+  getUnitLabel(): WeightUnit { // Renamed from getUnitSuffix for clarity if it returns full 'kg' or 'lbs'
+    return this.currentUnit();
+  }
+
+  // NEW METHOD
+  /**
+   * Returns the current weight unit abbreviation (e.g., "kg", "lbs").
+   * This is essentially the same as getUnitLabel but named for suffix usage.
+   */
+  getUnitSuffix(): WeightUnit {
+    return this.currentUnit();
   }
 }

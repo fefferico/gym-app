@@ -1,0 +1,31 @@
+<!-- src/app/shared/components/toast/toast.component.html -->
+<div class="fixed bottom-5 right-1 z-[100] space-y-3 m-5">
+  <div *ngFor="let toast of toasts(); trackBy: trackByToastId"
+       @toastAnimation
+       class="flex items-start p-4 rounded-lg shadow-xl text-white border-l-4"
+       [ngClass]="getToastClasses(toast.type)"
+       role="alert">
+
+    <!-- Icon -->
+    <div class="flex-shrink-0 mr-3">
+      <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="getIconPath(toast.type)" />
+      </svg>
+    </div>
+
+    <!-- Message Content -->
+    <div class="flex-grow">
+      <h5 *ngIf="toast.title" class="font-bold text-sm mb-0.5">{{ toast.title }}</h5>
+      <p class="text-sm">{{ toast.message }}</p>
+    </div>
+
+    <!-- Close Button -->
+    <button (click)="removeToast(toast.id!)"
+            class="ml-3 -mr-1 -my-1 p-1.5 rounded-md hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/50">
+      <span class="sr-only">Close</span>
+      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+      </svg>
+    </button>
+  </div>
+</div>

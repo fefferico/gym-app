@@ -7,11 +7,12 @@ import { CommonModule } from '@angular/common';
 import { TrackingService } from './core/services/tracking.service';
 import { LoggedWorkoutExercise, WorkoutLog } from './core/models/workout-log.model';
 import { SpinnerComponent } from './shared/components/spinner/spinner.component';
+import { ToastContainerComponent } from './shared/components/toast/toast.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, NavigationComponent, CommonModule, SpinnerComponent],
+  imports: [RouterOutlet, NavigationComponent, CommonModule, SpinnerComponent, ToastContainerComponent],
   template: `
     <div class="flex flex-col min-h-screen bg-gray-100 dark:bg-gray-900">
       <!-- Header/Toolbar Area -->
@@ -26,6 +27,7 @@ import { SpinnerComponent } from './shared/components/spinner/spinner.component'
         <!-- mb-16 to prevent overlap with fixed bottom nav -->
         <router-outlet></router-outlet>
         <app-spinner></app-spinner>
+        <app-toast-container></app-toast-container>
       </main>
 
       <!-- Bottom Navigation -->
