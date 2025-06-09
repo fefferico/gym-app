@@ -1,0 +1,109 @@
+{
+  "configVersion": 1,
+  "timestamp": 1749504806565,
+  "index": "C:/Program Files/Git/gym-app/index.csr.html",
+  "assetGroups": [
+    {
+      "name": "app",
+      "installMode": "prefetch",
+      "updateMode": "prefetch",
+      "cacheQueryOptions": {
+        "ignoreVary": true
+      },
+      "urls": [
+        "C:/Program Files/Git/gym-app/chunk-33TTW6GX.js",
+        "C:/Program Files/Git/gym-app/chunk-7PRPN7VN.js",
+        "C:/Program Files/Git/gym-app/chunk-AU2LICDD.js",
+        "C:/Program Files/Git/gym-app/chunk-AYU4UXH7.js",
+        "C:/Program Files/Git/gym-app/chunk-BNWSHQHN.js",
+        "C:/Program Files/Git/gym-app/chunk-DTGTDYOV.js",
+        "C:/Program Files/Git/gym-app/chunk-GNPNRPY6.js",
+        "C:/Program Files/Git/gym-app/chunk-L7SXLIKN.js",
+        "C:/Program Files/Git/gym-app/chunk-MXTF2KEE.js",
+        "C:/Program Files/Git/gym-app/chunk-QAJYNPVR.js",
+        "C:/Program Files/Git/gym-app/chunk-SN7FO6I7.js",
+        "C:/Program Files/Git/gym-app/chunk-T5I2HBCF.js",
+        "C:/Program Files/Git/gym-app/chunk-VYASKGX4.js",
+        "C:/Program Files/Git/gym-app/chunk-W2QT7HM5.js",
+        "C:/Program Files/Git/gym-app/chunk-WNG5FCQ7.js",
+        "C:/Program Files/Git/gym-app/chunk-YAHOZYMW.js",
+        "C:/Program Files/Git/gym-app/chunk-ZY6Y7O54.js",
+        "C:/Program Files/Git/gym-app/main-L6VRVFGT.js",
+        "C:/Program Files/Git/gym-app/polyfills-B6TNHZQ6.js",
+        "C:/Program Files/Git/gym-app/styles-7PXMFGEA.css"
+      ],
+      "patterns": [
+        "\\/"
+      ]
+    },
+    {
+      "name": "assets",
+      "installMode": "lazy",
+      "updateMode": "prefetch",
+      "cacheQueryOptions": {
+        "ignoreVary": true
+      },
+      "urls": [
+        "C:/Program Files/Git/gym-app/assets/icons/barbell.svg",
+        "C:/Program Files/Git/gym-app/assets/icons/bodyweight.svg",
+        "C:/Program Files/Git/gym-app/assets/icons/cardio.svg",
+        "C:/Program Files/Git/gym-app/assets/icons/default-exercise.svg",
+        "C:/Program Files/Git/gym-app/assets/icons/dumbbell.svg",
+        "C:/Program Files/Git/gym-app/assets/icons/kettlebell.svg",
+        "C:/Program Files/Git/gym-app/assets/icons/machine.svg",
+        "C:/Program Files/Git/gym-app/assets/icons/rope.svg"
+      ],
+      "patterns": []
+    }
+  ],
+  "dataGroups": [],
+  "hashTable": {
+    "C:/Program Files/Git/gym-app/assets/icons/barbell.svg": "f50af71d799f41a2d0359979d3fb7056bba8396c",
+    "C:/Program Files/Git/gym-app/assets/icons/bodyweight.svg": "ad3faecc82e92075abad927395f8548494a9be41",
+    "C:/Program Files/Git/gym-app/assets/icons/cardio.svg": "9aa29ec79c5cff5bca0f8609f020a4a5de6d413d",
+    "C:/Program Files/Git/gym-app/assets/icons/default-exercise.svg": "cbf11822ff230057b3282dfe4b720abcf9fc9adf",
+    "C:/Program Files/Git/gym-app/assets/icons/dumbbell.svg": "6c2ac8d03a08e2e328886254218c2ec8f59ad815",
+    "C:/Program Files/Git/gym-app/assets/icons/kettlebell.svg": "6883674af42c7b66ba1557676d143e0fb3e21ee5",
+    "C:/Program Files/Git/gym-app/assets/icons/machine.svg": "20e2cf7f2a53767f9754b295353ba0376a4041af",
+    "C:/Program Files/Git/gym-app/assets/icons/rope.svg": "7e4a261fd29f2e909ad0eb005238f3db4b913d26",
+    "C:/Program Files/Git/gym-app/chunk-33TTW6GX.js": "6baa4712cfc79a4829001e5130d83e12d85435ec",
+    "C:/Program Files/Git/gym-app/chunk-7PRPN7VN.js": "0339dc2adf9a305dc06c6d6f42395234be9d757a",
+    "C:/Program Files/Git/gym-app/chunk-AU2LICDD.js": "cf3a73bb64be6a93fbebfa4c9ba04aa8842052eb",
+    "C:/Program Files/Git/gym-app/chunk-AYU4UXH7.js": "5660aa1de690e2e60818ae5094a1c4e4458a7ca9",
+    "C:/Program Files/Git/gym-app/chunk-BNWSHQHN.js": "589f6fed92c56ef0567cdb59a5e2da5a2ff7e4e8",
+    "C:/Program Files/Git/gym-app/chunk-DTGTDYOV.js": "4086650b9d8e185e03ada0d5ba4ee2f950b2831b",
+    "C:/Program Files/Git/gym-app/chunk-GNPNRPY6.js": "3a108a21b6bde21981549b2ca405f1c21ef28613",
+    "C:/Program Files/Git/gym-app/chunk-L7SXLIKN.js": "289506515731c21c0acfb26d50d1c4e06669741d",
+    "C:/Program Files/Git/gym-app/chunk-MXTF2KEE.js": "440166652728cc77d6ca8ac73a03e440144cfd15",
+    "C:/Program Files/Git/gym-app/chunk-QAJYNPVR.js": "29b5fe46cc22771c112374d4aa260576f5ec9fb5",
+    "C:/Program Files/Git/gym-app/chunk-SN7FO6I7.js": "d4acdcae14b81a303074d6c884c0f08799592c49",
+    "C:/Program Files/Git/gym-app/chunk-T5I2HBCF.js": "75edb95f23c6bcce4228f7ec8f4aee31c5bb4322",
+    "C:/Program Files/Git/gym-app/chunk-VYASKGX4.js": "4463aca4cf54cac1ca1d0215a07220720a72215b",
+    "C:/Program Files/Git/gym-app/chunk-W2QT7HM5.js": "2c1e8eb72c8eda619e09bee2529c47bd38b8ac6d",
+    "C:/Program Files/Git/gym-app/chunk-WNG5FCQ7.js": "1996b13067b44445daed846ca11ef26c6e774862",
+    "C:/Program Files/Git/gym-app/chunk-YAHOZYMW.js": "57bdd621bace29ec7a953b72f617e251871c5e6c",
+    "C:/Program Files/Git/gym-app/chunk-ZY6Y7O54.js": "39c6ae999bbce894ffa7d572ae8179be60d30e2f",
+    "C:/Program Files/Git/gym-app/main-L6VRVFGT.js": "9879ffa4585f845b033634673df9ba78bff2f20c",
+    "C:/Program Files/Git/gym-app/polyfills-B6TNHZQ6.js": "bf76ac291d7f51c1139b7edcf86b359a30c08c64",
+    "C:/Program Files/Git/gym-app/styles-7PXMFGEA.css": "e3642658e4c0bf6b3f32439335b855e7b11a1a10"
+  },
+  "navigationUrls": [
+    {
+      "positive": true,
+      "regex": "^\\/.*$"
+    },
+    {
+      "positive": false,
+      "regex": "^\\/(?:.+\\/)?[^/]*\\.[^/]*$"
+    },
+    {
+      "positive": false,
+      "regex": "^\\/(?:.+\\/)?[^/]*__[^/]*$"
+    },
+    {
+      "positive": false,
+      "regex": "^\\/(?:.+\\/)?[^/]*__[^/]*\\/.*$"
+    }
+  ],
+  "navigationRequestStrategy": "performance"
+}
