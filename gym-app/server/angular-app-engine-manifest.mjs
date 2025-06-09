@@ -1,6 +1,6 @@
 
 export default {
-  basePath: 'C:/Program Files/Git/gym-app',
+  basePath: '/gym-app',
   supportedLocales: {
   "en-US": ""
 },

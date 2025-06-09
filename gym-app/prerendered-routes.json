@@ -1,18 +1,18 @@
 {
   "routes": {
-    "/Program%20Files/Git/gym-app": {},
-    "/Program%20Files/Git/gym-app/history": {},
-    "/Program%20Files/Git/gym-app/history/add-manual": {},
-    "/Program%20Files/Git/gym-app/history/dashboard": {},
-    "/Program%20Files/Git/gym-app/history/list": {},
-    "/Program%20Files/Git/gym-app/home": {},
-    "/Program%20Files/Git/gym-app/library": {},
-    "/Program%20Files/Git/gym-app/library/new": {},
-    "/Program%20Files/Git/gym-app/profile": {},
-    "/Program%20Files/Git/gym-app/profile/personal-bests": {},
-    "/Program%20Files/Git/gym-app/training-programs": {},
-    "/Program%20Files/Git/gym-app/training-programs/new": {},
-    "/Program%20Files/Git/gym-app/workout": {},
-    "/Program%20Files/Git/gym-app/workout/new": {}
+    "/gym-app": {},
+    "/gym-app/history": {},
+    "/gym-app/history/add-manual": {},
+    "/gym-app/history/dashboard": {},
+    "/gym-app/history/list": {},
+    "/gym-app/home": {},
+    "/gym-app/library": {},
+    "/gym-app/library/new": {},
+    "/gym-app/profile": {},
+    "/gym-app/profile/personal-bests": {},
+    "/gym-app/training-programs": {},
+    "/gym-app/training-programs/new": {},
+    "/gym-app/workout": {},
+    "/gym-app/workout/new": {}
   }
 }

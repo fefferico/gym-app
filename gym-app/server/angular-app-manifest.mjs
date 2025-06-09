@@ -2,7 +2,7 @@
 export default {
   bootstrap: () => import('./main.server.mjs').then(m => m.default),
   inlineCriticalCss: true,
-  baseHref: 'C:/Program Files/Git/gym-app/',
+  baseHref: '/gym-app/',
   locale: undefined,
   routes: undefined,
   entryPointToBrowserMapping: {
@@ -108,8 +108,8 @@ export default {
   ]
 },
   assets: {
-    'index.csr.html': {size: 2858, hash: '20d5c475bdf51ea1a629449b3ad37fde41b10dcdaa80c7162a920f9d2056f7e8', text: () => import('./assets-chunks/index_csr_html.mjs').then(m => m.default)},
-    'index.server.html': {size: 1525, hash: '07de3174d610a00aa86cf3bf2f903b26d0b7c14066ca29d4dc7b86f7187cb36f', text: () => import('./assets-chunks/index_server_html.mjs').then(m => m.default)},
+    'index.csr.html': {size: 2838, hash: 'ce9dff2910acc52c3a995407d63d557d9210d1c899d5a058ac9a78737801e459', text: () => import('./assets-chunks/index_csr_html.mjs').then(m => m.default)},
+    'index.server.html': {size: 1505, hash: 'bc4b422766a99dbf6f99fe553488e3d7a523052fd6a8d08f805933d73f124e60', text: () => import('./assets-chunks/index_server_html.mjs').then(m => m.default)},
     'styles-7PXMFGEA.css': {size: 57621, hash: 'fxQo7I+yQsc', text: () => import('./assets-chunks/styles-7PXMFGEA_css.mjs').then(m => m.default)}
   },
 };
