@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1749506120062,
+  "timestamp": 1749506685579,
   "index": "/gym-app/index.csr.html",
   "assetGroups": [
     {
@@ -28,7 +28,7 @@
         "/gym-app/chunk-WNG5FCQ7.js",
         "/gym-app/chunk-YAHOZYMW.js",
         "/gym-app/chunk-ZY6Y7O54.js",
-        "/gym-app/index.html",
+        "/gym-app/index.csr.html",
         "/gym-app/main-L6VRVFGT.js",
         "/gym-app/polyfills-B6TNHZQ6.js",
         "/gym-app/styles-7PXMFGEA.css"
@@ -45,6 +45,7 @@
         "ignoreVary": true
       },
       "urls": [
+        "/gym-app/assets/data/exercises.json",
         "/gym-app/assets/icons/barbell.svg",
         "/gym-app/assets/icons/bodyweight.svg",
         "/gym-app/assets/icons/cardio.svg",
@@ -55,10 +56,23 @@
         "/gym-app/assets/icons/rope.svg"
       ],
       "patterns": []
+    },
+    {
+      "name": "prerendered-routes",
+      "installMode": "lazy",
+      "updateMode": "prefetch",
+      "cacheQueryOptions": {
+        "ignoreVary": true
+      },
+      "urls": [
+        "/gym-app/index.html"
+      ],
+      "patterns": []
     }
   ],
   "dataGroups": [],
   "hashTable": {
+    "/gym-app/assets/data/exercises.json": "d509732f3faa77d330a40adbf301b424b2a81fb8",
     "/gym-app/assets/icons/barbell.svg": "f50af71d799f41a2d0359979d3fb7056bba8396c",
     "/gym-app/assets/icons/bodyweight.svg": "ad3faecc82e92075abad927395f8548494a9be41",
     "/gym-app/assets/icons/cardio.svg": "9aa29ec79c5cff5bca0f8609f020a4a5de6d413d",
@@ -84,7 +98,8 @@
     "/gym-app/chunk-WNG5FCQ7.js": "1996b13067b44445daed846ca11ef26c6e774862",
     "/gym-app/chunk-YAHOZYMW.js": "57bdd621bace29ec7a953b72f617e251871c5e6c",
     "/gym-app/chunk-ZY6Y7O54.js": "39c6ae999bbce894ffa7d572ae8179be60d30e2f",
-    "/gym-app/index.html": "68ad2e16ff5647e424bbf8017f7c3daf2b093b44",
+    "/gym-app/index.csr.html": "7991987d1e1e5907621fd5fa7c3de95c3e915dc6",
+    "/gym-app/index.html": "35348a1d830165211cb00b27c4893647a09f0590",
     "/gym-app/main-L6VRVFGT.js": "9879ffa4585f845b033634673df9ba78bff2f20c",
     "/gym-app/polyfills-B6TNHZQ6.js": "bf76ac291d7f51c1139b7edcf86b359a30c08c64",
     "/gym-app/styles-7PXMFGEA.css": "e3642658e4c0bf6b3f32439335b855e7b11a1a10"
