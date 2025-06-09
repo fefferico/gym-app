@@ -29,7 +29,6 @@ interface DayOption {
         CommonModule,
         ReactiveFormsModule,
         RouterLink,
-        DatePipe,
         TitleCasePipe,
         DragDropModule,
         DayOfWeekPipe,

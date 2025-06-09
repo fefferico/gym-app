@@ -1,6 +1,6 @@
 // src/app/features/training-programs/training-program-list/training-program-list.component.ts
 import { Component, inject, OnInit, PLATFORM_ID, signal } from '@angular/core';
-import { CommonModule, DatePipe, isPlatformBrowser, TitleCasePipe } from '@angular/common';
+import { CommonModule, DatePipe, isPlatformBrowser } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { Observable } from 'rxjs';
 import { TrainingProgram } from '../../../core/models/training-program.model';
@@ -12,7 +12,7 @@ import { SpinnerService } from '../../../core/services/spinner.service';
 @Component({
   selector: 'app-training-program-list',
   standalone: true,
-  imports: [CommonModule, RouterLink, DatePipe, TitleCasePipe],
+  imports: [CommonModule, DatePipe],
   templateUrl: './training-program-list.html',
   styleUrls: ['./training-program-list.scss']
 })

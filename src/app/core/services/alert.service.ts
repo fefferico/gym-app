@@ -1,5 +1,6 @@
 // src/app/core/services/alert.service.ts
-import { Injectable, ApplicationRef, createComponent, EnvironmentInjector, ComponentRef } from '@angular/core';
+import { Injectable, ApplicationRef, createComponent, EnvironmentInjector, ComponentRef, PLATFORM_ID, inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common'; // Import isPlatformBrowser
 import { AlertComponent } from '../../shared/components/alert/alert.component';
 import { AlertButton, AlertOptions, AlertInput } from '../models/alert.model';
 
@@ -8,6 +9,7 @@ import { AlertButton, AlertOptions, AlertInput } from '../models/alert.model';
 })
 export class AlertService {
     private alertComponentRef: ComponentRef<AlertComponent> | null = null;
+    private platformId = inject(PLATFORM_ID); // Inject PLATFORM_ID
 
     constructor(
         private appRef: ApplicationRef,
@@ -15,8 +17,16 @@ export class AlertService {
     ) { }
 
     async present(options: AlertOptions): Promise<{ role: string, data?: any, values?: { [key: string]: string | number } } | undefined> {
+        if (!isPlatformBrowser(this.platformId)) {
+            // console.warn("AlertService.present called in a non-browser environment. Alert will not be shown.");
+            // For methods like showConfirm that await a result, returning undefined or a default
+            // "cancelled" response is often best on the server.
+            return Promise.resolve(undefined);
+        }
+
+        // Dismiss any existing alert if on the browser
         if (this.alertComponentRef) {
-            this.dismiss(undefined); // Dismiss any existing alert
+            this.dismiss(undefined);
         }
 
         return new Promise((resolve) => {
@@ -26,14 +36,14 @@ export class AlertService {
 
             this.appRef.attachView(alertComponentRef.hostView);
             const domElem = (alertComponentRef.hostView as any).rootNodes[0] as HTMLElement;
-            document.body.appendChild(domElem);
+            document.body.appendChild(domElem); // This line is browser-specific
 
             this.alertComponentRef = alertComponentRef;
 
             alertComponentRef.instance.options = options;
             alertComponentRef.instance.dismissed.subscribe((result: { role: string, data?: any, values?: { [key: string]: string | number } } | undefined) => {
                 this.dismiss(result); // Internal dismiss also handles handler logic
-                resolve(result); // **MODIFIED: Always resolve with the full result object or undefined**
+                resolve(result);
             });
 
             alertComponentRef.changeDetectorRef.detectChanges();
@@ -41,10 +51,17 @@ export class AlertService {
     }
 
     dismiss(result?: { role: string, data?: any, values?: { [key: string]: string | number } }): void {
+        if (!isPlatformBrowser(this.platformId)) {
+            return; // Do nothing on the server
+        }
+
         if (this.alertComponentRef) {
             const buttonClicked = result?.role;
             
-            const clickedButton = this.alertComponentRef.instance.options?.buttons.find(b => b.role === buttonClicked);
+            // Safely access options only if alertComponentRef and its instance exist
+            const options = this.alertComponentRef.instance?.options;
+            const clickedButton = options?.buttons.find(b => b.role === buttonClicked);
+
             if (clickedButton && clickedButton.handler) {
                 try {
                     const handlerResult = clickedButton.handler();
@@ -61,12 +78,14 @@ export class AlertService {
     }
 
     async showAlert(header: string, message: string, okText: string = 'OK'): Promise<void> {
-        // For showAlert, we don't typically care about the resolve value, just that it completed.
+        // `present` is already guarded, so this will effectively be a no-op on the server
+        // and the promise will resolve to undefined.
         await this.present({
             header,
             message,
             buttons: [{ text: okText, role: 'confirm' }]
         });
+        // No return value needed here, the void promise is fine.
     }
 
     async showConfirm(
@@ -84,10 +103,11 @@ export class AlertService {
             ]
         });
         
-        if (result) { // Result will be { role, data, values }
+        // `result` will be undefined if on the server (due to guard in `present`)
+        if (result) { // This check also implicitly confirms we are on the browser if result is not undefined
             return { role: result.role as 'confirm' | 'cancel', data: result.data };
         }
-        return undefined; // Dismissed via backdrop/escape
+        return undefined; // Dismissed via backdrop/escape or if on server
     }
 
     async showCustomAlert(title: string, message: string) {
@@ -101,14 +121,16 @@ export class AlertService {
         ],
         backdropDismiss: false
       });
-      console.log('showCustomAlert Result:', result); // result is now the full object
+      if (isPlatformBrowser(this.platformId)) { // Only log in browser if you want to see console output
+          console.log('showCustomAlert Result:', result);
+      }
     }
 
     async showConfirmationDialog(
         title: string, 
         message: string, 
         customButtons?: AlertButton[]
-    ): Promise<{role: string, data?:any, values?: { [key: string]: string | number } } | undefined> { // Return the full result
+    ): Promise<{role: string, data?:any, values?: { [key: string]: string | number } } | undefined> {
       const result = await this.present({
         header: title,
         message: message,
@@ -118,8 +140,7 @@ export class AlertService {
         ],
         backdropDismiss: false
       });
-      // console.log('showConfirmationDialog Result from present:', result); // For debugging
-      return result; // Return the full result object passed from present()
+      return result; // `result` will be undefined if on server
     }
 
     async showPromptDialog(
@@ -134,15 +155,16 @@ export class AlertService {
             message,
             inputs,
             buttons: [
-                { text: cancelText, role: 'cancel', data: false }, // Added data:false for clearer cancel
-                { text: okText, role: 'confirm', data: true }    // Added data:true for clearer confirm
+                { text: cancelText, role: 'cancel', data: false },
+                { text: okText, role: 'confirm', data: true }
             ],
             backdropDismiss: false
         });
 
-        if (result && result.role === 'confirm' && result.data === true) { // Check for confirm role and data
-            return result.values || {}; // Return input values or empty object if none
+        // `result` will be undefined if on server
+        if (result && result.role === 'confirm' && result.data === true) {
+            return result.values || {};
         }
-        return null; // Cancelled or dismissed
+        return null; // Cancelled, dismissed, or on server
     }
 }

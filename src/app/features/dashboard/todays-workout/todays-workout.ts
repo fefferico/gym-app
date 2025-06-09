@@ -1,6 +1,6 @@
 // src/app/features/dashboard/todays-workout/todays-workout.component.ts
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { CommonModule, DatePipe, TitleCasePipe } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { TrainingProgramService } from '../../../core/services/training-program.service';
 import { Routine } from '../../../core/models/workout.model';
@@ -12,7 +12,7 @@ import { Observable } from 'rxjs';
 @Component({
   selector: 'app-todays-workout',
   standalone: true,
-  imports: [CommonModule, DatePipe, TitleCasePipe],
+  imports: [CommonModule, DatePipe],
   templateUrl: './todays-workout.html',
   styleUrls: ['./todays-workout.scss']
 })

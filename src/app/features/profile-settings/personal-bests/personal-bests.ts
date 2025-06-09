@@ -24,7 +24,7 @@ interface DisplayPersonalBest extends PersonalBestSet {
 @Component({
   selector: 'app-personal-bests',
   standalone: true,
-  imports: [CommonModule, RouterLink, DatePipe, TitleCasePipe, WeightUnitPipe],
+  imports: [CommonModule, RouterLink, DatePipe, TitleCasePipe],
   templateUrl: './personal-bests.html',
   styleUrl: './personal-bests.scss',
 })
