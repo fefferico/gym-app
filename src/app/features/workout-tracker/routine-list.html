@@ -52,7 +52,7 @@
 
                 <!-- Action Buttons - Conditionally Visible -->
                 <div *ngIf="areActionsVisible(routine.id)"
-                    class="absolute inset-x-0 bottom-0 p-2 bg-gray-100 dark:bg-gray-750 border-t border-gray-200 dark:border-gray-700
+                    class="absolute inset-x-0 bottom-0 p-2 bg-gray-100 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-700
                            flex flex-wrap gap-1.5 justify-center z-20 rounded-b-lg"
                     @slideInOutActions> <!-- Animation trigger -->
                     <button (click)="startWorkout(routine.id, $event)" title="Start Workout"

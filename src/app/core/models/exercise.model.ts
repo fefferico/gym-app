@@ -1,13 +1,20 @@
 // src/app/core/models/exercise.model.ts
-export type ExerciseCategory =
-  | 'bodyweight'
-  | 'dumbbells'
-  | 'kettlebells'
-  | 'barbells'
-  | 'machines'
-  | 'cables'
-  | 'bands'
-  | 'other';
+export const EXERCISE_CATEGORIES = [
+  'bodyweight',
+  'dumbbells',
+  'kettlebells',
+  'barbells',
+  'machines',
+  'cables',
+  'bands',
+  'cardio',
+  'stretching',
+  'plyometrics',
+  'strongman',
+  'other',
+] as const;
+
+export type ExerciseCategory = typeof EXERCISE_CATEGORIES[number];
 
 export interface Exercise {
   id: string; // Unique identifier (e.g., UUID or a slug like 'push-up')

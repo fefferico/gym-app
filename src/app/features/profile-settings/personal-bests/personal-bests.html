@@ -2,85 +2,141 @@
 <div class="container mx-auto p-4">
     <div class="mb-6 flex items-center">
         <button routerLink="/profile"
-            class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-light p-2 -ml-1"><svg
-                fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
+            class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-light p-2 -ml-2 rounded-full focus:outline-none focus:ring-2 focus:ring-primary-focus">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
                 class="w-6 h-6">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-            </svg></button>
-        <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-200">Personal Bests</h1>
+            </svg>
+        </button>
+        <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-200 ml-2">Personal Bests</h1>
     </div>
 
-    <div *ngIf="displayPersonalBests().length > 0; else noPBs">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-auto mb-6">
-            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead class="bg-gray-50 dark:bg-gray-750">
-                    <tr>
-                        <th scope="col"
-                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                            Exercise</th>
-                        <th scope="col"
-                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                            PB Type</th>
-                        <th scope="col"
-                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                            Best</th>
-                        <th scope="col"
-                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                            Date</th>
-                        <th scope="col"
-                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                            Notes</th>
-                        <th scope="col" class="relative px-6 py-3"> <!-- Column for view button -->
-                            <span class="sr-only">View Log</span>
-                        </th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                    <tr *ngFor="let pb of displayPersonalBests()" (click)="navigateToLogDetail(pb.workoutLogId)"
-                        class="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors duration-150">
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
-                            {{ pb.exerciseName }} <span class="text-xs text-gray-500 dark:text-gray-400">({{
-                                pb.primaryMuscleGroup | titlecase }})</span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{ pb.pbType }}
-                        </td>
-                        <td
-                            class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-primary dark:text-primary-light">
-                            {{ formatPbValue(pb) }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ pb.timestamp
-                            | date:'mediumDate' }}</td>
-                        <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 italic truncate max-w-xs"
-                            [title]="pb.notes">{{ pb.notes | slice:0:50
-                            }}{{ pb && pb.notes && pb.notes.length > 50 ? '...' : '' }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <button (click)="navigateToLogDetail(pb.workoutLogId, $event)"
-                                class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
-                                title="View Workout Log">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
-                                    class="w-5 h-5">
-                                    <path d="M10 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" />
-                                    <path fill-rule="evenodd"
-                                        d="M.664 10.59a1.651 1.651 0 0 1 0-1.186A10.004 10.004 0 0 1 10 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0 1 10 17c-4.257 0-7.893-2.66-9.336-6.41ZM14 10a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z"
-                                        clip-rule="evenodd" />
-                                </svg>
-                            </button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+    <!-- Filter Accordion Section -->
+    <div class="mb-8 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+        <button (click)="toggleFiltersVisibility()"
+            class="w-full flex justify-between items-center p-4 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-opacity-75 rounded-t-lg"
+            [class.rounded-b-lg]="!filtersVisible()"
+            [attr.aria-expanded]="filtersVisible()"
+            aria-controls="filters-content">
+            <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-300">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 inline-block mr-2 align-text-bottom">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.572a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z" />
+                </svg>
+                Filters
+            </h2>
+            <!-- Expand/Collapse Icon -->
+            <svg *ngIf="filtersVisible()" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-gray-500 dark:text-gray-400 transform transition-transform duration-200">
+                <polyline points="18 15 12 9 6 15"></polyline>
+            </svg>
+            <svg *ngIf="!filtersVisible()" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-gray-500 dark:text-gray-400 transform transition-transform duration-200">
+                <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+        </button>
+
+        <div *ngIf="filtersVisible()" id="filters-content" class="p-4 border-t border-gray-200 dark:border-gray-700">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label for="exerciseNameFilter" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Filter by Exercise Name
+                    </label>
+                    <input type="text" id="exerciseNameFilter" #nameFilterInput
+                           [value]="exerciseNameFilter()"
+                           (input)="exerciseNameFilter.set(nameFilterInput.value)"
+                           placeholder="e.g., Bench Press"
+                           class="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500">
+                </div>
+                <div>
+                    <label for="categoryFilter" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Filter by Category
+                    </label>
+                    <select id="categoryFilter" #categoryFilterInput
+                            [value]="exerciseCategoryFilter()"
+                            (change)="exerciseCategoryFilter.set(categoryFilterInput.value)"
+                            class="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm text-gray-900 dark:text-gray-100">
+                        <option value="">All Categories</option>
+                        <option *ngFor="let category of availableCategories()" [value]="category">
+                            {{ category | titlecase }}
+                        </option>
+                    </select>
+                </div>
+            </div>
+            <div class="flex justify-end">
+                <button (click)="resetFilters()"
+                    class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md shadow-sm border border-gray-300 dark:border-gray-500 transition-colors">
+                    Reset Filters
+                </button>
+            </div>
         </div>
     </div>
 
-    <ng-template #noPBs>
-        <div class="text-center py-10 bg-white dark:bg-gray-800 rounded-lg shadow-md">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                stroke="currentColor" class="w-16 h-16 mx-auto text-gray-400 dark:text-gray-500 mb-4">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                    d="M6 3H18M8 3V5C8 7.20914 9.79086 9 12 9C14.2091 9 16 7.20914 16 5V3M10 9V17H14V9M8 20H16" />
+    <div *ngIf="displayPersonalBests().length > 0; else noPBsOrFilters">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div *ngFor="let pb of displayPersonalBests()"
+                class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden flex flex-col transition-all hover:shadow-xl">
+                
+                <div class="p-5 flex-grow">
+                    <h2 class="text-xl font-semibold text-primary dark:text-primary-light mb-1 truncate" [title]="pb.exerciseName">
+                        {{ pb.exerciseName }}
+                    </h2>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                        ({{ pb.primaryMuscleGroup | titlecase }})
+                    </p>
+
+                    <div class="mb-4">
+                        <span class="text-sm font-medium text-gray-600 dark:text-gray-300">Type:</span>
+                        <p class="text-md text-gray-800 dark:text-gray-100">{{ pb.pbType }}</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <span class="text-sm font-medium text-gray-600 dark:text-gray-300">Best:</span>
+                        <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ formatPbValue(pb) }}</p>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <span class="text-sm font-medium text-gray-600 dark:text-gray-300">Date:</span>
+                        <p class="text-sm text-gray-700 dark:text-gray-200">{{ pb.timestamp | date:'mediumDate' }}</p>
+                    </div>
+
+                    <div *ngIf="pb.notes" class="mb-4">
+                        <span class="text-sm font-medium text-gray-600 dark:text-gray-300">Notes:</span>
+                        <p class="text-sm text-gray-700 dark:text-gray-200 italic max-h-24 overflow-y-auto custom-scrollbar pr-1" [title]="pb.notes">
+                            {{ pb.notes }}
+                        </p>
+                    </div>
+                </div>
+
+                <div class="px-5 py-4 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600">
+                    <button (click)="navigateToLogDetail(pb.workoutLogId, $event)"
+                        class="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-indigo-500 dark:hover:bg-indigo-600 dark:focus:ring-offset-gray-800 transition-colors duration-150"
+                        title="View Workout Log">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                            class="w-5 h-5 mr-2">
+                            <path d="M10 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" />
+                            <path fill-rule="evenodd"
+                                d="M.664 10.59a1.651 1.651 0 0 1 0-1.186A10.004 10.004 0 0 1 10 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0 1 10 17c-4.257 0-7.893-2.66-9.336-6.41ZM14 10a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z"
+                                clip-rule="evenodd" />
+                        </svg>
+                        View Log
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Updated ng-template to handle both no PBs initially and no results after filtering -->
+    <ng-template #noPBsOrFilters>
+        <div class="text-center py-10 bg-white dark:bg-gray-800 rounded-xl shadow-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-16 h-16 mx-auto text-gray-400 dark:text-gray-500 mb-4">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM13.5 10.5h-6" />
             </svg>
-            <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">No Personal Bests Yet!</h2>
-            <p class="text-gray-500 dark:text-gray-400">Keep logging your workouts to track your progress and
-                achievements here.</p>
+            <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                <span *ngIf="hasActiveFilters(); else noPBsMessage">No Personal Bests Match Your Filters</span>
+                <ng-template #noPBsMessage>No Personal Bests Yet!</ng-template>
+            </h2>
+            <p class="text-gray-500 dark:text-gray-400 px-4">
+                <span *ngIf="hasActiveFilters()">Try adjusting your filter criteria or <button (click)="resetFiltersAndShow()" class="text-primary dark:text-primary-light hover:underline">reset all filters</button>.</span>
+                <span *ngIf="!hasActiveFilters() && allPersonalBestsSignalEmpty()">Keep logging your workouts to track your progress and achievements here.</span>
+            </p>
         </div>
     </ng-template>
 </div>

@@ -1,0 +1,30 @@
+// In personal-bests.scss or styles.scss
+
+.custom-scrollbar {
+  &::-webkit-scrollbar {
+    width: 6px; /* Adjust width */
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent; /* Or a light gray like theme('colors.gray.200') */
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: theme('colors.gray.400'); /* Adjust color */
+    border-radius: 3px;
+    &:hover {
+        background: theme('colors.gray.500'); /* Adjust hover color */
+    }
+  }
+}
+
+// For dark mode, you might want different scrollbar colors
+.dark .custom-scrollbar {
+    &::-webkit-scrollbar-thumb {
+        background: theme('colors.gray.600');
+        &:hover {
+            background: theme('colors.gray.500');
+        }
+    }
+}

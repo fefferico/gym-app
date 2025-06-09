@@ -64,7 +64,7 @@
             class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden shadow-sm">
 
             <button (click)="toggleExerciseAccordion(loggedEx)"
-              class="w-full flex justify-between items-center p-3 text-left bg-gray-100 dark:bg-gray-750 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors focus:outline-none">
+              class="w-full flex justify-between items-center p-3 text-left bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors focus:outline-none">
               <div class="flex items-center">
                 <div
                   class="flex-shrink-0 mr-3 w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-gray-200 dark:bg-gray-700 rounded-md border border-gray-300 dark:border-gray-600">
@@ -150,7 +150,7 @@
                 <h4 class="text-sm font-semibold text-gray-600 dark:text-gray-300"
                   *ngIf="loggedEx.warmupSets && loggedEx.warmupSets.length > 0">Working Sets:</h4>
                 <div *ngFor="let set of loggedEx.workingSets; let setIdx = index"
-                  class="p-2 rounded-md bg-gray-50 dark:bg-gray-750/70 border border-gray-200 dark:border-gray-600">
+                  class="p-2 rounded-md bg-gray-50 dark:bg-gray-700/70 border border-gray-200 dark:border-gray-600">
                   <p class="text-sm font-medium text-gray-700 dark:text-gray-200">
                     {{ getDisplaySetLabel(loggedEx.workingSets, setIdx) }}:
                   </p>
