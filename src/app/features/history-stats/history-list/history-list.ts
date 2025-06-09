@@ -1,5 +1,5 @@
-import { Component, inject, OnInit, signal, computed, effect } from '@angular/core'; // effect for debugging
-import { CommonModule, DatePipe, DecimalPipe, TitleCasePipe } from '@angular/common';
+import { Component, inject, OnInit, signal, computed, effect, PLATFORM_ID } from '@angular/core'; // effect for debugging
+import { CommonModule, DatePipe, DecimalPipe, isPlatformBrowser, TitleCasePipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { Observable, combineLatest } from 'rxjs'; // Added combineLatest
 import { map, startWith, distinctUntilChanged } from 'rxjs/operators'; // Added distinctUntilChanged
@@ -107,8 +107,12 @@ export class HistoryListComponent implements OnInit {
     });
   }
 
+  private platformId = inject(PLATFORM_ID); // Inject PLATFORM_ID
+
   ngOnInit(): void {
-    window.scrollTo(0, 0);
+    if (isPlatformBrowser(this.platformId)) { // Check if running in a browser
+      window.scrollTo(0, 0);
+    }
     this.trackingService.workoutLogs$.subscribe(logs => {
       this.allWorkoutLogs.set(logs);
     });

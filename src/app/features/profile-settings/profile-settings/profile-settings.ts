@@ -1,6 +1,6 @@
 // src/app/features/profile-settings/profile-settings.component.ts
-import { Component, inject, signal } from '@angular/core'; // Added signal
-import { CommonModule } from '@angular/common';
+import { Component, inject, PLATFORM_ID, signal } from '@angular/core'; // Added signal
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { format } from 'date-fns'; // For file naming
 import { WorkoutService } from '../../../core/services/workout.service';
@@ -35,8 +35,13 @@ export class ProfileSettingsComponent {
   currentUnit = this.unitsService.currentUnit;
 
   constructor() {
-    window.scrollTo(0, 0);
+    if (isPlatformBrowser(this.platformId)) { // Check if running in a browser
+      window.scrollTo(0, 0);
+    }
   }
+
+  private platformId = inject(PLATFORM_ID); // Inject PLATFORM_ID
+
 
   // --- Unit Preference Logic ---
   selectUnit(unit: WeightUnit): void {

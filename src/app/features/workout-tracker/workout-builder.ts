@@ -1,6 +1,6 @@
-import { Component, inject, OnInit, OnDestroy, signal, computed, ElementRef, QueryList, ViewChildren, AfterViewInit, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal, computed, ElementRef, QueryList, ViewChildren, AfterViewInit, ChangeDetectorRef, PLATFORM_ID } from '@angular/core';
 
-import { CommonModule, DecimalPipe } from '@angular/common';
+import { CommonModule, DecimalPipe, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, ActivatedRouteSnapshot, Router, RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray, AbstractControl, FormsModule } from '@angular/forms';
 import { Subscription, of, firstValueFrom } from 'rxjs';
@@ -44,7 +44,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   protected toastService = inject(ToastService);
   private trackingService = inject(TrackingService);
 
-   private readonly PAUSED_WORKOUT_KEY = 'fitTrackPro_pausedWorkoutState';
+  private readonly PAUSED_WORKOUT_KEY = 'fitTrackPro_pausedWorkoutState';
   private readonly PAUSED_STATE_VERSION = '1.1'; // Incremented version for new snapshot field
 
 
@@ -80,7 +80,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     { value: 'mental health / stress relief', label: 'Mental health' },
     { value: 'general health & longevity', label: 'General health & longevity' },
     { value: 'sport-specific performance', label: 'Sport-specific performance' },
-    { value: 'maintenance', label: 'Maintenance'},
+    { value: 'maintenance', label: 'Maintenance' },
     { value: 'custom', label: 'Custom' }
   ];
 
@@ -106,13 +106,17 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     this.routineForm = this.fb.group({
       name: ['', Validators.required],
       description: [''],
-      goal: ['custom'as Routine['goal']],
+      goal: ['custom' as Routine['goal']],
       exercises: this.fb.array([]),
     });
   }
 
+  private platformId = inject(PLATFORM_ID); // Inject PLATFORM_ID
+
   ngOnInit(): void {
-    window.scrollTo(0, 0);
+    if (isPlatformBrowser(this.platformId)) { // Check if running in a browser
+      window.scrollTo(0, 0);
+    }
     this.loadAvailableExercises();
 
     this.routeSub = this.route.paramMap.pipe(
@@ -130,8 +134,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         }
         this.exercisesFormArray.clear();
         this.routineForm.reset({ goal: 'custom', exercises: [] });
-         if (this.isNewMode) {
-            this.toggleFormState(false);
+        if (this.isNewMode) {
+          this.toggleFormState(false);
         }
         return of(null);
       }),
@@ -141,7 +145,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
           if (this.isViewMode) {
             this.toggleFormState(true);
           } else if (this.isEditMode && !this.isNewMode) {
-             this.toggleFormState(false);
+            this.toggleFormState(false);
           }
         } else if ((this.isEditMode || this.isViewMode) && !this.isNewMode && this.currentRoutineId) {
           this.toastService.error(`Routine with ID ${this.currentRoutineId} not found.`, 0, "Error");
@@ -212,7 +216,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       supersetOrder: [exerciseData?.supersetOrder ?? null],
       supersetSize: [exerciseData?.supersetSize ?? null],
       rounds: [exerciseData?.rounds ?? 1, [Validators.min(1)]],
-      });
+    });
 
     fg.get('supersetId')?.valueChanges.subscribe(() => this.updateRoundsControlability(fg));
     fg.get('supersetOrder')?.valueChanges.subscribe(() => this.updateRoundsControlability(fg));
@@ -273,14 +277,14 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   ngAfterViewInit(): void {
     // This can be used to scroll to the expanded set after it's rendered
     this.expandedSetElements.changes.subscribe((elems: QueryList<ElementRef<HTMLDivElement>>) => {
-        if (elems.first) {
-            // Check if expandedSetPath is not null to ensure we only scroll when a set is truly expanded
-            if (this.expandedSetPath()) {
-                 setTimeout(() => { // Timeout ensures DOM is fully ready
-                    elems.first.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                 }, 0);
-            }
+      if (elems.first) {
+        // Check if expandedSetPath is not null to ensure we only scroll when a set is truly expanded
+        if (this.expandedSetPath()) {
+          setTimeout(() => { // Timeout ensures DOM is fully ready
+            elems.first.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }, 0);
         }
+      }
     });
   }
 
@@ -296,17 +300,17 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     // Focus logic will be handled by ngAfterViewInit when the expanded element is rendered.
   }
 
-  removeSet(exerciseControl: AbstractControl, exerciseIndex:number, setIndex: number): void {
+  removeSet(exerciseControl: AbstractControl, exerciseIndex: number, setIndex: number): void {
     if (this.isViewMode) return;
     const setsArray = this.getSetsFormArray(exerciseControl);
     setsArray.removeAt(setIndex);
     // If the removed set was the expanded one, collapse (set to null)
     const currentExpanded = this.expandedSetPath();
     if (currentExpanded && currentExpanded.exerciseIndex === exerciseIndex && currentExpanded.setIndex === setIndex) {
-        this.expandedSetPath.set(null);
+      this.expandedSetPath.set(null);
     } else if (currentExpanded && currentExpanded.exerciseIndex === exerciseIndex && currentExpanded.setIndex > setIndex) {
-        // If a set before the expanded one was removed, adjust the expanded index
-        this.expandedSetPath.set({ exerciseIndex, setIndex: currentExpanded.setIndex -1 });
+      // If a set before the expanded one was removed, adjust the expanded index
+      this.expandedSetPath.set({ exerciseIndex, setIndex: currentExpanded.setIndex - 1 });
     }
   }
 
@@ -314,11 +318,11 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   toggleSetExpansion(exerciseIndex: number, setIndex: number, event?: MouseEvent): void {
     event?.stopPropagation(); // Prevent exercise card click if called from a button/icon
     if (this.isViewMode && !(this.expandedSetPath()?.exerciseIndex === exerciseIndex && this.expandedSetPath()?.setIndex === setIndex)) {
-        // In view mode, allow expanding but not direct editing inputs.
-        // If already expanded, clicking again will collapse it.
+      // In view mode, allow expanding but not direct editing inputs.
+      // If already expanded, clicking again will collapse it.
     } else if (this.isViewMode) {
-        this.expandedSetPath.set(null); // Collapse if clicking the already expanded one in view mode
-        return;
+      this.expandedSetPath.set(null); // Collapse if clicking the already expanded one in view mode
+      return;
     }
 
 
@@ -328,23 +332,23 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     } else {
       this.expandedSetPath.set({ exerciseIndex, setIndex });
       // Focus logic can be more targeted here or rely on ngAfterViewInit for the #expandedSetElement
-        this.cdr.detectChanges(); // Ensure the expanded element is rendered
-        setTimeout(() => {
-            const expandedElement = this.expandedSetElements.find((el, idx) => {
-                // This logic for finding the correct element might need refinement
-                // if QueryList doesn't map directly to the *ngFor of expanded sets.
-                // For now, assuming only one can be expanded, so .first might work.
-                return true; // Simplified, assuming first is the one if any
-            });
-            if(expandedElement) {
-                 // Find the first focusable input within the expanded set
-                const firstInput = expandedElement.nativeElement.querySelector('input[formControlName="reps"], input[formControlName="weight"], input[formControlName="duration"]');
-                if (firstInput instanceof HTMLInputElement) {
-                    firstInput.focus();
-                    firstInput.select();
-                }
-            }
-        }, 50); // Small delay
+      this.cdr.detectChanges(); // Ensure the expanded element is rendered
+      setTimeout(() => {
+        const expandedElement = this.expandedSetElements.find((el, idx) => {
+          // This logic for finding the correct element might need refinement
+          // if QueryList doesn't map directly to the *ngFor of expanded sets.
+          // For now, assuming only one can be expanded, so .first might work.
+          return true; // Simplified, assuming first is the one if any
+        });
+        if (expandedElement) {
+          // Find the first focusable input within the expanded set
+          const firstInput = expandedElement.nativeElement.querySelector('input[formControlName="reps"], input[formControlName="weight"], input[formControlName="duration"]');
+          if (firstInput instanceof HTMLInputElement) {
+            firstInput.focus();
+            firstInput.select();
+          }
+        }
+      }, 50); // Small delay
     }
   }
 
@@ -458,7 +462,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
           supersetGroups.set(supersetId, []);
         }
         supersetGroups.get(supersetId)!.push(exerciseForm);
-      } else { 
+      } else {
         exerciseForm.patchValue({ supersetOrder: null, supersetSize: null }, { emitEvent: false });
         this.updateRoundsControlability(exerciseForm);
       }
@@ -466,19 +470,19 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     supersetGroups.forEach((groupExercises, supersetId) => {
       if (groupExercises.length < 2) {
         groupExercises.forEach(fg => {
-            fg.patchValue({ supersetId: null, supersetOrder: null, supersetSize: null });
-            this.updateRoundsControlability(fg);
+          fg.patchValue({ supersetId: null, supersetOrder: null, supersetSize: null });
+          this.updateRoundsControlability(fg);
         });
       } else {
         groupExercises.sort((a, b) => {
-            return this.exercisesFormArray.controls.indexOf(a) - this.exercisesFormArray.controls.indexOf(b);
+          return this.exercisesFormArray.controls.indexOf(a) - this.exercisesFormArray.controls.indexOf(b);
         });
         groupExercises.forEach((exerciseForm, index) => {
           exerciseForm.patchValue({
             supersetOrder: index,
             supersetSize: groupExercises.length,
           }, { emitEvent: false });
-           this.updateRoundsControlability(exerciseForm);
+          this.updateRoundsControlability(exerciseForm);
         });
       }
     });
@@ -565,7 +569,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       return;
     }
 
-     const exercisesValue = this.exercisesFormArray.value as WorkoutExercise[];
+    const exercisesValue = this.exercisesFormArray.value as WorkoutExercise[];
     for (let i = 0; i < exercisesValue.length; i++) {
       const exercise = exercisesValue[i];
       const baseExerciseDetails = this.availableExercises.find(e => e.id === exercise.exerciseId);
@@ -578,8 +582,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       const exerciseFormControl = this.exercisesFormArray.at(i) as FormGroup;
       const roundsValue = exerciseFormControl.get('rounds')?.value;
       if (roundsValue !== null && roundsValue !== undefined && roundsValue < 1) {
-          this.toastService.error(`The exercise "${exerciseDisplayName}" must have at least 1 round.`, 0, "Validation Error");
-          return;
+        this.toastService.error(`The exercise "${exerciseDisplayName}" must have at least 1 round.`, 0, "Validation Error");
+        return;
       }
       for (let j = 0; j < exercise.sets.length; j++) {
         const set = exercise.sets[j];
@@ -589,10 +593,10 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         const duration = set.duration ?? 0;
         let isPrimarilyDurationSet = duration > 0;
         if (!isPrimarilyDurationSet && baseExerciseDetails) {
-            const durationCategories = ['cardio', 'stretching', 'plank', 'isometric'];
-            if (durationCategories.includes(baseExerciseDetails.category.toLowerCase())) {
-                isPrimarilyDurationSet = true;
-            }
+          const durationCategories = ['cardio', 'stretching', 'plank', 'isometric'];
+          if (durationCategories.includes(baseExerciseDetails.category.toLowerCase())) {
+            isPrimarilyDurationSet = true;
+          }
         }
         if (isPrimarilyDurationSet) {
           if (duration <= 0) {
@@ -604,7 +608,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
             this.toastService.error(`${setDisplayName} must have reps or weight.`, 0, "Validation Error");
             return;
           }
-           if (reps <= 0 && weight > 0) { 
+          if (reps <= 0 && weight > 0) {
             this.toastService.error(`${setDisplayName} with weight must also have reps.`, 0, "Validation Error");
             return;
           }
@@ -636,28 +640,28 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       })),
     };
     if (this.isNewMode && !this.currentRoutineId) {
-        routinePayload.id = uuidv4();
+      routinePayload.id = uuidv4();
     }
 
     try {
-        this.spinnerService.show();
-        if (this.isNewMode) {
-          this.workoutService.addRoutine(routinePayload);
-          this.toastService.success("Routine created successfully!", 4000, "Success");
-        } else if (this.isEditMode && this.currentRoutineId) {
-          this.workoutService.updateRoutine(routinePayload);
-          this.toastService.success("Routine updated successfully!", 4000, "Success");
-        } else {
-          this.toastService.warning("No save operation performed. Mode is unclear or ID missing.", 0, "Save Warning");
-          this.spinnerService.hide();
-          return;
-        }
-        this.router.navigate(['/workout']);
-    } catch (e: any) {
-        console.error("Error saving routine:", e);
-        this.toastService.error(`Failed to save routine: ${e.message || 'Unknown error'}`, 0, "Save Error");
-    } finally {
+      this.spinnerService.show();
+      if (this.isNewMode) {
+        this.workoutService.addRoutine(routinePayload);
+        this.toastService.success("Routine created successfully!", 4000, "Success");
+      } else if (this.isEditMode && this.currentRoutineId) {
+        this.workoutService.updateRoutine(routinePayload);
+        this.toastService.success("Routine updated successfully!", 4000, "Success");
+      } else {
+        this.toastService.warning("No save operation performed. Mode is unclear or ID missing.", 0, "Save Warning");
         this.spinnerService.hide();
+        return;
+      }
+      this.router.navigate(['/workout']);
+    } catch (e: any) {
+      console.error("Error saving routine:", e);
+      this.toastService.error(`Failed to save routine: ${e.message || 'Unknown error'}`, 0, "Save Error");
+    } finally {
+      this.spinnerService.hide();
     }
   }
 
@@ -692,9 +696,9 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     const supersetOrder = exerciseFormGroup.get('supersetOrder')?.value;
     const roundsControl = exerciseFormGroup.get('rounds');
 
-    if (this.isViewMode) { 
-        roundsControl?.disable({ emitEvent: false });
-        return;
+    if (this.isViewMode) {
+      roundsControl?.disable({ emitEvent: false });
+      return;
     }
 
     if (supersetId && supersetOrder !== null && supersetOrder > 0) {
@@ -729,62 +733,62 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
   startCurrentWorkout(): void {
     if (this.currentRoutineId) {
-        this.router.navigate(['/workout/play', this.currentRoutineId]);
+      this.router.navigate(['/workout/play', this.currentRoutineId]);
     } else {
-        this.toastService.error("Cannot start workout: Routine ID is missing.", 0, "Error");
+      this.toastService.error("Cannot start workout: Routine ID is missing.", 0, "Error");
     }
   }
 
   enableEditMode(): void {
     if (this.isViewMode && this.currentRoutineId) {
-        this.isViewMode = false;
-        this.isEditMode = true; 
-        this.toggleFormState(false); 
-        this.router.navigate(['/workout/edit', this.currentRoutineId], { replaceUrl: true }); 
-        this.toastService.info("Edit mode enabled.", 3000, "Mode Changed");
+      this.isViewMode = false;
+      this.isEditMode = true;
+      this.toggleFormState(false);
+      this.router.navigate(['/workout/edit', this.currentRoutineId], { replaceUrl: true });
+      this.toastService.info("Edit mode enabled.", 3000, "Mode Changed");
     }
   }
 
   async deleteCurrentRoutine(): Promise<void> {
     if (!this.currentRoutineId) {
-        this.toastService.error("Cannot delete: Routine ID is missing.", 0, "Error");
-        return;
+      this.toastService.error("Cannot delete: Routine ID is missing.", 0, "Error");
+      return;
     }
     const routineToDelete = await firstValueFrom(this.workoutService.getRoutineById(this.currentRoutineId).pipe(take(1)));
 
     if (!routineToDelete) {
-        this.toastService.error("Routine not found for deletion.", 0, "Error");
-        return;
+      this.toastService.error("Routine not found for deletion.", 0, "Error");
+      return;
     }
 
     const associatedLogs = await firstValueFrom(this.trackingService.getWorkoutLogsByRoutineId(this.currentRoutineId).pipe(take(1))) || [];
     let confirmationMessage = `Are you sure you want to delete the routine "${routineToDelete.name}"?`;
     if (associatedLogs.length > 0) {
-        confirmationMessage += ` This will also delete ${associatedLogs.length} associated workout log(s). This action cannot be undone.`;
+      confirmationMessage += ` This will also delete ${associatedLogs.length} associated workout log(s). This action cannot be undone.`;
     }
 
     const confirm = await this.alertService.showConfirm(
-        'Delete Routine',
-        confirmationMessage,
-        'Delete',
+      'Delete Routine',
+      confirmationMessage,
+      'Delete',
     );
 
     if (confirm && confirm.data) {
-        try {
-            this.spinnerService.show();
-            if (associatedLogs.length > 0) {
-                await this.trackingService.clearWorkoutLogsByRoutineId(this.currentRoutineId); 
-                 this.toastService.info(`${associatedLogs.length} workout log(s) deleted.`, 3000, "Logs Cleared");
-            }
-            await this.workoutService.deleteRoutine(this.currentRoutineId); 
-            this.toastService.success(`Routine "${routineToDelete.name}" deleted.`, 4000, "Routine Deleted");
-            this.router.navigate(['/workout']);
-        } catch (error) {
-            console.error("Error during deletion:", error);
-            this.toastService.error("Failed to delete routine or logs. Please try again.", 0, "Deletion Failed");
-        } finally {
-            this.spinnerService.hide();
+      try {
+        this.spinnerService.show();
+        if (associatedLogs.length > 0) {
+          await this.trackingService.clearWorkoutLogsByRoutineId(this.currentRoutineId);
+          this.toastService.info(`${associatedLogs.length} workout log(s) deleted.`, 3000, "Logs Cleared");
         }
+        await this.workoutService.deleteRoutine(this.currentRoutineId);
+        this.toastService.success(`Routine "${routineToDelete.name}" deleted.`, 4000, "Routine Deleted");
+        this.router.navigate(['/workout']);
+      } catch (error) {
+        console.error("Error during deletion:", error);
+        this.toastService.error("Failed to delete routine or logs. Please try again.", 0, "Deletion Failed");
+      } finally {
+        this.spinnerService.hide();
+      }
     }
   }
 

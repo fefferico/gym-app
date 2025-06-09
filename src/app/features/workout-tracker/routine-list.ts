@@ -1,5 +1,5 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
-import { CommonModule, DatePipe, TitleCasePipe } from '@angular/common'; // Added TitleCasePipe
+import { Component, inject, OnInit, PLATFORM_ID, signal } from '@angular/core';
+import { CommonModule, DatePipe, isPlatformBrowser, TitleCasePipe } from '@angular/common'; // Added TitleCasePipe
 import { Router } from '@angular/router';
 import { firstValueFrom, Observable, take } from 'rxjs';
 import { Routine } from '../../core/models/workout.model';
@@ -54,8 +54,12 @@ export class RoutineListComponent implements OnInit {
   visibleActionsRutineId = signal<string | null>(null);
 
 
+  private platformId = inject(PLATFORM_ID); // Inject PLATFORM_ID
+
   ngOnInit(): void {
-    window.scrollTo(0, 0);
+    if (isPlatformBrowser(this.platformId)) { // Check if running in a browser
+      window.scrollTo(0, 0);
+    }
     this.routines$ = this.workoutService.routines$;
   }
 
@@ -75,40 +79,40 @@ export class RoutineListComponent implements OnInit {
 
     const routineToDelete = await firstValueFrom(this.workoutService.getRoutineById(routineId).pipe(take(1)));
     if (!routineToDelete) {
-        this.toastService.error("Routine not found for deletion.", 0, "Error");
-        return;
+      this.toastService.error("Routine not found for deletion.", 0, "Error");
+      return;
     }
 
     const associatedLogs = await firstValueFrom(this.trackingService.getWorkoutLogsByRoutineId(routineId).pipe(take(1))) || [];
 
     let confirmationMessage = `Are you sure you want to delete the routine "${routineToDelete.name}"?`;
     if (associatedLogs.length > 0) {
-        confirmationMessage += ` This will also delete ${associatedLogs.length} associated workout log(s). This action cannot be undone.`;
+      confirmationMessage += ` This will also delete ${associatedLogs.length} associated workout log(s). This action cannot be undone.`;
     }
 
     const confirm = await this.alertService.showConfirm(
-        'Delete Routine',
-        confirmationMessage,
-        'Delete', // confirmButtonText
+      'Delete Routine',
+      confirmationMessage,
+      'Delete', // confirmButtonText
     );
 
     if (confirm && confirm.data) {
-        try {
-            this.spinnerService.show();
-            // Delete associated logs first
-            if (associatedLogs.length > 0) {
-                await this.trackingService.clearWorkoutLogsByRoutineId(routineId);
-                this.toastService.info(`${associatedLogs.length} workout log(s) deleted.`, 3000, "Logs Cleared");
-            }
-            // Then delete the routine
-            await this.workoutService.deleteRoutine(routineId);
-            this.toastService.success(`Routine "${routineToDelete.name}" deleted successfully.`, 4000, "Routine Deleted");
-        } catch (error) {
-            console.error("Error during deletion:", error);
-            this.toastService.error("Failed to delete routine or its logs. Please try again.", 0, "Deletion Failed");
-        } finally {
-            this.spinnerService.hide();
+      try {
+        this.spinnerService.show();
+        // Delete associated logs first
+        if (associatedLogs.length > 0) {
+          await this.trackingService.clearWorkoutLogsByRoutineId(routineId);
+          this.toastService.info(`${associatedLogs.length} workout log(s) deleted.`, 3000, "Logs Cleared");
         }
+        // Then delete the routine
+        await this.workoutService.deleteRoutine(routineId);
+        this.toastService.success(`Routine "${routineToDelete.name}" deleted successfully.`, 4000, "Routine Deleted");
+      } catch (error) {
+        console.error("Error during deletion:", error);
+        this.toastService.error("Failed to delete routine or its logs. Please try again.", 0, "Deletion Failed");
+      } finally {
+        this.spinnerService.hide();
+      }
     }
   }
 

@@ -1,6 +1,6 @@
 // src/app/features/history-stats/stats-dashboard.ts
-import { Component, inject, OnInit, OnDestroy, signal, computed, ChangeDetectionStrategy, effect, ViewChild, ElementRef, afterNextRender, HostListener } from '@angular/core';
-import { CommonModule, TitleCasePipe, DecimalPipe, DatePipe } from '@angular/common';
+import { Component, inject, OnInit, OnDestroy, signal, computed, ChangeDetectionStrategy, effect, ViewChild, ElementRef, afterNextRender, HostListener, PLATFORM_ID } from '@angular/core';
+import { CommonModule, TitleCasePipe, DecimalPipe, DatePipe, isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms'; // Import ReactiveFormsModule
 import { distinctUntilChanged, Subscription } from 'rxjs';
@@ -131,8 +131,12 @@ export class StatsDashboardComponent implements OnInit, OnDestroy {
     });
   }
 
+  private platformId = inject(PLATFORM_ID); // Inject PLATFORM_ID
+
   ngOnInit(): void {
-    window.scrollTo(0, 0);
+    if (isPlatformBrowser(this.platformId)) { // Check if running in a browser
+      window.scrollTo(0, 0);
+    }
     this.logsSub = this.trackingService.workoutLogs$.subscribe(allLogsData => {
       console.log('StatsDashboard: Received allLogsData update - count:', allLogsData.length);
       this.allLogs.set(allLogsData); // This will trigger the effect for initial calculation

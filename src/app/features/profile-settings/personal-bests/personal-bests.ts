@@ -1,6 +1,6 @@
 // src/app/features/profile-settings/personal-bests.component.ts
-import { Component, inject, OnInit, signal, computed } from '@angular/core';
-import { CommonModule, DatePipe, TitleCasePipe, DecimalPipe } from '@angular/common';
+import { Component, inject, OnInit, signal, computed, PLATFORM_ID } from '@angular/core';
+import { CommonModule, DatePipe, TitleCasePipe, DecimalPipe, isPlatformBrowser } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { Observable, combineLatest, of } from 'rxjs';
 import { map, take, tap } from 'rxjs/operators';
@@ -113,8 +113,12 @@ export class PersonalBestsComponent implements OnInit {
 
   constructor() { }
 
+  private platformId = inject(PLATFORM_ID); // Inject PLATFORM_ID
+
   ngOnInit(): void {
-    window.scrollTo(0, 0);
+    if (isPlatformBrowser(this.platformId)) { // Check if running in a browser
+      window.scrollTo(0, 0);
+    }
     combineLatest([
       this.trackingService.personalBests$.pipe(take(1)),
       this.exerciseService.getExercises().pipe(take(1))

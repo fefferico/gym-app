@@ -1,5 +1,5 @@
-import { Component, inject, OnInit, OnDestroy, signal, computed, WritableSignal, ChangeDetectorRef, HostListener } from '@angular/core';
-import { CommonModule, TitleCasePipe, DatePipe, DecimalPipe } from '@angular/common';
+import { Component, inject, OnInit, OnDestroy, signal, computed, WritableSignal, ChangeDetectorRef, HostListener, PLATFORM_ID } from '@angular/core';
+import { CommonModule, TitleCasePipe, DatePipe, DecimalPipe, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subscription, Observable, of, timer, firstValueFrom } from 'rxjs';
 import { switchMap, tap, map, takeWhile, take } from 'rxjs/operators';
@@ -280,8 +280,12 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     this.initializeCurrentSetForm();
   }
 
+  private platformId = inject(PLATFORM_ID); // Inject PLATFORM_ID
+
   async ngOnInit(): Promise<void> {
-    window.scrollTo(0, 0);
+    if (isPlatformBrowser(this.platformId)) { // Check if running in a browser
+      window.scrollTo(0, 0);
+    }
     const hasPausedSession = await this.checkForPausedSession();
     if (!hasPausedSession) {
       this.loadNewWorkoutFromRoute();

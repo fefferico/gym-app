@@ -1,6 +1,6 @@
 // src/app/features/training-programs/training-program-list/training-program-list.component.ts
-import { Component, inject, OnInit, signal } from '@angular/core';
-import { CommonModule, DatePipe, TitleCasePipe } from '@angular/common';
+import { Component, inject, OnInit, PLATFORM_ID, signal } from '@angular/core';
+import { CommonModule, DatePipe, isPlatformBrowser, TitleCasePipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { Observable } from 'rxjs';
 import { TrainingProgram } from '../../../core/models/training-program.model';
@@ -30,8 +30,12 @@ export class TrainingProgramListComponent implements OnInit {
 
   constructor() { }
 
+  private platformId = inject(PLATFORM_ID); // Inject PLATFORM_ID
+
   ngOnInit(): void {
-    window.scrollTo(0, 0);
+    if (isPlatformBrowser(this.platformId)) { // Check if running in a browser
+      window.scrollTo(0, 0);
+    }
     this.programs$ = this.trainingProgramService.getAllPrograms();
   }
 
@@ -56,13 +60,13 @@ export class TrainingProgramListComponent implements OnInit {
     this.activeProgramActions.set(null); // Close dropdown before alert
     // The service method already handles confirmation and toasts
     try {
-        this.spinnerService.show("Deleting program...");
-        await this.trainingProgramService.deleteProgram(programId);
+      this.spinnerService.show("Deleting program...");
+      await this.trainingProgramService.deleteProgram(programId);
     } catch (error) {
-        console.error("Error initiating program deletion from component:", error);
-        this.toastService.error("An unexpected error occurred while trying to delete the program.", 0, "Deletion Error");
+      console.error("Error initiating program deletion from component:", error);
+      this.toastService.error("An unexpected error occurred while trying to delete the program.", 0, "Deletion Error");
     } finally {
-        this.spinnerService.hide();
+      this.spinnerService.hide();
     }
   }
 

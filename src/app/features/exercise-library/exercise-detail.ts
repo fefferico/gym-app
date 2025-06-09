@@ -1,5 +1,5 @@
-import { Component, inject, Input, OnInit, signal, OnDestroy } from '@angular/core'; // Added OnDestroy
-import { CommonModule, TitleCasePipe, DatePipe } from '@angular/common'; // Added DatePipe
+import { Component, inject, Input, OnInit, signal, OnDestroy, PLATFORM_ID } from '@angular/core'; // Added OnDestroy
+import { CommonModule, TitleCasePipe, DatePipe, isPlatformBrowser } from '@angular/common'; // Added DatePipe
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Observable, of, Subscription, forkJoin, map, take, tap } from 'rxjs'; // Added Subscription, forkJoin
 import { Exercise } from '../../core/models/exercise.model';
@@ -49,9 +49,12 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy {
   progressChartAutoScale = true;
 
   @Input() id?: string; // For route parameter binding
+  private platformId = inject(PLATFORM_ID); // Inject PLATFORM_ID
 
   ngOnInit(): void {
-    window.scrollTo(0, 0);
+    if (isPlatformBrowser(this.platformId)) { // Check if running in a browser
+      window.scrollTo(0, 0);
+    }
     const idSource$ = this.id ? of(this.id) : this.route.paramMap.pipe(map(params => params.get('id')));
 
     this.exerciseDetailSub = idSource$.pipe(
@@ -137,10 +140,10 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy {
     }).subscribe(({ baseExercise, pbs, progress }) => {
       this.exercise.set(baseExercise || null);
       this.currentImageIndex.set(0);
-//      // Sort PBs (existing logic)
+      //      // Sort PBs (existing logic)
       const sortedPBs = pbs.sort((a, b) => /* your sorting logic */(b.weightUsed ?? 0) - (a.weightUsed ?? 0) || a.pbType.localeCompare(b.pbType));
       this.exercisePBs.set(sortedPBs);
-//      // Prepare data for progress chart
+      //      // Prepare data for progress chart
       if (progress && progress.length > 0) {
         this.exerciseProgressChartData.set([
           {
@@ -189,17 +192,17 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy {
     // const isUsed = await firstValueFrom(this.trackingService.isExerciseUsedInLogs(exerciseToDelete.id));
 
     const customBtns: AlertButton[] = [{
-          text: 'Cancel',
-          role: 'cancel',
-          data: false,
-          cssClass: 'bg-gray-300 hover:bg-gray-500' // Example custom class
-        } as AlertButton,
-        {
-          text: 'Delete Exercise',
-          role: 'confirm',
-          data: true,
-          cssClass: 'button-danger'
-        } as AlertButton];
+      text: 'Cancel',
+      role: 'cancel',
+      data: false,
+      cssClass: 'bg-gray-300 hover:bg-gray-500' // Example custom class
+    } as AlertButton,
+    {
+      text: 'Delete Exercise',
+      role: 'confirm',
+      data: true,
+      cssClass: 'button-danger'
+    } as AlertButton];
 
     const confirmation = await this.alertService.showConfirmationDialog(
       'Confirm Deletion',

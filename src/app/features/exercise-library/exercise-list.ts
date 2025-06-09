@@ -1,5 +1,5 @@
-import { Component, inject, OnInit, signal, computed, effect } from '@angular/core'; // Added computed and effect
-import { AsyncPipe, CommonModule, TitleCasePipe } from '@angular/common';
+import { Component, inject, OnInit, signal, computed, effect, PLATFORM_ID } from '@angular/core'; // Added computed and effect
+import { AsyncPipe, CommonModule, isPlatformBrowser, TitleCasePipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { Observable } from 'rxjs';
 import { Exercise } from '../../core/models/exercise.model';
@@ -62,8 +62,12 @@ export class ExerciseListComponent implements OnInit {
     // });
   }
 
+  private platformId = inject(PLATFORM_ID); // Inject PLATFORM_ID
+
   ngOnInit(): void {
-    window.scrollTo(0, 0);
+    if (isPlatformBrowser(this.platformId)) { // Check if running in a browser
+      window.scrollTo(0, 0);
+    }
     this.categories$ = this.exerciseService.getUniqueCategories();
     this.primaryMuscleGroups$ = this.exerciseService.getUniquePrimaryMuscleGroups();
 

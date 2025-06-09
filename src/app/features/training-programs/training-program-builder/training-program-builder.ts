@@ -1,6 +1,6 @@
 // src/app/features/training-programs/training-program-builder/training-program-builder.component.ts
-import { Component, inject, OnInit, OnDestroy, signal, computed, ChangeDetectorRef } from '@angular/core';
-import { CommonModule, DatePipe, TitleCasePipe } from '@angular/common';
+import { Component, inject, OnInit, OnDestroy, signal, computed, ChangeDetectorRef, PLATFORM_ID } from '@angular/core';
+import { CommonModule, DatePipe, isPlatformBrowser, TitleCasePipe } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { Subscription, of, firstValueFrom } from 'rxjs';
@@ -97,8 +97,12 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         });
     }
 
+    private platformId = inject(PLATFORM_ID); // Inject PLATFORM_ID
+
     ngOnInit(): void {
-        window.scrollTo(0, 0);
+        if (isPlatformBrowser(this.platformId)) { // Check if running in a browser
+            window.scrollTo(0, 0);
+        }
         this.loadAvailableRoutines();
 
         this.routeSub = this.route.data.pipe(
