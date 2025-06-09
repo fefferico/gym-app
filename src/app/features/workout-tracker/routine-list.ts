@@ -1,13 +1,12 @@
-import { Component, inject, OnInit, signal, WritableSignal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule, DatePipe, TitleCasePipe } from '@angular/common'; // Added TitleCasePipe
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { firstValueFrom, Observable, take } from 'rxjs';
 import { Routine } from '../../core/models/workout.model';
 import { WorkoutService } from '../../core/services/workout.service';
 import { AlertService } from '../../core/services/alert.service';
 import { SpinnerService } from '../../core/services/spinner.service';
 import { TrackingService } from '../../core/services/tracking.service';
-import { WorkoutLog } from '../../core/models/workout-log.model';
 import { ToastService } from '../../core/services/toast.service';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 
@@ -15,7 +14,7 @@ import { animate, state, style, transition, trigger } from '@angular/animations'
 @Component({
   selector: 'app-routine-list',
   standalone: true,
-  imports: [CommonModule, DatePipe, TitleCasePipe, RouterLink],
+  imports: [CommonModule, DatePipe, TitleCasePipe],
   templateUrl: './routine-list.html',
   styleUrl: './routine-list.scss',
   animations: [ // <<<< THIS IS CORRECTLY PLACED
