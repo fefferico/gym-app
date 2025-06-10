@@ -14,14 +14,14 @@
                     <label for="username"
                         class="block text-sm font-medium text-gray-700 dark:text-gray-300">Username</label>
                     <input type="text" id="username" formControlName="username" placeholder="Your display name"
-                        class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700">
+                        class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600">
                 </div>
 
                 <div>
                     <label for="gender"
                         class="block text-sm font-medium text-gray-700 dark:text-gray-300">Gender</label>
                     <select id="gender" formControlName="gender"
-                        class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700">
+                        class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600">
                         <option [ngValue]="null">Select Gender...</option>
                         <option *ngFor="let genderOpt of genders" [value]="genderOpt.value">{{ genderOpt.label }}
                         </option>
@@ -35,44 +35,44 @@
                             <label for="age"
                                 class="block text-xs font-medium text-gray-600 dark:text-gray-400">Age</label>
                             <input type="number" min="0" id="age" formControlName="age" placeholder="Years"
-                                class="mt-1 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700">
+                                class="mt-1 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-600">
                         </div>
                         <div>
                             <label for="heightCm"
                                 class="block text-xs font-medium text-gray-600 dark:text-gray-400">Height (cm)</label>
                             <input type="number" min="0" id="heightCm" formControlName="heightCm" placeholder="cm"
-                                class="mt-1 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700">
+                                class="mt-1 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-600">
                         </div>
                         <div>
                             <label for="weightKg"
                                 class="block text-xs font-medium text-gray-600 dark:text-gray-400">Weight (kg)</label>
                             <input type="number" min="0" id="weightKg" formControlName="weightKg" placeholder="kg"
-                                class="mt-1 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700">
+                                class="mt-1 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-600">
                         </div>
                         <div>
                             <label for="chestCm"
                                 class="block text-xs font-medium text-gray-600 dark:text-gray-400">Chest (cm)</label>
                             <input type="number" min="0" id="chestCm" formControlName="chestCm" placeholder="cm"
-                                class="mt-1 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700">
+                                class="mt-1 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-600">
                         </div>
                         <div>
                             <label for="waistCm"
                                 class="block text-xs font-medium text-gray-600 dark:text-gray-400">Waist (cm)</label>
                             <input type="number" min="0" id="waistCm" formControlName="waistCm" placeholder="cm"
-                                class="mt-1 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700">
+                                class="mt-1 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-600">
                         </div>
                         <div>
                             <label for="hipsCm" class="block text-xs font-medium text-gray-600 dark:text-gray-400">Hips
                                 (cm)</label>
                             <input type="number" min="0" id="hipsCm" formControlName="hipsCm" placeholder="cm"
-                                class="mt-1 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700">
+                                class="mt-1 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-600">
                         </div>
                         <div>
                             <label for="rightArmCm"
                                 class="block text-xs font-medium text-gray-600 dark:text-gray-400">Right Arm
                                 (cm)</label>
                             <input type="number" min="0" id="rightArmCm" formControlName="rightArmCm" placeholder="cm"
-                                class="mt-1 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700">
+                                class="mt-1 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-600">
                         </div>
                         <!-- Add more inputs for other measurements as needed -->
                     </div>
@@ -113,7 +113,7 @@
                         class="block text-sm font-medium text-gray-700 dark:text-gray-300">Countdown From
                         (seconds)</label>
                     <input type="number" id="countdownSeconds" formControlName="countdownSoundSeconds" min="1" max="20"
-                        class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700">
+                        class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600">
                     <div *ngIf="appSettingsForm.get('countdownSoundSeconds')?.invalid && appSettingsForm.get('countdownSoundSeconds')?.touched"
                         class="text-red-500 dark:text-red-400 text-xs mt-1">
                         Must be 1-20s.
@@ -133,7 +133,7 @@
                         <input type="checkbox" id="preset-timer-toggle" class="sr-only peer"
                             formControlName="enablePresetTimer">
                         <div
-                            class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary dark:peer-checked:bg-primary-dark">
+                            class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary dark:peer-checked:bg-primary-dark">
                         </div>
                         <span class="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
                             {{ appSettingsForm.get('enablePresetTimer')?.value ? 'On' : 'Off' }}
@@ -146,7 +146,7 @@
                         (seconds)</label>
                     <input type="number" id="presetTimerDurationSeconds" formControlName="presetTimerDurationSeconds"
                         min="3" max="60"
-                        class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700">
+                        class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600">
                     <div *ngIf="appSettingsForm.get('presetTimerDurationSeconds')?.invalid && appSettingsForm.get('presetTimerDurationSeconds')?.touched"
                         class="text-red-500 dark:text-red-400 text-xs mt-1">
                         Must be 3-60s.
@@ -162,7 +162,7 @@
                         <input type="checkbox" id="preset-timer-toggle-after-rest" class="sr-only peer"
                             formControlName="enablePresetTimerAfterRest">
                         <div
-                            class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary dark:peer-checked:bg-primary-dark">
+                            class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary dark:peer-checked:bg-primary-dark">
                         </div>
                         <span class="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
                             {{ appSettingsForm.get('enablePresetTimerAfterRest')?.value ? 'On' : 'Off' }}
@@ -195,7 +195,7 @@
                     <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Restore your data from a JSON
                         backup file.</p>
                     <input type="file" (change)="importData($event)" accept="application/json"
-                        class="block w-full text-sm text-gray-700 dark:text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-200 file:text-gray-700 hover:file:bg-gray-300 dark:file:bg-gray-700 dark:file:text-gray-200 dark:hover:file:bg-gray-700">
+                        class="block w-full text-sm text-gray-700 dark:text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-200 file:text-gray-700 hover:file:bg-gray-300 dark:file:bg-gray-600 dark:file:text-gray-200 dark:hover:file:bg-gray-700">
                 </div>
                 <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
                     <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">Reset / Clear Data</h3>

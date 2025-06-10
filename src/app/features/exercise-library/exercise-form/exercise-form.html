@@ -1,9 +1,10 @@
-<div class="acontainer mx-auto p-1">
+<div class="container mx-auto p-1">
   <header class="mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
     <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-200">{{ pageTitle() }}</h1>
   </header>
 
-  <form [formGroup]="exerciseForm" (ngSubmit)="onSubmit()" class="space-y-6 bg-white dark:bg-gray-700 p-6 rounded-lg shadow-md">
+  <form [formGroup]="exerciseForm" (ngSubmit)="onSubmit()"
+    class="space-y-6 bg-white dark:bg-gray-700 p-6 rounded-lg shadow-md">
     <!-- Name -->
     <div>
       <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
@@ -14,7 +15,8 @@
     <!-- Description -->
     <div>
       <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Description</label>
-      <textarea id="description" formControlName="description" rows="3" class="mt-1 block w-full p-2 border rounded-md"></textarea>
+      <textarea id="description" formControlName="description" rows="3"
+        class="mt-1 block w-full p-2 border rounded-md"></textarea>
     </div>
 
     <!-- Category -->
@@ -27,8 +29,10 @@
 
     <!-- Primary Muscle Group -->
     <div>
-      <label for="primaryMuscleGroup" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Primary Muscle Group</label>
-      <select id="primaryMuscleGroup" formControlName="primaryMuscleGroup" class="mt-1 block w-full p-2 border rounded-md">
+      <label for="primaryMuscleGroup" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Primary Muscle
+        Group</label>
+      <select id="primaryMuscleGroup" formControlName="primaryMuscleGroup"
+        class="mt-1 block w-full p-2 border rounded-md">
         <option value="">Select Primary Muscle</option>
         <option *ngFor="let group of availableMuscleGroups" [value]="group">{{ group }}</option>
       </select>
@@ -36,50 +40,62 @@
 
     <!-- Other Muscle Groups (FormArray) -->
     <div formArrayName="muscleGroups">
-      <h3 class="text-lg font-medium">Other Muscle Groups</h3>
-      <div *ngFor="let groupCtrl of getFormArray('muscleGroups').controls; let i = index" class="flex items-center space-x-2 mb-2">
+      <h3 class="text-lg font-medium dark:text-gray-300">Other Muscle Groups</h3>
+      <div *ngFor="let groupCtrl of getFormArray('muscleGroups').controls; let i = index"
+        class="flex items-center space-x-2 mb-2">
         <input type="text" [formControlName]="i" class="block w-full p-2 border rounded-md">
-        <button type="button" (click)="removeControlFromFormArray('muscleGroups', i)" class="text-red-500">Remove</button>
+        <button type="button" (click)="removeControlFromFormArray('muscleGroups', i)"
+          class="text-red-500">Remove</button>
       </div>
-      <button type="button" (click)="addControlToFormArray('muscleGroups')" class="text-sm text-blue-600">+ Add Muscle Group</button>
+      <button type="button" (click)="addControlToFormArray('muscleGroups')" class="text-sm text-blue-600">+ Add Muscle
+        Group</button>
     </div>
 
     <!-- Equipment Needed (FormArray) - Similar structure to muscleGroups -->
     <div formArrayName="equipmentNeeded">
-      <h3 class="text-lg font-medium">Equipment Needed</h3>
-      <div *ngFor="let equipCtrl of getFormArray('equipmentNeeded').controls; let i = index" class="flex items-center space-x-2 mb-2">
+      <h3 class="text-lg font-medium dark:text-gray-300">Equipment Needed</h3>
+      <div *ngFor="let equipCtrl of getFormArray('equipmentNeeded').controls; let i = index"
+        class="flex items-center space-x-2 mb-2">
         <input type="text" [formControlName]="i" class="block w-full p-2 border rounded-md">
-        <button type="button" (click)="removeControlFromFormArray('equipmentNeeded', i)" class="text-red-500">Remove</button>
+        <button type="button" (click)="removeControlFromFormArray('equipmentNeeded', i)"
+          class="text-red-500">Remove</button>
       </div>
-      <button type="button" (click)="addControlToFormArray('equipmentNeeded')" class="text-sm text-blue-600">+ Add Equipment</button>
+      <button type="button" (click)="addControlToFormArray('equipmentNeeded')" class="text-sm text-blue-600">+ Add
+        Equipment</button>
     </div>
 
 
     <!-- Image URLs (FormArray) - Similar structure -->
-     <div *ngIf="false" formArrayName="imageUrls">
+    <div *ngIf="false" formArrayName="imageUrls">
       <h3 class="text-lg font-medium">Image URLs (one per line)</h3>
-      <div *ngFor="let urlCtrl of getFormArray('imageUrls').controls; let i = index" class="flex items-center space-x-2 mb-2">
-        <input type="url" [formControlName]="i" placeholder="https://example.com/image.jpg" class="block w-full p-2 border rounded-md">
+      <div *ngFor="let urlCtrl of getFormArray('imageUrls').controls; let i = index"
+        class="flex items-center space-x-2 mb-2">
+        <input type="url" [formControlName]="i" placeholder="https://example.com/image.jpg"
+          class="block w-full p-2 border rounded-md">
         <button type="button" (click)="removeControlFromFormArray('imageUrls', i)" class="text-red-500">Remove</button>
       </div>
-      <button type="button" (click)="addControlToFormArray('imageUrls')" class="text-sm text-blue-600">+ Add Image URL</button>
+      <button type="button" (click)="addControlToFormArray('imageUrls')" class="text-sm text-blue-600">+ Add Image
+        URL</button>
     </div>
 
     <!-- Video URL -->
     <div>
-      <label for="videoUrl" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Video URL (Optional)</label>
+      <label for="videoUrl" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Video URL
+        (Optional)</label>
       <input type="url" id="videoUrl" formControlName="videoUrl" class="mt-1 block w-full p-2 border rounded-md">
     </div>
 
     <!-- Notes -->
     <div>
-      <label for="notes" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Notes & Tips (Optional)</label>
+      <label for="notes" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Notes & Tips
+        (Optional)</label>
       <textarea id="notes" formControlName="notes" rows="3" class="mt-1 block w-full p-2 border rounded-md"></textarea>
     </div>
 
     <div class="pt-6 flex justify-end space-x-3">
-      <a routerLink="/library" class="px-4 py-2 border rounded-md">Cancel</a>
-      <button type="submit" [disabled]="exerciseForm.invalid" class="px-4 py-2 bg-primary text-white rounded-md disabled:opacity-50">
+      <a routerLink="/library" class="px-4 py-2 border rounded-md dark:bg-gray-400">Cancel</a>
+      <button type="submit" [disabled]="exerciseForm.invalid"
+        class="px-4 py-2 bg-primary text-white rounded-md disabled:opacity-50">
         {{ isEditMode() ? 'Update Exercise' : 'Add Exercise' }}
       </button>
     </div>
