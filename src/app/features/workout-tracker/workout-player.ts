@@ -21,6 +21,7 @@ import { UnitsService } from '../../core/services/units.service';
 import { ToastService } from '../../core/services/toast.service';
 import { v4 as uuidv4 } from 'uuid';
 import { format } from 'date-fns';
+import { AppSettingsService } from '../../core/services/app-settings.service'; // Import AppSettingsService
 
 
 // Interface to manage the state of the currently active set/exercise
@@ -75,6 +76,12 @@ enum TimedSetState {
   Paused = 'paused',
 }
 
+enum PlayerSubState {
+  PerformingSet = 'performing_set',
+  PresetCountdown = 'preset_countdown',
+  Resting = 'resting'
+}
+
 @Component({
   selector: 'app-workout-player',
   standalone: true,
@@ -96,40 +103,149 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   private cdr = inject(ChangeDetectorRef);
   private unitService = inject(UnitsService);
 
-  private readonly PAUSED_WORKOUT_KEY = 'fitTrackPro_pausedWorkoutState';
-  private readonly PAUSED_STATE_VERSION = '1.1';
 
-  nextActionButtonLabel = signal<string>('SET DONE');
-  isRestTimerVisible = signal(false);
-  restDuration = signal(0);
-  restTimerMainText = signal('RESTING');
-  restTimerNextUpText = signal<string | null>(null);
-  currentSetForm!: FormGroup;
-  routineId: string | null = null;
+  protected appSettingsService = inject(AppSettingsService);
+  private platformId = inject(PLATFORM_ID); // Ensure this is injected if not already
+  // private countdownAudio: HTMLAudioElement | undefined; // REMOVE THIS
+  // --- State Signals ---
   routine = signal<Routine | null | undefined>(undefined);
-  private originalRoutineSnapshot: WorkoutExercise[] = [];
+  sessionState = signal<SessionState>(SessionState.Loading); // Main session state
+  public readonly PlayerSubState = PlayerSubState; // <--- ADD THIS LINE
+  playerSubState = signal<PlayerSubState>(PlayerSubState.PerformingSet); // Sub-state for player UI
 
   currentExerciseIndex = signal(0);
   currentSetIndex = signal(0);
-  private currentWorkoutLogExercises = signal<LoggedWorkoutExercise[]>([]);
-  private workoutStartTime: number = 0;
-  private routeSub: Subscription | undefined;
-  private timerSub: Subscription | undefined;
-  sessionTimerDisplay = signal('00:00:00');
-  restTimerDisplay = signal<string | null>(null);
   currentBlockRound = signal(1);
   totalBlockRounds = signal(1);
-  private wasRestTimerVisibleOnPause = false;
-  private restTimerRemainingSecondsOnPause = 0;
-  private restTimerInitialDurationOnPause = 0;
-  private restTimerMainTextOnPause = 'RESTING';
-  private restTimerNextUpTextOnPause: string | null = null;
-  rpeValue = signal<number | null>(null);
-  rpeOptions: number[] = Array.from({ length: 10 }, (_, i) => i + 1);
-  showRpeSlider = signal(false);
+
+  // --- Timer Signals & Properties ---
+  sessionTimerDisplay = signal('00:00:00');
+  private workoutStartTime: number = 0;
+  private sessionTimerElapsedSecondsBeforePause = 0;
+  private timerSub: Subscription | undefined;
+
+  // For Timed Sets (countdown/countup within a set)
   timedSetTimerState = signal<TimedSetState>(TimedSetState.Idle);
   timedSetElapsedSeconds = signal(0);
   private timedSetIntervalSub: Subscription | undefined;
+  private soundPlayedForThisCountdownSegment = false;
+
+  // For Pre-Set Timer
+  presetTimerCountdownDisplay = signal<string | null>(null);
+  presetTimerDuration = signal(0); // Stores the target duration for the current pre-set timer
+  private presetTimerSub: Subscription | undefined;
+
+  // For Post-Set Rest Timer
+  isRestTimerVisible = signal(false); // Controls the FULL SCREEN rest timer visibility
+  restDuration = signal(0);           // Target duration for the current rest period
+  restTimerDisplay = signal<string | null>(null); // Formatted display for footer rest timer
+  // restTimerMainText & restTimerNextUpText are used by both pre-set and post-set footer display
+  restTimerMainText = signal('RESTING');
+  restTimerNextUpText = signal<string | null>(null);
+
+  readonly nextActionButtonLabel = computed(() => {
+    switch (this.playerSubState()) {
+      case PlayerSubState.PresetCountdown:
+        return 'GETTING READY...'; // Or could be an empty string if button is hidden/disabled
+      case PlayerSubState.Resting:
+        return 'RESTING...'; // Or empty / "Skip Rest" could be its own button
+      case PlayerSubState.PerformingSet:
+      default:
+        return 'SET DONE';
+    }
+  });
+
+
+  // Modify isRestTimerVisible to be a computed signal if we merge states
+  // isRestTimerVisible = computed(() => this.playerSubState() === PlayerSubState.Resting);
+  // 
+  //   restDuration = signal(0);
+  currentSetForm!: FormGroup;
+  lastPerformanceForCurrentExercise: LastPerformanceSummary | null = null;
+  editingTarget: 'reps' | 'weight' | 'duration' | null = null;
+  editingTargetValue: number | string = '';
+  routineId: string | null = null;
+
+  // --- Paused State & Auto-Save ---
+  private readonly PAUSED_WORKOUT_KEY = 'fitTrackPro_pausedWorkoutState';
+  private readonly PAUSED_STATE_VERSION = '1.1'; // Ensure PausedWorkoutState interface has workoutDate
+  private originalRoutineSnapshot: WorkoutExercise[] = [];
+  private currentWorkoutLogExercises = signal<LoggedWorkoutExercise[]>([]);
+  private wasRestTimerVisibleOnPause = false;
+  private restTimerRemainingSecondsOnPause = 0;
+  private restTimerInitialDurationOnPause = 0; // Store the original duration for pause/resume
+  private restTimerMainTextOnPause = 'RESTING';
+  private restTimerNextUpTextOnPause: string | null = null;
+  private wasTimedSetRunningOnPause = false;
+  private autoSaveSub: Subscription | undefined;
+  private readonly AUTO_SAVE_INTERVAL_MS = 15000;
+  private isSessionConcluded = false;
+  private routerEventsSub: Subscription | undefined;
+  private isInitialLoadComplete = false;
+
+  // This computed signal determines if the CURRENTLY active set (activeSetInfo)
+  // should have initiated via a pre-set timer.
+  // It's used to decide the initial label of the main action button.
+  readonly shouldStartWithPresetTimer = computed<boolean>(() => {
+    const activeInfo = this.activeSetInfo(); // The set we are about to perform or are performing
+    if (!activeInfo) return false;
+
+    const enablePreset = this.appSettingsService.enablePresetTimer();
+    const presetDurationValue = this.appSettingsService.presetTimerDurationSeconds();
+    if (!enablePreset || presetDurationValue <= 0) return false;
+
+    const r = this.routine();
+    const exIndex = activeInfo.exerciseIndex;
+    const sIndex = activeInfo.setIndex;
+
+    if (!r || !r.exercises[exIndex] || !r.exercises[exIndex].sets[sIndex]) return false;
+
+    const isFirstSetOfFirstExerciseInWorkout = exIndex === 0 && sIndex === 0 && this.currentBlockRound() === 1;
+
+    let previousSetRestDuration = Infinity; // Assume significant rest if no previous set
+    if (sIndex > 0) { // If not the first set of this exercise
+      previousSetRestDuration = r.exercises[exIndex].sets[sIndex - 1].restAfterSet;
+    } else if (exIndex > 0) { // First set of this exercise, but not the first exercise in the routine
+      const prevExercise = r.exercises[exIndex - 1];
+      previousSetRestDuration = prevExercise.sets[prevExercise.sets.length - 1].restAfterSet;
+    }
+    // If previousSetRestDuration is still Infinity here, it means it's the very first set of the workout.
+
+    return isFirstSetOfFirstExerciseInWorkout || previousSetRestDuration === 0;
+  });
+
+
+  // The main action button's label
+  readonly mainActionButtonLabel = computed(() => {
+    switch (this.playerSubState()) {
+      case PlayerSubState.PresetCountdown:
+        return `PREPARING... ${this.presetTimerCountdownDisplay()}s`;
+      case PlayerSubState.Resting:
+        return `RESTING: ${this.restTimerDisplay()}`;
+      case PlayerSubState.PerformingSet:
+        // If this set should have started with a pre-set timer (and we are now in PerformingSet,
+        // meaning the pre-set timer is done or was skipped, or wasn't needed), the button is "SET DONE".
+        // If it's PerformingSet AND it *should* start with a pre-set timer that hasn't run yet,
+        // then the button should be "START SET".
+        // This is handled by prepareCurrentSet setting the playerSubState.
+        // So, if playerSubState is PerformingSet, it means we are past any pre-set timer.
+        if (this.checkIfLatestSetOfWorkout()) {
+          return 'FINISH WORKOUT';
+        } else if (this.checkIfLatestSetOfExercise()){
+          return 'COMPLETE EXERCISE'
+        } else {
+          return 'SET DONE';
+        }
+      default:
+        return 'SET DONE'; // Default fallback
+    }
+  });
+
+
+  private routeSub: Subscription | undefined;
+  rpeValue = signal<number | null>(null);
+  rpeOptions: number[] = Array.from({ length: 10 }, (_, i) => i + 1);
+  showRpeSlider = signal(false);
 
   readonly timedSetDisplay = computed(() => {
     const state = this.timedSetTimerState();
@@ -161,9 +277,6 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       this.captureAndSaveStateForUnload();
     }
   }
-
-  private autoSaveSub: Subscription | undefined; // For the auto-save interval
-  private readonly AUTO_SAVE_INTERVAL_MS = 15000; // 15 seconds
 
   protected get weightUnitDisplaySymbol(): string {
     return this.unitService.getUnitLabel();
@@ -271,25 +384,19 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     return [];
   });
 
-  protected lastPerformanceForCurrentExercise: LastPerformanceSummary | null = null;
-  editingTarget: 'reps' | 'weight' | 'duration' | null = null;
-  editingTargetValue: number | string = '';
-  sessionState = signal<SessionState>(SessionState.Loading);
-  private sessionTimerElapsedSecondsBeforePause = 0;
-  private wasTimedSetRunningOnPause = false;
+  // --- Menu/Modal States ---
   isWorkoutMenuVisible = signal(false);
   isPerformanceInsightsVisible = signal(false);
   showCompletedSetsInfo = signal<boolean>(false);
 
 
-  private routerEventsSub: Subscription | undefined; // For router events
-  private isSessionConcluded = false; // NEW: Flag to track if workout was properly finished/quit
-
   constructor() {
     this.initializeCurrentSetForm();
+    // if (isPlatformBrowser(this.platformId)) { // Initialize audio only in browser
+    //   this.countdownAudio = new Audio('assets/sounds/countdown-beep.mp3'); // Adjust path
+    //   this.countdownAudio.load(); // Preload the audio
+    // }
   }
-
-  private platformId = inject(PLATFORM_ID); // Inject PLATFORM_ID
 
   private resetAndPatchCurrentSetForm(): void {
     this.currentSetForm.reset({ rpe: null });
@@ -500,20 +607,57 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       if (targetDuration !== undefined && targetDuration > 0) {
         this.currentSetForm.get('actualDuration')?.setValue(targetDuration, { emitEvent: false });
       }
+      this.soundPlayedForThisCountdownSegment = false; // Reset sound flag for new timer
     }
     this.timedSetTimerState.set(TimedSetState.Running);
+
     if (this.timedSetIntervalSub) {
       this.timedSetIntervalSub.unsubscribe();
     }
+
     this.timedSetIntervalSub = timer(0, 1000).subscribe(() => {
       if (this.timedSetTimerState() === TimedSetState.Running) {
         this.timedSetElapsedSeconds.update(s => s + 1);
-        this.currentSetForm.get('actualDuration')?.setValue(this.timedSetElapsedSeconds(), { emitEvent: false });
+        const currentElapsed = this.timedSetElapsedSeconds();
+        this.currentSetForm.get('actualDuration')?.setValue(currentElapsed, { emitEvent: false });
+
+        // Countdown Sound Logic
+        const activeInfo = this.activeSetInfo();
+        const targetDuration = activeInfo?.setData?.duration;
+        const enableSound = this.appSettingsService.enableTimerCountdownSound();
+        const countdownFrom = this.appSettingsService.countdownSoundSeconds(); // e.g., 5
+
+        if (enableSound && targetDuration && targetDuration > 20 && currentElapsed > 0) {
+          const remainingSeconds = targetDuration - currentElapsed;
+
+          // Play a beep each second during the countdown window
+          if (remainingSeconds <= countdownFrom && remainingSeconds >= 0) { // Play from countdownFrom down to 0
+            if (remainingSeconds === 0) { // If it's the final beep
+              this.playClientGong();
+              this.soundPlayedForThisCountdownSegment = true; // Mark that the countdown sequence completed with sound
+            } else {
+              this.playClientBeep();
+            }
+          }
+        }
       } else {
         if (this.timedSetIntervalSub) this.timedSetIntervalSub.unsubscribe();
       }
     });
   }
+
+  // Add this method to play the sound
+  // private playCountdownSound(): void {
+  //   if (isPlatformBrowser(this.platformId) && this.countdownAudio) {
+  //     this.countdownAudio.currentTime = 0; // Rewind to start for re-plays
+  //     this.countdownAudio.play().catch(error => {
+  //       console.warn('Error playing countdown sound:', error);
+  //       // Handle potential errors, e.g., user hasn't interacted with the page yet
+  //       // which is often required for audio to play automatically.
+  //     });
+  //   }
+  // }
+
 
   private pauseTimedSet(): void {
     if (this.timedSetIntervalSub) {
@@ -532,6 +676,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     this.timedSetElapsedSeconds.set(0);
     const targetDuration = this.activeSetInfo()?.setData?.duration;
     this.currentSetForm.get('actualDuration')?.setValue(targetDuration ?? 0, { emitEvent: false });
+    this.soundPlayedForThisCountdownSegment = false; // Reset flag
   }
 
   stopAndLogTimedSet(): void {
@@ -624,75 +769,75 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       console.log("PrepareCurrentSet: Session is paused, deferring preparation.");
       return;
     }
-    const sessionRoutine = this.routine();
+    const sessionRoutine = this.routine(); // Ensure we have the latest routine value
     const exIndex = this.currentExerciseIndex();
     const sIndex = this.currentSetIndex();
 
     if (!sessionRoutine || !sessionRoutine.exercises[exIndex] || !sessionRoutine.exercises[exIndex].sets[sIndex]) {
-      this.currentSetForm.reset({ rpe: null });
-      this.rpeValue.set(null);
-      this.showRpeSlider.set(false);
-      this.resetTimedSet();
-      this.currentBaseExercise.set(null);
-      this.exercisePBs.set([]);
-      this.lastPerformanceForCurrentExercise = null;
-      console.warn('prepareCurrentSet: Could not find active set data in session routine.');
+      this.currentSetForm.reset({ rpe: null }); this.resetTimedSet(); this.currentBaseExercise.set(null);
+      this.exercisePBs.set([]); this.lastPerformanceForCurrentExercise = null; this.rpeValue.set(null); this.showRpeSlider.set(false);
+      console.warn('prepareCurrentSet: Critical error - active set data not found.');
+      this.sessionState.set(SessionState.Error); // Indicate an error state
       return;
     }
-
     const currentExerciseData = sessionRoutine.exercises[exIndex];
-    const originalPlannedSetForThisSet = currentExerciseData.sets[sIndex];
+    const originalExerciseForSuggestions = this.originalRoutineSnapshot[exIndex];
+    const plannedSetForSuggestions = originalExerciseForSuggestions?.sets[sIndex] || currentExerciseData.sets[sIndex];
+    const currentPlannedSetForId = currentExerciseData.sets[sIndex];
 
     this.loadBaseExerciseAndPBs(currentExerciseData.exerciseId);
 
     if (!this.lastPerformanceForCurrentExercise || this.lastPerformanceForCurrentExercise.sets[0]?.exerciseId !== currentExerciseData.exerciseId) {
-      try {
-        this.lastPerformanceForCurrentExercise = await new Promise<LastPerformanceSummary | null>((resolve) => {
-          this.trackingService.getLastPerformanceForExercise(currentExerciseData.exerciseId)
-            .pipe(take(1))
-            .subscribe(perf => resolve(perf));
-        });
-      } catch (error) {
-        console.error("Error fetching last performance:", error);
-        this.lastPerformanceForCurrentExercise = null;
-      }
+      this.lastPerformanceForCurrentExercise = await firstValueFrom(this.trackingService.getLastPerformanceForExercise(currentExerciseData.exerciseId).pipe(take(1)));
     }
-
-    const historicalSetPerformance = this.trackingService.findPreviousSetPerformance(
-      this.lastPerformanceForCurrentExercise,
-      originalPlannedSetForThisSet,
-      sIndex
-    );
-
+    const historicalSetPerformance = this.trackingService.findPreviousSetPerformance(this.lastPerformanceForCurrentExercise, plannedSetForSuggestions, sIndex);
     let finalSetParamsForSession: ExerciseSetParams;
-
-    if (originalPlannedSetForThisSet.isWarmup) {
-      finalSetParamsForSession = {
-        ...originalPlannedSetForThisSet,
-        reps: originalPlannedSetForThisSet.reps ?? 8,
-        weight: originalPlannedSetForThisSet.weight ?? null,
-        restAfterSet: originalPlannedSetForThisSet.restAfterSet ?? 30,
-      };
+    if (plannedSetForSuggestions.isWarmup) {
+      finalSetParamsForSession = { ...plannedSetForSuggestions };
     } else {
-      const suggestedSetParams = this.workoutService.suggestNextSetParameters(
-        historicalSetPerformance,
-        originalPlannedSetForThisSet,
-        sessionRoutine.goal
-      );
-      finalSetParamsForSession = {
-        ...suggestedSetParams,
-        id: originalPlannedSetForThisSet.id,
-        notes: suggestedSetParams.notes ?? originalPlannedSetForThisSet.notes,
-        isWarmup: false,
-      };
+      finalSetParamsForSession = this.workoutService.suggestNextSetParameters(historicalSetPerformance, plannedSetForSuggestions, sessionRoutine.goal);
     }
+    finalSetParamsForSession.id = currentPlannedSetForId.id;
+    finalSetParamsForSession.isWarmup = !!currentPlannedSetForId.isWarmup;
+    // --- End of parameter calculation ---
 
+
+    // Update the routine signal with these *target* parameters *before* deciding on pre-set timer.
+    // This ensures activeSetInfo reflects the upcoming set's targets.
     const updatedRoutineForSession = JSON.parse(JSON.stringify(sessionRoutine)) as Routine;
     updatedRoutineForSession.exercises[exIndex].sets[sIndex] = finalSetParamsForSession;
     this.routine.set(updatedRoutineForSession);
+    this.patchActualsFormBasedOnSessionTargets(); // Patch form with these new targets
 
-    this.patchActualsFormBasedOnSessionTargets();
+    // Now, determine if pre-set timer should run
+    const enablePreset = this.appSettingsService.enablePresetTimer();
+    const enablePresetAfterRest = this.appSettingsService.enablePresetTimerAfterRest();
+    const presetDurationValue = this.appSettingsService.presetTimerDurationSeconds();
+    const isFirstSetOfFirstExerciseInWorkout = exIndex === 0 && sIndex === 0 && this.currentBlockRound() === 1;
+    let previousSetRestDuration = Infinity;
+    if (sIndex > 0) {
+      previousSetRestDuration = currentExerciseData.sets[sIndex - 1].restAfterSet;
+    } else if (exIndex > 0) {
+      const prevExercise = sessionRoutine.exercises[exIndex - 1];
+      previousSetRestDuration = prevExercise.sets[prevExercise.sets.length - 1].restAfterSet;
+    }
+
+    const shouldRunPresetTimer = enablePreset && presetDurationValue > 0 &&
+      this.playerSubState() !== PlayerSubState.Resting &&
+      ((isFirstSetOfFirstExerciseInWorkout || previousSetRestDuration === 0) || enablePresetAfterRest);
+
+    if (shouldRunPresetTimer) {
+      console.log('prepareCurrentSet: Starting pre-set timer for:', currentExerciseData.exerciseName, 'Set:', sIndex + 1);
+      // activeSetInfo() now reflects the set we are preparing for.
+      this.playerSubState.set(PlayerSubState.PresetCountdown); // This will change button label via computed signal
+      this.startPresetTimer(presetDurationValue, this.activeSetInfo()!); // Pass current activeSetInfo
+    } else {
+      console.log('prepareCurrentSet: No pre-set timer, setting to PerformingSet.');
+      this.playerSubState.set(PlayerSubState.PerformingSet); // This will change button label
+    }
+    // Form is already patched with target values. User will fill actuals when PerformingSet.
   }
+
 
   private patchActualsFormBasedOnSessionTargets(): void {
     if (this.sessionState() === SessionState.Paused) {
@@ -745,73 +890,6 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     this.trackingService.getAllPersonalBestsForExercise(exerciseId).pipe(take(1)).subscribe(pbs => this.exercisePBs.set(pbs));
   }
 
-  private navigateToNextStepInWorkout(completedActiveInfo: ActiveSetInfo, currentSessionRoutine: Routine): void {
-    const currentGlobalExerciseIndex = completedActiveInfo.exerciseIndex;
-    const currentGlobalSetIndex = completedActiveInfo.setIndex;
-    const currentPlayedExercise = currentSessionRoutine.exercises[currentGlobalExerciseIndex];
-
-    let nextExerciseGlobalIndex = currentGlobalExerciseIndex;
-    let nextSetIndexInExercise = 0;
-    let exerciseBlockChanged = false;
-
-    if (currentGlobalSetIndex < currentPlayedExercise.sets.length - 1) {
-      nextSetIndexInExercise = currentGlobalSetIndex + 1;
-    } else {
-      if (currentPlayedExercise.supersetId &&
-        currentPlayedExercise.supersetOrder !== null &&
-        (currentPlayedExercise.supersetSize !== null && currentPlayedExercise.supersetSize !== undefined) &&
-        currentPlayedExercise.supersetOrder < currentPlayedExercise.supersetSize - 1) {
-        nextExerciseGlobalIndex++;
-        if (!(nextExerciseGlobalIndex < currentSessionRoutine.exercises.length &&
-          currentSessionRoutine.exercises[nextExerciseGlobalIndex].supersetId === currentPlayedExercise.supersetId)) {
-          const foundBlockIdx = this.findNextExerciseBlockStartIndex(currentGlobalExerciseIndex, currentSessionRoutine);
-          if (foundBlockIdx !== -1) {
-            nextExerciseGlobalIndex = foundBlockIdx;
-            exerciseBlockChanged = true;
-          } else { this.finishWorkout(); return; }
-        }
-      } else {
-        const currentBlockTotalRounds = this.totalBlockRounds();
-        if (this.currentBlockRound() < currentBlockTotalRounds) {
-          this.currentBlockRound.update(r => r + 1);
-          if (currentPlayedExercise.supersetId && currentPlayedExercise.supersetOrder !== null) {
-            nextExerciseGlobalIndex = currentGlobalExerciseIndex - currentPlayedExercise.supersetOrder;
-          }
-        } else {
-          const foundBlockIdx = this.findNextExerciseBlockStartIndex(currentGlobalExerciseIndex, currentSessionRoutine);
-          if (foundBlockIdx !== -1) {
-            nextExerciseGlobalIndex = foundBlockIdx;
-            exerciseBlockChanged = true;
-          } else {
-            this.finishWorkout();
-            return;
-          }
-        }
-      }
-    }
-
-    if (exerciseBlockChanged) {
-      this.currentBlockRound.set(1);
-      const newBlockStarterExercise = currentSessionRoutine.exercises[nextExerciseGlobalIndex];
-      if (!newBlockStarterExercise.supersetId || newBlockStarterExercise.supersetOrder === 0) {
-        this.totalBlockRounds.set(newBlockStarterExercise.rounds ?? 1);
-      } else {
-        const actualBlockStart = currentSessionRoutine.exercises.find(ex => ex.supersetId === newBlockStarterExercise.supersetId && ex.supersetOrder === 0);
-        this.totalBlockRounds.set(actualBlockStart?.rounds ?? 1);
-      }
-      this.lastPerformanceForCurrentExercise = null;
-    }
-
-    this.currentExerciseIndex.set(nextExerciseGlobalIndex);
-    this.currentSetIndex.set(nextSetIndexInExercise);
-
-    if (completedActiveInfo.setData.restAfterSet > 0) {
-      this.startRestPeriod(completedActiveInfo.setData.restAfterSet);
-    }
-
-    this.prepareCurrentSet();
-  }
-
   confirmEditTarget(): void {
     const activeInfoOriginal = this.activeSetInfo();
     if (!activeInfoOriginal || this.editingTarget === null) return;
@@ -837,23 +915,27 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     this.patchActualsFormBasedOnSessionTargets();
   }
 
-  completeSetAndProceed(): void {
-    if (this.sessionState() === SessionState.Paused) {
-      this.toastService.warning("Session is paused. Please resume to continue.", 3000, "Paused");
-      return;
-    }
+  completeAndLogCurrentSet(): void {
+    // ... (All existing logic from your original completeSetAndProceed method)
+    // - Stop timed set timer if active
+    // - Validate form
+    // - Create loggedSetData
+    // - Call addLoggedSetToCurrentLog
+    // - Call captureAndSaveStateForUnload
+    // - Reset RPE slider
+    // - Call navigateToNextStepInWorkout
+    // Make sure this method no longer directly calls prepareCurrentSet at its end.
+    // navigateToNextStepInWorkout will handle that flow.
+
     const activeInfo = this.activeSetInfo();
     const currentRoutineValue = this.routine();
-    if (!activeInfo || !currentRoutineValue) {
-      console.error("Cannot complete set: activeInfo or routine is not available.");
-      this.toastService.error("Cannot complete set: data missing.", 0, "Error");
-      return;
-    }
+    if (!activeInfo || !currentRoutineValue) { /* ... error handling ... */ return; }
 
     if (activeInfo.setData.duration && activeInfo.setData.duration > 0 &&
       (this.timedSetTimerState() === TimedSetState.Running || this.timedSetTimerState() === TimedSetState.Paused)) {
       this.stopAndLogTimedSet();
     }
+    this.soundPlayedForThisCountdownSegment = false;
 
     if (this.currentSetForm.invalid) {
       this.currentSetForm.markAllAsTouched();
@@ -877,8 +959,8 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       durationToLog = activeInfo.setData.duration;
     }
 
-    const loggedSetData: LoggedSet = {
-      id: activeInfo.setData.id,
+    const loggedSetData: LoggedSet = { /* ... populate ... */
+      id: activeInfo.setData.id, // or uuidv4() if sets are not uniquely IDd in plan
       plannedSetId: activeInfo.setData.id,
       exerciseId: activeInfo.exerciseData.exerciseId,
       isWarmup: !!activeInfo.setData.isWarmup,
@@ -901,8 +983,9 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
     this.rpeValue.set(null);
     this.showRpeSlider.set(false);
+    this.editingTarget = null; // Reset inline editing target
 
-    this.navigateToNextStepInWorkout(activeInfo, currentRoutineValue);
+    this.navigateToNextStepInWorkout(activeInfo, currentRoutineValue); // This is key
   }
 
   private findNextExerciseBlockStartIndex(currentExerciseGlobalIndex: number, routine: Routine): number {
@@ -984,54 +1067,6 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       return `${nextBlockSetType} of ${nextBlockFirstExercise.exerciseName}`;
     }
     return 'Finish Workout!';
-  }
-
-  getDisabled(): boolean {
-    return this.timedSetTimerState() === TimedSetState.Running || this.sessionState() === SessionState.Paused;
-  }
-
-  private startRestPeriod(duration: number, isResumingPausedRest: boolean = false): void {
-    if (this.sessionState() === SessionState.Paused && !isResumingPausedRest) {
-      this.wasRestTimerVisibleOnPause = true;
-      this.restTimerRemainingSecondsOnPause = duration;
-      this.restTimerInitialDurationOnPause = duration;
-      this.restTimerMainTextOnPause = (this.activeSetInfo()?.setData?.restAfterSet === 0 && this.activeSetInfo()?.exerciseData?.supersetId) ? 'SUPERSET TRANSITION' : 'RESTING';
-      const nextActiveSetInfo = this.activeSetInfo();
-      if (this.routine() && nextActiveSetInfo) {
-        this.restTimerNextUpTextOnPause = this.activeSetInfo()?.exerciseData.exerciseName || 'Next Exercise';
-      }
-      return;
-    }
-
-    if (duration > 0) {
-      const currentRoutineValue = this.routine();
-      this.restDuration.set(duration);
-
-      if (!isResumingPausedRest) {
-        this.restTimerMainText.set(
-          this.activeSetInfo()?.setData?.restAfterSet === 0 && this.activeSetInfo()?.exerciseData?.supersetId ?
-            'SUPERSET TRANSITION' : 'RESTING'
-        );
-        this.restTimerNextUpText.set(this.activeSetInfo()?.exerciseData.exerciseName || 'Next Exercise');
-
-      } else {
-        this.restTimerMainText.set(this.restTimerMainTextOnPause);
-        this.restTimerNextUpText.set(this.restTimerNextUpTextOnPause);
-      }
-      this.isRestTimerVisible.set(true);
-      this.updateRestTimerDisplay(duration);
-    } else {
-      this.isRestTimerVisible.set(false);
-    }
-  }
-
-  handleRestTimerFinished(): void {
-    this.isRestTimerVisible.set(false);
-  }
-
-  handleRestTimerSkipped(): void {
-    this.isRestTimerVisible.set(false);
-    this.toastService.info("Rest skipped.", 2000);
   }
 
   skipRest(): void {
@@ -1277,6 +1312,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     if (!activeInfo || !currentRoutineVal) { this.toastService.error("Cannot skip set: No active set information.", 0, "Error"); return; }
     const confirm = await this.alertService.showConfirm("Skip Current Set", `Skip current ${activeInfo.isWarmup ? 'warm-up' : 'set ' + this.getCurrentWorkingSetNumber()} of "${activeInfo.exerciseData.exerciseName}"? It won't be logged.`);
     if (!confirm || !confirm.data) return;
+    this.soundPlayedForThisCountdownSegment = false; // Reset flag
     this.toastService.info(`Skipped set of ${activeInfo.exerciseData.exerciseName}.`, 2000);
     this.resetTimedSet();
     this.navigateToNextStepInWorkout(activeInfo, currentRoutineVal);
@@ -1610,48 +1646,6 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  private isInitialLoadComplete = false; // New flag
-
   async ngOnInit(): Promise<void> {
     if (isPlatformBrowser(this.platformId)) {
       window.scrollTo(0, 0);
@@ -1959,6 +1953,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     if (this.timerSub) this.timerSub.unsubscribe();
     if (this.timedSetIntervalSub) this.timedSetIntervalSub.unsubscribe();
     if (this.routerEventsSub) { this.routerEventsSub.unsubscribe(); } // Unsubscribe here
+    if (this.presetTimerSub) this.presetTimerSub.unsubscribe();
     this.stopAutoSave();
     this.isRestTimerVisible.set(false);
 
@@ -1968,5 +1963,371 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       console.log('WorkoutPlayer ngOnDestroy - Saving state (session not formally concluded)... State:', this.sessionState());
       this.savePausedSessionState(); // Use direct save
     }
+
+    // if (isPlatformBrowser(this.platformId) && this.countdownAudio) {
+    //   this.countdownAudio.pause();
+    //   this.countdownAudio = undefined; // Release reference
+    // }
   }
+
+  // Method to play a beep using Web Audio API
+  private playClientBeep(frequency: number = 800, durationMs: number = 150): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
+    try {
+      // Check for AudioContext (standard) or webkitAudioContext (older Safari)
+      const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioContext) {
+        console.warn('Web Audio API not supported in this browser.');
+        return;
+      }
+      const ctx = new AudioContext();
+      const oscillator = ctx.createOscillator();
+
+      oscillator.type = 'sine'; // 'sine', 'square', 'sawtooth', 'triangle'
+      oscillator.frequency.setValueAtTime(frequency, ctx.currentTime); // Frequency in Hz
+      oscillator.connect(ctx.destination);
+
+      oscillator.start();
+      oscillator.stop(ctx.currentTime + durationMs / 1000); // Duration in seconds
+
+      // Close the context after the sound has played to free resources
+      setTimeout(() => {
+        if (ctx.state !== 'closed') {
+          ctx.close();
+        }
+      }, durationMs + 50);
+
+    } catch (e) {
+      console.error('Error playing beep sound:', e);
+    }
+  }
+
+  // Method to play a "gong" sound using Web Audio API
+  private playClientGong(frequency: number = 440, durationMs: number = 700): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
+    try {
+      const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioContext) {
+        console.warn('Web Audio API not supported in this browser.');
+        return;
+      }
+      const ctx = new AudioContext();
+      const oscillator = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      oscillator.type = 'triangle';
+      oscillator.frequency.setValueAtTime(200, ctx.currentTime); // deep tone
+      gain.gain.setValueAtTime(1, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 2); // 2s fade
+
+      oscillator.connect(gain);
+      gain.connect(ctx.destination);
+
+      oscillator.start();
+      oscillator.stop(ctx.currentTime + 2); // stop after 2 seconds
+
+    } catch (e) {
+      console.error('Error playing gong sound:', e);
+    }
+  }
+
+  private startPresetTimer(duration: number, forActiveSetDisplay: ActiveSetInfo): void {
+    this.playerSubState.set(PlayerSubState.PresetCountdown);
+    this.presetTimerDuration.set(duration);
+    let remaining = duration;
+    this.presetTimerCountdownDisplay.set(String(remaining));
+
+    this.restTimerMainText.set(`GET READY: ${forActiveSetDisplay.exerciseData.exerciseName}`);
+    const setNumberText = forActiveSetDisplay.isWarmup
+      ? `Warm-up ${this.getWarmupSetNumberForDisplay(forActiveSetDisplay.exerciseData, forActiveSetDisplay.setIndex)}/${this.getTotalWarmupSetsForExercise(forActiveSetDisplay.exerciseData)}`
+      : `Set ${this.getWorkingSetNumberForDisplay(forActiveSetDisplay.exerciseData, forActiveSetDisplay.setIndex)}/${this.getWorkingSetCountForExercise(forActiveSetDisplay.exerciseData)}`;
+    this.restTimerNextUpText.set(setNumberText);
+
+
+    if (this.presetTimerSub) this.presetTimerSub.unsubscribe();
+    this.presetTimerSub = timer(0, 1000).pipe(take(duration + 1)).subscribe({
+      next: () => { /* ... update display, play beeps ... */
+        this.presetTimerCountdownDisplay.set(String(remaining));
+        if (remaining <= this.appSettingsService.countdownSoundSeconds() && remaining > 0 &&
+          this.appSettingsService.enableTimerCountdownSound() && duration > 5) {
+          this.playClientBeep(600, 150);
+        }
+        remaining--;
+      },
+      complete: () => {
+        if (this.playerSubState() === PlayerSubState.PresetCountdown) { // Check state before auto-finishing
+          this.playClientBeep(1000, 250); // "Go" sound
+          this.handlePresetTimerFinished();
+        }
+      }
+    });
+  }
+
+  handlePresetTimerFinished(): void {
+    if (this.presetTimerSub) {
+      this.presetTimerSub.unsubscribe();
+      this.presetTimerSub = undefined;
+    }
+    this.presetTimerCountdownDisplay.set(null);
+    this.playerSubState.set(PlayerSubState.PerformingSet); // Transition to performing the set
+
+    // The routine signal should already reflect the target parameters for the upcoming set
+    // as it was updated in prepareCurrentSet *before* the pre-set timer decision was made.
+    // patchActualsFormBasedOnSessionTargets was also called in prepareCurrentSet.
+    // We might not need to do much here other than setting the state.
+    this.cdr.detectChanges(); // Ensure UI updates for button text, etc.
+    console.log('Pre-set timer finished. Player state set to PerformingSet.');
+  }
+
+  skipPresetTimer(): void {
+    if (this.playerSubState() === PlayerSubState.PresetCountdown) {
+      // this.toastService.info("Pre-set countdown skipped.", 1500);
+      if (this.presetTimerSub) {
+        this.presetTimerSub.unsubscribe();
+        this.presetTimerSub = undefined;
+      }
+      this.handlePresetTimerFinished();
+    }
+  }
+
+
+  // Helpers to get set numbers for display within pre-set timer footer
+  private getWarmupSetNumberForDisplay(exercise: WorkoutExercise, currentSetIndexInExercise: number): number {
+    let count = 0;
+    for (let i = 0; i <= currentSetIndexInExercise; i++) {
+      if (exercise.sets[i].isWarmup) count++;
+    }
+    return count;
+  }
+  private getTotalWarmupSetsForExercise(exercise: WorkoutExercise): number {
+    return exercise.sets.filter(s => s.isWarmup).length;
+  }
+  private getWorkingSetNumberForDisplay(exercise: WorkoutExercise, currentSetIndexInExercise: number): number {
+    let count = 0;
+    for (let i = 0; i <= currentSetIndexInExercise; i++) {
+      if (!exercise.sets[i].isWarmup) count++;
+    }
+    return count;
+  }
+  private getWorkingSetCountForExercise(exercise: WorkoutExercise): number {
+    return exercise.sets.filter(s => !s.isWarmup).length;
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+  private navigateToNextStepInWorkout(completedActiveInfo: ActiveSetInfo, currentSessionRoutine: Routine): void {
+    const currentGlobalExerciseIndex = completedActiveInfo.exerciseIndex;
+    const currentGlobalSetIndex = completedActiveInfo.setIndex;
+    const currentPlayedExercise = currentSessionRoutine.exercises[currentGlobalExerciseIndex];
+
+    let nextExerciseGlobalIndex = currentGlobalExerciseIndex;
+    let nextSetIndexInExercise = 0;
+    let exerciseBlockChanged = false;
+
+    // --- Determine next exercise and set indices (existing logic) ---
+    if (currentGlobalSetIndex < currentPlayedExercise.sets.length - 1) {
+      nextSetIndexInExercise = currentGlobalSetIndex + 1;
+    } else {
+      if (currentPlayedExercise.supersetId && /* ...is part of ongoing superset... */
+        currentPlayedExercise.supersetOrder! < currentPlayedExercise.supersetSize! - 1) {
+        nextExerciseGlobalIndex++;
+        // Boundary check for superset (ensure next exercise is part of same superset)
+        if (!(nextExerciseGlobalIndex < currentSessionRoutine.exercises.length &&
+          currentSessionRoutine.exercises[nextExerciseGlobalIndex].supersetId === currentPlayedExercise.supersetId)) {
+          // This case implies superset structure error or end of routine.
+          // For safety, try to find next block or finish.
+          const foundBlockIdx = this.findNextExerciseBlockStartIndex(currentGlobalExerciseIndex, currentSessionRoutine);
+          if (foundBlockIdx !== -1) {
+            nextExerciseGlobalIndex = foundBlockIdx;
+            exerciseBlockChanged = true;
+          } else { this.finishWorkoutAndReportStatus(); return; } // Changed to use the reporting version
+        }
+      } else { // End of sets for this exercise, or end of superset block
+        const currentBlockTotalRounds = this.totalBlockRounds();
+        if (this.currentBlockRound() < currentBlockTotalRounds) {
+          this.currentBlockRound.update(r => r + 1);
+          if (currentPlayedExercise.supersetId && currentPlayedExercise.supersetOrder !== null) {
+            nextExerciseGlobalIndex = currentGlobalExerciseIndex - currentPlayedExercise.supersetOrder; // Go to start of superset
+          }
+          // For a non-superset exercise, nextExerciseGlobalIndex remains the same for the new round.
+        } else { // Finished all rounds for this block
+          const foundBlockIdx = this.findNextExerciseBlockStartIndex(currentGlobalExerciseIndex, currentSessionRoutine);
+          if (foundBlockIdx !== -1) {
+            nextExerciseGlobalIndex = foundBlockIdx;
+            exerciseBlockChanged = true;
+          } else {
+            this.finishWorkoutAndReportStatus(); // Changed to use the reporting version
+            return;
+          }
+        }
+      }
+    }
+
+    // Update indices for the upcoming set
+    this.currentExerciseIndex.set(nextExerciseGlobalIndex);
+    this.currentSetIndex.set(nextSetIndexInExercise);
+
+    if (exerciseBlockChanged) {
+      this.currentBlockRound.set(1); // Reset round for new block
+      const newBlockStarterExercise = currentSessionRoutine.exercises[nextExerciseGlobalIndex];
+      if (!newBlockStarterExercise.supersetId || newBlockStarterExercise.supersetOrder === 0) {
+        this.totalBlockRounds.set(newBlockStarterExercise.rounds ?? 1);
+      } else {
+        const actualBlockStart = currentSessionRoutine.exercises.find(ex => ex.supersetId === newBlockStarterExercise.supersetId && ex.supersetOrder === 0);
+        this.totalBlockRounds.set(actualBlockStart?.rounds ?? 1);
+      }
+      this.lastPerformanceForCurrentExercise = null; // Reset for new exercise block
+    }
+
+    // --- Decision point for rest or next set preparation ---
+    const restDurationAfterCompletedSet = completedActiveInfo.setData.restAfterSet;
+    if (restDurationAfterCompletedSet > 0) {
+      this.startRestPeriod(restDurationAfterCompletedSet);
+    } else {
+      // No rest, directly prepare the next set (which might include a pre-set timer)
+      this.playerSubState.set(PlayerSubState.PerformingSet); // Tentatively set, prepareCurrentSet might change it
+      this.prepareCurrentSet();
+    }
+  }
+
+  private startRestPeriod(duration: number, isResumingPausedRest: boolean = false): void {
+    this.playerSubState.set(PlayerSubState.Resting);
+    this.restDuration.set(duration);
+
+    if (isPlatformBrowser(this.platformId) && duration > 0) { // Ensure duration > 0 for timer
+      const activeInfoJustCompleted = this.activeSetInfo(); // This is info about the set JUST completed
+      const routineVal = this.routine();
+
+      if (!isResumingPausedRest) {
+        this.restTimerMainText.set("RESTING");
+        // For "UP NEXT", we need to peek at what the *next* set will be.
+        // This requires knowing the indices that navigateToNextStepInWorkout has *just set*.
+        // Or, getNextUpText needs to calculate based on *current* indices and assume it's for the *next* set.
+        // Let's assume getNextUpText is smart enough or we pass the *next* set's info.
+        // For simplicity, let's calculate next up based on current indices (which point to the next set).
+        const nextSetInfo = this.peekNextSetInfo(); // A new helper method
+        this.restTimerNextUpText.set(
+          nextSetInfo ?
+            `${nextSetInfo.isWarmup ? 'Warm-up ' : ''}Set ${nextSetInfo.isWarmup ? this.getWarmupSetNumberForDisplay(nextSetInfo.exerciseData, nextSetInfo.setIndex) : this.getWorkingSetNumberForDisplay(nextSetInfo.exerciseData, nextSetInfo.setIndex)} of ${nextSetInfo.exerciseData.exerciseName}`
+            : 'Next Exercise'
+        );
+
+      } else {
+        this.restTimerMainText.set(this.restTimerMainTextOnPause);
+        this.restTimerNextUpText.set(this.restTimerNextUpTextOnPause);
+      }
+
+      this.playerSubState.set(PlayerSubState.Resting);
+      this.restDuration.set(duration);
+
+      this.isRestTimerVisible.set(true); // Show full-screen timer
+      this.updateRestTimerDisplay(duration); // For footer
+    } else {
+      // This 'else' should ideally not be reached if duration is 0,
+      // as navigateToNextStepInWorkout would call prepareCurrentSet directly.
+      // But as a fallback:
+      this.isRestTimerVisible.set(false);
+      this.playerSubState.set(PlayerSubState.PerformingSet);
+      this.prepareCurrentSet();
+    }
+  }
+
+  // New helper to peek at the next set's details without advancing state
+  private peekNextSetInfo(): ActiveSetInfo | null {
+    const r = this.routine();
+    const exIndex = this.currentExerciseIndex(); // These indices point to the *upcoming* set
+    const sIndex = this.currentSetIndex();
+
+    if (r && r.exercises[exIndex] && r.exercises[exIndex].sets[sIndex]) {
+      const exerciseData = r.exercises[exIndex];
+      const setData = r.exercises[exIndex].sets[sIndex]; // This is the *planned* set data
+      return {
+        exerciseIndex: exIndex, setIndex: sIndex, exerciseData, setData,
+        isWarmup: !!setData.isWarmup, isCompleted: false // Dummy values
+      };
+    }
+    return null;
+  }
+
+  handleRestTimerFinished(): void {
+    console.log('Rest timer finished.');
+    this.isRestTimerVisible.set(false);
+    // this.playerSubState.set(PlayerSubState.PerformingSet); // prepareCurrentSet will determine the next subState
+    this.prepareCurrentSet(); // This will handle if a pre-set timer is next, or directly to performing
+  }
+
+  handleRestTimerSkipped(): void {
+    console.log('Rest timer skipped.');
+    this.isRestTimerVisible.set(false);
+    this.toastService.info("Rest skipped.", 2000);
+    this.playerSubState.set(PlayerSubState.PerformingSet);
+    this.prepareCurrentSet();
+  }
+
+  getDisabled(): boolean {
+    return this.timedSetTimerState() === TimedSetState.Running ||
+      this.sessionState() === SessionState.Paused ||
+      this.playerSubState() === PlayerSubState.PresetCountdown || // Disable inputs during pre-set
+      this.playerSubState() === PlayerSubState.Resting; // Disable inputs during rest
+  }
+
+
+  // This method is now the main action when the big button is clicked
+  handleMainAction(): void {
+    if (this.sessionState() === SessionState.Paused) {
+      this.toastService.warning("Session is paused. Please resume to continue.", 3000, "Paused");
+      return;
+    }
+
+    switch (this.playerSubState()) {
+      case PlayerSubState.PerformingSet:
+        // Was "SET DONE", so complete the set and proceed
+        this.completeAndLogCurrentSet();
+        break;
+      case PlayerSubState.PresetCountdown:
+        // Button might say "GETTING READY..." or be disabled.
+        // If somehow clickable, perhaps it should skip the countdown.
+        this.skipPresetTimer();
+        break;
+      case PlayerSubState.Resting:
+        // Button might say "RESTING..." or "SKIP REST".
+        this.skipRest();
+        break;
+    }
+  }
+
+  // Add this to WorkoutPlayerComponent class
+  readonly shouldRunPresetTimerForCurrentSet = computed<boolean>(() => {
+    const enablePreset = this.appSettingsService.enablePresetTimer();
+    const presetDurationValue = this.appSettingsService.presetTimerDurationSeconds();
+    if (!enablePreset || presetDurationValue <= 0) return false;
+
+    const r = this.routine();
+    const exIdx = this.currentExerciseIndex();
+    const sIdx = this.currentSetIndex();
+
+    if (!r || !r.exercises[exIdx] || !r.exercises[exIdx].sets[sIdx]) return false;
+
+    const isFirstSetOfFirstExerciseInWorkout = exIdx === 0 && sIdx === 0 && this.currentBlockRound() === 1;
+    let previousSetRestDuration = Infinity; // Assume significant rest if no previous set
+    if (sIdx > 0) {
+      previousSetRestDuration = r.exercises[exIdx].sets[sIdx - 1].restAfterSet;
+    } else if (exIdx > 0) {
+      const prevExercise = r.exercises[exIdx - 1];
+      previousSetRestDuration = prevExercise.sets[prevExercise.sets.length - 1].restAfterSet;
+    }
+    return isFirstSetOfFirstExerciseInWorkout || previousSetRestDuration === 0;
+  });
 }

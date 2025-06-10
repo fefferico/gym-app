@@ -1,5 +1,5 @@
 // src/app/features/home/home.component.ts
-import { Component, OnInit, PLATFORM_ID, inject, signal, effect } from '@angular/core'; // Added effect
+import { Component, OnInit, PLATFORM_ID, inject, signal, effect, computed } from '@angular/core'; // Added effect
 import { CommonModule, DatePipe, isPlatformBrowser } from '@angular/common'; // Added DatePipe
 import { Router, RouterLink } from '@angular/router';
 import { TodaysWorkoutComponent } from '../../dashboard/todays-workout/todays-workout';
@@ -8,6 +8,7 @@ import { AlertService } from '../../../core/services/alert.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { WorkoutService } from '../../../core/services/workout.service';
 import { PausedWorkoutState } from '../../workout-tracker/workout-player';
+import { UserProfileService } from '../../../core/services/user-profile.service';
 
 
 @Component({
@@ -18,13 +19,16 @@ import { PausedWorkoutState } from '../../workout-tracker/workout-player';
   styleUrls: ['./home.scss']
 })
 export class HomeComponent implements OnInit {
-  userName = signal<string>('Fitness Enthusiast');
   private platformId = inject(PLATFORM_ID);
   private storageService = inject(StorageService);
   private router = inject(Router);
   private alertService = inject(AlertService);
   private toastService = inject(ToastService);
   private workoutService = inject(WorkoutService); // For fetching routine name if only ID is in paused state
+  private userProfileService = inject(UserProfileService); // Inject UserProfileService
+
+  userName = computed(() => this.userProfileService.username() || 'Fitness Enthusiast');
+
 
   // Signal to hold information about a paused/active workout
   pausedWorkoutInfo = signal<PausedWorkoutState | null>(null);

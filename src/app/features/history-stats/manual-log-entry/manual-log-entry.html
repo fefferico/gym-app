@@ -17,7 +17,7 @@
     </header>
 
     <form [formGroup]="logForm" (ngSubmit)="onSubmit()"
-        class="space-y-6 bg-white dark:bg-gray-800 p-3 rounded-lg shadow-md">
+        class="space-y-6 bg-white dark:bg-gray-700 p-3 rounded-lg shadow-md">
         <!-- Date and Time Section -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
@@ -91,7 +91,7 @@
             <div formArrayName="exercises" class="space-y-6">
                 <div *ngFor="let exerciseControl of exercisesFormArray.controls; let exIndex = index"
                     [formGroupName]="exIndex"
-                    class="p-4 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 shadow space-y-3">
+                    class="p-4 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-700 shadow space-y-3">
 
                     <div class="flex justify-between items-center pb-2 border-b border-gray-200 dark:border-gray-600">
                         <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">
@@ -199,11 +199,11 @@
 
     <!-- Basic Exercise Selection Modal (similar to WorkoutBuilder) -->
     <div *ngIf="isExerciseModalOpen"
-        class="fixed inset-0 bg-gray-600 bg-opacity-75 transition-opacity overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4"
+        class="fixed inset-0 bg-gray-700 bg-opacity-75 transition-opacity overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4"
         (click)="closeExerciseSelectionModal()">
-        <div class="relative transform overflow-hidden rounded-lg bg-white dark:bg-gray-800 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg"
+        <div class="relative transform overflow-hidden rounded-lg bg-white dark:bg-gray-700 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg"
             (click)="$event.stopPropagation()">
-            <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+            <div class="bg-white dark:bg-gray-700 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <div class="flex justify-between items-center pb-3">
                     <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">Add Ad-hoc Exercise</h3>
                     <button type="button" (click)="closeExerciseSelectionModal()"
@@ -236,7 +236,7 @@
             </div>
             <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
                 <button type="button" (click)="closeExerciseSelectionModal()"
-                    class="mt-3 inline-flex w-full justify-center rounded-md bg-white dark:bg-gray-600 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-gray-200 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-500 hover:bg-gray-50 dark:hover:bg-gray-500 sm:mt-0 sm:w-auto">
+                    class="mt-3 inline-flex w-full justify-center rounded-md bg-white dark:bg-gray-700 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-gray-200 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-500 hover:bg-gray-50 dark:hover:bg-gray-500 sm:mt-0 sm:w-auto">
                     Cancel
                 </button>
             </div>

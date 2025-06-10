@@ -53,7 +53,7 @@
     </header>
 
     <form [formGroup]="routineForm" (ngSubmit)="onSubmit()" class="space-y-6 mb-6">
-        <section class="space-y-4 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+        <section class="space-y-4 p-4 bg-white dark:bg-gray-700 rounded-lg shadow-sm">
             <div>
                 <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Routine
                     Name</label>
@@ -81,7 +81,7 @@
             </div>
         </section>
 
-        <section class="pt-4">
+        <section class="pt-4" *ngIf="routineForm.get('goal')?.value !== 'rest'">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300">Exercises</h2>
                 <button *ngIf="isEditMode && exercisesFormArray.length > 0" [disabled]="isViewMode" type="button"
@@ -112,7 +112,7 @@
                                 'border-orange-500 dark:border-orange-400 bg-orange-50 dark:bg-orange-900/30': exerciseControl.get('supersetId')?.value,
                                 'ring-2 ring-orange-400 dark:ring-orange-300 shadow-md': selectedExerciseIndicesForSuperset().includes(exIndex),
                                 'dark:bg-orange-900/40': exerciseControl.get('supersetId')?.value && selectedExerciseIndicesForSuperset().includes(exIndex),
-                                'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800': !exerciseControl.get('supersetId')?.value && !selectedExerciseIndicesForSuperset().includes(exIndex),
+                                'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700': !exerciseControl.get('supersetId')?.value && !selectedExerciseIndicesForSuperset().includes(exIndex),
                                 'rounded-b-none border-b-transparent dark:border-b-transparent': exerciseControl.get('supersetId')?.value && (exerciseControl.get('supersetOrder')?.value ?? -1) < ((exerciseControl.get('supersetSize')?.value ?? 0) - 1),
                                 'rounded-t-none': exerciseControl.get('supersetId')?.value && (exerciseControl.get('supersetOrder')?.value ?? 0) > 0,
                                 'mt-4': isEditMode && selectedExerciseIndicesForSuperset().length >= 2 && exIndex === firstSelectedExerciseIndexForSuperset
@@ -280,7 +280,7 @@
                                                     <input #setRepsInput type="number"
                                                         [id]="'reps-exp-' + exIndex + '-' + setIndex"
                                                         formControlName="reps" placeholder="Reps"
-                                                        class="mt-0.5 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md focus:ring-primary focus:border-primary dark:bg-gray-600">
+                                                        class="mt-0.5 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md focus:ring-primary focus:border-primary dark:bg-gray-700">
                                                 </div>
                                                 <div>
                                                     <label [for]="'weight-exp-' + exIndex + '-' + setIndex"
@@ -288,7 +288,7 @@
                                                         ({{ unitsService.getUnitLabel() }})</label>
                                                     <input type="number" [id]="'weight-exp-' + exIndex + '-' + setIndex"
                                                         formControlName="weight" placeholder="Weight"
-                                                        class="mt-0.5 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md focus:ring-primary focus:border-primary dark:bg-gray-600">
+                                                        class="mt-0.5 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md focus:ring-primary focus:border-primary dark:bg-gray-700">
                                                 </div>
                                                 <div>
                                                     <label [for]="'duration-exp-' + exIndex + '-' + setIndex"
@@ -297,14 +297,14 @@
                                                     <input type="number"
                                                         [id]="'duration-exp-' + exIndex + '-' + setIndex"
                                                         formControlName="duration" placeholder="Secs"
-                                                        class="mt-0.5 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md focus:ring-primary focus:border-primary dark:bg-gray-600">
+                                                        class="mt-0.5 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md focus:ring-primary focus:border-primary dark:bg-gray-700">
                                                 </div>
                                                 <div>
                                                     <label [for]="'tempo-exp-' + exIndex + '-' + setIndex"
                                                         class="block text-xs font-medium text-gray-600 dark:text-gray-400">Tempo</label>
                                                     <input type="text" [id]="'tempo-exp-' + exIndex + '-' + setIndex"
                                                         formControlName="tempo" placeholder="e.g. 2010"
-                                                        class="mt-0.5 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md focus:ring-primary focus:border-primary dark:bg-gray-600">
+                                                        class="mt-0.5 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md focus:ring-primary focus:border-primary dark:bg-gray-700">
                                                 </div>
                                                 <div class="col-span-2 sm:col-span-1 md:col-span-2">
                                                     <label [for]="'rest-exp-' + exIndex + '-' + setIndex"
@@ -312,7 +312,7 @@
                                                         (s)</label>
                                                     <input type="number" [id]="'rest-exp-' + exIndex + '-' + setIndex"
                                                         formControlName="restAfterSet" placeholder="Rest"
-                                                        class="mt-0.5 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md focus:ring-primary focus:border-primary dark:bg-gray-600">
+                                                        class="mt-0.5 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md focus:ring-primary focus:border-primary dark:bg-gray-700">
                                                 </div>
                                                 <div class="col-span-full">
                                                     <label [for]="'setNotes-exp-' + exIndex + '-' + setIndex"
@@ -320,7 +320,7 @@
                                                         Notes (Opt.)</label>
                                                     <input type="text" [id]="'setNotes-exp-' + exIndex + '-' + setIndex"
                                                         formControlName="notes" placeholder="e.g. Drop set"
-                                                        class="mt-0.5 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md focus:ring-primary focus:border-primary dark:bg-gray-600">
+                                                        class="mt-0.5 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md focus:ring-primary focus:border-primary dark:bg-gray-700">
                                                 </div>
                                             </div>
                                             <div class="mt-2 text-right">
@@ -360,6 +360,13 @@
             </div>
         </section>
 
+        <section *ngIf="routineForm.get('goal')?.value === 'rest'"
+            class="p-4 bg-blue-50 dark:bg-blue-900/30 rounded-lg text-center">
+            <p class="text-sm text-blue-700 dark:text-blue-300">
+                This is a rest day routine. No exercises are needed.
+            </p>
+        </section>
+
         <div *ngIf="isEditMode || isNewMode" class="pt-6 flex justify-end space-x-3">
             <a routerLink="/workout"
                 class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700">
@@ -373,11 +380,11 @@
     </form>
 
     <div *ngIf="isExerciseModalOpen()"
-        class="fixed inset-0 bg-gray-600 bg-opacity-75 transition-opacity overflow-y-auto h-full w-full z-[70] flex items-center justify-center p-4"
+        class="fixed inset-0 bg-gray-700 bg-opacity-75 transition-opacity overflow-y-auto h-full w-full z-[70] flex items-center justify-center p-4"
         (click)="closeExerciseSelectionModal()">
-        <div class="relative transform overflow-hidden rounded-lg bg-white dark:bg-gray-800 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg"
+        <div class="relative transform overflow-hidden rounded-lg bg-white dark:bg-gray-700 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg"
             (click)="$event.stopPropagation()">
-            <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+            <div class="bg-white dark:bg-gray-700 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <div class="sm:flex sm:items-start w-full">
                     <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
                         <div class="flex justify-between items-center pb-3">
@@ -425,7 +432,7 @@
             </div>
             <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
                 <button type="button" (click)="closeExerciseSelectionModal()"
-                    class="mt-3 inline-flex w-full justify-center rounded-md bg-white dark:bg-gray-600 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-gray-200 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-500 hover:bg-gray-50 dark:hover:bg-gray-500 sm:mt-0 sm:w-auto">Cancel</button>
+                    class="mt-3 inline-flex w-full justify-center rounded-md bg-white dark:bg-gray-700 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-gray-200 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-500 hover:bg-gray-50 dark:hover:bg-gray-500 sm:mt-0 sm:w-auto">Cancel</button>
             </div>
         </div>
     </div>

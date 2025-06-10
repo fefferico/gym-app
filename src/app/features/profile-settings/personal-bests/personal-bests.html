@@ -12,7 +12,7 @@
     </div>
 
     <!-- Filter Accordion Section -->
-    <div class="mb-8 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+    <div class="mb-8 bg-white dark:bg-gray-700 rounded-lg shadow-md">
         <button (click)="toggleFiltersVisibility()"
             class="w-full flex justify-between items-center p-4 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-opacity-75 rounded-t-lg"
             [class.rounded-b-lg]="!filtersVisible()"
@@ -62,7 +62,7 @@
             </div>
             <div class="flex justify-end">
                 <button (click)="resetFilters()"
-                    class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md shadow-sm border border-gray-300 dark:border-gray-500 transition-colors">
+                    class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md shadow-sm border border-gray-300 dark:border-gray-500 transition-colors">
                     Reset Filters
                 </button>
             </div>
@@ -72,7 +72,7 @@
     <div *ngIf="displayPersonalBests().length > 0; else noPBsOrFilters">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             <div *ngFor="let pb of displayPersonalBests()"
-                class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden flex flex-col transition-all hover:shadow-xl">
+                class="bg-white dark:bg-gray-700 rounded-xl shadow-lg overflow-hidden flex flex-col transition-all hover:shadow-xl">
                 
                 <div class="p-5 flex-grow">
                     <h2 class="text-xl font-semibold text-primary dark:text-primary-light mb-1 truncate" [title]="pb.exerciseName">
@@ -125,7 +125,7 @@
 
     <!-- Updated ng-template to handle both no PBs initially and no results after filtering -->
     <ng-template #noPBsOrFilters>
-        <div class="text-center py-10 bg-white dark:bg-gray-800 rounded-xl shadow-lg">
+        <div class="text-center py-10 bg-white dark:bg-gray-700 rounded-xl shadow-lg">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-16 h-16 mx-auto text-gray-400 dark:text-gray-500 mb-4">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM13.5 10.5h-6" />
             </svg>

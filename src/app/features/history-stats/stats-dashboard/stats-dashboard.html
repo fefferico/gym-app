@@ -17,7 +17,7 @@
     <div class="overflow-hidden transition-all duration-500 ease-in-out"
         [style.maxHeight]="isStatsFilterAccordionOpen() ? '500px' : '0px'" [class.mb-8]="isStatsFilterAccordionOpen()">
         <form [formGroup]="statsFilterForm" (ngSubmit)="applyStatsFilters()"
-            class="p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md space-y-4 border dark:border-gray-700">
+            class="p-4 bg-white dark:bg-gray-700 rounded-lg shadow-md space-y-4 border dark:border-gray-700">
             <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-3">Filter Statistics by Date</h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
                 <div>
@@ -54,12 +54,12 @@
 
             <!-- Overall Stats Cards -->
             <section class="mb-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md text-center">
+                <div class="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-md text-center">
                     <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Workouts <span
                             *ngIf="hasActiveDateFilters()">(Period)</span></h2>
                     <p class="text-4xl font-bold text-primary dark:text-primary-light">{{ workoutsInPeriodCount() }}</p>
                 </div>
-                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md text-center">
+                <div class="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-md text-center">
                     <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Total Volume <span
                             *ngIf="hasActiveDateFilters()">(Period)</span></h2>
                     <p class="text-4xl font-bold text-primary dark:text-primary-light">
@@ -69,7 +69,7 @@
                 </div>
 
                 <!-- Current Streak Card with Flame Icon -->
-                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md text-center">
+                <div class="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-md text-center">
                     <div class="flex items-center justify-center mb-2">
                         <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300">Current Streak</h2>
                         <svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
@@ -114,7 +114,7 @@
                 </div>
 
                 <!-- Longest Streak Card with Cup Icon -->
-                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md text-center">
+                <div class="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-md text-center">
                     <div class="flex items-center justify-center mb-2">
                         <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300">Longest Streak</h2>
                         <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -146,7 +146,7 @@
 
             <!-- CHARTS SECTION -->
             <section class="mb-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md min-h-[350px] overflow-hidden">
+                <div class="bg-white dark:bg-gray-700 p-4 rounded-lg shadow-md min-h-[350px] overflow-hidden">
                     <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">Volume by Muscle Group <span
                             *ngIf="hasActiveDateFilters()">(Period)</span></h3>
                     <div *ngIf="muscleGroupChartDataForPeriod().length > 0; else noChartDataMsg" class="chart-wrapper">
@@ -182,7 +182,7 @@
                 <h2 class="text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-4">Weekly Summary <span
                         *ngIf="hasActiveDateFilters()">(Period)</span></h2>
                 <div *ngIf="weeklySummariesTableDataForPeriod().length > 0; else noWeeklyDataMsg"
-                    class="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg shadow-md">
+                    class="overflow-x-auto bg-white dark:bg-gray-700 rounded-lg shadow-md">
                     <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                         <thead class="bg-gray-50 dark:bg-gray-700">
                             <tr>
@@ -197,7 +197,7 @@
                                     Total Volume (kg)</th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                        <tbody class="bg-white dark:bg-gray-700 divide-y divide-gray-200 dark:divide-gray-700">
                             <tr *ngFor="let summary of weeklySummariesTableDataForPeriod()">
                                 <td
                                     class="px-2 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
@@ -220,7 +220,7 @@
                 <h2 class="text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-4 ">Volume by Muscle Group <span
                         *ngIf="hasActiveDateFilters()">(Period)</span></h2>
                 <div *ngIf="muscleGroupPerformanceTableDataForPeriod().length > 0; else noMuscleDataMsg"
-                    class="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg shadow-md">
+                    class="overflow-x-auto bg-white dark:bg-gray-700 rounded-lg shadow-md">
                     <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                         <thead class="bg-gray-50 dark:bg-gray-700">
                             <tr>
@@ -235,7 +235,7 @@
                                     Total Volume (kg)</th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                        <tbody class="bg-white dark:bg-gray-700 divide-y divide-gray-200 dark:divide-gray-700">
                             <tr *ngFor="let perf of muscleGroupPerformanceTableDataForPeriod()">
                                 <td
                                     class="px-2 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100 text-balance">
@@ -258,7 +258,7 @@
         <!-- Message specifically for when filters are active but yield no results -->
         <ng-template #noDataInPeriod>
             <div *ngIf="hasActiveDateFilters() && filteredLogsForStats().length === 0"
-                class="text-center py-12 px-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+                class="text-center py-12 px-6 bg-white dark:bg-gray-700 rounded-lg shadow-md">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                     stroke="currentColor" class="w-16 h-16 mx-auto text-gray-400 dark:text-gray-500 mb-4">
                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -274,7 +274,7 @@
     </ng-container> <!-- End of *ngIf="allLogs().length > 0" -->
 
     <ng-template #noDataOverall>
-        <div class="text-center py-12 px-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+        <div class="text-center py-12 px-6 bg-white dark:bg-gray-700 rounded-lg shadow-md">
             <!-- Your existing "No Data for Statistics" SVG and message -->
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                 stroke="currentColor" class="w-16 h-16 mx-auto text-gray-400 dark:text-gray-500 mb-4">

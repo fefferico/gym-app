@@ -30,7 +30,7 @@
   background-color: var(--card-background-color, white); /* Use CSS variable or actual color */
 }
  body.dark .cdk-drag-preview {
-     background-color: var(--dark-card-background-color, #1f2937); /* dark:bg-gray-800 */
+     background-color: var(--dark-card-background-color, #1f2937); /* dark:bg-gray-700 */
  }
 
 

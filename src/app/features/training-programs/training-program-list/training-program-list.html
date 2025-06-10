@@ -31,7 +31,7 @@
       <div *ngIf="programs$ | async as programs; else loadingProgramsOrList">
         <div *ngIf="programs.length > 0; else noPrograms" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <div *ngFor="let program of programs"
-            class="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-200 flex flex-col relative"
+            class="bg-white dark:bg-gray-700 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-200 flex flex-col relative"
             [ngClass]="{'ring-2 ring-green-500 dark:ring-green-400': program.isActive}">
             <div (click)="viewProgram(program.id)" class="p-4 flex-grow cursor-pointer">
               <div class="flex justify-between items-start mb-1.5">
@@ -64,7 +64,7 @@
               <div *ngIf="activeProgramActions() === program.id"
                 class="origin-top-right absolute right-0 mt-1 sm:mt-2 w-40 sm:w-48 rounded-md shadow-lg bg-white dark:bg-gray-700 ring-1 ring-black dark:ring-gray-600 ring-opacity-5 focus:outline-none py-1 z-20">
                 <button (click)="viewProgram(program.id, $event)"
-                  class="w-full text-left px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 flex items-center"><svg
+                  class="w-full text-left px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center"><svg
                     xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
                     class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-2">
                     <path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5Z" />
@@ -73,7 +73,7 @@
                       clip-rule="evenodd" />
                   </svg>View</button>
                 <button (click)="editProgram(program.id, $event)"
-                  class="w-full text-left px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 flex items-center"><svg
+                  class="w-full text-left px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center"><svg
                     xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
                     class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-2">
                     <path
@@ -81,7 +81,7 @@
                   </svg>Edit</button>
                 <button (click)="toggleActiveProgram(program.id, program.isActive, $event)"
                   class="w-full text-left px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium flex items-center"
-                  [ngClass]="{'text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-600/50': !program.isActive, 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 opacity-70 cursor-not-allowed': program.isActive }"><svg
+                  [ngClass]="{'text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-600/50': !program.isActive, 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 opacity-70 cursor-not-allowed': program.isActive }"><svg
                     *ngIf="!program.isActive" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
                     class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-2">
                     <path fill-rule="evenodd"
@@ -107,7 +107,7 @@
           </div>
         </div>
         <ng-template #noPrograms>
-          <div class="text-center py-12 px-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+          <div class="text-center py-12 px-6 bg-white dark:bg-gray-700 rounded-lg shadow-md">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
               stroke="currentColor" class="w-16 h-16 mx-auto text-gray-400 dark:text-gray-200 mb-4">
               <path stroke-linecap="round" stroke-linejoin="round"
@@ -131,17 +131,17 @@
 
     <div *ngSwitchCase="'calendar'">
       <div *ngIf="activeProgramForCalendar() as activeProgram; else noActiveProgramForCalendar"
-        class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-2 sm:p-4">
+        class="bg-white dark:bg-gray-700 rounded-lg shadow-md p-2 sm:p-4">
         <div
           class="mb-3 sm:mb-4 flex justify-center sm:justify-start space-x-1 p-1 bg-gray-100 dark:bg-gray-700 rounded-lg max-w-xs mx-auto sm:mx-0">
           <button (click)="setCalendarDisplayMode('week')"
             class="px-3 py-1.5 text-xs sm:text-sm font-medium rounded-md flex-1 transition-colors"
-            [ngClass]="calendarDisplayMode() === 'week' ? 'bg-primary text-white shadow' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'">
+            [ngClass]="calendarDisplayMode() === 'week' ? 'bg-primary text-white shadow' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'">
             Week
           </button>
           <button (click)="setCalendarDisplayMode('month')"
             class="px-3 py-1.5 text-xs sm:text-sm font-medium rounded-md flex-1 transition-colors"
-            [ngClass]="calendarDisplayMode() === 'month' ? 'bg-primary text-white shadow' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'">
+            [ngClass]="calendarDisplayMode() === 'month' ? 'bg-primary text-white shadow' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'">
             Month
           </button>
         </div>
@@ -192,7 +192,7 @@
             class="py-3 px-1 text-center rounded-lg cursor-pointer transition-all border border-transparent hover:border-gray-300 dark:hover:border-gray-600"
             [ngClass]="{
                     'bg-primary-50 dark:bg-primary-900/30 ring-1 ring-inset ring-primary dark:ring-primary-light': day.isToday,
-                    'bg-white dark:bg-gray-800': !day.isToday,
+                    'bg-white dark:bg-gray-700': !day.isToday,
                     'font-semibold text-primary dark:text-primary-light': day.hasWorkout && day.isToday,
                     'font-semibold text-gray-700 dark:text-gray-200': day.hasWorkout && !day.isToday,
                     'text-gray-500 dark:text-gray-400': !day.hasWorkout
@@ -200,7 +200,7 @@
             <span class="block text-2xs sm:text-xs uppercase">{{ day.date | date:'EEE' }}</span>
             <span class="block text-lg sm:text-xl font-bold mt-0.5">{{ day.date | date:'d' }}</span>
             <div class="mt-1 h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full mx-auto"
-              [ngClass]="{'bg-primary dark:bg-primary-light': day.hasWorkout, 'bg-gray-300 dark:bg-gray-600': !day.hasWorkout}">
+              [ngClass]="{'bg-primary dark:bg-primary-light': day.hasWorkout, 'bg-gray-300 dark:bg-gray-700': !day.hasWorkout}">
             </div>
           </div>
         </div>
@@ -215,8 +215,8 @@
           <div *ngFor="let day of calendarDays()" (click)="selectCalendarDay(day)"
             class="p-1 sm:p-2 min-h-[60px] sm:min-h-[80px] relative transition-colors text-left cursor-pointer hover:bg-opacity-80"
             [ngClass]="{
-                    'bg-white dark:bg-gray-800': day.isCurrentMonth,
-                    'bg-gray-50 dark:bg-gray-800/60 opacity-70': !day.isCurrentMonth && calendarDisplayMode() === 'month',
+                    'bg-white dark:bg-gray-700': day.isCurrentMonth,
+                    'bg-gray-50 dark:bg-gray-700/60 opacity-70': !day.isCurrentMonth && calendarDisplayMode() === 'month',
                     'ring-1 ring-inset ring-primary dark:ring-primary-light': day.isToday && day.isCurrentMonth
                  }">
             <span class="text-xs sm:text-sm font-semibold"
@@ -233,7 +233,7 @@
               </div>
             </div>
             <div *ngIf="day.hasWorkout && !day.isCurrentMonth"
-              class="mt-1 h-1.5 w-1.5 rounded-full mx-auto bg-gray-300 dark:bg-gray-600"></div>
+              class="mt-1 h-1.5 w-1.5 rounded-full mx-auto bg-gray-300 dark:bg-gray-700"></div>
           </div>
         </div>
 
@@ -243,7 +243,7 @@
         </div>
       </div>
       <ng-template #noActiveProgramForCalendar>
-        <div class="text-center py-10 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+        <div class="text-center py-10 bg-white dark:bg-gray-700 rounded-lg shadow-md">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
             stroke="currentColor" class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-3">
             <path stroke-linecap="round" stroke-linejoin="round"
@@ -266,7 +266,8 @@
 
     <!-- Actual Bottom Sheet Content -->
     <div @slideUpDown
-      class="fixed inset-x-0 bottom-0 z-40 bg-white dark:bg-gray-800 shadow-2xl rounded-t-2xl border-t-2 border-primary dark:border-primary-light max-h-[75vh] flex flex-col">
+      class="fixed inset-x-0 bottom-0 z-40 bg-white dark:bg-gray-700 shadow-2xl rounded-t-2xl border-t-2 border-primary dark:border-primary-light max-h-[75vh] flex flex-col"
+      style="min-height: 500px;">
       <!-- Header Section (fixed height based on its content) -->
       <div class="p-4 sm:p-5 flex-shrink-0">
         <div class="flex justify-between items-center mb-2">
@@ -339,7 +340,7 @@
               <button *ngIf="item.logs.length === 0" (click)="startScheduledWorkout(item.routine.id)"
                 [disabled]="selectedDay.isPastDay && !selectedDay.isToday"
                 class="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-3 rounded-md shadow-sm text-xs sm:text-sm flex items-center justify-center
-                           disabled:bg-gray-400 disabled:dark:bg-gray-600 disabled:cursor-not-allowed disabled:opacity-70">
+                           disabled:bg-gray-400 disabled:dark:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-70">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                   stroke="currentColor" class="w-4 h-4 sm:w-5 sm:h-5 mr-2">
                   <path stroke-linecap="round" stroke-linejoin="round"

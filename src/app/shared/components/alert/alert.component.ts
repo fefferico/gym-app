@@ -75,7 +75,7 @@ export class AlertComponent implements OnInit {
       case 'cancel': if (button.cssClass) {
         classes += button.cssClass + ' ';
       } else {
-        classes += 'bg-gray-200 hover:bg-gray-300 text-gray-700 focus:ring-gray-400 dark:bg-gray-600 dark:hover:bg-gray-500 dark:text-gray-200 dark:focus:ring-gray-500';
+        classes += 'bg-gray-200 hover:bg-gray-300 text-gray-700 focus:ring-gray-400 dark:bg-gray-700 dark:hover:bg-gray-500 dark:text-gray-200 dark:focus:ring-gray-500';
       }
         break;
       default:

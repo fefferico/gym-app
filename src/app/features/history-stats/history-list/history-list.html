@@ -35,7 +35,7 @@
     [style.maxHeight]="isFilterAccordionOpen() ? '1000px' : '0px'" [class.mb-8]="isFilterAccordionOpen()">
     <!-- Filter Form (content is the same, just wrapped) -->
     <form [formGroup]="filterForm"
-      class="p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md space-y-4 border dark:border-gray-700">
+      class="p-4 bg-white dark:bg-gray-700 rounded-lg shadow-md space-y-4 border dark:border-gray-700">
       <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-3">Filter History</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <!-- Date From -->
@@ -89,7 +89,7 @@
     <div *ngIf="filteredWorkoutLogs().length > 0; else noLogsAfterFilter" class="space-y-4">
       <!-- ... (existing *ngFor for logs) ... -->
       <div *ngFor="let log of filteredWorkoutLogs()" (click)="viewLogDetails(log.id)"
-        class="bg-white dark:bg-gray-600 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 cursor-pointer overflow-hidden">
+        class="bg-white dark:bg-gray-700 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 cursor-pointer overflow-hidden">
         <div class="p-4 sm:p-6">
           <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-2">
             <h2 class="text-xl font-semibold text-primary dark:text-primary-light truncate"
@@ -123,7 +123,7 @@
       </div>
     </div>
     <ng-template #noLogsAfterFilter>
-      <div class="text-center py-12 px-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+      <div class="text-center py-12 px-6 bg-white dark:bg-gray-700 rounded-lg shadow-md">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
           class="w-16 h-16 mx-auto text-gray-400 dark:text-gray-500 mb-4">
           <path stroke-linecap="round" stroke-linejoin="round"
@@ -139,7 +139,7 @@
   <ng-template #loadingOrInitialLogs>
     <!-- ... (existing loading/no logs template) ... -->
     <div *ngIf="(trackingService.workoutLogs$ | async)?.length === 0 && allWorkoutLogs().length === 0; else loadingLogs"
-      class="text-center py-12 px-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+      class="text-center py-12 px-6 bg-white dark:bg-gray-700 rounded-lg shadow-md">
       There is no data here yet, let's workout a bit!
     </div>
     <ng-template #loadingLogs>

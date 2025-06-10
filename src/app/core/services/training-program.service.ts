@@ -131,6 +131,35 @@ export class TrainingProgramService {
     this.toastService.success(`Program "${targetProgram.name}" is now active.`, 3000, "Program Activated");
   }
 
+  async deactivateAllPrograms(): Promise<void> {
+    const currentPrograms = this.programsSubject.getValue();
+    if (currentPrograms.length > 0) {
+      const updatedPrograms = currentPrograms.map(p => ({ ...p, isActive: false }));
+      this._saveProgramsToStorage(updatedPrograms);
+    }
+  }
+
+  async deactivateProgram(programId: string): Promise<void> {
+    const currentPrograms = this.programsSubject.getValue();
+    const targetProgram = currentPrograms.find(p => p.id === programId);
+
+    if (!targetProgram) {
+      this.toastService.error("Program not found to deactivate.", 0, "Deactivation Error");
+      return;
+    }
+
+    if (!targetProgram.isActive) {
+      this.toastService.info(`Program "${targetProgram.name}" is already inactive.`, 3000, "Already Inactive");
+      return;
+    }
+
+    const updatedPrograms = currentPrograms.map(p =>
+      p.id === programId ? { ...p, isActive: false } : p
+    );
+    this._saveProgramsToStorage(updatedPrograms);
+    this.toastService.success(`Program "${targetProgram.name}" has been deactivated.`, 3000, "Program Deactivated");
+  }
+
   getActiveProgram(): Observable<TrainingProgram | undefined> {
     return this.programs$.pipe(
       map(programs => programs.find(p => p.isActive))

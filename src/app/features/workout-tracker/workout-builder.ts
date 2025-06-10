@@ -81,6 +81,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     { value: 'general health & longevity', label: 'General health & longevity' },
     { value: 'sport-specific performance', label: 'Sport-specific performance' },
     { value: 'maintenance', label: 'Maintenance' },
+    { value: 'rest', label: 'Rest' },
     { value: 'custom', label: 'Custom' }
   ];
 
@@ -153,6 +154,26 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         }
       })
     ).subscribe();
+
+    this.routineForm.get('goal')?.valueChanges.subscribe(goalValue => {
+      const exercisesCtrl = this.exercisesFormArray;
+      if (goalValue === 'rest') {
+        // If goal is rest, clear exercises and remove 'required' validator from the array
+        while (exercisesCtrl.length) {
+          exercisesCtrl.removeAt(0);
+        }
+        exercisesCtrl.clearValidators(); // Remove validators like Validators.required
+        // Optional: disable add exercise buttons, though *ngIf in template handles UI
+      } else {
+        // If goal is not rest, ensure 'required' validator is present (if it's always required for non-rest)
+        // However, your current validation in onSubmit handles this better by checking array length.
+        // So, just ensuring it's enabled or re-adding validator if it was removed.
+        // For simplicity, let's assume the onSubmit validation is sufficient.
+        // If you had dynamically added/removed Validators.required from exercisesFormArray:
+        // exercisesCtrl.setValidators(Validators.required);
+      }
+      exercisesCtrl.updateValueAndValidity(); // Important after changing validators
+    });
   }
 
   private toggleFormState(disable: boolean): void {
@@ -563,66 +584,95 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       this.toastService.info("Currently in view mode. No changes to save.", 3000, "View Mode");
       return;
     }
+
+    // Recalculate superset orders before any validation that might depend on it
     this.recalculateSupersetOrders();
-    if (!this.validateSupersetIntegrity()) {
+
+    // Determine if the routine is a "rest" type routine
+    const isRestTypeRoutine = this.routineForm.get('goal')?.value === 'rest';
+
+    // --- Validation ---
+    // 1. Basic form validity (name, etc.)
+    if (this.routineForm.get('name')?.invalid || this.routineForm.get('goal')?.invalid) {
+      this.routineForm.markAllAsTouched(); // Mark all fields to show errors
+      this.toastService.error('Please fill all required routine details (Name, Goal).', 0, "Validation Error");
+      console.log('Form Errors (Details):', this.getFormErrors(this.routineForm));
+      return;
+    }
+
+    // 2. Superset integrity validation (only if not a rest type routine AND has exercises)
+    if (!isRestTypeRoutine && this.exercisesFormArray.length > 0 && !this.validateSupersetIntegrity()) {
       this.toastService.error('Superset configuration is invalid. Ensure supersets have at least two contiguous exercises.', 0, "Validation Error");
       return;
     }
 
-    const exercisesValue = this.exercisesFormArray.value as WorkoutExercise[];
-    for (let i = 0; i < exercisesValue.length; i++) {
-      const exercise = exercisesValue[i];
-      const baseExerciseDetails = this.availableExercises.find(e => e.id === exercise.exerciseId);
-      const exerciseDisplayName = exercise.exerciseName || baseExerciseDetails?.name || `Exercise ${i + 1}`;
+    // 3. Exercise and Set validation (only if not a rest type routine)
+    if (!isRestTypeRoutine) {
+      if (!this.exercisesFormArray || this.exercisesFormArray.length === 0) {
+        this.routineForm.markAllAsTouched(); // Mark exercises array as touched if needed by UI
+        this.toastService.error('A non-rest routine must have at least one exercise.', 0, "Validation Error");
+        return;
+      }
 
-      if (!exercise.sets || exercise.sets.length === 0) {
-        this.toastService.error(`The exercise "${exerciseDisplayName}" must have at least one set.`, 0, "Validation Error");
-        return;
-      }
-      const exerciseFormControl = this.exercisesFormArray.at(i) as FormGroup;
-      const roundsValue = exerciseFormControl.get('rounds')?.value;
-      if (roundsValue !== null && roundsValue !== undefined && roundsValue < 1) {
-        this.toastService.error(`The exercise "${exerciseDisplayName}" must have at least 1 round.`, 0, "Validation Error");
-        return;
-      }
-      for (let j = 0; j < exercise.sets.length; j++) {
-        const set = exercise.sets[j];
-        const setDisplayName = `Set ${j + 1} of "${exerciseDisplayName}"`;
-        const reps = set.reps ?? 0;
-        const weight = set.weight ?? 0;
-        const duration = set.duration ?? 0;
-        let isPrimarilyDurationSet = duration > 0;
-        if (!isPrimarilyDurationSet && baseExerciseDetails) {
-          const durationCategories = ['cardio', 'stretching', 'plank', 'isometric'];
-          if (durationCategories.includes(baseExerciseDetails.category.toLowerCase())) {
-            isPrimarilyDurationSet = true;
-          }
+      const exercisesValue = this.exercisesFormArray.value as WorkoutExercise[];
+      for (let i = 0; i < exercisesValue.length; i++) {
+        const exercise = exercisesValue[i];
+        const baseExerciseDetails = this.availableExercises.find(e => e.id === exercise.exerciseId);
+        const exerciseDisplayName = exercise.exerciseName || baseExerciseDetails?.name || `Exercise ${i + 1}`;
+
+        if (!exercise.sets || exercise.sets.length === 0) {
+          this.toastService.error(`The exercise "${exerciseDisplayName}" must have at least one set.`, 0, "Validation Error");
+          // Potentially mark this specific exercise control as touched/invalid if UI shows errors at that level
+          (this.exercisesFormArray.at(i) as FormGroup).markAllAsTouched();
+          return;
         }
-        if (isPrimarilyDurationSet) {
-          if (duration <= 0) {
-            this.toastService.error(`${setDisplayName} is timed but has no duration.`, 0, "Validation Error");
-            return;
+        const exerciseFormControl = this.exercisesFormArray.at(i) as FormGroup;
+        const roundsValue = exerciseFormControl.get('rounds')?.value;
+        if (roundsValue !== null && roundsValue !== undefined && roundsValue < 1) {
+          this.toastService.error(`The exercise "${exerciseDisplayName}" must have at least 1 round.`, 0, "Validation Error");
+          (this.exercisesFormArray.at(i) as FormGroup).get('rounds')?.markAsTouched();
+          return;
+        }
+        for (let j = 0; j < exercise.sets.length; j++) {
+          const set = exercise.sets[j];
+          const setDisplayName = `Set ${j + 1} of "${exerciseDisplayName}"`;
+          const reps = set.reps ?? 0;
+          const weight = set.weight ?? 0;
+          const duration = set.duration ?? 0;
+          let isPrimarilyDurationSet = duration > 0;
+
+          if (!isPrimarilyDurationSet && baseExerciseDetails) {
+            const durationCategories = ['cardio', 'stretching', 'plank', 'isometric']; // Consider 'yoga', 'pilates' etc.
+            if (durationCategories.includes(baseExerciseDetails.category.toLowerCase())) {
+              isPrimarilyDurationSet = true;
+            }
           }
-        } else {
-          if (reps <= 0 && weight <= 0) {
-            this.toastService.error(`${setDisplayName} must have reps or weight.`, 0, "Validation Error");
-            return;
-          }
-          if (reps <= 0 && weight > 0) {
-            this.toastService.error(`${setDisplayName} with weight must also have reps.`, 0, "Validation Error");
-            return;
+
+          if (isPrimarilyDurationSet) {
+            if (duration <= 0) {
+              this.toastService.error(`${setDisplayName} is timed but has no duration.`, 0, "Validation Error");
+              ((this.exercisesFormArray.at(i) as FormGroup).get('sets') as FormArray).at(j).markAllAsTouched();
+              return;
+            }
+          } else { // Not primarily duration based (i.e., reps/weight based)
+            if (reps <= 0 && weight <= 0 && duration <= 0) { // If duration is also 0 or null, then reps or weight must be > 0
+              this.toastService.error(`${setDisplayName} must have reps, weight, or duration.`, 0, "Validation Error");
+              ((this.exercisesFormArray.at(i) as FormGroup).get('sets') as FormArray).at(j).markAllAsTouched();
+              return;
+            }
+            if (reps <= 0 && weight > 0) {
+              this.toastService.error(`${setDisplayName} with weight must also have reps.`, 0, "Validation Error");
+              ((this.exercisesFormArray.at(i) as FormGroup).get('sets') as FormArray).at(j).markAllAsTouched();
+              return;
+            }
           }
         }
       }
     }
+    // --- End of Validation ---
 
-    if (this.routineForm.invalid || (!this.exercisesFormArray || this.exercisesFormArray.length === 0)) {
-      this.routineForm.markAllAsTouched();
-      this.toastService.error('Please fill required fields (Name, at least one exercise with sets).', 0, "Validation Error");
-      console.log('Form Errors:', this.getFormErrors(this.routineForm));
-      return;
-    }
 
+    // If all validations pass (or are skipped for "rest" type)
     const formValue = this.routineForm.getRawValue();
 
     const routinePayload: Routine = {
@@ -630,7 +680,9 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       name: formValue.name,
       description: formValue.description,
       goal: formValue.goal,
-      exercises: formValue.exercises.map((exInput: any) => ({
+      // If it's a rest type routine, exercises array will be empty or what was submitted (should be empty due to validation skip)
+      // Otherwise, map the exercises.
+      exercises: isRestTypeRoutine ? [] : formValue.exercises.map((exInput: any) => ({
         ...exInput,
         sets: exInput.sets.map((setInput: any) => ({
           ...setInput,
@@ -639,12 +691,13 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         }))
       })),
     };
+
     if (this.isNewMode && !this.currentRoutineId) {
-      routinePayload.id = uuidv4();
+      routinePayload.id = uuidv4(); // Ensure new ID for new routines
     }
 
     try {
-      this.spinnerService.show();
+      this.spinnerService.show("Saving routine...");
       if (this.isNewMode) {
         this.workoutService.addRoutine(routinePayload);
         this.toastService.success("Routine created successfully!", 4000, "Success");
@@ -652,10 +705,12 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         this.workoutService.updateRoutine(routinePayload);
         this.toastService.success("Routine updated successfully!", 4000, "Success");
       } else {
+        // This case should ideally not be reached if modes are set correctly
         this.toastService.warning("No save operation performed. Mode is unclear or ID missing.", 0, "Save Warning");
         this.spinnerService.hide();
         return;
       }
+      this.routineForm.markAsPristine(); // Mark form as pristine after successful save
       this.router.navigate(['/workout']);
     } catch (e: any) {
       console.error("Error saving routine:", e);
@@ -664,6 +719,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       this.spinnerService.hide();
     }
   }
+
 
   private validateSupersetIntegrity(): boolean {
     const exercises = this.exercisesFormArray.value as WorkoutExercise[];
