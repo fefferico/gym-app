@@ -1,8 +1,8 @@
 import { Component, inject, OnInit, OnDestroy, signal, computed, WritableSignal, ChangeDetectorRef, HostListener, PLATFORM_ID } from '@angular/core';
 import { CommonModule, TitleCasePipe, DatePipe, DecimalPipe, isPlatformBrowser } from '@angular/common';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { Subscription, Observable, of, timer, firstValueFrom } from 'rxjs';
-import { switchMap, tap, map, takeWhile, take } from 'rxjs/operators';
+import { ActivatedRoute, NavigationEnd, Router, RouterLink } from '@angular/router';
+import { Subscription, Observable, of, timer, firstValueFrom, interval } from 'rxjs';
+import { switchMap, tap, map, takeWhile, take, filter } from 'rxjs/operators';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { FullScreenRestTimerComponent } from '../../shared/components/full-screen-rest-timer/full-screen-rest-timer';
 
@@ -20,6 +20,7 @@ import { AlertButton, AlertInput } from '../../core/models/alert.model';
 import { UnitsService } from '../../core/services/units.service';
 import { ToastService } from '../../core/services/toast.service';
 import { v4 as uuidv4 } from 'uuid';
+import { format } from 'date-fns';
 
 
 // Interface to manage the state of the currently active set/exercise
@@ -37,7 +38,7 @@ interface ActiveSetInfo {
   isWarmup: boolean;
 }
 
-interface PausedWorkoutState {
+export interface PausedWorkoutState {
   version: string;
   routineId: string | null;
   sessionRoutine: Routine; // The routine state as it was when paused (potentially modified)
@@ -58,6 +59,7 @@ interface PausedWorkoutState {
   restTimerMainTextOnPause: string;
   restTimerNextUpTextOnPause: string | null;
   lastPerformanceForCurrentExercise: LastPerformanceSummary | null;
+  workoutDate: string; // Date of the workout when paused
 }
 
 enum SessionState {
@@ -159,6 +161,9 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       this.captureAndSaveStateForUnload();
     }
   }
+
+  private autoSaveSub: Subscription | undefined; // For the auto-save interval
+  private readonly AUTO_SAVE_INTERVAL_MS = 15000; // 15 seconds
 
   protected get weightUnitDisplaySymbol(): string {
     return this.unitService.getUnitLabel();
@@ -276,21 +281,15 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   isPerformanceInsightsVisible = signal(false);
   showCompletedSetsInfo = signal<boolean>(false);
 
+
+  private routerEventsSub: Subscription | undefined; // For router events
+  private isSessionConcluded = false; // NEW: Flag to track if workout was properly finished/quit
+
   constructor() {
     this.initializeCurrentSetForm();
   }
 
   private platformId = inject(PLATFORM_ID); // Inject PLATFORM_ID
-
-  async ngOnInit(): Promise<void> {
-    if (isPlatformBrowser(this.platformId)) { // Check if running in a browser
-      window.scrollTo(0, 0);
-    }
-    const hasPausedSession = await this.checkForPausedSession();
-    if (!hasPausedSession) {
-      this.loadNewWorkoutFromRoute();
-    }
-  }
 
   private resetAndPatchCurrentSetForm(): void {
     this.currentSetForm.reset({ rpe: null });
@@ -365,159 +364,11 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     }
   }
 
+  // Your existing finishWorkout() method should now just call this:
   async finishWorkout(): Promise<void> {
-    if (this.sessionState() === SessionState.Paused) {
-      this.toastService.warning("Please resume workout before finishing.", 3000, "Session Paused");
-      return;
-    }
-    if (this.sessionState() === SessionState.Loading) {
-      this.toastService.info("Workout is still loading.", 3000, "Loading");
-      return;
-    }
-    if (this.currentWorkoutLogExercises().length === 0) {
-      this.toastService.info("No sets logged. Workout not saved.", 3000, "Empty Workout");
-      this.router.navigate(['/workout']);
-      return;
-    }
-
-    if (this.timerSub) this.timerSub.unsubscribe();
-
-    const sessionRoutineValue = this.routine();
-    const performedExercises = this.currentWorkoutLogExercises();
-
-    let proceedToLog = true;
-    let logAsNewRoutine = false;
-    let updateOriginalRoutineStructure = false; // <-- NEW FLAG
-    let newRoutineName = sessionRoutineValue?.name ? `${sessionRoutineValue.name} - ${new DatePipe('en-US').transform(Date.now(), 'MMM d')}` : `Ad-hoc Workout - ${new DatePipe('en-US').transform(Date.now(), 'MMM d, HH:mm')}`;
-
-    if (this.routineId && this.originalRoutineSnapshot && this.originalRoutineSnapshot.length > 0 && sessionRoutineValue) {
-      const differences = this.comparePerformedToOriginal(performedExercises, this.originalRoutineSnapshot);
-      if (differences.majorDifference) {
-        const confirmation = await this.alertService.showConfirmationDialog(
-          'Workout Modified', // Changed title slightly
-          `This workout differed from the original "${sessionRoutineValue.name}". How would you like to proceed?`,
-          [
-            { text: 'Save as New Routine', role: 'confirm', data: 'new', cssClass: 'bg-green-500 hover:bg-green-600 text-white' },
-            { text: 'Update Original Routine', role: 'confirm', data: 'update_original', cssClass: 'bg-orange-500 hover:bg-orange-600 text-white' }, // <-- NEW OPTION
-            { text: 'Log (Keep Original Structure)', role: 'confirm', data: 'log_only', cssClass: 'bg-blue-500 hover:bg-blue-600 text-white' },
-            { text: 'Discard Workout', role: 'cancel', data: 'discard', cssClass: 'bg-gray-300 hover:bg-gray-400' }
-          ] as AlertButton[]
-        );
-
-        if (confirmation && confirmation.data === 'new') {
-          logAsNewRoutine = true;
-          // ... (prompt for new routine name - existing logic)
-          const nameInput = await this.alertService.showPromptDialog(
-            'New Routine Name',
-            'Enter a name for this new routine:',
-            [{ name: 'newRoutineName', type: 'text', placeholder: 'E.g., My Custom Workout', value: newRoutineName }] as AlertInput[],
-            'Save New Routine'
-          );
-          if (nameInput && nameInput['newRoutineName']) {
-            newRoutineName = String(nameInput['newRoutineName']).trim();
-          } else if (!nameInput && confirmation.data === 'new') {
-            this.toastService.warning("New routine name not provided. Saving with default name.", 3000);
-          } else {
-            proceedToLog = false;
-          }
-        } else if (confirmation && confirmation.data === 'update_original') { // <<< --- HANDLING NEW OPTION ---
-          updateOriginalRoutineStructure = true;
-          // proceedToLog remains true. logAsNewRoutine remains false.
-          this.toastService.info(`Original routine "${sessionRoutineValue.name}" will be updated with this session's structure.`, 3000, "Updating Original");
-        } else if (confirmation && confirmation.data === 'log_only') {
-          // User chose to log against the original routine but NOT update its structure.
-          // proceedToLog remains true. logAsNewRoutine remains false. updateOriginalRoutineStructure remains false.
-          this.toastService.info(`Workout will be logged against "${sessionRoutineValue.name}", structure unchanged.`, 3000, "Logging to Original");
-        } else if (confirmation && confirmation.data === 'discard') {
-          proceedToLog = false;
-        } else if (!confirmation || (confirmation.role === 'cancel' && confirmation.data !== 'discard')) {
-          proceedToLog = false;
-        }
-      }
-    } else if (!this.routineId && performedExercises.length > 0) {
-      logAsNewRoutine = true;
-      // ... (prompt for ad-hoc routine name - existing logic)
-      const nameInput = await this.alertService.showPromptDialog(
-        'Save Ad-hoc Workout',
-        'Enter a name for this new routine:',
-        [{ name: 'newRoutineName', type: 'text', placeholder: newRoutineName, value: newRoutineName }] as AlertInput[],
-        'Save New Routine'
-      );
-      if (nameInput && String(nameInput['newRoutineName']).trim()) {
-        newRoutineName = String(nameInput['newRoutineName']).trim();
-      } else if (!nameInput) {
-        proceedToLog = false;
-      }
-    }
-
-    if (!proceedToLog) {
-      this.toastService.info("Workout not saved.", 3000, "Cancelled");
-      this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
-      if (this.router.url.includes('/play')) {
-        this.router.navigate(['/workout']);
-      }
-      return;
-    }
-
-    const endTime = Date.now();
-    const sessionStartTime = this.workoutStartTime - (this.sessionTimerElapsedSecondsBeforePause * 1000);
-    const durationMinutes = Math.round((endTime - sessionStartTime) / (1000 * 60));
-
-    let finalRoutineIdToLog: string | undefined = this.routineId || undefined;
-    let finalRoutineNameForLog = sessionRoutineValue?.name || 'Ad-hoc Workout';
-
-    if (logAsNewRoutine) {
-      const newRoutine: Routine = {
-        id: uuidv4(),
-        name: newRoutineName,
-        description: sessionRoutineValue?.description || 'Workout performed on ' + new DatePipe('en-US').transform(Date.now(), 'mediumDate'),
-        goal: sessionRoutineValue?.goal || 'custom',
-        exercises: this.convertLoggedToWorkoutExercises(performedExercises),
-        // lastPerformed will be set after logging this workout against the new routine
-      };
-      this.workoutService.addRoutine(newRoutine);
-      finalRoutineIdToLog = newRoutine.id;
-      finalRoutineNameForLog = newRoutine.name;
-      this.toastService.success(`New routine "${newRoutine.name}" created.`, 4000);
-    }
-
-    const finalLog: Omit<WorkoutLog, 'id'> = {
-      routineId: finalRoutineIdToLog,
-      routineName: finalRoutineNameForLog,
-      startTime: sessionStartTime,
-      endTime: endTime,
-      durationMinutes: durationMinutes,
-      exercises: this.currentWorkoutLogExercises(),
-      date: new Date(sessionStartTime).toISOString().split('T')[0],
-    };
-
-    const savedLog = this.trackingService.addWorkoutLog(finalLog);
-    this.toastService.success(`Workout logged against "${finalRoutineNameForLog}"!`, 5000, "Workout Finished");
-
-    // Update routine's lastPerformed date and potentially its structure
-    if (finalRoutineIdToLog) { // Ensure we have a routine ID to update
-      const routineToUpdate = await firstValueFrom(this.workoutService.getRoutineById(finalRoutineIdToLog).pipe(take(1)));
-      if (routineToUpdate) {
-        let updatedRoutineData = { ...routineToUpdate, lastPerformed: new Date(sessionStartTime).toISOString() };
-
-        if (updateOriginalRoutineStructure && !logAsNewRoutine && this.routineId === finalRoutineIdToLog) {
-          // Update the structure of the original routine
-          updatedRoutineData.exercises = this.convertLoggedToWorkoutExercises(performedExercises);
-          // Optionally update name/description if they were editable during session and changed
-          // For now, assume sessionRoutineValue holds any such in-session metadata edits
-          if (sessionRoutineValue) {
-            updatedRoutineData.name = sessionRoutineValue.name;
-            updatedRoutineData.description = sessionRoutineValue.description;
-            updatedRoutineData.goal = sessionRoutineValue.goal;
-          }
-          this.toastService.info(`Routine "${updatedRoutineData.name}" structure updated.`, 3000);
-        }
-        this.workoutService.updateRoutine(updatedRoutineData);
-      }
-    }
-
-    this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
-    this.router.navigate(['/workout/summary', savedLog.id]);
+    await this.finishWorkoutAndReportStatus();
+    // The new method handles navigation and status reporting.
+    // This original finishWorkout() might become redundant or just be a simple wrapper.
   }
 
   private comparePerformedToOriginal(
@@ -1214,105 +1065,10 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       this.restTimerNextUpTextOnPause = this.restTimerNextUpText();
       this.isRestTimerVisible.set(false);
     }
+    this.stopAutoSave(); // Stop auto-save when pausing
     this.sessionState.set(SessionState.Paused);
-    this.savePausedSessionState();
+    this.savePausedSessionState(); // Explicit save on pause
     this.toastService.info("Workout Paused", 3000);
-  }
-
-  resumeSession(): void {
-    if (this.sessionState() !== SessionState.Paused) return;
-
-    this.workoutStartTime = Date.now();
-    this.sessionState.set(SessionState.Playing);
-    this.startSessionTimer();
-
-    if (this.wasTimedSetRunningOnPause && this.timedSetTimerState() === TimedSetState.Paused) {
-      this.startOrResumeTimedSet();
-    }
-    this.wasTimedSetRunningOnPause = false;
-
-    if (this.wasRestTimerVisibleOnPause && this.restTimerRemainingSecondsOnPause > 0) {
-      this.startRestPeriod(this.restTimerRemainingSecondsOnPause, true);
-    }
-    this.wasRestTimerVisibleOnPause = false;
-
-    this.closeWorkoutMenu();
-    this.closePerformanceInsights();
-    this.toastService.info('Workout session resumed.', 3000);
-  }
-
-  private async checkForPausedSession(): Promise<boolean> {
-    const pausedState = this.storageService.getItem<PausedWorkoutState>(this.PAUSED_WORKOUT_KEY);
-    if (pausedState && pausedState.version === this.PAUSED_STATE_VERSION) {
-      const routineName = pausedState.sessionRoutine?.name || 'a previous session';
-      const customBtns: AlertButton[] = [
-        { text: 'Discard', role: 'cancel', data: false, cssClass: 'bg-gray-300 hover:bg-gray-500' } as AlertButton,
-        { text: 'Resume', role: 'confirm', data: true, cssClass: 'bg-green-500 hover:bg-green-600 text-white' } as AlertButton
-      ];
-      const confirmation = await this.alertService.showConfirmationDialog('Resume Workout?', `You have a paused workout session for "${routineName}". Would you like to resume it?`, customBtns);
-      if (confirmation && confirmation.data === true) {
-        await this.loadStateFromPausedSession(pausedState); // Make sure this is awaited
-        this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
-        return true;
-      } else {
-        this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
-        this.toastService.info('Paused session discarded.', 3000);
-        return false;
-      }
-    }
-    return false;
-  }
-
-  private async loadNewWorkoutFromRoute(): Promise<void> {
-    this.sessionState.set(SessionState.Loading);
-    this.workoutStartTime = Date.now();
-    this.sessionTimerElapsedSecondsBeforePause = 0;
-    this.originalRoutineSnapshot = [];
-
-    this.routeSub = this.route.paramMap.pipe(
-      switchMap(params => {
-        this.routineId = params.get('routineId');
-        if (this.routineId) {
-          return this.workoutService.getRoutineById(this.routineId).pipe(
-            map(originalRoutine => {
-              if (originalRoutine) {
-                this.originalRoutineSnapshot = JSON.parse(JSON.stringify(originalRoutine.exercises));
-                return JSON.parse(JSON.stringify(originalRoutine)) as Routine;
-              }
-              return null;
-            })
-          );
-        }
-        return of(null);
-      }),
-      tap(async sessionRoutineCopy => {
-        if (sessionRoutineCopy) {
-          this.routine.set(sessionRoutineCopy);
-          if (sessionRoutineCopy.exercises.length > 0) {
-            const firstEx = sessionRoutineCopy.exercises[0];
-            if (!firstEx.supersetId || firstEx.supersetOrder === 0) this.totalBlockRounds.set(firstEx.rounds ?? 1);
-            else {
-              const actualStart = sessionRoutineCopy.exercises.find(ex => ex.supersetId === firstEx.supersetId && ex.supersetOrder === 0);
-              this.totalBlockRounds.set(actualStart?.rounds ?? 1);
-            }
-          } else this.totalBlockRounds.set(1);
-        } else if (this.routineId) {
-          this.routine.set(null);
-          this.sessionState.set(SessionState.Error);
-          this.toastService.error("Failed to load workout routine.", 0, "Load Error");
-          this.router.navigate(['/workout']);
-          return;
-        }
-        this.currentBlockRound.set(1);
-        this.currentExerciseIndex.set(0);
-        this.currentSetIndex.set(0);
-        this.currentWorkoutLogExercises.set([]);
-
-        await this.prepareCurrentSet();
-        this.sessionState.set(SessionState.Playing);
-        this.startSessionTimer();
-      })
-    ).subscribe();
   }
 
   private async loadStateFromPausedSession(state: PausedWorkoutState): Promise<void> {
@@ -1324,7 +1080,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     this.currentSetIndex.set(state.currentSetIndex);
     this.currentWorkoutLogExercises.set(state.currentWorkoutLogExercises);
 
-    this.workoutStartTime = Date.now();
+    this.workoutStartTime = Date.now(); // This is the start of the *current segment* after resuming
     this.sessionTimerElapsedSecondsBeforePause = state.sessionTimerElapsedSecondsBeforePause;
 
     this.currentBlockRound.set(state.currentBlockRound);
@@ -1332,78 +1088,110 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
     this.timedSetTimerState.set(state.timedSetTimerState);
     this.timedSetElapsedSeconds.set(state.timedSetElapsedSeconds);
-    this.wasTimedSetRunningOnPause = state.timedSetTimerState === TimedSetState.Running || state.timedSetTimerState === TimedSetState.Paused;
+    this.wasTimedSetRunningOnPause = state.timedSetTimerState === TimedSetState.Running || state.timedSetTimerState === TimedSetState.Paused; // Recalculate based on loaded state
 
     this.lastPerformanceForCurrentExercise = state.lastPerformanceForCurrentExercise;
 
-    this.wasRestTimerVisibleOnPause = state.isRestTimerVisibleOnPause;
+    this.wasRestTimerVisibleOnPause = state.isRestTimerVisibleOnPause; // This was the state of the full screen timer visibility
     this.restTimerRemainingSecondsOnPause = state.restTimerRemainingSecondsOnPause;
     this.restTimerInitialDurationOnPause = state.restTimerInitialDurationOnPause;
     this.restTimerMainTextOnPause = state.restTimerMainTextOnPause;
     this.restTimerNextUpTextOnPause = state.restTimerNextUpTextOnPause;
 
-    await this.prepareCurrentSet();
-    this.sessionState.set(SessionState.Playing);
-    this.startSessionTimer();
+    await this.prepareCurrentSet(); // This is async and sets up the form
+    this.sessionState.set(SessionState.Playing); // Set state to playing
+    this.startSessionTimer(); // Start the main session timer
+    this.startAutoSave();     // Start auto-save
 
-    if (state.timedSetTimerState === TimedSetState.Running) {
-      this.startOrResumeTimedSet();
+    // Resume timed set timer if it was running or paused
+    if (state.timedSetTimerState === TimedSetState.Running || state.timedSetTimerState === TimedSetState.Paused) {
+      this.startOrResumeTimedSet(); // This will set it to 'running' if it was 'paused'
+      if (state.timedSetTimerState === TimedSetState.Paused) { // If it was explicitly paused, keep it paused
+        this.pauseTimedSet();
+      }
     }
 
+    // Resume rest timer if it was active
     if (this.wasRestTimerVisibleOnPause && this.restTimerRemainingSecondsOnPause > 0) {
-      this.startRestPeriod(this.restTimerRemainingSecondsOnPause, true);
+      this.startRestPeriod(this.restTimerRemainingSecondsOnPause, true); // true to indicate resuming paused rest
     }
     this.cdr.detectChanges();
     this.toastService.success('Workout session resumed.', 3000, "Resumed");
   }
 
+  // Ensure savePausedSessionState includes the current date of the workout.
+  // You already added `workoutDate` to PausedWorkoutState interface. Let's ensure it's saved.
   private savePausedSessionState(): void {
-    const currentRoutine = this.routine(); // Get current signal value
-    if (!currentRoutine) { // Check if routine is null or undefined
+    const currentRoutine = this.routine();
+    if (!currentRoutine) {
       console.warn("Cannot save paused state: routine data is not available.");
       return;
     }
 
     let currentTotalSessionElapsed = this.sessionTimerElapsedSecondsBeforePause;
+    // Only add current segment if it was actively playing and workoutStartTime is set
     if (this.sessionState() === SessionState.Playing && this.workoutStartTime > 0) {
       currentTotalSessionElapsed += Math.floor((Date.now() - this.workoutStartTime) / 1000);
     }
 
+    // Determine the workout date to save
+    // If a workout was loaded based on a specific date (e.g., from a plan or manual log for past date), use that.
+    // Otherwise, use today's date.
+    // This logic might need to be more robust if player can be started for a specific past/future date.
+    // For now, let's assume a paused session refers to a session started "today" or its original log date.
+    let dateToSaveInState: string;
+    const activeInfo = this.activeSetInfo();
+    if (this.currentWorkoutLogExercises().length > 0 && this.currentWorkoutLogExercises()[0].sets.length > 0) {
+      // If sets have been logged, their timestamp might be most accurate if the session spanned midnight.
+      // Or, if there's an initial log date (e.g., if resuming or logging a past workout).
+      // For simplicity, if workoutStartTime is set, use that as the basis.
+      dateToSaveInState = format(new Date(this.workoutStartTime - (this.sessionTimerElapsedSecondsBeforePause * 1000)), 'yyyy-MM-dd');
+    } else {
+      dateToSaveInState = format(new Date(), 'yyyy-MM-dd'); // Fallback to current date
+    }
+
+
     const stateToSave: PausedWorkoutState = {
       version: this.PAUSED_STATE_VERSION,
       routineId: this.routineId,
-      sessionRoutine: JSON.parse(JSON.stringify(currentRoutine)), // Use the resolved value
+      sessionRoutine: JSON.parse(JSON.stringify(currentRoutine)),
       originalRoutineSnapshot: JSON.parse(JSON.stringify(this.originalRoutineSnapshot)),
       currentExerciseIndex: this.currentExerciseIndex(),
       currentSetIndex: this.currentSetIndex(),
       currentWorkoutLogExercises: JSON.parse(JSON.stringify(this.currentWorkoutLogExercises())),
-      workoutStartTimeOriginal: this.workoutStartTime,
-      sessionTimerElapsedSecondsBeforePause: currentTotalSessionElapsed,
+      workoutStartTimeOriginal: this.workoutStartTime, // This is the timestamp of when the current "playing" segment started
+      sessionTimerElapsedSecondsBeforePause: currentTotalSessionElapsed, // This is the ACCUMULATED time
       currentBlockRound: this.currentBlockRound(),
       totalBlockRounds: this.totalBlockRounds(),
       timedSetTimerState: this.timedSetTimerState(),
       timedSetElapsedSeconds: this.timedSetElapsedSeconds(),
       isResting: this.isRestTimerVisible(),
-      isRestTimerVisibleOnPause: this.wasRestTimerVisibleOnPause,
+      isRestTimerVisibleOnPause: this.wasRestTimerVisibleOnPause, // State of rest timer if session was explicitly paused
       restTimerRemainingSecondsOnPause: this.restTimerRemainingSecondsOnPause,
       restTimerInitialDurationOnPause: this.restTimerInitialDurationOnPause,
       restTimerMainTextOnPause: this.restTimerMainTextOnPause,
       restTimerNextUpTextOnPause: this.restTimerNextUpTextOnPause,
       lastPerformanceForCurrentExercise: this.lastPerformanceForCurrentExercise ? JSON.parse(JSON.stringify(this.lastPerformanceForCurrentExercise)) : null,
+      workoutDate: dateToSaveInState // Added workoutDate
     };
     this.storageService.setItem(this.PAUSED_WORKOUT_KEY, stateToSave);
+    console.log('Paused session state saved.', stateToSave);
   }
 
+  // captureAndSaveStateForUnload is for the specific 'beforeunload' browser event
   private captureAndSaveStateForUnload(): void {
+    // No change needed here if savePausedSessionState is robust
     let currentTotalSessionElapsed = this.sessionTimerElapsedSecondsBeforePause;
     if (this.sessionState() === SessionState.Playing && this.workoutStartTime > 0) {
       currentTotalSessionElapsed += Math.floor((Date.now() - this.workoutStartTime) / 1000);
     }
+    // Temporarily update for saving
     const originalElapsed = this.sessionTimerElapsedSecondsBeforePause;
     this.sessionTimerElapsedSecondsBeforePause = currentTotalSessionElapsed;
 
     this.savePausedSessionState();
 
+    // Revert for the current session if it continues
     this.sessionTimerElapsedSecondsBeforePause = originalElapsed;
     console.log('Session state attempt saved via beforeunload.');
   }
@@ -1435,12 +1223,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     this.closeWorkoutMenu(); this.closePerformanceInsights();
   }
 
-  ngOnDestroy(): void {
-    if (this.routeSub) this.routeSub.unsubscribe();
-    if (this.timerSub) this.timerSub.unsubscribe();
-    if (this.timedSetIntervalSub) this.timedSetIntervalSub.unsubscribe();
-    this.isRestTimerVisible.set(false);
-  }
+
 
   getSets(): ExerciseSetParams[] {
     const activeSet = this.activeSetInfo();
@@ -1524,22 +1307,211 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
   async finishWorkoutEarly(): Promise<void> {
-    if (this.sessionState() === 'paused') { this.toastService.warning("Please resume before finishing early.", 3000, "Paused"); return; }
-    const confirmFinish = await this.alertService.showConfirm("Finish Workout Early", "Finish workout now? Progress will be saved.");
-    if (confirmFinish && confirmFinish.data) { this.closeWorkoutMenu(); this.closePerformanceInsights(); this.finishWorkout(); }
+    if (this.sessionState() === SessionState.Paused) {
+      this.toastService.warning("Please resume before finishing early.", 3000, "Paused");
+      return;
+    }
+
+    const confirmFinishEarly = await this.alertService.showConfirm(
+      "Finish Workout Early",
+      "Finish workout now? Current progress will be saved."
+    );
+
+    if (confirmFinishEarly && confirmFinishEarly.data) {
+      this.closeWorkoutMenu();
+      this.closePerformanceInsights();
+
+      const didLog = await this.finishWorkoutAndReportStatus();
+
+      if (!didLog) {
+        // If finishWorkoutAndReportStatus was called but the user bailed internally (e.g., cancelled a prompt)
+        // and didn't log, we should still clear the paused state because the initial
+        // intent from "Finish Early" was to stop the session.
+        this.toastService.info("Workout finished early. Paused session cleared.", 4000);
+        this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
+        // Navigate away if not already done by finishWorkout (e.g. if it returned false due to empty log)
+        if (this.router.url.includes('/play')) {
+          this.router.navigate(['/workout']);
+        }
+      }
+      // If didLog is true, finishWorkoutAndReportStatus handled navigation and cleanup.
+    }
+  }
+
+  // This method replaces your old finishWorkout()
+  async finishWorkoutAndReportStatus(): Promise<boolean> {
+    this.stopAutoSave();
+
+    if (this.sessionState() === SessionState.Paused) {
+      this.toastService.warning("Please resume workout before finishing.", 3000, "Session Paused");
+      // If user tries to finish while paused, maybe offer to resume or just return false
+      // For now, let's assume they need to resume via the resume button first.
+      return false; // Did not log
+    }
+    if (this.sessionState() === SessionState.Loading) {
+      this.toastService.info("Workout is still loading.", 3000, "Loading");
+      return false; // Did not log
+    }
+
+    if (this.currentWorkoutLogExercises().length === 0) {
+      this.toastService.info("No sets logged. Workout not saved.", 3000, "Empty Workout");
+      this.storageService.removeItem(this.PAUSED_WORKOUT_KEY); // Clear paused state even for empty
+      if (this.router.url.includes('/play')) { // Avoid navigation if already navigating away
+        this.router.navigate(['/workout']);
+      }
+      return false; // Did not log (or logged an empty shell that was then discarded)
+    }
+
+    if (this.timerSub) this.timerSub.unsubscribe();
+
+    const sessionRoutineValue = this.routine();
+    const performedExercises = this.currentWorkoutLogExercises();
+    let proceedToLog = true;
+    let logAsNewRoutine = false;
+    let updateOriginalRoutineStructure = false;
+    let newRoutineName = sessionRoutineValue?.name ? `${sessionRoutineValue.name} - ${format(new Date(), 'MMM d')}` : `Ad-hoc Workout - ${format(new Date(), 'MMM d, HH:mm')}`;
+
+    if (this.routineId && this.originalRoutineSnapshot && this.originalRoutineSnapshot.length > 0 && sessionRoutineValue) {
+      const differences = this.comparePerformedToOriginal(performedExercises, this.originalRoutineSnapshot);
+      if (differences.majorDifference) {
+        const confirmation = await this.alertService.showConfirmationDialog(
+          'Workout Modified',
+          `This workout differed from the original "${sessionRoutineValue.name}". How would you like to proceed?`,
+          [
+            { text: 'Save as New Routine', role: 'confirm', data: 'new', cssClass: 'bg-green-500 hover:bg-green-600 text-white' },
+            { text: 'Update Original Routine', role: 'confirm', data: 'update_original', cssClass: 'bg-orange-500 hover:bg-orange-600 text-white' },
+            { text: 'Log (Keep Original Structure)', role: 'confirm', data: 'log_only', cssClass: 'bg-blue-500 hover:bg-blue-600 text-white' },
+            // { text: 'Discard Changes & Log Original', role: 'cancel', data: 'discard_changes_log_original', cssClass: 'bg-gray-400 hover:bg-gray-500'}, // This option might be complex to implement perfectly without careful log reconstruction. Let's simplify for now.
+            { text: 'Cancel Finish (Keep Active)', role: 'cancel', data: 'cancel_finish', cssClass: 'bg-gray-300 hover:bg-gray-400' }
+          ] as AlertButton[]
+        );
+
+        if (confirmation && confirmation.data === 'new') {
+          logAsNewRoutine = true;
+          const nameInput = await this.alertService.showPromptDialog(
+            'New Routine Name',
+            'Enter a name for this new routine:',
+            [{ name: 'newRoutineName', type: 'text', placeholder: 'E.g., My Custom Workout', value: newRoutineName }] as AlertInput[],
+            'Save New Routine'
+          );
+          if (nameInput && String(nameInput['newRoutineName']).trim()) {
+            newRoutineName = String(nameInput['newRoutineName']).trim();
+          } else if (!nameInput && confirmation.data === 'new') { // User cancelled the prompt for new name
+            this.toastService.warning("New routine name not provided. Saving with default name.", 3000);
+            // proceedToLog = false; // Or save with default if that's desired
+          } else if (!nameInput) { // User cancelled prompt dialog
+            proceedToLog = false;
+          }
+        } else if (confirmation && confirmation.data === 'update_original') {
+          updateOriginalRoutineStructure = true;
+          this.toastService.info(`Original routine "${sessionRoutineValue.name}" will be updated with this session's structure.`, 3000, "Updating Original");
+        } else if (confirmation && confirmation.data === 'log_only') {
+          // proceedToLog remains true. logAsNewRoutine and updateOriginalRoutineStructure remain false.
+          // this.toastService.info(`Workout will be logged against "${sessionRoutineValue.name}", structure unchanged.`, 3000, "Logging to Original");
+        } else { // 'cancel_finish' or dialog dismissed
+          proceedToLog = false;
+        }
+      }
+    } else if (!this.routineId && performedExercises.length > 0) { // Ad-hoc workout
+      logAsNewRoutine = true; // Always save ad-hoc as a new routine
+      const nameInput = await this.alertService.showPromptDialog(
+        'Save Ad-hoc Workout',
+        'Enter a name for this new routine:',
+        [{ name: 'newRoutineName', type: 'text', placeholder: newRoutineName, value: newRoutineName }] as AlertInput[],
+        'Save New Routine'
+      );
+      if (nameInput && String(nameInput['newRoutineName']).trim()) {
+        newRoutineName = String(nameInput['newRoutineName']).trim();
+      } else if (!nameInput) { // User cancelled the prompt
+        proceedToLog = false;
+      }
+    }
+
+    if (!proceedToLog) {
+      this.toastService.info("Finish workout cancelled. Session remains active/paused.", 3000, "Cancelled");
+      if (this.sessionState() === SessionState.Playing) {
+        this.startAutoSave();
+      }
+      // DO NOT set isSessionConcluded = true here, as user cancelled finishing
+      return false;
+    }
+    const endTime = Date.now();
+    // Use workoutStartTime which was set at the beginning of the session or resume.
+    // sessionTimerElapsedSecondsBeforePause accounts for time already passed before the current "playing" segment.
+    const sessionStartTime = this.workoutStartTime - (this.sessionTimerElapsedSecondsBeforePause * 1000);
+    const durationMinutes = Math.round((endTime - sessionStartTime) / (1000 * 60));
+
+    let finalRoutineIdToLog: string | undefined = this.routineId || undefined;
+    let finalRoutineNameForLog = sessionRoutineValue?.name || 'Ad-hoc Workout';
+
+    if (logAsNewRoutine) {
+      const newRoutineDef: Omit<Routine, 'id'> = { // Use Omit for addRoutine
+        name: newRoutineName,
+        description: sessionRoutineValue?.description || 'Workout performed on ' + format(new Date(), 'MMM d, yyyy'),
+        goal: sessionRoutineValue?.goal || 'custom',
+        exercises: this.convertLoggedToWorkoutExercises(performedExercises),
+        // lastPerformed will be set after logging this workout against the new routine
+      };
+      const createdRoutine = this.workoutService.addRoutine(newRoutineDef); // addRoutine should return the created Routine
+      finalRoutineIdToLog = createdRoutine.id;
+      finalRoutineNameForLog = createdRoutine.name;
+      this.toastService.success(`New routine "${createdRoutine.name}" created.`, 4000);
+    }
+
+    const finalLog: Omit<WorkoutLog, 'id'> = {
+      routineId: finalRoutineIdToLog,
+      routineName: finalRoutineNameForLog,
+      date: format(new Date(sessionStartTime), 'yyyy-MM-dd'), // Use consistent formatting
+      startTime: sessionStartTime,
+      endTime: endTime,
+      durationMinutes: durationMinutes,
+      exercises: this.currentWorkoutLogExercises(), // Already contains the LoggedWorkoutExercise[]
+      notes: sessionRoutineValue?.notes, // Or overall notes if you have a form field for it
+    };
+
+    const savedLog = this.trackingService.addWorkoutLog(finalLog);
+    this.toastService.success(`Congrats! Workout completed!`, 5000, "Workout Finished");
+
+    if (finalRoutineIdToLog) {
+      const routineToUpdate = await firstValueFrom(this.workoutService.getRoutineById(finalRoutineIdToLog).pipe(take(1)));
+      if (routineToUpdate) {
+        let updatedRoutineData: Routine = { ...routineToUpdate, lastPerformed: new Date(sessionStartTime).toISOString() };
+
+        if (updateOriginalRoutineStructure && !logAsNewRoutine && this.routineId === finalRoutineIdToLog) {
+          updatedRoutineData.exercises = this.convertLoggedToWorkoutExercises(performedExercises);
+          if (sessionRoutineValue) { // Persist any in-session name/desc/goal changes to original routine
+            updatedRoutineData.name = sessionRoutineValue.name;
+            updatedRoutineData.description = sessionRoutineValue.description;
+            updatedRoutineData.goal = sessionRoutineValue.goal;
+          }
+          this.toastService.info(`Routine "${updatedRoutineData.name}" structure updated.`, 3000);
+        }
+        this.workoutService.updateRoutine(updatedRoutineData);
+      }
+    }
+
+    this.isSessionConcluded = true; // Mark as concluded BEFORE navigation
+    this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
+    this.router.navigate(['/workout/summary', savedLog.id]);
+    return true;
   }
 
   async quitWorkout(): Promise<void> {
     const confirmQuit = await this.alertService.showConfirm("Quit Workout", 'Quit workout? Unsaved progress (if not paused) will be lost.');
     if (confirmQuit && confirmQuit.data) {
-      this.sessionState.set(SessionState.Playing);
+      this.stopAutoSave();
+      // this.sessionState.set(SessionState.Playing); // Not strictly needed to set to playing before quitting
       if (this.timerSub) this.timerSub.unsubscribe();
       if (this.timedSetIntervalSub) this.timedSetIntervalSub.unsubscribe();
       this.isRestTimerVisible.set(false);
-      this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
-      this.closeWorkoutMenu(); this.closePerformanceInsights();
+
+      this.isSessionConcluded = true; // Mark as concluded BEFORE navigation
+      this.storageService.removeItem(this.PAUSED_WORKOUT_KEY); // Remove any paused state
+
+      this.closeWorkoutMenu();
+      this.closePerformanceInsights();
       this.router.navigate(['/workout']);
-      this.toastService.info("Workout quit. No progress saved for this session unless paused.", 4000);
+      this.toastService.info("Workout quit. No progress saved for this session.", 4000);
     }
   }
 
@@ -1610,6 +1582,391 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     } else if (numericValue === null) {
       this.rpeValue.set(null);
       this.currentSetForm.patchValue({ rpe: null });
+    }
+  }
+
+  private startAutoSave(): void {
+    if (!isPlatformBrowser(this.platformId)) return; // Only run auto-save in the browser
+
+    if (this.autoSaveSub) {
+      this.autoSaveSub.unsubscribe(); // Unsubscribe from previous if any
+    }
+
+    this.autoSaveSub = interval(this.AUTO_SAVE_INTERVAL_MS).subscribe(() => {
+      if (this.sessionState() === SessionState.Playing && this.routine()) {
+        console.log('Auto-saving workout state...');
+        this.savePausedSessionState(); // Reuse the existing save state logic
+        // Optionally, provide a subtle feedback to the user, e.g., a small toast "Progress saved"
+        // this.toastService.info("Progress auto-saved", 1500, "Auto-Save"); // Be mindful not to be too intrusive
+      }
+    });
+  }
+
+  private stopAutoSave(): void {
+    if (this.autoSaveSub) {
+      this.autoSaveSub.unsubscribe();
+      this.autoSaveSub = undefined;
+    }
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  private isInitialLoadComplete = false; // New flag
+
+  async ngOnInit(): Promise<void> {
+    if (isPlatformBrowser(this.platformId)) {
+      window.scrollTo(0, 0);
+    }
+    console.log('WorkoutPlayer ngOnInit - Start');
+
+    // Try to check for a paused session first on initial load
+    const hasPausedSessionOnInit = await this.checkForPausedSession(false); // false for initial load
+
+    if (hasPausedSessionOnInit) {
+      console.log('WorkoutPlayer ngOnInit - Resumed paused session.');
+      this.isInitialLoadComplete = true;
+      // Auto-save is started in loadStateFromPausedSession if session becomes 'Playing'
+    } else {
+      console.log('WorkoutPlayer ngOnInit - No paused session resumed, proceeding to load from route.');
+      // If no paused session, load based on route params.
+      // loadNewWorkoutFromRoute will set isInitialLoadComplete after its async operations.
+      this.loadNewWorkoutFromRoute();
+    }
+
+    // Subscribe to router events to handle re-entry or param changes on a reused component
+    if (isPlatformBrowser(this.platformId)) {
+      this.routerEventsSub = this.router.events.pipe(
+        filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+        // distinctUntilChanged((prev, curr) => prev.urlAfterRedirects === curr.urlAfterRedirects && prev.id === curr.id), // Avoid re-triggering for same nav event
+        tap(async (event: NavigationEnd) => {
+          console.log('WorkoutPlayer RouterEvent - NavigationEnd:', event.urlAfterRedirects);
+          const routeSnapshot = this.route.snapshot;
+          const navigatedToPlayerUrl = event.urlAfterRedirects.startsWith('/workout/play/');
+          const targetRoutineId = routeSnapshot.paramMap.get('routineId');
+
+          if (navigatedToPlayerUrl) {
+            if (this.routineId === targetRoutineId && this.isInitialLoadComplete && this.sessionState() !== SessionState.Playing) {
+              // Re-navigated to the *same* routine, initial load was done, but not currently playing.
+              // This implies user navigated away and came back. Try to resume.
+              console.log('WorkoutPlayer RouterEvent - Re-entered same workout, checking for pause state.');
+              const resumedOnReEntry = await this.checkForPausedSession(true); // true for re-entry
+              if (!resumedOnReEntry && this.sessionState() !== SessionState.Playing) {
+                // If still not playing (e.g., no paused state, or user discarded),
+                // and it's the same routine, we might need to reset or re-prepare.
+                // For now, if they came back to the same URL, and it didn't resume,
+                // it implies they want to start it fresh OR the previous state was invalid.
+                // Calling loadNewWorkoutFromRoute again will effectively restart it for that routineId.
+                console.log('WorkoutPlayer RouterEvent - No pause state resumed on re-entry, reloading route.', targetRoutineId);
+                this.loadNewWorkoutFromRoute();
+              }
+            } else if (this.routineId !== targetRoutineId) {
+              // Navigated to a *different* routine while player component is reused.
+              // loadNewWorkoutFromRoute should handle this via its paramMap subscription.
+              // We ensure it's called if it wasn't already processing.
+              console.log('WorkoutPlayer RouterEvent - Navigated to new routineId, ensuring loadNewWorkoutFromRoute runs.');
+              // loadNewWorkoutFromRoute is already subscribed to paramMap, so it *should* pick this up.
+              // If `take(1)` was in loadNewWorkoutFromRoute's paramMap sub, this would be an issue.
+              // For safety, can call it, but it needs to be idempotent or handle the current routineId correctly.
+              // Let's rely on the paramMap subscription within loadNewWorkoutFromRoute for this case.
+            }
+          }
+        })
+      ).subscribe();
+    }
+  }
+
+  private async loadNewWorkoutFromRoute(): Promise<void> {
+    console.log('loadNewWorkoutFromRoute - Called.');
+    this.isInitialLoadComplete = false; // Mark that initial load for this route is starting/restarting
+    this.sessionState.set(SessionState.Loading);
+
+    // Stop any ongoing activities from a previous routine on this component instance
+    this.stopAutoSave();
+    if (this.timerSub) this.timerSub.unsubscribe();
+    if (this.timedSetIntervalSub) this.timedSetIntervalSub.unsubscribe();
+    this.isRestTimerVisible.set(false);
+
+    // Reset core state for a new routine load
+    this.workoutStartTime = Date.now();
+    this.sessionTimerElapsedSecondsBeforePause = 0;
+    this.originalRoutineSnapshot = [];
+    this.currentWorkoutLogExercises.set([]);
+    this.currentExerciseIndex.set(0);
+    this.currentSetIndex.set(0);
+    this.currentBlockRound.set(1);
+    this.totalBlockRounds.set(1);
+    this.routine.set(undefined); // Clear current routine before loading new one
+
+    // Unsubscribe from previous routeSub to avoid multiple subscriptions if called multiple times
+    if (this.routeSub) {
+      this.routeSub.unsubscribe();
+    }
+
+    this.routeSub = this.route.paramMap.pipe(
+      // REMOVE take(1) here to allow updates if component is reused and params change
+      switchMap(params => {
+        const newRoutineId = params.get('routineId');
+        console.log('loadNewWorkoutFromRoute - paramMap emitted, newRoutineId:', newRoutineId);
+
+        if (!newRoutineId) {
+          this.toastService.error("No routine specified to play.", 0, "Error");
+          this.router.navigate(['/workout']);
+          return of(null);
+        }
+        if (this.routineId === newRoutineId && this.routine()) {
+          // Already loaded and processing this routine, possibly from a re-entry check that then called this.
+          // Or, paramMap emitted same ID again. Re-prepare current set to be safe if state is not 'Playing'.
+          if (this.sessionState() !== SessionState.Playing) {
+            console.log('loadNewWorkoutFromRoute - Same routineId, re-preparing set for state:', this.sessionState());
+            // State will be set to Playing inside prepareCurrentSet if successful
+          } else {
+            console.log('loadNewWorkoutFromRoute - Same routineId, already playing. No action.');
+            return of(this.routine()); // Already playing this one
+          }
+        }
+        this.routineId = newRoutineId; // Set the current routineId for the component
+        return this.workoutService.getRoutineById(this.routineId).pipe(
+          map(originalRoutine => {
+            if (originalRoutine) {
+              this.originalRoutineSnapshot = JSON.parse(JSON.stringify(originalRoutine.exercises));
+              return JSON.parse(JSON.stringify(originalRoutine)) as Routine; // Deep copy
+            }
+            return null;
+          })
+        );
+      }),
+      tap(async (sessionRoutineCopy) => {
+        if (this.sessionState() === SessionState.Paused) {
+          console.log('loadNewWorkoutFromRoute - tap: Session is paused, skipping setup.');
+          this.isInitialLoadComplete = true;
+          return; // If a pause was initiated, don't overwrite with new load
+        }
+
+        if (sessionRoutineCopy) {
+          console.log('loadNewWorkoutFromRoute - tap: Processing routine - ', sessionRoutineCopy.name);
+          this.routine.set(sessionRoutineCopy);
+          if (sessionRoutineCopy.exercises.length > 0) {
+            const firstEx = sessionRoutineCopy.exercises[0];
+            if (!firstEx.supersetId || firstEx.supersetOrder === 0) this.totalBlockRounds.set(firstEx.rounds ?? 1);
+            else {
+              const actualStart = sessionRoutineCopy.exercises.find(ex => ex.supersetId === firstEx.supersetId && ex.supersetOrder === 0);
+              this.totalBlockRounds.set(actualStart?.rounds ?? 1);
+            }
+          } else {
+            this.totalBlockRounds.set(1);
+          }
+
+          this.currentExerciseIndex.set(0);
+          this.currentSetIndex.set(0);
+          this.currentBlockRound.set(1);
+          this.currentWorkoutLogExercises.set([]);
+
+          await this.prepareCurrentSet(); // This patches form, loads PBs, suggests set
+          this.sessionState.set(SessionState.Playing);
+          this.startSessionTimer();
+          this.startAutoSave();
+        } else if (this.routineId) { // routineId was present but routine fetch failed
+          console.error('loadNewWorkoutFromRoute - tap: Failed to load routine for ID:', this.routineId);
+          this.routine.set(null);
+          this.sessionState.set(SessionState.Error);
+          this.toastService.error("Failed to load workout routine.", 0, "Load Error");
+          this.router.navigate(['/workout']);
+          this.stopAutoSave();
+        }
+        this.isInitialLoadComplete = true;
+      })
+    ).subscribe();
+  }
+
+  // In WorkoutPlayerComponent (workout-player.ts)
+
+  private async checkForPausedSession(isReEntry: boolean = false): Promise<boolean> {
+    const pausedState = this.storageService.getItem<PausedWorkoutState>(this.PAUSED_WORKOUT_KEY);
+    const routeRoutineId = this.route.snapshot.paramMap.get('routineId'); // string | null
+    const resumeQueryParam = this.route.snapshot.queryParamMap.get('resume') === 'true';
+
+    console.log(
+      'WorkoutPlayer.checkForPausedSession - Entry. isReEntry:', isReEntry,
+      'resumeQueryParam:', resumeQueryParam,
+      'Paused State Exists:', !!pausedState,
+      'Paused Version Match:', pausedState?.version === this.PAUSED_STATE_VERSION,
+      'Paused Routine ID:', pausedState?.routineId,
+      'Route Routine ID:', routeRoutineId,
+      'Paused Workout Date:', pausedState?.workoutDate
+    );
+
+    if (pausedState && pausedState.version === this.PAUSED_STATE_VERSION) {
+      // --- Sanity Checks for Relevancy ---
+      // 1. If current route has a routineId, but paused session is ad-hoc (null routineId) -> discard paused
+      if (routeRoutineId && pausedState.routineId === null) {
+        console.log('WorkoutPlayer.checkForPausedSession - Current route is for a specific routine, but paused session was ad-hoc. Discarding paused session.');
+        this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
+        return false;
+      }
+      // 2. If current route is ad-hoc (null routineId), but paused session was for a specific routine -> discard paused
+      if (!routeRoutineId && pausedState.routineId !== null) {
+        console.log('WorkoutPlayer.checkForPausedSession - Current route is ad-hoc, but paused session was for a specific routine. Discarding paused session.');
+        this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
+        return false;
+      }
+      // 3. If both have routineIds, but they don't match -> discard paused
+      if (routeRoutineId && pausedState.routineId && routeRoutineId !== pausedState.routineId) {
+        console.log('WorkoutPlayer.checkForPausedSession - Paused session routine ID does not match current route routine ID. Discarding paused session.');
+        this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
+        return false;
+      }
+      // At this point, either both routineIds are null (ad-hoc match), or both are non-null and identical.
+
+      let shouldAttemptToLoadPausedState = false;
+
+      if (resumeQueryParam) {
+        console.log('WorkoutPlayer.checkForPausedSession - `resume=true` query param found. Attempting direct resume.');
+        shouldAttemptToLoadPausedState = true;
+        // Clear the query param immediately after use to prevent re-triggering on refresh/back
+        this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: { resume: null },
+          queryParamsHandling: 'merge',
+          replaceUrl: true // Avoid adding this to browser history
+        });
+      } else if (isReEntry) {
+        // If it's a re-entry (e.g., browser back button to the same URL) and the session matches
+        console.log('WorkoutPlayer.checkForPausedSession - Re-entry detected for matching routine. Attempting direct resume.');
+        shouldAttemptToLoadPausedState = true;
+      } else {
+        // Initial load, or no explicit resume signal from query param or re-entry logic, so show dialog.
+        const routineName = pausedState.sessionRoutine?.name || 'a previous session';
+        const pausedDateString = pausedState.workoutDate ? ` from ${format(new Date(pausedState.workoutDate), 'MMM d, yyyy HH:mm')}` : '';
+        const customBtns: AlertButton[] = [
+          { text: 'Discard', role: 'cancel', data: false, cssClass: 'bg-gray-300 hover:bg-gray-500' },
+          { text: 'Resume', role: 'confirm', data: true, cssClass: 'bg-green-500 hover:bg-green-600 text-white' }
+        ];
+        const confirmation = await this.alertService.showConfirmationDialog(
+          'Resume Workout?',
+          `You have a paused workout session for "${routineName}"${pausedDateString}. Resume?`,
+          customBtns
+        );
+        shouldAttemptToLoadPausedState = !!(confirmation && confirmation.data === true);
+      }
+
+      if (shouldAttemptToLoadPausedState) {
+        console.log('WorkoutPlayer.checkForPausedSession - Proceeding to load paused state.');
+        this.stopAllActivity(); // Stop current timers/subs before loading state
+        if (this.routeSub) this.routeSub.unsubscribe(); // Also stop paramMap sub from `loadNewWorkoutFromRoute`
+
+        await this.loadStateFromPausedSession(pausedState); // This sets sessionState to Playing, starts timers/autosave
+        this.storageService.removeItem(this.PAUSED_WORKOUT_KEY); // Remove after successful load
+        this.isInitialLoadComplete = true; // Mark that initial load is handled by resume
+        return true; // Paused session was successfully loaded and resumed
+      } else {
+        // User chose to discard, or it was an irrelevant paused session for auto-resume attempts
+        console.log('WorkoutPlayer.checkForPausedSession - Paused session not loaded (discarded by user or not auto-resumed).');
+        this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
+        this.toastService.info('Paused session discarded.', 3000);
+        return false; // Paused session was discarded or not applicable for auto-resume
+      }
+    }
+    // If no pausedState or version mismatch
+    console.log('WorkoutPlayer.checkForPausedSession - No valid paused session found in storage.');
+    return false;
+  }
+
+  private stopAllActivity(): void {
+    console.log('stopAllActivity - Stopping timers and auto-save.');
+    this.stopAutoSave();
+    if (this.timerSub) this.timerSub.unsubscribe();
+    if (this.timedSetIntervalSub) this.timedSetIntervalSub.unsubscribe();
+    this.isRestTimerVisible.set(false);
+    // Don't unsubscribe from routerEventsSub or routeSub here, they manage themselves or are handled by ngOnDestroy
+  }
+
+  // ... (resumeSession method should now just be a simple call or primarily for the UI button)
+  async resumeSession(): Promise<void> {
+    if (this.sessionState() === SessionState.Paused) {
+      console.log('resumeSession button clicked - transitioning from Paused to Playing');
+      // The state was already saved when it was paused.
+      // We just need to re-initialize timers and UI from the paused state values.
+      this.workoutStartTime = Date.now(); // Reset start time for this new segment of work
+      this.sessionState.set(SessionState.Playing);
+      this.startSessionTimer(); // Uses sessionTimerElapsedSecondsBeforePause
+      this.startAutoSave();
+
+      if (this.wasTimedSetRunningOnPause && this.timedSetTimerState() === TimedSetState.Paused) {
+        this.startOrResumeTimedSet(); // Resumes using timedSetElapsedSeconds
+      }
+      this.wasTimedSetRunningOnPause = false; // Reset flag
+
+      if (this.wasRestTimerVisibleOnPause && this.restTimerRemainingSecondsOnPause > 0) {
+        this.startRestPeriod(this.restTimerRemainingSecondsOnPause, true); // true to indicate it's resuming a paused rest
+      }
+      this.wasRestTimerVisibleOnPause = false; // Reset flag
+
+      this.closeWorkoutMenu();
+      this.closePerformanceInsights();
+      this.toastService.info('Workout session resumed.', 3000);
+    } else {
+      console.log('resumeSession called but not in Paused state. Current state:', this.sessionState());
+      // If somehow called when not paused, check if there's a discoverable session.
+      const resumed = await this.checkForPausedSession(true);
+      if (!resumed && this.sessionState() !== SessionState.Playing && this.routineId) {
+        this.loadNewWorkoutFromRoute();
+      }
+    }
+  }
+
+  // ... ngOnDestroy should unsubscribe from routerEventsSub and routeSub ...
+  ngOnDestroy(): void {
+    if (this.routeSub) this.routeSub.unsubscribe();
+    if (this.timerSub) this.timerSub.unsubscribe();
+    if (this.timedSetIntervalSub) this.timedSetIntervalSub.unsubscribe();
+    if (this.routerEventsSub) { this.routerEventsSub.unsubscribe(); } // Unsubscribe here
+    this.stopAutoSave();
+    this.isRestTimerVisible.set(false);
+
+    if (isPlatformBrowser(this.platformId) && !this.isSessionConcluded &&
+      (this.sessionState() === SessionState.Playing || this.sessionState() === SessionState.Paused) && // Save if playing or explicitly paused
+      this.routine() && this.currentWorkoutLogExercises().length > 0) {
+      console.log('WorkoutPlayer ngOnDestroy - Saving state (session not formally concluded)... State:', this.sessionState());
+      this.savePausedSessionState(); // Use direct save
     }
   }
 }

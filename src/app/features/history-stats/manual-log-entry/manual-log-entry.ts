@@ -11,9 +11,10 @@ import { Exercise } from '../../../core/models/exercise.model';
 import { WorkoutService } from '../../../core/services/workout.service';
 import { ExerciseService } from '../../../core/services/exercise.service';
 import { v4 as uuidv4 } from 'uuid';
-import { switchMap, take, tap } from 'rxjs/operators'; // For fetching log in edit mode
+import { distinctUntilChanged, switchMap, take, tap } from 'rxjs/operators'; // For fetching log in edit mode
 import { of } from 'rxjs'; // For fetching log in edit mode
 import { AlertService } from '../../../core/services/alert.service';
+import { sign } from 'crypto';
 
 
 @Component({
@@ -45,6 +46,7 @@ export class ManualLogEntryComponent implements OnInit {
   isEditMode = signal(false);
   editingLogId: string | null = null;
   // --- END EDIT MODE ---
+  private initialRoutineIdForEdit: string | null | undefined = undefined; // To track initial routine in edit mode
 
   filteredAvailableExercises = computed(() => {
     const term = this.modalSearchTerm().toLowerCase();
@@ -58,12 +60,13 @@ export class ManualLogEntryComponent implements OnInit {
     );
   });
 
+  previousRoutineToBeLogged = signal<Routine | null>(null); // Signal to hold the routine being logged
+
   constructor() {
-    // Initialize form structure here, actual values will be patched in ngOnInit
     this.logForm = this.fb.group({
       workoutDate: ['', Validators.required],
       startTime: ['', Validators.required],
-      routineId: [''],
+      routineId: [''], // Keep enabled initially for valueChanges
       routineName: [{ value: '', disabled: true }],
       overallNotes: [''],
       durationMinutes: [60, [Validators.min(1), Validators.max(720)]],
@@ -72,83 +75,152 @@ export class ManualLogEntryComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.workoutService.routines$.subscribe(routines => this.availableRoutines = routines);
-    this.exerciseService.getExercises().subscribe(exercises => this.availableExercises = exercises);
+    // These can load in parallel, they don't depend on route params directly for now
+    this.workoutService.routines$.pipe(take(1)).subscribe(routines => this.availableRoutines = routines);
+    this.exerciseService.getExercises().pipe(take(1)).subscribe(exercises => this.availableExercises = exercises);
 
     this.activatedRoute.paramMap.pipe(
-      switchMap(params => {
-        this.editingLogId = params.get('logId');
-        if (this.editingLogId) {
-          this.isEditMode.set(true);
-          return this.trackingService.getWorkoutLogById(this.editingLogId);
-        }
-        return of(null); // For new entry mode
-      }),
-      take(1) // Ensure this subscription completes after the first emission
-    ).subscribe(logToEdit => {
-      if (logToEdit && this.isEditMode()) {
-        this.patchFormForEditing(logToEdit);
-      } else {
-        // New entry mode
-        const today = new Date();
-        this.logForm.patchValue({
-          workoutDate: format(today, 'yyyy-MM-dd'),
-          startTime: format(today, 'HH:mm'),
-          durationMinutes: 60
+      take(1) // Process route params only once on init
+    ).subscribe(params => {
+      this.editingLogId = params.get('logId');
+      const routineIdParam = params.get('routineId');
+      const workoutDateParam = params.get('workoutDate');
+
+      console.log('OnInit - Route params: workoutDate =', workoutDateParam, ', routineId =', routineIdParam, ', logId =', this.editingLogId);
+
+      if (this.editingLogId) {
+        // --- EDIT MODE ---
+        this.isEditMode.set(true);
+        console.log('OnInit - Entering Edit Mode for logId:', this.editingLogId);
+        this.trackingService.getWorkoutLogById(this.editingLogId).pipe(take(1)).subscribe(logToEdit => {
+          if (logToEdit) {
+            console.log('OnInit - Fetched log to edit:', logToEdit.id);
+            this.initialRoutineIdForEdit = logToEdit.routineId;
+            this.patchFormForEditing(logToEdit);
+          } else {
+            console.error('OnInit - Log not found for editing, ID:', this.editingLogId);
+            // this.toastService.error('Log to edit not found.', 0, 'Error');
+            this.router.navigate(['/history/list']); // Or some error page
+          }
         });
+      } else if (routineIdParam && workoutDateParam) {
+        // --- PREFILL NEW LOG FROM ROUTE PARAMS ---
+        this.isEditMode.set(false);
+        this.editingLogId = null;
+        console.log('OnInit - Prefilling new log from route: routineId =', routineIdParam, ', workoutDate =', workoutDateParam);
+        // Ensure availableRoutines has loaded; if not, this might be too early.
+        // Consider if this.availableRoutines needs to be awaited or checked.
+        // For simplicity now, assuming it's populated by the time this runs.
+        const selectedRoutine = this.availableRoutines.find(r => r.id === routineIdParam);
+        this.previousRoutineToBeLogged.set(selectedRoutine || null); // Set the routine being logged
+        if (selectedRoutine) {
+          this.logForm.patchValue({
+            routineId: selectedRoutine.id,
+            routineName: selectedRoutine.name,
+            workoutDate: workoutDateParam, // workoutDateParam IS "yyyy-MM-dd"
+            startTime: format(new Date(), 'HH:mm'), // Default time to now
+            durationMinutes: 60,
+            overallNotes: ''
+          }, { emitEvent: false }); // emitEvent:false for initial routineId/Name patch
+          
+          this.prefillExercisesFromRoutine(selectedRoutine);
+          this.logForm.get('routineId')?.disable();
+          this.logForm.get('workoutDate')?.disable();
+          // this.logForm.get('workoutDate')?.disable(); // Optional
+
+          console.log('OnInit - Form workoutDate after prefill:', this.logForm.get('workoutDate')?.value);
+        } else {
+          console.warn('OnInit - Selected routine for prefill not found:', routineIdParam, '. Initializing as new log.');
+          this.initializeAsFreshNewLog(); // Fallback if routine isn't found
+        }
+      } else {
+        // --- COMPLETELY NEW LOG MODE (NO PARAMS or only partial) ---
+        this.isEditMode.set(false);
+        this.editingLogId = null;
+        console.log('OnInit - Entering New Log Mode (no/partial params).');
+        this.initializeAsFreshNewLog();
       }
     });
 
-    // Routine ID change listener (remains mostly the same)
+    // Routine ID valueChanges listener
     this.logForm.get('routineId')?.valueChanges.subscribe(routineId => {
-      if (this.isEditMode() && this.logForm.get('routineId')?.pristine) {
-        // In edit mode, if routineId is changed from its initial loaded value,
-        // it might mean the user wants to re-associate or de-associate.
-        // For now, we keep it simple: if they change it, the prefill logic runs.
-      }
-
       const routineNameCtrl = this.logForm.get('routineName');
-      if (routineId) {
-        const selectedRoutine = this.availableRoutines.find(r => r.id === routineId);
-        routineNameCtrl?.setValue(selectedRoutine?.name || '');
-        routineNameCtrl?.disable();
-        // Only prefill exercises if NOT in edit mode, or if user *explicitly* changes routine in edit mode.
-        // If just loading an existing log, exercises are patched from the log itself.
-        if (!this.isEditMode() || (this.isEditMode() && !this.logForm.get('routineId')?.pristine)) {
-          if (selectedRoutine) this.prefillExercisesFromRoutine(selectedRoutine);
-        }
+      const selectedRoutine = this.availableRoutines.find(r => r.id === routineId);
 
+      if (selectedRoutine) {
+        routineNameCtrl?.setValue(selectedRoutine.name, { emitEvent: false });
+        routineNameCtrl?.disable();
+        if (!this.isEditMode() || (this.isEditMode() && routineId !== this.initialRoutineIdForEdit && this.logForm.get('routineId')?.dirty)) {
+          this.prefillExercisesFromRoutine(selectedRoutine);
+        }
       } else {
-        routineNameCtrl?.setValue('');
+        routineNameCtrl?.setValue('', { emitEvent: false });
         routineNameCtrl?.enable();
-        if (!this.isEditMode() || (this.isEditMode() && !this.logForm.get('routineId')?.pristine)) {
+        if (!this.isEditMode() || (this.isEditMode() && this.logForm.get('routineId')?.dirty)) {
           this.exercisesFormArray.clear();
         }
       }
     });
   }
 
+  // Helper method to initialize for a completely new log
+  initializeAsFreshNewLog(): void {
+    console.log('Initializing form as fresh new log.');
+    const today = new Date();
+    this.logForm.patchValue({
+      workoutDate: format(today, 'yyyy-MM-dd'),
+      startTime: format(today, 'HH:mm'),
+      durationMinutes: 60,
+      routineId: '',
+      routineName: '',
+      overallNotes: ''
+    }, { emitEvent: false }); // No need to trigger valueChanges for routineId here initially
+
+    while (this.exercisesFormArray.length) {
+      this.exercisesFormArray.removeAt(0);
+    }
+    this.logForm.get('routineId')?.enable();
+    this.logForm.get('routineName')?.disable(); // Name should be disabled if no routine, or enabled if manual entry allowed
+    // Let's keep it consistent: disable if routineId has value, enable if not.
+    // Since routineId is '', routineNameCtrl should be enabled by valueChanges or explicitly
+    this.logForm.get('routineName')?.setValue(''); // Explicitly set if needed
+    if (!this.logForm.get('routineId')?.value) {
+      this.logForm.get('routineName')?.enable();
+    }
+  }
+
+  // patchFormForEditing needs to handle routineName and enabling/disabling routineId carefully
   patchFormForEditing(log: WorkoutLog): void {
     this.logForm.patchValue({
-      workoutDate: format(new Date(log.startTime), 'yyyy-MM-dd'),
+      workoutDate: format(parseISO(log.date), 'yyyy-MM-dd'), // Use parseISO if log.date can be full ISO
       startTime: format(new Date(log.startTime), 'HH:mm'),
-      routineId: log.routineId || '',
-      routineName: log.routineName || '', // Will be updated by routineId listener if routineId exists
+      // routineId and routineName are tricky here due to valueChanges
+      // It's often better to set them, then set related state.
       overallNotes: log.notes || '',
       durationMinutes: log.durationMinutes || 60,
-    });
+    }, { emitEvent: false }); // Emit false to avoid initial valueChanges cascade
+
+    // Set routineId first, allowing valueChanges to potentially run if structure is simpler,
+    // OR set it with emitEvent: false and then manually set routineName.
+    this.logForm.get('routineId')?.setValue(log.routineId || '', { emitEvent: false });
+
+    const routineNameCtrl = this.logForm.get('routineName');
+    if (log.routineId) {
+      const selectedRoutine = this.availableRoutines.find(r => r.id === log.routineId);
+      routineNameCtrl?.setValue(selectedRoutine?.name || log.routineName || '', { emitEvent: false });
+      this.logForm.get('routineId')?.enable(); // User should be able to change the routine even in edit mode
+      routineNameCtrl?.disable();
+    } else {
+      routineNameCtrl?.setValue(log.routineName || '', { emitEvent: false });
+      this.logForm.get('routineId')?.enable();
+      routineNameCtrl?.enable(); // Allow editing routine name if no routine is linked
+    }
 
     this.exercisesFormArray.clear();
     log.exercises.forEach(loggedEx => {
       this.exercisesFormArray.push(this.createLoggedExerciseFormGroupFromLog(loggedEx));
     });
-
-    if (log.routineId) {
-      this.logForm.get('routineName')?.disable();
-    } else {
-      this.logForm.get('routineName')?.enable();
-    }
-    this.logForm.markAsPristine(); // Mark as pristine after patching
+    this.logForm.markAsPristine();
   }
 
   createLoggedExerciseFormGroupFromLog(loggedEx: LoggedWorkoutExercise): FormGroup {

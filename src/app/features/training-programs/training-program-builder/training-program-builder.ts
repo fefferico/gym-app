@@ -49,6 +49,8 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
     private cdr = inject(ChangeDetectorRef);
 
     programForm!: FormGroup;
+    submitted = false; // Add this flag
+
     isEditMode = false;
     isNewMode = false;
     isViewMode = false;
@@ -108,9 +110,9 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
             switchMap(data => {
                 const mode = data['mode'];
                 this.currentProgramId = this.route.snapshot.paramMap.get('programId');
+                this.submitted = false; // Reset submitted state when component initializes or route changes
 
                 this.isNewMode = mode === 'new';
-                // Ensure modes are mutually exclusive based on currentProgramId presence
                 this.isViewMode = mode === 'view' && !!this.currentProgramId;
                 this.isEditMode = mode === 'edit' && !!this.currentProgramId;
 
@@ -119,33 +121,21 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
                     this.updateFormEnabledState();
                     return of(null);
                 } else if (this.currentProgramId) {
-                    // Fetch the program. The service's observable will emit when data changes (e.g., after deletion)
                     return this.trainingProgramService.getProgramById(this.currentProgramId);
                 }
-                // If not new and no ID, it's an invalid state, navigate away (though routing should prevent this)
-                this.router.navigate(['/training-programs']);
                 return of(null);
             }),
             tap(program => {
-                if (program) { // Program found, patch the form
+                if (program) {
                     this.patchFormWithProgramData(program);
-                    this.updateFormEnabledState(); // Update based on current mode
                 } else if (!this.isNewMode && this.currentProgramId) {
-                    // Program is null/undefined, not in new mode, but we have a currentProgramId.
-                    // This means the program was likely deleted or the ID is invalid.
-                    // The toast is good, but ensure navigation happens to prevent errors from trying to access a non-existent program's data.
-                    //this.toastService.info(`Program with ID ${this.currentProgramId} no longer exists or could not be loaded.`, 4000, "Program Not Found");
+                    this.toastService.error(`Program with ID ${this.currentProgramId} not found.`, 0, "Error");
                     this.router.navigate(['/training-programs']);
-                } else if (this.isNewMode) {
-                    // Already handled in switchMap, but good to be explicit for updateFormEnabledState if needed
-                    this.updateFormEnabledState();
                 }
-                // If it's none of the above (e.g. program is null and no currentProgramId, which switchMap should prevent),
-                // it's an odd state, but navigation in switchMap would have already handled it.
+                this.updateFormEnabledState();
             })
         ).subscribe();
 
-        // Reset dayOfWeek if cycleLength changes to ensure valid options
         this.programForm.get('cycleLength')?.valueChanges.subscribe(val => {
             this.scheduleFormArray.controls.forEach(control => {
                 (control as FormGroup).get('dayOfWeek')?.setValue(this.currentDayOptions()[0]?.value || 1);
@@ -260,7 +250,8 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
     }
 
     async onSubmit(): Promise<void> {
-        if (this.isViewMode) return;
+        this.submitted = true; // Set to true on submit attempt
+        if (this.isViewMode) return
 
         if (this.programForm.invalid) {
             this.programForm.markAllAsTouched();

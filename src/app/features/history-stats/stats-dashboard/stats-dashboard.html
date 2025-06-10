@@ -1,4 +1,4 @@
-<div class="container mx-auto p-4">
+<div class="acontainer mx-auto p-1">
     <header class="mb-6 pb-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
         <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-200">My Statistics</h1>
         <button (click)="toggleStatsFilterAccordion()" type="button"
@@ -201,7 +201,7 @@
                             <tr *ngFor="let summary of weeklySummariesTableDataForPeriod()">
                                 <td
                                     class="px-2 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
-                                    {{ summary.weekLabel }}</td>
+                                    {{ summary.weekLabel }} - {{ summary.weekLabelStart }}-{{ summary.weekLabelEnd }}</td>
                                 <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{
                                     summary.workoutCount }}</td>
                                 <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{

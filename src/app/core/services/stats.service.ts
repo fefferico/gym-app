@@ -11,6 +11,8 @@ export interface WeeklySummary {
   weekNumber: number;
   year: number;
   weekLabel: string; // e.g., "W23 2024" or "Jun 03 - Jun 09"
+  weekLabelStart?: string; // Optional, for custom labels
+  weekLabelEnd?: string; // Optional, for custom end labels
   workoutCount: number;
   totalVolume: number;
 }
@@ -76,13 +78,16 @@ export class StatsService {
       // const weekEndDate = endOfWeek(logDate, { weekStartsOn: 1 });
       // const weekLabel = `${format(weekStartDate, 'MMM dd')} - ${format(weekEndDate, 'MMM dd, yyyy')}`;
       const weekLabel = `Week ${weekNum}, ${year}`;
-
+      const weekLabelStart = format(weekStartDate, 'dd/MM');
+      const weekLabelEnd = format(subDays(weekStartDate, -6), 'dd/MM'); // 6 days after start gives the end of the week
 
       if (!summariesMap.has(weekKey)) {
         summariesMap.set(weekKey, {
           weekNumber: weekNum,
           year: year,
           weekLabel: weekLabel,
+          weekLabelStart: weekLabelStart,
+          weekLabelEnd: weekLabelEnd,
           workoutCount: 0,
           totalVolume: 0,
         });
