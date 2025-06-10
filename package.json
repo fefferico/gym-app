@@ -3,12 +3,14 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve --deploy-url /gym-app/",
-    "build": "ng build",
+    "start": "ng serve",
+    "build": "ng build --configuration production --base-href /gym-app/",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "serve:ssr:GymBro": "node dist/GymBro/server/server.mjs",
-    "deploy:gh": "ng build --configuration production --base-href /gym-app/ && cd dist/gym-app/browser && ren index.csr.html index.html && cd ../../.. && npx angular-cli-ghpages --dir=dist/gym-app/browser"
+    "serve:ssr:gym-app": "node dist/gym-app/server/server.mjs",
+    "electron:dev": "concurrently \"ng serve\" \"wait-on http://localhost:4200 && electron .\"",
+    "electron:build": "npm run build && electron-builder",
+    "deploy:gh": "ng build --configuration production --base-href /gym-app/ && npx angular-cli-ghpages --dir=dist/gym-app/browser"
   },
   "private": true,
   "dependencies": {

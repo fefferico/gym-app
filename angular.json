@@ -18,35 +18,37 @@
           "builder": "@angular/build:application",
           "options": {
             "baseHref": "/gym-app/",
+            "prerender": false,
+            "ssr": false,
             "outputPath": "dist/gym-app",
-            "index": "src/index.html",         
-            "browser": "src/main.ts",          
-            "polyfills": [                     
+            "index": "src/index.html",
+            "browser": "src/main.ts",
+            "polyfills": [
               "zone.js"
             ],
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "assets": [
-              "src/assets", 
-              "src/favicon.ico", 
-              "src/manifest.webmanifest" 
+              {
+                "glob": "**/*",
+                "input": "public"
+              },
+              "src/favicon.ico",
+              "src/assets"
             ],
             "styles": [
               "src/styles.scss"
             ],
-            "server": "src/main.server.ts",
-            "prerender": true,
-            "ssr": {
-              "entry": "src/server.ts" 
-            }
+            "scripts": [],
+            "server": "src/main.server.ts"
           },
           "configurations": {
             "production": {
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "1MB",
-                  "maximumError": "1MB"
+                  "maximumWarning": "500kB",
+                  "maximumError": "10MB"
                 },
                 {
                   "type": "anyComponentStyle",
@@ -60,8 +62,7 @@
             "development": {
               "optimization": false,
               "extractLicenses": false,
-              "sourceMap": true,
-              "namedChunks": true 
+              "sourceMap": true
             }
           },
           "defaultConfiguration": "production"
@@ -82,22 +83,26 @@
           "builder": "@angular/build:extract-i18n"
         },
         "test": {
-          "builder": "@angular/build:karma",
+          "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "polyfills": [ 
+            "polyfills": [
               "zone.js",
               "zone.js/testing"
             ],
             "tsConfig": "tsconfig.spec.json",
             "inlineStyleLanguage": "scss",
             "assets": [
-              "src/assets",
+              {
+                "glob": "**/*",
+                "input": "public"
+              },
               "src/favicon.ico",
-              "src/manifest.webmanifest"
+              "src/assets"
             ],
             "styles": [
               "src/styles.scss"
-            ]
+            ],
+            "scripts": []
           }
         }
       }
