@@ -636,6 +636,58 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
     };
   }
 
+  /**
+   * Merges scheduledItems from a CalendarDay with past workout sessions as ScheduledItemWithLogs for the same date.
+   * Ensures no duplicate routineId entries; past sessions not already in scheduledItems are appended.
+   * @param selectedDay The CalendarDay to merge for.
+   * @returns Merged ScheduledItemWithLogs[]
+   */
+  mergeScheduledItemsWithPastSessions(selectedDay: CalendarDay): ScheduledItemWithLogs[] {
+    if (!selectedDay) return [];
+
+    // Map of routineId to ScheduledItemWithLogs from scheduledItems
+    const scheduledMap = new Map<string, ScheduledItemWithLogs>();
+    selectedDay.scheduledItems.forEach(item => {
+      if (item.routine?.id) {
+        scheduledMap.set(item.routine.id, item);
+      }
+    });
+
+    // Find all past sessions for each routine on this date
+    const allPastSessions: ScheduledItemWithLogs[] = []
+    for (const item of selectedDay.scheduledItems) {
+      const routineId = item.routine?.id;
+      if (routineId) {
+        const pastSessions = this.getPastWorkoutSessionsAsScheduledItemsForRoutineOnDate(routineId, selectedDay.date);
+        for (const session of pastSessions) {
+          // Only add if not already in scheduledMap (avoid duplicates)
+          // if (!scheduledMap.has(routineId)) {
+            allPastSessions.push(session);
+          // }
+        }
+      }
+    }
+
+    // Also check for routines that had past sessions but are not in scheduledItems (e.g., ad-hoc workouts)
+    // We'll scan all routines in allWorkoutLogs for this date
+    const allLogs = this.allWorkoutLogs();
+    const seenRoutineIds = new Set(selectedDay.scheduledItems.map(i => i.routine.id));
+    allLogs.forEach(log => {
+      if (isSameDay(parseISO(log.date), selectedDay.date)) {
+        if (log.routineId && !seenRoutineIds.has(log.routineId)) {
+          const session = this.mapWorkoutLogToScheduledItemWithLogs(log);
+          if (session) {
+            allPastSessions.push(session);
+            seenRoutineIds.add(log.routineId);
+          }
+        }
+      }
+    });
+
+    // Merge: scheduledItems first, then any unique past sessions
+    return [...selectedDay.scheduledItems, ...allPastSessions];
+  }
+
   ngOnDestroy(): void {
     this.dataSubscription?.unsubscribe();
     this.hammerInstanceCalendar?.destroy();
