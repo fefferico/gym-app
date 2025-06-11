@@ -1,8 +1,8 @@
 // src/app/features/training-programs/training-program-list/training-program-list.component.ts
-import { Component, inject, OnInit, PLATFORM_ID, signal, computed, ChangeDetectorRef, OnDestroy } from '@angular/core'; // Added OnDestroy
+import { Component, inject, OnInit, PLATFORM_ID, signal, computed, ChangeDetectorRef, OnDestroy, ElementRef, AfterViewInit, NgZone, ViewChild } from '@angular/core';
 import { CommonModule, DatePipe, isPlatformBrowser, TitleCasePipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
-import { firstValueFrom, Observable, of, Subscription } from 'rxjs';
+import { firstValueFrom, Observable, of, Subscription, forkJoin } from 'rxjs';
 import { map, switchMap, take, tap } from 'rxjs/operators';
 import { TrainingProgram, ScheduledRoutineDay } from '../../../core/models/training-program.model';
 import { TrainingProgramService } from '../../../core/services/training-program.service';
@@ -10,18 +10,20 @@ import { AlertService } from '../../../core/services/alert.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { SpinnerService } from '../../../core/services/spinner.service';
 import { Routine } from '../../../core/models/workout.model';
+import { Exercise } from '../../../core/models/exercise.model';
 import {
   startOfWeek, endOfWeek, addDays, subDays, eachDayOfInterval, format,
   isSameDay, isToday, addMonths, subMonths, startOfMonth, endOfMonth,
   isSameMonth, isPast, isFuture, parseISO
 } from 'date-fns';
 import { DayOfWeekPipe } from '../../../shared/pipes/day-of-week-pipe';
-import { animate, state, style, transition, trigger } from '@angular/animations';
+import { animate, group, query, state, style, transition, trigger } from '@angular/animations';
 import { TrackingService } from '../../../core/services/tracking.service';
 import { WorkoutLog } from '../../../core/models/workout-log.model';
 import { ThemeService } from '../../../core/services/theme.service';
-import { WorkoutService } from '../../../core/services/workout.service'; // Import WorkoutService
+import { WorkoutService } from '../../../core/services/workout.service';
 import { ExerciseService } from '../../../core/services/exercise.service';
+import Hammer from 'hammerjs';
 
 interface ScheduledItemWithLogs {
   routine: Routine;
@@ -49,38 +51,48 @@ type CalendarDisplayMode = 'week' | 'month';
   styleUrls: ['./training-program-list.scss'],
   animations: [
     trigger('slideUpDown', [
-      transition(':enter', [
-        style({ transform: 'translateY(100%)', opacity: 0 }),
-        animate('300ms ease-out', style({ transform: 'translateY(0%)', opacity: 1 }))
-      ]),
-      transition(':leave', [
-        animate('250ms ease-in', style({ transform: 'translateY(100%)', opacity: 0 }))
-      ])
+      transition(':enter', [ style({ transform: 'translateY(100%)', opacity: 0 }), animate('300ms ease-out', style({ transform: 'translateY(0%)', opacity: 1 })) ]),
+      transition(':leave', [ animate('250ms ease-in', style({ transform: 'translateY(100%)', opacity: 0 })) ])
     ]),
     trigger('slideInOutActions', [
-      state('void', style({
-        height: '20px', opacity: 0, overflow: 'hidden',
-        paddingTop: '0', paddingBottom: '0', marginTop: '0', marginBottom: '0'
-      })),
-      state('*', style({
-        height: '*', opacity: 1, overflow: 'hidden',
-        paddingTop: '0.5rem', paddingBottom: '0.5rem'
-      })),
+      state('void', style({ height: '0px', opacity: 0, overflow: 'hidden', paddingTop: '0', paddingBottom: '0', marginTop: '0', marginBottom: '0' })),
+      state('*', style({ height: '*', opacity: 1, overflow: 'hidden', paddingTop: '0.5rem', paddingBottom: '0.5rem' })),
       transition('void <=> *', animate('200ms ease-in-out'))
     ]),
     trigger('dropdownMenu', [
-      state('void', style({
-        opacity: 0, transform: 'scale(0.75) translateY(-10px)', transformOrigin: 'top right'
-      })),
-      state('*', style({
-        opacity: 1, transform: 'scale(1) translateY(0)', transformOrigin: 'top right'
-      })),
+      state('void', style({ opacity: 0, transform: 'scale(0.75) translateY(-10px)', transformOrigin: 'top right' })),
+      state('*', style({ opacity: 1, transform: 'scale(1) translateY(0)', transformOrigin: 'top right' })),
       transition('void => *', [animate('150ms cubic-bezier(0.25, 0.8, 0.25, 1)')]),
       transition('* => void', [animate('100ms cubic-bezier(0.25, 0.8, 0.25, 1)')])
+    ]),
+    trigger('viewSlide', [
+        transition('list <=> calendar', [
+            style({ position: 'relative', overflow: 'hidden' }),
+            query(':enter, :leave', [ style({ position: 'absolute', top: 0, left: 0, width: '100%' }) ], { optional: true }),
+            query(':enter', [ style({ transform: '{{ enterTransform }}', opacity: 0 }) ], { optional: true }),
+            group([
+                query(':leave', [ animate('300ms ease-out', style({ transform: '{{ leaveTransform }}', opacity: 0 })) ], { optional: true }),
+                query(':enter', [ animate('300ms ease-out', style({ transform: 'translateX(0%)', opacity: 1 })) ], { optional: true })
+            ])
+        ])
+    ]),
+    trigger('calendarPeriodSlide', [
+        state('center', style({ transform: 'translateX(0%)', opacity: 1 })),
+        state('outLeft', style({ transform: 'translateX(-100%)', opacity: 0 })),
+        state('outRight', style({ transform: 'translateX(100%)', opacity: 0 })),
+        state('preloadFromRight', style({ transform: 'translateX(100%)', opacity: 0 })),
+        state('preloadFromLeft', style({ transform: 'translateX(-100%)', opacity: 0 })),
+
+        transition('center => outLeft', animate('200ms ease-in')),
+        transition('center => outRight', animate('200ms ease-in')),
+        transition('preloadFromRight => center', animate('200ms ease-out')),
+        transition('preloadFromLeft => center', animate('200ms ease-out')),
+        transition('outLeft => center', [ style({ transform: 'translateX(100%)', opacity: 0 }), animate('200ms ease-out')]),
+        transition('outRight => center', [ style({ transform: 'translateX(-100%)', opacity: 0 }), animate('200ms ease-out')]),
     ])
   ]
 })
-export class TrainingProgramListComponent implements OnInit, OnDestroy {
+export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDestroy {
   private trainingProgramService = inject(TrainingProgramService);
   private router = inject(Router);
   private alertService = inject(AlertService);
@@ -90,13 +102,33 @@ export class TrainingProgramListComponent implements OnInit, OnDestroy {
   private cdr = inject(ChangeDetectorRef);
   private trackingService = inject(TrackingService);
   private themeService = inject(ThemeService);
-  private workoutService = inject(WorkoutService); // Inject WorkoutService
+  private workoutService = inject(WorkoutService);
   private exerciseService = inject(ExerciseService);
+  private elementRef = inject(ElementRef);
+  private ngZone = inject(NgZone);
 
   programs$: Observable<TrainingProgram[]> | undefined;
   allProgramsForList = signal<TrainingProgram[]>([]);
-  private programsSubscription: Subscription | undefined;
-  private routinesSubscription: Subscription | undefined; // For fetching all routines
+  private dataSubscription: Subscription | undefined;
+  private hammerInstanceCalendar: HammerManager | null = null;
+
+  // Use ViewChild with a setter
+  @ViewChild('calendarSwipeContainerEl')
+  set calendarSwipeContainer(element: ElementRef<HTMLDivElement> | undefined) {
+    if (element && isPlatformBrowser(this.platformId)) {
+      // If Hammer instance already exists, destroy it first to avoid duplicates
+      if (this.hammerInstanceCalendar) {
+        this.hammerInstanceCalendar.destroy();
+        this.hammerInstanceCalendar = null;
+      }
+      this.setupCalendarSwipe(element.nativeElement);
+    } else if (!element && this.hammerInstanceCalendar) {
+      // Element is removed from DOM, clean up HammerJS
+      this.hammerInstanceCalendar.destroy();
+      this.hammerInstanceCalendar = null;
+      console.log("HammerJS for calendar swipe destroyed because element was removed.");
+    }
+  }
 
   activeProgramActions = signal<string | null>(null);
   menuModeCompact: boolean = false;
@@ -107,10 +139,11 @@ export class TrainingProgramListComponent implements OnInit, OnDestroy {
   selectedProgramGoal = signal<string | null>(null);
   selectedProgramMuscleGroup = signal<string | null>(null);
 
-  // Signals for filter dropdown options
   uniqueProgramGoals = signal<string[]>([]);
   uniqueProgramMuscleGroups = signal<string[]>([]);
-  private allRoutines: Routine[] = []; // To store all routines for deriving goals/muscles
+
+  private allRoutinesMap = new Map<string, Routine>();
+  private allExercisesMap = new Map<string, Exercise>();
 
   filteredPrograms = computed(() => {
     let programs = this.allProgramsForList();
@@ -132,7 +165,7 @@ export class TrainingProgramListComponent implements OnInit, OnDestroy {
     if (goalFilter) {
       programs = programs.filter(p =>
         p.schedule.some(day => {
-          const routine = this.allRoutines.find(r => r.id === day.routineId);
+          const routine = this.allRoutinesMap.get(day.routineId);
           return routine?.goal?.toLowerCase() === goalFilter.toLowerCase();
         })
       );
@@ -140,27 +173,12 @@ export class TrainingProgramListComponent implements OnInit, OnDestroy {
     if (muscleFilter) {
       programs = programs.filter(p =>
         p.schedule.some(day => {
-          const routine = this.allRoutines.find(r => r.id === day.routineId);
+          const routine = this.allRoutinesMap.get(day.routineId);
           if (!routine) return false;
-          // Check all exercises in the routine for the selected muscle group
-          for (const ex of routine.exercises) {
-            const exercises: any[] = [];
-            this.exerciseService.getExerciseById(ex.exerciseId).subscribe(exerciseDetail => {
-              if (exerciseDetail) {
-                exercises.push(exerciseDetail);
-              }
-            });
-            const exerciseDetail = this.exerciseService.getExerciseById(ex.exerciseId);
-            // getExerciseById returns an Observable, but we need a synchronous check for filtering.
-            // This means we cannot use it directly here for async fetching.
-            // Instead, you should pre-populate a map of exerciseId -> exerciseDetail (with primaryMuscleGroup)
-            // during initialization, and use that map here synchronously.
-            // For now, fallback to ex.primaryMuscleGroup if available:
-            if (exercises.some(exer => exer.primaryMuscleGroup?.toLowerCase() === muscleFilter.toLowerCase())) {
-              return true;
-            }
-          }
-          return false;
+          return routine.exercises.some(exDetail => {
+            const fullExercise = this.allExercisesMap.get(exDetail.exerciseId);
+            return fullExercise?.primaryMuscleGroup?.toLowerCase() === muscleFilter.toLowerCase();
+          });
         })
       );
     }
@@ -168,6 +186,10 @@ export class TrainingProgramListComponent implements OnInit, OnDestroy {
   });
 
   currentView = signal<ProgramListView>('list');
+  viewAnimationParams = signal<{ value: ProgramListView, params: { enterTransform: string, leaveTransform: string } }>({
+    value: 'list', params: { enterTransform: 'translateX(100%)', leaveTransform: 'translateX(-100%)' }
+  });
+
   calendarViewDate = signal<Date>(new Date());
   calendarDays = signal<CalendarDay[]>([]);
   calendarLoading = signal<boolean>(false);
@@ -175,7 +197,10 @@ export class TrainingProgramListComponent implements OnInit, OnDestroy {
   weekStartsOn: 0 | 1 = 1;
   calendarDisplayMode = signal<CalendarDisplayMode>('week');
   selectedCalendarDayDetails = signal<CalendarDay | null>(null);
+  calendarAnimationState = signal<'center' | 'outLeft' | 'outRight' | 'preloadFromLeft' | 'preloadFromRight'>('center');
+  protected isCalendarAnimating = false; // Using a simple boolean, not a signal here for internal logic
 
+  protected weekDayNames: string[] = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   readonly calendarHeaderFormat = computed(() => {
     return this.calendarDisplayMode() === 'month' ? 'MMMM yyyy' : 'MMMM yyyy';
   });
@@ -186,235 +211,269 @@ export class TrainingProgramListComponent implements OnInit, OnDestroy {
     if (isPlatformBrowser(this.platformId)) {
       window.scrollTo(0, 0);
     }
+    this.menuModeCompact = this.themeService.isMenuModeCompact();
 
-    this.routinesSubscription = this.workoutService.routines$.subscribe(routines => {
-      this.allRoutines = routines;
-      this.populateFilterOptions(this.allProgramsForList()); // Re-populate if programs already loaded
+    this.dataSubscription = forkJoin({
+      programs: this.trainingProgramService.getAllPrograms().pipe(take(1)),
+      routines: this.workoutService.routines$.pipe(take(1)),
+      exercises: this.exerciseService.getExercises().pipe(take(1))
+    }).subscribe(({ programs, routines, exercises }) => {
+      this.allProgramsForList.set(programs.sort((a,b) => a.name.localeCompare(b.name)));
+      routines.forEach(r => this.allRoutinesMap.set(r.id, r));
+      exercises.forEach(e => this.allExercisesMap.set(e.id, e));
+      this.populateFilterOptions();
     });
 
-    this.programsSubscription = this.trainingProgramService.getAllPrograms().subscribe(programs => {
-      this.allProgramsForList.set(programs);
-      this.populateFilterOptions(programs); // Populate filters once programs are loaded
-    });
-    // This observable is just for the template's async pipe if needed for loading/empty states
     this.programs$ = this.trainingProgramService.getAllPrograms();
 
-
-    this.menuModeCompact = this.themeService.isMenuModeCompact();
     this.trainingProgramService.getActiveProgram().subscribe(program => {
+      const oldActiveProgramId = this.activeProgramForCalendar()?.id;
       this.activeProgramForCalendar.set(program);
-      if (this.currentView() === 'calendar' && program) {
-        this.generateCalendarDays();
-      } else if (this.currentView() === 'calendar' && !program) {
-        this.calendarDays.set([]);
-        this.calendarLoading.set(false);
+      if (this.currentView() === 'calendar') {
+        if (program && (!oldActiveProgramId || oldActiveProgramId !== program.id)) {
+            this.generateCalendarDays(true);
+        } else if (!program) {
+            this.calendarDays.set([]);
+            this.calendarLoading.set(false);
+            this.calendarAnimationState.set('center'); // Reset animation if no program
+        }
       }
     });
   }
 
-  private populateFilterOptions(programs: TrainingProgram[]): void {
-    if (!this.allRoutines || this.allRoutines.length === 0) return;
+  ngAfterViewInit(): void {
+    // if (isPlatformBrowser(this.platformId)) {
+    //     this.setupCalendarSwipe();
+    // }
+  }
 
+  // Modified setupCalendarSwipe to accept the element
+  private setupCalendarSwipe(calendarSwipeElement: HTMLElement): void {
+    let lastSwipeTime = 0;
+    const swipeDebounce = 350;
+
+    this.ngZone.runOutsideAngular(() => {
+        this.hammerInstanceCalendar = new Hammer(calendarSwipeElement);
+        this.hammerInstanceCalendar.get('swipe').set({ direction: Hammer.DIRECTION_HORIZONTAL, threshold: 30, velocity: 0.2 });
+
+        this.hammerInstanceCalendar.on('swipeleft', () => {
+            const now = Date.now();
+            if (now - lastSwipeTime < swipeDebounce || this.isCalendarAnimating) return;
+            lastSwipeTime = now;
+            this.ngZone.run(() => this.nextPeriod());
+        });
+        this.hammerInstanceCalendar.on('swiperight', () => {
+            const now = Date.now();
+            if (now - lastSwipeTime < swipeDebounce || this.isCalendarAnimating) return;
+            lastSwipeTime = now;
+            this.ngZone.run(() => this.previousPeriod());
+        });
+        console.log("HammerJS successfully attached to calendar swipe container via ViewChild.");
+    });
+  }
+
+  private populateFilterOptions(): void {
+    const programs = this.allProgramsForList();
+    if (programs.length === 0 || this.allRoutinesMap.size === 0) {
+        this.uniqueProgramGoals.set([]);
+        this.uniqueProgramMuscleGroups.set([]);
+        return;
+    }
     const goals = new Set<string>();
     const muscles = new Set<string>();
-
     programs.forEach(program => {
       program.schedule.forEach(day => {
-        const routine = this.allRoutines.find(r => r.id === day.routineId);
+        const routine = this.allRoutinesMap.get(day.routineId);
         if (routine) {
-          if (routine.goal) {
-            goals.add(routine.goal);
-          }
-          routine.exercises.forEach(exerciseDetail => {
-            // Assuming ExerciseDetail has primaryMuscleGroup
-            // If not, you might need to fetch full exercise details or have it on routine.exercise
-            this.exerciseService.getExerciseById(exerciseDetail.exerciseId).subscribe(exerciseDetail => {
-              if (exerciseDetail && exerciseDetail.primaryMuscleGroup) {
-                muscles.add(exerciseDetail.primaryMuscleGroup);
-              }
-            });
+          if (routine.goal) { goals.add(routine.goal); }
+          routine.exercises.forEach(exDetail => {
+            const fullExercise = this.allExercisesMap.get(exDetail.exerciseId);
+            if (fullExercise?.primaryMuscleGroup) { muscles.add(fullExercise.primaryMuscleGroup); }
           });
         }
       });
     });
-    this.uniqueProgramGoals.set(Array.from(goals).sort());
-    this.uniqueProgramMuscleGroups.set(Array.from(muscles).sort());
+    this.uniqueProgramGoals.set(Array.from(goals).sort((a,b) => a.localeCompare(b)));
+    this.uniqueProgramMuscleGroups.set(Array.from(muscles).sort((a,b) => a.localeCompare(b)));
   }
 
-
-  toggleFilterAccordion(): void {
-    this.isFilterAccordionOpen.update(isOpen => !isOpen);
-  }
-
-  onProgramSearchTermChange(event: Event): void {
-    const target = event.target as HTMLInputElement;
-    this.programSearchTerm.set(target.value);
-  }
-
-  onProgramCycleTypeChange(event: Event): void {
-    const target = event.target as HTMLSelectElement;
-    this.selectedProgramCycleType.set(target.value || null);
-  }
-
-  onProgramGoalChange(event: Event): void {
-    const target = event.target as HTMLSelectElement;
-    this.selectedProgramGoal.set(target.value || null);
-  }
-
-  onProgramMuscleGroupChange(event: Event): void {
-    const target = event.target as HTMLSelectElement;
-    this.selectedProgramMuscleGroup.set(target.value || null);
-  }
-
+  toggleFilterAccordion(): void { this.isFilterAccordionOpen.update(isOpen => !isOpen); }
+  onProgramSearchTermChange(event: Event): void { const target = event.target as HTMLInputElement; this.programSearchTerm.set(target.value); }
+  onProgramCycleTypeChange(event: Event): void { const target = event.target as HTMLSelectElement; this.selectedProgramCycleType.set(target.value || null); }
+  onProgramGoalChange(event: Event): void { const target = event.target as HTMLSelectElement; this.selectedProgramGoal.set(target.value || null); }
+  onProgramMuscleGroupChange(event: Event): void { const target = event.target as HTMLSelectElement; this.selectedProgramMuscleGroup.set(target.value || null); }
   clearProgramFilters(): void {
-    this.programSearchTerm.set('');
-    this.selectedProgramCycleType.set(null);
-    this.selectedProgramGoal.set(null);
-    this.selectedProgramMuscleGroup.set(null);
-
-    const searchInput = document.getElementById('program-search-term') as HTMLInputElement;
-    if (searchInput) searchInput.value = '';
-    const cycleSelect = document.getElementById('program-cycle-type-filter') as HTMLSelectElement;
-    if (cycleSelect) cycleSelect.value = '';
-    const goalSelect = document.getElementById('program-goal-filter') as HTMLSelectElement;
-    if (goalSelect) goalSelect.value = '';
-    const muscleSelect = document.getElementById('program-muscle-filter') as HTMLSelectElement;
-    if (muscleSelect) muscleSelect.value = '';
+    this.programSearchTerm.set(''); this.selectedProgramCycleType.set(null); this.selectedProgramGoal.set(null); this.selectedProgramMuscleGroup.set(null);
+    (document.getElementById('program-search-term') as HTMLInputElement).value = '';
+    (document.getElementById('program-cycle-type-filter') as HTMLSelectElement).value = '';
+    (document.getElementById('program-goal-filter') as HTMLSelectElement).value = '';
+    (document.getElementById('program-muscle-filter') as HTMLSelectElement).value = '';
   }
-
-  navigateToCreateProgram(): void {
-    this.router.navigate(['/training-programs/new']);
-  }
-
-  viewProgram(programId: string, event?: MouseEvent): void {
-    event?.stopPropagation();
-    this.router.navigate(['/training-programs/view', programId]);
-    this.activeProgramActions.set(null);
-  }
-
-  editProgram(programId: string, event: MouseEvent): void {
-    event.stopPropagation();
-    this.router.navigate(['/training-programs/edit', programId]);
-    this.activeProgramActions.set(null);
-  }
-
+  navigateToCreateProgram(): void { this.router.navigate(['/training-programs/new']); }
+  viewProgram(programId: string, event?: MouseEvent): void { event?.stopPropagation(); this.router.navigate(['/training-programs/view', programId]); this.activeProgramActions.set(null); }
+  editProgram(programId: string, event: MouseEvent): void { event.stopPropagation(); this.router.navigate(['/training-programs/edit', programId]); this.activeProgramActions.set(null); }
   async deleteProgram(programId: string, event: MouseEvent): Promise<void> {
-    event.stopPropagation();
-    this.activeProgramActions.set(null);
+    event.stopPropagation(); this.activeProgramActions.set(null);
     try {
       this.spinnerService.show("Deleting program...");
       await this.trainingProgramService.deleteProgram(programId);
-    } catch (error) {
-      console.error("Error initiating program deletion from component:", error);
-      this.toastService.error("An unexpected error occurred. Program might be active or have logs.", 0, "Deletion Error");
-    } finally {
-      this.spinnerService.hide();
-    }
+    } catch (error) { this.toastService.error("An unexpected error occurred.", 0, "Deletion Error"); }
+    finally { this.spinnerService.hide(); }
   }
-
   async toggleActiveProgram(programId: string, currentIsActive: boolean, event: MouseEvent): Promise<void> {
-    event.stopPropagation();
-    this.activeProgramActions.set(null);
-    if (currentIsActive) {
-      this.toastService.info("This program is already active. To change, set another program as active.", 4000, "Info");
-      return;
-    }
+    event.stopPropagation(); this.activeProgramActions.set(null);
+    if (currentIsActive) { this.toastService.info("This program is already active.", 4000, "Info"); return; }
     try {
       this.spinnerService.show("Setting active program...");
       await this.trainingProgramService.setActiveProgram(programId);
-    } catch (error) {
-      this.toastService.error("Failed to set active program.", 0, "Error");
-    } finally {
-      this.spinnerService.hide();
-    }
+    } catch (error) { this.toastService.error("Failed to set active program.", 0, "Error"); }
+    finally { this.spinnerService.hide(); }
   }
-
-  toggleActions(programId: string, event: MouseEvent): void {
-    event.stopPropagation();
-    this.activeProgramActions.update(current => current === programId ? null : programId);
-  }
-
+  toggleActions(programId: string, event: MouseEvent): void { event.stopPropagation(); this.activeProgramActions.update(current => current === programId ? null : programId); }
   getDaysScheduled(program: TrainingProgram): string {
     if (!program.schedule || program.schedule.length === 0) return '0 days';
-    const uniqueDays = new Set(program.schedule.map(s => s.dayOfWeek));
-    const count = uniqueDays.size;
+    const count = new Set(program.schedule.map(s => s.dayOfWeek)).size;
     return `${count} day${count === 1 ? '' : 's'}`;
   }
-
-  getCycleInfo(program: TrainingProgram): string {
-    if (program.cycleLength && program.cycleLength > 0) {
-      return `${program.cycleLength}-day cycle`;
-    }
-    return 'Weekly';
-  }
-
-  // Helper methods to display aggregated goals and muscles for a program
+  getCycleInfo(program: TrainingProgram): string { return (program.cycleLength && program.cycleLength > 0) ? `${program.cycleLength}-day cycle` : 'Weekly'; }
   getProgramOverallGoals(program: TrainingProgram): string[] {
-    if (!this.allRoutines.length || !program.schedule.length) return [];
+    if (this.allRoutinesMap.size === 0 || !program.schedule?.length) return [];
     const goals = new Set<string>();
-    program.schedule.forEach(day => {
-      const routine = this.allRoutines.find(r => r.id === day.routineId);
-      if (routine?.goal) {
-        goals.add(routine.goal);
-      }
-    });
+    program.schedule.forEach(day => { const routine = this.allRoutinesMap.get(day.routineId); if (routine?.goal) goals.add(routine.goal); });
     return Array.from(goals);
   }
-
   getProgramMainMuscleGroups(program: TrainingProgram): string[] {
-    if (!this.allRoutines.length || !program.schedule.length) return [];
+    if (this.allRoutinesMap.size === 0 || this.allExercisesMap.size === 0 || !program.schedule?.length) return [];
     const muscles = new Set<string>();
     program.schedule.forEach(day => {
-      const routine = this.allRoutines.find(r => r.id === day.routineId);
-      routine?.exercises.forEach(ex => {
-        this.exerciseService.getExerciseById(ex.exerciseId).subscribe(exerciseDetail => {
-          if (exerciseDetail && exerciseDetail.primaryMuscleGroup) {
-            muscles.add(exerciseDetail.primaryMuscleGroup);
-          }
-        });
-      });
+      const routine = this.allRoutinesMap.get(day.routineId);
+      routine?.exercises.forEach(exDetail => { const fullExercise = this.allExercisesMap.get(exDetail.exerciseId); if (fullExercise?.primaryMuscleGroup) muscles.add(fullExercise.primaryMuscleGroup); });
     });
     return Array.from(muscles);
   }
 
-
   setView(view: ProgramListView): void {
+    const current = this.currentView();
+    if (current === view) return;
+    let enterTransform = 'translateX(100%)', leaveTransform = 'translateX(-100%)';
+    if (view === 'list') { enterTransform = 'translateX(-100%)'; leaveTransform = 'translateX(100%)'; }
+
+    this.viewAnimationParams.set({ value: view, params: { enterTransform, leaveTransform } });
     this.currentView.set(view);
     this.isFilterAccordionOpen.set(false);
+
     if (view === 'calendar') {
       this.calendarDisplayMode.set('week');
-      if (this.activeProgramForCalendar()) {
-        this.generateCalendarDays();
-      } else {
-        this.calendarDays.set([]);
-        this.calendarLoading.set(false);
-      }
+      this.calendarAnimationState.set('center'); // Reset calendar animation state when switching to it
+      if (this.activeProgramForCalendar()) this.generateCalendarDays(true);
+      else { this.calendarDays.set([]); this.calendarLoading.set(false); }
     }
   }
 
   setCalendarDisplayMode(mode: CalendarDisplayMode): void {
-    this.calendarDisplayMode.set(mode);
+    if (this.isCalendarAnimating || this.calendarDisplayMode() === mode) return;
+    this.isCalendarAnimating = true;
+
+    const oldMode = this.calendarDisplayMode();
+    let outState: 'outLeft' | 'outRight' = 'outLeft';
+    let preloadState: 'preloadFromLeft' | 'preloadFromRight' = 'preloadFromRight';
+
+    if (oldMode === 'week' && mode === 'month') { outState = 'outLeft'; preloadState = 'preloadFromRight'; }
+    else if (oldMode === 'month' && mode === 'week') { outState = 'outRight'; preloadState = 'preloadFromLeft'; }
+
+    this.calendarAnimationState.set(outState);
     this.selectedCalendarDayDetails.set(null);
-    if (this.activeProgramForCalendar()) {
-      this.generateCalendarDays();
+
+    setTimeout(() => {
+        this.calendarDisplayMode.set(mode);
+        this.calendarAnimationState.set(preloadState);
+        if (this.activeProgramForCalendar()) this.generateCalendarDays();
+        else this.isCalendarAnimating = false; // Reset if no program to load
+        // isCalendarAnimating will be reset in generateCalendarDays' finally block or here
+    }, 200); // out animation duration
+  }
+
+  private changeCalendarPeriod(direction: 'next' | 'previous'): void {
+    if (this.isCalendarAnimating || !this.activeProgramForCalendar()) return;
+    this.isCalendarAnimating = true;
+    this.selectedCalendarDayDetails.set(null); // Clear details when period changes
+
+    let outState: 'outLeft' | 'outRight';
+    let preloadState: 'preloadFromLeft' | 'preloadFromRight';
+
+    if (direction === 'next') {
+      outState = 'outLeft'; preloadState = 'preloadFromRight';
+      if (this.calendarDisplayMode() === 'month') this.calendarViewDate.update(d => addMonths(d, 1));
+      else this.calendarViewDate.update(d => addDays(d, 7));
+    } else {
+      outState = 'outRight'; preloadState = 'preloadFromLeft';
+      if (this.calendarDisplayMode() === 'month') this.calendarViewDate.update(d => subMonths(d, 1));
+      else this.calendarViewDate.update(d => subDays(d, 7));
+    }
+    this.calendarAnimationState.set(outState);
+
+    setTimeout(() => {
+      this.calendarAnimationState.set(preloadState);
+      this.generateCalendarDays(); // This will set to 'center' and reset isCalendarAnimating in its finally block
+    }, 200); // out animation duration
+  }
+
+  previousPeriod(): void { this.changeCalendarPeriod('previous'); }
+  nextPeriod(): void { this.changeCalendarPeriod('next'); }
+
+  goToTodayCalendar(): void {
+    if (this.isCalendarAnimating || !this.activeProgramForCalendar() || this.isTodayDisplayedInCalendar()) return;
+    this.isCalendarAnimating = true;
+    this.selectedCalendarDayDetails.set(null);
+
+    const today = new Date();
+    const currentCalDate = this.calendarViewDate();
+    let outState: 'outLeft' | 'outRight';
+    let preloadState: 'preloadFromLeft' | 'preloadFromRight';
+
+    if (currentCalDate > today) { outState = 'outRight'; preloadState = 'preloadFromLeft'; }
+    else { outState = 'outLeft'; preloadState = 'preloadFromRight'; }
+
+    this.calendarAnimationState.set(outState);
+
+    setTimeout(() => {
+      this.calendarViewDate.set(new Date());
+      this.calendarAnimationState.set(preloadState);
+      this.generateCalendarDays(); // Will reset isCalendarAnimating
+    }, 200);
+  }
+
+  isTodayDisplayedInCalendar(): boolean {
+    const today = new Date();
+    const currentCalDate = this.calendarViewDate();
+    if (this.calendarDisplayMode() === 'month') {
+        return isSameMonth(currentCalDate, today);
+    } else {
+        const weekStartForCurrentView = startOfWeek(currentCalDate, { weekStartsOn: this.weekStartsOn });
+        const weekEndForCurrentView = endOfWeek(currentCalDate, { weekStartsOn: this.weekStartsOn });
+        return today >= weekStartForCurrentView && today <= weekEndForCurrentView;
     }
   }
 
-  async generateCalendarDays(): Promise<void> {
+  async generateCalendarDays(isInitialOrProgramChange: boolean = false): Promise<void> {
     const activeProg = this.activeProgramForCalendar();
     if (!isPlatformBrowser(this.platformId) || !activeProg) {
       this.calendarDays.set([]);
       this.selectedCalendarDayDetails.set(null);
       this.calendarLoading.set(false);
+      if (!isInitialOrProgramChange) this.calendarAnimationState.set('center');
+      this.isCalendarAnimating = false; // Ensure reset
       return;
     }
     this.calendarLoading.set(true);
-    this.selectedCalendarDayDetails.set(null);
+    if (!isInitialOrProgramChange && !this.isCalendarAnimating) {
+        this.selectedCalendarDayDetails.set(null);
+    }
+
     const viewDate = this.calendarViewDate();
     let rangeStart: Date, rangeEnd: Date;
     if (this.calendarDisplayMode() === 'month') {
-      const monthStart = startOfMonth(viewDate);
-      const monthEnd = endOfMonth(viewDate);
+      const monthStart = startOfMonth(viewDate); const monthEnd = endOfMonth(viewDate);
       rangeStart = startOfWeek(monthStart, { weekStartsOn: this.weekStartsOn });
       rangeEnd = endOfWeek(monthEnd, { weekStartsOn: this.weekStartsOn });
     } else {
@@ -433,23 +492,13 @@ export class TrainingProgramListComponent implements OnInit, OnDestroy {
         const distinctScheduledForThisDate = scheduledEntriesFromProgram.filter(entry => isSameDay(entry.date, date));
         const currentDayIsPast = isPast(date) && !isToday(date);
         const scheduledItemsWithLogs: ScheduledItemWithLogs[] = distinctScheduledForThisDate.map(scheduledEntry => {
-          const correspondingLogs: WorkoutLog[] = allLogsForPeriod.filter(log =>
-            isSameDay(parseISO(log.date), date) && log.routineId === scheduledEntry.routine.id
-          ).sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
-          return {
-            routine: scheduledEntry.routine,
-            scheduledDayInfo: scheduledEntry.scheduledDayInfo,
-            logs: correspondingLogs
-          };
-        });
-        return {
-          date: date,
-          isCurrentMonth: this.calendarDisplayMode() === 'month' ? isSameMonth(date, viewDate) : true,
-          isToday: isToday(date),
-          isPastDay: currentDayIsPast,
-          hasWorkout: scheduledItemsWithLogs.length > 0,
-          scheduledItems: scheduledItemsWithLogs
-        };
+          const routineForDay = this.allRoutinesMap.get(scheduledEntry.scheduledDayInfo.routineId);
+          if (!routineForDay) { console.warn(`Routine with ID ${scheduledEntry.scheduledDayInfo.routineId} not found.`); return null; }
+          const correspondingLogs: WorkoutLog[] = allLogsForPeriod.filter(log => isSameDay(parseISO(log.date), date) && log.routineId === routineForDay.id)
+            .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
+          return { routine: routineForDay, scheduledDayInfo: scheduledEntry.scheduledDayInfo, logs: correspondingLogs };
+        }).filter(item => item !== null) as ScheduledItemWithLogs[];
+        return { date: date, isCurrentMonth: this.calendarDisplayMode() === 'month' ? isSameMonth(date, viewDate) : true, isToday: isToday(date), isPastDay: currentDayIsPast, hasWorkout: scheduledItemsWithLogs.length > 0, scheduledItems: scheduledItemsWithLogs };
       });
       this.calendarDays.set(days);
     } catch (error) {
@@ -458,91 +507,39 @@ export class TrainingProgramListComponent implements OnInit, OnDestroy {
       this.calendarDays.set([]);
     } finally {
       this.calendarLoading.set(false);
+      if (isInitialOrProgramChange || this.calendarAnimationState() === 'center') {
+        this.calendarAnimationState.set('center');
+      } else if (this.calendarAnimationState() === 'preloadFromLeft' || this.calendarAnimationState() === 'preloadFromRight') {
+         Promise.resolve().then(() => this.calendarAnimationState.set('center'));
+      }
+      this.isCalendarAnimating = false; // Crucial: reset animation flag
       this.cdr.detectChanges();
     }
   }
 
-  viewSessionSummary(logId: string | undefined): void {
-    if (logId) {
-      this.router.navigate(['/workout/summary', logId]);
-      this.selectCalendarDay(null);
-    }
-  }
-
-  previousPeriod(): void {
-    if (this.calendarDisplayMode() === 'month') {
-      this.calendarViewDate.update(d => subMonths(d, 1));
-    } else {
-      this.calendarViewDate.update(d => subDays(d, 7));
-    }
-    this.selectedCalendarDayDetails.set(null);
-    if (this.activeProgramForCalendar()) this.generateCalendarDays();
-  }
-
-  nextPeriod(): void {
-    if (this.calendarDisplayMode() === 'month') {
-      this.calendarViewDate.update(d => addMonths(d, 1));
-    } else {
-      this.calendarViewDate.update(d => addDays(d, 7));
-    }
-    this.selectedCalendarDayDetails.set(null);
-    if (this.activeProgramForCalendar()) this.generateCalendarDays();
-  }
-
-  goToTodayCalendar(): void {
-    this.calendarViewDate.set(new Date());
-    this.selectedCalendarDayDetails.set(null);
-    if (this.activeProgramForCalendar()) this.generateCalendarDays();
-  }
-
-  get weekDayNames(): string[] {
-    const start = startOfWeek(new Date(), { weekStartsOn: this.weekStartsOn });
-    return eachDayOfInterval({ start, end: addDays(start, 6) }).map(d => format(d, 'EE'));
-  }
-
+  viewSessionSummary(logId: string | undefined): void { if (logId) { this.router.navigate(['/workout/summary', logId]); this.selectCalendarDay(null); } }
   selectCalendarDay(day: CalendarDay | null): void {
-    if (day && day.hasWorkout) {
-      this.selectedCalendarDayDetails.set(day);
-    } else if (day && !day.hasWorkout) {
-      this.toastService.info("It's a rest day!", 2000, format(day.date, 'EEEE'));
-      this.selectedCalendarDayDetails.set(null);
-    } else {
-      this.selectedCalendarDayDetails.set(null);
-    }
+    if (this.isCalendarAnimating) return; // Prevent opening sheet during slide
+    if (day?.hasWorkout) this.selectedCalendarDayDetails.set(day);
+    else if (day && !day.hasWorkout) { this.toastService.info("It's a rest day!", 2000, format(day.date, 'EEEE')); this.selectedCalendarDayDetails.set(null); }
+    else this.selectedCalendarDayDetails.set(null);
   }
-
   startScheduledWorkout(routineId: string | undefined, programId: string | undefined): void {
     if (routineId) {
       const navigationExtras: any = {};
-      if (programId) {
-        navigationExtras.queryParams = { programId: programId };
-      }
+      if (programId) navigationExtras.queryParams = { programId: programId };
       this.router.navigate(['/workout/play', routineId], navigationExtras);
       this.selectCalendarDay(null);
     }
   }
-
-  logPreviousSession(routineId: string, workoutDate: Date): void {
-    this.router.navigate(['/history/add-manual', { routineId, workoutDate: format(workoutDate, 'yyyy-MM-dd') }]);
-    this.selectCalendarDay(null);
-  }
-
-  goToPreviousProgramSession(programId: string | undefined): void {
-    if (programId) {
-      this.router.navigate(['/history/list'], { queryParams: { programId: programId } });
-    } else {
-      this.router.navigate(['/history/list']);
-    }
-    this.selectCalendarDay(null);
-  }
-
+  logPreviousSession(routineId: string, workoutDate: Date): void { this.router.navigate(['/history/add-manual', { routineId, workoutDate: format(workoutDate, 'yyyy-MM-dd') }]); this.selectCalendarDay(null); }
+  goToPreviousProgramSession(programId: string | undefined): void { this.router.navigate(['/history/list'], programId ? { queryParams: { programId: programId } } : {}); this.selectCalendarDay(null); }
   isToday(date: Date): boolean { return isToday(date); }
-  isPast(date: Date): boolean { return isPast(date) && !isToday(date); } // Ensure !isToday for past
+  isPast(date: Date): boolean { return isPast(date) && !isToday(date); }
   isFuture(date: Date): boolean { return isFuture(date); }
 
-
   ngOnDestroy(): void {
-    this.programsSubscription?.unsubscribe();
-    this.routinesSubscription?.unsubscribe();
+    this.dataSubscription?.unsubscribe();
+    this.hammerInstanceCalendar?.destroy();
   }
 }

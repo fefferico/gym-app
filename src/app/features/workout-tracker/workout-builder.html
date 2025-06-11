@@ -13,7 +13,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                 </svg></button>
             <h1
-                class="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800 dark:text-gray-200 text-center flex-grow truncate px-2">
+                class="text-xl sm:text-2xl md:text-2xl font-bold text-gray-800 dark:text-gray-200 text-center flex-grow truncate px-2">
                 {{ isNewMode ? 'New Routine' : (isViewMode ? (routineForm.get('name')?.value || 'View Routine') :
                 ('Edit: ' + (routineForm.get('name')?.value || 'Routine'))) }}
             </h1>

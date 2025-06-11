@@ -8,7 +8,7 @@
                     class="w-6 h-6">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                 </svg></button>
-            <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-200">
+            <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">
                 Log Past Workout Session
             </h1>
             <span *ngIf="previousRoutineToBeLogged() !== null" class=" text-gray-800 dark:text-gray-200">for previous
@@ -84,7 +84,7 @@
                 <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300">Logged Exercises</h2>
                 <button type="button" (click)="openExerciseSelectionModal()"
                     class="bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium py-2 px-3 rounded-md transition-colors">
-                    + Add Ad-hoc Exercise
+                    + Add Exercise
                 </button>
             </div>
 
@@ -205,7 +205,7 @@
             (click)="$event.stopPropagation()">
             <div class="bg-white dark:bg-gray-700 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <div class="flex justify-between items-center pb-3">
-                    <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">Add Ad-hoc Exercise</h3>
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">Add Exercise</h3>
                     <button type="button" (click)="closeExerciseSelectionModal()"
                         class="p-1 rounded-full text-gray-400 hover:text-gray-600">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"

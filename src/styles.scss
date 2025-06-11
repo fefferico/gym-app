@@ -11,3 +11,7 @@ body {
   */
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
 }
+
+.your-swipeable-card-class { /* Add a specific class to the div if needed */
+  touch-action: pan-y pan-x; /* Or just 'auto' if that works, but pan-y pan-x is often good */
+}
