@@ -1,6 +1,16 @@
 <div class="container mx-auto p-1">
   <header class="flex justify-between items-center mb-2 pb-2 border-b border-gray-200 dark:border-gray-700">
     <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">Exercise Library</h1>
+    <!-- Filter Accordion Toggle Button -->
+    <button (click)="toggleFilterAccordion()" type="button"
+      class="p-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-light transition-all duration-300 ease-in-out">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+        class="w-6 h-6 transition-transform duration-300" [class.rotate-180]="isFilterAccordionOpen()">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0M3.75 18H7.5m3-6h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0M3.75 12H7.5" />
+      </svg>
+      <span class="sr-only">Toggle Filters</span>
+    </button>
   </header>
 
   <button routerLink="/library/new"
@@ -11,53 +21,60 @@
     Add New Exercise
   </button>
 
-  <!-- Filters -->
-  <div class="mb-8 p-4 bg-white dark:bg-gray-700 rounded-lg shadow-md">
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-      <div>
-        <label for="category-filter"
-          class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
-        <select id="category-filter" (change)="onCategoryChange($event)" [value]="selectedCategory() || ''"
-          class="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200">
-          <option value="">All Categories</option>
-          <option *ngFor="let category of categories$ | async" [value]="category">{{ category | titlecase }}</option>
-        </select>
+  <!-- Filter Accordion Section -->
+  <div class="overflow-hidden transition-all duration-500 ease-in-out"
+       [style.maxHeight]="isFilterAccordionOpen() ? '1000px' : '0px'"
+       [class.mb-8]="isFilterAccordionOpen()">
+    <div class="p-4 bg-white dark:bg-gray-700 rounded-lg shadow-md border dark:border-gray-600">
+      <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">Filter Exercises</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+        <div>
+          <label for="category-filter"
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
+          <select id="category-filter" (change)="onCategoryChange($event)" [value]="selectedCategory() || ''"
+            class="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200">
+            <option value="">All Categories</option>
+            <option *ngFor="let category of categories$ | async" [value]="category">{{ category | titlecase }}</option>
+          </select>
+        </div>
+        <div>
+          <label for="muscle-group-filter" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Primary
+            Muscle Group</label>
+          <select id="muscle-group-filter" (change)="onMuscleGroupChange($event)" [value]="selectedMuscleGroup() || ''"
+            class="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200">
+            <option value="">All Muscle Groups</option>
+            <option *ngFor="let group of primaryMuscleGroups$ | async" [value]="group">{{ group | titlecase }}</option>
+          </select>
+        </div>
+        <div>
+          <label for="search-term" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Search</label>
+          <input type="text" id="search-term" placeholder="Search by name or description..." [value]="searchTerm()"
+            (input)="onSearchTermChange($event)"
+            class="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200">
+        </div>
       </div>
-      <div>
-        <label for="muscle-group-filter" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Primary
-          Muscle Group</label>
-        <select id="muscle-group-filter" (change)="onMuscleGroupChange($event)" [value]="selectedMuscleGroup() || ''"
-          class="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200">
-          <option value="">All Muscle Groups</option>
-          <option *ngFor="let group of primaryMuscleGroups$ | async" [value]="group">{{ group | titlecase }}</option>
-        </select>
-      </div>
-      <div>
-        <label for="search-term" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Search</label>
-        <input type="text" id="search-term" placeholder="Search by name or description..." [value]="searchTerm()"
-          (input)="onSearchTermChange($event)"
-          class="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200">
-      </div>
-    </div>
-    <div class="mt-4 flex justify-between items-center">
-      <button (click)="clearFilters()"
-        class="flex px-4 py-2 bg-yellow-200 dark:bg-yellow-700 text-gray-700 dark:text-gray-200 rounded-md hover:bg-yellow-300 dark:hover:bg-yellow-500 text-sm items-center">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-          class="size-5 mr-2"> <!-- Adjusted size -->
-          <path stroke-linecap="round" stroke-linejoin="round"
-            d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-        </svg>
-        Clear Filters
-      </button>
-      <div *ngIf="allExercises().length > 0" class="text-sm text-gray-600 dark:text-gray-400">
-        Showing <strong class="text-gray-800 dark:text-gray-200">{{ filteredExercises().length }}</strong>
-        <span *ngIf="searchTerm() || selectedCategory() || selectedMuscleGroup()">
-          of <strong class="text-gray-800 dark:text-gray-200">{{ allExercises().length }}</strong>
-        </span>
-        exercises
+      <div class="mt-4 flex justify-between items-center">
+        <button (click)="clearFilters()"
+          class="flex px-4 py-2 bg-yellow-200 dark:bg-yellow-700 text-gray-700 dark:text-gray-200 rounded-md hover:bg-yellow-300 dark:hover:bg-yellow-500 text-sm items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+            class="size-5 mr-2">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+          </svg>
+          Clear Filters
+        </button>
+        <div *ngIf="allExercises().length > 0" class="text-sm text-gray-600 dark:text-gray-400">
+          Showing <strong class="text-gray-800 dark:text-gray-200">{{ filteredExercises().length }}</strong>
+          <span *ngIf="searchTerm() || selectedCategory() || selectedMuscleGroup()">
+            of <strong class="text-gray-800 dark:text-gray-200">{{ allExercises().length }}</strong>
+          </span>
+          exercises
+        </div>
       </div>
     </div>
   </div>
+  <!-- End Filter Accordion Section -->
+
 
   <!-- Exercise List -->
   <div *ngIf="allExercises().length > 0; else loadingOrInitial">
@@ -70,7 +87,7 @@
         <div class="p-4 sm:p-5 flex-grow cursor-pointer">
           <div class="flex items-start mb-1.5">
             <img *ngIf="exercise" [src]="getIconPath(exercise.iconName)" [alt]="exercise.name + ' icon'"
-              class="w-7 h-7 sm:w-8 sm:h-8 object-contain mr-2 mt-0.5 sm:mt-1" 
+              class="w-7 h-7 sm:w-8 sm:h-8 object-contain mr-2 mt-0.5 sm:mt-1"
               [ngClass]="{'filter dark:invert': exercise.iconName !== 'default-exercise'}">
             <h2 class="text-lg sm:text-xl font-semibold text-primary dark:text-primary-light flex-grow pr-8" [title]="exercise.name">{{ exercise.name }}</h2>
           </div>
@@ -78,7 +95,6 @@
           <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-1 capitalize">{{ exercise.category | titlecase }}</p>
           <p class="text-xs sm:text-sm text-gray-700 dark:text-gray-300 mb-2 sm:mb-3">Primary: {{ exercise.primaryMuscleGroup | titlecase }}</p>
           <p *ngIf="exercise.description" class="text-gray-600 dark:text-gray-400 text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2 sm:line-clamp-3" [title]="exercise.description">{{ exercise.description }}</p>
-          <!-- Removed old details button, actions will be in menus -->
         </div>
 
         <!-- Wrapper for "More Actions" button and its dropdown -->
@@ -93,7 +109,7 @@
 
                 <!-- Non-Compact (Window) Dropdown Menu -->
                 <div *ngIf="actionsVisibleId() === exercise.id && !menuModeCompact" @dropdownMenu
-                    class="origin-top-right absolute right-0 top-full mt-1 sm:mt-2 w-40 sm:w-48 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black dark:ring-gray-600 ring-opacity-5 focus:outline-none py-1">
+                    class="origin-top-right absolute right-0 top-full mt-1 sm:mt-2 w-40 sm:w-48 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black dark:ring-gray-600 ring-opacity-5 focus:outline-none py-1 z-50">
                     <button (click)="goToExerciseDetails(exercise.id, $event)"
                         class="w-full text-left px-3 py-1.5 sm:px-4 sm:py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-500 flex items-center">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-2">
@@ -107,7 +123,6 @@
                             <path d="m13.83 3.393 2.777 2.777-9.333 9.333H4.5v-2.777l9.33-9.333Zm0 0L12.5 2.06M6 13.5V15h1.5l7.5-7.5-1.5-1.5L6 13.5Z" />
                         </svg>Edit
                     </button>
-                    <!-- Add to workout/routine could go here -->
                     <div class="my-0.5 sm:my-1 border-t border-gray-200 dark:border-gray-600"></div>
                     <button (click)="deleteExercise(exercise.id, $event)"
                         class="w-full text-left px-3 py-1.5 sm:px-4 sm:py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-600/50 flex items-center">
@@ -154,8 +169,8 @@
   </div>
 
   <ng-template #loadingOrInitial>
-    <div *ngIf="!allExercises() || allExercises().length === 0" class="text-center py-10"> <!-- More specific condition -->
-        <div *ngIf="exerciseService.isLoadingExercises$ | async" class="text-center py-10"> <!-- Check loading state from service -->
+    <div *ngIf="!allExercises() || allExercises().length === 0" class="text-center py-10">
+        <div *ngIf="exerciseService.isLoadingExercises$ | async" class="text-center py-10">
             <svg class="animate-spin h-8 w-8 text-primary dark:text-primary-light mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>

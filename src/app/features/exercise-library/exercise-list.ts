@@ -4,11 +4,11 @@ import { Router, RouterLink } from '@angular/router';
 import { Observable } from 'rxjs';
 import { Exercise } from '../../core/models/exercise.model';
 import { ExerciseService } from '../../core/services/exercise.service';
-import { animate, state, style, transition, trigger } from '@angular/animations'; // Import animations
-import { AlertService } from '../../core/services/alert.service'; // For delete confirmation
-import { ToastService } from '../../core/services/toast.service'; // For feedback
-import { SpinnerService } from '../../core/services/spinner.service'; // For loading indicators
-import { ThemeService } from '../../core/services/theme.service'; // Assuming you have this for menuModeCompact
+import { animate, state, style, transition, trigger } from '@angular/animations';
+import { AlertService } from '../../core/services/alert.service';
+import { ToastService } from '../../core/services/toast.service';
+import { SpinnerService } from '../../core/services/spinner.service';
+import { ThemeService } from '../../core/services/theme.service';
 
 @Component({
   selector: 'app-exercise-list',
@@ -16,7 +16,7 @@ import { ThemeService } from '../../core/services/theme.service'; // Assuming yo
   imports: [CommonModule, RouterLink, AsyncPipe, TitleCasePipe],
   templateUrl: './exercise-list.html',
   styleUrl: './exercise-list.scss',
-  animations: [ // Add animation triggers
+  animations: [
     trigger('slideInOutActions', [
       state('void', style({
         height: '0px',
@@ -56,15 +56,14 @@ import { ThemeService } from '../../core/services/theme.service'; // Assuming yo
   ]
 })
 export class ExerciseListComponent implements OnInit {
-  // Keep existing injections
-  public exerciseService = inject(ExerciseService); // Made public for template access to isLoadingExercises$
+  public exerciseService = inject(ExerciseService);
   private router = inject(Router);
   private alertService = inject(AlertService);
   private toastService = inject(ToastService);
   private spinnerService = inject(SpinnerService);
-  private themeService = inject(ThemeService); // Uncomment and use if ThemeService is available
+  private themeService = inject(ThemeService);
+  private platformId = inject(PLATFORM_ID);
 
-  // Keep existing observables and signals for filters and data
   categories$: Observable<string[]> | undefined;
   primaryMuscleGroups$: Observable<string[]> | undefined;
   selectedCategory = signal<string | null>(null);
@@ -72,9 +71,9 @@ export class ExerciseListComponent implements OnInit {
   searchTerm = signal<string>('');
   allExercises = signal<Exercise[]>([]);
 
-  // Add signals and properties for menu logic
   actionsVisibleId = signal<string | null>(null);
-  menuModeCompact: boolean = false; // Default, set from ThemeService if available
+  menuModeCompact: boolean = false;
+  isFilterAccordionOpen = signal(false); // Signal for accordion state
 
   filteredExercises = computed(() => {
     let exercises = this.allExercises();
@@ -90,7 +89,7 @@ export class ExerciseListComponent implements OnInit {
     if (term) {
       exercises = exercises.filter(ex =>
         ex.name.toLowerCase().includes(term) ||
-        (ex.description && ex.description.toLowerCase().includes(term)) // Check if description exists
+        (ex.description && ex.description.toLowerCase().includes(term))
       );
     }
     return exercises.map(ex => ({
@@ -99,12 +98,10 @@ export class ExerciseListComponent implements OnInit {
     }));
   });
 
-  private platformId = inject(PLATFORM_ID);
-
   constructor() {
-    effect(() => {
-      console.log('Filtered exercises updated:', this.filteredExercises().length);
-    });
+    // effect(() => { // Keep for debugging if needed
+    //   console.log('Filtered exercises updated:', this.filteredExercises().length);
+    // });
   }
 
   ngOnInit(): void {
@@ -113,8 +110,7 @@ export class ExerciseListComponent implements OnInit {
     }
     this.categories$ = this.exerciseService.getUniqueCategories();
     this.primaryMuscleGroups$ = this.exerciseService.getUniquePrimaryMuscleGroups();
-
-    this.menuModeCompact = this.themeService.isMenuModeCompact(); // Set from ThemeService
+    this.menuModeCompact = this.themeService.isMenuModeCompact();
 
     this.exerciseService.getExercises().subscribe(exercises => {
       this.allExercises.set(exercises);
@@ -140,7 +136,6 @@ export class ExerciseListComponent implements OnInit {
     this.selectedCategory.set(null);
     this.selectedMuscleGroup.set(null);
     this.searchTerm.set('');
-    // Reset select elements visually if not using two-way binding
     const categorySelect = document.getElementById('category-filter') as HTMLSelectElement;
     if (categorySelect) categorySelect.value = '';
     const muscleGroupSelect = document.getElementById('muscle-group-filter') as HTMLSelectElement;
@@ -150,16 +145,15 @@ export class ExerciseListComponent implements OnInit {
   }
 
   goToExerciseDetails(id: string, event?: MouseEvent): void {
-    event?.stopPropagation(); // Prevent card click if called from button inside
+    event?.stopPropagation();
     this.router.navigate(['/library', id]);
-    this.actionsVisibleId.set(null); // Close menu
+    this.actionsVisibleId.set(null);
   }
 
   getIconPath(iconName: string | undefined): string {
     return this.exerciseService.getIconPath(iconName);
   }
 
-  // Methods for menu actions (View, Edit, Delete)
   toggleActions(exerciseId: string, event: MouseEvent): void {
     event.stopPropagation();
     this.actionsVisibleId.update(current => (current === exerciseId ? null : exerciseId));
@@ -167,38 +161,39 @@ export class ExerciseListComponent implements OnInit {
 
   editExercise(exerciseId: string, event: MouseEvent): void {
     event.stopPropagation();
-    this.router.navigate(['/library/edit', exerciseId]); // Assuming this route exists
+    this.router.navigate(['/library/edit', exerciseId]);
     this.actionsVisibleId.set(null);
   }
 
   async deleteExercise(exerciseId: string, event: MouseEvent): Promise<void> {
     event.stopPropagation();
     this.actionsVisibleId.set(null);
-
     const exerciseToDelete = this.allExercises().find(ex => ex.id === exerciseId);
     if (!exerciseToDelete) {
         this.toastService.error("Exercise not found.", 0);
         return;
     }
-
     const confirm = await this.alertService.showConfirm(
       'Delete Exercise',
       `Are you sure you want to delete the exercise "${exerciseToDelete.name}"? This action cannot be undone.`,
       'Delete'
     );
-
     if (confirm && confirm.data) {
       try {
         this.spinnerService.show("Deleting exercise...");
-        await this.exerciseService.deleteExercise(exerciseId); // Assuming deleteExercise is async
-        // No need to manually update allExercises, getExercises() in service should emit new list
+        await this.exerciseService.deleteExercise(exerciseId);
         this.toastService.success(`Exercise "${exerciseToDelete.name}" deleted successfully.`, 3000, "Deleted");
       } catch (error) {
         console.error("Error deleting exercise:", error);
-        this.toastService.error("Failed to delete exercise. It might be in use in routines or programs.", 0, "Error");
+        this.toastService.error("Failed to delete exercise. It might be in use.", 0, "Error");
       } finally {
         this.spinnerService.hide();
       }
     }
+  }
+
+  // Method to toggle the filter accordion
+  toggleFilterAccordion(): void {
+    this.isFilterAccordionOpen.update(isOpen => !isOpen);
   }
 }

@@ -262,21 +262,15 @@
                         themeService.isDarkTheme() ? 'On' : 'Off' }}</span>
                 </label>
             </div>
-        </section>
-
-        <!-- Menu compact mode or window -->
-        <section class="bg-white dark:bg-gray-700 p-4 sm:p-6 rounded-lg shadow-md">
-            <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">Menu Appearance</h2>
-            <!-- ... existing dark mode toggle code ... -->
-            <div class="flex items-center justify-between">
+            <div class="flex items-center justify-between mt-5">
                 <div>
-                    <h3 class="text-md font-medium text-gray-700 dark:text-gray-300">Compact mode</h3>
+                    <h3 class="text-md font-medium text-gray-700 dark:text-gray-300">Compact menu mode</h3>
                     <p class="text-sm text-gray-500 dark:text-gray-400 mr-1">Toggle between window and compact mode.</p>
                 </div>
                 <label for="menu-mode-toggle" class="inline-flex items-center cursor-pointer">
                     <span class="sr-only">Toggle Compact Mode</span>
-                    <input type="checkbox" id="menu-mode-toggle" class="sr-only peer" [checked]="themeService.isMenuModeCompact()"
-                        (change)="themeService.toggleMenuMode()">
+                    <input type="checkbox" id="menu-mode-toggle" class="sr-only peer"
+                        [checked]="themeService.isMenuModeCompact()" (change)="themeService.toggleMenuMode()">
                     <div
                         class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary dark:peer-checked:bg-primary-dark">
                     </div>

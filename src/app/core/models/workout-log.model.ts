@@ -53,6 +53,7 @@ export interface WorkoutLog {
   // Optional: User-perceived effort, mood, location, etc.
   // effortLevel?: number; // e.g., RPE 1-10
   // mood?: 'good' | 'average' | 'poor';
+  programId?: string; // ID of the program this workout belongs to, if applicable
 }
 
 // For displaying personal bests

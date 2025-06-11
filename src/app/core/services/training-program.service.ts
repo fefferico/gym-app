@@ -285,4 +285,73 @@ export class TrainingProgramService {
       })
     );
   }
+
+  /**
+   * Retrieves all scheduled routine days for a given date range from the program with the specified ID.
+   * Useful for populating a calendar view for a specific program.
+   * @param programId The ID of the program to use.
+   * @param viewStartDate The start of the date range.
+   * @param viewEndDate The end of the date range.
+   * @returns An Observable emitting an array of objects, each containing the date, routine, and scheduled day info.
+   */
+  getScheduledRoutinesForDateRangeByProgramId(
+    programId: string,
+    viewStartDate: Date,
+    viewEndDate: Date
+  ): Observable<{ date: Date; routine: Routine; scheduledDayInfo: ScheduledRoutineDay }[]> {
+    return this.getProgramById(programId).pipe(
+      switchMap(program => {
+        if (!program || !program.schedule || program.schedule.length === 0) {
+          return of([]);
+        }
+
+        const scheduledEntries: Observable<{ date: Date; routine: Routine; scheduledDayInfo: ScheduledRoutineDay } | null>[] = [];
+        let currentDate = new Date(viewStartDate);
+
+        while (currentDate <= viewEndDate) {
+          let dayMatchLogic: (day: ScheduledRoutineDay) => boolean;
+          const currentTargetDate = new Date(currentDate);
+
+          if (program.cycleLength && program.cycleLength > 0 && program.startDate) {
+            const programStartDate = new Date(program.startDate);
+            const diffTime = Math.abs(currentTargetDate.getTime() - programStartDate.getTime());
+            const diffDays = currentTargetDate >= programStartDate ? Math.floor(diffTime / (1000 * 60 * 60 * 24)) : -1;
+
+            if (diffDays >= 0) {
+              const currentCycleDayNumber = (diffDays % program.cycleLength) + 1;
+              dayMatchLogic = (s: ScheduledRoutineDay) => s.dayOfWeek === currentCycleDayNumber;
+            } else {
+              dayMatchLogic = () => false;
+            }
+          } else {
+            const dayOfWeekForTargetDate = getDay(currentTargetDate);
+            dayMatchLogic = (s: ScheduledRoutineDay) => s.dayOfWeek === dayOfWeekForTargetDate;
+          }
+
+          const scheduledDayInfo = program.schedule.find(dayMatchLogic);
+
+          if (scheduledDayInfo) {
+            scheduledEntries.push(
+              this.workoutService.getRoutineById(scheduledDayInfo.routineId).pipe(
+                map(routine => {
+                  if (routine) {
+                    return { date: currentTargetDate, routine, scheduledDayInfo };
+                  }
+                  return null;
+                })
+              )
+            );
+          }
+          currentDate.setDate(currentDate.getDate() + 1);
+        }
+
+        if (scheduledEntries.length === 0) {
+          return of([]);
+        }
+        return combineLatest(scheduledEntries).pipe(
+          map(results => results.filter(r => r !== null) as { date: Date; routine: Routine; scheduledDayInfo: ScheduledRoutineDay }[])
+        );
+      })
+    );
+  }
 }

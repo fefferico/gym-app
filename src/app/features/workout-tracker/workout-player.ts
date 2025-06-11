@@ -22,6 +22,7 @@ import { ToastService } from '../../core/services/toast.service';
 import { v4 as uuidv4 } from 'uuid';
 import { format } from 'date-fns';
 import { AppSettingsService } from '../../core/services/app-settings.service'; // Import AppSettingsService
+import { TrainingProgram } from '../../core/models/training-program.model';
 
 
 // Interface to manage the state of the currently active set/exercise
@@ -109,6 +110,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   // private countdownAudio: HTMLAudioElement | undefined; // REMOVE THIS
   // --- State Signals ---
   routine = signal<Routine | null | undefined>(undefined);
+  program = signal<TrainingProgram | null | undefined>(undefined);
   sessionState = signal<SessionState>(SessionState.Loading); // Main session state
   public readonly PlayerSubState = PlayerSubState; // <--- ADD THIS LINE
   playerSubState = signal<PlayerSubState>(PlayerSubState.PerformingSet); // Sub-state for player UI
@@ -1401,6 +1403,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     if (this.timerSub) this.timerSub.unsubscribe();
 
     const sessionRoutineValue = this.routine();
+    const sessionProgramValue = this.program();
     const performedExercises = this.currentWorkoutLogExercises();
     let proceedToLog = true;
     let logAsNewRoutine = false;
@@ -1494,6 +1497,8 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       this.toastService.success(`New routine "${createdRoutine.name}" created.`, 4000);
     }
 
+    // const programIf = this.routine()? this.routine().programId : undefined;
+
     const finalLog: Omit<WorkoutLog, 'id'> = {
       routineId: finalRoutineIdToLog,
       routineName: finalRoutineNameForLog,
@@ -1503,6 +1508,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       durationMinutes: durationMinutes,
       exercises: this.currentWorkoutLogExercises(), // Already contains the LoggedWorkoutExercise[]
       notes: sessionRoutineValue?.notes, // Or overall notes if you have a form field for it
+      programId: sessionProgramValue?.id, // If applicable
     };
 
     const savedLog = this.trackingService.addWorkoutLog(finalLog);
@@ -1676,6 +1682,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
           const routeSnapshot = this.route.snapshot;
           const navigatedToPlayerUrl = event.urlAfterRedirects.startsWith('/workout/play/');
           const targetRoutineId = routeSnapshot.paramMap.get('routineId');
+          const targetProgram = routeSnapshot.paramMap.get('programToStart');
 
           if (navigatedToPlayerUrl) {
             if (this.routineId === targetRoutineId && this.isInitialLoadComplete && this.sessionState() !== SessionState.Playing) {
@@ -1729,6 +1736,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     this.currentBlockRound.set(1);
     this.totalBlockRounds.set(1);
     this.routine.set(undefined); // Clear current routine before loading new one
+    this.program.set(undefined); // Clear current program if any
 
     // Unsubscribe from previous routeSub to avoid multiple subscriptions if called multiple times
     if (this.routeSub) {
@@ -1739,6 +1747,13 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       // REMOVE take(1) here to allow updates if component is reused and params change
       switchMap(params => {
         const newRoutineId = params.get('routineId');
+        const currentProgramId = this.route.snapshot.queryParamMap.get('programId');
+
+        if (currentProgramId){
+          console.log('loadNewWorkoutFromRoute - Program ID found in query params:', currentProgramId);
+          this.program.set({ id: currentProgramId, name: 'Program Name Placeholder', schedule: [], isActive: true }); // Replace with actual program fetch if needed
+        }
+
         console.log('loadNewWorkoutFromRoute - paramMap emitted, newRoutineId:', newRoutineId);
 
         if (!newRoutineId) {
@@ -1816,6 +1831,10 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   private async checkForPausedSession(isReEntry: boolean = false): Promise<boolean> {
     const pausedState = this.storageService.getItem<PausedWorkoutState>(this.PAUSED_WORKOUT_KEY);
     const routeRoutineId = this.route.snapshot.paramMap.get('routineId'); // string | null
+
+    // Get optional programId from query parameters
+    const currentProgramId = this.route.snapshot.queryParamMap.get('programId');
+
     const resumeQueryParam = this.route.snapshot.queryParamMap.get('resume') === 'true';
 
     console.log(
@@ -1825,7 +1844,8 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       'Paused Version Match:', pausedState?.version === this.PAUSED_STATE_VERSION,
       'Paused Routine ID:', pausedState?.routineId,
       'Route Routine ID:', routeRoutineId,
-      'Paused Workout Date:', pausedState?.workoutDate
+      'Paused Workout Date:', pausedState?.workoutDate,
+      'Program ID:', currentProgramId,
     );
 
     if (pausedState && pausedState.version === this.PAUSED_STATE_VERSION) {

@@ -58,7 +58,7 @@
                 <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Routine
                     Name</label>
                 <input type="text" id="name" formControlName="name"
-                    class="mt-1 block w-full p-2 border rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700 dark:border-gray-600"
+                    class="mt-1 block w-full p-2 border rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:border-gray-600 dark:text-gray-200"
                     [ngClass]="{'border-red-500 dark:border-red-400': f['name'].invalid && f['name'].touched, 'border-gray-300 dark:border-gray-600': !(f['name'].invalid && f['name'].touched) }">
                 <div *ngIf="f['name'].invalid && (f['name'].dirty || f['name'].touched)"
                     class="text-red-500 dark:text-red-400 text-xs mt-1">
@@ -69,13 +69,13 @@
                 <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Description
                     (Optional)</label>
                 <textarea id="description" formControlName="description" rows="3"
-                    class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700"></textarea>
+                    class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200"></textarea>
             </div>
             <div>
                 <label for="goal" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Primary
                     Goal</label>
                 <select id="goal" formControlName="goal"
-                    class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700">
+                    class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200">
                     <option *ngFor="let goalOpt of routineGoals" [value]="goalOpt.value">{{ goalOpt.label }}</option>
                 </select>
             </div>
@@ -155,7 +155,7 @@
                                         <label [for]="'rounds-' + exIndex"
                                             class="text-xs font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap">Rounds:</label>
                                         <input type="number" [id]="'rounds-' + exIndex" formControlName="rounds" min="1"
-                                            class="w-16 p-1 text-sm border-gray-300 dark:border-gray-600 border-2 rounded-md focus:ring-primary focus:border-primary dark:bg-gray-700 disabled:opacity-50 disabled:bg-gray-300 dark:disabled:bg-gray-500"
+                                            class="w-16 p-1 text-sm border-gray-300 dark:border-gray-600 border-2 rounded-md focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200 disabled:opacity-50 disabled:bg-gray-300 dark:disabled:bg-gray-500"
                                             [readonly]="(exerciseControl.get('supersetId')?.value && (exerciseControl.get('supersetOrder')?.value ?? 0) > 0) || isViewMode"
                                             (change)="syncSupersetRounds(exerciseControl.get('supersetId')?.value, exerciseControl.get('rounds')?.value, exIndex)">
                                     </div>
@@ -212,7 +212,7 @@
                                         <!-- Compact Set Row (Click to expand) -->
                                         <div *ngIf="!isSetExpanded(exIndex, setIndex)"
                                             (click)="toggleSetExpansion(exIndex, setIndex, $event)"
-                                            class="grid grid-cols-12 gap-x-2 items-center py-1.5 px-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer border dark:border-gray-700"
+                                            class="grid grid-cols-12 gap-x-2 items-center py-1.5 px-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer border dark:border-gray-700 dark:text-gray-200"
                                             [ngClass]="{
                                                 'bg-blue-100 dark:bg-blue-700': setControl.get('isWarmup')?.value,
                                                 'bg-gray-50 dark:bg-gray-700': !setControl.get('isWarmup')?.value && !isViewMode,
@@ -222,20 +222,20 @@
                                                 class="col-span-1 text-xs text-gray-600 dark:text-gray-400 text-center font-medium">
                                                 {{ setIndex + 1 }}</div>
                                             <div
-                                                class="col-span-2 text-xs text-gray-700 dark:text-gray-200 text-center">
+                                                class="col-span-2 text-xs text-gray-700 text-center">
                                                 {{ setControl.get('reps')?.value || '-' }}</div>
                                             <div
-                                                class="col-span-2 text-xs text-gray-700 dark:text-gray-200 text-center">
+                                                class="col-span-2 text-xs text-gray-700 text-center">
                                                 {{ setControl.get('weight')?.value ? (setControl.get('weight')?.value |
                                                 weightUnit:'1.0-2') : '-' }}</div>
                                             <div
-                                                class="col-span-2 text-xs text-gray-700 dark:text-gray-200 text-center">
+                                                class="col-span-2 text-xs text-gray-700 text-center">
                                                 {{ setControl.get('duration')?.value ?
                                                 (setControl.get('duration')?.value + 's') : '-' }}</div>
                                             <div
-                                                class="col-span-2 text-xs text-gray-700 dark:text-gray-200 text-center">
+                                                class="col-span-2 text-xs text-gray-700 text-center">
                                                 {{ setControl.get('restAfterSet')?.value }}s</div>
-                                            <div class="col-span-2 text-xs text-gray-700 dark:text-gray-200 text-center truncate"
+                                            <div class="col-span-2 text-xs text-gray-700 text-center truncate"
                                                 [title]="setControl.get('tempo')?.value">{{
                                                 setControl.get('tempo')?.value || '-' }}</div>
 
@@ -276,11 +276,11 @@
                                                 class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-3 gap-y-2 items-center">
                                                 <div>
                                                     <label [for]="'reps-exp-' + exIndex + '-' + setIndex"
-                                                        class="block text-xs font-medium text-gray-600 dark:text-gray-400">Reps</label>
+                                                        class="block text-xs font-medium text-gray-600 dark:text-gray-400 ">Reps</label>
                                                     <input #setRepsInput type="number"
                                                         [id]="'reps-exp-' + exIndex + '-' + setIndex"
                                                         formControlName="reps" placeholder="Reps"
-                                                        class="mt-0.5 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md focus:ring-primary focus:border-primary dark:bg-gray-700">
+                                                        class="mt-0.5 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md focus:ring-primary focus:border-primary dark:bg-gray-500 dark:text-gray-200">
                                                 </div>
                                                 <div>
                                                     <label [for]="'weight-exp-' + exIndex + '-' + setIndex"
@@ -288,7 +288,7 @@
                                                         ({{ unitsService.getUnitLabel() }})</label>
                                                     <input type="number" [id]="'weight-exp-' + exIndex + '-' + setIndex"
                                                         formControlName="weight" placeholder="Weight"
-                                                        class="mt-0.5 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md focus:ring-primary focus:border-primary dark:bg-gray-700">
+                                                        class="mt-0.5 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md focus:ring-primary focus:border-primary dark:bg-gray-500 dark:text-gray-200">
                                                 </div>
                                                 <div>
                                                     <label [for]="'duration-exp-' + exIndex + '-' + setIndex"
@@ -297,14 +297,14 @@
                                                     <input type="number"
                                                         [id]="'duration-exp-' + exIndex + '-' + setIndex"
                                                         formControlName="duration" placeholder="Secs"
-                                                        class="mt-0.5 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md focus:ring-primary focus:border-primary dark:bg-gray-700">
+                                                        class="mt-0.5 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md focus:ring-primary focus:border-primary dark:bg-gray-500 dark:text-gray-200">
                                                 </div>
                                                 <div>
                                                     <label [for]="'tempo-exp-' + exIndex + '-' + setIndex"
                                                         class="block text-xs font-medium text-gray-600 dark:text-gray-400">Tempo</label>
                                                     <input type="text" [id]="'tempo-exp-' + exIndex + '-' + setIndex"
                                                         formControlName="tempo" placeholder="e.g. 2010"
-                                                        class="mt-0.5 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md focus:ring-primary focus:border-primary dark:bg-gray-700">
+                                                        class="mt-0.5 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md focus:ring-primary focus:border-primary dark:bg-gray-500 dark:text-gray-200">
                                                 </div>
                                                 <div class="col-span-2 sm:col-span-1 md:col-span-2">
                                                     <label [for]="'rest-exp-' + exIndex + '-' + setIndex"
@@ -312,7 +312,7 @@
                                                         (s)</label>
                                                     <input type="number" [id]="'rest-exp-' + exIndex + '-' + setIndex"
                                                         formControlName="restAfterSet" placeholder="Rest"
-                                                        class="mt-0.5 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md focus:ring-primary focus:border-primary dark:bg-gray-700">
+                                                        class="mt-0.5 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md focus:ring-primary focus:border-primary dark:bg-gray-500 dark:text-gray-200">
                                                 </div>
                                                 <div class="col-span-full">
                                                     <label [for]="'setNotes-exp-' + exIndex + '-' + setIndex"
@@ -320,7 +320,7 @@
                                                         Notes (Opt.)</label>
                                                     <input type="text" [id]="'setNotes-exp-' + exIndex + '-' + setIndex"
                                                         formControlName="notes" placeholder="e.g. Drop set"
-                                                        class="mt-0.5 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md focus:ring-primary focus:border-primary dark:bg-gray-700">
+                                                        class="mt-0.5 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md focus:ring-primary focus:border-primary dark:bg-gray-500 dark:text-gray-200">
                                                 </div>
                                             </div>
                                             <div class="mt-2 text-right">

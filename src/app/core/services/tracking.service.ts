@@ -604,4 +604,34 @@ export class TrackingService {
     console.log(`Workout log with ID ${logId} deleted.`);
   }
 
+
+  /**
+   * Retrieves all workout logs associated with a specific program ID and within a given date range.
+   * @param programId The ID of the program to filter logs by.
+   * @param startDate The start date (inclusive) as a Date object.
+   * @param endDate The end date (inclusive) as a Date object.
+   * @returns An Observable emitting an array of WorkoutLog objects that match the criteria.
+   */
+  getWorkoutLogsByProgramIdForDateRange(
+    programId: string | null | undefined,
+    startDate: Date,
+    endDate: Date
+  ): Observable<WorkoutLog[]> {
+    if (!programId || !startDate || !endDate) {
+      return of([]);
+    }
+    return this.workoutLogs$.pipe(
+      map(allLogs =>
+        allLogs.filter(log => {
+          const logDate = parseISO(log.date);
+          return (
+            log.programId === programId &&
+            logDate >= startDate &&
+            logDate <= endDate
+          );
+        })
+      )
+    );
+  }
+
 }
