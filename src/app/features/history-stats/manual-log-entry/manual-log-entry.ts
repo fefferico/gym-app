@@ -344,7 +344,7 @@ export class ManualLogEntryComponent implements OnInit {
       return;
     }
 
-    const formValue = this.logForm.value;
+    const formValue = this.logForm.getRawValue();
 
     const workoutDateStr = formValue.workoutDate; // Should be 'yyyy-MM-dd'
     const startTimeStr = formValue.startTime;   // Should be 'HH:mm'

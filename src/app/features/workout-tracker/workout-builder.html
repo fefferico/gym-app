@@ -222,20 +222,20 @@
                                                 class="col-span-1 text-xs text-gray-600 dark:text-gray-400 text-center font-medium">
                                                 {{ setIndex + 1 }}</div>
                                             <div
-                                                class="col-span-2 text-xs text-gray-700 text-center">
+                                                class="col-span-2 text-xs text-gray-300 text-center">
                                                 {{ setControl.get('reps')?.value || '-' }}</div>
                                             <div
-                                                class="col-span-2 text-xs text-gray-700 text-center">
+                                                class="col-span-2 text-xs text-gray-300 text-center">
                                                 {{ setControl.get('weight')?.value ? (setControl.get('weight')?.value |
                                                 weightUnit:'1.0-2') : '-' }}</div>
                                             <div
-                                                class="col-span-2 text-xs text-gray-700 text-center">
+                                                class="col-span-2 text-xs text-gray-300 text-center">
                                                 {{ setControl.get('duration')?.value ?
                                                 (setControl.get('duration')?.value + 's') : '-' }}</div>
                                             <div
-                                                class="col-span-2 text-xs text-gray-700 text-center">
+                                                class="col-span-2 text-xs text-gray-300 text-center">
                                                 {{ setControl.get('restAfterSet')?.value }}s</div>
-                                            <div class="col-span-2 text-xs text-gray-700 text-center truncate"
+                                            <div class="col-span-2 text-xs text-gray-300 text-center truncate"
                                                 [title]="setControl.get('tempo')?.value">{{
                                                 setControl.get('tempo')?.value || '-' }}</div>
 

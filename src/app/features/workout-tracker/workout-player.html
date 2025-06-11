@@ -176,7 +176,7 @@
                               'bg-green-500 hover:bg-green-600': timedSetTimerState() === 'idle' || timedSetTimerState() === 'paused',
                               'bg-yellow-500 hover:bg-yellow-600 text-black': timedSetTimerState() === 'running'
                             }"
-                  class="flex-grow max-w-[150px] text-white font-medium py-2 px-3 rounded-md transition-colors text-sm disabled:opacity-50">
+                  class="flex-grow max-w-[150px] text-white font-medium py-2 px-3 rounded-full transition-colors text-sm disabled:opacity-50">
                   <span *ngIf="timedSetTimerState() === 'idle'">Start Timer</span>
                   <span *ngIf="timedSetTimerState() === 'running'">Pause Timer</span>
                   <span *ngIf="timedSetTimerState() === 'paused'">Resume Timer</span>
@@ -216,7 +216,7 @@
 
         <button (click)="handleMainAction()"
           [disabled]="sessionState() === 'paused' || (playerSubState() === PlayerSubState.PresetCountdown && presetTimerCountdownDisplay() !== '0' && presetTimerCountdownDisplay() !== null) || (playerSubState() === PlayerSubState.Resting && isRestTimerVisible())"
-          class="w-full font-bold py-4 px-4 rounded-2xl shadow-md text-lg transition-colors focus:outline-none focus:ring-2 disabled:opacity-70 text-white"
+          class="w-full font-bold py-4 px-4 rounded-full shadow-md text-lg transition-colors focus:outline-none focus:ring-2 disabled:opacity-70 text-white"
           [ngClass]="{
                 'bg-red-500 hover:bg-red-600 focus:ring-red-400': playerSubState() === PlayerSubState.PerformingSet && !shouldStartWithPresetTimer(),
                 'bg-primary hover:bg-primary-dark focus:ring-primary-dark': playerSubState() === PlayerSubState.PerformingSet && shouldStartWithPresetTimer(),

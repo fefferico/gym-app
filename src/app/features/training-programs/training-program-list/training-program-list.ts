@@ -51,8 +51,8 @@ type CalendarDisplayMode = 'week' | 'month';
   styleUrls: ['./training-program-list.scss'],
   animations: [
     trigger('slideUpDown', [
-      transition(':enter', [ style({ transform: 'translateY(100%)', opacity: 0 }), animate('300ms ease-out', style({ transform: 'translateY(0%)', opacity: 1 })) ]),
-      transition(':leave', [ animate('250ms ease-in', style({ transform: 'translateY(100%)', opacity: 0 })) ])
+      transition(':enter', [style({ transform: 'translateY(100%)', opacity: 0 }), animate('300ms ease-out', style({ transform: 'translateY(0%)', opacity: 1 }))]),
+      transition(':leave', [animate('250ms ease-in', style({ transform: 'translateY(100%)', opacity: 0 }))])
     ]),
     trigger('slideInOutActions', [
       state('void', style({ height: '0px', opacity: 0, overflow: 'hidden', paddingTop: '0', paddingBottom: '0', marginTop: '0', marginBottom: '0' })),
@@ -66,29 +66,29 @@ type CalendarDisplayMode = 'week' | 'month';
       transition('* => void', [animate('100ms cubic-bezier(0.25, 0.8, 0.25, 1)')])
     ]),
     trigger('viewSlide', [
-        transition('list <=> calendar', [
-            style({ position: 'relative', overflow: 'hidden' }),
-            query(':enter, :leave', [ style({ position: 'absolute', top: 0, left: 0, width: '100%' }) ], { optional: true }),
-            query(':enter', [ style({ transform: '{{ enterTransform }}', opacity: 0 }) ], { optional: true }),
-            group([
-                query(':leave', [ animate('300ms ease-out', style({ transform: '{{ leaveTransform }}', opacity: 0 })) ], { optional: true }),
-                query(':enter', [ animate('300ms ease-out', style({ transform: 'translateX(0%)', opacity: 1 })) ], { optional: true })
-            ])
+      transition('list <=> calendar', [
+        style({ position: 'relative', overflow: 'hidden' }),
+        query(':enter, :leave', [style({ position: 'absolute', top: 0, left: 0, width: '100%' })], { optional: true }),
+        query(':enter', [style({ transform: '{{ enterTransform }}', opacity: 0 })], { optional: true }),
+        group([
+          query(':leave', [animate('300ms ease-out', style({ transform: '{{ leaveTransform }}', opacity: 0 }))], { optional: true }),
+          query(':enter', [animate('300ms ease-out', style({ transform: 'translateX(0%)', opacity: 1 }))], { optional: true })
         ])
+      ])
     ]),
     trigger('calendarPeriodSlide', [
-        state('center', style({ transform: 'translateX(0%)', opacity: 1 })),
-        state('outLeft', style({ transform: 'translateX(-100%)', opacity: 0 })),
-        state('outRight', style({ transform: 'translateX(100%)', opacity: 0 })),
-        state('preloadFromRight', style({ transform: 'translateX(100%)', opacity: 0 })),
-        state('preloadFromLeft', style({ transform: 'translateX(-100%)', opacity: 0 })),
+      state('center', style({ transform: 'translateX(0%)', opacity: 1 })),
+      state('outLeft', style({ transform: 'translateX(-100%)', opacity: 0 })),
+      state('outRight', style({ transform: 'translateX(100%)', opacity: 0 })),
+      state('preloadFromRight', style({ transform: 'translateX(100%)', opacity: 0 })),
+      state('preloadFromLeft', style({ transform: 'translateX(-100%)', opacity: 0 })),
 
-        transition('center => outLeft', animate('200ms ease-in')),
-        transition('center => outRight', animate('200ms ease-in')),
-        transition('preloadFromRight => center', animate('200ms ease-out')),
-        transition('preloadFromLeft => center', animate('200ms ease-out')),
-        transition('outLeft => center', [ style({ transform: 'translateX(100%)', opacity: 0 }), animate('200ms ease-out')]),
-        transition('outRight => center', [ style({ transform: 'translateX(-100%)', opacity: 0 }), animate('200ms ease-out')]),
+      transition('center => outLeft', animate('200ms ease-in')),
+      transition('center => outRight', animate('200ms ease-in')),
+      transition('preloadFromRight => center', animate('200ms ease-out')),
+      transition('preloadFromLeft => center', animate('200ms ease-out')),
+      transition('outLeft => center', [style({ transform: 'translateX(100%)', opacity: 0 }), animate('200ms ease-out')]),
+      transition('outRight => center', [style({ transform: 'translateX(-100%)', opacity: 0 }), animate('200ms ease-out')]),
     ])
   ]
 })
@@ -131,7 +131,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
     }
   }
 
-    @ViewChild('viewSwipeContainerEl')
+  @ViewChild('viewSwipeContainerEl')
   set modeSwipeContainer(element: ElementRef<HTMLDivElement> | undefined) {
     if (element && isPlatformBrowser(this.platformId)) {
       // If Hammer instance already exists, destroy it first to avoid duplicates
@@ -226,18 +226,27 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
 
   constructor() { }
 
+  protected allWorkoutLogs = signal<WorkoutLog[]>([]);
+  private workoutLogsSubscription: Subscription | undefined;
+
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       window.scrollTo(0, 0);
     }
     this.menuModeCompact = this.themeService.isMenuModeCompact();
 
+
+    this.workoutLogsSubscription = this.trackingService.workoutLogs$.subscribe(logs => {
+      this.allWorkoutLogs.set(logs);
+    });
+
     this.dataSubscription = forkJoin({
       programs: this.trainingProgramService.getAllPrograms().pipe(take(1)),
       routines: this.workoutService.routines$.pipe(take(1)),
-      exercises: this.exerciseService.getExercises().pipe(take(1))
+      exercises: this.exerciseService.getExercises().pipe(take(1)),
+      workouts: this.exerciseService.getExercises().pipe(take(1))
     }).subscribe(({ programs, routines, exercises }) => {
-      this.allProgramsForList.set(programs.sort((a,b) => a.name.localeCompare(b.name)));
+      this.allProgramsForList.set(programs.sort((a, b) => a.name.localeCompare(b.name)));
       routines.forEach(r => this.allRoutinesMap.set(r.id, r));
       exercises.forEach(e => this.allExercisesMap.set(e.id, e));
       this.populateFilterOptions();
@@ -250,11 +259,11 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
       this.activeProgramForCalendar.set(program);
       if (this.currentView() === 'calendar') {
         if (program && (!oldActiveProgramId || oldActiveProgramId !== program.id)) {
-            this.generateCalendarDays(true);
+          this.generateCalendarDays(true);
         } else if (!program) {
-            this.calendarDays.set([]);
-            this.calendarLoading.set(false);
-            this.calendarAnimationState.set('center'); // Reset animation if no program
+          this.calendarDays.set([]);
+          this.calendarLoading.set(false);
+          this.calendarAnimationState.set('center'); // Reset animation if no program
         }
       }
     });
@@ -272,22 +281,22 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
     const swipeDebounce = 350;
 
     this.ngZone.runOutsideAngular(() => {
-        this.hammerInstanceCalendar = new Hammer(calendarSwipeElement);
-        this.hammerInstanceCalendar.get('swipe').set({ direction: Hammer.DIRECTION_HORIZONTAL, threshold: 30, velocity: 0.2 });
+      this.hammerInstanceCalendar = new Hammer(calendarSwipeElement);
+      this.hammerInstanceCalendar.get('swipe').set({ direction: Hammer.DIRECTION_HORIZONTAL, threshold: 30, velocity: 0.2 });
 
-        this.hammerInstanceCalendar.on('swipeleft', () => {
-            const now = Date.now();
-            if (now - lastSwipeTime < swipeDebounce || this.isCalendarAnimating) return;
-            lastSwipeTime = now;
-            this.ngZone.run(() => this.nextPeriod());
-        });
-        this.hammerInstanceCalendar.on('swiperight', () => {
-            const now = Date.now();
-            if (now - lastSwipeTime < swipeDebounce || this.isCalendarAnimating) return;
-            lastSwipeTime = now;
-            this.ngZone.run(() => this.previousPeriod());
-        });
-        console.log("HammerJS successfully attached to calendar swipe container via ViewChild.");
+      this.hammerInstanceCalendar.on('swipeleft', () => {
+        const now = Date.now();
+        if (now - lastSwipeTime < swipeDebounce || this.isCalendarAnimating) return;
+        lastSwipeTime = now;
+        this.ngZone.run(() => this.nextPeriod());
+      });
+      this.hammerInstanceCalendar.on('swiperight', () => {
+        const now = Date.now();
+        if (now - lastSwipeTime < swipeDebounce || this.isCalendarAnimating) return;
+        lastSwipeTime = now;
+        this.ngZone.run(() => this.previousPeriod());
+      });
+      console.log("HammerJS successfully attached to calendar swipe container via ViewChild.");
     });
   }
 
@@ -318,9 +327,9 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
   private populateFilterOptions(): void {
     const programs = this.allProgramsForList();
     if (programs.length === 0 || this.allRoutinesMap.size === 0) {
-        this.uniqueProgramGoals.set([]);
-        this.uniqueProgramMuscleGroups.set([]);
-        return;
+      this.uniqueProgramGoals.set([]);
+      this.uniqueProgramMuscleGroups.set([]);
+      return;
     }
     const goals = new Set<string>();
     const muscles = new Set<string>();
@@ -336,8 +345,8 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
         }
       });
     });
-    this.uniqueProgramGoals.set(Array.from(goals).sort((a,b) => a.localeCompare(b)));
-    this.uniqueProgramMuscleGroups.set(Array.from(muscles).sort((a,b) => a.localeCompare(b)));
+    this.uniqueProgramGoals.set(Array.from(goals).sort((a, b) => a.localeCompare(b)));
+    this.uniqueProgramMuscleGroups.set(Array.from(muscles).sort((a, b) => a.localeCompare(b)));
   }
 
   toggleFilterAccordion(): void { this.isFilterAccordionOpen.update(isOpen => !isOpen); }
@@ -428,11 +437,11 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
     this.selectedCalendarDayDetails.set(null);
 
     setTimeout(() => {
-        this.calendarDisplayMode.set(mode);
-        this.calendarAnimationState.set(preloadState);
-        if (this.activeProgramForCalendar()) this.generateCalendarDays();
-        else this.isCalendarAnimating = false; // Reset if no program to load
-        // isCalendarAnimating will be reset in generateCalendarDays' finally block or here
+      this.calendarDisplayMode.set(mode);
+      this.calendarAnimationState.set(preloadState);
+      if (this.activeProgramForCalendar()) this.generateCalendarDays();
+      else this.isCalendarAnimating = false; // Reset if no program to load
+      // isCalendarAnimating will be reset in generateCalendarDays' finally block or here
     }, 200); // out animation duration
   }
 
@@ -490,11 +499,11 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
     const today = new Date();
     const currentCalDate = this.calendarViewDate();
     if (this.calendarDisplayMode() === 'month') {
-        return isSameMonth(currentCalDate, today);
+      return isSameMonth(currentCalDate, today);
     } else {
-        const weekStartForCurrentView = startOfWeek(currentCalDate, { weekStartsOn: this.weekStartsOn });
-        const weekEndForCurrentView = endOfWeek(currentCalDate, { weekStartsOn: this.weekStartsOn });
-        return today >= weekStartForCurrentView && today <= weekEndForCurrentView;
+      const weekStartForCurrentView = startOfWeek(currentCalDate, { weekStartsOn: this.weekStartsOn });
+      const weekEndForCurrentView = endOfWeek(currentCalDate, { weekStartsOn: this.weekStartsOn });
+      return today >= weekStartForCurrentView && today <= weekEndForCurrentView;
     }
   }
 
@@ -510,7 +519,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
     }
     this.calendarLoading.set(true);
     if (!isInitialOrProgramChange && !this.isCalendarAnimating) {
-        this.selectedCalendarDayDetails.set(null);
+      this.selectedCalendarDayDetails.set(null);
     }
 
     const viewDate = this.calendarViewDate();
@@ -553,7 +562,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
       if (isInitialOrProgramChange || this.calendarAnimationState() === 'center') {
         this.calendarAnimationState.set('center');
       } else if (this.calendarAnimationState() === 'preloadFromLeft' || this.calendarAnimationState() === 'preloadFromRight') {
-         Promise.resolve().then(() => this.calendarAnimationState.set('center'));
+        Promise.resolve().then(() => this.calendarAnimationState.set('center'));
       }
       this.isCalendarAnimating = false; // Crucial: reset animation flag
       this.cdr.detectChanges();
@@ -580,6 +589,52 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
   isToday(date: Date): boolean { return isToday(date); }
   isPast(date: Date): boolean { return isPast(date) && !isToday(date); }
   isFuture(date: Date): boolean { return isFuture(date); }
+
+  getPastWorkoutSessionsForRoutineOnDate(routineId: string, date: Date, filterByActiveProgram: boolean = true): WorkoutLog[] {
+    const activeProg = this.activeProgramForCalendar();
+    if (!activeProg) return [];
+    const allLogs = this.allWorkoutLogs();
+
+    const filteredLogs = allLogs.filter(
+      log =>
+        log.routineId === routineId &&
+        // (!filterByActiveProgram || !activeProg.id || log.programId === activeProg.id) &&
+        isSameDay(parseISO(log.date), date)
+    );
+    console.log(filteredLogs)
+    return filteredLogs;
+  }
+
+  getPastWorkoutSessionsAsScheduledItemsForRoutineOnDate(
+    routineId: string, date: Date, filterByActiveProgram: boolean = true
+  ): ScheduledItemWithLogs[] {
+    const logs = this.getPastWorkoutSessionsForRoutineOnDate(routineId, date, filterByActiveProgram);
+    if (logs.length === 0) return [];
+    return logs
+      .map(log => this.mapWorkoutLogToScheduledItemWithLogs(log))
+      .filter((item): item is ScheduledItemWithLogs => !!item);
+  }
+
+  mapWorkoutLogToScheduledItemWithLogs(log: WorkoutLog): ScheduledItemWithLogs | null {
+    if (!log.routineId) return null;
+    const routine = this.allRoutinesMap.get(log.routineId);
+    if (!routine) return null;
+
+    // Try to find the scheduled day info from the active program's schedule
+    const activeProg = this.activeProgramForCalendar();
+    if (!activeProg) return null;
+
+    const scheduledDayInfo = activeProg.schedule.find(
+      s => s.routineId === log.routineId
+    );
+    if (!scheduledDayInfo) return null;
+
+    return {
+      routine,
+      scheduledDayInfo,
+      logs: [log]
+    };
+  }
 
   ngOnDestroy(): void {
     this.dataSubscription?.unsubscribe();

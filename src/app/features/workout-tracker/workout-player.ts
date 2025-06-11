@@ -825,8 +825,8 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     }
 
     const shouldRunPresetTimer = enablePreset && presetDurationValue > 0 &&
-      this.playerSubState() !== PlayerSubState.Resting &&
-      ((isFirstSetOfFirstExerciseInWorkout || previousSetRestDuration === 0) || enablePresetAfterRest);
+      ((this.playerSubState() !== PlayerSubState.Resting &&
+      (isFirstSetOfFirstExerciseInWorkout || previousSetRestDuration === 0)) || enablePresetAfterRest);
 
     if (shouldRunPresetTimer) {
       console.log('prepareCurrentSet: Starting pre-set timer for:', currentExerciseData.exerciseName, 'Set:', sIndex + 1);
