@@ -1,11 +1,10 @@
-// src/app/core/services/exercise.service.ts
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
-import { catchError, map, shareReplay, take, tap } from 'rxjs/operators';
-import { Exercise } from '../models/exercise.model'; // Ensure this path is correct
+import { catchError, map, shareReplay, take, tap, finalize } from 'rxjs/operators'; // Added finalize
+import { Exercise } from '../models/exercise.model';
 import { StorageService } from './storage.service';
-import { TrackingService } from './tracking.service'; // Ensure this path is correct
+import { TrackingService } from './tracking.service';
 import { v4 as uuidv4 } from 'uuid';
 import { EXERCISES_DATA } from './exercises-data';
 
@@ -18,21 +17,27 @@ export class ExerciseService {
   private trackingService = inject(TrackingService);
 
   private readonly EXERCISES_STORAGE_KEY = 'fitTrackPro_exercises';
-  private readonly EXERCISES_JSON_PATH = 'assets/data/exercises.json'; // Relative path for HttpClient
+  // private readonly EXERCISES_JSON_PATH = 'assets/data/exercises.json'; // Not used if EXERCISES_DATA is primary
 
   private exercisesSubject: BehaviorSubject<Exercise[]>;
   public exercises$: Observable<Exercise[]>;
 
+  // New BehaviorSubject for loading state
+  private isLoadingExercisesSubject = new BehaviorSubject<boolean>(true); // Start as true
+  public isLoadingExercises$: Observable<boolean> = this.isLoadingExercisesSubject.asObservable();
+
   constructor() {
+    this.isLoadingExercisesSubject.next(true); // Explicitly set loading to true at the start
     const initialExercises = this._loadExercisesFromStorage();
     this.exercisesSubject = new BehaviorSubject<Exercise[]>(initialExercises);
     this.exercises$ = this.exercisesSubject.asObservable().pipe(
-      shareReplay(1) // Cache the last emitted list of exercises
+      shareReplay(1)
     );
 
-    // If storage is empty, attempt to seed from the JSON file.
     if (initialExercises.length === 0) {
-      this._seedExercisesFromAssets();
+      this._seedExercisesFromAssets(); // This method will set loading to false
+    } else {
+      this.isLoadingExercisesSubject.next(false); // Loaded from storage, set loading to false
     }
   }
 
@@ -43,40 +48,47 @@ export class ExerciseService {
 
   private _saveExercisesToStorage(exercises: Exercise[]): void {
     this.storageService.setItem(this.EXERCISES_STORAGE_KEY, exercises);
-    // Emit a new sorted array to trigger subscribers
     this.exercisesSubject.next([...exercises].sort((a, b) => a.name.localeCompare(b.name)));
   }
 
   private _seedExercisesFromAssets(): void {
-    // Use the imported EXERCISES_DATA constant instead of loading from JSON
-    const exercisesFromData = EXERCISES_DATA as Exercise[];
-    if (this.exercisesSubject.getValue().length === 0 && exercisesFromData && exercisesFromData.length > 0) {
-      this._saveExercisesToStorage(exercisesFromData);
-      console.log('ExerciseService: Seed exercises loaded successfully from EXERCISES_DATA and saved to storage.');
-    } else if (this.exercisesSubject.getValue().length > 0) {
-      console.log('ExerciseService: Exercises already present in storage, skipping seed from EXERCISES_DATA.');
-    } else {
-      console.warn('ExerciseService: EXERCISES_DATA was empty or contained no exercises.');
+    this.isLoadingExercisesSubject.next(true); // Ensure loading is true during seeding
+    // Simulate async operation if needed, or just proceed
+    try {
+      const exercisesFromData = EXERCISES_DATA as Exercise[];
+      if (this.exercisesSubject.getValue().length === 0 && exercisesFromData && exercisesFromData.length > 0) {
+        this._saveExercisesToStorage(exercisesFromData);
+        console.log('ExerciseService: Seed exercises loaded successfully from EXERCISES_DATA.');
+      } else if (this.exercisesSubject.getValue().length > 0) {
+        console.log('ExerciseService: Exercises already present, skipping seed.');
+      } else {
+        console.warn('ExerciseService: EXERCISES_DATA was empty.');
+      }
+    } catch (error) {
+      console.error("Error seeding exercises from assets:", error);
+      // Potentially set an error state here if needed
+    } finally {
+      this.isLoadingExercisesSubject.next(false); // Set loading to false after seeding attempt
     }
   }
 
   getExercises(): Observable<Exercise[]> {
+    // If you want to show loading every time getExercises is called and it's the first time
+    // or if exercises are empty, you could add logic here, but constructor handles initial load.
     return this.exercises$;
   }
 
   getExerciseById(id: string): Observable<Exercise | undefined> {
     return this.exercises$.pipe(
-      // `first()` or `take(1)` is good here if you only need the current state once.
-      // If this method is called before `exercises$` has emitted (e.g., during initial seeding),
-      // `first()` will wait for the first emission.
       map(exercises => exercises.find(exercise => exercise.id === id)),
-      take(1) // Ensures the observable completes after finding (or not finding) the exercise.
+      take(1)
     );
   }
 
   addExercise(exerciseData: Omit<Exercise, 'id'>): Observable<Exercise> {
-    // Ensure exercises are loaded before trying to add.
-    // This could also be handled by an app initializer if seeding is critical before app start.
+    // For local operations, loading state might be too quick to notice unless it was an API call.
+    // If it were an API call:
+    // this.isLoadingExercisesSubject.next(true);
     const currentExercises = this.exercisesSubject.getValue();
     const newExercise: Exercise = {
       ...exerciseData,
@@ -84,10 +96,12 @@ export class ExerciseService {
     };
     const updatedExercises = [...currentExercises, newExercise];
     this._saveExercisesToStorage(updatedExercises);
+    // if API call: .pipe(finalize(() => this.isLoadingExercisesSubject.next(false)))
     return of(newExercise);
   }
 
   updateExercise(updatedExercise: Exercise): Observable<Exercise> {
+    // Similar to addExercise, set loading if it were an async API operation
     const currentExercises = this.exercisesSubject.getValue();
     const index = currentExercises.findIndex(ex => ex.id === updatedExercise.id);
     if (index > -1) {
@@ -100,24 +114,28 @@ export class ExerciseService {
   }
 
   async deleteExercise(exerciseId: string): Promise<void> {
-    const currentExercises = this.exercisesSubject.getValue();
-    const exerciseToDelete = currentExercises.find(ex => ex.id === exerciseId);
-
-    if (!exerciseToDelete) {
-      console.warn(`ExerciseService: Exercise with id ${exerciseId} not found for deletion.`);
-      return Promise.reject(new Error('Exercise not found'));
-    }
-
+    // You could set a specific "isDeleting" flag or use the general loading flag.
+    // For this example, let's assume delete is quick enough locally after trackingService.
+    this.isLoadingExercisesSubject.next(true); // Or a more specific isDeletingSubject
     try {
+      const currentExercises = this.exercisesSubject.getValue();
+      const exerciseToDelete = currentExercises.find(ex => ex.id === exerciseId);
+
+      if (!exerciseToDelete) {
+        console.warn(`ExerciseService: Exercise with id ${exerciseId} not found for deletion.`);
+        throw new Error('Exercise not found'); // Throw to be caught by finalize and caller
+      }
+
       await this.trackingService.handleExerciseDeletion(exerciseId);
       const updatedExercises = currentExercises.filter(ex => ex.id !== exerciseId);
       this._saveExercisesToStorage(updatedExercises);
     } catch (error) {
       console.error(`Error during exercise deletion process for ${exerciseId}:`, error);
-      throw error; // Re-throw to be caught by the caller
+      throw error;
+    } finally {
+      this.isLoadingExercisesSubject.next(false);
     }
   }
-
   getExercisesByCategory(category: string): Observable<Exercise[]> {
     return this.exercises$.pipe(
       map(exercises => exercises.filter(ex => ex.category === category))
