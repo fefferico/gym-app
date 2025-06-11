@@ -1,4 +1,4 @@
-<div class="container mx-auto p-1 sm:p-4">
+<div class="container mx-auto p-1 sm:p-4" #viewSwipeContainerEl view-swipe-container>
   <header class="flex justify-between items-center mb-2 pb-2 border-b border-gray-200 dark:border-gray-700">
     <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">Training</h1>
     <button *ngIf="currentView() === 'list'" (click)="toggleFilterAccordion()" type="button"

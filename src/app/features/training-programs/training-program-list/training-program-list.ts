@@ -111,6 +111,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
   allProgramsForList = signal<TrainingProgram[]>([]);
   private dataSubscription: Subscription | undefined;
   private hammerInstanceCalendar: HammerManager | null = null;
+  private hammerInstanceMode: HammerManager | null = null;
 
   // Use ViewChild with a setter
   @ViewChild('calendarSwipeContainerEl')
@@ -127,6 +128,23 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
       this.hammerInstanceCalendar.destroy();
       this.hammerInstanceCalendar = null;
       console.log("HammerJS for calendar swipe destroyed because element was removed.");
+    }
+  }
+
+    @ViewChild('viewSwipeContainerEl')
+  set modeSwipeContainer(element: ElementRef<HTMLDivElement> | undefined) {
+    if (element && isPlatformBrowser(this.platformId)) {
+      // If Hammer instance already exists, destroy it first to avoid duplicates
+      if (this.hammerInstanceMode) {
+        this.hammerInstanceMode.destroy();
+        this.hammerInstanceMode = null;
+      }
+      this.setupModeSwipe(element.nativeElement);
+    } else if (!element && this.hammerInstanceMode) {
+      // Element is removed from DOM, clean up HammerJS
+      this.hammerInstanceMode.destroy();
+      this.hammerInstanceMode = null;
+      console.log("HammerJS for MODE swipe destroyed because element was removed.");
     }
   }
 
@@ -199,6 +217,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
   selectedCalendarDayDetails = signal<CalendarDay | null>(null);
   calendarAnimationState = signal<'center' | 'outLeft' | 'outRight' | 'preloadFromLeft' | 'preloadFromRight'>('center');
   protected isCalendarAnimating = false; // Using a simple boolean, not a signal here for internal logic
+  protected isCardAnimating = false; // Using a simple boolean, not a signal here for internal logic
 
   protected weekDayNames: string[] = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   readonly calendarHeaderFormat = computed(() => {
@@ -270,6 +289,30 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
         });
         console.log("HammerJS successfully attached to calendar swipe container via ViewChild.");
     });
+  }
+
+  private setupModeSwipe(modeSwipeElement: HTMLElement): void {
+    // let lastSwipeTime = 0;
+    // const swipeDebounce = 350;
+
+    // this.ngZone.runOutsideAngular(() => {
+    //     this.hammerInstanceMode = new Hammer(modeSwipeElement);
+    //     this.hammerInstanceMode.get('swipe').set({ direction: Hammer.DIRECTION_HORIZONTAL, threshold: 30, velocity: 0.2 });
+
+    //     this.hammerInstanceMode.on('swipeleft', () => {
+    //         const now = Date.now();
+    //         if (now - lastSwipeTime < swipeDebounce || this.isCardAnimating) return;
+    //         lastSwipeTime = now;
+    //         this.ngZone.run(() => this.setView('calendar'));
+    //     });
+    //     this.hammerInstanceMode.on('swiperight', () => {
+    //         const now = Date.now();
+    //         if (now - lastSwipeTime < swipeDebounce || this.isCardAnimating) return;
+    //         lastSwipeTime = now;
+    //         this.ngZone.run(() => this.setView('list'));
+    //     });
+    //     console.log("HammerJS successfully attached to MODE swipe container via ViewChild.");
+    // });
   }
 
   private populateFilterOptions(): void {

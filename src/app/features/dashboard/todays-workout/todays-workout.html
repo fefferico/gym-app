@@ -1,4 +1,4 @@
-<div class="p-4 md:p-6 bg-white dark:bg-gray-700 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700">
+<div class="p-4 md:p-6 bg-white dark:bg-gray-700 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700" data-swipe-card-content-wrapper>
   <!-- Date Navigation remains outside the animated div -->
   <div class="mb-4 flex items-center justify-between pb-3 border-b border-gray-200 dark:border-gray-700">
     <button (click)="previousDay()" title="Previous Day"
@@ -29,7 +29,7 @@
   </button>
 
   <!-- Wrapper for clipping and applying HammerJS for swipe -->
-  <div class="relative overflow-hidden" data-swipe-card-content-wrapper>
+  <div class="relative overflow-hidden">
     <!-- Animated Content Block: This div moves -->
     <div [@slideAnimation]="animationState()">
       <!-- Content is determined by isLoading and todaysScheduledWorkout -->
