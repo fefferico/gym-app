@@ -14,6 +14,7 @@ import { StorageService } from '../../core/services/storage.service'; // Import 
 import { AlertButton } from '../../core/models/alert.model'; // Import AlertButton for custom dialogs
 import { format } from 'date-fns'; // For formatting date in dialog
 import { PausedWorkoutState } from './workout-player';
+import { ThemeService } from '../../core/services/theme.service';
 
 @Component({
   selector: 'app-routine-list',
@@ -24,7 +25,7 @@ import { PausedWorkoutState } from './workout-player';
   animations: [
     trigger('slideInOutActions', [
       state('void', style({
-        height: '0px',
+        height: '20px',
         opacity: 0,
         overflow: 'hidden',
         paddingTop: '0',
@@ -40,6 +41,25 @@ import { PausedWorkoutState } from './workout-player';
         paddingBottom: '0.5rem' // Tailwind's p-2
       })),
       transition('void <=> *', animate('200ms ease-in-out'))
+    ]),
+    // NEW ANIMATION for the dropdown menu
+    trigger('dropdownMenu', [
+      state('void', style({
+        opacity: 0,
+        transform: 'scale(0.75) translateY(-10px)', // Start slightly smaller and moved up
+        transformOrigin: 'top right' // Animate from the top-right corner
+      })),
+      state('*', style({
+        opacity: 1,
+        transform: 'scale(1) translateY(0)',
+        transformOrigin: 'top right'
+      })),
+      transition('void => *', [ // Enter animation
+        animate('400ms cubic-bezier(0.25, 0.8, 0.25, 1)') // A nice easing function
+      ]),
+      transition('* => void', [ // Leave animation
+        animate('300ms cubic-bezier(0.25, 0.8, 0.25, 1)')
+      ])
     ])
   ]
 })
@@ -51,6 +71,7 @@ export class RoutineListComponent implements OnInit {
   private spinnerService = inject(SpinnerService);
   private toastService = inject(ToastService);
   private storageService = inject(StorageService); // Inject StorageService
+  private themeService = inject(ThemeService);
   private platformId = inject(PLATFORM_ID);
 
   routines$: Observable<Routine[]> | undefined;
@@ -58,12 +79,15 @@ export class RoutineListComponent implements OnInit {
 
   private readonly PAUSED_WORKOUT_KEY = 'fitTrackPro_pausedWorkoutState';
 
+  menuModeCompact: boolean = false; // Signal to control compact menu mode
+
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       window.scrollTo(0, 0);
     }
     this.routines$ = this.workoutService.routines$;
+    this.menuModeCompact = this.themeService.isMenuModeCompact();
   }
 
   navigateToCreateRoutine(): void {

@@ -49,6 +49,7 @@ export interface WorkoutLog {
   durationMinutes?: number; // Total duration of the workout in minutes
   exercises: LoggedWorkoutExercise[]; // Array of all exercises performed in this session
   notes?: string;         // Overall user notes for the entire workout session
+  goal?: string;         // Optional: Goal of the workout (e.g., "Strength", "Hypertrophy", "Endurance")
   // Optional: User-perceived effort, mood, location, etc.
   // effortLevel?: number; // e.g., RPE 1-10
   // mood?: 'good' | 'average' | 'poor';

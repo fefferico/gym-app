@@ -1,7 +1,6 @@
-<!-- src/app/features/profile-settings/profile-settings.component.html -->
-<div class="container mx-auto p-2 sm:p-4"> <!-- Adjusted padding -->
-    <header class="mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
-        <h1 class="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-gray-200">Profile & Settings</h1>
+<div class="container mx-auto p-1">
+    <header class="flex justify-between items-center mb-2 pb-2 border-b border-gray-200 dark:border-gray-700">
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">Profile & Settings</h1>
     </header>
 
     <div class="space-y-6 sm:space-y-8">
@@ -17,7 +16,7 @@
                         class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600">
                 </div>
 
-                <div>
+                <div class=" dark:text-gray-300">
                     <label for="gender"
                         class="block text-sm font-medium text-gray-700 dark:text-gray-300">Gender</label>
                     <select id="gender" formControlName="gender"
@@ -101,14 +100,14 @@
                         <input type="checkbox" id="countdown-sound-toggle" class="sr-only peer"
                             formControlName="enableTimerCountdownSound">
                         <div
-                            class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary dark:peer-checked:bg-primary-dark">
+                            class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary dark:peer-checked:bg-primary-dark">
                         </div>
                         <span class="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
                             {{ appSettingsForm.get('enableTimerCountdownSound')?.value ? 'On' : 'Off' }}
                         </span>
                     </label>
                 </div>
-                <div *ngIf="appSettingsForm.get('enableTimerCountdownSound')?.value">
+                <div *ngIf="appSettingsForm.get('enableTimerCountdownSound')?.value" class=" dark:text-gray-300">
                     <label for="countdownSeconds"
                         class="block text-sm font-medium text-gray-700 dark:text-gray-300">Countdown From
                         (seconds)</label>
@@ -155,7 +154,8 @@
                 <div *ngIf="appSettingsForm.get('enablePresetTimer')?.value">
                     <div>
                         <h3 class="text-md font-medium text-gray-700 dark:text-gray-300">Pre-Set Timer after rest</h3>
-                        <p class="text-sm text-gray-500 dark:text-gray-400 mr-1">Show the countdown after each rest ends.</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mr-1">Show the countdown after each rest
+                            ends.</p>
                     </div>
                     <label for="preset-timer-toggle-after-rest" class="inline-flex items-center cursor-pointer">
                         <span class="sr-only">Toggle Pre-Set Timer after rest</span>
@@ -256,10 +256,32 @@
                     <input type="checkbox" id="theme-toggle" class="sr-only peer" [checked]="themeService.isDarkTheme()"
                         (change)="themeService.toggleTheme()">
                     <div
-                        class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary dark:peer-checked:bg-primary-dark">
+                        class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary dark:peer-checked:bg-primary-dark">
                     </div>
                     <span class="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">{{
                         themeService.isDarkTheme() ? 'On' : 'Off' }}</span>
+                </label>
+            </div>
+        </section>
+
+        <!-- Menu compact mode or window -->
+        <section class="bg-white dark:bg-gray-700 p-4 sm:p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">Menu Appearance</h2>
+            <!-- ... existing dark mode toggle code ... -->
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-md font-medium text-gray-700 dark:text-gray-300">Compact mode</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mr-1">Toggle between window and compact mode.</p>
+                </div>
+                <label for="menu-mode-toggle" class="inline-flex items-center cursor-pointer">
+                    <span class="sr-only">Toggle Compact Mode</span>
+                    <input type="checkbox" id="menu-mode-toggle" class="sr-only peer" [checked]="themeService.isMenuModeCompact()"
+                        (change)="themeService.toggleMenuMode()">
+                    <div
+                        class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary dark:peer-checked:bg-primary-dark">
+                    </div>
+                    <span class="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">{{
+                        themeService.isMenuModeCompact() ? 'On' : 'Off' }}</span>
                 </label>
             </div>
         </section>

@@ -33,6 +33,7 @@ import { DayOfWeekPipe } from '../../../shared/pipes/day-of-week-pipe';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { TrackingService } from '../../../core/services/tracking.service';
 import { WorkoutLog } from '../../../core/models/workout-log.model';
+import { ThemeService } from '../../../core/services/theme.service';
 
 interface ScheduledItemWithLogs { // Renamed for clarity, plural logs
   routine: Routine;
@@ -68,6 +69,45 @@ type CalendarDisplayMode = 'week' | 'month'; // New type for calendar mode
       transition(':leave', [ // Use :leave for when the element is removed from the DOM (e.g., *ngIf becomes false)
         animate('250ms ease-in', style({ transform: 'translateY(100%)', opacity: 0 }))
       ])
+    ]),
+
+    trigger('slideInOutActions', [
+      state('void', style({
+        height: '20px',
+        opacity: 0,
+        overflow: 'hidden',
+        paddingTop: '0',
+        paddingBottom: '0',
+        marginTop: '0',
+        marginBottom: '0'
+      })),
+      state('*', style({
+        height: '*',
+        opacity: 1,
+        overflow: 'hidden',
+        paddingTop: '0.5rem', // Tailwind's p-2
+        paddingBottom: '0.5rem' // Tailwind's p-2
+      })),
+      transition('void <=> *', animate('200ms ease-in-out'))
+    ]),
+    // NEW ANIMATION for the dropdown menu
+    trigger('dropdownMenu', [
+      state('void', style({
+        opacity: 0,
+        transform: 'scale(0.75) translateY(-10px)', // Start slightly smaller and moved up
+        transformOrigin: 'top right' // Animate from the top-right corner
+      })),
+      state('*', style({
+        opacity: 1,
+        transform: 'scale(1) translateY(0)',
+        transformOrigin: 'top right'
+      })),
+      transition('void => *', [ // Enter animation
+        animate('400ms cubic-bezier(0.25, 0.8, 0.25, 1)') // A nice easing function
+      ]),
+      transition('* => void', [ // Leave animation
+        animate('300ms cubic-bezier(0.25, 0.8, 0.25, 1)')
+      ])
     ])
   ]
 })
@@ -80,9 +120,12 @@ export class TrainingProgramListComponent implements OnInit {
   private platformId = inject(PLATFORM_ID);
   private cdr = inject(ChangeDetectorRef);
   private trackingService = inject(TrackingService);
+  private themeService = inject(ThemeService); // Inject StorageService
 
   programs$: Observable<TrainingProgram[]> | undefined;
   activeProgramActions = signal<string | null>(null);
+  menuModeCompact: boolean = false; // Signal to control compact menu mode
+
 
   // View management
   currentView = signal<ProgramListView>('list'); // Default to 'list' view
@@ -110,6 +153,7 @@ export class TrainingProgramListComponent implements OnInit {
       window.scrollTo(0, 0);
     }
     this.programs$ = this.trainingProgramService.getAllPrograms();
+    this.menuModeCompact = this.themeService.isMenuModeCompact();
     this.trainingProgramService.getActiveProgram().subscribe(program => {
       this.activeProgramForCalendar.set(program);
       if (this.currentView() === 'calendar') {
@@ -163,7 +207,7 @@ export class TrainingProgramListComponent implements OnInit {
       // Active program will be re-fetched by the subscription in ngOnInit for calendar update
     } catch (error) { /* ... */ } finally { this.spinnerService.hide(); }
   }
-  toggleActionsDropdown(programId: string, event: MouseEvent): void {
+  toggleActions(programId: string, event: MouseEvent): void {
     event.stopPropagation();
     this.activeProgramActions.update(current => current === programId ? null : programId);
   }
@@ -265,7 +309,7 @@ export class TrainingProgramListComponent implements OnInit {
   }
 
 
-async generateCalendarDays(): Promise<void> {
+  async generateCalendarDays(): Promise<void> {
     if (!isPlatformBrowser(this.platformId) || !this.activeProgramForCalendar()) {
       this.calendarDays.set([]);
       this.selectedCalendarDayDetails.set(null);

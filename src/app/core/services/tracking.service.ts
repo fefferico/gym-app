@@ -572,4 +572,36 @@ export class TrackingService {
     // No need to return explicitly for a Promise<void> if successful
   }
 
+  /**
+   * Deletes a workout log by its ID.
+   * Also updates personal bests after deletion.
+   * @param logId The ID of the workout log to delete.
+   * @returns A Promise that resolves when the deletion is complete.
+   */
+  async deleteWorkoutLog(logId: string): Promise<void> {
+    if (!logId) {
+      console.error('TrackingService: deleteWorkoutLog called with invalid logId.');
+      throw new Error('Invalid log ID for deletion.');
+    }
+
+    const currentLogs = this.workoutLogsSubject.getValue();
+    const logIndex = currentLogs.findIndex(log => log.id === logId);
+
+    if (logIndex === -1) {
+      console.warn(`TrackingService: WorkoutLog with ID ${logId} not found for deletion.`);
+      return;
+    }
+
+    const updatedLogs = currentLogs.filter(log => log.id !== logId);
+    this.saveWorkoutLogsToStorage(updatedLogs);
+
+    // Optional: Recalculate all PBs from scratch for full consistency
+    // (since a deleted log might have held a PB)
+    const allPBs: Record<string, PersonalBestSet[]> = {};
+    updatedLogs.forEach(log => this.updateAllPersonalBestsFromLog(log));
+    // If you want to fully recalculate PBs, you could clear and recalculate here
+
+    console.log(`Workout log with ID ${logId} deleted.`);
+  }
+
 }
