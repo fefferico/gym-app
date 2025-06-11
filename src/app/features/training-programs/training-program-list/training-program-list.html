@@ -25,9 +25,9 @@
     </button>
   </div>
 
-  <div class="relative overflow-hidden min-h-[400px]">
+  <div class="relative min-h-[400px]">
     <div [@viewSlide]="viewAnimationParams()" [ngSwitch]="currentView()">
-      <div *ngSwitchCase="'list'">
+      <div *ngSwitchCase="'list'" class="p-1">
         <button (click)="navigateToCreateProgram()"
           class="bg-primary hover:bg-primary-dark text-white font-semibold py-2 px-3 rounded-md shadow-sm text-xs sm:text-sm mb-2">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
@@ -95,29 +95,29 @@
             <div *ngFor="let program of filteredPrograms()"
               class="bg-white dark:bg-gray-700 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 relative"
               [ngClass]="{'ring-2 ring-green-500 dark:ring-green-400': program.isActive}">
-              <div class="p-4 flex-grow cursor-pointer" (click)="viewProgram(program.id)">
+              <div class="p-4 flex-grow cursor-pointer">
                 <div class="flex justify-between items-start mb-1.5">
                   <h2 class="text-lg sm:text-xl font-semibold text-primary dark:text-primary-light truncate pr-10" [title]="program.name">{{ program.name }}</h2>
                   <span *ngIf="program.isActive" class="absolute top-3 right-12 sm:top-4 sm:right-14 bg-green-100 text-green-700 dark:bg-green-700 dark:text-green-100 text-2xs sm:text-xs font-semibold px-1.5 sm:px-2.5 py-0.5 rounded-full">Active</span>
                 </div>
-                <p *ngIf="program.description" class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-2 line-clamp-2" [title]="program.description">{{ program.description }}</p>
-                <div class="space-y-0.5 text-xs sm:text-sm text-gray-500 dark:text-gray-300">
+                <p *ngIf="program.description" class="text-sm sm:text-xs text-gray-600 dark:text-gray-400 mb-2 line-clamp-2" [title]="program.description">{{ program.description }}</p>
+                <div class="space-y-0.5 text-sm sm:text-xs text-gray-500 dark:text-gray-300">
                   <div><span class="font-medium">Schedule:</span> {{ getDaysScheduled(program) }} / {{ getCycleInfo(program) }}</div>
                   <div *ngIf="program.startDate"><span class="font-medium">Started:</span> {{ program.startDate | date:'mediumDate' }}</div>
                   <div *ngIf="getProgramOverallGoals(program).length > 0" class="mt-1">
                       <span class="font-medium">Goals:</span>
-                      <span *ngFor="let goal of getProgramOverallGoals(program); let isLast = last" class="text-2xs bg-blue-100 text-blue-700 dark:bg-blue-700 dark:text-blue-200 px-1.5 py-0.5 rounded-full mx-1 mb-1 inline-block">{{ goal | titlecase }}</span>
+                      <span *ngFor="let goal of getProgramOverallGoals(program); let isLast = last" class="bg-blue-100 text-blue-700 dark:bg-blue-700 dark:text-blue-200 px-1.5 py-0.5 rounded-full mx-1 mb-1 inline-block">{{ goal | titlecase }}</span>
                   </div>
                   <div *ngIf="getProgramMainMuscleGroups(program).length > 0" class="mt-1">
                       <span class="font-medium">Muscles:</span>
-                       <span *ngFor="let muscle of getProgramMainMuscleGroups(program); let isLast = last" class="text-2xs bg-purple-100 text-purple-700 dark:bg-purple-700 dark:text-purple-200 px-1.5 py-0.5 rounded-full mx-1 mb-1 inline-block">{{ muscle | titlecase }}</span>
+                       <span *ngFor="let muscle of getProgramMainMuscleGroups(program); let isLast = last" class="bg-purple-100 text-purple-700 dark:bg-purple-700 dark:text-purple-200 px-1.5 py-0.5 rounded-full mx-1 mb-1 inline-block">{{ muscle | titlecase }}</span>
                   </div>
                 </div>
               </div>
-              <div class="absolute top-2 right-2 z-30">
+              <div class="absolute top-2 right-2">
                 <div class="relative">
                   <button (click)="toggleActions(program.id, $event)" class="p-1.5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full focus:outline-none"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" /></svg></button>
-                  <div *ngIf="activeProgramActions() === program.id && !menuModeCompact" @dropdownMenu class="origin-top-right absolute right-0 top-full mt-1 sm:mt-2 w-40 sm:w-48 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black dark:ring-gray-600 ring-opacity-5 focus:outline-none py-1">
+                  <div *ngIf="activeProgramActions() === program.id && !menuModeCompact" @dropdownMenu class="origin-top-right absolute right-0 top-full mt-1 sm:mt-2 w-40 sm:w-48 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black dark:ring-gray-600 ring-opacity-5 focus:outline-none py-1 z-50 sm:z-50">
                     <button (click)="viewProgram(program.id, $event)" class="w-full text-left px-3 py-1.5 sm:px-4 sm:py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-500 flex items-center"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-2"><path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5Z" /><path fill-rule="evenodd" d="M.664 10.59a1.651 1.651 0 010-1.186A10.004 10.004 0 0110 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0110 17c-4.257 0-7.893-2.66-9.336-6.41ZM14 10a4 4 0 11-8 0 4 4 0 018 0Z" clip-rule="evenodd" /></svg>View</button>
                     <button (click)="editProgram(program.id, $event)" class="w-full text-left px-3 py-1.5 sm:px-4 sm:py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-500 flex items-center"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-2"><path d="m13.83 3.393 2.777 2.777-9.333 9.333H4.5v-2.777l9.33-9.333Zm0 0L12.5 2.06M6 13.5V15h1.5l7.5-7.5-1.5-1.5L6 13.5Z" /></svg>Edit</button>
                     <button (click)="toggleActiveProgram(program.id, program.isActive, $event)" class="w-full text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium flex items-center" [ngClass]="{'text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-600/50': !program.isActive, 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 opacity-70 cursor-not-allowed': program.isActive }"><svg *ngIf="!program.isActive" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-2"><path fill-rule="evenodd" d="M16.403 12.652a3 3 0 000-5.304 3 3 0 00-3.75-3.751 3 3 0 00-5.305 0 3 3 0 00-3.751 3.75 3 3 0 000 5.305 3 3 0 003.75 3.751 3 3 0 005.305 0 3 3 0 003.751-3.75Zm-2.546-4.46a.75.75 0 00-1.214-.883l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5Z" clip-rule="evenodd" /></svg><svg *ngIf="program.isActive" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-2 text-green-500"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16Zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5Z" clip-rule="evenodd" /></svg>{{ program.isActive ? 'Active' : 'Set Active' }}</button>
