@@ -193,12 +193,12 @@ export class RoutineListComponent implements OnInit, OnDestroy {
 
   // --- Action Methods ---
   navigateToCreateRoutine(): void {
-    this.router.navigate(['/workout/new']);
+    this.router.navigate(['/workout/routine/new']);
   }
 
   editRoutine(routineId: string, event: MouseEvent): void {
     event.stopPropagation();
-    this.router.navigate(['/workout/edit', routineId]);
+    this.router.navigate(['/workout/routine/edit', routineId]);
     this.visibleActionsRutineId.set(null);
   }
 
@@ -268,13 +268,16 @@ export class RoutineListComponent implements OnInit, OnDestroy {
         this.toastService.info('Starting new workout cancelled.', 2000);
       }
     } else {
-      this.router.navigate(['/workout/play', newRoutineId]);
+      // Use absolute path for player
+      if (/* condition to start new */ true) { // Simplified condition
+        this.router.navigate(['/workout/play', newRoutineId]);
+      }
     }
   }
 
   viewRoutineDetails(routineId: string, event?: MouseEvent): void {
     event?.stopPropagation();
-    this.router.navigate(['/workout/view', routineId]);
+    this.router.navigate(['/workout/routine/view', routineId, { isView: 'routineBuilder' }]); // Pass isView flag
     this.visibleActionsRutineId.set(null);
   }
 

@@ -544,7 +544,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
             tempo: loggedSet.targetTempo || originalPlannedSet?.tempo,
             restAfterSet: originalPlannedSet?.restAfterSet || 60, // Prefer planned rest
             notes: loggedSet.notes, // Persist individual logged set notes if saving structure
-            type: loggedSet.type,
+            type: loggedSet.type as 'standard' | 'warmup' | 'amrap' | 'custom' | string,
           };
         }),
         // sessionStatus is NOT included here as it's session-specific
@@ -1249,7 +1249,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       id: uuidv4(), // Unique ID for this specific logged instance
       plannedSetId: activeInfo.setData.id,
       exerciseId: activeInfo.exerciseData.exerciseId,
-      type: activeInfo.setData.type,
+      type: activeInfo.setData.type as 'standard' | 'warmup' | 'amrap' | 'custom' | undefined,
       repsAchieved: formValues.actualReps ?? (activeInfo.setData.type === 'warmup' ? 0 : activeInfo.setData.reps ?? 0),
       weightUsed: formValues.actualWeight ?? (activeInfo.setData.type === 'warmup' ? null : activeInfo.setData.weight),
       durationPerformed: durationToLog,
@@ -1953,8 +1953,9 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   private pressStartTime: number | null = null;
 
   private weightIncrementIntervalId: any = null;
+  private weightDecrementIntervalId: any = null;
 
-  onWeightPointerDown(event: MouseEvent | TouchEvent): void {
+  onWeightIncrementPointerDown(event: MouseEvent | TouchEvent): void {
     // Prevent multiple intervals
     if (this.weightIncrementIntervalId !== null) return;
     // Immediately increment once
@@ -1979,15 +1980,52 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     document.addEventListener('mouseleave', stopIncrement);
   }
 
-  onWeightPointerUp(event: MouseEvent | TouchEvent): void {
+  onWeightIncrementPointerUp(event: MouseEvent | TouchEvent): void {
     if (this.weightIncrementIntervalId !== null) {
       clearInterval(this.weightIncrementIntervalId);
       this.weightIncrementIntervalId = null;
     }
     // Remove listeners in case pointerup is called directly
-    document.removeEventListener('mouseup', this.onWeightPointerUp as any);
-    document.removeEventListener('touchend', this.onWeightPointerUp as any);
-    document.removeEventListener('mouseleave', this.onWeightPointerUp as any);
+    document.removeEventListener('mouseup', this.onWeightIncrementPointerUp as any);
+    document.removeEventListener('touchend', this.onWeightIncrementPointerUp as any);
+    document.removeEventListener('mouseleave', this.onWeightIncrementPointerUp as any);
+  }
+
+
+  onWeightDecrementPointerDown(event: MouseEvent | TouchEvent): void {
+    // Prevent multiple intervals
+    if (this.weightDecrementIntervalId !== null) return;
+    // Immediately decrement once
+    this.decrementWeight();
+    // Start interval for continuous decrement
+    this.weightDecrementIntervalId = setInterval(() => {
+      this.decrementWeight();
+    }, 100);
+
+    // Add event listeners to stop decrementing on mouseup/touchend anywhere on the document
+    const stopDecrement = () => {
+      if (this.weightDecrementIntervalId !== null) {
+        clearInterval(this.weightDecrementIntervalId);
+        this.weightDecrementIntervalId = null;
+      }
+      document.removeEventListener('mouseup', stopDecrement);
+      document.removeEventListener('touchend', stopDecrement);
+      document.removeEventListener('mouseleave', stopDecrement);
+    };
+    document.addEventListener('mouseup', stopDecrement);
+    document.addEventListener('touchend', stopDecrement);
+    document.addEventListener('mouseleave', stopDecrement);
+  }
+
+  onWeightDecrementPointerUp(event: MouseEvent | TouchEvent): void {
+    if (this.weightDecrementIntervalId !== null) {
+      clearInterval(this.weightDecrementIntervalId);
+      this.weightDecrementIntervalId = null;
+    }
+    // Remove listeners in case pointerup is called directly
+    document.removeEventListener('mouseup', this.onWeightDecrementPointerUp as any);
+    document.removeEventListener('touchend', this.onWeightDecrementPointerUp as any);
+    document.removeEventListener('mouseleave', this.onWeightDecrementPointerUp as any);
   }
 
   decrementWeight(defaultStep: number = 0.5): void {

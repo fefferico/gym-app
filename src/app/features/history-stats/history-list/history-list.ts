@@ -342,8 +342,13 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   toggleFilterAccordion(): void { this.isFilterAccordionOpen.update(isOpen => !isOpen); }
   resetFilters(): void { this.filterForm.reset({ dateFrom: '', dateTo: '', routineName: '', exerciseId: '' }); }
-  viewLogDetails(logId: string, event?: MouseEvent): void { event?.stopPropagation(); this.router.navigate(['/history/log', logId]); this.visibleActionsRutineId.set(null); }
-  editLogDetails(logId: string, event?: MouseEvent): void { event?.stopPropagation(); this.router.navigate(['/history/edit', logId]); this.visibleActionsRutineId.set(null); }
+  viewLogDetails(logId: string, event?: MouseEvent): void { 
+    event?.stopPropagation(); this.router.navigate(['/history/log', logId]); 
+    this.visibleActionsRutineId.set(null); }
+  editLogDetails(logId: string, event?: MouseEvent): void { 
+    event?.stopPropagation(); this.router.navigate(['/workout/log/manual/edit', logId]); 
+    this.visibleActionsRutineId.set(null); 
+  }
   async deleteLogDetails(logId: string, event?: MouseEvent): Promise<void> {
     event?.stopPropagation(); this.visibleActionsRutineId.set(null);
     const confirm = await this.alertService.showConfirm("Delete Workout Log", "Are you sure you want to delete this workout log? This action cannot be undone.", "Delete");
@@ -367,4 +372,8 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.workoutLogsSubscription?.unsubscribe();
     this.hammerInstanceHistoryCalendar?.destroy();
   }
+
+  logPastWorkout(): void {
+    this.router.navigate(['/workout/log/manual/new']);
+  } 
 }

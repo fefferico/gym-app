@@ -1,9 +1,9 @@
 // src/app/features/workout-tracker/workout-tracker.routes.ts
 import { Routes } from '@angular/router';
 import { RoutineListComponent } from './routine-list';
-import { WorkoutBuilderComponent } from './workout-builder';
-import { WorkoutPlayerComponent } from './workout-player'; // Assuming you have this for the /play route
-import { WorkoutSummaryComponent } from './workout-summary/workout-summary'; // New component
+import { WorkoutBuilderComponent } from './workout-builder'; // This now serves multiple purposes
+import { WorkoutPlayerComponent } from './workout-player';
+import { WorkoutSummaryComponent } from './workout-summary/workout-summary';
 
 export const WORKOUT_TRACKER_ROUTES: Routes = [
   {
@@ -11,28 +11,52 @@ export const WORKOUT_TRACKER_ROUTES: Routes = [
     component: RoutineListComponent,
     title: 'My Routines'
   },
+  // --- Routine Builder Routes ---
   {
-    path: 'new',
+    path: 'routine/new', // Changed path for clarity
     component: WorkoutBuilderComponent,
+    data: { mode: 'routineBuilder', isNew: true }, // Pass mode and isNew
     title: 'Create New Routine'
   },
   {
-    path: 'edit/:routineId',
+    path: 'routine/edit/:routineId', // Changed path for clarity
     component: WorkoutBuilderComponent,
+    data: { mode: 'routineBuilder', isNew: false }, // Pass mode and isNew
     title: 'Edit Routine'
   },
-    {
-    path: 'view/:routineId',
+  {
+    path: 'routine/view/:routineId', // Changed path for clarity
     component: WorkoutBuilderComponent,
+    data: { mode: 'routineBuilder', isNew: false, isView: true }, // Pass mode, isNew, and isView
     title: 'View Routine'
   },
+  // --- Manual Log Entry Routes ---
   {
-    path: 'play/:routineId', // Route for the player
+    path: 'log/manual/new', // New path for creating a manual log
+    component: WorkoutBuilderComponent,
+    data: { mode: 'manualLogEntry', isNew: true },
+    title: 'Log Past Workout'
+  },
+  {
+    path: 'log/manual/new/from/:routineId', // New path for creating a manual log prefilled from a routine
+    component: WorkoutBuilderComponent,
+    data: { mode: 'manualLogEntry', isNew: true, prefillFromRoutine: true }, // Indicate prefill
+    title: 'Log Workout from Routine'
+  },
+  {
+    path: 'log/manual/edit/:logId', // New path for editing a manual log
+    component: WorkoutBuilderComponent,
+    data: { mode: 'manualLogEntry', isNew: false },
+    title: 'Edit Workout Log'
+  },
+  // --- Player and Summary Routes ---
+  {
+    path: 'play/:routineId',
     component: WorkoutPlayerComponent,
     title: 'Workout Session'
   },
   {
-    path: 'summary/:logId', // New route for the summary
+    path: 'summary/:logId',
     component: WorkoutSummaryComponent,
     title: 'Workout Summary'
   }

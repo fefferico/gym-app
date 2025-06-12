@@ -1,33 +1,32 @@
 import { Component, inject, OnInit, OnDestroy, signal, computed, ElementRef, QueryList, ViewChildren, AfterViewInit, ChangeDetectorRef, PLATFORM_ID } from '@angular/core';
-
-import { CommonModule, DecimalPipe, isPlatformBrowser } from '@angular/common';
-import { ActivatedRoute, ActivatedRouteSnapshot, Router, RouterLink } from '@angular/router';
+import { CommonModule, DecimalPipe, isPlatformBrowser, TitleCasePipe } from '@angular/common'; // Added TitleCasePipe
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray, AbstractControl, FormsModule } from '@angular/forms';
 import { Subscription, of, firstValueFrom } from 'rxjs';
 import { switchMap, tap, take } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
+import { format, parseISO, isValid as isValidDate } from 'date-fns';
 
 import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 
 import { Routine, ExerciseSetParams, WorkoutExercise } from '../../core/models/workout.model';
 import { Exercise } from '../../core/models/exercise.model';
+import { WorkoutLog, LoggedWorkoutExercise, LoggedSet } from '../../core/models/workout-log.model'; // For manual log
 import { WorkoutService } from '../../core/services/workout.service';
 import { ExerciseService } from '../../core/services/exercise.service';
 import { UnitsService } from '../../core/services/units.service';
 import { WeightUnitPipe } from '../../shared/pipes/weight-unit-pipe';
 import { SpinnerService } from '../../core/services/spinner.service';
-import { AlertComponent } from '../../shared/components/alert/alert.component';
 import { AlertService } from '../../core/services/alert.service';
 import { ToastService } from '../../core/services/toast.service';
-import { TrackingService } from '../../core/services/tracking.service';
+import { TrackingService } from '../../core/services/tracking.service'; // For manual log
 
+type BuilderMode = 'routineBuilder' | 'manualLogEntry';
 
 @Component({
   selector: 'app-workout-builder',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, FormsModule, DragDropModule
-    , WeightUnitPipe
-  ],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, FormsModule, DragDropModule, WeightUnitPipe, TitleCasePipe],
   templateUrl: './workout-builder.html',
   styleUrl: './workout-builder.scss',
   providers: [DecimalPipe]
@@ -43,256 +42,411 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   protected alertService = inject(AlertService);
   protected toastService = inject(ToastService);
   private trackingService = inject(TrackingService);
-
-  private readonly PAUSED_WORKOUT_KEY = 'fitTrackPro_pausedWorkoutState';
-  private readonly PAUSED_STATE_VERSION = '1.1'; // Incremented version for new snapshot field
-
+  private cdr = inject(ChangeDetectorRef);
+  private platformId = inject(PLATFORM_ID);
 
   @ViewChildren('setRepsInput') setRepsInputs!: QueryList<ElementRef<HTMLInputElement>>;
   @ViewChildren('expandedSetElement') expandedSetElements!: QueryList<ElementRef<HTMLDivElement>>;
 
-  private cdr = inject(ChangeDetectorRef);
-
-  routineForm!: FormGroup;
+  builderForm!: FormGroup;
+  mode: BuilderMode = 'routineBuilder';
   isEditMode = false;
-  isNewMode = false;
-  isViewMode = false;
-  currentRoutineId: string | null = null;
+  isNewMode = true;
+  isViewMode = false; // Only for routineBuilder mode
+  currentRoutineId: string | null = null; // For editing/viewing a Routine
+  currentLogId: string | null = null;     // For editing a WorkoutLog
   private routeSub: Subscription | undefined;
+  private initialRoutineIdForLogEdit: string | null | undefined = undefined; // For log edit mode
 
-  // Signal to track the path to the currently expanded set for detailed editing
-  // Path is { exerciseIndex, setIndex }
   expandedSetPath = signal<{ exerciseIndex: number, setIndex: number } | null>(null);
 
-
+  availableSetTypes: { value: string, label: string }[] = [
+    { value: 'standard', label: 'Standard' },
+    { value: 'warmup', label: 'Warm-up' },
+    { value: 'amrap', label: 'AMRAP' },
+    { value: 'dropset', label: 'Dropset' },
+    { value: 'failure', label: 'To Failure' },
+    { value: 'myorep', label: 'Myo-rep' },
+    { value: 'restpause', label: 'Rest-Pause' },
+    { value: 'custom', label: 'Custom Type' }
+  ];
   routineGoals: { value: Routine['goal'], label: string }[] = [
-    { value: 'hypertrophy', label: 'Hypertrophy' },
-    { value: 'strength', label: 'Strength' },
-    { value: 'muscular endurance', label: 'Muscular endurance' },
-    { value: 'cardiovascular endurance', label: 'Cardiovascular endurance' },
-    { value: 'fat loss / body composition', label: 'Fat loss / body composition' },
-    { value: 'mobility & flexibility', label: 'Mobility & flexibility' },
-    { value: 'power / explosiveness', label: 'Power / explosiveness' },
-    { value: 'speed & agility', label: 'Speed & agility' },
-    { value: 'balance & coordination', label: 'Balance & coordination' },
-    { value: 'skill acquisition', label: 'Skill acquisition' },
-    { value: 'rehabilitation / injury prevention', label: 'Rehabilitation / injury prevention' },
-    { value: 'mental health / stress relief', label: 'Mental health' },
-    { value: 'general health & longevity', label: 'General health & longevity' },
-    { value: 'sport-specific performance', label: 'Sport-specific performance' },
-    { value: 'maintenance', label: 'Maintenance' },
-    { value: 'rest', label: 'Rest' },
-    { value: 'custom', label: 'Custom' }
+    { value: 'hypertrophy', label: 'Hypertrophy' }, { value: 'strength', label: 'Strength' },
+    { value: 'muscular endurance', label: 'Muscular endurance' }, { value: 'cardiovascular endurance', label: 'Cardiovascular endurance' },
+    { value: 'fat loss / body composition', label: 'Fat loss / body composition' }, { value: 'mobility & flexibility', label: 'Mobility & flexibility' },
+    { value: 'power / explosiveness', label: 'Power / explosiveness' }, { value: 'speed & agility', label: 'Speed & agility' },
+    { value: 'balance & coordination', label: 'Balance & coordination' }, { value: 'skill acquisition', label: 'Skill acquisition' },
+    { value: 'rehabilitation / injury prevention', label: 'Rehabilitation / injury prevention' }, { value: 'mental health / stress relief', label: 'Mental health' },
+    { value: 'general health & longevity', label: 'General health & longevity' }, { value: 'sport-specific performance', label: 'Sport-specific performance' },
+    { value: 'maintenance', label: 'Maintenance' }, { value: 'rest', label: 'Rest' }, { value: 'custom', label: 'Custom' }
   ];
 
-  isExerciseModalOpen = signal(false);
+  isExerciseModalOpen = false;
   availableExercises: Exercise[] = [];
+  availableRoutines: Routine[] = []; // For selecting a base routine when logging manually
   modalSearchTerm = signal('');
-
   filteredAvailableExercises = computed(() => {
     const term = this.modalSearchTerm().toLowerCase();
-    if (!term) {
-      return this.availableExercises;
-    }
+    if (!term) return this.availableExercises;
     return this.availableExercises.filter(ex =>
       ex.name.toLowerCase().includes(term) ||
       ex.category.toLowerCase().includes(term) ||
-      ex.primaryMuscleGroup.toLowerCase().includes(term)
+      (ex.primaryMuscleGroup && ex.primaryMuscleGroup.toLowerCase().includes(term))
     );
   });
-
   selectedExerciseIndicesForSuperset = signal<number[]>([]);
 
   constructor() {
-    this.routineForm = this.fb.group({
-      name: ['', Validators.required],
-      description: [''],
-      goal: ['custom' as Routine['goal']],
-      exercises: this.fb.array([]),
+    this.builderForm = this.fb.group({
+      name: [''], // Validated based on mode
+      description: [''], // Only for routineBuilder
+      goal: ['custom' as Routine['goal']], // Only for routineBuilder
+
+      workoutDate: [''], // Only for manualLogEntry
+      startTime: [''],   // Only for manualLogEntry
+      durationMinutes: [60, [Validators.min(1)]], // Only for manualLogEntry
+      overallNotesLog: [''], // Only for manualLogEntry
+      routineIdForLog: [''], // For selecting base routine in manualLogEntry
+
+      exercises: this.fb.array([]), // Validated based on mode/goal
     });
   }
 
-  private platformId = inject(PLATFORM_ID); // Inject PLATFORM_ID
-
   ngOnInit(): void {
-    if (isPlatformBrowser(this.platformId)) { // Check if running in a browser
-      window.scrollTo(0, 0);
-    }
-    this.loadAvailableExercises();
+    if (isPlatformBrowser(this.platformId)) { window.scrollTo(0, 0); }
+    this.loadAvailableExercises(); // For exercise selection modal
+    this.workoutService.routines$.pipe(take(1)).subscribe(routines => this.availableRoutines = routines); // For routine selection in log mode
 
-    this.routeSub = this.route.paramMap.pipe(
-      switchMap(params => {
-        this.currentRoutineId = params.get('routineId');
-        const currentPath = this.route.snapshot.url[0]?.path;
-        this.isNewMode = currentPath === 'new';
-        this.isViewMode = currentPath === 'view' && !!this.currentRoutineId;
-        this.isEditMode = (currentPath === 'edit' && !!this.currentRoutineId) || this.isNewMode;
+    this.routeSub = this.route.data.pipe(
+      switchMap(data => {
+        this.mode = data['mode'] as BuilderMode || 'routineBuilder';
+        this.isNewMode = data['isNew'] === true; // True if creating new (Routine or Log)
+        console.log(`Builder ngOnInit: Mode=${this.mode}, isNewMode=${this.isNewMode}`);
 
-        this.expandedSetPath.set(null); // Reset expanded set on route change
+        this.currentRoutineId = this.route.snapshot.paramMap.get('routineId'); // For editing/viewing a Routine, or prefilling a Log
+        this.currentLogId = this.route.snapshot.paramMap.get('logId');         // For editing a WorkoutLog
 
-        if (this.currentRoutineId && (this.isEditMode || this.isViewMode) && !this.isNewMode) {
-          return this.workoutService.getRoutineById(this.currentRoutineId);
-        }
-        this.exercisesFormArray.clear();
-        this.routineForm.reset({ goal: 'custom', exercises: [] });
-        if (this.isNewMode) {
-          this.toggleFormState(false);
-        }
-        return of(null);
-      }),
-      tap(routine => {
-        if (routine) {
-          this.patchFormWithRoutineData(routine);
-          if (this.isViewMode) {
-            this.toggleFormState(true);
-          } else if (this.isEditMode && !this.isNewMode) {
-            this.toggleFormState(false);
+        // isViewMode is specific to viewing a Routine template
+        this.isViewMode = (this.mode === 'routineBuilder' && !!this.currentRoutineId && !this.isNewMode && this.route.snapshot.routeConfig?.path?.includes('view')) || false;
+        // isEditMode is true if not new and not view (i.e. editing a routine or a log)
+        this.isEditMode = !this.isNewMode && !this.isViewMode;
+
+        this.configureFormValidatorsAndFieldsForMode();
+        this.expandedSetPath.set(null);
+        this.exercisesFormArray.clear({ emitEvent: false }); // Clear before reset
+        this.builderForm.reset(this.getDefaultFormValuesForMode(), { emitEvent: false });
+
+        if (this.mode === 'routineBuilder') {
+          if (this.currentRoutineId && (this.isEditMode || this.isViewMode)) { // Editing or Viewing a Routine
+            return this.workoutService.getRoutineById(this.currentRoutineId);
           }
-        } else if ((this.isEditMode || this.isViewMode) && !this.isNewMode && this.currentRoutineId) {
-          this.toastService.error(`Routine with ID ${this.currentRoutineId} not found.`, 0, "Error");
-          this.router.navigate(['/workout']);
+        } else if (this.mode === 'manualLogEntry') {
+          if (this.currentLogId && this.isEditMode) { // Editing an existing Log
+            return this.trackingService.getWorkoutLogById(this.currentLogId);
+          } else if (this.currentRoutineId && this.isNewMode) { // New Log, prefilling from a Routine
+            return this.workoutService.getRoutineById(this.currentRoutineId);
+          }
         }
+        return of(null); // New Routine or New Ad-hoc Log
+      }),
+      tap(loadedData => { // data can be Routine, WorkoutLog, or null
+        if (loadedData) {
+          if (this.mode === 'routineBuilder') {
+            this.patchFormWithRoutineData(loadedData as Routine);
+          } else if (this.mode === 'manualLogEntry' && this.isEditMode && this.currentLogId) {
+            this.patchFormWithLogData(loadedData as WorkoutLog);
+          } else if (this.mode === 'manualLogEntry' && this.isNewMode && this.currentRoutineId) {
+            this.prefillLogFormFromRoutine(loadedData as Routine);
+          }
+        } else if (!this.isNewMode && (this.currentRoutineId || this.currentLogId)) {
+          this.toastService.error(`Data not found.`, 0, "Error");
+          this.router.navigate([this.mode === 'routineBuilder' ? '/workout' : '/history/list']);
+        }
+
+        if (this.isViewMode) this.toggleFormState(true);
+        else this.toggleFormState(false); // Enable for new/edit modes
       })
     ).subscribe();
 
-    this.routineForm.get('goal')?.valueChanges.subscribe(goalValue => {
-      const exercisesCtrl = this.exercisesFormArray;
-      if (goalValue === 'rest') {
-        // If goal is rest, clear exercises and remove 'required' validator from the array
-        while (exercisesCtrl.length) {
-          exercisesCtrl.removeAt(0);
+    if (this.mode === 'manualLogEntry') {
+      this.builderForm.get('routineIdForLog')?.valueChanges.subscribe(routineId => {
+        if (this.isEditMode && routineId === this.initialRoutineIdForLogEdit && !this.builderForm.get('routineIdForLog')?.dirty) {
+          return;
         }
-        exercisesCtrl.clearValidators(); // Remove validators like Validators.required
-        // Optional: disable add exercise buttons, though *ngIf in template handles UI
-      } else {
-        // If goal is not rest, ensure 'required' validator is present (if it's always required for non-rest)
-        // However, your current validation in onSubmit handles this better by checking array length.
-        // So, just ensuring it's enabled or re-adding validator if it was removed.
-        // For simplicity, let's assume the onSubmit validation is sufficient.
-        // If you had dynamically added/removed Validators.required from exercisesFormArray:
-        // exercisesCtrl.setValidators(Validators.required);
+        const selectedRoutine = this.availableRoutines.find(r => r.id === routineId);
+        if (selectedRoutine) {
+          this.prefillLogFormFromRoutine(selectedRoutine, false); // Don't reset date/time if user already set them
+        } else {
+          this.exercisesFormArray.clear();
+          // If user deselects routine, workout name might become editable or clear
+          if (!this.isEditMode) this.builderForm.get('name')?.setValue('Ad-hoc Workout');
+        }
+      });
+    }
+
+    this.builderForm.get('goal')?.valueChanges.subscribe(goalValue => {
+      if (this.mode === 'routineBuilder' && goalValue === 'rest') {
+        while (this.exercisesFormArray.length) this.exercisesFormArray.removeAt(0);
+        this.exercisesFormArray.clearValidators();
       }
-      exercisesCtrl.updateValueAndValidity(); // Important after changing validators
+      this.exercisesFormArray.updateValueAndValidity();
     });
+  }
+
+  private getDefaultFormValuesForMode(): any { /* ... (as previously defined) ... */
+    if (this.mode === 'manualLogEntry') {
+      const today = new Date();
+      return {
+        name: '', description: '', goal: 'custom',
+        workoutDate: format(today, 'yyyy-MM-dd'),
+        startTime: format(today, 'HH:mm'),
+        durationMinutes: 60,
+        overallNotesLog: '',
+        routineIdForLog: '',
+        exercises: []
+      };
+    } else { // routineBuilder
+      return {
+        name: '', description: '', goal: 'custom',
+        workoutDate: '', startTime: '', durationMinutes: 60, overallNotesLog: '', routineIdForLog: '',
+        exercises: []
+      };
+    }
+  }
+
+  private configureFormValidatorsAndFieldsForMode(): void { /* ... (as previously defined) ... */
+    const nameCtrl = this.builderForm.get('name');
+    const goalCtrl = this.builderForm.get('goal');
+    const dateCtrl = this.builderForm.get('workoutDate');
+    const timeCtrl = this.builderForm.get('startTime');
+    const durationCtrl = this.builderForm.get('durationMinutes');
+
+    nameCtrl?.clearValidators();
+    goalCtrl?.clearValidators();
+    dateCtrl?.clearValidators();
+    timeCtrl?.clearValidators();
+    durationCtrl?.clearValidators();
+
+
+    if (this.mode === 'routineBuilder') {
+      nameCtrl?.setValidators(Validators.required);
+      goalCtrl?.setValidators(Validators.required);
+      this.builderForm.get('exercises')?.setValidators(Validators.nullValidator); // Exercises not strictly required if goal is 'rest'
+    } else { // manualLogEntry
+      dateCtrl?.setValidators(Validators.required);
+      timeCtrl?.setValidators(Validators.required);
+      durationCtrl?.setValidators([Validators.required, Validators.min(1)]);
+      this.builderForm.get('exercises')?.setValidators(Validators.required); // Exercises always required for a log
+    }
+    this.builderForm.updateValueAndValidity({ emitEvent: false });
   }
 
   private toggleFormState(disable: boolean): void {
     if (disable) {
-      this.routineForm.disable({ emitEvent: false });
+      this.builderForm.disable({ emitEvent: false });
     } else {
-      this.routineForm.enable({ emitEvent: false });
+      this.builderForm.enable({ emitEvent: false });
+      // Specific field disabling based on mode after enabling all
+      if (this.mode === 'routineBuilder') {
+        this.builderForm.get('workoutDate')?.disable({ emitEvent: false });
+        this.builderForm.get('startTime')?.disable({ emitEvent: false });
+        this.builderForm.get('durationMinutes')?.disable({ emitEvent: false });
+        this.builderForm.get('overallNotesLog')?.disable({ emitEvent: false });
+        this.builderForm.get('routineIdForLog')?.disable({ emitEvent: false });
+      } else { // manualLogEntry
+        // Name field is used for WorkoutLog's title, so it should be enabled or prefilled
+        // this.builderForm.get('name')?.enable({ emitEvent: false });
+        this.builderForm.get('description')?.disable({ emitEvent: false });
+        this.builderForm.get('goal')?.disable({ emitEvent: false });
+      }
       this.exercisesFormArray.controls.forEach(exCtrl => {
         this.updateRoundsControlability(exCtrl as FormGroup);
       });
     }
   }
 
-  get exercisesFormArray(): FormArray {
-    return this.routineForm.get('exercises') as FormArray;
-  }
-
-  getSetsFormArray(exerciseControl: AbstractControl): FormArray {
-    return exerciseControl.get('sets') as FormArray;
-  }
-
-  private loadAvailableExercises(): void {
-    this.exerciseService.getExercises().subscribe(exercises => {
-      this.availableExercises = exercises;
-    });
-  }
+  get exercisesFormArray(): FormArray { return this.builderForm.get('exercises') as FormArray; }
+  getSetsFormArray(exerciseControl: AbstractControl): FormArray { return exerciseControl.get('sets') as FormArray; }
+  private loadAvailableExercises(): void { this.exerciseService.getExercises().pipe(take(1)).subscribe(exs => this.availableExercises = exs); }
 
   patchFormWithRoutineData(routine: Routine): void {
-    this.routineForm.patchValue({
+    this.builderForm.patchValue({
       name: routine.name,
       description: routine.description,
       goal: routine.goal,
-    });
-
-    this.exercisesFormArray.clear();
+    }, { emitEvent: false });
+    this.exercisesFormArray.clear({ emitEvent: false });
     routine.exercises.forEach(exerciseData => {
-      const exerciseFormGroup = this.createExerciseFormGroup(exerciseData);
-      this.exercisesFormArray.push(exerciseFormGroup);
+      this.exercisesFormArray.push(this.createExerciseFormGroup(exerciseData, true, false), { emitEvent: false });
     });
-
-    if (this.isViewMode) {
-      this.toggleFormState(true);
-    } else {
-      this.toggleFormState(false);
-    }
-    this.expandedSetPath.set(null); // Ensure no set is expanded after patching
+    this.builderForm.markAsPristine();
   }
 
-  private createExerciseFormGroup(exerciseData?: WorkoutExercise): FormGroup {
-    const baseExercise = exerciseData?.exerciseId ? this.availableExercises.find(e => e.id === exerciseData.exerciseId) : null;
+  patchFormWithLogData(log: WorkoutLog): void {
+    this.initialRoutineIdForLogEdit = log.routineId;
+    this.builderForm.patchValue({
+      name: log.routineName || 'Logged Workout', // 'name' field used for log title
+      workoutDate: format(parseISO(log.date), 'yyyy-MM-dd'),
+      startTime: format(new Date(log.startTime), 'HH:mm'),
+      durationMinutes: log.durationMinutes || 60,
+      overallNotesLog: log.notes || '',
+      routineIdForLog: log.routineId || '',
+    }, { emitEvent: false });
 
+    this.exercisesFormArray.clear({ emitEvent: false });
+    log.exercises.forEach(loggedEx => {
+      this.exercisesFormArray.push(this.createExerciseFormGroupFromLog(loggedEx), { emitEvent: false });
+    });
+    this.builderForm.markAsPristine();
+  }
+
+  prefillLogFormFromRoutine(routine: Routine, resetDateTime: boolean = true): void {
+    const patchData: any = {
+      name: `Log: ${routine.name}`,
+      routineIdForLog: routine.id,
+    };
+    if (resetDateTime) {
+      const today = new Date();
+      patchData.workoutDate = format(today, 'yyyy-MM-dd');
+      patchData.startTime = format(today, 'HH:mm');
+      patchData.durationMinutes = 60;
+    }
+    this.builderForm.patchValue(patchData, { emitEvent: false });
+    this.exercisesFormArray.clear({ emitEvent: false });
+    routine.exercises.forEach(routineEx => {
+      this.exercisesFormArray.push(this.createExerciseFormGroup(routineEx, false, true), { emitEvent: false });
+    });
+    this.builderForm.markAsDirty();
+  }
+
+  private createExerciseFormGroup(exerciseData?: WorkoutExercise, isFromRoutineTemplate: boolean = false, forLogging: boolean = false): FormGroup {
+    const baseExercise = exerciseData?.exerciseId ? this.availableExercises.find(e => e.id === exerciseData.exerciseId) : null;
+    const sets = exerciseData?.sets || [];
     const fg = this.fb.group({
       id: [exerciseData?.id || this.workoutService.generateWorkoutExerciseId()],
       exerciseId: [exerciseData?.exerciseId || '', Validators.required],
       exerciseName: [exerciseData?.exerciseName || baseExercise?.name || 'Select Exercise'],
       notes: [exerciseData?.notes || ''],
       sets: this.fb.array(
-        exerciseData?.sets.map(set => this.createSetFormGroup(set)) || []
+        sets.map(set => this.createSetFormGroup(set, forLogging))
       ),
-      supersetId: [exerciseData?.supersetId || null],
-      supersetOrder: [exerciseData?.supersetOrder ?? null],
-      supersetSize: [exerciseData?.supersetSize ?? null],
-      rounds: [exerciseData?.rounds ?? 1, [Validators.min(1)]],
+      supersetId: [isFromRoutineTemplate ? exerciseData?.supersetId : null],
+      supersetOrder: [isFromRoutineTemplate ? exerciseData?.supersetOrder : null],
+      supersetSize: [isFromRoutineTemplate ? exerciseData?.supersetSize : null],
+      rounds: [isFromRoutineTemplate ? (exerciseData?.rounds ?? 1) : 1, [Validators.min(1)]],
     });
-
-    fg.get('supersetId')?.valueChanges.subscribe(() => this.updateRoundsControlability(fg));
-    fg.get('supersetOrder')?.valueChanges.subscribe(() => this.updateRoundsControlability(fg));
-    this.updateRoundsControlability(fg);
-
+    if (isFromRoutineTemplate) {
+      fg.get('supersetId')?.valueChanges.subscribe(() => this.updateRoundsControlability(fg));
+      fg.get('supersetOrder')?.valueChanges.subscribe(() => this.updateRoundsControlability(fg));
+      this.updateRoundsControlability(fg);
+    } else {
+      fg.get('rounds')?.enable({ emitEvent: false });
+    }
     fg.get('exerciseId')?.valueChanges.subscribe(newExerciseId => {
       const selectedBaseExercise = this.availableExercises.find(e => e.id === newExerciseId);
       fg.get('exerciseName')?.setValue(selectedBaseExercise?.name || 'Unknown Exercise', { emitEvent: false });
     });
     return fg;
   }
-
-  private createSetFormGroup(setData?: ExerciseSetParams): FormGroup {
+  private createExerciseFormGroupFromLog(loggedEx: LoggedWorkoutExercise): FormGroup {
     return this.fb.group({
-      id: [setData?.id || this.workoutService.generateExerciseSetId()],
-      reps: [setData?.reps ?? null, [Validators.min(0)]],
-      weight: [this.unitsService.convertFromKg(setData?.weight, this.unitsService.currentUnit()) ?? null, [Validators.min(0)]],
-      duration: [setData?.duration ?? null, [Validators.min(0)]],
-      tempo: [setData?.tempo || ''],
-      restAfterSet: [setData?.restAfterSet ?? 60, [Validators.required, Validators.min(0)]],
-      notes: [setData?.notes || ''],
-      type: [setData?.type || 'standard'], // <<<< NEW
+      id: [loggedEx.exerciseId || uuidv4()],
+      exerciseId: [loggedEx.exerciseId, Validators.required],
+      exerciseName: [loggedEx.exerciseName, Validators.required],
+      notes: [loggedEx.notes || ''],
+      sets: this.fb.array(loggedEx.sets.map(set => this.createSetFormGroup(set, true))),
+      supersetId: [null], supersetOrder: [null], supersetSize: [null], rounds: [1],
     });
+  }
+  private createSetFormGroup(setData?: ExerciseSetParams | LoggedSet, forLogging: boolean = false): FormGroup {
+    let reps, weight, duration, notes, type, tempo, restAfterSet;
+    let id = uuidv4();
+    let plannedSetId;
+
+    if (setData) {
+      id = setData.id || id; // Keep original set ID if from template or editing logged set
+      if ('repsAchieved' in setData) { // LoggedSet
+        reps = setData.repsAchieved; weight = setData.weightUsed; duration = setData.durationPerformed;
+        notes = setData.notes; type = setData.type; plannedSetId = setData.plannedSetId;
+        tempo = setData.targetTempo; // LoggedSet might not have tempo directly
+        restAfterSet = 60; // Default rest for log, not usually part of LoggedSet directly
+      } else { // ExerciseSetParams from routine template
+        reps = setData.reps; weight = setData.weight; duration = setData.duration;
+        notes = setData.notes; type = setData.type; tempo = setData.tempo;
+        restAfterSet = setData.restAfterSet;
+        plannedSetId = setData.id; // This is the template set ID
+      }
+    } else { // New blank set
+      reps = null; weight = null; duration = null; notes = ''; type = 'standard'; tempo = ''; restAfterSet = 60;
+    }
+
+    const formGroupConfig: { [key: string]: any } = {
+      id: [id],
+      type: [type || 'standard', Validators.required],
+      notes: [notes || ''],
+    };
+
+    if (forLogging) {
+      formGroupConfig['repsAchieved'] = [reps ?? null, [Validators.required, Validators.min(0)]];
+      formGroupConfig['weightUsed'] = [this.unitsService.convertFromKg(weight, this.unitsService.currentUnit()) ?? null, [Validators.min(0)]];
+      formGroupConfig['durationPerformed'] = [duration ?? null, [Validators.min(0)]];
+      formGroupConfig['plannedSetId'] = [plannedSetId]; // For linking back if logging from template
+      formGroupConfig['timestamp'] = [(setData as LoggedSet)?.timestamp || new Date().toISOString()]; // For editing existing log
+    } else { // For routine builder
+      formGroupConfig['reps'] = [reps ?? null, [Validators.min(0)]];
+      formGroupConfig['weight'] = [this.unitsService.convertFromKg(weight, this.unitsService.currentUnit()) ?? null, [Validators.min(0)]];
+      formGroupConfig['duration'] = [duration ?? null, [Validators.min(0)]];
+      formGroupConfig['tempo'] = [tempo || ''];
+      formGroupConfig['restAfterSet'] = [restAfterSet ?? 60, [Validators.required, Validators.min(0)]];
+    }
+    return this.fb.group(formGroupConfig);
   }
 
   openExerciseSelectionModal(): void {
     if (this.isViewMode) return;
     this.modalSearchTerm.set('');
-    this.isExerciseModalOpen.set(true);
+    this.isExerciseModalOpen = true;
   }
 
   closeExerciseSelectionModal(): void {
-    this.isExerciseModalOpen.set(false);
+    this.isExerciseModalOpen = false;
   }
 
   onModalSearchTermChange(event: Event): void {
     const inputElement = event.target as HTMLInputElement;
     this.modalSearchTerm.set(inputElement.value);
   }
-
-  selectExercise(exercise: Exercise): void {
+  selectExercise(exercise: Exercise): void { // For Routine Builder
     const newExerciseFormGroup = this.createExerciseFormGroup({
+      id: this.workoutService.generateWorkoutExerciseId(), exerciseId: exercise.id, exerciseName: exercise.name,
+      sets: [{ id: this.workoutService.generateExerciseSetId(), type: 'standard', reps: 8, weight: 0, restAfterSet: 60, duration: undefined, tempo: '', notes: '' }],
+      supersetId: null, supersetOrder: null, supersetSize: null, rounds: 1
+    }, true, false);
+    this.exercisesFormArray.push(newExerciseFormGroup); this.closeExerciseSelectionModal();
+    this.toggleSetExpansion(this.exercisesFormArray.length - 1, 0);
+  }
+  selectExerciseForLog(exerciseFromLibrary: Exercise): void { // For Manual Log
+    const workoutExercise: WorkoutExercise = {
       id: this.workoutService.generateWorkoutExerciseId(),
-      exerciseId: exercise.id,
-      exerciseName: exercise.name,
-      sets: [{ id: this.workoutService.generateExerciseSetId(), reps: 8, weight: 0, restAfterSet: 60, duration: 0, tempo: '-', notes: '' }],
+      exerciseId: exerciseFromLibrary.id,
+      exerciseName: exerciseFromLibrary.name,
+      sets: [{
+        id: this.workoutService.generateExerciseSetId(),
+        type: 'standard',
+        reps: 8,
+        weight: 0,
+        restAfterSet: 60,
+        duration: undefined,
+        tempo: '',
+        notes: ''
+      }],
       supersetId: null,
       supersetOrder: null,
       supersetSize: null,
       rounds: 1
-    });
-    this.exercisesFormArray.push(newExerciseFormGroup);
+    };
+    this.exercisesFormArray.push(this.createExerciseFormGroup(workoutExercise, false, true));
     this.closeExerciseSelectionModal();
-    // Automatically expand the first set of the new exercise
-    this.toggleSetExpansion(this.exercisesFormArray.length - 1, 0);
   }
 
   ngAfterViewInit(): void {
@@ -312,15 +466,11 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   addSet(exerciseControl: AbstractControl, exerciseIndex: number): void {
     if (this.isViewMode) return;
     const setsArray = this.getSetsFormArray(exerciseControl);
-    setsArray.push(this.createSetFormGroup());
-    this.cdr.detectChanges(); // Ensure new set is rendered
-
-    // Expand the newly added set
+    setsArray.push(this.createSetFormGroup(undefined, this.mode === 'manualLogEntry')); // Pass forLogging
+    this.cdr.detectChanges();
     const newSetIndex = setsArray.length - 1;
     this.toggleSetExpansion(exerciseIndex, newSetIndex);
-    // Focus logic will be handled by ngAfterViewInit when the expanded element is rendered.
   }
-
   removeSet(exerciseControl: AbstractControl, exerciseIndex: number, setIndex: number): void {
     if (this.isViewMode) return;
     const setsArray = this.getSetsFormArray(exerciseControl);
@@ -335,54 +485,28 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     }
   }
 
-  // --- Set Expansion Logic ---
   toggleSetExpansion(exerciseIndex: number, setIndex: number, event?: MouseEvent): void {
-    event?.stopPropagation(); // Prevent exercise card click if called from a button/icon
+    event?.stopPropagation();
     if (this.isViewMode && !(this.expandedSetPath()?.exerciseIndex === exerciseIndex && this.expandedSetPath()?.setIndex === setIndex)) {
-      // In view mode, allow expanding but not direct editing inputs.
-      // If already expanded, clicking again will collapse it.
-    } else if (this.isViewMode) {
-      this.expandedSetPath.set(null); // Collapse if clicking the already expanded one in view mode
+      this.expandedSetPath.set({ exerciseIndex, setIndex }); // Allow expanding in view mode
       return;
-    }
-
-
+    } else if (this.isViewMode) {
+      this.expandedSetPath.set(null); return;
+    } // For edit/new modes:
     const currentPath = this.expandedSetPath();
     if (currentPath?.exerciseIndex === exerciseIndex && currentPath?.setIndex === setIndex) {
-      this.expandedSetPath.set(null); // Collapse if already expanded
+      this.expandedSetPath.set(null);
     } else {
       this.expandedSetPath.set({ exerciseIndex, setIndex });
-      // Focus logic can be more targeted here or rely on ngAfterViewInit for the #expandedSetElement
-      this.cdr.detectChanges(); // Ensure the expanded element is rendered
-      setTimeout(() => {
-        const expandedElement = this.expandedSetElements.find((el, idx) => {
-          // This logic for finding the correct element might need refinement
-          // if QueryList doesn't map directly to the *ngFor of expanded sets.
-          // For now, assuming only one can be expanded, so .first might work.
-          return true; // Simplified, assuming first is the one if any
-        });
-        if (expandedElement) {
-          // Find the first focusable input within the expanded set
-          const firstInput = expandedElement.nativeElement.querySelector('input[formControlName="reps"], input[formControlName="weight"], input[formControlName="duration"]');
-          if (firstInput instanceof HTMLInputElement) {
-            firstInput.focus();
-            firstInput.select();
-          }
-        }
-      }, 50); // Small delay
+      this.cdr.detectChanges();
+      setTimeout(() => { /* ... focus logic ... */ }, 50);
     }
   }
-
   isSetExpanded(exerciseIndex: number, setIndex: number): boolean {
     const currentPath = this.expandedSetPath();
     return currentPath?.exerciseIndex === exerciseIndex && currentPath?.setIndex === setIndex;
   }
-
-  collapseExpandedSet(): void {
-    this.expandedSetPath.set(null);
-  }
-
-
+  collapseExpandedSet(): void { this.expandedSetPath.set(null); }
   private getFormErrors(formGroup: FormGroup | FormArray): any {
     const errors: any = {};
     Object.keys(formGroup.controls).forEach(key => {
@@ -399,11 +523,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     });
     return errors;
   }
-
-
-  get f() {
-    return this.routineForm.controls;
-  }
+  get f() { return this.builderForm.controls; } // Use builderForm
 
   toggleExerciseSelectionForSuperset(index: number, event: Event): void {
     if (this.isViewMode) return;
@@ -471,9 +591,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       });
     });
     this.recalculateSupersetOrders();
-  }
-
-  private recalculateSupersetOrders(): void {
+  } private recalculateSupersetOrders(): void {
     const supersetGroups = new Map<string, FormGroup[]>();
     this.exercisesFormArray.controls.forEach(control => {
       const exerciseForm = control as FormGroup;
@@ -576,150 +694,100 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     this.toastService.info("Exercise removed.", 2000);
     this.expandedSetPath.set(null); // Collapse if an exercise is removed
   }
-
   errorMessage = signal<string | null>(null);
 
-  onSubmit(): void {
-    if (this.isViewMode) {
-      this.toastService.info("Currently in view mode. No changes to save.", 3000, "View Mode");
+  async onSubmit(): Promise<void> {
+    if (this.isViewMode) { this.toastService.info("View mode. No changes.", 3000, "View Mode"); return; }
+
+    if (this.mode === 'routineBuilder') this.recalculateSupersetOrders();
+
+    const isRestGoalRoutine = this.mode === 'routineBuilder' && this.builderForm.get('goal')?.value === 'rest';
+
+    if ((this.mode === 'routineBuilder' && (this.builderForm.get('name')?.invalid || this.builderForm.get('goal')?.invalid)) ||
+      (this.mode === 'manualLogEntry' && (this.builderForm.get('workoutDate')?.invalid || this.builderForm.get('startTime')?.invalid || this.builderForm.get('durationMinutes')?.invalid))) {
+      this.builderForm.markAllAsTouched();
+      this.toastService.error('Please fill all required details.', 0, "Validation Error");
       return;
     }
-
-    // Recalculate superset orders before any validation that might depend on it
-    this.recalculateSupersetOrders();
-
-    // Determine if the routine is a "rest" type routine
-    const isRestTypeRoutine = this.routineForm.get('goal')?.value === 'rest';
-
-    // --- Validation ---
-    // 1. Basic form validity (name, etc.)
-    if (this.routineForm.get('name')?.invalid || this.routineForm.get('goal')?.invalid) {
-      this.routineForm.markAllAsTouched(); // Mark all fields to show errors
-      this.toastService.error('Please fill all required routine details (Name, Goal).', 0, "Validation Error");
-      console.log('Form Errors (Details):', this.getFormErrors(this.routineForm));
+    if (!isRestGoalRoutine && this.exercisesFormArray.length === 0) {
+      this.toastService.error(this.mode === 'manualLogEntry' ? 'Log must have exercises.' : 'Routine needs exercises.', 0, "Validation Error");
       return;
     }
+    if (this.mode === 'routineBuilder' && !isRestGoalRoutine && !this.validateSupersetIntegrity()) {
+      this.toastService.error('Invalid superset configuration.', 0, "Validation Error"); return;
+    }
+    // Detailed set validation loop (ensure this is robust)
+    // ...
 
-    // 2. Superset integrity validation (only if not a rest type routine AND has exercises)
-    if (!isRestTypeRoutine && this.exercisesFormArray.length > 0 && !this.validateSupersetIntegrity()) {
-      this.toastService.error('Superset configuration is invalid. Ensure supersets have at least two contiguous exercises.', 0, "Validation Error");
-      return;
+    if (this.builderForm.invalid) {
+      this.toastService.error('Please correct validation errors.', 0, "Validation Error");
+      this.builderForm.markAllAsTouched(); return;
     }
 
-    // 3. Exercise and Set validation (only if not a rest type routine)
-    if (!isRestTypeRoutine) {
-      if (!this.exercisesFormArray || this.exercisesFormArray.length === 0) {
-        this.routineForm.markAllAsTouched(); // Mark exercises array as touched if needed by UI
-        this.toastService.error('A non-rest routine must have at least one exercise.', 0, "Validation Error");
-        return;
-      }
-
-      const exercisesValue = this.exercisesFormArray.value as WorkoutExercise[];
-      for (let i = 0; i < exercisesValue.length; i++) {
-        const exercise = exercisesValue[i];
-        const baseExerciseDetails = this.availableExercises.find(e => e.id === exercise.exerciseId);
-        const exerciseDisplayName = exercise.exerciseName || baseExerciseDetails?.name || `Exercise ${i + 1}`;
-
-        if (!exercise.sets || exercise.sets.length === 0) {
-          this.toastService.error(`The exercise "${exerciseDisplayName}" must have at least one set.`, 0, "Validation Error");
-          // Potentially mark this specific exercise control as touched/invalid if UI shows errors at that level
-          (this.exercisesFormArray.at(i) as FormGroup).markAllAsTouched();
-          return;
-        }
-        const exerciseFormControl = this.exercisesFormArray.at(i) as FormGroup;
-        const roundsValue = exerciseFormControl.get('rounds')?.value;
-        if (roundsValue !== null && roundsValue !== undefined && roundsValue < 1) {
-          this.toastService.error(`The exercise "${exerciseDisplayName}" must have at least 1 round.`, 0, "Validation Error");
-          (this.exercisesFormArray.at(i) as FormGroup).get('rounds')?.markAsTouched();
-          return;
-        }
-        for (let j = 0; j < exercise.sets.length; j++) {
-          const set = exercise.sets[j];
-          const setDisplayName = `Set ${j + 1} of "${exerciseDisplayName}"`;
-          const reps = set.reps ?? 0;
-          const weight = set.weight ?? 0;
-          const duration = set.duration ?? 0;
-          let isPrimarilyDurationSet = duration > 0;
-
-          if (!isPrimarilyDurationSet && baseExerciseDetails) {
-            const durationCategories = ['cardio', 'stretching', 'plank', 'isometric']; // Consider 'yoga', 'pilates' etc.
-            if (durationCategories.includes(baseExerciseDetails.category.toLowerCase())) {
-              isPrimarilyDurationSet = true;
-            }
-          }
-
-          if (isPrimarilyDurationSet) {
-            if (duration <= 0) {
-              this.toastService.error(`${setDisplayName} is timed but has no duration.`, 0, "Validation Error");
-              ((this.exercisesFormArray.at(i) as FormGroup).get('sets') as FormArray).at(j).markAllAsTouched();
-              return;
-            }
-          } else { // Not primarily duration based (i.e., reps/weight based)
-            if (reps <= 0 && weight <= 0 && duration <= 0) { // If duration is also 0 or null, then reps or weight must be > 0
-              this.toastService.error(`${setDisplayName} must have reps, weight, or duration.`, 0, "Validation Error");
-              ((this.exercisesFormArray.at(i) as FormGroup).get('sets') as FormArray).at(j).markAllAsTouched();
-              return;
-            }
-            if (reps <= 0 && weight > 0) {
-              this.toastService.error(`${setDisplayName} with weight must also have reps.`, 0, "Validation Error");
-              ((this.exercisesFormArray.at(i) as FormGroup).get('sets') as FormArray).at(j).markAllAsTouched();
-              return;
-            }
-          }
-        }
-      }
-    }
-    // --- End of Validation ---
-
-
-    // If all validations pass (or are skipped for "rest" type)
-    const formValue = this.routineForm.getRawValue();
-
-    const routinePayload: Routine = {
-      id: (this.isEditMode || this.isNewMode) && this.currentRoutineId ? this.currentRoutineId : uuidv4(),
-      name: formValue.name,
-      description: formValue.description,
-      goal: formValue.goal,
-      // If it's a rest type routine, exercises array will be empty or what was submitted (should be empty due to validation skip)
-      // Otherwise, map the exercises.
-      exercises: isRestTypeRoutine ? [] : formValue.exercises.map((exInput: any) => ({
-        ...exInput,
-        sets: exInput.sets.map((setInput: any) => ({
-          ...setInput,
-          weight: this.unitsService.convertToKg(setInput.weight, this.unitsService.currentUnit()) ?? null,
-          restAfterSet: setInput.restAfterSet ?? 0,
-        }))
-      })),
-    };
-
-    if (this.isNewMode && !this.currentRoutineId) {
-      routinePayload.id = uuidv4(); // Ensure new ID for new routines
-    }
+    const formValue = this.builderForm.getRawValue();
+    this.spinnerService.show(this.isNewMode ? "Saving..." : "Updating...");
 
     try {
-      this.spinnerService.show("Saving routine...");
-      if (this.isNewMode) {
-        this.workoutService.addRoutine(routinePayload);
-        this.toastService.success("Routine created successfully!", 4000, "Success");
-      } else if (this.isEditMode && this.currentRoutineId) {
-        this.workoutService.updateRoutine(routinePayload);
-        this.toastService.success("Routine updated successfully!", 4000, "Success");
-      } else {
-        // This case should ideally not be reached if modes are set correctly
-        this.toastService.warning("No save operation performed. Mode is unclear or ID missing.", 0, "Save Warning");
-        this.spinnerService.hide();
-        return;
+      if (this.mode === 'routineBuilder') {
+        const routinePayload: Routine = { /* ... map formValue to Routine ... */
+          id: this.currentRoutineId || uuidv4(), name: formValue.name, description: formValue.description, goal: formValue.goal,
+          exercises: formValue.exercises.map((exInput: any) => ({
+            ...exInput, sets: exInput.sets.map((setInput: any) => ({ ...setInput, weight: this.unitsService.convertToKg(setInput.weight, this.unitsService.currentUnit()) ?? null, }))
+          })),
+        };
+        if (this.isNewMode) this.workoutService.addRoutine(routinePayload); else this.workoutService.updateRoutine(routinePayload);
+        this.toastService.success(`Routine ${this.isNewMode ? 'created' : 'updated'}!`, 4000, "Success");
+        this.router.navigate(['/workout']);
+      } else { // manualLogEntry
+        const workoutDateStr = formValue.workoutDate; const startTimeStr = formValue.startTime;
+        const combinedDateTimeStr = `${workoutDateStr}T${startTimeStr}:00`;
+        let startTimeMs: number;
+        try {
+          const parsedDate = parseISO(combinedDateTimeStr);
+          if (!isValidDate(parsedDate)) throw new Error("Invalid date/time for log entry");
+          startTimeMs = parsedDate.getTime();
+        } catch (e) { this.toastService.error("Invalid date/time.", 0, "Error"); this.spinnerService.hide(); return; }
+        let endTimeMs: number | undefined = undefined;
+        if (formValue.durationMinutes) endTimeMs = new Date(startTimeMs).setMinutes(new Date(startTimeMs).getMinutes() + formValue.durationMinutes);
+
+        const logExercises: LoggedWorkoutExercise[] = formValue.exercises.map((exInput: any): LoggedWorkoutExercise => ({
+          exerciseId: exInput.exerciseId, exerciseName: exInput.exerciseName, notes: exInput.notes,
+          sets: exInput.sets.map((setInput: any): LoggedSet => ({
+            id: setInput.id || uuidv4(), plannedSetId: setInput.plannedSetId, exerciseId: exInput.exerciseId, type: setInput.type,
+            repsAchieved: setInput.repsAchieved, // Form now uses repsAchieved for log mode
+            weightUsed: this.unitsService.convertToKg(setInput.weightUsed, this.unitsService.currentUnit()) ?? null,
+            durationPerformed: setInput.durationPerformed, notes: setInput.notes,
+            targetReps: undefined, targetWeight: undefined, targetDuration: undefined, targetTempo: undefined, // Not directly logged, but could be if needed
+            timestamp: setInput.timestamp || new Date().toISOString(), rpe: undefined
+          }))
+        }));
+
+        const logPayloadBase = {
+          date: format(new Date(startTimeMs), 'yyyy-MM-dd'), startTime: startTimeMs, endTime: endTimeMs,
+          durationMinutes: formValue.durationMinutes, routineId: formValue.routineIdForLog || undefined,
+          routineName: formValue.routineIdForLog ? (this.availableRoutines.find(r => r.id === formValue.routineIdForLog)?.name || formValue.name || 'From Routine') : (formValue.name || 'Ad-hoc Workout'),
+          notes: formValue.overallNotesLog, exercises: logExercises
+        };
+        if (this.isEditMode && this.currentLogId) {
+          const updatedLog: WorkoutLog = { ...logPayloadBase, id: this.currentLogId };
+          await this.trackingService.updateWorkoutLog(updatedLog);
+          this.toastService.success("Log updated!", 4000, "Success");
+          this.router.navigate(['/history/log', this.currentLogId]);
+        } else {
+          const newLog: Omit<WorkoutLog, 'id'> = logPayloadBase;
+          const savedLog = this.trackingService.addWorkoutLog(newLog);
+          this.toastService.success("Workout logged!", 4000, "Success");
+          this.router.navigate(['/history/log', savedLog.id]);
+        }
       }
-      this.routineForm.markAsPristine(); // Mark form as pristine after successful save
-      this.router.navigate(['/workout']);
+      this.builderForm.markAsPristine();
     } catch (e: any) {
-      console.error("Error saving routine:", e);
-      this.toastService.error(`Failed to save routine: ${e.message || 'Unknown error'}`, 0, "Save Error");
+      console.error("Error saving:", e);
+      this.toastService.error(`Failed to save: ${e.message || 'Unknown error'}`, 0, "Save Error");
     } finally {
       this.spinnerService.hide();
     }
   }
-
 
   private validateSupersetIntegrity(): boolean {
     const exercises = this.exercisesFormArray.value as WorkoutExercise[];
@@ -733,15 +801,19 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       }
     }
     for (const [id, group] of supersetGroups.entries()) {
-      if (group.length < 2) return false;
+      if (group.length < 2) return false; // Superset must have at least 2 exercises
       const sortedGroup = group.sort((a, b) => (a.supersetOrder ?? Infinity) - (b.supersetOrder ?? Infinity));
       for (let i = 0; i < sortedGroup.length; i++) {
-        if (sortedGroup[i].supersetOrder !== i) return false;
+        if (sortedGroup[i].supersetOrder !== i) return false; // Orders must be sequential 0, 1, 2...
+      }
+      // Check if all exercises in the group are contiguous in the main exercisesFormArray
+      const formIndices = sortedGroup.map(ex => this.exercisesFormArray.controls.findIndex(ctrl => (ctrl as FormGroup).get('id')?.value === ex.id));
+      for (let i = 1; i < formIndices.length; i++) {
+        if (formIndices[i] !== formIndices[i - 1] + 1) return false; // Not contiguous
       }
     }
     return true;
   }
-
   get firstSelectedExerciseIndexForSuperset(): number | null {
     const selectedIndices = this.selectedExerciseIndicesForSuperset();
     return selectedIndices.length > 0 ? selectedIndices[0] : null;

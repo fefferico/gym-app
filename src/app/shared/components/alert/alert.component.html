@@ -11,7 +11,7 @@
     </header>
 
     <main class="mb-6">
-      <p *ngIf="options.message" class="text-sm text-gray-600 dark:text-gray-300 whitespace-pre-wrap mb-3">{{
+      <p *ngIf="options.message" class="text-m text-gray-600 dark:text-gray-300 whitespace-pre-wrap mb-3">{{
         options.message }}</p>
 
       <!-- Inputs Section (remains the same) -->
@@ -25,12 +25,12 @@
             <textarea *ngSwitchCase="'textarea'" [id]="input.id || ('alert-input-' + i)" [name]="input.name"
               [placeholder]="input.placeholder || ''" [(ngModel)]="inputValues[input.name]"
               [required]="input.required ? true : false" rows="3"
-              class="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:text-gray-200">
+              class="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-m dark:bg-gray-700 dark:text-gray-200">
             </textarea>
             <input *ngSwitchDefault [type]="input.type || 'text'" [id]="input.id || ('alert-input-' + i)"
               [name]="input.name" [placeholder]="input.placeholder || ''" [(ngModel)]="inputValues[input.name]"
               [required]="input.required ? true : false" [min]="input.min" [max]="input.max"
-              class="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:text-gray-200">
+              class="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-m dark:bg-gray-700 dark:text-gray-200">
           </ng-container>
         </div>
       </div>

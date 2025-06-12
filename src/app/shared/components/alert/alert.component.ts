@@ -63,7 +63,7 @@ export class AlertComponent implements OnInit {
   }
 
   getButtonClass(button: AlertButton): string {
-    let classes = 'px-4 py-2 rounded text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 ';
+    let classes = 'px-4 py-2 rounded text-m font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 ';
     switch (button.role) {
       case 'confirm':
         if (button.cssClass) {

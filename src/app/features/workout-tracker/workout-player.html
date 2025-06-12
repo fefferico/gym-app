@@ -12,7 +12,7 @@
       Resume Workout
     </button>
     <button (click)="quitWorkout()"
-      class="text-sm text-red-300 hover:text-red-100 font-medium py-2 px-4 rounded-md border border-red-300 hover:bg-red-700/30 w-full max-w-xs mt-2">
+      class="text-m text-red-300 hover:text-red-100 font-medium py-2 px-4 rounded-md border border-red-300 hover:bg-red-700/30 w-full max-w-xs mt-2">
       Quit Workout (No Save)
     </button>
   </div>
@@ -29,7 +29,7 @@
       </button>
       <div class="text-center">
         <h1
-          class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider truncate max-w-[calc(100vw-120px)]"
+          class="text-m font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider truncate max-w-[calc(100vw-120px)]"
           [title]="currentRoutine.name">
           {{ currentRoutine.name || 'Workout' }}
         </h1>
@@ -66,7 +66,7 @@
         </div>
 
         <div class="text-center mb-2">
-          <p class="text-sm text-gray-500 dark:text-gray-400">
+          <p class="text-m text-gray-500 dark:text-gray-400">
             <span *ngIf="activeSet.type === 'warmup'" class="text-blue-500 dark:text-blue-400">
               Warm-up Set {{ getCurrentWarmupSetNumber() }}
               <span *ngIf="getTotalWarmupSetsForCurrentExercise() > 0">/{{
@@ -102,7 +102,7 @@
           <h3 class="text-xl font-semibold text-blue-600 dark:text-blue-400">Get Ready!</h3>
           <p class="text-4xl sm:text-5xl font-bold text-blue-500 dark:text-blue-300 my-3">{{
             presetTimerCountdownDisplay() }}s</p>
-          <p class="text-sm text-gray-600 dark:text-gray-400">
+          <p class="text-m text-gray-600 dark:text-gray-400">
             Upcoming: {{ activeSet.setData.reps ? (activeSet.setData.reps + ' reps') : '' }}
             {{ activeSet.setData.reps && activeSet.setData.weight ? ' at ' : '' }}
             {{ activeSet.setData.weight ? (activeSet.setData.weight | weightUnit) : '' }}
@@ -120,7 +120,8 @@
               <label
                 class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider text-center mb-1">Weight</label>
               <div class="flex items-center justify-center space-x-2">
-                <button type="button" (click)="decrementWeight()" [disabled]="getDisabled()"
+                <button type="button" (mousedown)="onWeightDecrementPointerDown($event)" [disabled]="getDisabled()" appLongPress
+                  (longPress)="onWeightDecrementPointerDown($event)"
                   class="p-3 bg-gray-200 dark:bg-gray-700 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50">
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
@@ -132,8 +133,8 @@
                 </div>
                 <input type="number" formControlName="actualWeight" class="hidden">
                 <span class="text-lg text-gray-700 dark:text-gray-200 -ml-1">{{weightUnitDisplaySymbol}}</span>
-                <button type="button" (mousedown)="onWeightPointerDown($event)" [disabled]="getDisabled()" appLongPress
-                  (longPress)="onWeightPointerDown($event)"
+                <button type="button" (mousedown)="onWeightIncrementPointerDown($event)" [disabled]="getDisabled()" appLongPress
+                  (longPress)="onWeightIncrementPointerDown($event)"
                   class="p-3 bg-gray-200 dark:bg-gray-700 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50">
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
@@ -189,14 +190,14 @@
                               'bg-green-500 hover:bg-green-600': timedSetTimerState() === 'idle' || timedSetTimerState() === 'paused',
                               'bg-yellow-500 hover:bg-yellow-600 text-black': timedSetTimerState() === 'running'
                             }"
-                  class="flex-grow max-w-[150px] text-white font-medium py-2 px-3 rounded-full transition-colors text-sm disabled:opacity-50">
+                  class="flex-grow max-w-[150px] text-white font-medium py-2 px-3 rounded-full transition-colors text-m disabled:opacity-50">
                   <span *ngIf="timedSetTimerState() === 'idle'">Start Timer</span>
                   <span *ngIf="timedSetTimerState() === 'running'">Pause Timer</span>
                   <span *ngIf="timedSetTimerState() === 'paused'">Resume Timer</span>
                 </button>
                 <button type="button" (click)="resetTimedSet()" *ngIf="timedSetTimerState() !== 'idle'"
                   [disabled]="getDisabled()"
-                  class="flex-grow max-w-[150px] bg-gray-300 hover:bg-gray-400 dark:bg-gray-700 dark:hover:bg-gray-500 text-gray-800 dark:text-gray-200 font-medium py-2 px-3 rounded-md transition-colors text-sm disabled:opacity-50">
+                  class="flex-grow max-w-[150px] bg-gray-300 hover:bg-gray-400 dark:bg-gray-700 dark:hover:bg-gray-500 text-gray-800 dark:text-gray-200 font-medium py-2 px-3 rounded-md transition-colors text-m disabled:opacity-50">
                   Reset
                 </button>
               </div>
@@ -208,14 +209,14 @@
                 class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider text-center mb-1">Set
                 Notes (Optional)</label>
               <textarea id="setNotes" formControlName="setNotes" rows="2" [disabled]="getDisabled()"
-                class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-800 dark:text-gray-200 text-sm disabled:opacity-60"
+                class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-800 dark:text-gray-200 text-m disabled:opacity-60"
                 placeholder="e.g., felt good, struggled on last rep..."></textarea>
             </div>
 
             <!-- RPE Slider -->
             <!-- <div *ngIf="appSettingsService.enableRpeTracking()" class="pt-2">
               <button type="button" (click)="toggleRpeInput()"
-                class="w-full text-center text-sm text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary-light mb-1">
+                class="w-full text-center text-m text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary-light mb-1">
                 Tap to track RPE
                 <svg xmlns="http://www.w3.org/2000/svg" class="inline h-4 w-4 ml-1 text-gray-400 dark:text-gray-500"
                   fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -295,7 +296,7 @@
             [title]="restTimerNextUpText()">
             {{ restTimerNextUpText() || 'Next Exercise' }}
           </div>
-          <div class="text-sm text-gray-600 dark:text-gray-300">
+          <div class="text-m text-gray-600 dark:text-gray-300">
             Rest: {{ restTimerDisplay() || (restDuration() | number:'1.0-0') + 's' }}
             <button (click)="skipRest()"
               class="ml-2 text-xs text-primary dark:text-primary-light hover:underline">(Skip)</button>
@@ -327,7 +328,7 @@
         </svg>
       </button>
       <div class="text-center">
-        <h1 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Error</h1>
+        <h1 class="text-m font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Error</h1>
       </div>
       <div class="w-6"></div>
     </div>
@@ -407,7 +408,7 @@
   </button>
 
   <button (click)="closeWorkoutMenu()"
-    class="mt-3 text-gray-300 hover:text-white font-medium py-2 px-4 rounded-md text-sm">
+    class="mt-3 text-gray-300 hover:text-white font-medium py-2 px-4 rounded-md text-m">
     Close Menu
   </button>
 </div>
@@ -494,7 +495,7 @@
         <!-- Target editing inputs -->
         <div *ngIf="activeSet.setData.reps !== undefined"
           class="col-span-2 md:col-span-2 mt-2 pt-2 border-t border-dashed border-gray-300 dark:border-gray-600">
-          <span class="block text-sm text-gray-500 dark:text-gray-400 mb-1">Target Reps</span>
+          <span class="block text-m text-gray-500 dark:text-gray-400 mb-1">Target Reps</span>
           <div *ngIf="editingTarget !== 'reps'" (click)="startEditTarget('reps')"
             class="text-2xl font-bold text-gray-800 dark:text-gray-100 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 p-1 rounded">
             {{ activeSet.setData.reps }}
@@ -510,7 +511,7 @@
         </div>
         <div *ngIf="activeSet.setData.weight !== undefined && activeSet.setData.weight !== null"
           class="col-span-2 md:col-span-2 mt-2 pt-2 border-t border-dashed border-gray-300 dark:border-gray-600">
-          <span class="block text-sm text-gray-500 dark:text-gray-400 mb-1">Target Weight</span>
+          <span class="block text-m text-gray-500 dark:text-gray-400 mb-1">Target Weight</span>
           <div *ngIf="editingTarget !== 'weight'" (click)="startEditTarget('weight')"
             class="text-2xl font-bold text-gray-800 dark:text-gray-100 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 p-1 rounded">
             {{ activeSet.setData.weight | weightUnit }}
@@ -527,7 +528,7 @@
 
         <div *ngIf="activeSet.setData.duration !== undefined"
           class="col-span-2 md:col-span-2 mt-2 pt-2 border-t border-dashed border-gray-300 dark:border-gray-600">
-          <span class="block text-sm text-gray-500 dark:text-gray-400 mb-1">Target Time</span>
+          <span class="block text-m text-gray-500 dark:text-gray-400 mb-1">Target Time</span>
           <div *ngIf="editingTarget !== 'duration'" (click)="startEditTarget('duration')"
             class="text-2xl font-bold text-gray-800 dark:text-gray-100 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 p-1 rounded">
             {{ activeSet.setData.duration }}<span class="text-lg">s</span>
@@ -544,19 +545,19 @@
 
         <div *ngIf="activeSet.setData.tempo"
           class="col-span-2 md:col-span-2 mt-2 pt-2 border-t border-dashed border-gray-300 dark:border-gray-600">
-          <span class="block text-sm text-gray-500 dark:text-gray-400 mb-1">Target Tempo</span>
+          <span class="block text-m text-gray-500 dark:text-gray-400 mb-1">Target Tempo</span>
           <span class="text-lg font-semibold text-gray-800 dark:text-gray-100 p-1">{{ activeSet.setData.tempo }}</span>
         </div>
         <div *ngIf="activeSet.setData.notes"
           class="col-span-full mt-2 pt-2 border-t border-dashed border-gray-300 dark:border-gray-600">
-          <span class="block text-sm text-gray-500 dark:text-gray-400 mb-1">Planned Notes for this Set</span>
-          <p class="text-sm text-gray-700 dark:text-gray-200 p-1 italic">{{ activeSet.setData.notes }}</p>
+          <span class="block text-m text-gray-500 dark:text-gray-400 mb-1">Planned Notes for this Set</span>
+          <p class="text-m text-gray-700 dark:text-gray-200 p-1 italic">{{ activeSet.setData.notes }}</p>
         </div>
       </div>
     </div>
     <footer class="p-4 border-t border-gray-200 dark:border-gray-700 text-right">
       <button (click)="closePerformanceInsights()"
-        class="bg-primary hover:bg-primary-dark text-white font-semibold py-2 px-6 rounded-md text-sm">
+        class="bg-primary hover:bg-primary-dark text-white font-semibold py-2 px-6 rounded-md text-m">
         Done
       </button>
     </footer>

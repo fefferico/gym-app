@@ -2,7 +2,6 @@
 import { Routes } from '@angular/router';
 import { HistoryListComponent } from './history-list/history-list'; // Assuming path is correct
 import { WorkoutLogDetailComponent } from './workout-log-detail/workout-log-detail'; // Assuming path is correct
-import { ManualLogEntryComponent } from './manual-log-entry/manual-log-entry'; // New component
 import { StatsDashboardComponent } from './stats-dashboard/stats-dashboard'; // Assuming path is correct
 
 export const HISTORY_STATS_ROUTES: Routes = [
@@ -17,13 +16,6 @@ export const HISTORY_STATS_ROUTES: Routes = [
     component: WorkoutLogDetailComponent,
     title: 'Workout Details'
   },
-  {
-    path: 'add-manual', // New route for manual entry
-    component: ManualLogEntryComponent,
-    title: 'Log Past Workout'
-  },
-  { path: 'edit/:logId', component: ManualLogEntryComponent }, // <<< NEW ROUTE FOR EDITING
-
   {
     path: 'dashboard', // Changed from 'stats' to 'dashboard'
     component: StatsDashboardComponent,

@@ -18,7 +18,7 @@
     <!-- Action Buttons Group -->
     <div class="flex items-center space-x-2 flex-shrink-0">
       <button *ngIf="workoutLog() as log" [routerLink]="['/workout/summary', log.id]" title="View Summary"
-        class="p-2 text-sm font-medium text-white bg-blue-500 rounded-md shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 flex items-center transition-colors">
+        class="p-2 text-m font-medium text-white bg-blue-500 rounded-md shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 flex items-center transition-colors">
         <span class=""> <!-- Show only icon on very small screens -->
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0ZM3.75 12h.007v.008H3.75V12Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm-.375 5.25h.007v.008H3.75v-.008Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
@@ -29,7 +29,7 @@
       </button>
 
       <button *ngIf="workoutLog() as log" [routerLink]="['/history/edit', log.id]" title="Edit Log"
-        class="p-2 text-sm font-medium text-white bg-yellow-500 rounded-md shadow-sm hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-75 flex items-center transition-colors">
+        class="p-2 text-m font-medium text-white bg-yellow-500 rounded-md shadow-sm hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-75 flex items-center transition-colors">
         <span class=""> <!-- Show only icon on very small screens -->
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
             stroke="currentColor" class="w-5 h-5">
@@ -48,10 +48,10 @@
         <p class="text-md text-gray-600 dark:text-gray-400">
           Performed on: {{ log.startTime | date:'fullDate' }} at {{ log.startTime | date:'shortTime' }}
         </p>
-        <p class="text-sm text-gray-500 dark:text-gray-500">
+        <p class="text-m text-gray-500 dark:text-gray-500">
           Duration: {{ log.durationMinutes }} minutes
         </p>
-        <p *ngIf="log.notes" class="mt-2 text-sm text-gray-600 dark:text-gray-400 italic">
+        <p *ngIf="log.notes" class="mt-2 text-m text-gray-600 dark:text-gray-400 italic">
           <strong>Overall Notes:</strong> {{ log.notes }}
         </p>
       </div>
@@ -95,7 +95,7 @@
 
             <div *ngIf="loggedEx.isExpanded" class="p-3 sm:p-4 bg-white dark:bg-gray-700 space-y-3">
               <p *ngIf="loggedEx.notes"
-                class="text-sm italic text-gray-600 dark:text-gray-400 mb-3 border-b dark:border-gray-700 pb-2">
+                class="text-m italic text-gray-600 dark:text-gray-400 mb-3 border-b dark:border-gray-700 pb-2">
                 <strong>Exercise Notes:</strong> {{ loggedEx.notes }}
               </p>
 
@@ -103,7 +103,7 @@
                 class="border border-blue-200 dark:border-blue-700 rounded-md">
                 <button (click)="toggleWarmupAccordion(loggedEx)"
                   class="w-full flex justify-between items-center p-2 text-left bg-blue-50 dark:bg-blue-900/40 hover:bg-blue-100 dark:hover:bg-blue-800/60 transition-colors focus:outline-none">
-                  <span class="font-medium text-sm text-blue-700 dark:text-blue-300">
+                  <span class="font-medium text-m text-blue-700 dark:text-blue-300">
                     Warm-up Sets ({{ loggedEx.warmupSets.length }})
                   </span>
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
@@ -147,11 +147,11 @@
               </div>
 
               <div *ngIf="loggedEx.workingSets && loggedEx.workingSets.length > 0" class="space-y-2 pt-2">
-                <h4 class="text-sm font-semibold text-gray-600 dark:text-gray-300"
+                <h4 class="text-m font-semibold text-gray-600 dark:text-gray-300"
                   *ngIf="loggedEx.warmupSets && loggedEx.warmupSets.length > 0">Working Sets:</h4>
                 <div *ngFor="let set of loggedEx.workingSets; let setIdx = index"
                   class="p-2 rounded-md bg-gray-50 dark:bg-gray-700/70 border border-gray-200 dark:border-gray-600">
-                  <p class="text-sm font-medium text-gray-700 dark:text-gray-200">
+                  <p class="text-m font-medium text-gray-700 dark:text-gray-200">
                     {{ getDisplaySetLabel(loggedEx.workingSets, setIdx) }}:
                   </p>
                   <ul class="list-disc list-inside pl-4 text-xs text-gray-600 dark:text-gray-400">
@@ -184,7 +184,7 @@
               </div>
               <div
                 *ngIf="(!loggedEx.warmupSets || loggedEx.warmupSets.length === 0) && (!loggedEx.workingSets || loggedEx.workingSets.length === 0)">
-                <p class="text-gray-500 dark:text-gray-400 text-sm">No sets were recorded for this exercise.</p>
+                <p class="text-gray-500 dark:text-gray-400 text-m">No sets were recorded for this exercise.</p>
               </div>
             </div>
           </div>

@@ -8,11 +8,15 @@ export interface ExerciseSetParams {
   tempo?: string;
   restAfterSet: number; // For the set *within* an exercise. For supersets, this might be 0 for intermediate exercises.
   notes?: string;
-  type?: 'standard' | 'warmup' | 'amrap' | 'custom'; 
+  type: 'standard' | 'warmup' | 'amrap' | 'dropset' | 'failure' | 'myorep' | 'restpause' | 'custom' | string; // More flexible
   _uiIsCompleted?: boolean;
   _uiActualReps?: number;
   _uiActualWeight?: number;
   _uiActualDuration?: number;
+  // Add other specific fields if a type implies them, e.g.:
+  targetRpe?: number | null; // Could be useful for 'failure' sets
+  dropToWeight?: number | null; // For 'dropset'
+  amrapTimeLimit?: number | null; // For AMRAP if it's time-bound rather than rep-bound
 }
 
 export interface WorkoutExercise {
