@@ -629,7 +629,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
       this.selectCalendarDay(null);
     }
   }
-  logPreviousSession(routineId: string, workoutDate: Date): void { this.router.navigate(['/history/add-manual', { routineId, workoutDate: format(workoutDate, 'yyyy-MM-dd') }]); this.selectCalendarDay(null); }
+  logPreviousSession(routineId: string, workoutDate: Date): void { this.router.navigate(['/workout/log/manual/new', { routineId, workoutDate: format(workoutDate, 'yyyy-MM-dd') }]); this.selectCalendarDay(null); }
   goToPreviousProgramSession(programId: string | undefined): void { this.router.navigate(['/history/list'], programId ? { queryParams: { programId: programId } } : {}); this.selectCalendarDay(null); }
   isToday(date: Date): boolean { return isToday(date); }
   isPast(date: Date): boolean { return isPast(date) && !isToday(date); }
