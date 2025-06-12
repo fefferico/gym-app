@@ -110,6 +110,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
   programs$: Observable<TrainingProgram[]> | undefined;
   allProgramsForList = signal<TrainingProgram[]>([]);
   private dataSubscription: Subscription | undefined;
+  private programsListSubscription: Subscription | undefined; // NEW: For ongoing program list updates
   private hammerInstanceCalendar: HammerManager | null = null;
   private hammerInstanceMode: HammerManager | null = null;
 
@@ -240,30 +241,51 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
       this.allWorkoutLogs.set(logs);
     });
 
+    // Initial load of routines and exercises for mapping (can remain take(1))
     this.dataSubscription = forkJoin({
-      programs: this.trainingProgramService.getAllPrograms().pipe(take(1)),
+      // programs: this.trainingProgramService.getAllPrograms().pipe(take(1)), // We'll get programs from the live observable
       routines: this.workoutService.routines$.pipe(take(1)),
       exercises: this.exerciseService.getExercises().pipe(take(1)),
-      workouts: this.exerciseService.getExercises().pipe(take(1))
-    }).subscribe(({ programs, routines, exercises }) => {
-      this.allProgramsForList.set(programs.sort((a, b) => a.name.localeCompare(b.name)));
+    }).subscribe(({ routines, exercises }) => {
+      // this.allProgramsForList.set(programs.sort((a, b) => a.name.localeCompare(b.name))); // Set by the live observable
       routines.forEach(r => this.allRoutinesMap.set(r.id, r));
       exercises.forEach(e => this.allExercisesMap.set(e.id, e));
-      this.populateFilterOptions();
+      // Populate filters once programs are loaded by the live observable
+      // this.populateFilterOptions(); // Moved to the programsListSubscription
     });
 
-    this.programs$ = this.trainingProgramService.getAllPrograms();
+    this.programs$ = this.trainingProgramService.programs$; // Assign directly
+    // Subscribe to the live programs$ observable from the service
+    this.programsListSubscription = this.trainingProgramService.programs$.subscribe(programs => {
+      console.log('Received updated programs from service for signal:', programs.length);
+      this.allProgramsForList.set(programs.sort((a, b) => a.name.localeCompare(b.name)));
+      this.populateFilterOptions();
+      // If view is calendar and active program might have changed, refresh calendar
+      if (this.currentView() === 'calendar') {
+        const currentActiveId = this.activeProgramForCalendar()?.id;
+        const newActiveProgram = programs.find(p => p.isActive);
+        if (newActiveProgram?.id !== currentActiveId || (currentActiveId && !newActiveProgram)) {
+          this.activeProgramForCalendar.set(newActiveProgram); // Update active program for calendar
+          this.generateCalendarDays(true); // Regenerate calendar
+        } else if (!newActiveProgram && currentActiveId) { // Active program was removed/deactivated
+          this.activeProgramForCalendar.set(null);
+          this.generateCalendarDays(true);
+        }
+      }
+    });
 
+
+    // Active program for calendar still uses its own subscription
     this.trainingProgramService.getActiveProgram().subscribe(program => {
       const oldActiveProgramId = this.activeProgramForCalendar()?.id;
       this.activeProgramForCalendar.set(program);
       if (this.currentView() === 'calendar') {
         if (program && (!oldActiveProgramId || oldActiveProgramId !== program.id)) {
           this.generateCalendarDays(true);
-        } else if (!program) {
+        } else if (!program && oldActiveProgramId) { // Active program became null
           this.calendarDays.set([]);
           this.calendarLoading.set(false);
-          this.calendarAnimationState.set('center'); // Reset animation if no program
+          this.calendarAnimationState.set('center');
         }
       }
     });
@@ -369,18 +391,41 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
     try {
       this.spinnerService.show("Deleting program...");
       await this.trainingProgramService.deleteProgram(programId);
+      // No need to manually update allProgramsForList here.
+      this.toastService.success("Program deleted successfully.", 3000, "Success");
     } catch (error) { this.toastService.error("An unexpected error occurred.", 0, "Deletion Error"); }
     finally { this.spinnerService.hide(); }
   }
   async toggleActiveProgram(programId: string, currentIsActive: boolean, event: MouseEvent): Promise<void> {
     event.stopPropagation(); this.activeProgramActions.set(null);
-    if (currentIsActive) { this.toastService.info("This program is already active.", 4000, "Info"); return; }
+    if (currentIsActive) {
+      // Option to deactivate
+      const confirmDeactivate = await this.alertService.showConfirm("Deactivate Program?", "Do you want to deactivate this program? No program will be active.", "Deactivate");
+      if (confirmDeactivate && confirmDeactivate.data) {
+        try {
+          this.spinnerService.show("Deactivating program...");
+          await this.trainingProgramService.deactivateProgram(programId); // Assumes service has this
+          // Service emits updated list
+        } catch (error) { this.toastService.error("Failed to deactivate.", 0, "Error"); }
+        finally { this.spinnerService.hide(); }
+      }
+      return;
+    }
+    // Activate new program
     try {
       this.spinnerService.show("Setting active program...");
+      // The service method should handle setting the new active program,
+      // updating isActive flags on all programs, and emitting the updated list.
       await this.trainingProgramService.setActiveProgram(programId);
     } catch (error) { this.toastService.error("Failed to set active program.", 0, "Error"); }
     finally { this.spinnerService.hide(); }
   }
+
+  refreshPrograms(): void {
+    this.programs$ = this.trainingProgramService.getAllPrograms();
+  }
+
+
   toggleActions(programId: string, event: MouseEvent): void { event.stopPropagation(); this.activeProgramActions.update(current => current === programId ? null : programId); }
   getDaysScheduled(program: TrainingProgram): string {
     if (!program.schedule || program.schedule.length === 0) return '0 days';
@@ -662,7 +707,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
         for (const session of pastSessions) {
           // Only add if not already in scheduledMap (avoid duplicates)
           // if (!scheduledMap.has(routineId)) {
-            allPastSessions.push(session);
+          allPastSessions.push(session);
           // }
         }
       }
@@ -690,6 +735,9 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
 
   ngOnDestroy(): void {
     this.dataSubscription?.unsubscribe();
+    this.programsListSubscription?.unsubscribe(); // UNSUBSCRIBE from the new subscription
+    this.workoutLogsSubscription?.unsubscribe();
     this.hammerInstanceCalendar?.destroy();
+    this.hammerInstanceMode?.destroy(); // Ensure this is also cleaned up
   }
 }

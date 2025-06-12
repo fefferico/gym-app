@@ -1943,8 +1943,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
   incrementWeight(defaultStep: number = 0.5): void {
-    const step = 1 || defaultStep;
-    // const step = this.appSettingsService.weightStep() || defaultStep;
+    const step = this.appSettingsService.getSettings().weightStep || defaultStep;
     const currentValue = this.csf['actualWeight'].value ?? 0;
     this.currentSetForm.patchValue({ actualWeight: parseFloat((currentValue + step).toFixed(2)) });
   }
@@ -2029,8 +2028,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
   decrementWeight(defaultStep: number = 0.5): void {
-    const step = 1 || defaultStep;
-    // const step = this.appSettingsService.weightStep() || defaultStep;
+    const step = this.appSettingsService.getSettings().weightStep || defaultStep;
     const currentValue = this.csf['actualWeight'].value ?? 0;
     this.currentSetForm.patchValue({ actualWeight: Math.max(0, parseFloat((currentValue - step).toFixed(2))) });
   }

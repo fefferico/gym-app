@@ -157,7 +157,7 @@
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300">{{ mode === 'routineBuilder' ?
                     'Exercises' : 'Logged Exercises' }}</h2>
-                <button *ngIf="!isViewMode" type="button" (click)="openExerciseSelectionModal()"
+                <button *ngIf="!isViewMode && (!exercisesFormArray.controls || exercisesFormArray.controls.length > 0)" type="button" (click)="openExerciseSelectionModal()"
                     class="bg-green-500 hover:enabled:bg-green-600 text-white text-m font-medium py-2 px-3 rounded-md transition-all duration-150 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed">
                     + Add Exercise
                 </button>
@@ -290,7 +290,7 @@
                                             'Notes'}}</div>
                                         <div class="col-span-1 text-center">{{ mode === 'routineBuilder' ? 'Tempo' :
                                             ''}}</div>
-                                        <div class="col-span-1"></div>
+                                        <div class="col-span-1"></div> <!-- Action column -->
                                     </div>
 
                                     <div *ngFor="let setControl of getSetsFormArray(exerciseControl).controls; let setIndex = index"
@@ -317,7 +317,7 @@
                                                 'manualLogEntry' ? 'repsAchieved' : 'reps')?.value) ?? '-' }}</div>
                                             <div class="col-span-2 text-xs text-center">{{ (setControl.get(mode ===
                                                 'manualLogEntry' ? 'weightUsed' : 'weight')?.value) | weightUnit:'1.0-2'
-                                                }}</div>
+                                                }}</div> <!-- Removed :true:'-' as it's handled by pipe -->
                                             <div class="col-span-1 text-xs text-center">{{ (setControl.get(mode ===
                                                 'manualLogEntry' ? 'durationPerformed' : 'duration')?.value) ?
                                                 ((setControl.get(mode === 'manualLogEntry' ? 'durationPerformed' :
@@ -352,11 +352,26 @@
                                         <div #expandedSetElement *ngIf="isSetExpanded(exIndex, setIndex)"
                                             class="mt-1 p-3 rounded-md border border-gray-300 dark:border-gray-500 shadow-inner space-y-2"
                                             [ngClass]="{
-                                                'bg-blue-100 dark:bg-blue-700': setControl.get('type')?.value === 'warmup',
-                                                'bg-gray-100 dark:bg-gray-700': !setControl.get('type')?.value,
+                                                'bg-blue-100 dark:bg-blue-900/40': setControl.get('type')?.value === 'warmup',
+                                                'bg-yellow-100 dark:bg-yellow-900/40': setControl.get('type')?.value === 'dropset',
+                                                'bg-red-100 dark:bg-red-900/40': setControl.get('type')?.value === 'failure',
+                                                'bg-purple-100 dark:bg-purple-900/40': setControl.get('type')?.value === 'amrap',
+                                                'bg-teal-100 dark:bg-teal-900/40': setControl.get('type')?.value === 'myorep',
+                                                'bg-indigo-100 dark:bg-indigo-900/40': setControl.get('type')?.value === 'restpause',
+                                                'bg-gray-100 dark:bg-gray-800/50': !['warmup', 'dropset', 'failure', 'amrap', 'myorep', 'restpause'].includes(setControl.get('type')?.value ?? '')
                                             }">
-                                            <div
-                                                class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-3 gap-y-2 items-center">
+                                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-x-3 gap-y-2 items-end">
+                                                <div class="col-span-full sm:col-span-1">
+                                                    <label [for]="'setType-exp-' + exIndex + '-' + setIndex"
+                                                        class="block text-xs font-medium text-gray-600 dark:text-gray-400">Set
+                                                        Type</label>
+                                                    <select [id]="'setType-exp-' + exIndex + '-' + setIndex"
+                                                        formControlName="type" [disabled]="isViewMode"
+                                                        class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
+                                                        <option *ngFor="let typeOpt of availableSetTypes"
+                                                            [value]="typeOpt.value">{{ typeOpt.label }}</option>
+                                                    </select>
+                                                </div>
                                                 <div>
                                                     <label [for]="'reps-exp-' + exIndex + '-' + setIndex"
                                                         class="block text-xs font-medium text-gray-600 dark:text-gray-400">Reps
@@ -364,7 +379,7 @@
                                                     <input type="number" [id]="'reps-exp-' + exIndex + '-' + setIndex"
                                                         [formControlName]="mode === 'manualLogEntry' ? 'repsAchieved' : 'reps'"
                                                         placeholder="Reps" [readonly]="isViewMode"
-                                                        class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200">
+                                                        class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
                                                 </div>
                                                 <div>
                                                     <label [for]="'weight-exp-' + exIndex + '-' + setIndex"
@@ -374,7 +389,7 @@
                                                     <input type="number" [id]="'weight-exp-' + exIndex + '-' + setIndex"
                                                         [formControlName]="mode === 'manualLogEntry' ? 'weightUsed' : 'weight'"
                                                         placeholder="Weight" [readonly]="isViewMode"
-                                                        class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200">
+                                                        class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
                                                 </div>
                                                 <div>
                                                     <label [for]="'duration-exp-' + exIndex + '-' + setIndex"
@@ -384,7 +399,7 @@
                                                         [id]="'duration-exp-' + exIndex + '-' + setIndex"
                                                         [formControlName]="mode === 'manualLogEntry' ? 'durationPerformed' : 'duration'"
                                                         placeholder="Secs" [readonly]="isViewMode"
-                                                        class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200">
+                                                        class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
                                                 </div>
                                                 <div *ngIf="mode === 'routineBuilder'">
                                                     <label [for]="'tempo-exp-' + exIndex + '-' + setIndex"
@@ -392,7 +407,7 @@
                                                     <input type="text" [id]="'tempo-exp-' + exIndex + '-' + setIndex"
                                                         formControlName="tempo" placeholder="e.g. 2010"
                                                         [readonly]="isViewMode"
-                                                        class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200">
+                                                        class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
                                                 </div>
                                                 <div *ngIf="mode === 'routineBuilder'">
                                                     <label [for]="'rest-exp-' + exIndex + '-' + setIndex"
@@ -401,7 +416,7 @@
                                                     <input type="number" [id]="'rest-exp-' + exIndex + '-' + setIndex"
                                                         formControlName="restAfterSet" placeholder="Rest"
                                                         [readonly]="isViewMode"
-                                                        class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200">
+                                                        class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
                                                 </div>
                                                 <div class="col-span-full">
                                                     <label [for]="'setNotes-exp-' + exIndex + '-' + setIndex"
@@ -410,7 +425,7 @@
                                                     <input type="text" [id]="'setNotes-exp-' + exIndex + '-' + setIndex"
                                                         formControlName="notes" placeholder="e.g. Good form"
                                                         [readonly]="isViewMode"
-                                                        class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200">
+                                                        class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
                                                 </div>
                                             </div>
                                             <div class="mt-2 text-right">
@@ -448,8 +463,7 @@
             </div>
 
 
-            <div *ngIf="!isViewMode && exercisesFormArray.length > 0 && (mode === 'routineBuilder' && builderForm.get('goal')?.value !== 'rest')"
-                class="mt-6 text-center">
+            <div *ngIf="!isViewMode && exercisesFormArray.length > 0" class="mt-6 text-center">
                 <button type="button" (click)="openExerciseSelectionModal()"
                     class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-6 rounded-md shadow-md hover:shadow-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
@@ -475,7 +489,7 @@
             <button type="submit"
                 [disabled]="builderForm.invalid || (exercisesFormArray.length === 0 && !(mode === 'routineBuilder' && builderForm.get('goal')?.value === 'rest'))"
                 class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark disabled:opacity-50">
-                {{ mode === 'routineBuilder' ? (isNewMode ? 'Create Routine' : 'Save Changes') : (isNewMode ? 'Log
+                {{ mode === 'routineBuilder' ? (isNewMode ? 'CREATE ROUTINE' : 'SAVE CHANGES') : (isNewMode ? 'Log
                 Workout' : 'Save Log Changes') }}
             </button>
         </div>

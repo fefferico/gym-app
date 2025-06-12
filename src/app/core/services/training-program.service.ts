@@ -157,7 +157,7 @@ export class TrainingProgramService {
       p.id === programId ? { ...p, isActive: false } : p
     );
     this._saveProgramsToStorage(updatedPrograms);
-    this.toastService.success(`Program "${targetProgram.name}" has been deactivated.`, 3000, "Program Deactivated");
+    this.toastService.info(`Program "${targetProgram.name}" has been deactivated.`, 3000, "Program Deactivated");
   }
 
   getActiveProgram(): Observable<TrainingProgram | undefined> {

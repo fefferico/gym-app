@@ -1,9 +1,10 @@
 // src/app/features/profile-settings/profile-settings.component.ts
-import { Component, inject, OnInit, PLATFORM_ID, signal, WritableSignal } from '@angular/core'; // Added OnInit
+import { Component, inject, OnInit, PLATFORM_ID, signal, WritableSignal } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'; // Import ReactiveFormsModule and FormBuilder
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { format } from 'date-fns';
+import { debounceTime, filter, tap } from 'rxjs';
 
 import { WorkoutService } from '../../../core/services/workout.service';
 import { TrackingService } from '../../../core/services/tracking.service';
@@ -12,39 +13,38 @@ import { UnitsService, WeightUnit } from '../../../core/services/units.service';
 import { AlertService } from '../../../core/services/alert.service';
 import { SpinnerService } from '../../../core/services/spinner.service';
 import { ThemeService } from '../../../core/services/theme.service';
-import { UserProfileService } from '../../../core/services/user-profile.service'; // Import
-import { AppSettingsService } from '../../../core/services/app-settings.service'; // Import
-import { AppSettings } from '../../../core/models/app-settings.model'; // Import
-import { ToastService } from '../../../core/services/toast.service'; // Import ToastService
+import { AppSettingsService } from '../../../core/services/app-settings.service';
+import { AppSettings } from '../../../core/models/app-settings.model';
+import { ToastService } from '../../../core/services/toast.service';
 import { Gender, UserProfile } from '../../../core/models/user-profile.model';
-import { debounceTime, filter, tap } from 'rxjs';
 import { TrainingProgramService } from '../../../core/services/training-program.service';
+import { UserProfileService } from '../../../core/services/user-profile.service';
 
 
 @Component({
   selector: 'app-profile-settings',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule], // Add ReactiveFormsModule
+  imports: [CommonModule, RouterLink, ReactiveFormsModule],
   templateUrl: './profile-settings.html',
   styleUrl: './profile-settings.scss',
 })
-export class ProfileSettingsComponent implements OnInit { // Implement OnInit
+export class ProfileSettingsComponent implements OnInit {
   private fb = inject(FormBuilder);
   private workoutService = inject(WorkoutService);
   private trackingService = inject(TrackingService);
   private trainingProgramService = inject(TrainingProgramService);
-  private storageService = inject(StorageService); // Not directly used now, but services use it
-  private unitsService = inject(UnitsService);
+  private storageService = inject(StorageService);
+  protected unitsService = inject(UnitsService);
   private alertService = inject(AlertService);
   private spinnerService = inject(SpinnerService);
   protected themeService = inject(ThemeService);
   protected userProfileService = inject(UserProfileService);
-  protected appSettingsService = inject(AppSettingsService);
+  protected appSettingsService = inject(AppSettingsService); // Already injected
   private platformId = inject(PLATFORM_ID);
   private toastService = inject(ToastService);
 
   profileForm!: FormGroup;
-  appSettingsForm!: FormGroup; // Define here
+  appSettingsForm!: FormGroup;
 
   currentUnit = this.unitsService.currentUnit;
   readonly genders: { label: string, value: Gender }[] = [
@@ -57,7 +57,6 @@ export class ProfileSettingsComponent implements OnInit { // Implement OnInit
   private readonly BACKUP_VERSION = 2;
 
   constructor() {
-    // Initialize forms ONCE in the constructor
     this.profileForm = this.fb.group({
       username: [''],
       gender: [null as Gender | null],
@@ -69,16 +68,16 @@ export class ProfileSettingsComponent implements OnInit { // Implement OnInit
         waistCm: [null as number | null, [Validators.min(0)]],
         hipsCm: [null as number | null, [Validators.min(0)]],
         rightArmCm: [null as number | null, [Validators.min(0)]],
-        // Add leftArmCm if needed
       })
     });
 
     this.appSettingsForm = this.fb.group({
       enableTimerCountdownSound: [true],
       countdownSoundSeconds: [5, [Validators.required, Validators.min(1), Validators.max(60)]],
-      enablePresetTimer: [false], // Initialize with all controls
-      enablePresetTimerAfterRest: [false], // Initialize with all controls
-      presetTimerDurationSeconds: [10, [Validators.required, Validators.min(3), Validators.max(60)]]
+      enablePresetTimer: [false],
+      enablePresetTimerAfterRest: [false],
+      presetTimerDurationSeconds: [10, [Validators.required, Validators.min(3), Validators.max(60)]],
+      weightStep: [2.5, [Validators.required, Validators.min(0.01), Validators.max(50)]] // <<< ADDED weightStep
     });
   }
 
@@ -89,14 +88,12 @@ export class ProfileSettingsComponent implements OnInit { // Implement OnInit
     this.loadProfileData();
     this.loadAppSettingsData();
 
-    // Auto-save on valueChanges (optional: can be removed if only explicit save is desired)
     this.profileForm.valueChanges.pipe(
-      debounceTime(700), // Wait for 700ms of silence before saving
-      filter(() => this.profileForm.valid && this.profileForm.dirty), // Only save if valid and dirty
+      debounceTime(700),
+      filter(() => this.profileForm.valid && this.profileForm.dirty),
       tap(value => {
-        console.log('Auto-saving profile...', value);
         this.userProfileService.saveProfile(value as UserProfile);
-        this.profileForm.markAsPristine({ onlySelf: false }); // Mark as pristine after auto-save
+        this.profileForm.markAsPristine({ onlySelf: false });
         this.toastService.info("Profile auto-saved", 1500);
       })
     ).subscribe();
@@ -105,7 +102,6 @@ export class ProfileSettingsComponent implements OnInit { // Implement OnInit
       debounceTime(700),
       filter(() => this.appSettingsForm.valid && this.appSettingsForm.dirty),
       tap(value => {
-        console.log('Auto-saving app settings...', value);
         this.appSettingsService.saveSettings(value as AppSettings);
         this.appSettingsForm.markAsPristine({ onlySelf: false });
         this.toastService.info("App settings auto-saved", 1500);
@@ -113,33 +109,27 @@ export class ProfileSettingsComponent implements OnInit { // Implement OnInit
     ).subscribe();
   }
 
-  loadProfileData(): void {
+  loadProfileData(): void { /* ... as before ... */
     const profile = this.userProfileService.getProfile();
     if (profile) {
-      // Use reset instead of patchValue to also reset dirty/touched states
       this.profileForm.reset(profile, { emitEvent: false });
     } else {
       this.profileForm.reset({
-        username: '',
-        gender: null,
-        measurements: {
-          heightCm: null, weightKg: null, age: null, chestCm: null,
-          waistCm: null, hipsCm: null, rightArmCm: null
-        }
+        username: '', gender: null,
+        measurements: { heightCm: null, weightKg: null, age: null, chestCm: null, waistCm: null, hipsCm: null, rightArmCm: null }
       }, { emitEvent: false });
     }
   }
 
   loadAppSettingsData(): void {
-    const settings = this.appSettingsService.getSettings(); // This already merges with defaults in service
+    const settings = this.appSettingsService.getSettings();
     this.appSettingsForm.reset(settings, { emitEvent: false });
   }
 
-  saveProfileSettings(): void {
+  saveProfileSettings(): void { /* ... as before ... */
     if (this.profileForm.invalid) {
       this.toastService.error("Please correct errors in the profile form.", 3000, "Validation Error");
-      this.profileForm.markAllAsTouched(); // Show all errors
-      return;
+      this.profileForm.markAllAsTouched(); return;
     }
     this.userProfileService.saveProfile(this.profileForm.value as UserProfile);
     this.profileForm.markAsPristine();

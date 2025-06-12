@@ -285,7 +285,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   patchFormWithLogData(log: WorkoutLog): void {
     this.initialRoutineIdForLogEdit = log.routineId;
     this.builderForm.patchValue({
-      name: log.routineName || 'Logged Workout', // 'name' field used for log title
+      name: log.routineName || 'Logged Workout',
       workoutDate: format(parseISO(log.date), 'yyyy-MM-dd'),
       startTime: format(new Date(log.startTime), 'HH:mm'),
       durationMinutes: log.durationMinutes || 60,
@@ -295,11 +295,14 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
     this.exercisesFormArray.clear({ emitEvent: false });
     log.exercises.forEach(loggedEx => {
+      // createExerciseFormGroupFromLog will call createSetFormGroup with forLogging=true
       this.exercisesFormArray.push(this.createExerciseFormGroupFromLog(loggedEx), { emitEvent: false });
     });
+
+    this.toggleFormState(false);
+    this.expandedSetPath.set(null);
     this.builderForm.markAsPristine();
   }
-
   prefillLogFormFromRoutine(routine: Routine, resetDateTime: boolean = true): void {
     const patchData: any = {
       name: `Log: ${routine.name}`,
@@ -359,45 +362,61 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     });
   }
   private createSetFormGroup(setData?: ExerciseSetParams | LoggedSet, forLogging: boolean = false): FormGroup {
-    let reps, weight, duration, notes, type, tempo, restAfterSet;
+    let repsValue, weightValue, durationValue, notesValue, typeValue, tempoValue, restValue;
     let id = uuidv4();
-    let plannedSetId;
+    let plannedSetIdValue;
+    let timestampValue = new Date().toISOString(); // Default for new sets being logged
 
     if (setData) {
       id = setData.id || id; // Keep original set ID if from template or editing logged set
-      if ('repsAchieved' in setData) { // LoggedSet
-        reps = setData.repsAchieved; weight = setData.weightUsed; duration = setData.durationPerformed;
-        notes = setData.notes; type = setData.type; plannedSetId = setData.plannedSetId;
-        tempo = setData.targetTempo; // LoggedSet might not have tempo directly
-        restAfterSet = 60; // Default rest for log, not usually part of LoggedSet directly
-      } else { // ExerciseSetParams from routine template
-        reps = setData.reps; weight = setData.weight; duration = setData.duration;
-        notes = setData.notes; type = setData.type; tempo = setData.tempo;
-        restAfterSet = setData.restAfterSet;
-        plannedSetId = setData.id; // This is the template set ID
+      if ('repsAchieved' in setData) { // It's a LoggedSet
+        const loggedS = setData as LoggedSet;
+        repsValue = loggedS.repsAchieved;
+        weightValue = loggedS.weightUsed;
+        durationValue = loggedS.durationPerformed;
+        notesValue = loggedS.notes;
+        typeValue = loggedS.type || 'standard'; // Use logged type, default to standard
+        plannedSetIdValue = loggedS.plannedSetId;
+        timestampValue = loggedS.timestamp; // Preserve original timestamp for logged sets
+        // For logging, tempo and restAfterSet usually come from the plan, not directly part of LoggedSet for achievement
+        tempoValue = loggedS.targetTempo || '';
+        restValue = 60; // Default, or could be inferred if prefilling from a plan
+      } else { // It's ExerciseSetParams from routine template
+        const plannedS = setData as ExerciseSetParams;
+        repsValue = plannedS.reps;
+        weightValue = plannedS.weight;
+        durationValue = plannedS.duration;
+        notesValue = plannedS.notes;
+        typeValue = plannedS.type || 'standard';
+        tempoValue = plannedS.tempo;
+        restValue = plannedS.restAfterSet;
+        plannedSetIdValue = plannedS.id; // This is the template set ID
       }
     } else { // New blank set
-      reps = null; weight = null; duration = null; notes = ''; type = 'standard'; tempo = ''; restAfterSet = 60;
+      repsValue = null; weightValue = null; durationValue = null; notesValue = ''; typeValue = 'standard'; tempoValue = ''; restValue = 60;
     }
 
     const formGroupConfig: { [key: string]: any } = {
       id: [id],
-      type: [type || 'standard', Validators.required],
-      notes: [notes || ''],
+      type: [typeValue, Validators.required], // Type is always present
+      notes: [notesValue || ''],
     };
 
     if (forLogging) {
-      formGroupConfig['repsAchieved'] = [reps ?? null, [Validators.required, Validators.min(0)]];
-      formGroupConfig['weightUsed'] = [this.unitsService.convertFromKg(weight, this.unitsService.currentUnit()) ?? null, [Validators.min(0)]];
-      formGroupConfig['durationPerformed'] = [duration ?? null, [Validators.min(0)]];
-      formGroupConfig['plannedSetId'] = [plannedSetId]; // For linking back if logging from template
-      formGroupConfig['timestamp'] = [(setData as LoggedSet)?.timestamp || new Date().toISOString()]; // For editing existing log
-    } else { // For routine builder
-      formGroupConfig['reps'] = [reps ?? null, [Validators.min(0)]];
-      formGroupConfig['weight'] = [this.unitsService.convertFromKg(weight, this.unitsService.currentUnit()) ?? null, [Validators.min(0)]];
-      formGroupConfig['duration'] = [duration ?? null, [Validators.min(0)]];
-      formGroupConfig['tempo'] = [tempo || ''];
-      formGroupConfig['restAfterSet'] = [restAfterSet ?? 60, [Validators.required, Validators.min(0)]];
+      formGroupConfig['repsAchieved'] = [repsValue ?? null, [Validators.required, Validators.min(0)]];
+      formGroupConfig['weightUsed'] = [this.unitsService.convertFromKg(weightValue, this.unitsService.currentUnit()) ?? null, [Validators.min(0)]];
+      formGroupConfig['durationPerformed'] = [durationValue ?? null, [Validators.min(0)]];
+      formGroupConfig['plannedSetId'] = [plannedSetIdValue];
+      formGroupConfig['timestamp'] = [timestampValue];
+      // For manual log, tempo and restAfterSet are not primary achievement fields from the form
+      // They might be prefilled if basing on a routine, but not directly editable *as achieved values* here.
+      // If you want them to be editable achievements, add FormControls for them.
+    } else { // For routine builder (planning mode)
+      formGroupConfig['reps'] = [repsValue ?? null, [Validators.min(0)]];
+      formGroupConfig['weight'] = [this.unitsService.convertFromKg(weightValue, this.unitsService.currentUnit()) ?? null, [Validators.min(0)]];
+      formGroupConfig['duration'] = [durationValue ?? null, [Validators.min(0)]];
+      formGroupConfig['tempo'] = [tempoValue || ''];
+      formGroupConfig['restAfterSet'] = [restValue ?? 60, [Validators.required, Validators.min(0)]];
     }
     return this.fb.group(formGroupConfig);
   }
@@ -719,7 +738,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     // Detailed set validation loop (ensure this is robust)
     // ...
 
-    if (this.builderForm.invalid) {
+if (this.builderForm.invalid) {
       this.toastService.error('Please correct validation errors.', 0, "Validation Error");
       this.builderForm.markAllAsTouched(); return;
     }
@@ -729,10 +748,13 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
     try {
       if (this.mode === 'routineBuilder') {
-        const routinePayload: Routine = { /* ... map formValue to Routine ... */
+        const routinePayload: Routine = {
           id: this.currentRoutineId || uuidv4(), name: formValue.name, description: formValue.description, goal: formValue.goal,
-          exercises: formValue.exercises.map((exInput: any) => ({
-            ...exInput, sets: exInput.sets.map((setInput: any) => ({ ...setInput, weight: this.unitsService.convertToKg(setInput.weight, this.unitsService.currentUnit()) ?? null, }))
+          exercises: (formValue.goal === 'rest') ? [] : formValue.exercises.map((exInput: any) => ({
+            ...exInput, sets: exInput.sets.map((setInput: any) => ({
+              ...setInput, // This includes 'type', 'reps', 'duration', 'tempo', 'restAfterSet', 'notes'
+              weight: this.unitsService.convertToKg(setInput.weight, this.unitsService.currentUnit()) ?? null,
+            }))
           })),
         };
         if (this.isNewMode) this.workoutService.addRoutine(routinePayload); else this.workoutService.updateRoutine(routinePayload);
@@ -743,31 +765,50 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         const combinedDateTimeStr = `${workoutDateStr}T${startTimeStr}:00`;
         let startTimeMs: number;
         try {
-          const parsedDate = parseISO(combinedDateTimeStr);
-          if (!isValidDate(parsedDate)) throw new Error("Invalid date/time for log entry");
-          startTimeMs = parsedDate.getTime();
-        } catch (e) { this.toastService.error("Invalid date/time.", 0, "Error"); this.spinnerService.hide(); return; }
+            const parsedDate = parseISO(combinedDateTimeStr);
+            if (!isValidDate(parsedDate)) throw new Error("Invalid date/time for log entry");
+            startTimeMs = parsedDate.getTime();
+        } catch (e) { this.toastService.error("Invalid date or time format.", 0, "Error"); this.spinnerService.hide(); return; }
         let endTimeMs: number | undefined = undefined;
         if (formValue.durationMinutes) endTimeMs = new Date(startTimeMs).setMinutes(new Date(startTimeMs).getMinutes() + formValue.durationMinutes);
 
+
         const logExercises: LoggedWorkoutExercise[] = formValue.exercises.map((exInput: any): LoggedWorkoutExercise => ({
-          exerciseId: exInput.exerciseId, exerciseName: exInput.exerciseName, notes: exInput.notes,
+          exerciseId: exInput.exerciseId,
+          exerciseName: exInput.exerciseName,
+          notes: exInput.notes, // Exercise-level notes from the form
           sets: exInput.sets.map((setInput: any): LoggedSet => ({
-            id: setInput.id || uuidv4(), plannedSetId: setInput.plannedSetId, exerciseId: exInput.exerciseId, type: setInput.type,
-            repsAchieved: setInput.repsAchieved, // Form now uses repsAchieved for log mode
+            id: setInput.id || uuidv4(),
+            plannedSetId: setInput.plannedSetId, // This was set during prefill or from existing log
+            exerciseId: exInput.exerciseId,
+            type: setInput.type, // <<<< ENSURE THIS IS SAVED
+            repsAchieved: setInput.repsAchieved,
             weightUsed: this.unitsService.convertToKg(setInput.weightUsed, this.unitsService.currentUnit()) ?? null,
-            durationPerformed: setInput.durationPerformed, notes: setInput.notes,
-            targetReps: undefined, targetWeight: undefined, targetDuration: undefined, targetTempo: undefined, // Not directly logged, but could be if needed
-            timestamp: setInput.timestamp || new Date().toISOString(), rpe: undefined
+            durationPerformed: setInput.durationPerformed,
+            notes: setInput.notes, // Set-level notes
+            // Target fields are not directly edited in log mode form, but might be on LoggedSet if prefilled
+            targetReps: setInput.targetReps,
+            targetWeight: setInput.targetWeight,
+            targetDuration: setInput.targetDuration,
+            targetTempo: setInput.targetTempo,
+            rpe: undefined, // RPE not part of this form
+            timestamp: setInput.timestamp || new Date().toISOString(),
           }))
         }));
 
         const logPayloadBase = {
-          date: format(new Date(startTimeMs), 'yyyy-MM-dd'), startTime: startTimeMs, endTime: endTimeMs,
-          durationMinutes: formValue.durationMinutes, routineId: formValue.routineIdForLog || undefined,
-          routineName: formValue.routineIdForLog ? (this.availableRoutines.find(r => r.id === formValue.routineIdForLog)?.name || formValue.name || 'From Routine') : (formValue.name || 'Ad-hoc Workout'),
-          notes: formValue.overallNotesLog, exercises: logExercises
+          date: format(new Date(startTimeMs), 'yyyy-MM-dd'),
+          startTime: startTimeMs,
+          endTime: endTimeMs,
+          durationMinutes: formValue.durationMinutes,
+          routineId: formValue.routineIdForLog || undefined,
+          routineName: formValue.routineIdForLog ?
+                       (this.availableRoutines.find(r => r.id === formValue.routineIdForLog)?.name || formValue.name || 'Workout from Routine') :
+                       (formValue.name || 'Ad-hoc Workout'), // Use form 'name' as log title if no routine
+          notes: formValue.overallNotesLog, // Overall log notes
+          exercises: logExercises
         };
+
         if (this.isEditMode && this.currentLogId) {
           const updatedLog: WorkoutLog = { ...logPayloadBase, id: this.currentLogId };
           await this.trackingService.updateWorkoutLog(updatedLog);

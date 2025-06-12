@@ -10,6 +10,7 @@ const DEFAULT_APP_SETTINGS: AppSettings = {
     enablePresetTimer: false,        // NEW Default
     enablePresetTimerAfterRest: false,        // NEW Default
     presetTimerDurationSeconds: 10,  // NEW Default (e.g., 10 seconds)
+    weightStep: 1
 };
 
 @Injectable({

@@ -1,8 +1,9 @@
-// src/app/core/models/app-settings.model.ts
 export interface AppSettings {
   enableTimerCountdownSound: boolean;
   countdownSoundSeconds: number;
-  enablePresetTimer: boolean;         // NEW
-  enablePresetTimerAfterRest: boolean;         // NEW
-  presetTimerDurationSeconds: number; // NEW
+  enablePresetTimer: boolean;
+  presetTimerDurationSeconds: number;
+  enablePresetTimerAfterRest: boolean;
+  weightStep: number; // <<< NEW PROPERTY
+  // Add other settings as needed
 }
