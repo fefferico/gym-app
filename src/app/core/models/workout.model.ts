@@ -8,7 +8,7 @@ export interface ExerciseSetParams {
   tempo?: string;
   restAfterSet: number; // For the set *within* an exercise. For supersets, this might be 0 for intermediate exercises.
   notes?: string;
-  isWarmup?: boolean; // <<<< NEW
+  type?: 'standard' | 'warmup' | 'amrap' | 'custom'; 
   _uiIsCompleted?: boolean;
   _uiActualReps?: number;
   _uiActualWeight?: number;
@@ -51,6 +51,7 @@ export interface WorkoutExercise {
    */
   rounds?: number; // e.g., 3 for 3 rounds
   workoutLogId?: string;
+  sessionStatus?: 'pending' | 'skipped' | 'do_later'; // For in-session tracking
 }
 
 export interface Routine {

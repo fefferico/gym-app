@@ -69,8 +69,8 @@ export class WorkoutLogDetailComponent implements OnInit {
     const detailFetchers$: Observable<DisplayLoggedExercise>[] = loggedExercises.map((loggedEx, index) =>
       this.exerciseService.getExerciseById(loggedEx.exerciseId).pipe(
         map(baseEx => { // baseEx here is Exercise | undefined
-          const warmupSets = loggedEx.sets.filter(s => s.isWarmup);
-          const workingSets = loggedEx.sets.filter(s => !s.isWarmup);
+          const warmupSets = loggedEx.sets.filter(s => s.type === 'warmup');
+          const workingSets = loggedEx.sets.filter(s => s.type !== 'warmup');
           const exerciseForIcon = baseEx || null; // Convert undefined to null
 
           return {
@@ -85,8 +85,8 @@ export class WorkoutLogDetailComponent implements OnInit {
         }),
         catchError(err => {
           console.error(`Error fetching base exercise details for ID ${loggedEx.exerciseId}:`, err);
-          const warmupSets = loggedEx.sets.filter(s => s.isWarmup);
-          const workingSets = loggedEx.sets.filter(s => !s.isWarmup);
+          const warmupSets = loggedEx.sets.filter(s => s.type === 'warmup');
+          const workingSets = loggedEx.sets.filter(s => s.type !== 'warmup');
           // In catchError, baseEx is not available, so pass null directly
           return of({
             ...loggedEx,
@@ -113,8 +113,8 @@ export class WorkoutLogDetailComponent implements OnInit {
       error: (err) => {
         console.error("Error fetching exercise details for log display:", err);
         this.displayExercises.set(loggedExercises.map((le, index) => {
-          const warmupSets = le.sets.filter(s => s.isWarmup);
-          const workingSets = le.sets.filter(s => !s.isWarmup);
+          const warmupSets = le.sets.filter(s => s.type === 'warmup');
+          const workingSets = le.sets.filter(s => s.type !== 'warmup');
           return {
             ...le,
             baseExercise: null,
@@ -144,7 +144,7 @@ export class WorkoutLogDetailComponent implements OnInit {
   getDisplaySetLabel(setsOfType: LoggedSet[], currentIndexInType: number): string {
     const currentSet = setsOfType[currentIndexInType];
     const displayIndex = currentIndexInType + 1;
-    return currentSet.isWarmup ? `Warm-up ${displayIndex}` : `Set ${displayIndex}`;
+    return currentSet.type === 'warmup' ? `Warm-up ${displayIndex}` : `Set ${displayIndex}`;
   }
 
   displayExerciseDetails(id: string): void {

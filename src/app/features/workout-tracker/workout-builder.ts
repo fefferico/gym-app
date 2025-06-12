@@ -259,7 +259,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       tempo: [setData?.tempo || ''],
       restAfterSet: [setData?.restAfterSet ?? 60, [Validators.required, Validators.min(0)]],
       notes: [setData?.notes || ''],
-      isWarmup: [setData?.isWarmup || false], // <<<< NEW
+      type: [setData?.type || 'standard'], // <<<< NEW
     });
   }
 

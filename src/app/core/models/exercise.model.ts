@@ -11,6 +11,7 @@ export const EXERCISE_CATEGORIES = [
   'stretching',
   'plyometrics',
   'strongman',
+  'custom',
   'other',
 ] as const;
 

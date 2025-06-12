@@ -24,7 +24,7 @@ export interface LoggedSet {
   notes?: string;         // User notes specific to this performed set (e.g., "Felt easy", "Form breakdown on last rep")
   // formRating?: 1 | 2 | 3 | 4 | 5; // Optional: User's perceived form rating for the set
   timestamp: string;       // ISO string of when this set was completed/logged.
-  isWarmup?: boolean; // <<<< NEW
+  type?: 'standard' | 'warmup' | 'amrap' | 'custom'; 
   rpe?: number; // Optional: User's perceived exertion for this set (RPE 1-10)
   workoutLogId?: string; // ID of the WorkoutLog this set belongs to
 }

@@ -1,6 +1,6 @@
 import { Component, inject, Input, OnInit, signal } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { forkJoin, Observable, of } from 'rxjs';
 import { map, switchMap, tap, take } from 'rxjs/operators';
 import { Exercise } from '../../../core/models/exercise.model';
@@ -27,7 +27,7 @@ interface SessionPbInfo {
 @Component({
   selector: 'app-workout-summary',
   standalone: true,
-  imports: [CommonModule, DatePipe],
+  imports: [CommonModule, DatePipe, RouterLink],
   templateUrl: './workout-summary.html',
   styleUrl: './workout-summary.scss',
 })
