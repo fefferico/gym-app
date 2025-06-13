@@ -198,7 +198,7 @@ export class PersonalBestsComponent implements OnInit {
     if (workoutLogId) {
       this.router.navigate(['/workout/summary', workoutLogId]);
     } else {
-      this.toastService.error('Could not find the associated workout log for this PB.', 0, 'Navigation Error');
+      this.toastService.error('Could not find the associated workout log for this personal best. It\'s possible that the related workout session has been removed.', 0, 'Navigation Error');
       console.warn('Attempted to navigate to log detail, but workoutLogId is undefined for PB:', event);
     }
   }

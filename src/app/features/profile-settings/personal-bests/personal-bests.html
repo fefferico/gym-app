@@ -105,7 +105,7 @@
                     </div>
                 </div>
 
-                <div class="px-5 py-4 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600">
+                <div *ngIf="pb.pbType !== '1RM (Estimated)'" class="px-5 py-4 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600">
                     <button (click)="navigateToLogDetail(pb.workoutLogId, $event)"
                         class="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-indigo-500 dark:hover:bg-indigo-600 dark:focus:ring-offset-gray-800 transition-colors duration-150"
                         title="View Workout Log">
@@ -116,7 +116,7 @@
                                 d="M.664 10.59a1.651 1.651 0 0 1 0-1.186A10.004 10.004 0 0 1 10 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0 1 10 17c-4.257 0-7.893-2.66-9.336-6.41ZM14 10a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z"
                                 clip-rule="evenodd" />
                         </svg>
-                        View Log
+                        VIEW LOG
                     </button>
                 </div>
             </div>

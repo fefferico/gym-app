@@ -36,13 +36,16 @@
       </div>
     </main>
 
-    <footer *ngIf="options.buttons && options.buttons.length > 0" 
-            class="flex flex-wrap grid justify-center gap-2 sm:gap-3">
+    <footer *ngIf="options.buttons && options.buttons.length > 0"
+      [ngClass]="options.buttons.length === 2 ? 'flex justify-center gap-2 sm:gap-3' : 'grid grid-cols-1 gap-2 sm:gap-3'"
+    >
       <button *ngFor="let button of options.buttons"
-              [ngClass]="getButtonClass(button)"
-              (click)="onButtonClick(button)"
-              class="min-w-[80px]"> 
-        {{ button.text }}
+      [ngClass]="getButtonClass(button)"
+      (click)="onButtonClick(button)"
+      class="min-w-[80px] h-12 flex items-center justify-center"
+      style="line-height: normal;"
+      >
+      {{ button.text }}
       </button>
     </footer>
 

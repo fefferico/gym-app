@@ -63,7 +63,7 @@ export class AlertComponent implements OnInit {
   }
 
   getButtonClass(button: AlertButton): string {
-    let classes = 'px-4 py-2 rounded text-m font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 ';
+    let classes = 'text-white px-4 py-2 rounded text-m font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 ';
     switch (button.role) {
       case 'confirm':
         if (button.cssClass) {
@@ -75,7 +75,7 @@ export class AlertComponent implements OnInit {
       case 'cancel': if (button.cssClass) {
         classes += button.cssClass + ' ';
       } else {
-        classes += 'bg-gray-200 hover:bg-gray-300 text-gray-700 focus:ring-gray-400 dark:bg-gray-700 dark:hover:bg-gray-500 dark:text-gray-200 dark:focus:ring-gray-500';
+        classes += 'bg-gray-200 hover:bg-gray-300 text-gray-700 focus:ring-gray-400 dark:bg-gray-500 dark:hover:bg-gray-500 dark:text-gray-200 dark:focus:ring-gray-500';
       }
         break;
       default:
