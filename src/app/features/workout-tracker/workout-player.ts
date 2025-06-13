@@ -159,6 +159,23 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   editingTargetValue: number | string = '';
   routineId: string | null = null;
 
+  // --- For Exercise Selection Modal ---
+  isExerciseModalOpen = signal(false);
+  availableExercises: Exercise[] = [];
+  modalSearchTerm = signal('');
+  filteredAvailableExercises = computed(() => {
+    const term = this.modalSearchTerm().toLowerCase();
+    if (!term) {
+      return this.availableExercises;
+    }
+    return this.availableExercises.filter(ex =>
+      ex.name.toLowerCase().includes(term) ||
+      ex.category.toLowerCase().includes(term) ||
+      (ex.primaryMuscleGroup && ex.primaryMuscleGroup.toLowerCase().includes(term))
+    );
+  });
+  // --- End Exercise Selection Modal ---
+
   private readonly PAUSED_WORKOUT_KEY = 'fitTrackPro_pausedWorkoutState';
   private readonly PAUSED_STATE_VERSION = '1.2'; // Updated for sessionStatus
   private originalRoutineSnapshot: WorkoutExercise[] = [];
@@ -1638,6 +1655,131 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     this.closeWorkoutMenu();
     this.closePerformanceInsights(); // Close insights if open
   }
+
+
+
+
+  // Replaces the old addCustomExercise, now it opens the modal first
+  async addExerciseDuringSession(): Promise<void> {
+    if (this.sessionState() === 'paused') {
+      this.toastService.warning("Session is paused. Resume to add exercise.", 3000, "Paused");
+      this.closeWorkoutMenu();
+      return;
+    }
+    this.openExerciseSelectionModal();
+    // The actual addition logic will be in selectExerciseToAddFromModal or handleTrulyCustomExercise
+  }
+
+  // Called when an exercise is selected from the modal
+  async selectExerciseToAddFromModal(selectedExercise: Exercise): Promise<void> {
+    this.closeExerciseSelectionModal();
+    const currentRoutineVal = this.routine();
+    if (!currentRoutineVal) {
+      this.toastService.error("Cannot add exercise: routine data unavailable.", 0, "Error"); return;
+    }
+
+    // Prompt for number of sets for this selected exercise
+    const setsInput = await this.alertService.showPromptDialog(
+      `Add ${selectedExercise.name}`,
+      'How many sets?',
+      [{ name: 'numSets', type: 'number', placeholder: 'e.g., 3', value: '3', attributes: { min: '1', required: true } }] as AlertInput[],
+      'Next'
+    );
+
+    if (!setsInput || !setsInput['numSets'] || parseInt(String(setsInput['numSets']), 10) <= 0) {
+      this.toastService.info("Exercise addition cancelled or invalid set count.", 2000);
+      return;
+    }
+    const numSets = parseInt(String(setsInput['numSets']), 10);
+
+    const newExerciseSets: ExerciseSetParams[] = [];
+    for (let i = 0; i < numSets; i++) {
+      newExerciseSets.push({
+        id: `custom-set-${uuidv4()}`, // Or generate based on planned set ID if this was a template
+        reps: 8, // Default reps
+        weight: null, // Default weight
+        duration: undefined,
+        restAfterSet: 60, // Default rest
+        type: 'standard',
+        notes: ''
+      });
+    }
+
+    const newWorkoutExercise: WorkoutExercise = {
+      id: `session-ex-${uuidv4()}`, // Unique ID for this session's instance of the exercise
+      exerciseId: selectedExercise.id,
+      exerciseName: selectedExercise.name,
+      sets: newExerciseSets,
+      rounds: 1, // Default to 1 round for an ad-hoc added exercise
+      supersetId: null,
+      supersetOrder: null,
+      supersetSize: null,
+      sessionStatus: 'pending'
+    };
+
+    this.addExerciseToCurrentRoutine(newWorkoutExercise);
+  }
+
+  // Called if user wants to define a completely new exercise not in the library
+  async handleTrulyCustomExerciseEntry(): Promise<void> {
+    this.closeExerciseSelectionModal();
+    const currentRoutineVal = this.routine();
+    if (!currentRoutineVal) { return; }
+
+    const inputs: AlertInput[] = [
+      { name: 'exerciseName', type: 'text', placeholder: 'Custom Exercise Name', value: '', attributes: { required: true } },
+      { name: 'numSets', type: 'number', placeholder: 'Number of Sets (e.g., 3)', value: '3', attributes: { min: '1', required: true } },
+    ];
+    const result = await this.alertService.showPromptDialog('Add New Custom Exercise', 'Define exercise name and sets:', inputs, 'Add Exercise');
+
+    if (result && result['exerciseName'] && result['numSets']) {
+      const exerciseName = String(result['exerciseName']).trim();
+      const numSets = parseInt(String(result['numSets']), 10);
+      if (!exerciseName || numSets <= 0) {
+        this.toastService.error("Invalid input for custom exercise.", 0, "Error"); return;
+      }
+      const newExerciseSets: ExerciseSetParams[] = Array.from({ length: numSets }, () => ({
+        id: `custom-adhoc-set-${uuidv4()}`, reps: 8, weight: null, duration: undefined, restAfterSet: 60, type: 'standard', notes: ''
+      }));
+      const newWorkoutExercise: WorkoutExercise = {
+        id: `custom-adhoc-ex-${uuidv4()}`, exerciseId: `custom-exercise-${uuidv4()}`, // Generic custom ID
+        exerciseName: exerciseName, sets: newExerciseSets, rounds: 1, supersetId: null, sessionStatus: 'pending', supersetOrder: null,
+      };
+      this.addExerciseToCurrentRoutine(newWorkoutExercise);
+    }
+  }
+
+  private async addExerciseToCurrentRoutine(newWorkoutExercise: WorkoutExercise): Promise<void> {
+    const currentRoutineVal = this.routine();
+    if (!currentRoutineVal) return;
+
+    const updatedRoutine = JSON.parse(JSON.stringify(currentRoutineVal)) as Routine;
+    let insertAtIndex = this.currentExerciseIndex() + 1;
+    const activeInfo = this.activeSetInfo();
+    if (activeInfo && activeInfo.exerciseData.supersetId && activeInfo.exerciseData.supersetOrder !== null && activeInfo.exerciseData.supersetSize) {
+      insertAtIndex = activeInfo.exerciseIndex - activeInfo.exerciseData.supersetOrder + activeInfo.exerciseData.supersetSize;
+    }
+    updatedRoutine.exercises.splice(insertAtIndex, 0, newWorkoutExercise);
+    this.routine.set(updatedRoutine);
+
+    const goToNewEx = await this.alertService.showConfirm("Exercise Added", `"${newWorkoutExercise.exerciseName}" added. Start it now? (Otherwise, it will appear after your current block)`);
+    if (goToNewEx && goToNewEx.data) {
+      this.currentExerciseIndex.set(insertAtIndex);
+      this.currentSetIndex.set(0);
+      this.currentBlockRound.set(1);
+      this.totalBlockRounds.set(newWorkoutExercise.rounds ?? 1);
+      this.lastPerformanceForCurrentExercise = null;
+      this.isPerformingDeferredExercise = true; // Treat ad-hoc added as a "deferred" type choice contextually
+      this.lastActivatedDeferredExerciseId = newWorkoutExercise.id;
+      this.playerSubState.set(PlayerSubState.PerformingSet);
+      await this.prepareCurrentSet();
+    } else {
+      this.toastService.success(`"${newWorkoutExercise.exerciseName}" added to the queue.`, 3000, "Exercise Added");
+    }
+  }
+
+
+
   async addCustomExercise(): Promise<void> {
     if (this.sessionState() === 'paused') {
       this.toastService.warning("Session is paused. Resume to add exercise.", 3000, "Paused"); return;
@@ -2113,6 +2255,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         })
       ).subscribe();
     }
+    this.loadAvailableExercises(); // Load exercises for the modal
   }
 
   private async loadNewWorkoutFromRoute(): Promise<void> {
@@ -2946,6 +3089,36 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       this.resetTimedSet();
     }
   }
+
+  private loadAvailableExercises(): void {
+    this.exerciseService.getExercises().pipe(take(1)).subscribe(exercises => {
+      this.availableExercises = exercises;
+    });
+  }
+
+  // --- Modal Methods for Workout Player ---
+  openExerciseSelectionModal(): void {
+    if (this.sessionState() === 'paused') {
+      this.toastService.warning("Session is paused. Resume to add exercise.", 3000, "Paused");
+      return;
+    }
+    if (this.availableExercises.length === 0) { // Lazy load if not already loaded
+      this.loadAvailableExercises();
+    }
+    this.modalSearchTerm.set('');
+    this.isExerciseModalOpen.set(true);
+    this.closeWorkoutMenu(); // Close main menu when opening modal
+  }
+
+  closeExerciseSelectionModal(): void {
+    this.isExerciseModalOpen.set(false);
+  }
+
+  onModalSearchTermChange(event: Event): void {
+    const inputElement = event.target as HTMLInputElement;
+    this.modalSearchTerm.set(inputElement.value);
+  }
+  // --- End Modal Methods ---
 
 
 }
