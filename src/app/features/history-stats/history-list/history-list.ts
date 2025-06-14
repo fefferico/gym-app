@@ -346,7 +346,8 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
     event?.stopPropagation(); this.router.navigate(['/history/log', logId]); 
     this.visibleActionsRutineId.set(null); }
   editLogDetails(logId: string, event?: MouseEvent): void { 
-    event?.stopPropagation(); this.router.navigate(['/workout/log/manual/edit', logId]); 
+    event?.stopPropagation(); 
+    this.router.navigate(['/workout/log/manual/edit', logId]); 
     this.visibleActionsRutineId.set(null); 
   }
   async deleteLogDetails(logId: string, event?: MouseEvent): Promise<void> {

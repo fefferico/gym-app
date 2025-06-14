@@ -913,7 +913,6 @@ if (this.builderForm.invalid) {
       this.isViewMode = false;
       this.isEditMode = true;
       this.toggleFormState(false);
-      this.router.navigate(['/workout/edit', this.currentRoutineId], { replaceUrl: true });
       this.toastService.info("Edit mode enabled.", 3000, "Mode Changed");
     }
   }
