@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy, signal, computed, ElementRef, QueryList, ViewChildren, AfterViewInit, ChangeDetectorRef, PLATFORM_ID } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal, computed, ElementRef, QueryList, ViewChildren, AfterViewInit, ChangeDetectorRef, PLATFORM_ID, Input } from '@angular/core';
 import { CommonModule, DecimalPipe, isPlatformBrowser, TitleCasePipe } from '@angular/common'; // Added TitleCasePipe
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray, AbstractControl, FormsModule } from '@angular/forms';
@@ -57,6 +57,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   currentLogId: string | null = null;     // For editing a WorkoutLog
   private routeSub: Subscription | undefined;
   private initialRoutineIdForLogEdit: string | null | undefined = undefined; // For log edit mode
+
+  isCompactView: boolean = true;
 
   expandedSetPath = signal<{ exerciseIndex: number, setIndex: number } | null>(null);
 
@@ -508,6 +510,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     event?.stopPropagation();
     if (this.isViewMode && !(this.expandedSetPath()?.exerciseIndex === exerciseIndex && this.expandedSetPath()?.setIndex === setIndex)) {
       this.expandedSetPath.set({ exerciseIndex, setIndex }); // Allow expanding in view mode
+      this.isCompactView = false;
       return;
     } else if (this.isViewMode) {
       this.expandedSetPath.set(null); return;
@@ -517,6 +520,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       this.expandedSetPath.set(null);
     } else {
       this.expandedSetPath.set({ exerciseIndex, setIndex });
+      this.isCompactView = false;
       this.cdr.detectChanges();
       setTimeout(() => { /* ... focus logic ... */ }, 50);
     }
@@ -525,7 +529,11 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     const currentPath = this.expandedSetPath();
     return currentPath?.exerciseIndex === exerciseIndex && currentPath?.setIndex === setIndex;
   }
-  collapseExpandedSet(): void { this.expandedSetPath.set(null); }
+  collapseExpandedSet(event?: MouseEvent): void {
+    this.expandedSetPath.set(null);
+    this.isCompactView = true;
+    event?.stopPropagation();
+  }
   private getFormErrors(formGroup: FormGroup | FormArray): any {
     const errors: any = {};
     Object.keys(formGroup.controls).forEach(key => {
@@ -738,7 +746,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     // Detailed set validation loop (ensure this is robust)
     // ...
 
-if (this.builderForm.invalid) {
+    if (this.builderForm.invalid) {
       this.toastService.error('Please correct validation errors.', 0, "Validation Error");
       this.builderForm.markAllAsTouched(); return;
     }
@@ -765,9 +773,9 @@ if (this.builderForm.invalid) {
         const combinedDateTimeStr = `${workoutDateStr}T${startTimeStr}:00`;
         let startTimeMs: number;
         try {
-            const parsedDate = parseISO(combinedDateTimeStr);
-            if (!isValidDate(parsedDate)) throw new Error("Invalid date/time for log entry");
-            startTimeMs = parsedDate.getTime();
+          const parsedDate = parseISO(combinedDateTimeStr);
+          if (!isValidDate(parsedDate)) throw new Error("Invalid date/time for log entry");
+          startTimeMs = parsedDate.getTime();
         } catch (e) { this.toastService.error("Invalid date or time format.", 0, "Error"); this.spinnerService.hide(); return; }
         let endTimeMs: number | undefined = undefined;
         if (formValue.durationMinutes) endTimeMs = new Date(startTimeMs).setMinutes(new Date(startTimeMs).getMinutes() + formValue.durationMinutes);
@@ -803,8 +811,8 @@ if (this.builderForm.invalid) {
           durationMinutes: formValue.durationMinutes,
           routineId: formValue.routineIdForLog || undefined,
           routineName: formValue.routineIdForLog ?
-                       (this.availableRoutines.find(r => r.id === formValue.routineIdForLog)?.name || formValue.name || 'Workout from Routine') :
-                       (formValue.name || 'Ad-hoc Workout'), // Use form 'name' as log title if no routine
+            (this.availableRoutines.find(r => r.id === formValue.routineIdForLog)?.name || formValue.name || 'Workout from Routine') :
+            (formValue.name || 'Ad-hoc Workout'), // Use form 'name' as log title if no routine
           notes: formValue.overallNotesLog, // Overall log notes
           exercises: logExercises
         };
