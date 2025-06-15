@@ -125,7 +125,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
       this.loadRoutinesAndPopulateFilters();
     });
 
-     // This observable is for the template's async pipe if needed for loading states, before filtering kicks in.
+    // This observable is for the template's async pipe if needed for loading states, before filtering kicks in.
     this.routines$ = this.workoutService.routines$;
   }
 
@@ -253,7 +253,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
       const buttons: AlertButton[] = [
         { text: 'Cancel', role: 'cancel', data: 'cancel' },
         { text: 'Discard Paused & Start New', role: 'confirm', data: 'discard_start_new', cssClass: 'bg-red-500 hover:bg-red-600 text-white' },
-        { text: `Resume: ${pausedRoutineName.substring(0,15)}${pausedRoutineName.length > 15 ? '...' : ''}`, role: 'confirm', data: 'resume_paused', cssClass: 'bg-green-500 hover:bg-green-600 text-white' },
+        { text: `Resume: ${pausedRoutineName.substring(0, 15)}${pausedRoutineName.length > 15 ? '...' : ''}`, role: 'confirm', data: 'resume_paused', cssClass: 'bg-green-500 hover:bg-green-600 text-white' },
       ];
       const confirmation = await this.alertService.showConfirmationDialog('Workout in Progress', `You have a paused workout ("${pausedRoutineName}"${pausedDate}). What would you like to do?`, buttons);
 
@@ -302,6 +302,39 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     });
     return Array.from(muscles).slice(0, 3); // Show up to 3 for brevity on card
   }
+
+  async cloneAndEditRoutine(routineId: string, event: MouseEvent): Promise<void> {
+    event.stopPropagation();
+    this.visibleActionsRutineId.set(null);
+
+    const originalRoutine = this.allRoutinesForList().find(r => r.id === routineId);
+    if (!originalRoutine) {
+      this.toastService.error("Routine not found for cloning.", 0, "Error");
+      return;
+    }
+
+    // Deep clone the routine and assign a new id
+    let clonedRoutine: Routine = {
+      ...structuredClone(originalRoutine),
+      name: originalRoutine.name + " (Copy)",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    try {
+      this.spinnerService.show();
+      clonedRoutine = await this.workoutService.addRoutine(clonedRoutine);
+      this.toastService.success(`Routine "${clonedRoutine.name}" cloned successfully.`, 3000, "Routine Cloned");
+      this.router.navigate(['/workout/routine/edit', clonedRoutine.id]);
+      this.visibleActionsRutineId.set(null);
+    } catch (error) {
+      console.error("Error during routine cloning:", error);
+      this.toastService.error("Failed to clone routine.", 0, "Clone Failed");
+    } finally {
+      this.spinnerService.hide();
+    }
+  }
+
 
   ngOnDestroy(): void {
     this.routinesSubscription?.unsubscribe();
