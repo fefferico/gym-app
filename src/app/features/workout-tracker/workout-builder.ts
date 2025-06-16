@@ -655,6 +655,19 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     return true;
   }
 
+  canUngroupSelectedExercises(): boolean {
+    const selectedIndices = this.selectedExerciseIndicesForSuperset();
+    if (selectedIndices.length === 0) return false;
+    // All selected exercises must be part of the same superset
+    const supersetIds = Array.from(new Set(
+      selectedIndices
+        .map(i => (this.exercisesFormArray.at(i) as FormGroup).get('supersetId')?.value)
+        .filter(id => !!id)
+    ));
+    const uniqueSupersetIds = Array.from(new Set(supersetIds));
+    return uniqueSupersetIds.length === 1;
+  }
+
   onExerciseDrop(event: CdkDragDrop<AbstractControl[]>): void {
     if (this.isViewMode) return;
     if (event.previousContainer === event.container) {
@@ -1064,6 +1077,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     const isSelected = this.mode === 'routineBuilder' && this.selectedExerciseIndicesForSuperset().includes(exIndex);
     const isFirstInSuperset = isSuperset && supersetOrder === 0;
     const isLastInSuperset = isSuperset && supersetOrder === supersetSize - 1;
+    const isMiddleInSuperSet = isSuperset && (!isFirstInSuperset && !isLastInSuperset);
     const isCompact = this.isCompactView;
     const isEdit = this.isEditMode;
     const firstSelected = this.firstSelectedExerciseIndexForSuperset;
@@ -1081,8 +1095,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800': !isSuperset && !isSelected,
       'rounded-b-none border-b-transparent dark:border-b-transparent':
         this.mode === 'routineBuilder' &&
-        isSuperset && isFirstInSuperset,
-      'rounded-t-none border-t-transparent dark:border-t-transparent': isSuperset && isLastInSuperset,
+        isSuperset && (isFirstInSuperset || isMiddleInSuperSet),
+      'rounded-t-none border-t-transparent dark:border-t-transparent': isSuperset && (isLastInSuperset || isMiddleInSuperSet),
       'border-x border-t':
         isSuperset &&
         isFirstInSuperset,
