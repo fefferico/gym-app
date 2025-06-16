@@ -890,7 +890,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
             targetTempo: setInput.targetTempo,
             rpe: undefined, // RPE not part of this form
             timestamp: setInput.timestamp || new Date().toISOString(),
-          }))
+          })),
+          rounds: formValue.get('rounds')?.value || 1
         }));
 
         const logPayloadBase = {

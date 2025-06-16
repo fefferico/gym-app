@@ -244,8 +244,9 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
               const logged = this.currentWorkoutLogExercises().find(le => le.exerciseId === activeInfo.exerciseData.exerciseId);
               const allSetsLogged = logged && logged.sets.length === activeInfo.exerciseData.sets.length;
               if (!allSetsLogged) {
-                // Still sets to log, so propose to complete
-                return this.checkIfLatestSetOfExercise() ? 'COMPLETE EXERCISE' : 'SET DONE';
+                return this.checkIfSetIsPartOfRounds() ?
+                  (this.checkIfLatestSetOfRound() ? 'COMPLETE ROUND' : 'SET DONE')
+                  : (this.checkIfLatestSetOfExercise() ? 'COMPLETE EXERCISE' : 'SET DONE');
               }
             }
             return sessionStatus === 'skipped'
@@ -254,7 +255,9 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
           }
           return 'FINISH WORKOUT';
         } else if (this.checkIfLatestSetOfExercise()) { // This should also consider pending
-          return 'COMPLETE EXERCISE'
+          return this.checkIfSetIsPartOfRounds() ?
+            (this.checkIfLatestSetOfRound() ? 'COMPLETE ROUND' : 'SET DONE')
+            : 'COMPLETE EXERCISE'
         } else {
           return 'SET DONE';
         }
@@ -458,7 +461,8 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       exerciseLog = {
         exerciseId: exerciseData.exerciseId,
         exerciseName: this.currentBaseExercise()?.name || exerciseData.exerciseName || 'Unknown Exercise',
-        sets: [loggedSet]
+        sets: [loggedSet],
+        rounds: exerciseData.rounds || 0,
       };
       logs.push(exerciseLog);
     }
@@ -520,7 +524,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       }
 
       // Compare sets for warmup status or count differences
-      if (performedEx.sets.length !== originalEx.sets.length) {
+      if (performedEx.sets.length !== originalEx.sets.length && performedEx.rounds !== originalEx.rounds) {
         details.push(`Set count for "${performedEx.exerciseName || performedEx.exerciseId}" changed (was ${originalEx.sets.length}, now ${performedEx.sets.length}).`);
         majorDifference = true;
       } else {
@@ -679,6 +683,71 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     }
     return true; // All subsequent sets are warmups
   }
+
+  /**
+   * Returns true if the current set is the last set of the current round for the current exercise block.
+   * For non-superset, non-multi-round exercises, this is equivalent to checkIfLatestSetOfExercise().
+   * For supersets or multi-round blocks, returns true if this is the last set of the last exercise in the block for the current round.
+   */
+  checkIfLatestSetOfRound(): boolean {
+    const activeInfo = this.activeSetInfo();
+    const routine = this.routine();
+    if (!activeInfo || !routine) return false;
+
+    const currentExercise = routine.exercises[activeInfo.exerciseIndex];
+
+    // If not in a superset or multi-round block, fallback to FALSE cause it's not a true round
+    if ((!currentExercise.supersetId && (!currentExercise.rounds || currentExercise.rounds <= 1))) {
+      return false;
+    }
+
+    // Find the block start and end indices
+    let blockStartIdx = activeInfo.exerciseIndex;
+    let blockEndIdx = activeInfo.exerciseIndex;
+    if (currentExercise.supersetId && currentExercise.supersetOrder !== null) {
+      blockStartIdx = activeInfo.exerciseIndex - currentExercise.supersetOrder;
+      blockEndIdx = blockStartIdx + (currentExercise.supersetSize ? currentExercise.supersetSize - 1 : 0);
+    }
+
+    // The last set of the last exercise in the block for the current round
+    if (
+      activeInfo.exerciseIndex === blockEndIdx &&
+      activeInfo.setIndex === routine.exercises[blockEndIdx].sets.length - 1
+    ) {
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Determines if the current set is part of a multi-round block (i.e., the exercise or its superset block has rounds > 1).
+   * Returns an object with isPartOfRounds and the total number of rounds.
+   */
+  checkIfSetIsPartOfRounds(): boolean {
+    const activeInfo = this.activeSetInfo();
+    const routine = this.routine();
+    if (!activeInfo || !routine) return false;
+
+    const exercise = routine.exercises[activeInfo.exerciseIndex];
+    if (!exercise) return false;
+
+    // If exercise is part of a superset, get rounds from the block start
+    if (exercise.supersetId && exercise.supersetOrder !== null) {
+      const blockStart = routine.exercises.find(
+        ex => ex.supersetId === exercise.supersetId && ex.supersetOrder === 0
+      );
+      const rounds = blockStart?.rounds ?? 1;
+      return rounds > 0;
+    }
+
+    // Otherwise, use the exercise's own rounds property
+    const rounds = (exercise.rounds && 
+      exercise.supersetId !== undefined &&
+    exercise.supersetId !== null ) ? 1 : 0;
+    return rounds > 0;
+  }
+
 
   checkIfLatestSetOfWorkout(): boolean { // Legacy name, use checkIfLatestSetOfWorkoutConsideringPending
     return this.checkIfLatestSetOfWorkoutConsideringPending();
@@ -2813,26 +2882,44 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     this.restDuration.set(duration);
 
     if (isPlatformBrowser(this.platformId) && duration > 0) { // Ensure duration > 0 for timer
-      const activeInfoJustCompleted = this.activeSetInfo(); // This is info about the set JUST completed
       const routineVal = this.routine();
 
       if (!isResumingPausedRest) {
         this.restTimerMainText.set("RESTING");
-        // For "UP NEXT", we need to peek at what the *next* set will be.
-        // This requires knowing the indices that navigateToNextStepInWorkout has *just set*.
-        // Or, getNextUpText needs to calculate based on *current* indices and assume it's for the *next* set.
-        // Let's assume getNextUpText is smart enough or we pass the *next* set's info.
-        // For simplicity, let's calculate next up based on current indices (which point to the next set).
-        const nextSetInfo = this.peekNextSetInfo(); // A new helper method
+        // For "UP NEXT", peek at the next set and handle rounds/supersets
+        const nextSetInfo = this.peekNextSetInfo();
         let resultText = 'Next Exercise';
+
         if (nextSetInfo && nextSetInfo.exerciseData && nextSetInfo.exerciseData.sets) {
           const isWarmup = nextSetInfo.type === 'warmup';
           const setNumber = isWarmup
             ? this.getWarmupSetNumberForDisplay(nextSetInfo.exerciseData, nextSetInfo.setIndex)
             : this.getWorkingSetNumberForDisplay(nextSetInfo.exerciseData, nextSetInfo.setIndex);
-          const totalSets = nextSetInfo.exerciseData.sets.length;
+          const totalSets = isWarmup
+            ? this.getTotalWarmupSetsForExercise(nextSetInfo.exerciseData)
+            : this.getWorkingSetCountForExercise(nextSetInfo.exerciseData);
           const exerciseName = nextSetInfo.exerciseData.exerciseName || 'Exercise';
-          resultText = `${isWarmup ? 'Warm-up ' : ''}Set ${setNumber}${!isWarmup ? '/' + totalSets : ''} of ${exerciseName}`;
+
+          // Handle rounds/supersets
+          let roundText = '';
+          if (routineVal) {
+            const ex = nextSetInfo.exerciseData;
+            let rounds = ex.rounds ?? 1;
+            // If part of a superset, get rounds from block start
+            if (ex.supersetId && ex.supersetOrder !== null) {
+              const blockStart = routineVal.exercises.find(e =>
+                e.supersetId === ex.supersetId && e.supersetOrder === 0
+              );
+              if (blockStart) {
+                rounds = blockStart.rounds ?? 1;
+              }
+            }
+            if (rounds > 1) {
+              roundText = ` (Round ${this.currentBlockRound()}/${rounds})`;
+            }
+          }
+
+          resultText = `${isWarmup ? 'Warm-up ' : ''}Set ${setNumber}/${totalSets} of ${exerciseName}${roundText}`;
         }
         this.restTimerNextUpText.set(resultText);
 

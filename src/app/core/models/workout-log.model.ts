@@ -29,11 +29,23 @@ export interface LoggedSet {
   workoutLogId?: string; // ID of the WorkoutLog this set belongs to
 }
 
+// Describes a group of sets performed together as a "round" (e.g., in a circuit or superset)
+export interface LoggedRound {
+  id: string; // Unique ID for this round
+  exerciseIds: string[]; // IDs of exercises included in this round
+  setIds: string[]; // IDs of LoggedSet instances that are part of this round
+  order: number; // The order of this round within the workout or exercise
+  timestamp: string; // ISO string of when this round was completed/logged
+  notes?: string; // Optional notes for this round
+  workoutLogId?: string; // ID of the WorkoutLog this round belongs to
+}
+
 // Describes all sets performed for a specific exercise within a single workout session.
 export interface LoggedWorkoutExercise {
   exerciseId: string;     // ID of the base Exercise definition
   exerciseName: string;   // Denormalized name for easier display in logs
   sets: LoggedSet[];      // Array of actual sets performed for this exercise
+  rounds: number;
   notes?: string;         // User notes for this exercise during this specific workout log
   workoutLogId?: string; // ID of the WorkoutLog this exercise belongs to
 }

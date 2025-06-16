@@ -49,24 +49,4 @@ export class AppComponent implements OnInit {
     //this.testAddLog(); // Uncomment to test
     //this.trackingService.workoutLogs$.subscribe(logs => console.log('Current Logs:', logs));
   }
-
-  testAddLog() {
-    const dummyLoggedExercise: LoggedWorkoutExercise = {
-      exerciseId: 'push-up',
-      exerciseName: 'Push-up',
-      sets: [
-        { id: 'set1', exerciseId: 'push-up', repsAchieved: 10, timestamp: new Date().toISOString(), plannedSetId: 'plan_set1' },
-        { id: 'set2', exerciseId: 'push-up', repsAchieved: 8, weightUsed: 5, timestamp: new Date().toISOString(), plannedSetId: 'plan_set2' },
-      ]
-    };
-    const dummyLog: Omit<WorkoutLog, 'id'> = {
-      routineName: 'Test Workout',
-      date: new Date().toISOString(),
-      startTime: Date.now() - (60 * 60 * 1000), // An hour ago
-      endTime: Date.now(),
-      exercises: [dummyLoggedExercise],
-      // overa  llNotes: 'Felt good today!',
-    };
-    this.trackingService.addWorkoutLog(dummyLog);
-  }
 }
