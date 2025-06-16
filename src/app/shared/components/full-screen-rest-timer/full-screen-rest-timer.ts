@@ -7,11 +7,11 @@ import { CommonModule } from '@angular/common';
   imports: [CommonModule],
   templateUrl: './full-screen-rest-timer.html',
   styleUrls: ['./full-screen-rest-timer.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush, // Good for performance
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FullScreenRestTimerComponent implements OnChanges, OnDestroy, AfterViewInit {
   @Input() isVisible: boolean = false;
-  @Input() durationSeconds: number = 60; // Default duration
+  @Input() durationSeconds: number = 60;
   @Input() mainText: string = 'RESTING';
   @Input() nextUpText: string | null = null;
 
@@ -21,26 +21,37 @@ export class FullScreenRestTimerComponent implements OnChanges, OnDestroy, After
   @ViewChild('progressCircleSvg') progressCircleSvg!: ElementRef<SVGSVGElement>;
 
   private timerIntervalId: any;
-  private circleRadius = 90; // Radius of the progress circle
-  private circumference = 2 * Math.PI * this.circleRadius;
+  private readonly circleRadius = 90;
+  private readonly circumference = 2 * Math.PI * this.circleRadius;
+  private readonly timerUpdateIntervalMs = 100; // Update every 100ms for tenths of a second
 
-  // Signals for reactive state
-  readonly remainingTime = signal(0);
-  readonly initialDuration = signal(0);
+  readonly remainingTime = signal(0); // Will store time in seconds, can be float
+  readonly initialDuration = signal(0); // Will store time in seconds, can be float
 
-  // Computed signal for SVG stroke-dashoffset
   readonly strokeDashoffset = computed(() => {
-    if (this.initialDuration() <= 0) return this.circumference;
-    const progress = this.remainingTime() / this.initialDuration();
-    return this.circumference * (1 - progress);
+    const initial = this.initialDuration();
+    if (initial <= 0) return this.circumference;
+    // Ensure progress doesn't go below 0 for calculation
+    const currentProgress = Math.max(0, this.remainingTime()) / initial;
+    return this.circumference * (1 - currentProgress);
   });
 
-  // Computed signal for displayable time
   readonly displayTime = computed(() => {
-    const totalSeconds = this.remainingTime();
-    const minutes = Math.floor(totalSeconds / 60);
-    const seconds = totalSeconds % 60;
-    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    // Use Math.max to prevent displaying negative time if an interval fires slightly after time hits 0
+    const totalSecondsValue = Math.max(0, this.remainingTime());
+    const minutes = Math.floor(totalSecondsValue / 60);
+    const seconds = Math.floor(totalSecondsValue % 60);
+
+    if (minutes > 0) {
+      return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    } else {
+      return `${seconds}`;
+    }
+  });
+
+  readonly displayTentsTime = computed(() => {
+    const tenths = Math.floor(Math.max(0, this.remainingTime()) * 10) % 10;
+    return `.${tenths}`;
   });
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -52,17 +63,21 @@ export class FullScreenRestTimerComponent implements OnChanges, OnDestroy, After
       }
     }
     if (changes['durationSeconds'] && this.isVisible) {
-      this.startTimer(); // Restart timer if duration changes while visible
+      // If duration changes while timer is visible and running, restart it
+      this.startTimer();
+    } else if (changes['durationSeconds'] && !this.isVisible) {
+      // If duration changes while not visible, just update initial values for next show
+      this.initialDuration.set(this.durationSeconds);
+      this.remainingTime.set(this.durationSeconds);
     }
   }
 
   ngAfterViewInit(): void {
-    // If you need to manipulate the SVG element directly after view init
-    // For this example, direct manipulation isn't strictly necessary as attributes are bound
+    // Not strictly necessary for this change
   }
 
   private startTimer(): void {
-    this.stopTimer(); // Clear any existing timer
+    this.stopTimer();
     this.initialDuration.set(this.durationSeconds);
     this.remainingTime.set(this.durationSeconds);
 
@@ -71,17 +86,19 @@ export class FullScreenRestTimerComponent implements OnChanges, OnDestroy, After
       return;
     }
 
+    const decrementAmount = this.timerUpdateIntervalMs / 1000; // e.g., 0.1 seconds
+
     this.timerIntervalId = setInterval(() => {
       this.remainingTime.update(rt => {
-        const newTime = rt - 1;
+        const newTime = rt - decrementAmount;
         if (newTime <= 0) {
           this.stopTimer();
           this.timerFinished.emit();
-          return 0;
+          return 0; // Ensure remainingTime is exactly 0 on finish
         }
         return newTime;
       });
-    }, 1000);
+    }, this.timerUpdateIntervalMs);
   }
 
   private stopTimer(): void {
@@ -94,14 +111,12 @@ export class FullScreenRestTimerComponent implements OnChanges, OnDestroy, After
   skipTimer(): void {
     this.stopTimer();
     this.timerSkipped.emit();
-    // The parent component will typically set isVisible to false
   }
 
   ngOnDestroy(): void {
     this.stopTimer();
   }
 
-  // Expose for template binding
   getCircleCircumference(): number {
     return this.circumference;
   }

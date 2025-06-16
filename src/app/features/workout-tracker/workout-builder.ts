@@ -267,9 +267,15 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     }
   }
 
-  get exercisesFormArray(): FormArray { return this.builderForm.get('exercises') as FormArray; }
-  getSetsFormArray(exerciseControl: AbstractControl): FormArray { return exerciseControl.get('sets') as FormArray; }
-  private loadAvailableExercises(): void { this.exerciseService.getExercises().pipe(take(1)).subscribe(exs => this.availableExercises = exs); }
+  get exercisesFormArray(): FormArray {
+    return this.builderForm.get('exercises') as FormArray;
+  }
+  getSetsFormArray(exerciseControl: AbstractControl): FormArray {
+    return exerciseControl.get('sets') as FormArray;
+  }
+  private loadAvailableExercises(): void {
+    this.exerciseService.getExercises().pipe(take(1)).subscribe(exs => this.availableExercises = exs);
+  }
 
   patchFormWithRoutineData(routine: Routine): void {
     this.builderForm.patchValue({
@@ -487,12 +493,57 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   addSet(exerciseControl: AbstractControl, exerciseIndex: number): void {
     if (this.isViewMode) return;
     const setsArray = this.getSetsFormArray(exerciseControl);
-    setsArray.push(this.createSetFormGroup(undefined, this.mode === 'manualLogEntry')); // Pass forLogging
+    let newSet;
+    if (setsArray.length > 0) {
+      // Copy values from the previous set
+      const prevSet = setsArray.at(setsArray.length - 1).value;
+      // Only copy relevant fields, not IDs
+      const setData = { ...prevSet };
+      // Remove unique fields
+      delete setData.id;
+      if (this.mode === 'manualLogEntry') {
+        // For logging, only copy fields that make sense
+        // Get the current exerciseId from the parent exerciseControl
+        const exerciseId = exerciseControl.get('exerciseId')?.value;
+        newSet = this.createSetFormGroup({
+          id: setData.id ?? this.workoutService.generateExerciseSetId(),
+          exerciseId: exerciseId,
+          repsAchieved: setData.repsAchieved,
+          weightUsed: setData.weightUsed,
+          durationPerformed: setData.durationPerformed,
+          notes: setData.notes,
+          type: setData.type,
+          plannedSetId: setData.plannedSetId,
+          timestamp: new Date().toISOString(),
+          targetReps: setData.targetReps,
+          targetWeight: setData.targetWeight,
+          targetDuration: setData.targetDuration,
+          targetTempo: setData.targetTempo
+        }, true);
+      } else {
+        // For routine builder, copy planning fields
+        newSet = this.createSetFormGroup({
+          id: setData.id ?? this.workoutService.generateExerciseSetId(),
+          reps: setData.reps,
+          weight: setData.weight,
+          duration: setData.duration,
+          notes: setData.notes,
+          type: setData.type,
+          tempo: setData.tempo,
+          restAfterSet: setData.restAfterSet
+        }, false);
+      }
+    } else {
+      // No previous set, use blank/default
+      newSet = this.createSetFormGroup(undefined, this.mode === 'manualLogEntry');
+    }
+    setsArray.push(newSet);
     this.cdr.detectChanges();
     const newSetIndex = setsArray.length - 1;
     this.toggleSetExpansion(exerciseIndex, newSetIndex);
   }
-  removeSet(exerciseControl: AbstractControl, exerciseIndex: number, setIndex: number): void {
+  removeSet(exerciseControl: AbstractControl, exerciseIndex: number, setIndex: number, event?: MouseEvent): void {
+    event?.stopPropagation();
     if (this.isViewMode) return;
     const setsArray = this.getSetsFormArray(exerciseControl);
     setsArray.removeAt(setIndex);
@@ -508,6 +559,12 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
   toggleSetExpansion(exerciseIndex: number, setIndex: number, event?: MouseEvent): void {
     event?.stopPropagation();
+
+    // If the event is from a checkbox (superset selection), do not expand/collapse set
+    if (event && (event.target as HTMLInputElement)?.type === 'checkbox') {
+      return;
+    }
+
     if (this.isViewMode && !(this.expandedSetPath()?.exerciseIndex === exerciseIndex && this.expandedSetPath()?.setIndex === setIndex)) {
       this.expandedSetPath.set({ exerciseIndex, setIndex }); // Allow expanding in view mode
       this.isCompactView = false;
@@ -518,20 +575,31 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     const currentPath = this.expandedSetPath();
     if (currentPath?.exerciseIndex === exerciseIndex && currentPath?.setIndex === setIndex) {
       this.expandedSetPath.set(null);
+      if (!this.isCompactView) {
+        return;
+      }
     } else {
       this.expandedSetPath.set({ exerciseIndex, setIndex });
       this.isCompactView = false;
       this.cdr.detectChanges();
-      setTimeout(() => { /* ... focus logic ... */ }, 50);
+      setTimeout(() => {
+        const expandedElem = this.expandedSetElements.first?.nativeElement;
+        if (expandedElem) {
+          const input = expandedElem.querySelector('input[type="text"], input[type="number"]') as HTMLInputElement | null;
+          if (input) {
+            input.focus();
+          }
+        }
+      }, 50);
     }
   }
   isSetExpanded(exerciseIndex: number, setIndex: number): boolean {
     const currentPath = this.expandedSetPath();
     return currentPath?.exerciseIndex === exerciseIndex && currentPath?.setIndex === setIndex;
   }
-  collapseExpandedSet(event?: MouseEvent): void {
+  collapseExpandedSet(collapseAll: boolean = false, event?: MouseEvent): void {
     this.expandedSetPath.set(null);
-    this.isCompactView = true;
+    this.isCompactView = collapseAll;
     event?.stopPropagation();
   }
   private getFormErrors(formGroup: FormGroup | FormArray): any {
@@ -564,6 +632,11 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       }
       return newSelected.sort((a, b) => a - b);
     });
+
+    // fix for compact view
+    if (this.isCompactView) {
+
+    }
   }
 
   canGroupSelectedExercises(): boolean {
@@ -974,4 +1047,79 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       this.routeSub.unsubscribe();
     }
   }
+
+  getExerciseCardClasses(
+    exerciseControl: AbstractControl,
+    exIndex: number
+  ): { [klass: string]: boolean } {
+    const isSuperset =
+      this.mode === 'routineBuilder' &&
+      !!exerciseControl.get('supersetId')?.value;
+    const supersetOrder = exerciseControl.get('supersetOrder')?.value ?? -1;
+    const supersetName = exerciseControl.get('exerciseName')?.value;
+    const supersetSize = exerciseControl.get('supersetSize')?.value ?? 0;
+    const isSelected = this.mode === 'routineBuilder' && this.selectedExerciseIndicesForSuperset().includes(exIndex);
+    const isFirstInSuperset = isSuperset && supersetOrder === 0;
+    const isLastInSuperset = isSuperset && supersetOrder === supersetSize - 1;
+    const isCompact = this.isCompactView;
+    const isEdit = this.isEditMode;
+    const firstSelected = this.firstSelectedExerciseIndexForSuperset;
+
+    const returnObj = {
+      'p-1.5 sm:p-2': isCompact,
+      'p-3': !isCompact,
+      'space-y-3': !isCompact,
+      'border rounded-lg': true,
+      'border rounded-md':
+        isCompact &&
+        isSuperset,
+      'shadow-sm': true,
+      'border-orange-500 dark:border-orange-400 bg-orange-50 dark:bg-orange-900/30': isSuperset,
+      'ring-2 ring-orange-400 dark:ring-orange-300 shadow-md': isSelected,
+      'dark:bg-orange-900/40': isSuperset && isSelected,
+      'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800': !isSuperset && !isSelected,
+      'rounded-b-none border-b-transparent dark:border-b-transparent':
+        isCompact &&
+        this.mode === 'routineBuilder' &&
+        isSuperset && isFirstInSuperset,
+      'rounded-t-none border-t-transparent dark:border-t-transparent': isCompact && isSuperset && isLastInSuperset,
+      'border-x border-t':
+        isCompact &&
+        isSuperset &&
+        isFirstInSuperset,
+      'mb-2': !isSuperset || (isSuperset && isLastInSuperset)
+    };
+    return returnObj;
+  }
+
+  /**
+   * Checks if the exercise at the given index is adjacent to another exercise with the same supersetId.
+   * Returns true if the previous or next exercise shares the same supersetId.
+   */
+  hasAdjacentSupersets(exerciseIndex: number): boolean {
+    const exercises = this.exercisesFormArray;
+    if (exerciseIndex < 0 || exerciseIndex >= exercises.length) return false;
+    const currentSupersetId = (exercises.at(exerciseIndex) as FormGroup).get('supersetId')?.value;
+    if (!currentSupersetId) return false;
+
+    // Check previous exercise
+    if (exerciseIndex > 0) {
+      const prevSupersetId = (exercises.at(exerciseIndex - 1) as FormGroup).get('supersetId')?.value;
+      if (prevSupersetId && prevSupersetId === currentSupersetId) return true;
+    }
+    // Check next exercise
+    if (exerciseIndex < exercises.length - 1) {
+      const nextSupersetId = (exercises.at(exerciseIndex + 1) as FormGroup).get('supersetId')?.value;
+      if (nextSupersetId && nextSupersetId === currentSupersetId) return true;
+    }
+    return false;
+  }
+
+  isSupersetSpacing(exIndex: number): boolean {
+    if (exIndex <= 0) return false;
+    const currentSupersetId = this.exercisesFormArray.at(exIndex).get('id')?.value;
+    const prevSupersetId = this.exercisesFormArray.at(exIndex - 1).get('id')?.value;
+    return exIndex > 0 && currentSupersetId && currentSupersetId !== prevSupersetId;
+  }
+
 }

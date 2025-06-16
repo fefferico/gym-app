@@ -169,7 +169,9 @@
                 [cdkDropListDisabled]="mode !== 'routineBuilder' || isViewMode" formArrayName="exercises"
                 class="exercise-list-container space-y-4">
                 <ng-container *ngFor="let exerciseControl of exercisesFormArray.controls; let exIndex = index;">
-                    <div class="relative group exercise-card-wrapper" (click)="toggleSetExpansion(exIndex,0, $event)">
+                    <div class="relative group exercise-card-wrapper" (click)="toggleSetExpansion(exIndex,0, $event)" [ngClass]="{
+                                        'superset-spacing': isSupersetSpacing(exIndex)
+                                        }">
                         <div *ngIf="mode === 'routineBuilder' && isEditMode && selectedExerciseIndicesForSuperset().length >= 2 && exIndex === firstSelectedExerciseIndexForSuperset"
                             class="absolute left-1/2 -translate-x-1/2 z-20" style="top: -1.25rem;">
                             <button type="button" (click)="groupSelectedAsSuperset()"
@@ -181,32 +183,17 @@
 
                         <div cdkDrag [cdkDragDisabled]="mode !== 'routineBuilder' || isViewMode || !isEditMode"
                             [cdkDragData]="exerciseControl" [formGroupName]="exIndex"
-                            class="exercise-item relative transition-all" [ngClass]="{
-        'p-1.5 sm:p-2': isCompactView,
-        'p-3': !isCompactView,
-        'space-y-3': !isCompactView,
-        'border rounded-lg': !isCompactView,
-        'border rounded-md': isCompactView && !(mode === 'routineBuilder' && exerciseControl.get('supersetId')?.value && (exerciseControl.get('supersetOrder')?.value ?? -1) < ((exerciseControl.get('supersetSize')?.value ?? 0) - 1)) && !(mode === 'routineBuilder' && exerciseControl.get('supersetId')?.value && (exerciseControl.get('supersetOrder')?.value ?? 0) > 0),
-        'shadow-sm': true,
-        'border-orange-500 dark:border-orange-400 bg-orange-50 dark:bg-orange-900/30': mode === 'routineBuilder' && exerciseControl.get('supersetId')?.value,
-        'ring-2 ring-orange-400 dark:ring-orange-300 shadow-md': mode === 'routineBuilder' && selectedExerciseIndicesForSuperset().includes(exIndex),
-        'dark:bg-orange-900/40': mode === 'routineBuilder' && exerciseControl.get('supersetId')?.value && selectedExerciseIndicesForSuperset().includes(exIndex),
-        'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800': !(mode === 'routineBuilder' && exerciseControl.get('supersetId')?.value) && !(mode === 'routineBuilder' && selectedExerciseIndicesForSuperset().includes(exIndex)),
-
-        'rounded-b-none border-b-transparent dark:border-b-transparent': mode === 'routineBuilder' && exerciseControl.get('supersetId')?.value && (exerciseControl.get('supersetOrder')?.value ?? -1) < ((exerciseControl.get('supersetSize')?.value ?? 0) - 1),
-        'rounded-t-none': mode === 'routineBuilder' && exerciseControl.get('supersetId')?.value && (exerciseControl.get('supersetOrder')?.value ?? 0) > 0,
-        'border-x border-t': isCompactView && mode === 'routineBuilder' && exerciseControl.get('supersetId')?.value && (exerciseControl.get('supersetOrder')?.value ?? 0) > 0 && (exerciseControl.get('supersetOrder')?.value ?? -1) < ((exerciseControl.get('supersetSize')?.value ?? 0) - 1),
-        'mt-4': !isCompactView && mode === 'routineBuilder' && isEditMode && selectedExerciseIndicesForSuperset().length >= 2 && exIndex === firstSelectedExerciseIndexForSuperset
-     }">
+                            class="exercise-item relative transition-all"
+                            [ngClass]="getExerciseCardClasses(exerciseControl, exIndex)">
                             <!-- COMPACT VIEW / HEADER AREA -->
                             <div class="flex items-center space-x-2">
                                 <!-- DRAG HANDLE -->
                                 <div *ngIf="mode === 'routineBuilder' && isEditMode && !isViewMode" cdkDragHandle
                                     class="cdk-drag-handle cursor-grab p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 flex-shrink-0 top-1 right-1 sm:static"
                                     [ngClass]="{
-                'absolute top-1 right-1 sm:static': isCompactView,
-                'absolute top-2 right-2': !isCompactView && (mode !== 'routineBuilder' || !isEditMode || isViewMode)
-            }" title="Drag to reorder">
+                                        'absolute top-1 right-1 sm:static': isCompactView,
+                                        'absolute top-2 right-2': !isCompactView && (mode !== 'routineBuilder' || !isEditMode || isViewMode)
+                                    }" title="Drag to reorder">
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-5 h-5">
                                         <path d="M 7 17 L 7 3 M 4 6 L 7 3 L 10 6 M 17 7 L 17 21 M 14 18 L 17 21 L 20 18"
                                             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -215,24 +202,25 @@
                                 </div>
                                 <!-- CHECKBOX (if applicable) -->
                                 <input *ngIf="mode === 'routineBuilder' && isEditMode && !isViewMode" type="checkbox"
+                                    title="Select the exercise for the Superset"
                                     [id]="'superset-select-' + exIndex"
                                     (change)="toggleExerciseSelectionForSuperset(exIndex, $event)"
                                     [checked]="selectedExerciseIndicesForSuperset().includes(exIndex)"
                                     class="h-4 w-4 text-orange-600 border-gray-300 dark:border-gray-600 rounded focus:ring-orange-500 flex-shrink-0 disabled:opacity-50"
                                     [disabled]="isViewMode">
                                 <!-- EXERCISE NAME & SUPERSET INFO / SETS SUMMARY FOR COMPACT -->
-                                <div class="flex-grow min-w-0">
+                                <div *ngIf="isCompactView" class="flex-grow min-w-0">
                                     <h3 class="font-semibold text-gray-800 dark:text-gray-100 truncate" [ngClass]="{
-                    'text-sm': isCompactView,
-                    'text-lg': !isCompactView
-                }">
+                                            'text-sm': isCompactView,
+                                            'text-lg': !isCompactView
+                                        }">
                                         <span
                                             *ngIf="mode === 'routineBuilder' && exerciseControl.get('supersetId')?.value"
                                             class="text-xs text-orange-600 dark:text-orange-400 font-normal block"
                                             [ngClass]="{
-                        'sm:inline sm:mr-1': !isCompactView,
-                        'block text-xs leading-tight': isCompactView 
-                    }">
+                                                'sm:inline sm:mr-1': !isCompactView,
+                                                'block text-xs leading-tight': isCompactView 
+                                            }">
                                             Superset ({{ (exerciseControl.get('supersetOrder')?.value ?? 0) + 1 }} of {{
                                             exerciseControl.get('supersetSize')?.value }})
                                         </span>
@@ -261,8 +249,6 @@
                             </div>
                             <!-- EXPANDED CONTENT AREA -->
                             <div *ngIf="!isCompactView" class="space-y-3">
-                                <!-- Added space-y-3 here for expanded view items -->
-                                <!-- Top section with Rounds input and Remove/Ungroup buttons -->
                                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-2 pt-1 sm:pt-0"
                                     [ngClass]="{
                                     'border-b border-orange-300 dark:border-orange-600': mode==='routineBuilder' &&
@@ -273,21 +259,16 @@
                                         && exerciseControl.get('supersetId')?.value) || (mode==='routineBuilder' &&
                                         (exerciseControl.get('supersetOrder')?.value ??
                                         -1)===((exerciseControl.get('supersetSize')?.value ?? 0) -1)) }">
-                                    <!--
-                The Exercise H3 and Superset checkbox were part of this section originally.
-                They are now handled in the unified header/compact view area above.
-                This section now primarily holds actions specific to the expanded view that aren't the main title.
-            -->
                                     <div class="flex-grow">
-                                        <!-- This div is a placeholder if you had other elements to the left of actions in expanded view -->
-                                        <!-- If the H3 was meant to be only here for expanded, you'd put it here:
-                 <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">
-                    <span *ngIf="mode === 'routineBuilder' && exerciseControl.get('supersetId')?.value" class="text-xs text-orange-600 dark:text-orange-400 font-normal block">
-                        Superset ({{ (exerciseControl.get('supersetOrder')?.value ?? 0) + 1 }} of {{ exerciseControl.get('supersetSize')?.value }})
-                    </span>
-                    {{ exerciseControl.get('exerciseName')?.value || 'Select Exercise' }}
-                </h3>
-                -->
+                                        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">
+                                            <span
+                                                *ngIf="mode === 'routineBuilder' && exerciseControl.get('supersetId')?.value"
+                                                class="text-xs text-orange-600 dark:text-orange-400 font-normal block">
+                                                Superset ({{ (exerciseControl.get('supersetOrder')?.value ?? 0) + 1 }}
+                                                of {{ exerciseControl.get('supersetSize')?.value }})
+                                            </span>
+                                            {{ exerciseControl.get('exerciseName')?.value || 'Select Exercise' }}
+                                        </h3>
                                     </div>
 
                                     <div
@@ -342,7 +323,7 @@
                                     <div class="flex justify-between items-center mb-1">
                                         <h4 class="text-m font-semibold text-gray-700 dark:text-gray-300">Sets:</h4>
                                         <button *ngIf="!isViewMode" type="button"
-                                            (click)="addSet(exerciseControl, exIndex)"
+                                            (click)="addSet(exerciseControl, exIndex); $event.stopPropagation()"
                                             class="text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium py-0.5 px-1.5 rounded-md hover:enabled:bg-blue-100 dark:hover:bg-blue-900/50">
                                             + Add Set
                                         </button>
@@ -373,11 +354,11 @@
                                             <!-- Collapsed Set View -->
                                             <div *ngIf="!isSetExpanded(exIndex, setIndex)"
                                                 (click)="toggleSetExpansion(exIndex, setIndex, $event)"
-                                                class="grid grid-cols-12 gap-x-1 items-center py-1.5 px-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800/60 cursor-pointer border dark:border-gray-700"
+                                                class="grid grid-cols-12 gap-x-1 items-center py-1.5 px-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800/60 cursor-pointer border dark:border-gray-700 dark:text-white"
                                                 [ngClass]="{
-                            'bg-gray-50 dark:bg-gray-700/50 text-gray-800 dark:text-gray-200': !['warmup', 'dropset', 'failure', 'amrap', 'myorep', 'restpause'].includes(setControl.get('type')?.value ?? '') && !isViewMode,
-                            'cursor-default': isViewMode
-                        } ">
+                                                        'bg-gray-50 dark:bg-gray-700/50 text-gray-800 dark:text-gray-200': !['warmup', 'dropset', 'failure', 'amrap', 'myorep', 'restpause'].includes(setControl.get('type')?.value ?? '') && !isViewMode,
+                                                        'cursor-default': isViewMode
+                                                    } ">
                                                 <!-- ... content of collapsed set row (as before) ... -->
                                                 <div class="col-span-1 text-xs text-center font-medium">{{ setIndex + 1
                                                     }}</div>
@@ -425,8 +406,8 @@
                                             <div #expandedSetElement *ngIf="isSetExpanded(exIndex, setIndex)"
                                                 class="mt-1 p-3 rounded-md border border-gray-300 dark:border-gray-500 shadow-inner space-y-2"
                                                 [ngClass]="{
-                             'bg-gray-100 dark:bg-gray-800/50': !['warmup', 'dropset', 'failure', 'amrap', 'myorep', 'restpause'].includes(setControl.get('type')?.value ?? '')
-                        }">
+                                                        'bg-gray-100 dark:bg-gray-800/50': !['warmup', 'dropset', 'failure', 'amrap', 'myorep', 'restpause'].includes(setControl.get('type')?.value ?? '')
+                                                    }">
                                                 <!-- ... content of expanded set form (as before) ... -->
                                                 <div class="grid grid-cols-2 sm:grid-cols-3 gap-x-3 gap-y-2 items-end">
                                                     <div class="col-span-full sm:col-span-1">
@@ -504,7 +485,7 @@
                                                     </div>
                                                 </div>
                                                 <div class="mt-2 text-right">
-                                                    <button type="button" (click)="collapseExpandedSet($event)"
+                                                    <button type="button" (click)="collapseExpandedSet(false,$event)" title="Collapse set"
                                                         class="text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium py-1 px-2 rounded-md">Done</button>
                                                 </div>
                                             </div>
@@ -512,7 +493,14 @@
                                     </div>
                                 </div>
                             </div> <!-- End of *ngIf="!isCompactView" -->
-                        </div>
+                            <button *ngIf="!isCompactView" type="button" (click)="collapseExpandedSet(true, $event)" title="Collapse exercise"
+                                class=" p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 flex-shrink-0 ">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+                                    <path d="M 12 5 L 12 10 M 9 7 L 12 10 L 15 7 M 12 19 L 12 14 M 9 17 L 12 14 L 15 17" fill="none"
+                                        stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                            </button>
+                            </div>
                     </div>
                 </ng-container>
             </div>

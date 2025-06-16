@@ -17,7 +17,7 @@
     <!-- Timer Text Content -->
     <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
       <div class="text-6xl md:text-7xl font-bold tabular-nums">
-        {{ displayTime() }}
+        {{ displayTime()}}<span class="text-4xl md:text-5xl font-bold tabular-nums">{{ displayTentsTime()}}</span>
       </div>
       <div class="mt-2 text-xl md:text-2xl font-medium uppercase tracking-wider">
         {{ mainText }}
@@ -31,7 +31,7 @@
     Skip
   </button>
 
-  <div *ngIf="nextUpText" class="mt-5 text-m md:text-base text-gray-300">
+  <div *ngIf="nextUpText" class="mt-5 text-center text-m md:text-base text-gray-300">
         Prepare for: {{ nextUpText }}
       </div>
 

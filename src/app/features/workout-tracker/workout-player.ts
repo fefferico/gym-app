@@ -2824,11 +2824,17 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         // Let's assume getNextUpText is smart enough or we pass the *next* set's info.
         // For simplicity, let's calculate next up based on current indices (which point to the next set).
         const nextSetInfo = this.peekNextSetInfo(); // A new helper method
-        this.restTimerNextUpText.set(
-          nextSetInfo ?
-            `${nextSetInfo.type === 'warmup' ? 'Warm-up ' : ''}Set ${nextSetInfo.type === 'warmup' ? this.getWarmupSetNumberForDisplay(nextSetInfo.exerciseData, nextSetInfo.setIndex) : this.getWorkingSetNumberForDisplay(nextSetInfo.exerciseData, nextSetInfo.setIndex)} of ${nextSetInfo.exerciseData.exerciseName}`
-            : 'Next Exercise'
-        );
+        let resultText = 'Next Exercise';
+        if (nextSetInfo && nextSetInfo.exerciseData && nextSetInfo.exerciseData.sets) {
+          const isWarmup = nextSetInfo.type === 'warmup';
+          const setNumber = isWarmup
+            ? this.getWarmupSetNumberForDisplay(nextSetInfo.exerciseData, nextSetInfo.setIndex)
+            : this.getWorkingSetNumberForDisplay(nextSetInfo.exerciseData, nextSetInfo.setIndex);
+          const totalSets = nextSetInfo.exerciseData.sets.length;
+          const exerciseName = nextSetInfo.exerciseData.exerciseName || 'Exercise';
+          resultText = `${isWarmup ? 'Warm-up ' : ''}Set ${setNumber}${!isWarmup ? '/' + totalSets : ''} of ${exerciseName}`;
+        }
+        this.restTimerNextUpText.set(resultText);
 
       } else {
         this.restTimerMainText.set(this.restTimerMainTextOnPause);
