@@ -163,18 +163,46 @@ export class ExerciseService {
   determineExerciseIcon(baseExercise: Exercise | null, exerciseName: string): string {
     const nameLower = exerciseName.toLowerCase();
 
-    if (baseExercise && baseExercise.equipment) {
-      const equipmentLower = baseExercise.equipment.toLowerCase();
-      if (equipmentLower.includes('barbell')) return 'barbell';
-      if (equipmentLower.includes('dumbbell')) return 'dumbbell';
-      if (equipmentLower.includes('machine') || equipmentLower.includes('cable')) return 'machine';
-      if (equipmentLower.includes('body') || equipmentLower.includes('none')) return 'bodyweight';
-      if (equipmentLower.includes('kettlebell')) return 'kettlebell';
-      if (equipmentLower.includes('resistance band')) return 'resistance-band';
+    if (baseExercise && (baseExercise.equipment || baseExercise.equipmentNeeded)) {
+      // Prefer equipmentNeeded if present, else fallback to equipment
+      const equipmentList = [
+        ...(Array.isArray(baseExercise.equipmentNeeded) ? baseExercise.equipmentNeeded : baseExercise.equipmentNeeded ? [baseExercise.equipmentNeeded] : []),
+        ...(Array.isArray(baseExercise.equipment) ? baseExercise.equipment : baseExercise.equipment ? [baseExercise.equipment] : [])
+      ];
+      const equipmentLower = equipmentList.join(' ').toLowerCase();
+
+      // Find the index of each equipment type
+      const barbellIndex = equipmentLower.indexOf('barbell');
+      const kettlebellIndex = equipmentLower.indexOf('kettlebell');
+      const dumbbellIndex = equipmentLower.indexOf('dumbbell');
+      const machineIndex = equipmentLower.indexOf('machine');
+      const cableIndex = equipmentLower.indexOf('cable');
+      const bodyweightIndex = equipmentLower.indexOf('body');
+      const noneIndex = equipmentLower.indexOf('none');
+      const resistanceBandIndex = equipmentLower.indexOf('resistance band');
+
+      // Collect all found equipment types with their indices
+      const equipmentPriority: { type: string; index: number }[] = [
+        { type: 'barbell', index: barbellIndex },
+        { type: 'kettlebell', index: kettlebellIndex },
+        { type: 'dumbbell', index: dumbbellIndex },
+        { type: 'machine', index: machineIndex },
+        { type: 'machine', index: cableIndex }, // treat cable as machine
+        { type: 'bodyweight', index: bodyweightIndex },
+        { type: 'bodyweight', index: noneIndex },
+        { type: 'resistance-band', index: resistanceBandIndex }
+      ].filter(e => e.index !== -1);
+
+      if (equipmentPriority.length > 0) {
+        // Return the type with the lowest index (first occurrence)
+        equipmentPriority.sort((a, b) => a.index - b.index);
+        return equipmentPriority[0].type;
+      }
     }
 
     if (nameLower.includes('barbell')) return 'barbell';
     if (nameLower.includes('dumbbell') || nameLower.includes('db ')) return 'dumbbell';
+    if (nameLower.includes('kettlebell')) return 'kettlebell';
     if (nameLower.includes('squat') && nameLower.includes('barbell')) return 'barbell';
     if (nameLower.includes('squat') && !nameLower.includes('barbell') && !nameLower.includes('dumbbell')) return 'bodyweight';
     if (nameLower.includes('deadlift')) return 'barbell';
@@ -184,7 +212,6 @@ export class ExerciseService {
     if (nameLower.includes('curl') && nameLower.includes('dumbbell')) return 'dumbbell';
     if (nameLower.includes('machine') || nameLower.includes('cable')) return 'machine';
     if (nameLower.includes('body') || nameLower.includes('none')) return 'bodyweight';
-    if (nameLower.includes('kettlebell')) return 'kettlebell';
     if (nameLower.includes('run') || nameLower.includes('cardio') || nameLower.includes('tapis') || nameLower.includes('jog')) return 'cardio';
     if (nameLower.includes('resistance band')) return 'resistance-band';
 

@@ -176,13 +176,12 @@
                         <div *ngIf="mode === 'routineBuilder' && isEditMode && selectedExerciseIndicesForSuperset().length >= 2 && exIndex === firstSelectedExerciseIndexForSuperset"
                             class="absolute left-1/2 -translate-x-1/2 z-20" style="top: -1.25rem;">
                             <button *ngIf="!canUngroupSelectedExercises()" type="button"
-                                (click)="groupSelectedAsSuperset()"
-                                [disabled]="isViewMode"
+                                (click)="groupSelectedAsSuperset()" [disabled]="isViewMode"
                                 class="bg-orange-600 hover:bg-orange-700 text-white text-xs font-semibold py-1.5 px-3 rounded-full shadow-lg">
                                 Group Superset ({{ selectedExerciseIndicesForSuperset().length }})
                             </button>
-                            <button *ngIf="canUngroupSelectedExercises()" type="button" (click)="ungroupSuperset(exIndex)"
-                                [disabled]="isViewMode"
+                            <button *ngIf="canUngroupSelectedExercises()" type="button"
+                                (click)="ungroupSuperset(exIndex)" [disabled]="isViewMode"
                                 class="bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold py-1.5 px-3 rounded-full shadow-lg">
                                 Ungroup Superset ({{ selectedExerciseIndicesForSuperset().length }})
                             </button>
@@ -511,7 +510,7 @@
                             </div> <!-- End of *ngIf="!isCompactView" -->
                             <button *ngIf="!isCompactView && expandedSetPath()?.exerciseIndex === exIndex" type="button"
                                 (click)="collapseExpandedSet(true, $event)" title="Collapse exercise"
-                                class=" p-1 text-gray-300 hover:text-gray-500 dark:text-gray-400 dark:hover:text-gray-200 flex-shrink-0 ">
+                                class=" p-1 text-blue-600 hover:text-gray-500 dark:text-gray-400 dark:hover:text-gray-200 flex-shrink-0 ">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
                                     <path d="M 12 5 L 12 10 M 9 7 L 12 10 L 15 7 M 12 19 L 12 14 M 9 17 L 12 14 L 15 17"
                                         fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
@@ -619,6 +618,13 @@
                             class="text-gray-500 dark:text-gray-400 text-center p-4">No exercises match your search or
                             library is empty.</li>
                     </ul>
+                </div>
+
+                <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600 text-center">
+                    <button type="button" (click)="handleTrulyCustomExerciseEntry()"
+                        class="text-sm text-primary dark:text-primary-light hover:underline">
+                        Or, create a new custom exercise entry...
+                    </button>
                 </div>
             </div>
             <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">

@@ -20,6 +20,7 @@ import { SpinnerService } from '../../core/services/spinner.service';
 import { AlertService } from '../../core/services/alert.service';
 import { ToastService } from '../../core/services/toast.service';
 import { TrackingService } from '../../core/services/tracking.service'; // For manual log
+import { AlertInput } from '../../core/models/alert.model';
 
 type BuilderMode = 'routineBuilder' | 'manualLogEntry';
 
@@ -65,6 +66,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   availableSetTypes: { value: string, label: string }[] = [
     { value: 'standard', label: 'Standard' },
     { value: 'warmup', label: 'Warm-up' },
+    { value: 'superset', label: 'Superset' },
     { value: 'amrap', label: 'AMRAP' },
     { value: 'dropset', label: 'Dropset' },
     { value: 'failure', label: 'To Failure' },
@@ -344,7 +346,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       supersetId: [isFromRoutineTemplate ? exerciseData?.supersetId : null],
       supersetOrder: [isFromRoutineTemplate ? exerciseData?.supersetOrder : null],
       supersetSize: [isFromRoutineTemplate ? exerciseData?.supersetSize : null],
-      rounds: [isFromRoutineTemplate ? (exerciseData?.rounds ?? 1) : 1, [Validators.min(1)]],
+      rounds: [isFromRoutineTemplate ? (exerciseData?.rounds ?? 0) : 0, [Validators.min(0)]],
     });
     if (isFromRoutineTemplate) {
       fg.get('supersetId')?.valueChanges.subscribe(() => this.updateRoundsControlability(fg));
@@ -366,7 +368,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       exerciseName: [loggedEx.exerciseName, Validators.required],
       notes: [loggedEx.notes || ''],
       sets: this.fb.array(loggedEx.sets.map(set => this.createSetFormGroup(set, true))),
-      supersetId: [null], supersetOrder: [null], supersetSize: [null], rounds: [1],
+      supersetId: [null], supersetOrder: [null], supersetSize: [null], rounds: [0],
     });
   }
   private createSetFormGroup(setData?: ExerciseSetParams | LoggedSet, forLogging: boolean = false): FormGroup {
@@ -446,8 +448,19 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   selectExercise(exercise: Exercise): void { // For Routine Builder
     const newExerciseFormGroup = this.createExerciseFormGroup({
       id: this.workoutService.generateWorkoutExerciseId(), exerciseId: exercise.id, exerciseName: exercise.name,
-      sets: [{ id: this.workoutService.generateExerciseSetId(), type: 'standard', reps: 8, weight: 0, restAfterSet: 60, duration: undefined, tempo: '', notes: '' }],
-      supersetId: null, supersetOrder: null, supersetSize: null, rounds: 1
+      sets: [{
+        id: this.workoutService.generateExerciseSetId(),
+        type: 'standard',
+        reps: 8,
+        weight: 0,
+        restAfterSet: 60,
+        duration: undefined,
+        tempo: '',
+        notes: ''
+      }],
+      supersetId: null, supersetOrder: null, supersetSize: null,
+      rounds: 0,
+      type: 'standard'
     }, true, false);
     this.exercisesFormArray.push(newExerciseFormGroup); this.closeExerciseSelectionModal();
     this.toggleSetExpansion(this.exercisesFormArray.length - 1, 0);
@@ -467,10 +480,11 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         tempo: '',
         notes: ''
       }],
+      type: 'standard',
       supersetId: null,
       supersetOrder: null,
       supersetSize: null,
-      rounds: 1
+      rounds: 0
     };
     this.exercisesFormArray.push(this.createExerciseFormGroup(workoutExercise, false, true));
     this.closeExerciseSelectionModal();
@@ -759,8 +773,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     }
     const newSupersetId = uuidv4();
     const supersetSize = selectedIndices.length;
-    const firstExerciseControl = this.exercisesFormArray.at(selectedIndices[0]) as FormGroup;
-    const supersetRounds = firstExerciseControl.get('rounds')?.value ?? 1;
+    const supersetRounds = 1;
 
     selectedIndices.forEach((exerciseIndexInFormArray, orderInSuperset) => {
       const exerciseControl = this.exercisesFormArray.at(exerciseIndexInFormArray) as FormGroup;
@@ -891,7 +904,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
             rpe: undefined, // RPE not part of this form
             timestamp: setInput.timestamp || new Date().toISOString(),
           })),
-          rounds: formValue.get('rounds')?.value || 1
+          rounds: exInput.rounds || 0,
+          type: exInput.type || 'standard'
         }));
 
         const logPayloadBase = {
@@ -1082,6 +1096,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     const isCompact = this.isCompactView;
     const isEdit = this.isEditMode;
     const firstSelected = this.firstSelectedExerciseIndexForSuperset;
+    const sets = exerciseControl.get('sets')?.value || [];
+    const isWarmup = sets.length > 0 && sets.every((set: any) => set.type === 'warmup');
 
     const returnObj = {
       'p-1.5 sm:p-2': true,
@@ -1090,10 +1106,11 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       // 'border rounded-lg': true,
       'border rounded': true,
       'shadow-sm': true,
-      'border-orange-500 dark:border-orange-400 bg-orange-50 dark:bg-orange-900/30': isSuperset,
+      'border-orange-500 dark:border-orange-400 bg-orange-50 dark:bg-orange-800/30': isSuperset,
       'ring-2 ring-orange-400 dark:ring-orange-300 shadow-md': isSelected,
-      'dark:bg-orange-900/40': isSuperset && isSelected,
-      'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800': !isSuperset && !isSelected,
+      'dark:bg-orange-800/40': isSuperset && isSelected,
+      'bg-blue-800/40': isWarmup,
+      'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800': !isSuperset && !isSelected && !isWarmup,
       'rounded-b-none border-b-transparent dark:border-b-transparent':
         this.mode === 'routineBuilder' &&
         isSuperset && (isFirstInSuperset || isMiddleInSuperSet),
@@ -1134,6 +1151,66 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     const currentSupersetId = this.exercisesFormArray.at(exIndex).get('id')?.value;
     const prevSupersetId = this.exercisesFormArray.at(exIndex - 1).get('id')?.value;
     return exIndex > 0 && currentSupersetId && currentSupersetId !== prevSupersetId;
+  }
+
+  // Called if user wants to define a completely new exercise not in the library
+  async handleTrulyCustomExerciseEntry(showError: boolean = false): Promise<void> {
+    const inputs: AlertInput[] = [
+      { name: 'exerciseName', type: 'text', placeholder: 'Custom Exercise Name', value: '', attributes: { required: true }, label: 'Custom Exercise Name',  },
+      { name: 'numSets', type: 'number', placeholder: 'Number of Sets (e.g., 3)', value: '3', attributes: { min: '1', required: true }, label: 'Number of Sets' },
+      { name: 'equipmentNeeded', type: 'text', placeholder: 'Equipment', value: '', attributes: { required: false }, label: 'Equipment' },
+      { name: 'description', type: 'textarea', placeholder: 'Description', value: '', attributes: { required: false }, label: 'Description' },
+    ];
+
+    if (showError){
+      this.toastService.error("Invalid input for custom exercise.", 0, "Error"); 
+    }
+    const result = await this.alertService.showPromptDialog('Add New Custom Exercise', 'Define exercise name and sets:', inputs, 'Add Exercise');
+
+    if (result && result['exerciseName']) {
+      const exerciseName = String(result['exerciseName']).trim();
+      const description = String(result['description']).trim();
+      const numSets = result['numSets'] ? parseInt(String(result['numSets']), 10) : 3;
+      if (!exerciseName || numSets <= 0) {
+        this.toastService.error("Invalid input for custom exercise.", 0, "Error"); return;
+      }
+      const newExerciseSets: ExerciseSetParams[] = Array.from({ length: numSets }, () => ({
+        id: `custom-adhoc-set-${uuidv4()}`, reps: 8, weight: null, duration: undefined, restAfterSet: 60, type: 'standard', notes: '',
+      }));
+      const slug = exerciseName.trim().toLowerCase().replace(/\s+/g, '-');
+      const newExercise: Exercise = {
+        id: `custom-adhoc-ex-${slug}-${uuidv4()}`,
+        name: exerciseName,
+        description: description,
+        category: 'custom',
+        muscleGroups: [],
+        primaryMuscleGroup: '',
+        imageUrls: []
+      };
+
+      this.closeExerciseSelectionModal();
+      this.exerciseService.addExercise(newExercise);
+
+      const workoutExercise: WorkoutExercise = {
+        id: this.workoutService.generateWorkoutExerciseId(),
+        exerciseId: newExercise.id,
+        exerciseName: newExercise.name,
+        sets: newExerciseSets,
+        type: 'standard',
+        supersetId: null,
+        supersetOrder: null,
+        supersetSize: null,
+        rounds: 0
+      };
+      this.exercisesFormArray.push(this.createExerciseFormGroup(workoutExercise, true, false));
+      this.toggleSetExpansion(this.exercisesFormArray.length - 1, 0);
+    } else {
+      if (!result){
+        return
+      }
+      this.handleTrulyCustomExerciseEntry(true);
+      return;
+    }
   }
 
 }

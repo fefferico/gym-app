@@ -93,6 +93,9 @@
           </div>
 
           <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-1 capitalize">{{ exercise.category | titlecase }}</p>
+          <p *ngIf='exercise.equipmentNeeded' class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-1 capitalize">
+            Equipment: {{ (exercise.equipmentNeeded?.join(', ') || 'None') | titlecase }}
+          </p>
           <p class="text-xs sm:text-sm text-gray-700 dark:text-gray-300 mb-2 sm:mb-3">Primary: {{ exercise.primaryMuscleGroup | titlecase }}</p>
           <p *ngIf="exercise.description" class="text-gray-600 dark:text-gray-400 text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2 sm:line-clamp-3" [title]="exercise.description">{{ exercise.description }}</p>
         </div>

@@ -24,7 +24,7 @@ export interface LoggedSet {
   notes?: string;         // User notes specific to this performed set (e.g., "Felt easy", "Form breakdown on last rep")
   // formRating?: 1 | 2 | 3 | 4 | 5; // Optional: User's perceived form rating for the set
   timestamp: string;       // ISO string of when this set was completed/logged.
-  type?: 'standard' | 'warmup' | 'amrap' | 'custom'; 
+  type: 'standard' | 'warmup' | 'amrap' | 'dropset' | 'failure' | 'myorep' | 'restpause' | 'custom' | 'superset' | string; // More flexible
   rpe?: number; // Optional: User's perceived exertion for this set (RPE 1-10)
   workoutLogId?: string; // ID of the WorkoutLog this set belongs to
 }
@@ -48,6 +48,9 @@ export interface LoggedWorkoutExercise {
   rounds: number;
   notes?: string;         // User notes for this exercise during this specific workout log
   workoutLogId?: string; // ID of the WorkoutLog this exercise belongs to
+  supersetId?: string;
+  supersetOrder?: number;
+  type: 'standard' | 'warmup' | 'amrap' | 'dropset' | 'failure' | 'myorep' | 'restpause' | 'custom' | 'superset' | string; // More flexible
 }
 
 // Describes an entire completed workout session.

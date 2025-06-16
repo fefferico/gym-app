@@ -3,7 +3,7 @@ export const EXERCISES_DATA = [
     "id": "push-up",
     "name": "Push-up",
     "description": "A classic bodyweight exercise that works the chest, shoulders, and triceps. Keep your body straight and core engaged.",
-    "category": "bodyweight",
+    "category": "bodyweight/calisthenics",
     "primaryMuscleGroup": "Chest",
     "muscleGroups": ["Chest", "Triceps", "Shoulders (Anterior)", "Core"],
     "equipmentNeeded": [],
@@ -15,7 +15,7 @@ export const EXERCISES_DATA = [
     "id": "pull-up",
     "name": "Pull-up",
     "description": "An advanced bodyweight exercise that targets the back and biceps using an overhand grip.",
-    "category": "bodyweight",
+    "category": "bodyweight/calisthenics",
     "primaryMuscleGroup": "Lats",
     "muscleGroups": ["Lats", "Biceps", "Traps (Middle & Lower)", "Rhomboids", "Forearms", "Core"],
     "equipmentNeeded": ["Pull-up Bar"],
@@ -25,7 +25,7 @@ export const EXERCISES_DATA = [
     "id": "chin-up",
     "name": "Chin-up",
     "description": "A bodyweight exercise targeting the back and biceps using an underhand grip, often emphasizing biceps more than pull-ups.",
-    "category": "bodyweight",
+    "category": "bodyweight/calisthenics",
     "primaryMuscleGroup": "Biceps",
     "muscleGroups": ["Lats", "Biceps", "Traps (Middle & Lower)", "Rhomboids", "Forearms", "Core"],
     "equipmentNeeded": ["Pull-up Bar"],
@@ -35,7 +35,7 @@ export const EXERCISES_DATA = [
     "id": "bodyweight-squat",
     "name": "Bodyweight Squat",
     "description": "A fundamental lower body exercise engaging quads, glutes, and hamstrings without external weight.",
-    "category": "bodyweight",
+    "category": "bodyweight/calisthenics",
     "primaryMuscleGroup": "Quadriceps",
     "muscleGroups": ["Quadriceps", "Glutes", "Hamstrings", "Calves", "Core"],
     "equipmentNeeded": [],
@@ -46,7 +46,7 @@ export const EXERCISES_DATA = [
     "id": "lunge",
     "name": "Lunge",
     "description": "A unilateral leg exercise that improves balance, stability, and strengthens quads, glutes, and hamstrings.",
-    "category": "bodyweight",
+    "category": "bodyweight/calisthenics",
     "primaryMuscleGroup": "Quadriceps",
     "muscleGroups": ["Quadriceps", "Glutes", "Hamstrings", "Calves"],
     "equipmentNeeded": [],
@@ -56,7 +56,7 @@ export const EXERCISES_DATA = [
     "id": "plank",
     "name": "Plank",
     "description": "An isometric core strength exercise that involves maintaining a position similar to a push-up for the maximum possible time.",
-    "category": "bodyweight",
+    "category": "bodyweight/calisthenics",
     "primaryMuscleGroup": "Core",
     "muscleGroups": ["Core (Abs, Obliques, Lower Back)", "Shoulders", "Glutes"],
     "equipmentNeeded": [],
@@ -66,7 +66,7 @@ export const EXERCISES_DATA = [
     "id": "burpee",
     "name": "Burpee",
     "description": "A full-body, high-intensity exercise combining a squat, push-up, and jump.",
-    "category": "bodyweight",
+    "category": "bodyweight/calisthenics",
     "primaryMuscleGroup": "Full Body",
     "muscleGroups": ["Chest", "Triceps", "Shoulders", "Core", "Quadriceps", "Glutes", "Hamstrings", "Calves"],
     "equipmentNeeded": [],
@@ -76,7 +76,7 @@ export const EXERCISES_DATA = [
     "id": "dip-bar",
     "name": "Dip (Bar)",
     "description": "A compound bodyweight exercise primarily targeting the triceps and chest, performed on parallel bars.",
-    "category": "bodyweight",
+    "category": "bodyweight/calisthenics",
     "primaryMuscleGroup": "Triceps",
     "muscleGroups": ["Triceps", "Chest (Lower)", "Shoulders (Anterior)"],
     "equipmentNeeded": ["Dip Station / Parallel Bars"],
@@ -263,28 +263,8 @@ export const EXERCISES_DATA = [
     "category": "kettlebells",
     "primaryMuscleGroup": "Glutes",
     "muscleGroups": ["Glutes", "Hamstrings", "Lower Back", "Core", "Shoulders (stabilizers)"],
-    "equipmentNeeded": ["Kettlebell"],
+    "equipmentNeeded": ["Kettlebells"],
     "imageUrls": ["assets/images/exercises/kb-swing_1.jpg", "assets/images/exercises/kb-swing_2.jpg"]
-  },
-  {
-    "id": "kettlebell-goblet-squat",
-    "name": "Kettlebell Goblet Squat",
-    "description": "A squat holding a kettlebell by the horns at chest level, excellent for form and core engagement.",
-    "category": "kettlebells",
-    "primaryMuscleGroup": "Quadriceps",
-    "muscleGroups": ["Quadriceps", "Glutes", "Adductors", "Core"],
-    "equipmentNeeded": ["Kettlebell"],
-    "imageUrls": ["assets/images/exercises/kb-goblet-squat_1.jpg", "assets/images/exercises/kb-goblet-squat_2.jpg"]
-  },
-  {
-    "id": "kettlebell-clean-and-press",
-    "name": "Kettlebell Clean and Press",
-    "description": "A full-body compound movement involving cleaning a kettlebell to the rack position and then pressing it overhead.",
-    "category": "kettlebells",
-    "primaryMuscleGroup": "Full Body",
-    "muscleGroups": ["Shoulders", "Triceps", "Glutes", "Hamstrings", "Core", "Back"],
-    "equipmentNeeded": ["Kettlebell"],
-    "imageUrls": ["assets/images/exercises/kb-clean-press_1.jpg", "assets/images/exercises/kb-clean-press_2.jpg"]
   },
   {
     "id": "turkish-get-up",
@@ -333,7 +313,7 @@ export const EXERCISES_DATA = [
     "category": "kettlebells",
     "primaryMuscleGroup": "Shoulders (Anterior & Medial)",
     "muscleGroups": ["Shoulders (Anterior, Medial)", "Triceps", "Traps (Upper)", "Core (stabilizer)"],
-    "equipmentNeeded": ["Kettlebell"],
+    "equipmentNeeded": ["Kettlebells"],
     "imageUrls": ["assets/images/exercises/kb-strict-press_1.jpg", "assets/images/exercises/kb-strict-press_2.jpg"]
   },
   {
@@ -347,23 +327,13 @@ export const EXERCISES_DATA = [
     "imageUrls": ["assets/images/exercises/kb-rack-lunge_1.jpg", "assets/images/exercises/kb-rack-lunge_2.jpg"]
   },
   {
-    "id": "kettlebell-windmill",
-    "name": "Kettlebell Windmill",
-    "description": "A complex exercise that improves shoulder stability, hip mobility, and core strength, involving hinging sideways at the hips while keeping a kettlebell locked out overhead.",
-    "category": "kettlebells",
-    "primaryMuscleGroup": "Core (Obliques)",
-    "muscleGroups": ["Core (Obliques, Transverse Abdominis)", "Shoulders (stabilizers)", "Hamstrings", "Glutes", "Lower Back"],
-    "equipmentNeeded": ["Kettlebell"],
-    "imageUrls": ["assets/images/exercises/kb-windmill_1.jpg", "assets/images/exercises/kb-windmill_2.jpg"]
-  },
-  {
     "id": "kettlebell-russian-twist",
     "name": "Kettlebell Russian Twist",
     "description": "A core exercise targeting the obliques and rectus abdominis, performed by sitting with knees bent and feet off the ground (optional), twisting the torso from side to side while holding a kettlebell.",
     "category": "kettlebells",
     "primaryMuscleGroup": "Core (Obliques)",
     "muscleGroups": ["Core (Obliques, Rectus Abdominis)", "Hip Flexors", "Lower Back (stabilizer)"],
-    "equipmentNeeded": ["Kettlebell"],
+    "equipmentNeeded": ["Kettlebells"],
     "imageUrls": ["assets/images/exercises/kb-russian-twist_1.jpg", "assets/images/exercises/kb-russian-twist_2.jpg"]
   },
   {
@@ -373,18 +343,8 @@ export const EXERCISES_DATA = [
     "category": "kettlebells",
     "primaryMuscleGroup": "Shoulders",
     "muscleGroups": ["Shoulders (Deltoids, Traps)", "Glutes", "Hamstrings", "Back (Upper)", "Biceps", "Core"],
-    "equipmentNeeded": ["Kettlebell"],
+    "equipmentNeeded": ["Kettlebells"],
     "imageUrls": ["assets/images/exercises/kb-high-pull_1.jpg", "assets/images/exercises/kb-high-pull_2.jpg"]
-  },
-  {
-    "id": "kettlebell-figure-8",
-    "name": "Kettlebell Figure 8",
-    "description": "A dynamic exercise that improves coordination, core stability, and grip strength by passing the kettlebell between and around the legs in a figure-eight motion.",
-    "category": "kettlebells",
-    "primaryMuscleGroup": "Core",
-    "muscleGroups": ["Core (Obliques, Transverse Abdominis)", "Legs (stabilizers)", "Forearms (Grip)", "Hips", "Lower Back"],
-    "equipmentNeeded": ["Kettlebell"],
-    "imageUrls": ["assets/images/exercises/kb-figure-8_1.jpg", "assets/images/exercises/kb-figure-8_2.jpg"]
   },
   {
     "id": "kettlebell-suitcase-carry",
@@ -393,7 +353,7 @@ export const EXERCISES_DATA = [
     "category": "kettlebells",
     "primaryMuscleGroup": "Core (Obliques)",
     "muscleGroups": ["Core (Obliques, Quadratus Lumborum)", "Forearms (Grip)", "Traps", "Shoulders (stabilizers)", "Hips (stabilizers)"],
-    "equipmentNeeded": ["Kettlebell"],
+    "equipmentNeeded": ["Kettlebells"],
     "imageUrls": ["assets/images/exercises/kb-suitcase-carry_1.jpg", "assets/images/exercises/kb-suitcase-carry_2.jpg"]
   },
   {
@@ -405,16 +365,6 @@ export const EXERCISES_DATA = [
     "muscleGroups": ["Quadriceps", "Glutes", "Shoulders", "Triceps", "Core"],
     "equipmentNeeded": ["Kettlebell(s)"],
     "imageUrls": ["assets/images/exercises/kb-thruster_1.jpg", "assets/images/exercises/kb-thruster_2.jpg"]
-  },
-  {
-    "id": "turkish-get-up",
-    "name": "Turkish Get-Up (TGU)",
-    "description": "A complex, full-body exercise involving transitioning from lying on the floor to standing, all while holding a kettlebell (or dumbbell) overhead. Enhances stability, mobility, and strength.",
-    "category": "kettlebells",
-    "primaryMuscleGroup": "Full Body",
-    "muscleGroups": ["Core", "Shoulders (stabilizers)", "Glutes", "Legs", "Triceps"],
-    "equipmentNeeded": ["Kettlebell", "Dumbbell (alternative)"],
-    "imageUrls": ["assets/images/exercises/turkish-get-up_1.jpg", "assets/images/exercises/turkish-get-up_2.jpg", "assets/images/exercises/turkish-get-up_3.jpg"]
   },
   {
     "id": "lat-pulldown-machine",
@@ -640,7 +590,7 @@ export const EXERCISES_DATA = [
     "id": "box-jump",
     "name": "Box Jump",
     "description": "A plyometric exercise that involves jumping onto an elevated platform, developing explosive power in the lower body.",
-    "category": "bodyweight",
+    "category": "bodyweight/calisthenics",
     "primaryMuscleGroup": "Quadriceps",
     "muscleGroups": ["Quadriceps", "Glutes", "Hamstrings", "Calves"],
     "equipmentNeeded": ["Plyo Box or Sturdy Platform"],
@@ -661,7 +611,7 @@ export const EXERCISES_DATA = [
     "id": "glute-bridge",
     "name": "Glute Bridge",
     "description": "A bodyweight exercise targeting the glutes and hamstrings by lifting the hips off the floor.",
-    "category": "bodyweight",
+    "category": "bodyweight/calisthenics",
     "primaryMuscleGroup": "Glutes",
     "muscleGroups": ["Glutes", "Hamstrings", "Core (Lower Back)"],
     "equipmentNeeded": [],
@@ -671,7 +621,7 @@ export const EXERCISES_DATA = [
     "id": "superman-exercise",
     "name": "Superman",
     "description": "A bodyweight exercise that strengthens the lower back, glutes, and hamstrings by simultaneously lifting arms and legs off the floor while lying prone.",
-    "category": "bodyweight",
+    "category": "bodyweight/calisthenics",
     "primaryMuscleGroup": "Lower Back",
     "muscleGroups": ["Lower Back (Erector Spinae)", "Glutes", "Hamstrings"],
     "equipmentNeeded": [],
@@ -681,7 +631,7 @@ export const EXERCISES_DATA = [
     "id": "mountain-climbers",
     "name": "Mountain Climbers",
     "description": "A dynamic full-body exercise that builds cardio endurance, core strength, and agility, mimicking the motion of climbing a mountain.",
-    "category": "bodyweight",
+    "category": "bodyweight/calisthenics",
     "primaryMuscleGroup": "Core",
     "muscleGroups": ["Core", "Shoulders", "Quadriceps", "Hip Flexors"],
     "equipmentNeeded": [],
@@ -691,7 +641,7 @@ export const EXERCISES_DATA = [
     "id": "bench-dips",
     "name": "Bench Dips (Triceps)",
     "description": "A bodyweight exercise targeting the triceps, performed using a bench or chair.",
-    "category": "bodyweight",
+    "category": "bodyweight/calisthenics",
     "primaryMuscleGroup": "Triceps",
     "muscleGroups": ["Triceps", "Shoulders (Anterior)", "Chest (Lower)"],
     "equipmentNeeded": ["Bench or sturdy chair"],
@@ -701,7 +651,7 @@ export const EXERCISES_DATA = [
     "id": "bodyweight-calf-raise",
     "name": "Bodyweight Calf Raise",
     "description": "A simple yet effective bodyweight exercise to strengthen the calf muscles.",
-    "category": "bodyweight",
+    "category": "bodyweight/calisthenics",
     "primaryMuscleGroup": "Calves",
     "muscleGroups": ["Calves (Gastrocnemius, Soleus)"],
     "equipmentNeeded": [],
@@ -798,23 +748,13 @@ export const EXERCISES_DATA = [
     "imageUrls": ["assets/images/exercises/db-pullover_1.jpg", "assets/images/exercises/db-pullover_2.jpg"]
   },
   {
-    "id": "kettlebell-snatch",
-    "name": "Kettlebell Snatch",
-    "description": "An explosive full-body exercise where the kettlebell is swung from between the legs to an overhead locked-out position in one fluid motion.",
-    "category": "kettlebells",
-    "primaryMuscleGroup": "Full Body",
-    "muscleGroups": ["Glutes", "Hamstrings", "Lower Back", "Shoulders", "Core", "Traps"],
-    "equipmentNeeded": ["Kettlebell"],
-    "imageUrls": ["assets/images/exercises/kb-snatch_1.jpg", "assets/images/exercises/kb-snatch_2.jpg"]
-  },
-  {
     "id": "kettlebell-halo",
     "name": "Kettlebell Halo",
     "description": "A shoulder mobility and stability exercise involving circling a kettlebell around the head.",
     "category": "kettlebells",
     "primaryMuscleGroup": "Shoulders (stabilizers)",
     "muscleGroups": ["Shoulders (Rotator Cuff, Deltoids)", "Core", "Upper Back"],
-    "equipmentNeeded": ["Kettlebell"],
+    "equipmentNeeded": ["Kettlebells"],
     "imageUrls": ["assets/images/exercises/kb-halo_1.jpg", "assets/images/exercises/kb-halo_2.jpg"]
   },
   {
@@ -1108,5 +1048,708 @@ export const EXERCISES_DATA = [
     "muscleGroups": ["Shoulders", "Arms (Biceps, Triceps, Forearms)", "Core", "Back", "Cardiovascular System"],
     "equipmentNeeded": ["Battle Ropes", "Anchor Point"],
     "imageUrls": ["assets/images/exercises/battle-ropes_1.jpg", "assets/images/exercises/battle-ropes_2.jpg"]
+  },
+  {
+    "id": "archer-push-up",
+    "name": "Archer Push-up",
+    "description": "An advanced push-up variation that enhances unilateral chest and shoulder strength by shifting weight side to side.",
+    "category": "bodyweight/calisthenics",
+    "primaryMuscleGroup": "Chest",
+    "muscleGroups": ["Chest", "Triceps", "Shoulders (Anterior)"],
+    "equipmentNeeded": [],
+    imageUrls: ["assets/images/exercises/archer-push-up_1.jpg"],
+    notes: "Keep your body straight and reach one arm out to the side, then switch sides."
+  },
+  {
+    "id": "pistol-squat",
+    "name": "Pistol Squat",
+    "description": "A challenging single-leg squat that improves balance, mobility, and leg strength.",
+    "category": "bodyweight/calisthenics",
+    "primaryMuscleGroup": "Quadriceps",
+    "muscleGroups": ["Quadriceps", "Glutes", "Hamstrings", "Core"],
+    "equipmentNeeded": [],
+    imageUrls: ["assets/images/exercises/pistol-squat_1.jpg"]
+  },
+  // Dumbbell Exercises
+  {
+    "id": "dumbbell-arnold-press",
+    "name": "Dumbbell Arnold Press",
+    "description": "A shoulder exercise that combines rotation and pressing for full deltoid activation.",
+    "category": "dumbbells",
+    "primaryMuscleGroup": "Shoulders (Anterior & Lateral)",
+    "muscleGroups": ["Shoulders (All Deltoid Heads)", "Triceps"],
+    "equipmentNeeded": ["Dumbbells"],
+    imageUrls: ["assets/images/exercises/db-arnold-press_1.jpg"]
+  },
+  {
+    "id": "dumbbell-concentration-curl",
+    "name": "Dumbbell Concentration Curl",
+    "description": "An isolation exercise focusing on the biceps peak by curling with elbow supported on the inner thigh.",
+    "category": "dumbbells",
+    "primaryMuscleGroup": "Biceps",
+    "muscleGroups": ["Biceps"],
+    "equipmentNeeded": ["Dumbbell"],
+    imageUrls: ["assets/images/exercises/db-concentration-curl_1.jpg"]
+  },
+  {
+    "id": "dumbbell-overhead-lunge",
+    "name": "Dumbbell Overhead Lunge",
+    "description": "A lower body exercise combining lunges with overhead dumbbell hold to challenge stability and core engagement.",
+    "category": "dumbbells",
+    "primaryMuscleGroup": "Quadriceps",
+    "muscleGroups": ["Quadriceps", "Glutes", "Core"],
+    "equipmentNeeded": ["Dumbbells"],
+    imageUrls: ["assets/images/exercises/db-overhead-lunge_1.jpg"]
+  },
+  // Machine Exercises
+  {
+    "id": "seated-pec-fly",
+    "name": "Seated Pec Deck Fly",
+    "description": "An isolation exercise for the chest, focusing on pectoral contraction at various angles.",
+    "category": "machines",
+    "primaryMuscleGroup": "Chest",
+    "muscleGroups": ["Chest"],
+    "equipmentNeeded": ["Pec Deck Machine"],
+    imageUrls: ["assets/images/exercises/seated-pec-fly_1.jpg"]
+  },
+  {
+    "id": "machine-lateral-raise",
+    "name": "Machine Lateral Raise",
+    "description": "Targets the medial deltoids with controlled movement on a machine.",
+    "category": "machines",
+    "primaryMuscleGroup": "Shoulders (Medial)",
+    "muscleGroups": ["Shoulders (Medial)"],
+    "equipmentNeeded": ["Shoulder Machine"],
+    imageUrls: ["assets/images/exercises/machine-lateral-raise_1.jpg"]
+  },
+  {
+    "id": "cable-seated-row",
+    "name": "Cable Seated Row",
+    "description": "A back exercise focusing on middle and upper back muscles with a seated position.",
+    "category": "machines",
+    "primaryMuscleGroup": "Middle Back",
+    "muscleGroups": ["Rhomboids", "Lats", "Traps", "Biceps"],
+    "equipmentNeeded": ["Cable Machine"],
+    imageUrls: ["assets/images/exercises/cable-seated-row_1.jpg"]
+  },
+
+  // Cardio & Plyometric Exercises
+  {
+    "id": "burpee-box-jump",
+    "name": "Burpee with Box Jump",
+    "description": "Combines a burpee with a box jump for increased explosiveness and cardio intensity.",
+    "category": "cardio",
+    "primaryMuscleGroup": "Full Body",
+    "muscleGroups": ["Chest", "Legs", "Core", "Arms"],
+    "equipmentNeeded": ["Plyo Box"],
+    imageUrls: ["assets/images/exercises/burpee-box-jump_1.jpg"]
+  },
+  {
+    "id": "skater-jumps",
+    "name": "Skater Jumps",
+    "description": "A lateral plyometric exercise that targets legs and improves agility.",
+    "category": "cardio",
+    "primaryMuscleGroup": "Legs",
+    "muscleGroups": ["Quadriceps", "Glutes", "Adductors"],
+    "equipmentNeeded": [],
+    imageUrls: ["assets/images/exercises/skater-jumps_1.jpg"]
+  },
+  {
+    "id": "jump-squat",
+    "name": "Jump Squat",
+    "description": "A plyometric squat that develops explosive power in the lower body.",
+    "category": "bodyweight/calisthenics",
+    "primaryMuscleGroup": "Quadriceps",
+    "muscleGroups": ["Quadriceps", "Glutes", "Hamstrings", "Calves"],
+    "equipmentNeeded": [],
+    imageUrls: ["assets/images/exercises/jump-squat_1.jpg"]
+  },
+
+  // Flexibility & Stretching
+  {
+    "id": "hip-flexor-stretch",
+    "name": "Hip Flexor Stretch",
+    "description": "A static stretch to improve flexibility in the hip flexors.",
+    "category": "stretching",
+    "primaryMuscleGroup": "Hip Flexors",
+    "muscleGroups": ["Hip Flexors"],
+    "equipmentNeeded": [],
+    imageUrls: ["assets/images/stretches/hip-flexor_1.jpg"]
+  },
+  {
+    "id": "calf-stretch",
+    "name": "Calf Stretch",
+    "description": "A static stretch to elongate the calf muscles.",
+    "category": "stretching",
+    "primaryMuscleGroup": "Calves",
+    "muscleGroups": ["Calves"],
+    "equipmentNeeded": [],
+    imageUrls: ["assets/images/stretches/calf-stretch_1.jpg"]
+  },
+
+  // Additional Functional & Core Exercises
+  {
+    "id": "bird-dog",
+    "name": "Bird Dog",
+    "description": "A core and lower back stability exercise performed on hands and knees, extending opposite arm and leg.",
+    "category": "bodyweight/calisthenics",
+    "primaryMuscleGroup": "Lower Back",
+    "muscleGroups": ["Lower Back", "Glutes", "Core"],
+    "equipmentNeeded": [],
+    imageUrls: ["assets/images/exercises/bird-dog_1.jpg"]
+  },
+  {
+    "id": "plank-to-push-up",
+    "name": "Plank to Push-up",
+    "description": "A dynamic core and upper body exercise that transitions between plank and push-up positions.",
+    "category": "bodyweight/calisthenics",
+    "primaryMuscleGroup": "Core",
+    "muscleGroups": ["Core", "Shoulders", "Arms"],
+    "equipmentNeeded": [],
+    imageUrls: ["assets/images/exercises/plank-to-push-up_1.jpg"]
+  },
+  {
+    "id": "handstand-push-up",
+    "name": "Handstand Push-up",
+    "description": "An advanced exercise that builds shoulder, triceps, and core strength by performing a push-up while in a handstand position against a wall or free-standing.",
+    "category": "bodyweight/calisthenics",
+    "primaryMuscleGroup": "Shoulders",
+    "muscleGroups": ["Shoulders (Deltoids)", "Triceps", "Upper Chest", "Core"],
+    "equipmentNeeded": [],
+    imageUrls: ["assets/images/exercises/handstand-push-up_1.jpg"],
+    notes: "Start against a wall for support. Progress to freestanding as strength improves."
+  },
+  {
+    "id": "muscle-up",
+    "name": "Muscle-up",
+    "description": "A challenging compound movement that combines a pull-up and a dip, requiring explosive strength and technique.",
+    "category": "bodyweight/calisthenics",
+    "primaryMuscleGroup": "Upper Body",
+    "muscleGroups": ["Lats", "Biceps", "Triceps", "Chest", "Shoulders"],
+    "equipmentNeeded": ["Pull-up Bar"],
+    imageUrls: ["assets/images/exercises/muscle-up_1.jpg"]
+  },
+  {
+    "id": "explosive-clap-push-up",
+    "name": "Explosive Clap Push-up",
+    "description": "A plyometric push-up that develops explosive power by pushing off the ground to clap in mid-air.",
+    "category": "bodyweight/calisthenics",
+    "primaryMuscleGroup": "Chest",
+    "muscleGroups": ["Chest", "Triceps", "Shoulders"],
+    "equipmentNeeded": [],
+    imageUrls: ["assets/images/exercises/explosive-clap_1.jpg"]
+  },
+  {
+    "id": "pike-push-up",
+    "name": "Pike Push-up",
+    "description": "Targets the shoulders and upper chest with a push-up position that emphasizes overhead pressing motion.",
+    "category": "bodyweight/calisthenics",
+    "primaryMuscleGroup": "Shoulders",
+    "muscleGroups": ["Shoulders (Deltoids)", "Triceps", "Upper Chest"],
+    "equipmentNeeded": [],
+    imageUrls: ["assets/images/exercises/pike-push-up_1.jpg"]
+  },
+  {
+    "id": "decline-push-up",
+    "name": "Decline Push-up",
+    "description": "An increased difficulty push-up variation that targets the upper chest and shoulders by elevating the feet.",
+    "category": "bodyweight/calisthenics",
+    "primaryMuscleGroup": "Chest",
+    "muscleGroups": ["Upper Chest", "Shoulders (Anterior)", "Triceps"],
+    "equipmentNeeded": [],
+    imageUrls: ["assets/images/exercises/decline-push-up_1.jpg"]
+  },
+  {
+    "id": "wall-sit",
+    "name": "Wall Sit",
+    "description": "Isometric lower body exercise that targets the quadriceps and improves endurance by holding a seated position against a wall.",
+    "category": "bodyweight/calisthenics",
+    "primaryMuscleGroup": "Quadriceps",
+    "muscleGroups": ["Quadriceps", "Glutes", "Calves"],
+    "equipmentNeeded": [],
+    imageUrls: ["assets/images/exercises/wall-sit_1.jpg"]
+  },
+  {
+    "id": "plank",
+    "name": "Plank",
+    "description": "An isometric core strength exercise that involves maintaining a position similar to a push-up for maximum duration.",
+    "category": "bodyweight/calisthenics",
+    "primaryMuscleGroup": "Core",
+    "muscleGroups": ["Core (Abs, Obliques, Lower Back)", "Shoulders", "Glutes"],
+    "equipmentNeeded": [],
+    imageUrls: ["assets/images/exercises/plank_1.jpg"]
+  },
+  {
+    id: "side-plank",
+    name: "Side Plank",
+    description: "Targets obliques and improves lateral core stability.",
+    category: "calisthenics",
+    primaryMuscleGroup: "Core",
+    muscleGroups: ["Obliques", "Transverse Abdominis"],
+    equipmentNeeded: [],
+    imageUrls: ["assets/images/exercises/side-plank_1.jpg"]
+  },
+  {
+    "id": "superman",
+    "name": "Superman",
+    "description": "A lower back and posterior chain exercise performed lying prone, lifting arms and legs simultaneously.",
+    "category": "bodyweight/calisthenics",
+    "primaryMuscleGroup": "Lower Back",
+    "muscleGroups": ["Lower Back (Erector Spinae)", "Glutes", "Hamstrings"],
+    "equipmentNeeded": [],
+    imageUrls: ["assets/images/exercises/superman_1.jpg"]
+  },
+  {
+    "id": "dolphin-plank",
+    "name": "Dolphin Plank",
+    "description": "A core and shoulder stability exercise performed on forearms with hips raised, strengthening shoulders and core.",
+    "category": "bodyweight/calisthenics",
+    "primaryMuscleGroup": "Shoulders",
+    "muscleGroups": ["Shoulders", "Core", "Upper Back"],
+    "equipmentNeeded": [],
+    imageUrls: ["assets/images/exercises/dolphin-plank_1.jpg"]
+  },
+  {
+    "id": "leg-raises",
+    "name": "Leg Raises",
+    "description": "An effective core exercise that targets the lower abs by lifting legs while lying on the back.",
+    "category": "bodyweight/calisthenics",
+    "primaryMuscleGroup": "Abs",
+    "muscleGroups": ["Lower Abs", "Hip Flexors"],
+    "equipmentNeeded": [],
+    imageUrls: ["assets/images/exercises/leg-raises_1.jpg"]
+  },
+  {
+    "id": "crab-walk",
+    "name": "Crab Walk",
+    "description": "A full-body exercise that improves shoulder stability, core strength, and coordination by walking on hands and feet.",
+    "category": "bodyweight/calisthenics",
+    "primaryMuscleGroup": "Full Body",
+    "muscleGroups": ["Shoulders", "Core", "Glutes", "Legs"],
+    "equipmentNeeded": [],
+    imageUrls: ["assets/images/exercises/crab-walk_1.jpg"]
+  },
+  {
+    "id": "wall-handstand",
+    "name": "Wall Handstand",
+    "description": "A balance and shoulder stability exercise performed against a wall, building strength for free-standing handstands.",
+    "category": "bodyweight/calisthenics",
+    "primaryMuscleGroup": "Shoulders",
+    "muscleGroups": ["Shoulders", "Core", "Wrists"],
+    "equipmentNeeded": [],
+    imageUrls: ["assets/images/exercises/wall-handstand_1.jpg"]
+  },
+  {
+    id: "handstand",
+    name: "Handstand",
+    description: "A balance and strength move targeting shoulders, arms, and core.",
+    category: "calisthenics",
+    primaryMuscleGroup: "Shoulders",
+    muscleGroups: ["Deltoids", "Arms", "Core"],
+    equipmentNeeded: ["Wall or open space"],
+    imageUrls: ["assets/images/exercises/handstand_1.jpg"]
+  },
+  {
+    "id": "clapping-push-up",
+    "name": "Clapping Push-up",
+    "description": "A plyometric push-up that develops explosive upper body power by clapping hands mid-air.",
+    "category": "bodyweight/calisthenics",
+    "primaryMuscleGroup": "Chest",
+    "muscleGroups": ["Chest", "Triceps", "Shoulders"],
+    "equipmentNeeded": [],
+    imageUrls: ["assets/images/exercises/clapping-push-up_1.jpg"]
+  },
+  {
+    "id": "wall-sit",
+    "name": "Wall Sit",
+    "description": "An isometric hold that targets the quadriceps, glutes, and calves, simulating a seated position against a wall.",
+    "category": "bodyweight/calisthenics",
+    "primaryMuscleGroup": "Quadriceps",
+    "muscleGroups": ["Quadriceps", "Glutes", "Calves"],
+    "equipmentNeeded": [],
+    imageUrls: ["assets/images/exercises/wall-sit_1.jpg"]
+  },
+  {
+    "id": "shrimp-squat",
+    "name": "Shrimp Squat",
+    "description": "A challenging single-leg squat variation that emphasizes balance and unilateral strength.",
+    "category": "bodyweight/calisthenics",
+    "primaryMuscleGroup": "Quadriceps",
+    "muscleGroups": ["Quadriceps", "Glutes", "Hamstrings", "Core"],
+    "equipmentNeeded": [],
+    imageUrls: ["assets/images/exercises/shrimp-squat_1.jpg"]
+  },
+  {
+    "id": "superman-extensions",
+    "name": "Superman Extensions",
+    "description": "Lying prone, lift arms, chest, and legs off the ground to strengthen lower back and posterior chain.",
+    "category": "bodyweight/calisthenics",
+    "primaryMuscleGroup": "Lower Back",
+    "muscleGroups": ["Lower Back", "Glutes", "Hamstrings"],
+    "equipmentNeeded": [],
+    imageUrls: ["assets/images/exercises/superman-extensions_1.jpg"]
+  },
+  {
+    "id": "l-sit",
+    "name": "L-Sit",
+    "description": "An isometric hold that develops core, hip flexors, and shoulder strength by supporting the body in an 'L' shape with hands on the ground.",
+    "category": "bodyweight/calisthenics",
+    "primaryMuscleGroup": "Core",
+    "muscleGroups": ["Core", "Hip Flexors", "Shoulders"],
+    "equipmentNeeded": ["Parallettes or Dip Bars"],
+    imageUrls: ["assets/images/exercises/l-sit_1.jpg"]
+  },
+  {
+    "id": "planche",
+    "name": "Planche",
+    "description": "A highly advanced balance move that requires full-body strength, especially in the core, shoulders, and arms.",
+    "category": "bodyweight/calisthenics",
+    "primaryMuscleGroup": "Core & Upper Body",
+    "muscleGroups": ["Core", "Shoulders", "Arms"],
+    "equipmentNeeded": ["Parallettes or Flat Surface"],
+    imageUrls: ["assets/images/exercises/planche_1.jpg"]
+  },
+  {
+    "id": "frog-stand",
+    "name": "Frog Stand",
+    "description": "A beginner balance exercise that builds wrist, arm, and core strength necessary for handstands.",
+    "category": "bodyweight/calisthenics",
+    "primaryMuscleGroup": "Core & Shoulders",
+    "muscleGroups": ["Core", "Shoulders", "Wrists"],
+    "equipmentNeeded": [],
+    imageUrls: ["assets/images/exercises/frog-stand_1.jpg"]
+  },
+  {
+    "id": "tuck-planche",
+    "name": "Tuck Planche",
+    "description": "An advanced balance move where knees are tucked in, challenging core and shoulder stability.",
+    "category": "bodyweight/calisthenics",
+    "primaryMuscleGroup": "Core & Shoulders",
+    "muscleGroups": ["Core", "Shoulders", "Arms"],
+    "equipmentNeeded": ["Parallettes"],
+    imageUrls: ["assets/images/exercises/tuck-planche_1.jpg"]
+  },
+  {
+    "id": "dip",
+    "name": "Straight Bar Dip",
+    "description": "An exercise that targets the chest, triceps, and shoulders by lowering and pressing on a straight bar or dip station.",
+    "category": "bodyweight/calisthenics",
+    "primaryMuscleGroup": "Triceps",
+    "muscleGroups": ["Triceps", "Chest", "Shoulders (Anterior)"],
+    "equipmentNeeded": ["Dip Bars or Parallel Bars"],
+    imageUrls: ["assets/images/exercises/dip_1.jpg"]
+  },
+  {
+    "id": "inverted-row",
+    "name": "Inverted Row",
+    "description": "A back and biceps exercise performed underneath a bar or suspension trainer, pulling the chest towards the bar.",
+    "category": "bodyweight/calisthenics",
+    "primaryMuscleGroup": "Back",
+    "muscleGroups": ["Lats", "Rhomboids", "Biceps", "Traps"],
+    "equipmentNeeded": ["Bar or Suspension Trainer"],
+    imageUrls: ["assets/images/exercises/inverted-row_1.jpg"]
+  },
+  {
+    "id": "kettlebell-clean",
+    "name": "Kettlebell Clean",
+    "description": "A fundamental movement that lifts the kettlebell from the floor to the rack position, engaging the hips, core, and arms.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Full Body",
+    "muscleGroups": ["Hips", "Glutes", "Back", "Shoulders", "Arms"],
+    "equipmentNeeded": ["Kettlebells"],
+    imageUrls: ["assets/images/exercises/kettlebell-clean_1.jpg"]
+  },
+  {
+    "id": "kettlebell-jerk",
+    "name": "Kettlebell Jerk",
+    "description": "An overhead pressing movement that involves a dip, drive, and lockout, developing explosive shoulder and arm strength.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Shoulders",
+    "muscleGroups": ["Shoulders", "Triceps", "Core"],
+    "equipmentNeeded": ["Kettlebells"],
+    imageUrls: ["assets/images/exercises/kettlebell-jerk_1.jpg"]
+  },
+  {
+    "id": "kettlebell-sumo-deadlift",
+    "name": "Kettlebell Sumo Deadlift",
+    "description": "A variation of the deadlift emphasizing the inner thighs, hips, and glutes with a wide stance.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Lower Body",
+    "muscleGroups": ["Glutes", "Hamstrings", "Quadriceps", "Lower Back"],
+    "equipmentNeeded": ["Kettlebells"],
+    imageUrls: ["assets/images/exercises/kettlebell-sumo-deadlift_1.jpg"]
+  },
+  {
+    "id": "kettlebell-snatch",
+    "name": "Kettlebell Snatch",
+    "description": "An explosive movement that lifts the kettlebell overhead in one fluid motion, engaging the entire posterior chain.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Full Body",
+    "muscleGroups": ["Hips", "Glutes", "Back", "Shoulders", "Arms"],
+    "equipmentNeeded": ["Kettlebells"],
+    imageUrls: ["assets/images/exercises/kettlebell-snatch_1.jpg"]
+  },
+  {
+    "id": "kettlebell-goblet-squat",
+    "name": "Kettlebell Goblet Squat",
+    "description": "A squat variation holding the kettlebell at chest level, promoting proper form and core engagement.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Lower Body",
+    "muscleGroups": ["Quadriceps", "Glutes", "Core"],
+    "equipmentNeeded": ["Kettlebells"],
+    imageUrls: ["assets/images/exercises/kettlebell-goblet-squat_1.jpg"]
+  },
+  {
+    "id": "kettlebell-figure-eight",
+    "name": "Kettlebell Figure Eight",
+    "description": "A dynamic movement passing the kettlebell between the legs in a figure-eight pattern, improving coordination and grip.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Full Body",
+    "muscleGroups": ["Core", "Forearms", "Hips"],
+    "equipmentNeeded": ["Kettlebells"],
+    imageUrls: ["assets/images/exercises/kettlebell-figure-eight_1.jpg"]
+  },
+  {
+    "id": "kettlebell-clean-and-press",
+    "name": "Kettlebell Clean and Press",
+    "description": "A compound exercise combining the clean and overhead press, building strength and power in the hips, shoulders, and arms.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Full Body",
+    "muscleGroups": ["Hips", "Back", "Shoulders", "Arms"],
+    "equipmentNeeded": ["Kettlebells"],
+    imageUrls: ["assets/images/exercises/kettlebell-clean-and-press_1.jpg"]
+  },
+  {
+    "id": "kettlebell-rack-walk",
+    "name": "Kettlebell Rack Walk",
+    "description": "Walking with kettlebells held in the rack position, enhancing grip, core stability, and overall endurance.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Core & Grip",
+    "muscleGroups": ["Core", "Forearms", "Shoulders"],
+    "equipmentNeeded": ["Kettlebell(s)"],
+    imageUrls: ["assets/images/exercises/kettlebell-rack-walk_1.jpg"]
+  },
+  {
+    "id": "kettlebell-halifax",
+    "name": "Kettlebell Halifax",
+    "description": "A rotational movement passing the kettlebell around the body, improving core rotational strength and coordination.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Core",
+    "muscleGroups": ["Obliques", "Transverse Abdominis", "Shoulders"],
+    "equipmentNeeded": ["Kettlebells"],
+    imageUrls: ["assets/images/exercises/kettlebell-halifax_1.jpg"]
+  },
+  {
+    id: "double-kettlebell-front-squat",
+    name: "Double Kettlebell Front Squat",
+    description: "Holding two kettlebells at shoulder height, perform a squat to target the quads, glutes, and core.",
+    category: "kettlebells",
+    primaryMuscleGroup: "Lower Body",
+    muscleGroups: ["Quadriceps", "Glutes", "Core"],
+    equipmentNeeded: ["2 Kettlebells"],
+    imageUrls: ["assets/images/exercises/double-kettlebell-front-squat_1.jpg"]
+  },
+  {
+    id: "double-kettlebell-rack-deadlift",
+    name: "Double Kettlebell Rack Deadlift",
+    description: "Lift two kettlebells from the ground to a rack position, emphasizing posterior chain strength.",
+    category: "kettlebells",
+    primaryMuscleGroup: "Posterior Chain",
+    muscleGroups: ["Hamstrings", "Glutes", "Lower Back"],
+    equipmentNeeded: ["2 Kettlebells"],
+    imageUrls: ["assets/images/exercises/double-kettlebell-rack-deadlift_1.jpg"]
+  },
+  {
+    id: "double-kettlebell-swing",
+    name: "Double Kettlebell Swing",
+    description: "A powerful hip-hinge movement using two kettlebells to develop explosive strength and endurance.",
+    category: "kettlebells",
+    primaryMuscleGroup: "Full Body",
+    muscleGroups: ["Hips", "Glutes", "Hamstrings", "Back"],
+    equipmentNeeded: ["2 Kettlebells"],
+    imageUrls: ["assets/images/exercises/double-kettlebell-swing_1.jpg"]
+  },
+  {
+    id: "single-kettlebell-jerk",
+    name: "Single Kettlebell Jerk",
+    description: "An overhead press with a dip and drive movement, improving explosive shoulder power.",
+    category: "kettlebells",
+    primaryMuscleGroup: "Shoulders",
+    muscleGroups: ["Shoulders", "Triceps", "Core"],
+    equipmentNeeded: ["Kettlebell"],
+    imageUrls: ["assets/images/exercises/single-kettlebell-jerk_1.jpg"]
+  },
+  {
+    id: "single-kettlebell-clean-and-press",
+    name: "Single Kettlebell Clean and Press",
+    description: "A dynamic full-body movement to build strength, power, and coordination.",
+    category: "kettlebells",
+    primaryMuscleGroup: "Full Body",
+    muscleGroups: ["Hips", "Back", "Shoulders", "Arms"],
+    equipmentNeeded: ["Kettlebell"],
+    imageUrls: ["assets/images/exercises/single-kettlebell-clean-and-press_1.jpg"]
+  },
+  {
+    id: "double-kettlebell-arching-swing",
+    name: "Double Kettlebell Arching Swing",
+    description: "A variation emphasizing controlled movement and grip strength, swinging two kettlebells in an arc.",
+    category: "kettlebells",
+    primaryMuscleGroup: "Full Body",
+    muscleGroups: ["Hips", "Glutes", "Back"],
+    equipmentNeeded: ["2 Kettlebells"],
+    imageUrls: ["assets/images/exercises/double-kettlebell-arching-swing_1.jpg"]
+  },
+  {
+    id: "single-kettlebell-figure-eight",
+    name: "Single Kettlebell Figure Eight",
+    description: "Passing the kettlebell between the legs in a figure-eight pattern, enhancing coordination and grip.",
+    category: "kettlebells",
+    primaryMuscleGroup: "Full Body",
+    muscleGroups: ["Core", "Forearms", "Hips"],
+    equipmentNeeded: ["Kettlebell"],
+    imageUrls: ["assets/images/exercises/single-kettlebell-figure-eight_1.jpg"]
+  },
+  {
+    id: "double-kettlebell-overhead-lunge",
+    name: "Double Kettlebell Overhead Lunge",
+    description: "Holding two kettlebells overhead, perform lunges to challenge stability and strength.",
+    category: "kettlebells",
+    primaryMuscleGroup: "Lower Body",
+    muscleGroups: ["Quadriceps", "Glutes", "Core", "Shoulders"],
+    equipmentNeeded: ["2 Kettlebells"],
+    imageUrls: ["assets/images/exercises/double-kettlebell-overhead-lunge_1.jpg"]
+  },
+  {
+    id: "single-kettlebell-high-pull",
+    name: "Single Kettlebell High Pull",
+    description: "A powerful movement pulling the kettlebell to chest level, engaging the back and shoulders.",
+    category: "kettlebells",
+    primaryMuscleGroup: "Back & Shoulders",
+    muscleGroups: ["Lats", "Traps", "Shoulders"],
+    equipmentNeeded: ["Kettlebell"],
+    imageUrls: ["assets/images/exercises/single-kettlebell-high-pull_1.jpg"]
+  },
+  {
+    id: "double-kettlebell-press",
+    name: "Double Kettlebell Overhead Press",
+    description: "Pressing two kettlebells overhead simultaneously for balanced shoulder development.",
+    category: "kettlebells",
+    primaryMuscleGroup: "Shoulders",
+    muscleGroups: ["Shoulders", "Triceps", "Core"],
+    equipmentNeeded: ["2 Kettlebells"],
+    imageUrls: ["assets/images/exercises/double-kettlebell-press_1.jpg"]
+  },
+  {
+    id: "single-kettlebell-front-squat",
+    name: "Single Kettlebell Front Squat",
+    description: "Hold the kettlebell at chest level and perform a squat to target quads, glutes, and core stability.",
+    category: "kettlebells",
+    primaryMuscleGroup: "Lower Body",
+    muscleGroups: ["Quadriceps", "Glutes", "Core"],
+    equipmentNeeded: ["Kettlebell"],
+    imageUrls: ["assets/images/exercises/single-kettlebell-front-squat_1.jpg"]
+  },
+  {
+    id: "single-kettlebell-russian-twist",
+    name: "Single Kettlebell Russian Twist",
+    description: "Sit on the floor, lean back slightly, and twist the kettlebell side to side for oblique engagement.",
+    category: "kettlebells",
+    primaryMuscleGroup: "Core",
+    muscleGroups: ["Obliques", "Rectus Abdominis"],
+    equipmentNeeded: ["Kettlebell"],
+    imageUrls: ["assets/images/exercises/single-kettlebell-russian-twist_1.jpg"]
+  },
+  {
+    id: "single-kettlebell-overhead-press",
+    name: "Single Kettlebell Overhead Press",
+    description: "Press the kettlebell overhead, focusing on shoulder stability and core engagement.",
+    category: "kettlebells",
+    primaryMuscleGroup: "Shoulders",
+    muscleGroups: ["Shoulders", "Triceps", "Core"],
+    equipmentNeeded: ["Kettlebell"],
+    imageUrls: ["assets/images/exercises/single-kettlebell-overhead-press_1.jpg"]
+  },
+  {
+    id: "single-kettlebell-windmill",
+    name: "Single Kettlebell Windmill",
+    description: "Hold the kettlebell overhead and hinge at the hips to touch the opposite foot, improving mobility and core strength.",
+    category: "kettlebells",
+    primaryMuscleGroup: "Core & Shoulders",
+    muscleGroups: ["Obliques", "Shoulders", "Hips"],
+    equipmentNeeded: ["Kettlebell"],
+    imageUrls: ["assets/images/exercises/single-kettlebell-windmill_1.jpg"]
+  },
+  {
+    id: "single-kettlebell-swing",
+    name: "Single Kettlebell Swing",
+    description: "Hinge at hips and swing the kettlebell between legs to chest or eye level, building explosive hip power.",
+    category: "kettlebells",
+    primaryMuscleGroup: "Full Body",
+    muscleGroups: ["Hips", "Glutes", "Hamstrings", "Back"],
+    equipmentNeeded: ["Kettlebell"],
+    imageUrls: ["assets/images/exercises/single-kettlebell-swing_1.jpg"]
+  },
+
+  // Double kettlebell exercises
+  {
+    id: "double-kettlebell-clean",
+    name: "Double Kettlebell Clean",
+    description: "Lift two kettlebells from the ground to rack position in one explosive movement, engaging full posterior chain.",
+    category: "kettlebells",
+    primaryMuscleGroup: "Full Body",
+    muscleGroups: ["Hips", "Back", "Shoulders", "Arms"],
+    equipmentNeeded: ["2 Kettlebells"],
+    imageUrls: ["assets/images/exercises/double-kettlebell-clean_1.jpg"]
+  },
+  {
+    id: "double-kettlebell-sumo-deadlift",
+    name: "Double Kettlebell Sumo Deadlift",
+    description: "Wide stance deadlift with two kettlebells to target inner thighs, hips, and glutes.",
+    category: "kettlebells",
+    primaryMuscleGroup: "Lower Body",
+    muscleGroups: ["Glutes", "Hamstrings", "Quadriceps", "Lower Back"],
+    equipmentNeeded: ["2 Kettlebells"],
+    imageUrls: ["assets/images/exercises/double-kettlebell-sumo-deadlift_1.jpg"]
+  },
+  {
+    id: "double-kettlebell-windmill",
+    name: "Double Kettlebell Windmill",
+    description: "Hold kettlebells overhead in both hands and hinge at the hips to touch the floor, improving mobility and core strength.",
+    category: "kettlebells",
+    primaryMuscleGroup: "Core & Shoulders",
+    muscleGroups: ["Obliques", "Shoulders", "Hips"],
+    equipmentNeeded: ["2 Kettlebells"],
+    imageUrls: ["assets/images/exercises/double-kettlebell-windmill_1.jpg"]
+  },
+  // Additional versatile exercises
+  {
+    id: "single-kettlebell-overhead-lunge",
+    name: "Single Kettlebell Overhead Lunge",
+    description: "Hold one kettlebell overhead in one hand and perform lunges to challenge stability and core control.",
+    category: "kettlebells",
+    primaryMuscleGroup: "Lower Body & Core",
+    muscleGroups: ["Quadriceps", "Glutes", "Obliques"],
+    equipmentNeeded: ["Kettlebell"],
+    imageUrls: ["assets/images/exercises/single-kettlebell-overhead-lunge_1.jpg"]
+  },
+  {
+    id: "double-kettlebell-rotational-press",
+    name: "Double Kettlebell Rotational Press",
+    description: "Press kettlebells overhead while rotating the torso to enhance rotational strength and core stability.",
+    category: "kettlebells",
+    primaryMuscleGroup: "Core & Shoulders",
+    muscleGroups: ["Obliques", "Shoulders", "Core"],
+    equipmentNeeded: ["2 Kettlebells"],
+    imageUrls: ["assets/images/exercises/double-kettlebell-rotational-press_1.jpg"]
+  },
+  {
+    id: "front-lever",
+    name: "Front Lever",
+    description: "Isometric hold for core, back, and shoulder strength.",
+    category: "calisthenics",
+    primaryMuscleGroup: "Back & Core",
+    muscleGroups: ["Lats", "Core"],
+    equipmentNeeded: ["Pull-up Bar"],
+    imageUrls: ["assets/images/exercises/front-lever_1.jpg"]
   }
 ];

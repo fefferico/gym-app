@@ -19,18 +19,18 @@
     <div class="flex items-center space-x-2 flex-shrink-0">
       <button *ngIf="workoutLog() as log" [routerLink]="['/workout/summary', log.id]" title="View Summary"
         class="p-2 text-m font-medium text-white bg-blue-500 rounded-md shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 flex items-center transition-colors">
-        <span class=""> <!-- Show only icon on very small screens -->
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-  <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0ZM3.75 12h.007v.008H3.75V12Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm-.375 5.25h.007v.008H3.75v-.008Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
-</svg>
-
-
+        <span class="">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+            stroke="currentColor" class="size-6">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0ZM3.75 12h.007v.008H3.75V12Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm-.375 5.25h.007v.008H3.75v-.008Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+          </svg>
         </span>
       </button>
 
       <button *ngIf="workoutLog() as log" [routerLink]="['/workout/log/manual/edit', log.id]" title="Edit Log"
         class="p-2 text-m font-medium text-white bg-yellow-500 rounded-md shadow-sm hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-75 flex items-center transition-colors">
-        <span class=""> <!-- Show only icon on very small screens -->
+        <span class="">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
             stroke="currentColor" class="w-5 h-5">
             <path stroke-linecap="round" stroke-linejoin="round"
@@ -43,7 +43,6 @@
 
   <ng-container *ngIf="workoutLog() as log; else loadingOrNotFound">
     <div class="bg-white dark:bg-gray-700 rounded-lg shadow-xl overflow-hidden">
-      <!-- Removed header title from here as it's in the main page header -->
       <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
         <p class="text-md text-gray-600 dark:text-gray-400">
           Performed on: {{ log.startTime | date:'fullDate' }} at {{ log.startTime | date:'shortTime' }}
@@ -58,42 +57,78 @@
 
       <div class="p-4 sm:p-6 space-y-2">
         <h2 class="text-xl sm:text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-4">Exercises Performed:</h2>
-        <div *ngIf="displayExercises().length > 0; else noLoggedExercises" class="space-y-3">
+        <div *ngIf="displayExercises().length > 0; else noLoggedExercises" class="space-y-0">
 
-          <div *ngFor="let loggedEx of displayExercises(); let exIdx = index"
-            class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden shadow-sm">
+          <div *ngFor="let loggedEx of displayExercises(); let exIdx = index" class="overflow-hidden shadow-sm"
+            [ngClass]="{
+              'border border-gray-200 dark:border-gray-700 rounded-lg': !loggedEx.supersetId,
+              'mb-3': !loggedEx.supersetId || (loggedEx.supersetId && loggedEx.supersetOrder === (loggedEx.supersetSize ?? 0) - 1),
+
+              'border-l border-r border-orange-400 dark:border-orange-600': loggedEx.supersetId,
+              'bg-orange-50 dark:bg-orange-900/20': loggedEx.supersetId,
+              'rounded-t-lg border-t': loggedEx.supersetId && loggedEx.supersetOrder === 0,
+              'rounded-b-lg border-b': loggedEx.supersetId && loggedEx.supersetOrder === (loggedEx.supersetSize ?? 0) - 1,
+              'border-b border-orange-300 dark:border-orange-700/50': loggedEx.supersetId && loggedEx.supersetOrder !== null && loggedEx.supersetOrder !== undefined && loggedEx.supersetOrder < ((loggedEx.supersetSize ?? 0) - 1) && !loggedEx.isExpanded
+            }">
 
             <button (click)="toggleExerciseAccordion(loggedEx)"
-              class="w-full flex justify-between items-center p-3 text-left bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors focus:outline-none">
-              <div class="flex items-center">
+              class="w-full flex justify-between items-center p-3 text-left transition-colors focus:outline-none"
+              [ngClass]="{
+                'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700': !loggedEx.supersetId,
+                'hover:bg-orange-100 dark:hover:bg-orange-800/40': loggedEx.supersetId,
+                'bg-orange-100/50 dark:bg-orange-900/30': loggedEx.supersetId && loggedEx.isExpanded,
+                'border-b border-orange-300 dark:border-orange-700/50': loggedEx.supersetId && loggedEx.isExpanded && loggedEx.supersetOrder !== undefined && loggedEx.supersetOrder !== null && loggedEx.supersetOrder < ((loggedEx.supersetSize ?? 0) - 1)
+              }">
+              <div class="flex items-center min-w-0"> <!-- Added min-w-0 for truncation -->
                 <div
-                  class="flex-shrink-0 mr-3 w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-gray-200 dark:bg-gray-700 rounded-md border border-gray-300 dark:border-gray-600">
+                  class="flex-shrink-0 mr-3 w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-md border"
+                  [ngClass]="{
+                    'bg-gray-200 dark:bg-gray-700 border-gray-300 dark:border-gray-600': !loggedEx.supersetId,
+                    'bg-orange-100 dark:bg-orange-800/30 border-orange-300 dark:border-orange-700': loggedEx.supersetId
+                  }">
                   <img *ngIf="loggedEx.iconName" [src]="getIconPath(loggedEx.iconName)"
                     [alt]="loggedEx.exerciseName + ' icon'" class="w-6 h-6 sm:w-8 sm:h-8 object-contain"
-                    [ngClass]="{'filter dark:invert': loggedEx.iconName !== 'default-exercise'}">
+                    [ngClass]="{'filter dark:invert': loggedEx.iconName !== 'default-exercise' && !loggedEx.supersetId, 'filter dark:brightness-200 dark:contrast-150': loggedEx.iconName !== 'default-exercise' && loggedEx.supersetId}">
                 </div>
                 <div *ngIf="loggedEx.baseExercise === undefined"
                   class="w-10 h-10 sm:w-12 sm:h-12 bg-gray-200 dark:bg-gray-700 animate-pulse rounded-md mr-3"></div>
 
-                <div>
-                  <h3 class="text-md sm:text-lg font-semibold text-primary dark:text-primary-light">
+                <div class="min-w-0"> <!-- Added min-w-0 for truncation -->
+                  <h3 class="text-md sm:text-lg font-semibold truncate" [ngClass]="{
+                      'text-primary dark:text-primary-light': !loggedEx.supersetId,
+                      'text-orange-700 dark:text-orange-300': loggedEx.supersetId
+                    }" [title]="loggedEx.exerciseName">
+                    <span *ngIf="loggedEx.supersetId"
+                      class="text-xs font-normal text-orange-600 dark:text-orange-400 block leading-tight">
+                      <ng-container
+                        *ngIf="loggedEx.supersetRounds && loggedEx.supersetRounds > 1 && loggedEx.supersetCurrentRound">
+                        Round {{ loggedEx.supersetCurrentRound }} of {{ loggedEx.supersetRounds }} |
+                      </ng-container>
+                      Superset ({{ (loggedEx.supersetOrder ?? 0) + 1 }} of {{ loggedEx.supersetSize }})
+                    </span>
                     {{ loggedEx.exerciseName }}
                   </h3>
-                  <p *ngIf="loggedEx.baseExercise?.category" class="text-xs text-gray-500 dark:text-gray-400">
+                  <p *ngIf="loggedEx.baseExercise?.category" class="text-xs text-gray-500 dark:text-gray-400 truncate">
                     {{ loggedEx.baseExercise?.category | titlecase }}
                   </p>
                 </div>
               </div>
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
-                class="w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform duration-200"
-                [class.rotate-180]="loggedEx.isExpanded">
+                class="w-5 h-5 transition-transform duration-200 flex-shrink-0 ml-2" [ngClass]="{
+                'text-gray-500 dark:text-gray-400': !loggedEx.supersetId,
+                'text-orange-500 dark:text-orange-400': loggedEx.supersetId,
+                'rotate-180': loggedEx.isExpanded
+                }">
                 <path fill-rule="evenodd"
                   d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z"
                   clip-rule="evenodd" />
               </svg>
             </button>
 
-            <div *ngIf="loggedEx.isExpanded" class="p-3 sm:p-4 bg-white dark:bg-gray-700 space-y-3">
+            <div *ngIf="loggedEx.isExpanded" class="p-3 sm:p-4 space-y-3" [ngClass]="{
+                'bg-white dark:bg-gray-700': !loggedEx.supersetId,
+                'bg-orange-50/50 dark:bg-orange-900/10': loggedEx.supersetId
+              }">
               <p *ngIf="loggedEx.notes"
                 class="text-m italic text-gray-600 dark:text-gray-400 mb-3 border-b dark:border-gray-700 pb-2">
                 <strong>Exercise Notes:</strong> {{ loggedEx.notes }}
@@ -205,10 +240,12 @@
         <h2 class="text-2xl font-semibold text-red-600 dark:text-red-400 mb-4">Workout Log Not Found</h2>
         <p class="text-gray-600 dark:text-gray-400">The workout log you are looking for does not exist.</p>
         <button routerLink="/history/list"
-          class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-light p-2 -ml-1"><svg
-            fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6">
+          class="inline-flex items-center text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-light p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
+            class="w-5 h-5 mr-1">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-          </svg> Back to History</button>
+          </svg> Back to History
+        </button>
       </div>
     </ng-template>
   </ng-template>
