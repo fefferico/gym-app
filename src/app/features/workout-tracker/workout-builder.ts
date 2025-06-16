@@ -561,7 +561,10 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     event?.stopPropagation();
 
     // If the event is from a checkbox (superset selection), do not expand/collapse set
-    if (event && (event.target as HTMLInputElement)?.type === 'checkbox') {
+    if (
+      event &&
+      (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement || event.target instanceof HTMLSelectElement)
+    ) {
       return;
     }
 
@@ -1066,25 +1069,21 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     const firstSelected = this.firstSelectedExerciseIndexForSuperset;
 
     const returnObj = {
-      'p-1.5 sm:p-2': isCompact,
-      'p-3': !isCompact,
-      'space-y-3': !isCompact,
-      'border rounded-lg': true,
-      'border rounded-md':
-        isCompact &&
-        isSuperset,
+      'p-1.5 sm:p-2': true,
+      // 'p-3': !isCompact && this.expandedSetPath()?.exerciseIndex !== exIndex,
+      // 'space-y-3': !isCompact,
+      // 'border rounded-lg': true,
+      'border rounded': true,
       'shadow-sm': true,
       'border-orange-500 dark:border-orange-400 bg-orange-50 dark:bg-orange-900/30': isSuperset,
       'ring-2 ring-orange-400 dark:ring-orange-300 shadow-md': isSelected,
       'dark:bg-orange-900/40': isSuperset && isSelected,
       'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800': !isSuperset && !isSelected,
       'rounded-b-none border-b-transparent dark:border-b-transparent':
-        isCompact &&
         this.mode === 'routineBuilder' &&
         isSuperset && isFirstInSuperset,
-      'rounded-t-none border-t-transparent dark:border-t-transparent': isCompact && isSuperset && isLastInSuperset,
+      'rounded-t-none border-t-transparent dark:border-t-transparent': isSuperset && isLastInSuperset,
       'border-x border-t':
-        isCompact &&
         isSuperset &&
         isFirstInSuperset,
       'mb-2': !isSuperset || (isSuperset && isLastInSuperset)

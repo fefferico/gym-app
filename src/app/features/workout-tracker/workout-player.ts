@@ -3017,7 +3017,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         text: `${ex.exerciseName}${statusIndicator}`,
         role: 'confirm',
         data: ex.originalIndex, // Pass the original index
-        cssClass: (ex.id === this.activeSetInfo()?.exerciseData.id && ex.sessionStatus === 'pending') ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700 dark:text-gray-100'
+        cssClass: (ex.id === this.activeSetInfo()?.exerciseData.id && ex.sessionStatus === 'pending') ? 'bg-blue-600 text-white' : 'bg-gray-500 dark:bg-gray-700 dark:text-gray-100 hover:bg-gray-300 hover:text-gray-500 hover:dark:bg-gray-300 hover:dark:text-gray-500'
       };
     });
 

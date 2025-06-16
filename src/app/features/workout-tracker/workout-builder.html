@@ -209,17 +209,17 @@
                                     class="h-4 w-4 text-orange-600 border-gray-300 dark:border-gray-600 rounded focus:ring-orange-500 flex-shrink-0 disabled:opacity-50"
                                     [disabled]="isViewMode">
                                 <!-- EXERCISE NAME & SUPERSET INFO / SETS SUMMARY FOR COMPACT -->
-                                <div *ngIf="isCompactView" class="flex-grow min-w-0">
+                                <div *ngIf="isCompactView || (!isCompactView && expandedSetPath()?.exerciseIndex !== exIndex)" class="flex-grow min-w-0">
                                     <h3 class="font-semibold text-gray-800 dark:text-gray-100 truncate" [ngClass]="{
-                                            'text-sm': isCompactView,
-                                            'text-lg': !isCompactView
+                                            'text-sm': isCompactView && expandedSetPath()?.exerciseIndex !== exIndex,
+                                            'text-lg': !isCompactView && expandedSetPath()?.exerciseIndex === exIndex
                                         }">
                                         <span
                                             *ngIf="mode === 'routineBuilder' && exerciseControl.get('supersetId')?.value"
                                             class="text-xs text-orange-600 dark:text-orange-400 font-normal block"
                                             [ngClass]="{
-                                                'sm:inline sm:mr-1': !isCompactView,
-                                                'block text-xs leading-tight': isCompactView 
+                                                'sm:inline sm:mr-1': !isCompactView && expandedSetPath()?.exerciseIndex === exIndex,
+                                                'block text-xs leading-tight': isCompactView && expandedSetPath()?.exerciseIndex !== exIndex 
                                             }">
                                             Superset ({{ (exerciseControl.get('supersetOrder')?.value ?? 0) + 1 }} of {{
                                             exerciseControl.get('supersetSize')?.value }})
@@ -227,14 +227,14 @@
                                         {{ exerciseControl.get('exerciseName')?.value || 'Select Exercise' }}
                                     </h3>
                                     <!-- COMPACT: Show SETS SUMMARY if in compact view -->
-                                    <div *ngIf="isCompactView && getSetsFormArray(exerciseControl).controls.length > 0"
+                                    <div *ngIf="(isCompactView  || (!isCompactView && expandedSetPath()?.exerciseIndex !== exIndex)) && getSetsFormArray(exerciseControl).controls.length > 0"
                                         class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                                         {{ getSetsFormArray(exerciseControl).controls.length }}
                                         {{ getSetsFormArray(exerciseControl).controls.length === 1 ? 'set' : 'sets' }}
                                     </div>
                                 </div>
                                 <!-- COMPACT: Minimal actions for compact view (e.g., small remove icon) -->
-                                <div *ngIf="isCompactView && !isViewMode" class="flex-shrink-0 ml-auto">
+                                <div *ngIf="(isCompactView  || (!isCompactView && expandedSetPath()?.exerciseIndex !== exIndex)) && !isViewMode" class="flex-shrink-0 ml-auto">
                                     <!-- ml-auto to push to the right -->
                                     <button type="button" (click)="removeExercise(exIndex); $event.stopPropagation()"
                                         title="Remove Exercise"
@@ -248,7 +248,7 @@
                                 </div>
                             </div>
                             <!-- EXPANDED CONTENT AREA -->
-                            <div *ngIf="!isCompactView" class="space-y-3">
+                            <div *ngIf="expandedSetPath()?.exerciseIndex === exIndex" class="space-y-3">
                                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-2 pt-1 sm:pt-0"
                                     [ngClass]="{
                                     'border-b border-orange-300 dark:border-orange-600': mode==='routineBuilder' &&
@@ -493,7 +493,7 @@
                                     </div>
                                 </div>
                             </div> <!-- End of *ngIf="!isCompactView" -->
-                            <button *ngIf="!isCompactView" type="button" (click)="collapseExpandedSet(true, $event)" title="Collapse exercise"
+                            <button *ngIf="!isCompactView && expandedSetPath()?.exerciseIndex === exIndex" type="button" (click)="collapseExpandedSet(true, $event)" title="Collapse exercise"
                                 class=" p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 flex-shrink-0 ">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
                                     <path d="M 12 5 L 12 10 M 9 7 L 12 10 L 15 7 M 12 19 L 12 14 M 9 17 L 12 14 L 15 17" fill="none"
