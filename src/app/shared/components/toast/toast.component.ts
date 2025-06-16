@@ -14,15 +14,24 @@ import { trigger, state, style, transition, animate } from '@angular/animations'
   animations: [
     trigger('toastAnimation', [
       state('void', style({
-        transform: 'translateY(100%) translateX(50%) scale(0.5)',
+        // MODIFIED: Start fully off-screen at the bottom
+        // Using a large fixed value like '150vh' or '200%' ensures it's off-screen.
+        // Or, more precisely, if you know the max height of your toast, you can use that.
+        // For simplicity and robustness, a large viewport percentage works well.
+        // The translateX and scale are less critical for the "from bottom" effect
+        // but kept them for now if you still want that horizontal/scale part of the initial state.
+        // If you only want vertical, remove translateX and scale.
+        transform: 'translateY(150vh) translateX(0) scale(1)', // Or 'translateY(200%)'
         opacity: 0,
+        // height, margin, padding for ':leave' transition consistency, can be kept
         height: 0,
         margin: 0,
-        padding:0,
+        padding: 0,
       })),
       state('*', style({
-        transform: 'translateY(0) translateX(0) scale(1)',
+        transform: 'translateY(0) translateX(0) scale(1)', // Final resting position relative to its container
         opacity: 1,
+        // height, margin, padding will be auto/default from CSS
       })),
       transition('void => *', [
         animate('0.3s ease-out')
@@ -30,10 +39,10 @@ import { trigger, state, style, transition, animate } from '@angular/animations'
       transition('* => void', [
         animate('0.2s ease-in', style({
           opacity: 0,
-          transform: 'translateX(100%)',
-          height:0,
-          margin:0,
-          padding:0
+          transform: 'translateX(100%)', // Exit to the right
+          height: 0,
+          margin: 0,
+          padding: 0
         }))
       ])
     ])
@@ -47,6 +56,10 @@ export class ToastContainerComponent {
 
   removeToast(toastId: string): void {
     this.toastService.remove(toastId);
+  }
+
+  clearAllNotifications() {
+    this.toastService.clearAll();
   }
 
   // Explicit trackBy function

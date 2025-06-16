@@ -88,7 +88,7 @@
                 <div *ngFor="let routine of routines" class="p-3 bg-gray-50 dark:bg-gray-600 rounded-md shadow-sm hover:shadow-md transition-shadow flex justify-between items-center">
                   <div class="truncate">
                     <span class="font-medium text-gray-800 dark:text-gray-100">{{ routine.name }}</span>
-                    <span class="block text-xs text-gray-500 dark:text-gray-400">{{ routine.exercises.length }} exercises</span>
+                    <span class="block text-left text-xs text-gray-500 dark:text-gray-400">{{ routine.exercises.length }} exercises</span>
                   </div>
                   <button (click)="startWorkout(routine.id)" [disabled]="isAnimating"
                     class="flex items-center ml-2 text-m bg-primary hover:bg-green-200 text-white dark:hover:bg-primary-dark font-semibold py-1 px-2.5 rounded-md disabled:opacity-50">
