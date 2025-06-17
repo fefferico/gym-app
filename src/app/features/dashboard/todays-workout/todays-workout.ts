@@ -5,11 +5,14 @@ import { Router } from '@angular/router';
 import { TrainingProgramService } from '../../../core/services/training-program.service';
 import { Routine } from '../../../core/models/workout.model';
 import { ScheduledRoutineDay } from '../../../core/models/training-program.model';
-import { SpinnerService } from '../../../core/services/spinner.service';
+import { SpinnerService } from '../../../core/services/spinner.service'; // Assuming this is used or could be
 import { WorkoutService } from '../../../core/services/workout.service';
 import { Observable } from 'rxjs';
 import Hammer from 'hammerjs';
 import { trigger, state, style, transition, animate } from '@angular/animations';
+
+// Define animation states type for better type safety
+export type SlideAnimationState = 'center' | 'exitToLeft' | 'exitToRight' | 'enterFromLeft' | 'enterFromRight';
 
 @Component({
   selector: 'app-todays-workout',
@@ -19,27 +22,29 @@ import { trigger, state, style, transition, animate } from '@angular/animations'
   styleUrls: ['./todays-workout.scss'],
   animations: [
     trigger('slideAnimation', [
+      // States
       state('center', style({ transform: 'translateX(0%)', opacity: 1 })),
-      state('slideOutToLeft', style({ transform: 'translateX(-100%)', opacity: 0 })),
-      state('slideOutToRight', style({ transform: 'translateX(100%)', opacity: 0 })),
-      // No explicit 'slideInFrom...' states needed if we reset transform before centering
+      state('exitToRight', style({ transform: 'translateX(100%)', opacity: 0 })), // Old content moves its full width to the right
+      state('exitToLeft', style({ transform: 'translateX(-100%)', opacity: 0 })), // Old content moves its full width to the left
+      state('enterFromLeft', style({ transform: 'translateX(-100%)', opacity: 0 })), // New content starts off-screen to the left
+      state('enterFromRight', style({ transform: 'translateX(100%)', opacity: 0 })), // New content starts off-screen to the right
 
-      transition('center => slideOutToLeft', animate('200ms ease-in')),
-      transition('center => slideOutToRight', animate('200ms ease-in')),
+      // Transitions for OLD content exiting
+      transition('center => exitToRight', animate('200ms ease-in')), // Swipe L->R: Old content exits to RIGHT
+      transition('center => exitToLeft', animate('200ms ease-in')),  // Swipe R->L: Old content exits to LEFT
 
-      // For content entering: we'll set it to an off-screen position then animate to center
-      transition('void => center', [ // For initial load, or if element is re-added
-        style({ transform: 'translateX(0%)', opacity: 1 }), // Start visible if it's just appearing
+      // Transitions for NEW content entering
+      transition('enterFromLeft => center', animate('200ms ease-out')), // Swipe L->R: New content enters from LEFT
+      transition('enterFromRight => center', animate('200ms ease-out')), // Swipe R->L: New content enters from RIGHT
+
+      // Initial load
+      transition('void => center', [
+        style({ transform: 'translateX(0%)', opacity: 1 }),
         animate('0s') // No animation for initial appearance, or make it a fade-in
       ]),
-      transition('slideOutToLeft => center', [ // This is for the NEW content after old one left
-        style({ transform: 'translateX(100%)', opacity: 0 }), // New content enters from right
-        animate('200ms ease-out')
-      ]),
-      transition('slideOutToRight => center', [ // This is for the NEW content after old one left
-        style({ transform: 'translateX(-100%)', opacity: 0 }), // New content enters from left
-        animate('200ms ease-out')
-      ]),
+      // Optional: if element is added directly to an 'enter' state
+      transition('void => enterFromLeft', [style({ transform: 'translateX(-100%)', opacity: 0 }), animate('0s')]),
+      transition('void => enterFromRight', [style({ transform: 'translateX(100%)', opacity: 0 }), animate('0s')]),
     ])
   ]
 })
@@ -47,7 +52,7 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
   private trainingProgramService = inject(TrainingProgramService);
   private workoutService = inject(WorkoutService);
   private router = inject(Router);
-  private spinnerService = inject(SpinnerService); // Optional
+  private spinnerService = inject(SpinnerService);
   private elementRef = inject(ElementRef);
   private ngZone = inject(NgZone);
 
@@ -57,35 +62,38 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
   availableRoutines$: Observable<Routine[]> | undefined;
   private hammerInstance: any | null = null;
 
-  // Animation state for the content
-  animationState = signal<'center' | 'slideOutToLeft' | 'slideOutToRight'>('center');
-  protected isAnimating = false; // To prevent multiple rapid clicks/swipes
+  animationState = signal<SlideAnimationState>('center');
+  protected isAnimating = signal<boolean>(false);
+
+  // Animation Durations (should match CSS animations)
+  private readonly ANIMATION_OUT_DURATION = 200;
+  private readonly ANIMATION_IN_DURATION = 200;
 
   ngOnInit(): void {
-    this.loadTodaysWorkoutContent(); // Initial load
+    this.loadTodaysWorkoutContent();
     this.availableRoutines$ = this.workoutService.routines$;
   }
 
   ngAfterViewInit(): void {
-    const swipeCardElement = this.elementRef.nativeElement.querySelector('div[data-swipe-card-content-wrapper]'); // Target the inner content wrapper for Hammer
+    const swipeCardElement = this.elementRef.nativeElement.querySelector('div[data-swipe-card-content-wrapper]');
     if (swipeCardElement) {
       this.ngZone.runOutsideAngular(() => {
         this.hammerInstance = new Hammer(swipeCardElement);
-        this.hammerInstance.get('swipe').set({ direction: Hammer.DIRECTION_HORIZONTAL, threshold: 20, velocity: 0.2 }); // Adjusted thresholds
+        this.hammerInstance.get('swipe').set({ direction: Hammer.DIRECTION_HORIZONTAL, threshold: 40, velocity: 0.3 });
 
-        this.hammerInstance.on('swipeleft', () => {
-          if (!this.isAnimating) {
+        this.hammerInstance.on('swipeleft', () => { // Swipe L->R on screen means content moves left
+          if (!this.isAnimating()) {
             this.ngZone.run(() => this.nextDay());
           }
         });
-        this.hammerInstance.on('swiperight', () => {
-          if (!this.isAnimating) {
+        this.hammerInstance.on('swiperight', () => { // Swipe R->L on screen means content moves right
+          if (!this.isAnimating()) {
             this.ngZone.run(() => this.previousDay());
           }
         });
       });
     } else {
-      console.error('Swipe content wrapper element NOT found for direct HammerJS setup.');
+      console.error('Swipe content wrapper element NOT found for HammerJS setup.');
     }
   }
 
@@ -93,101 +101,124 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
     this.hammerInstance?.destroy();
   }
 
-  // This method will ONLY fetch data. Animation is handled by changing animationState.
   private loadTodaysWorkoutContent(): void {
     this.isLoading.set(true);
+    // this.spinnerService.show(); // Optional: if you use a global spinner
     this.trainingProgramService.getRoutineForDay(this.currentDate())
       .subscribe({
         next: (data) => {
           this.todaysScheduledWorkout.set(data);
           this.isLoading.set(false);
+          // this.spinnerService.hide();
         },
         error: (err) => {
-          console.error("Error fetching today's scheduled workout:", err);
-          this.todaysScheduledWorkout.set(null); // Ensure it's cleared on error
+          console.error("Error fetching scheduled workout:", err);
+          this.todaysScheduledWorkout.set(null);
           this.isLoading.set(false);
+          // this.spinnerService.hide();
         }
       });
   }
 
-  private changeDay(direction: 'next' | 'previous'): void {
-    if (this.isAnimating) return;
-    this.isAnimating = true;
+  private changeDay(swipeDirection: 'left' | 'right'): void { // 'left' swipe = next, 'right' swipe = previous
+    if (this.isAnimating()) return;
+    this.isAnimating.set(true);
 
-    if (direction === 'next') {
-      this.animationState.set('slideOutToLeft');
-    } else {
-      this.animationState.set('slideOutToRight');
+    // 1. Trigger OLD content to animate OUT
+    if (swipeDirection === 'left') { // User swipes Left on screen (Next Day): Old content exits to Right, New enters from Left
+      this.animationState.set('exitToLeft');
+    } else { // User swipes Right on screen (Previous Day): Old content exits to Left, New enters from Right
+      this.animationState.set('exitToRight');
     }
 
-    // Wait for the "out" animation to finish
+    // 2. After OUT animation, update data and prepare NEW content to animate IN
     setTimeout(() => {
-      if (direction === 'next') {
-        this.currentDate.update(d => {
-          const newDate = new Date(d);
-          newDate.setDate(d.getDate() + 1);
-          return newDate;
-        });
-      } else {
-        this.currentDate.update(d => {
-          const newDate = new Date(d);
-          newDate.setDate(d.getDate() - 1);
-          return newDate;
-        });
+      this.currentDate.update(d => {
+        const newDate = new Date(d);
+        newDate.setDate(d.getDate() + (swipeDirection === 'left' ? 1 : -1));
+        return newDate;
+      });
+
+      // Set the state for NEW content to be OFF-SCREEN
+      if (swipeDirection === 'left') { // New content enters from Left
+        this.animationState.set('enterFromRight');
+      } else { // New content enters from Right
+        this.animationState.set('enterFromLeft');
       }
-      this.loadTodaysWorkoutContent(); // Load new content
-      // The animation to 'center' for new content will be triggered by the transition
-      // from 'slideOutToLeft' or 'slideOutToRight' to 'center'
-      // after the content has been updated by loadTodaysWorkoutContent
-      this.animationState.set('center'); // Trigger "in" animation for the new content
-      
-      // Allow new animations after this one completes
-      setTimeout(() => { this.isAnimating = false; }, 250); // Match "in" animation duration
-    }, 200); // Match "out" animation duration
+
+      this.loadTodaysWorkoutContent(); // Load new data (template will update with new data in the 'enterFrom...' position)
+
+      // Use requestAnimationFrame to ensure the 'enterFrom...' state is processed before animating to 'center'
+      requestAnimationFrame(() => {
+        this.animationState.set('center'); // Trigger "in" animation for new content
+      });
+
+      // Reset isAnimating flag after the "in" animation is expected to complete
+      // Total duration for isAnimating lock: out_duration + in_duration (since they are sequential)
+      setTimeout(() => {
+        this.isAnimating.set(false);
+      }, this.ANIMATION_IN_DURATION + 50); // Add a small buffer
+
+    }, this.ANIMATION_OUT_DURATION);
   }
 
   previousDay(): void {
-    console.log('previousDay method called');
-    this.changeDay('previous');
+    // console.log('previousDay method called (swipe R->L)');
+    this.changeDay('right'); // Swiping right on screen to go to previous day
   }
 
   nextDay(): void {
-    console.log('nextDay method called');
-    this.changeDay('next');
+    // console.log('nextDay method called (swipe L->R)');
+    this.changeDay('left'); // Swiping left on screen to go to next day
   }
 
   goToToday(): void {
-    if (this.isAnimating) return;
+    if (this.isAnimating()) return;
 
     const today = new Date();
-    const currentDateVal = this.currentDate();
+    today.setHours(0, 0, 0, 0); // Normalize today's date
+    const currentDateVal = new Date(this.currentDate());
+    currentDateVal.setHours(0, 0, 0, 0); // Normalize current date
+
     if (currentDateVal.getTime() === today.getTime()) return;
 
-    this.isAnimating = true;
+    this.isAnimating.set(true);
+    const isGoingToPast = currentDateVal > today; // True if current date is in future, moving to past (today)
 
-    if (currentDateVal > today) {
-      this.animationState.set('slideOutToRight');
-    } else {
-      this.animationState.set('slideOutToLeft');
+    // 1. Trigger OLD content to animate OUT
+    if (isGoingToPast) { // Old (future) exits Left, New (today) enters Right
+      this.animationState.set('exitToRight');
+    } else { // Old (past) exits Right, New (today) enters Left
+      this.animationState.set('exitToLeft');
     }
 
+    // 2. After OUT animation
     setTimeout(() => {
-      this.currentDate.set(new Date());
-      this.loadTodaysWorkoutContent();
-      this.animationState.set('center');
-      setTimeout(() => { this.isAnimating = false; }, 250);
-    }, 200);
-  }
+      this.currentDate.set(new Date()); // Set to actual today
 
+      // Set the state for NEW content (today) to be OFF-SCREEN
+      if (isGoingToPast) {
+        this.animationState.set('enterFromLeft');
+      } else {
+        this.animationState.set('enterFromRight');
+      }
+
+      this.loadTodaysWorkoutContent();
+
+      requestAnimationFrame(() => {
+        this.animationState.set('center'); // Trigger "in" animation
+      });
+
+      setTimeout(() => {
+        this.isAnimating.set(false);
+      }, this.ANIMATION_IN_DURATION + 50);
+
+    }, this.ANIMATION_OUT_DURATION);
+  }
 
   startWorkout(routineId: string | undefined): void {
     if (routineId) {
-      const navigationExtras: any = {};
-      // const programInfo = this.todaysScheduledWorkout();
-      // if (programInfo && programInfo.scheduledDayInfo.programId) {
-      //   navigationExtras.queryParams = { programId: programInfo.scheduledDayInfo.programId };
-      // }
-      this.router.navigate(['/workout/play', routineId], navigationExtras);
+      this.router.navigate(['/workout/play', routineId]);
     }
   }
 
@@ -208,7 +239,7 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
   isToday(date: Date): boolean {
     const today = new Date();
     return date.getDate() === today.getDate() &&
-           date.getMonth() === today.getMonth() &&
-           date.getFullYear() === today.getFullYear();
+      date.getMonth() === today.getMonth() &&
+      date.getFullYear() === today.getFullYear();
   }
 }

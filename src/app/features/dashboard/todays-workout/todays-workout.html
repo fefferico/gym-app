@@ -3,7 +3,7 @@
   <div class="mb-4 flex items-center justify-between pb-3 border-b border-gray-200 dark:border-gray-700">
     <button (click)="previousDay()" title="Previous Day"
       class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 disabled:opacity-50"
-      [disabled]="isAnimating">
+      [disabled]="isAnimating()">
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
         <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
       </svg>
@@ -16,7 +16,7 @@
     </div>
     <button (click)="nextDay()" title="Next Day"
       class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 disabled:opacity-50"
-      [disabled]="isAnimating">
+      [disabled]="isAnimating()">
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
         <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
       </svg>
@@ -24,7 +24,7 @@
   </div>
   <button *ngIf="!isToday(currentDate())" (click)="goToToday()"
     class="mb-4 text-m text-primary dark:text-primary-light hover:underline disabled:opacity-50"
-    [disabled]="isAnimating">
+    [disabled]="isAnimating()">
     Jump to Today
   </button>
 
@@ -57,12 +57,12 @@
               Suggested Time: {{ workoutInfo.scheduledDayInfo.timeOfDay }}
             </p>
             <div class="mt-4 flex flex-col sm:flex-row gap-2">
-              <button (click)="startWorkout(workoutInfo.routine.id)" [disabled]="isAnimating"
+              <button (click)="startWorkout(workoutInfo.routine.id)" [disabled]="isAnimating()"
                 class="flex-1 bg-green-500 hover:bg-green-600 text-white font-semibold py-2.5 px-4 rounded-md shadow-sm transition-colors flex items-center justify-center text-m disabled:opacity-50">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 010 1.972l-11.54 6.347a1.125 1.125 0 01-1.667-.986V5.653z" /></svg>
                 START
               </button>
-              <button (click)="viewRoutineDetails(workoutInfo.routine.id)" [disabled]="isAnimating"
+              <button (click)="viewRoutineDetails(workoutInfo.routine.id)" [disabled]="isAnimating()"
                 class="flex-1 bg-sky-500 hover:bg-sky-600 text-white font-semibold py-2.5 px-4 rounded-md shadow-sm transition-colors flex items-center justify-center text-m disabled:opacity-50">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                 DETAILS
@@ -90,7 +90,7 @@
                     <span class="font-medium text-gray-800 dark:text-gray-100">{{ routine.name }}</span>
                     <span class="block text-left text-xs text-gray-500 dark:text-gray-400">{{ routine.exercises.length }} exercises</span>
                   </div>
-                  <button (click)="startWorkout(routine.id)" [disabled]="isAnimating"
+                  <button (click)="startWorkout(routine.id)" [disabled]="isAnimating()"
                     class="flex items-center ml-2 text-m bg-primary hover:bg-green-200 text-white dark:hover:bg-primary-dark font-semibold py-1 px-2.5 rounded-md disabled:opacity-50">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-4 mr-1"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 010 1.972l-11.54 6.347a1.125 1.125 0 01-1.667-.986V5.653z" /></svg>
                     START

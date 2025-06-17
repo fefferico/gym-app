@@ -25,6 +25,8 @@ import { AppSettingsService } from '../../core/services/app-settings.service'; /
 import { TrainingProgram } from '../../core/models/training-program.model';
 import { LongPressDirective } from '../../shared/directives/long-press.directive';
 import { id } from '@swimlane/ngx-charts';
+import { ExerciseDetailComponent } from '../exercise-library/exercise-detail';
+import { ModalComponent } from '../../shared/components/modal/modal.component';
 
 
 // Interface to manage the state of the currently active set/exercise
@@ -88,7 +90,7 @@ enum PlayerSubState {
 @Component({
   selector: 'app-workout-player',
   standalone: true,
-  imports: [CommonModule, RouterLink, DatePipe, ReactiveFormsModule, FormsModule, WeightUnitPipe, FullScreenRestTimerComponent, LongPressDirective],
+  imports: [CommonModule, RouterLink, DatePipe, ReactiveFormsModule, FormsModule, WeightUnitPipe, FullScreenRestTimerComponent, LongPressDirective, ModalComponent, ExerciseDetailComponent],
   templateUrl: './workout-player.html',
   styleUrl: './workout-player.scss',
   providers: [DecimalPipe]
@@ -402,6 +404,36 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       return previousLoggedSets;
     }
     return [];
+  });
+
+  allPreviousLoggedSetsForCurrentSession = computed<LoggedSet[]>(() => {
+    const activeInfo = this.activeSetInfo();
+    if (!activeInfo) {
+      return [];
+    }
+    const allLoggedSets: LoggedSet[] = [];
+    for (const exLog of this.currentWorkoutLogExercises()) {
+      for (const set of exLog.sets) {
+        // Only include sets that were performed before the current set in the session
+        // Compare by exercise index and set index in the routine
+        const routine = this.routine();
+        if (!routine) continue;
+        const exerciseIdx = routine.exercises.findIndex(e => e.exerciseId === exLog.exerciseId);
+        // const exerciseIdx = routine.exercises.findIndex(e => e.exerciseId === exLog.exerciseId && e.id === (exLog as any).id);
+        if (exerciseIdx < 0) continue;
+        // If before current exercise, include all sets
+        if (exerciseIdx < activeInfo.exerciseIndex) {
+          allLoggedSets.push(set);
+        } else if (exerciseIdx === activeInfo.exerciseIndex) {
+          // For current exercise, only include sets before the current set index
+          const setIdx = routine.exercises[exerciseIdx].sets.findIndex(s => s.id === set.plannedSetId);
+          if (setIdx > -1 && setIdx < activeInfo.setIndex) {
+            allLoggedSets.push(set);
+          }
+        }
+      }
+    }
+    return allLoggedSets;
   });
 
   isWorkoutMenuVisible = signal(false);
@@ -821,7 +853,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
     // No more 'pending' exercises after this one in the main sequence.
     // Now, check if there are *any* unlogged 'do_later' or 'skipped' exercises in the whole routine.
-    const hasUnfinishedDeferred = currentRoutine.exercises.some((ex,index) =>
+    const hasUnfinishedDeferred = currentRoutine.exercises.some((ex, index) =>
       (ex.sessionStatus === 'do_later' || ex.sessionStatus === 'skipped') &&
       !this.isExerciseFullyLogged(ex.exerciseId, index, ex.sets.length)
     );
@@ -883,10 +915,34 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
           userCancelledChoice = true;
         }
       } else { // Multiple unfinished exercises
-        const exerciseButtons: AlertButton[] = mergedUnfinishedExercises.map(ex => ({
-          text: `${ex.exerciseName} (${ex.sessionStatus})`, role: 'confirm', data: ex.originalIndex,
-          cssClass: ex.sessionStatus === 'do_later' ? 'bg-orange-500 hover:bg-orange-600 text-white' : 'bg-yellow-500 hover:bg-yellow-600 text-black'
-        }));
+        const exerciseButtons: AlertButton[] = mergedUnfinishedExercises.map(ex => {
+          // Convert sessionStatus to a user-friendly label
+          let statusLabel = '';
+
+          let cssClass = 'bg-gray-500 dark:bg-gray-700 dark:text-gray-100 hover:bg-gray-300 hover:text-gray-500 hover:dark:bg-gray-300 hover:dark:text-gray-500';
+          switch (ex.sessionStatus) {
+            case 'do_later':
+              statusLabel = 'Do Later';
+              cssClass = 'bg-orange-500 hover:bg-orange-600 text-white';
+              break;
+            case 'skipped':
+              statusLabel = 'Skipped';
+              cssClass = 'bg-yellow-500 hover:bg-yellow-600 text-black';
+              break;
+            case 'pending':
+              statusLabel = 'Pending';
+              cssClass = 'bg-violet-500 hover:bg-violet-600 text-black';
+              break;
+            default:
+              statusLabel = ex.sessionStatus || '';
+          }
+          return {
+            text: `${ex.exerciseName} (${statusLabel})`,
+            role: 'confirm',
+            data: ex.originalIndex,
+            cssClass: cssClass
+          };
+        });
         const alertButtons: AlertButton[] = [
           ...exerciseButtons,
           { text: 'Finish Workout Now', role: 'destructive', data: 'finish_now', cssClass: 'bg-green-500 hover:bg-green-600 text-white mt-4' },
@@ -963,7 +1019,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
   private isExerciseFullyLogged(exerciseId: string, exerciseIndex: number, totalPlannedSets: number): boolean {
-    const loggedEx = this.currentWorkoutLogExercises().find((le,index) => le.exerciseId === exerciseId && index === exerciseIndex);
+    const loggedEx = this.currentWorkoutLogExercises().find((le, index) => le.exerciseId === exerciseId);
     if (!loggedEx) return false;
     return loggedEx.sets.length >= totalPlannedSets;
   }
@@ -1375,6 +1431,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
     const loggedSetData: LoggedSet = {
       id: uuidv4(), // Unique ID for this specific logged instance
+      exerciseName: activeInfo.exerciseData.exerciseName,
       plannedSetId: activeInfo.setData.id,
       exerciseId: activeInfo.exerciseData.exerciseId,
       type: activeInfo.setData.type,
@@ -1707,7 +1764,10 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     }
   }
 
-  closeWorkoutMenu(): void { this.isWorkoutMenuVisible.set(false); }
+  closeWorkoutMenu(): void {
+    this.isWorkoutMenuVisible.set(false);
+    window.scrollTo(0, 0);
+  }
 
   async skipCurrentSet(): Promise<void> {
     if (this.sessionState() === 'paused') { this.toastService.warning("Session is paused. Resume to skip set.", 3000, "Paused"); return; }
@@ -2063,6 +2123,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       exerciseName: ex.exerciseName || '',
       sets: ex.sets.map(set => ({
         id: uuidv4(),
+        exerciseName: ex.exerciseName,
         plannedSetId: set.id,
         exerciseId: ex.exerciseId,
         type: ex.type,
@@ -2094,11 +2155,11 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     if (this.sessionState() === SessionState.Loading) {
       this.toastService.info("Workout is still loading.", 3000, "Loading");
       return false; // Did not log
-    } 
+    }
     // const loggedExercisesForReport = this.currentWorkoutLogExercises().filter(ex => ex.sets.length > 0);
     const loggedExercisesForReport = this.routine()?.exercises.map(ex => this.mapWorkoutExerciseToLoggedWorkoutExercise(ex));
 
-    if (loggedExercisesForReport === undefined || loggedExercisesForReport.length === 0){
+    if (loggedExercisesForReport === undefined || loggedExercisesForReport.length === 0) {
       return false
     }
 
@@ -2267,7 +2328,10 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
   closePerformanceInsights(): void {
     this.isPerformanceInsightsVisible.set(false);
-    if (this.editingTarget) this.cancelEditTarget();
+    if (this.editingTarget) {
+      this.cancelEditTarget();
+    }
+    this.isWorkoutMenuVisible.set(true);
   }
 
   openPerformanceInsightsFromMenu(): void {
@@ -2953,6 +3017,20 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     });
   }
 
+  /**
+   * Returns an array of all exercises in the current routine that are fully logged.
+   * An exercise is considered finished if all its sets are logged.
+   */
+  getFinishedExercises(): WorkoutExercise[] {
+    const routine = this.routine();
+    const loggedExercises = this.currentWorkoutLogExercises();
+    if (!routine) return [];
+    return routine.exercises.filter((ex, idx) => {
+      const logged = loggedExercises.find(le => le.exerciseId === ex.exerciseId && routine.exercises[idx].id === ex.id);
+      return logged && logged.sets.length >= ex.sets.length;
+    });
+  }
+
   // Ensure navigateToNextStepInWorkout correctly resets exercisesProposedThisCycle
   // when it decides to call tryProceedToDeferredExercisesOrFinish.
 
@@ -2993,6 +3071,35 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       this.exercisesProposedThisCycle = { doLater: false, skipped: false };
       await this.tryProceedToDeferredExercisesOrFinish(currentSessionRoutine);
       return;
+    }
+
+    // If the nextExIdx points to the same exercise as just completed, but the set index is different,
+    // OR if the nextExIdx points to a different exercise but it's actually the same exercise (e.g., due to duplicate IDs in routine),
+    // we want to ensure we are not repeating the same exercise unintentionally.
+
+    // Defensive: If the nextExIdx is -1, do nothing (should be handled above)
+    if (nextExIdx === -1) {
+      // Already handled above with isEndOfAllPending
+      return;
+    }
+
+    // Check if the next exercise is the same as the one just completed (by id)
+    const nextExercise = currentSessionRoutine.exercises[nextExIdx];
+    if (nextExercise && exerciseJustCompleted && nextExercise.id === exerciseJustCompleted.id) {
+      // Optionally, you could add logic here if you want to handle repeated exercises differently
+      // For now, just log for debugging
+      console.log('Next exercise is the same as just completed:', nextExercise.exerciseName);
+    }
+
+    // Check if the next exercise is already among currentWorkoutLogExercises (by exerciseId and id)
+    const isNextExerciseLogged = this.currentWorkoutLogExercises().some(
+      logEx => logEx.exerciseId === nextExercise?.exerciseId &&
+        currentSessionRoutine.exercises.find(ex => ex.id === nextExercise?.id) && this.isExerciseFullyLogged(nextExercise?.id,nextExIdx,nextExercise.sets?.length)
+    );
+    if (isNextExerciseLogged) {
+      console.log('Next exercise is already logged in currentWorkoutLogExercises:', nextExercise?.exerciseName);
+      // You can add additional logic here if you want to handle this case
+      this.tryProceedToDeferredExercisesOrFinish(currentSessionRoutine);
     }
 
     this.currentExerciseIndex.set(nextExIdx);
@@ -3254,11 +3361,28 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         statusIndicator = ' (Do Later)';
       }
 
+      let cssClass = 'bg-gray-500 dark:bg-gray-700 dark:text-gray-100 hover:bg-gray-300 hover:text-gray-500 hover:dark:bg-gray-300 hover:dark:text-gray-500';
+
+      switch (ex.sessionStatus) {
+        case 'pending':
+          cssClass = statusIndicator.includes('Current') ? 'bg-blue-600 text-white' : cssClass;
+          break;
+        case 'do_later':
+          cssClass = 'bg-orange-500 hover:bg-orange-600 text-white';
+          break;
+        case 'skipped':
+          cssClass = 'bg-yellow-500 hover:bg-yellow-600 text-black';
+          break;
+        default:
+          cssClass = 'bg-gray-500 dark:bg-gray-700 dark:text-gray-100 hover:bg-gray-300 hover:text-gray-500 hover:dark:bg-gray-300 hover:dark:text-gray-500';
+          break;
+      }
+
       return {
         text: `${ex.exerciseName}${statusIndicator}`,
         role: 'confirm',
         data: ex.originalIndex, // Pass the original index
-        cssClass: (ex.id === this.activeSetInfo()?.exerciseData.id && ex.sessionStatus === 'pending') ? 'bg-blue-600 text-white' : 'bg-gray-500 dark:bg-gray-700 dark:text-gray-100 hover:bg-gray-300 hover:text-gray-500 hover:dark:bg-gray-300 hover:dark:text-gray-500'
+        cssClass: cssClass
       };
     });
 
@@ -3367,5 +3491,32 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   }
   // --- End Modal Methods ---
 
+
+  isExerciseDetailModalOpen = signal(false);
+  isSimpleModalOpen = signal(false);
+  exerciseDetailsId: string = '';
+  exerciseDetailsName: string = '';
+
+  performAction() {
+    console.log('Action performed from modal footer!');
+    this.isExerciseDetailModalOpen.set(false);
+  }
+
+  openModal(exerciseData: WorkoutExercise) {
+    this.exerciseDetailsId = exerciseData.exerciseId;
+    this.exerciseDetailsName = exerciseData.exerciseName || 'Exercise details';
+    this.isSimpleModalOpen.set(true);
+  }
+
+  showCompletedSetsForExerciseInfo = signal(false);
+  toggleCompletedSetsForExerciseInfo(): void {
+    this.showCompletedSetsForExerciseInfo.update(s => !s);
+  }
+
+  // For the "Completed Sets Today (All Exercises)"
+  showCompletedSetsForDayInfo = signal(false);
+  toggleCompletedSetsForDayInfo(): void {
+    this.showCompletedSetsForDayInfo.update(s => !s);
+  }
 
 }

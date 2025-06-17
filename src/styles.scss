@@ -15,3 +15,44 @@ body {
 .your-swipeable-card-class { /* Add a specific class to the div if needed */
   touch-action: pan-y pan-x; /* Or just 'auto' if that works, but pan-y pan-x is often good */
 }
+
+@layer components {
+  /* Modal Appear Animation */
+  @keyframes modal-appear-animation {
+    0% {
+      opacity: 0;
+      transform: scale(0.95) translateY(10px);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+
+  .animate-modal-appear {
+    animation: modal-appear-animation 0.3s ease-out forwards;
+  }
+
+  /* Optional: Custom Scrollbar (Tailwind doesn't have great utilities for this yet) */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;  /* For vertical scrollbars */
+    height: 6px; /* For horizontal scrollbars */
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 3px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+  }
+  .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(0, 0, 0, 0.3);
+  }
+  .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+  }
+}

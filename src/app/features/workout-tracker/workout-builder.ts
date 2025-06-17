@@ -522,6 +522,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         newSet = this.createSetFormGroup({
           id: setData.id ?? this.workoutService.generateExerciseSetId(),
           exerciseId: exerciseId,
+          exerciseName: setData.exerciseName,
           repsAchieved: setData.repsAchieved,
           weightUsed: setData.weightUsed,
           durationPerformed: setData.durationPerformed,
@@ -889,6 +890,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
           notes: exInput.notes, // Exercise-level notes from the form
           sets: exInput.sets.map((setInput: any): LoggedSet => ({
             id: setInput.id || uuidv4(),
+            exerciseName: exInput.exerciseName,
             plannedSetId: setInput.plannedSetId, // This was set during prefill or from existing log
             exerciseId: exInput.exerciseId,
             type: setInput.type, // <<<< ENSURE THIS IS SAVED

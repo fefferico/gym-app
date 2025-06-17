@@ -3,6 +3,7 @@
 // Describes a single set that was actually performed and logged.
 export interface LoggedSet {
   id: string; // Unique ID for this specific logged set instance (can be the plannedSetId if it originated from a routine)
+  exerciseName: string | undefined;
   plannedSetId?: string; // ID of the ExerciseSetParams from the routine, if applicable
   exerciseId: string;    // ID of the base Exercise performed
 

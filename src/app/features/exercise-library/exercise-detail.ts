@@ -49,11 +49,14 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy {
   progressChartAutoScale = true;
 
   @Input() id?: string; // For route parameter binding
+  @Input() isModal?: boolean = false; // For route parameter binding
   private platformId = inject(PLATFORM_ID); // Inject PLATFORM_ID
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) { // Check if running in a browser
-      window.scrollTo(0, 0);
+      if (!this.isModal) { // Only scroll if not in a modal
+        window.scrollTo(0, 0);
+      }
     }
     const idSource$ = this.id ? of(this.id) : this.route.paramMap.pipe(map(params => params.get('id')));
 

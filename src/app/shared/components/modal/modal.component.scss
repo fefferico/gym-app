@@ -1,0 +1,45 @@
+// :host {
+//   // display: contents; // Often not needed if parent handles layout,
+//                      // but can be kept if it helps in specific scenarios.
+//                      // Angular Animations on the modal-container makes this less critical.
+// }
+
+// Most styling is now handled by Tailwind classes in the HTML.
+// This SCSS is now for things Tailwind doesn't easily do or for very specific overrides.
+
+.modal-footer {
+  &:empty { // Hide footer if no content is projected into it
+    display: none;
+  }
+}
+
+// If you had any very specific styles that CANNOT be achieved with Tailwind
+// and are unique to the modal's structure, they could go here.
+// For example, very custom scrollbar styling if Tailwind's utilities aren't enough.
+// But generally, prefer Tailwind.
+
+// Example for custom scrollbar (if needed)
+// .modal-body {
+//   &::-webkit-scrollbar {
+//     width: 8px;
+//   }
+//   &::-webkit-scrollbar-track {
+//     background: transparent;
+//   }
+//   &::-webkit-scrollbar-thumb {
+//     background-color: rgba(0, 0, 0, 0.2);
+//     border-radius: 4px;
+//     &:hover {
+//       background-color: rgba(0, 0, 0, 0.3);
+//     }
+//   }
+// }
+
+// .dark .modal-body {
+//   &::-webkit-scrollbar-thumb {
+//     background-color: rgba(255, 255, 255, 0.2);
+//     &:hover {
+//       background-color: rgba(255, 255, 255, 0.3);
+//     }
+//   }
+// }
