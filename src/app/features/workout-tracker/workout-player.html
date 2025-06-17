@@ -63,15 +63,15 @@
             [title]="activeSet.exerciseData.exerciseName">
             {{ activeSet.exerciseData.exerciseName || 'Loading Exercise...' }}
           </h2>
-          <svg class="ml-2 cursor-pointer" title="Exercise details" *ngIf="activeSet.exerciseData.id" width="20"
+          <svg class="ml-2 cursor-pointer dark:text-white" title="Exercise details" *ngIf="activeSet.exerciseData.id" width="20"
             height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"
             (click)="openModal(activeSet.exerciseData)">
             <!-- Outer circle -->
-            <circle cx="10" cy="10" r="9" stroke="white" stroke-width="2" fill="none" />
+            <circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="2" fill="none" />
             <!-- Dot of the 'i' -->
-            <circle cx="10" cy="6" r="1.5" fill="white" />
+            <circle cx="10" cy="6" r="1.5" fill="currentColor" />
             <!-- Stem of the 'i' -->
-            <rect x="9" y="8" width="2" height="8" fill="white" />
+            <rect x="9" y="9" width="2" height="7" fill="currentColor" />
           </svg>
         </div>
 
