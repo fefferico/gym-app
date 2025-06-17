@@ -124,7 +124,7 @@
         </div>
 
         <div *ngIf="playerSubState() === PlayerSubState.PerformingSet">
-          <form [formGroup]="currentSetForm" class="space-y-4 mb-6">
+          <form [formGroup]="currentSetForm" class="space-y-4 mb-2">
             <!-- Weight Input -->
             <div *ngIf="csf['actualWeight']">
               <label
@@ -248,7 +248,7 @@
           </form>
         </div>
         <div
-          class="left-0 right-0 z-20 bg-gray-50 dark:bg-gray-950 border-t border-gray-200 dark:border-gray-800 p-3 shadow-[0_-2px_5px_-1px_rgba(0,0,0,0.1)]"
+          class="left-0 right-0 z-20 p-3"
           *ngIf="routine() && sessionState() === 'playing' && activeSetInfo()">
           <div class="max-w-md mx-auto">
             <button (click)="handleMainAction()"
@@ -264,6 +264,10 @@
             </button>
           </div>
         </div>
+        <div *ngIf="getNextUpText(activeSetInfo(), routine() ?? null)" class="text-wrap text-sm text-center text-gray-800 dark:text-gray-100 px-2 text-s"
+            [title]="getNextUpText(activeSetInfo(), routine() ?? null) || 'Next Exercise'">
+            <span class="font-medium">Next up: </span><span>{{ getNextUpText(activeSetInfo(), routine() ?? null) || 'Next Exercise' }}</span>
+          </div>
       </div>
       <ng-template #workoutCompleteOrError>
         <div class="text-center py-10 pt-16">

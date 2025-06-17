@@ -1,7 +1,7 @@
 <div
   *ngIf="isOpen()"
   [@modalAnimation]="animationState"
-  class="modal-container mx-1 fixed inset-0 z-[1000] flex items-center justify-center bg-black bg-opacity-60"
+  class="modal-container fixed inset-0 z-[1000] flex items-center justify-center bg-black bg-opacity-60"
   (click)="closeModal()">
   <!--
     Tailwind classes used:
@@ -13,7 +13,7 @@
 
   <div
     [@dialogAnimation]="animationState"
-    class="modal-dialog bg-white dark:bg-gray-800 rounded-lg shadow-xl
+    class="modal-dialog mx-2 bg-white dark:bg-gray-800 rounded-lg shadow-xl
            min-w-[300px] w-full max-w-lg md:max-w-xl lg:max-w-2xl
            max-h-[90vh] flex flex-col overflow-hidden"
     (click)="onDialogClick($event)">
