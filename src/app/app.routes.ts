@@ -1,6 +1,7 @@
 // src/app/app.routes.ts
 import { Routes } from '@angular/router';
 import { HomeComponent } from './features/home/home/home';
+import { KettleBellWorkoutTrackerComponent } from './kb-workout-tracker/kb-workout-tracker';
 
 export const APP_ROUTES: Routes = [
   { path: '', component: HomeComponent, pathMatch: 'full' },

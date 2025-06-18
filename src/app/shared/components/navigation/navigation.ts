@@ -25,5 +25,6 @@ export class NavigationComponent {
     { path: '/library', label: 'Library', iconSvgPath: 'M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6-2.292m0-14.25v14.25c0 .621.504 1.125 1.125 1.125H19.5A2.25 2.25 0 0 0 21.75 18V5.25c0-.621-.504-1.125-1.125-1.125H13.125c-.621 0-1.125.504-1.125 1.125Z' }, // Example: book-open
     { path: '/history/dashboard', label: 'Stats', iconSvgPath: 'M3 17l6-6 4 2 8-8 M17 7l4 0l0 4' /* appropriate icon */ },
     { path: '/profile', label: 'Profile', iconSvgPath: 'M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A1.875 1.875 0 0 1 18.126 22.5H5.874a1.875 1.875 0 0 1-1.373-2.382Z' }, // Example: user-circle
+    // { path: '/workout/routine/kb-workout-traker', label: 'KB', iconSvgPath: 'M70,50 Q70,40 80,40 Q90,40 90,50 L90,130 Q90,140 80,140 Q70,140 70,130 L70,50 Z M60,50 Q60,70 50,80 Q40,100 50,120 Q60,130 70,130 Q80,130 90,120 Q100,100 90,80 Q80,70 70,50 Z' }, // Example: user-circle
   ];
 }

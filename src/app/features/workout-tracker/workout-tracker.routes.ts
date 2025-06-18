@@ -4,6 +4,7 @@ import { RoutineListComponent } from './routine-list';
 import { WorkoutBuilderComponent } from './workout-builder'; // This now serves multiple purposes
 import { WorkoutPlayerComponent } from './workout-player';
 import { WorkoutSummaryComponent } from './workout-summary/workout-summary';
+import { KettleBellWorkoutTrackerComponent } from '../../kb-workout-tracker/kb-workout-tracker';
 
 export const WORKOUT_TRACKER_ROUTES: Routes = [
   {
@@ -59,5 +60,9 @@ export const WORKOUT_TRACKER_ROUTES: Routes = [
     path: 'summary/:logId',
     component: WorkoutSummaryComponent,
     title: 'Workout Summary'
-  }
+  },
+  {
+    path: 'routine/kb-workout-tracker',
+    component: KettleBellWorkoutTrackerComponent
+  },
 ];

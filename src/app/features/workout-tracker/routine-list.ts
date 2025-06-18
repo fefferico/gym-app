@@ -340,4 +340,8 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     this.routinesSubscription?.unsubscribe();
     this.exercisesSubscription?.unsubscribe();
   }
+
+  startKB(): void {
+    this.router.navigate(['/workout/routine/kb-workout-tracker']);
+  }
 }
