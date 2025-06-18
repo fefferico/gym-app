@@ -62,28 +62,37 @@ export class KettleBellWorkoutTrackerComponent implements OnInit, OnDestroy {
 
   // --- THRESHOLDS (CRITICAL FOR TUNING) ---
   // General
-  private KEYPOINT_SCORE_THRESHOLD = 0.4; // Min confidence for a keypoint
-  private STABLE_FRAME_COUNT = 2; // Number of consecutive frames for state debounce
+  private KEYPOINT_SCORE_THRESHOLD = 0.5;  // was 0.4 → improve accuracy
+  private STABLE_FRAME_COUNT = 3;          // was 2 → reduce false positives
   private lastFramesStates: { [key: string]: boolean[] } = {}; // Debounce history
 
   // Bicep Curl
-  private BICEP_ELBOW_ANGLE_UP = 70;    // Degrees, arm flexed
-  private BICEP_ELBOW_ANGLE_DOWN = 150; // Degrees, arm extended
-  private BICEP_WRIST_ELBOW_VERTICAL_DIFF_DOWN = -10; // Pixels: wrist Y vs elbow Y at bottom
+  private BICEP_ELBOW_ANGLE_UP = 50;       // was 70 → tighter top position
+  private BICEP_ELBOW_ANGLE_DOWN = 160;    // was 150 → clearer full extension
+  private BICEP_WRIST_ELBOW_VERTICAL_DIFF_DOWN = 10; // was -10 → correct direction (wrist should be below elbow)
 
   // Kettlebell Snatch (very rough placeholders)
-  private SNATCH_HIP_EXTENSION_ANGLE_START = 160;
-  private SNATCH_ARM_LOCKOUT_SHOULDER_WRIST_ALIGNMENT_Y = 20;
-  private SNATCH_KNEE_ANGLE_BOTTOM = 90;
+  private SNATCH_HIP_EXTENSION_ANGLE_START = 170;   // was 160
+  private SNATCH_ARM_LOCKOUT_SHOULDER_WRIST_ALIGNMENT_Y = 30; // was 20 → tolerate more variation
+  private SNATCH_KNEE_ANGLE_BOTTOM = 80;            // was 90 → deeper bottom
 
   // Kettlebell Press
-  private PRESS_ELBOW_ANGLE_UP = 160; // Arm fully extended
-  private PRESS_ELBOW_ANGLE_RACK = 90; // Elbow bent at rack position
-  private PRESS_WRIST_SHOULDER_Y_DIFF_UP = -20; // Wrist Y higher than shoulder Y at lockout
-  private PRESS_WRIST_SHOULDER_Y_DIFF_RACK = 10; // Wrist Y relative to shoulder Y at rack
-  private PRESS_WRIST_SHOULDER_X_ALIGNMENT = 40; // Max horizontal diff for wrist/shoulder alignment
-  private PRESS_TORSO_LEAN_X_ALIGNMENT = 50;   // Max horizontal diff for shoulder/hip alignment (lean check)
-  private lastRepTime = -1; // Helper for demo rep counter, can be removed if not using timed demo reps
+  private PRESS_ELBOW_ANGLE_UP = 170;               // was 160 → clearer lockout
+  private PRESS_ELBOW_ANGLE_RACK = 90;
+  private PRESS_WRIST_SHOULDER_Y_DIFF_UP = -10;     // was -20 → allow for more wrist height variation
+  private PRESS_WRIST_SHOULDER_Y_DIFF_RACK = 20;    // was 10 → allow more tolerance
+  private PRESS_WRIST_SHOULDER_X_ALIGNMENT = 30;    // was 40
+  private PRESS_TORSO_LEAN_X_ALIGNMENT = 40;        // was 50 → stricter uprightness
+
+
+  private JERK_ELBOW_LOCKOUT_ANGLE = 165;     // at the end of the jerk (overhead)
+  private JERK_ELBOW_RACK_ANGLE = 90;         // in rack position
+  private JERK_KNEE_DIP_ANGLE = 90;           // deep knee bend during dip/drive
+  private JERK_SECOND_DIP_KNEE_ANGLE = 100;   // shallower than initial dip
+
+  private JERK_WRIST_SHOULDER_Y_DIFF_LOCKOUT = -20;
+  private JERK_WRIST_SHOULDER_X_ALIGNMENT = 30;
+
 
   // --- LIFECYCLE HOOKS ---
   async ngOnInit() {
@@ -349,7 +358,14 @@ export class KettleBellWorkoutTrackerComponent implements OnInit, OnDestroy {
       this.exerciseSpecificLogic = this.analyzeKettlebellSnatch;
     } else if (exerciseName === 'Kettlebell Press') {
       this.exerciseSpecificLogic = this.analyzeKettlebellPress;
+    } else if (exerciseName === 'Goblet Squat') {
+      this.exerciseSpecificLogic = this.analyzeGobletSquat;
+    } else if (exerciseName === 'Deadlift') {
+      this.exerciseSpecificLogic = this.analyzeDeadlift;
+    } else if (exerciseName === 'Kettlebell Jerk') {
+      this.exerciseSpecificLogic = this.analyzeKettlebellJerk;
     }
+
     // Add more 'else if' blocks for other exercises
     else {
       this.addFeedback('warning', `No specific logic implemented for exercise: ${exerciseName}`);
@@ -371,7 +387,7 @@ export class KettleBellWorkoutTrackerComponent implements OnInit, OnDestroy {
     const rWrist = pose.keypoints.find(kp => kp.name === 'right_wrist');
 
     if (!rShoulder || !rElbow || !rWrist ||
-        [rShoulder, rElbow, rWrist].some(kp => (kp!.score ?? 0) < this.KEYPOINT_SCORE_THRESHOLD)) {
+      [rShoulder, rElbow, rWrist].some(kp => (kp!.score ?? 0) < this.KEYPOINT_SCORE_THRESHOLD)) {
       // this.addFeedback('info', 'Curl: Right arm keypoints not clear.'); // Optional: too much feedback can be noisy
       return;
     }
@@ -435,7 +451,7 @@ export class KettleBellWorkoutTrackerComponent implements OnInit, OnDestroy {
     const rHip = pose.keypoints.find(kp => kp.name === 'right_hip'); // For torso lean check
 
     if (!rShoulder || !rElbow || !rWrist || !rHip ||
-        [rShoulder, rElbow, rWrist, rHip].some(kp => (kp!.score ?? 0) < this.KEYPOINT_SCORE_THRESHOLD)) {
+      [rShoulder, rElbow, rWrist, rHip].some(kp => (kp!.score ?? 0) < this.KEYPOINT_SCORE_THRESHOLD)) {
       // this.addFeedback('info', 'Press: Keypoints not clear for analysis.');
       return;
     }
@@ -477,15 +493,128 @@ export class KettleBellWorkoutTrackerComponent implements OnInit, OnDestroy {
         const wristShoulderXDiff = Math.abs(rWrist.x - rShoulder.x);
         const shoulderHipXDiff = Math.abs(rShoulder.x - rHip.x); // Crude torso lean check
         if (wristShoulderXDiff > this.PRESS_WRIST_SHOULDER_X_ALIGNMENT) {
-            this.addFeedback('warning', 'Press: Check wrist/shoulder horizontal alignment at lockout.');
+          this.addFeedback('warning', 'Press: Check wrist/shoulder horizontal alignment at lockout.');
         }
         if (shoulderHipXDiff > this.PRESS_TORSO_LEAN_X_ALIGNMENT) {
-            this.addFeedback('warning', 'Press: Possible torso lean at lockout. Stay upright.');
+          this.addFeedback('warning', 'Press: Possible torso lean at lockout. Stay upright.');
         }
         // No rep counted yet, just holding overhead. Rep counts on return to rack.
       }
     }
   }
+
+  private analyzeGobletSquat(pose: posedetection.Pose) {
+    const lHip = pose.keypoints.find(kp => kp.name === 'left_hip');
+    const rHip = pose.keypoints.find(kp => kp.name === 'right_hip');
+    const lKnee = pose.keypoints.find(kp => kp.name === 'left_knee');
+    const rKnee = pose.keypoints.find(kp => kp.name === 'right_knee');
+    const lAnkle = pose.keypoints.find(kp => kp.name === 'left_ankle');
+    const rAnkle = pose.keypoints.find(kp => kp.name === 'right_ankle');
+
+    if ([lHip, rHip, lKnee, rKnee, lAnkle, rAnkle].some(kp => (kp?.score ?? 0) < this.KEYPOINT_SCORE_THRESHOLD)) return;
+
+    const leftKneeAngle = this.calculateAngle(lHip!, lKnee!, lAnkle!);
+    const rightKneeAngle = this.calculateAngle(rHip!, rKnee!, rAnkle!);
+    if (!leftKneeAngle || !rightKneeAngle) return;
+
+    const avgKneeAngle = (leftKneeAngle + rightKneeAngle) / 2;
+    const isDown = avgKneeAngle < 90;
+    const isUp = avgKneeAngle > 160;
+
+    const stableDown = this.isStateStable('goblet_down', isDown);
+    const stableUp = this.isStateStable('goblet_up', isUp);
+
+    if (this.currentRepCycleState === RepState.START && stableDown) {
+      this.currentRepCycleState = RepState.UP;
+      this.addFeedback('info', `Squat: Down phase`);
+      this.lastFramesStates = {};
+    } else if (this.currentRepCycleState === RepState.UP && stableUp) {
+      this.incrementRep();
+      this.addFeedback('success', 'Squat: Rep complete!');
+      this.currentRepCycleState = RepState.START;
+      this.lastFramesStates = {};
+    }
+  }
+
+  private analyzeDeadlift(pose: posedetection.Pose) {
+    const lHip = pose.keypoints.find(kp => kp.name === 'left_hip');
+    const rHip = pose.keypoints.find(kp => kp.name === 'right_hip');
+    const lKnee = pose.keypoints.find(kp => kp.name === 'left_knee');
+    const rKnee = pose.keypoints.find(kp => kp.name === 'right_knee');
+    const lShoulder = pose.keypoints.find(kp => kp.name === 'left_shoulder');
+    const rShoulder = pose.keypoints.find(kp => kp.name === 'right_shoulder');
+
+    if ([lHip, rHip, lKnee, rKnee, lShoulder, rShoulder].some(kp => (kp?.score ?? 0) < this.KEYPOINT_SCORE_THRESHOLD)) return;
+
+    const leftHipAngle = this.calculateAngle(lShoulder!, lHip!, lKnee!);
+    const rightHipAngle = this.calculateAngle(rShoulder!, rHip!, rKnee!);
+    if (leftHipAngle === null || rightHipAngle === null) return;
+    const avgHipAngle = (leftHipAngle + rightHipAngle) / 2;
+
+    const isBottom = avgHipAngle < 90;
+    const isTop = avgHipAngle > 160;
+
+    const stableBottom = this.isStateStable('deadlift_bottom', isBottom);
+    const stableTop = this.isStateStable('deadlift_top', isTop);
+
+    if (this.currentRepCycleState === RepState.START && stableBottom) {
+      this.currentRepCycleState = RepState.UP;
+      this.addFeedback('info', 'Deadlift: Bottom position');
+      this.lastFramesStates = {};
+    } else if (this.currentRepCycleState === RepState.UP && stableTop) {
+      this.incrementRep();
+      this.addFeedback('success', 'Deadlift: Rep complete!');
+      this.currentRepCycleState = RepState.START;
+      this.lastFramesStates = {};
+    }
+  }
+
+  private analyzeKettlebellJerk(pose: posedetection.Pose) {
+    const rShoulder = pose.keypoints.find(kp => kp.name === 'right_shoulder');
+    const rElbow = pose.keypoints.find(kp => kp.name === 'right_elbow');
+    const rWrist = pose.keypoints.find(kp => kp.name === 'right_wrist');
+    const rHip = pose.keypoints.find(kp => kp.name === 'right_hip');
+    const rKnee = pose.keypoints.find(kp => kp.name === 'right_knee');
+    const rAnkle = pose.keypoints.find(kp => kp.name === 'right_ankle');
+
+    if ([rShoulder, rElbow, rWrist, rHip, rKnee, rAnkle].some(kp => (kp?.score ?? 0) < this.KEYPOINT_SCORE_THRESHOLD)) return;
+
+    const elbowAngle = this.calculateAngle(rShoulder!, rElbow!, rWrist!);
+    const kneeAngle = this.calculateAngle(rHip!, rKnee!, rAnkle!);
+    const wristOverhead = (rWrist!.y < rShoulder!.y + this.JERK_WRIST_SHOULDER_Y_DIFF_LOCKOUT);
+    const wristShoulderXDiff = Math.abs(rWrist!.x - rShoulder!.x);
+    const kneeIsDipped = kneeAngle! < this.JERK_KNEE_DIP_ANGLE;
+    const kneeIsSecondDip = kneeAngle! < this.JERK_SECOND_DIP_KNEE_ANGLE;
+
+    const stableDip = this.isStateStable('jerk_dip', kneeIsDipped);
+    const stableSecondDip = this.isStateStable('jerk_second_dip', kneeIsSecondDip);
+    const stableLockout = this.isStateStable('jerk_lockout', elbowAngle! > this.JERK_ELBOW_LOCKOUT_ANGLE && wristOverhead);
+
+    if (this.currentRepCycleState === RepState.START) {
+      if (stableDip) {
+        this.currentRepCycleState = RepState.UP;
+        this.addFeedback('info', 'Jerk: First dip detected (drive).');
+        this.lastFramesStates = {};
+      }
+    } else if (this.currentRepCycleState === RepState.UP) {
+      if (stableSecondDip && wristOverhead) {
+        this.currentRepCycleState = RepState.UP; // Still UP, but transitioning to lockout
+        this.addFeedback('info', 'Jerk: Second dip under bell.');
+      }
+
+      if (stableLockout) {
+        if (wristShoulderXDiff > this.JERK_WRIST_SHOULDER_X_ALIGNMENT) {
+          this.addFeedback('warning', 'Jerk: Check wrist/shoulder alignment at lockout.');
+        }
+        this.incrementRep();
+        this.addFeedback('success', 'Jerk: Rep complete!');
+        this.currentRepCycleState = RepState.START;
+        this.lastFramesStates = {};
+      }
+    }
+  }
+
+
 
   // --- UTILITY AND HELPER METHODS ---
   private calculateAngle(
@@ -494,9 +623,9 @@ export class KettleBellWorkoutTrackerComponent implements OnInit, OnDestroy {
     p3: posedetection.Keypoint
   ): number | null {
     if (!p1 || !p2 || !p3 || // Ensure keypoints are defined
-        (p1.score ?? 0) < this.KEYPOINT_SCORE_THRESHOLD ||
-        (p2.score ?? 0) < this.KEYPOINT_SCORE_THRESHOLD ||
-        (p3.score ?? 0) < this.KEYPOINT_SCORE_THRESHOLD) {
+      (p1.score ?? 0) < this.KEYPOINT_SCORE_THRESHOLD ||
+      (p2.score ?? 0) < this.KEYPOINT_SCORE_THRESHOLD ||
+      (p3.score ?? 0) < this.KEYPOINT_SCORE_THRESHOLD) {
       return null; // Not enough confidence or keypoint missing
     }
 
@@ -638,8 +767,8 @@ export class KettleBellWorkoutTrackerComponent implements OnInit, OnDestroy {
     } else {
       this.addFeedback('info', 'Not currently recording.');
       if (this.isRecording) { // Correct state if somehow out of sync
-          this.isRecording = false;
-          this.changeDetectorRef.detectChanges();
+        this.isRecording = false;
+        this.changeDetectorRef.detectChanges();
       }
     }
   }
