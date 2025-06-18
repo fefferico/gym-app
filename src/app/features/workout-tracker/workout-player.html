@@ -85,7 +85,7 @@
             <span *ngIf="activeSet.type !== 'warmup'">
               Set {{ getCurrentWorkingSetNumber() }}/{{ getWorkingSetCountForCurrentExercise() }}
             </span>
-            <span *ngIf="totalBlockRounds() > 1 && currentBlockRound() > 0" class="ml-2">
+            <span *ngIf="totalBlockRounds() >= 1 && currentBlockRound() > 0" class="ml-2">
               (Round {{currentBlockRound()}}/{{totalBlockRounds()}})
             </span>
             <span *ngIf="activeSet.exerciseData.supersetId" class="ml-2 text-purple-500 dark:text-purple-400 italic">

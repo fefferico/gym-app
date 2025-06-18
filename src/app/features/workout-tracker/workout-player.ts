@@ -3239,23 +3239,90 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     // If there are unfinished exercises and we're at the last set of the last exercise of the round,
     // prompt the user what to do before proceeding.
     const isLastSetOfRound = this.checkIfLatestSetOfRound();
-    const unfinishedExercises = this.getUnfinishedExercises();
+    const unfinishedExercises = this.getUnfinishedOrDeferredExercises(currentSessionRoutine);
     if (
       unfinishedExercises.length > 0 &&
       isLastSetOfRound &&
       this.currentBlockRound() < this.totalBlockRounds()
     ) {
+      // If there are more rounds, advance to the first exercise of the next round
+      if (this.currentBlockRound() < this.totalBlockRounds()) {
+        this.currentBlockRound.update(r => r + 1);
+        // Find the first pending exercise in the current block
+        let blockStartIdx = completedActiveInfo.exerciseIndex;
+        const currentExercise = currentSessionRoutine.exercises[completedActiveInfo.exerciseIndex];
+        if (currentExercise.supersetId && currentExercise.supersetOrder !== null) {
+          blockStartIdx = completedActiveInfo.exerciseIndex - currentExercise.supersetOrder;
+        }
+        let foundPending = false;
+        for (let i = blockStartIdx; i < currentSessionRoutine.exercises.length; i++) {
+          const ex = currentSessionRoutine.exercises[i];
+          if (
+        (currentExercise.supersetId
+          ? ex.supersetId === currentExercise.supersetId
+          : i === blockStartIdx) &&
+        ex.sessionStatus === 'pending'
+          ) {
+        this.currentExerciseIndex.set(i);
+        this.currentSetIndex.set(0);
+        this.lastPerformanceForCurrentExercise = null;
+        foundPending = true;
+        break;
+          }
+          // Stop if we leave the block
+          if (
+        currentExercise.supersetId &&
+        ex.supersetId !== currentExercise.supersetId
+          ) {
+        break;
+          }
+          if (!currentExercise.supersetId && i > blockStartIdx) {
+        break;
+          }
+        }
+        if (foundPending) {
+          await this.prepareCurrentSet();
+          return;
+        }
+        // If not found, fall through to check for unfinished exercises after rounds
+      }
+
+      // After all rounds, check for next unfinished exercise right after the rounds
+      let nextUnfinishedIdx = -1;
+      for (let i = completedActiveInfo.exerciseIndex + 1; i < currentSessionRoutine.exercises.length; i++) {
+        if (
+          currentSessionRoutine.exercises[i].sessionStatus === 'pending' &&
+          !this.isExerciseFullyLogged(
+        currentSessionRoutine.exercises[i].exerciseId,
+        i,
+        currentSessionRoutine.exercises[i].id
+          )
+        ) {
+          nextUnfinishedIdx = i;
+          break;
+        }
+      }
+      if (nextUnfinishedIdx !== -1) {
+        this.currentExerciseIndex.set(nextUnfinishedIdx);
+        this.currentSetIndex.set(0);
+        this.currentBlockRound.set(1);
+        this.lastPerformanceForCurrentExercise = null;
+        await this.prepareCurrentSet();
+        return;
+      }
+
+      // Otherwise, prompt for what to do
       const confirm = await this.alertService.showConfirmationDialog(
-      "End of Round",
-      "You have unfinished exercises in this round. What would you like to do?",
-      [
-        { text: "Continue to Next Set", role: "confirm", data: "continue", cssClass: "bg-blue-600 text-white" } as AlertButton,
-        { text: "Review Unfinished Exercises", role: "destructive", data: "review", cssClass: "bg-orange-500 text-white" } as AlertButton,
-      ]
+        "End of Round",
+        "You have unfinished exercises in this round. What would you like to do?",
+        [
+          { text: "Continue to Next Round", role: "confirm", data: "continue", cssClass: "bg-blue-600 text-white" } as AlertButton,
+          { text: "Review Unfinished Exercises", role: "destructive", data: "review", cssClass: "bg-orange-500 text-white" } as AlertButton,
+        ]
       );
       if (confirm && confirm.data === "review") {
-      await this.jumpToExercise();
-      return;
+        await this.jumpToExercise();
+        return;
       }
       // If "continue", fall through to proceed as normal
     }
@@ -3305,7 +3372,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       logEx => logEx.exerciseId === nextExercise?.exerciseId &&
         currentSessionRoutine.exercises.find(ex => ex.id === nextExercise?.id) && this.isExerciseFullyLogged(nextExercise?.exerciseId, nextExIdx, nextExercise.id)
     );
-    if (isNextExerciseLogged) {
+    if (isNextExerciseLogged && !this.checkIfSetIsPartOfRounds()) {
       console.log('Next exercise is already logged in currentWorkoutLogExercises:', nextExercise?.exerciseName);
       // You can add additional logic here if you want to handle this case
       this.tryProceedToDeferredExercisesOrFinish(currentSessionRoutine);
@@ -3560,6 +3627,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
     const exerciseButtons: AlertButton[] = availableExercises.map(ex => {
       let statusIndicator = '';
+      let setTypeIndicator = '';
       if (ex.id === this.activeSetInfo()?.exerciseData.id && ex.sessionStatus === 'pending' && !ex.isFullyLogged) {
         statusIndicator = ' (Current)';
       } else if (ex.isFullyLogged && ex.sessionStatus !== 'skipped' && ex.sessionStatus !== 'do_later') {
@@ -3568,6 +3636,12 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         statusIndicator = ' (Skipped)';
       } else if (ex.sessionStatus === 'do_later') {
         statusIndicator = ' (Do Later)';
+      }
+
+      // Always use blue background for current or superset exercises
+      let superSetClass = '';
+      if (ex.supersetId && ex.supersetOrder !== null) {
+        superSetClass = ' border-2 border-primary bg-primary/50 text-white';
       }
 
       let cssClass = 'bg-gray-500 dark:bg-gray-700 dark:text-gray-100 hover:bg-gray-300 hover:text-gray-500 hover:dark:bg-gray-300 hover:dark:text-gray-500';
@@ -3587,11 +3661,57 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
           break;
       }
 
+      // If superset, always force blue bg (overrides above)
+      if (superSetClass && !statusIndicator.includes('Current')) {
+        cssClass = superSetClass;
+      } else if (statusIndicator.includes('Current')) {
+        cssClass = cssClass + ' bg-blue-600 text-white' + (superSetClass ? ' border-2 border-primary' : '');
+      }
+
+      let supersetIndexText = '';
+      let groupKey: string | undefined = undefined;
+      if (ex.supersetId) {
+        // Use the index of this exercise within the superset block (1-based)
+        const blockExercises = currentRoutineVal.exercises.filter(e => e.supersetId === ex.supersetId);
+        const blockIndex = blockExercises.findIndex(e => e.id === ex.id);
+        // Extract round index for this exercise (if applicable)
+        let roundIndex = 1;
+        if (ex.rounds && ex.rounds > 1) {
+          // If the exercise has multiple rounds, show the current round
+            // Try to get the current roundIndex from the exercise in the log
+            const logEx = this.currentWorkoutLogExercises().find(le => le.exerciseId === ex.exerciseId && le.id === ex.id);
+            if (logEx && typeof logEx.rounds === 'number' && logEx.rounds > 1) {
+            roundIndex = logEx.rounds;
+            } else {
+            roundIndex = this.currentBlockRound ? this.currentBlockRound() : 1;
+            }
+        }
+        if (blockIndex !== -1) {
+          supersetIndexText = ` [SuperSet #${blockIndex + 1}${ex.rounds && ex.rounds > 1 ? `, Round ${roundIndex}/${ex.rounds}` : ''}]`;
+        }
+        // Group key for adjacent styling: supersetId + round
+        groupKey = `${ex.supersetId}-round${roundIndex}`;
+      }
+
+      // Add a custom property for grouping in the dialog template (if supported)
+      // If your dialog supports custom properties, you can use groupKey for adjacent styling.
+      // If not, you can add a custom CSS class for superset grouping.
+
+      // Example CSS class for superset grouping (add this to your global styles or component SCSS):
+      // .superset-group-[groupKey] {
+      //   border-left: 4px solid #6366f1; /* Example: indigo-500 */
+      //   background-color: #eef2ff;      /* Example: indigo-50 */
+      // }
+      if (groupKey) {
+        cssClass += ` superset-group-${groupKey}`;
+      }
+
       return {
-        text: `${ex.exerciseName}${statusIndicator}`,
+        text: `${ex.exerciseName}${statusIndicator}${supersetIndexText}`,
         role: 'confirm',
         data: ex.originalIndex, // Pass the original index
-        cssClass: cssClass
+        cssClass: cssClass,
+        groupKey // Optional: for template logic if needed
       };
     });
 
