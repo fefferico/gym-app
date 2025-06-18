@@ -87,7 +87,7 @@
         <div *ngIf="allWorkoutLogs().length > 0; else loadingOrInitialLogs_List">
           <div *ngIf="filteredWorkoutLogs().length > 0; else noLogsAfterFilter_List" class="space-y-4">
             <div *ngFor="let log of filteredWorkoutLogs()"
-              class="bg-white dark:bg-gray-700 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 relative">
+              class="bg-white dark:bg-gray-700 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 relative transform hover:-translate-y-1">
               <div class="p-4 sm:p-6 cursor-pointer" (click)="viewLogDetails(log.id)">
                 <div class="flex justify-between items-start mb-1.5">
                   <h2 class="text-lg sm:text-xl font-semibold text-primary dark:text-primary-light truncate pr-8"
@@ -199,7 +199,7 @@
 
       <!-- CALENDAR VIEW -->
       <div *ngSwitchCase="'calendar'" class="p-1">
-        <div class="bg-white dark:bg-gray-700 rounded-lg shadow-md p-2 sm:p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-2 sm:p-4">
           <!-- Calendar Header for Month Navigation (This part should NOT slide with the grid) -->
           <div class="flex justify-between items-center mb-3 sm:mb-4">
             <button (click)="previousHistoryMonth()" title="Previous Month"
@@ -230,19 +230,21 @@
               </div>
               <div *ngIf="!historyCalendarLoading() || isHistoryCalendarAnimating">
                 <div *ngIf="historyCalendarDays().length > 0"
-                  class="grid grid-cols-7 gap-px border dark:border-gray-700 rounded-md overflow-hidden bg-gray-200 dark:bg-gray-700">
+                  class="grid grid-cols-7 gap-px border dark:border-gray-700 rounded-md overflow-hidden bg-gray-200 dark:bg-gray-600">
                   <div *ngFor="let dayName of getHistoryWeekDayNames()"
                     class="text-center py-1.5 sm:py-2 text-2xs sm:text-xs font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-750">
                     {{ dayName }}</div>
                   <div *ngFor="let day of historyCalendarDays()"
                     (click)="!isHistoryCalendarAnimating && selectHistoryDay(day)"
-                    class="p-1 sm:p-2 min-h-[50px] sm:min-h-[70px] relative transition-colors text-left"
+                    class="p-1 sm:p-2 min-h-[50px] sm:min-h-[70px] relative transition-colors text-left rounded-md transform hover:-translate-y-1"
                     [class.cursor-pointer]="!isHistoryCalendarAnimating && day.hasLog"
-                    [class.hover:bg-gray-100]="day.isCurrentMonth && day.hasLog && !isHistoryCalendarAnimating"
-                    [class.dark:hover:bg-gray-600]="day.isCurrentMonth && day.hasLog && !isHistoryCalendarAnimating"
+                    [class.hover:bg-gray-50]="day.isCurrentMonth && day.hasLog && !isHistoryCalendarAnimating"
+                    [class.hover:bg-gray-100]="day.isCurrentMonth && !day.hasLog && !isHistoryCalendarAnimating"
+                    [class.dark:hover:bg-gray-600]="day.isCurrentMonth && !day.hasLog && !isHistoryCalendarAnimating"
+                    [class.dark:hover:bg-primary-light]="day.isCurrentMonth && day.hasLog && !isHistoryCalendarAnimating"
                     [ngClass]="{'bg-white dark:bg-gray-700': day.isCurrentMonth, 'bg-gray-50 dark:bg-gray-700/60 opacity-70': !day.isCurrentMonth, 'ring-1 ring-inset ring-primary dark:ring-primary-light': day.isToday && day.isCurrentMonth}">
                     <span class="text-xs sm:text-sm font-semibold"
-                      [ngClass]="{'text-primary dark:text-primary-light': day.isToday && day.isCurrentMonth, 'text-gray-700 dark:text-gray-200': !day.isToday && day.isCurrentMonth, 'text-gray-400 dark:text-gray-500': !day.isCurrentMonth}">{{
+                      [ngClass]="{'text-primary hover:text-white': day.isToday && day.isCurrentMonth, 'text-gray-700 dark:text-gray-200': !day.isToday && day.isCurrentMonth, 'text-gray-400 dark:text-gray-500': !day.isCurrentMonth}">{{
                       day.date | date:'d' }}</span>
                     <div *ngIf="day.hasLog && day.isCurrentMonth"
                       class="absolute bottom-1 right-1 sm:bottom-1.5 sm:right-1.5 flex items-center justify-center w-4 h-4 sm:w-5 sm:h-5 rounded-full text-2xs sm:text-xs font-bold"

@@ -43,7 +43,8 @@ export interface LoggedRound {
 
 // Describes all sets performed for a specific exercise within a single workout session.
 export interface LoggedWorkoutExercise {
-  exerciseId: string;     // ID of the base Exercise definition
+  id: string;     // ID of the base Exercise definition
+  exerciseId: string;     // exerciseId of the base Exercise definition
   exerciseName: string;   // Denormalized name for easier display in logs
   sets: LoggedSet[];      // Array of actual sets performed for this exercise
   rounds: number;

@@ -216,7 +216,8 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
     }, this.ANIMATION_OUT_DURATION);
   }
 
-  startWorkout(routineId: string | undefined): void {
+  startWorkout(routineId: string | undefined, event: Event): void {
+    event?.stopPropagation();
     if (routineId) {
       this.router.navigate(['/workout/play', routineId]);
     }
@@ -224,7 +225,7 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
 
   viewRoutineDetails(routineId: string | undefined): void {
     if (routineId) {
-      this.router.navigate(['/workout/view', routineId]);
+      this.router.navigate(['/workout/routine/view', routineId, { isView: 'routineBuilder' }]); // Pass isView flag
     }
   }
 

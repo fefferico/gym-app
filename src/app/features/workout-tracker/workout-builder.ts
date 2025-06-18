@@ -885,6 +885,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
 
         const logExercises: LoggedWorkoutExercise[] = formValue.exercises.map((exInput: any): LoggedWorkoutExercise => ({
+          id: exInput.id,
           exerciseId: exInput.exerciseId,
           exerciseName: exInput.exerciseName,
           notes: exInput.notes, // Exercise-level notes from the form

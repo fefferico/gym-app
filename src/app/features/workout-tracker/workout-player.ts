@@ -516,11 +516,13 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     for (let i = 0; i < logs.length; i++) {
       const exLog = logs[i];
       // Find the corresponding exercise in the routine for this log
-      const routineEx = this.routine()?.exercises[i];
+      const routineEx = this.routine()?.exercises.find(ex => ex.id === exerciseData.id);
+
       if (
         exLog.exerciseId === exerciseData.exerciseId &&
         routineEx &&
-        routineEx.id === exerciseData.id
+        routineEx.id === exerciseData.id &&
+        routineEx.id === exLog.id
       ) {
         exerciseLog = exLog;
         logIndex = i;
@@ -540,6 +542,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       // Use the exerciseName from the currentBaseExercise if available, otherwise from the routine
       const exerciseName = this.currentBaseExercise()?.name || exerciseData.exerciseName || 'Unknown Exercise';
       const newLog: LoggedWorkoutExercise = {
+        id: exerciseData.id,
         exerciseId: exerciseData.exerciseId,
         exerciseName,
         sets: [loggedSet],
@@ -882,7 +885,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       // No future pending exercises. Now check for *any* unlogged 'do_later' or 'skipped' exercises.
       const hasUnfinishedDeferred = currentRoutine.exercises.some(ex =>
         (ex.sessionStatus === 'do_later' || ex.sessionStatus === 'skipped') &&
-        !this.isExerciseFullyLogged(ex.exerciseId, activeInfo.exerciseIndex, ex.sets.length)
+        !this.isExerciseFullyLogged(ex.exerciseId, activeInfo.exerciseIndex, ex.id)
       );
       return !hasUnfinishedDeferred; // True (latest) if no unfinished deferred/skipped
     }
@@ -904,17 +907,16 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     // Now, check if there are *any* unlogged 'do_later' or 'skipped' exercises in the whole routine.
     const hasUnfinishedDeferred = currentRoutine.exercises.some((ex, index) =>
       (ex.sessionStatus === 'do_later' || ex.sessionStatus === 'skipped') &&
-      !this.isExerciseFullyLogged(ex.exerciseId, index, ex.sets.length)
+      !this.isExerciseFullyLogged(ex.exerciseId, index, ex.id)
     );
 
     return !hasUnfinishedDeferred;
   }
-  private async tryProceedToDeferredExercisesOrFinish(sessionRoutine: Routine): Promise<void> {
-    console.log("tryProceedToDeferredExercisesOrFinish: ENTERED. Proposed flags before:", JSON.stringify(this.exercisesProposedThisCycle));
-    const currentLoggedExerciseIds = new Set(this.currentWorkoutLogExercises().map(le => le.exerciseId));
 
+  private getUnfinishedOrDeferredExercises(sessionRoutine: Routine): any[] {
+    const currentExercise = sessionRoutine.exercises[this.currentExerciseIndex()];
     const unfinishedOtherExercises = this.getUnfinishedExercises().filter(
-      ex => ex.exerciseId !== sessionRoutine.exercises[this.currentExerciseIndex()].exerciseId
+      ex => ex.id !== currentExercise.id 
     );
     console.log("Unfinished exercises (excluding current):", unfinishedOtherExercises.map(e => e.exerciseName));
 
@@ -922,7 +924,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       .map((ex, idx) => ({ ...ex, originalIndex: idx }))
       .filter((ex, innerIdx) =>
         (ex.sessionStatus === 'do_later' || ex.sessionStatus === 'skipped') &&
-        !this.isExerciseFullyLogged(ex.exerciseId, innerIdx, ex.sets.length)
+        !this.isExerciseFullyLogged(ex.exerciseId, innerIdx, ex.id)
       )
       .sort((a, b) => {
         if (a.sessionStatus === 'do_later' && b.sessionStatus === 'skipped') return -1;
@@ -934,9 +936,28 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       ...ex,
       originalIndex: sessionRoutine.exercises.findIndex(e => e.id === ex.id)
     }));
-    const mergedUnfinishedExercises = unfinishedDeferredOrSkippedExercises.concat(unfinishedOtherExercisesWithIndex);
+    // Merge and deduplicate unfinished exercises by their unique id
+    const mergedUnfinishedExercises = [
+      ...unfinishedDeferredOrSkippedExercises,
+      ...unfinishedOtherExercisesWithIndex
+    ].filter((ex, idx, arr) =>
+      arr.findIndex(e => e.id === ex.id) === idx
+    );
 
-    console.log("tryProceedToDeferredExercisesOrFinish: Found unfinished deferred/skipped:", unfinishedDeferredOrSkippedExercises.map(e => `${e.exerciseName} (${e.sessionStatus})`));
+    mergedUnfinishedExercises.sort((a, b) => {
+      const idxA = sessionRoutine.exercises.findIndex(ex => ex.id === a.id);
+      const idxB = sessionRoutine.exercises.findIndex(ex => ex.id === b.id);
+      return idxA - idxB;
+    });
+
+    return mergedUnfinishedExercises;
+  }
+
+
+  private async tryProceedToDeferredExercisesOrFinish(sessionRoutine: Routine): Promise<void> {
+    console.log("tryProceedToDeferredExercisesOrFinish: ENTERED. Proposed flags before:", JSON.stringify(this.exercisesProposedThisCycle));
+    const mergedUnfinishedExercises = this.getUnfinishedOrDeferredExercises(sessionRoutine);
+    console.log("tryProceedToDeferredExercisesOrFinish: Found unfinished deferred/skipped:", mergedUnfinishedExercises.map(e => `${e.exerciseName} (${e.sessionStatus})`));
 
     if (mergedUnfinishedExercises.length > 0) {
       let proceedWithSelectedExercise = false;
@@ -1067,9 +1088,36 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     await this.finishWorkoutAndReportStatus();
   }
 
-  private isExerciseFullyLogged(exerciseId: string, exerciseIndex: number, totalPlannedSets: number): boolean {
-    const loggedEx = this.currentWorkoutLogExercises().find((le, index) => le.exerciseId === exerciseId);
+  private isExerciseFullyLogged(exerciseIdName: string, exerciseIndex: number, exerciseId: string): boolean {
+    const routine = this.routine();
+    if (!routine) return false;
+    const exercise = routine.exercises.find(ex => ex.exerciseId === exerciseIdName && ex.id === exerciseId);
+    if (!exercise) return false;
+
+    const loggedEx = this.currentWorkoutLogExercises().find(le => 
+      le.exerciseId === exerciseIdName 
+      && exercise.exerciseId === le.exerciseId
+      && le.id === exerciseId 
+    );
+
     if (!loggedEx) return false;
+
+    // Determine rounds for this exercise (handle supersets)
+    let rounds = exercise.rounds ?? 1;
+    if (exercise.supersetId && exercise.supersetOrder !== null) {
+      const blockStart = routine.exercises.find(
+        ex => ex.supersetId === exercise.supersetId && ex.supersetOrder === 0
+      );
+      rounds = blockStart?.rounds ?? 1;
+    }
+
+    // Calculate the total number of planned sets for this exercise, considering rounds (for supersets/multi-rounds)
+    let totalPlannedSets = exercise.sets.length;
+    // if (rounds > 1) {
+    //   totalPlannedSets = exercise.sets.length * rounds;
+    // }
+
+    const plannedSetsForAllRounds = totalPlannedSets * rounds;
     return loggedEx.sets.length >= totalPlannedSets;
   }
 
@@ -1235,7 +1283,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       let prevPlayedExIndex = exIndex - 1;
       let foundPrevPlayed = false;
       while (prevPlayedExIndex >= 0) {
-        if (this.isExerciseFullyLogged(sessionRoutine.exercises[prevPlayedExIndex].exerciseId, prevPlayedExIndex, sessionRoutine.exercises[prevPlayedExIndex].sets.length) ||
+        if (this.isExerciseFullyLogged(sessionRoutine.exercises[prevPlayedExIndex].exerciseId, prevPlayedExIndex, sessionRoutine.exercises[prevPlayedExIndex].id) ||
           (sessionRoutine.exercises[prevPlayedExIndex].sessionStatus === 'pending' && this.currentWorkoutLogExercises().some(le => le.exerciseId === sessionRoutine.exercises[prevPlayedExIndex].exerciseId))) {
           const prevExercise = sessionRoutine.exercises[prevPlayedExIndex];
           if (prevExercise.sets.length > 0) {
@@ -1608,6 +1656,34 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         nextExerciseName = currExercise.exerciseName || '';
       }
       return `Complete Round ${round}/${totalRounds}${nextExerciseName ? ` [Next exercise: ${nextExerciseName}]` : ''}${currExercise.sets?.length ? ` (${currExercise.sets.length} sets)` : ''}`;
+    }
+
+    const mergedUnfinishedExercises = this.getUnfinishedOrDeferredExercises(currentSessionRoutine);
+
+    // If there are unfinished exercises (do_later/skipped/pending), suggest the next one in routine order
+    if (mergedUnfinishedExercises.length > 0) {
+      // Find the first unfinished exercise that comes after the current exercise in the routine
+      const currExIdxInRoutine = completedActiveSetInfo.exerciseIndex;
+      // Sort by originalIndex to ensure routine order
+      const sortedUnfinished = mergedUnfinishedExercises
+      .slice()
+      .sort((a, b) => a.originalIndex - b.originalIndex);
+
+      // Find the next unfinished exercise after the current one
+      const nextUnfinished = sortedUnfinished.find(ex => ex.originalIndex > currExIdxInRoutine)
+      // If none after, wrap to the first unfinished in the routine
+      ?? sortedUnfinished[0];
+
+      if (nextUnfinished) {
+      let statusLabel = '';
+      switch (nextUnfinished.sessionStatus) {
+        case 'do_later': statusLabel = 'Do Later'; break;
+        case 'skipped': statusLabel = 'Skipped'; break;
+        case 'pending': statusLabel = 'Pending'; break;
+        default: statusLabel = nextUnfinished.sessionStatus || '';
+      }
+      return `Next: ${nextUnfinished.exerciseName} (${statusLabel})`;
+      }
     }
 
     return totalRounds >= 1 ? '' : 'Complete';
@@ -2231,6 +2307,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
    */
   private mapWorkoutExerciseToLoggedWorkoutExercise(ex: WorkoutExercise): LoggedWorkoutExercise {
     return {
+      id: ex.id,
       exerciseId: ex.exerciseId,
       exerciseName: ex.exerciseName || '',
       sets: ex.sets.map(set => ({
@@ -3121,12 +3198,8 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
    */
   getUnfinishedExercises(): WorkoutExercise[] {
     const routine = this.routine();
-    const loggedExercises = this.currentWorkoutLogExercises();
     if (!routine) return [];
-    return routine.exercises.filter((ex, idx) => {
-      const logged = loggedExercises.find(le => le.exerciseId === ex.exerciseId && routine.exercises[idx].id === ex.id);
-      return !logged || logged.sets.length < ex.sets.length;
-    });
+    return routine.exercises.filter((ex, idx) => !this.isExerciseFullyLogged(ex.exerciseId, idx, ex.id));
   }
 
   /**
@@ -3152,7 +3225,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     forceAdvanceExerciseBlock: boolean = false
   ): Promise<void> {
     const exerciseJustCompleted = completedActiveInfo.exerciseData;
-    const isNowFullyLogged = this.isExerciseFullyLogged(exerciseJustCompleted.exerciseId, completedActiveInfo.exerciseIndex, exerciseJustCompleted.sets.length);
+    const isNowFullyLogged = this.isExerciseFullyLogged(exerciseJustCompleted.exerciseId, completedActiveInfo.exerciseIndex, exerciseJustCompleted.id);
 
     if (this.isPerformingDeferredExercise && exerciseJustCompleted.id === this.lastActivatedDeferredExerciseId && isNowFullyLogged) {
       console.log("navigateToNextStepInWorkout: Completed an explicitly chosen deferred/skipped exercise. Re-evaluating all remaining.");
@@ -3161,6 +3234,30 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       this.exercisesProposedThisCycle = { doLater: false, skipped: false };
       await this.tryProceedToDeferredExercisesOrFinish(currentSessionRoutine);
       return;
+    }
+
+    // If there are unfinished exercises and we're at the last set of the last exercise of the round,
+    // prompt the user what to do before proceeding.
+    const isLastSetOfRound = this.checkIfLatestSetOfRound();
+    const unfinishedExercises = this.getUnfinishedExercises();
+    if (
+      unfinishedExercises.length > 0 &&
+      isLastSetOfRound &&
+      this.currentBlockRound() < this.totalBlockRounds()
+    ) {
+      const confirm = await this.alertService.showConfirmationDialog(
+      "End of Round",
+      "You have unfinished exercises in this round. What would you like to do?",
+      [
+        { text: "Continue to Next Set", role: "confirm", data: "continue", cssClass: "bg-blue-600 text-white" } as AlertButton,
+        { text: "Review Unfinished Exercises", role: "destructive", data: "review", cssClass: "bg-orange-500 text-white" } as AlertButton,
+      ]
+      );
+      if (confirm && confirm.data === "review") {
+      await this.jumpToExercise();
+      return;
+      }
+      // If "continue", fall through to proceed as normal
     }
 
     const {
@@ -3206,7 +3303,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     // Check if the next exercise is already among currentWorkoutLogExercises (by exerciseId and id)
     const isNextExerciseLogged = this.currentWorkoutLogExercises().some(
       logEx => logEx.exerciseId === nextExercise?.exerciseId &&
-        currentSessionRoutine.exercises.find(ex => ex.id === nextExercise?.id) && this.isExerciseFullyLogged(nextExercise?.id, nextExIdx, nextExercise.sets?.length)
+        currentSessionRoutine.exercises.find(ex => ex.id === nextExercise?.id) && this.isExerciseFullyLogged(nextExercise?.exerciseId, nextExIdx, nextExercise.id)
     );
     if (isNextExerciseLogged) {
       console.log('Next exercise is already logged in currentWorkoutLogExercises:', nextExercise?.exerciseName);
@@ -3450,7 +3547,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       .map((ex, index) => ({
         ...ex,
         originalIndex: index, // Keep track of original index in the routine.exercises array
-        isFullyLogged: this.isExerciseFullyLogged(ex.exerciseId, index, ex.sets.length)
+        isFullyLogged: this.isExerciseFullyLogged(ex.exerciseId, index, ex.id)
       }))
       .filter(ex => !ex.isFullyLogged || ex.sessionStatus === 'pending' || ex.sessionStatus === 'do_later' || ex.sessionStatus === 'skipped'); // Include pending/deferred even if logged, to allow restart
 

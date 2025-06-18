@@ -173,7 +173,7 @@
                         [ngClass]="{
                                         'superset-spacing': isSupersetSpacing(exIndex)
                                         }">
-                        <div *ngIf="mode === 'routineBuilder' && isEditMode && selectedExerciseIndicesForSuperset().length >= 2 && exIndex === firstSelectedExerciseIndexForSuperset"
+                        <div *ngIf="mode === 'routineBuilder' && (isEditMode || isNewMode) && selectedExerciseIndicesForSuperset().length >= 2 && exIndex === firstSelectedExerciseIndexForSuperset"
                             class="absolute left-1/2 -translate-x-1/2 z-20" style="top: -1.25rem;">
                             <button *ngIf="!canUngroupSelectedExercises()" type="button"
                                 (click)="groupSelectedAsSuperset()" [disabled]="isViewMode"
@@ -207,7 +207,7 @@
                                     </svg>
                                 </div>
                                 <!-- CHECKBOX (if applicable) -->
-                                <input *ngIf="mode === 'routineBuilder' && isEditMode && !isViewMode" type="checkbox"
+                                <input *ngIf="mode === 'routineBuilder' && (isEditMode || isNewMode) && !isViewMode" type="checkbox"
                                     title="Select the exercise for the Superset" [id]="'superset-select-' + exIndex"
                                     (change)="toggleExerciseSelectionForSuperset(exIndex, $event)"
                                     [checked]="selectedExerciseIndicesForSuperset().includes(exIndex)"
@@ -233,6 +233,11 @@
                                         {{ exerciseControl.get('exerciseName')?.value || 'Select Exercise' }}
                                     </h3>
                                     <!-- COMPACT: Show SETS SUMMARY if in compact view -->
+                                    <div *ngIf="exerciseControl.get('supersetId')?.value && getSetsFormArray(exerciseControl).controls.length > 0"
+                                        class="text-xs text-orange-600 dark:text-orange-400 mt-0.5">
+                                        {{ exerciseControl.get('rounds')?.value || 1 }}
+                                        {{ (exerciseControl.get('rounds')?.value || 1) === 1 ? 'round' : 'rounds' }}
+                                    </div>
                                     <div *ngIf="(isCompactView  || (!isCompactView && expandedSetPath()?.exerciseIndex !== exIndex)) && getSetsFormArray(exerciseControl).controls.length > 0"
                                         class="text-s text-gray-500 dark:text-gray-400 mt-0.5">
                                         {{ getSetsFormArray(exerciseControl).controls.length }}
@@ -304,7 +309,7 @@
                                             Remove
                                         </button>
                                         <button
-                                            *ngIf="mode === 'routineBuilder' && isEditMode && exerciseControl.get('supersetId')?.value"
+                                            *ngIf="mode === 'routineBuilder' && (isEditMode || isNewMode) && exerciseControl.get('supersetId')?.value"
                                             type="button" (click)="ungroupSuperset(exIndex)" [disabled]="isViewMode"
                                             class="flex bg-violet-200 items-center text-xs text-violet-600 hover:text-violet-700 dark:text-violet-400 dark:hover:text-violet-300 font-medium py-1 px-2 rounded-md hover:bg-violet-100 dark:hover:bg-violet-900/50 disabled:opacity-50">
                                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"

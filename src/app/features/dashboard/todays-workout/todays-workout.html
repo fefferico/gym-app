@@ -57,7 +57,7 @@
               Suggested Time: {{ workoutInfo.scheduledDayInfo.timeOfDay }}
             </p>
             <div class="mt-4 flex flex-col sm:flex-row gap-2">
-              <button (click)="startWorkout(workoutInfo.routine.id)" [disabled]="isAnimating()"
+              <button (click)="startWorkout(workoutInfo.routine.id, $event)" [disabled]="isAnimating()"
                 class="flex-1 bg-green-500 hover:bg-green-600 text-white font-semibold py-2.5 px-4 rounded-md shadow-sm transition-colors flex items-center justify-center text-m disabled:opacity-50">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 010 1.972l-11.54 6.347a1.125 1.125 0 01-1.667-.986V5.653z" /></svg>
                 START
@@ -84,13 +84,13 @@
             </p>
             <div class="mt-6 pt-4 border-t dark:border-gray-700" *ngIf="availableRoutines$ | async as routines">
               <h4 class="text-md font-semibold text-gray-600 dark:text-gray-200 mb-2">Or, pick a quick workout:</h4>
-              <div class="max-h-60 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
-                <div *ngFor="let routine of routines" class="p-3 bg-gray-50 dark:bg-gray-600 rounded-md shadow-sm hover:shadow-md transition-shadow flex justify-between items-center">
+              <div class="max-h-60 overflow-y-auto space-y-2 pr-2 py-2 custom-scrollbar">
+                <div (click)="viewRoutineDetails(routine.id)" *ngFor="let routine of routines" class="p-3 bg-gray-50 dark:bg-gray-600 rounded-md shadow-sm hover:shadow-md transition-shadow flex justify-between items-center transform hover:-translate-y-1">
                   <div class="truncate">
                     <span class="font-medium text-gray-800 dark:text-gray-100">{{ routine.name }}</span>
                     <span class="block text-left text-xs text-gray-500 dark:text-gray-400">{{ routine.exercises.length }} exercises</span>
                   </div>
-                  <button (click)="startWorkout(routine.id)" [disabled]="isAnimating()"
+                  <button (click)="startWorkout(routine.id, $event)" [disabled]="isAnimating()"
                     class="flex items-center ml-2 text-m bg-primary hover:bg-green-200 text-white dark:hover:bg-primary-dark font-semibold py-1 px-2.5 rounded-md disabled:opacity-50">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-4 mr-1"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 010 1.972l-11.54 6.347a1.125 1.125 0 01-1.667-.986V5.653z" /></svg>
                     START
