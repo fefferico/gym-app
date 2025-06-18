@@ -42,7 +42,7 @@
                 <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Program
                     Name</label>
                 <input type="text" id="name" formControlName="name"
-                    class="mt-1 block w-full p-2 border rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700 dark:border-gray-600"
+                    class="mt-1 block w-full p-2 border rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
                     [ngClass]="{'border-red-500 dark:border-red-400': f['name'].invalid && f['name'].touched}">
                 <div *ngIf="f['name'].invalid && (f['name'].dirty || f['name'].touched)"
                     class="text-red-500 dark:text-red-400 text-xs mt-1">
@@ -137,14 +137,14 @@
                         </button>
                     </div>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 dark:text-gray-300">
                         <div>
                             <label [for]="'dayOfWeek-' + i"
                                 class="block text-xs font-medium text-gray-700 dark:text-gray-300">
                                 {{ f['cycleLength'].value > 0 ? 'Cycle Day Number' : 'Day of Week' }}
                             </label>
                             <select [id]="'dayOfWeek-' + i" formControlName="dayOfWeek"
-                                class="mt-1 block w-full p-2 text-sm border rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700 dark:border-gray-500">
+                                class="mt-1 block w-full p-2 text-sm border rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700 dark:border-gray-500 dark:text-gray-300">
                                 <option *ngFor="let dayOpt of currentDayOptions()" [value]="dayOpt.value">{{
                                     dayOpt.label }}</option>
                             </select>
