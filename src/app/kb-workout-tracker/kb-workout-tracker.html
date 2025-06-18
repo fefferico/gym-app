@@ -1,7 +1,8 @@
+<!-- START OF FILE kb-workout-tracker.html -->
+
 <div class="workout-tracker-container">
     <div class="video-area">
         <video #videoElement autoplay playsinline muted class="video-feed" [class.hidden]="!isCameraReady"></video>
-        <!-- Canvas for drawing poses, MUST be on top of video -->
         <canvas #canvasElement class="pose-canvas"></canvas>
 
         <div *ngIf="!isCameraReady && !modelReady" class="video-placeholder">
@@ -13,57 +14,67 @@
             class="video-placeholder">
             <p *ngIf="!videoStream?.active">Camera access was lost or denied. Please reload or check permissions.</p>
             <p *ngIf="!modelReady && videoStream?.active">AI Model failed to load. Try reloading.</p>
-            <button (click)="setupCamera()" *ngIf="!videoStream?.active">Retry Camera</button>
-            <button (click)="loadPoseDetectionModel()" *ngIf="!modelReady && videoStream?.active">Retry AI
-                Model</button>
+            <button (click)="setupCamera()" *ngIf="!videoStream?.active" class="action-btn retry-btn">Retry
+                Camera</button>
+            <button (click)="loadPoseDetectionModel()" *ngIf="!modelReady && videoStream?.active"
+                class="action-btn retry-btn">Retry AI Model</button>
         </div>
     </div>
 
-    <div class="controls-status">
-        <div class="exercise-selector">
-            <label for="exercise">Choose Exercise: </label>
-            <select id="exercise" [(ngModel)]="currentExercise" (ngModelChange)="setExerciseLogic($event)">
-                <option value="Right Bicep Curl">Right Bicep Curl</option>
-                <option value="Kettlebell Snatch">Kettlebell Snatch</option>
-                <option value="Kettlebell Snatch">Kettlebell Press</option>
-                <!-- Add more exercises -->
-            </select>
-        </div>
-
-        <h2>{{ currentExercise }} - {{ modelReady ? 'AI Ready' : 'AI Loading...' }}</h2>
-        <div class="status-bar">
-            <div class="reps">
-                Reps: <span>{{ repCount }}</span>
+    <div class="controls-overlay">
+        <div class="main-controls">
+            <div class="exercise-selector">
+                <label for="exercise">Exercise: </label>
+                <select id="exercise" [(ngModel)]="currentExercise" (ngModelChange)="setExerciseLogic($event)">
+                    <option value="Right Bicep Curl">Right Bicep Curl</option>
+                    <option value="Kettlebell Snatch">Kettlebell Snatch</option>
+                    <option value="Kettlebell Press">Kettlebell Press</option>
+                </select>
             </div>
-            <div class="timer">
-                Time: <span>{{ formatTime(elapsedTime) }}</span>
-            </div>
-        </div>
 
-        <div class="actions">
-            <button *ngIf="!isWorkoutActive" (click)="startWorkout()" [disabled]="!isCameraReady || !modelReady"
-                class="start-btn">
-                Start Workout
-            </button>
-            <button *ngIf="isWorkoutActive" (click)="stopWorkout()" class="stop-btn">
-                Stop Workout
-            </button>
-            <button *ngIf="isCameraReady && videoStream?.active" (click)="toggleRecording()" class="record-btn"
-                [class.recording]="isRecording">
-                {{ isRecording ? 'Stop Recording' : 'Start Recording' }}
-            </button>
+            <div class="status-info">
+                <span>{{ currentExercise }} - {{ modelReady ? 'AI Ready' : 'AI Loading...' }}</span>
+                <div class="reps">Reps: <span>{{ repCount }}</span></div>
+                <div class="timer">Time: <span>{{ formatTime(elapsedTime) }}</span></div>
+            </div>
+
+            <div class="action-buttons">
+                <button *ngIf="!isWorkoutActive" (click)="startWorkout()" [disabled]="!isCameraReady || !modelReady"
+                    class="action-btn start-btn">
+                    Start Workout
+                </button>
+                <button *ngIf="isWorkoutActive" (click)="stopWorkout()" class="action-btn stop-btn">
+                    Stop Workout
+                </button>
+                <button *ngIf="isCameraReady && videoStream?.active" (click)="toggleRecording()"
+                    class="action-btn record-btn" [class.recording]="isRecording">
+                    {{ isRecording ? 'Stop Recording' : 'Start Recording' }}
+                </button>
+                <button (click)="toggleFeedbackVisibility()" class="action-btn feedback-modal-btn">
+                    View Log
+                </button>
+            </div>
         </div>
     </div>
 
-    <div class="feedback-area">
-        <h3>Feedback & Log:</h3>
-        <ul>
-            <li *ngFor="let item of feedbackMessages" [ngClass]="'feedback-' + item.type">
-                [{{item.type | uppercase}}] {{ item.message }}
-            </li>
-        </ul>
-        <div *ngIf="feedbackMessages.length === 0" class="no-feedback">
-            No feedback yet.
+
+    <!-- Feedback Modal -->
+    <div *ngIf="isFeedbackVisible" class="modal-overlay" (click)="toggleFeedbackVisibility()">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <h3>Feedback & Log</h3>
+                <button (click)="toggleFeedbackVisibility()" class="modal-close-btn">×</button>
+            </div>
+            <div class="modal-body">
+                <ul>
+                    <li *ngFor="let item of feedbackMessages" [ngClass]="'feedback-' + item.type">
+                        [{{item.type | uppercase}}] {{ item.message }}
+                    </li>
+                </ul>
+                <div *ngIf="feedbackMessages.length === 0" class="no-feedback">
+                    No feedback yet. Start your workout!
+                </div>
+            </div>
         </div>
     </div>
 </div>

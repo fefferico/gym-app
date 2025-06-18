@@ -1,32 +1,52 @@
+// Variables for colors (optional, but good practice)
+$primary-color: #007bff;
+$success-color: #28a745;
+$danger-color: #dc3545;
+$warning-color: #ffc107;
+$info-color: #17a2b8;
+$light-gray: #f8f9fa;
+$medium-gray: #6c757d;
+$dark-gray: #343a40;
+$text-color: #212529;
+$modal-overlay-color: rgba(0, 0, 0, 0.6);
+
+// --- Global Host and Container ---
+:host {
+  display: flex; // Use flex to allow child to fill height
+  flex-direction: column;
+  width: 100%;
+  height: 100vh; // Take full viewport height
+  overflow: hidden; // Prevent page scrollbars
+  background-color: $dark-gray; // Background for the whole app screen
+}
+
 .workout-tracker-container {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  font-family: Arial, sans-serif;
-  max-width: 700px;
-  margin: 20px auto;
-  padding: 15px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  background-color: #f9f9f9;
+  width: 100%;
+  flex-grow: 1; // Allow this container to grow and fill :host
+  overflow: hidden; // Child elements will manage their own scrolling if needed
+  position: relative; // For positioning overlay controls
 }
 
+// --- Video Area ---
 .video-area {
-  position: relative;
+  position: relative; // For canvas overlay
   width: 100%;
-  max-width: 640px; /* Match ideal video width */
-  aspect-ratio: 4 / 3; /* Common aspect ratio for webcams */
+  flex-grow: 1; // CRITICAL: Makes video area take up available vertical space
   background-color: #000;
-  border-radius: 6px;
   overflow: hidden;
-  margin-bottom: 15px;
+  display: flex; // For centering placeholder
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 80px;
 }
 
 .video-feed {
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover; /* Cover the area, might crop */
+  object-fit: contain; // Ensures whole video is visible; use 'cover' to fill (may crop)
 }
 
 .video-feed.hidden {
@@ -39,133 +59,237 @@
   left: 0;
   width: 100%;
   height: 100%;
+  pointer-events: none; // So it doesn't interfere with video controls if any were present
 }
 
 .video-placeholder {
+  color: $light-gray;
+  text-align: center;
+  padding: 20px;
+  button { // Styling for retry buttons within placeholder
+    background-color: $primary-color;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+    &:hover {
+      background-color: darken($primary-color, 10%);
+    }
+  }
+}
+
+
+// --- Controls Overlay (New) ---
+.controls-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.7) 100%); // Subtle gradient
+  padding: 15px 10px 10px 10px; // More padding at top for gradient effect
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center; // Center the .main-controls
+}
+
+.main-controls {
+  background-color: rgba(40, 40, 40, 0.9); // Darker semi-transparent background for controls
+  color: $light-gray;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+  width: 100%;
+  max-width: 700px; // Max width for controls for readability
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  gap: 15px; // Space between control groups
+  margin-bottom: 80px;
+}
+
+.exercise-selector {
+  display: flex;
   align-items: center;
-  width: 100%;
-  height: 100%;
-  color: #fff;
-  text-align: center;
-}
-.video-placeholder button {
-  margin-top: 10px;
-  padding: 8px 15px;
-}
-
-.controls-status {
-  width: 100%;
-  text-align: center;
-  margin-bottom: 15px;
+  gap: 8px;
+  label {
+    font-size: 0.9em;
+  }
+  select {
+    padding: 6px 10px;
+    border-radius: 4px;
+    border: 1px solid $medium-gray;
+    background-color: $dark-gray;
+    color: $light-gray;
+    flex-grow: 1;
+  }
 }
 
-.controls-status h2 {
-  margin-top: 0;
-  color: #333;
-}
-
-.status-bar {
+.status-info {
   display: flex;
   justify-content: space-around;
-  font-size: 1.5em;
-  margin-bottom: 20px;
-  background-color: #e9e9e9;
-  padding: 10px;
-  border-radius: 4px;
+  align-items: center;
+  font-size: 0.9em;
+  text-align: center;
+  flex-wrap: wrap; // Allow wrapping on smaller screens
+  gap: 10px;
+
+  .reps, .timer {
+    background-color: rgba(0,0,0,0.2);
+    padding: 5px 10px;
+    border-radius: 4px;
+    span {
+      font-weight: bold;
+      color: $primary-color; // Example color for numbers
+    }
+  }
 }
 
-.status-bar span {
-  font-weight: bold;
-  color: #007bff;
+
+// --- Action Buttons with Distinct Colors ---
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap; // Allow buttons to wrap on small screens
 }
 
-.actions button {
-  padding: 10px 20px;
-  font-size: 1em;
-  margin: 0 10px;
+.action-btn {
+  padding: 10px 15px;
+  font-size: 0.9em;
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  color: white; // Default text color for buttons
+  min-width: 120px; // Ensure buttons have some width
+  text-align: center;
+
+  &:hover {
+    opacity: 0.9;
+  }
+  &:active {
+    transform: translateY(1px);
+  }
+  &:disabled {
+    background-color: $medium-gray !important; // Important to override specific colors
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
 }
 
 .start-btn {
-  background-color: #28a745;
-  color: white;
-}
-.start-btn:disabled {
-  background-color: #8fbc8f;
-  cursor: not-allowed;
-}
-.start-btn:hover:not(:disabled) {
-  background-color: #218838;
+  background-color: $success-color; // Green
+  &:hover { background-color: darken($success-color, 10%); }
 }
 
 .stop-btn {
-  background-color: #dc3545;
-  color: white;
-}
-.stop-btn:hover {
-  background-color: #c82333;
+  background-color: $danger-color; // Red
+  &:hover { background-color: darken($danger-color, 10%); }
 }
 
 .record-btn {
-  background-color: #17a2b8;
-  color: white;
+  background-color: $info-color; // Blue
+  &:hover { background-color: darken($info-color, 10%); }
+  &.recording {
+    background-color: $warning-color; // Orange/Yellow when recording
+    color: $dark-gray;
+    &:hover { background-color: darken($warning-color, 10%); }
+  }
 }
-.record-btn.recording {
-  background-color: #ffc107;
-  color: black;
-}
-.record-btn:hover {
-  background-color: #138496;
+
+.feedback-modal-btn {
+    background-color: $medium-gray; // Neutral Grey
+    &:hover { background-color: darken($medium-gray, 10%); }
 }
 
 
-.feedback-area {
+// --- Modal Styling ---
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 100%;
-  margin-top: 15px;
+  height: 100%;
+  background-color: $modal-overlay-color;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000; // Ensure modal is on top
+  padding: 20px; // Padding for smaller screens so modal isn't edge-to-edge
+  box-sizing: border-box;
+}
+
+.modal-content {
   background-color: #fff;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  padding: 10px;
-  max-height: 200px;
-  overflow-y: auto;
+  color: $text-color;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  width: 100%;
+  max-width: 600px; // Max width of the modal
+  max-height: 80vh; // Max height, content will scroll
+  display: flex;
+  flex-direction: column;
 }
 
-.feedback-area h3 {
-  margin-top: 0;
-  font-size: 1.1em;
-  color: #555;
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   border-bottom: 1px solid #eee;
-  padding-bottom: 5px;
-  margin-bottom: 10px;
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+
+  h3 {
+    margin: 0;
+    font-size: 1.4em;
+  }
 }
 
-.feedback-area ul {
-  list-style-type: none;
-  padding: 0;
-  margin: 0;
+.modal-close-btn {
+  background: none;
+  border: none;
+  font-size: 1.8em;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 5px;
+  color: $medium-gray;
+  &:hover {
+    color: $dark-gray;
+  }
 }
 
-.feedback-area li {
-  padding: 5px 0;
-  font-size: 0.9em;
-  border-bottom: 1px solid #f0f0f0;
-}
-.feedback-area li:last-child {
-  border-bottom: none;
-}
+.modal-body {
+  overflow-y: auto; // Make only the body scrollable
+  flex-grow: 1;
 
-.feedback-info { color: #007bff; }
-.feedback-success { color: #28a745; }
-.feedback-warning { color: #ffc107; }
-.feedback-error { color: #dc3545; }
+  ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  li {
+    padding: 6px 0;
+    font-size: 0.9em;
+    border-bottom: 1px solid #f0f0f0;
+    word-break: break-word; // Prevent long messages from breaking layout
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  // Feedback type colors (same as before)
+  .feedback-info { color: $primary-color; }
+  .feedback-success { color: $success-color; }
+  .feedback-warning { color: $warning-color; }
+  .feedback-error { color: $danger-color; }
+}
 
 .no-feedback {
-  color: #777;
+  color: $medium-gray;
   font-style: italic;
+  padding: 20px 0;
+  text-align: center;
 }
