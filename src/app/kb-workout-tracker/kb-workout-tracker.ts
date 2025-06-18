@@ -572,20 +572,16 @@ export class KettleBellWorkoutTrackerComponent implements OnInit, OnDestroy {
     const stableRacked = this.isStateStable('press_racked', isRacked);
 
     if (this.currentRepCycleState === RepState.START) { // Expecting RACKED position
-      // Check if moving towards overhead from a racked-like position
-      if (isOverhead && !stableOverhead && elbowAngle > (this.PRESS_ELBOW_ANGLE_RACK + 10)) { // elbow extending
+      // Transition to UP only when stableOverhead is achieved (lockout is stable)
+      if (stableOverhead) {
         this.currentRepCycleState = RepState.UP;
-        this.addFeedback('info', `Press: Pressing up (Elbow: ${elbowAngle.toFixed(0)}°)`);
+        this.addFeedback('info', `Press: Lockout achieved (Elbow: ${elbowAngle.toFixed(0)}°)`);
         this.lastFramesStates = {};
-      } else if (stableRacked) {
-        // this.addFeedback('info', `Press: Ready at rack (Elbow: ${elbowAngle.toFixed(0)}°)`);
-        // No state change yet, just confirming racked position
       }
+      // else remain in START (rack) state
     } else if (this.currentRepCycleState === RepState.UP) { // Expecting OVERHEAD, looking to return to RACKED
       if (stableRacked) {
-        // Form check should ideally happen at the point of stableOverhead in previous cycle.
-        // For simplicity here, we'll assume the form was good if it reached UP state.
-        // A more advanced approach would store form metrics when UP state was achieved.
+        // Only count rep when returning from lockout to rack
         this.incrementRep();
         this.addFeedback('success', `Press: Rep complete! Returned to rack.`);
         this.currentRepCycleState = RepState.START;
