@@ -93,6 +93,8 @@ export class KettleBellWorkoutTrackerComponent implements OnInit, OnDestroy {
   private JERK_WRIST_SHOULDER_Y_DIFF_LOCKOUT = -20;
   private JERK_WRIST_SHOULDER_X_ALIGNMENT = 30;
 
+  alternatingArm: string = '';
+
 
   // --- LIFECYCLE HOOKS ---
   async ngOnInit() {
@@ -354,6 +356,10 @@ export class KettleBellWorkoutTrackerComponent implements OnInit, OnDestroy {
 
     if (exerciseName === 'Right Bicep Curl') {
       this.exerciseSpecificLogic = this.analyzeRightBicepCurl;
+    } else if (exerciseName === 'Left Bicep Curl') {
+      this.exerciseSpecificLogic = this.analyzeLeftBicepCurl;
+    } else if (exerciseName === 'Alternating Bicep Curl') {
+      this.exerciseSpecificLogic = this.analyzeAlternatingBicepCurl;
     } else if (exerciseName === 'Kettlebell Snatch') {
       this.exerciseSpecificLogic = this.analyzeKettlebellSnatch;
     } else if (exerciseName === 'Kettlebell Press') {
@@ -412,6 +418,110 @@ export class KettleBellWorkoutTrackerComponent implements OnInit, OnDestroy {
         this.incrementRep();
         this.currentRepCycleState = RepState.START;
         this.addFeedback('success', `Curl: Down phase, Rep Complete! (Angle: ${elbowAngle.toFixed(0)}°)`);
+      }
+    }
+  }
+
+  private analyzeLeftBicepCurl(pose: posedetection.Pose) {
+    const leftShoulder = pose.keypoints.find(kp => kp.name === 'left_shoulder');
+    const leftElbow = pose.keypoints.find(kp => kp.name === 'left_elbow');
+    const leftWrist = pose.keypoints.find(kp => kp.name === 'left_wrist');
+
+    if (!leftShoulder || !leftElbow || !leftWrist) {
+      return;
+    }
+
+    if ((leftShoulder.score ?? 0) < this.KEYPOINT_SCORE_THRESHOLD ||
+      (leftElbow.score ?? 0) < this.KEYPOINT_SCORE_THRESHOLD ||
+      (leftWrist.score ?? 0) < this.KEYPOINT_SCORE_THRESHOLD) {
+      return;
+    }
+
+    const elbowAngle = this.calculateAngle(leftShoulder, leftElbow, leftWrist);
+
+    if (elbowAngle === null) {
+      return;
+    }
+
+    if (this.currentRepCycleState === RepState.START) {
+      if (elbowAngle < this.BICEP_ELBOW_ANGLE_UP) {
+        this.currentRepCycleState = RepState.UP;
+        this.addFeedback('info', `Left Curl: Up phase detected (Angle: ${elbowAngle.toFixed(0)}°)`);
+      }
+    } else if (this.currentRepCycleState === RepState.UP) {
+      if (elbowAngle > this.BICEP_ELBOW_ANGLE_DOWN) {
+        this.incrementRep();
+        this.currentRepCycleState = RepState.START;
+        this.addFeedback('success', `Left Curl: Down phase, Rep Complete! (Angle: ${elbowAngle.toFixed(0)}°)`);
+      }
+    }
+  }
+
+  private analyzeAlternatingBicepCurl(pose: posedetection.Pose) {
+    const rightShoulder = pose.keypoints.find(kp => kp.name === 'right_shoulder');
+    const rightElbow = pose.keypoints.find(kp => kp.name === 'right_elbow');
+    const rightWrist = pose.keypoints.find(kp => kp.name === 'right_wrist');
+    const leftShoulder = pose.keypoints.find(kp => kp.name === 'left_shoulder');
+    const leftElbow = pose.keypoints.find(kp => kp.name === 'left_elbow');
+    const leftWrist = pose.keypoints.find(kp => kp.name === 'left_wrist');
+
+    if (
+      !rightShoulder || !rightElbow || !rightWrist ||
+      !leftShoulder || !leftElbow || !leftWrist
+    ) {
+      return;
+    }
+
+    if (
+      (rightShoulder.score ?? 0) < this.KEYPOINT_SCORE_THRESHOLD ||
+      (rightElbow.score ?? 0) < this.KEYPOINT_SCORE_THRESHOLD ||
+      (rightWrist.score ?? 0) < this.KEYPOINT_SCORE_THRESHOLD ||
+      (leftShoulder.score ?? 0) < this.KEYPOINT_SCORE_THRESHOLD ||
+      (leftElbow.score ?? 0) < this.KEYPOINT_SCORE_THRESHOLD ||
+      (leftWrist.score ?? 0) < this.KEYPOINT_SCORE_THRESHOLD
+    ) {
+      return;
+    }
+
+    const rightElbowAngle = this.calculateAngle(rightShoulder, rightElbow, rightWrist);
+    const leftElbowAngle = this.calculateAngle(leftShoulder, leftElbow, leftWrist);
+
+    if (rightElbowAngle === null || leftElbowAngle === null) {
+      return;
+    }
+
+    // Track which arm is currently curling
+    if (!this['alternatingArm']) {
+      this['alternatingArm'] = 'right';
+    }
+
+    if (this['alternatingArm'] === 'right') {
+      if (this.currentRepCycleState === RepState.START) {
+        if (rightElbowAngle < this.BICEP_ELBOW_ANGLE_UP) {
+          this.currentRepCycleState = RepState.UP;
+          this.addFeedback('info', `Alt Curl: Right up phase (Angle: ${rightElbowAngle.toFixed(0)}°)`);
+        }
+      } else if (this.currentRepCycleState === RepState.UP) {
+        if (rightElbowAngle > this.BICEP_ELBOW_ANGLE_DOWN) {
+          this.incrementRep();
+          this.currentRepCycleState = RepState.START;
+          this['alternatingArm'] = 'left';
+          this.addFeedback('success', `Alt Curl: Right down, Rep Complete! (Angle: ${rightElbowAngle.toFixed(0)}°)`);
+        }
+      }
+    } else if (this['alternatingArm'] === 'left') {
+      if (this.currentRepCycleState === RepState.START) {
+        if (leftElbowAngle < this.BICEP_ELBOW_ANGLE_UP) {
+          this.currentRepCycleState = RepState.UP;
+          this.addFeedback('info', `Alt Curl: Left up phase (Angle: ${leftElbowAngle.toFixed(0)}°)`);
+        }
+      } else if (this.currentRepCycleState === RepState.UP) {
+        if (leftElbowAngle > this.BICEP_ELBOW_ANGLE_DOWN) {
+          this.incrementRep();
+          this.currentRepCycleState = RepState.START;
+          this['alternatingArm'] = 'right';
+          this.addFeedback('success', `Alt Curl: Left down, Rep Complete! (Angle: ${leftElbowAngle.toFixed(0)}°)`);
+        }
       }
     }
   }
