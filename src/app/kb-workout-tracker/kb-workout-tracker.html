@@ -2,7 +2,6 @@
 
 <div class="workout-tracker-container">
 
-    <!-- REP COUNTER DISPLAY AREA (NEW) -->
     <div class="rep-counter-display-area" *ngIf="isWorkoutActive">
         <div class="rep-count-value">{{ repCount }}</div>
         <div class="rep-count-label">REPS</div>
@@ -21,14 +20,20 @@
             class="video-placeholder">
             <p *ngIf="!videoStream?.active">Camera access was lost or denied. Please reload or check permissions.</p>
             <p *ngIf="!modelReady && videoStream?.active">AI Model failed to load. Try reloading.</p>
-            <button (click)="setupCamera()" *ngIf="!videoStream?.active" class="action-btn retry-btn">Retry
-                Camera</button>
+            <button (click)="setupCamera()" *ngIf="!videoStream?.active" class="action-btn retry-btn">Retry Camera</button>
             <button (click)="loadPoseDetectionModel()" *ngIf="!modelReady && videoStream?.active"
                 class="action-btn retry-btn">Retry AI Model</button>
         </div>
     </div>
 
-    <div class="controls-overlay">
+    <!-- FLOATING ACTION BUTTON for Controls -->
+    <button class="controls-fab" (click)="toggleControlsExpansion()" (mousedown)="onFabMouseDown($event)" (touchstart)="onFabTouchStart($event)"
+        [style.left.px]="fabPosition.x" [style.top.px]="fabPosition.y">
+        <span class="material-icons-outlined">tune</span>
+    </button>
+
+    <!-- EXPANDABLE CONTROLS PANEL (was controls-overlay) -->
+    <div class="expandable-controls-panel" [class.expanded]="isControlsExpanded">
         <div class="main-controls">
             <div class="exercise-selector">
                 <label for="exercise">Exercise: </label>
@@ -46,7 +51,6 @@
 
             <div class="status-info">
                 <span>{{ currentExercise }} - {{ modelReady ? 'AI Ready' : 'AI Loading...' }}</span>
-                <!-- Rep count is now displayed above the video -->
                 <div class="timer">Time: <span>{{ formatTime(elapsedTime) }}</span></div>
             </div>
 
@@ -70,7 +74,7 @@
     </div>
 
 
-    <!-- Feedback Modal -->
+    <!-- Feedback Modal (remains the same) -->
     <div *ngIf="isFeedbackVisible" class="modal-overlay" (click)="toggleFeedbackVisibility()">
         <div class="modal-content" (click)="$event.stopPropagation()">
             <div class="modal-header">

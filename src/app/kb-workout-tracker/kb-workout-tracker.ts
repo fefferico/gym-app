@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef, ChangeDetectorRef, inject, NgZone } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, ChangeDetectorRef, inject, NgZone, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -41,6 +41,7 @@ export class KettleBellWorkoutTrackerComponent implements OnInit, OnDestroy {
 
   modelReady = false; // Public for template binding
   public isFeedbackVisible: boolean = false; // Modal starts hidden
+  public isControlsExpanded: boolean = false; // New property for FAB state, initially closed
 
   isCameraReady = false;
   isRecording = false;
@@ -95,6 +96,11 @@ export class KettleBellWorkoutTrackerComponent implements OnInit, OnDestroy {
 
   alternatingArm: string = '';
 
+  // --- NEW PROPERTIES FOR DRAGGABLE FAB ---
+  public fabPosition = { x: 0, y: 0 }; // Initial position (will be set dynamically)
+  private isFabDragging = false;
+  private fabDragStartOffset = { x: 0, y: 0 }; // Offset from mouse click to FAB top-left
+  private fabElementRef!: ElementRef<HTMLElement>; // To get FAB dimensions if needed
 
   // --- LIFECYCLE HOOKS ---
   async ngOnInit() {
@@ -119,7 +125,10 @@ export class KettleBellWorkoutTrackerComponent implements OnInit, OnDestroy {
     await this.setupCamera();
     await this.loadPoseDetectionModel();
     this.setExerciseLogic(this.currentExercise); // Set initial exercise logic
+    this.initializeFabPosition();
   }
+
+  constructor(private hostElement: ElementRef<HTMLElement>) { }
 
   ngOnDestroy() {
     this.stopWorkout(); // This also stops the animation frame
@@ -781,9 +790,16 @@ export class KettleBellWorkoutTrackerComponent implements OnInit, OnDestroy {
     return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   }
 
+  // New method to toggle feedback modal visibility
   toggleFeedbackVisibility(): void {
     this.isFeedbackVisible = !this.isFeedbackVisible;
-    this.changeDetectorRef.detectChanges(); // UI update for modal visibility
+    this.changeDetectorRef.detectChanges();
+  }
+
+  // NEW METHOD to toggle controls panel expansion
+  toggleControlsExpansion(): void {
+    this.isControlsExpanded = !this.isControlsExpanded;
+    this.changeDetectorRef.detectChanges(); // Ensure UI updates
   }
 
   // --- VIDEO RECORDING (Optional) ---
@@ -877,5 +893,168 @@ export class KettleBellWorkoutTrackerComponent implements OnInit, OnDestroy {
     } else {
       this.startRecording();
     }
+  }
+
+  private initializeFabPosition(): void {
+    // Initial position: bottom-right corner with some padding
+    // We need to wait for the view to be initialized to get viewport dimensions reliably
+    // or calculate based on the component's host element if it fills the viewport.
+
+    // A simple way is to set it relative to viewport size initially.
+    // This might need adjustment if your layout is complex.
+    const padding = 20; // pixels from edge
+    const fabSize = 56; // pixels (same as in SCSS)
+
+    // Using window dimensions for initial placement.
+    // For more robustness within an Angular component that might not fill the screen,
+    // you'd get the dimensions of a known parent container.
+    this.fabPosition.x = window.innerWidth - fabSize - padding;
+    this.fabPosition.y = window.innerHeight - fabSize - padding;
+
+    // If you need the FAB's own dimensions (e.g., if it's not fixed size)
+    // you'd typically query it after view init:
+    // ngAfterViewInit() {
+    //   const fabButton = this.hostElement.nativeElement.querySelector('.controls-fab') as HTMLElement;
+    //   if (fabButton) {
+    //     this.fabElementRef = new ElementRef(fabButton);
+    //     // Now you can use this.fabElementRef.nativeElement.offsetWidth, etc.
+    //     // And then set initial position.
+    //     this.fabPosition.x = window.innerWidth - fabButton.offsetWidth - padding;
+    //     this.fabPosition.y = window.innerHeight - fabButton.offsetHeight - padding;
+    //     this.changeDetectorRef.detectChanges(); // Update view with initial position
+    //   }
+    // }
+  }
+
+
+  onFabMouseDown(event: MouseEvent): void {
+    // Only start dragging if the user is actually trying to drag (not just a click)
+    // Only respond to left mouse button (button === 0)
+    if (event.button !== 0) return;
+
+    // Ignore simple clicks: only start dragging if the user moves the mouse (handled in mousemove)
+    // Here, we just record the initial position and set a flag to indicate a drag may start.
+    event.preventDefault(); // Prevent text selection during drag
+    this.isFabDragging = false; // Will be set to true on actual drag
+    const fabButton = event.currentTarget as HTMLElement;
+    const fabRect = fabButton.getBoundingClientRect();
+
+    // Store initial mouse position and FAB offset for drag threshold
+    this.fabDragStartOffset.x = event.clientX - fabRect.left;
+    this.fabDragStartOffset.y = event.clientY - fabRect.top;
+
+    // Set up a temporary mousemove and mouseup listener to detect drag threshold
+    const dragThreshold = 5; // pixels
+    const initialX = event.clientX;
+    const initialY = event.clientY;
+
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      const dx = moveEvent.clientX - initialX;
+      const dy = moveEvent.clientY - initialY;
+      if (!this.isFabDragging && (Math.abs(dx) > dragThreshold || Math.abs(dy) > dragThreshold)) {
+        this.isFabDragging = true;
+      }
+      if (this.isFabDragging) {
+        this.updateFabPosition(moveEvent.clientX, moveEvent.clientY);
+      }
+    };
+
+    const onMouseUp = () => {
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+      this.isFabDragging = false;
+    };
+
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+  }
+
+  onFabTouchStart(event: TouchEvent): void {
+    if (event.touches.length !== 1) return; // Only single touch drag
+    event.preventDefault(); // Prevent page scroll during drag on touch devices
+    this.isFabDragging = false; // Will be set to true after drag threshold is passed
+    const fabButton = event.currentTarget as HTMLElement;
+    const fabRect = fabButton.getBoundingClientRect();
+    const touch = event.touches[0];
+
+    this.fabDragStartOffset.x = touch.clientX - fabRect.left;
+    this.fabDragStartOffset.y = touch.clientY - fabRect.top;
+
+    const dragThreshold = 5; // pixels
+    const initialX = touch.clientX;
+    const initialY = touch.clientY;
+
+    const onTouchMove = (moveEvent: TouchEvent) => {
+      if (moveEvent.touches.length !== 1) return;
+      const moveTouch = moveEvent.touches[0];
+      const dx = moveTouch.clientX - initialX;
+      const dy = moveTouch.clientY - initialY;
+      if (!this.isFabDragging && (Math.abs(dx) > dragThreshold || Math.abs(dy) > dragThreshold)) {
+        this.isFabDragging = true;
+      }
+      if (this.isFabDragging) {
+        this.updateFabPosition(moveTouch.clientX, moveTouch.clientY);
+      }
+    };
+
+    const onTouchEnd = () => {
+      window.removeEventListener('touchmove', onTouchMove);
+      window.removeEventListener('touchend', onTouchEnd);
+      this.isFabDragging = false;
+    };
+
+    window.addEventListener('touchmove', onTouchMove, { passive: false });
+    window.addEventListener('touchend', onTouchEnd);
+  }
+
+  // Listen for mousemove and mouseup on the whole document
+  // This ensures dragging continues even if the mouse leaves the FAB itself,
+  // and that dragging stops when the mouse button is released anywhere.
+  @HostListener('document:mousemove', ['$event'])
+  onDocumentMouseMove(event: MouseEvent): void {
+    if (!this.isFabDragging) return;
+    event.preventDefault();
+    this.updateFabPosition(event.clientX, event.clientY);
+  }
+
+  @HostListener('document:touchmove', ['$event'])
+  onDocumentTouchMove(event: TouchEvent): void {
+    if (!this.isFabDragging || event.touches.length !== 1) return;
+    event.preventDefault();
+    const touch = event.touches[0];
+    this.updateFabPosition(touch.clientX, touch.clientY);
+  }
+
+  @HostListener('document:mouseup', ['$event'])
+  onDocumentMouseUp(event: MouseEvent): void {
+    if (this.isFabDragging) {
+      this.isFabDragging = false;
+      // Optional: Snap to edges or save position here
+    }
+  }
+
+  @HostListener('document:touchend', ['$event'])
+  onDocumentTouchEnd(event: TouchEvent): void {
+    if (this.isFabDragging) {
+      this.isFabDragging = false;
+      // Optional: Snap to edges or save position here
+    }
+  }
+
+  private updateFabPosition(clientX: number, clientY: number): void {
+    const hostRect = this.hostElement.nativeElement.getBoundingClientRect();
+    const fabSize = 56; // Assuming fixed size from SCSS, or get from this.fabElementRef
+
+    // Calculate new top-left position for the FAB
+    let newX = clientX - this.fabDragStartOffset.x - hostRect.left;
+    let newY = clientY - this.fabDragStartOffset.y - hostRect.top;
+
+    // Constrain FAB within the bounds of the host element (workout-tracker-container)
+    newX = Math.max(0, Math.min(newX, hostRect.width - fabSize));
+    newY = Math.max(0, Math.min(newY, hostRect.height - fabSize));
+
+    this.fabPosition = { x: newX, y: newY };
+    // No need for changeDetectorRef.detectChanges() here as Angular's event binding
+    // and property updates will trigger change detection for style bindings.
   }
 }
