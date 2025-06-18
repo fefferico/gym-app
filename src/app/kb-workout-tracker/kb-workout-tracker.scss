@@ -10,43 +10,78 @@ $dark-gray: #343a40;
 $text-color: #212529;
 $modal-overlay-color: rgba(0, 0, 0, 0.6);
 
+$text-color-on-dark: #f0f0f0; // For text on dark backgrounds like the rep counter
+
 // --- Global Host and Container ---
 :host {
-  display: flex; // Use flex to allow child to fill height
+  display: flex;
   flex-direction: column;
   width: 100%;
-  height: 100vh; // Take full viewport height
-  overflow: hidden; // Prevent page scrollbars
-  background-color: $dark-gray; // Background for the whole app screen
+  height: 100vh;
+  overflow: hidden;
+  background-color: $dark-gray;
 }
 
 .workout-tracker-container {
   display: flex;
   flex-direction: column;
   width: 100%;
-  flex-grow: 1; // Allow this container to grow and fill :host
-  overflow: hidden; // Child elements will manage their own scrolling if needed
-  position: relative; // For positioning overlay controls
+  flex-grow: 1;
+  overflow: hidden;
+  position: relative; // Important for absolute positioning of overlays
+}
+
+// --- REP COUNTER DISPLAY AREA (NEW STYLES) ---
+.rep-counter-display-area {
+  position: absolute; // Position it relative to workout-tracker-container
+  top: 20px; // Adjust as needed for spacing from the top
+  left: 50%;
+  transform: translateX(-50%); // Center horizontally
+  z-index: 10; // Ensure it's above the video but below modal/controls if they overlap heavily
+  background-color: rgba(0, 0, 0, 0.6); // Semi-transparent background
+  padding: 10px 25px;
+  border-radius: 10px;
+  text-align: center;
+  color: $text-color-on-dark;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+
+  .rep-count-value {
+    font-size: 4rem; // Significantly larger font size
+    font-weight: bold;
+    line-height: 1; // Adjust line height for tight packing
+    color: $success-color; // Make the number stand out
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+  }
+
+  .rep-count-label {
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 2px;
+  }
 }
 
 // --- Video Area ---
 .video-area {
-  position: relative; // For canvas overlay
+  position: relative;
   width: 100%;
-  flex-grow: 1; // CRITICAL: Makes video area take up available vertical space
+  flex-grow: 1;
   background-color: #000;
   overflow: hidden;
-  display: flex; // For centering placeholder
+  display: flex;
   justify-content: center;
   align-items: center;
-  margin-bottom: 80px;
+  // Add padding top if rep counter is absolutely positioned *over* it
+  // and you don't want potential overlap with top of video content.
+  // Alternatively, the rep counter can be part of the flex flow, pushing video down.
+  // For overlay effect, this is not needed if rep-counter-display-area is outside video-area.
 }
 
 .video-feed {
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: contain; // Ensures whole video is visible; use 'cover' to fill (may crop)
+  object-fit: contain;
 }
 
 .video-feed.hidden {
@@ -59,55 +94,46 @@ $modal-overlay-color: rgba(0, 0, 0, 0.6);
   left: 0;
   width: 100%;
   height: 100%;
-  pointer-events: none; // So it doesn't interfere with video controls if any were present
+  pointer-events: none;
 }
 
 .video-placeholder {
   color: $light-gray;
   text-align: center;
   padding: 20px;
-  button { // Styling for retry buttons within placeholder
+  button {
     background-color: $primary-color;
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-top: 10px;
-    &:hover {
-      background-color: darken($primary-color, 10%);
-    }
+    // ... (rest of button styles for placeholder)
   }
 }
 
 
-// --- Controls Overlay (New) ---
+// --- Controls Overlay ---
 .controls-overlay {
   position: absolute;
   bottom: 0;
   left: 0;
   width: 100%;
-  background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.7) 100%); // Subtle gradient
-  padding: 15px 10px 10px 10px; // More padding at top for gradient effect
+  background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.7) 100%);
+  padding: 15px 10px 10px 10px;
   box-sizing: border-box;
   display: flex;
-  justify-content: center; // Center the .main-controls
+  justify-content: center;
+  z-index: 5; // Below rep counter if it overlays, above video
 }
 
 .main-controls {
-  background-color: rgba(40, 40, 40, 0.9); // Darker semi-transparent background for controls
+  background-color: rgba(40, 40, 40, 0.9);
   color: $light-gray;
   padding: 15px;
   border-radius: 8px;
   box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
   width: 100%;
-  max-width: 700px; // Max width for controls for readability
+  max-width: 700px;
   display: flex;
   flex-direction: column;
-  gap: 15px; // Space between control groups
-  margin-bottom: 80px;
+  gap: 15px;
 }
-
 .exercise-selector {
   display: flex;
   align-items: center;
@@ -127,20 +153,21 @@ $modal-overlay-color: rgba(0, 0, 0, 0.6);
 
 .status-info {
   display: flex;
-  justify-content: space-around;
+  justify-content: space-around; // Will now space out Exercise Name and Timer
   align-items: center;
   font-size: 0.9em;
   text-align: center;
-  flex-wrap: wrap; // Allow wrapping on smaller screens
+  flex-wrap: wrap;
   gap: 10px;
 
-  .reps, .timer {
+  // Reps are removed from here
+  .timer {
     background-color: rgba(0,0,0,0.2);
     padding: 5px 10px;
     border-radius: 4px;
     span {
       font-weight: bold;
-      color: $primary-color; // Example color for numbers
+      color: $primary-color;
     }
   }
 }

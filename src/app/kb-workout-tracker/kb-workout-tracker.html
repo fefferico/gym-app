@@ -1,6 +1,13 @@
 <!-- START OF FILE kb-workout-tracker.html -->
 
 <div class="workout-tracker-container">
+
+    <!-- REP COUNTER DISPLAY AREA (NEW) -->
+    <div class="rep-counter-display-area" *ngIf="isWorkoutActive">
+        <div class="rep-count-value">{{ repCount }}</div>
+        <div class="rep-count-label">REPS</div>
+    </div>
+
     <div class="video-area">
         <video #videoElement autoplay playsinline muted class="video-feed" [class.hidden]="!isCameraReady"></video>
         <canvas #canvasElement class="pose-canvas"></canvas>
@@ -39,7 +46,7 @@
 
             <div class="status-info">
                 <span>{{ currentExercise }} - {{ modelReady ? 'AI Ready' : 'AI Loading...' }}</span>
-                <div class="reps">Reps: <span>{{ repCount }}</span></div>
+                <!-- Rep count is now displayed above the video -->
                 <div class="timer">Time: <span>{{ formatTime(elapsedTime) }}</span></div>
             </div>
 
