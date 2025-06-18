@@ -337,7 +337,7 @@ $text-color-on-dark: #f0f0f0; // For text on dark backgrounds like the rep count
 }
 
 .modal-body {
-  overflow-y: auto; // Make only the body scrollable
+//   overflow-y: auto; // Make only the body scrollable
   flex-grow: 1;
 
   ul {

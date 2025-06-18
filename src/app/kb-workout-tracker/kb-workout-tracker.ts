@@ -984,6 +984,8 @@ export class KettleBellWorkoutTrackerComponent implements OnInit, OnDestroy {
     const initialX = touch.clientX;
     const initialY = touch.clientY;
 
+    let moved = false;
+
     const onTouchMove = (moveEvent: TouchEvent) => {
       if (moveEvent.touches.length !== 1) return;
       const moveTouch = moveEvent.touches[0];
@@ -991,6 +993,7 @@ export class KettleBellWorkoutTrackerComponent implements OnInit, OnDestroy {
       const dy = moveTouch.clientY - initialY;
       if (!this.isFabDragging && (Math.abs(dx) > dragThreshold || Math.abs(dy) > dragThreshold)) {
         this.isFabDragging = true;
+        moved = true;
       }
       if (this.isFabDragging) {
         this.updateFabPosition(moveTouch.clientX, moveTouch.clientY);
@@ -1000,6 +1003,10 @@ export class KettleBellWorkoutTrackerComponent implements OnInit, OnDestroy {
     const onTouchEnd = () => {
       window.removeEventListener('touchmove', onTouchMove);
       window.removeEventListener('touchend', onTouchEnd);
+      if (!moved) {
+        // Considered a tap, not a drag
+        this.toggleControlsExpansion();
+      }
       this.isFabDragging = false;
     };
 
@@ -1020,7 +1027,7 @@ export class KettleBellWorkoutTrackerComponent implements OnInit, OnDestroy {
   @HostListener('document:touchmove', ['$event'])
   onDocumentTouchMove(event: TouchEvent): void {
     if (!this.isFabDragging || event.touches.length !== 1) return;
-    event.preventDefault();
+    // event.preventDefault(); // Removed to avoid passive event listener error
     const touch = event.touches[0];
     this.updateFabPosition(touch.clientX, touch.clientY);
   }
