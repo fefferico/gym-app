@@ -344,4 +344,9 @@ export class RoutineListComponent implements OnInit, OnDestroy {
   startKB(): void {
     this.router.navigate(['/workout/routine/kb-workout-tracker']);
   }
+
+  getIconPath(iconName: string | undefined): string {
+    return this.exerciseService.getIconPath(iconName);
+  }
+
 }
