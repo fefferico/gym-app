@@ -382,44 +382,36 @@ export class KettleBellWorkoutTrackerComponent implements OnInit, OnDestroy {
 
   // --- SPECIFIC EXERCISE ANALYSIS METHODS ---
   private analyzeRightBicepCurl(pose: posedetection.Pose) {
-    const rShoulder = pose.keypoints.find(kp => kp.name === 'right_shoulder');
-    const rElbow = pose.keypoints.find(kp => kp.name === 'right_elbow');
-    const rWrist = pose.keypoints.find(kp => kp.name === 'right_wrist');
+    const rightShoulder = pose.keypoints.find(kp => kp.name === 'right_shoulder');
+    const rightElbow = pose.keypoints.find(kp => kp.name === 'right_elbow');
+    const rightWrist = pose.keypoints.find(kp => kp.name === 'right_wrist');
 
-    if (!rShoulder || !rElbow || !rWrist ||
-      [rShoulder, rElbow, rWrist].some(kp => (kp!.score ?? 0) < this.KEYPOINT_SCORE_THRESHOLD)) {
-      // this.addFeedback('info', 'Curl: Right arm keypoints not clear.'); // Optional: too much feedback can be noisy
+    if (!rightShoulder || !rightElbow || !rightWrist) {
       return;
     }
 
-    const elbowAngle = this.calculateAngle(rShoulder, rElbow, rWrist);
-    if (elbowAngle === null) return;
+    if ((rightShoulder.score ?? 0) < this.KEYPOINT_SCORE_THRESHOLD ||
+      (rightElbow.score ?? 0) < this.KEYPOINT_SCORE_THRESHOLD ||
+      (rightWrist.score ?? 0) < this.KEYPOINT_SCORE_THRESHOLD) {
+      return;
+    }
 
-    const isArmUp = elbowAngle < this.BICEP_ELBOW_ANGLE_UP;
-    const isArmDown = elbowAngle > this.BICEP_ELBOW_ANGLE_DOWN;
+    const elbowAngle = this.calculateAngle(rightShoulder, rightElbow, rightWrist);
 
-    const stableArmUp = this.isStateStable('bicep_arm_up', isArmUp);
-    const stableArmDown = this.isStateStable('bicep_arm_down', isArmDown);
-
-    const wristVsElbowVertical = rWrist.y - rElbow.y;
-    const isWristPositionCorrectDown = wristVsElbowVertical > this.BICEP_WRIST_ELBOW_VERTICAL_DIFF_DOWN;
+    if (elbowAngle === null) {
+      return;
+    }
 
     if (this.currentRepCycleState === RepState.START) {
-      if (stableArmUp) {
+      if (elbowAngle < this.BICEP_ELBOW_ANGLE_UP) {
         this.currentRepCycleState = RepState.UP;
-        this.addFeedback('info', `Curl: Up phase (Angle: ${elbowAngle.toFixed(0)}°)`);
-        this.lastFramesStates = {}; // Clear debounce for next state part
+        this.addFeedback('info', `Curl: Up phase detected (Angle: ${elbowAngle.toFixed(0)}°)`);
       }
     } else if (this.currentRepCycleState === RepState.UP) {
-      if (stableArmDown) {
-        if (isWristPositionCorrectDown) {
-          this.incrementRep();
-          this.addFeedback('success', `Curl: Rep Complete!`);
-        } else {
-          this.addFeedback('warning', `Curl: Rep done, but check wrist position at bottom next time.`);
-        }
+      if (elbowAngle > this.BICEP_ELBOW_ANGLE_DOWN) {
+        this.incrementRep();
         this.currentRepCycleState = RepState.START;
-        this.lastFramesStates = {};
+        this.addFeedback('success', `Curl: Down phase, Rep Complete! (Angle: ${elbowAngle.toFixed(0)}°)`);
       }
     }
   }
