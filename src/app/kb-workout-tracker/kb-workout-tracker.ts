@@ -19,6 +19,14 @@ enum RepState {
   // You might add more states for complex exercises
 }
 
+interface ExerciseConfig {
+  name: string;
+  keypoints: string[]; // Names of essential keypoints
+  analyzer: (pose: posedetection.Pose, component: KettleBellWorkoutTrackerComponent) => void;
+  thresholds: { [key: string]: number };
+  initialState: RepState;
+}
+
 @Component({
   selector: 'app-workout-tracker',
   standalone: true,
@@ -60,10 +68,22 @@ export class KettleBellWorkoutTrackerComponent implements OnInit, OnDestroy {
 
   public currentExercise = 'Right Bicep Curl';
 
-  // Thresholds (these will need significant tuning!)
-  private ELBOW_ANGLE_UP_THRESHOLD = 70;
-  private ELBOW_ANGLE_DOWN_THRESHOLD = 150;
-  private KEYPOINT_SCORE_THRESHOLD = 0.4;
+  // --- THRESHOLDS (CRITICAL FOR TUNING) ---
+  // Bicep Curl
+  private BICEP_ELBOW_ANGLE_UP = 70;    // Degrees, arm flexed
+  private BICEP_ELBOW_ANGLE_DOWN = 150; // Degrees, arm extended
+  private BICEP_WRIST_ELBOW_VERTICAL_DIFF_DOWN = -10; // Pixels: wrist should ideally not be much HIGHER than elbow at bottom (negative means wrist is lower or same)
+  // This is sensitive to camera angle!
+
+  // General
+  private KEYPOINT_SCORE_THRESHOLD = 0.4; // Min confidence for a keypoint
+  private STABLE_FRAME_COUNT = 2; // Number of consecutive frames a condition must hold for state change (debounce)
+  private lastFramesStates: { [key: string]: boolean[] } = {}; // For debouncing
+
+  // Kettlebell Snatch (very rough placeholders, will need significant work)
+  private SNATCH_HIP_EXTENSION_ANGLE_START = 160; // Hip relatively straight at start of pull
+  private SNATCH_ARM_LOCKOUT_SHOULDER_WRIST_ALIGNMENT_Y = 20; // Pixels: wrist Y should be close to shoulder Y at lockout
+  private SNATCH_KNEE_ANGLE_BOTTOM = 90; // Approx knee angle at bottom
 
 
   async ngOnInit() {
@@ -459,21 +479,19 @@ export class KettleBellWorkoutTrackerComponent implements OnInit, OnDestroy {
   setExerciseLogic(exerciseName: string) {
     this.currentRepCycleState = RepState.START;
     this.repCount = 0;
+    this.lastFramesStates = {}; // Reset debounce history
     this.addFeedback('info', `Switched to exercise: ${exerciseName}`);
 
+    this.currentExercise = exerciseName; // Set it regardless, so UI updates
+
     if (exerciseName === 'Right Bicep Curl') {
-      this.currentExercise = exerciseName;
-      // Assign directly, no .call needed here for assignment
       this.exerciseSpecificLogic = this.analyzeRightBicepCurl;
     } else if (exerciseName === 'Kettlebell Snatch') {
-      this.currentExercise = exerciseName;
-      this.addFeedback('warning', 'Kettlebell Snatch logic not fully implemented yet.');
-      // If you had analyzeKettlebellSnatch, it would be:
-      // this.exerciseSpecificLogic = this.analyzeKettlebellSnatch;
-      this.exerciseSpecificLogic = (pose: posedetection.Pose) => { // Ensure it matches signature
-        /* console.log("Kettlebell Snatch placeholder called with pose:", pose); */
-      };
+      this.exerciseSpecificLogic = this.analyzeKettlebellSnatch;
+    } else if (exerciseName === 'Kettlebell Press') {
+      this.exerciseSpecificLogic = this.analyzeKettlebellPress;
     }
+    // Add more exercises here with 'else if'
     else {
       this.addFeedback('warning', `No specific logic for exercise: ${exerciseName}`);
       this.exerciseSpecificLogic = null;
@@ -534,41 +552,196 @@ export class KettleBellWorkoutTrackerComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Specific logic for Right Bicep Curl
+  // --- BICEP CURL LOGIC ---
   private analyzeRightBicepCurl(pose: posedetection.Pose) {
-    const rightShoulder = pose.keypoints.find(kp => kp.name === 'right_shoulder');
-    const rightElbow = pose.keypoints.find(kp => kp.name === 'right_elbow');
-    const rightWrist = pose.keypoints.find(kp => kp.name === 'right_wrist');
+    const rShoulder = pose.keypoints.find(kp => kp.name === 'right_shoulder');
+    const rElbow = pose.keypoints.find(kp => kp.name === 'right_elbow');
+    const rWrist = pose.keypoints.find(kp => kp.name === 'right_wrist');
 
-    if (!rightShoulder || !rightElbow || !rightWrist) {
+    if (!rShoulder || !rElbow || !rWrist ||
+        (rShoulder.score ?? 0) < this.KEYPOINT_SCORE_THRESHOLD ||
+        (rElbow.score ?? 0) < this.KEYPOINT_SCORE_THRESHOLD ||
+        (rWrist.score ?? 0) < this.KEYPOINT_SCORE_THRESHOLD) {
+      // this.addFeedback('warning', 'Curl: Right arm keypoints not clearly visible or low confidence.');
       return;
     }
 
-    if ((rightShoulder.score ?? 0) < this.KEYPOINT_SCORE_THRESHOLD ||
-      (rightElbow.score ?? 0) < this.KEYPOINT_SCORE_THRESHOLD ||
-      (rightWrist.score ?? 0) < this.KEYPOINT_SCORE_THRESHOLD) {
-      return;
-    }
+    const elbowAngle = this.calculateAngle(rShoulder, rElbow, rWrist);
+    if (elbowAngle === null) return;
 
-    const elbowAngle = this.calculateAngle(rightShoulder, rightElbow, rightWrist);
+    const isArmUp = elbowAngle < this.BICEP_ELBOW_ANGLE_UP;
+    const isArmDown = elbowAngle > this.BICEP_ELBOW_ANGLE_DOWN;
 
-    if (elbowAngle === null) {
-      return;
-    }
+    const stableArmUp = this.isStateStable('bicep_arm_up', isArmUp);
+    const stableArmDown = this.isStateStable('bicep_arm_down', isArmDown);
+
+    // Wrist position check (example: wrist should not be significantly higher than elbow at bottom)
+    // Positive Y is typically downwards in screen/image coordinates.
+    const wristVsElbowVertical = rWrist.y - rElbow.y;
+    const isWristPositionCorrectDown = wristVsElbowVertical > this.BICEP_WRIST_ELBOW_VERTICAL_DIFF_DOWN;
+    // this.addFeedback('info', `Elbow: ${elbowAngle.toFixed(0)}, WristY-ElbowY: ${wristVsElbowVertical.toFixed(0)}`);
+
 
     if (this.currentRepCycleState === RepState.START) {
-      if (elbowAngle < this.ELBOW_ANGLE_UP_THRESHOLD) {
+      if (stableArmUp) {
         this.currentRepCycleState = RepState.UP;
-        this.addFeedback('info', `Curl: Up phase detected (Angle: ${elbowAngle.toFixed(0)}°)`);
+        this.addFeedback('info', `Curl: Up phase (Angle: ${elbowAngle.toFixed(0)}°)`);
+        this.lastFramesStates = {}; // Clear debounce for next state
+      } else if (isArmDown && !isWristPositionCorrectDown) {
+        // this.addFeedback('warning', 'Curl: Check wrist position at bottom.');
       }
     } else if (this.currentRepCycleState === RepState.UP) {
-      if (elbowAngle > this.ELBOW_ANGLE_DOWN_THRESHOLD) {
-        this.incrementRep();
+      if (stableArmDown) {
+        if (isWristPositionCorrectDown) { // Check form on completion
+          this.incrementRep();
+          this.addFeedback('success', `Curl: Rep Complete! (Angle: ${elbowAngle.toFixed(0)}°)`);
+        } else {
+          this.addFeedback('warning', `Curl: Rep done, but check wrist position at bottom next time.`);
+        }
         this.currentRepCycleState = RepState.START;
-        this.addFeedback('success', `Curl: Down phase, Rep Complete! (Angle: ${elbowAngle.toFixed(0)}°)`);
+        this.lastFramesStates = {}; // Clear debounce for next state
+      }
+      // Add feedback if user is stuck in "up" but not fully down, e.g.
+      // else if (!isArmUp && elbowAngle < (this.BICEP_ELBOW_ANGLE_DOWN - 20)) { // Not fully down, not fully up
+      //   this.addFeedback('info', `Curl: Extend arm fully to complete rep.`);
+      // }
+    }
+
+    // Conceptual Elbow Drift Check:
+    // 1. When state becomes UP, store rElbow.x relative to rShoulder.x
+    // 2. While in UP state, if rElbow.x deviates too much from stored initial, provide feedback.
+    // This requires storing state across frames within the exercise logic.
+  }
+
+  // --- KETTLEBELL SNATCH LOGIC (VERY BASIC OUTLINE) ---
+  private analyzeKettlebellSnatch(pose: posedetection.Pose) {
+    this.addFeedback('info', 'Snatch: Analyzing...');
+
+    const rShoulder = pose.keypoints.find(kp => kp.name === 'right_shoulder');
+    const rElbow = pose.keypoints.find(kp => kp.name === 'right_elbow');
+    const rWrist = pose.keypoints.find(kp => kp.name === 'right_wrist');
+    const rHip = pose.keypoints.find(kp => kp.name === 'right_hip');
+    const rKnee = pose.keypoints.find(kp => kp.name === 'right_knee');
+    const rAnkle = pose.keypoints.find(kp => kp.name === 'right_ankle');
+    // Consider nose or an ear for head position/posture.
+    // For symmetry, you might average left and right keypoints if doing a two-handed movement or want general posture.
+
+    if (!rShoulder || !rElbow || !rWrist || !rHip || !rKnee || !rAnkle ||
+        [rShoulder, rElbow, rWrist, rHip, rKnee, rAnkle].some(kp => (kp?.score ?? 0) < this.KEYPOINT_SCORE_THRESHOLD)) {
+      this.addFeedback('warning', 'Snatch: Key body parts not clearly visible.');
+      return;
+    }
+
+    // Calculate relevant angles
+    const hipAngle = this.calculateAngle(rShoulder, rHip, rKnee); // Hip extension/flexion
+    const kneeAngle = this.calculateAngle(rHip, rKnee, rAnkle);   // Knee extension/flexion
+    const elbowAngle = this.calculateAngle(rShoulder, rElbow, rWrist); // Arm position
+
+    if (hipAngle === null || kneeAngle === null || elbowAngle === null) {
+        this.addFeedback('info', 'Snatch: Could not calculate key angles.');
+        return;
+    }
+
+    // Snatch States (example, needs to be much more granular):
+    // RepState.START -> Bottom of swing / initial dip
+    // RepState.PULLING -> Hip extension, KB travelling up
+    // RepState.CATCHING -> Arm punching through, KB turnover
+    // RepState.UP (or LOCKOUT) -> KB overhead, stable
+    // (Then a sequence for lowering the bell)
+
+    // Example transition (VERY simplified)
+    if (this.currentRepCycleState === RepState.START) {
+        // Looking for bottom position (e.g., knees bent, hips hinged)
+        // AND THEN a move towards hip extension
+        const isBottomPosition = kneeAngle < this.SNATCH_KNEE_ANGLE_BOTTOM + 20 && hipAngle < 120; // Example values
+        const isHipExtending = hipAngle > this.SNATCH_HIP_EXTENSION_ANGLE_START - 30; // Moving towards straight
+
+        if (this.isStateStable('snatch_bottom', isBottomPosition)) {
+            // Now wait for hip extension from this stable bottom
+        }
+
+        if (isBottomPosition && isHipExtending && rWrist.y > rHip.y) { // KB still low, but hips are opening
+            // This is too simple, just an idea for a trigger
+            // A real snatch relies on timing and velocity which is hard with static poses.
+            // You might look for rWrist moving upwards rapidly after hip extension.
+            // this.currentRepCycleState = "PULLING"; // Define more states
+            this.addFeedback('info', `Snatch: Hip drive detected (Hip: ${hipAngle.toFixed(0)}°)`);
+            // Reset debounce for next phase
+        }
+    } else if (this.currentRepCycleState === RepState.UP) { // Assuming UP is lockout
+        // Looking for bell to come down to START a new rep
+        const isArmLowering = elbowAngle > 90 && rWrist.y > rShoulder.y; // Bell coming down
+        if (this.isStateStable('snatch_lowering', isArmLowering) && kneeAngle < this.SNATCH_KNEE_ANGLE_BOTTOM + 30) {
+            this.incrementRep();
+            this.currentRepCycleState = RepState.START;
+            this.addFeedback('success', `Snatch: Rep Complete (placeholder).`);
+            // Reset debounce for next phase
+        }
+    }
+
+    // Form Checks for Snatch (Examples):
+    // - Back straightness: Angle between shoulder, hip, and knee (should be relatively straight during pull).
+    // - KB path: Wrist should stay relatively close to the body during the pull.
+    // - Lockout: Elbow fully extended, wrist stacked over shoulder, KB stable (minimal wrist movement).
+    // - Smooth catch: Avoid the KB crashing onto the forearm (hard to detect without impact sensors, but abrupt wrist/elbow angle changes might hint).
+    // - Timing: Hip extension should precede arm pull.
+
+    // this.addFeedback('info', `Snatch Angles - Hip:${hipAngle.toFixed(0)}, Knee:${kneeAngle.toFixed(0)}, Elbow:${elbowAngle.toFixed(0)}`);
+  }
+
+  /**
+   * Analyze a right-arm kettlebell press (strict press, not push press).
+   * Detects a rep when the arm moves from a "down" (elbow flexed, wrist below shoulder) to "up" (elbow extended, wrist above shoulder) position.
+   * Form checks: elbow lockout at top, wrist stacked over shoulder, minimal torso lean.
+   */
+  private analyzeKettlebellPress(pose: posedetection.Pose) {
+    const rShoulder = pose.keypoints.find(kp => kp.name === 'right_shoulder');
+    const rElbow = pose.keypoints.find(kp => kp.name === 'right_elbow');
+    const rWrist = pose.keypoints.find(kp => kp.name === 'right_wrist');
+    const rHip = pose.keypoints.find(kp => kp.name === 'right_hip');
+
+    if (!rShoulder || !rElbow || !rWrist || !rHip ||
+        [rShoulder, rElbow, rWrist, rHip].some(kp => (kp?.score ?? 0) < this.KEYPOINT_SCORE_THRESHOLD)) {
+      // Not enough confidence in keypoints
+      return;
+    }
+
+    // Calculate elbow angle (shoulder-elbow-wrist)
+    const elbowAngle = this.calculateAngle(rShoulder, rElbow, rWrist);
+    if (elbowAngle === null) return;
+
+    // "Up" = arm extended, wrist above shoulder
+    const isArmUp = elbowAngle > 155 && rWrist.y < rShoulder.y - 10;
+    // "Down" = elbow flexed, wrist below shoulder
+    const isArmDown = elbowAngle < 110 && rWrist.y > rShoulder.y + 10;
+
+    const stableArmUp = this.isStateStable('press_arm_up', isArmUp);
+    const stableArmDown = this.isStateStable('press_arm_down', isArmDown);
+
+    if (this.currentRepCycleState === RepState.START) {
+      if (stableArmDown) {
+        this.addFeedback('info', `Press: Ready at bottom (elbow: ${elbowAngle.toFixed(0)}°)`);
+        this.currentRepCycleState = RepState.UP;
+        this.lastFramesStates = {};
+      }
+    } else if (this.currentRepCycleState === RepState.UP) {
+      if (stableArmUp) {
+        // Form check: wrist stacked over shoulder (x close), torso upright (shoulder and hip x close)
+        const wristShoulderXDiff = Math.abs(rWrist.x - rShoulder.x);
+        const shoulderHipXDiff = Math.abs(rShoulder.x - rHip.x);
+        if (wristShoulderXDiff < 30 && shoulderHipXDiff < 40) {
+          this.incrementRep();
+          this.addFeedback('success', `Press: Rep complete! (elbow: ${elbowAngle.toFixed(0)}°)`);
+        } else {
+          this.addFeedback('warning', 'Press: Check wrist/shoulder alignment or torso lean at lockout.');
+        }
+        this.currentRepCycleState = RepState.START;
+        this.lastFramesStates = {};
       }
     }
   }
+
+
 
   // You would add more analyze... methods for other exercises
   // private analyzeKettlebellSnatch(pose: posedetection.Pose) {
@@ -585,4 +758,19 @@ export class KettleBellWorkoutTrackerComponent implements OnInit, OnDestroy {
   //       this.addFeedback('success', `Rep ${this.repCount} counted!`);
   //   });
   // }
+
+  // Helper: Debounce state changes
+  private isStateStable(stateName: string, currentState: boolean): boolean {
+    if (!this.lastFramesStates[stateName]) {
+      this.lastFramesStates[stateName] = [];
+    }
+    this.lastFramesStates[stateName].push(currentState);
+    if (this.lastFramesStates[stateName].length > this.STABLE_FRAME_COUNT) {
+      this.lastFramesStates[stateName].shift(); // Keep buffer size
+    }
+    if (this.lastFramesStates[stateName].length < this.STABLE_FRAME_COUNT) {
+      return false; // Not enough frames yet
+    }
+    return this.lastFramesStates[stateName].every(s => s === currentState);
+  }
 }
