@@ -1,0 +1,36 @@
+// src/app/features/profile-settings/pb-trend-chart/pb-trend-chart.scss
+
+// Define default for the CSS variable if not set (optional fallback)
+:host {
+  --ngx-charts-text-color: #374151; // Default to light theme text color
+}
+
+// Apply the CSS variable to ngx-charts text elements
+// You might need to inspect the generated SVG to find the correct selectors for text.
+// These are common ones.
+:host ::ng-deep {
+  .ngx-charts {
+    text {
+      fill: var(--ngx-charts-text-color) !important;
+    }
+    .axis-label, .legend-label { // More specific selectors
+      fill: var(--ngx-charts-text-color) !important;
+    }
+    .gridline-path { // Optional: lighten gridlines in dark mode
+        // Example: stroke: var(--ngx-charts-gridline-color, rgba(0,0,0,0.1));
+    }
+  }
+}
+
+// ... (rest of your SCSS, like tooltip styling)
+.pb-chart-container ::ng-deep .ngx-charts {
+  overflow: visible !important;
+}
+
+::ng-deep .chart-tooltip {
+  pointer-events: none;
+  font-size: 0.75rem;
+  strong {
+    font-weight: 600;
+  }
+}

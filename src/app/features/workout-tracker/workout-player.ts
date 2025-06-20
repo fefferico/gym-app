@@ -2288,7 +2288,8 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       "Finish workout now? Current progress will be saved."
     );
     if (confirmFinishEarly && confirmFinishEarly.data) {
-      this.closeWorkoutMenu(); this.closePerformanceInsights();
+      this.closeWorkoutMenu(); 
+      this.closePerformanceInsights();
       const didLog = await this.finishWorkoutAndReportStatus();
       if (!didLog) {
         this.toastService.info("Workout finished early. Paused session cleared.", 4000);
@@ -2345,8 +2346,8 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       this.toastService.info("Workout is still loading.", 3000, "Loading");
       return false; // Did not log
     }
-    // const loggedExercisesForReport = this.currentWorkoutLogExercises().filter(ex => ex.sets.length > 0);
-    const loggedExercisesForReport = this.routine()?.exercises.map(ex => this.mapWorkoutExerciseToLoggedWorkoutExercise(ex));
+    const loggedExercisesForReport = this.currentWorkoutLogExercises().filter(ex => ex.sets.length > 0);
+    // const loggedExercisesForReport = this.routine()?.exercises.map(ex => this.mapWorkoutExerciseToLoggedWorkoutExercise(ex));
 
     if (loggedExercisesForReport === undefined || loggedExercisesForReport.length === 0) {
       return false
@@ -2355,10 +2356,11 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     if (loggedExercisesForReport.length === 0) {
       this.toastService.info("No sets logged. Workout not saved.", 3000, "Empty Workout");
       this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
-      if (this.router.url.includes('/play')) { this.router.navigate(['/workout']); }
+      if (this.router.url.includes('/play')) { 
+        this.router.navigate(['/workout']); }
       return false;
     }
-
+    this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
     if (this.timerSub) this.timerSub.unsubscribe();
 
     const sessionRoutineValue = this.routine();

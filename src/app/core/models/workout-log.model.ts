@@ -9,7 +9,7 @@ export interface LoggedSet {
 
   // Actual performance data
   repsAchieved: number;
-  weightUsed?: number | null;
+  weightUsed?: number | undefined;
   durationPerformed?: number; // Duration in seconds, if it was a timed set or part of one.
   tempoUsed?: string;     // Actual tempo used, if tracked by user.
   // restTaken?: number;  // Actual rest taken before the next set (more complex to track accurately)
@@ -78,17 +78,27 @@ export interface PersonalBestSet extends LoggedSet {
   pbType: string; // e.g., "1RM", "5RM (estimated)", "Max Reps @ X kg"
   exerciseId: string;
   repsAchieved: number;
-  weightUsed?: number | null;
+  weightUsed?: number | undefined;
   durationPerformed?: number; // In seconds
   estimatedOneRepMax?: number | null;
   timestamp: string; // ISO date string of when this PB was achieved
   workoutLogId?: string; // <<<< ADD THIS if not present
   notes?: string; // Optional notes from the set that achieved this PB
   // Potentially routineId and routineName if you want to display that too
+  history?: PBHistoryInstance[]; // Array of previous instances for this specific pbType, most recent previous PB at index 0
 }
 
 export interface LastPerformanceSummary {
   lastPerformedDate: string;
   workoutLogId: string;       // Ensure this is present
   sets: LoggedSet[];          // Ensure this is LoggedSet[]
+}
+
+
+export interface PBHistoryInstance {
+  weightUsed?: number | undefined;
+  repsAchieved: number; // Actual reps for this historical PB instance
+  durationPerformed?: number; // Actual duration for this historical PB instance
+  timestamp: string;    // ISO date string of when this historical PB was achieved
+  workoutLogId?: string; // The log ID where this historical PB was achieved
 }

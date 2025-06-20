@@ -1,0 +1,62 @@
+<!-- src/app/features/profile-settings/pb-trend-chart/pb-trend-chart.component.html -->
+<div class="container mx-auto p-4" (window:resize)="onResize($event)">
+  <div class="mb-6 flex items-center">
+    <button (click)="goBack()"
+      class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-light p-2 -ml-2 rounded-full focus:outline-none focus:ring-2 focus:ring-primary-focus">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+      </svg>
+    </button>
+    <h1 class="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-200 ml-2">
+      {{ currentExerciseName() }} - {{ currentPbType || 'PB Trend' }}
+    </h1>
+  </div>
+
+  <div *ngIf="isLoading()" class="text-center py-10">
+    <p class="text-lg text-gray-600 dark:text-gray-400">Loading trend data...</p>
+    <!-- Optional: Add a spinner -->
+    <div class="mt-4 animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+  </div>
+
+  <div *ngIf="errorMessage()" class="text-center py-10 bg-red-50 dark:bg-red-900/30 p-4 rounded-lg shadow">
+    <p class="text-lg font-semibold text-red-700 dark:text-red-300">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 inline-block mr-2 align-middle">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+      </svg>
+      {{ errorMessage() }}
+    </p>
+    <button (click)="goBack()" class="mt-4 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark transition-colors">
+      Back to Personal Bests
+    </button>
+  </div>
+
+  <div *ngIf="!isLoading() && !errorMessage() && chartData()" class="bg-white dark:bg-gray-800 p-2 sm:p-4 rounded-lg shadow-xl">
+    <ngx-charts-line-chart
+      [view]="view"
+      [scheme]="chartColorScheme()"
+      [results]="chartData()!"
+      [legend]="legend"
+      [xAxis]="xAxis"
+      [yAxis]="yAxis"
+      [showXAxisLabel]="showXAxisLabel"
+      [showYAxisLabel]="showYAxisLabel"
+      [xAxisLabel]="'Date'"
+      [yAxisLabel]="yAxisLabel()"
+      [timeline]="timeline"
+      [autoScale]="autoScale"
+      [roundDomains]="roundDomains"
+      [xAxisTickFormatting]="xAxisTickFormatting"
+      (select)="onChartSelect($event)"
+      class="pb-chart-container">
+      <ng-template #tooltipTemplate let-model="model">
+        <div class="chart-tooltip bg-gray-700 text-white p-2 rounded shadow-lg text-xs">
+          <div><strong>{{ model.name | date:'mediumDate' }}</strong></div>
+          <div>Value: {{ model.value }} {{ yAxisLabel().split(' ')[0] }}</div>
+          <div *ngIf="model.extra?.reps">Reps: {{ model.extra.reps }}</div>
+          <div *ngIf="model.extra?.notes" class="max-w-xs truncate">Notes: {{ model.extra.notes }}</div>
+           <div *ngIf="model.extra?.workoutLogId" class="mt-1 text-indigo-300">Click to view log</div>
+        </div>
+      </ng-template>
+    </ngx-charts-line-chart>
+  </div>
+</div>

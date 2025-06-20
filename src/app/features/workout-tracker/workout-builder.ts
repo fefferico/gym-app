@@ -896,7 +896,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
             exerciseId: exInput.exerciseId,
             type: setInput.type, // <<<< ENSURE THIS IS SAVED
             repsAchieved: setInput.repsAchieved,
-            weightUsed: this.unitsService.convertToKg(setInput.weightUsed, this.unitsService.currentUnit()) ?? null,
+            weightUsed: this.unitsService.convertToKg(setInput.weightUsed, this.unitsService.currentUnit()) ?? undefined,
             durationPerformed: setInput.durationPerformed,
             notes: setInput.notes, // Set-level notes
             // Target fields are not directly edited in log mode form, but might be on LoggedSet if prefilled

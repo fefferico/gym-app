@@ -1,4 +1,3 @@
-<!-- src/app/features/profile-settings/personal-bests.component.html -->
 <div class="container mx-auto p-1 sm:p-4">
     <div class="mb-6 flex items-center">
         <button routerLink="/profile"
@@ -8,51 +7,70 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
             </svg>
         </button>
-        <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200 ml-2">Personal Bests</h1>
+        <header
+            class="flex justify-between items-center mb-2 pb-2 border-b border-gray-200 dark:border-gray-700 ng-tns-c47381853-11">
+            <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200 ml-2">Personal Bests</h1>
+            <button (click)="toggleFiltersVisibility()" type="button"
+                class="p-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 focus:ring-primary dark:focus:ring-primary-light transition-all duration-300 ease-in-out">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                    stroke="currentColor" class="w-6 h-6 transition-transform duration-300"
+                    [class.rotate-180]="filtersVisible()">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0M3.75 18H7.5m3-6h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0M3.75 12H7.5" />
+                </svg>
+                <span class="sr-only">Toggle Filters</span>
+            </button>
+
+            <button (click)="triggerRecalculatePBs()" title="Recalculate all Personal Bests from your workout history"
+                class="ml-2 p-2 text-sm text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary-light rounded-md border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                    stroke="currentColor" class="w-3.5 h-3.5 sm:w-4 sm:h-4">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+                </svg>
+                <span class="hidden sm:inline-block ml-1">Recalculate</span>
+            </button>
+            <!-- Reset PBs Button -->
+            <button (click)="resetPBs()" title="Reset all PBs"
+                class="ml-2 p-2 text-sm text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-500 rounded-md border border-gray-300 dark:border-gray-600 hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                    class="w-3.5 h-3.5 sm:w-4 sm:h-4">
+                    <path fill-rule="evenodd"
+                        d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.58.177-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5Zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5Z"
+                        clip-rule="evenodd"></path>
+                </svg>
+                <span class="hidden sm:inline-block ml-1">Reset PBs</span>
+            </button>
+        </header>
+
+        <!-- Recalculate PBs Button -->
+
+
     </div>
 
-    <!-- Filter Accordion Section -->
-    <div class="mb-8 bg-white dark:bg-gray-700 rounded-lg shadow-md">
-        <button (click)="toggleFiltersVisibility()"
-            class="w-full flex justify-between items-center p-4 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-opacity-75 rounded-t-lg"
-            [class.rounded-b-lg]="!filtersVisible()"
-            [attr.aria-expanded]="filtersVisible()"
-            aria-controls="filters-content">
-            <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-300">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 inline-block mr-2 align-text-bottom">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.572a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z" />
-                </svg>
-                Filters
-            </h2>
-            <!-- Expand/Collapse Icon -->
-            <svg *ngIf="filtersVisible()" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-gray-500 dark:text-gray-400 transform transition-transform duration-200">
-                <polyline points="18 15 12 9 6 15"></polyline>
-            </svg>
-            <svg *ngIf="!filtersVisible()" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-gray-500 dark:text-gray-400 transform transition-transform duration-200">
-                <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
-        </button>
-
-        <div *ngIf="filtersVisible()" id="filters-content" class="p-4 border-t border-gray-200 dark:border-gray-700">
+    <!-- Filter Accordion Section - UPDATED -->
+    <div class="overflow-hidden transition-all duration-500 ease-in-out"
+        [style.maxHeight]="filtersVisible() ? '1000px' : '0px'" [class.mb-6]="filtersVisible()">
+        <div *ngIf="filtersVisible()" id="filters-content-personal-bests"
+            class="p-4 bg-white dark:bg-gray-700 rounded-lg shadow-md border dark:border-gray-600">
+            <!-- Changed ID here -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
-                    <label for="exerciseNameFilter" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label for="exerciseNameFilter"
+                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Filter by Exercise Name
                     </label>
-                    <input type="text" id="exerciseNameFilter" #nameFilterInput
-                           [value]="exerciseNameFilter()"
-                           (input)="exerciseNameFilter.set(nameFilterInput.value)"
-                           placeholder="e.g., Bench Press"
-                           class="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500">
+                    <input type="text" id="exerciseNameFilter" #nameFilterInput [value]="exerciseNameFilter()"
+                        (input)="exerciseNameFilter.set(nameFilterInput.value)" placeholder="e.g., Bench Press"
+                        class="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500">
                 </div>
                 <div>
                     <label for="categoryFilter" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Filter by Category
                     </label>
-                    <select id="categoryFilter" #categoryFilterInput
-                            [value]="exerciseCategoryFilter()"
-                            (change)="exerciseCategoryFilter.set(categoryFilterInput.value)"
-                            class="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm text-gray-900 dark:text-gray-100">
+                    <select id="categoryFilter" #categoryFilterInput [value]="exerciseCategoryFilter()"
+                        (change)="exerciseCategoryFilter.set(categoryFilterInput.value)"
+                        class="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm text-gray-900 dark:text-gray-100">
                         <option value="">All Categories</option>
                         <option *ngFor="let category of availableCategories()" [value]="category">
                             {{ category | titlecase }}
@@ -62,7 +80,7 @@
             </div>
             <div class="flex justify-end">
                 <button (click)="resetFilters()"
-                    class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md shadow-sm border border-gray-300 dark:border-gray-500 transition-colors">
+                    class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md shadow-sm border border-gray-300 dark:border-gray-500 transition-colors">
                     Reset Filters
                 </button>
             </div>
@@ -70,47 +88,68 @@
     </div>
 
     <div *ngIf="displayPersonalBests().length > 0; else noPBsOrFilters">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             <div *ngFor="let pb of displayPersonalBests()"
                 class="bg-white dark:bg-gray-700 rounded-xl shadow-lg overflow-hidden flex flex-col transition-all hover:shadow-xl">
-                
-                <div class="p-5 flex-grow">
-                    <h2 class="text-xl font-semibold text-primary dark:text-primary-light mb-1 truncate" [title]="pb.exerciseName">
-                        {{ pb.exerciseName }}
-                    </h2>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">
-                        ({{ pb.primaryMuscleGroup | titlecase }})
-                    </p>
 
-                    <div class="mb-4">
-                        <span class="text-sm font-medium text-gray-600 dark:text-gray-300">Type:</span>
-                        <p class="text-md text-gray-800 dark:text-gray-100">{{ pb.pbType }}</p>
+                <div class="p-3 flex-grow">
+                    <div class="flex justify-between items-start mb-1">
+                        <div>
+                            <h2 class="text-md font-semibold text-primary dark:text-primary-light truncate"
+                                [title]="pb.exerciseName">
+                                {{ pb.exerciseName }}
+                            </h2>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">
+                                ({{ pb.primaryMuscleGroup | titlecase }})
+                            </p>
+                        </div>
+                        <!-- Trend Chart Button -->
+                        <button (click)="showPbTrend(pb.exerciseId, pb.pbType)" title="Show Trend for this PB"
+                            class="p-1 -mr-1 -mt-1 text-gray-400 hover:text-primary dark:hover:text-primary-light rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                stroke="currentColor" class="w-5 h-5">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941" />
+                            </svg>
+                        </button>
                     </div>
 
-                    <div class="mb-4">
-                        <span class="text-sm font-medium text-gray-600 dark:text-gray-300">Best:</span>
-                        <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ formatPbValue(pb) }}</p>
-                    </div>
-                    
-                    <div class="mb-4">
-                        <span class="text-sm font-medium text-gray-600 dark:text-gray-300">Date:</span>
-                        <p class="text-sm text-gray-700 dark:text-gray-200">{{ pb.timestamp | date:'mediumDate' }}</p>
+                    <div class="mb-2">
+                        <span class="text-xl font-bold text-gray-900 dark:text-white">{{ formatPbValue(pb) }}</span>
                     </div>
 
-                    <div *ngIf="pb.notes" class="mb-4">
-                        <span class="text-sm font-medium text-gray-600 dark:text-gray-300">Notes:</span>
-                        <p class="text-sm text-gray-700 dark:text-gray-200 italic max-h-24 overflow-y-auto custom-scrollbar pr-1" [title]="pb.notes">
+                    <div class="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400 mb-2">
+                        <span>{{ pb.pbType }}</span>
+                        <span>{{ pb.timestamp | date:'shortDate' }}</span>
+                    </div>
+
+                    <div *ngIf="pb.history && pb.history.length > 0"
+                        class="mt-2 pt-1 border-t border-gray-200 dark:border-gray-600 text-xs text-gray-500 dark:text-gray-400">
+                        <span class="font-medium">Prev:</span>
+                        <span *ngFor="let prevPb of pb.history.slice(0,1); let isLast = last">
+                            {{ formatPbValue(prevPb, pb.pbType) }} ({{ prevPb.timestamp | date:'shortDate' }}){{ !isLast
+                            ? ', ' : '' }}
+                        </span>
+                        <span *ngIf="pb.history.length > 1"> ...</span>
+                    </div>
+
+                    <div *ngIf="pb.notes" class="pt-1 border-t border-gray-200 dark:border-gray-600"
+                        [class.mt-2]="pb.history && pb.history.length > 0"
+                        [class.mt-1]="!(pb.history && pb.history.length > 0)">
+                        <p class="text-xs text-gray-600 dark:text-gray-400 italic max-h-16 overflow-y-auto custom-scrollbar pr-1"
+                            [title]="pb.notes">
                             {{ pb.notes }}
                         </p>
                     </div>
                 </div>
 
-                <div *ngIf="pb.pbType !== '1RM (Estimated)'" class="px-5 py-4 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600">
+                <div *ngIf="pb.pbType !== '1RM (Estimated)' && pb.workoutLogId"
+                    class="px-3 py-2 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-600">
                     <button (click)="navigateToLogDetail(pb.workoutLogId, $event)"
-                        class="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-indigo-500 dark:hover:bg-indigo-600 dark:focus:ring-offset-gray-800 transition-colors duration-150"
+                        class="w-full flex items-center justify-center px-2 py-1 border border-transparent rounded-md shadow-sm text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-indigo-500 dark:hover:bg-indigo-600 dark:focus:ring-offset-gray-800 transition-colors duration-150"
                         title="View Workout Log">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
-                            class="w-5 h-5 mr-2">
+                            class="w-4 h-4 mr-1">
                             <path d="M10 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" />
                             <path fill-rule="evenodd"
                                 d="M.664 10.59a1.651 1.651 0 0 1 0-1.186A10.004 10.004 0 0 1 10 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0 1 10 17c-4.257 0-7.893-2.66-9.336-6.41ZM14 10a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z"
@@ -123,19 +162,29 @@
         </div>
     </div>
 
-    <!-- Updated ng-template to handle both no PBs initially and no results after filtering -->
     <ng-template #noPBsOrFilters>
         <div class="text-center py-10 bg-white dark:bg-gray-700 rounded-xl shadow-lg">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-16 h-16 mx-auto text-gray-400 dark:text-gray-500 mb-4">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM13.5 10.5h-6" />
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                stroke="currentColor" class="w-16 h-16 mx-auto text-gray-400 dark:text-gray-500 mb-4">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM13.5 10.5h-6" />
             </svg>
             <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">
                 <span *ngIf="hasActiveFilters(); else noPBsMessage">No Personal Bests Match Your Filters</span>
                 <ng-template #noPBsMessage>No Personal Bests Yet!</ng-template>
             </h2>
             <p class="text-gray-500 dark:text-gray-400 px-4">
-                <span *ngIf="hasActiveFilters()">Try adjusting your filter criteria or <button (click)="resetFiltersAndShow()" class="text-primary dark:text-primary-light hover:underline">reset all filters</button>.</span>
-                <span *ngIf="!hasActiveFilters() && allPersonalBestsSignalEmpty()">Keep logging your workouts to track your progress and achievements here.</span>
+                <span *ngIf="hasActiveFilters()">Try adjusting your filter criteria or <button
+                        (click)="resetFiltersAndShow()"
+                        class="text-primary dark:text-primary-light hover:underline">reset all filters</button>.</span>
+                <span *ngIf="!hasActiveFilters() && allPersonalBestsSignalEmpty()">Keep logging your workouts to track
+                    your progress and achievements here.</span>
+                <span
+                    *ngIf="!allPersonalBestsSignalEmpty() && displayPersonalBests().length === 0 && !hasActiveFilters()">
+                    Try clearing filters, or perhaps <button (click)="triggerRecalculatePBs()"
+                        class="text-primary dark:text-primary-light hover:underline">recalculate PBs</button> if you've
+                    recently imported data.
+                </span>
             </p>
         </div>
     </ng-template>

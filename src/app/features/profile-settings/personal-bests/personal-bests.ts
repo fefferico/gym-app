@@ -1,32 +1,58 @@
 // src/app/features/profile-settings/personal-bests.component.ts
 import { Component, inject, OnInit, signal, computed, PLATFORM_ID } from '@angular/core';
-import { CommonModule, DatePipe, TitleCasePipe, DecimalPipe, isPlatformBrowser } from '@angular/common';
+import { CommonModule, DatePipe, TitleCasePipe, DecimalPipe, isPlatformBrowser } from '@angular/common'; // Ensure DecimalPipe is imported
 import { Router, RouterLink } from '@angular/router';
 import { Observable, combineLatest, of } from 'rxjs';
 import { map, take, tap } from 'rxjs/operators';
 
 import { TrackingService } from '../../../core/services/tracking.service';
 import { ExerciseService } from '../../../core/services/exercise.service';
-import { PersonalBestSet } from '../../../core/models/workout-log.model';
-import { Exercise, EXERCISE_CATEGORIES } from '../../../core/models/exercise.model'; // Import EXERCISE_CATEGORIES
+// Make sure PBHistoryInstance is exported from your model file and imported here if needed,
+// but for the function signature, a structural type is fine.
+import { PersonalBestSet, PBHistoryInstance } from '../../../core/models/workout-log.model';
+import { Exercise, EXERCISE_CATEGORIES } from '../../../core/models/exercise.model';
 import { UnitsService } from '../../../core/services/units.service';
-import { WeightUnitPipe } from '../../../shared/pipes/weight-unit-pipe';
+import { WeightUnitPipe } from '../../../shared/pipes/weight-unit-pipe'; // Not directly used in formatPbValue but good to have if template uses it elsewhere
 import { ToastService } from '../../../core/services/toast.service';
+import { animate, state, style, transition, trigger } from '@angular/animations';
 
 
 // Interface to combine PB data with Exercise details
 interface DisplayPersonalBest extends PersonalBestSet {
   exerciseName: string;
-  exerciseCategory: string; // Should be ExerciseCategory type if EXERCISE_CATEGORIES uses it
+  exerciseCategory: string;
   primaryMuscleGroup: string;
 }
 
 @Component({
   selector: 'app-personal-bests',
   standalone: true,
-  imports: [CommonModule, RouterLink, DatePipe, TitleCasePipe],
+  imports: [CommonModule, RouterLink, DatePipe, TitleCasePipe, DecimalPipe], // Add DecimalPipe to imports if not already
   templateUrl: './personal-bests.html',
   styleUrl: './personal-bests.scss',
+  animations: [
+    trigger('slideInOutActions', [
+      state('void', style({
+        height: '0px', opacity: 0, overflow: 'hidden',
+        paddingTop: '0', paddingBottom: '0', marginTop: '0', marginBottom: '0'
+      })),
+      state('*', style({
+        height: '*', opacity: 1, overflow: 'hidden',
+        paddingTop: '0.5rem', paddingBottom: '0.5rem'
+      })),
+      transition('void <=> *', animate('200ms ease-in-out'))
+    ]),
+    trigger('dropdownMenu', [
+      state('void', style({
+        opacity: 0, transform: 'scale(0.75) translateY(-10px)', transformOrigin: 'top right'
+      })),
+      state('*', style({
+        opacity: 1, transform: 'scale(1) translateY(0)', transformOrigin: 'top right'
+      })),
+      transition('void => *', [animate('150ms cubic-bezier(0.25, 0.8, 0.25, 1)')]),
+      transition('* => void', [animate('100ms cubic-bezier(0.25, 0.8, 0.25, 1)')])
+    ])
+  ]
 })
 export class PersonalBestsComponent implements OnInit {
   private trackingService = inject(TrackingService);
@@ -34,42 +60,33 @@ export class PersonalBestsComponent implements OnInit {
   protected unitsService = inject(UnitsService);
   private router = inject(Router);
   private toastService = inject(ToastService);
+  private platformId = inject(PLATFORM_ID);
 
   // Signals for raw data
   private allPersonalBestsRaw = signal<Record<string, PersonalBestSet[]>>({});
   private allExercisesRaw = signal<Exercise[]>([]);
 
-  // Signal for accordion visibility
-  filtersVisible = signal<boolean>(false); // Accordion closed by default
-
-  // Signals for filters
+  filtersVisible = signal<boolean>(false);
   exerciseNameFilter = signal<string>('');
   exerciseCategoryFilter = signal<string>('');
 
+  // Instantiate DecimalPipe for use in formatPbValue
+  private decimalPipe = new DecimalPipe('en-US');
+
   availableCategories = computed<string[]>(() => {
-    // Assuming EXERCISE_CATEGORIES is a readonly array of strings
-    // If it's an enum, the logic `Object.values(EXERCISE_CATEGORIES).filter(v => typeof v === 'string')` is correct.
-    // If it's `as const` array, `[...EXERCISE_CATEGORIES]` is fine.
-    // Let's stick to the previous `as const` approach for simplicity or direct array.
-    return [...EXERCISE_CATEGORIES].sort() as string[]; // Cast to string[] if EXERCISE_CATEGORIES is `as const`
+    return [...EXERCISE_CATEGORIES].sort() as string[];
   });
 
   private combinedPersonalBests = computed<DisplayPersonalBest[]>(() => {
     const pbsByExercise = this.allPersonalBestsRaw();
     const exercises = this.allExercisesRaw();
-
-    if (Object.keys(pbsByExercise).length === 0 || exercises.length === 0) {
-      return [];
-    }
-
+    if (Object.keys(pbsByExercise).length === 0 || exercises.length === 0) return [];
     const exerciseMap = new Map(exercises.map(ex => [ex.id, ex]));
     const combinedList: DisplayPersonalBest[] = [];
-
     for (const exerciseId in pbsByExercise) {
       if (pbsByExercise.hasOwnProperty(exerciseId)) {
         const exerciseDetails = exerciseMap.get(exerciseId);
         const pbsForExercise = pbsByExercise[exerciseId];
-
         if (exerciseDetails) {
           pbsForExercise.forEach(pb => {
             combinedList.push({
@@ -89,17 +106,12 @@ export class PersonalBestsComponent implements OnInit {
     const combinedList = this.combinedPersonalBests();
     const nameFilter = this.exerciseNameFilter().toLowerCase().trim();
     const categoryFilter = this.exerciseCategoryFilter();
-
-    if (!nameFilter && !categoryFilter) {
-      return this.sortPBs(combinedList);
-    }
-
+    if (!nameFilter && !categoryFilter) return this.sortPBs(combinedList);
     const filteredList = combinedList.filter(pb => {
       const nameMatch = nameFilter ? pb.exerciseName.toLowerCase().includes(nameFilter) : true;
       const categoryMatch = categoryFilter ? pb.exerciseCategory === categoryFilter : true;
       return nameMatch && categoryMatch;
     });
-
     return this.sortPBs(filteredList);
   });
 
@@ -113,17 +125,15 @@ export class PersonalBestsComponent implements OnInit {
 
   constructor() { }
 
-  private platformId = inject(PLATFORM_ID); // Inject PLATFORM_ID
-
   ngOnInit(): void {
-    if (isPlatformBrowser(this.platformId)) { // Check if running in a browser
+    if (isPlatformBrowser(this.platformId)) {
       window.scrollTo(0, 0);
     }
-    combineLatest([
-      this.trackingService.personalBests$.pipe(take(1)),
-      this.exerciseService.getExercises().pipe(take(1))
-    ]).subscribe(([pbs, exercises]) => {
+    // Corrected subscription for live updates
+    this.trackingService.personalBests$.subscribe(pbs => {
       this.allPersonalBestsRaw.set(pbs);
+    });
+    this.exerciseService.getExercises().pipe(take(1)).subscribe(exercises => { // exercises usually don't change that often
       this.allExercisesRaw.set(exercises);
     });
   }
@@ -135,14 +145,11 @@ export class PersonalBestsComponent implements OnInit {
   resetFilters(): void {
     this.exerciseNameFilter.set('');
     this.exerciseCategoryFilter.set('');
-    // The input fields in the template are bound using [value],
-    // so setting the signals will automatically clear them.
   }
 
-  // Used by the button in the "no results" message
   resetFiltersAndShow(): void {
     this.resetFilters();
-    this.filtersVisible.set(true); // Optionally open filters if they were closed
+    this.filtersVisible.set(true);
   }
 
   private getPbTypeSortOrder(pbType: string): number {
@@ -160,11 +167,9 @@ export class PersonalBestsComponent implements OnInit {
     return [...list].sort((a, b) => {
       const nameCompare = a.exerciseName.localeCompare(b.exerciseName);
       if (nameCompare !== 0) return nameCompare;
-      
       const orderA = this.getPbTypeSortOrder(a.pbType);
       const orderB = this.getPbTypeSortOrder(b.pbType);
       if (orderA !== orderB) return orderA - orderB;
-
       if (a.weightUsed !== undefined && b.weightUsed !== undefined) {
         return (b.weightUsed ?? 0) - (a.weightUsed ?? 0);
       }
@@ -174,22 +179,48 @@ export class PersonalBestsComponent implements OnInit {
       if (a.durationPerformed !== undefined && b.durationPerformed !== undefined && a.pbType.includes('Max Duration')) {
         return (b.durationPerformed ?? 0) - (a.durationPerformed ?? 0);
       }
-      return a.pbType.localeCompare(b.pbType);
+      return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(); // Fallback to date sort
     });
   }
 
-  formatPbValue(pb: PersonalBestSet): string {
+  // Updated formatPbValue method
+  formatPbValue(
+    // Item can be a DisplayPersonalBest (which has pbType) or PBHistoryInstance (which doesn't)
+    item: { weightUsed?: number; repsAchieved: number; durationPerformed?: number; pbType?: string },
+    // pbTypeForContext is used when 'item' is a PBHistoryInstance,
+    // and it's the pbType of the main PB record (e.g., pb.pbType from the template).
+    pbTypeForContext?: string
+  ): string {
     let value = '';
-    if (pb.weightUsed !== undefined && pb.weightUsed !== null) {
-      value += `${pb.weightUsed}${this.unitsService.getUnitSuffix()}`;
-      if (pb.repsAchieved > 0 && !(pb.pbType.includes('RM (Actual)') && pb.repsAchieved === parseInt(pb.pbType, 10))) {
-        value += ` x ${pb.repsAchieved}`;
+    const effectivePbType = item.pbType || pbTypeForContext;
+
+    if (item.weightUsed !== undefined && item.weightUsed !== null) {
+      value += `${this.decimalPipe.transform(item.weightUsed, '1.0-2')}${this.unitsService.getUnitSuffix()}`;
+
+      if (item.repsAchieved > 0) {
+        let showRepsSuffix = true;
+        if (effectivePbType && effectivePbType.includes('RM (Actual)')) {
+          // Extracts X from "XRM (Actual)"
+          const rmValueString = effectivePbType.split('RM')[0];
+          const rmValue = parseInt(rmValueString, 10);
+          if (!isNaN(rmValue) && item.repsAchieved === rmValue) {
+            showRepsSuffix = false; // Don't show "x 1" for "1RM (Actual)", etc.
+          }
+        }
+        if (showRepsSuffix) {
+          value += ` x ${item.repsAchieved}`;
+        }
       }
-    } else if (pb.repsAchieved > 0 && pb.pbType.includes('Max Reps')) {
-      value = `${pb.repsAchieved} reps`;
-    } else if (pb.durationPerformed && pb.durationPerformed > 0 && pb.pbType.includes('Max Duration')) {
-      value = `${pb.durationPerformed}s`;
+    } else if (item.repsAchieved > 0 && effectivePbType?.includes('Max Reps')) {
+      value = `${item.repsAchieved} reps`;
+    } else if (item.durationPerformed && item.durationPerformed > 0 && effectivePbType?.includes('Max Duration')) {
+      value = `${item.durationPerformed}s`;
+    } else if (item.repsAchieved > 0) { // Fallback if no weight and not a specific 'Max Reps' type
+      value = `${item.repsAchieved} reps`;
+    } else if (item.durationPerformed && item.durationPerformed > 0) { // Fallback if no weight and not 'Max Duration'
+      value = `${item.durationPerformed}s`;
     }
+
     return value || 'N/A';
   }
 
@@ -201,5 +232,40 @@ export class PersonalBestsComponent implements OnInit {
       this.toastService.error('Could not find the associated workout log for this personal best. It\'s possible that the related workout session has been removed.', 0, 'Navigation Error');
       console.warn('Attempted to navigate to log detail, but workoutLogId is undefined for PB:', event);
     }
+  }
+
+  async triggerRecalculatePBs(): Promise<void> {
+    try {
+      await this.trackingService.recalculateAllPersonalBests();
+      // Success/loading messages are handled by the service.
+      // The component will automatically update due to the personalBests$ subscription.
+    } catch (error) {
+      console.error('Error initiating PB recalculation:', error);
+      this.toastService.error('An error occurred while trying to recalculate personal bests.');
+    }
+  }
+
+  async resetPBs(): Promise<void> {
+    try {
+      await this.trackingService.clearAllPersonalBests_DEV_ONLY();
+    } catch (error) {
+      console.error('Error clearAllPersonalBests_DEV_ONLY:', error);
+      this.toastService.error('An error occurred while trying to reset personal bests.');
+    }
+  }
+
+  showPbTrend(exerciseId: string, pbType: string): void {
+    if (!exerciseId || !pbType) {
+      this.toastService.error('Cannot show trend: Missing exercise ID or PB type.', 0, "Error");
+      return;
+    }
+    // Encode pbType to make it URL-safe, especially if it contains spaces or special characters
+    const encodedPbType = encodeURIComponent(pbType);
+    this.router.navigate(['/profile/pb-trend', exerciseId, encodedPbType]);
+    // Alternative: Open a modal
+    // this.selectedExerciseIdForTrend.set(exerciseId);
+    // this.selectedPbTypeForTrend.set(pbType);
+    // this.isTrendModalVisible.set(true);
+    console.log(`Requesting trend for Exercise ID: ${exerciseId}, PB Type: ${pbType}`);
   }
 }
