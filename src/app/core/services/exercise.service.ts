@@ -188,8 +188,8 @@ export class ExerciseService {
         { type: 'dumbbell', index: dumbbellIndex },
         { type: 'machine', index: machineIndex },
         { type: 'machine', index: cableIndex }, // treat cable as machine
-        { type: 'bodyweight', index: bodyweightIndex },
-        { type: 'bodyweight', index: noneIndex },
+        { type: 'bodyweight/calisthenics', index: bodyweightIndex },
+        { type: 'bodyweight/calisthenics', index: noneIndex },
         { type: 'resistance-band', index: resistanceBandIndex }
       ].filter(e => e.index !== -1);
 
@@ -204,14 +204,14 @@ export class ExerciseService {
     if (nameLower.includes('dumbbell') || nameLower.includes('db ')) return 'dumbbell';
     if (nameLower.includes('kettlebell')) return 'kettlebell';
     if (nameLower.includes('squat') && nameLower.includes('barbell')) return 'barbell';
-    if (nameLower.includes('squat') && !nameLower.includes('barbell') && !nameLower.includes('dumbbell')) return 'bodyweight';
+    if (nameLower.includes('squat') && !nameLower.includes('barbell') && !nameLower.includes('dumbbell')) return 'bodyweight/calisthenics';
     if (nameLower.includes('deadlift')) return 'barbell';
     if (nameLower.includes('bench press')) return 'barbell';
     if (nameLower.includes('row') && (nameLower.includes('barbell') || !nameLower.includes('dumbbell'))) return 'barbell';
     if (nameLower.includes('curl') && nameLower.includes('barbell')) return 'barbell';
     if (nameLower.includes('curl') && nameLower.includes('dumbbell')) return 'dumbbell';
     if (nameLower.includes('machine') || nameLower.includes('cable')) return 'machine';
-    if (nameLower.includes('body') || nameLower.includes('none')) return 'bodyweight';
+    if (nameLower.includes('body') || nameLower.includes('none')) return 'bodyweight/calisthenics';
     if (nameLower.includes('run') || nameLower.includes('cardio') || nameLower.includes('tapis') || nameLower.includes('jog')) return 'cardio';
     if (nameLower.includes('resistance band')) return 'resistance-band';
 
@@ -221,7 +221,7 @@ export class ExerciseService {
         if (nameLower.includes('squat') || nameLower.includes('deadlift') || nameLower.includes('bench')) return 'barbell';
       }
       if (categoryLower === 'cardio') return 'cardio';
-      if (categoryLower === 'calisthenics' || categoryLower === 'plyometrics' || categoryLower === 'bodyweight') return 'bodyweight'; // Added bodyweight category check
+      if (categoryLower === 'calisthenics' || categoryLower === 'plyometrics' || categoryLower === 'bodyweight/calisthenics') return 'bodyweight/calisthenics'; // Added bodyweight category check
     }
     return 'default-exercise';
   }

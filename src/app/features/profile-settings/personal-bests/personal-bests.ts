@@ -63,11 +63,12 @@ export class PersonalBestsComponent implements OnInit {
   private platformId = inject(PLATFORM_ID);
 
   // Signals for raw data
-  private allPersonalBestsRaw = signal<Record<string, PersonalBestSet[]>>({});
+  protected allPersonalBestsRaw = signal<Record<string, PersonalBestSet[]>>({});
   private allExercisesRaw = signal<Exercise[]>([]);
 
   filtersVisible = signal<boolean>(false);
   exerciseNameFilter = signal<string>('');
+  pbTypeFilter = signal<string>('');
   exerciseCategoryFilter = signal<string>('');
 
   // Instantiate DecimalPipe for use in formatPbValue
@@ -77,7 +78,21 @@ export class PersonalBestsComponent implements OnInit {
     return [...EXERCISE_CATEGORIES].sort() as string[];
   });
 
-  private combinedPersonalBests = computed<DisplayPersonalBest[]>(() => {
+  availablePbTypes = computed<string[]>(() => {
+    // Gather all pbTypes from allPersonalBestsRaw
+    const pbsByExercise = this.allPersonalBestsRaw();
+    const pbTypesSet = new Set<string>();
+    Object.values(pbsByExercise).forEach(pbList => {
+      pbList.forEach(pb => {
+        if (pb.pbType) {
+          pbTypesSet.add(pb.pbType);
+        }
+      });
+    });
+    return Array.from(pbTypesSet).sort();
+  });
+
+  protected combinedPersonalBests = computed<DisplayPersonalBest[]>(() => {
     const pbsByExercise = this.allPersonalBestsRaw();
     const exercises = this.allExercisesRaw();
     if (Object.keys(pbsByExercise).length === 0 || exercises.length === 0) return [];
@@ -106,17 +121,27 @@ export class PersonalBestsComponent implements OnInit {
     const combinedList = this.combinedPersonalBests();
     const nameFilter = this.exerciseNameFilter().toLowerCase().trim();
     const categoryFilter = this.exerciseCategoryFilter();
-    if (!nameFilter && !categoryFilter) return this.sortPBs(combinedList);
+    const typeFilter = this.pbTypeFilter();
+
+    if (!nameFilter && !categoryFilter && !typeFilter) {
+      return this.sortPBs(combinedList);
+    }
+
+    // Only filter on fields that have a filter value set
     const filteredList = combinedList.filter(pb => {
-      const nameMatch = nameFilter ? pb.exerciseName.toLowerCase().includes(nameFilter) : true;
-      const categoryMatch = categoryFilter ? pb.exerciseCategory === categoryFilter : true;
-      return nameMatch && categoryMatch;
+      if (nameFilter && !pb.exerciseName.toLowerCase().includes(nameFilter)) return false;
+      if (categoryFilter && pb.exerciseCategory !== categoryFilter) return false;
+      if (typeFilter && pb.pbType !== typeFilter) return false;
+      return true;
     });
+
     return this.sortPBs(filteredList);
   });
 
   hasActiveFilters = computed<boolean>(() => {
-    return this.exerciseNameFilter().trim() !== '' || this.exerciseCategoryFilter() !== '';
+    return this.exerciseNameFilter().trim() !== '' 
+    || this.exerciseCategoryFilter() !== '' 
+    || this.pbTypeFilter().trim() !== '';
   });
 
   allPersonalBestsSignalEmpty = computed<boolean>(() => {

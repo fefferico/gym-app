@@ -28,7 +28,7 @@ export class ExerciseFormComponent implements OnInit {
   pageTitle = signal('Add New Exercise');
 
   // Populate these from constants or a service if they become dynamic
-  categories: ExerciseCategory[] = ['barbells', 'dumbbells', 'bodyweight', 'machines', 'cables', 'kettlebells', 'bands', 'other'];
+  categories: ExerciseCategory[] = ['barbells', 'dumbbells', 'bodyweight/calisthenics', 'machines', 'cables', 'kettlebells', 'bands', 'other'];
   // Example muscle groups - ideally, make this more dynamic or a multi-select component
   availableMuscleGroups: string[] = [ /* ... populate this array ... */ 'Chest', 'Back', 'Legs', 'Shoulders', 'Biceps', 'Triceps', 'Abs', 'Calves', 'Forearms', 'Glutes', 'Hamstrings', 'Lats', 'Quads', 'Traps'];
 
@@ -37,7 +37,7 @@ export class ExerciseFormComponent implements OnInit {
     this.exerciseForm = this.fb.group({
       name: ['', Validators.required],
       description: ['', Validators.required],
-      category: ['bodyweight' as ExerciseCategory, Validators.required],
+      category: ['bodyweight/calisthenics' as ExerciseCategory, Validators.required],
       primaryMuscleGroup: ['', Validators.required],
       muscleGroups: this.fb.array([]), // For simplicity, start with primary; multi-select is more UI work
       equipmentNeeded: this.fb.array([]),

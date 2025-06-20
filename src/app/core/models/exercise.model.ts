@@ -1,6 +1,6 @@
 // src/app/core/models/exercise.model.ts
 export const EXERCISE_CATEGORIES = [
-  'bodyweight',
+  'bodyweight/calisthenics',
   'dumbbells',
   'kettlebells',
   'barbells',
@@ -28,6 +28,6 @@ export interface Exercise {
   imageUrls: string[]; // Paths to static images in assets, e.g., ['exercises/push-up_1.jpg', 'exercises/push-up_2.jpg']
   videoUrl?: string; // Optional: Link to a demonstration video (e.g., YouTube)
   notes?: string; // Optional: Tips, common mistakes, variations
-  equipment?: string; // << NEW: e.g., 'Barbell', 'Dumbbell', 'Machine', 'Bodyweight'
+  equipment?: string; // << NEW: e.g., 'Barbell', 'Dumbbell', 'Machine', 'Bodyweight/Calisthenics'
   iconName?: string;
 }
