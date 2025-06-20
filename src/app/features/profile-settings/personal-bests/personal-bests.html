@@ -28,7 +28,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round"
                         d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
                 </svg>
-                <span class="hidden sm:inline-block ml-1">Recalculate</span>
+                <span class="hidden sm:inline-block ml-1">RECALCULATE</span>
             </button>
             <!-- Reset PBs Button -->
             <button (click)="resetPBs()" title="Reset all PBs"
@@ -39,7 +39,7 @@
                         d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.58.177-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5Zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5Z"
                         clip-rule="evenodd"></path>
                 </svg>
-                <span class="hidden sm:inline-block ml-1">Reset PBs</span>
+                <span class="hidden sm:inline-block ml-1">RESET PBs</span>
             </button>
         </header>
 
@@ -97,7 +97,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round"
                             d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
                     </svg>
-                    Clear PBs Filters
+                    CLEAR FILTERS
                 </button>
                 <div *ngIf="combinedPersonalBests().length > 0" class="text-sm text-gray-600 dark:text-gray-400">
                     Showing <strong class="text-gray-800 dark:text-gray-200">{{ displayPersonalBests().length
@@ -128,15 +128,6 @@
                                 ({{ pb.primaryMuscleGroup | titlecase }})
                             </p>
                         </div>
-                        <!-- Trend Chart Button -->
-                        <button (click)="showPbTrend(pb.exerciseId, pb.pbType)" title="Show Trend for this PB"
-                            class="p-1 -mr-1 -mt-1 text-gray-400 hover:text-primary dark:hover:text-primary-light rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                stroke="currentColor" class="w-5 h-5">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941" />
-                            </svg>
-                        </button>
                     </div>
 
                     <div class="mb-2">
@@ -169,9 +160,9 @@
                 </div>
 
                 <div *ngIf="pb.pbType !== '1RM (Estimated)' && pb.workoutLogId"
-                    class="px-3 py-2 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-600">
+                    class="flex px-3 py-2 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-600">
                     <button (click)="navigateToLogDetail(pb.workoutLogId, $event)"
-                        class="w-full flex items-center justify-center px-2 py-1 border border-transparent rounded-md shadow-sm text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-indigo-500 dark:hover:bg-indigo-600 dark:focus:ring-offset-gray-800 transition-colors duration-150"
+                        class="flex items-center justify-center px-2 py-1 border border-transparent rounded-md shadow-sm text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-indigo-500 dark:hover:bg-indigo-600 dark:focus:ring-offset-gray-800 transition-colors duration-150"
                         title="View Workout Log">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
                             class="w-4 h-4 mr-1">
@@ -181,6 +172,17 @@
                                 clip-rule="evenodd" />
                         </svg>
                         VIEW LOG
+                    </button>
+                    <!-- Trend Chart Button -->
+                    <button (click)="showPbTrend(pb.exerciseId, pb.pbType)" title="Show Trend for this PB"
+                        class="ml-2 flex items-center justify-center px-2 py-1 border border-transparent rounded-md shadow-sm text-xs font-medium text-white bg-primary hover:bg-primary-light focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary dark:bg-primary dark:hover:bg-primary-light dark:focus:ring-offset-gray-800 transition-colors duration-150"
+                        title="View trend Log">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" class="w-5 h-5 mr-2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941" />
+                        </svg>
+                        TREND
                     </button>
                 </div>
             </div>

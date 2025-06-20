@@ -18,11 +18,13 @@ import { AlertButton } from '../../core/models/alert.model';
 import { format } from 'date-fns';
 import { PausedWorkoutState } from './workout-player'; // Adjust path as needed
 import { ThemeService } from '../../core/services/theme.service';
+import { ActionMenuItem } from '../../core/models/action-menu.model';
+import { ActionMenuComponent } from '../../shared/components/action-menu/action-menu';
 
 @Component({
   selector: 'app-routine-list',
   standalone: true,
-  imports: [CommonModule, DatePipe, TitleCasePipe, RouterLink],
+  imports: [CommonModule, DatePipe, TitleCasePipe, RouterLink, ActionMenuComponent],
   templateUrl: './routine-list.html',
   styleUrl: './routine-list.scss',
   animations: [
@@ -196,14 +198,14 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     this.router.navigate(['/workout/routine/new']);
   }
 
-  editRoutine(routineId: string, event: MouseEvent): void {
-    event.stopPropagation();
+  editRoutine(routineId: string, event?: MouseEvent): void {
+    // event.stopPropagation();
     this.router.navigate(['/workout/routine/edit', routineId]);
     this.visibleActionsRutineId.set(null);
   }
 
-  async deleteRoutine(routineId: string, event: MouseEvent): Promise<void> {
-    event.stopPropagation();
+  async deleteRoutine(routineId: string, event?: MouseEvent): Promise<void> {
+    // event.stopPropagation();
     this.visibleActionsRutineId.set(null);
 
     const routineToDelete = this.allRoutinesForList().find(r => r.id === routineId); // Use signal value
@@ -237,8 +239,8 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     }
   }
 
-  async startWorkout(newRoutineId: string, event: MouseEvent): Promise<void> {
-    event.stopPropagation();
+  async startWorkout(newRoutineId: string, event?: MouseEvent): Promise<void> {
+    // event.stopPropagation();
     this.visibleActionsRutineId.set(null);
 
     if (!isPlatformBrowser(this.platformId)) {
@@ -281,14 +283,14 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     this.visibleActionsRutineId.set(null);
   }
 
-  toggleActions(routineId: string, event: MouseEvent): void {
-    event.stopPropagation();
-    this.visibleActionsRutineId.update(current => (current === routineId ? null : routineId));
-  }
+  // toggleActions(routineId: string, event: MouseEvent): void {
+  //   event.stopPropagation();
+  //   this.visibleActionsRutineId.update(current => (current === routineId ? null : routineId));
+  // }
 
-  areActionsVisible(routineId: string): boolean {
-    return this.visibleActionsRutineId() === routineId;
-  }
+  // areActionsVisible(routineId: string): boolean {
+  //   return this.visibleActionsRutineId() === routineId;
+  // }
 
   // Helper to get muscle groups for display on the card
   getRoutineMainMuscleGroups(routine: Routine): string[] {
@@ -303,8 +305,8 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     return Array.from(muscles).slice(0, 3); // Show up to 3 for brevity on card
   }
 
-  async cloneAndEditRoutine(routineId: string, event: MouseEvent): Promise<void> {
-    event.stopPropagation();
+  async cloneAndEditRoutine(routineId: string, event?: MouseEvent): Promise<void> {
+    // event.stopPropagation();
     this.visibleActionsRutineId.set(null);
 
     const originalRoutine = this.allRoutinesForList().find(r => r.id === routineId);
@@ -347,6 +349,97 @@ export class RoutineListComponent implements OnInit, OnDestroy {
 
   getIconPath(iconName: string | undefined): string {
     return this.exerciseService.getIconPath(iconName);
+  }
+  
+
+  getRoutineDropdownActionItems(routineId: string, mode: 'dropdown' | 'compact-bar'): ActionMenuItem[] {
+    return [
+      {
+        label: 'VIEW',
+        actionKey: 'view',
+        iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5Z" /><path fill-rule="evenodd" d="M.664 10.59a1.651 1.651 0 010-1.186A10.004 10.004 0 0110 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0110 17c-4.257 0-7.893-2.66-9.336-6.41ZM14 10a4 4 0 11-8 0 4 4 0 018 0Z" clip-rule="evenodd" /></svg>`,
+        iconClass: 'w-8 h-8 mr-2', // Adjusted for consistency if needed,
+        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') +  'text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-cyan-600 dark:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-700/30 flex items-center text-sm',
+        data: { routineId }
+      },
+      {
+        label: 'START',
+        actionKey: 'start',
+        iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" /></svg>`,
+        iconClass: 'w-8 h-8 mr-2',
+        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') +  'text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-700/30 flex items-center text-sm',
+        data: { routineId }
+      },
+      {
+        label: 'EDIT',
+        actionKey: 'edit',
+        iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>`,
+        iconClass: 'w-8 h-8 mr-2',
+        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') +  'text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-yellow-600 dark:text-yellow-400 hover:bg-yellow-50 dark:hover:bg-yellow-700/30 flex items-center text-sm',
+        data: { routineId }
+      },
+      {
+        label: 'CLONE',
+        actionKey: 'clone',
+        iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none"><path d="M 5 3 H 16 A 2 2 0 0 1 18 5 V 16 A 2 2 0 0 1 16 18 H 5 A 2 2 0 0 1 3 16 V 5 A 2 2 0 0 1 5 3 Z M 8 6 H 19 A 2 2 0 0 1 21 8 V 19 A 2 2 0 0 1 19 21 H 8 A 2 2 0 0 1 6 19 V 8 A 2 2 0 0 1 8 6 Z" /></svg>`,
+        iconClass: 'w-8 h-8 mr-2',
+        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') +  'text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-violet-600 dark:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-700/30 flex items-center text-sm',
+        data: { routineId }
+      },
+      { isDivider: true },
+      {
+        label: 'DELETE',
+        actionKey: 'delete',
+        iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.58.177-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5Zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5Z" clip-rule="evenodd" /></svg>`,
+        iconClass: 'w-8 h-8 mr-2',
+        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') +  'text-left px-3 py-1.5 sm:px-4 sm:py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-600/50 flex items-center text-sm',
+        data: { routineId }
+      }
+    ];
+  }
+
+  handleActionMenuItemClick(event: { actionKey: string, data?: any }, originalMouseEvent?: MouseEvent): void {
+    // originalMouseEvent.stopPropagation(); // Stop original event that opened the menu
+    const routineId = event.data?.routineId;
+    if (!routineId) return;
+
+    switch (event.actionKey) {
+      case 'view':
+        this.viewRoutineDetails(routineId);
+        break;
+      case 'start':
+        this.startWorkout(routineId);
+        break;
+      case 'edit':
+        this.editRoutine(routineId);
+        break;
+      case 'clone':
+        this.cloneAndEditRoutine(routineId);
+        break;
+      case 'delete':
+        this.deleteRoutine(routineId);
+        break;
+    }
+    this.activeRoutineIdActions.set(null); // Close the menu
+  }
+
+  // Your existing toggleActions, areActionsVisible, viewRoutineDetails, etc. methods
+  // The toggleActions will now just control a signal like `activeRoutineIdActions`
+  // which is used to show/hide the <app-action-menu>
+   activeRoutineIdActions = signal<string | null>(null); // Store ID of routine whose actions are open
+
+  toggleActions(routineId: string, event: MouseEvent): void {
+    event.stopPropagation();
+    this.activeRoutineIdActions.update(current => (current === routineId ? null : routineId));
+  }
+
+  areActionsVisible(routineId: string): boolean {
+    return this.activeRoutineIdActions() === routineId;
+  }
+  
+  // When closing menu from the component's output
+  onCloseActionMenu() {
+    this.activeRoutineIdActions.set(null);
   }
 
 }

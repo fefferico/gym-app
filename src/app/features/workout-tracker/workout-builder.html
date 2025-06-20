@@ -15,9 +15,9 @@
             <h1
                 class="text-xl sm:text-2xl md:text-2xl font-bold text-gray-800 dark:text-gray-200 text-center flex-grow truncate px-2">
                 {{ mode === 'routineBuilder' ?
-                (isNewMode ? 'New Routine' : (isViewMode ? (builderForm.get('name')?.value || 'View Routine') : ('Edit:
+                (isNewMode ? 'New Routine' : (isViewMode ? (builderForm.get('name')?.value || 'View Routine') : ('EDIT:
                 ' + (builderForm.get('name')?.value || 'Routine')))) :
-                (isNewMode ? 'Log Past Workout' : ('Edit Log: ' + (builderForm.get('name')?.value || 'Workout')))
+                (isNewMode ? 'Log Past Workout' : ('EDIT Log: ' + (builderForm.get('name')?.value || 'Workout')))
                 }}
             </h1>
             <div class="w-10 h-10"></div> <!-- Spacer -->

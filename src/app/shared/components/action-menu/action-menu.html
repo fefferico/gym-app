@@ -1,0 +1,33 @@
+<!-- src/app/shared/components/action-menu/action-menu.component.html -->
+<ng-container [ngSwitch]="displayMode">
+    <!-- Dropdown Mode -->
+    <div *ngSwitchCase="'dropdown'">
+        <div *ngIf="isVisible" [@dropdownMenu] [ngClass]="dropdownMenuClass">
+            <ng-container *ngFor="let item of items">
+                <div *ngIf="item.isDivider" class="my-0.5 sm:my-1 border-t border-gray-200 dark:border-gray-600"></div>
+                <button *ngIf="!item.isDivider" type="button" (click)="onItemClicked($event, item)"
+                    [ngClass]="item.buttonClass || 'w-full text-left px-3 py-1.5 sm:px-4 sm:py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 flex items-center text-sm'"
+                    class="transition-colors duration-150 ease-in-out">
+                    <span *ngIf="item.iconSvg" [innerHTML]="sanitizeSvg(item.iconSvg)"
+                        [ngClass]="item.iconClass || 'w-4 h-4 mr-2'"></span>
+                    {{ item.label }}
+                </button>
+            </ng-container>
+        </div>
+    </div>
+
+    <!-- Compact Bar Mode -->
+    <div *ngSwitchCase="'compact-bar'">
+        <div *ngIf="isVisible" [@compactBar] [ngClass]="compactBarClass">
+            <ng-container *ngFor="let item of items">
+                <button *ngIf="!item.isDivider" type="button" (click)="onItemClicked($event, item)" [title]="item.label"
+                    [ngClass]="item.buttonClass || 'flex-1 text-xs min-w-[60px] flex items-center justify-center p-1.5
+                rounded-md transition-colors'" class="hover:opacity-80">
+                    <span *ngIf="item.iconSvg" [innerHTML]="sanitizeSvg(item.iconSvg)"
+                        [ngClass]="item.iconClass || 'w-4 h-4'" [class.mr-1.5]="showLabelInCompact(item)"></span>
+                    <span *ngIf="showLabelInCompact(item)">{{ item.label }}</span>
+                </button>
+            </ng-container>
+        </div>
+    </div>
+</ng-container>
