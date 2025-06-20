@@ -1,0 +1,7 @@
+.chart-container {
+  min-height: 350px;
+  overflow: auto; /* Or overflow-x: auto; overflow-y: auto; */
+  /* You might also want to set an explicit width or max-width if the chart
+     can become very wide and you want horizontal scrolling. */
+  /* Example: max-width: 100%; width: 600px; */
+}

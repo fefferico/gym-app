@@ -87,7 +87,8 @@
             class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
             <!-- Card -->
             <div *ngFor="let routine of filteredRoutines()"
-                class="bg-white dark:bg-gray-700 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 relative group transform hover:-translate-y-1">
+                class="bg-white dark:bg-gray-700 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 relative group transform hover:-translate-y-1"
+                [style.zIndex]="areActionsVisible(routine.id) ? 50 : 'auto'">
                 <!-- Main content area, make this clickable -->
                 <div class="p-3 cursor-pointer" (click)="viewRoutineDetails(routine.id)">
                     <div class="flex justify-between items-start mb-1.5">
@@ -141,7 +142,8 @@
                         </button>
                         <!-- Non-Compact (Window) Dropdown Menu -->
                         <div *ngIf="areActionsVisible(routine.id) && !menuModeCompact" @dropdownMenu
-                            class="origin-top-right absolute right-0 top-full mt-1 sm:mt-2 w-40 sm:w-48 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black dark:ring-gray-600 ring-opacity-5 focus:outline-none py-1 z-50 sm:z-50">
+                            class="origin-top-right absolute right-0 top-full mt-1 sm:mt-2 w-40 sm:w-48 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black dark:ring-gray-600 ring-opacity-5 focus:outline-none py-1 z-50 sm:z-50
+                             z-[60]">
                             <button (click)="viewRoutineDetails(routine.id, $event)"
                                 class="w-full text-left px-3 py-1.5 sm:px-4 sm:py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-500 flex items-center">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"

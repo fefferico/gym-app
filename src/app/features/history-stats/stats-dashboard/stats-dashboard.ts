@@ -1,7 +1,7 @@
 // src/app/features/history-stats/stats-dashboard.ts
 import { Component, inject, OnInit, OnDestroy, signal, computed, ChangeDetectionStrategy, effect, ViewChild, ElementRef, afterNextRender, HostListener, PLATFORM_ID } from '@angular/core';
 import { CommonModule, TitleCasePipe, DecimalPipe, DatePipe, isPlatformBrowser } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms'; // Import ReactiveFormsModule
 import { distinctUntilChanged, Subscription } from 'rxjs';
 // No need for startWith, distinctUntilChanged from rxjs/operators if using signals directly for form values
@@ -40,6 +40,7 @@ export class StatsDashboardComponent implements OnInit, OnDestroy {
   private statsService = inject(StatsService);
   private fb = inject(FormBuilder); // Inject FormBuilder
   protected unitsService = inject(UnitsService);
+  protected router = inject(Router);
 
   @ViewChild('muscleGroupChartWrapper') muscleGroupChartWrapperRef!: ElementRef<HTMLDivElement>;
 
@@ -289,6 +290,11 @@ export class StatsDashboardComponent implements OnInit, OnDestroy {
       this.view.set([300, this.chartHeight]); // A small default
     }
   }
+
+  goToPBs(): void {
+    this.router.navigate(['profile/personal-bests']);
+  }
+
 
   ngOnDestroy(): void {
     this.logsSub?.unsubscribe();

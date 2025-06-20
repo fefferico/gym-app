@@ -94,7 +94,8 @@
                   class="w-10 h-10 sm:w-12 sm:h-12 bg-gray-200 dark:bg-gray-700 animate-pulse rounded-md mr-3"></div>
 
                 <div class="min-w-0"> <!-- Added min-w-0 for truncation -->
-                  <h3 class="text-md sm:text-lg font-semibold truncate" [ngClass]="{
+                  <div class="flex">
+                    <h3 class="text-md sm:text-lg font-semibold truncate" [ngClass]="{
                       'text-primary dark:text-primary-light': !loggedEx.supersetId,
                       'text-orange-700 dark:text-orange-300': loggedEx.supersetId
                     }" [title]="loggedEx.exerciseName">
@@ -108,6 +109,17 @@
                     </span>
                     {{ loggedEx.exerciseName }}
                   </h3>
+                  <svg class="ml-2 cursor-pointer dark:text-white" title="Exercise details" *ngIf="loggedEx.exerciseId" width="20"
+                    height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" (click)="openModal(loggedEx)">
+                    <!-- Outer circle -->
+                    <title>Exercise details and progression</title>
+                    <circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="2" fill="none"/>
+                    <!-- Dot of the 'i' -->
+                    <circle cx="10" cy="6" r="1.5" fill="currentColor" />
+                    <!-- Stem of the 'i' -->
+                    <rect x="9" y="9" width="2" height="7" fill="currentColor" />
+                  </svg>
+                  </div>
                   <p *ngIf="loggedEx.baseExercise?.category" class="text-xs text-gray-500 dark:text-gray-400 truncate">
                     {{ loggedEx.baseExercise?.category | titlecase }}
                   </p>
@@ -250,3 +262,7 @@
     </ng-template>
   </ng-template>
 </div>
+
+<app-modal *ngIf="exerciseDetailsId" [(isOpen)]="isSimpleModalOpen" [modalTitle]="exerciseDetailsName">
+  <app-exercise-detail [id]="exerciseDetailsId" [isModal]="true"></app-exercise-detail>
+</app-modal>

@@ -9,6 +9,9 @@ import { LoggedWorkoutExercise, WorkoutLog, LoggedSet } from '../../../core/mode
 import { TrackingService } from '../../../core/services/tracking.service';
 import { ExerciseService } from '../../../core/services/exercise.service';
 import { WeightUnitPipe } from '../../../shared/pipes/weight-unit-pipe';
+import { ModalComponent } from '../../../shared/components/modal/modal.component';
+import { ExerciseDetailComponent } from '../../exercise-library/exercise-detail';
+import { WorkoutExercise } from '../../../core/models/workout.model';
 // DomSanitizer is not explicitly used in this version after previous edits, but good to keep if you plan to use [innerHTML] with dynamic SVGs later.
 // import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
@@ -30,7 +33,7 @@ interface DisplayLoggedExercise extends LoggedWorkoutExercise {
 @Component({
   selector: 'app-workout-log-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, DatePipe, TitleCasePipe, WeightUnitPipe],
+  imports: [CommonModule, RouterLink, DatePipe, TitleCasePipe, WeightUnitPipe, ModalComponent, ExerciseDetailComponent],
   templateUrl: './workout-log-detail.html',
   providers: [DecimalPipe] // DecimalPipe if used directly in template; WeightUnitPipe already handles it
 })
@@ -40,6 +43,11 @@ export class WorkoutLogDetailComponent implements OnInit {
   private trackingService = inject(TrackingService);
   private exerciseService = inject(ExerciseService);
   // private sanitizer = inject(DomSanitizer); // Keep if needed for other purposes
+
+  isExerciseDetailModalOpen = signal(false);
+  isSimpleModalOpen = signal(false);
+  exerciseDetailsId: string = '';
+  exerciseDetailsName: string = '';
 
   workoutLog = signal<WorkoutLog | null | undefined>(undefined);
   displayExercises = signal<DisplayLoggedExercise[]>([]);
@@ -249,5 +257,16 @@ export class WorkoutLogDetailComponent implements OnInit {
 
   displayExerciseDetails(id: string): void {
     this.router.navigate(['/library', id]);
+  }
+
+  performAction() {
+    console.log('Action performed from modal footer!');
+    this.isExerciseDetailModalOpen.set(false);
+  }
+
+  openModal(exerciseData: DisplayLoggedExercise) {
+    this.exerciseDetailsId = exerciseData.exerciseId;
+    this.exerciseDetailsName = exerciseData.exerciseName || 'Exercise details';
+    this.isSimpleModalOpen.set(true);
   }
 }
