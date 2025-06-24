@@ -21,13 +21,14 @@ import { AlertService } from '../../core/services/alert.service';
 import { ToastService } from '../../core/services/toast.service';
 import { TrackingService } from '../../core/services/tracking.service'; // For manual log
 import { AlertInput } from '../../core/models/alert.model';
+import { LongPressDragDirective } from '../../shared/directives/long-press-drag.directive';
 
 type BuilderMode = 'routineBuilder' | 'manualLogEntry';
 
 @Component({
   selector: 'app-workout-builder',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, FormsModule, DragDropModule, WeightUnitPipe, TitleCasePipe],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, FormsModule, DragDropModule, WeightUnitPipe, TitleCasePipe, LongPressDragDirective],
   templateUrl: './workout-builder.html',
   styleUrl: './workout-builder.scss',
   providers: [DecimalPipe]

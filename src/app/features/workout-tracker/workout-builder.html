@@ -188,14 +188,20 @@
                         </div>
 
                         <div cdkDrag [cdkDragDisabled]="mode !== 'routineBuilder' || isViewMode || !isEditMode"
+                            appLongPressDrag
+                            [longPressEnabled]="isEditMode"
+                            [longPressDelay]="150"
+                            longPressClass="is-long-pressing"
+
                             [cdkDragData]="exerciseControl" [formGroupName]="exIndex"
-                            class="exercise-item relative transition-all"
+                            [cdkDragStartDelay]="110"
+                            class="exercise-item relative transition-all cursor-grab"
                             [ngClass]="getExerciseCardClasses(exerciseControl, exIndex)">
                             <!-- COMPACT VIEW / HEADER AREA -->
                             <div class="flex items-center space-x-2">
-                                <!-- DRAG HANDLE -->
-                                <div *ngIf="mode === 'routineBuilder' && isEditMode && !isViewMode" cdkDragHandle
-                                    class="cdk-drag-handle cursor-grab p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 flex-shrink-0 top-1 right-1 sm:static"
+                                <!-- DRAG HANDLE ICON (Now just a visual cue) -->
+                                <div *ngIf="mode === 'routineBuilder' && isEditMode && !isViewMode"
+                                    class="p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 flex-shrink-0 top-1 right-1 sm:static"
                                     [ngClass]="{
                                         'absolute top-1 right-1 sm:static': isCompactView,
                                         'absolute top-2 right-2': !isCompactView && (mode !== 'routineBuilder' || !isEditMode || isViewMode)
@@ -207,8 +213,9 @@
                                     </svg>
                                 </div>
                                 <!-- CHECKBOX (if applicable) -->
-                                <input *ngIf="mode === 'routineBuilder' && (isEditMode || isNewMode) && !isViewMode" type="checkbox"
-                                    title="Select the exercise for the Superset" [id]="'superset-select-' + exIndex"
+                                <input *ngIf="mode === 'routineBuilder' && (isEditMode || isNewMode) && !isViewMode"
+                                    type="checkbox" title="Select the exercise for the Superset"
+                                    [id]="'superset-select-' + exIndex"
                                     (change)="toggleExerciseSelectionForSuperset(exIndex, $event)"
                                     [checked]="selectedExerciseIndicesForSuperset().includes(exIndex)"
                                     class="h-4 w-4 text-orange-600 border-gray-300 dark:border-gray-600 rounded focus:ring-orange-500 flex-shrink-0 disabled:opacity-50"
@@ -299,7 +306,8 @@
                                         </div>
                                         <button *ngIf="!isViewMode" type="button" (click)="removeExercise(exIndex)"
                                             class="flex items-center text-xs text-red-600 bg-red-200 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 font-medium py-1 px-2 rounded-md hover:enabled:bg-red-100 dark:enabled:hover:bg-red-900/50 disabled:opacity-50">
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" class="w-4 h-4 mr-2">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"
+                                                class="w-4 h-4 mr-2">
                                                 <!-- Rounded square background in red -->
                                                 <rect width="16" height="16" rx="3" ry="3" fill="red" />
                                                 <!-- White "X" shape centered -->

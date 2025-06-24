@@ -3,11 +3,17 @@
 }
 
 .exercise-item {
-  transition: box-shadow 0.2s ease-in-out;
+  transition: transform 200ms ease-out, box-shadow 200ms ease-out;
+}
 
-  &:hover {
-    // Slightly lift or indicate hover
-  }
+// This is our custom class, added by the independent directive.
+// This style will be applied when the long press is successful.
+.is-long-pressing {
+  transform: scale(1.03);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.25);
+  border-color: #e0460d;
+  border-width: 2px;
+  z-index: 1000;
 }
 
 /* When an item is being dragged, its original spot gets this placeholder */
@@ -50,8 +56,8 @@ body.dark .cdk-drag-preview {
   cursor: grab; /* 'cursor-grab' */
   padding: 0.25rem; /* 'p-1' */
   color: #9ca3af; /* 'text-gray-400' */
-  display: flex;
-  flex-shrink: 0; /* 'flex-shrink-0' */
+  // display: flex;
+  // flex-shrink: 0; /* 'flex-shrink-0' */
   position: relative; /* default position for top/right */
   top: 0.25rem; /* 'top-1' */
   right: 0.25rem; /* 'right-1' */
