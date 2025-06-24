@@ -57,18 +57,17 @@
 
       <div class="p-4 sm:p-6 space-y-2">
         <h2 class="text-xl sm:text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-4">Exercises Performed:</h2>
-        <div *ngIf="displayExercises().length > 0; else noLoggedExercises" class="space-y-0">
+        <div *ngIf="displayExercises().length > 0; else noLoggedExercises">
 
           <div *ngFor="let loggedEx of displayExercises(); let exIdx = index" class="overflow-hidden shadow-sm"
             [ngClass]="{
-              'border border-gray-200 dark:border-gray-700 rounded-lg': !loggedEx.supersetId,
-              'mb-3': !loggedEx.supersetId || (loggedEx.supersetId && loggedEx.supersetOrder === (loggedEx.supersetSize ?? 0) - 1),
-
+              'border border-gray-200 dark:border-gray-700 rounded-lg mt-2': !loggedEx.supersetId,
+              'mb-3': loggedEx.supersetId && loggedEx.supersetOrder === (loggedEx.supersetSize ?? 0),
+              'mt-3': loggedEx.supersetId && loggedEx.supersetOrder === 0,
               'border-l border-r border-orange-400 dark:border-orange-600': loggedEx.supersetId,
               'bg-orange-50 dark:bg-orange-900/20': loggedEx.supersetId,
               'rounded-t-lg border-t': loggedEx.supersetId && loggedEx.supersetOrder === 0,
-              'rounded-b-lg border-b': loggedEx.supersetId && loggedEx.supersetOrder === (loggedEx.supersetSize ?? 0) - 1,
-              'border-b border-orange-300 dark:border-orange-700/50': loggedEx.supersetId && loggedEx.supersetOrder !== null && loggedEx.supersetOrder !== undefined && loggedEx.supersetOrder < ((loggedEx.supersetSize ?? 0) - 1) && !loggedEx.isExpanded
+              'rounded-b-lg border-b': loggedEx.supersetId && loggedEx.supersetOrder === ((loggedEx.supersetSize ?? 0) - 1),
             }">
 
             <button (click)="toggleExerciseAccordion(loggedEx)"
@@ -76,8 +75,7 @@
               [ngClass]="{
                 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700': !loggedEx.supersetId,
                 'hover:bg-orange-100 dark:hover:bg-orange-800/40': loggedEx.supersetId,
-                'bg-orange-100/50 dark:bg-orange-900/30': loggedEx.supersetId && loggedEx.isExpanded,
-                'border-b border-orange-300 dark:border-orange-700/50': loggedEx.supersetId && loggedEx.isExpanded && loggedEx.supersetOrder !== undefined && loggedEx.supersetOrder !== null && loggedEx.supersetOrder < ((loggedEx.supersetSize ?? 0) - 1)
+                'rounded-b': loggedEx.supersetId && loggedEx.supersetOrder === ((loggedEx.supersetSize ?? 0) - 1) && !loggedEx.isExpanded && (loggedEx.supersetOrder > 0 && loggedEx.supersetOrder < ((loggedEx.supersetSize ?? 0) - 1) ),
               }">
               <div class="flex items-center min-w-0"> <!-- Added min-w-0 for truncation -->
                 <div
@@ -99,26 +97,27 @@
                       'text-primary dark:text-primary-light': !loggedEx.supersetId,
                       'text-orange-700 dark:text-orange-300': loggedEx.supersetId
                     }" [title]="loggedEx.exerciseName">
-                    <span *ngIf="loggedEx.supersetId"
-                      class="text-xs font-normal text-orange-600 dark:text-orange-400 block leading-tight">
-                      <ng-container
-                        *ngIf="loggedEx.supersetRounds && loggedEx.supersetRounds > 1 && loggedEx.supersetCurrentRound">
-                        Round {{ loggedEx.supersetCurrentRound }} of {{ loggedEx.supersetRounds }} |
-                      </ng-container>
-                      Superset ({{ (loggedEx.supersetOrder ?? 0) + 1 }} of {{ loggedEx.supersetSize }})
-                    </span>
-                    {{ loggedEx.exerciseName }}
-                  </h3>
-                  <svg class="ml-2 cursor-pointer dark:text-white" title="Exercise details" *ngIf="loggedEx.exerciseId" width="20"
-                    height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" (click)="openModal(loggedEx)">
-                    <!-- Outer circle -->
-                    <title>Exercise details and progression</title>
-                    <circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="2" fill="none"/>
-                    <!-- Dot of the 'i' -->
-                    <circle cx="10" cy="6" r="1.5" fill="currentColor" />
-                    <!-- Stem of the 'i' -->
-                    <rect x="9" y="9" width="2" height="7" fill="currentColor" />
-                  </svg>
+                      <span *ngIf="loggedEx.supersetId"
+                        class="text-xs font-normal text-orange-600 dark:text-orange-400 block leading-tight">
+                        <ng-container
+                          *ngIf="loggedEx.supersetRounds && loggedEx.supersetRounds > 1 && loggedEx.supersetCurrentRound">
+                          Round {{ loggedEx.supersetCurrentRound }} of {{ loggedEx.supersetRounds }} |
+                        </ng-container>
+                        Superset ({{ (loggedEx.supersetOrder ?? 0) + 1 }} of {{ loggedEx.supersetSize }})
+                      </span>
+                      {{ loggedEx.exerciseName }}
+                    </h3>
+                    <svg class="ml-2 cursor-pointer dark:text-white" title="Exercise details"
+                      *ngIf="loggedEx.exerciseId" width="20" height="20" viewBox="0 0 20 20"
+                      xmlns="http://www.w3.org/2000/svg" (click)="openModal(loggedEx)">
+                      <!-- Outer circle -->
+                      <title>Exercise details and progression</title>
+                      <circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="2" fill="none" />
+                      <!-- Dot of the 'i' -->
+                      <circle cx="10" cy="6" r="1.5" fill="currentColor" />
+                      <!-- Stem of the 'i' -->
+                      <rect x="9" y="9" width="2" height="7" fill="currentColor" />
+                    </svg>
                   </div>
                   <p *ngIf="loggedEx.baseExercise?.category" class="text-xs text-gray-500 dark:text-gray-400 truncate">
                     {{ loggedEx.baseExercise?.category | titlecase }}
@@ -137,9 +136,8 @@
               </svg>
             </button>
 
-            <div *ngIf="loggedEx.isExpanded" class="p-3 sm:p-4 space-y-3" [ngClass]="{
+            <div *ngIf="loggedEx.isExpanded" class="p-2 space-y-2" [ngClass]="{
                 'bg-white dark:bg-gray-700': !loggedEx.supersetId,
-                'bg-orange-50/50 dark:bg-orange-900/10': loggedEx.supersetId
               }">
               <p *ngIf="loggedEx.notes"
                 class="text-m italic text-gray-600 dark:text-gray-400 mb-3 border-b dark:border-gray-700 pb-2">
@@ -193,7 +191,7 @@
                 </div>
               </div>
 
-              <div *ngIf="loggedEx.workingSets && loggedEx.workingSets.length > 0" class="space-y-2 pt-2">
+              <div *ngIf="loggedEx.workingSets && loggedEx.workingSets.length > 0" class="space-y-2">
                 <h4 class="text-m font-semibold text-gray-600 dark:text-gray-300"
                   *ngIf="loggedEx.warmupSets && loggedEx.warmupSets.length > 0">Working Sets:</h4>
                 <div *ngFor="let set of loggedEx.workingSets; let setIdx = index"

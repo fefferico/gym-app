@@ -50,8 +50,11 @@ export interface LoggedWorkoutExercise {
   rounds: number;
   notes?: string;         // User notes for this exercise during this specific workout log
   workoutLogId?: string; // ID of the WorkoutLog this exercise belongs to
-  supersetId?: string;
-  supersetOrder?: number;
+  supersetId?: string | null;
+  supersetOrder?: number | null;
+  supersetSize?: number | null;
+  supersetRounds?: number | null;
+  supersetCurrentRound?: number | null;
   type: 'standard' | 'warmup' | 'amrap' | 'dropset' | 'failure' | 'myorep' | 'restpause' | 'custom' | 'superset' | string; // More flexible
 }
 

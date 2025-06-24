@@ -73,6 +73,7 @@ enum SessionState {
   Playing = 'playing',
   Paused = 'paused',
   Error = 'error',
+  End = 'end',
 }
 
 enum TimedSetState {
@@ -269,10 +270,10 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
               if (this.checkIfLatestSetOfExercise()) { // This should also consider pending
                 if (this.checkIfSetIsPartOfRounds()) {
                   if (this.checkIfLatestSetOfRound()) {
-                  if (this.checkIfLatestRoundOfRounds()) {
-                    return 'FINISH WORKOUT';
-                  }
-                  return 'COMPLETE ROUND';
+                    if (this.checkIfLatestRoundOfRounds()) {
+                      return 'FINISH WORKOUT';
+                    }
+                    return 'COMPLETE ROUND';
                   }
                   return 'COMPLETE EXERCISE';
                 } else {
@@ -549,6 +550,14 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         rounds: exerciseData.rounds || 0,
         type: loggedSet.type || 'standard'
       };
+
+      if (exerciseData.rounds && exerciseData.rounds > 0){
+        newLog.supersetId = exerciseData.supersetId ? exerciseData.supersetId : null;
+        newLog.supersetOrder = exerciseData.supersetOrder !== null ? exerciseData.supersetOrder : null;
+        newLog.supersetSize = exerciseData.supersetSize !== null ? exerciseData.supersetSize : null;
+        newLog.supersetRounds = exerciseData.supersetRounds !== null ? exerciseData.supersetRounds : null;
+      }
+
       // Insert at the same index as in the routine for consistency
       if (typeof exerciseIndex === 'number' && exerciseIndex >= 0 && exerciseIndex <= logs.length) {
         logs.splice(exerciseIndex, 0, newLog);
@@ -916,7 +925,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   private getUnfinishedOrDeferredExercises(sessionRoutine: Routine): any[] {
     const currentExercise = sessionRoutine.exercises[this.currentExerciseIndex()];
     const unfinishedOtherExercises = this.getUnfinishedExercises().filter(
-      ex => ex.id !== currentExercise.id 
+      ex => ex.id !== currentExercise.id
     );
     console.log("Unfinished exercises (excluding current):", unfinishedOtherExercises.map(e => e.exerciseName));
 
@@ -1094,10 +1103,10 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     const exercise = routine.exercises.find(ex => ex.exerciseId === exerciseIdName && ex.id === exerciseId);
     if (!exercise) return false;
 
-    const loggedEx = this.currentWorkoutLogExercises().find(le => 
-      le.exerciseId === exerciseIdName 
+    const loggedEx = this.currentWorkoutLogExercises().find(le =>
+      le.exerciseId === exerciseIdName
       && exercise.exerciseId === le.exerciseId
-      && le.id === exerciseId 
+      && le.id === exerciseId
     );
 
     if (!loggedEx) return false;
@@ -1666,23 +1675,23 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       const currExIdxInRoutine = completedActiveSetInfo.exerciseIndex;
       // Sort by originalIndex to ensure routine order
       const sortedUnfinished = mergedUnfinishedExercises
-      .slice()
-      .sort((a, b) => a.originalIndex - b.originalIndex);
+        .slice()
+        .sort((a, b) => a.originalIndex - b.originalIndex);
 
       // Find the next unfinished exercise after the current one
       const nextUnfinished = sortedUnfinished.find(ex => ex.originalIndex > currExIdxInRoutine)
-      // If none after, wrap to the first unfinished in the routine
-      ?? sortedUnfinished[0];
+        // If none after, wrap to the first unfinished in the routine
+        ?? sortedUnfinished[0];
 
       if (nextUnfinished) {
-      let statusLabel = '';
-      switch (nextUnfinished.sessionStatus) {
-        case 'do_later': statusLabel = 'Do Later'; break;
-        case 'skipped': statusLabel = 'Skipped'; break;
-        case 'pending': statusLabel = 'Pending'; break;
-        default: statusLabel = nextUnfinished.sessionStatus || '';
-      }
-      return `Next: ${nextUnfinished.exerciseName} (${statusLabel})`;
+        let statusLabel = '';
+        switch (nextUnfinished.sessionStatus) {
+          case 'do_later': statusLabel = 'Do Later'; break;
+          case 'skipped': statusLabel = 'Skipped'; break;
+          case 'pending': statusLabel = 'Pending'; break;
+          default: statusLabel = nextUnfinished.sessionStatus || '';
+        }
+        return `Next: ${nextUnfinished.exerciseName} (${statusLabel})`;
       }
     }
 
@@ -1783,6 +1792,10 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
   private savePausedSessionState(): void {
+    if (this.sessionState() === SessionState.End) {
+      this.stopAllActivity();
+      return;
+    }
     const currentRoutine = this.routine();
     if (!currentRoutine) {
       console.warn("Cannot save paused state: routine data is not available.");
@@ -1883,7 +1896,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
       this.addExerciseToCurrentRoutine(warmupExercise, supersetBlockStartIdx);
       this.toastService.success("Warm-up set added as a separate exercise before superset.", 4000, "Warm-up Added");
-      this.closeWorkoutMenu(); 
+      this.closeWorkoutMenu();
       this.closePerformanceInsights();
       return;
     }
@@ -2288,7 +2301,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       "Finish workout now? Current progress will be saved."
     );
     if (confirmFinishEarly && confirmFinishEarly.data) {
-      this.closeWorkoutMenu(); 
+      this.closeWorkoutMenu();
       this.closePerformanceInsights();
       const didLog = await this.finishWorkoutAndReportStatus();
       if (!didLog) {
@@ -2356,8 +2369,9 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     if (loggedExercisesForReport.length === 0) {
       this.toastService.info("No sets logged. Workout not saved.", 3000, "Empty Workout");
       this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
-      if (this.router.url.includes('/play')) { 
-        this.router.navigate(['/workout']); }
+      if (this.router.url.includes('/play')) {
+        this.router.navigate(['/workout']);
+      }
       return false;
     }
     this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
@@ -2494,6 +2508,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
     this.isSessionConcluded = true;
     this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
+    this.sessionState.set(SessionState.End);
     this.router.navigate(['/workout/summary', savedLog.id]);
     return true;
   }
@@ -3260,26 +3275,26 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         for (let i = blockStartIdx; i < currentSessionRoutine.exercises.length; i++) {
           const ex = currentSessionRoutine.exercises[i];
           if (
-        (currentExercise.supersetId
-          ? ex.supersetId === currentExercise.supersetId
-          : i === blockStartIdx) &&
-        ex.sessionStatus === 'pending'
+            (currentExercise.supersetId
+              ? ex.supersetId === currentExercise.supersetId
+              : i === blockStartIdx) &&
+            ex.sessionStatus === 'pending'
           ) {
-        this.currentExerciseIndex.set(i);
-        this.currentSetIndex.set(0);
-        this.lastPerformanceForCurrentExercise = null;
-        foundPending = true;
-        break;
+            this.currentExerciseIndex.set(i);
+            this.currentSetIndex.set(0);
+            this.lastPerformanceForCurrentExercise = null;
+            foundPending = true;
+            break;
           }
           // Stop if we leave the block
           if (
-        currentExercise.supersetId &&
-        ex.supersetId !== currentExercise.supersetId
+            currentExercise.supersetId &&
+            ex.supersetId !== currentExercise.supersetId
           ) {
-        break;
+            break;
           }
           if (!currentExercise.supersetId && i > blockStartIdx) {
-        break;
+            break;
           }
         }
         if (foundPending) {
@@ -3295,9 +3310,9 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         if (
           currentSessionRoutine.exercises[i].sessionStatus === 'pending' &&
           !this.isExerciseFullyLogged(
-        currentSessionRoutine.exercises[i].exerciseId,
-        i,
-        currentSessionRoutine.exercises[i].id
+            currentSessionRoutine.exercises[i].exerciseId,
+            i,
+            currentSessionRoutine.exercises[i].id
           )
         ) {
           nextUnfinishedIdx = i;
@@ -3680,13 +3695,13 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         let roundIndex = 1;
         if (ex.rounds && ex.rounds > 1) {
           // If the exercise has multiple rounds, show the current round
-            // Try to get the current roundIndex from the exercise in the log
-            const logEx = this.currentWorkoutLogExercises().find(le => le.exerciseId === ex.exerciseId && le.id === ex.id);
-            if (logEx && typeof logEx.rounds === 'number' && logEx.rounds > 1) {
+          // Try to get the current roundIndex from the exercise in the log
+          const logEx = this.currentWorkoutLogExercises().find(le => le.exerciseId === ex.exerciseId && le.id === ex.id);
+          if (logEx && typeof logEx.rounds === 'number' && logEx.rounds > 1) {
             roundIndex = logEx.rounds;
-            } else {
+          } else {
             roundIndex = this.currentBlockRound ? this.currentBlockRound() : 1;
-            }
+          }
         }
         if (blockIndex !== -1) {
           supersetIndexText = ` [SuperSet #${blockIndex + 1}${ex.rounds && ex.rounds > 1 ? `, Round ${roundIndex}/${ex.rounds}` : ''}]`;

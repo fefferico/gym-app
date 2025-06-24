@@ -227,6 +227,10 @@ export class ExerciseService {
   }
 
   getIconPath(iconName: string | undefined): string {
-    return `assets/icons/${iconName || 'default-exercise'}.svg`;
+    let tmpIconName = iconName;
+    if (tmpIconName && tmpIconName.indexOf('/')>=0){
+      tmpIconName = 'default-exercise';
+    }
+    return `assets/icons/${tmpIconName || 'default-exercise'}.svg`;
   }
 }

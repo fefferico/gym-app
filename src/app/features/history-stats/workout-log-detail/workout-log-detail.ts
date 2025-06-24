@@ -23,8 +23,8 @@ interface DisplayLoggedExercise extends LoggedWorkoutExercise {
   workingSets?: LoggedSet[];
   iconName?: string;
   // Superset related properties (assuming they come from LoggedWorkoutExercise or are derived)
-  supersetId?: string;
-  supersetOrder?: number;
+  supersetId?: string | null;
+  supersetOrder?: number | null;
   supersetSize?: number | null;
   supersetRounds?: number | null;      // Total rounds for THIS superset instance in the log
   supersetCurrentRound?: number | null; // The current round number for THIS exercise entry
