@@ -1,8 +1,8 @@
 import { Component, inject, OnInit, OnDestroy, signal, computed, WritableSignal, ChangeDetectorRef, HostListener, PLATFORM_ID, ViewChildren, QueryList, ElementRef, effect } from '@angular/core';
 import { CommonModule, TitleCasePipe, DatePipe, DecimalPipe, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, NavigationEnd, Router, RouterLink } from '@angular/router';
-import { Subscription, Observable, of, timer, firstValueFrom, interval } from 'rxjs';
-import { switchMap, tap, map, takeWhile, take, filter } from 'rxjs/operators';
+import { Subscription, Observable, of, timer, firstValueFrom, interval, Subject } from 'rxjs';
+import { switchMap, tap, map, takeWhile, take, filter, takeUntil } from 'rxjs/operators';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { FullScreenRestTimerComponent } from '../../shared/components/full-screen-rest-timer/full-screen-rest-timer';
 
@@ -75,6 +75,10 @@ export interface PausedWorkoutState {
   restTimerNextUpTextOnPause: string | null;
   lastPerformanceForCurrentExercise: LastPerformanceSummary | null;
   workoutDate: string; // Date of the workout when paused
+  // --- NEW: TABATA RESUME FIELDS ---
+  isTabataMode?: boolean;
+  tabataCurrentIntervalIndex?: number;
+  tabataTimeRemainingOnPause?: number;
 }
 
 enum SessionState {
@@ -225,6 +229,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     const index = this.currentTabataIntervalIndex();
     return intervals[index] || null;
   });
+  private tabataIntervalMap: [number, number][] = [];
 
   private tabataTimerSub: Subscription | undefined;
   // --- END: TABATA MODE STATE SIGNALS ---
@@ -328,6 +333,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   });
 
 
+  private readonly destroy$ = new Subject<void>();
   private routeSub: Subscription | undefined;
   rpeValue = signal<number | null>(null);
   rpeOptions: number[] = Array.from({ length: 10 }, (_, i) => i + 1);
@@ -535,7 +541,9 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     if (this.sessionState() === SessionState.Paused) return;
     if (this.timerSub) this.timerSub.unsubscribe();
 
-    this.timerSub = timer(0, 1000).subscribe(() => {
+    this.timerSub = timer(0, 1000).pipe(
+      takeUntil(this.destroy$) // Add this line
+    ).subscribe(() => {
       if (this.sessionState() === SessionState.Playing) {
         const currentDeltaSeconds = Math.floor((Date.now() - this.workoutStartTime) / 1000);
         const totalElapsedSeconds = this.sessionTimerElapsedSecondsBeforePause + currentDeltaSeconds;
@@ -757,7 +765,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       this.timedSetIntervalSub.unsubscribe();
     }
 
-    this.timedSetIntervalSub = timer(0, 1000).subscribe(() => {
+    this.timedSetIntervalSub = timer(0, 1000).pipe(takeUntil(this.destroy$)).subscribe(() => {
       if (this.timedSetTimerState() === TimedSetState.Running) {
         this.timedSetElapsedSeconds.update(s => s + 1);
         const currentElapsed = this.timedSetElapsedSeconds();
@@ -1791,11 +1799,34 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   private async loadStateFromPausedSession(state: PausedWorkoutState): Promise<void> {
     this.routineId = state.routineId;
     this.routine.set(state.sessionRoutine); // This routine has sessionStatus populated
+    this.currentWorkoutLogExercises.set(state.currentWorkoutLogExercises);
+
+    // --- NEW: TABATA RESUME LOGIC ---
+    if (state.isTabataMode) {
+      console.log("Resuming a paused Tabata session.");
+
+      this.sessionState.set(SessionState.Playing);
+      this.workoutStartTime = Date.now();
+      this.sessionTimerElapsedSecondsBeforePause = state.sessionTimerElapsedSecondsBeforePause;
+
+      // Setup the tabata player from the saved state.
+      this.setupTabataMode(
+        state.sessionRoutine,
+        state.tabataCurrentIntervalIndex,
+        state.tabataTimeRemainingOnPause
+      );
+
+      this.startSessionTimer();
+      this.toastService.success('Tabata session resumed.', 3000, "Resumed");
+      // We are done for Tabata mode, so we return early.
+      return;
+    }
+    // --- END: TABATA RESUME LOGIC ---
+
     this.originalRoutineSnapshot = state.originalRoutineSnapshot ? JSON.parse(JSON.stringify(state.originalRoutineSnapshot)) : [];
 
     this.currentExerciseIndex.set(state.currentExerciseIndex);
     this.currentSetIndex.set(state.currentSetIndex);
-    this.currentWorkoutLogExercises.set(state.currentWorkoutLogExercises);
 
     this.workoutStartTime = Date.now();
     this.sessionTimerElapsedSecondsBeforePause = state.sessionTimerElapsedSecondsBeforePause;
@@ -1884,8 +1915,15 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       restTimerMainTextOnPause: this.restTimerMainText(),
       restTimerNextUpTextOnPause: this.restTimerNextUpText(),
       lastPerformanceForCurrentExercise: this.lastPerformanceForCurrentExercise ? JSON.parse(JSON.stringify(this.lastPerformanceForCurrentExercise)) : null,
-      workoutDate: dateToSaveInState
+      workoutDate: dateToSaveInState,
+      isTabataMode: this.isTabataMode(),
     };
+
+    if (this.isTabataMode()) {
+      stateToSave.tabataCurrentIntervalIndex = this.currentTabataIntervalIndex();
+      stateToSave.tabataTimeRemainingOnPause = this.tabataTimeRemaining();
+    }
+
     this.storageService.setItem(this.PAUSED_WORKOUT_KEY, stateToSave);
     console.log('Paused session state saved.', stateToSave);
   }
@@ -2542,7 +2580,11 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       programId: sessionProgramValue?.id,
     };
     const savedLog = this.trackingService.addWorkoutLog(finalLog);
-    this.toastService.success(`Congrats! Workout completed!`, 5000, "Workout Finished");
+    if (!this.isTabataMode()) {
+      this.toastService.success(`Congrats! Workout completed!`, 5000, "Workout Finished");
+    } else {
+      this.toastService.success("Tabata Workout Complete!", 5000, "Workout Finished");
+    }
 
     if (finalRoutineIdToLog) {
       const routineToUpdate = await firstValueFrom(this.workoutService.getRoutineById(finalRoutineIdToLog).pipe(take(1)));
@@ -2755,12 +2797,6 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
     // Add a check for tabata mode here for paused sessions
     const pausedState = this.storageService.getItem<PausedWorkoutState>(this.PAUSED_WORKOUT_KEY);
-    if (pausedState?.sessionRoutine?.goal === 'tabata') {
-      // Handle Tabata paused state if you implement that feature later
-      // For now, we'll just clear it to start fresh.
-      this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
-    }
-
     const hasPausedSessionOnInit = await this.checkForPausedSession(false);
     if (hasPausedSessionOnInit) {
       this.isInitialLoadComplete = true;
@@ -2784,7 +2820,8 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
               // paramMap subscription in loadNewWorkoutFromRoute should handle this
             }
           }
-        })
+        }),
+        takeUntil(this.destroy$) // Add this line
       ).subscribe();
     }
     this.loadAvailableExercises(); // Load exercises for the modal
@@ -2912,7 +2949,8 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         }
         this.isInitialLoadComplete = true;
         console.log('loadNewWorkoutFromRoute - END tap operator. Final sessionState:', this.sessionState());
-      })
+      }),
+      takeUntil(this.destroy$) // Add this line
     ).subscribe({
       error: (err) => {
         console.error('loadNewWorkoutFromRoute - Error in observable pipeline:', err);
@@ -2993,6 +3031,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     this.stopAutoSave();
     if (this.timerSub) this.timerSub.unsubscribe();
     if (this.timedSetIntervalSub) this.timedSetIntervalSub.unsubscribe();
+    if (this.tabataTimerSub) this.tabataTimerSub.unsubscribe();
     this.isRestTimerVisible.set(false);
     // Don't unsubscribe from routerEventsSub or routeSub here, they manage themselves or are handled by ngOnDestroy
   }
@@ -3025,13 +3064,15 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    if (this.routeSub) this.routeSub.unsubscribe();
-    if (this.timerSub) this.timerSub.unsubscribe();
-    if (this.timedSetIntervalSub) this.timedSetIntervalSub.unsubscribe();
-    if (this.routerEventsSub) { this.routerEventsSub.unsubscribe(); }
-    if (this.presetTimerSub) this.presetTimerSub.unsubscribe();
-    this.stopAutoSave();
-    this.isRestTimerVisible.set(false); // Ensure full screen timer is dismissed
+    // --- This is the core of the pattern ---
+    // Emit a value to notify all subscriptions to complete.
+    this.destroy$.next();
+    this.destroy$.complete();
+    // ------------------------------------
+
+    // The rest of your specific cleanup logic remains the same.
+    this.stopAllActivity(); // This is good to keep for any non-observable timers.
+    this.isRestTimerVisible.set(false);
 
     if (isPlatformBrowser(this.platformId) && !this.isSessionConcluded &&
       (this.sessionState() === SessionState.Playing || this.sessionState() === SessionState.Paused) &&
@@ -3118,22 +3159,24 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
 
     if (this.presetTimerSub) this.presetTimerSub.unsubscribe();
-    this.presetTimerSub = timer(0, 1000).pipe(take(duration + 1)).subscribe({
-      next: () => {
-        this.presetTimerCountdownDisplay.set(String(remaining));
-        if (remaining <= this.appSettingsService.countdownSoundSeconds() && remaining > 0 &&
-          this.appSettingsService.enableTimerCountdownSound() && duration > 5) {
-          this.playClientBeep(600, 150);
+    this.presetTimerSub = timer(0, 1000).pipe(
+      takeUntil(this.destroy$), // Add this line
+      take(duration + 1)).subscribe({
+        next: () => {
+          this.presetTimerCountdownDisplay.set(String(remaining));
+          if (remaining <= this.appSettingsService.countdownSoundSeconds() && remaining > 0 &&
+            this.appSettingsService.enableTimerCountdownSound() && duration > 5) {
+            this.playClientBeep(600, 150);
+          }
+          remaining--;
+        },
+        complete: () => {
+          if (this.playerSubState() === PlayerSubState.PresetCountdown) { // Check state before auto-finishing
+            this.playClientBeep(1000, 250); // "Go" sound
+            this.handlePresetTimerFinished();
+          }
         }
-        remaining--;
-      },
-      complete: () => {
-        if (this.playerSubState() === PlayerSubState.PresetCountdown) { // Check state before auto-finishing
-          this.playClientBeep(1000, 250); // "Go" sound
-          this.handlePresetTimerFinished();
-        }
-      }
-    });
+      });
   }
   handlePresetTimerFinished(): void {
     if (this.presetTimerSub) {
@@ -3501,6 +3544,9 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
 
   private startRestPeriod(duration: number, isResumingPausedRest: boolean = false): void {
+    if (this.isTabataMode()) {
+      return;
+    }
     this.playerSubState.set(PlayerSubState.Resting);
     this.restDuration.set(duration);
 
@@ -3938,75 +3984,121 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   /**
    * Transforms a standard routine into a flat list of HIIT intervals and starts the player.
    */
-  private setupTabataMode(routine: Routine): void {
+  /**
+  * Transforms a standard routine into a flat list of HIIT intervals and starts the player.
+  */
+  /**
+   * Transforms a routine into a flat list of HIIT intervals and starts the player.
+   * Can start from a specific index and time if resuming.
+   */
+  private setupTabataMode(
+    routine: Routine,
+    startAtIndex: number = 0,
+    startTimeRemaining?: number
+  ): void {
     const intervals: Omit<HIITInterval, 'totalIntervals' | 'currentIntervalNumber'>[] = [];
 
-    // 1. Add a "Prepare" interval at the beginning
-    intervals.push({ type: 'prepare', duration: 10, exerciseName: 'Get Ready' });
+    // This map will store the [exerciseIndex, setIndex] for each interval.
+    // It will be the same size as the 'intervals' array.
+    const intervalMap: [number, number][] = [];
 
-    // 2. Iterate through exercises and sets to create work/rest intervals
-    routine.exercises.forEach(exercise => {
-      exercise.sets.forEach(set => {
-        // Add a "Work" interval. Use duration if available, otherwise a default.
+    // 1. Add "Prepare" interval and its map entry.
+    // It maps to the very first exercise and set for context.
+    intervals.push({ type: 'prepare', duration: 10, exerciseName: 'Get Ready' });
+    intervalMap.push([0, 0]);
+
+    // 2. Iterate through exercises and sets to build the intervals and the map.
+    const totalExercises = routine.exercises.length;
+    routine.exercises.forEach((exercise, exerciseIndex) => {
+      const totalSetsInExercise = exercise.sets.length;
+
+      exercise.sets.forEach((set, setIndex) => {
+        // A. Add the "Work" interval.
         intervals.push({
           type: 'work',
-          duration: set.duration || 40, // Default to 40s for Tabata if not specified
+          duration: set.duration || 40, // Default duration
           exerciseName: exercise.exerciseName
         });
+        // Map this "Work" interval directly to its source set.
+        intervalMap.push([exerciseIndex, setIndex]);
 
-        // Add a "Rest" interval if rest is specified
-        if (set.restAfterSet > 0) {
+        // B. Conditionally add the "Rest" interval.
+        const isLastExercise = exerciseIndex === totalExercises - 1;
+        const isLastSet = setIndex === totalSetsInExercise - 1;
+
+        if (set.restAfterSet > 0 && !(isLastExercise && isLastSet)) {
           intervals.push({
             type: 'rest',
-            duration: set.restAfterSet || 20, // Default to 20s if not specified
+            duration: set.restAfterSet || 20, // Default rest
             exerciseName: 'Rest'
           });
+          // CRITICAL: The "Rest" interval maps to the SAME set that preceded it.
+          // This keeps the context correct during rest periods.
+          intervalMap.push([exerciseIndex, setIndex]);
         }
       });
     });
 
-    // 3. Finalize the intervals list with total counts for the UI
+    // Store the generated map in the component property for later use.
+    this.tabataIntervalMap = intervalMap;
+
+    // 3. Finalize the intervals list with total counts (no changes here).
     const totalIntervals = intervals.length;
     const finalIntervals = intervals.map((interval, index) => ({
       ...interval,
       totalIntervals: totalIntervals,
       currentIntervalNumber: index + 1
     }));
-
-    this.isTabataMode.set(true);
-    this.routine.set(routine);
     this.tabataIntervals.set(finalIntervals);
-    this.currentTabataIntervalIndex.set(0);
+
+    // 4. Set the initial state of the player.
     this.sessionState.set(SessionState.Playing);
-    this.startCurrentTabataInterval();
+    this.routine.set(routine); // Ensure the routine is set
+    this.isTabataMode.set(true)
+
+    // 5. Use the new helper to set the correct state for BOTH players.
+    // This replaces the scattered state-setting logic.
+    this.setPlayerStateFromTabataIndex(startAtIndex);
+
+
+    // 6. Start the timer.
+    if (startTimeRemaining !== undefined && startTimeRemaining > 0) {
+      this.startCurrentTabataInterval(startTimeRemaining);
+    } else {
+      this.startCurrentTabataInterval();
+    }
   }
 
   /**
-   * Starts the timer for the currently active Tabata interval.
-   */
-  private startCurrentTabataInterval(): void {
+ * Starts the timer for the currently active Tabata interval.
+ * Can start from a specific remaining time if resuming.
+ */
+  private startCurrentTabataInterval(startFromTime?: number): void {
     if (this.tabataTimerSub) this.tabataTimerSub.unsubscribe();
     if (this.sessionState() === SessionState.Paused) return;
 
     const interval = this.currentTabataInterval();
     if (!interval) {
-      // End of workout
       this.sessionState.set(SessionState.End);
-      this.finishWorkoutAndReportStatus(); // Or a specific Tabata summary
+      this.finishWorkoutAndReportStatus();
       return;
     }
 
-    this.tabataTimeRemaining.set(interval.duration);
+    // If resuming, use the provided time. Otherwise, use the interval's full duration.
+    const initialTime = startFromTime !== undefined ? startFromTime : interval.duration;
+    this.tabataTimeRemaining.set(initialTime);
 
     this.tabataTimerSub = timer(0, 1000)
-      .pipe(take(interval.duration + 1))
-      .subscribe({
+      .pipe(
+        take(interval.duration + 1), // Keep your existing take()
+        takeUntil(this.destroy$)      // Add this line after it
+      ).subscribe({
         next: () => {
           this.tabataTimeRemaining.update(t => t - 1);
         },
         complete: () => {
           if (this.sessionState() === SessionState.Playing) {
-            this.nextTabataInterval(); // Automatically move to the next interval
+            this.nextTabataInterval();
           }
         }
       });
@@ -4017,19 +4109,23 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
    */
   nextTabataInterval(): void {
     const nextIndex = this.currentTabataIntervalIndex() + 1;
-    if (nextIndex < this.tabataIntervals().length) {
-      this.currentTabataIntervalIndex.set(nextIndex);
-      this.startCurrentTabataInterval();
-    } else {
-      // Reached the end
-      this.tabataTimeRemaining.set(0);
-      if (this.tabataTimerSub) this.tabataTimerSub.unsubscribe();
-      this.sessionState.set(SessionState.End);
-      this.toastService.success("Tabata Workout Complete!", 4000);
-      setTimeout(() => {
-        this.finishWorkout();
-      }, 5000);
-      // Optional: Navigate to summary or show completion screen
+    if (nextIndex <= this.tabataIntervals().length) {
+      if (nextIndex === this.tabataIntervals().length) {
+        // ending logging
+        this.completeAndLogCurrentSet();
+        // Reached the end
+        this.tabataTimeRemaining.set(0);
+        if (this.tabataTimerSub) this.tabataTimerSub.unsubscribe();
+        this.sessionState.set(SessionState.End);
+      } else {
+        if (this.currentTabataInterval() !== null &&
+          (this.currentTabataInterval()?.type !== 'prepare' && this.currentTabataInterval()?.type !== 'rest')) {
+          this.completeAndLogCurrentSet();
+        }
+        this.currentTabataIntervalIndex.set(nextIndex);
+        this.startCurrentTabataInterval();
+      }
+
     }
   }
 
@@ -4060,6 +4156,56 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       this.workoutStartTime = Date.now(); // Reset start time for delta calculation
       this.startSessionTimer(); // Resume overall timer
       this.startCurrentTabataInterval(); // Resume interval timer
+    }
+  }
+
+
+  private getCurrentSetInfo(): ActiveSetInfo | null {
+    const r = this.routine();
+    const exIndex = this.currentExerciseIndex();
+    const sIndex = this.currentSetIndex();
+
+    if (r && r.exercises[exIndex] && r.exercises[exIndex].sets[sIndex]) {
+      const exerciseData = r.exercises[exIndex];
+      const setData = r.exercises[exIndex].sets[sIndex];
+      const completedExerciseLog = this.currentWorkoutLogExercises().find(logEx => logEx.exerciseId === exerciseData.exerciseId);
+      const completedSetLog = completedExerciseLog?.sets.find(logSet => logSet.plannedSetId === setData.id);
+
+      return {
+        exerciseIndex: exIndex,
+        setIndex: sIndex,
+        exerciseData: exerciseData,
+        setData: setData,
+        type: (setData.type as 'standard' | 'warmup' | 'amrap' | 'custom') ?? 'standard',
+        baseExerciseInfo: undefined,
+        isCompleted: !!completedSetLog,
+        actualReps: completedSetLog?.repsAchieved,
+        actualWeight: completedSetLog?.weightUsed,
+        actualDuration: completedSetLog?.durationPerformed,
+        notes: completedSetLog?.notes, // This is the logged note for this specific set completion
+      };
+    }
+    return null;
+  }
+
+  // NEW HELPER METHOD
+  private setPlayerStateFromTabataIndex(tabataIndex: number): void {
+    this.currentTabataIntervalIndex.set(tabataIndex);
+
+    // Use the map to find the corresponding standard player indices
+    const mappedIndices = this.tabataIntervalMap[tabataIndex];
+    if (mappedIndices) {
+      const [exerciseIndex, setIndex] = mappedIndices;
+      this.currentExerciseIndex.set(exerciseIndex);
+      this.currentSetIndex.set(setIndex);
+      console.log(`Tabata Sync: Interval ${tabataIndex} maps to Exercise ${exerciseIndex}, Set ${setIndex}`);
+    } else {
+      // Fallback for the end of the workout
+      const lastValidMap = this.tabataIntervalMap[this.tabataIntervalMap.length - 1];
+      if (lastValidMap) {
+        this.currentExerciseIndex.set(lastValidMap[0]);
+        this.currentSetIndex.set(lastValidMap[1]);
+      }
     }
   }
 
