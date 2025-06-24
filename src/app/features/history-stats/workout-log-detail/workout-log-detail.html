@@ -201,7 +201,7 @@
                   <p class="text-m font-medium text-gray-700 dark:text-gray-200">
                     {{ getDisplaySetLabel(loggedEx.workingSets, setIdx) }}:
                   </p>
-                  <ul class="list-disc list-inside pl-4 text-xs text-gray-600 dark:text-gray-400">
+                  <ul class="list-disc list-inside pl-4 text-s text-gray-600 dark:text-gray-400">
                     <li *ngIf="set.repsAchieved !== undefined">Reps:
                       <strong [class.text-green-500]="set.repsAchieved >= (set.targetReps || 0)"
                         [class.dark:text-green-400]="set.repsAchieved >= (set.targetReps || 0)"

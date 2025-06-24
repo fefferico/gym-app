@@ -384,28 +384,28 @@
                                                         'cursor-default': isViewMode
                                                     } ">
                                                 <!-- ... content of collapsed set row (as before) ... -->
-                                                <div class="col-span-1 text-xs text-center font-medium">{{ setIndex + 1
+                                                <div class="col-span-1 text-s text-center font-medium">{{ setIndex + 1
                                                     }}</div>
                                                 <div class="col-span-2 text-xs text-center truncate"
                                                     [title]="setControl.get('type')?.value | titlecase">{{
                                                     (setControl.get('type')?.value | titlecase) || 'Standard' }}</div>
-                                                <div class="col-span-2 text-xs text-center">{{ (setControl.get(mode ===
+                                                <div class="col-span-2 text-s text-center">{{ (setControl.get(mode ===
                                                     'manualLogEntry' ? 'repsAchieved' : 'reps')?.value) ?? '-' }}</div>
-                                                <div class="col-span-2 text-xs text-center">{{ (setControl.get(mode ===
+                                                <div class="col-span-2 text-s text-center">{{ (setControl.get(mode ===
                                                     'manualLogEntry' ? 'weightUsed' : 'weight')?.value) |
                                                     weightUnit:'1.0-2' }}</div>
-                                                <div class="col-span-1 text-xs text-center">{{ (setControl.get(mode ===
+                                                <div class="col-span-1 text-s text-center">{{ (setControl.get(mode ===
                                                     'manualLogEntry' ? 'durationPerformed' : 'duration')?.value) ?
                                                     ((setControl.get(mode === 'manualLogEntry' ? 'durationPerformed' :
                                                     'duration')?.value) + 's') : '-' }}</div>
-                                                <div class="col-span-2 text-xs text-center truncate"
+                                                <div class="col-span-2 text-s text-center truncate"
                                                     [title]="mode === 'routineBuilder' ? (setControl.get('restAfterSet')?.value + 's') : setControl.get('notes')?.value">
                                                     <ng-container *ngIf="mode === 'routineBuilder'">{{
                                                         setControl.get('restAfterSet')?.value }}s</ng-container>
                                                     <ng-container *ngIf="mode === 'manualLogEntry'">{{
                                                         setControl.get('notes')?.value || '-' }}</ng-container>
                                                 </div>
-                                                <div class="col-span-1 text-xs text-center truncate"
+                                                <div class="col-span-1 text-s text-center truncate"
                                                     [title]="setControl.get('tempo')?.value">
                                                     <ng-container *ngIf="mode === 'routineBuilder'">{{
                                                         setControl.get('tempo')?.value || '-' }}</ng-container>

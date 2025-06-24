@@ -8,7 +8,7 @@ export interface ExerciseSetParams {
   tempo?: string;
   restAfterSet: number; // For the set *within* an exercise. For supersets, this might be 0 for intermediate exercises.
   notes?: string;
-  type: 'standard' | 'warmup' | 'amrap' | 'dropset' | 'failure' | 'myorep' | 'restpause' | 'custom' | 'superset' | string; // More flexible
+  type: 'standard' | 'warmup' | 'amrap' | 'dropset' | 'failure' | 'myorep' | 'restpause' | 'custom' | 'superset' | 'tabata' | string; // More flexible
   _uiIsCompleted?: boolean;
   _uiActualReps?: number;
   _uiActualWeight?: number;
