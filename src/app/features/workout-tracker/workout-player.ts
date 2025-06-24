@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy, signal, computed, WritableSignal, ChangeDetectorRef, HostListener, PLATFORM_ID } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal, computed, WritableSignal, ChangeDetectorRef, HostListener, PLATFORM_ID, ViewChildren, QueryList, ElementRef, effect } from '@angular/core';
 import { CommonModule, TitleCasePipe, DatePipe, DecimalPipe, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, NavigationEnd, Router, RouterLink } from '@angular/router';
 import { Subscription, Observable, of, timer, firstValueFrom, interval } from 'rxjs';
@@ -42,6 +42,15 @@ interface ActiveSetInfo {
   actualDuration?: number;
   notes?: string; // This is for the *individual set's notes*
   type: 'standard' | 'warmup' | 'amrap' | 'custom';
+}
+
+// NEW Interface for our flattened Tabata/HIIT intervals
+export interface HIITInterval {
+  type: 'prepare' | 'work' | 'rest';
+  duration: number;
+  exerciseName?: string;
+  totalIntervals: number;
+  currentIntervalNumber: number;
 }
 
 export interface PausedWorkoutState {
@@ -196,6 +205,29 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   private routerEventsSub: Subscription | undefined;
   private isInitialLoadComplete = false;
   private exercisesProposedThisCycle = { doLater: false, skipped: false };
+
+
+
+  // ... (inside the WorkoutPlayerComponent class)
+
+  // ... (existing signals and properties)
+
+  // --- NEW: TABATA MODE STATE SIGNALS ---
+  @ViewChildren('intervalListItem') intervalListItems!: QueryList<ElementRef<HTMLLIElement>>;
+  isTabataMode = signal<boolean>(false);
+  tabataIntervals = signal<HIITInterval[]>([]);
+  currentTabataIntervalIndex = signal(0);
+  tabataTimeRemaining = signal(0);
+
+  // Computed signal for easy access to the current interval's data
+  currentTabataInterval = computed<HIITInterval | null>(() => {
+    const intervals = this.tabataIntervals();
+    const index = this.currentTabataIntervalIndex();
+    return intervals[index] || null;
+  });
+
+  private tabataTimerSub: Subscription | undefined;
+  // --- END: TABATA MODE STATE SIGNALS ---
 
 
   readonly shouldStartWithPresetTimer = computed<boolean>(() => {
@@ -471,6 +503,24 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
   constructor() {
     this.initializeCurrentSetForm();
+
+    // --- ADD THIS EFFECT ---
+    // This effect will automatically run whenever currentTabataIntervalIndex changes.
+    effect(() => {
+      const index = this.currentTabataIntervalIndex();
+
+      // Ensure the list items have been rendered by the time this runs.
+      if (this.intervalListItems && this.intervalListItems.length > index) {
+        // Get the specific <li> element for the current index.
+        const activeItemElement = this.intervalListItems.toArray()[index].nativeElement;
+
+        // Command the browser to scroll the element into view.
+        activeItemElement.scrollIntoView({
+          behavior: 'smooth', // For a nice, smooth scroll instead of an instant jump
+          block: 'start',     // Aligns the top of the element to the top of the scroll container
+        });
+      }
+    });
   }
 
   private resetAndPatchCurrentSetForm(): void { // May be largely covered by patchActuals...
@@ -551,7 +601,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         type: loggedSet.type || 'standard'
       };
 
-      if (exerciseData.rounds && exerciseData.rounds > 0){
+      if (exerciseData.rounds && exerciseData.rounds > 0) {
         newLog.supersetId = exerciseData.supersetId ? exerciseData.supersetId : null;
         newLog.supersetOrder = exerciseData.supersetOrder !== null ? exerciseData.supersetOrder : null;
         newLog.supersetSize = exerciseData.supersetSize !== null ? exerciseData.supersetSize : null;
@@ -2702,6 +2752,15 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
   async ngOnInit(): Promise<void> {
     if (isPlatformBrowser(this.platformId)) { window.scrollTo(0, 0); }
+
+    // Add a check for tabata mode here for paused sessions
+    const pausedState = this.storageService.getItem<PausedWorkoutState>(this.PAUSED_WORKOUT_KEY);
+    if (pausedState?.sessionRoutine?.goal === 'tabata') {
+      // Handle Tabata paused state if you implement that feature later
+      // For now, we'll just clear it to start fresh.
+      this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
+    }
+
     const hasPausedSessionOnInit = await this.checkForPausedSession(false);
     if (hasPausedSessionOnInit) {
       this.isInitialLoadComplete = true;
@@ -2787,6 +2846,16 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       }),
       tap(async (sessionRoutineCopy) => {
         console.log('loadNewWorkoutFromRoute - tap operator. Session routine copy:', sessionRoutineCopy ? sessionRoutineCopy.name : 'null');
+
+        // --- NEW: TABATA MODE CHECK ---
+        if (sessionRoutineCopy?.goal === 'tabata') {
+          this.setupTabataMode(sessionRoutineCopy);
+          this.startSessionTimer(); // Start the overall workout timer
+          this.isInitialLoadComplete = true;
+          return; // Exit here to prevent running the standard player logic
+        }
+        // --- END: TABATA MODE CHECK ---
+
         if (this.sessionState() === SessionState.Paused) {
           console.log('loadNewWorkoutFromRoute - tap: Session is paused, skipping setup.');
           this.isInitialLoadComplete = true;
@@ -3863,6 +3932,135 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   showCompletedSetsForDayInfo = signal(false);
   toggleCompletedSetsForDayInfo(): void {
     this.showCompletedSetsForDayInfo.update(s => !s);
+  }
+
+
+  /**
+   * Transforms a standard routine into a flat list of HIIT intervals and starts the player.
+   */
+  private setupTabataMode(routine: Routine): void {
+    const intervals: Omit<HIITInterval, 'totalIntervals' | 'currentIntervalNumber'>[] = [];
+
+    // 1. Add a "Prepare" interval at the beginning
+    intervals.push({ type: 'prepare', duration: 10, exerciseName: 'Get Ready' });
+
+    // 2. Iterate through exercises and sets to create work/rest intervals
+    routine.exercises.forEach(exercise => {
+      exercise.sets.forEach(set => {
+        // Add a "Work" interval. Use duration if available, otherwise a default.
+        intervals.push({
+          type: 'work',
+          duration: set.duration || 40, // Default to 40s for Tabata if not specified
+          exerciseName: exercise.exerciseName
+        });
+
+        // Add a "Rest" interval if rest is specified
+        if (set.restAfterSet > 0) {
+          intervals.push({
+            type: 'rest',
+            duration: set.restAfterSet || 20, // Default to 20s if not specified
+            exerciseName: 'Rest'
+          });
+        }
+      });
+    });
+
+    // 3. Finalize the intervals list with total counts for the UI
+    const totalIntervals = intervals.length;
+    const finalIntervals = intervals.map((interval, index) => ({
+      ...interval,
+      totalIntervals: totalIntervals,
+      currentIntervalNumber: index + 1
+    }));
+
+    this.isTabataMode.set(true);
+    this.routine.set(routine);
+    this.tabataIntervals.set(finalIntervals);
+    this.currentTabataIntervalIndex.set(0);
+    this.sessionState.set(SessionState.Playing);
+    this.startCurrentTabataInterval();
+  }
+
+  /**
+   * Starts the timer for the currently active Tabata interval.
+   */
+  private startCurrentTabataInterval(): void {
+    if (this.tabataTimerSub) this.tabataTimerSub.unsubscribe();
+    if (this.sessionState() === SessionState.Paused) return;
+
+    const interval = this.currentTabataInterval();
+    if (!interval) {
+      // End of workout
+      this.sessionState.set(SessionState.End);
+      this.finishWorkoutAndReportStatus(); // Or a specific Tabata summary
+      return;
+    }
+
+    this.tabataTimeRemaining.set(interval.duration);
+
+    this.tabataTimerSub = timer(0, 1000)
+      .pipe(take(interval.duration + 1))
+      .subscribe({
+        next: () => {
+          this.tabataTimeRemaining.update(t => t - 1);
+        },
+        complete: () => {
+          if (this.sessionState() === SessionState.Playing) {
+            this.nextTabataInterval(); // Automatically move to the next interval
+          }
+        }
+      });
+  }
+
+  /**
+   * Navigates to the next interval in the Tabata sequence.
+   */
+  nextTabataInterval(): void {
+    const nextIndex = this.currentTabataIntervalIndex() + 1;
+    if (nextIndex < this.tabataIntervals().length) {
+      this.currentTabataIntervalIndex.set(nextIndex);
+      this.startCurrentTabataInterval();
+    } else {
+      // Reached the end
+      this.tabataTimeRemaining.set(0);
+      if (this.tabataTimerSub) this.tabataTimerSub.unsubscribe();
+      this.sessionState.set(SessionState.End);
+      this.toastService.success("Tabata Workout Complete!", 4000);
+      setTimeout(() => {
+        this.finishWorkout();
+      }, 5000);
+      // Optional: Navigate to summary or show completion screen
+    }
+  }
+
+  /**
+   * Navigates to the previous interval in the Tabata sequence.
+   */
+  previousTabataInterval(): void {
+    const prevIndex = this.currentTabataIntervalIndex() - 1;
+    if (prevIndex >= 0) {
+      this.currentTabataIntervalIndex.set(prevIndex);
+      this.startCurrentTabataInterval();
+    }
+  }
+
+  /**
+   * Toggles the pause state for the Tabata player.
+   */
+  toggleTabataPause(): void {
+    if (this.sessionState() === SessionState.Playing) {
+      // Pausing
+      this.sessionState.set(SessionState.Paused);
+      if (this.tabataTimerSub) this.tabataTimerSub.unsubscribe();
+      if (this.timerSub) this.timerSub.unsubscribe(); // Pause overall timer too
+      this.sessionTimerElapsedSecondsBeforePause += Math.floor((Date.now() - this.workoutStartTime) / 1000);
+    } else if (this.sessionState() === SessionState.Paused) {
+      // Resuming
+      this.sessionState.set(SessionState.Playing);
+      this.workoutStartTime = Date.now(); // Reset start time for delta calculation
+      this.startSessionTimer(); // Resume overall timer
+      this.startCurrentTabataInterval(); // Resume interval timer
+    }
   }
 
 }

@@ -77,6 +77,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   ];
   routineGoals: { value: Routine['goal'], label: string }[] = [
     { value: 'hypertrophy', label: 'Hypertrophy' }, { value: 'strength', label: 'Strength' },
+    { value: 'tabata', label: 'Tabata' },
     { value: 'muscular endurance', label: 'Muscular endurance' }, { value: 'cardiovascular endurance', label: 'Cardiovascular endurance' },
     { value: 'fat loss / body composition', label: 'Fat loss / body composition' }, { value: 'mobility & flexibility', label: 'Mobility & flexibility' },
     { value: 'power / explosiveness', label: 'Power / explosiveness' }, { value: 'speed & agility', label: 'Speed & agility' },
@@ -584,6 +585,11 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       return;
     }
 
+    if (this.expandedSetPath() !== null && this.expandedSetPath()?.exerciseIndex === exerciseIndex
+      && this.expandedSetPath()?.setIndex === setIndex) {
+      return;
+    }
+
     if (this.isViewMode && !(this.expandedSetPath()?.exerciseIndex === exerciseIndex && this.expandedSetPath()?.setIndex === setIndex)) {
       this.expandedSetPath.set({ exerciseIndex, setIndex }); // Allow expanding in view mode
       this.isCompactView = false;
@@ -593,10 +599,11 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     } // For edit/new modes:
     const currentPath = this.expandedSetPath();
     if (currentPath?.exerciseIndex === exerciseIndex && currentPath?.setIndex === setIndex) {
-      this.expandedSetPath.set(null);
-      if (!this.isCompactView) {
-        return;
-      }
+      return;
+      // this.expandedSetPath.set(null);
+      // if (!this.isCompactView) {
+      //   return;
+      // }
     } else {
       this.expandedSetPath.set({ exerciseIndex, setIndex });
       this.isCompactView = false;
@@ -612,6 +619,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       }, 50);
     }
   }
+
+
   isSetExpanded(exerciseIndex: number, setIndex: number): boolean {
     const currentPath = this.expandedSetPath();
     return currentPath?.exerciseIndex === exerciseIndex && currentPath?.setIndex === setIndex;
@@ -1160,14 +1169,14 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   // Called if user wants to define a completely new exercise not in the library
   async handleTrulyCustomExerciseEntry(showError: boolean = false): Promise<void> {
     const inputs: AlertInput[] = [
-      { name: 'exerciseName', type: 'text', placeholder: 'Custom Exercise Name', value: '', attributes: { required: true }, label: 'Custom Exercise Name',  },
+      { name: 'exerciseName', type: 'text', placeholder: 'Custom Exercise Name', value: '', attributes: { required: true }, label: 'Custom Exercise Name', },
       { name: 'numSets', type: 'number', placeholder: 'Number of Sets (e.g., 3)', value: '3', attributes: { min: '1', required: true }, label: 'Number of Sets' },
       { name: 'equipmentNeeded', type: 'text', placeholder: 'Equipment', value: '', attributes: { required: false }, label: 'Equipment' },
       { name: 'description', type: 'textarea', placeholder: 'Description', value: '', attributes: { required: false }, label: 'Description' },
     ];
 
-    if (showError){
-      this.toastService.error("Invalid input for custom exercise.", 0, "Error"); 
+    if (showError) {
+      this.toastService.error("Invalid input for custom exercise.", 0, "Error");
     }
     const result = await this.alertService.showPromptDialog('Add New Custom Exercise', 'Define exercise name and sets:', inputs, 'Add Exercise');
 
@@ -1209,7 +1218,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       this.exercisesFormArray.push(this.createExerciseFormGroup(workoutExercise, true, false));
       this.toggleSetExpansion(this.exercisesFormArray.length - 1, 0);
     } else {
-      if (!result){
+      if (!result) {
         return
       }
       this.handleTrulyCustomExerciseEntry(true);

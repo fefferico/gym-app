@@ -46,7 +46,7 @@ export class LongPressDragDirective implements OnInit, OnDestroy {
   onMouseDown(event: MouseEvent): void {
     if (!this.longPressEnabled) return;
     // We can safely call preventDefault on mouse events.
-    event.preventDefault();
+    // event.preventDefault();
     this.startTimer();
   }
 

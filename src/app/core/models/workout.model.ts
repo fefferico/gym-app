@@ -67,7 +67,7 @@ export interface Routine {
   exercises: WorkoutExercise[]; // This list will be ordered, and superset exercises will be contiguous
   estimatedDuration?: number;
   lastPerformed?: string;
-  goal?: 'hypertrophy' | 'strength' | 'muscular endurance' | 'cardiovascular endurance' | 'fat loss / body composition' | 'mobility & flexibility' | 'power / explosiveness' | 'speed & agility' | 'balance & coordination' | 'skill acquisition' | 'rehabilitation / injury prevention' | 'mental health / stress relief' | 'general health & longevity' | 'sport-specific performance' | 'maintenance' | 'rest' | 'custom';
+  goal?: 'hypertrophy' | 'strength' | 'muscular endurance' | 'tabata' | 'cardiovascular endurance' | 'fat loss / body composition' | 'mobility & flexibility' | 'power / explosiveness' | 'speed & agility' | 'balance & coordination' | 'skill acquisition' | 'rehabilitation / injury prevention' | 'mental health / stress relief' | 'general health & longevity' | 'sport-specific performance' | 'maintenance' | 'rest' | 'custom';
   targetMuscleGroups?: string[];
   notes?: string;
   createdAt?: string;
