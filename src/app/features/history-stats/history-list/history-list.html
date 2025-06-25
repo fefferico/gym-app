@@ -267,4 +267,21 @@
       </div>
     </div>
   </div>
+
+  <!-- ========================================================== -->
+    <!-- NEW: "Back to Top" Button -->
+    <!-- ========================================================== -->
+    <button *ngIf="showBackToTopButton()" (click)="scrollToTop()" type="button"
+        class="fixed bottom-20 right-4 z-50 bg-primary dark:bg-primary-dark text-white rounded-full p-3 shadow-lg hover:bg-primary-dark dark:hover:bg-primary-light focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-focus dark:focus:ring-offset-gray-900 transition-opacity animate-fade-in">
+
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"
+            class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+        </svg>
+        <span class="sr-only">Back to Top</span>
+    </button>
+    <!-- ========================================================== -->
+    <!-- END: "Back to Top" Button -->
+    <!-- ========================================================== -->
+     
 </div>

@@ -1,5 +1,5 @@
 // src/app/features/workout-routines/routine-list/routine-list.component.ts
-import { Component, inject, OnInit, PLATFORM_ID, signal, computed, OnDestroy } from '@angular/core'; // Added computed, OnDestroy
+import { Component, inject, OnInit, PLATFORM_ID, signal, computed, OnDestroy, HostListener } from '@angular/core'; // Added computed, OnDestroy
 import { CommonModule, DatePipe, isPlatformBrowser, TitleCasePipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { firstValueFrom, Observable, Subscription, take } from 'rxjs'; // Added Subscription
@@ -69,6 +69,14 @@ export class RoutineListComponent implements OnInit, OnDestroy {
   private routinesSubscription: Subscription | undefined;
   private exercisesSubscription: Subscription | undefined;
 
+  showBackToTopButton = signal<boolean>(false);
+  @HostListener('window:scroll', [])
+  onWindowScroll(): void {
+    // Check if the user has scrolled down more than a certain amount (e.g., 400 pixels)
+    // You can adjust this value to your liking.
+    const verticalOffset = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+    this.showBackToTopButton.set(verticalOffset > 400);
+  }
 
   // Signals for menu and accordion
   visibleActionsRutineId = signal<string | null>(null);
@@ -616,6 +624,15 @@ export class RoutineListComponent implements OnInit, OnDestroy {
       return this.workoutService.getEstimatedRoutineDuration(routine);
     } else {
       return 0;
+    }
+  }
+
+  scrollToTop(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth' // For a smooth scrolling animation
+      });
     }
   }
 }

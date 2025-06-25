@@ -1,7 +1,8 @@
 // src/app/features/history/history-list/history-list.component.ts
 import {
   Component, inject, OnInit, signal, computed, PLATFORM_ID, OnDestroy,
-  ChangeDetectorRef, ElementRef, AfterViewInit, NgZone, ViewChild
+  ChangeDetectorRef, ElementRef, AfterViewInit, NgZone, ViewChild,
+  HostListener
 } from '@angular/core';
 import { CommonModule, DatePipe, DecimalPipe, isPlatformBrowser, TitleCasePipe } from '@angular/common';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
@@ -48,37 +49,37 @@ type HistoryListView = 'list' | 'calendar';
   providers: [DecimalPipe],
   animations: [
     trigger('slideInOutActions', [
-        state('void', style({ height: '0px', opacity: 0, overflow: 'hidden', paddingTop: '0', paddingBottom: '0', marginTop: '0', marginBottom: '0' })),
-        state('*', style({ height: '*', opacity: 1, overflow: 'hidden', paddingTop: '0.5rem', paddingBottom: '0.5rem' })),
-        transition('void <=> *', animate('200ms ease-in-out'))
+      state('void', style({ height: '0px', opacity: 0, overflow: 'hidden', paddingTop: '0', paddingBottom: '0', marginTop: '0', marginBottom: '0' })),
+      state('*', style({ height: '*', opacity: 1, overflow: 'hidden', paddingTop: '0.5rem', paddingBottom: '0.5rem' })),
+      transition('void <=> *', animate('200ms ease-in-out'))
     ]),
     trigger('dropdownMenu', [
-        state('void', style({ opacity: 0, transform: 'scale(0.75) translateY(-10px)', transformOrigin: 'top right' })),
-        state('*', style({ opacity: 1, transform: 'scale(1) translateY(0)', transformOrigin: 'top right' })),
-        transition('void => *', [animate('150ms cubic-bezier(0.25, 0.8, 0.25, 1)')]),
-        transition('* => void', [animate('100ms cubic-bezier(0.25, 0.8, 0.25, 1)')])
+      state('void', style({ opacity: 0, transform: 'scale(0.75) translateY(-10px)', transformOrigin: 'top right' })),
+      state('*', style({ opacity: 1, transform: 'scale(1) translateY(0)', transformOrigin: 'top right' })),
+      transition('void => *', [animate('150ms cubic-bezier(0.25, 0.8, 0.25, 1)')]),
+      transition('* => void', [animate('100ms cubic-bezier(0.25, 0.8, 0.25, 1)')])
     ]),
     trigger('viewSlide', [
-        transition('list <=> calendar', [
-            style({ position: 'relative', overflow: 'hidden' }),
-            query(':enter, :leave', [ style({ position: 'absolute', top: 0, left: 0, width: '100%' }) ], { optional: true }),
-            query(':enter', [ style({ transform: '{{ enterTransform }}', opacity: 0 }) ], { optional: true }),
-            group([
-                query(':leave', [ animate('300ms ease-out', style({ transform: '{{ leaveTransform }}', opacity: 0 })) ], { optional: true }),
-                query(':enter', [ animate('300ms ease-out', style({ transform: 'translateX(0%)', opacity: 1 })) ], { optional: true })
-            ])
+      transition('list <=> calendar', [
+        style({ position: 'relative', overflow: 'hidden' }),
+        query(':enter, :leave', [style({ position: 'absolute', top: 0, left: 0, width: '100%' })], { optional: true }),
+        query(':enter', [style({ transform: '{{ enterTransform }}', opacity: 0 })], { optional: true }),
+        group([
+          query(':leave', [animate('300ms ease-out', style({ transform: '{{ leaveTransform }}', opacity: 0 }))], { optional: true }),
+          query(':enter', [animate('300ms ease-out', style({ transform: 'translateX(0%)', opacity: 1 }))], { optional: true })
         ])
+      ])
     ]),
-     trigger('calendarMonthSlide', [
-        state('center', style({ transform: 'translateX(0%)', opacity: 1 })),
-        state('outLeft', style({ transform: 'translateX(-100%)', opacity: 0 })),
-        state('outRight', style({ transform: 'translateX(100%)', opacity: 0 })),
-        state('preloadFromRight', style({ transform: 'translateX(100%)', opacity: 0 })),
-        state('preloadFromLeft', style({ transform: 'translateX(-100%)', opacity: 0 })),
-        transition('center => outLeft', animate('200ms ease-in')),
-        transition('center => outRight', animate('200ms ease-in')),
-        transition('preloadFromRight => center', animate('200ms ease-out')),
-        transition('preloadFromLeft => center', animate('200ms ease-out')),
+    trigger('calendarMonthSlide', [
+      state('center', style({ transform: 'translateX(0%)', opacity: 1 })),
+      state('outLeft', style({ transform: 'translateX(-100%)', opacity: 0 })),
+      state('outRight', style({ transform: 'translateX(100%)', opacity: 0 })),
+      state('preloadFromRight', style({ transform: 'translateX(100%)', opacity: 0 })),
+      state('preloadFromLeft', style({ transform: 'translateX(-100%)', opacity: 0 })),
+      transition('center => outLeft', animate('200ms ease-in')),
+      transition('center => outRight', animate('200ms ease-in')),
+      transition('preloadFromRight => center', animate('200ms ease-out')),
+      transition('preloadFromLeft => center', animate('200ms ease-out')),
     ])
   ]
 })
@@ -114,6 +115,15 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
   historyViewAnimationParams = signal<{ value: HistoryListView, params: { enterTransform: string, leaveTransform: string } }>({
     value: 'list', params: { enterTransform: 'translateX(100%)', leaveTransform: 'translateX(-100%)' }
   });
+
+  showBackToTopButton = signal<boolean>(false);
+  @HostListener('window:scroll', [])
+  onWindowScroll(): void {
+    // Check if the user has scrolled down more than a certain amount (e.g., 400 pixels)
+    // You can adjust this value to your liking.
+    const verticalOffset = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+    this.showBackToTopButton.set(verticalOffset > 400);
+  }
 
   historyCalendarDays = signal<HistoryCalendarDay[]>([]);
   historyCalendarViewDate = signal<Date>(new Date());
@@ -200,14 +210,14 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
     );
 
     this.route.queryParamMap.pipe(take(1)).subscribe(params => {
-        const programId = params.get('programId');
-        if (programId) {
-            console.log("HistoryListComponent: Should filter by programId", programId);
-            // Implement programId filtering if needed here by modifying filterValuesSignal
-            // For example:
-            // this.filterValuesSignal.update(currentFilters => ({...currentFilters, programId: programId}));
-            // this.filterForm.patchValue({ programId: programId }, { emitEvent: false }); // if you add programId to form
-        }
+      const programId = params.get('programId');
+      if (programId) {
+        console.log("HistoryListComponent: Should filter by programId", programId);
+        // Implement programId filtering if needed here by modifying filterValuesSignal
+        // For example:
+        // this.filterValuesSignal.update(currentFilters => ({...currentFilters, programId: programId}));
+        // this.filterForm.patchValue({ programId: programId }, { emitEvent: false }); // if you add programId to form
+      }
     });
   }
 
@@ -220,22 +230,22 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
     const swipeDebounce = 350;
 
     this.ngZone.runOutsideAngular(() => {
-        this.hammerInstanceHistoryCalendar = new Hammer(calendarSwipeElement);
-        this.hammerInstanceHistoryCalendar.get('swipe').set({ direction: Hammer.DIRECTION_HORIZONTAL, threshold: 40, velocity: 0.3 });
+      this.hammerInstanceHistoryCalendar = new Hammer(calendarSwipeElement);
+      this.hammerInstanceHistoryCalendar.get('swipe').set({ direction: Hammer.DIRECTION_HORIZONTAL, threshold: 40, velocity: 0.3 });
 
-        this.hammerInstanceHistoryCalendar.on('swipeleft', () => {
-            const now = Date.now();
-            if (now - lastSwipeTime < swipeDebounce || this.isHistoryCalendarAnimating) return;
-            lastSwipeTime = now;
-            this.ngZone.run(() => this.nextHistoryMonth());
-        });
-        this.hammerInstanceHistoryCalendar.on('swiperight', () => {
-            const now = Date.now();
-            if (now - lastSwipeTime < swipeDebounce || this.isHistoryCalendarAnimating) return;
-            lastSwipeTime = now;
-            this.ngZone.run(() => this.previousHistoryMonth());
-        });
-        console.log("HammerJS attached to HISTORY calendar swipe container.");
+      this.hammerInstanceHistoryCalendar.on('swipeleft', () => {
+        const now = Date.now();
+        if (now - lastSwipeTime < swipeDebounce || this.isHistoryCalendarAnimating) return;
+        lastSwipeTime = now;
+        this.ngZone.run(() => this.nextHistoryMonth());
+      });
+      this.hammerInstanceHistoryCalendar.on('swiperight', () => {
+        const now = Date.now();
+        if (now - lastSwipeTime < swipeDebounce || this.isHistoryCalendarAnimating) return;
+        lastSwipeTime = now;
+        this.ngZone.run(() => this.previousHistoryMonth());
+      });
+      console.log("HammerJS attached to HISTORY calendar swipe container.");
     });
   }
 
@@ -256,7 +266,7 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   generateHistoryCalendarDays(isInitialLoad: boolean = false): void {
     if (!isPlatformBrowser(this.platformId)) {
-        this.historyCalendarDays.set([]); this.historyCalendarLoading.set(false); return;
+      this.historyCalendarDays.set([]); this.historyCalendarLoading.set(false); return;
     }
     this.historyCalendarLoading.set(true);
     const viewDate = this.historyCalendarViewDate();
@@ -266,19 +276,19 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
     const rangeEnd = endOfWeek(monthEnd, { weekStartsOn: this.weekStartsOn });
     const dateRange = eachDayOfInterval({ start: rangeStart, end: rangeEnd });
     const logsForMonth = this.allWorkoutLogs().filter(log => {
-        const logDate = parseISO(log.date);
-        return logDate >= monthStart && logDate <= monthEnd;
+      const logDate = parseISO(log.date);
+      return logDate >= monthStart && logDate <= monthEnd;
     });
     const days: HistoryCalendarDay[] = dateRange.map(date => {
-        const logsOnThisDay = logsForMonth.filter(log => isSameDay(parseISO(log.date), date));
-        return { date: date, isCurrentMonth: isSameMonth(date, viewDate), isToday: isToday(date), hasLog: logsOnThisDay.length > 0, logCount: logsOnThisDay.length };
+      const logsOnThisDay = logsForMonth.filter(log => isSameDay(parseISO(log.date), date));
+      return { date: date, isCurrentMonth: isSameMonth(date, viewDate), isToday: isToday(date), hasLog: logsOnThisDay.length > 0, logCount: logsOnThisDay.length };
     });
     this.historyCalendarDays.set(days);
     this.historyCalendarLoading.set(false);
     if (isInitialLoad) {
-        this.historyCalendarAnimationState.set('center');
+      this.historyCalendarAnimationState.set('center');
     } else if (this.historyCalendarAnimationState() === 'preloadFromLeft' || this.historyCalendarAnimationState() === 'preloadFromRight') {
-        Promise.resolve().then(() => this.historyCalendarAnimationState.set('center'));
+      Promise.resolve().then(() => this.historyCalendarAnimationState.set('center'));
     }
     this.isHistoryCalendarAnimating = false;
     this.cdr.detectChanges();
@@ -342,13 +352,14 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   toggleFilterAccordion(): void { this.isFilterAccordionOpen.update(isOpen => !isOpen); }
   resetFilters(): void { this.filterForm.reset({ dateFrom: '', dateTo: '', routineName: '', exerciseId: '' }); }
-  viewLogDetails(logId: string, event?: MouseEvent): void { 
-    event?.stopPropagation(); this.router.navigate(['/history/log', logId]); 
-    this.visibleActionsRutineId.set(null); }
-  editLogDetails(logId: string, event?: MouseEvent): void { 
-    event?.stopPropagation(); 
-    this.router.navigate(['/workout/log/manual/edit', logId]); 
-    this.visibleActionsRutineId.set(null); 
+  viewLogDetails(logId: string, event?: MouseEvent): void {
+    event?.stopPropagation(); this.router.navigate(['/history/log', logId]);
+    this.visibleActionsRutineId.set(null);
+  }
+  editLogDetails(logId: string, event?: MouseEvent): void {
+    event?.stopPropagation();
+    this.router.navigate(['/workout/log/manual/edit', logId]);
+    this.visibleActionsRutineId.set(null);
   }
   async deleteLogDetails(logId: string, event?: MouseEvent): Promise<void> {
     event?.stopPropagation(); this.visibleActionsRutineId.set(null);
@@ -376,5 +387,14 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   logPastWorkout(): void {
     this.router.navigate(['/workout/log/manual/new']);
-  } 
+  }
+
+  scrollToTop(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth' // For a smooth scrolling animation
+      });
+    }
+  }
 }
