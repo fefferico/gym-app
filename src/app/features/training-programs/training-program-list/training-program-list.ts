@@ -220,7 +220,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
   protected isCalendarAnimating = false; // Using a simple boolean, not a signal here for internal logic
   protected isCardAnimating = false; // Using a simple boolean, not a signal here for internal logic
 
-  protected weekDayNames: string[] = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  protected weekDayNames: string[] = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   readonly calendarHeaderFormat = computed(() => {
     return this.calendarDisplayMode() === 'month' ? 'MMMM yyyy' : 'MMMM yyyy';
   });

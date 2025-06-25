@@ -335,7 +335,7 @@
                       [class.dark:hover:border-gray-600]="!isCalendarAnimating"
                       [ngClass]="{'bg-primary-50 dark:bg-primary-900/30 ring-1 ring-inset ring-primary dark:ring-primary-light': day.isToday, 'bg-white dark:bg-gray-700': !day.isToday, 'font-semibold text-primary dark:text-primary-light': day.hasWorkout && day.isToday, 'font-semibold text-gray-700 dark:text-gray-200': day.hasWorkout && !day.isToday, 'text-gray-500 dark:text-gray-400': !day.hasWorkout }">
                       <span class="block text-2xs sm:text-xs uppercase">{{ day.date | date:'EEE' }}</span><span
-                        class="block text-lg sm:text-xl font-bold mt-0.5">{{ day.date | date:'d' }}</span>
+                        class="block text-lg sm:text-xl font-bold mt-0.5">{{ day.date | date:'EE' }}</span>
                       <div class="mt-1 h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full mx-auto"
                         [ngClass]="{'bg-primary dark:bg-primary-light': day.hasWorkout, 'bg-gray-300 dark:bg-gray-700': !day.hasWorkout}">
                       </div>
