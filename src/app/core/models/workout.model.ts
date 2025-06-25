@@ -72,5 +72,6 @@ export interface Routine {
   notes?: string;
   createdAt?: string;
   updatedAt?: string;
+  isHidden?: boolean;
 }
 

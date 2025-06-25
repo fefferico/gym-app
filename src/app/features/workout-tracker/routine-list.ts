@@ -92,10 +92,16 @@ export class RoutineListComponent implements OnInit, OnDestroy {
 
   maxDuration = signal<number>(120); // A default max, will be updated dynamically
   selectedMaxDuration = signal<number>(120); // The current value of the slider
+  showHiddenRoutines = signal<boolean>(false);
 
   // Computed signal for filtered routines
   filteredRoutines = computed(() => {
     let routines = this.allRoutinesForList();
+    const showHidden = this.showHiddenRoutines(); // Get the value of the signal once
+
+    if (!showHidden) {
+      routines = routines.filter(routine => !routine.isHidden);
+    }
     const searchTerm = this.routineSearchTerm().toLowerCase();
     const goalFilter = this.selectedRoutineGoal();
     const muscleFilter = this.selectedRoutineMuscleGroup();
@@ -398,14 +404,23 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     this.visibleActionsRutineId.set(null);
   }
 
-  // toggleActions(routineId: string, event: MouseEvent): void {
-  //   event.stopPropagation();
-  //   this.visibleActionsRutineId.update(current => (current === routineId ? null : routineId));
-  // }
+  hideRoutine(routineId: string, event?: MouseEvent): void {
+    event?.stopPropagation();
+    const hiddenRotuine = this.allRoutinesForList().find(routine => routine.id === routineId);
+    if (hiddenRotuine) {
+      hiddenRotuine.isHidden = true;
+      this.workoutService.updateRoutine(hiddenRotuine);
+    }
+  }
 
-  // areActionsVisible(routineId: string): boolean {
-  //   return this.visibleActionsRutineId() === routineId;
-  // }
+  unhideRoutine(routineId: string, event?: MouseEvent): void {
+    event?.stopPropagation();
+    const hiddenRotuine = this.allRoutinesForList().find(routine => routine.id === routineId);
+    if (hiddenRotuine) {
+      hiddenRotuine.isHidden = false;
+      this.workoutService.updateRoutine(hiddenRotuine);
+    }
+  }
 
   // Helper to get muscle groups for display on the card
   getRoutineMainMuscleGroups(routine: Routine): string[] {
@@ -470,7 +485,26 @@ export class RoutineListComponent implements OnInit, OnDestroy {
   getRoutineDropdownActionItems(routineId: string, mode: 'dropdown' | 'compact-bar'): ActionMenuItem[] {
     const defaultBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-primary flex items-center text-sm hover:text-white dark:hover:text-gray-100 dark:hover:text-white';
     const deleteBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-red-600 flex items-center text-sm hover:text-gray-100 hover:animate-pulse';;
-    return [
+
+    const currentRoutine = this.allRoutinesForList().find(routine => routine.id === routineId);
+    const hideRoutineButton = {
+      label: 'HIDE',
+      actionKey: 'hide',
+      iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3.28 2.22a.75.75 0 00-1.06 1.06l14.5 14.5a.75.75 0 101.06-1.06l-1.745-1.745a10.029 10.029 0 003.3-4.38 1.651 1.651 0 000-1.185A10.004 10.004 0 009.999 3a9.956 9.956 0 00-4.744 1.194L3.28 2.22zM7.752 6.69l1.092 1.092a2.5 2.5 0 013.374 3.373l1.091 1.092a4 4 0 00-5.557-5.557z" clip-rule="evenodd" />
+        <path d="M10.748 13.93l2.523 2.523a9.987 9.987 0 01-3.27.547c-4.257 0-7.893-2.66-9.336-6.41a1.651 1.651 0 010-1.186A10.007 10.007 0 012.839 6.02L6.07 9.252a4 4 0 004.678 4.678z" /></svg>`,
+      iconClass: 'w-8 h-8 mr-2', // Adjusted for consistency if needed,
+      buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+      data: { routineId }
+    };
+    const unhideRoutineButton = {
+      label: 'UNHIDE',
+      actionKey: 'unhide',
+      iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5Z" /><path fill-rule="evenodd" d="M.664 10.59a1.651 1.651 0 010-1.186A10.004 10.004 0 0110 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0110 17c-4.257 0-7.893-2.66-9.336-6.41ZM14 10a4 4 0 11-8 0 4 4 0 018 0Z" clip-rule="evenodd" /></svg>`,
+      iconClass: 'w-8 h-8 mr-2', // Adjusted for consistency if needed,
+      buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+      data: { routineId }
+    };
+    const actionsArray = [
       {
         label: 'VIEW',
         actionKey: 'view',
@@ -513,6 +547,17 @@ export class RoutineListComponent implements OnInit, OnDestroy {
         data: { routineId }
       }
     ];
+
+    if (currentRoutine?.isHidden) {
+      actionsArray.push(unhideRoutineButton);
+    } else {
+      // Only show the "Hide" button if we are not already in the "Show Hidden" view
+      if (!this.showHiddenRoutines()) {
+        actionsArray.push(hideRoutineButton);
+      }
+    }
+
+    return actionsArray;
   }
 
   handleActionMenuItemClick(event: { actionKey: string, data?: any }, originalMouseEvent?: MouseEvent): void {
@@ -523,6 +568,12 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     switch (event.actionKey) {
       case 'view':
         this.viewRoutineDetails(routineId);
+        break;
+      case 'hide':
+        this.hideRoutine(routineId);
+        break;
+      case 'unhide':
+        this.unhideRoutine(routineId);
         break;
       case 'start':
         this.startWorkout(routineId);

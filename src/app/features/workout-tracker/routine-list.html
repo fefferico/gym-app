@@ -31,7 +31,7 @@
         [style.maxHeight]="isFilterAccordionOpen() ? '1000px' : '0px'" [class.mb-6]="isFilterAccordionOpen()">
         <div class="p-4 bg-white dark:bg-gray-700 rounded-lg shadow-md border dark:border-gray-600 mt-2">
             <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">Filter Routines</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
                 <div>
                     <label for="routine-search-term"
                         class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Search
@@ -87,6 +87,24 @@
                     <input type="range" id="duration-filter" min="0" [max]="maxDuration()" step="5"
                         [value]="selectedMaxDuration()" (input)="onDurationFilterChange($event)"
                         class="w-full h-2 bg-gray-300 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer">
+                </div>
+                <div class="border-t border-gray-200 dark:border-gray-600 md:border-none">
+                    <div class="flex flex-col tems-center justify-between pt-4">
+                        <div>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mr-1">Hidden routines</p>
+                        </div>
+                        <label for="show-hidden-routine" class="inline-flex items-center cursor-pointer mt-2">
+                            <input type="checkbox" id="show-hidden-routine" class="sr-only peer"
+                                [checked]="showHiddenRoutines()"
+                                (change)="showHiddenRoutines.set(!showHiddenRoutines())">
+                            <div
+                                class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary dark:peer-checked:bg-primary-dark">
+                            </div>
+                            <span class="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
+                                {{ showHiddenRoutines() ? 'Hide' : 'Show' }} Hidden Routines
+                            </span>
+                        </label>
+                    </div>
                 </div>
             </div>
             <div class="mt-4 flex justify-between items-center">
@@ -163,6 +181,12 @@
                     <div *ngIf="!routine.lastPerformed"
                         class="text-sm sm:text-xs text-gray-500 dark:text-gray-300 italic">
                         Not performed
+                    </div>
+                    <div *ngIf="routine.isHidden" class="text-sm sm:text-xs text-gray-500 dark:text-gray-300 my-2">
+                        <span
+                            class="text-2xs bg-yellow-100 text-yellow-700 dark:bg-yellow-700 dark:text-yellow-200 px-1.5 py-0.5 rounded-full mx-1 mb-1 inline-block">
+                            {{ 'Hidden' | titlecase }}
+                        </span>
                     </div>
                 </div>
                 <!-- Wrapper for "More Actions" button and its dropdown -->

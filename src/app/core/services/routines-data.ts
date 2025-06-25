@@ -1,4 +1,6 @@
-export const ROUTINES_DATA = [
+import { Routine } from "../models/workout.model";
+
+export const ROUTINES_DATA: Routine[] = [
     {
         "id": "f4f6e3c1-4b7e-4b1e-8c3b-2f1a6e9a0b1d",
         "name": "Build 3-Dimensional Shoulders",
@@ -978,6 +980,394 @@ export const ROUTINES_DATA = [
                 "id": "mb-v2-lb-ex5", "exerciseId": "plank", "exerciseName": "Abs", "sets": [
                     { "id": "mb-v2-lb-s5-1", "reps": 15, "weight": null, "restAfterSet": 60, "type": "standard", "notes": "Perform any ab exercise. Aim for 8-15 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
+            }
+        ]
+    },
+    {
+        "id": "muscle-building-v3-upper-a",
+        "name": "Muscle Building - Upper Body A (V3)",
+        "description": "Version 3 of the upper body hypertrophy routine. Exercise order is adjusted to group push and pull movements together.",
+        "goal": "hypertrophy",
+        "exercises": [
+            {
+                "id": "mb-v3-ua-ex1", "exerciseId": "barbell-bench-press", "exerciseName": "Bench Press", "sets": [
+                    { "id": "mb-v3-ua-s1-1", "reps": 8, "weight": null, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v3-ua-s1-2", "reps": 8, "weight": null, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v3-ua-s1-3", "reps": 8, "weight": null, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." }
+                ], "supersetId": null, "supersetOrder": null, "type": "standard"
+            },
+            {
+                "id": "mb-v3-ua-ex2", "exerciseId": "dumbbell-incline-press", "exerciseName": "Incline Dumbbell Press", "sets": [
+                    { "id": "mb-v3-ua-s2-1", "reps": 10, "weight": null, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-v3-ua-s2-2", "reps": 10, "weight": null, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-v3-ua-s2-3", "reps": 10, "weight": null, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." }
+                ], "supersetId": null, "supersetOrder": null, "type": "standard"
+            },
+            {
+                "id": "mb-v3-ua-ex3", "exerciseId": "bent-over-row-barbell", "exerciseName": "Rows", "sets": [
+                    { "id": "mb-v3-ua-s3-1", "reps": 8, "weight": null, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v3-ua-s3-2", "reps": 8, "weight": null, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v3-ua-s3-3", "reps": 8, "weight": null, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." }
+                ], "supersetId": null, "supersetOrder": null, "type": "standard"
+            },
+            {
+                "id": "mb-v3-ua-ex4", "exerciseId": "lat-pulldown-machine", "exerciseName": "Lat Pull-Downs", "sets": [
+                    { "id": "mb-v3-ua-s4-1", "reps": 10, "weight": null, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-v3-ua-s4-2", "reps": 10, "weight": null, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-v3-ua-s4-3", "reps": 10, "weight": null, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." }
+                ], "supersetId": null, "supersetOrder": null, "type": "standard"
+            },
+            {
+                "id": "mb-v3-ua-ex5", "exerciseId": "dumbbell-lateral-raise", "exerciseName": "Lateral Raises", "sets": [
+                    { "id": "mb-v3-ua-s5-1", "reps": 15, "weight": null, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-15 reps." },
+                    { "id": "mb-v3-ua-s5-2", "reps": 15, "weight": null, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-15 reps." }
+                ], "supersetId": null, "supersetOrder": null, "type": "standard"
+            },
+            {
+                "id": "mb-v3-ua-ex6", "exerciseId": "cable-tricep-pushdown", "exerciseName": "Triceps Pushdowns", "sets": [
+                    { "id": "mb-v3-ua-s6-1", "reps": 12, "weight": null, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-12 reps." },
+                    { "id": "mb-v3-ua-s6-2", "reps": 12, "weight": null, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-12 reps." },
+                    { "id": "mb-v3-ua-s6-3", "reps": 12, "weight": null, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-12 reps." }
+                ], "supersetId": null, "supersetOrder": null, "type": "standard"
+            },
+            {
+                "id": "mb-v3-ua-ex7", "exerciseId": "dumbbell-bicep-curl", "exerciseName": "Dumbbell Curls", "sets": [
+                    { "id": "mb-v3-ua-s7-1", "reps": 15, "weight": null, "restAfterSet": 60, "type": "standard", "notes": "Aim for 12-15 reps." },
+                    { "id": "mb-v3-ua-s7-2", "reps": 15, "weight": null, "restAfterSet": 60, "type": "standard", "notes": "Aim for 12-15 reps." }
+                ], "supersetId": null, "supersetOrder": null, "type": "standard"
+            }
+        ]
+    },
+    {
+        "id": "muscle-building-v3-lower-a",
+        "name": "Muscle Building - Lower Body A (V3)",
+        "description": "Version 3 of the hamstring-focused lower body routine for hypertrophy.",
+        "goal": "hypertrophy",
+        "exercises": [
+            {
+                "id": "mb-v3-la-ex1", "exerciseId": "barbell-romanian-deadlift", "exerciseName": "Romanian Deadlifts", "sets": [
+                    { "id": "mb-v3-la-s1-1", "reps": 8, "weight": null, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v3-la-s1-2", "reps": 8, "weight": null, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v3-la-s1-3", "reps": 8, "weight": null, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." }
+                ], "supersetId": null, "supersetOrder": null, "type": "standard"
+            },
+            {
+                "id": "mb-v3-la-ex2", "exerciseId": "leg-curl-machine", "exerciseName": "Seated Leg Curls", "sets": [
+                    { "id": "mb-v3-la-s2-1", "reps": 10, "weight": null, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-v3-la-s2-2", "reps": 10, "weight": null, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-v3-la-s2-3", "reps": 10, "weight": null, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." }
+                ], "supersetId": null, "supersetOrder": null, "type": "standard"
+            },
+            {
+                "id": "mb-v3-la-ex3", "exerciseId": "leg-press-machine", "exerciseName": "Leg Press", "sets": [
+                    { "id": "mb-v3-la-s3-1", "reps": 12, "weight": null, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps." },
+                    { "id": "mb-v3-la-s3-2", "reps": 12, "weight": null, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps." },
+                    { "id": "mb-v3-la-s3-3", "reps": 12, "weight": null, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps." }
+                ], "supersetId": null, "supersetOrder": null, "type": "standard"
+            },
+            {
+                "id": "mb-v3-la-ex4", "exerciseId": "standing-calf-raise", "exerciseName": "Standing Calf Raises", "sets": [
+                    { "id": "mb-v3-la-s4-1", "reps": 8, "weight": null, "restAfterSet": 90, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v3-la-s4-2", "reps": 8, "weight": null, "restAfterSet": 90, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v3-la-s4-3", "reps": 8, "weight": null, "restAfterSet": 90, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v3-la-s4-4", "reps": 8, "weight": null, "restAfterSet": 90, "type": "standard", "notes": "Aim for 6-8 reps." }
+                ], "supersetId": null, "supersetOrder": null, "type": "standard"
+            },
+            {
+                "id": "mb-v3-la-ex5", "exerciseId": "plank", "exerciseName": "Abs", "sets": [
+                    { "id": "mb-v3-la-s5-1", "reps": 15, "weight": null, "restAfterSet": 60, "type": "standard", "notes": "Perform any ab exercise. Aim for 8-15 reps." }
+                ], "supersetId": null, "supersetOrder": null, "type": "standard"
+            }
+        ]
+    },
+    {
+        "id": "muscle-building-v3-upper-b",
+        "name": "Muscle Building - Upper Body B (V3)",
+        "description": "Version 3 of the second upper body routine, grouping pull and push movements.",
+        "goal": "hypertrophy",
+        "exercises": [
+            {
+                "id": "mb-v3-ub-ex1", "exerciseId": "pull-up", "exerciseName": "Pull-Ups", "sets": [
+                    { "id": "mb-v3-ub-s1-1", "reps": 8, "weight": null, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v3-ub-s1-2", "reps": 8, "weight": null, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v3-ub-s1-3", "reps": 8, "weight": null, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." }
+                ], "supersetId": null, "supersetOrder": null, "type": "standard"
+            },
+            {
+                "id": "mb-v3-ub-ex2", "exerciseId": "seated-row-machine", "exerciseName": "Seated Cable Row", "sets": [
+                    { "id": "mb-v3-ub-s2-1", "reps": 10, "weight": null, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-v3-ub-s2-2", "reps": 10, "weight": null, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-v3-ub-s2-3", "reps": 10, "weight": null, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." }
+                ], "supersetId": null, "supersetOrder": null, "type": "standard"
+            },
+            {
+                "id": "mb-v3-ub-ex3", "exerciseId": "overhead-press-barbell", "exerciseName": "Barbell Shoulder Press", "sets": [
+                    { "id": "mb-v3-ub-s3-1", "reps": 8, "weight": null, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v3-ub-s3-2", "reps": 8, "weight": null, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v3-ub-s3-3", "reps": 8, "weight": null, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." }
+                ], "supersetId": null, "supersetOrder": null, "type": "standard"
+            },
+            {
+                "id": "mb-v3-ub-ex4", "exerciseId": "dumbbell-bench-press", "exerciseName": "Dumbbell Bench Press", "sets": [
+                    { "id": "mb-v3-ub-s4-1", "reps": 10, "weight": null, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-v3-ub-s4-2", "reps": 10, "weight": null, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-v3-ub-s4-3", "reps": 10, "weight": null, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." }
+                ], "supersetId": null, "supersetOrder": null, "type": "standard"
+            },
+            {
+                "id": "mb-v3-ub-ex5", "exerciseId": "dumbbell-fly", "exerciseName": "Dumbbell Flyes", "sets": [
+                    { "id": "mb-v3-ub-s5-1", "reps": 15, "weight": null, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-15 reps." },
+                    { "id": "mb-v3-ub-s5-2", "reps": 15, "weight": null, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-15 reps." }
+                ], "supersetId": null, "supersetOrder": null, "type": "standard"
+            },
+            {
+                "id": "mb-v3-ub-ex6", "exerciseId": "barbell-bicep-curl", "exerciseName": "Barbell Curls", "sets": [
+                    { "id": "mb-v3-ub-s6-1", "reps": 12, "weight": null, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-12 reps." },
+                    { "id": "mb-v3-ub-s6-2", "reps": 12, "weight": null, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-12 reps." },
+                    { "id": "mb-v3-ub-s6-3", "reps": 12, "weight": null, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-12 reps." }
+                ], "supersetId": null, "supersetOrder": null, "type": "standard"
+            },
+            {
+                "id": "mb-v3-ub-ex7", "exerciseId": "barbell-skull-crusher", "exerciseName": "Skull Crushers", "sets": [
+                    { "id": "mb-v3-ub-s7-1", "reps": 15, "weight": null, "restAfterSet": 60, "type": "standard", "notes": "Aim for 12-15 reps." },
+                    { "id": "mb-v3-ub-s7-2", "reps": 15, "weight": null, "restAfterSet": 60, "type": "standard", "notes": "Aim for 12-15 reps." }
+                ], "supersetId": null, "supersetOrder": null, "type": "standard"
+            }
+        ]
+    },
+    {
+        "id": "muscle-building-v3-lower-b",
+        "name": "Muscle Building - Lower Body B (V3)",
+        "description": "Version 3 of the squat-focused lower body routine for hypertrophy.",
+        "goal": "hypertrophy",
+        "exercises": [
+            {
+                "id": "mb-v3-lb-ex1", "exerciseId": "barbell-back-squat", "exerciseName": "Squats", "sets": [
+                    { "id": "mb-v3-lb-s1-1", "reps": 8, "weight": null, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v3-lb-s1-2", "reps": 8, "weight": null, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v3-lb-s1-3", "reps": 8, "weight": null, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." }
+                ], "supersetId": null, "supersetOrder": null, "type": "standard"
+            },
+            {
+                "id": "mb-v3-lb-ex2", "exerciseId": "dumbbell-bulgarian-split-squat", "exerciseName": "Split Squats", "sets": [
+                    { "id": "mb-v3-lb-s2-1", "reps": 10, "weight": null, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps per leg." },
+                    { "id": "mb-v3-lb-s2-2", "reps": 10, "weight": null, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps per leg." },
+                    { "id": "mb-v3-lb-s2-3", "reps": 10, "weight": null, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps per leg." }
+                ], "supersetId": null, "supersetOrder": null, "type": "standard"
+            },
+            {
+                "id": "mb-v3-lb-ex3", "exerciseId": "lying-leg-curl-machine", "exerciseName": "Lying Leg Curls", "sets": [
+                    { "id": "mb-v3-lb-s3-1", "reps": 12, "weight": null, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps." },
+                    { "id": "mb-v3-lb-s3-2", "reps": 12, "weight": null, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps." },
+                    { "id": "mb-v3-lb-s3-3", "reps": 12, "weight": null, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps." }
+                ], "supersetId": null, "supersetOrder": null, "type": "standard"
+            },
+            {
+                "id": "mb-v3-lb-ex4", "exerciseId": "seated-calf-raise-machine", "exerciseName": "Seated Calf Raises", "sets": [
+                    { "id": "mb-v3-lb-s4-1", "reps": 15, "weight": null, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-15 reps." },
+                    { "id": "mb-v3-lb-s4-2", "reps": 15, "weight": null, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-15 reps." },
+                    { "id": "mb-v3-lb-s4-3", "reps": 15, "weight": null, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-15 reps." },
+                    { "id": "mb-v3-lb-s4-4", "reps": 15, "weight": null, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-15 reps." }
+                ], "supersetId": null, "supersetOrder": null, "type": "standard"
+            },
+            {
+                "id": "mb-v3-lb-ex5", "exerciseId": "plank", "exerciseName": "Abs", "sets": [
+                    { "id": "mb-v3-lb-s5-1", "reps": 15, "weight": null, "restAfterSet": 60, "type": "standard", "notes": "Perform any ab exercise. Aim for 8-15 reps." }
+                ], "supersetId": null, "supersetOrder": null, "type": "standard"
+            }
+        ]
+    },
+    {
+        "id": "muscle-building-v4-upper-a",
+        "name": "Muscle Building - Upper Body A (V4)",
+        "description": "Version 4 of the upper body hypertrophy routine, utilizing supersets to increase workout intensity and density.",
+        "goal": "hypertrophy",
+        "exercises": [
+            {
+                "id": "mb-v4-ua-ex1", "exerciseId": "barbell-bench-press", "exerciseName": "Bench Press", "supersetId": "ss-ua-1", "supersetSize":2, "supersetOrder": 0, "sets": [
+                    { "id": "mb-v4-ua-s1-1", "reps": 8, "weight": null, "restAfterSet": 0, "type": "superset", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v4-ua-s1-2", "reps": 8, "weight": null, "restAfterSet": 0, "type": "superset", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v4-ua-s1-3", "reps": 8, "weight": null, "restAfterSet": 0, "type": "superset", "notes": "Aim for 6-8 reps." }
+                ], "type": "superset"
+            },
+            {
+                "id": "mb-v4-ua-ex2", "exerciseId": "bent-over-row-barbell", "exerciseName": "Rows", "supersetId": "ss-ua-1", "supersetSize":2, "supersetOrder": 1, "sets": [
+                    { "id": "mb-v4-ua-s2-1", "reps": 8, "weight": null, "restAfterSet": 90, "type": "superset", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v4-ua-s2-2", "reps": 8, "weight": null, "restAfterSet": 90, "type": "superset", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v4-ua-s2-3", "reps": 8, "weight": null, "restAfterSet": 90, "type": "superset", "notes": "Aim for 6-8 reps." }
+                ], "type": "superset"
+            },
+            {
+                "id": "mb-v4-ua-ex3", "exerciseId": "dumbbell-incline-press", "exerciseName": "Incline Dumbbell Press", "supersetId": "ss-ua-2", "supersetSize":2, "supersetOrder": 0, "sets": [
+                    { "id": "mb-v4-ua-s3-1", "reps": 10, "weight": null, "restAfterSet": 0, "type": "superset", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-v4-ua-s3-2", "reps": 10, "weight": null, "restAfterSet": 0, "type": "superset", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-v4-ua-s3-3", "reps": 10, "weight": null, "restAfterSet": 0, "type": "superset", "notes": "Aim for 8-10 reps." }
+                ], "type": "superset"
+            },
+            {
+                "id": "mb-v4-ua-ex4", "exerciseId": "lat-pulldown-machine", "exerciseName": "Lat Pull-Downs", "supersetId": "ss-ua-2", "supersetSize":2, "supersetOrder": 1, "sets": [
+                    { "id": "mb-v4-ua-s4-1", "reps": 10, "weight": null, "restAfterSet": 60, "type": "superset", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-v4-ua-s4-2", "reps": 10, "weight": null, "restAfterSet": 60, "type": "superset", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-v4-ua-s4-3", "reps": 10, "weight": null, "restAfterSet": 60, "type": "superset", "notes": "Aim for 8-10 reps." }
+                ], "type": "superset"
+            },
+            {
+                "id": "mb-v4-ua-ex5", "exerciseId": "dumbbell-lateral-raise", "exerciseName": "Lateral Raises", "sets": [
+                    { "id": "mb-v4-ua-s5-1", "reps": 15, "weight": null, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-15 reps." },
+                    { "id": "mb-v4-ua-s5-2", "reps": 15, "weight": null, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-15 reps." }
+                ], "supersetId": null, "supersetOrder": null, "type": "standard"
+            },
+            {
+                "id": "mb-v4-ua-ex6", "exerciseId": "cable-tricep-pushdown", "exerciseName": "Triceps Pushdowns", "supersetId": "ss-ua-3", "supersetSize":2, "supersetOrder": 0, "sets": [
+                    { "id": "mb-v4-ua-s6-1", "reps": 12, "weight": null, "restAfterSet": 0, "type": "superset", "notes": "Aim for 10-12 reps." },
+                    { "id": "mb-v4-ua-s6-2", "reps": 12, "weight": null, "restAfterSet": 0, "type": "superset", "notes": "Aim for 10-12 reps." },
+                    { "id": "mb-v4-ua-s6-3", "reps": 12, "weight": null, "restAfterSet": 0, "type": "superset", "notes": "Aim for 10-12 reps." }
+                ], "type": "superset"
+            },
+            {
+                "id": "mb-v4-ua-ex7", "exerciseId": "dumbbell-bicep-curl", "exerciseName": "Dumbbell Curls", "supersetId": "ss-ua-3", "supersetSize":2, "supersetOrder": 1, "sets": [
+                    { "id": "mb-v4-ua-s7-1", "reps": 15, "weight": null, "restAfterSet": 45, "type": "superset", "notes": "Aim for 12-15 reps." },
+                    { "id": "mb-v4-ua-s7-2", "reps": 15, "weight": null, "restAfterSet": 45, "type": "superset", "notes": "Aim for 12-15 reps." }
+                ], "type": "superset"
+            }
+        ]
+    },
+    {
+        "id": "muscle-building-v4-lower-a",
+        "name": "Muscle Building - Lower Body A (V4)",
+        "description": "Version 4 of the hamstring-focused lower body routine, utilizing supersets.",
+        "goal": "hypertrophy",
+        "exercises": [
+            {
+                "id": "mb-v4-la-ex1", "exerciseId": "barbell-romanian-deadlift", "exerciseName": "Romanian Deadlifts", "sets": [
+                    { "id": "mb-v4-la-s1-1", "reps": 8, "weight": null, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v4-la-s1-2", "reps": 8, "weight": null, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v4-la-s1-3", "reps": 8, "weight": null, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." }
+                ], "supersetId": null, "supersetOrder": null, "type": "standard"
+            },
+            {
+                "id": "mb-v4-la-ex2", "exerciseId": "leg-press-machine", "exerciseName": "Leg Press", "supersetId": "ss-la-1", "supersetSize":2, "supersetOrder": 0, "sets": [
+                    { "id": "mb-v4-la-s2-1", "reps": 12, "weight": null, "restAfterSet": 0, "type": "superset", "notes": "Aim for 10-12 reps." },
+                    { "id": "mb-v4-la-s2-2", "reps": 12, "weight": null, "restAfterSet": 0, "type": "superset", "notes": "Aim for 10-12 reps." },
+                    { "id": "mb-v4-la-s2-3", "reps": 12, "weight": null, "restAfterSet": 0, "type": "superset", "notes": "Aim for 10-12 reps." }
+                ], "type": "superset"
+            },
+            {
+                "id": "mb-v4-la-ex3", "exerciseId": "leg-curl-machine", "exerciseName": "Seated Leg Curls", "supersetId": "ss-la-1", "supersetSize":2, "supersetOrder": 1, "sets": [
+                    { "id": "mb-v4-la-s3-1", "reps": 10, "weight": null, "restAfterSet": 60, "type": "superset", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-v4-la-s3-2", "reps": 10, "weight": null, "restAfterSet": 60, "type": "superset", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-v4-la-s3-3", "reps": 10, "weight": null, "restAfterSet": 60, "type": "superset", "notes": "Aim for 8-10 reps." }
+                ], "type": "superset"
+            },
+            {
+                "id": "mb-v4-la-ex4", "exerciseId": "standing-calf-raise", "exerciseName": "Standing Calf Raises", "supersetId": "ss-la-2", "supersetSize":2, "supersetOrder": 0, "sets": [
+                    { "id": "mb-v4-la-s4-1", "reps": 8, "weight": null, "restAfterSet": 0, "type": "superset", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v4-la-s4-2", "reps": 8, "weight": null, "restAfterSet": 0, "type": "superset", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v4-la-s4-3", "reps": 8, "weight": null, "restAfterSet": 0, "type": "superset", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v4-la-s4-4", "reps": 8, "weight": null, "restAfterSet": 0, "type": "superset", "notes": "Aim for 6-8 reps." }
+                ], "type": "superset"
+            },
+            {
+                "id": "mb-v4-la-ex5", "exerciseId": "plank", "exerciseName": "Abs", "supersetId": "ss-la-2", "supersetSize":2, "supersetOrder": 1, "sets": [
+                    { "id": "mb-v4-la-s5-1", "reps": 15, "weight": null, "restAfterSet": 45, "type": "superset", "notes": "Perform any ab exercise. Aim for 8-15 reps." }
+                ], "type": "superset"
+            }
+        ]
+    },
+    {
+        "id": "muscle-building-v4-upper-b",
+        "name": "Muscle Building - Upper Body B (V4)",
+        "description": "Version 4 of the second upper body routine, featuring supersets.",
+        "goal": "hypertrophy",
+        "exercises": [
+            {
+                "id": "mb-v4-ub-ex1", "exerciseId": "pull-up", "exerciseName": "Pull-Ups", "supersetId": "ss-ub-1", "supersetSize":2, "supersetOrder": 0, "sets": [
+                    { "id": "mb-v4-ub-s1-1", "reps": 8, "weight": null, "restAfterSet": 0, "type": "superset", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v4-ub-s1-2", "reps": 8, "weight": null, "restAfterSet": 0, "type": "superset", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v4-ub-s1-3", "reps": 8, "weight": null, "restAfterSet": 0, "type": "superset", "notes": "Aim for 6-8 reps." }
+                ], "type": "superset"
+            },
+            {
+                "id": "mb-v4-ub-ex2", "exerciseId": "overhead-press-barbell", "exerciseName": "Barbell Shoulder Press", "supersetId": "ss-ub-1", "supersetSize":2, "supersetOrder": 1, "sets": [
+                    { "id": "mb-v4-ub-s2-1", "reps": 8, "weight": null, "restAfterSet": 90, "type": "superset", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v4-ub-s2-2", "reps": 8, "weight": null, "restAfterSet": 90, "type": "superset", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v4-ub-s2-3", "reps": 8, "weight": null, "restAfterSet": 90, "type": "superset", "notes": "Aim for 6-8 reps." }
+                ], "type": "superset"
+            },
+            {
+                "id": "mb-v4-ub-ex3", "exerciseId": "seated-row-machine", "exerciseName": "Seated Cable Row", "supersetId": "ss-ub-2", "supersetSize":2, "supersetOrder": 0, "sets": [
+                    { "id": "mb-v4-ub-s3-1", "reps": 10, "weight": null, "restAfterSet": 0, "type": "superset", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-v4-ub-s3-2", "reps": 10, "weight": null, "restAfterSet": 0, "type": "superset", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-v4-ub-s3-3", "reps": 10, "weight": null, "restAfterSet": 0, "type": "superset", "notes": "Aim for 8-10 reps." }
+                ], "type": "superset"
+            },
+            {
+                "id": "mb-v4-ub-ex4", "exerciseId": "dumbbell-bench-press", "exerciseName": "Dumbbell Bench Press", "supersetId": "ss-ub-2", "supersetSize":2, "supersetOrder": 1, "sets": [
+                    { "id": "mb-v4-ub-s4-1", "reps": 10, "weight": null, "restAfterSet": 60, "type": "superset", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-v4-ub-s4-2", "reps": 10, "weight": null, "restAfterSet": 60, "type": "superset", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-v4-ub-s4-3", "reps": 10, "weight": null, "restAfterSet": 60, "type": "superset", "notes": "Aim for 8-10 reps." }
+                ], "type": "superset"
+            },
+            {
+                "id": "mb-v4-ub-ex5", "exerciseId": "dumbbell-fly", "exerciseName": "Dumbbell Flyes", "sets": [
+                    { "id": "mb-v4-ub-s5-1", "reps": 15, "weight": null, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-15 reps." },
+                    { "id": "mb-v4-ub-s5-2", "reps": 15, "weight": null, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-15 reps." }
+                ], "supersetId": null, "supersetOrder": null, "type": "standard"
+            },
+            {
+                "id": "mb-v4-ub-ex6", "exerciseId": "barbell-bicep-curl", "exerciseName": "Barbell Curls", "supersetId": "ss-ub-3", "supersetSize":2, "supersetOrder": 0, "sets": [
+                    { "id": "mb-v4-ub-s6-1", "reps": 12, "weight": null, "restAfterSet": 0, "type": "superset", "notes": "Aim for 10-12 reps." },
+                    { "id": "mb-v4-ub-s6-2", "reps": 12, "weight": null, "restAfterSet": 0, "type": "superset", "notes": "Aim for 10-12 reps." },
+                    { "id": "mb-v4-ub-s6-3", "reps": 12, "weight": null, "restAfterSet": 0, "type": "superset", "notes": "Aim for 10-12 reps." }
+                ], "type": "superset"
+            },
+            {
+                "id": "mb-v4-ub-ex7", "exerciseId": "barbell-skull-crusher", "exerciseName": "Skull Crushers", "supersetId": "ss-ub-3", "supersetSize":2, "supersetOrder": 1, "sets": [
+                    { "id": "mb-v4-ub-s7-1", "reps": 15, "weight": null, "restAfterSet": 45, "type": "superset", "notes": "Aim for 12-15 reps." },
+                    { "id": "mb-v4-ub-s7-2", "reps": 15, "weight": null, "restAfterSet": 45, "type": "superset", "notes": "Aim for 12-15 reps." }
+                ], "type": "superset"
+            }
+        ]
+    },
+    {
+        "id": "muscle-building-v4-lower-b",
+        "name": "Muscle Building - Lower Body B (V4)",
+        "description": "Version 4 of the squat-focused lower body routine, featuring supersets.",
+        "goal": "hypertrophy",
+        "exercises": [
+            {
+                "id": "mb-v4-lb-ex1", "exerciseId": "barbell-back-squat", "exerciseName": "Squats", "sets": [
+                    { "id": "mb-v4-lb-s1-1", "reps": 8, "weight": null, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v4-lb-s1-2", "reps": 8, "weight": null, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v4-lb-s1-3", "reps": 8, "weight": null, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." }
+                ], "supersetId": null, "supersetOrder": null, "type": "standard"
+            },
+            {
+                "id": "mb-v4-lb-ex2", "exerciseId": "dumbbell-bulgarian-split-squat", "exerciseName": "Split Squats", "sets": [
+                    { "id": "mb-v4-lb-s2-1", "reps": 10, "weight": null, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps per leg." },
+                    { "id": "mb-v4-lb-s2-2", "reps": 10, "weight": null, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps per leg." },
+                    { "id": "mb-v4-lb-s2-3", "reps": 10, "weight": null, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps per leg." }
+                ], "supersetId": null, "supersetOrder": null, "type": "standard"
+            },
+            {
+                "id": "mb-v4-lb-ex3", "exerciseId": "lying-leg-curl-machine", "exerciseName": "Lying Leg Curls", "sets": [
+                    { "id": "mb-v4-lb-s3-1", "reps": 12, "weight": null, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps." },
+                    { "id": "mb-v4-lb-s3-2", "reps": 12, "weight": null, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps." },
+                    { "id": "mb-v4-lb-s3-3", "reps": 12, "weight": null, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps." }
+                ], "supersetId": null, "supersetOrder": null, "type": "standard"
+            },
+            {
+                "id": "mb-v4-lb-ex4", "exerciseId": "seated-calf-raise-machine", "exerciseName": "Seated Calf Raises", "supersetId": "ss-lb-1", "supersetSize":2, "supersetOrder": 0, "sets": [
+                    { "id": "mb-v4-lb-s4-1", "reps": 15, "weight": null, "restAfterSet": 0, "type": "superset", "notes": "Aim for 10-15 reps." },
+                    { "id": "mb-v4-lb-s4-2", "reps": 15, "weight": null, "restAfterSet": 0, "type": "superset", "notes": "Aim for 10-15 reps." },
+                    { "id": "mb-v4-lb-s4-3", "reps": 15, "weight": null, "restAfterSet": 0, "type": "superset", "notes": "Aim for 10-15 reps." },
+                    { "id": "mb-v4-lb-s4-4", "reps": 15, "weight": null, "restAfterSet": 0, "type": "superset", "notes": "Aim for 10-15 reps." }
+                ], "type": "superset"
+            },
+            {
+                "id": "mb-v4-lb-ex5", "exerciseId": "plank", "exerciseName": "Abs", "supersetId": "ss-lb-1", "supersetSize":2, "supersetOrder": 1, "sets": [
+                    { "id": "mb-v4-lb-s5-1", "reps": 15, "weight": null, "restAfterSet": 45, "type": "superset", "notes": "Perform any ab exercise. Aim for 8-15 reps." }
+                ], "type": "superset"
             }
         ]
     }
