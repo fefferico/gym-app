@@ -2,8 +2,8 @@ import { Component, inject, OnInit, OnDestroy, signal, computed, ElementRef, Que
 import { CommonModule, DecimalPipe, isPlatformBrowser, TitleCasePipe } from '@angular/common'; // Added TitleCasePipe
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray, AbstractControl, FormsModule } from '@angular/forms';
-import { Subscription, of, firstValueFrom } from 'rxjs';
-import { switchMap, tap, take } from 'rxjs/operators';
+import { Subscription, of, firstValueFrom, Observable, from } from 'rxjs';
+import { switchMap, tap, take, distinctUntilChanged, map, mergeMap, startWith, debounceTime, filter } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
 import { format, parseISO, isValid as isValidDate } from 'date-fns';
 
@@ -23,6 +23,7 @@ import { TrackingService } from '../../core/services/tracking.service'; // For m
 import { AlertInput } from '../../core/models/alert.model';
 import { LongPressDragDirective } from '../../shared/directives/long-press-drag.directive';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { merge } from 'hammerjs';
 
 type BuilderMode = 'routineBuilder' | 'manualLogEntry';
 
@@ -51,6 +52,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   @ViewChildren('setRepsInput') setRepsInputs!: QueryList<ElementRef<HTMLInputElement>>;
   @ViewChildren('expandedSetElement') expandedSetElements!: QueryList<ElementRef<HTMLDivElement>>;
 
+  routine: Routine | null = null;
   builderForm!: FormGroup;
   mode: BuilderMode = 'routineBuilder';
   isEditMode = false;
@@ -62,6 +64,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   private initialRoutineIdForLogEdit: string | null | undefined = undefined; // For log edit mode
 
   isCompactView: boolean = true;
+
+  private subscriptions = new Subscription();
 
   expandedSetPath = signal<{ exerciseIndex: number, setIndex: number } | null>(null);
 
@@ -162,6 +166,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       tap(loadedData => { // data can be Routine, WorkoutLog, or null
         if (loadedData) {
           if (this.mode === 'routineBuilder') {
+            this.routine = loadedData as Routine;
             this.patchFormWithRoutineData(loadedData as Routine);
           } else if (this.mode === 'manualLogEntry' && this.isEditMode && this.currentLogId) {
             this.patchFormWithLogData(loadedData as WorkoutLog);
@@ -177,6 +182,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         else this.toggleFormState(false); // Enable for new/edit modes
       })
     ).subscribe();
+
+    this.subscriptions.add(this.routeSub);
 
     if (this.mode === 'manualLogEntry') {
       this.builderForm.get('routineIdForLog')?.valueChanges.subscribe(routineId => {
@@ -194,16 +201,29 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       });
     }
 
-    this.builderForm.get('goal')?.valueChanges.subscribe(goalValue => {
+    const goalSub = this.builderForm.get('goal')?.valueChanges.subscribe(goalValue => {
       if (this.mode === 'routineBuilder' && goalValue === 'rest') {
         while (this.exercisesFormArray.length) this.exercisesFormArray.removeAt(0);
         this.exercisesFormArray.clearValidators();
       }
       this.exercisesFormArray.updateValueAndValidity();
     });
-    this.builderForm.get('description')?.valueChanges.subscribe(value => {
+    this.subscriptions.add(goalSub);
+
+    const descSub = this.builderForm.get('description')?.valueChanges.subscribe(value => {
       this.updateSanitizedDescription(value || '');
     });
+    this.subscriptions.add(descSub);
+
+    const setsSub = this.builderForm.get('sets')?.valueChanges.subscribe(value => {
+      this.getRoutineDuration();
+    });
+    this.subscriptions.add(setsSub);
+    const roundsSub = this.builderForm.get('rounds')?.valueChanges.subscribe(value => {
+      this.getRoutineDuration();
+    });
+    this.subscriptions.add(roundsSub);
+
   }
 
   private updateSanitizedDescription(value: string): void {
@@ -289,6 +309,55 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   getSetsFormArray(exerciseControl: AbstractControl): FormArray {
     return exerciseControl.get('sets') as FormArray;
   }
+
+  private addRepsListener(exerciseControl: FormGroup): void {
+    const repsSubscription = this.setupRepsListener(exerciseControl);
+    this.subscriptions.add(repsSubscription);
+  }
+
+  private setupRepsListener(exerciseControl: FormGroup): void {
+    const setsFormArray = this.getSetsFormArray(exerciseControl);
+
+    const repsSub = setsFormArray.valueChanges.pipe(
+      debounceTime(300),
+      // startWith will now emit an initial value, just to kick off the stream.
+      // The value itself doesn't matter.
+      startWith(null),
+
+      // --- THIS IS THE CRITICAL FIX ---
+      // We ignore the value from the stream (`_`) and ALWAYS use setsFormArray.controls.
+      // This guarantees we are always working with the actual Form Controls.
+      mergeMap((_) => {
+        const controls = setsFormArray.controls; // Get the up-to-date controls array
+
+        // The rest of the logic is now safe because 'controls' is always AbstractControl[]
+        return from(controls).pipe(
+          mergeMap((setControl, index) => {
+            const repsControl = setControl.get('reps');
+            if (!repsControl) {
+              return of(null);
+            }
+            return repsControl.valueChanges.pipe(
+              map(repsValue => ({
+                reps: repsValue,
+                setIndex: index,
+                exerciseId: exerciseControl.get('id')?.value
+              })),
+              distinctUntilChanged((prev, curr) => prev.reps === curr.reps)
+            );
+          })
+        );
+      }),
+      filter(change => change !== null)
+
+    ).subscribe(change => {
+      console.log(`Reps changed on Ex: ${change.exerciseId}, Set: ${change.setIndex} to ${change.reps}`);
+      this.getRoutineDuration();
+    });
+
+    this.subscriptions.add(repsSub);
+  }
+
   private loadAvailableExercises(): void {
     this.exerciseService.getExercises().pipe(take(1)).subscribe(exs => this.availableExercises = exs);
   }
@@ -302,7 +371,9 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     this.updateSanitizedDescription(routine.description || '');
     this.exercisesFormArray.clear({ emitEvent: false });
     routine.exercises.forEach(exerciseData => {
-      this.exercisesFormArray.push(this.createExerciseFormGroup(exerciseData, true, false), { emitEvent: false });
+      const newExerciseFormGroup = this.createExerciseFormGroup(exerciseData, true, false);
+      this.exercisesFormArray.push(newExerciseFormGroup, { emitEvent: false });
+      this.addRepsListener(newExerciseFormGroup);
     });
     this.builderForm.markAsPristine();
   }
@@ -478,7 +549,10 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       rounds: 0,
       type: 'standard'
     }, true, false);
-    this.exercisesFormArray.push(newExerciseFormGroup); this.closeExerciseSelectionModal();
+    this.addRepsListener(newExerciseFormGroup);
+    this.exercisesFormArray.push(newExerciseFormGroup);
+
+    this.closeExerciseSelectionModal();
     this.toggleSetExpansion(this.exercisesFormArray.length - 1, 0);
   }
   selectExerciseForLog(exerciseFromLibrary: Exercise): void { // For Manual Log
@@ -883,15 +957,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
     try {
       if (this.mode === 'routineBuilder') {
-        const routinePayload: Routine = {
-          id: this.currentRoutineId || uuidv4(), name: formValue.name, description: formValue.description, goal: formValue.goal,
-          exercises: (formValue.goal === 'rest') ? [] : formValue.exercises.map((exInput: any) => ({
-            ...exInput, sets: exInput.sets.map((setInput: any) => ({
-              ...setInput, // This includes 'type', 'reps', 'duration', 'tempo', 'restAfterSet', 'notes'
-              weight: this.unitsService.convertToKg(setInput.weight, this.unitsService.currentUnit()) ?? null,
-            }))
-          })),
-        };
+        const routinePayload: Routine = this.mapFormToRoutine(formValue);
         if (this.isNewMode) this.workoutService.addRoutine(routinePayload); else this.workoutService.updateRoutine(routinePayload);
         this.toastService.success(`Routine ${this.isNewMode ? 'created' : 'updated'}!`, 4000, "Success");
         this.router.navigate(['/workout']);
@@ -1101,9 +1167,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
 
   ngOnDestroy(): void {
-    if (this.routeSub) {
-      this.routeSub.unsubscribe();
-    }
+    this.subscriptions.unsubscribe();
   }
 
   getExerciseCardClasses(
@@ -1229,8 +1293,10 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         supersetSize: null,
         rounds: 0
       };
-      this.exercisesFormArray.push(this.createExerciseFormGroup(workoutExercise, true, false));
+      const newExerciseFormGroup = this.createExerciseFormGroup(workoutExercise, true, false);
+      this.exercisesFormArray.push(newExerciseFormGroup);
       this.toggleSetExpansion(this.exercisesFormArray.length - 1, 0);
+      this.addRepsListener(newExerciseFormGroup);
     } else {
       if (!result) {
         return
@@ -1238,6 +1304,29 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       this.handleTrulyCustomExerciseEntry(true);
       return;
     }
+  }
+
+
+  getRoutineDuration(): number {
+    if (this.routine) {
+      this.routine = this.mapFormToRoutine(this.builderForm.getRawValue());
+      return this.workoutService.getEstimatedRoutineDuration(this.routine);
+    } else {
+      return 0;
+    }
+  }
+
+  private mapFormToRoutine(formValue: any): Routine {
+    const routinePayload: Routine = {
+      id: this.currentRoutineId || uuidv4(), name: formValue.name, description: formValue.description, goal: formValue.goal,
+      exercises: (formValue.goal === 'rest') ? [] : formValue.exercises.map((exInput: any) => ({
+        ...exInput, sets: exInput.sets.map((setInput: any) => ({
+          ...setInput, // This includes 'type', 'reps', 'duration', 'tempo', 'restAfterSet', 'notes'
+          weight: this.unitsService.convertToKg(setInput.weight, this.unitsService.currentUnit()) ?? null,
+        }))
+      })),
+    };
+    return routinePayload;
   }
 
 }

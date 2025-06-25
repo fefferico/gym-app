@@ -62,9 +62,9 @@
                 <!-- ROUTINE NAME -->
                 <div *ngIf="isViewMode">
                     <label
-                        class="block text-xl font-medium text-gray-700 dark:text-gray-300">{{builderForm.get('name')?.value}}</label>
+                        class="block text-xl font-black text-gray-700 dark:text-gray-300">{{builderForm.get('name')?.value}}</label>
                 </div>
-                <div *ngIf="isEditMode">
+                <div *ngIf="isEditMode || isNewMode">
                     <label for="routineName" class="block text-m font-medium text-gray-700 dark:text-gray-300">Routine
                         Name</label>
                     <input type="text" id="routineName" formControlName="name" placeholder="Routine name"
@@ -80,7 +80,7 @@
                     <p class="mt-1 block w-full shadow-sm dark:text-gray-200" [innerHTML]="sanitizedDescription">
                     </p>
                 </div>
-                <div *ngIf="isEditMode">
+                <div *ngIf="isEditMode || isNewMode">
                     <label for="description"
                         class="block text-m font-medium text-gray-700 dark:text-gray-300">Description (Optional)</label>
                     <textarea id="description" formControlName="description" rows="3"
@@ -93,7 +93,7 @@
                         <span class="font-medium">Goal: </span>
                         {{ builderForm.get('goal')?.value?.toUpperCase() || ''}}</label>
                 </div>
-                <div *ngIf="isEditMode">
+                <div *ngIf="isEditMode || isNewMode">
                     <!-- <label for="goal" class="block text-m font-medium text-gray-700 dark:text-gray-300">Primary
                         Goal</label> -->
                     <select id="goal" formControlName="goal"
@@ -103,6 +103,14 @@
                         </option>
                     </select>
                 </div>
+                <!-- TIME TO COMPLETE -->
+                <div>
+                    <div *ngIf="routine && getRoutineDuration() > 0"
+                        class="text-m text-gray-500 dark:text-gray-300">
+                        <span class="font-medium">Est:</span> ~{{ getRoutineDuration()}} min
+                    </div>
+                </div>
+
             </ng-container>
 
             <!-- MANUAL LOG ENTRY FIELDS -->
@@ -649,7 +657,7 @@
                         </li>
                         <li *ngIf="filteredAvailableExercises().length === 0"
                             class="text-gray-500 dark:text-gray-400 text-center p-4">No exercises match your search or
-                            library is empty</li>
+                            library is empty.</li>
                     </ul>
                 </div>
 

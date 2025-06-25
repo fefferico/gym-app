@@ -4,7 +4,7 @@ import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 import { catchError, finalize, map, shareReplay, tap } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid'; // For generating unique IDs
 
-import { ExerciseSetParams, Routine } from '../models/workout.model'; // Ensure this path is correct
+import { ExerciseSetParams, Routine, WorkoutExercise } from '../models/workout.model'; // Ensure this path is correct
 import { StorageService } from './storage.service';
 import { LoggedSet } from '../models/workout-log.model';
 import { AlertService } from './alert.service';
@@ -286,5 +286,132 @@ export class WorkoutService {
           await this.alertService.showAlert("Info", "All routines logs cleared!");
         }
       })
+  }
+
+
+
+
+
+
+
+
+
+
+ /**
+ * --- FUNCTION 1 (Updated) ---
+ * Estimates the "working time" for a single set in seconds.
+ * 
+ * - It calculates an estimated time based on the number of reps.
+ * - It considers the explicitly set `duration`.
+ * - It returns the HIGHER of the two values to provide a more realistic estimate,
+ *   especially for AMRAPs or sets with both rep and time targets.
+ *
+ * @param set The ExerciseSetParams object for a single set.
+ * @returns The estimated working time in seconds.
+ */
+public getEstimatedWorkTimeForSet(set: ExerciseSetParams): number {
+  let timeFromReps = 0;
+  
+  // 1. Calculate the estimated time from reps, if reps are specified.
+  if (set.reps && set.reps > 0) {
+    // Estimate ~3 seconds per rep (1s up, 2s down). Adjust as needed.
+    const timePerRep = 3; 
+    timeFromReps = set.reps * timePerRep;
+  }
+
+  // 2. Get the duration specified in the set, defaulting to 0 if not present.
+  const timeFromDuration = set.duration || 0;
+
+  // 3. Compare the two calculated times and return the greater value.
+  const estimatedTime = Math.max(timeFromReps, timeFromDuration);
+
+  // 4. Handle edge cases where neither reps nor duration are set.
+  if (estimatedTime > 0) {
+    // Return the calculated time, but with a minimum floor (e.g., 5s) 
+    // to account for setup for very short sets.
+    return Math.max(estimatedTime, 5);
+  }
+
+  // 5. Fallback for sets with no duration AND no reps (e.g., a "carry to failure").
+  // Assume a default time, e.g., 30 seconds.
+  return 30; 
+}
+
+
+  /**
+   * --- FUNCTION 2 ---
+   * Extracts the "resting time" for a single set in seconds.
+   * 
+   * This is straightforward as it's directly defined by `restAfterSet`.
+   *
+   * @param set The ExerciseSetParams object for a single set.
+   * @returns The planned resting time in seconds after the set is completed.
+   */
+  public getRestTimeForSet(set: ExerciseSetParams): number {
+    return set.restAfterSet || 0;
+  }
+
+
+  /**
+   * --- FUNCTION 3 ---
+   * Estimates the total time to complete an entire routine in minutes.
+   * 
+   * This function iterates through all exercises and their sets, summing up the
+   * working time and resting time, and accounting for multiple rounds.
+   *
+   * @param routine The full Routine object.
+   * @returns The total estimated duration in minutes.
+   */
+  public getEstimatedRoutineDuration(routine: Routine): number {
+    if (!routine || !routine.exercises || routine.exercises.length === 0) {
+      return 0;
+    }
+
+    let totalSeconds = 0;
+
+    // Process exercises considering rounds and supersets
+    for (let i = 0; i < routine.exercises.length; i++) {
+      const exercise = routine.exercises[i];
+
+      // --- Logic to handle rounds ---
+      // A block of work is either a single exercise or a superset.
+      // The number of rounds is defined on the FIRST exercise of a block.
+      // We only process the round calculation when we encounter the start of a new block.
+
+      const isStartOfBlock = !exercise.supersetId || exercise.supersetOrder === 0;
+
+      if (isStartOfBlock) {
+        const rounds = exercise.rounds || 1;
+        let blockDurationSeconds = 0;
+
+        // Determine the exercises included in this block
+        let blockExercises: WorkoutExercise[];
+        if (exercise.supersetId) {
+          // If it's a superset, find all exercises with the same supersetId
+          blockExercises = routine.exercises.filter(ex => ex.supersetId === exercise.supersetId);
+          // Advance the main loop counter to skip these exercises on the next iteration
+          i += blockExercises.length - 1;
+        } else {
+          // If it's a single exercise block
+          blockExercises = [exercise];
+        }
+
+        // Calculate the duration of one round of the block
+        blockExercises.forEach(blockEx => {
+          blockEx.sets.forEach((set: ExerciseSetParams) => {
+            blockDurationSeconds += this.getEstimatedWorkTimeForSet(set);
+            blockDurationSeconds += this.getRestTimeForSet(set);
+          });
+        });
+
+        // Multiply the block's duration by the number of rounds
+        totalSeconds += blockDurationSeconds * rounds;
+      }
+    }
+
+    // Convert total seconds to minutes and round to the nearest whole number.
+    const totalMinutes = Math.round(totalSeconds / 60);
+
+    return totalMinutes;
   }
 }

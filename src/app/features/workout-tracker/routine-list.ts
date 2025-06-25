@@ -523,4 +523,12 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     this.activeRoutineIdActions.set(null);
   }
 
+
+  getRoutineDuration(routine: Routine): number {
+    if (routine) {
+      return this.workoutService.getEstimatedRoutineDuration(routine);
+    } else {
+      return 0;
+    }
+  }
 }
