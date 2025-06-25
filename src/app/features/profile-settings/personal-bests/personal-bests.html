@@ -205,7 +205,7 @@
                         (click)="resetFiltersAndShow()"
                         class="text-primary dark:text-primary-light hover:underline">reset all filters</button>.</span>
                 <span *ngIf="!hasActiveFilters() && allPersonalBestsSignalEmpty()">Keep logging your workouts to track
-                    your progress and achievements here.</span>
+                    your progress and achievements here</span>
                 <span
                     *ngIf="!allPersonalBestsSignalEmpty() && displayPersonalBests().length === 0 && !hasActiveFilters()">
                     Try clearing filters, or perhaps <button (click)="triggerRecalculatePBs()"

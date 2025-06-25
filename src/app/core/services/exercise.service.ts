@@ -26,18 +26,58 @@ export class ExerciseService {
   private isLoadingExercisesSubject = new BehaviorSubject<boolean>(true); // Start as true
   public isLoadingExercises$: Observable<boolean> = this.isLoadingExercisesSubject.asObservable();
 
-  constructor() {
-    this.isLoadingExercisesSubject.next(true); // Explicitly set loading to true at the start
-    const initialExercises = this._loadExercisesFromStorage();
-    this.exercisesSubject = new BehaviorSubject<Exercise[]>(initialExercises);
+  constructor(
+  ) {
+    this.isLoadingExercisesSubject.next(true);
+
+    // Load initial exercises from storage
+    const exercisesFromStorage = this._loadExercisesFromStorage();
+
+    // Initialize the BehaviorSubject with exercises from storage
+    this.exercisesSubject = new BehaviorSubject<Exercise[]>(exercisesFromStorage);
     this.exercises$ = this.exercisesSubject.asObservable().pipe(
       shareReplay(1)
     );
 
-    if (initialExercises.length === 0) {
-      this._seedExercisesFromAssets(); // This method will set loading to false
-    } else {
-      this.isLoadingExercisesSubject.next(false); // Loaded from storage, set loading to false
+    // Call the new, synchronous seeding method
+    this._seedAndMergeExercisesFromStaticData(exercisesFromStorage);
+  }
+
+  /**
+   * Merges exercises from the static EXERCISE_DATA constant with existing exercises from storage.
+   * This is a synchronous operation and does not involve HTTP requests.
+   * @param existingExercises Exercises already loaded from storage.
+   */
+  private _seedAndMergeExercisesFromStaticData(existingExercises: Exercise[]): void {
+    try {
+      // Cast the imported data to the Exercise[] type for type safety.
+      const assetExercises = EXERCISES_DATA as Exercise[];
+
+      // Create a Set of existing exercise IDs for efficient lookup.
+      const existingExerciseIds = new Set(existingExercises.map(r => r.id));
+
+      // Filter the asset exercises to only include those that are NOT already in storage.
+      const newExercisesToSeed = assetExercises.filter(
+        assetExercise => !existingExerciseIds.has(assetExercise.id)
+      );
+
+      // If there are new exercises to add, merge them and update the state.
+      if (newExercisesToSeed.length > 0) {
+        console.log(`Seeding ${newExercisesToSeed.length} new exercises from static data.`);
+        const mergedExercises = [...existingExercises, ...newExercisesToSeed];
+
+        // Update the subject with the full, merged list.
+        this.exercisesSubject.next(mergedExercises);
+        // Save the merged list back to storage for the next session.
+        this._saveExercisesToStorage(mergedExercises);
+      } else {
+        console.log("No new exercises to seed from static data. All are present in storage.");
+      }
+    } catch (error) {
+      console.error('Failed to process or seed exercises from static data:', error);
+    } finally {
+      // This logic now happens synchronously, so we can set loading to false right after.
+      this.isLoadingExercisesSubject.next(false);
     }
   }
 
@@ -228,7 +268,7 @@ export class ExerciseService {
 
   getIconPath(iconName: string | undefined): string {
     let tmpIconName = iconName;
-    if (tmpIconName && tmpIconName.indexOf('/')>=0){
+    if (tmpIconName && tmpIconName.indexOf('/') >= 0) {
       tmpIconName = 'default-exercise';
     }
     return `assets/icons/${tmpIconName || 'default-exercise'}.svg`;

@@ -20,6 +20,7 @@ import { PausedWorkoutState } from './workout-player'; // Adjust path as needed
 import { ThemeService } from '../../core/services/theme.service';
 import { ActionMenuItem } from '../../core/models/action-menu.model';
 import { ActionMenuComponent } from '../../shared/components/action-menu/action-menu';
+import e from 'express';
 
 @Component({
   selector: 'app-routine-list',
@@ -77,10 +78,12 @@ export class RoutineListComponent implements OnInit, OnDestroy {
   // Signals for filter values
   routineSearchTerm = signal<string>('');
   selectedRoutineGoal = signal<string | null>(null);
+  selectedEquipment = signal<string[]>([]); // Now an array of strings
   selectedRoutineMuscleGroup = signal<string | null>(null);
 
   // Signals for filter dropdown options
   uniqueRoutineGoals = signal<string[]>([]);
+  uniqueRoutineEquipments = signal<string[]>([]);
   uniqueRoutineMuscleGroups = signal<string[]>([]);
   private allExercisesMap = new Map<string, Exercise>(); // To store exercises for quick lookup
 
@@ -92,6 +95,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     const searchTerm = this.routineSearchTerm().toLowerCase();
     const goalFilter = this.selectedRoutineGoal();
     const muscleFilter = this.selectedRoutineMuscleGroup();
+    const equipmentFilter = this.selectedEquipment();
 
     if (searchTerm) {
       routines = routines.filter(r =>
@@ -110,8 +114,44 @@ export class RoutineListComponent implements OnInit, OnDestroy {
         })
       );
     }
+    // New logic for multi-select equipment
+    if (equipmentFilter.length > 0) {
+      routines = routines.filter(r => {
+        // Get all unique equipment for this routine
+        const routineEquipment = new Set<string>();
+        r.exercises.forEach(exDetail => {
+          const fullExercise = this.allExercisesMap.get(exDetail.exerciseId);
+          if (fullExercise?.equipment) {
+            routineEquipment.add(fullExercise.equipment);
+          }
+          fullExercise?.equipmentNeeded?.forEach(eq => {
+            // Simplified cleanup logic
+            if (eq.toLowerCase().includes('kettlebell')) {
+              routineEquipment.add('Kettlebell');
+            } else {
+              routineEquipment.add(eq.split(' (')[0].trim());
+            }
+          });
+        });
+        // Check if every selected filter equipment is present in the routine's equipment
+        return equipmentFilter.every(filterEq => routineEquipment.has(filterEq));
+      });
+    }
     return routines;
   });
+
+  // --- ADD A NEW METHOD TO TOGGLE EQUIPMENT CHIPS ---
+  toggleEquipmentFilter(equipment: string): void {
+    this.selectedEquipment.update(current => {
+      const newSelection = new Set(current);
+      if (newSelection.has(equipment)) {
+        newSelection.delete(equipment); // If it exists, remove it
+      } else {
+        newSelection.add(equipment); // If it doesn't exist, add it
+      }
+      return Array.from(newSelection);
+    });
+  }
 
 
   ngOnInit(): void {
@@ -143,6 +183,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
 
     const goals = new Set<string>();
     const muscles = new Set<string>();
+    const equipments = new Set<string>();
 
     routines.forEach(routine => {
       if (routine.goal) {
@@ -153,10 +194,40 @@ export class RoutineListComponent implements OnInit, OnDestroy {
         if (fullExercise?.primaryMuscleGroup) {
           muscles.add(fullExercise.primaryMuscleGroup);
         }
+
+        // EQUIPMENTS
+        if (fullExercise?.equipmentNeeded) {
+          fullExercise.equipmentNeeded.forEach(equip => {
+            // remove noise from equipment string
+            // and reduce any KB-relates exercise to just 'Kettlebell'
+            const altIndex = equip.indexOf(' (alternative)');
+            const optIndex = equip.indexOf(' (optional)');
+            const dbIndex = equip.indexOf('Dumbbells');
+            const dbsIndex = equip.indexOf('Dumbbell(s)');
+            const kbIndex = equip.indexOf('Kettlebells');
+            const kbsIndex = equip.indexOf('Kettlebell(s)');
+            if (altIndex >= 0) {
+              equip = equip.substring(0, altIndex);
+            }
+            if (optIndex >= 0) {
+              equip = equip.substring(0, optIndex);
+            }
+            if (kbsIndex >= 0 || kbIndex >= 0) {
+              equip = 'Kettlebell';
+            }
+            if (dbIndex >= 0 || dbsIndex >= 0) {
+              equip = 'Dumbbell';
+            }
+            equipments.add(equip);
+          });
+        } else if (fullExercise?.equipment) {
+          equipments.add(fullExercise.equipment);
+        }
       });
     });
     this.uniqueRoutineGoals.set(Array.from(goals).sort());
     this.uniqueRoutineMuscleGroups.set(Array.from(muscles).sort());
+    this.uniqueRoutineEquipments.set(Array.from(equipments).sort());
   }
 
   // --- Filter Methods ---
@@ -174,6 +245,11 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     this.selectedRoutineGoal.set(target.value || null);
   }
 
+  // onRoutineEquipmentChange(event: Event): void {
+  //   const target = event.target as HTMLSelectElement;
+  //   this.selectedEquipment.set(target.value || null);
+  // }
+
   onRoutineMuscleGroupChange(event: Event): void {
     const target = event.target as HTMLSelectElement;
     this.selectedRoutineMuscleGroup.set(target.value || null);
@@ -183,6 +259,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     this.routineSearchTerm.set('');
     this.selectedRoutineGoal.set(null);
     this.selectedRoutineMuscleGroup.set(null);
+    this.selectedEquipment.set([]); // Reset to an empty array
 
     const searchInput = document.getElementById('routine-search-term') as HTMLInputElement;
     if (searchInput) searchInput.value = '';
@@ -190,6 +267,8 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     if (goalSelect) goalSelect.value = '';
     const muscleSelect = document.getElementById('routine-muscle-filter') as HTMLSelectElement;
     if (muscleSelect) muscleSelect.value = '';
+    const equipmentSelect = document.getElementById('routine-equipment-filter') as HTMLSelectElement; // This ID will be removed, but keeping logic just in case
+    if (equipmentSelect) equipmentSelect.value = '';
   }
 
 
@@ -350,16 +429,18 @@ export class RoutineListComponent implements OnInit, OnDestroy {
   getIconPath(iconName: string | undefined): string {
     return this.exerciseService.getIconPath(iconName);
   }
-  
+
 
   getRoutineDropdownActionItems(routineId: string, mode: 'dropdown' | 'compact-bar'): ActionMenuItem[] {
+    const defaultBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-primary flex items-center text-sm hover:text-white dark:hover:text-gray-100 dark:hover:text-white';
+    const deleteBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-red-600 flex items-center text-sm hover:text-gray-100 hover:animate-pulse';;
     return [
       {
         label: 'VIEW',
         actionKey: 'view',
         iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5Z" /><path fill-rule="evenodd" d="M.664 10.59a1.651 1.651 0 010-1.186A10.004 10.004 0 0110 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0110 17c-4.257 0-7.893-2.66-9.336-6.41ZM14 10a4 4 0 11-8 0 4 4 0 018 0Z" clip-rule="evenodd" /></svg>`,
         iconClass: 'w-8 h-8 mr-2', // Adjusted for consistency if needed,
-        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') +  'text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-cyan-600 dark:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-700/30 flex items-center text-sm',
+        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
         data: { routineId }
       },
       {
@@ -367,7 +448,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
         actionKey: 'start',
         iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" /></svg>`,
         iconClass: 'w-8 h-8 mr-2',
-        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') +  'text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-700/30 flex items-center text-sm',
+        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
         data: { routineId }
       },
       {
@@ -375,7 +456,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
         actionKey: 'edit',
         iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>`,
         iconClass: 'w-8 h-8 mr-2',
-        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') +  'text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-yellow-600 dark:text-yellow-400 hover:bg-yellow-50 dark:hover:bg-yellow-700/30 flex items-center text-sm',
+        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
         data: { routineId }
       },
       {
@@ -383,7 +464,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
         actionKey: 'clone',
         iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none"><path d="M 5 3 H 16 A 2 2 0 0 1 18 5 V 16 A 2 2 0 0 1 16 18 H 5 A 2 2 0 0 1 3 16 V 5 A 2 2 0 0 1 5 3 Z M 8 6 H 19 A 2 2 0 0 1 21 8 V 19 A 2 2 0 0 1 19 21 H 8 A 2 2 0 0 1 6 19 V 8 A 2 2 0 0 1 8 6 Z" /></svg>`,
         iconClass: 'w-8 h-8 mr-2',
-        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') +  'text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-violet-600 dark:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-700/30 flex items-center text-sm',
+        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
         data: { routineId }
       },
       { isDivider: true },
@@ -392,7 +473,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
         actionKey: 'delete',
         iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.58.177-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5Zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5Z" clip-rule="evenodd" /></svg>`,
         iconClass: 'w-8 h-8 mr-2',
-        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') +  'text-left px-3 py-1.5 sm:px-4 sm:py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-600/50 flex items-center text-sm',
+        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + deleteBtnClass,
         data: { routineId }
       }
     ];
@@ -426,7 +507,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
   // Your existing toggleActions, areActionsVisible, viewRoutineDetails, etc. methods
   // The toggleActions will now just control a signal like `activeRoutineIdActions`
   // which is used to show/hide the <app-action-menu>
-   activeRoutineIdActions = signal<string | null>(null); // Store ID of routine whose actions are open
+  activeRoutineIdActions = signal<string | null>(null); // Store ID of routine whose actions are open
 
   toggleActions(routineId: string, event: MouseEvent): void {
     event.stopPropagation();
@@ -436,7 +517,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
   areActionsVisible(routineId: string): boolean {
     return this.activeRoutineIdActions() === routineId;
   }
-  
+
   // When closing menu from the component's output
   onCloseActionMenu() {
     this.activeRoutineIdActions.set(null);

@@ -506,9 +506,14 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   private isPerformingDeferredExercise = false;
   private lastActivatedDeferredExerciseId: string | null = null;
 
+  private readonly stopWeightIncrementHandler: () => void;
+  private readonly stopWeightDecrementHandler: () => void;
 
   constructor() {
     this.initializeCurrentSetForm();
+
+    this.stopWeightIncrementHandler = this.onWeightIncrementPointerUp.bind(this);
+    this.stopWeightDecrementHandler = this.onWeightDecrementPointerUp.bind(this);
 
     // --- ADD THIS EFFECT ---
     // This effect will automatically run whenever currentTabataIntervalIndex changes.
@@ -2662,76 +2667,47 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   private weightDecrementIntervalId: any = null;
 
   onWeightIncrementPointerDown(event: MouseEvent | TouchEvent): void {
-    // Prevent multiple intervals
     if (this.weightIncrementIntervalId !== null) return;
-    // Immediately increment once
     this.incrementWeight();
-    // Start interval for continuous increment
-    this.weightIncrementIntervalId = setInterval(() => {
-      this.incrementWeight();
-    }, 100);
+    this.weightIncrementIntervalId = setInterval(() => this.incrementWeight(), 100);
 
-    // Add event listeners to stop incrementing on mouseup/touchend anywhere on the document
-    const stopIncrement = () => {
-      if (this.weightIncrementIntervalId !== null) {
-        clearInterval(this.weightIncrementIntervalId);
-        this.weightIncrementIntervalId = null;
-      }
-      document.removeEventListener('mouseup', stopIncrement);
-      document.removeEventListener('touchend', stopIncrement);
-      document.removeEventListener('mouseleave', stopIncrement);
-    };
-    document.addEventListener('mouseup', stopIncrement);
-    document.addEventListener('touchend', stopIncrement);
-    document.addEventListener('mouseleave', stopIncrement);
+    // --- FIX: Use the stable, pre-bound handlers ---
+    document.addEventListener('mouseup', this.stopWeightIncrementHandler);
+    document.addEventListener('touchend', this.stopWeightIncrementHandler);
+    document.addEventListener('mouseleave', this.stopWeightIncrementHandler);
   }
 
-  onWeightIncrementPointerUp(event: MouseEvent | TouchEvent): void {
+  onWeightIncrementPointerUp(): void { // No longer needs 'event' parameter
     if (this.weightIncrementIntervalId !== null) {
       clearInterval(this.weightIncrementIntervalId);
       this.weightIncrementIntervalId = null;
     }
-    // Remove listeners in case pointerup is called directly
-    document.removeEventListener('mouseup', this.onWeightIncrementPointerUp as any);
-    document.removeEventListener('touchend', this.onWeightIncrementPointerUp as any);
-    document.removeEventListener('mouseleave', this.onWeightIncrementPointerUp as any);
+    // --- FIX: Use the stable, pre-bound handlers to remove ---
+    document.removeEventListener('mouseup', this.stopWeightIncrementHandler);
+    document.removeEventListener('touchend', this.stopWeightIncrementHandler);
+    document.removeEventListener('mouseleave', this.stopWeightIncrementHandler);
   }
-
 
   onWeightDecrementPointerDown(event: MouseEvent | TouchEvent): void {
-    // Prevent multiple intervals
     if (this.weightDecrementIntervalId !== null) return;
-    // Immediately decrement once
     this.decrementWeight();
-    // Start interval for continuous decrement
-    this.weightDecrementIntervalId = setInterval(() => {
-      this.decrementWeight();
-    }, 100);
+    this.weightDecrementIntervalId = setInterval(() => this.decrementWeight(), 100);
 
-    // Add event listeners to stop decrementing on mouseup/touchend anywhere on the document
-    const stopDecrement = () => {
-      if (this.weightDecrementIntervalId !== null) {
-        clearInterval(this.weightDecrementIntervalId);
-        this.weightDecrementIntervalId = null;
-      }
-      document.removeEventListener('mouseup', stopDecrement);
-      document.removeEventListener('touchend', stopDecrement);
-      document.removeEventListener('mouseleave', stopDecrement);
-    };
-    document.addEventListener('mouseup', stopDecrement);
-    document.addEventListener('touchend', stopDecrement);
-    document.addEventListener('mouseleave', stopDecrement);
+    // --- FIX: Use the stable, pre-bound handlers ---
+    document.addEventListener('mouseup', this.stopWeightDecrementHandler);
+    document.addEventListener('touchend', this.stopWeightDecrementHandler);
+    document.addEventListener('mouseleave', this.stopWeightDecrementHandler);
   }
 
-  onWeightDecrementPointerUp(event: MouseEvent | TouchEvent): void {
+  onWeightDecrementPointerUp(): void { // No longer needs 'event' parameter
     if (this.weightDecrementIntervalId !== null) {
       clearInterval(this.weightDecrementIntervalId);
       this.weightDecrementIntervalId = null;
     }
-    // Remove listeners in case pointerup is called directly
-    document.removeEventListener('mouseup', this.onWeightDecrementPointerUp as any);
-    document.removeEventListener('touchend', this.onWeightDecrementPointerUp as any);
-    document.removeEventListener('mouseleave', this.onWeightDecrementPointerUp as any);
+    // --- FIX: Use the stable, pre-bound handlers to remove ---
+    document.removeEventListener('mouseup', this.stopWeightDecrementHandler);
+    document.removeEventListener('touchend', this.stopWeightDecrementHandler);
+    document.removeEventListener('mouseleave', this.stopWeightDecrementHandler);
   }
 
   decrementWeight(defaultStep: number = 0.5): void {
@@ -3609,28 +3585,6 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     }
   }
 
-
-  // private startRestPeriod(duration: number, isResumingPausedRest: boolean = false): void {
-  //   this.playerSubState.set(PlayerSubState.Resting);
-  //   this.restDuration.set(duration);
-
-  //   if (isPlatformBrowser(this.platformId) && duration > 0) {
-  //     if (!isResumingPausedRest) {
-  //       this.restTimerMainText.set("RESTING");
-  //       this.restTimerNextUpText.set(this.getNextUpText(this.activeSetInfo(), this.routine() ?? null));
-  //     } else {
-  //       this.restTimerMainText.set(this.restTimerMainTextOnPause);
-  //       this.restTimerNextUpText.set(this.restTimerNextUpTextOnPause);
-  //     }
-  //     this.isRestTimerVisible.set(true);
-  //     this.updateRestTimerDisplay(duration);
-  //   } else {
-  //     this.isRestTimerVisible.set(false);
-  //     this.playerSubState.set(PlayerSubState.PerformingSet);
-  //     this.prepareCurrentSet();
-  //   }
-  // }
-
   // New helper to peek at the next set's details without advancing state
   private peekNextSetInfo(): ActiveSetInfo | null {
     const r = this.routine();
@@ -3997,6 +3951,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     startTimeRemaining?: number
   ): void {
     const intervals: Omit<HIITInterval, 'totalIntervals' | 'currentIntervalNumber'>[] = [];
+    this.startOrResumeTimedSet();
 
     // This map will store the [exerciseIndex, setIndex] for each interval.
     // It will be the same size as the 'intervals' array.
@@ -4016,7 +3971,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         // A. Add the "Work" interval.
         intervals.push({
           type: 'work',
-          duration: set.duration || 40, // Default duration
+          duration: set.duration || 5, // Default duration
           exerciseName: exercise.exerciseName
         });
         // Map this "Work" interval directly to its source set.

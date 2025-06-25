@@ -22,6 +22,7 @@ import { ToastService } from '../../core/services/toast.service';
 import { TrackingService } from '../../core/services/tracking.service'; // For manual log
 import { AlertInput } from '../../core/models/alert.model';
 import { LongPressDragDirective } from '../../shared/directives/long-press-drag.directive';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 type BuilderMode = 'routineBuilder' | 'manualLogEntry';
 
@@ -101,6 +102,9 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     );
   });
   selectedExerciseIndicesForSuperset = signal<number[]>([]);
+
+  private sanitizer = inject(DomSanitizer);
+  public sanitizedDescription: SafeHtml = '';
 
   constructor() {
     this.builderForm = this.fb.group({
@@ -197,6 +201,14 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       }
       this.exercisesFormArray.updateValueAndValidity();
     });
+    this.builderForm.get('description')?.valueChanges.subscribe(value => {
+      this.updateSanitizedDescription(value || '');
+    });
+  }
+
+  private updateSanitizedDescription(value: string): void {
+    // This tells Angular to trust this HTML string and render it as is.
+    this.sanitizedDescription = this.sanitizer.bypassSecurityTrustHtml(value);
   }
 
   private getDefaultFormValuesForMode(): any { /* ... (as previously defined) ... */
@@ -213,7 +225,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       };
     } else { // routineBuilder
       return {
-        name: '', description: '', goal: 'custom',
+        name: '', description: '', goal: '',
         workoutDate: '', startTime: '', durationMinutes: 60, overallNotesLog: '', routineIdForLog: '',
         exercises: []
       };
@@ -287,12 +299,14 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       description: routine.description,
       goal: routine.goal,
     }, { emitEvent: false });
+    this.updateSanitizedDescription(routine.description || '');
     this.exercisesFormArray.clear({ emitEvent: false });
     routine.exercises.forEach(exerciseData => {
       this.exercisesFormArray.push(this.createExerciseFormGroup(exerciseData, true, false), { emitEvent: false });
     });
     this.builderForm.markAsPristine();
   }
+
 
   patchFormWithLogData(log: WorkoutLog): void {
     this.initialRoutineIdForLogEdit = log.routineId;

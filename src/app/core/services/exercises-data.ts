@@ -299,11 +299,11 @@ export const EXERCISES_DATA = [
   {
     "id": "kettlebell-deadlift",
     "name": "Kettlebell Deadlift",
-    "description": "A foundational strength exercise using one or two kettlebells to target the posterior chain, focusing on a hip hinge movement. Can be done with kettlebell(s) between feet or outside (suitcase style).",
+    "description": "A foundational strength exercise using one or two kettlebells to target the posterior chain, focusing on a hip hinge movement. Can be done with Kettlebell between feet or outside (suitcase style).",
     "category": "kettlebells",
     "primaryMuscleGroup": "Hamstrings",
     "muscleGroups": ["Hamstrings", "Glutes", "Lower Back", "Core", "Traps", "Forearms (Grip)"],
-    "equipmentNeeded": ["Kettlebell(s)"],
+    "equipmentNeeded": ["Kettlebell"],
     "imageUrls": ["assets/images/exercises/kb-deadlift_1.jpg", "assets/images/exercises/kb-deadlift_2.jpg"]
   },
   {
@@ -323,7 +323,7 @@ export const EXERCISES_DATA = [
     "category": "kettlebells",
     "primaryMuscleGroup": "Quadriceps",
     "muscleGroups": ["Quadriceps", "Glutes", "Hamstrings", "Core (stabilizer)"],
-    "equipmentNeeded": ["Kettlebell(s)"],
+    "equipmentNeeded": ["Kettlebell"],
     "imageUrls": ["assets/images/exercises/kb-rack-lunge_1.jpg", "assets/images/exercises/kb-rack-lunge_2.jpg"]
   },
   {
@@ -363,7 +363,7 @@ export const EXERCISES_DATA = [
     "category": "kettlebells",
     "primaryMuscleGroup": "Full Body",
     "muscleGroups": ["Quadriceps", "Glutes", "Shoulders", "Triceps", "Core"],
-    "equipmentNeeded": ["Kettlebell(s)"],
+    "equipmentNeeded": ["Kettlebell"],
     "imageUrls": ["assets/images/exercises/kb-thruster_1.jpg", "assets/images/exercises/kb-thruster_2.jpg"]
   },
   {
@@ -1526,7 +1526,7 @@ export const EXERCISES_DATA = [
     "category": "kettlebells",
     "primaryMuscleGroup": "Core & Grip",
     "muscleGroups": ["Core", "Forearms", "Shoulders"],
-    "equipmentNeeded": ["Kettlebell(s)"],
+    "equipmentNeeded": ["Kettlebell"],
     imageUrls: ["assets/images/exercises/kettlebell-rack-walk_1.jpg"]
   },
   {
@@ -1751,5 +1751,85 @@ export const EXERCISES_DATA = [
     muscleGroups: ["Lats", "Core"],
     equipmentNeeded: ["Pull-up Bar"],
     imageUrls: ["assets/images/exercises/front-lever_1.jpg"]
-  }
+  },
+  {
+    "id": "kettlebell-clean-and-overhead-press-complex",
+    "name": "Kettlebell Clean & OHP Complex",
+    "description": "A complex combining a clean and overhead press with alternating variations.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Shoulders",
+    "muscleGroups": ["Shoulders", "Triceps", "Core", "Back"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": [],
+    "notes": "As described by Chandler Marchman: Clean & Overhead Press to Alternating From Top OHP to Alternating From Bottom OHP."
+  },
+  {
+    "id": "kettlebell-rack-carry",
+    "name": "Kettlebell Rack Carry",
+    "description": "A loaded carry exercise where one or two kettlebells are held in the front rack position, challenging core stability and posture.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Core",
+    "muscleGroups": ["Core", "Shoulders", "Forearms (Grip)"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": []
+  },
+  {
+    "id": "kettlebell-double-hand-swing",
+    "name": "Kettlebell Double Hand Swing",
+    "description": "The standard two-handed kettlebell swing, a powerful hip-hinge movement for the posterior chain.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Glutes",
+    "muscleGroups": ["Glutes", "Hamstrings", "Lower Back", "Core"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": []
+  },
+  {
+    "id": "kettlebell-goblet-walk",
+    "name": "Kettlebell Goblet Walk",
+    "description": "A loaded carry exercise performed by walking while holding a single kettlebell at chest level in the goblet position.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Core",
+    "muscleGroups": ["Core", "Quadriceps", "Glutes", "Upper Back"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": []
+  }, {
+    "id": "kettlebell-floor-skullcrusher",
+    "name": "Kettlebell Floor Skullcrusher",
+    "description": "A tricep isolation exercise performed lying on the floor, lowering one or two kettlebells towards the forehead.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Triceps",
+    "muscleGroups": ["Triceps"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": []
+  },
+  {
+    "id": "kettlebell-close-grip-floor-press",
+    "name": "Kettlebell Close Grip Floor Press",
+    "description": "A chest and tricep exercise performed on the floor with a close grip, emphasizing tricep activation.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Triceps",
+    "muscleGroups": ["Triceps", "Chest (Inner)"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": []
+  },
+  {
+    "id": "kettlebell-towel-curl",
+    "name": "Kettlebell Towel Curl",
+    "description": "A bicep curl variation using a towel looped through a kettlebell handle to challenge grip strength and target the biceps differently.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Biceps",
+    "muscleGroups": ["Biceps", "Forearms (Grip)"],
+    "equipmentNeeded": ["Kettlebell", "Towel"],
+    "imageUrls": []
+  },
+    {
+    "id": "kettlebell-slow-eccentric-pause-towel-curl",
+    "name": "Slow Eccentric Pause Towel Curls",
+    "description": "A bicep curl variation using a towel looped through a kettlebell handle to challenge grip strength and target the biceps differently.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Biceps",
+    "muscleGroups": ["Biceps", "Forearms (Grip)"],
+    "equipmentNeeded": ["Kettlebell", "Towel"],
+    "imageUrls": []
+  },
 ];

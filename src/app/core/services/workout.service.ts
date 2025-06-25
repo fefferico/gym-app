@@ -1,13 +1,15 @@
 // src/app/core/services/workout.service.ts
 import { Injectable, inject } from '@angular/core';
-import { BehaviorSubject, Observable, of } from 'rxjs';
-import { map, tap } from 'rxjs/operators';
+import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
+import { catchError, finalize, map, shareReplay, tap } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid'; // For generating unique IDs
 
 import { ExerciseSetParams, Routine } from '../models/workout.model'; // Ensure this path is correct
 import { StorageService } from './storage.service';
 import { LoggedSet } from '../models/workout-log.model';
 import { AlertService } from './alert.service';
+import { ROUTINES_DATA } from './routines-data';
+import { HttpClient } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root',
@@ -16,6 +18,7 @@ export class WorkoutService {
   private storageService = inject(StorageService);
   private alertService = inject(AlertService);
   private readonly ROUTINES_STORAGE_KEY = 'fitTrackPro_routines';
+  private http = inject(HttpClient);
 
   // Using a BehaviorSubject to make routines reactively available and to update them
   // It's initialized by loading routines from storage.
@@ -24,15 +27,82 @@ export class WorkoutService {
   // Public observable that components can subscribe to
   public routines$: Observable<Routine[]> = this.routinesSubject.asObservable();
 
-  constructor() {
-    // You could log the initial routines loaded for debugging
-    // console.log('Initial routines loaded:', this.routinesSubject.getValue());
+  private isLoadingRoutinesSubject = new BehaviorSubject<boolean>(true); // Start as true
+  public isLoadingRoutines$: Observable<boolean> = this.isLoadingRoutinesSubject.asObservable();
+
+  constructor(
+  ) {
+    this.isLoadingRoutinesSubject.next(true);
+
+    // Load initial routines from storage
+    const routinesFromStorage = this._loadRoutinesFromStorage();
+
+    // Initialize the BehaviorSubject with routines from storage
+    this.routinesSubject = new BehaviorSubject<Routine[]>(routinesFromStorage);
+    this.routines$ = this.routinesSubject.asObservable().pipe(
+      shareReplay(1)
+    );
+
+    // Call the new, synchronous seeding method
+    this._seedAndMergeRoutinesFromStaticData(routinesFromStorage);
   }
 
   private loadRoutinesFromStorage(): Routine[] {
     const routines = this.storageService.getItem<Routine[]>(this.ROUTINES_STORAGE_KEY);
     // Sort by name for consistent display, or by lastPerformed if available
     return routines ? routines.sort((a, b) => a.name.localeCompare(b.name)) : [];
+  }
+
+  /**
+ * Loads routines from local storage.
+ * @returns An array of Routine objects.
+ */
+  private _loadRoutinesFromStorage(): Routine[] {
+    const routines = this.storageService.getItem<Routine[]>(this.ROUTINES_STORAGE_KEY) || [];
+    return routines ? routines.sort((a, b) => a.name.localeCompare(b.name)) : [];
+  }
+
+  private _saveRoutinesToStorage(exercises: Routine[]): void {
+    this.storageService.setItem(this.ROUTINES_STORAGE_KEY, exercises);
+    this.routinesSubject.next([...exercises].sort((a, b) => a.name.localeCompare(b.name)));
+  }
+
+  /**
+ * Merges routines from the static ROUTINES_DATA constant with existing routines from storage.
+ * This is a synchronous operation and does not involve HTTP requests.
+ * @param existingRoutines Routines already loaded from storage.
+ */
+  private _seedAndMergeRoutinesFromStaticData(existingRoutines: Routine[]): void {
+    try {
+      // Cast the imported data to the Routine[] type for type safety.
+      const assetRoutines = ROUTINES_DATA as Routine[];
+
+      // Create a Set of existing routine IDs for efficient lookup.
+      const existingRoutineIds = new Set(existingRoutines.map(r => r.id));
+
+      // Filter the asset routines to only include those that are NOT already in storage.
+      const newRoutinesToSeed = assetRoutines.filter(
+        assetRoutine => !existingRoutineIds.has(assetRoutine.id)
+      );
+
+      // If there are new routines to add, merge them and update the state.
+      if (newRoutinesToSeed.length > 0) {
+        console.log(`Seeding ${newRoutinesToSeed.length} new routines from static data.`);
+        const mergedRoutines = [...existingRoutines, ...newRoutinesToSeed];
+
+        // Update the subject with the full, merged list.
+        this.routinesSubject.next(mergedRoutines);
+        // Save the merged list back to storage for the next session.
+        this._saveRoutinesToStorage(mergedRoutines);
+      } else {
+        console.log("No new routines to seed from static data. All are present in storage.");
+      }
+    } catch (error) {
+      console.error('Failed to process or seed routines from static data:', error);
+    } finally {
+      // This logic now happens synchronously, so we can set loading to false right after.
+      this.isLoadingRoutinesSubject.next(false);
+    }
   }
 
   private saveRoutinesToStorage(routines: Routine[]): void {

@@ -79,10 +79,10 @@
               }">
               <div class="flex items-center min-w-0"> <!-- Added min-w-0 for truncation -->
                 <div
-                  class="flex-shrink-0 mr-3 w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-md border"
+                  class="flex-shrink-0 mr-2 w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-md"
                   [ngClass]="{
-                    'bg-gray-200 dark:bg-gray-700 border-gray-300 dark:border-gray-600': !loggedEx.supersetId,
-                    'bg-orange-100 dark:bg-orange-800/30 border-orange-300 dark:border-orange-700': loggedEx.supersetId
+                    'bg-gray-100 dark:bg-gray-400': !loggedEx.supersetId,
+                    'dark:bg-orange-300/30 border-orange-300 dark:border-orange-700': loggedEx.supersetId
                   }">
                   <img *ngIf="loggedEx.iconName" [src]="getIconPath(loggedEx.iconName)"
                     [alt]="loggedEx.exerciseName + ' icon'" class="w-6 h-6 sm:w-8 sm:h-8 object-contain"
@@ -229,7 +229,7 @@
               </div>
               <div
                 *ngIf="(!loggedEx.warmupSets || loggedEx.warmupSets.length === 0) && (!loggedEx.workingSets || loggedEx.workingSets.length === 0)">
-                <p class="text-gray-500 dark:text-gray-400 text-m">No sets were recorded for this exercise.</p>
+                <p class="text-gray-500 dark:text-gray-400 text-m">No sets were recorded for this exercise</p>
               </div>
             </div>
           </div>

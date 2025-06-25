@@ -22,7 +22,7 @@
             <ng-container *ngFor="let item of items">
                 <button *ngIf="!item.isDivider" type="button" (click)="onItemClicked($event, item)" [title]="item.label"
                     [ngClass]="item.buttonClass || 'flex-1 text-xs min-w-[60px] flex items-center justify-center p-1.5
-                rounded-md transition-colors'" class="hover:opacity-80">
+                rounded-md transition-colors '">
                     <span *ngIf="item.iconSvg" [innerHTML]="sanitizeSvg(item.iconSvg)"
                         [ngClass]="item.iconClass || 'w-4 h-4'" [class.mr-1.5]="showLabelInCompact(item)"></span>
                     <span *ngIf="showLabelInCompact(item)">{{ item.label }}</span>
@@ -31,3 +31,5 @@
         </div>
     </div>
 </ng-container>
+
+<div class="hidden dark:hover:text-gray-100"></div>

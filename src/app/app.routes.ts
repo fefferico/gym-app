@@ -4,8 +4,10 @@ import { HomeComponent } from './features/home/home/home';
 import { KettleBellWorkoutTrackerComponent } from './kb-workout-tracker/kb-workout-tracker';
 
 export const APP_ROUTES: Routes = [
-  { path: '', component: HomeComponent, pathMatch: 'full' },
-  { path: 'home', redirectTo: '', pathMatch: 'full' }, // Optional redirect
+  { path: '', redirectTo: '/home', pathMatch: 'full' }, 
+  
+  // The 'home' route is now the single source of truth for the HomeComponent.
+  { path: 'home', component: HomeComponent }, 
 
   {
     path: 'workout',

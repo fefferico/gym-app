@@ -295,6 +295,9 @@ export class StatsDashboardComponent implements OnInit, OnDestroy {
     this.router.navigate(['profile/personal-bests']);
   }
 
+  browseRoutines(): void {
+    this.router.navigate(['/workout']);
+  }
 
   ngOnDestroy(): void {
     this.logsSub?.unsubscribe();
