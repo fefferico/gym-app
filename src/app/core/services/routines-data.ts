@@ -143,11 +143,11 @@ export const ROUTINES_DATA: Routine[] = [
                 "exerciseId": "kettlebell-deadlift",
                 "exerciseName": "Deadlift",
                 "sets": [
-                    { "id": "s2c1", "reps": 10, "weight": 71, "duration": 20, "restAfterSet": 10, "type": "tabata" },
-                    { "id": "s2c2", "reps": 8, "weight": 71, "duration": 20, "restAfterSet": 10, "type": "tabata" },
-                    { "id": "s2c3", "reps": 6, "weight": 71, "duration": 20, "restAfterSet": 10, "type": "tabata" },
-                    { "id": "s2c4", "reps": 4, "weight": 71, "duration": 20, "restAfterSet": 10, "type": "tabata" },
-                    { "id": "s2c5", "reps": 2, "weight": 71, "duration": 20, "restAfterSet": 10, "type": "tabata" }
+                    { "id": "s2c1", "reps": 10, "weight": 71, "duration": 20, "restAfterSet": 10, "type": "standard" },
+                    { "id": "s2c2", "reps": 8, "weight": 71, "duration": 20, "restAfterSet": 10, "type": "standard" },
+                    { "id": "s2c3", "reps": 6, "weight": 71, "duration": 20, "restAfterSet": 10, "type": "standard" },
+                    { "id": "s2c4", "reps": 4, "weight": 71, "duration": 20, "restAfterSet": 10, "type": "standard" },
+                    { "id": "s2c5", "reps": 2, "weight": 71, "duration": 20, "restAfterSet": 10, "type": "standard" }
                 ],
                 "supersetId": null,
                 "supersetOrder": null,
@@ -158,7 +158,7 @@ export const ROUTINES_DATA: Routine[] = [
                 "exerciseId": "kettlebell-goblet-walk",
                 "exerciseName": "Goblet Walk",
                 "sets": [
-                    { "id": "s2d1", "duration": 50, "notes": "Distance: 50 ft. after each interval", "weight": 71, "restAfterSet": 0, "type": "tabata" }
+                    { "id": "s2d1", "duration": 50, "notes": "Distance: 50 ft. after each interval", "reps":1, "weight": 71, "restAfterSet": 0, "type": "standard" }
                 ],
                 "supersetId": null,
                 "supersetOrder": null,

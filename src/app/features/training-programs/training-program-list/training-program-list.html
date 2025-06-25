@@ -116,8 +116,17 @@
                 <div class="flex justify-between items-start mb-1.5">
                   <h2 class="text-lg sm:text-xl font-semibold text-primary dark:text-primary-light truncate pr-10"
                     [title]="program.name">{{ program.name }}</h2>
-                  <span *ngIf="program.isActive"
-                    class="absolute top-3 right-12 sm:top-4 sm:right-14 bg-green-100 text-green-700 dark:bg-green-700 dark:text-green-100 text-2xs sm:text-xs font-semibold px-1.5 sm:px-2.5 py-0.5 rounded-full">Active</span>
+                  <div *ngIf="program.isActive" class="flex items-center absolute top-3 right-12 bg-green-100 text-green-700 dark:bg-green-700 dark:text-green-100 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                      class="w-5 h-5 ml-1">
+                      <path fill-rule="evenodd"
+                        d="M16.403 12.652a3 3 0 000-5.304 3 3 0 00-3.75-3.751 3 3 0 00-5.305 0 3 3 0 00-3.751 3.75 3 3 0 000 5.305 3 3 0 003.75 3.751 3 3 0 005.305 0 3 3 0 003.751-3.75Zm-2.546-4.46a.75.75 0 00-1.214-.883l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5Z"
+                        clip-rule="evenodd"></path>
+                    </svg>
+                    <span *ngIf="program.isActive"
+                      class=" text-2xs sm:text-xs font-semibold px-1.5 sm:px-2.5 py-0.5 ">Active</span>
+
+                  </div>
                 </div>
                 <p *ngIf="program.description"
                   class="text-sm sm:text-xs text-gray-600 dark:text-gray-400 mb-2 line-clamp-2"
@@ -168,7 +177,7 @@
                       </svg>EDIT</button>
                     <button (click)="toggleActiveProgram(program.id, program.isActive, $event)"
                       class="w-full text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium flex items-center"
-                      [ngClass]="{'text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-600/50': !program.isActive, 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 opacity-70 cursor-not-allowed': program.isActive }"><svg
+                      [ngClass]="{'text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-600/50': !program.isActive, 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 opacity-70': program.isActive }"><svg
                         *ngIf="!program.isActive" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
                         fill="currentColor" class="w-5 h-5 mr-2">
                         <path fill-rule="evenodd"
@@ -179,7 +188,7 @@
                         <path fill-rule="evenodd"
                           d="M10 18a8 8 0 100-16 8 8 0 000 16Zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5Z"
                           clip-rule="evenodd" />
-                      </svg>{{ program.isActive ? 'ACTIVE' : 'SET ACTIVE' }}</button>
+                      </svg>{{ program.isActive ? 'DEACTIVATE' : 'SET ACTIVE' }}</button>
                     <div class="my-0.5 sm:my-1 border-t border-gray-200 dark:border-gray-600"></div>
                     <button (click)="deleteProgram(program.id, $event)"
                       class="w-full text-left px-3 py-1.5 sm:px-4 sm:py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-600/50 flex items-center"><svg
@@ -195,7 +204,7 @@
                 class="absolute inset-x-0 bottom-0 p-2 bg-gray-100 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-700 flex flex-wrap gap-1.5 justify-center z-20 rounded-b-lg">
                 <button (click)="toggleActiveProgram(program.id, program.isActive, $event)" title="Set Active"
                   class="flex-1 text-xs min-w-[70px] flex items-center justify-center p-1.5 text-white rounded-md transition-colors"
-                  [ngClass]="program.isActive ? 'bg-green-600 hover:bg-green-700 cursor-not-allowed opacity-80' : 'bg-green-500 hover:bg-green-600'"><svg
+                  [ngClass]="program.isActive ? 'bg-green-600 hover:bg-green-700 opacity-80' : 'bg-green-500 hover:bg-green-600'"><svg
                     *ngIf="!program.isActive" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
                     class="w-5 h-5 mr-1">
                     <path fill-rule="evenodd"
@@ -206,7 +215,7 @@
                     <path fill-rule="evenodd"
                       d="M10 18a8 8 0 100-16 8 8 0 000 16Zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5Z"
                       clip-rule="evenodd" />
-                  </svg>{{ program.isActive ? 'ACTIVE' : 'ACTIVATE' }}</button><button
+                  </svg>{{ program.isActive ? 'DEACTIVATE' : 'ACTIVATE' }}</button><button
                   (click)="viewProgram(program.id, $event)" title="View Details"
                   class="flex-1 text-xs min-w-[70px] flex items-center justify-center p-1.5 bg-cyan-500 text-white rounded-md hover:bg-cyan-600 transition-colors"><svg
                     xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
@@ -293,8 +302,9 @@
                     <h2 class="text-md sm:text-lg font-semibold text-gray-700 dark:text-gray-200">{{ calendarViewDate()
                       | date:calendarHeaderFormat() }}</h2>
                     <p class="text-2xs sm:text-xs text-gray-500 dark:text-gray-400">Active Program: <strong
-                        class="text-primary dark:text-primary-light truncate max-w-[150px] sm:max-w-xs inline-block align-bottom hover:cursor-pointer"
-                        [title]="'Go to program ' + activeProgram.name" (click)="viewProgram(activeProgram.id)">{{ activeProgram.name }}</strong></p>
+                        class="text-primary dark:text-primary-light truncate max-w-[150px] sm:max-w-xs inline-block align-bottom hover:cursor-pointer hover:underline"
+                        [title]="'Go to program ' + activeProgram.name" (click)="viewProgram(activeProgram.id)">{{
+                        activeProgram.name }}</strong></p>
                   </div>
                   <button (click)="nextPeriod()" [title]="'Next ' + (calendarDisplayMode() | titlecase)"
                     class="p-1.5 sm:p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 disabled:opacity-50"
@@ -453,14 +463,14 @@
                   stroke="currentColor" class="w-4 h-4 sm:w-5 sm:h-5 mr-2">
                   <path stroke-linecap="round" stroke-linejoin="round"
                     d="M2 17.25V21h3.75L17.81 9.94l-3.75-3.75L2 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
-                </svg>Log This Past Session</button>
+                </svg>LOG THIS PAST SESSION</button>
               <button (click)="goToPreviousProgramSession(activeProgramForCalendar()?.id)"
                 class="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-3 rounded-md shadow-sm text-xs sm:text-sm flex items-center justify-center"><svg
                   xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                   stroke="currentColor" class="w-4 h-4 sm:w-5 sm:h-5 mr-2">
                   <path stroke-linecap="round" stroke-linejoin="round"
                     d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                </svg>All Logs for Program</button>
+                </svg>ALL LOGS FOR PROGRAM</button>
             </div>
             <hr *ngIf="selectedDay.scheduledItems.length > 1 && i < selectedDay.scheduledItems.length - 1"
               class="my-4 border-gray-300 dark:border-gray-600">

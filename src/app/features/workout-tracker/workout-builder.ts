@@ -24,13 +24,14 @@ import { AlertInput } from '../../core/models/alert.model';
 import { LongPressDragDirective } from '../../shared/directives/long-press-drag.directive';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { merge } from 'hammerjs';
+import { AutoGrowDirective } from '../../shared/directives/auto-grow.directive';
 
 type BuilderMode = 'routineBuilder' | 'manualLogEntry';
 
 @Component({
   selector: 'app-workout-builder',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, FormsModule, DragDropModule, WeightUnitPipe, TitleCasePipe, LongPressDragDirective],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, FormsModule, DragDropModule, WeightUnitPipe, TitleCasePipe, LongPressDragDirective, AutoGrowDirective],
   templateUrl: './workout-builder.html',
   styleUrl: './workout-builder.scss',
   providers: [DecimalPipe]

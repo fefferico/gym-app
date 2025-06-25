@@ -359,6 +359,7 @@
                                         Logged Exercise (Optional)'}}
                                     </label>
                                     <textarea [id]="'exerciseNotes-' + exIndex" formControlName="notes" rows="1"
+                                        appAutoGrow 
                                         class="mt-0.5 block w-full p-1.5 text-sm border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200"
                                         [readonly]="isViewMode"></textarea>
                                 </div>
@@ -593,7 +594,7 @@
                         <path
                             d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
                     </svg>
-                    Add Another Exercise
+                    ADD ANOTHER EXERCISE
                 </button>
             </div>
         </section>
@@ -611,8 +612,8 @@
             <button type="submit"
                 [disabled]="builderForm.invalid || (exercisesFormArray.length === 0 && !(mode === 'routineBuilder' && builderForm.get('goal')?.value === 'rest'))"
                 class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark disabled:opacity-50">
-                {{ mode === 'routineBuilder' ? (isNewMode ? 'CREATE ROUTINE' : 'SAVE CHANGES') : (isNewMode ? 'Log
-                Workout' : 'Save Log Changes') }}
+                {{ mode === 'routineBuilder' ? (isNewMode ? 'CREATE ROUTINE' : 'SAVE CHANGES') : (isNewMode ? 'LOG
+                WORKOUT' : 'SAVE LOG CHANGES') }}
             </button>
         </div>
     </form>

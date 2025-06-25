@@ -10,7 +10,7 @@ import { Routine } from '../models/workout.model';
 import { WorkoutService } from './workout.service';
 import { AlertService } from './alert.service';
 import { ToastService } from './toast.service';
-import { isSameDay, getDay } from 'date-fns'; // For date comparisons and getting day of week
+import { isSameDay, getDay, eachDayOfInterval, parseISO } from 'date-fns'; // For date comparisons and getting day of week
 
 @Injectable({
   providedIn: 'root'
@@ -287,70 +287,68 @@ export class TrainingProgramService {
   }
 
   /**
-   * Retrieves all scheduled routine days for a given date range from the program with the specified ID.
-   * Useful for populating a calendar view for a specific program.
-   * @param programId The ID of the program to use.
-   * @param viewStartDate The start of the date range.
-   * @param viewEndDate The end of the date range.
-   * @returns An Observable emitting an array of objects, each containing the date, routine, and scheduled day info.
+   * Gets all scheduled routine occurrences for a given program within a specific date range.
+   * This method correctly calculates recurring weekly or cyclical schedules.
+   *
+   * @param programId The ID of the training program.
+   * @param rangeStart The start of the date range.
+   * @param rangeEnd The end of the date range.
+   * @returns An observable emitting an array of scheduled entries, with the `date` property
+   *          set to the actual occurrence date within the range.
    */
-  getScheduledRoutinesForDateRangeByProgramId(
-    programId: string,
-    viewStartDate: Date,
-    viewEndDate: Date
-  ): Observable<{ date: Date; routine: Routine; scheduledDayInfo: ScheduledRoutineDay }[]> {
+  getScheduledRoutinesForDateRangeByProgramId(programId: string, rangeStart: Date, rangeEnd: Date): Observable<{ date: Date; scheduledDayInfo: ScheduledRoutineDay }[]> {
     return this.getProgramById(programId).pipe(
-      switchMap(program => {
+      map(program => {
         if (!program || !program.schedule || program.schedule.length === 0) {
-          return of([]);
+          return []; // No program or no schedule, return empty
         }
 
-        const scheduledEntries: Observable<{ date: Date; routine: Routine; scheduledDayInfo: ScheduledRoutineDay } | null>[] = [];
-        let currentDate = new Date(viewStartDate);
+        const allDaysInRange = eachDayOfInterval({ start: rangeStart, end: rangeEnd });
+        const allOccurrences: { date: Date; scheduledDayInfo: ScheduledRoutineDay }[] = [];
 
-        while (currentDate <= viewEndDate) {
-          let dayMatchLogic: (day: ScheduledRoutineDay) => boolean;
-          const currentTargetDate = new Date(currentDate);
+        // Determine the cycle length: a custom number or 7 for a standard week.
+        const cycleLength = program.cycleLength && program.cycleLength > 0 ? program.cycleLength : 7;
+        const programStartDate = program.startDate ? parseISO(program.startDate) : new Date(1970, 0, 1); // A very early date if not set
 
-          if (program.cycleLength && program.cycleLength > 0 && program.startDate) {
-            const programStartDate = new Date(program.startDate);
-            const diffTime = Math.abs(currentTargetDate.getTime() - programStartDate.getTime());
-            const diffDays = currentTargetDate >= programStartDate ? Math.floor(diffTime / (1000 * 60 * 60 * 24)) : -1;
+        // Create a map for quick lookup of what's scheduled on a given cycle day.
+        const scheduleMap = new Map<number, ScheduledRoutineDay[]>();
+        program.schedule.forEach(day => {
+          const dayIndex = day.dayOfWeek % cycleLength; // 0 for Sunday/Day 1, 1 for Monday/Day 2, etc.
+          if (!scheduleMap.has(dayIndex)) {
+            scheduleMap.set(dayIndex, []);
+          }
+          scheduleMap.get(dayIndex)!.push(day);
+        });
 
-            if (diffDays >= 0) {
-              const currentCycleDayNumber = (diffDays % program.cycleLength) + 1;
-              dayMatchLogic = (s: ScheduledRoutineDay) => s.dayOfWeek === currentCycleDayNumber;
-            } else {
-              dayMatchLogic = () => false;
+        // Iterate through every single day in the requested calendar range.
+        allDaysInRange.forEach(currentDate => {
+          // Ignore days before the program's official start date.
+          if (currentDate < programStartDate) {
+            return;
+          }
+
+          // For weekly cycles (cycleLength is 7)
+          if (cycleLength === 7) {
+            const dayOfWeek = getDay(currentDate); // 0 for Sunday, 1 for Monday, etc.
+            if (scheduleMap.has(dayOfWeek)) {
+              scheduleMap.get(dayOfWeek)!.forEach(scheduledDayInfo => {
+                allOccurrences.push({ date: currentDate, scheduledDayInfo });
+              });
             }
-          } else {
-            const dayOfWeekForTargetDate = getDay(currentTargetDate);
-            dayMatchLogic = (s: ScheduledRoutineDay) => s.dayOfWeek === dayOfWeekForTargetDate;
           }
-
-          const scheduledDayInfo = program.schedule.find(dayMatchLogic);
-
-          if (scheduledDayInfo) {
-            scheduledEntries.push(
-              this.workoutService.getRoutineById(scheduledDayInfo.routineId).pipe(
-                map(routine => {
-                  if (routine) {
-                    return { date: currentTargetDate, routine, scheduledDayInfo };
-                  }
-                  return null;
-                })
-              )
-            );
+          // For custom-length cycles (e.g., 4-day cycle)
+          else {
+            const daysSinceStart = Math.floor((currentDate.getTime() - programStartDate.getTime()) / (1000 * 60 * 60 * 24));
+            const currentCycleDay = daysSinceStart % cycleLength;
+            if (scheduleMap.has(currentCycleDay)) {
+              scheduleMap.get(currentCycleDay)!.forEach(scheduledDayInfo => {
+                allOccurrences.push({ date: currentDate, scheduledDayInfo });
+              });
+            }
           }
-          currentDate.setDate(currentDate.getDate() + 1);
-        }
+        });
 
-        if (scheduledEntries.length === 0) {
-          return of([]);
-        }
-        return combineLatest(scheduledEntries).pipe(
-          map(results => results.filter(r => r !== null) as { date: Date; routine: Routine; scheduledDayInfo: ScheduledRoutineDay }[])
-        );
+        return allOccurrences;
       })
     );
   }

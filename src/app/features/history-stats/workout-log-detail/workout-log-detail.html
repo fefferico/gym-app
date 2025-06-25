@@ -61,7 +61,7 @@
 
           <div *ngFor="let loggedEx of displayExercises(); let exIdx = index" class="overflow-hidden shadow-sm"
             [ngClass]="{
-              'border border-gray-200 dark:border-gray-700 rounded-lg mt-2': !loggedEx.supersetId,
+              'border border-gray-200 dark:border-gray-600 rounded-lg mt-2': !loggedEx.supersetId,
               'mb-3': loggedEx.supersetId && loggedEx.supersetOrder === (loggedEx.supersetSize ?? 0),
               'mt-3': loggedEx.supersetId && loggedEx.supersetOrder === 0,
               'border-l border-r border-orange-400 dark:border-orange-600': loggedEx.supersetId,
@@ -81,7 +81,7 @@
                 <div
                   class="flex-shrink-0 mr-2 w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-md"
                   [ngClass]="{
-                    'bg-gray-100 dark:bg-gray-400': !loggedEx.supersetId,
+                    'bg-gray-100 dark:bg-gray-200': !loggedEx.supersetId,
                     'dark:bg-orange-300/30 border-orange-300 dark:border-orange-700': loggedEx.supersetId
                   }">
                   <img *ngIf="loggedEx.iconName" [src]="getIconPath(loggedEx.iconName)"
