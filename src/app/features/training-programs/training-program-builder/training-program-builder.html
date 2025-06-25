@@ -100,7 +100,7 @@
                 <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300">Schedule</h2>
                 <button *ngIf="!isViewMode" type="button" (click)="addScheduledDay()"
                     class="bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium py-1.5 px-3 rounded-md shadow-sm">
-                    + Add Day to Schedule
+                    + ADD DAY TO SCHEDULE
                 </button>
             </div>
 
@@ -213,11 +213,11 @@
         <div *ngIf="!isViewMode" class="pt-6 flex justify-end space-x-3">
             <a routerLink="/training-programs"
                 class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700">
-                Cancel
+                CANCEL
             </a>
             <button type="submit" [disabled]="programForm.invalid && (programForm.touched || programForm.dirty)"
                 class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark disabled:opacity-50">
-                {{ isNewMode ? 'Create Program' : 'Save Changes' }}
+                {{ isNewMode ? 'CREATE PROGRAM' : 'SAVE CHANGES' }}
             </button>
         </div>
     </form>

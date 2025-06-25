@@ -391,8 +391,6 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
     try {
       this.spinnerService.show("Deleting program...");
       await this.trainingProgramService.deleteProgram(programId);
-      // No need to manually update allProgramsForList here.
-      this.toastService.success("Program deleted successfully.", 3000, "Success");
     } catch (error) { this.toastService.error("An unexpected error occurred.", 0, "Deletion Error"); }
     finally { this.spinnerService.hide(); }
   }

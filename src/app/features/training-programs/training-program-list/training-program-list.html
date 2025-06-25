@@ -28,7 +28,7 @@
   <div class="relative min-h-[400px]">
     <div [@viewSlide]="viewAnimationParams()" [ngSwitch]="currentView()">
       <div *ngSwitchCase="'list'" class="p-1">
-        <div class="flex justify-center">
+        <div *ngIf="filteredPrograms.length > 0" class="flex justify-center">
           <button (click)="navigateToCreateProgram()"
             class="bg-primary hover:bg-primary-dark text-white font-semibold py-2 px-3 rounded-md shadow-sm text-xs sm:text-sm mb-2">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
@@ -272,11 +272,11 @@
             <button (click)="setCalendarDisplayMode('week')"
               class="px-3 py-1.5 text-xs sm:text-sm font-medium rounded-md flex-1 transition-colors disabled:opacity-60"
               [ngClass]="calendarDisplayMode() === 'week' ? 'bg-primary text-white shadow' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'"
-              [disabled]="isCalendarAnimating">Week</button>
+              [disabled]="isCalendarAnimating">WEEK</button>
             <button (click)="setCalendarDisplayMode('month')"
               class="px-3 py-1.5 text-xs sm:text-sm font-medium rounded-md flex-1 transition-colors disabled:opacity-60"
               [ngClass]="calendarDisplayMode() === 'month' ? 'bg-primary text-white shadow' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'"
-              [disabled]="isCalendarAnimating">Month</button>
+              [disabled]="isCalendarAnimating">MONTH</button>
           </div>
           <!-- Container for the sliding calendar content (header + grid) -->
           <div class="relative overflow-hidden min-h-[300px]" #calendarSwipeContainerEl data-calendar-swipe-container>
@@ -293,8 +293,8 @@
                     <h2 class="text-md sm:text-lg font-semibold text-gray-700 dark:text-gray-200">{{ calendarViewDate()
                       | date:calendarHeaderFormat() }}</h2>
                     <p class="text-2xs sm:text-xs text-gray-500 dark:text-gray-400">Active Program: <strong
-                        class="text-primary dark:text-primary-light truncate max-w-[150px] sm:max-w-xs inline-block align-bottom"
-                        [title]="activeProgram.name">{{ activeProgram.name }}</strong></p>
+                        class="text-primary dark:text-primary-light truncate max-w-[150px] sm:max-w-xs inline-block align-bottom hover:cursor-pointer"
+                        [title]="'Go to program ' + activeProgram.name" (click)="viewProgram(activeProgram.id)">{{ activeProgram.name }}</strong></p>
                   </div>
                   <button (click)="nextPeriod()" [title]="'Next ' + (calendarDisplayMode() | titlecase)"
                     class="p-1.5 sm:p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 disabled:opacity-50"
