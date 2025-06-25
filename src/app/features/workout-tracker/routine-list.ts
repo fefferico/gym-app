@@ -89,6 +89,10 @@ export class RoutineListComponent implements OnInit, OnDestroy {
 
   private readonly PAUSED_WORKOUT_KEY = 'fitTrackPro_pausedWorkoutState';
 
+
+  maxDuration = signal<number>(120); // A default max, will be updated dynamically
+  selectedMaxDuration = signal<number>(120); // The current value of the slider
+
   // Computed signal for filtered routines
   filteredRoutines = computed(() => {
     let routines = this.allRoutinesForList();
@@ -96,6 +100,16 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     const goalFilter = this.selectedRoutineGoal();
     const muscleFilter = this.selectedRoutineMuscleGroup();
     const equipmentFilter = this.selectedEquipment();
+    const durationFilter = this.selectedMaxDuration(); // Get the slider value
+
+    // Calculate estimated duration for each routine once, to avoid recalculating
+    const routinesWithDuration = routines.map(r => ({
+      ...r,
+      estimatedDuration: this.getRoutineDuration(r)
+    }));
+
+    // Apply duration filter first
+    routines = routinesWithDuration.filter(r => r.estimatedDuration <= durationFilter);
 
     if (searchTerm) {
       routines = routines.filter(r =>
@@ -179,13 +193,23 @@ export class RoutineListComponent implements OnInit, OnDestroy {
   }
 
   private populateRoutineFilterOptions(routines: Routine[]): void {
-    if (!routines) return;
+    if (!routines || routines.length === 0) {
+      this.maxDuration.set(120); // Reset to default if no routines
+      return;
+    };
 
     const goals = new Set<string>();
     const muscles = new Set<string>();
     const equipments = new Set<string>();
+    let maxCalculatedDuration = 0;
 
     routines.forEach(routine => {
+      // Calculate duration for each routine
+      const duration = this.getRoutineDuration(routine);
+      if (duration > maxCalculatedDuration) {
+        maxCalculatedDuration = duration;
+      }
+
       if (routine.goal) {
         goals.add(routine.goal);
       }
@@ -225,6 +249,11 @@ export class RoutineListComponent implements OnInit, OnDestroy {
         }
       });
     });
+    // Set the max for the slider, with a sensible ceiling (e.g., 180 mins)
+    const newMax = Math.min(Math.ceil(maxCalculatedDuration / 10) * 10, 180); // Round up to nearest 10
+    this.maxDuration.set(newMax > 0 ? newMax : 120);
+    this.selectedMaxDuration.set(newMax > 0 ? newMax : 120); // Also reset the selected value
+
     this.uniqueRoutineGoals.set(Array.from(goals).sort());
     this.uniqueRoutineMuscleGroups.set(Array.from(muscles).sort());
     this.uniqueRoutineEquipments.set(Array.from(equipments).sort());
@@ -255,11 +284,18 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     this.selectedRoutineMuscleGroup.set(target.value || null);
   }
 
+  onDurationFilterChange(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    this.selectedMaxDuration.set(Number(target.value));
+  }
+
+  // --- UPDATE the clear filters method ---
   clearRoutineFilters(): void {
     this.routineSearchTerm.set('');
     this.selectedRoutineGoal.set(null);
     this.selectedRoutineMuscleGroup.set(null);
-    this.selectedEquipment.set([]); // Reset to an empty array
+    this.selectedEquipment.set([]);
+    this.selectedMaxDuration.set(this.maxDuration()); // Reset slider to its max value
 
     const searchInput = document.getElementById('routine-search-term') as HTMLInputElement;
     if (searchInput) searchInput.value = '';

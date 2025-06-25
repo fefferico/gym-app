@@ -1822,7 +1822,7 @@ export const EXERCISES_DATA = [
     "equipmentNeeded": ["Kettlebell", "Towel"],
     "imageUrls": []
   },
-    {
+  {
     "id": "kettlebell-slow-eccentric-pause-towel-curl",
     "name": "Slow Eccentric Pause Towel Curls",
     "description": "A bicep curl variation using a towel looped through a kettlebell handle to challenge grip strength and target the biceps differently.",
@@ -1832,4 +1832,34 @@ export const EXERCISES_DATA = [
     "equipmentNeeded": ["Kettlebell", "Towel"],
     "imageUrls": []
   },
+  {
+    "id": "lying-leg-curl-machine",
+    "name": "Lying Leg Curl (Machine)",
+    "description": "An isolation exercise for the hamstrings, performed lying face down on a machine.",
+    "category": "machines",
+    "primaryMuscleGroup": "Hamstrings",
+    "muscleGroups": ["Hamstrings"],
+    "equipmentNeeded": ["Lying Leg Curl Machine"],
+    "imageUrls": []
+  },
+  {
+    "id": "barbell-skull-crusher",
+    "name": "Barbell Skull Crusher",
+    "description": "A tricep isolation exercise performed lying on a bench, lowering a barbell towards the forehead. Also known as a lying tricep extension.",
+    "category": "barbells",
+    "primaryMuscleGroup": "Triceps",
+    "muscleGroups": ["Triceps"],
+    "equipmentNeeded": ["Barbell", "Bench", "EZ-Curl Bar (recommended)"],
+    "imageUrls": []
+  },
+  {
+    "id": "standing-calf-raise",
+    "name": "Standing Calf Raise",
+    "description": "An isolation exercise for the calf muscles (gastrocnemius and soleus), typically performed on a machine or with free weights.",
+    "category": "bodyweight/calisthenics",
+    "primaryMuscleGroup": "Calves",
+    "muscleGroups": ["Calves (Gastrocnemius, Soleus)"],
+    "equipmentNeeded": ["Calf Raise Machine", "Dumbbells (optional)"],
+    "imageUrls": []
+  }
 ];
