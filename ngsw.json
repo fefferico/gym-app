@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1750871442801,
+  "timestamp": 1750872060002,
   "index": "/gym-app/index.html",
   "assetGroups": [
     {
@@ -31,12 +31,12 @@
         "/gym-app/chunk-UREGBNQO.js",
         "/gym-app/chunk-X2XI6BUQ.js",
         "/gym-app/chunk-XHLQWURF.js",
-        "/gym-app/chunk-Y3DGQCN7.js",
+        "/gym-app/chunk-YCMCARIW.js",
         "/gym-app/chunk-YKPMGRVE.js",
         "/gym-app/chunk-Z3H7HP7L.js",
         "/gym-app/favicon.ico",
         "/gym-app/index.html",
-        "/gym-app/main-GP2ZTVY7.js",
+        "/gym-app/main-HDTP6MNV.js",
         "/gym-app/manifest.webmanifest",
         "/gym-app/polyfills-B6TNHZQ6.js",
         "/gym-app/styles-JLX7FAZB.css"
@@ -106,7 +106,7 @@
     "/gym-app/chunk-UREGBNQO.js": "60f1aeaaa1d165b8d5253a8ff4b972c84899bf31",
     "/gym-app/chunk-X2XI6BUQ.js": "c191f78c050958e284f92f1ea559b99c2988a101",
     "/gym-app/chunk-XHLQWURF.js": "c1e05e14226a0b348c8e58e3a132434761579bf9",
-    "/gym-app/chunk-Y3DGQCN7.js": "c2a01a265bb1fa2c107d79103e424a2cdba985ba",
+    "/gym-app/chunk-YCMCARIW.js": "0d523e6c1e098709e9557e95c36fdcc844096870",
     "/gym-app/chunk-YKPMGRVE.js": "774cab62d61a4075c3303711a5efe5abcf975f3d",
     "/gym-app/chunk-Z3H7HP7L.js": "13176ef0c468957668ca088d8539dc17f6294eb8",
     "/gym-app/favicon.ico": "9c39f434fe1261f68c5e3eefdf734630d99c5670",
@@ -119,8 +119,8 @@
     "/gym-app/icons/icon-512x512.png": "1de182f76f7329dfa8f9fcdd1fdcdd695bea6a99",
     "/gym-app/icons/icon-72x72.png": "aa88a6096bd973be7f6d7a5489bfa6bc2463f8c4",
     "/gym-app/icons/icon-96x96.png": "7fb8f59c30ce2ff12c700321a0b39e14b3dc8f95",
-    "/gym-app/index.html": "d03f9376ec8e48c34ecf6e14b84e77b95d865c73",
-    "/gym-app/main-GP2ZTVY7.js": "05b4376749cf4541b6c920129840f293b869454c",
+    "/gym-app/index.html": "42f2fa734a6c6e412c1c2aa14a7e63a22cfcde37",
+    "/gym-app/main-HDTP6MNV.js": "7ff4440d396302f3dcc8744fc36e7a165e9475d7",
     "/gym-app/manifest.webmanifest": "651aca4c4893d038fa26ea82650bfdeb1ede434b",
     "/gym-app/polyfills-B6TNHZQ6.js": "bf76ac291d7f51c1139b7edcf86b359a30c08c64",
     "/gym-app/styles-JLX7FAZB.css": "708065fdd3df881b21444849f03b67638da92974"
