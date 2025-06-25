@@ -28,9 +28,9 @@
   <div class="relative min-h-[400px]">
     <div [@viewSlide]="viewAnimationParams()" [ngSwitch]="currentView()">
       <div *ngSwitchCase="'list'" class="p-1">
-        <div *ngIf="filteredPrograms.length > 0" class="flex justify-center">
+        <div *ngIf="allProgramsForList().length > 0" class="flex justify-center">
           <button (click)="navigateToCreateProgram()"
-            class="bg-primary hover:bg-primary-dark text-white font-semibold py-2 px-3 rounded-md shadow-sm text-xs sm:text-sm mb-2">
+            class="bg-primary hover:bg-primary-dark text-white font-semibold py-2 px-3 rounded-md shadow-sm text-xs sm:text-sm mb-1">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
               class="w-4 h-4 mr-1.5 inline-block align-text-bottom">
               <path
