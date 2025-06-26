@@ -1,5 +1,5 @@
 // src/app/features/profile-settings/personal-bests.component.ts
-import { Component, inject, OnInit, signal, computed, PLATFORM_ID } from '@angular/core';
+import { Component, inject, OnInit, signal, computed, PLATFORM_ID, HostListener } from '@angular/core';
 import { CommonModule, DatePipe, TitleCasePipe, DecimalPipe, isPlatformBrowser } from '@angular/common'; // Ensure DecimalPipe is imported
 import { Router, RouterLink } from '@angular/router';
 import { Observable, combineLatest, of } from 'rxjs';
@@ -139,9 +139,9 @@ export class PersonalBestsComponent implements OnInit {
   });
 
   hasActiveFilters = computed<boolean>(() => {
-    return this.exerciseNameFilter().trim() !== '' 
-    || this.exerciseCategoryFilter() !== '' 
-    || this.pbTypeFilter().trim() !== '';
+    return this.exerciseNameFilter().trim() !== ''
+      || this.exerciseCategoryFilter() !== ''
+      || this.pbTypeFilter().trim() !== '';
   });
 
   allPersonalBestsSignalEmpty = computed<boolean>(() => {
@@ -292,5 +292,24 @@ export class PersonalBestsComponent implements OnInit {
     // this.selectedPbTypeForTrend.set(pbType);
     // this.isTrendModalVisible.set(true);
     console.log(`Requesting trend for Exercise ID: ${exerciseId}, PB Type: ${pbType}`);
+  }
+
+
+  showBackToTopButton = signal<boolean>(false);
+  @HostListener('window:scroll', [])
+  onWindowScroll(): void {
+    // Check if the user has scrolled down more than a certain amount (e.g., 400 pixels)
+    // You can adjust this value to your liking.
+    const verticalOffset = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+    this.showBackToTopButton.set(verticalOffset > 400);
+  }
+
+  scrollToTop(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth' // For a smooth scrolling animation
+      });
+    }
   }
 }

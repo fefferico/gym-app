@@ -26,7 +26,7 @@
         <div *ngIf="mode === 'routineBuilder' && !isNewMode && currentRoutineId"
             class="mt-4 flex flex-wrap gap-2 justify-center">
             <button type="button" (click)="startCurrentWorkout()"
-                class="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-3 rounded-md shadow-sm text-m flex items-center">
+                class="bg-primary hover:bg-green-600 text-white font-semibold py-3 px-3 rounded-md shadow-sm text-m flex items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3"
                     stroke="currentColor" class="size-4 sm:size-5 mr-1">
                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -35,7 +35,7 @@
                 START
             </button>
             <button *ngIf="isViewMode" type="button" (click)="enableEditMode()"
-                class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-3 px-3 rounded-md shadow-sm text-m flex items-center">
+                class="bg-primary hover:bg-yellow-500 text-white font-semibold py-3 px-3 rounded-md shadow-sm text-m flex items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
                     stroke="currentColor" class="size-4 sm:size-5 mr-1">
                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -44,7 +44,7 @@
                 EDIT
             </button>
             <button type="button" (click)="deleteCurrentRoutine()"
-                class="bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-3 rounded-md shadow-sm text-m flex items-center">
+                class="bg-red-500/50 hover:bg-red-600 text-white font-semibold py-3 px-3 rounded-md shadow-sm text-m flex items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
                     stroke="currentColor" class="size-4 sm:size-5 mr-1">
                     <path stroke-linecap="round" stroke-linejoin="round"
