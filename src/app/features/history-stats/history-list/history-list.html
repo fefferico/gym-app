@@ -2,7 +2,7 @@
   <header class="flex justify-between items-center mb-2 pb-2 border-b border-gray-200 dark:border-gray-700">
     <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">Workout History</h1>
     <button *ngIf="currentHistoryView() === 'list'" (click)="toggleFilterAccordion()" type="button"
-      class="p-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-light transition-all duration-300 ease-in-out">
+      class="rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-light transition-all duration-300 ease-in-out">
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
         class="w-8 h-8 transition-transform duration-300" [class.rotate-180]="isFilterAccordionOpen()">
         <path stroke-linecap="round" stroke-linejoin="round"

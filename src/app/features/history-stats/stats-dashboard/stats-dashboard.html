@@ -1,5 +1,5 @@
 <div class="container mx-auto p-1 sm:p-4">
-    <div class="flex justify-between border-b border-gray-200 dark:border-gray-700 mb-6 pb-4">
+    <div class="flex justify-between border-b border-gray-200 dark:border-gray-700 mb-6">
         <div>
             <header class="items-center">
                 <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">My Statistics</h1>
@@ -7,7 +7,7 @@
         </div>
         <div>
             <button (click)="goToPBs()" type="button"
-                class="p-1 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary">
+                class="rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary">
                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke-width="1.5"
                     stroke="currentColor" class="w-8 h-8 transition-transform duration-300">
                     <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
@@ -36,7 +36,7 @@
                 <span class="sr-only">Personal Bests</span>
             </button>
             <button (click)="toggleStatsFilterAccordion()" type="button"
-                class="p-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary">
+                class="rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                     stroke="currentColor" class="w-8 h-8 transition-transform duration-300"
                     [class.rotate-180]="isStatsFilterAccordionOpen()">

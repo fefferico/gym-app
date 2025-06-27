@@ -1,4 +1,4 @@
-<div class="p-4 md:p-6 bg-white dark:bg-gray-700 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700" data-swipe-card-content-wrapper>
+<div class="p-4 text-center md:p-6 bg-white dark:bg-gray-700 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700" data-swipe-card-content-wrapper>
   <!-- Date Navigation remains outside the animated div -->
   <div class="mb-4 flex items-center justify-between pb-3 border-b border-gray-200 dark:border-gray-700">
     <button (click)="previousDay()" title="Previous Day"
@@ -88,7 +88,7 @@
                 <div (click)="viewRoutineDetails(routine.id)" *ngFor="let routine of routines" class="p-3 bg-gray-50 dark:bg-gray-600 rounded-md shadow-sm hover:shadow-md transition-shadow flex justify-between items-center transform hover:-translate-y-1">
                   <div class="truncate">
                     <span class="font-medium text-gray-800 dark:text-gray-100">{{ routine.name }}</span>
-                    <span class="block text-left text-xs text-gray-500 dark:text-gray-400">{{ routine.exercises.length }} exercises</span>
+                    <span class="block text-left text-xs text-gray-500 dark:text-gray-400">{{ routine.exercises.length }} exercises - Est: ~{{ getRoutineDuration(routine)}} min</span>
                   </div>
                   <button (click)="startWorkout(routine.id, $event)" [disabled]="isAnimating()"
                     class="flex items-center ml-2 text-m bg-primary hover:bg-green-200 text-white dark:hover:bg-primary-dark font-semibold py-1 px-2.5 rounded-md disabled:opacity-50">

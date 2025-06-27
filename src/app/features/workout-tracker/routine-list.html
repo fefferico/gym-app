@@ -3,7 +3,7 @@
         <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">My Routines</h1>
         <!-- Filter Accordion Toggle Button -->
         <button (click)="toggleFilterAccordion()" type="button"
-            class="p-3 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-light transition-all duration-300 ease-in-out">
+            class="rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-light transition-all duration-300 ease-in-out">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                 stroke="currentColor" class="w-8 h-8 transition-transform duration-300"
                 [class.rotate-180]="isFilterAccordionOpen()">
@@ -14,7 +14,7 @@
         </button>
     </header>
 
-    <div *ngIf="allRoutinesForList.length > 0" class="flex justify-center">
+    <div *ngIf="allRoutinesForList().length > 0" class="flex justify-center">
         <button (click)="navigateToCreateRoutine()"
             class="mb-2 bg-primary hover:bg-primary-dark text-white font-semibold py-2 px-3 rounded-md shadow-sm hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-light focus:ring-opacity-75 text-sm">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"

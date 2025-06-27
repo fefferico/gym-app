@@ -243,4 +243,12 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
       date.getMonth() === today.getMonth() &&
       date.getFullYear() === today.getFullYear();
   }
+
+  getRoutineDuration(routine: Routine): number {
+    if (routine) {
+      return this.workoutService.getEstimatedRoutineDuration(routine);
+    } else {
+      return 0;
+    }
+  }
 }
