@@ -3006,7 +3006,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         } else if (this.routineId) {
           if (this.routineId === "-1") {
             const emptyNewRoutine = {
-              name: "New routine",
+              name: "New session",
               createdAt: new Date().toISOString(),
               goal: 'custom',
               exercises: [] as WorkoutExercise[],

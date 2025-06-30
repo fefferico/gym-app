@@ -383,7 +383,7 @@
               (routineId === '-1' ? 'Workout to be started' : 'Workout Ended') : 'Workout Complete!') }}
             </h2>
             <p class="text-gray-600 dark:text-gray-400 mt-2" *ngIf="sessionState() !== 'error'">
-              {{ currentWorkoutLogExercises().length === 0 ? 'No sets were logged.' : 'All planned sets are done. Well
+              {{ currentWorkoutLogExercises().length === 0 ? 'No sets logged yet' : 'All planned sets are done. Well
               done!' }}
             </p>
             <button *ngIf="sessionState() !== 'error' && currentWorkoutLogExercises().length > 0"
@@ -393,7 +393,7 @@
             </button>
             <button *ngIf="sessionState() !== 'error' && currentWorkoutLogExercises().length === 0"
               routerLink="/workout"
-              class="w-full max-w-xs bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-6 rounded-lg text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed">
+              class="mt-1 w-full max-w-xs bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-6 rounded-lg text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed">
               Back to Workouts
             </button>
             <button (click)="addExerciseDuringSession()" [disabled]="sessionState() === 'paused'"
