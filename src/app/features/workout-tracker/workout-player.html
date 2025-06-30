@@ -380,7 +380,7 @@
           <div class="text-center py-10 pt-16">
             <h2 class="text-2xl font-semibold text-gray-700 dark:text-gray-200">
               {{ sessionState() === 'error' ? 'Error Loading Workout' : (currentWorkoutLogExercises().length === 0 ?
-              'Workout Ended' : 'Workout Complete!') }}
+              (routineId === '-1' ? 'Workout to be started' : 'Workout Ended') : 'Workout Complete!') }}
             </h2>
             <p class="text-gray-600 dark:text-gray-400 mt-2" *ngIf="sessionState() !== 'error'">
               {{ currentWorkoutLogExercises().length === 0 ? 'No sets were logged.' : 'All planned sets are done. Well
@@ -393,12 +393,12 @@
             </button>
             <button *ngIf="sessionState() !== 'error' && currentWorkoutLogExercises().length === 0"
               routerLink="/workout"
-              class="mt-6 bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg shadow-md text-lg transition-colors">
+              class="w-full max-w-xs bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-6 rounded-lg text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed">
               Back to Workouts
             </button>
-            <button *ngIf="sessionState() === 'error'" routerLink="/workout"
-              class="mt-6 text-primary dark:text-primary-light hover:underline p-2">
-              Go Back
+            <button (click)="addExerciseDuringSession()" [disabled]="sessionState() === 'paused'"
+              class="w-full max-w-xs bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-6 rounded-lg text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed ml-1 mt-1">
+              + Add Exercise to Session
             </button>
           </div>
         </ng-template>
@@ -556,9 +556,10 @@
     Mark Exercise for Later
   </button>
 
-  <button (click)="finishWorkoutEarly()" [disabled]="sessionState() === 'paused'"
+  <button (click)="finishWorkoutEarly()" [disabled]="sessionState() === 'paused' || currentWorkoutLogExercises().length === 0"
     class="w-full max-w-xs bg-teal-500 hover:bg-teal-600 text-white font-semibold py-2 px-6 rounded-lg text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed">
     Finish Workout Early
+    <span *ngIf="currentWorkoutLogExercises().length === 0">(No exercises logged yet)</span>
   </button>
 
   <button (click)="quitWorkout()"

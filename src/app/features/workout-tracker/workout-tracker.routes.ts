@@ -52,6 +52,12 @@ export const WORKOUT_TRACKER_ROUTES: Routes = [
   },
   // --- Player and Summary Routes ---
   {
+    path: 'play',
+    component: WorkoutPlayerComponent,
+    data: { mode: 'newRoutine', isNew: false },
+    title: 'Workout Session'
+  },
+  {
     path: 'play/:routineId',
     component: WorkoutPlayerComponent,
     title: 'Workout Session'

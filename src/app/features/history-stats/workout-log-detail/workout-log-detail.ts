@@ -269,4 +269,10 @@ export class WorkoutLogDetailComponent implements OnInit {
     this.exerciseDetailsName = exerciseData.exerciseName || 'Exercise details';
     this.isSimpleModalOpen.set(true);
   }
+
+  secondsToDateTime(seconds: number): Date {
+    const d = new Date(0, 0, 0, 0, 0, 0, 0);
+    d.setSeconds(seconds);
+    return d;
+  }
 }

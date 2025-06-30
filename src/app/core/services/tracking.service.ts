@@ -76,6 +76,7 @@ export class TrackingService {
 
     if (newLog.startTime && newLog.endTime && !newLog.durationMinutes) {
       newLog.durationMinutes = Math.round((newLog.endTime - newLog.startTime) / (1000 * 60));
+      newLog.durationSeconds = Math.round((newLog.endTime - newLog.startTime) / (1000));
     }
 
     const updatedLogs = [newLog, ...currentLogs];

@@ -1,6 +1,6 @@
 <!-- In workout-log-detail.html -->
 
-<div class="container mx-auto p-1 sm:p-4">
+<div class="container mx-auto p-2 sm:p-4">
   <!-- Header row for Back button, Title, and Action Buttons -->
   <header class="flex items-center justify-between mb-4 p-2 border-b border-gray-200 dark:border-gray-700">
     <button routerLink="/history/list"
@@ -48,7 +48,8 @@
           Performed on: {{ log.startTime | date:'fullDate' }} at {{ log.startTime | date:'shortTime' }}
         </p>
         <p class="text-m text-gray-500 dark:text-gray-500">
-          Duration: {{ log.durationMinutes }} minutes
+          <span *ngIf="log.durationSeconds">Duration: {{ secondsToDateTime(log.durationSeconds) | date:'HH:mm:ss' }}</span>
+          <span *ngIf="!log.durationSeconds">Duration: {{ log.durationMinutes }} minutes</span>
         </p>
         <p *ngIf="log.notes" class="mt-2 text-m text-gray-600 dark:text-gray-400 italic">
           <strong>Overall Notes:</strong> {{ log.notes }}

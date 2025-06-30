@@ -1157,7 +1157,25 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
     // If there were no unfinished exercises, or if some edge case led here without a return.
     console.log("tryProceedToDeferredExercisesOrFinish: No unfinished exercises to propose or all paths handled. Finishing workout.");
-    await this.finishWorkoutAndReportStatus();
+
+    if (this.routineId === "-1") {
+      const endCurrentWorkout = await this.alertService.showConfirmationDialog(
+        `Continue or End`,
+        'Would you like to add a new exercise to the current session or complete it?',
+        [
+          { text: 'Add exercise', role: 'add_exercise', data: 'add_exercise', cssClass: 'bg-primary hover:bg-primary-dark text-white' } as AlertButton,
+          { text: 'End session', role: 'end_session', data: "end_session", cssClass: 'bg-blue-500 hover:bg-blue-600 text-white' } as AlertButton,
+        ],
+      );
+
+      if (endCurrentWorkout && endCurrentWorkout.role === 'end_session') {
+        await this.finishWorkoutAndReportStatus();
+      } else {
+        this.openExerciseSelectionModal();
+      }
+    } else {
+      await this.finishWorkoutAndReportStatus();
+    }
   }
 
   private isExerciseFullyLogged(exerciseIdName: string, exerciseIndex: number, exerciseId: string): boolean {
@@ -2137,8 +2155,9 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     if (exerciseToUpdateInSession) {
       const previousStatus = exerciseToUpdateInSession.sessionStatus;
       exerciseToUpdateInSession.sessionStatus = status;
+      let statusString = status.replace(/(^\w)/g, g => g[0].toUpperCase()).replace(/([-_]\w)/g, g => " " + g[1].toUpperCase()).trim();
       this.routine.set(updatedRoutine);
-      this.toastService.info(`"${exName}" marked as ${status}.`, 2000);
+      this.toastService.info(`"${exName}" marked as ${statusString}.`, 2000);
       this.resetTimedSet(); // Reset timer for the set we are leaving
 
       // NEW LOGIC: If the exercise being marked was the one we were actively performing as a deferred item
@@ -2195,14 +2214,69 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     }
     const numSets = parseInt(String(setsInput['numSets']), 10);
 
+    const defaultWeight = this.unitService.currentUnit() === 'kg' ? 10 : 2.2;
+    // add weight section
+    const addWeight = await this.alertService.showConfirmationDialog(
+      `Add weight info to ${selectedExercise.name}`,
+      `Do you want to add weight? (default ${defaultWeight} ${this.unitService.currentUnit()})`,
+      [
+        { text: 'No', role: 'cancel', data: 'cancel_deferred_choice' } as AlertButton,
+        { text: 'Yes', role: 'confirm', data: "confirm" } as AlertButton,
+      ],
+    );
+
+    let setWeight = 10;
+    if (addWeight && addWeight.role === 'confirm') {
+      // Prompt for weight of each set of the exercise
+      const weightInput = await this.alertService.showPromptDialog(
+        `Add weight to ${selectedExercise.name}`,
+        'How much weight?',
+        [{ name: 'weight', type: 'number', placeholder: 'e.g., 10', value: '10', attributes: { min: '1', required: true } }] as AlertInput[],
+        'Next'
+      );
+
+      if (!weightInput || !weightInput['weight'] || parseInt(String(setsInput['weight']), 10) <= 0) {
+        this.toastService.info("Exercise addition cancelled or invalid weight parameter.", 2000);
+        return;
+      }
+      setWeight = parseInt(String(weightInput['weight']), 10);
+    }
+
+    // add rest section
+    const addRest = await this.alertService.showConfirmationDialog(
+      `Add rest info to ${selectedExercise.name}`,
+      'Do you want to add rest? (default 60s)',
+      [
+        { text: 'No', role: 'cancel', data: 'cancel_deferred_choice' } as AlertButton,
+        { text: 'Yes', role: 'confirm', data: "confirm" } as AlertButton,
+      ],
+    );
+
+    let setRest = 60;
+    if (addRest && addRest.role === 'confirm') {
+      // Prompt for rest of each set of the exercise
+      const restInput = await this.alertService.showPromptDialog(
+        `Add rest to ${selectedExercise.name}`,
+        'How much rest?',
+        [{ name: 'rest', type: 'number', placeholder: 'e.g., 60', value: '60', attributes: { min: '1', required: true } }] as AlertInput[],
+        'Next'
+      );
+
+      if (!restInput || !restInput['rest'] || parseInt(String(setsInput['rest']), 10) <= 0) {
+        this.toastService.info("Exercise addition cancelled or invalid rest parameter.", 2000);
+        return;
+      }
+      setRest = parseInt(String(restInput['rest']), 10);
+    }
+
     const newExerciseSets: ExerciseSetParams[] = [];
     for (let i = 0; i < numSets; i++) {
       newExerciseSets.push({
         id: `custom-set-${uuidv4()}`, // Or generate based on planned set ID if this was a template
         reps: 8, // Default reps
-        weight: null, // Default weight
+        weight: setWeight,
         duration: undefined,
-        restAfterSet: 60, // Default rest
+        restAfterSet: setRest,
         type: 'standard',
         notes: ''
       });
@@ -2280,8 +2354,16 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       this.playerSubState.set(PlayerSubState.PerformingSet);
       await this.prepareCurrentSet();
     } else {
-      const goToNewEx = await this.alertService.showConfirm("Exercise Added", `"${newWorkoutExercise.exerciseName}" added. Start it now? (Otherwise, it will appear after your current block)`);
-      if (goToNewEx && goToNewEx.data) {
+      let goToNewEx = undefined;
+      if (this.routineId === "-1" && this.routine()?.exercises?.length === 1) {
+        goToNewEx = { data: true };
+        this.sessionState.set(SessionState.Playing);
+        this.startSessionTimer();
+        this.startAutoSave();
+      } else {
+        goToNewEx = await this.alertService.showConfirm("Exercise Added", `"${newWorkoutExercise.exerciseName}" added. Start it now? (Otherwise, it will appear after your current block)`);;
+      }
+      if ((goToNewEx && goToNewEx.data) || this.routineId === "-1") {
         this.currentExerciseIndex.set(insertAtIndex);
         this.currentSetIndex.set(0);
         this.currentBlockRound.set(1);
@@ -2557,6 +2639,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     const endTime = Date.now();
     const sessionStartTime = this.workoutStartTime - (this.sessionTimerElapsedSecondsBeforePause * 1000);
     const durationMinutes = Math.round((endTime - sessionStartTime) / (1000 * 60));
+    const durationSeconds = Math.round((endTime - sessionStartTime) / (1000));
     let finalRoutineIdToLog: string | undefined = this.routineId || undefined;
     let finalRoutineNameForLog = sessionRoutineValue?.name || 'Ad-hoc Workout';
 
@@ -2580,6 +2663,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       startTime: sessionStartTime,
       endTime: endTime,
       durationMinutes: durationMinutes,
+      durationSeconds: durationSeconds,
       exercises: loggedExercisesForReport, // Use filtered logs
       notes: sessionRoutineValue?.notes,
       programId: sessionProgramValue?.id,
@@ -2828,11 +2912,15 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         const newRoutineId = params.get('routineId');
         console.log('loadNewWorkoutFromRoute - paramMap emitted, newRoutineId:', newRoutineId);
         // ... (programId logic) ...
-        if (!newRoutineId) {
-          this.toastService.error("No routine specified to play.", 0, "Error");
-          this.router.navigate(['/workout']);
-          this.sessionState.set(SessionState.Error); // Ensure state changes if error
-          return of(null);
+        if (!newRoutineId || newRoutineId === "-1") {
+          if (newRoutineId === "-1") {
+
+          } else {
+            this.toastService.error("No routine specified to play.", 0, "Error");
+            this.router.navigate(['/workout']);
+            this.sessionState.set(SessionState.Error); // Ensure state changes if error
+            return of(null);
+          }
         }
         // ... (check if same routine already loading/playing) ...
         this.routineId = newRoutineId;
@@ -2916,12 +3004,25 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
             this.startAutoSave();
           }
         } else if (this.routineId) {
-          console.error('loadNewWorkoutFromRoute - tap: Failed to load routine for ID or routine was null:', this.routineId);
-          this.routine.set(null); // Explicitly set to null to trigger error display in template
-          this.sessionState.set(SessionState.Error);
-          this.toastService.error("Failed to load workout routine.", 0, "Load Error");
-          if (isPlatformBrowser(this.platformId)) this.router.navigate(['/workout']); // only navigate in browser
-          this.stopAutoSave();
+          if (this.routineId === "-1") {
+            const emptyNewRoutine = {
+              name: "New routine",
+              createdAt: new Date().toISOString(),
+              goal: 'custom',
+              exercises: [] as WorkoutExercise[],
+            } as Routine;
+
+            this.routine.set(emptyNewRoutine);
+            this.openExerciseSelectionModal();
+          } else {
+            console.error('loadNewWorkoutFromRoute - tap: Failed to load routine for ID or routine was null:', this.routineId);
+            this.routine.set(null); // Explicitly set to null to trigger error display in template
+            this.sessionState.set(SessionState.Error);
+            this.toastService.error("Failed to load workout routine.", 0, "Load Error");
+            if (isPlatformBrowser(this.platformId)) this.router.navigate(['/workout']); // only navigate in browser
+            this.stopAutoSave();
+          }
+
         }
         this.isInitialLoadComplete = true;
         console.log('loadNewWorkoutFromRoute - END tap operator. Final sessionState:', this.sessionState());

@@ -79,7 +79,11 @@ export class AlertComponent implements OnInit {
       }
         break;
       default:
-        classes += 'bg-blue-500 hover:bg-blue-600 text-white focus:ring-blue-400 dark:bg-blue-600 dark:hover:bg-blue-500 dark:focus:ring-blue-500';
+        if (button.cssClass) {
+          classes += button.cssClass + ' ';
+        } else {
+          classes += 'bg-blue-500 hover:bg-blue-600 text-white focus:ring-blue-400 dark:bg-blue-600 dark:hover:bg-blue-500 dark:focus:ring-blue-500';
+        }
         break;
     }
 
