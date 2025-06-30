@@ -1,5 +1,5 @@
 // src/app/features/training-programs/training-program-list/training-program-list.component.ts
-import { Component, inject, OnInit, PLATFORM_ID, signal, computed, ChangeDetectorRef, OnDestroy, ElementRef, AfterViewInit, NgZone, ViewChild } from '@angular/core';
+import { Component, inject, OnInit, PLATFORM_ID, signal, computed, ChangeDetectorRef, OnDestroy, ElementRef, AfterViewInit, NgZone, ViewChild, HostListener } from '@angular/core';
 import { CommonModule, DatePipe, isPlatformBrowser, TitleCasePipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { firstValueFrom, Observable, of, Subscription, forkJoin } from 'rxjs';
@@ -24,6 +24,8 @@ import { ThemeService } from '../../../core/services/theme.service';
 import { WorkoutService } from '../../../core/services/workout.service';
 import { ExerciseService } from '../../../core/services/exercise.service';
 import Hammer from 'hammerjs';
+import { ActionMenuItem } from '../../../core/models/action-menu.model';
+import { ActionMenuComponent } from '../../../shared/components/action-menu/action-menu';
 
 interface ScheduledItemWithLogs {
   routine: Routine;
@@ -46,7 +48,7 @@ type CalendarDisplayMode = 'week' | 'month';
 @Component({
   selector: 'app-training-program-list',
   standalone: true,
-  imports: [CommonModule, DatePipe, RouterLink, TitleCasePipe, DayOfWeekPipe],
+  imports: [CommonModule, DatePipe, RouterLink, TitleCasePipe, DayOfWeekPipe, ActionMenuComponent],
   templateUrl: './training-program-list.html',
   styleUrls: ['./training-program-list.scss'],
   animations: [
@@ -383,19 +385,34 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
     (document.getElementById('program-goal-filter') as HTMLSelectElement).value = '';
     (document.getElementById('program-muscle-filter') as HTMLSelectElement).value = '';
   }
-  navigateToCreateProgram(): void { this.router.navigate(['/training-programs/new']); }
-  viewProgram(programId: string, event?: MouseEvent): void { event?.stopPropagation(); this.router.navigate(['/training-programs/view', programId]); this.activeProgramActions.set(null); }
-  editProgram(programId: string, event: MouseEvent): void { event.stopPropagation(); this.router.navigate(['/training-programs/edit', programId]); this.activeProgramActions.set(null); }
-  async deleteProgram(programId: string, event: MouseEvent): Promise<void> {
-    event.stopPropagation(); this.activeProgramActions.set(null);
+  navigateToCreateProgram(): void {
+    this.router.navigate(['/training-programs/new']);
+
+  }
+
+  viewProgramDetails(programId: string, event?: MouseEvent): void {
+    event?.stopPropagation();
+    this.router.navigate(['/training-programs/view', programId]);
+    this.activeProgramActions.set(null);
+  }
+
+  editProgram(programId: string, event?: MouseEvent): void {
+    event?.stopPropagation();
+    this.router.navigate(['/training-programs/edit', programId]);
+    this.activeProgramActions.set(null);
+  }
+
+  async deleteProgram(programId: string, event?: MouseEvent): Promise<void> {
+    event?.stopPropagation(); this.activeProgramActions.set(null);
     try {
       this.spinnerService.show("Deleting program...");
       await this.trainingProgramService.deleteProgram(programId);
     } catch (error) { this.toastService.error("An unexpected error occurred.", 0, "Deletion Error"); }
     finally { this.spinnerService.hide(); }
   }
-  async toggleActiveProgram(programId: string, currentIsActive: boolean, event: MouseEvent): Promise<void> {
-    event.stopPropagation(); this.activeProgramActions.set(null);
+  async toggleActiveProgram(programId: string, currentIsActive: boolean, event?: MouseEvent): Promise<void> {
+    event?.stopPropagation();
+    this.activeProgramActions.set(null);
     if (currentIsActive) {
       // Option to deactivate
       const confirmDeactivate = await this.alertService.showConfirm("Deactivate Program?", "Do you want to deactivate this program? No program will be active.", "Deactivate");
@@ -424,7 +441,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
   }
 
 
-  toggleActions(programId: string, event: MouseEvent): void { event.stopPropagation(); this.activeProgramActions.update(current => current === programId ? null : programId); }
+  // toggleActions(programId: string, event: MouseEvent): void { event.stopPropagation(); this.activeProgramActions.update(current => current === programId ? null : programId); }
   getDaysScheduled(program: TrainingProgram): string {
     if (!program.schedule || program.schedule.length === 0) return '0 days';
     const count = new Set(program.schedule.map(s => s.dayOfWeek)).size;
@@ -729,6 +746,139 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
 
     // Merge: scheduledItems first, then any unique past sessions
     return [...selectedDay.scheduledItems, ...allPastSessions];
+  }
+
+
+  getProgramDropdownActionItems(programId: string, mode: 'dropdown' | 'compact-bar'): ActionMenuItem[] {
+    const defaultBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-primary flex items-center text-sm hover:text-white dark:hover:text-gray-100 dark:hover:text-white';
+    const deleteBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-red-600 flex items-center text-sm hover:text-gray-100 hover:animate-pulse';
+    const activateBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-green-600 flex items-center text-sm hover:text-gray-100';;
+    const deactivateBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-500 flex items-center text-sm hover:text-gray-100';;
+
+    const currentProgram = this.allProgramsForList().find(program => program.id === programId);
+
+    const activateProgramBtn = {
+      label: 'ACTIVATE',
+      actionKey: 'activate',
+      iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                        fill="currentColor" class="w-8 h-8 mr-1">
+                        <path fill-rule="evenodd"
+                          d="M16.403 12.652a3 3 0 000-5.304 3 3 0 00-3.75-3.751 3 3 0 00-5.305 0 3 3 0 00-3.751 3.75 3 3 0 000 5.305 3 3 0 003.75 3.751 3 3 0 005.305 0 3 3 0 003.751-3.75Zm-2.546-4.46a.75.75 0 00-1.214-.883l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5Z"
+                          clip-rule="evenodd" />
+                      </svg>`,
+      iconClass: 'w-8 h-8 mr-2',
+      buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + activateBtnClass,
+      data: { programId: programId }
+    };
+
+    const deactivateProgramBtn =
+    {
+      label: 'DEACTIVATE',
+      actionKey: 'deactivate',
+      iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                        fill="currentColor" text-green-500">
+                        <path fill-rule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16Zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5Z"
+                          clip-rule="evenodd" />
+                      </svg>`,
+      iconClass: 'w-8 h-8 mr-2',
+      buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + deactivateBtnClass,
+      data: { programId: programId }
+    };
+
+    let actionsArray = [
+      {
+        label: 'VIEW',
+        actionKey: 'view',
+        iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5Z" /><path fill-rule="evenodd" d="M.664 10.59a1.651 1.651 0 010-1.186A10.004 10.004 0 0110 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0110 17c-4.257 0-7.893-2.66-9.336-6.41ZM14 10a4 4 0 11-8 0 4 4 0 018 0Z" clip-rule="evenodd" /></svg>`,
+        iconClass: 'w-8 h-8 mr-2', // Adjusted for consistency if needed,
+        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+        data: { programId: programId }
+      },
+      {
+        label: 'EDIT',
+        actionKey: 'edit',
+        iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>`,
+        iconClass: 'w-8 h-8 mr-2',
+        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+        data: { programId: programId }
+      }     
+    ] as ActionMenuItem[];
+
+    if (currentProgram?.isActive) {
+      actionsArray.push(deactivateProgramBtn);
+    } else {
+      actionsArray.push(activateProgramBtn);
+    }
+
+    actionsArray.push({ isDivider: true });
+    actionsArray.push({
+      label: 'DELETE',
+      actionKey: 'delete',
+      iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.58.177-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5Zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5Z" clip-rule="evenodd" /></svg>`,
+      iconClass: 'w-8 h-8 mr-2',
+      buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + deleteBtnClass,
+      data: { programId: programId }
+    });
+
+    return actionsArray;
+  }
+
+  handleActionMenuItemClick(event: { actionKey: string, data?: any }, originalMouseEvent?: MouseEvent): void {
+    // originalMouseEvent.stopPropagation(); // Stop original event that opened the menu
+    const programId = event.data?.programId;
+    if (!programId) return;
+
+    switch (event.actionKey) {
+      case 'view':
+        this.viewProgramDetails(programId);
+        break;
+      case 'activate':
+        this.toggleActiveProgram(programId, this.activeProgramForCalendar() !== undefined);
+        break;
+      case 'deactivate':
+        this.toggleActiveProgram(programId, this.activeProgramForCalendar() !== undefined);
+        break;
+      case 'edit':
+        this.editProgram(programId);
+        break;
+      case 'delete':
+        this.deleteProgram(programId);
+        break;
+    }
+    this.activeProgramIdActions.set(null); // Close the menu
+  }
+
+  // Your existing toggleActions, areActionsVisible, viewRoutineDetails, etc. methods
+  // The toggleActions will now just control a signal like `activeRoutineIdActions`
+  // which is used to show/hide the <app-action-menu>
+  activeProgramIdActions = signal<string | null>(null); // Store ID of routine whose actions are open
+
+  toggleActions(routineId: string, event: MouseEvent): void {
+    event.stopPropagation();
+    this.activeProgramIdActions.update(current => (current === routineId ? null : routineId));
+  }
+
+  areActionsVisible(routineId: string): boolean {
+    return this.activeProgramIdActions() === routineId;
+  }
+
+  // When closing menu from the component's output
+  onCloseActionMenu() {
+    this.activeProgramIdActions.set(null);
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    // If an action menu is open AND the click was outside the menu container...
+    if (this.activeProgramIdActions() !== null) {
+      // Find the menu element. We need a way to identify it. Let's give it a class.
+      // We check if the clicked element or any of its parents have the 'action-menu-container' class.
+      const clickedElement = event.target as HTMLElement;
+      if (!clickedElement.closest('.action-menu-container')) {
+        this.activeProgramIdActions.set(null); // ...then close it.
+      }
+    }
   }
 
   ngOnDestroy(): void {

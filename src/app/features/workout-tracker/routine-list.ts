@@ -101,14 +101,19 @@ export class RoutineListComponent implements OnInit, OnDestroy {
   maxDuration = signal<number>(120); // A default max, will be updated dynamically
   selectedMaxDuration = signal<number>(120); // The current value of the slider
   showHiddenRoutines = signal<boolean>(false);
+  showFavouriteRoutinesOnly = signal<boolean>(false);
 
   // Computed signal for filtered routines
   filteredRoutines = computed(() => {
     let routines = this.allRoutinesForList();
     const showHidden = this.showHiddenRoutines(); // Get the value of the signal once
+    const showFavouriteRoutinesOnlyFilter = this.showFavouriteRoutinesOnly();
 
     if (!showHidden) {
       routines = routines.filter(routine => !routine.isHidden);
+    }
+    if (showFavouriteRoutinesOnlyFilter) {
+      routines = routines.filter(routine => routine.isFavourite);
     }
     const searchTerm = this.routineSearchTerm().toLowerCase();
     const goalFilter = this.selectedRoutineGoal();
@@ -414,19 +419,43 @@ export class RoutineListComponent implements OnInit, OnDestroy {
 
   hideRoutine(routineId: string, event?: MouseEvent): void {
     event?.stopPropagation();
-    const hiddenRotuine = this.allRoutinesForList().find(routine => routine.id === routineId);
-    if (hiddenRotuine) {
-      hiddenRotuine.isHidden = true;
-      this.workoutService.updateRoutine(hiddenRotuine);
+    const hiddenRoutine = this.allRoutinesForList().find(routine => routine.id === routineId);
+    if (hiddenRoutine) {
+      hiddenRoutine.isHidden = true;
+      this.workoutService.updateRoutine(hiddenRoutine);
+      this.loadRoutinesAndPopulateFilters();
     }
   }
 
   unhideRoutine(routineId: string, event?: MouseEvent): void {
     event?.stopPropagation();
-    const hiddenRotuine = this.allRoutinesForList().find(routine => routine.id === routineId);
-    if (hiddenRotuine) {
-      hiddenRotuine.isHidden = false;
-      this.workoutService.updateRoutine(hiddenRotuine);
+    const hiddenRoutine = this.allRoutinesForList().find(routine => routine.id === routineId);
+    if (hiddenRoutine) {
+      hiddenRoutine.isHidden = false;
+      this.workoutService.updateRoutine(hiddenRoutine);
+      this.loadRoutinesAndPopulateFilters();
+    }
+  }
+
+  markAsFavourite(routineId: string, event?: MouseEvent): void {
+    event?.stopPropagation();
+    const favouriteRoutine = this.allRoutinesForList().find(routine => routine.id === routineId);
+    if (favouriteRoutine) {
+      favouriteRoutine.isFavourite = true;
+      this.workoutService.updateRoutine(favouriteRoutine);
+      this.loadRoutinesAndPopulateFilters();
+      this.toastService.info(`Routine "${favouriteRoutine.name}" added to favourites`)
+    }
+  }
+
+  unmarkAsFavourite(routineId: string, event?: MouseEvent): void {
+    event?.stopPropagation();
+    const favouriteRoutine = this.allRoutinesForList().find(routine => routine.id === routineId);
+    if (favouriteRoutine) {
+      favouriteRoutine.isFavourite = false;
+      this.workoutService.updateRoutine(favouriteRoutine);
+      this.loadRoutinesAndPopulateFilters();
+      this.toastService.info(`Routine "${favouriteRoutine.name}" removed from favourites`)
     }
   }
 
@@ -512,6 +541,27 @@ export class RoutineListComponent implements OnInit, OnDestroy {
       buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
       data: { routineId }
     };
+    const markAsFavouriteRoutineButton = {
+      label: 'FAVOURITE',
+      actionKey: 'markAsFavourite',
+      iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+        </svg>`,
+      iconClass: 'w-8 h-8 mr-2', // Adjusted for consistency if needed,
+      buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+      data: { routineId }
+    };
+    const unmarkAsFavouriteRoutineButton = {
+      label: 'REMOVE',
+      actionKey: 'unmarkAsFavourite',
+      iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+        <line x1="2" y1="20" x2="22" y2="4"></line>
+      </svg>`,
+      iconClass: 'w-8 h-8 mr-2', // Adjusted for consistency if needed,
+      buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+      data: { routineId }
+    };
     const actionsArray = [
       {
         label: 'VIEW',
@@ -565,6 +615,12 @@ export class RoutineListComponent implements OnInit, OnDestroy {
       }
     }
 
+    if (currentRoutine?.isFavourite) {
+      actionsArray.push(unmarkAsFavouriteRoutineButton);
+    } else {
+      actionsArray.push(markAsFavouriteRoutineButton);
+    }
+
     return actionsArray;
   }
 
@@ -582,6 +638,12 @@ export class RoutineListComponent implements OnInit, OnDestroy {
         break;
       case 'unhide':
         this.unhideRoutine(routineId);
+        break;
+      case 'markAsFavourite':
+        this.markAsFavourite(routineId);
+        break;
+      case 'unmarkAsFavourite':
+        this.unmarkAsFavourite(routineId);
         break;
       case 'start':
         this.startWorkout(routineId);
@@ -633,6 +695,37 @@ export class RoutineListComponent implements OnInit, OnDestroy {
         top: 0,
         behavior: 'smooth' // For a smooth scrolling animation
       });
+    }
+  }
+
+  toggleOnlyFavouriteRoutines(event: Event): void {
+    event?.stopPropagation();
+    this.showFavouriteRoutinesOnly.set(!this.showFavouriteRoutinesOnly());
+  }
+
+  toggleOnlyHiddenRoutines(event: Event): void {
+    event?.stopPropagation();
+    this.showHiddenRoutines.set(!this.showHiddenRoutines());
+  }
+
+  filterByGoal(goal: string, event: Event): void {
+    event?.stopPropagation();
+    this.onRoutineGoalChange(event);
+    if (event && event.target && goal) {
+      const target = event.target as HTMLSelectElement;
+      target.value = goal;
+      this.onRoutineGoalChange(event);
+      this.toastService.info(`Filtered routines by goal '${goal}'`);
+    }
+  }
+
+  filterByMuscleGroup(muscle: string, event: Event): void {
+    event?.stopPropagation();
+    if (event && event.target && muscle) {
+      const target = event.target as HTMLSelectElement;
+      target.value = muscle;
+      this.onRoutineMuscleGroupChange(event);
+      this.toastService.info(`Filtered routines by muscle '${muscle}'`);
     }
   }
 }

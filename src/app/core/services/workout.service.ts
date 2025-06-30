@@ -30,27 +30,44 @@ export class WorkoutService {
   private isLoadingRoutinesSubject = new BehaviorSubject<boolean>(true); // Start as true
   public isLoadingRoutines$: Observable<boolean> = this.isLoadingRoutinesSubject.asObservable();
 
-  constructor(
-  ) {
+  constructor() {
     this.isLoadingRoutinesSubject.next(true);
 
-    // Load initial routines from storage
-    const routinesFromStorage = this._loadRoutinesFromStorage();
+    // 1. Load initial routines from storage (this now includes sorting)
+    const routinesFromStorage = this.loadRoutinesFromStorage();
 
-    // Initialize the BehaviorSubject with routines from storage
+    // 2. Initialize the BehaviorSubject with the sorted routines
     this.routinesSubject = new BehaviorSubject<Routine[]>(routinesFromStorage);
     this.routines$ = this.routinesSubject.asObservable().pipe(
       shareReplay(1)
     );
 
-    // Call the new, synchronous seeding method
+    // 3. Seed new data if necessary. The save method inside will handle re-sorting.
     this._seedAndMergeRoutinesFromStaticData(routinesFromStorage);
+  }
+  // Add this helper method inside your WorkoutService class
+  private _sortRoutines(routines: Routine[]): Routine[] {
+    // Use slice() to create a shallow copy to avoid mutating the original array directly
+    return routines.slice().sort((a, b) => {
+      // Primary sort: favourites first
+      // If 'a' is a favourite and 'b' is not, 'a' should come first (-1).
+      if (a.isFavourite && !b.isFavourite) {
+        return -1;
+      }
+      // If 'b' is a favourite and 'a' is not, 'b' should come first (1).
+      if (!a.isFavourite && b.isFavourite) {
+        return 1;
+      }
+
+      // Secondary sort: alphabetical by name
+      // If both are favourites or both are not, sort by name.
+      return a.name.localeCompare(b.name);
+    });
   }
 
   private loadRoutinesFromStorage(): Routine[] {
-    const routines = this.storageService.getItem<Routine[]>(this.ROUTINES_STORAGE_KEY);
-    // Sort by name for consistent display, or by lastPerformed if available
-    return routines ? routines.sort((a, b) => a.name.localeCompare(b.name)) : [];
+    let routines = this.storageService.getItem<Routine[]>(this.ROUTINES_STORAGE_KEY);
+    return routines ? this._sortRoutines(routines) : [];
   }
 
   /**
@@ -62,9 +79,10 @@ export class WorkoutService {
     return routines ? routines.sort((a, b) => a.name.localeCompare(b.name)) : [];
   }
 
-  private _saveRoutinesToStorage(exercises: Routine[]): void {
-    this.storageService.setItem(this.ROUTINES_STORAGE_KEY, exercises);
-    this.routinesSubject.next([...exercises].sort((a, b) => a.name.localeCompare(b.name)));
+  private _saveRoutinesToStorage(routines: Routine[]): void {
+    const sortedRoutines = this._sortRoutines(routines);
+    this.storageService.setItem(this.ROUTINES_STORAGE_KEY, sortedRoutines);
+    this.routinesSubject.next(sortedRoutines);
   }
 
   /**
@@ -74,40 +92,31 @@ export class WorkoutService {
  */
   private _seedAndMergeRoutinesFromStaticData(existingRoutines: Routine[]): void {
     try {
-      // Cast the imported data to the Routine[] type for type safety.
       const assetRoutines = ROUTINES_DATA as Routine[];
-
-      // Create a Set of existing routine IDs for efficient lookup.
       const existingRoutineIds = new Set(existingRoutines.map(r => r.id));
-
-      // Filter the asset routines to only include those that are NOT already in storage.
       const newRoutinesToSeed = assetRoutines.filter(
         assetRoutine => !existingRoutineIds.has(assetRoutine.id)
       );
 
-      // If there are new routines to add, merge them and update the state.
       if (newRoutinesToSeed.length > 0) {
         console.log(`Seeding ${newRoutinesToSeed.length} new routines from static data.`);
         const mergedRoutines = [...existingRoutines, ...newRoutinesToSeed];
 
-        // Update the subject with the full, merged list.
-        this.routinesSubject.next(mergedRoutines);
-        // Save the merged list back to storage for the next session.
-        this._saveRoutinesToStorage(mergedRoutines);
+        // This single call now handles sorting, saving, and updating the subject
+        this.saveRoutinesToStorage(mergedRoutines);
       } else {
         console.log("No new routines to seed from static data. All are present in storage.");
       }
     } catch (error) {
       console.error('Failed to process or seed routines from static data:', error);
     } finally {
-      // This logic now happens synchronously, so we can set loading to false right after.
       this.isLoadingRoutinesSubject.next(false);
     }
   }
 
   private saveRoutinesToStorage(routines: Routine[]): void {
     this.storageService.setItem(this.ROUTINES_STORAGE_KEY, routines);
-    this.routinesSubject.next([...routines].sort((a, b) => a.name.localeCompare(b.name)));
+    this.routinesSubject.next([...this._sortRoutines(routines)]);
   }
 
   public getCurrentRoutines(): Routine[] {
@@ -297,45 +306,45 @@ export class WorkoutService {
 
 
 
- /**
- * --- FUNCTION 1 (Updated) ---
- * Estimates the "working time" for a single set in seconds.
- * 
- * - It calculates an estimated time based on the number of reps.
- * - It considers the explicitly set `duration`.
- * - It returns the HIGHER of the two values to provide a more realistic estimate,
- *   especially for AMRAPs or sets with both rep and time targets.
- *
- * @param set The ExerciseSetParams object for a single set.
- * @returns The estimated working time in seconds.
- */
-public getEstimatedWorkTimeForSet(set: ExerciseSetParams): number {
-  let timeFromReps = 0;
-  
-  // 1. Calculate the estimated time from reps, if reps are specified.
-  if (set.reps && set.reps > 0) {
-    // Estimate ~3 seconds per rep (1s up, 2s down). Adjust as needed.
-    const timePerRep = 3; 
-    timeFromReps = set.reps * timePerRep;
+  /**
+  * --- FUNCTION 1 (Updated) ---
+  * Estimates the "working time" for a single set in seconds.
+  * 
+  * - It calculates an estimated time based on the number of reps.
+  * - It considers the explicitly set `duration`.
+  * - It returns the HIGHER of the two values to provide a more realistic estimate,
+  *   especially for AMRAPs or sets with both rep and time targets.
+  *
+  * @param set The ExerciseSetParams object for a single set.
+  * @returns The estimated working time in seconds.
+  */
+  public getEstimatedWorkTimeForSet(set: ExerciseSetParams): number {
+    let timeFromReps = 0;
+
+    // 1. Calculate the estimated time from reps, if reps are specified.
+    if (set.reps && set.reps > 0) {
+      // Estimate ~3 seconds per rep (1s up, 2s down). Adjust as needed.
+      const timePerRep = 3;
+      timeFromReps = set.reps * timePerRep;
+    }
+
+    // 2. Get the duration specified in the set, defaulting to 0 if not present.
+    const timeFromDuration = set.duration || 0;
+
+    // 3. Compare the two calculated times and return the greater value.
+    const estimatedTime = Math.max(timeFromReps, timeFromDuration);
+
+    // 4. Handle edge cases where neither reps nor duration are set.
+    if (estimatedTime > 0) {
+      // Return the calculated time, but with a minimum floor (e.g., 5s) 
+      // to account for setup for very short sets.
+      return Math.max(estimatedTime, 5);
+    }
+
+    // 5. Fallback for sets with no duration AND no reps (e.g., a "carry to failure").
+    // Assume a default time, e.g., 30 seconds.
+    return 30;
   }
-
-  // 2. Get the duration specified in the set, defaulting to 0 if not present.
-  const timeFromDuration = set.duration || 0;
-
-  // 3. Compare the two calculated times and return the greater value.
-  const estimatedTime = Math.max(timeFromReps, timeFromDuration);
-
-  // 4. Handle edge cases where neither reps nor duration are set.
-  if (estimatedTime > 0) {
-    // Return the calculated time, but with a minimum floor (e.g., 5s) 
-    // to account for setup for very short sets.
-    return Math.max(estimatedTime, 5);
-  }
-
-  // 5. Fallback for sets with no duration AND no reps (e.g., a "carry to failure").
-  // Assume a default time, e.g., 30 seconds.
-  return 30; 
-}
 
 
   /**

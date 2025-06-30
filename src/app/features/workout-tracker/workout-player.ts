@@ -2493,7 +2493,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
           `You made significant changes to the routine structure:\n\n${differences.details.join('\n')}\n\nWould you like to save this as a new routine, update the original, or cancel?`,
           [
             { text: "Save as New Routine", role: "confirm", data: "new", cssClass: "bg-green-600" } as AlertButton,
-            { text: "Update Original Routine", role: "destructive", data: "update", cssClass: "bg-blue-600" } as AlertButton,
+            { text: "Update Original Routine and log", role: "destructive", data: "update", cssClass: "bg-blue-600" } as AlertButton,
             { text: "Cancel", role: "cancel", data: "cancel" } as AlertButton
           ]
         );

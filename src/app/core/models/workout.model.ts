@@ -73,5 +73,6 @@ export interface Routine {
   createdAt?: string;
   updatedAt?: string;
   isHidden?: boolean;
+  isFavourite?: boolean;
 }
 
