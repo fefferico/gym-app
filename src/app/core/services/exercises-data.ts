@@ -1831,5 +1831,37 @@ export const EXERCISES_DATA = [
     "muscleGroups": ["Calves (Gastrocnemius, Soleus)"],
     "equipmentNeeded": ["Calf Raise Machine", "Dumbbells (optional)"],
     "imageUrls": []
+  },
+  {
+    "id": "dumbbell-incline-fly",
+    "name": "Dumbbell Incline Fly",
+    "description": "An isolation exercise for the upper chest using dumbbells on an incline bench, focusing on the pectoral muscles.",
+    "category": "dumbbells",
+    "primaryMuscleGroup": "Chest (Upper)",
+    "muscleGroups": ["Chest (Upper)", "Shoulders (Anterior)"],
+    "equipmentNeeded": ["Dumbbells", "Incline Bench"],
+    "imageUrls": ["assets/images/exercises/db-incline-fly_1.jpg", "assets/images/exercises/db-incline-fly_2.jpg"],
+    "notes": "Focus on a wide arc and squeezing the chest at the top of the movement. Avoid using heavy weight to maintain proper form."
+  },
+  {
+    "id": "incline-chest-press-machine",
+    "name": "Incline Chest Press (Machine)",
+    "description": "A machine-based compound exercise that targets the upper chest, shoulders, and triceps with a guided, inclined pressing motion.",
+    "category": "machines",
+    "primaryMuscleGroup": "Chest (Upper)",
+    "muscleGroups": ["Chest (Upper)", "Shoulders (Anterior)", "Triceps"],
+    "equipmentNeeded": ["Incline Chest Press Machine"],
+    "imageUrls": ["assets/images/exercises/incline-chest-press-machine_1.jpg", "assets/images/exercises/incline-chest-press-machine_2.jpg"]
+  },
+  {
+    "id": "twist-sit-up",
+    "name": "Twist Sit-up",
+    "description": "A core exercise that combines a traditional sit-up with a torso twist to engage the obliques and rectus abdominis.",
+    "category": "bodyweight/calisthenics",
+    "primaryMuscleGroup": "Core (Obliques)",
+    "muscleGroups": ["Core (Obliques, Rectus Abdominis)", "Hip Flexors"],
+    "equipmentNeeded": [],
+    "imageUrls": ["assets/images/exercises/twist-sit-up_1.jpg", "assets/images/exercises/twist-sit-up_2.jpg"],
+    "notes": "As you sit up, twist your torso to bring your opposite elbow towards your knee."
   }
 ];

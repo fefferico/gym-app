@@ -3740,6 +3740,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   handleRestTimerSkipped(): void {
     console.log('Rest timer skipped.');
     this.isRestTimerVisible.set(false);
+    this.toastService.clearAll();
     this.toastService.info("Rest skipped.", 2000);
     this.playerSubState.set(PlayerSubState.PerformingSet);
     this.prepareCurrentSet();

@@ -802,7 +802,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
         iconClass: 'w-8 h-8 mr-2',
         buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
         data: { programId: programId }
-      }     
+      }
     ] as ActionMenuItem[];
 
     if (currentProgram?.isActive) {
@@ -834,10 +834,10 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
         this.viewProgramDetails(programId);
         break;
       case 'activate':
-        this.toggleActiveProgram(programId, this.activeProgramForCalendar() !== undefined);
+        this.toggleActiveProgram(programId, this.activeProgramForCalendar() !== undefined && this.activeProgramForCalendar() == programId);
         break;
       case 'deactivate':
-        this.toggleActiveProgram(programId, this.activeProgramForCalendar() !== undefined);
+        this.toggleActiveProgram(programId, this.activeProgramForCalendar() !== undefined && this.activeProgramForCalendar() == programId);
         break;
       case 'edit':
         this.editProgram(programId);
