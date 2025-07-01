@@ -280,9 +280,9 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
             programNotes: formValue.programNotes,
             startDate: formValue.startDate || null, // Ensure null if empty
             cycleLength: formValue.cycleLength || null, // Ensure null if 0 or empty
-            schedule: formValue.schedule.map((s: any) => ({ // Ensure 'any' or proper type for s
+            schedule: formValue.schedule.map((s: ScheduledRoutineDay) => ({ // Ensure 'any' or proper type for s
                 id: s.id || uuidv4(),
-                dayOfWeek: s.dayOfWeek,
+                dayOfWeek: Number(s.dayOfWeek),
                 routineId: s.routineId,
                 routineName: s.routineName, // This should ideally be updated from WorkoutService if routine name changes
                 notes: s.notes,

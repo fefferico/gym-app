@@ -176,10 +176,11 @@
 
             <!-- CHARTS SECTION -->
             <section class="mb-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div class="bg-white dark:bg-gray-700 p-4 rounded-lg shadow-md min-h-[350px] overflow-hidden">
+                <!-- Bar Chart: Volume by Muscle Group -->
+                <div class="bg-white dark:bg-gray-700 p-4 rounded-lg shadow-md min-h-[350px] flex flex-col">
                     <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">Volume by Muscle Group <span
                             *ngIf="hasActiveDateFilters()">(Period)</span></h3>
-                    <div *ngIf="muscleGroupChartDataForPeriod().length > 0; else noChartDataMsg" class="chart-wrapper">
+                    <div *ngIf="muscleGroupChartDataForPeriod().length > 0; else noMuscleChartData" class="chart-wrapper flex-grow">
                         <ngx-charts-bar-vertical [results]="muscleGroupChartDataForPeriod()" [scheme]="colorScheme"
                             [gradient]="gradient" [xAxis]="showXAxis" [yAxis]="showYAxis" [legend]="false"
                             [showXAxisLabel]="showXAxisLabel" [showYAxisLabel]="showYAxisLabel"
@@ -187,24 +188,31 @@
                             (select)="onChartSelect($event)" class="chart-container">
                         </ngx-charts-bar-vertical>
                     </div>
-                    <ng-template #noChartDataMsg>
-                        <p class="text-sm text-gray-500 dark:text-gray-400 italic text-center pt-10">Not enough data for
-                            this chart.</p>
+                    <ng-template #noMuscleChartData>
+                        <div class="flex-grow flex items-center justify-center">
+                            <p class="text-sm text-gray-500 dark:text-gray-400 italic">Not enough data for this chart.</p>
+                        </div>
                     </ng-template>
                 </div>
 
-                <div *ngIf="hasWeeklyVolumeChartData; else noChartDataMsg" class="chart-wrapper">
-                    <ngx-charts-line-chart [results]="weeklyVolumeChartDataForPeriod()" [gradient]="gradient"
-                        [xAxis]="showXAxis" [yAxis]="showYAxis" [legend]="false" [showXAxisLabel]="showXAxisLabel"
-                        [showYAxisLabel]="showYAxisLabel" [xAxisLabel]="xAxisLabelWeek" [yAxisLabel]="yAxisLabelVolume"
-                        [autoScale]="true" [scheme]="colorScheme" (select)="onChartSelect($event)"
-                        class="chart-container">
-                    </ngx-charts-line-chart>
+                <!-- Line Chart: Weekly Volume Trend -->
+                <div class="bg-white dark:bg-gray-700 p-4 rounded-lg shadow-md min-h-[350px] flex flex-col">
+                    <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">Weekly Volume Trend <span
+                            *ngIf="hasActiveDateFilters()">(Period)</span></h3>
+                    <div *ngIf="hasWeeklyVolumeChartData; else noWeeklyChartData" class="chart-wrapper flex-grow">
+                        <ngx-charts-line-chart [results]="weeklyVolumeChartDataForPeriod()" [gradient]="gradient"
+                            [xAxis]="showXAxis" [yAxis]="showYAxis" [legend]="false" [showXAxisLabel]="showXAxisLabel"
+                            [showYAxisLabel]="showYAxisLabel" [xAxisLabel]="xAxisLabelWeek" [yAxisLabel]="yAxisLabelVolume"
+                            [autoScale]="true" [scheme]="colorScheme" (select)="onChartSelect($event)"
+                            class="chart-container">
+                        </ngx-charts-line-chart>
+                    </div>
+                    <ng-template #noWeeklyChartData>
+                        <div class="flex-grow flex items-center justify-center">
+                            <p class="text-sm text-gray-500 dark:text-gray-400 italic">Not enough data for this chart.</p>
+                        </div>
+                    </ng-template>
                 </div>
-                <ng-template #noChartDataMsg>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 italic text-center pt-10">Not enough data for
-                        this chart.</p>
-                </ng-template>
             </section>
 
             <!-- Weekly Summaries Table -->

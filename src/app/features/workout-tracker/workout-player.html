@@ -911,7 +911,7 @@
         </button>
       </div>
       <div class="my-4">
-        <input type="text" placeholder="Search exercises..." [ngModel]="modalSearchTerm()"
+        <input #exerciseSearchFied type="text" placeholder="Search exercises..." [ngModel]="modalSearchTerm()"
           (ngModelChange)="modalSearchTerm.set($event)"
           class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-gray-200" />
       </div>
@@ -921,8 +921,7 @@
             class="p-3 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md cursor-pointer transition-all duration-150 ease-in-out flex justify-between items-center">
             <div>
               <span class="font-medium text-gray-800 dark:text-gray-200">{{ ex.name }}</span>
-              <span class="block text-xs text-gray-500 dark:text-gray-400">{{ ex.category | titlecase }} - {{
-                ex.primaryMuscleGroup | titlecase }}</span>
+              <span *ngIf="ex.category" class="block text-xs text-gray-500 dark:text-gray-400">{{ ex.category | titlecase }} {{ ex.primaryMuscleGroup ? (' - ' + ex.primaryMuscleGroup | titlecase) : '' }}</span>
             </div>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
               class="w-5 h-5 text-primary dark:text-primary-light">

@@ -834,10 +834,10 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
         this.viewProgramDetails(programId);
         break;
       case 'activate':
-        this.toggleActiveProgram(programId, this.activeProgramForCalendar() !== undefined && this.activeProgramForCalendar() == programId);
+        this.toggleActiveProgram(programId, this.activeProgramForCalendar() !== undefined && this.activeProgramForCalendar()?.id == programId);
         break;
       case 'deactivate':
-        this.toggleActiveProgram(programId, this.activeProgramForCalendar() !== undefined && this.activeProgramForCalendar() == programId);
+        this.toggleActiveProgram(programId, this.activeProgramForCalendar() !== undefined && this.activeProgramForCalendar()?.id == programId);
         break;
       case 'edit':
         this.editProgram(programId);

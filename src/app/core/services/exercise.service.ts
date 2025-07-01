@@ -7,6 +7,7 @@ import { StorageService } from './storage.service';
 import { TrackingService } from './tracking.service';
 import { v4 as uuidv4 } from 'uuid';
 import { EXERCISES_DATA } from './exercises-data';
+import { WorkoutExercise } from '../models/workout.model';
 
 @Injectable({
   providedIn: 'root',
@@ -125,18 +126,58 @@ export class ExerciseService {
     );
   }
 
-  addExercise(exerciseData: Omit<Exercise, 'id'>): Observable<Exercise> {
-    // For local operations, loading state might be too quick to notice unless it was an API call.
-    // If it were an API call:
-    // this.isLoadingExercisesSubject.next(true);
+  /**
+   * Adds a new exercise to the collection, preventing duplicates by ID or name.
+   * 
+   * - If `exerciseData.id` is provided, it will be used. The method will fail if an
+   *   exercise with this ID already exists.
+   * - If `exerciseData.id` is not provided, a new UUID will be generated.
+   * - The method will also fail if an exercise with the same name (case-insensitive)
+   *   already exists to prevent user-created duplicates.
+   *
+   * @param exerciseData - A partial Exercise object. Must contain at least a `name`.
+   * @returns An Observable emitting the newly created Exercise, or `null` if the
+   *          exercise was not added due to a duplicate ID or name.
+   */
+  addExercise(exerciseData: Partial<Exercise>): Observable<Exercise | null> {
     const currentExercises = this.exercisesSubject.getValue();
+
+    // 1. Check for a valid name - an exercise must have a name.
+    if (!exerciseData.name || exerciseData.name.trim() === '') {
+      console.error('Exercise name is required and cannot be empty.');
+      return of(null);
+    }
+
+    // 2. Check for duplicate ID if an ID is provided
+    if (exerciseData.id && currentExercises.some(ex => ex.id === exerciseData.id)) {
+      console.warn(`An exercise with the ID '${exerciseData.id}' already exists. Add operation aborted.`);
+      return of(null);
+    }
+
+    // 3. Check for duplicate name (case-insensitive check for better UX)
+    const normalizedName = exerciseData.name.trim().toLowerCase();
+    if (currentExercises.some(ex => ex.name.trim().toLowerCase() === normalizedName)) {
+      console.warn(`An exercise with the name '${exerciseData.name}' already exists. Add operation aborted.`);
+      return of(null);
+    }
+
+    // 4. All checks passed. Create the new exercise.
     const newExercise: Exercise = {
-      ...exerciseData,
-      id: uuidv4(),
+      // Provide default values for required fields to ensure type safety
+      description: '',
+      category: 'custom',
+      muscleGroups: [],
+      primaryMuscleGroup: '',
+      imageUrls: [],
+      ...exerciseData, // Spread the provided data, which will overwrite defaults
+      name: exerciseData.name,
+      id: exerciseData.id || uuidv4(), // Use the provided ID or generate a new one
     };
+
+    // 5. Update state and persist
     const updatedExercises = [...currentExercises, newExercise];
-    this._saveExercisesToStorage(updatedExercises);
-    // if API call: .pipe(finalize(() => this.isLoadingExercisesSubject.next(false)))
+    this._saveExercisesToStorage(updatedExercises); // Assuming this updates the subject internally
+
     return of(newExercise);
   }
 
@@ -268,9 +309,64 @@ export class ExerciseService {
 
   getIconPath(iconName: string | undefined): string {
     let tmpIconName = iconName;
-    if (tmpIconName && tmpIconName.indexOf('/') >= 0) {
+    if (tmpIconName && (tmpIconName.indexOf('/') >= 0 || tmpIconName?.indexOf('custom-exercise') >= 0)) {
       tmpIconName = 'default-exercise';
     }
     return `assets/icons/${tmpIconName || 'default-exercise'}.svg`;
+  }
+
+  /**
+ * Maps a WorkoutExercise instance to its corresponding definitive Exercise object.
+ * 
+ * This function essentially acts as a "lookup" and returns the base definition
+ * of an exercise. It correctly uses the definitive ID and other properties from the
+ * baseExercise, ignoring instance-specific data like sets, reps, and routine notes
+ * from the workoutExercise.
+ *
+ * @param workoutExercise The instance of the exercise within a routine.
+ * @param baseExercise The complete, definitive Exercise object to use as the source of truth.
+ * @returns A complete Exercise object.
+ */
+  public mapWorkoutExerciseToExercise(
+    workoutExercise: WorkoutExercise,
+    baseExercise: Exercise
+  ): Exercise {
+
+    // The exerciseId on workoutExercise should match the id on baseExercise.
+    // We can add a check for robustness.
+    if (workoutExercise.exerciseId !== baseExercise.id) {
+      console.warn(
+        `Mismatched IDs in mapWorkoutExerciseToExercise: workoutExercise.exerciseId is "${workoutExercise.exerciseId}" but baseExercise.id is "${baseExercise.id}".`
+      );
+      // Depending on requirements, you could throw an error or proceed cautiously.
+    }
+
+    // The primary purpose is to return the clean, definitive exercise data.
+    // We spread the baseExercise to ensure all definitional properties are included.
+    // We don't map any instance-specific properties (like sets, superset info, etc.)
+    // because they do not belong on the Exercise model.
+    return {
+      ...baseExercise,
+    };
+  }
+
+  /**
+   * Creates a partial Exercise object from a WorkoutExercise when the full
+   * definition is not available.
+   *
+   * This is useful for scenarios where you only have the routine data and need to
+   * display basic information (like the name) before the full exercise details are loaded.
+   *
+   * @param workoutExercise The instance of the exercise within a routine.
+   * @returns A partial Exercise object, containing at least the id and name.
+   */
+  public mapWorkoutExerciseToPartialExercise(
+    workoutExercise: WorkoutExercise
+  ): Partial<Exercise> {
+    return {
+      id: workoutExercise.exerciseId,
+      name: workoutExercise.exerciseName || 'Unknown Exercise',
+      // All other Exercise properties will be undefined.
+    };
   }
 }

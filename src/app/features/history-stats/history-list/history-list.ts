@@ -271,8 +271,15 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
     const current = this.currentHistoryView();
     if (current === view) return;
     let enterTransform = 'translateX(100%)', leaveTransform = 'translateX(-100%)';
-    if (view === 'list') { enterTransform = (current === 'calendar') ? 'translateX(-100%)' : 'translateX(100%)'; leaveTransform = (current === 'calendar') ? 'translateX(100%)' : 'translateX(-100%)'; }
-    else { enterTransform = (current === 'list') ? 'translateX(100%)' : 'translateX(-100%)'; leaveTransform = (current === 'list') ? 'translateX(-100%)' : 'translateX(100%)'; }
+    if (view === 'list') { 
+      enterTransform = (current === 'calendar') ? 'translateX(-100%)' : 'translateX(100%)'; 
+      leaveTransform = (current === 'calendar') ? 'translateX(100%)' : 'translateX(-100%)'; 
+      this.resetFilters();
+    }
+    else { 
+      enterTransform = (current === 'list') ? 'translateX(100%)' : 'translateX(-100%)'; 
+      leaveTransform = (current === 'list') ? 'translateX(-100%)' : 'translateX(100%)'; 
+    }
     this.historyViewAnimationParams.set({ value: view, params: { enterTransform, leaveTransform } });
     this.currentHistoryView.set(view);
     this.isFilterAccordionOpen.set(false);

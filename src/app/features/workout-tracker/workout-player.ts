@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy, signal, computed, WritableSignal, ChangeDetectorRef, HostListener, PLATFORM_ID, ViewChildren, QueryList, ElementRef, effect } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal, computed, WritableSignal, ChangeDetectorRef, HostListener, PLATFORM_ID, ViewChildren, QueryList, ElementRef, effect, ViewChild } from '@angular/core';
 import { CommonModule, TitleCasePipe, DatePipe, DecimalPipe, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, NavigationEnd, Router, RouterLink } from '@angular/router';
 import { Subscription, Observable, of, timer, firstValueFrom, interval, Subject } from 'rxjs';
@@ -136,6 +136,8 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   currentSetIndex = signal(0);
   currentBlockRound = signal(1);
   totalBlockRounds = signal(1);
+
+  @ViewChild('exerciseSearchFied') myExerciseInput!: ElementRef;
 
   // --- Timer Signals & Properties ---
   sessionTimerDisplay = signal('00:00:00');
@@ -2215,102 +2217,68 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       this.toastService.error("Cannot add exercise: routine data unavailable.", 0, "Error"); return;
     }
 
-    // Prompt for number of sets for this selected exercise
-    const setsInput = await this.alertService.showPromptDialog(
+    const defaultWeight = this.unitService.currentUnit() === 'kg' ? 10 : 22.2;
+    const defaultRest = 60;
+    const defaultReps = 10;
+    const defaultSets = 3;
+    const exerciseData = await this.alertService.showPromptDialog(
       `Add ${selectedExercise.name}`,
-      'How many sets?',
-      [{ name: 'numSets', type: 'number', placeholder: 'e.g., 3', value: '3', attributes: { min: '1', required: true } }] as AlertInput[],
-      'Next'
-    );
-
-    if (!setsInput || !setsInput['numSets'] || parseInt(String(setsInput['numSets']), 10) <= 0) {
-      this.toastService.info("Exercise addition cancelled or invalid set count.", 2000);
-      return;
-    }
-    const numSets = parseInt(String(setsInput['numSets']), 10);
-
-    const defaultWeight = this.unitService.currentUnit() === 'kg' ? 10 : 2.2;
-    // add weight section
-    const addWeight = await this.alertService.showConfirmationDialog(
-      `Add weight info to ${selectedExercise.name}`,
-      `Do you want to add weight? (default ${defaultWeight} ${this.unitService.currentUnit()})`,
+      '',
       [
-        { text: 'No', role: 'cancel', data: 'cancel_deferred_choice' } as AlertButton,
-        { text: 'Yes', role: 'confirm', data: "confirm" } as AlertButton,
-      ],
-    );
+        { label: 'Exercise name', name: 'name', type: 'string', placeholder: 'Exercise name', value: selectedExercise.name, attributes: { required: true } },
+        { label: 'Number of Reps', name: 'numReps', type: 'number', placeholder: 'Number of Reps (e.g., 10)', value: 10, attributes: { min: 0, required: true } },
+        { label: 'Number of Sets', name: 'numSets', type: 'number', placeholder: 'Number of Sets (e.g., 3)', value: 3, attributes: { min: 1, required: true } },
+        { label: 'Target weight', name: 'weight', type: 'number', placeholder: 'e.g., 10', value: defaultWeight, attributes: { min: 0, required: true } },
+        { label: 'Rest between sets', name: 'rest', type: 'number', placeholder: 'e.g., 60', value: '60', attributes: { min: '1', required: true } }
+      ] as AlertInput[]);
 
-    let setWeight = 10;
-    if (addWeight && addWeight.role === 'confirm') {
-      // Prompt for weight of each set of the exercise
-      const weightInput = await this.alertService.showPromptDialog(
-        `Add weight to ${selectedExercise.name}`,
-        'How much weight?',
-        [{ name: 'weight', type: 'number', placeholder: 'e.g., 10', value: '10', attributes: { min: '1', required: true } }] as AlertInput[],
-        'Next'
-      );
+    if (exerciseData) {
+      const exerciseName = exerciseData['name'];
+      const numSets = isNaN(parseInt(String(exerciseData['numSets']))) ? defaultSets : parseInt(String(exerciseData['numSets']));
+      const numReps = isNaN(parseInt(String(exerciseData['numReps']))) ? defaultReps : parseInt(String(exerciseData['numReps']));
+      const weight = isNaN(parseInt(String(exerciseData['weight']))) ? defaultWeight : parseInt(String(exerciseData['weight']));
+      const rest = isNaN(parseInt(String(exerciseData['rest']))) ? defaultRest : parseInt(String(exerciseData['rest']));
 
-      if (!weightInput || !weightInput['weight'] || parseInt(String(setsInput['weight']), 10) <= 0) {
-        this.toastService.info("Exercise addition cancelled or invalid weight parameter.", 2000);
+      if (!exerciseName || (numSets === null || numSets === undefined || isNaN(numSets)) ||
+        (numReps === null || numReps === undefined || isNaN(numReps)) ||
+        (weight === null || weight === undefined || isNaN(weight)) ||
+        (rest === null || rest === undefined || isNaN(rest))) {
+        this.toastService.info("Exercise addition cancelled or invalid parameter.", 2000);
+        this.selectExerciseToAddFromModal(selectedExercise);
         return;
       }
-      setWeight = parseInt(String(weightInput['weight']), 10);
-    }
 
-    // add rest section
-    const addRest = await this.alertService.showConfirmationDialog(
-      `Add rest info to ${selectedExercise.name}`,
-      'Do you want to add rest? (default 60s)',
-      [
-        { text: 'No', role: 'cancel', data: 'cancel_deferred_choice' } as AlertButton,
-        { text: 'Yes', role: 'confirm', data: "confirm" } as AlertButton,
-      ],
-    );
-
-    let setRest = 60;
-    if (addRest && addRest.role === 'confirm') {
-      // Prompt for rest of each set of the exercise
-      const restInput = await this.alertService.showPromptDialog(
-        `Add rest to ${selectedExercise.name}`,
-        'How much rest?',
-        [{ name: 'rest', type: 'number', placeholder: 'e.g., 60', value: '60', attributes: { min: '1', required: true } }] as AlertInput[],
-        'Next'
-      );
-
-      if (!restInput || !restInput['rest'] || parseInt(String(setsInput['rest']), 10) <= 0) {
-        this.toastService.info("Exercise addition cancelled or invalid rest parameter.", 2000);
-        return;
+      const newExerciseSets: ExerciseSetParams[] = [];
+      for (let i = 0; i < numSets; i++) {
+        newExerciseSets.push({
+          id: `custom-set-${uuidv4()}`, // Or generate based on planned set ID if this was a template
+          reps: 8, // Default reps
+          weight: weight,
+          duration: undefined,
+          restAfterSet: rest,
+          type: 'standard',
+          notes: ''
+        });
       }
-      setRest = parseInt(String(restInput['rest']), 10);
+
+      const newWorkoutExercise: WorkoutExercise = {
+        id: selectedExercise.id, // Unique ID for this session's instance of the exercise
+        exerciseId: selectedExercise.id,
+        exerciseName: selectedExercise.name,
+        sets: newExerciseSets,
+        rounds: 1, // Default to 1 round for an ad-hoc added exercise
+        supersetId: null,
+        supersetOrder: null,
+        supersetSize: null,
+        sessionStatus: 'pending',
+        type: 'standard'
+      };
+
+      const nexExerciseToBeSaved = this.exerciseService.mapWorkoutExerciseToExercise(newWorkoutExercise, selectedExercise);
+      this.exerciseService.addExercise(nexExerciseToBeSaved)
+
+      this.addExerciseToCurrentRoutine(newWorkoutExercise);
     }
-
-    const newExerciseSets: ExerciseSetParams[] = [];
-    for (let i = 0; i < numSets; i++) {
-      newExerciseSets.push({
-        id: `custom-set-${uuidv4()}`, // Or generate based on planned set ID if this was a template
-        reps: 8, // Default reps
-        weight: setWeight,
-        duration: undefined,
-        restAfterSet: setRest,
-        type: 'standard',
-        notes: ''
-      });
-    }
-
-    const newWorkoutExercise: WorkoutExercise = {
-      id: `session-ex-${uuidv4()}`, // Unique ID for this session's instance of the exercise
-      exerciseId: selectedExercise.id,
-      exerciseName: selectedExercise.name,
-      sets: newExerciseSets,
-      rounds: 1, // Default to 1 round for an ad-hoc added exercise
-      supersetId: null,
-      supersetOrder: null,
-      supersetSize: null,
-      sessionStatus: 'pending',
-      type: 'standard'
-    };
-
-    this.addExerciseToCurrentRoutine(newWorkoutExercise);
   }
 
   // Called if user wants to define a completely new exercise not in the library
@@ -2318,29 +2286,12 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     this.closeExerciseSelectionModal();
     const currentRoutineVal = this.routine();
     if (!currentRoutineVal) { return; }
-
-    const inputs: AlertInput[] = [
-      { name: 'exerciseName', type: 'text', placeholder: 'Custom Exercise Name', value: '', attributes: { required: true } },
-      { name: 'numSets', type: 'number', placeholder: 'Number of Sets (e.g., 3)', value: '3', attributes: { min: '1', required: true } },
-    ];
-    const result = await this.alertService.showPromptDialog('Add New Custom Exercise', 'Define exercise name and sets:', inputs, 'Add Exercise');
-
-    if (result && result['exerciseName'] && result['numSets']) {
-      const exerciseName = String(result['exerciseName']).trim();
-      const numSets = parseInt(String(result['numSets']), 10);
-      if (!exerciseName || numSets <= 0) {
-        this.toastService.error("Invalid input for custom exercise.", 0, "Error"); return;
-      }
-      const newExerciseSets: ExerciseSetParams[] = Array.from({ length: numSets }, () => ({
-        id: `custom-adhoc-set-${uuidv4()}`, reps: 8, weight: null, duration: undefined, restAfterSet: 60, type: 'standard', notes: ''
-      }));
-      const newWorkoutExercise: WorkoutExercise = {
-        id: `custom-adhoc-ex-${uuidv4()}`, exerciseId: `custom-exercise-${uuidv4()}`, // Generic custom ID
-        exerciseName: exerciseName, sets: newExerciseSets, rounds: 1, supersetId: null, sessionStatus: 'pending', supersetOrder: null,
-        type: 'standard'
-      };
-      this.addExerciseToCurrentRoutine(newWorkoutExercise);
-    }
+    const newWorkoutExercise: Exercise = {
+      id: `custom-adhoc-ex-${uuidv4()}`,
+      name: 'Custom exercise',
+      description: '', category: 'bodyweight/calisthenics', muscleGroups: [], primaryMuscleGroup: '', imageUrls: []
+    };
+    this.selectExerciseToAddFromModal(newWorkoutExercise);
   }
 
   private async addExerciseToCurrentRoutine(newWorkoutExercise: WorkoutExercise, index?: number): Promise<void> {
@@ -2414,7 +2365,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       { name: 'restAfterSet', type: 'number', placeholder: 'Rest after set (sec, e.g., 60)', value: '60', attributes: { min: '0' } }
     ];
 
-    const result = await this.alertService.showPromptDialog('Add Custom Exercise', 'Define the new exercise:', inputs, 'Add Exercise');
+    const result = await this.alertService.showPromptDialog('Add asdasdds Exercise', 'Define the new exercise:', inputs, 'Add Exercise');
 
     if (result && result['exerciseName'] && result['numSets']) {
       const exerciseName = String(result['exerciseName']).trim();
@@ -2503,6 +2454,8 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       }
     }
   }
+
+
 
   /**
    * Maps a WorkoutExercise to a LoggedWorkoutExercise.
@@ -4023,6 +3976,9 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     this.modalSearchTerm.set('');
     this.isExerciseModalOpen.set(true);
     this.closeWorkoutMenu(); // Close main menu when opening modal
+
+    setTimeout(() => this.myExerciseInput.nativeElement?.focus());
+
   }
 
   closeExerciseSelectionModal(): void {
@@ -4292,5 +4248,4 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       }
     }
   }
-
 }

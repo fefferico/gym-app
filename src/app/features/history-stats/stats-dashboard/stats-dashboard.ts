@@ -106,9 +106,15 @@ export class StatsDashboardComponent implements OnInit, OnDestroy {
   private filterFormSub?: Subscription; // Subscription for filter form changes
 
   // Chart options (same as before)
-  showXAxis = true; showYAxis = true; gradient = false; showXAxisLabel = true;
-  xAxisLabelMuscle = 'Muscle Group'; xAxisLabelWeek = 'Week';
-  showYAxisLabel = true; yAxisLabelVolume = 'Total Volume (kg)'; colorScheme = 'vivid';
+  showXAxis = true; 
+  showYAxis = true; 
+  gradient = false; 
+  showXAxisLabel = true;
+  xAxisLabelMuscle = 'Muscle Group'; 
+  xAxisLabelWeek = 'Week';
+  showYAxisLabel = true; 
+  yAxisLabelVolume = 'Total Volume (kg)'; 
+  colorScheme = 'vivid';
 
 
   constructor() {

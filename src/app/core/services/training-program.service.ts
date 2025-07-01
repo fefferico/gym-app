@@ -188,12 +188,12 @@ export class TrainingProgramService {
           const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
           const currentCycleDayNumber = (diffDays % activeProgram.cycleLength) + 1; // 1-indexed cycle day
           // console.log(`Target date: ${targetDate.toDateString()}, Start date: ${startDate.toDateString()}, Diff days: ${diffDays}, Cycle day: ${currentCycleDayNumber}`);
-          dayMatchLogic = (s: ScheduledRoutineDay) => s.dayOfWeek === currentCycleDayNumber; // Assuming dayOfWeek stores cycle day number here
+          dayMatchLogic = (s: ScheduledRoutineDay) => s.dayOfWeek === Number(currentCycleDayNumber); // Assuming dayOfWeek stores cycle day number here
         } else {
           // Standard weekly cycle logic (0 for Sunday, 1 for Monday, etc.)
           const dayOfWeekForTargetDate = getDay(targetDate); // date-fns getDay: 0 for Sun, 1 for Mon...
           // console.log(`Target date: ${targetDate.toDateString()}, Day of week: ${dayOfWeekForTargetDate}`);
-          dayMatchLogic = (s: ScheduledRoutineDay) => s.dayOfWeek === dayOfWeekForTargetDate;
+          dayMatchLogic = (s: ScheduledRoutineDay) => s.dayOfWeek === Number(dayOfWeekForTargetDate);
         }
 
         const scheduledDayInfo = activeProgram.schedule.find(dayMatchLogic);

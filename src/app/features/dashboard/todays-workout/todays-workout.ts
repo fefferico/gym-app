@@ -4,7 +4,7 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { TrainingProgramService } from '../../../core/services/training-program.service';
 import { Routine } from '../../../core/models/workout.model';
-import { ScheduledRoutineDay } from '../../../core/models/training-program.model';
+import { ScheduledRoutineDay, TrainingProgram } from '../../../core/models/training-program.model';
 import { SpinnerService } from '../../../core/services/spinner.service'; // Assuming this is used or could be
 import { WorkoutService } from '../../../core/services/workout.service';
 import { Observable } from 'rxjs';
@@ -55,6 +55,7 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
   private spinnerService = inject(SpinnerService);
   private elementRef = inject(ElementRef);
   private ngZone = inject(NgZone);
+  protected activeProgram = signal<TrainingProgram | null>(null);
 
   isLoading = signal<boolean>(true);
   todaysScheduledWorkout = signal<{ routine: Routine, scheduledDayInfo: ScheduledRoutineDay } | null>(null);
@@ -72,6 +73,11 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
   ngOnInit(): void {
     this.loadTodaysWorkoutContent();
     this.availableRoutines$ = this.workoutService.routines$;
+    this.trainingProgramService.getActiveProgram().subscribe(activeProgram=> {
+      if (activeProgram){
+        this.activeProgram.set(activeProgram);
+      }
+    })
   }
 
   ngAfterViewInit(): void {
@@ -109,13 +115,11 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
         next: (data) => {
           this.todaysScheduledWorkout.set(data);
           this.isLoading.set(false);
-          // this.spinnerService.hide();
         },
         error: (err) => {
           console.error("Error fetching scheduled workout:", err);
           this.todaysScheduledWorkout.set(null);
           this.isLoading.set(false);
-          // this.spinnerService.hide();
         }
       });
   }
