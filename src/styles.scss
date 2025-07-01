@@ -3,6 +3,10 @@
 @tailwind components;
 @tailwind utilities;
 
+// * {
+//   outline: 1px solid red !important; /* The !important helps override other styles */
+// }
+
 /* Your other global styles can go here */
 body {
   /* Example: applied via Tailwind classes in app.component.html now, 

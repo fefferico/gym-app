@@ -63,3 +63,10 @@
     -ms-overflow-style: none;  /* IE and Edge */
     scrollbar-width: none;  /* Firefox */
 }
+
+.your-main-container {
+  height: calc(100vh - 90px);
+  // overflow-y: auto;
+  // position: absolute; /* or relative, depending on context */
+  top: 70px; /* Position it below the header */
+}
