@@ -2834,7 +2834,9 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       this.autoSaveSub.unsubscribe(); // Unsubscribe from previous if any
     }
 
-    this.autoSaveSub = interval(this.AUTO_SAVE_INTERVAL_MS).subscribe(() => {
+    this.autoSaveSub = interval(this.AUTO_SAVE_INTERVAL_MS)
+    .pipe(takeUntil(this.destroy$))
+    .subscribe(() => {
       if (this.sessionState() === SessionState.Playing && this.routine()) {
         console.log('Auto-saving workout state...');
         this.savePausedSessionState(); // Reuse the existing save state logic

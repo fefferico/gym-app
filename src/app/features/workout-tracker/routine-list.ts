@@ -21,11 +21,14 @@ import { ThemeService } from '../../core/services/theme.service';
 import { ActionMenuItem } from '../../core/models/action-menu.model';
 import { ActionMenuComponent } from '../../shared/components/action-menu/action-menu';
 import e from 'express';
+import { LongPressDirective } from '../../shared/directives/long-press.directive';
+import { PressDirective } from '../../shared/directives/press.directive';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-routine-list',
   standalone: true,
-  imports: [CommonModule, DatePipe, TitleCasePipe, RouterLink, ActionMenuComponent],
+  imports: [CommonModule, DatePipe, TitleCasePipe, RouterLink, ActionMenuComponent, PressDirective],
   templateUrl: './routine-list.html',
   styleUrl: './routine-list.scss',
   animations: [
@@ -63,6 +66,9 @@ export class RoutineListComponent implements OnInit, OnDestroy {
   private storageService = inject(StorageService);
   private themeService = inject(ThemeService);
   private platformId = inject(PLATFORM_ID);
+
+  private sanitizer = inject(DomSanitizer);
+  public sanitizedDescription: SafeHtml = '';
 
   routines$: Observable<Routine[]> | undefined; // Original observable
   allRoutinesForList = signal<Routine[]>([]); // Signal for all routines
@@ -206,6 +212,11 @@ export class RoutineListComponent implements OnInit, OnDestroy {
 
   private loadRoutinesAndPopulateFilters(): void {
     this.routinesSubscription = this.workoutService.routines$.subscribe(routines => {
+      // routines.map(routine => ({
+      //   ...routine,
+      //   description: this.updateSanitizedDescription(routine.description || '')
+      // }));
+
       this.allRoutinesForList.set(routines); // Update the signal with all routines
       this.populateRoutineFilterOptions(routines);
     });
@@ -413,11 +424,17 @@ export class RoutineListComponent implements OnInit, OnDestroy {
 
   viewRoutineDetails(routineId: string, event?: MouseEvent): void {
     event?.stopPropagation();
+    if (event && event.target) {
+      const elem = event.target as HTMLElement;
+      if (elem.className && elem.className.includes('bg-primary')) {
+        return;
+      }
+    }
     this.router.navigate(['/workout/routine/view', routineId, { isView: 'routineBuilder' }]); // Pass isView flag
     this.visibleActionsRutineId.set(null);
   }
 
-  hideRoutine(routineId: string, event?: MouseEvent): void {
+  hideRoutine(routineId: string, event?: MouseEvent | Event): void {
     event?.stopPropagation();
     const hiddenRoutine = this.allRoutinesForList().find(routine => routine.id === routineId);
     if (hiddenRoutine) {
@@ -427,13 +444,24 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     }
   }
 
-  unhideRoutine(routineId: string, event?: MouseEvent): void {
+  async unhideRoutine(routineId: string, event?: MouseEvent | Event, confirmation: boolean = false): Promise<void> {
     event?.stopPropagation();
     const hiddenRoutine = this.allRoutinesForList().find(routine => routine.id === routineId);
     if (hiddenRoutine) {
+      if (confirmation) {
+        const buttons: AlertButton[] = [
+          { text: 'Cancel', role: 'cancel', data: 'cancel' },
+          { text: 'Unmark', role: 'confirm', data: 'confirm' },
+        ];
+        const confirmation = await this.alertService.showConfirmationDialog('Unhide routine', `Would you like to unhide ${hiddenRoutine.name} from hidden ones?`, buttons);
+        if (!confirmation || !confirmation.data || confirmation.data === 'cancel') {
+          return;
+        }
+      }
       hiddenRoutine.isHidden = false;
       this.workoutService.updateRoutine(hiddenRoutine);
       this.loadRoutinesAndPopulateFilters();
+      this.toastService.success(`Removed ${hiddenRoutine.name} from hidden ones`)
     }
   }
 
@@ -448,10 +476,20 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     }
   }
 
-  unmarkAsFavourite(routineId: string, event?: MouseEvent): void {
+  async unmarkAsFavourite(routineId: string, event?: MouseEvent | Event, confirmation: boolean = false): Promise<void> {
     event?.stopPropagation();
     const favouriteRoutine = this.allRoutinesForList().find(routine => routine.id === routineId);
     if (favouriteRoutine) {
+      if (confirmation) {
+        const buttons: AlertButton[] = [
+          { text: 'Cancel', role: 'cancel', data: 'cancel' },
+          { text: 'Unmark', role: 'confirm', data: 'confirm' },
+        ];
+        const confirmation = await this.alertService.showConfirmationDialog('Unmark favourite routine', `Would you like to unmark ${favouriteRoutine.name} from favourites?`, buttons);
+        if (!confirmation || !confirmation.data || confirmation.data === 'cancel') {
+          return;
+        }
+      }
       favouriteRoutine.isFavourite = false;
       this.workoutService.updateRoutine(favouriteRoutine);
       this.loadRoutinesAndPopulateFilters();
@@ -727,5 +765,9 @@ export class RoutineListComponent implements OnInit, OnDestroy {
       this.onRoutineMuscleGroupChange(event);
       this.toastService.info(`Filtered routines by muscle '${muscle}'`);
     }
+  }
+
+  protected updateSanitizedDescription(value: string): SafeHtml {
+    return this.sanitizer.bypassSecurityTrustHtml(value);
   }
 }

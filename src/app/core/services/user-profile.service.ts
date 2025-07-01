@@ -11,6 +11,7 @@ import { Gender, UserMeasurements, UserProfile } from '../models/user-profile.mo
 export class UserProfileService {
   private storageService = inject(StorageService);
   private readonly USER_PROFILE_KEY = 'fitTrackPro_userProfile';
+  private readonly IS_WIP = true;
 
   // Using BehaviorSubject for reactive updates and easy sharing
   private userProfileSubject: BehaviorSubject<UserProfile | null>;

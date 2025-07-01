@@ -1270,16 +1270,6 @@ export const EXERCISES_DATA = [
     imageUrls: ["assets/images/exercises/wall-sit_1.jpg"]
   },
   {
-    "id": "plank",
-    "name": "Plank",
-    "description": "An isometric core strength exercise that involves maintaining a position similar to a push-up for maximum duration.",
-    "category": "bodyweight/calisthenics",
-    "primaryMuscleGroup": "Core",
-    "muscleGroups": ["Core (Abs, Obliques, Lower Back)", "Shoulders", "Glutes"],
-    "equipmentNeeded": [],
-    imageUrls: ["assets/images/exercises/plank_1.jpg"]
-  },
-  {
     id: "side-plank",
     name: "Side Plank",
     description: "Targets obliques and improves lateral core stability.",
@@ -1288,16 +1278,6 @@ export const EXERCISES_DATA = [
     muscleGroups: ["Obliques", "Transverse Abdominis"],
     equipmentNeeded: [],
     imageUrls: ["assets/images/exercises/side-plank_1.jpg"]
-  },
-  {
-    "id": "superman",
-    "name": "Superman",
-    "description": "A lower back and posterior chain exercise performed lying prone, lifting arms and legs simultaneously.",
-    "category": "bodyweight/calisthenics",
-    "primaryMuscleGroup": "Lower Back",
-    "muscleGroups": ["Lower Back (Erector Spinae)", "Glutes", "Hamstrings"],
-    "equipmentNeeded": [],
-    imageUrls: ["assets/images/exercises/superman_1.jpg"]
   },
   {
     "id": "dolphin-plank",
@@ -1358,16 +1338,6 @@ export const EXERCISES_DATA = [
     "muscleGroups": ["Chest", "Triceps", "Shoulders"],
     "equipmentNeeded": [],
     imageUrls: ["assets/images/exercises/clapping-push-up_1.jpg"]
-  },
-  {
-    "id": "wall-sit",
-    "name": "Wall Sit",
-    "description": "An isometric hold that targets the quadriceps, glutes, and calves, simulating a seated position against a wall.",
-    "category": "bodyweight/calisthenics",
-    "primaryMuscleGroup": "Quadriceps",
-    "muscleGroups": ["Quadriceps", "Glutes", "Calves"],
-    "equipmentNeeded": [],
-    imageUrls: ["assets/images/exercises/wall-sit_1.jpg"]
   },
   {
     "id": "shrimp-squat",

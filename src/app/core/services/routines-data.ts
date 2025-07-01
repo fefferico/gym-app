@@ -170,7 +170,7 @@ export const ROUTINES_DATA: Routine[] = [
     {
         "id": "b3c4d5e6-1",
         "name": "50 Rep Kettlebell Arm Blaster Build Muscular Biceps & Triceps",
-        "description": "Rest no more than 3 minutes between rounds. <italic>Original workout by Chandler Marchman.</italic>",
+        "description": "Rest no more than 3 minutes between rounds. <i>Original workout by Chandler Marchman.</i>",
         "goal": "hypertrophy",
         "exercises": [
             {
