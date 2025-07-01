@@ -8,17 +8,17 @@ export interface AlertButton {
 }
 
 export interface AlertInput {
-  type?: 'text' | 'number' | 'email' | 'password' | 'search' | 'tel' | 'url' | 'date' | 'textarea'; // Add more as needed
+  type?: 'text' | 'number' | 'email' | 'password' | 'search' | 'tel' | 'url' | 'date' | 'textarea' | 'checkbox'; // Add more as needed
   name: string; // Will be the key in the returned data object
   placeholder?: string;
-  value?: string | number;
+  value?: string | number | boolean;
   label?: string; // Optional label for the input
   id?: string; // Optional id for the input element
   min?: number | string; // For number/date types
   max?: number | string; // For number/date types
   required?: boolean; // Basic required validation indicator
   // Add more attributes as needed: pattern, step, rows (for textarea), etc.
-  attributes: any
+  attributes?: any
 }
 
 export interface AlertOptions {

@@ -55,6 +55,7 @@ export class HomeComponent implements OnInit {
         this.pausedRoutineName.set('your workout');
       }
     });
+    this.userProfileService.showWipDisclaimer();
   }
 
   ngOnInit(): void {

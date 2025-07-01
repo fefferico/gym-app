@@ -14,23 +14,52 @@
       <p *ngIf="options.message" class="text-m text-gray-600 dark:text-gray-300 whitespace-pre-wrap mb-3">{{
         options.message }}</p>
 
-      <!-- Inputs Section (remains the same) -->
-      <div *ngIf="options.inputs && options.inputs.length > 0" class="space-y-3">
+      <!-- Inputs Section (refactored for different input types) -->
+      <div *ngIf="options.inputs && options.inputs.length > 0" class="space-y-4">
         <div *ngFor="let input of options.inputs; let i = index">
-          <label *ngIf="input.label" [for]="input.id || ('alert-input-' + i)"
-            class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-0.5">
-            {{ input.label }}
-          </label>
           <ng-container [ngSwitch]="input.type">
-            <textarea *ngSwitchCase="'textarea'" [id]="input.id || ('alert-input-' + i)" [name]="input.name"
-              [placeholder]="input.placeholder || ''" [(ngModel)]="inputValues[input.name]"
-              [required]="input.required ? true : false" rows="3"
-              class="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-m dark:bg-gray-700 dark:text-gray-200">
-            </textarea>
-            <input *ngSwitchDefault [type]="input.type || 'text'" [id]="input.id || ('alert-input-' + i)"
-              [name]="input.name" [placeholder]="input.placeholder || ''" [(ngModel)]="inputValues[input.name]"
-              [required]="input.required ? true : false" [min]="input.min" [max]="input.max"
-              class="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-m dark:bg-gray-700 dark:text-gray-200">
+            
+            <!-- Checkbox Input Type -->
+            <div *ngSwitchCase="'checkbox'" class="flex items-center">
+              <input 
+                type="checkbox" 
+                [id]="input.id || ('alert-input-' + i)" 
+                [name]="input.name" 
+                [(ngModel)]="inputValues[input.name]"
+                class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-800 dark:focus:ring-offset-gray-800">
+              <label 
+                *ngIf="input.label" 
+                [for]="input.id || ('alert-input-' + i)"
+                class="ml-2 block text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+                {{ input.label }}
+              </label>
+            </div>
+            
+            <!-- Textarea Input Type -->
+            <div *ngSwitchCase="'textarea'">
+              <label *ngIf="input.label" [for]="input.id || ('alert-input-' + i)"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                {{ input.label }}
+              </label>
+              <textarea [id]="input.id || ('alert-input-' + i)" [name]="input.name"
+                [placeholder]="input.placeholder || ''" [(ngModel)]="inputValues[input.name]"
+                [required]="input.required ? true : false" rows="3"
+                class="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-m dark:bg-gray-700 dark:text-gray-200">
+              </textarea>
+            </div>
+
+            <!-- Default Input Type (text, number, etc.) -->
+            <div *ngSwitchDefault>
+              <label *ngIf="input.label" [for]="input.id || ('alert-input-' + i)"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                {{ input.label }}
+              </label>
+              <input [type]="input.type || 'text'" [id]="input.id || ('alert-input-' + i)"
+                [name]="input.name" [placeholder]="input.placeholder || ''" [(ngModel)]="inputValues[input.name]"
+                [required]="input.required ? true : false" [min]="input.min" [max]="input.max"
+                class="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-m dark:bg-gray-700 dark:text-gray-200">
+            </div>
+
           </ng-container>
         </div>
       </div>

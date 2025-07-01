@@ -73,6 +73,7 @@ export class ProfileSettingsComponent implements OnInit {
 
     this.appSettingsForm = this.fb.group({
       enableTimerCountdownSound: [true],
+      enableShowWIP: [true],
       countdownSoundSeconds: [5, [Validators.required, Validators.min(1), Validators.max(60)]],
       enablePresetTimer: [false],
       enablePresetTimerAfterRest: [false],
@@ -277,5 +278,17 @@ export class ProfileSettingsComponent implements OnInit {
 
   get measForm(): FormGroup { // Helper to get measurements form group
     return this.profileForm.get('measurements') as FormGroup;
+  }
+
+  /**
+   * Toggles the 'hideWipDisclaimer' setting in the user profile.
+   * This method is called by the (change) event on the toggle switch.
+   */
+  toggleWipDisclaimer(): void {
+    // 1. Get the current state
+    const isCurrentlyHidden = this.userProfileService.getHideWipDisclaimer();
+
+    // 2. Update the service with the opposite state
+    this.userProfileService.updateHideWipDisclaimer(!isCurrentlyHidden);
   }
 }

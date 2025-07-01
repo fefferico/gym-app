@@ -51,52 +51,52 @@ type HistoryListView = 'list' | 'calendar';
   providers: [DecimalPipe],
   animations: [
     trigger('slideUpDown', [
-    transition(':enter', [style({ transform: 'translateY(100%)', opacity: 0 }), animate('300ms ease-out', style({ transform: 'translateY(0%)', opacity: 1 }))]),
-    transition(':leave', [animate('250ms ease-in', style({ transform: 'translateY(100%)', opacity: 0 }))])
-  ]),
-  trigger('slideInOutActions', [
-    state('void', style({
-      height: '0px', opacity: 0, overflow: 'hidden',
-      paddingTop: '0', paddingBottom: '0', marginTop: '0', marginBottom: '0'
-    })),
-    state('*', style({
-      height: '*', opacity: 1, overflow: 'hidden',
-      paddingTop: '0.5rem', paddingBottom: '0.5rem'
-    })),
-    transition('void <=> *', animate('200ms ease-in-out'))
-  ]),
-  trigger('dropdownMenu', [
-    state('void', style({
-      opacity: 0, transform: 'scale(0.75) translateY(-10px)', transformOrigin: 'top right'
-    })),
-    state('*', style({
-      opacity: 1, transform: 'scale(1) translateY(0)', transformOrigin: 'top right'
-    })),
-    transition('void => *', [animate('150ms cubic-bezier(0.25, 0.8, 0.25, 1)')]),
-    transition('* => void', [animate('100ms cubic-bezier(0.25, 0.8, 0.25, 1)')])
-  ]),
-  trigger('viewSlide', [
-    transition('list <=> calendar', [
-      style({ position: 'relative', overflow: 'hidden' }),
-      query(':enter, :leave', [style({ position: 'absolute', top: 0, left: 0, width: '100%' })], { optional: true }),
-      query(':enter', [style({ transform: '{{ enterTransform }}', opacity: 0 })], { optional: true }),
-      group([
-        query(':leave', [animate('300ms ease-out', style({ transform: '{{ leaveTransform }}', opacity: 0 }))], { optional: true }),
-        query(':enter', [animate('300ms ease-out', style({ transform: 'translateX(0%)', opacity: 1 }))], { optional: true })
+      transition(':enter', [style({ transform: 'translateY(100%)', opacity: 0 }), animate('300ms ease-out', style({ transform: 'translateY(0%)', opacity: 1 }))]),
+      transition(':leave', [animate('250ms ease-in', style({ transform: 'translateY(100%)', opacity: 0 }))])
+    ]),
+    trigger('slideInOutActions', [
+      state('void', style({
+        height: '0px', opacity: 0, overflow: 'hidden',
+        paddingTop: '0', paddingBottom: '0', marginTop: '0', marginBottom: '0'
+      })),
+      state('*', style({
+        height: '*', opacity: 1, overflow: 'hidden',
+        paddingTop: '0.5rem', paddingBottom: '0.5rem'
+      })),
+      transition('void <=> *', animate('200ms ease-in-out'))
+    ]),
+    trigger('dropdownMenu', [
+      state('void', style({
+        opacity: 0, transform: 'scale(0.75) translateY(-10px)', transformOrigin: 'top right'
+      })),
+      state('*', style({
+        opacity: 1, transform: 'scale(1) translateY(0)', transformOrigin: 'top right'
+      })),
+      transition('void => *', [animate('150ms cubic-bezier(0.25, 0.8, 0.25, 1)')]),
+      transition('* => void', [animate('100ms cubic-bezier(0.25, 0.8, 0.25, 1)')])
+    ]),
+    trigger('viewSlide', [
+      transition('list <=> calendar', [
+        style({ position: 'relative', overflow: 'hidden' }),
+        query(':enter, :leave', [style({ position: 'absolute', top: 0, left: 0, width: '100%' })], { optional: true }),
+        query(':enter', [style({ transform: '{{ enterTransform }}', opacity: 0 })], { optional: true }),
+        group([
+          query(':leave', [animate('300ms ease-out', style({ transform: '{{ leaveTransform }}', opacity: 0 }))], { optional: true }),
+          query(':enter', [animate('300ms ease-out', style({ transform: 'translateX(0%)', opacity: 1 }))], { optional: true })
+        ])
       ])
+    ]),
+    trigger('calendarMonthSlide', [
+      state('center', style({ transform: 'translateX(0%)', opacity: 1 })),
+      state('outLeft', style({ transform: 'translateX(-100%)', opacity: 0 })),
+      state('outRight', style({ transform: 'translateX(100%)', opacity: 0 })),
+      state('preloadFromRight', style({ transform: 'translateX(100%)', opacity: 0 })),
+      state('preloadFromLeft', style({ transform: 'translateX(-100%)', opacity: 0 })),
+      transition('center => outLeft', animate('200ms ease-in')),
+      transition('center => outRight', animate('200ms ease-in')),
+      transition('preloadFromRight => center', animate('200ms ease-out')),
+      transition('preloadFromLeft => center', animate('200ms ease-out')),
     ])
-  ]),
-  trigger('calendarMonthSlide', [
-    state('center', style({ transform: 'translateX(0%)', opacity: 1 })),
-    state('outLeft', style({ transform: 'translateX(-100%)', opacity: 0 })),
-    state('outRight', style({ transform: 'translateX(100%)', opacity: 0 })),
-    state('preloadFromRight', style({ transform: 'translateX(100%)', opacity: 0 })),
-    state('preloadFromLeft', style({ transform: 'translateX(-100%)', opacity: 0 })),
-    transition('center => outLeft', animate('200ms ease-in')),
-    transition('center => outRight', animate('200ms ease-in')),
-    transition('preloadFromRight => center', animate('200ms ease-out')),
-    transition('preloadFromLeft => center', animate('200ms ease-out')),
-  ])
   ]
 })
 export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -528,9 +528,15 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   toggleShowPastLoggedWorkouts(): void {
     this.showPastLoggedWorkouts = !this.showPastLoggedWorkouts;
-    if (!this.showPastLoggedWorkouts){
+    if (!this.showPastLoggedWorkouts) {
       this.pastLoggedWorkoutsDay = null;
     }
+  }
+
+  secondsToDateTime(seconds: number): Date {
+    const d = new Date(0, 0, 0, 0, 0, 0, 0);
+    d.setSeconds(seconds);
+    return d;
   }
 
 }

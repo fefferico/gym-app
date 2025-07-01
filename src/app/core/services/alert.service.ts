@@ -4,6 +4,9 @@ import { isPlatformBrowser } from '@angular/common'; // Import isPlatformBrowser
 import { AlertComponent } from '../../shared/components/alert/alert.component';
 import { AlertButton, AlertOptions, AlertInput } from '../models/alert.model';
 
+// Define a reusable type for the alert result to keep the code clean and consistent.
+type AlertResult = { role: string, data?: any, values?: { [key: string]: string | number | boolean } };
+
 @Injectable({
     providedIn: 'root'
 })
@@ -16,7 +19,8 @@ export class AlertService {
         private injector: EnvironmentInjector
     ) { }
 
-    async present(options: AlertOptions): Promise<{ role: string, data?: any, values?: { [key: string]: string | number } } | undefined> {
+    // UPDATE 1: Changed the return type of the Promise to use AlertResult
+    async present(options: AlertOptions): Promise<AlertResult | undefined> {
         if (!isPlatformBrowser(this.platformId)) {
             // console.warn("AlertService.present called in a non-browser environment. Alert will not be shown.");
             // For methods like showConfirm that await a result, returning undefined or a default
@@ -41,7 +45,8 @@ export class AlertService {
             this.alertComponentRef = alertComponentRef;
 
             alertComponentRef.instance.options = options;
-            alertComponentRef.instance.dismissed.subscribe((result: { role: string, data?: any, values?: { [key: string]: string | number } } | undefined) => {
+            // UPDATE 2: Updated the type of the subscribed result to use AlertResult
+            alertComponentRef.instance.dismissed.subscribe((result: AlertResult | undefined) => {
                 this.dismiss(result); // Internal dismiss also handles handler logic
                 resolve(result);
             });
@@ -50,7 +55,8 @@ export class AlertService {
         });
     }
 
-    dismiss(result?: { role: string, data?: any, values?: { [key: string]: string | number } }): void {
+    // UPDATE 3: Updated the type of the result parameter to use AlertResult
+    dismiss(result?: AlertResult): void {
         if (!isPlatformBrowser(this.platformId)) {
             return; // Do nothing on the server
         }
@@ -78,14 +84,11 @@ export class AlertService {
     }
 
     async showAlert(header: string, message: string, okText: string = 'OK'): Promise<void> {
-        // `present` is already guarded, so this will effectively be a no-op on the server
-        // and the promise will resolve to undefined.
         await this.present({
             header,
             message,
             buttons: [{ text: okText, role: 'confirm' }]
         });
-        // No return value needed here, the void promise is fine.
     }
 
     async showConfirm(
@@ -103,11 +106,10 @@ export class AlertService {
             ]
         });
         
-        // `result` will be undefined if on the server (due to guard in `present`)
-        if (result) { // This check also implicitly confirms we are on the browser if result is not undefined
+        if (result) {
             return { role: result.role as 'confirm' | 'cancel', data: result.data };
         }
-        return undefined; // Dismissed via backdrop/escape or if on server
+        return undefined;
     }
 
     async showCustomAlert(title: string, message: string) {
@@ -121,16 +123,17 @@ export class AlertService {
         ],
         backdropDismiss: false
       });
-      if (isPlatformBrowser(this.platformId)) { // Only log in browser if you want to see console output
+      if (isPlatformBrowser(this.platformId)) {
           console.log('showCustomAlert Result:', result);
       }
     }
 
+    // UPDATE 4: Updated the return type to use AlertResult
     async showConfirmationDialog(
         title: string, 
         message: string, 
         customButtons?: AlertButton[]
-    ): Promise<{role: string, data?:any, values?: { [key: string]: string | number } } | undefined> {
+    ): Promise<AlertResult | undefined> {
       const result = await this.present({
         header: title,
         message: message,
@@ -140,16 +143,17 @@ export class AlertService {
         ],
         backdropDismiss: false
       });
-      return result; // `result` will be undefined if on server
+      return result;
     }
 
+    // UPDATE 5: Updated the return type to include boolean
     async showPromptDialog(
         header: string,
         message: string,
         inputs: AlertInput[],
         okText: string = 'OK',
         cancelText: string = 'Cancel'
-    ): Promise<{ [key: string]: string | number } | null> {
+    ): Promise<{ [key: string]: string | number | boolean } | null> {
         const result = await this.present({
             header,
             message,
@@ -161,10 +165,9 @@ export class AlertService {
             backdropDismiss: false
         });
 
-        // `result` will be undefined if on server
         if (result && result.role === 'confirm' && result.data === true) {
             return result.values || {};
         }
-        return null; // Cancelled, dismissed, or on server
+        return null;
     }
 }

@@ -261,7 +261,7 @@
                         <span class="font-medium">Muscles:</span>
                         <span *ngFor="let muscle of getRoutineMainMuscleGroups(routine)"
                             (click)="filterByMuscleGroup(muscle,$event)"
-                            class="text-center bg-purple-100 text-purple-700 dark:bg-purple-700 dark:text-purple-200 px-1.5 py-0.5 rounded-full mx-1 inline-block">
+                            class="text-center text-xs bg-purple-100 text-purple-700 dark:bg-purple-700 dark:text-purple-200 px-1.5 py-0.5 rounded-full mx-1 inline-block">
                             {{ muscle | titlecase }}
                         </span>
                     </div>

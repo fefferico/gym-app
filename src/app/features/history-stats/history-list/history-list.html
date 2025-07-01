@@ -149,7 +149,14 @@
                       <path stroke-linecap="round" stroke-linejoin="round"
                         d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"></path>
                     </svg>
-                    <span class="font-medium">Duration:</span> {{ log.durationMinutes || 'N/A' }} minutes
+                    <span *ngIf="log.durationSeconds"><span class="font-medium">Duration: </span> {{
+                      secondsToDateTime(log.durationSeconds) |
+                      date:'HH:mm:ss' }}</span>
+                    <span *ngIf="!log.durationSeconds"><span class="font-medium">Duration: </span>{{
+                      log.startTime |
+                      date:'shortTime' }}
+                      ({{ log.durationMinutes }} min)</span>
+
                   </p>
                   <p class="flex gap-1">
                     <!-- SVG flex arm icon -->
@@ -336,7 +343,11 @@
                 <p class="text-xs font-medium text-gray-700 dark:text-gray-300">Logged Session(s):</p>
                 <div class="p-2 bg-sky-50 dark:bg-sky-900/50 rounded-md border border-sky-200 dark:border-sky-700">
                   <div class="flex justify-between items-center">
-                    <span class="text-xs text-sky-700 dark:text-sky-300">Logged: {{ item.startTime |
+                    <span *ngIf="item.durationSeconds"><span class="font-medium">Duration: </span> {{
+                      secondsToDateTime(item.durationSeconds) |
+                      date:'HH:mm:ss' }}</span>
+                    <span *ngIf="!item.durationSeconds"><span class="font-medium">Duration: </span> {{
+                      item.startTime |
                       date:'shortTime' }}
                       ({{ item.durationMinutes }} min)</span>
                     <button (click)="viewLogDetails(item.id)"

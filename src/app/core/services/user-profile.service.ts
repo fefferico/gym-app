@@ -4,12 +4,14 @@ import { StorageService } from './storage.service';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Gender, UserMeasurements, UserProfile } from '../models/user-profile.model';
+import { AlertService } from './alert.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserProfileService {
   private storageService = inject(StorageService);
+  private alertService = inject(AlertService);
   private readonly USER_PROFILE_KEY = 'fitTrackPro_userProfile';
   private readonly IS_WIP = true;
 
@@ -31,6 +33,51 @@ export class UserProfileService {
       this.username.set(profile?.username);
       // Update other derived signals here
     });
+    // Show the disclaimer when the app starts, if necessary
+    this.showWipDisclaimer();
+  }
+
+  // New method to orchestrate showing the disclaimer
+  public async showWipDisclaimer(): Promise<void> {
+    // Only show if it's a WIP and user hasn't hidden it yet
+    if (this.IS_WIP && !this.getHideWipDisclaimer()) {
+    // if (this.IS_WIP) {
+      const result = await this.alertService.present({
+        header: 'Work-in-Progress Disclaimer',
+        message: `DISCLAIMER: This is a work-in-progress, browser-based app. This means your workout data won't be saved when you close the browser or clear your browser data. Be sure to regularly export your data and import it again when you return to the app.`,
+        backdropDismiss: false,
+        inputs: [
+          {
+            type: 'checkbox',
+            name: 'hideDisclaimer',
+            label: `Don't show this message again`,
+            value: false
+          }
+        ],
+        buttons: [
+          {
+            text: 'OK',
+            role: 'confirm'
+          }
+        ]
+      });
+
+      if (result?.role === 'confirm' && result.values?.['hideDisclaimer']) {
+        this.updateHideWipDisclaimer(true);
+      }
+    }
+  }
+
+  // Method to check the disclaimer setting
+  getHideWipDisclaimer(): boolean {
+    // Assumes 'hideWipDisclaimer' is an optional property on UserProfile
+    return this.userProfileSubject.getValue()?.hideWipDisclaimer ?? false;
+  }
+
+  // Method to update the disclaimer setting
+  updateHideWipDisclaimer(hide: boolean): void {
+    const currentProfile = this.getProfile() || {};
+    this.saveProfile({ ...currentProfile, hideWipDisclaimer: hide });
   }
 
   getProfile(): UserProfile | null {
@@ -86,7 +133,7 @@ export class UserProfileService {
 
   // Method to clear profile data (used by ProfileSettingsComponent)
   public clearUserProfile_DEV_ONLY(): void {
-      this.replaceData(null); // Effectively clears the profile
-      console.log('User profile data cleared.');
+    this.replaceData(null); // Effectively clears the profile
+    console.log('User profile data cleared.');
   }
 }

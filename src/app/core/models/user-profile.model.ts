@@ -20,5 +20,6 @@ export interface UserProfile {
   username?: string | null;
   gender?: Gender | null;
   measurements?: UserMeasurements;
+  hideWipDisclaimer?: boolean;
   // You can add more profile-specific fields here like fitness goals, experience level, etc.
 }

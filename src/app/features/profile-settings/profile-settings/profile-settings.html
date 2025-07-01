@@ -251,7 +251,8 @@
                     Bests.</p>
                 <a routerLink="/profile/personal-bests"
                     class="px-4 py-2 bg-primary hover:bg-primary-dark text-white font-semibold rounded-md shadow-sm transition-colors inline-flex items-center text-sm">
-                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 transition-all mr-2">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                        class="w-6 h-6 transition-all mr-2">
                         <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
                         <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
                         <g id="SVGRepo_iconCarrier">
@@ -261,11 +262,12 @@
                             <path d="M12 16V19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path>
                             <path
                                 d="M15.5 22H8.5L8.83922 20.3039C8.93271 19.8365 9.34312 19.5 9.8198 19.5H14.1802C14.6569 19.5 15.0673 19.8365 15.1608 20.3039L15.5 22Z"
-                                stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
-                            <path 
+                                stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            </path>
+                            <path
                                 d="M19 5L19.9486 5.31621C20.9387 5.64623 21.4337 5.81124 21.7168 6.20408C22 6.59692 22 7.11873 21.9999 8.16234L21.9999 8.23487C21.9999 9.09561 21.9999 9.52598 21.7927 9.87809C21.5855 10.2302 21.2093 10.4392 20.4569 10.8572L17.5 12.5"
                                 stroke="currentColor" stroke-width="1.5"></path>
-                            <path 
+                            <path
                                 d="M4.99994 5L4.05132 5.31621C3.06126 5.64623 2.56623 5.81124 2.2831 6.20408C1.99996 6.59692 1.99997 7.11873 2 8.16234L2 8.23487C2.00003 9.09561 2.00004 9.52598 2.20723 9.87809C2.41441 10.2302 2.79063 10.4392 3.54305 10.8572L6.49994 12.5"
                                 stroke="currentColor" stroke-width="1.5"></path>
                             <path
@@ -293,6 +295,26 @@
                             [ngClass]="{'bg-primary hover:bg-primary-dark text-white border-primary dark:border-primary': currentUnit() === 'lbs', 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700': currentUnit() !== 'lbs'}">lbs</button>
                     </div>
                 </div>
+
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-md font-medium text-gray-700 dark:text-gray-300">WIP Message</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mr-1">Toggle between showing or hiding WIP
+                            message.</p>
+                    </div>
+                    <label for="show-wip-message" class="inline-flex items-center cursor-pointer">
+                        <span class="sr-only">Show WIP Disclaimer</span>
+                        <input type="checkbox" id="show-wip-message" class="sr-only peer"
+                            [checked]="!userProfileService.getHideWipDisclaimer()" (change)="toggleWipDisclaimer()">
+                        <div
+                            class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary dark:peer-checked:bg-primary-dark">
+                        </div>
+                        <span class="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">{{
+                            !userProfileService.getHideWipDisclaimer() ? 'On' : 'Off' }}</span>
+                    </label>
+                </div>
+
+
             </div>
         </section>
 

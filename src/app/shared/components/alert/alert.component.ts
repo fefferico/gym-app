@@ -14,15 +14,21 @@ import { AlertButton, AlertOptions, AlertInput } from '../../../core/models/aler
 })
 export class AlertComponent implements OnInit {
   @Input() options: AlertOptions | null = null;
-  @Output() dismissed = new EventEmitter<{ role: string, data?: any, values?: { [key: string]: string | number } } | undefined>();
+  @Output() dismissed = new EventEmitter<{ role: string, data?: any, values?: { [key: string]: string | number | boolean } } | undefined>();
 
-  inputValues: { [key: string]: string | number } = {};
+  inputValues: { [key: string]: string | number | boolean } = {};
 
   ngOnInit(): void {
     // Initialize inputValues from options
     if (this.options?.inputs) {
       this.options.inputs.forEach(input => {
-        this.inputValues[input.name] = input.value !== undefined ? input.value : (input.type === 'number' ? 0 : '');
+        // Handle checkbox initialization
+        if (input.type === 'checkbox') {
+          this.inputValues[input.name] = input.value !== undefined ? !!input.value : false;
+        } else {
+          // Handle other inputs
+          this.inputValues[input.name] = input.value !== undefined ? input.value : (input.type === 'number' ? 0 : '');
+        }
       });
     }
   }
@@ -41,7 +47,8 @@ export class AlertComponent implements OnInit {
     if (button.role === 'confirm' || button.role !== 'cancel') { // Or check for specific roles that need validation
       if (this.options?.inputs) {
         for (const input of this.options.inputs) {
-          if (input.required && (this.inputValues[input.name] === undefined || String(this.inputValues[input.name]).trim() === '')) {
+          // Skip validation for checkboxes, as 'required' isn't standard for them
+          if (input.type !== 'checkbox' && input.required && (this.inputValues[input.name] === undefined || String(this.inputValues[input.name]).trim() === '')) {
             alert(`Please fill in the '${input.label || input.name}' field.`); // Simple browser alert for now
             // Or use a more sophisticated inline error display within the alert
             return; // Prevent dismiss
@@ -58,7 +65,7 @@ export class AlertComponent implements OnInit {
     }
   }
 
-  private dismissWith(result: { role: string, data?: any, values?: { [key: string]: string | number } } | undefined): void {
+  private dismissWith(result: { role: string, data?: any, values?: { [key: string]: string | number | boolean } } | undefined): void {
     this.dismissed.emit(result);
   }
 
