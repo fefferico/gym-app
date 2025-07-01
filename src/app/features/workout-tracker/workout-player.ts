@@ -659,20 +659,34 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       // For this comparison, an exercise in original not present in performed is a difference.
       return performed.some(pEx => pEx.exerciseId === origEx.exerciseId);
     });
-    const performedExercisesThatWereInOriginal = performed.filter(pEx =>
-      original.some(oEx => (oEx.exerciseId === pEx.exerciseId || pEx.exerciseName === oEx.exerciseName) && oEx.type !== pEx.type) // Looser match if custom was renamed from original
-    );
-    const addedCustomExercises = performed.filter(pEx =>
-      !original.some(oEx => oEx.exerciseId === pEx.exerciseId) && pEx.exerciseId.startsWith('custom-exercise-')
-    );
+
+    // Step 1: Create lookup sets for fast O(1) checking. This is very efficient.
+    const originalIdSet = new Set(original.map(ex => ex.exerciseId));
+    const originalNameSet = new Set(original.map(ex => ex.exerciseName));
+
+    // Step 2: Initialize your result arrays.
+    const performedExercisesThatWereInOriginal: LoggedWorkoutExercise[] = [];
+    const addedCustomExercises: LoggedWorkoutExercise[] = [];
+
+    // Step 3: Loop through the performed exercises only ONCE.
+    for (const pEx of performed) {
+      // Check if the performed exercise exists in the original sets.
+      if (originalIdSet.has(pEx.exerciseId) || originalNameSet.has(pEx.exerciseName)) {
+        performedExercisesThatWereInOriginal.push(pEx);
+      } else {
+        addedCustomExercises.push(pEx);
+      }
+    }
 
 
     if (performedExercisesThatWereInOriginal.length !== original.length || addedCustomExercises.length > 0) {
-      details.push(`Number of exercises or their content changed.`);
+      details.push(`Number of exercises or their content changed [Original number exercises: ${original.length}, performed number exercises: ${performedExercisesThatWereInOriginal.length}].`);
       majorDifference = true;
     }
     if (addedCustomExercises.length > 0) {
-      details.push(`${addedCustomExercises.length} custom exercise(s) added.`);
+      for (const cEx of addedCustomExercises) {
+        details.push(`${cEx.exerciseName} exercise added.`);
+      }
     }
 
 
@@ -1158,10 +1172,11 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     // If there were no unfinished exercises, or if some edge case led here without a return.
     console.log("tryProceedToDeferredExercisesOrFinish: No unfinished exercises to propose or all paths handled. Finishing workout.");
 
-    if (this.routineId === "-1") {
+    // if (this.routineId === "-1") {
+    if (true) {
       const endCurrentWorkout = await this.alertService.showConfirmationDialog(
         `Continue or End`,
-        'Would you like to add a new exercise to the current session or complete it?',
+        'The current session is finished! Would you like to add a new exercise or complete it?',
         [
           { text: 'Add exercise', role: 'add_exercise', data: 'add_exercise', cssClass: 'bg-primary hover:bg-primary-dark text-white' } as AlertButton,
           { text: 'End session', role: 'end_session', data: "end_session", cssClass: 'bg-blue-500 hover:bg-blue-600 text-white' } as AlertButton,
@@ -2569,15 +2584,20 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     if (this.routineId && this.originalRoutineSnapshot && this.originalRoutineSnapshot.length > 0 && sessionRoutineValue) {
       const differences = this.comparePerformedToOriginal(loggedExercisesForReport, originalSnapshotToCompare);
       if (differences.majorDifference) {
+        console.log("Major differences", differences.details)
         // Show a confirmation dialog with details of the differences
+
         const confirmation = await this.alertService.showConfirmationDialog(
           "Routine Structure Changed",
-          `You made significant changes to the routine structure:\n\n${differences.details.join('\n')}\n\nWould you like to save this as a new routine, update the original, or cancel?`,
+          `You made some changes to the routine structure. Would you like to save this as a new routine, update the original, or cancel?`,
           [
-            { text: "Save as New Routine", role: "confirm", data: "new", cssClass: "bg-green-600" } as AlertButton,
+            { text: "Simply log", role: "log", data: "log", cssClass: "bg-purple-600" } as AlertButton,
             { text: "Update Original Routine and log", role: "destructive", data: "update", cssClass: "bg-blue-600" } as AlertButton,
+            { text: "Save as New Routine", role: "confirm", data: "new", cssClass: "bg-green-600" } as AlertButton,
             { text: "Cancel", role: "cancel", data: "cancel" } as AlertButton
-          ]
+          ],
+          // Pass the details array directly to the new property
+          { listItems: differences.details }
         );
         if (confirmation && confirmation.data === 'new') {
           // Prompt for new routine name
@@ -2603,6 +2623,9 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
           }
         } else if (confirmation && confirmation.data === 'update') {
           updateOriginalRoutineStructure = true;
+        } else if (confirmation && confirmation.data === 'log') {
+          updateOriginalRoutineStructure = false;
+          proceedToLog = true;
         } else {
           proceedToLog = false;
         }
@@ -2687,9 +2710,8 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       }
     }
 
-    this.isSessionConcluded = true;
+    this.stopAllActivity();
     this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
-    this.sessionState.set(SessionState.End);
     this.router.navigate(['/workout/summary', savedLog.id]);
     return true;
   }
@@ -2700,7 +2722,8 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       this.stopAllActivity();
       this.isSessionConcluded = true;
       this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
-      this.closeWorkoutMenu(); this.closePerformanceInsights();
+      this.closeWorkoutMenu();
+      this.closePerformanceInsights();
       this.router.navigate(['/workout']);
       this.toastService.info("Workout quit. No progress saved for this session.", 4000);
     }
@@ -2835,15 +2858,15 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     }
 
     this.autoSaveSub = interval(this.AUTO_SAVE_INTERVAL_MS)
-    .pipe(takeUntil(this.destroy$))
-    .subscribe(() => {
-      if (this.sessionState() === SessionState.Playing && this.routine()) {
-        console.log('Auto-saving workout state...');
-        this.savePausedSessionState(); // Reuse the existing save state logic
-        // Optionally, provide a subtle feedback to the user, e.g., a small toast "Progress saved"
-        // this.toastService.info("Progress auto-saved", 1500, "Auto-Save"); // Be mindful not to be too intrusive
-      }
-    });
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        if (this.sessionState() === SessionState.Playing && this.routine()) {
+          console.log('Auto-saving workout state...');
+          this.savePausedSessionState(); // Reuse the existing save state logic
+          // Optionally, provide a subtle feedback to the user, e.g., a small toast "Progress saved"
+          // this.toastService.info("Progress auto-saved", 1500, "Auto-Save"); // Be mindful not to be too intrusive
+        }
+      });
   }
 
   private stopAutoSave(): void {
@@ -3106,12 +3129,14 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
   private stopAllActivity(): void {
+    this.isSessionConcluded = true;
     console.log('stopAllActivity - Stopping timers and auto-save.');
     this.stopAutoSave();
     if (this.timerSub) this.timerSub.unsubscribe();
     if (this.timedSetIntervalSub) this.timedSetIntervalSub.unsubscribe();
     if (this.tabataTimerSub) this.tabataTimerSub.unsubscribe();
     this.isRestTimerVisible.set(false);
+    this.sessionState.set(SessionState.End);
     // Don't unsubscribe from routerEventsSub or routeSub here, they manage themselves or are handled by ngOnDestroy
   }
   async resumeSession(): Promise<void> {

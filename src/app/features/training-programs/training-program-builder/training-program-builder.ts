@@ -16,6 +16,7 @@ import { SpinnerService } from '../../../core/services/spinner.service';
 import { AlertService } from '../../../core/services/alert.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { DayOfWeekPipe } from '../../../shared/pipes/day-of-week-pipe';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 interface DayOption {
     value: number;
@@ -55,7 +56,12 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
     isNewMode = false;
     isViewMode = false;
     currentProgramId: string | null = null;
+    currentProgram: TrainingProgram | null | undefined = null;
+    isCurrentProgramActive = signal<boolean>(false);
     private routeSub!: Subscription;
+
+    private sanitizer = inject(DomSanitizer);
+    public sanitizedDescription: SafeHtml = '';
 
     // For routine selection modal
     isRoutineModalOpen = signal(false);
@@ -132,7 +138,10 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
                     this.toastService.error(`Program with ID ${this.currentProgramId} not found.`, 0, "Error");
                     this.router.navigate(['/training-programs']);
                 }
+                this.currentProgram = program;
                 this.updateFormEnabledState();
+                const isActive = program?.isActive ?? false;
+                this.isCurrentProgramActive.set(isActive);
             })
         ).subscribe();
 
@@ -156,7 +165,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
     patchFormWithProgramData(program: TrainingProgram): void {
         this.programForm.patchValue({
             name: program.name,
-            description: program.description,
+            description: program.description ? this.updateSanitizedDescription(program.description) : '',
             programNotes: program.programNotes,
             startDate: program.startDate ? new Date(program.startDate).toISOString().split('T')[0] : null,
             cycleLength: program.cycleLength ?? null,
@@ -341,5 +350,37 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
     get f() { return this.programForm.controls; }
     getScheduleDayControl(index: number) {
         return this.scheduleFormArray.at(index) as FormGroup;
+    }
+
+    async toggleActiveProgram(): Promise<void> {
+        if (!this.currentProgramId) {
+            return;
+        }
+        if (this.isCurrentProgramActive()) {
+            // Option to deactivate
+            const confirmDeactivate = await this.alertService.showConfirm("Deactivate Program?", "Do you want to deactivate this program? No program will be active.", "Deactivate");
+            if (confirmDeactivate && confirmDeactivate.data) {
+                try {
+                    this.spinnerService.show("Deactivating program...");
+                    await this.trainingProgramService.deactivateProgram(this.currentProgramId); // Assumes service has this
+                    // Service emits updated list
+                } catch (error) { this.toastService.error("Failed to deactivate.", 0, "Error"); }
+                finally { this.spinnerService.hide(); }
+            }
+            return;
+        }
+        // Activate new program
+        try {
+            this.spinnerService.show("Setting active program...");
+            // The service method should handle setting the new active program,
+            // updating isActive flags on all programs, and emitting the updated list.
+            await this.trainingProgramService.setActiveProgram(this.currentProgramId);
+        } catch (error) { this.toastService.error("Failed to set active program.", 0, "Error"); }
+        finally { this.spinnerService.hide(); }
+    }
+
+    private updateSanitizedDescription(value: string): void {
+        // This tells Angular to trust this HTML string and render it as is.
+        this.sanitizedDescription = this.sanitizer.bypassSecurityTrustHtml(value);
     }
 }

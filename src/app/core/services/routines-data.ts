@@ -179,7 +179,8 @@ export const ROUTINES_DATA: Routine[] = [
                 "exerciseName": "Slow Eccentric Floor Skullcrusher",
                 "notes": "Split from combo exercise 'Slow Eccentric Floor Skullcrusher to Close Grip Floor Press'.",
                 "sets": [{ "id": "s3a1", "reps": 5, "weight": 71, "restAfterSet": 0, "type": "standard", "tempo": "4010" }],
-                "rounds": 3, "supersetId": null, "supersetOrder": null, "type": "standard"
+                "rounds": 3, "supersetId": null, "supersetOrder": null, 
+                "type": "superset",
             },
             {
                 "id": "e3a3b3c3-2",
@@ -187,49 +188,49 @@ export const ROUTINES_DATA: Routine[] = [
                 "exerciseName": "Close Grip Floor Press (from combo)",
                 "notes": "Split from combo exercise 'Slow Eccentric Floor Skullcrusher to Close Grip Floor Press'.",
                 "sets": [{ "id": "s3a2", "reps": 5, "weight": 71, "restAfterSet": 60, "type": "standard" }],
-                "rounds": 3, "supersetId": null, "supersetOrder": null, "type": "standard"
+                "rounds": 3, "supersetId": null, "supersetOrder": null, "type": "superset"
             },
             {
                 "id": "e3a3b3c3-3",
                 "exerciseId": "kettlebell-floor-skullcrusher",
                 "exerciseName": "Floor Skullcrusher",
                 "sets": [{ "id": "s3b", "reps": 10, "weight": 71, "restAfterSet": 60, "type": "standard" }],
-                "rounds": 3, "supersetId": null, "supersetOrder": null, "type": "standard"
+                "rounds": 3, "supersetId": null, "supersetOrder": null, "type": "superset"
             },
             {
                 "id": "e3a3b3c3-4",
                 "exerciseId": "kettlebell-close-grip-floor-press",
                 "exerciseName": "Close Grip Floor Press",
                 "sets": [{ "id": "s3c", "reps": 10, "weight": 71, "restAfterSet": 60, "type": "standard" }],
-                "rounds": 3, "supersetId": null, "supersetOrder": null, "type": "standard"
+                "rounds": 3, "supersetId": null, "supersetOrder": null, "type": "superset"
             },
             {
                 "id": "e3a3b3c3-5",
                 "exerciseId": "push-up",
                 "exerciseName": "Proprioceptive Close Grip Push Up",
                 "sets": [{ "id": "s3d", "reps": 5, "weight": null, "restAfterSet": 60, "type": "standard" }],
-                "rounds": 3, "supersetId": null, "supersetOrder": null, "type": "standard"
+                "rounds": 3, "supersetId": null, "supersetOrder": null, "type": "superset"
             },
             {
                 "id": "e3a3b3c3-6",
                 "exerciseId": "push-up",
                 "exerciseName": "Push Up",
                 "sets": [{ "id": "s3e", "reps": 5, "weight": null, "restAfterSet": 60, "type": "standard" }],
-                "rounds": 3, "supersetId": null, "supersetOrder": null, "type": "standard"
+                "rounds": 3, "supersetId": null, "supersetOrder": null, "type": "superset"
             },
             {
                 "id": "e3a3b3c3-7",
                 "exerciseId": "kettlebell-slow-eccentric-pause-towel-curl",
                 "exerciseName": "Slow Eccentric Pause Towel Curls",
                 "sets": [{ "id": "s3f", "reps": 5, "weight": 71, "restAfterSet": 60, "type": "standard", "tempo": "4110" }],
-                "rounds": 3, "supersetId": null, "supersetOrder": null, "type": "standard"
+                "rounds": 3, "supersetId": null, "supersetOrder": null, "type": "superset"
             },
             {
                 "id": "e3a3b3c3-8",
                 "exerciseId": "kettlebell-towel-curl",
                 "exerciseName": "Towel Curls",
                 "sets": [{ "id": "s3g", "reps": 5, "weight": 71, "restAfterSet": 180, "type": "standard" }],
-                "rounds": 3, "supersetId": null, "supersetOrder": null, "type": "standard"
+                "rounds": 3, "supersetId": null, "supersetOrder": null, "type": "superset"
             }
         ],
         "notes": "Original workout by Chandler Marchman. Video URL: https://www.youtube.com/watch?v=NKrxQWu4iYE. Weight Used During Workout: 71 lb. Kettlebell."

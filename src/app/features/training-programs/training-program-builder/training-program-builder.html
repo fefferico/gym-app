@@ -1,59 +1,87 @@
 <div class="container mx-auto p-2 sm:p-4">
-    <header class="mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
-        <div class="flex items-center">
-            <button routerLink="/training-programs"
-                class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-light p-2 -ml-2 rounded-full focus:outline-none focus:ring-2 focus:ring-primary-focus">
+    <header class="mb-2 pb-4 border-b border-gray-200 dark:border-gray-700">
+        <div class="flex justify-between items-center">
+            <button [routerLink]="'/training-programs'"
+                class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-light p-2 -ml-1">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
                     class="w-6 h-6">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                </svg>
-            </button>
-            <h1 class="text-xl sm:text-2xl md:text-2xl font-bold text-gray-800 dark:text-gray-200 ml-2 truncate">
-                {{ isNewMode ? 'New Training Program' : (isViewMode ? (programForm.get('name')?.value || 'View Program')
-                : ('EDIT: ' + (programForm.get('name')?.value || 'Program'))) }}
+                </svg></button>
+            <h1
+                class="text-xl sm:text-2xl md:text-2xl font-bold text-gray-800 dark:text-gray-200 text-center flex-grow truncate px-2">
+                {{ isNewMode ? '' : (isEditMode ? 'EDIT: ' + (currentProgram?.name || 'Program'): currentProgram?.name)
+                }}
             </h1>
+            <div class="w-10 h-10"></div> <!-- Spacer -->
         </div>
-        <div *ngIf="!isNewMode && currentProgramId" class="mt-4 flex flex-wrap gap-2 justify-start">
+        <div class="mt-4 flex flex-wrap gap-2 justify-center">
+            <button type="button" (click)="toggleActiveProgram()"
+                class="text-white font-semibold py-3 px-3 rounded-md shadow-sm text-m flex items-center"
+                [ngClass]="{'bg-green-600 hover:bg-green-800':!isCurrentProgramActive(), 'bg-gray-600 hover:bg-gray-800':isCurrentProgramActive()}">
+                <svg *ngIf="!isCurrentProgramActive()" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                    fill="currentColor" class="w-8 h-8 mr-1">
+                    <path fill-rule="evenodd"
+                        d="M16.403 12.652a3 3 0 000-5.304 3 3 0 00-3.75-3.751 3 3 0 00-5.305 0 3 3 0 00-3.751 3.75 3 3 0 000 5.305 3 3 0 003.75 3.751 3 3 0 005.305 0 3 3 0 003.751-3.75Zm-2.546-4.46a.75.75 0 00-1.214-.883l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5Z"
+                        clip-rule="evenodd" />
+                </svg>
+                <svg *ngIf="isCurrentProgramActive()" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                    fill="currentColor" class="w-8 h-8 mr-1 text-red-500">
+                    <path fill-rule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16Zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5Z"
+                        clip-rule="evenodd" />
+                </svg>
+                {{ isCurrentProgramActive() ? 'DEACTIVATE' : 'ACTIVATE'}}
+            </button>
             <button *ngIf="isViewMode" type="button" (click)="enableEditModeFromView()"
-                class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-3 rounded-md shadow-sm text-xs sm:text-sm flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                class="bg-yellow-500 hover:bg-yellow-800 text-white font-semibold py-3 px-3 rounded-md shadow-sm text-m flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
                     stroke="currentColor" class="size-4 sm:size-5 mr-1">
                     <path stroke-linecap="round" stroke-linejoin="round"
                         d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
                 </svg>
-                EDIT PROGRAM
+                EDIT
             </button>
             <button type="button" (click)="deleteProgram()"
-                class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-3 rounded-md shadow-sm text-xs sm:text-sm flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                class="bg-red-600 hover:bg-red-800 text-white font-semibold py-3 px-3 rounded-md shadow-sm text-m flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
                     stroke="currentColor" class="size-4 sm:size-5 mr-1">
                     <path stroke-linecap="round" stroke-linejoin="round"
                         d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
                 </svg>
-                DELETE PROGRAM
+                DELETE
             </button>
         </div>
     </header>
 
-    <form [formGroup]="programForm" (ngSubmit)="onSubmit()" class="space-y-6">
+    <form [formGroup]="programForm" (ngSubmit)="onSubmit()" class="space-y-6 mb-6">
         <!-- Program Details Section -->
-        <section class="p-4 sm:p-6 bg-white dark:bg-gray-700 rounded-lg shadow-md space-y-4">
-            <div>
-                <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Program
+        <section class="space-y-4 p-2 rounded-lg shadow-sm">
+            <!-- Program NAME -->
+            <div *ngIf="isViewMode">
+                <label
+                    class="block text-xl font-black text-gray-700 dark:text-gray-300">{{programForm.get('name')?.value}}</label>
+            </div>
+            <div *ngIf="isEditMode || isNewMode">
+                <label for="programName" class="block text-m font-medium text-gray-700 dark:text-gray-300">Program
                     Name</label>
-                <input type="text" id="name" formControlName="name"
-                    class="mt-1 block w-full p-2 border rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
-                    [ngClass]="{'border-red-500 dark:border-red-400': f['name'].invalid && f['name'].touched}">
-                <div *ngIf="f['name'].invalid && (f['name'].dirty || f['name'].touched)"
+                <input type="text" id="programName" formControlName="name" placeholder="Program name"
+                    class="mt-1 block w-full p-2 border rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200"
+                    [ngClass]="{'border-red-500 dark:border-red-400': programForm.get('name')?.invalid && programForm.get('name')?.touched, 'border-gray-300 dark:border-gray-500': !(programForm.get('name')?.invalid && programForm.get('name')?.touched) }">
+                <div *ngIf="programForm.get('name')?.invalid && (programForm.get('name')?.dirty || programForm.get('name')?.touched)"
                     class="text-red-500 dark:text-red-400 text-xs mt-1">
-                    <span *ngIf="f['name'].errors?.['required']">Program name is required.</span>
+                    <span *ngIf="programForm.get('name')?.errors?.['required']">Program name is required.</span>
                 </div>
             </div>
-            <div>
-                <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Description
+            <!-- DESCRIPTION -->
+            <div *ngIf="isViewMode">
+                <p class="mt-1 block w-full shadow-sm dark:text-gray-200" [innerHTML]="sanitizedDescription">
+                </p>
+            </div>
+            <div *ngIf="isEditMode || isNewMode">
+                <label for="description" class="block text-m font-medium text-gray-700 dark:text-gray-300">Description
                     (Optional)</label>
-                <textarea id="description" formControlName="description" rows="3"
-                    class="mt-1 block w-full p-2 border rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700 dark:border-gray-600"></textarea>
+                <textarea id="description" formControlName="description" rows="3" placeholder="Description (optional)"
+                    class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200"></textarea>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -95,8 +123,8 @@
         </section>
 
         <!-- Schedule Section -->
-        <section class="p-4 sm:p-6 bg-white dark:bg-gray-700 rounded-lg shadow-md">
-            <div class="flex justify-between items-center mb-4">
+        <section class="p-2 shadow-md">
+            <div class="flex justify-between items-center mb-1">
                 <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300">Schedule</h2>
                 <button *ngIf="!isViewMode" type="button" (click)="addScheduledDay()"
                     class="bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium py-1.5 px-3 rounded-md shadow-sm">
@@ -108,19 +136,16 @@
                 (cdkDropListDropped)="onScheduleDrop($event)" formArrayName="schedule" class="space-y-4">
                 <div *ngFor="let dayCtrl of scheduleFormArray.controls; let i = index" [formGroupName]="i" cdkDrag
                     [cdkDragDisabled]="isViewMode"
-                    class="scheduled-day-card p-3 border rounded-lg shadow-sm bg-gray-50 dark:bg-gray-700/50 dark:border-gray-600 relative">
-
+                    class="scheduled-day-card p-3 border rounded-lg shadow-sm bg-gray-50 dark:bg-gray-600/70 dark:border-gray-600 relative">
                     <div *ngIf="!isViewMode" cdkDragHandle
                         class="absolute top-2 right-2 cursor-grab p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
                         title="Drag to reorder day">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
-                            <path fill-rule="evenodd"
-                                d="M10 3a.75.75 0 01.75.75v12.5a.75.75 0 01-1.5 0V3.75A.75.75 0 0110 3ZM5.75 6.75a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5Zm0 5a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5Z"
-                                clip-rule="evenodd" />
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-5 h-5">
+                            <path d="M 7 17 L 7 3 M 4 6 L 7 3 L 10 6 M 17 7 L 17 21 M 14 18 L 17 21 L 20 18" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                         </svg>
                     </div>
-
-                    <div class="flex justify-between items-center mb-3 mt-5">
+                    <div class="flex justify-between items-center mb-1 mt-5">
                         <h4 class="text-md font-medium text-gray-800 dark:text-gray-100">
                             {{ (getScheduleDayControl(i).get('dayOfWeek')?.value | dayOfWeek : (f['cycleLength'].value >
                             0) ) || 'Scheduled Day ' + (i + 1) }}
@@ -160,9 +185,9 @@
                                 [ngClass]="{'ring-2 ring-offset-1 ring-red-500 dark:ring-red-400': getScheduleDayControl(i).get('routineId')?.invalid && (getScheduleDayControl(i).get('routineId')?.touched || submitted)}">
                                 <input type="text" [id]="'routineName-' + i" readonly
                                     [value]="getScheduleDayControl(i).get('routineName')?.value || (getScheduleDayControl(i).get('routineId')?.value ? 'Loading routine...' : 'No Routine Selected')"
-                                    class="flex-1 min-w-0 block w-full px-3 py-2 text-sm rounded-none rounded-l-md border-gray-300 dark:border-gray-500 dark:bg-gray-700 cursor-default
+                                    class="flex-1 min-w-0 block w-full px-3 py-2 text-sm rounded-none rounded-l-md border-gray-300 dark:border-gray-200 dark:bg-gray-500 cursor-default
                               focus:outline-none focus:ring-0 focus:border-gray-300"
-                                    [ngClass]="{'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 placeholder-red-400': getScheduleDayControl(i).get('routineId')?.invalid && (getScheduleDayControl(i).get('routineId')?.touched || submitted)}">
+                                    [ngClass]="{'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 placeholder-red-400': getScheduleDayControl(i).get('routineId')?.invalid && (getScheduleDayControl(i).get('routineId')?.touched || submitted), 'rounded-r-md':isViewMode}">
 
                                 <button *ngIf="!isViewMode" type="button" (click)="openRoutineSelectionModal(i)"
                                     class="inline-flex items-center px-3 py-2 border border-l-0 rounded-r-md text-sm transition-colors duration-150"

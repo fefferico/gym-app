@@ -24,6 +24,7 @@ export interface AlertInput {
 export interface AlertOptions {
   header?: string;
   message?: string;
+  listItems?: string[]; // <-- ADD THIS LINE
   buttons: AlertButton[];
   inputs?: AlertInput[]; // <-- ADDED THIS
   backdropDismiss?: boolean; // Default true (dismiss on backdrop click)

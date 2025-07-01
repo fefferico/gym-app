@@ -63,7 +63,7 @@ export class AlertService {
 
         if (this.alertComponentRef) {
             const buttonClicked = result?.role;
-            
+
             // Safely access options only if alertComponentRef and its instance exist
             const options = this.alertComponentRef.instance?.options;
             const clickedButton = options?.buttons.find(b => b.role === buttonClicked);
@@ -105,7 +105,7 @@ export class AlertService {
                 { text: okText, role: 'confirm', data: true }
             ]
         });
-        
+
         if (result) {
             return { role: result.role as 'confirm' | 'cancel', data: result.data };
         }
@@ -113,37 +113,40 @@ export class AlertService {
     }
 
     async showCustomAlert(title: string, message: string) {
-      const result = await this.present({
-        header: title,
-        message: message,
-        buttons: [
-          { text: 'Non fare nulla', role: 'cancel', cssClass: 'bg-gray-300 hover:bg-gray-500' } as AlertButton,
-          { text: 'Fai Qualcosa', role: 'custom', cssClass: 'bg-teal-500 hover:bg-teal-600', handler: () => { console.log('Handler custom exec'); }, data: { action: 'custom_action' } } as AlertButton,
-          { text: 'OK', role: 'confirm', data: 'ok_confirmed' } as AlertButton,
-        ],
-        backdropDismiss: false
-      });
-      if (isPlatformBrowser(this.platformId)) {
-          console.log('showCustomAlert Result:', result);
-      }
+        const result = await this.present({
+            header: title,
+            message: message,
+            buttons: [
+                { text: 'Non fare nulla', role: 'cancel', cssClass: 'bg-gray-300 hover:bg-gray-500' } as AlertButton,
+                { text: 'Fai Qualcosa', role: 'custom', cssClass: 'bg-teal-500 hover:bg-teal-600', handler: () => { console.log('Handler custom exec'); }, data: { action: 'custom_action' } } as AlertButton,
+                { text: 'OK', role: 'confirm', data: 'ok_confirmed' } as AlertButton,
+            ],
+            backdropDismiss: false
+        });
+        if (isPlatformBrowser(this.platformId)) {
+            console.log('showCustomAlert Result:', result);
+        }
     }
 
     // UPDATE 4: Updated the return type to use AlertResult
     async showConfirmationDialog(
-        title: string, 
-        message: string, 
-        customButtons?: AlertButton[]
+        title: string,
+        message: string,
+        customButtons?: AlertButton[],
+        // Add an optional extraOptions parameter
+        extraOptions?: { listItems?: string[] }
     ): Promise<AlertResult | undefined> {
-      const result = await this.present({
-        header: title,
-        message: message,
-        buttons: customButtons ? customButtons : [
-          { text: 'Cancel', role: 'cancel', data: false } as AlertButton,
-          { text: 'OK', role: 'confirm', data: true } as AlertButton,
-        ],
-        backdropDismiss: false
-      });
-      return result;
+        const result = await this.present({
+            header: title,
+            message: message,
+            buttons: customButtons ? customButtons : [
+                { text: 'Cancel', role: 'cancel', data: false } as AlertButton,
+                { text: 'OK', role: 'confirm', data: true } as AlertButton,
+            ],
+            listItems: extraOptions?.listItems, // Pass the list items here
+            backdropDismiss: false
+        });
+        return result;
     }
 
     // UPDATE 5: Updated the return type to include boolean

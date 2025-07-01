@@ -881,7 +881,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         supersetId: newSupersetId,
         supersetOrder: orderInSuperset,
         supersetSize: supersetSize,
-        rounds: supersetRounds
+        rounds: supersetRounds,
+        type: 'superset'
       });
       this.updateRoundsControlability(exerciseControl);
       const setsArray = exerciseControl.get('sets') as FormArray;
@@ -959,7 +960,11 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     try {
       if (this.mode === 'routineBuilder') {
         const routinePayload: Routine = this.mapFormToRoutine(formValue);
-        if (this.isNewMode) this.workoutService.addRoutine(routinePayload); else this.workoutService.updateRoutine(routinePayload);
+        if (this.isNewMode) {
+          this.workoutService.addRoutine(routinePayload);
+        } else {
+          this.workoutService.updateRoutine(routinePayload);
+        }
         this.toastService.success(`Routine ${this.isNewMode ? 'created' : 'updated'}!`, 4000, "Success");
         this.router.navigate(['/workout']);
       } else { // manualLogEntry

@@ -1,7 +1,7 @@
 <!-- src/app/shared/alert/alert.component.html -->
 <div *ngIf="options"
-     class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 backdrop-blur-sm"
-     (click)="onBackdropClick()">
+  class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 backdrop-blur-sm"
+  (click)="onBackdropClick()">
   <div
     class="bg-white dark:bg-gray-700 rounded-lg shadow-xl p-6 w-full max-w-md dark:text-gray-200 {{ options.customCssClass }}"
     (click)="$event.stopPropagation()">
@@ -14,27 +14,28 @@
       <p *ngIf="options.message" class="text-m text-gray-600 dark:text-gray-300 whitespace-pre-wrap mb-3">{{
         options.message }}</p>
 
+      <!-- ADD THIS BLOCK to render the list -->
+      <ul *ngIf="options.listItems && options.listItems.length > 0"
+        class="list-disc list-inside space-y-1 text-m text-gray-600 dark:text-gray-300 mb-3">
+        <li *ngFor="let item of options.listItems">{{ item }}</li>
+      </ul>
+
       <!-- Inputs Section (refactored for different input types) -->
       <div *ngIf="options.inputs && options.inputs.length > 0" class="space-y-4">
         <div *ngFor="let input of options.inputs; let i = index">
           <ng-container [ngSwitch]="input.type">
-            
+
             <!-- Checkbox Input Type -->
             <div *ngSwitchCase="'checkbox'" class="flex items-center">
-              <input 
-                type="checkbox" 
-                [id]="input.id || ('alert-input-' + i)" 
-                [name]="input.name" 
+              <input type="checkbox" [id]="input.id || ('alert-input-' + i)" [name]="input.name"
                 [(ngModel)]="inputValues[input.name]"
                 class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-800 dark:focus:ring-offset-gray-800">
-              <label 
-                *ngIf="input.label" 
-                [for]="input.id || ('alert-input-' + i)"
+              <label *ngIf="input.label" [for]="input.id || ('alert-input-' + i)"
                 class="ml-2 block text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
                 {{ input.label }}
               </label>
             </div>
-            
+
             <!-- Textarea Input Type -->
             <div *ngSwitchCase="'textarea'">
               <label *ngIf="input.label" [for]="input.id || ('alert-input-' + i)"
@@ -54,8 +55,8 @@
                 class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 {{ input.label }}
               </label>
-              <input [type]="input.type || 'text'" [id]="input.id || ('alert-input-' + i)"
-                [name]="input.name" [placeholder]="input.placeholder || ''" [(ngModel)]="inputValues[input.name]"
+              <input [type]="input.type || 'text'" [id]="input.id || ('alert-input-' + i)" [name]="input.name"
+                [placeholder]="input.placeholder || ''" [(ngModel)]="inputValues[input.name]"
                 [required]="input.required ? true : false" [min]="input.min" [max]="input.max"
                 class="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-m dark:bg-gray-700 dark:text-gray-200">
             </div>
@@ -66,15 +67,10 @@
     </main>
 
     <footer *ngIf="options.buttons && options.buttons.length > 0"
-      [ngClass]="options.buttons.length === 2 ? 'flex justify-center gap-2 sm:gap-3' : 'grid grid-cols-1 gap-2 sm:gap-3'"
-    >
-      <button *ngFor="let button of options.buttons"
-      [ngClass]="getButtonClass(button)"
-      (click)="onButtonClick(button)"
-      class="min-w-[80px] h-12 flex items-center justify-center"
-      style="line-height: normal;"
-      >
-      {{ button.text }}
+      [ngClass]="options.buttons.length === 2 ? 'flex justify-center gap-2 sm:gap-3' : 'grid grid-cols-1 gap-2 sm:gap-3'">
+      <button *ngFor="let button of options.buttons" [ngClass]="getButtonClass(button)" (click)="onButtonClick(button)"
+        class="min-w-[80px] h-12 flex items-center justify-center" style="line-height: normal;">
+        {{ button.text }}
       </button>
     </footer>
 

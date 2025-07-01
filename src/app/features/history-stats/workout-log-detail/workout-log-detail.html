@@ -44,11 +44,25 @@
   <ng-container *ngIf="workoutLog() as log; else loadingOrNotFound">
     <div class="bg-white dark:bg-gray-700 rounded-lg shadow-xl overflow-hidden">
       <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-        <p class="text-md text-gray-600 dark:text-gray-400">
-          Performed on: {{ log.startTime | date:'fullDate' }} at {{ log.startTime | date:'shortTime' }}
+        <p class="flex items-center flex-col text-md text-gray-600 dark:text-gray-400">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-5 0 32 32" stroke-width="1.5"
+            stroke="currentColor" class="w-10 h-10 transition-all">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5m-9-3.75h.008v.008H12v-.008zM12 15h.008v.008H12V15zm0 2.25h.008v.008H12v-.008zM9.75 15h.008v.008H9.75V15zm0 2.25h.008v.008H9.75v-.008zM7.5 15h.008v.008H7.5V15zm0 2.25h.008v.008H7.5v-.008zm6.75-4.5h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V15zm0 2.25h.008v.008h-.008v-.008zm2.25-4.5h.008v.008H16.5v-.008zm0 2.25h.008v.008H16.5V15z"></path>
+          </svg>
+          Performed on: {{ log.startTime | date:'fullDate' }}
+          <span class="text-md text-gray-600 dark:text-gray-400">
+            From {{ log.startTime | date:'shortTime' }} to {{ log.endTime | date:'shortTime' }}
+          </span>
         </p>
-        <p class="text-m text-gray-500 dark:text-gray-500">
-          <span *ngIf="log.durationSeconds">Duration: {{ secondsToDateTime(log.durationSeconds) | date:'HH:mm:ss' }}</span>
+        <p class="flex items-center flex-col text-md text-gray-600 dark:text-gray-400 mt-2">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-5 0 32 32" stroke-width="1.5"
+            stroke="currentColor" class="w-10 h-10 transition-all">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z">
+            </path>
+          </svg>
+          <span *ngIf="log.durationSeconds">Duration: {{ secondsToDateTime(log.durationSeconds) | date:'HH:mm:ss'
+            }}</span>
           <span *ngIf="!log.durationSeconds">Duration: {{ log.durationMinutes }} minutes</span>
         </p>
         <p *ngIf="log.notes" class="mt-2 text-m text-gray-600 dark:text-gray-400 italic">
@@ -57,7 +71,7 @@
       </div>
 
       <div class="p-4 sm:p-6 space-y-2">
-        <h2 class="text-xl sm:text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-4">Exercises Performed:</h2>
+        <h2 class="text-xl sm:text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-4">Exercises performed:</h2>
         <div *ngIf="displayExercises().length > 0; else noLoggedExercises">
 
           <div *ngFor="let loggedEx of displayExercises(); let exIdx = index" class="overflow-hidden shadow-sm"
@@ -79,10 +93,9 @@
                 'rounded-b': loggedEx.supersetId && loggedEx.supersetOrder === ((loggedEx.supersetSize ?? 0) - 1) && !loggedEx.isExpanded && (loggedEx.supersetOrder > 0 && loggedEx.supersetOrder < ((loggedEx.supersetSize ?? 0) - 1) ),
               }">
               <div class="flex items-center min-w-0"> <!-- Added min-w-0 for truncation -->
-                <div
-                  class="flex-shrink-0 mr-2 w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-md"
+                <div class="flex-shrink-0 mr-2 w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-md"
                   [ngClass]="{
-                    'bg-gray-100 dark:bg-gray-200': !loggedEx.supersetId,
+                    'bg-gray-100 dark:bg-gray-400': !loggedEx.supersetId,
                     'dark:bg-orange-300/30 border-orange-300 dark:border-orange-700': loggedEx.supersetId
                   }">
                   <img *ngIf="loggedEx.iconName" [src]="getIconPath(loggedEx.iconName)"
