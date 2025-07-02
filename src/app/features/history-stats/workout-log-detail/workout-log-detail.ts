@@ -129,16 +129,16 @@ export class WorkoutLogDetailComponent implements OnInit {
         // 3. If that also doesn't exist, default to 0.
 
         set.targetReps = (set.targetReps && set.targetReps > 0)
-        ? set.targetReps
-        : (routineExerciseSet?.targetReps ?? 0);
+          ? set.targetReps
+          : (routineExerciseSet?.targetReps ?? 0);
 
-      set.targetDuration = (set.targetDuration && set.targetDuration > 0)
-        ? set.targetDuration
-        : (routineExerciseSet?.targetDuration ?? 0);
+        set.targetDuration = (set.targetDuration && set.targetDuration > 0)
+          ? set.targetDuration
+          : (routineExerciseSet?.targetDuration ?? 0);
 
-      set.targetWeight = (set.targetWeight && set.targetWeight > 0)
-        ? set.targetWeight
-        : (routineExerciseSet?.targetWeight ?? 0);
+        set.targetWeight = (set.targetWeight && set.targetWeight > 0)
+          ? set.targetWeight
+          : (routineExerciseSet?.targetWeight ?? 0);
       }
     }
 
@@ -207,7 +207,8 @@ export class WorkoutLogDetailComponent implements OnInit {
         return of({
           ...(processedEx as LoggedWorkoutExercise), // Cast back if needed, ensure all base props
           baseExercise: null,
-          isExpanded: index === 0,
+          // isExpanded: index === 0,
+          isExpanded: true,
           showWarmups: warmupSets.length > 0,
           warmupSets: warmupSets,
           workingSets: workingSets,
@@ -229,7 +230,8 @@ export class WorkoutLogDetailComponent implements OnInit {
           return {
             ...(processedEx as LoggedWorkoutExercise), // Spread original loggedEx properties (which now include round info)
             baseExercise: exerciseForIcon,
-            isExpanded: index === 0 && (!processedEx.supersetId || (processedEx.supersetId && processedEx.supersetOrder === 0 && (processedEx.supersetCurrentRound === 1 || !processedEx.supersetCurrentRound))),
+            // isExpanded: index === 0 && (!processedEx.supersetId || (processedEx.supersetId && processedEx.supersetOrder === 0 && (processedEx.supersetCurrentRound === 1 || !processedEx.supersetCurrentRound))),
+            isExpanded: true,
             showWarmups: warmupSets.length > 0,
             warmupSets: warmupSets,
             workingSets: workingSets,
@@ -244,7 +246,8 @@ export class WorkoutLogDetailComponent implements OnInit {
           return of({
             ...(processedEx as LoggedWorkoutExercise),
             baseExercise: null,
-            isExpanded: index === 0,
+            // isExpanded: index === 0,
+            isExpanded: true,
             showWarmups: warmupSets.length > 0,
             warmupSets: warmupSets,
             workingSets: workingSets,
@@ -273,7 +276,8 @@ export class WorkoutLogDetailComponent implements OnInit {
           return {
             ...(le as LoggedWorkoutExercise),
             baseExercise: null,
-            isExpanded: index === 0,
+            // isExpanded: index === 0,
+            isExpanded: true,
             showWarmups: warmupSets.length > 0,
             warmupSets: warmupSets,
             workingSets: workingSets,

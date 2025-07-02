@@ -50,7 +50,7 @@
 
     <div class="overflow-hidden transition-all duration-500 ease-in-out"
         [style.maxHeight]="filtersVisible() ? '1000px' : '0px'" [class.mb-6]="filtersVisible()">
-        <div class="p-4 bg-white dark:bg-gray-700 rounded-lg shadow-md border dark:border-gray-600">
+        <div class="p-4 bg-white dark:bg-gray-700 rounded-md shadow-md border dark:border-gray-600">
             <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">Filter PBs</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
@@ -115,7 +115,7 @@
     <div *ngIf="displayPersonalBests().length > 0; else noPBsOrFilters">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             <div *ngFor="let pb of displayPersonalBests()"
-                class="bg-white dark:bg-gray-700 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 relative group transform hover:-translate-y-1"
+                class="bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow duration-200 relative group transform hover:-translate-y-1"
                 [style.zIndex]="filtersVisible() ? 50 : 'auto'">
                 <div class="p-3 flex-grow">
                     <div class="flex justify-between items-start mb-1">

@@ -42,7 +42,7 @@
   </header>
 
   <ng-container *ngIf="workoutLog() as log; else loadingOrNotFound">
-    <div class="bg-white dark:bg-gray-700 rounded-lg shadow-xl overflow-hidden">
+    <div class="bg-white dark:bg-gray-700 rounded-md shadow-xl overflow-hidden">
       <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
         <p class="flex items-center flex-col text-md text-gray-600 dark:text-gray-400">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-5 0 32 32" stroke-width="1.5"
@@ -72,12 +72,12 @@
       </div>
 
       <div class="p-2">
-        <h2 class="text-xl sm:text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-4">Exercises performed:</h2>
+        <!-- <h2 class="text-xl sm:text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-4">Exercises performed:</h2> -->
         <div *ngIf="displayExercises().length > 0; else noLoggedExercises">
 
-          <div *ngFor="let loggedEx of displayExercises(); let exIdx = index" class="overflow-hidden shadow-sm"
+          <div *ngFor="let loggedEx of displayExercises(); let exIdx = index" class="overflow-hidden shadow-md"
             [ngClass]="{
-              'border border-gray-200 dark:border-gray-600 rounded-lg mt-2': !loggedEx.supersetId,
+              'border border-gray-200 dark:border-gray-600 rounded-md mt-4': !loggedEx.supersetId,
               'mb-3': loggedEx.supersetId && loggedEx.supersetOrder === (loggedEx.supersetSize ?? 0),
               'mt-3': loggedEx.supersetId && loggedEx.supersetOrder === 0,
               'border-l border-r border-orange-400 dark:border-orange-600': loggedEx.supersetId,
@@ -89,7 +89,7 @@
             <button (click)="toggleExerciseAccordion(loggedEx)"
               class="w-full flex justify-between items-center p-1 text-left transition-colors focus:outline-none"
               [ngClass]="{
-                'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700': !loggedEx.supersetId,
+                'dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700': !loggedEx.supersetId,
                 'hover:bg-orange-100 dark:hover:bg-orange-800/40': loggedEx.supersetId,
                 'rounded-b': loggedEx.supersetId && loggedEx.supersetOrder === ((loggedEx.supersetSize ?? 0) - 1) && !loggedEx.isExpanded && (loggedEx.supersetOrder > 0 && loggedEx.supersetOrder < ((loggedEx.supersetSize ?? 0) - 1) ),
               }">
@@ -167,7 +167,7 @@
             <div *ngIf="loggedEx.isExpanded" [ngClass]="{
          'grid-cols-5': loggedEx | isWeighted,
          'grid-cols-4': !(loggedEx | isWeighted)
-       }" class="grid gap-x-4 gap-y-2 p-4 bg-white rounded-lg shadow-md dark:bg-gray-800">
+       }" class="grid gap-x-4 gap-y-2 p-4 bg-white rounded-md shadow-md dark:bg-gray-800">
 
               <!-- === GRID HEADER === -->
               <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Set</div>
@@ -183,7 +183,7 @@
 
 
               <!-- === GRID ROWS (LOOP) === -->
-              <ng-container *ngFor="let set of loggedEx.sets; let i = index">
+              <ng-container *ngFor="let set of loggedEx.sets; let i = index; let last = last">
 
                 <!-- Row data aligns perfectly -->
                 <div class="font-medium text-gray-900 dark:text-white">{{ i + 1 }}</div>
@@ -214,13 +214,15 @@
                   </strong>
                 </div>
                 <div class="cursor-pointer">
-                  <svg (click)="showNotesModal(set.notes)" *ngIf="set.notes" xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-500 dark:text-white" fill="none"
-                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <svg (click)="showNotesModal(set.notes)" *ngIf="set.notes" xmlns="http://www.w3.org/2000/svg"
+                    class="h-8 w-8 text-gray-500 dark:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round"
                       d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
                   </svg>
                   <span class="text-gray-500 dark:text-white" *ngIf="!set.notes">-</span>
                 </div>
+                <div *ngIf="!last" class="col-span-full h-px bg-gray-200 dark:bg-gray-700"></div>
 
               </ng-container>
 
@@ -265,7 +267,8 @@
   [modalTitle]="'Notes'">
 
   <div class="flex flex-col p-4 text-left text-gray-700 dark:text-gray-200">
-    <textarea [disabled]="true" class="font-semibold pb-2 dark:border-gray-600 dark:bg-gray-800" name="" id="">{{data}}</textarea>
+    <textarea [disabled]="true" class="font-semibold pb-2 dark:border-gray-600 dark:bg-gray-800" name=""
+      id="">{{data}}</textarea>
     <button (click)="notesModalsData.set(null)"
       class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary-light">
       CLOSE

@@ -55,7 +55,7 @@
 
     <form [formGroup]="programForm" (ngSubmit)="onSubmit()" class="space-y-6 mb-6">
         <!-- Program Details Section -->
-        <section class="space-y-4 p-2 rounded-lg shadow-sm">
+        <section class="space-y-4 p-2 rounded-md shadow-sm">
             <!-- Program NAME -->
             <div *ngIf="isViewMode">
                 <label
@@ -153,7 +153,7 @@
                 (cdkDropListDropped)="onScheduleDrop($event)" formArrayName="schedule" class="space-y-4">
                 <div *ngFor="let dayCtrl of scheduleFormArray.controls; let i = index" [formGroupName]="i" cdkDrag
                     [cdkDragDisabled]="isViewMode"
-                    class="scheduled-day-card p-3 border rounded-lg shadow-sm bg-gray-50 dark:bg-gray-600/70 dark:border-gray-600 relative">
+                    class="scheduled-day-card p-3 border rounded-md shadow-sm bg-gray-50 dark:bg-gray-600/70 dark:border-gray-600 relative">
                     <div *ngIf="!isViewMode" cdkDragHandle
                         class="absolute top-2 right-2 cursor-grab p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
                         title="Drag to reorder day">
@@ -270,7 +270,7 @@
     <div *ngIf="isRoutineModalOpen()"
         class="fixed inset-0 bg-gray-700 bg-opacity-75 transition-opacity overflow-y-auto h-full w-full z-[70] flex items-center justify-center p-4"
         (click)="closeRoutineSelectionModal()">
-        <div class="relative transform overflow-hidden rounded-lg bg-white dark:bg-gray-700 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl"
+        <div class="relative transform overflow-hidden rounded-md bg-white dark:bg-gray-700 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl"
             (click)="$event.stopPropagation()">
             <div class="bg-white dark:bg-gray-600 px-4 pt-5 pb-4 sm:p-6 sm:pb-4 backdrop-blur-sm">
                 <div class="sm:flex sm:items-start w-full">

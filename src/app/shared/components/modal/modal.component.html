@@ -13,14 +13,14 @@
 
   <div
     [@dialogAnimation]="animationState"
-    class="modal-dialog mx-2 bg-white dark:bg-gray-800 rounded-lg shadow-xl
+    class="modal-dialog mx-2 bg-white dark:bg-gray-800 rounded-md shadow-xl
            min-w-[300px] w-full max-w-lg md:max-w-xl lg:max-w-2xl
            max-h-[90vh] flex flex-col overflow-hidden"
     (click)="onDialogClick($event)">
     <!--
       Tailwind classes used:
       - bg-white dark:bg-gray-800: Background with dark mode
-      - rounded-lg shadow-xl: Styling
+      - rounded-md shadow-xl: Styling
       - min-w-[300px] w-full max-w-lg/md/lg: Responsive width. Adjust as needed.
       - max-h-[90vh]: Max height to prevent overflowing viewport
       - flex flex-col: Allows header/body/footer to stack and body to grow
@@ -43,7 +43,7 @@
         type="button"
         class="modal-close-button text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900
                dark:hover:bg-gray-600 dark:hover:text-white
-               rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center"
+               rounded-md text-sm w-8 h-8 ms-auto inline-flex justify-center items-center"
         (click)="closeModal()"
         aria-label="Close modal">
         <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">

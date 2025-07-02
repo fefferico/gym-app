@@ -56,7 +56,7 @@
     </header>
 
     <form [formGroup]="builderForm" (ngSubmit)="onSubmit()" class="space-y-6 mb-6">
-        <section class="space-y-4 p-2 rounded-lg shadow-sm">
+        <section class="space-y-4 p-2 rounded-md shadow-sm">
             <!-- ROUTINE BUILDER FIELDS -->
             <ng-container *ngIf="mode === 'routineBuilder'">
                 <!-- ROUTINE NAME -->
@@ -600,7 +600,7 @@
         </section>
 
         <section *ngIf="mode === 'routineBuilder' && builderForm.get('goal')?.value === 'rest'"
-            class="p-4 bg-blue-50 dark:bg-blue-900/30 rounded-lg text-center">
+            class="p-4 bg-blue-50 dark:bg-blue-900/30 rounded-md text-center">
             <p class="text-m text-blue-700 dark:text-blue-300">This is a rest day routine. No exercises are needed.</p>
         </section>
 
@@ -622,7 +622,7 @@
     <div *ngIf="isExerciseModalOpen"
         class="fixed inset-0 bg-gray-700 bg-opacity-75 transition-opacity overflow-y-auto h-full w-full z-[70] flex items-center justify-center p-4"
         (click)="closeExerciseSelectionModal()">
-        <div class="relative transform overflow-hidden rounded-lg bg-white dark:bg-gray-700 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg"
+        <div class="relative transform overflow-hidden rounded-md bg-white dark:bg-gray-700 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg"
             (click)="$event.stopPropagation()">
             <div class="bg-white dark:bg-gray-700 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <div class="flex justify-between items-center pb-3">

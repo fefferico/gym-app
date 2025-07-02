@@ -1,7 +1,7 @@
 <!-- src/app/shared/components/toast/toast.component.html -->
 <div class="fixed bottom-0 right-1 z-[10000] space-y-3 m-5">
   <div *ngFor="let toast of toasts(); trackBy: trackByToastId" @toastAnimation
-    class="flex items-start p-4 rounded-lg shadow-xl text-white border-l-4" [ngClass]="getToastClasses(toast.type)"
+    class="flex items-start p-4 rounded-md shadow-xl text-white border-l-4" [ngClass]="getToastClasses(toast.type)"
     role="alert">
 
     <!-- Icon -->

@@ -1,5 +1,5 @@
 <ng-container *ngIf="exercise() as ex; else loadingOrNotFound">
-  <div class="bg-white dark:bg-gray-700 rounded-lg shadow-xl overflow-hidden">
+  <div class="bg-white dark:bg-gray-700 rounded-md shadow-xl overflow-hidden">
     <!-- Image Carousel -->
     <div *ngIf="false" class="relative">
       <!-- <div *ngIf="ex.imageUrls && ex.imageUrls.length > 0" class="relative"> -->
@@ -112,7 +112,7 @@
         <h3 class="text-xl font-semibold mb-3 text-gray-700 dark:text-gray-300">Your Personal Bests</h3>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-2">
           <div *ngFor="let pb of exercisePBs()"
-            class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border dark:border-gray-600 shadow-sm">
+            class="p-4 bg-gray-50 dark:bg-gray-700 rounded-md border dark:border-gray-600 shadow-sm">
             <p class="text-sm font-medium text-primary dark:text-primary-light">{{ pb.pbType }}</p>
             <p class="text-2xl font-bold text-gray-800 dark:text-gray-100 mt-1">{{ formatPbValue(pb) }}</p>
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -137,7 +137,7 @@
         class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
         <h3 class="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-300">Progress: {{ progressChartYAxisLabel //
           }} Over Time</h3>
-        <div class="bg-white dark:bg-gray-700 p-1 rounded-lg shadow-md min-h-[350px] overflow-auto">
+        <div class="bg-white dark:bg-gray-700 p-1 rounded-md shadow-md min-h-[350px] overflow-auto">
           <ngx-charts-line-chart [view]="progressChartView" [scheme]="progressChartColorScheme"
             [results]="exerciseProgressChartData()" [legend]="false" [xAxis]="progressChartShowXAxis"
             [yAxis]="progressChartShowYAxis" [xAxisLabel]="progressChartXAxisLabel"
