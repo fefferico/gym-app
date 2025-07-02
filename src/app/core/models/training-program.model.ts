@@ -48,4 +48,5 @@ export interface TrainingProgram {
   cycleLength?: number;
   /** Optional: General notes for the entire program. */
   programNotes?: string;
+  goals?: string[]
 }

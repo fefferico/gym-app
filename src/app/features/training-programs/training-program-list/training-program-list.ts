@@ -452,7 +452,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
     if (this.allRoutinesMap.size === 0 || !program.schedule?.length) return [];
     const goals = new Set<string>();
     program.schedule.forEach(day => { const routine = this.allRoutinesMap.get(day.routineId); if (routine?.goal) goals.add(routine.goal); });
-    return Array.from(goals);
+    return program.goals || Array.from(goals);
   }
   getProgramMainMuscleGroups(program: TrainingProgram): string[] {
     if (this.allRoutinesMap.size === 0 || this.allExercisesMap.size === 0 || !program.schedule?.length) return [];

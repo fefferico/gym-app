@@ -48,7 +48,8 @@
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-5 0 32 32" stroke-width="1.5"
             stroke="currentColor" class="w-10 h-10 transition-all">
             <path stroke-linecap="round" stroke-linejoin="round"
-              d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5m-9-3.75h.008v.008H12v-.008zM12 15h.008v.008H12V15zm0 2.25h.008v.008H12v-.008zM9.75 15h.008v.008H9.75V15zm0 2.25h.008v.008H9.75v-.008zM7.5 15h.008v.008H7.5V15zm0 2.25h.008v.008H7.5v-.008zm6.75-4.5h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V15zm0 2.25h.008v.008h-.008v-.008zm2.25-4.5h.008v.008H16.5v-.008zm0 2.25h.008v.008H16.5V15z"></path>
+              d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5m-9-3.75h.008v.008H12v-.008zM12 15h.008v.008H12V15zm0 2.25h.008v.008H12v-.008zM9.75 15h.008v.008H9.75V15zm0 2.25h.008v.008H9.75v-.008zM7.5 15h.008v.008H7.5V15zm0 2.25h.008v.008H7.5v-.008zm6.75-4.5h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V15zm0 2.25h.008v.008h-.008v-.008zm2.25-4.5h.008v.008H16.5v-.008zm0 2.25h.008v.008H16.5V15z">
+            </path>
           </svg>
           Performed on: {{ log.startTime | date:'fullDate' }}
           <span class="text-md text-gray-600 dark:text-gray-400">
@@ -70,7 +71,7 @@
         </p>
       </div>
 
-      <div class="p-4 sm:p-6 space-y-2">
+      <div class="p-2">
         <h2 class="text-xl sm:text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-4">Exercises performed:</h2>
         <div *ngIf="displayExercises().length > 0; else noLoggedExercises">
 
@@ -86,16 +87,16 @@
             }">
 
             <button (click)="toggleExerciseAccordion(loggedEx)"
-              class="w-full flex justify-between items-center p-3 text-left transition-colors focus:outline-none"
+              class="w-full flex justify-between items-center p-1 text-left transition-colors focus:outline-none"
               [ngClass]="{
                 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700': !loggedEx.supersetId,
                 'hover:bg-orange-100 dark:hover:bg-orange-800/40': loggedEx.supersetId,
                 'rounded-b': loggedEx.supersetId && loggedEx.supersetOrder === ((loggedEx.supersetSize ?? 0) - 1) && !loggedEx.isExpanded && (loggedEx.supersetOrder > 0 && loggedEx.supersetOrder < ((loggedEx.supersetSize ?? 0) - 1) ),
               }">
-              <div class="flex items-center min-w-0"> <!-- Added min-w-0 for truncation -->
+              <div class="flex items-start min-w-0"> <!-- Added min-w-0 for truncation -->
                 <div class="flex-shrink-0 mr-2 w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-md"
                   [ngClass]="{
-                    'bg-gray-100 dark:bg-gray-400': !loggedEx.supersetId,
+                    '': !loggedEx.supersetId,
                     'dark:bg-orange-300/30 border-orange-300 dark:border-orange-700': loggedEx.supersetId
                   }">
                   <img *ngIf="loggedEx.iconName" [src]="getIconPath(loggedEx.iconName)"
@@ -133,119 +134,99 @@
                       <rect x="9" y="9" width="2" height="7" fill="currentColor" />
                     </svg>
                   </div>
-                  <p *ngIf="loggedEx.baseExercise?.category" class="text-xs text-gray-500 dark:text-gray-400 truncate">
-                    {{ loggedEx.baseExercise?.category | titlecase }}
-                  </p>
+                  <div *ngIf="!loggedEx.isExpanded" class="text-xs text-gray-500 dark:text-gray-400 truncate">
+                    <p *ngIf="loggedEx.baseExercise?.category"
+                      class="text-xs text-gray-500 dark:text-gray-400 truncate">
+                      {{ loggedEx.baseExercise?.category | titlecase }}
+                    </p>
+                    <p *ngIf="loggedEx.sets && loggedEx.sets.length >= 1 && checkIfTimedExercise(loggedEx)"> Duration
+                      (s): {{getSetDurationPerformed(loggedEx)}}</p>
+                    <p *ngIf="loggedEx.sets && loggedEx.sets.length > 1"> Sets: {{loggedEx.sets.length}}</p>
+                    <p *ngIf="loggedEx.sets && loggedEx.sets.length > 1 && checkIfWeightedExercise(loggedEx)"> Weight
+                      ({{unitService.getUnitLabel()}}): {{getSetWeightsUsed(loggedEx)}}</p>
+                  </div>
+
                 </div>
               </div>
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
-                class="w-5 h-5 transition-transform duration-200 flex-shrink-0 ml-2" [ngClass]="{
+
+              <div class="flex items-center min-w-0 text-xs text-gray-500 dark:text-gray-400 truncate ng-star-inserted">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                  class="w-5 h-5 transition-transform duration-200 flex-shrink-0 ml-2" [ngClass]="{
                 'text-gray-500 dark:text-gray-400': !loggedEx.supersetId,
                 'text-orange-500 dark:text-orange-400': loggedEx.supersetId,
                 'rotate-180': loggedEx.isExpanded
                 }">
-                <path fill-rule="evenodd"
-                  d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z"
-                  clip-rule="evenodd" />
-              </svg>
+                  <path fill-rule="evenodd"
+                    d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z"
+                    clip-rule="evenodd" />
+                </svg>
+              </div>
+
             </button>
 
-            <div *ngIf="loggedEx.isExpanded" class="p-2 space-y-2" [ngClass]="{
-                'bg-white dark:bg-gray-700': !loggedEx.supersetId,
-              }">
-              <p *ngIf="loggedEx.notes"
-                class="text-m italic text-gray-600 dark:text-gray-400 mb-3 border-b dark:border-gray-700 pb-2">
-                <strong>Exercise Notes:</strong> {{ loggedEx.notes }}
-              </p>
+            <div *ngIf="loggedEx.isExpanded" [ngClass]="{
+         'grid-cols-5': loggedEx | isWeighted,
+         'grid-cols-4': !(loggedEx | isWeighted)
+       }" class="grid gap-x-4 gap-y-2 p-4 bg-white rounded-lg shadow-md dark:bg-gray-800">
 
-              <div *ngIf="loggedEx.warmupSets && loggedEx.warmupSets.length > 0"
-                class="border border-blue-200 dark:border-blue-700 rounded-md">
-                <button (click)="toggleWarmupAccordion(loggedEx)"
-                  class="w-full flex justify-between items-center p-2 text-left bg-blue-50 dark:bg-blue-900/40 hover:bg-blue-100 dark:hover:bg-blue-800/60 transition-colors focus:outline-none">
-                  <span class="font-medium text-m text-blue-700 dark:text-blue-300">
-                    Warm-up Sets ({{ loggedEx.warmupSets.length }})
-                  </span>
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
-                    class="w-4 h-4 text-blue-600 dark:text-blue-400 transition-transform duration-200"
-                    [class.rotate-180]="loggedEx.showWarmups">
-                    <path fill-rule="evenodd"
-                      d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z"
-                      clip-rule="evenodd" />
+              <!-- === GRID HEADER === -->
+              <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Set</div>
+              <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Reps</div>
+
+              <!-- The pipe is used here for the *ngIf condition -->
+              <div *ngIf="loggedEx | isWeighted" class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">
+                Weight
+              </div>
+
+              <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Time</div>
+              <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Notes</div>
+
+
+              <!-- === GRID ROWS (LOOP) === -->
+              <ng-container *ngFor="let set of loggedEx.sets; let i = index">
+
+                <!-- Row data aligns perfectly -->
+                <div class="font-medium text-gray-900 dark:text-white">{{ i + 1 }}</div>
+                <div>
+                  <strong [ngClass]="checkTextClass(set, 'reps')" [class.cursor-pointer]="isTargetMissed(set, 'reps')"
+                    [class.hover:underline]="isTargetMissed(set, 'reps')" (click)="showComparisonModal(set, 'reps')">
+                    {{ set.repsAchieved || '—' }}
+                  </strong>
+                </div>
+
+                <!-- The pipe is used a final time for the data cell -->
+                <div *ngIf="loggedEx | isWeighted">
+                  <strong [ngClass]="checkTextClass(set, 'weight')"
+                    [class.cursor-pointer]="isTargetMissed(set, 'weight')"
+                    [class.hover:underline]="isTargetMissed(set, 'weight')"
+                    (click)="showComparisonModal(set, 'weight')">
+                    {{ set.weightUsed != null ? (set.weightUsed + ' ' + unitService.getUnitLabel()) : '—' }}
+                  </strong>
+
+                </div>
+
+                <div>
+                  <strong [ngClass]="checkTextClass(set, 'duration')"
+                    [class.cursor-pointer]="isTargetMissed(set, 'duration')"
+                    [class.hover:underline]="isTargetMissed(set, 'duration')"
+                    (click)="showComparisonModal(set, 'duration')">
+                    {{ set.durationPerformed || '—' }}
+                  </strong>
+                </div>
+                <div class="cursor-pointer">
+                  <svg (click)="showNotesModal(set.notes)" *ngIf="set.notes" xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-500 dark:text-white" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
                   </svg>
-                </button>
-                <div *ngIf="loggedEx.showWarmups"
-                  class="p-3 space-y-2 border-t border-blue-200 dark:border-blue-700 bg-blue-50/50 dark:bg-blue-900/20">
-                  <div *ngFor="let set of loggedEx.warmupSets; let setIdx = index"
-                    class="p-2 rounded-md bg-white dark:bg-gray-700/30 border border-blue-200 dark:border-blue-600/50">
-                    <p class="text-xs font-medium text-blue-700 dark:text-blue-300">
-                      {{ getDisplaySetLabel(loggedEx.warmupSets, setIdx) }}:
-                    </p>
-                    <ul class="list-disc list-inside pl-3 text-2xs text-gray-500 dark:text-gray-400">
-                      <li *ngIf="set.repsAchieved !== undefined">Reps: <strong class="dark:text-gray-300">{{
-                          set.repsAchieved }}</strong>
-                        <em
-                          *ngIf="set.targetReps !== undefined && set.targetReps > 0 && set.targetReps !== set.repsAchieved"
-                          class="text-gray-400 dark:text-gray-500 ml-1">(T: {{set.targetReps}})</em>
-                      </li>
-                      <li *ngIf="set.weightUsed !== undefined && set.weightUsed !== null">Weight: <strong
-                          class="dark:text-gray-300">{{ set.weightUsed | weightUnit:'1.0-2' }}</strong>
-                        <em
-                          *ngIf="set.targetWeight !== undefined && set.targetWeight !== null && set.targetWeight > 0 && set.targetWeight !== set.weightUsed"
-                          class="text-gray-400 dark:text-gray-500 ml-1">(T: {{set.targetWeight | weightUnit }})</em>
-                      </li>
-                      <li *ngIf="set.durationPerformed !== undefined">Time: <strong class="dark:text-gray-300">{{
-                          set.durationPerformed }}s</strong>
-                        <em
-                          *ngIf="set.targetDuration !== undefined && set.targetDuration > 0 && set.targetDuration !== set.durationPerformed"
-                          class="text-gray-400 dark:text-gray-500 ml-1">(T: {{set.targetDuration}}s)</em>
-                      </li>
-                      <li *ngIf="set.notes" class="italic">Notes: {{ set.notes }}</li>
-                    </ul>
-                  </div>
+                  <span class="text-gray-500 dark:text-white" *ngIf="!set.notes">-</span>
                 </div>
-              </div>
 
-              <div *ngIf="loggedEx.workingSets && loggedEx.workingSets.length > 0" class="space-y-2">
-                <h4 class="text-m font-semibold text-gray-600 dark:text-gray-300"
-                  *ngIf="loggedEx.warmupSets && loggedEx.warmupSets.length > 0">Working Sets:</h4>
-                <div *ngFor="let set of loggedEx.workingSets; let setIdx = index"
-                  class="p-2 rounded-md bg-gray-50 dark:bg-gray-700/70 border border-gray-200 dark:border-gray-600">
-                  <p class="text-m font-medium text-gray-700 dark:text-gray-200">
-                    {{ getDisplaySetLabel(loggedEx.workingSets, setIdx) }}:
-                  </p>
-                  <ul class="list-disc list-inside pl-4 text-s text-gray-600 dark:text-gray-400">
-                    <li *ngIf="set.repsAchieved !== undefined">Reps:
-                      <strong [class.text-green-500]="set.repsAchieved >= (set.targetReps || 0)"
-                        [class.dark:text-green-400]="set.repsAchieved >= (set.targetReps || 0)"
-                        [class.dark:text-gray-300]="set.repsAchieved < (set.targetReps || 0) || set.targetReps === undefined">
-                        {{ set.repsAchieved }}
-                      </strong>
-                      <em *ngIf="set.targetReps !== undefined && set.targetReps !== set.repsAchieved"
-                        class="text-gray-400 dark:text-gray-500 ml-1">(Target: {{set.targetReps}})</em>
-                    </li>
-                    <li *ngIf="set.weightUsed !== undefined && set.weightUsed !== null">Weight: <strong
-                        class="dark:text-gray-300">{{ set.weightUsed | weightUnit:'1.0-2' }}</strong>
-                      <em
-                        *ngIf="set.targetWeight !== undefined && set.targetWeight !== null && set.targetWeight !== set.weightUsed"
-                        class="text-gray-400 dark:text-gray-500 ml-1">(Target: {{set.targetWeight |
-                        weightUnit:'1.0-2'}})</em>
-                    </li>
-                    <li *ngIf="set.durationPerformed !== undefined">Time: <strong class="dark:text-gray-300">{{
-                        set.durationPerformed }}s</strong>
-                      <em *ngIf="set.targetDuration !== undefined && set.targetDuration !== set.durationPerformed"
-                        class="text-gray-400 dark:text-gray-500 ml-1">(Target: {{set.targetDuration}}s)</em>
-                    </li>
-                    <li *ngIf="set.targetTempo">Target Tempo: <strong class="dark:text-gray-300">{{ set.targetTempo
-                        }}</strong></li>
-                    <li *ngIf="set.notes" class="italic">Set Notes: {{ set.notes }}</li>
-                  </ul>
-                </div>
-              </div>
-              <div
-                *ngIf="(!loggedEx.warmupSets || loggedEx.warmupSets.length === 0) && (!loggedEx.workingSets || loggedEx.workingSets.length === 0)">
-                <p class="text-gray-500 dark:text-gray-400 text-m">No sets were recorded for this exercise</p>
-              </div>
+              </ng-container>
+
             </div>
+
+
           </div>
         </div>
         <ng-template #noLoggedExercises>
@@ -277,4 +258,38 @@
 
 <app-modal *ngIf="exerciseDetailsId" [(isOpen)]="isSimpleModalOpen" [modalTitle]="exerciseDetailsName">
   <app-exercise-detail [id]="exerciseDetailsId" [isModal]="true"></app-exercise-detail>
+</app-modal>
+
+<!-- NOTES MODAL -->
+<app-modal *ngIf="notesModalsData() as data" [isOpen]="!!data" (isOpenChange)="notesModalsData.set(null)"
+  [modalTitle]="'Notes'">
+
+  <div class="flex flex-col p-4 text-left text-gray-700 dark:text-gray-200">
+    <textarea [disabled]="true" class="font-semibold pb-2 dark:border-gray-600 dark:bg-gray-800" name="" id="">{{data}}</textarea>
+    <button (click)="notesModalsData.set(null)"
+      class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary-light">
+      CLOSE
+    </button>
+  </div>
+
+</app-modal>
+
+<!-- COMPARISON MODAL -->
+<app-modal *ngIf="comparisonModalData() as data" [isOpen]="!!data" (isOpenChange)="comparisonModalData.set(null)"
+  [modalTitle]="data.metric + ' Target Comparison'">
+
+  <div class="p-4 text-center text-gray-700 dark:text-gray-200">
+    <div class="grid grid-cols-2 gap-4 text-lg">
+      <div class="font-semibold border-b pb-2 dark:border-gray-600">Target</div>
+      <div class="font-semibold border-b pb-2 dark:border-gray-600">Performed</div>
+
+      <div class="text-gray-500 dark:text-gray-400">{{ data.targetValue }}</div>
+      <div class="text-red-500 dark:text-red-400 font-bold">{{ data.performedValue }}</div>
+    </div>
+    <button (click)="comparisonModalData.set(null)"
+      class="mt-6 w-full px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary-light">
+      Close
+    </button>
+  </div>
+
 </app-modal>

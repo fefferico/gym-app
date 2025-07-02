@@ -15,6 +15,9 @@ export interface ExerciseSetParams {
   _uiActualDuration?: number;
   // Add other specific fields if a type implies them, e.g.:
   targetRpe?: number | null; // Could be useful for 'failure' sets
+  targetWeight?: number;
+  targetDuration?: number;
+  targetReps?: number;
   dropToWeight?: number | null; // For 'dropset'
   amrapTimeLimit?: number | null; // For AMRAP if it's time-bound rather than rep-bound
 }

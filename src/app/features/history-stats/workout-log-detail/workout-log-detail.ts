@@ -1,8 +1,8 @@
 // workout-log-detail.ts
-import { Component, inject, Input, OnInit, signal } from '@angular/core';
+import { Component, inject, Input, OnInit, signal, SimpleChanges } from '@angular/core';
 import { CommonModule, DatePipe, DecimalPipe, TitleCasePipe } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { forkJoin, Observable, of } from 'rxjs';
+import { firstValueFrom, forkJoin, Observable, of } from 'rxjs';
 import { map, switchMap, tap, catchError } from 'rxjs/operators';
 import { Exercise } from '../../../core/models/exercise.model';
 import { LoggedWorkoutExercise, WorkoutLog, LoggedSet } from '../../../core/models/workout-log.model';
@@ -11,7 +11,10 @@ import { ExerciseService } from '../../../core/services/exercise.service';
 import { WeightUnitPipe } from '../../../shared/pipes/weight-unit-pipe';
 import { ModalComponent } from '../../../shared/components/modal/modal.component';
 import { ExerciseDetailComponent } from '../../exercise-library/exercise-detail';
-import { WorkoutExercise } from '../../../core/models/workout.model';
+import { Routine, WorkoutExercise } from '../../../core/models/workout.model';
+import { UnitsService } from '../../../core/services/units.service';
+import { IsWeightedPipe } from '../../../shared/pipes/is-weighted-pipe';
+import { WorkoutService } from '../../../core/services/workout.service';
 // DomSanitizer is not explicitly used in this version after previous edits, but good to keep if you plan to use [innerHTML] with dynamic SVGs later.
 // import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
@@ -30,10 +33,16 @@ interface DisplayLoggedExercise extends LoggedWorkoutExercise {
   supersetCurrentRound?: number | null; // The current round number for THIS exercise entry
 }
 
+interface TargetComparisonData {
+  metric: 'Reps' | 'Duration' | 'Weight';
+  targetValue: string;
+  performedValue: string;
+}
+
 @Component({
   selector: 'app-workout-log-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, DatePipe, TitleCasePipe, WeightUnitPipe, ModalComponent, ExerciseDetailComponent],
+  imports: [CommonModule, RouterLink, DatePipe, TitleCasePipe, WeightUnitPipe, ModalComponent, ExerciseDetailComponent, IsWeightedPipe],
   templateUrl: './workout-log-detail.html',
   providers: [DecimalPipe] // DecimalPipe if used directly in template; WeightUnitPipe already handles it
 })
@@ -42,8 +51,12 @@ export class WorkoutLogDetailComponent implements OnInit {
   private router = inject(Router);
   private trackingService = inject(TrackingService);
   private exerciseService = inject(ExerciseService);
+  private workoutService = inject(WorkoutService);
+  protected unitService = inject(UnitsService);
   // private sanitizer = inject(DomSanitizer); // Keep if needed for other purposes
 
+  comparisonModalData = signal<TargetComparisonData | null>(null);
+  notesModalsData = signal<string | null>(null);
   isExerciseDetailModalOpen = signal(false);
   isSimpleModalOpen = signal(false);
   exerciseDetailsId: string = '';
@@ -54,7 +67,9 @@ export class WorkoutLogDetailComponent implements OnInit {
 
   @Input() logId?: string;
 
-  ngOnInit(): void {
+
+
+  async ngOnInit(): Promise<void> {
     const idSource$ = this.logId ? of(this.logId) : this.route.paramMap.pipe(map(params => params.get('logId')));
 
     idSource$.pipe(
@@ -79,8 +94,57 @@ export class WorkoutLogDetailComponent implements OnInit {
         return of(null); // Continue the stream gracefully
       })
     ).subscribe();
+
+    await this.enrichLoggedExercisesWithTargets();
   }
 
+  async enrichLoggedExercisesWithTargets() {
+    const log = this.workoutLog();
+    if (!log?.routineId) return;
+
+    // 1. FETCH ROUTINE DATA ONCE
+    const routine$ = this.workoutService.getRoutineById(log.routineId);
+    const routine = await firstValueFrom(routine$);
+    if (!routine?.exercises) return;
+
+    // 2. CREATE A MAP FOR FAST LOOKUPS
+    // The key is the exercise ID, the value is the full routine exercise object.
+    const routineExerciseMap = new Map(routine.exercises.map(ex => [ex.id, ex]));
+
+    // 3. LOOP AND ENRICH
+    for (const loggedEx of log.exercises) {
+      // --- FIX: Use 'exerciseId' to find the corresponding routine exercise ---
+      const routineEx = routineExerciseMap.get(loggedEx.id);
+
+      // No need for an 'if (routineEx)' check here, the loop will just handle it.
+
+      for (let i = 0; i < loggedEx.sets.length; i++) {
+        const set = loggedEx.sets[i];
+        const routineExerciseSet = routineEx?.sets?.[i];
+
+        // --- THIS IS THE KEY LOGIC CHANGE ---
+        // For each target, establish a priority order:
+        // 1. Use the value already on the logged set (if it exists).
+        // 2. If not, use the value from the corresponding routine set.
+        // 3. If that also doesn't exist, default to 0.
+
+        set.targetReps = (set.targetReps && set.targetReps > 0)
+        ? set.targetReps
+        : (routineExerciseSet?.targetReps ?? 0);
+
+      set.targetDuration = (set.targetDuration && set.targetDuration > 0)
+        ? set.targetDuration
+        : (routineExerciseSet?.targetDuration ?? 0);
+
+      set.targetWeight = (set.targetWeight && set.targetWeight > 0)
+        ? set.targetWeight
+        : (routineExerciseSet?.targetWeight ?? 0);
+      }
+    }
+
+    // Update the signal to trigger view refresh with the enriched data.
+    this.workoutLog.set({ ...log });
+  }
   private prepareDisplayExercises(loggedExercises: LoggedWorkoutExercise[]): void {
     // --- Logic to determine supersetRounds and supersetCurrentRound ---
     // This part is crucial and depends on how your `loggedExercises` array is structured
@@ -274,5 +338,125 @@ export class WorkoutLogDetailComponent implements OnInit {
     const d = new Date(0, 0, 0, 0, 0, 0, 0);
     d.setSeconds(seconds);
     return d;
+  }
+
+  getSetWeightsUsed(loggedEx: LoggedWorkoutExercise): string {
+    return loggedEx.sets.map(set => set.weightUsed).join(' - ');
+  }
+
+  getSetDurationPerformed(loggedEx: LoggedWorkoutExercise): string {
+    return loggedEx.sets.map(set => set.durationPerformed).join(' - ');
+  }
+
+  checkIfTimedExercise(loggedEx: LoggedWorkoutExercise): boolean {
+    return loggedEx.sets.some(set => set.targetDuration);
+  }
+
+  checkIfWeightedExercise(loggedEx: LoggedWorkoutExercise): boolean {
+    return loggedEx?.sets.some(set => set.targetWeight) || loggedEx?.sets.some(set => set.weightUsed);
+  }
+
+
+  // This function is now fast, synchronous, and safe to call from a template.
+  checkTextClass(set: LoggedSet, type: 'reps' | 'duration' | 'weight'): string {
+    if (!set) {
+      return 'text-gray-700 dark:text-gray-300';
+    }
+
+    let performedValue = 0;
+    let targetValue = 0;
+
+    // Determine which properties to compare based on the 'type'
+    if (type === 'reps') {
+      performedValue = set.repsAchieved ?? 0;
+      targetValue = set.targetReps ?? 0;
+    } else if (type === 'duration') {
+      performedValue = set.durationPerformed ?? 0;
+      targetValue = set.targetDuration ?? 0;
+    } else if (type === 'weight') {
+      performedValue = set.weightUsed ?? 0;
+      targetValue = set.targetWeight ?? 0;
+    }
+
+    // The simple comparison logic
+    if (performedValue > targetValue) {
+      return 'text-green-500 dark:text-green-400';
+    } else if (performedValue < targetValue) {
+      return 'text-red-500 dark:text-red-400';
+    } else {
+      return 'text-gray-800 dark:text-white';
+    }
+  }
+
+
+  // --- ADD THIS NEW METHOD ---
+  /**
+   * Checks if a performance target was missed and, if so,
+   * prepares and shows the comparison modal.
+   * @param set The LoggedSet object.
+   * @param type The metric being checked ('reps', 'duration', 'weight').
+   */
+  showComparisonModal(set: LoggedSet, type: 'reps' | 'duration' | 'weight'): void {
+    if (!set) return;
+
+    let performedValue: number = 0;
+    let targetValue: number = 0;
+    let modalData: TargetComparisonData | null = null;
+    const unitLabel = this.unitService.getUnitLabel();
+
+    // Determine values based on type
+    if (type === 'reps') {
+      performedValue = set.repsAchieved ?? 0;
+      targetValue = set.targetReps ?? 0;
+      if (performedValue < targetValue) {
+        modalData = {
+          metric: 'Reps',
+          targetValue: `${targetValue}`,
+          performedValue: `${performedValue}`
+        };
+      }
+    } else if (type === 'duration') {
+      performedValue = set.durationPerformed ?? 0;
+      targetValue = set.targetDuration ?? 0;
+      if (performedValue < targetValue) {
+        modalData = {
+          metric: 'Duration',
+          targetValue: `${targetValue} s`,
+          performedValue: `${performedValue} s`
+        };
+      }
+    } else if (type === 'weight') {
+      performedValue = set.weightUsed ?? 0;
+      targetValue = set.targetWeight ?? 0;
+      if (performedValue < targetValue) {
+        modalData = {
+          metric: 'Weight',
+          targetValue: `${targetValue} ${unitLabel}`,
+          performedValue: `${performedValue} ${unitLabel}`
+        };
+      }
+    }
+
+    // If a target was missed, set the signal to open the modal
+    if (modalData) {
+      this.comparisonModalData.set(modalData);
+    }
+  }
+
+  // --- ADD A HELPER METHOD FOR STYLING ---
+  /**
+   * A simple boolean check to help with styling clickable elements.
+   */
+  isTargetMissed(set: LoggedSet, type: 'reps' | 'duration' | 'weight'): boolean {
+    if (!set) return false;
+
+    const performed = (type === 'reps' ? set.repsAchieved : type === 'duration' ? set.durationPerformed : set.weightUsed) ?? 0;
+    const target = (type === 'reps' ? set.targetReps : type === 'duration' ? set.targetDuration : set.targetWeight) ?? 0;
+
+    return performed < target && target > 0;
+  }
+
+  showNotesModal(notes: string): void {
+    this.notesModalsData.set(notes);
   }
 }

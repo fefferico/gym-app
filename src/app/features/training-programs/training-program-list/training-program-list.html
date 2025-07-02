@@ -190,7 +190,7 @@
                     </svg>
                     <span class="font-medium">Goals:</span>
                     <span *ngFor="let goal of getProgramOverallGoals(program); let isLast = last"
-                      class="bg-blue-100 text-blue-700 dark:bg-blue-700 dark:text-blue-200 px-1.5 py-0.5 rounded-full mx-1 mb-1 inline-block">{{
+                      class="text-center text-xs bg-blue-100 text-blue-700 dark:bg-blue-700 dark:text-blue-200 px-1.5 py-0.5 rounded-full mx-1 inline-block">{{
                       goal | titlecase }}</span>
                   </div>
                   <!-- <div *ngIf="getProgramMainMuscleGroups(program).length > 0" class="mt-1">

@@ -27,6 +27,7 @@ import { LongPressDirective } from '../../shared/directives/long-press.directive
 import { id } from '@swimlane/ngx-charts';
 import { ExerciseDetailComponent } from '../exercise-library/exercise-detail';
 import { ModalComponent } from '../../shared/components/modal/modal.component';
+import { PressDirective } from '../../shared/directives/press.directive';
 
 
 // Interface to manage the state of the currently active set/exercise
@@ -104,7 +105,7 @@ enum PlayerSubState {
 @Component({
   selector: 'app-workout-player',
   standalone: true,
-  imports: [CommonModule, RouterLink, DatePipe, ReactiveFormsModule, FormsModule, WeightUnitPipe, FullScreenRestTimerComponent, LongPressDirective, ModalComponent, ExerciseDetailComponent],
+  imports: [CommonModule, RouterLink, DatePipe, ReactiveFormsModule, FormsModule, WeightUnitPipe, FullScreenRestTimerComponent, PressDirective, ModalComponent, ExerciseDetailComponent],
   templateUrl: './workout-player.html',
   styleUrl: './workout-player.scss',
   providers: [DecimalPipe]
@@ -508,14 +509,12 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   private isPerformingDeferredExercise = false;
   private lastActivatedDeferredExerciseId: string | null = null;
 
-  private readonly stopWeightIncrementHandler: () => void;
-  private readonly stopWeightDecrementHandler: () => void;
+  // private readonly stopWeightDecrementHandler: () => void;
 
   constructor() {
     this.initializeCurrentSetForm();
 
-    this.stopWeightIncrementHandler = this.onWeightIncrementPointerUp.bind(this);
-    this.stopWeightDecrementHandler = this.onWeightDecrementPointerUp.bind(this);
+    // this.stopWeightDecrementHandler = this.onWeightDecrementPointerUp.bind(this);
 
     // --- ADD THIS EFFECT ---
     // This effect will automatically run whenever currentTabataIntervalIndex changes.
@@ -2720,68 +2719,60 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     this.currentSetForm.patchValue({ actualWeight: parseFloat((currentValue + step).toFixed(2)) });
   }
 
+  decrementWeight(defaultStep: number = 0.5): void {
+    const step = this.appSettingsService.getSettings().weightStep || defaultStep;
+    const currentValue = this.csf['actualWeight'].value ?? 0;
+    const newWeight = parseFloat((currentValue - step).toFixed(2)) >= 0 ? parseFloat((currentValue - step).toFixed(2)) : 0;
+    this.currentSetForm.patchValue({ actualWeight: newWeight });
+  }
+
   // Handles both touch and mouse events for press/tap/long-press detection
   private pressStartTime: number | null = null;
 
   private weightIncrementIntervalId: any = null;
   private weightDecrementIntervalId: any = null;
 
-  onWeightIncrementPointerDown(event: MouseEvent | TouchEvent): void {
-    if (this.weightIncrementIntervalId !== null) return;
+  private intervalId: any = null;
+
+  onShortPressWeightIncrement(): void {
     this.incrementWeight();
-    this.weightIncrementIntervalId = setInterval(() => this.incrementWeight(), 100);
-
-    // --- FIX: Use the stable, pre-bound handlers ---
-    document.addEventListener('mouseup', this.stopWeightIncrementHandler);
-    document.addEventListener('touchend', this.stopWeightIncrementHandler);
-    document.addEventListener('mouseleave', this.stopWeightIncrementHandler);
   }
-
-  onWeightIncrementPointerUp(): void { // No longer needs 'event' parameter
-    if (this.weightIncrementIntervalId !== null) {
-      clearInterval(this.weightIncrementIntervalId);
-      this.weightIncrementIntervalId = null;
+  onLongPressWeightIncrement(): void {
+    this.intervalId = setInterval(() => this.incrementWeight(), 200);
+  }
+  onPressRelease(): void {
+    // Always clear any active interval when the button is released.
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
+      this.intervalId = null;
     }
-    // --- FIX: Use the stable, pre-bound handlers to remove ---
-    document.removeEventListener('mouseup', this.stopWeightIncrementHandler);
-    document.removeEventListener('touchend', this.stopWeightIncrementHandler);
-    document.removeEventListener('mouseleave', this.stopWeightIncrementHandler);
   }
 
-  onWeightDecrementPointerDown(event: MouseEvent | TouchEvent): void {
-    if (this.weightDecrementIntervalId !== null) return;
+  onShortPressWeightDecrement(): void {
     this.decrementWeight();
-    this.weightDecrementIntervalId = setInterval(() => this.decrementWeight(), 100);
-
-    // --- FIX: Use the stable, pre-bound handlers ---
-    document.addEventListener('mouseup', this.stopWeightDecrementHandler);
-    document.addEventListener('touchend', this.stopWeightDecrementHandler);
-    document.addEventListener('mouseleave', this.stopWeightDecrementHandler);
+  }
+  onLongPressWeightDecrement(): void {
+    this.intervalId = setInterval(() => this.decrementWeight(), 200);
   }
 
-  onWeightDecrementPointerUp(): void { // No longer needs 'event' parameter
-    if (this.weightDecrementIntervalId !== null) {
-      clearInterval(this.weightDecrementIntervalId);
-      this.weightDecrementIntervalId = null;
-    }
-    // --- FIX: Use the stable, pre-bound handlers to remove ---
-    document.removeEventListener('mouseup', this.stopWeightDecrementHandler);
-    document.removeEventListener('touchend', this.stopWeightDecrementHandler);
-    document.removeEventListener('mouseleave', this.stopWeightDecrementHandler);
-  }
 
-  decrementWeight(defaultStep: number = 0.5): void {
-    const step = this.appSettingsService.getSettings().weightStep || defaultStep;
-    const currentValue = this.csf['actualWeight'].value ?? 0;
-    this.currentSetForm.patchValue({ actualWeight: Math.max(0, parseFloat((currentValue - step).toFixed(2))) });
+  onShortPressRepsIncrement(): void {
+    this.incrementReps();
   }
-
+  onLongPressRepsIncrement(): void {
+    this.intervalId = setInterval(() => this.incrementReps(), 200);
+  }
+  onShortPressRepsDecrement(): void {
+    this.decrementReps();
+  }
+  onLongPressRepsDecrement(): void {
+    this.intervalId = setInterval(() => this.decrementReps(), 200);
+  }
   incrementReps(defaultStep: number = 1): void {
     const step = defaultStep;
     const currentValue = this.csf['actualReps'].value ?? 0;
     this.currentSetForm.patchValue({ actualReps: currentValue + step });
   }
-
   decrementReps(defaultStep: number = 1): void {
     const step = defaultStep;
     const currentValue = this.csf['actualReps'].value ?? 0;

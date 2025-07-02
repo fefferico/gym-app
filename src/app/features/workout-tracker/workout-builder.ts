@@ -451,7 +451,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
   private createExerciseFormGroupFromLog(loggedEx: LoggedWorkoutExercise): FormGroup {
     return this.fb.group({
-      id: [loggedEx.exerciseId || uuidv4()],
+      id: [loggedEx.id || uuidv4()],
       exerciseId: [loggedEx.exerciseId, Validators.required],
       exerciseName: [loggedEx.exerciseName, Validators.required],
       notes: [loggedEx.notes || ''],
@@ -460,7 +460,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     });
   }
   private createSetFormGroup(setData?: ExerciseSetParams | LoggedSet, forLogging: boolean = false): FormGroup {
-    let repsValue, weightValue, durationValue, notesValue, typeValue, tempoValue, restValue;
+    let repsValue, targetReps, weightValue, targetWeighValue, durationValue, targetDurationValue, notesValue, typeValue, tempoValue, restValue;
     let id = uuidv4();
     let plannedSetIdValue;
     let timestampValue = new Date().toISOString(); // Default for new sets being logged
@@ -482,8 +482,11 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       } else { // It's ExerciseSetParams from routine template
         const plannedS = setData as ExerciseSetParams;
         repsValue = plannedS.reps;
+        targetReps = plannedS.reps;
         weightValue = plannedS.weight;
+        targetWeighValue = plannedS.weight;
         durationValue = plannedS.duration;
+        targetDurationValue = plannedS.duration;
         notesValue = plannedS.notes;
         typeValue = plannedS.type || 'standard';
         tempoValue = plannedS.tempo;
@@ -511,8 +514,11 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       // If you want them to be editable achievements, add FormControls for them.
     } else { // For routine builder (planning mode)
       formGroupConfig['reps'] = [repsValue ?? null, [Validators.min(0)]];
+      formGroupConfig['targetReps'] = [targetReps ?? null, [Validators.min(0)]];
       formGroupConfig['weight'] = [this.unitsService.convertFromKg(weightValue, this.unitsService.currentUnit()) ?? null, [Validators.min(0)]];
+      formGroupConfig['targetWeight'] = [this.unitsService.convertFromKg(targetWeighValue, this.unitsService.currentUnit()) ?? null, [Validators.min(0)]];
       formGroupConfig['duration'] = [durationValue ?? null, [Validators.min(0)]];
+      formGroupConfig['targetDuration'] = [targetDurationValue ?? null, [Validators.min(0)]];
       formGroupConfig['tempo'] = [tempoValue || ''];
       formGroupConfig['restAfterSet'] = [restValue ?? 60, [Validators.required, Validators.min(0)]];
     }
@@ -968,7 +974,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         this.toastService.success(`Routine ${this.isNewMode ? 'created' : 'updated'}!`, 4000, "Success");
         this.router.navigate(['/workout']);
       } else { // manualLogEntry
-        const workoutDateStr = formValue.workoutDate; const startTimeStr = formValue.startTime;
+        const workoutDateStr = formValue.workoutDate; 
+        const startTimeStr = formValue.startTime;
         const combinedDateTimeStr = `${workoutDateStr}T${startTimeStr}:00`;
         let startTimeMs: number;
         try {
@@ -1331,6 +1338,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
           weight: this.unitsService.convertToKg(setInput.weight, this.unitsService.currentUnit()) ?? null,
         }))
       })),
+      isFavourite: this.routine?.isFavourite,
+      isHidden: this.routine?.isHidden,
     };
     return routinePayload;
   }

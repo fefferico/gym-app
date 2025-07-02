@@ -23,6 +23,8 @@ interface DayOption {
     label: string;
 }
 
+interface ProgramGoal { value: Routine['goal'], label: string }
+
 @Component({
     selector: 'app-training-program-builder',
     standalone: true,
@@ -93,9 +95,24 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         return this.availableRoutines.filter(r => r.name.toLowerCase().includes(term));
     });
 
+
+    selectedGoals = signal<string[]>([]);
+    programGoals: ProgramGoal[] = [
+        { value: 'hypertrophy', label: 'Hypertrophy' }, { value: 'strength', label: 'Strength' },
+        { value: 'tabata', label: 'Tabata' },
+        { value: 'muscular endurance', label: 'Muscular endurance' }, { value: 'cardiovascular endurance', label: 'Cardiovascular endurance' },
+        { value: 'fat loss / body composition', label: 'Fat loss / body composition' }, { value: 'mobility & flexibility', label: 'Mobility & flexibility' },
+        { value: 'power / explosiveness', label: 'Power / explosiveness' }, { value: 'speed & agility', label: 'Speed & agility' },
+        { value: 'balance & coordination', label: 'Balance & coordination' }, { value: 'skill acquisition', label: 'Skill acquisition' },
+        { value: 'rehabilitation / injury prevention', label: 'Rehabilitation / injury prevention' }, { value: 'mental health / stress relief', label: 'Mental health' },
+        { value: 'general health & longevity', label: 'General health & longevity' }, { value: 'sport-specific performance', label: 'Sport-specific performance' },
+        { value: 'maintenance', label: 'Maintenance' }, { value: 'rest', label: 'Rest' }, { value: 'custom', label: 'Custom' }
+    ];
+
     constructor() {
         this.programForm = this.fb.group({
             name: ['', Validators.required],
+            goals: [''],
             description: [''],
             programNotes: [''],
             startDate: [null], // Store as YYYY-MM-DD string
@@ -176,6 +193,27 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
             this.scheduleFormArray.push(this.createScheduledDayGroup(scheduledDay));
         });
         this.updateFormEnabledState();
+
+        if (program.goals?.length) {
+            // 1. Create a Set of valid goal values for O(1) lookups.
+            // We filter out any null/undefined values from the source array first for robustness.
+            const goalValuesToFind = new Set(
+                program.goals.filter((g): g is string => g != null)
+            );
+
+            // 2. Chain filter and forEach on this.programGoals.
+            this.programGoals
+                .filter(progGoal =>
+                    // The value must not be null/undefined AND it must exist in our Set.
+                    progGoal.value != null && goalValuesToFind.has(progGoal.value)
+                )
+                .forEach(foundGoal => {
+                    // Because of the filter, TypeScript now knows `foundGoal.value` is a `string`.
+                    // The `foundGoal` object itself is valid and can be passed safely.
+                    this.toggleGoal(foundGoal);
+                });
+        }
+
     }
 
     createScheduledDayGroup(day?: ScheduledRoutineDay): FormGroup {
@@ -276,6 +314,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         const programPayload: TrainingProgram = {
             id: this.currentProgramId || uuidv4(), // Use existing ID for edit, new for new
             name: formValue.name,
+            goals: this.selectedGoals(),
             description: formValue.description,
             programNotes: formValue.programNotes,
             startDate: formValue.startDate || null, // Ensure null if empty
@@ -382,5 +421,20 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
     private updateSanitizedDescription(value: string): void {
         // This tells Angular to trust this HTML string and render it as is.
         this.sanitizedDescription = this.sanitizer.bypassSecurityTrustHtml(value);
+    }
+
+    toggleGoal(goal: ProgramGoal): void {
+        this.selectedGoals.update(current => {
+            const newSelection = new Set(current);
+            if (goal !== undefined && goal.value !== undefined) {
+                if (newSelection.has(goal.value)) {
+                    newSelection.delete(goal.value); // If it exists, remove it
+                } else {
+                    newSelection.add(goal.value); // If it doesn't exist, add it
+                }
+            }
+
+            return Array.from(newSelection);
+        });
     }
 }
