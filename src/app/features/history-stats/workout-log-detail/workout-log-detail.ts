@@ -361,7 +361,7 @@ export class WorkoutLogDetailComponent implements OnInit {
   }
 
   checkIfTimedExercise(loggedEx: LoggedWorkoutExercise): boolean {
-    return loggedEx.sets.some(set => set.targetDuration);
+    return loggedEx.sets.some(set => set.targetDuration) || loggedEx?.sets.some(set => set.durationPerformed);
   }
 
   checkIfWeightedExercise(loggedEx: LoggedWorkoutExercise): boolean {

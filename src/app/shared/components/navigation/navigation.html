@@ -1,24 +1,21 @@
 <!-- In navigation.html -->
 
-<nav class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow- ऊपर-md z-40">
+<nav
+  class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow- ऊपर-md z-40">
   <div class="container mx-auto flex justify-around items-center h-16 overflow-x-auto">
-    
-    <!-- The #rla variable will be true when the link is active, and false otherwise -->
-    <a *ngFor="let item of navItems"
-      [routerLink]="item.path"
-      routerLinkActive="text-primary dark:text-primary-light"
-      #rla="routerLinkActive"
-      [routerLinkActiveOptions]="{ exact: item.exact === true }"
-      class="flex flex-col items-center justify-center text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary-light transition-colors p-1 w-16 min-w-[64px]">
-      
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" 
-           class="w-6 h-6 transition-all"
-           [class.mb-1]="rla.isActive"> <!-- Conditionally add margin only when text is visible -->
+
+    <!-- The template is now much cleaner. We no longer need #rla or complex conditions. -->
+    <a *ngFor="let item of navItems" [routerLink]="item.path"
+      class="flex flex-col items-center justify-center text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary-light transition-colors p-1 w-16 min-w-[64px]"
+      [class.text-primary]="isLinkActive(item)" [class.dark:text-primary-light]="isLinkActive(item)">
+
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+        class="w-6 h-6 transition-all" [class.mb-1]="isLinkActive(item)">
         <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="item.iconSvgPath" />
       </svg>
-      
-      <!-- Use *ngIf with the #rla variable to show/hide the label -->
-      <span *ngIf="rla.isActive" class="text-xs transition-opacity duration-300">
+
+      <!-- Show/hide the label by calling the same helper method -->
+      <span *ngIf="isLinkActive(item)" class="text-xs transition-opacity duration-300">
         {{ item.label }}
       </span>
 

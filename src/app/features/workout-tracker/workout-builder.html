@@ -28,8 +28,9 @@
                         </svg>
                     </button>
                     <app-action-menu *ngIf="areActionsVisible(log.id)" displayMode="dropdown"
-                        [items]="getRoutineDropdownActionItems(log.id, 'dropdown')" [isVisible]="areActionsVisible(log.id)"
-                        (itemClick)="handleActionMenuItemClick($event)" (closeMenu)="onCloseActionMenu()">
+                        [items]="getRoutineDropdownActionItems(log.id, 'dropdown')"
+                        [isVisible]="areActionsVisible(log.id)" (itemClick)="handleActionMenuItemClick($event)"
+                        (closeMenu)="onCloseActionMenu()">
                     </app-action-menu>
                 </div>
             </div>
@@ -37,8 +38,9 @@
 
     </header>
 
-    <form [formGroup]="builderForm" (ngSubmit)="onSubmit()" class="space-y-6 mb-6 p-1 bg-white dark:bg-gray-700 rounded-md shadow-xl overflow-hidden">
-        <section class="space-y-4 p-2 rounded-md shadow-sm">
+    <form [formGroup]="builderForm" (ngSubmit)="onSubmit()"
+        class="space-y-6 mb-6 p-1 bg-white dark:bg-gray-700 rounded-md shadow-xl overflow-hidden">
+        <section class="space-y-4 p-2 rounded-md shadow-sm dark:shadow-none">
             <!-- ROUTINE BUILDER FIELDS -->
             <ng-container *ngIf="mode === 'routineBuilder'">
                 <!-- ROUTINE NAME -->
@@ -59,7 +61,8 @@
                 </div>
                 <!-- DESCRIPTION -->
                 <div *ngIf="isViewMode">
-                    <p class="mt-1 block w-full shadow-sm dark:text-gray-200" [innerHTML]="sanitizedDescription">
+                    <p class="mt-1 block w-full shadow-sm dark:shadow-none dark:text-gray-200"
+                        [innerHTML]="sanitizedDescription">
                     </p>
                 </div>
                 <div *ngIf="isEditMode || isNewMode">
@@ -225,7 +228,7 @@
                                 <!-- EXERCISE NAME & SUPERSET INFO / SETS SUMMARY FOR COMPACT -->
                                 <div *ngIf="isCompactView || (!isCompactView && expandedSetPath()?.exerciseIndex !== exIndex)"
                                     class="flex-grow min-w-0">
-                                    <h3 class="font-semibold text-gray-800 dark:text-gray-100 truncate" [ngClass]="{
+                                    <!-- <h3 class="font-semibold text-gray-800 dark:text-gray-100 truncate" [ngClass]="{
                                             'text-m': isCompactView && expandedSetPath()?.exerciseIndex !== exIndex,
                                             'text-lg': !isCompactView && expandedSetPath()?.exerciseIndex === exIndex
                                         }">
@@ -240,7 +243,7 @@
                                             exerciseControl.get('supersetSize')?.value }})
                                         </span>
                                         {{ exerciseControl.get('exerciseName')?.value || 'Select Exercise' }}
-                                    </h3>
+                                    </h3> -->
                                     <!-- COMPACT: Show SETS SUMMARY if in compact view -->
                                     <div *ngIf="exerciseControl.get('supersetId')?.value && getSetsFormArray(exerciseControl).controls.length > 0"
                                         class="text-xs text-orange-600 dark:text-orange-400 mt-0.5">
@@ -249,8 +252,40 @@
                                     </div>
                                     <div *ngIf="(isCompactView  || (!isCompactView && expandedSetPath()?.exerciseIndex !== exIndex)) && getSetsFormArray(exerciseControl).controls.length > 0"
                                         class="text-s text-gray-500 dark:text-gray-400 mt-0.5">
-                                        {{ getSetsFormArray(exerciseControl).controls.length }}
-                                        {{ getSetsFormArray(exerciseControl).controls.length === 1 ? 'set' : 'sets' }}
+                                        <img [src]="getIconPath(exerciseControl.get('exerciseId')?.value) | async" alt="Exercise Icon"
+                                            class="w-6 h-6 sm:w-8 sm:h-8 object-contain"
+                                            >
+                                        <!-- {{ getSetsFormArray(exerciseControl).controls.length }}
+                                        {{ getSetsFormArray(exerciseControl).controls.length === 1 ? 'set' : 'sets' }} -->
+                                        <div class="min-w-0"> <!-- Added min-w-0 for truncation -->
+                                            <div class="flex">
+                                                <h3 class="font-semibold text-gray-800 dark:text-gray-100 truncate"
+                                                    [title]="exerciseControl.get('exerciseName')?.value">
+                                                    {{ exerciseControl.get('exerciseName')?.value }}
+                                                </h3>
+                                            </div>
+                                            <div class="text-xs text-gray-500 dark:text-gray-400 truncate">
+                                                <!-- <p *ngIf="exerciseControl.baseExercise?.category"
+                      class="text-xs text-gray-500 dark:text-gray-400 truncate">
+                      {{ exerciseControl.baseExercise?.category | titlecase }}
+                    </p> -->
+                                                <p
+                                                    *ngIf="exerciseControl?.get('sets')?.value && exerciseControl?.get('sets')?.value.length >= 1 && checkIfTimedExercise(exerciseControl)">
+                                                    Duration
+                                                    (s):
+                                                    {{getSetDurationPerformed(exerciseControl)}}
+                                                </p>
+                                                <p
+                                                    *ngIf="exerciseControl?.get('sets')?.value && exerciseControl?.get('sets')?.value.length > 1">
+                                                    Sets: {{exerciseControl?.get('sets')?.value.length}}</p>
+                                                <p
+                                                    *ngIf="exerciseControl?.get('sets')?.value && exerciseControl?.get('sets')?.value.length > 1 && checkIfWeightedExercise(exerciseControl)">
+                                                    Weight
+                                                    ({{unitService.getUnitLabel()}}):
+                                                    {{getSetWeightsUsed(exerciseControl)}}</p>
+                                            </div>
+
+                                        </div>
                                     </div>
                                 </div>
                                 <!-- COMPACT: Minimal actions for compact view (e.g., small remove icon) -->
@@ -365,7 +400,7 @@
                                             <div class="col-span-2 text-center">{{ mode === 'manualLogEntry' ? 'Reps
                                                 Ach.' : 'Reps' }}</div>
                                             <div class="col-span-2 text-center truncate">{{ mode === 'manualLogEntry' ?
-                                                'Wt Used' : 'Weight' }} ({{unitsService.getUnitLabel()}})</div>
+                                                'Wt Used' : 'Weight' }} ({{unitService.getUnitLabel()}})</div>
                                             <div class="col-span-1 text-center">{{ mode === 'manualLogEntry' ? 'Time
                                                 Perf.' : 'Time' }}</div>
                                             <div class="col-span-2 text-center">{{ mode === 'routineBuilder' ? 'Rest' :
@@ -465,7 +500,7 @@
                                                     <div>
                                                         <label [for]="'weight-exp-' + exIndex + '-' + setIndex"
                                                             class="block text-s font-medium text-gray-600 dark:text-gray-400">Weight
-                                                            ({{ unitsService.getUnitLabel() }}) {{ mode ===
+                                                            ({{ unitService.getUnitLabel() }}) {{ mode ===
                                                             'manualLogEntry' ? '(Used)' : ''}}</label>
                                                         <input type="number"
                                                             [id]="'weight-exp-' + exIndex + '-' + setIndex"

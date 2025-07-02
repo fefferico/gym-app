@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, OnDestroy, signal, computed, ElementRef, QueryList, ViewChildren, AfterViewInit, ChangeDetectorRef, PLATFORM_ID, Input } from '@angular/core';
 import { CommonModule, DecimalPipe, isPlatformBrowser, TitleCasePipe } from '@angular/common'; // Added TitleCasePipe
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray, AbstractControl, FormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray, AbstractControl, FormsModule, FormControl } from '@angular/forms';
 import { Subscription, of, firstValueFrom, Observable, from } from 'rxjs';
 import { switchMap, tap, take, distinctUntilChanged, map, mergeMap, startWith, debounceTime, filter } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
@@ -44,7 +44,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   private route = inject(ActivatedRoute);
   private workoutService = inject(WorkoutService);
   private exerciseService = inject(ExerciseService);
-  protected unitsService = inject(UnitsService);
+  protected unitService = inject(UnitsService);
   protected spinnerService = inject(SpinnerService);
   protected alertService = inject(AlertService);
   protected toastService = inject(ToastService);
@@ -507,7 +507,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
     if (forLogging) {
       formGroupConfig['repsAchieved'] = [repsValue ?? null, [Validators.required, Validators.min(0)]];
-      formGroupConfig['weightUsed'] = [this.unitsService.convertFromKg(weightValue, this.unitsService.currentUnit()) ?? null, [Validators.min(0)]];
+      formGroupConfig['weightUsed'] = [this.unitService.convertFromKg(weightValue, this.unitService.currentUnit()) ?? null, [Validators.min(0)]];
       formGroupConfig['durationPerformed'] = [durationValue ?? null, [Validators.min(0)]];
       formGroupConfig['plannedSetId'] = [plannedSetIdValue];
       formGroupConfig['timestamp'] = [timestampValue];
@@ -517,8 +517,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     } else { // For routine builder (planning mode)
       formGroupConfig['reps'] = [repsValue ?? null, [Validators.min(0)]];
       formGroupConfig['targetReps'] = [targetReps ?? null, [Validators.min(0)]];
-      formGroupConfig['weight'] = [this.unitsService.convertFromKg(weightValue, this.unitsService.currentUnit()) ?? null, [Validators.min(0)]];
-      formGroupConfig['targetWeight'] = [this.unitsService.convertFromKg(targetWeighValue, this.unitsService.currentUnit()) ?? null, [Validators.min(0)]];
+      formGroupConfig['weight'] = [this.unitService.convertFromKg(weightValue, this.unitService.currentUnit()) ?? null, [Validators.min(0)]];
+      formGroupConfig['targetWeight'] = [this.unitService.convertFromKg(targetWeighValue, this.unitService.currentUnit()) ?? null, [Validators.min(0)]];
       formGroupConfig['duration'] = [durationValue ?? null, [Validators.min(0)]];
       formGroupConfig['targetDuration'] = [targetDurationValue ?? null, [Validators.min(0)]];
       formGroupConfig['tempo'] = [tempoValue || ''];
@@ -1001,7 +1001,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
             exerciseId: exInput.exerciseId,
             type: setInput.type, // <<<< ENSURE THIS IS SAVED
             repsAchieved: setInput.repsAchieved,
-            weightUsed: this.unitsService.convertToKg(setInput.weightUsed, this.unitsService.currentUnit()) ?? undefined,
+            weightUsed: this.unitService.convertToKg(setInput.weightUsed, this.unitService.currentUnit()) ?? undefined,
             durationPerformed: setInput.durationPerformed,
             notes: setInput.notes, // Set-level notes
             // Target fields are not directly edited in log mode form, but might be on LoggedSet if prefilled
@@ -1293,7 +1293,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       exercises: (formValue.goal === 'rest') ? [] : formValue.exercises.map((exInput: any) => ({
         ...exInput, sets: exInput.sets.map((setInput: any) => ({
           ...setInput, // This includes 'type', 'reps', 'duration', 'tempo', 'restAfterSet', 'notes'
-          weight: this.unitsService.convertToKg(setInput.weight, this.unitsService.currentUnit()) ?? null,
+          weight: this.unitService.convertToKg(setInput.weight, this.unitService.currentUnit()) ?? null,
         }))
       })),
       isFavourite: this.routine?.isFavourite,
@@ -1442,5 +1442,48 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     }
   }
 
+  checkIfTimedExercise(loggedEx: any): boolean {
+    const loggedExActual = loggedEx?.getRawValue() as WorkoutExercise;
+    return loggedExActual?.sets.some(set => set.targetDuration) || loggedExActual?.sets.some(set => set.duration);
+  }
 
+  checkIfWeightedExercise(loggedEx: any): boolean {
+    const loggedExActual = loggedEx?.getRawValue() as WorkoutExercise;
+    return loggedExActual?.sets.some(set => set.targetWeight) || loggedExActual?.sets.some(set => set.weight);
+  }
+
+  getSetWeightsUsed(loggedEx: any): string {
+    const loggedExActual = loggedEx?.getRawValue() as WorkoutExercise;
+    return loggedExActual?.sets.map(set => set.weight).join(' - ');
+  }
+
+  getSetDurationPerformed(loggedEx: any): string {
+    const loggedExActual = loggedEx?.getRawValue() as WorkoutExercise;
+    return loggedExActual?.sets.map(set => set.duration).join(' - ');
+  }
+
+  getIconPath(exerciseId: string | undefined): Observable<string> {
+    // If there's no ID, return an Observable of the default path immediately.
+    if (!exerciseId) {
+      return of(this.exerciseService.getIconPath('default-exercise'));
+    }
+
+    // Find the exercise in the local routine data.
+    const exerciseInRoutine = this.routine?.exercises.find(ex => ex.exerciseId === exerciseId);
+
+    if (exerciseInRoutine) {
+      // If found, get the full exercise details from the service.
+      // Use .pipe() to transform the result before it's returned.
+      return this.exerciseService.getExerciseById(exerciseInRoutine.exerciseId).pipe(
+        map(exerciseDetails => {
+          // The `map` operator transforms the emitted Exercise object
+          // into the icon path string you need.
+          return this.exerciseService.getIconPath(exerciseDetails?.iconName);
+        })
+      );
+    } else {
+      // If not found in the routine, return an Observable of the default path.
+      return of(this.exerciseService.getIconPath('default-exercise'));
+    }
+  }
 }
