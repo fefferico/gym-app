@@ -25,13 +25,15 @@ import { LongPressDragDirective } from '../../shared/directives/long-press-drag.
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { merge } from 'hammerjs';
 import { AutoGrowDirective } from '../../shared/directives/auto-grow.directive';
+import { ActionMenuComponent } from '../../shared/components/action-menu/action-menu';
+import { ActionMenuItem } from '../../core/models/action-menu.model';
 
 type BuilderMode = 'routineBuilder' | 'manualLogEntry';
 
 @Component({
   selector: 'app-workout-builder',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, FormsModule, DragDropModule, WeightUnitPipe, TitleCasePipe, LongPressDragDirective, AutoGrowDirective],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, FormsModule, DragDropModule, WeightUnitPipe, TitleCasePipe, LongPressDragDirective, AutoGrowDirective, ActionMenuComponent],
   templateUrl: './workout-builder.html',
   styleUrl: './workout-builder.scss',
   providers: [DecimalPipe]
@@ -974,7 +976,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         this.toastService.success(`Routine ${this.isNewMode ? 'created' : 'updated'}!`, 4000, "Success");
         this.router.navigate(['/workout']);
       } else { // manualLogEntry
-        const workoutDateStr = formValue.workoutDate; 
+        const workoutDateStr = formValue.workoutDate;
         const startTimeStr = formValue.startTime;
         const combinedDateTimeStr = `${workoutDateStr}T${startTimeStr}:00`;
         let startTimeMs: number;
@@ -1134,50 +1136,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       this.toastService.info("Edit mode enabled.", 3000, "Mode Changed");
     }
   }
-
-  async deleteCurrentRoutine(): Promise<void> {
-    if (!this.currentRoutineId) {
-      this.toastService.error("Cannot delete: Routine ID is missing.", 0, "Error");
-      return;
-    }
-    const routineToDelete = await firstValueFrom(this.workoutService.getRoutineById(this.currentRoutineId).pipe(take(1)));
-
-    if (!routineToDelete) {
-      this.toastService.error("Routine not found for deletion.", 0, "Error");
-      return;
-    }
-
-    const associatedLogs = await firstValueFrom(this.trackingService.getWorkoutLogsByRoutineId(this.currentRoutineId).pipe(take(1))) || [];
-    let confirmationMessage = `Are you sure you want to delete the routine "${routineToDelete.name}"?`;
-    if (associatedLogs.length > 0) {
-      confirmationMessage += ` This will also delete ${associatedLogs.length} associated workout log(s). This action cannot be undone.`;
-    }
-
-    const confirm = await this.alertService.showConfirm(
-      'Delete Routine',
-      confirmationMessage,
-      'Delete',
-    );
-
-    if (confirm && confirm.data) {
-      try {
-        this.spinnerService.show();
-        if (associatedLogs.length > 0) {
-          await this.trackingService.clearWorkoutLogsByRoutineId(this.currentRoutineId);
-          this.toastService.info(`${associatedLogs.length} workout log(s) deleted.`, 3000, "Logs Cleared");
-        }
-        await this.workoutService.deleteRoutine(this.currentRoutineId);
-        this.toastService.success(`Routine "${routineToDelete.name}" deleted.`, 4000, "Routine Deleted");
-        this.router.navigate(['/workout']);
-      } catch (error) {
-        console.error("Error during deletion:", error);
-        this.toastService.error("Failed to delete routine or logs. Please try again.", 0, "Deletion Failed");
-      } finally {
-        this.spinnerService.hide();
-      }
-    }
-  }
-
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
@@ -1343,5 +1301,146 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     };
     return routinePayload;
   }
+
+
+  getRoutineDropdownActionItems(routineId: string, mode: 'dropdown' | 'compact-bar'): ActionMenuItem[] {
+    const defaultBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-primary flex items-center text-sm hover:text-white dark:hover:text-gray-100 dark:hover:text-white';
+    const deleteBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-red-600 flex items-center text-sm hover:text-gray-100 hover:animate-pulse';;
+
+    const currentRoutine = this.routine;
+    const hideRoutineButton = {
+      label: 'HIDE',
+      actionKey: 'hide',
+      iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3.28 2.22a.75.75 0 00-1.06 1.06l14.5 14.5a.75.75 0 101.06-1.06l-1.745-1.745a10.029 10.029 0 003.3-4.38 1.651 1.651 0 000-1.185A10.004 10.004 0 009.999 3a9.956 9.956 0 00-4.744 1.194L3.28 2.22zM7.752 6.69l1.092 1.092a2.5 2.5 0 013.374 3.373l1.091 1.092a4 4 0 00-5.557-5.557z" clip-rule="evenodd" />
+          <path d="M10.748 13.93l2.523 2.523a9.987 9.987 0 01-3.27.547c-4.257 0-7.893-2.66-9.336-6.41a1.651 1.651 0 010-1.186A10.007 10.007 0 012.839 6.02L6.07 9.252a4 4 0 004.678 4.678z" /></svg>`,
+      iconClass: 'w-8 h-8 mr-2', // Adjusted for consistency if needed,
+      buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+      data: { routineId }
+    };
+    const unhideRoutineButton = {
+      label: 'UNHIDE',
+      actionKey: 'unhide',
+      iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5Z" /><path fill-rule="evenodd" d="M.664 10.59a1.651 1.651 0 010-1.186A10.004 10.004 0 0110 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0110 17c-4.257 0-7.893-2.66-9.336-6.41ZM14 10a4 4 0 11-8 0 4 4 0 018 0Z" clip-rule="evenodd" /></svg>`,
+      iconClass: 'w-8 h-8 mr-2', // Adjusted for consistency if needed,
+      buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+      data: { routineId }
+    };
+    const markAsFavouriteRoutineButton = {
+      label: 'FAVOURITE',
+      actionKey: 'markAsFavourite',
+      iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>`,
+      iconClass: 'w-8 h-8 mr-2', // Adjusted for consistency if needed,
+      buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+      data: { routineId }
+    };
+    const unmarkAsFavouriteRoutineButton = {
+      label: 'REMOVE',
+      actionKey: 'unmarkAsFavourite',
+      iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          <line x1="2" y1="20" x2="22" y2="4"></line>
+        </svg>`,
+      iconClass: 'w-8 h-8 mr-2', // Adjusted for consistency if needed,
+      buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+      data: { routineId }
+    };
+    const actionsArray = [
+      {
+        label: 'START',
+        actionKey: 'start',
+        iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" /></svg>`,
+        iconClass: 'w-8 h-8 mr-2',
+        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+        data: { routineId }
+      },
+      {
+        label: 'EDIT',
+        actionKey: 'edit',
+        iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>`,
+        iconClass: 'w-8 h-8 mr-2',
+        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+        data: { routineId }
+      },
+      {
+        label: 'CLONE',
+        actionKey: 'clone',
+        iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none"><path d="M 5 3 H 16 A 2 2 0 0 1 18 5 V 16 A 2 2 0 0 1 16 18 H 5 A 2 2 0 0 1 3 16 V 5 A 2 2 0 0 1 5 3 Z M 8 6 H 19 A 2 2 0 0 1 21 8 V 19 A 2 2 0 0 1 19 21 H 8 A 2 2 0 0 1 6 19 V 8 A 2 2 0 0 1 8 6 Z" /></svg>`,
+        iconClass: 'w-8 h-8 mr-2',
+        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+        data: { routineId }
+      }
+    ];
+
+    return actionsArray;
+  }
+
+  handleActionMenuItemClick(event: { actionKey: string, data?: any }, originalMouseEvent?: MouseEvent): void {
+    // originalMouseEvent.stopPropagation(); // Stop original event that opened the menu
+    const routineId = this.routine?.id;
+    if (!routineId) return;
+
+    switch (event.actionKey) {
+      case 'start':
+        this.startCurrentWorkout();
+        break;
+      case 'edit':
+        this.router.navigate(['/workout/routine/edit', routineId]);
+        break;
+      case 'clone':
+        this.cloneAndEditRoutine(routineId);
+        break;
+    }
+    this.activeRoutineIdActions.set(null); // Close the menu
+  }
+
+  // Your existing toggleActions, areActionsVisible, viewRoutineDetails, etc. methods
+  // The toggleActions will now just control a signal like `activeRoutineIdActions`
+  // which is used to show/hide the <app-action-menu>
+  activeRoutineIdActions = signal<string | null>(null); // Store ID of routine whose actions are open
+
+  toggleActions(routineId: string, event: MouseEvent): void {
+    event.stopPropagation();
+    this.activeRoutineIdActions.update(current => (current === routineId ? null : routineId));
+  }
+
+  areActionsVisible(routineId: string): boolean {
+    return this.activeRoutineIdActions() === routineId;
+  }
+
+  // When closing menu from the component's output
+  onCloseActionMenu() {
+    this.activeRoutineIdActions.set(null);
+  }
+
+  async cloneAndEditRoutine(routineId: string, event?: MouseEvent): Promise<void> {
+    const originalRoutine = this.routine;
+    if (!originalRoutine) {
+      this.toastService.error("Routine not found for cloning.", 0, "Error");
+      return;
+    }
+
+    // Deep clone the routine and assign a new id
+    let clonedRoutine: Routine = {
+      ...structuredClone(originalRoutine),
+      name: originalRoutine.name + " (Copy)",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    try {
+      this.spinnerService.show();
+      clonedRoutine = await this.workoutService.addRoutine(clonedRoutine);
+      this.toastService.success(`Routine "${clonedRoutine.name}" cloned successfully.`, 3000, "Routine Cloned");
+      this.router.navigate(['/workout/routine/edit', clonedRoutine.id]);
+    } catch (error) {
+      console.error("Error during routine cloning:", error);
+      this.toastService.error("Failed to clone routine.", 0, "Clone Failed");
+    } finally {
+      this.spinnerService.hide();
+    }
+  }
+
 
 }

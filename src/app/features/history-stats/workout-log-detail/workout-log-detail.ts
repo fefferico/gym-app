@@ -15,6 +15,11 @@ import { Routine, WorkoutExercise } from '../../../core/models/workout.model';
 import { UnitsService } from '../../../core/services/units.service';
 import { IsWeightedPipe } from '../../../shared/pipes/is-weighted-pipe';
 import { WorkoutService } from '../../../core/services/workout.service';
+import { ActionMenuComponent } from '../../../shared/components/action-menu/action-menu';
+import { ActionMenuItem } from '../../../core/models/action-menu.model';
+import { AlertService } from '../../../core/services/alert.service';
+import { SpinnerService } from '../../../core/services/spinner.service';
+import { ToastService } from '../../../core/services/toast.service';
 // DomSanitizer is not explicitly used in this version after previous edits, but good to keep if you plan to use [innerHTML] with dynamic SVGs later.
 // import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
@@ -42,7 +47,7 @@ interface TargetComparisonData {
 @Component({
   selector: 'app-workout-log-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, DatePipe, TitleCasePipe, WeightUnitPipe, ModalComponent, ExerciseDetailComponent, IsWeightedPipe],
+  imports: [CommonModule, RouterLink, DatePipe, TitleCasePipe, WeightUnitPipe, ModalComponent, ExerciseDetailComponent, IsWeightedPipe, ActionMenuComponent],
   templateUrl: './workout-log-detail.html',
   providers: [DecimalPipe] // DecimalPipe if used directly in template; WeightUnitPipe already handles it
 })
@@ -53,6 +58,9 @@ export class WorkoutLogDetailComponent implements OnInit {
   private exerciseService = inject(ExerciseService);
   private workoutService = inject(WorkoutService);
   protected unitService = inject(UnitsService);
+  private alertService = inject(AlertService);
+  private spinnerService = inject(SpinnerService);
+  private toastService = inject(ToastService);
   // private sanitizer = inject(DomSanitizer); // Keep if needed for other purposes
 
   comparisonModalData = signal<TargetComparisonData | null>(null);
@@ -463,4 +471,90 @@ export class WorkoutLogDetailComponent implements OnInit {
   showNotesModal(notes: string): void {
     this.notesModalsData.set(notes);
   }
+
+  // Your existing toggleActions, areActionsVisible, viewRoutineDetails, etc. methods
+  // The toggleActions will now just control a signal like `activeRoutineIdActions`
+  // which is used to show/hide the <app-action-menu>
+  activeRoutineIdActions = signal<string | null>(null); // Store ID of routine whose actions are open
+
+  toggleActions(routineId: string, event: MouseEvent): void {
+    event.stopPropagation();
+    this.activeRoutineIdActions.update(current => (current === routineId ? null : routineId));
+  }
+
+  areActionsVisible(routineId: string): boolean {
+    return this.activeRoutineIdActions() === routineId;
+  }
+
+  // When closing menu from the component's output
+  onCloseActionMenu() {
+    this.activeRoutineIdActions.set(null);
+  }
+
+
+  getLogDropdownActionItems(routineId: string, mode: 'dropdown' | 'compact-bar'): ActionMenuItem[] {
+    const defaultBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-primary flex items-center text-sm hover:text-white dark:hover:text-gray-100 dark:hover:text-white';
+    const deleteBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-red-600 flex items-center text-sm hover:text-gray-100 hover:animate-pulse';;
+
+    const currentLog = this.workoutLog();
+    const actionsArray = [
+      {
+        label: 'VIEW',
+        actionKey: 'view',
+        iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5Z" /><path fill-rule="evenodd" d="M.664 10.59a1.651 1.651 0 010-1.186A10.004 10.004 0 0110 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0110 17c-4.257 0-7.893-2.66-9.336-6.41ZM14 10a4 4 0 11-8 0 4 4 0 018 0Z" clip-rule="evenodd" /></svg>`,
+        iconClass: 'w-8 h-8 mr-2', // Adjusted for consistency if needed,
+        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+        data: { routineId }
+      },
+      {
+        label: 'EDIT',
+        actionKey: 'edit',
+        iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>`,
+        iconClass: 'w-8 h-8 mr-2',
+        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+        data: { routineId }
+      },
+      {
+        label: 'DELETE',
+        actionKey: 'delete',
+        iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.58.177-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5Zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5Z" clip-rule="evenodd" /></svg>`,
+        iconClass: 'w-8 h-8 mr-2',
+        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + deleteBtnClass,
+        data: { routineId }
+      }
+    ];
+    return actionsArray;
+  }
+
+  handleActionMenuItemClick(event: { actionKey: string, data?: any }, originalMouseEvent?: MouseEvent): void {
+    // originalMouseEvent.stopPropagation(); // Stop original event that opened the menu
+    const logId = event.data?.routineId;
+    if (!logId) return;
+
+    switch (event.actionKey) {
+      case 'edit':
+        this.router.navigate(['/workout/log/manual/edit', logId])
+        break;
+      case 'view':
+        this.router.navigate(['/workout/summary', logId])
+        break;
+      case 'delete':
+        this.deleteLogDetails(logId);
+        break;
+    }
+    this.activeRoutineIdActions.set(null); // Close the menu
+  }
+
+  async deleteLogDetails(logId: string, event?: MouseEvent): Promise<void> {
+    const confirm = await this.alertService.showConfirm("Delete Workout Log", "Are you sure you want to delete this workout log? This action cannot be undone.", "Delete");
+    if (confirm && confirm.data) {
+      try {
+        this.spinnerService.show(); await this.trackingService.deleteWorkoutLog(logId);
+        this.toastService.success("Workout log deleted successfully.");
+        this.router.navigate(['/history/list']);
+      } catch (err) { this.toastService.error("Failed to delete workout log."); }
+      finally { this.spinnerService.hide(); }
+    }
+  }
+
 }
