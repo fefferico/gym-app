@@ -251,10 +251,9 @@
                                         {{ (exerciseControl.get('rounds')?.value || 1) === 1 ? 'round' : 'rounds' }}
                                     </div>
                                     <div *ngIf="(isCompactView  || (!isCompactView && expandedSetPath()?.exerciseIndex !== exIndex)) && getSetsFormArray(exerciseControl).controls.length > 0"
-                                        class="text-s text-gray-500 dark:text-gray-400 mt-0.5">
-                                        <img [src]="getIconPath(exerciseControl.get('exerciseId')?.value) | async" alt="Exercise Icon"
-                                            class="w-6 h-6 sm:w-8 sm:h-8 object-contain"
-                                            >
+                                        class="flex items-center text-s text-gray-500 dark:text-gray-400 mt-0.5 gap-4">
+                                        <img [src]="getIconPath(exerciseControl.get('exerciseId')?.value) | async"
+                                            alt="Exercise Icon" class="w-6 h-6 sm:w-8 sm:h-8 object-contain">
                                         <!-- {{ getSetsFormArray(exerciseControl).controls.length }}
                                         {{ getSetsFormArray(exerciseControl).controls.length === 1 ? 'set' : 'sets' }} -->
                                         <div class="min-w-0"> <!-- Added min-w-0 for truncation -->
@@ -307,26 +306,30 @@
                             </div>
                             <!-- EXPANDED CONTENT AREA -->
                             <div *ngIf="expandedSetPath()?.exerciseIndex === exIndex" class="space-y-3">
+
                                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-2 pt-1 sm:pt-0"
-                                    [ngClass]="{
-                                    'border-b border-orange-300 dark:border-orange-600': mode==='routineBuilder' &&
-                                    exerciseControl.get('supersetId')?.value &&
-                                    (exerciseControl.get('supersetOrder')?.value ?? -1) <
-                                        ((exerciseControl.get('supersetSize')?.value ?? 0)
-                                        -1), 'border-b border-gray-200 dark:border-gray-600' : !(mode==='routineBuilder'
-                                        && exerciseControl.get('supersetId')?.value) || (mode==='routineBuilder' &&
-                                        (exerciseControl.get('supersetOrder')?.value ??
-                                        -1)===((exerciseControl.get('supersetSize')?.value ?? 0) -1)) }">
+                                    >
                                     <div class="flex-grow">
-                                        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">
-                                            <span
-                                                *ngIf="mode === 'routineBuilder' && exerciseControl.get('supersetId')?.value"
-                                                class="text-xs text-orange-600 dark:text-orange-400 font-normal block">
-                                                Superset ({{ (exerciseControl.get('supersetOrder')?.value ?? 0) + 1 }}
-                                                of {{ exerciseControl.get('supersetSize')?.value }})
-                                            </span>
-                                            {{ exerciseControl.get('exerciseName')?.value || 'Select Exercise' }}
-                                        </h3>
+                                        <!-- Superset info remains on its own line if visible, which is correct -->
+                                        <span
+                                            *ngIf="mode === 'routineBuilder' && exerciseControl.get('supersetId')?.value"
+                                            class="text-xs text-orange-600 dark:text-orange-400 font-normal block">
+                                            Superset ({{ (exerciseControl.get('supersetOrder')?.value ?? 0) + 1 }} of {{
+                                            exerciseControl.get('supersetSize')?.value }})
+                                        </span>
+
+                                        <!-- NEW: Flex container to align the icon and the title horizontally -->
+                                        <div class="flex items-center">
+                                            <!-- The Image: Added margin-right for spacing and flex-shrink-0 -->
+                                            <img [src]="getIconPath(exerciseControl.get('exerciseId')?.value) | async"
+                                                alt="Exercise Icon"
+                                                class="w-6 h-6 sm:w-8 sm:h-8 object-contain mr-3 flex-shrink-0">
+
+                                            <!-- The Title Text: Now wrapped in its own h3 tag -->
+                                            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">
+                                                {{ exerciseControl.get('exerciseName')?.value || 'Select Exercise' }}
+                                            </h3>
+                                        </div>
                                     </div>
 
                                     <div
@@ -549,6 +552,7 @@
                                                             class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
                                                     </div>
                                                 </div>
+                                                <!--
                                                 <div class="mt-2 text-right">
                                                     <button type="button" (click)="collapseExpandedSet(false,$event)"
                                                         title="Collapse set"
@@ -561,12 +565,13 @@
                                                                 stroke-linecap="round" stroke-linejoin="round" />
                                                         </svg></button>
                                                 </div>
+                                                -->
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div> <!-- End of *ngIf="!isCompactView" -->
-                            <button *ngIf="!isCompactView && expandedSetPath()?.exerciseIndex === exIndex" type="button"
+                            <!--<button *ngIf="!isCompactView && expandedSetPath()?.exerciseIndex === exIndex" type="button"
                                 (click)="collapseExpandedSet(true, $event)" title="Collapse exercise"
                                 class="bg-blue-200 mt-1 p-1 text-blue-600 hover:text-gray-500 dark:text-gray-400 dark:hover:text-gray-200 flex-shrink-0  rounded-md">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
@@ -574,7 +579,8 @@
                                         fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
                                         stroke-linejoin="round" />
                                 </svg>
-                            </button>
+                            </button> 
+                                                -->
                         </div>
                     </div>
                 </ng-container>

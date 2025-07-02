@@ -1307,58 +1307,22 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     const defaultBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-primary flex items-center text-sm hover:text-white dark:hover:text-gray-100 dark:hover:text-white';
     const deleteBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-red-600 flex items-center text-sm hover:text-gray-100 hover:animate-pulse';;
 
+    const editButton = {
+        label: 'EDIT',
+        actionKey: 'edit',
+        iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>`,
+        iconClass: 'w-8 h-8 mr-2',
+        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+        data: { routineId }
+      };
+
     const currentRoutine = this.routine;
-    const hideRoutineButton = {
-      label: 'HIDE',
-      actionKey: 'hide',
-      iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3.28 2.22a.75.75 0 00-1.06 1.06l14.5 14.5a.75.75 0 101.06-1.06l-1.745-1.745a10.029 10.029 0 003.3-4.38 1.651 1.651 0 000-1.185A10.004 10.004 0 009.999 3a9.956 9.956 0 00-4.744 1.194L3.28 2.22zM7.752 6.69l1.092 1.092a2.5 2.5 0 013.374 3.373l1.091 1.092a4 4 0 00-5.557-5.557z" clip-rule="evenodd" />
-          <path d="M10.748 13.93l2.523 2.523a9.987 9.987 0 01-3.27.547c-4.257 0-7.893-2.66-9.336-6.41a1.651 1.651 0 010-1.186A10.007 10.007 0 012.839 6.02L6.07 9.252a4 4 0 004.678 4.678z" /></svg>`,
-      iconClass: 'w-8 h-8 mr-2', // Adjusted for consistency if needed,
-      buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
-      data: { routineId }
-    };
-    const unhideRoutineButton = {
-      label: 'UNHIDE',
-      actionKey: 'unhide',
-      iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5Z" /><path fill-rule="evenodd" d="M.664 10.59a1.651 1.651 0 010-1.186A10.004 10.004 0 0110 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0110 17c-4.257 0-7.893-2.66-9.336-6.41ZM14 10a4 4 0 11-8 0 4 4 0 018 0Z" clip-rule="evenodd" /></svg>`,
-      iconClass: 'w-8 h-8 mr-2', // Adjusted for consistency if needed,
-      buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
-      data: { routineId }
-    };
-    const markAsFavouriteRoutineButton = {
-      label: 'FAVOURITE',
-      actionKey: 'markAsFavourite',
-      iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-          </svg>`,
-      iconClass: 'w-8 h-8 mr-2', // Adjusted for consistency if needed,
-      buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
-      data: { routineId }
-    };
-    const unmarkAsFavouriteRoutineButton = {
-      label: 'REMOVE',
-      actionKey: 'unmarkAsFavourite',
-      iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-          <line x1="2" y1="20" x2="22" y2="4"></line>
-        </svg>`,
-      iconClass: 'w-8 h-8 mr-2', // Adjusted for consistency if needed,
-      buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
-      data: { routineId }
-    };
+    
     const actionsArray = [
       {
         label: 'START',
         actionKey: 'start',
         iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" /></svg>`,
-        iconClass: 'w-8 h-8 mr-2',
-        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
-        data: { routineId }
-      },
-      {
-        label: 'EDIT',
-        actionKey: 'edit',
-        iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>`,
         iconClass: 'w-8 h-8 mr-2',
         buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
         data: { routineId }
@@ -1372,6 +1336,10 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         data: { routineId }
       }
     ];
+
+    if (this.isViewMode){
+      actionsArray.push(editButton);
+    }
 
     return actionsArray;
   }
@@ -1478,7 +1446,12 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         map(exerciseDetails => {
           // The `map` operator transforms the emitted Exercise object
           // into the icon path string you need.
-          return this.exerciseService.getIconPath(exerciseDetails?.iconName);
+          if (exerciseDetails) {
+            const iconName = this.exerciseService.determineExerciseIcon(exerciseDetails, exerciseDetails.name);
+            return this.exerciseService.getIconPath(iconName);
+          } else {
+            return this.exerciseService.getIconPath('default-exercise');
+          }
         })
       );
     } else {
