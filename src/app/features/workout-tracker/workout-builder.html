@@ -180,6 +180,8 @@
                 class="exercise-list-container space-y-4">
                 <ng-container *ngFor="let exerciseControl of exercisesFormArray.controls; let exIndex = index;">
                     <div class="relative group exercise-card-wrapper" (click)="toggleSetExpansion(exIndex,0, $event)"
+                        appClickOutside
+                        (clickOutside)="collapseExpandedSet(false,$event)"
                         [title]="'Drag to reorder'" [ngClass]="{
                                         'superset-spacing': isSupersetSpacing(exIndex)
                                         }">
@@ -310,7 +312,6 @@
                             </div>
                             <!-- EXPANDED CONTENT AREA -->
                             <div *ngIf="expandedSetPath()?.exerciseIndex === exIndex" class="space-y-3">
-
                                 <div
                                     class="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-2 pt-1 sm:pt-0">
                                     <div class="flex-grow">
@@ -388,7 +389,73 @@
                                 </div>
 
                                 <!-- Sets Section (Headers, Collapsed Sets, Expanded Set Form) -->
-                                <div *ngIf="!isCompactView" class="space-y-1">
+                                <!-- EXPANDED Only VIEW MODE - START -->
+                                <div *ngIf="!isCompactView && isViewMode" [ngClass]="{
+                                        'grid-cols-5': exerciseControl.getRawValue() | isWeighted,
+                                        'grid-cols-4': !(exerciseControl.getRawValue() | isWeighted)
+                                    }" class="grid gap-x-4 gap-y-2 p-4 bg-white rounded-md shadow-md dark:bg-gray-800">
+
+                                    <!-- === GRID HEADER === -->
+                                    <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Set</div>
+                                    <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Reps</div>
+
+                                    <!-- The pipe is used here for the *ngIf condition -->
+                                    <div *ngIf="exerciseControl.getRawValue() | isWeighted"
+                                        class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">
+                                        Weight
+                                    </div>
+
+                                    <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Time</div>
+                                    <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Notes
+                                    </div>
+
+
+                                    <!-- === GRID ROWS (LOOP) === -->
+                                    <ng-container
+                                        *ngFor="let set of exerciseControl.get('sets')?.value; let i = index; let last = last">
+
+                                        <!-- Row data aligns perfectly -->
+                                        <div class="font-medium text-gray-900 dark:text-white">{{ i + 1 }}</div>
+                                        <div>
+                                            <strong>
+                                                {{ set.reps || '—' }}
+                                            </strong>
+                                        </div>
+
+                                        <!-- The pipe is used a final time for the data cell -->
+                                        <div *ngIf="exerciseControl.getRawValue() | isWeighted">
+                                            <strong>
+                                                {{ set.weight != null ? (set.weight + ' ' +
+                                                unitService.getUnitLabel()) : '—' }}
+                                            </strong>
+
+                                        </div>
+
+                                        <div>
+                                            <strong>
+                                                {{ set.duration || '—' }}
+                                            </strong>
+                                        </div>
+                                        <div class="cursor-pointer">
+                                            <svg (click)="showNotesModal(set.notes)" *ngIf="set.notes"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                class="h-8 w-8 text-gray-500 dark:text-white" fill="none"
+                                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                                            </svg>
+                                            <span class="text-gray-500 dark:text-white" *ngIf="!set.notes">-</span>
+                                        </div>
+                                        <div *ngIf="!last" class="col-span-full h-px bg-gray-200 dark:bg-gray-700">
+                                        </div>
+
+                                    </ng-container>
+
+                                </div>
+                                <!-- EXPANDED Only VIEW MODE - END -->
+
+                                <!-- EXPANDED Only EDIT MODE - START -->
+                                <div *ngIf="!isCompactView && isEditMode" class="space-y-1">
                                     <div class="flex justify-between items-center mb-1">
                                         <h4 class="text-m font-semibold text-gray-700 dark:text-gray-300">Sets:</h4>
                                         <button *ngIf="!isViewMode" type="button"
@@ -526,7 +593,8 @@
                                                             placeholder="Secs" [readonly]="isViewMode"
                                                             class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
                                                     </div>
-                                                    <div *ngIf="mode === 'routineBuilder' && (setControl.get('tempo')?.value || isEditMode)">
+                                                    <div
+                                                        *ngIf="mode === 'routineBuilder' && (setControl.get('tempo')?.value || isEditMode)">
                                                         <label [for]="'tempo-exp-' + exIndex + '-' + setIndex"
                                                             class="block text-s font-medium text-gray-600 dark:text-gray-400">Tempo</label>
                                                         <input type="text"
@@ -545,7 +613,8 @@
                                                             [readonly]="isViewMode"
                                                             class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
                                                     </div>
-                                                    <div class="col-span-full" *ngIf="(setControl.get('notes')?.value || isEditMode)">
+                                                    <div class="col-span-full"
+                                                        *ngIf="(setControl.get('notes')?.value || isEditMode)">
                                                         <label [for]="'setNotes-exp-' + exIndex + '-' + setIndex"
                                                             class="block text-s font-medium text-gray-600 dark:text-gray-400">Set
                                                             Notes</label>
@@ -572,6 +641,7 @@
                                         </div>
                                     </div>
                                 </div>
+                                <!-- EXPANDED Only EDIT MODE - END -->
                             </div> <!-- End of *ngIf="!isCompactView" -->
                             <!--<button *ngIf="!isCompactView && expandedSetPath()?.exerciseIndex === exIndex" type="button"
                                 (click)="collapseExpandedSet(true, $event)" title="Collapse exercise"
@@ -700,3 +770,18 @@
         </div>
     </div>
 </div>
+
+<!-- NOTES MODAL -->
+<app-modal *ngIf="notesModalsData() as data" [isOpen]="!!data" (isOpenChange)="notesModalsData.set(null)"
+    [modalTitle]="'Notes'">
+
+    <div class="flex flex-col p-4 text-left text-gray-700 dark:text-gray-200">
+        <textarea [disabled]="true" class="font-semibold pb-2 dark:border-gray-600 dark:bg-gray-800" name=""
+            id="">{{data}}</textarea>
+        <button (click)="notesModalsData.set(null)"
+            class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary-light">
+            CLOSE
+        </button>
+    </div>
+
+</app-modal>

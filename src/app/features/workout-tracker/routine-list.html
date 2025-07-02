@@ -161,11 +161,11 @@
         <div *ngIf="filteredRoutines().length > 0; else noRoutines"
             class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
             <!-- Card -->
-            <div *ngFor="let routine of filteredRoutines()"
-                class="bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow duration-200 relative group transform hover:-translate-y-1"
+            <div *ngFor="let routine of filteredRoutines()" (click)="viewRoutineDetails(routine.id, $event)"
+                class="bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow duration-200 relative group transform hover:-translate-y-1 cursor-pointer"
                 [style.zIndex]="areActionsVisible(routine.id) ? 50 : 'auto'">
                 <!-- Main content area, make this clickable -->
-                <div class="p-3 cursor-pointer" (click)="viewRoutineDetails(routine.id, $event)">
+                <div class="p-3">
                     <div class="flex justify-between items-start mb-1.5">
                         <h2 class="text-lg font-semibold text-primary dark:text-primary-light pr-8"
                             [title]="routine.name">{{ routine.name }}</h2>

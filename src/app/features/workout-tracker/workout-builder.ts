@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy, signal, computed, ElementRef, QueryList, ViewChildren, AfterViewInit, ChangeDetectorRef, PLATFORM_ID, Input } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal, computed, ElementRef, QueryList, ViewChildren, AfterViewInit, ChangeDetectorRef, PLATFORM_ID, Input, HostListener } from '@angular/core';
 import { CommonModule, DecimalPipe, isPlatformBrowser, TitleCasePipe } from '@angular/common'; // Added TitleCasePipe
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray, AbstractControl, FormsModule, FormControl } from '@angular/forms';
@@ -27,13 +27,16 @@ import { merge } from 'hammerjs';
 import { AutoGrowDirective } from '../../shared/directives/auto-grow.directive';
 import { ActionMenuComponent } from '../../shared/components/action-menu/action-menu';
 import { ActionMenuItem } from '../../core/models/action-menu.model';
+import { IsWeightedPipe } from '../../shared/pipes/is-weighted-pipe';
+import { ModalComponent } from '../../shared/components/modal/modal.component';
+import { ClickOutsideDirective } from '../../shared/directives/click-outside.directive';
 
 type BuilderMode = 'routineBuilder' | 'manualLogEntry';
 
 @Component({
   selector: 'app-workout-builder',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, FormsModule, DragDropModule, WeightUnitPipe, TitleCasePipe, LongPressDragDirective, AutoGrowDirective, ActionMenuComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, FormsModule, DragDropModule, WeightUnitPipe, TitleCasePipe, LongPressDragDirective, AutoGrowDirective, ActionMenuComponent, IsWeightedPipe, ModalComponent, ClickOutsideDirective],
   templateUrl: './workout-builder.html',
   styleUrl: './workout-builder.scss',
   providers: [DecimalPipe]
@@ -71,6 +74,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   private subscriptions = new Subscription();
 
   expandedSetPath = signal<{ exerciseIndex: number, setIndex: number } | null>(null);
+  expandedSetPaths: { exerciseIndex: number, setIndex: number }[] = [];
 
   availableSetTypes: { value: string, label: string }[] = [
     { value: 'standard', label: 'Standard' },
@@ -722,7 +726,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     const currentPath = this.expandedSetPath();
     return currentPath?.exerciseIndex === exerciseIndex && currentPath?.setIndex === setIndex;
   }
-  collapseExpandedSet(collapseAll: boolean = false, event?: MouseEvent): void {
+  collapseExpandedSet(collapseAll: boolean = false, event?: Event): void {
     this.expandedSetPath.set(null);
     this.isCompactView = collapseAll;
     event?.stopPropagation();
@@ -1308,16 +1312,16 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     const deleteBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-red-600 flex items-center text-sm hover:text-gray-100 hover:animate-pulse';;
 
     const editButton = {
-        label: 'EDIT',
-        actionKey: 'edit',
-        iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>`,
-        iconClass: 'w-8 h-8 mr-2',
-        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
-        data: { routineId }
-      };
+      label: 'EDIT',
+      actionKey: 'edit',
+      iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>`,
+      iconClass: 'w-8 h-8 mr-2',
+      buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+      data: { routineId }
+    };
 
     const currentRoutine = this.routine;
-    
+
     const actionsArray = [
       {
         label: 'START',
@@ -1337,7 +1341,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       }
     ];
 
-    if (this.isViewMode){
+    if (this.isViewMode) {
       actionsArray.push(editButton);
     }
 
@@ -1463,5 +1467,42 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       // If not found in the routine, return an Observable of the default path.
       return of(this.exerciseService.getIconPath('default-exercise'));
     }
+  }
+
+  // This function is now fast, synchronous, and safe to call from a template.
+  checkTextClass(set: LoggedSet, type: 'reps' | 'duration' | 'weight'): string {
+    if (!set) {
+      return 'text-gray-700 dark:text-gray-300';
+    }
+
+    let performedValue = 0;
+    let targetValue = 0;
+
+    // Determine which properties to compare based on the 'type'
+    if (type === 'reps') {
+      performedValue = set.repsAchieved ?? 0;
+      targetValue = set.targetReps ?? 0;
+    } else if (type === 'duration') {
+      performedValue = set.durationPerformed ?? 0;
+      targetValue = set.targetDuration ?? 0;
+    } else if (type === 'weight') {
+      performedValue = set.weightUsed ?? 0;
+      targetValue = set.targetWeight ?? 0;
+    }
+
+    // The simple comparison logic
+    if (performedValue > targetValue) {
+      return 'text-green-500 dark:text-green-400';
+    } else if (performedValue < targetValue) {
+      return 'text-red-500 dark:text-red-400';
+    } else {
+      return 'text-gray-800 dark:text-white';
+    }
+  }
+
+
+  notesModalsData = signal<string | null>(null);
+  showNotesModal(notes: string): void {
+    this.notesModalsData.set(notes);
   }
 }
