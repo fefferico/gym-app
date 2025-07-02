@@ -1420,6 +1420,11 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     return loggedExActual?.sets.some(set => set.targetWeight) || loggedExActual?.sets.some(set => set.weight);
   }
 
+  getSetReps(loggedEx: any): string {
+    const loggedExActual = loggedEx?.getRawValue() as WorkoutExercise;
+    return loggedExActual?.sets.map(set => set.reps).join(' - ');
+  }
+
   getSetWeightsUsed(loggedEx: any): string {
     const loggedExActual = loggedEx?.getRawValue() as WorkoutExercise;
     return loggedExActual?.sets.map(set => set.weight).join(' - ');

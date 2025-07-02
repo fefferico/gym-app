@@ -180,7 +180,7 @@
                     </p>
                     <p *ngIf="loggedEx.sets && loggedEx.sets.length >= 1 && checkIfTimedExercise(loggedEx)"> Duration
                       (s): {{getSetDurationPerformed(loggedEx)}}</p>
-                    <p *ngIf="loggedEx.sets && loggedEx.sets.length > 1"> Sets: {{loggedEx.sets.length}}</p>
+                    <p *ngIf="loggedEx.sets && loggedEx.sets.length >= 1"> Sets: {{loggedEx.sets.length}} {{ getSetReps(loggedEx) != '0' ? '( Reps: ' + getSetReps(loggedEx) + ' )' : ''  }}</p>
                     <p *ngIf="loggedEx.sets && loggedEx.sets.length > 1 && checkIfWeightedExercise(loggedEx)"> Weight
                       ({{unitService.getUnitLabel()}}): {{getSetWeightsUsed(loggedEx)}}</p>
                   </div>

@@ -360,6 +360,10 @@ export class WorkoutLogDetailComponent implements OnInit {
     return loggedEx.sets.map(set => set.durationPerformed).join(' - ');
   }
 
+  getSetReps(loggedEx: LoggedWorkoutExercise): string {
+    return loggedEx?.sets.map(set => set.repsAchieved).join(' - ');
+  }
+
   checkIfTimedExercise(loggedEx: LoggedWorkoutExercise): boolean {
     return loggedEx.sets.some(set => set.targetDuration) || loggedEx?.sets.some(set => set.durationPerformed);
   }
