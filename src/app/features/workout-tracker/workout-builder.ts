@@ -58,6 +58,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   @ViewChildren('setRepsInput') setRepsInputs!: QueryList<ElementRef<HTMLInputElement>>;
   @ViewChildren('expandedSetElement') expandedSetElements!: QueryList<ElementRef<HTMLDivElement>>;
 
+  isAllExpandedInViewMode = signal(false);
+
   routine: Routine | null = null;
   builderForm!: FormGroup;
   mode: BuilderMode = 'routineBuilder';
@@ -185,8 +187,13 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
           this.router.navigate([this.mode === 'routineBuilder' ? '/workout' : '/history/list']);
         }
 
-        if (this.isViewMode) this.toggleFormState(true);
-        else this.toggleFormState(false); // Enable for new/edit modes
+        if (this.isViewMode) {
+          this.toggleFormState(true);
+          this.isAllExpandedInViewMode.set(true);
+          this.isCompactView = false; // This ensures the component doesn't start in compact mode
+        } else {
+          this.toggleFormState(false); // Enable for new/edit modes
+        }
       })
     ).subscribe();
 
@@ -676,6 +683,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   toggleSetExpansion(exerciseIndex: number, setIndex: number, event?: MouseEvent): void {
+    this.isAllExpandedInViewMode.set(false); // <-- ADD THIS LINE
     event?.stopPropagation();
 
     // If the event is from a checkbox (superset selection), do not expand/collapse set
@@ -727,6 +735,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     return currentPath?.exerciseIndex === exerciseIndex && currentPath?.setIndex === setIndex;
   }
   collapseExpandedSet(collapseAll: boolean = false, event?: Event): void {
+    this.isAllExpandedInViewMode.set(false); // <-- ADD THIS LINE
     this.expandedSetPath.set(null);
     this.isCompactView = collapseAll;
     event?.stopPropagation();
@@ -1504,5 +1513,17 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   notesModalsData = signal<string | null>(null);
   showNotesModal(notes: string): void {
     this.notesModalsData.set(notes);
+  }
+
+  // Add this new public method to the class
+  public shouldShowExpandedExercise(exIndex: number): boolean {
+    if (this.isCompactView) {
+      return false;
+    }
+    if (this.isAllExpandedInViewMode()) {
+      return true;
+    }
+    const currentPath = this.expandedSetPath();
+    return currentPath?.exerciseIndex === exIndex;
   }
 }

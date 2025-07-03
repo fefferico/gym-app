@@ -198,10 +198,12 @@
                             </button>
                         </div>
 
-                        <div cdkDrag [cdkDragDisabled]="mode !== 'routineBuilder' || isViewMode || !isEditMode || isSetExpanded(exIndex, 0)"
-                            appLongPressDrag [longPressEnabled]="isEditMode && !isSetExpanded(exIndex, 0)" [longPressDelay]="150"
-                            longPressClass="is-long-pressing" [cdkDragData]="exerciseControl" [formGroupName]="exIndex"
-                            [cdkDragStartDelay]="110" class="exercise-item relative transition-all cursor-grab"
+                        <div cdkDrag
+                            [cdkDragDisabled]="mode !== 'routineBuilder' || isViewMode || !isEditMode || isSetExpanded(exIndex, 0)"
+                            appLongPressDrag [longPressEnabled]="isEditMode && !isSetExpanded(exIndex, 0)"
+                            [longPressDelay]="150" longPressClass="is-long-pressing" [cdkDragData]="exerciseControl"
+                            [formGroupName]="exIndex" [cdkDragStartDelay]="110"
+                            class="exercise-item relative transition-all cursor-grab"
                             [ngClass]="getExerciseCardClasses(exerciseControl, exIndex)">
                             <!-- COMPACT VIEW / HEADER AREA -->
                             <div class="flex items-center space-x-2">
@@ -227,8 +229,7 @@
                                     class="h-4 w-4 text-orange-600 border-gray-300 dark:border-gray-600 rounded focus:ring-orange-500 flex-shrink-0 disabled:opacity-50"
                                     [disabled]="isViewMode">
                                 <!-- EXERCISE NAME & SUPERSET INFO / SETS SUMMARY FOR COMPACT -->
-                                <div *ngIf="isCompactView || (!isCompactView && expandedSetPath()?.exerciseIndex !== exIndex)"
-                                    class="flex-grow min-w-0">
+                                <div *ngIf="!shouldShowExpandedExercise(exIndex)" class="flex-grow min-w-0">
                                     <!-- <h3 class="font-semibold text-gray-800 dark:text-gray-100 truncate" [ngClass]="{
                                             'text-m': isCompactView && expandedSetPath()?.exerciseIndex !== exIndex,
                                             'text-lg': !isCompactView && expandedSetPath()?.exerciseIndex === exIndex
@@ -251,7 +252,7 @@
                                         {{ exerciseControl.get('rounds')?.value || 1 }}
                                         {{ (exerciseControl.get('rounds')?.value || 1) === 1 ? 'round' : 'rounds' }}
                                     </div>
-                                    <div *ngIf="(isCompactView  || (!isCompactView && expandedSetPath()?.exerciseIndex !== exIndex)) && getSetsFormArray(exerciseControl).controls.length > 0"
+                                    <div *ngIf="!shouldShowExpandedExercise(exIndex) && getSetsFormArray(exerciseControl).controls.length > 0"
                                         class="flex items-center text-s text-gray-500 dark:text-gray-400 mt-0.5 gap-4 pl-2">
                                         <img [src]="getIconPath(exerciseControl.get('exerciseId')?.value) | async"
                                             alt="Exercise Icon" class="w-6 h-6 sm:w-8 sm:h-8 object-contain">
@@ -293,7 +294,7 @@
                                     </div>
                                 </div>
                                 <!-- COMPACT: Minimal actions for compact view (e.g., small remove icon) -->
-                                <div *ngIf="(isCompactView  || (!isCompactView && expandedSetPath()?.exerciseIndex !== exIndex)) && !isViewMode"
+                                <div *ngIf="!shouldShowExpandedExercise(exIndex) && !isViewMode"
                                     class="flex-shrink-0 ml-auto">
                                     <!-- ml-auto to push to the right -->
                                     <button type="button" (click)="removeExercise(exIndex); $event.stopPropagation()"
@@ -310,7 +311,7 @@
                                 </div>
                             </div>
                             <!-- EXPANDED CONTENT AREA -->
-                            <div *ngIf="expandedSetPath()?.exerciseIndex === exIndex" class="p-2">
+                            <div *ngIf="shouldShowExpandedExercise(exIndex)" class="p-2">
                                 <div
                                     class="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-2 pt-1 sm:pt-0">
                                     <div class="flex-grow">
@@ -392,7 +393,8 @@
                                 <div *ngIf="!isCompactView && isViewMode" [ngClass]="{
                                         'grid-cols-6': exerciseControl.getRawValue() | isWeighted,
                                         'grid-cols-5': !(exerciseControl.getRawValue() | isWeighted)
-                                    }" class="grid gap-x-4 gap-y-2 px-2 py-2 bg-white rounded-md dark:bg-gray-800 text-gray-900 dark:text-white">
+                                    }"
+                                    class="grid gap-x-4 gap-y-2 px-2 py-2 bg-white rounded-md dark:bg-gray-800 text-gray-900 dark:text-white">
 
                                     <!-- === GRID HEADER === -->
                                     <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Set</div>
@@ -548,8 +550,7 @@
 
                                             <!-- Expanded Set Form -->
                                             <div #expandedSetElement *ngIf="isSetExpanded(exIndex, setIndex)"
-                                                class="p-1 rounded-md shadow-inner space-y-2"
-                                                [ngClass]="{
+                                                class="p-1 rounded-md shadow-inner space-y-2" [ngClass]="{
                                                         'bg-gray-100 dark:bg-gray-800/50': !['warmup', 'dropset', 'failure', 'amrap', 'myorep', 'restpause'].includes(setControl.get('type')?.value ?? '')
                                                     }">
                                                 <!-- ... content of expanded set form (as before) ... -->
