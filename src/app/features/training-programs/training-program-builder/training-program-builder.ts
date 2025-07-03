@@ -17,6 +17,8 @@ import { AlertService } from '../../../core/services/alert.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { DayOfWeekPipe } from '../../../shared/pipes/day-of-week-pipe';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { ActionMenuItem } from '../../../core/models/action-menu.model';
+import { ActionMenuComponent } from '../../../shared/components/action-menu/action-menu';
 
 interface DayOption {
     value: number;
@@ -35,7 +37,8 @@ interface ProgramGoal { value: Routine['goal'], label: string }
         TitleCasePipe,
         DragDropModule,
         DayOfWeekPipe,
-        FormsModule
+        FormsModule,
+        ActionMenuComponent
     ],
     templateUrl: './training-program-builder.html',
     styleUrls: ['./training-program-builder.scss']
@@ -437,4 +440,107 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
             return Array.from(newSelection);
         });
     }
+
+
+
+    getProgramDropdownActionItems(programId: string, mode: 'dropdown' | 'compact-bar'): ActionMenuItem[] {
+        const defaultBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-primary flex items-center text-sm hover:text-white dark:hover:text-gray-100 dark:hover:text-white';
+        const deleteBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-red-600 flex items-center text-sm hover:text-gray-100 hover:animate-pulse';
+        const activateBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-green-600 flex items-center text-sm hover:text-gray-100';;
+        const deactivateBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-500 flex items-center text-sm hover:text-gray-100';;
+
+        const currentProgram = this.currentProgram;
+
+        const editProgramButton = 
+            {
+                label: 'EDIT',
+                actionKey: 'edit',
+                iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>`,
+                iconClass: 'w-8 h-8 mr-2',
+                buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+                data: { programId: programId }
+            };
+
+        const activateProgramBtn = {
+            label: 'ACTIVATE',
+            actionKey: 'activate',
+            iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                        fill="currentColor" class="w-8 h-8 mr-1">
+                        <path fill-rule="evenodd"
+                          d="M16.403 12.652a3 3 0 000-5.304 3 3 0 00-3.75-3.751 3 3 0 00-5.305 0 3 3 0 00-3.751 3.75 3 3 0 000 5.305 3 3 0 003.75 3.751 3 3 0 005.305 0 3 3 0 003.751-3.75Zm-2.546-4.46a.75.75 0 00-1.214-.883l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5Z"
+                          clip-rule="evenodd" />
+                      </svg>`,
+            iconClass: 'w-8 h-8 mr-2',
+            buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + activateBtnClass,
+            data: { programId: programId }
+        };
+
+        const deactivateProgramBtn =
+        {
+            label: 'DEACTIVATE',
+            actionKey: 'deactivate',
+            iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                        fill="currentColor" class="text-red-500">
+                        <path fill-rule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16Zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5Z"
+                          clip-rule="evenodd" />
+                      </svg>`,
+            iconClass: 'w-8 h-8 mr-2',
+            buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + deactivateBtnClass,
+            data: { programId: programId }
+        };
+
+        let actionsArray = [] as ActionMenuItem[];
+
+        if (currentProgram?.isActive) {
+            actionsArray.push(deactivateProgramBtn);
+        } else {
+            actionsArray.push(activateProgramBtn);
+        }
+
+        if (this.isViewMode){
+            actionsArray.push(editProgramButton);
+        }
+        return actionsArray;
+    }
+
+
+    handleActionMenuItemClick(event: { actionKey: string, data?: any }, originalMouseEvent?: MouseEvent): void {
+        // originalMouseEvent.stopPropagation(); // Stop original event that opened the menu
+        const programId = event.data?.programId;
+        if (!programId) return;
+
+        switch (event.actionKey) {
+            case 'activate':
+                this.toggleActiveProgram();
+                break;
+            case 'deactivate':
+                this.toggleActiveProgram();
+                break;
+            case 'edit':
+                this.enableEditModeFromView();
+                break;
+        }
+    }
+
+    // Your existing toggleActions, areActionsVisible, viewRoutineDetails, etc. methods
+    // The toggleActions will now just control a signal like `activeRoutineIdActions`
+    // which is used to show/hide the <app-action-menu>
+    activeRoutineIdActions = signal<string | null>(null); // Store ID of routine whose actions are open
+
+    toggleActions(routineId: string, event: MouseEvent): void {
+        event.stopPropagation();
+        this.activeRoutineIdActions.update(current => (current === routineId ? null : routineId));
+    }
+
+    areActionsVisible(routineId: string): boolean {
+        return this.activeRoutineIdActions() === routineId;
+    }
+
+    // When closing menu from the component's output
+    onCloseActionMenu() {
+        this.activeRoutineIdActions.set(null);
+    }
+
+
 }

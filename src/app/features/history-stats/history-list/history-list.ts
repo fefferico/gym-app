@@ -50,6 +50,15 @@ type HistoryListView = 'list' | 'calendar';
   styleUrl: './history-list.scss',
   providers: [DecimalPipe],
   animations: [
+    trigger('fabSlideUp', [
+      transition(':enter', [
+        style({ opacity: 0, transform: 'translateY(100%)' }),
+        animate('250ms ease-out', style({ opacity: 1, transform: 'translateY(0)' }))
+      ]),
+      transition(':leave', [
+        animate('200ms ease-in', style({ opacity: 0, transform: 'translateY(100%)' }))
+      ])
+    ]),
     trigger('slideUpDown', [
       transition(':enter', [style({ transform: 'translateY(100%)', opacity: 0 }), animate('300ms ease-out', style({ transform: 'translateY(0%)', opacity: 1 }))]),
       transition(':leave', [animate('250ms ease-in', style({ transform: 'translateY(100%)', opacity: 0 }))])
@@ -211,8 +220,16 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
     ).subscribe(newValues => this.filterValuesSignal.set(newValues));
   }
 
+  // --- ADD NEW PROPERTIES FOR THE FAB ---
+  isFabActionsOpen = signal(false);
+  isTouchDevice = false;
+
+
   ngOnInit(): void {
-    if (isPlatformBrowser(this.platformId)) window.scrollTo(0, 0);
+    if (isPlatformBrowser(this.platformId)) {
+      window.scrollTo(0, 0);
+      this.isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    }
     this.menuModeCompact = this.themeService.isMenuModeCompact();
 
     this.workoutLogsSubscription = this.trackingService.workoutLogs$.subscribe(logs => {
@@ -271,14 +288,14 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
     const current = this.currentHistoryView();
     if (current === view) return;
     let enterTransform = 'translateX(100%)', leaveTransform = 'translateX(-100%)';
-    if (view === 'list') { 
-      enterTransform = (current === 'calendar') ? 'translateX(-100%)' : 'translateX(100%)'; 
-      leaveTransform = (current === 'calendar') ? 'translateX(100%)' : 'translateX(-100%)'; 
+    if (view === 'list') {
+      enterTransform = (current === 'calendar') ? 'translateX(-100%)' : 'translateX(100%)';
+      leaveTransform = (current === 'calendar') ? 'translateX(100%)' : 'translateX(-100%)';
       this.resetFilters();
     }
-    else { 
-      enterTransform = (current === 'list') ? 'translateX(100%)' : 'translateX(-100%)'; 
-      leaveTransform = (current === 'list') ? 'translateX(-100%)' : 'translateX(100%)'; 
+    else {
+      enterTransform = (current === 'list') ? 'translateX(100%)' : 'translateX(-100%)';
+      leaveTransform = (current === 'list') ? 'translateX(-100%)' : 'translateX(100%)';
     }
     this.historyViewAnimationParams.set({ value: view, params: { enterTransform, leaveTransform } });
     this.currentHistoryView.set(view);
@@ -544,6 +561,36 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
     const d = new Date(0, 0, 0, 0, 0, 0, 0);
     d.setSeconds(seconds);
     return d;
+  }
+
+
+  // --- ADD NEW HANDLER METHODS FOR THE FAB ---
+
+  /**
+   * Toggles the FAB menu on touch devices.
+   */
+  handleFabClick(): void {
+    if (this.isTouchDevice) {
+      this.isFabActionsOpen.update(v => !v);
+    }
+  }
+
+  /**
+   * Opens the FAB menu on hover for non-touch devices.
+   */
+  handleFabMouseEnter(): void {
+    if (!this.isTouchDevice) {
+      this.isFabActionsOpen.set(true);
+    }
+  }
+
+  /**
+   * Closes the FAB menu on mouse leave for non-touch devices.
+   */
+  handleFabMouseLeave(): void {
+    if (!this.isTouchDevice) {
+      this.isFabActionsOpen.set(false);
+    }
   }
 
 }

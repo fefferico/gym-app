@@ -180,9 +180,8 @@
                 class="exercise-list-container space-y-4">
                 <ng-container *ngFor="let exerciseControl of exercisesFormArray.controls; let exIndex = index;">
                     <div class="relative group exercise-card-wrapper" (click)="toggleSetExpansion(exIndex,0, $event)"
-                        appClickOutside
-                        (clickOutside)="collapseExpandedSet(false,$event)"
-                        [title]="'Drag to reorder'" [ngClass]="{
+                        appClickOutside (clickOutside)="collapseExpandedSet(false,$event)" [title]="'Drag to reorder'"
+                        [ngClass]="{
                                         'superset-spacing': isSupersetSpacing(exIndex)
                                         }">
                         <div *ngIf="mode === 'routineBuilder' && (isEditMode || isNewMode) && selectedExerciseIndicesForSuperset().length >= 2 && exIndex === firstSelectedExerciseIndexForSuperset"
@@ -199,8 +198,8 @@
                             </button>
                         </div>
 
-                        <div cdkDrag [cdkDragDisabled]="mode !== 'routineBuilder' || isViewMode || !isEditMode"
-                            appLongPressDrag [longPressEnabled]="isEditMode" [longPressDelay]="150"
+                        <div cdkDrag [cdkDragDisabled]="mode !== 'routineBuilder' || isViewMode || !isEditMode || isSetExpanded(exIndex, 0)"
+                            appLongPressDrag [longPressEnabled]="isEditMode && !isSetExpanded(exIndex, 0)" [longPressDelay]="150"
                             longPressClass="is-long-pressing" [cdkDragData]="exerciseControl" [formGroupName]="exIndex"
                             [cdkDragStartDelay]="110" class="exercise-item relative transition-all cursor-grab"
                             [ngClass]="getExerciseCardClasses(exerciseControl, exIndex)">
@@ -391,9 +390,9 @@
                                 <!-- Sets Section (Headers, Collapsed Sets, Expanded Set Form) -->
                                 <!-- EXPANDED Only VIEW MODE - START -->
                                 <div *ngIf="!isCompactView && isViewMode" [ngClass]="{
-                                        'grid-cols-5': exerciseControl.getRawValue() | isWeighted,
-                                        'grid-cols-4': !(exerciseControl.getRawValue() | isWeighted)
-                                    }" class="grid gap-x-4 gap-y-2 p-4 bg-white rounded-md shadow-md dark:bg-gray-800">
+                                        'grid-cols-6': exerciseControl.getRawValue() | isWeighted,
+                                        'grid-cols-5': !(exerciseControl.getRawValue() | isWeighted)
+                                    }" class="grid gap-x-4 gap-y-2 p-4 bg-white rounded-md shadow-md dark:bg-gray-800 text-gray-900 dark:text-white">
 
                                     <!-- === GRID HEADER === -->
                                     <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Set</div>
@@ -406,6 +405,7 @@
                                     </div>
 
                                     <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Time</div>
+                                    <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Rest</div>
                                     <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Notes
                                     </div>
 
@@ -415,7 +415,7 @@
                                         *ngFor="let set of exerciseControl.get('sets')?.value; let i = index; let last = last">
 
                                         <!-- Row data aligns perfectly -->
-                                        <div class="font-medium text-gray-900 dark:text-white">{{ i + 1 }}</div>
+                                        <div class="font-medium">{{ i + 1 }}</div>
                                         <div>
                                             <strong>
                                                 {{ set.reps || '—' }}
@@ -434,6 +434,11 @@
                                         <div>
                                             <strong>
                                                 {{ set.duration || '—' }}
+                                            </strong>
+                                        </div>
+                                        <div>
+                                            <strong>
+                                                {{ set.restAfterSet || '—' }}
                                             </strong>
                                         </div>
                                         <div class="cursor-pointer">

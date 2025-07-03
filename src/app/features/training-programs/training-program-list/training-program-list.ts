@@ -232,9 +232,15 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
   protected allWorkoutLogs = signal<WorkoutLog[]>([]);
   private workoutLogsSubscription: Subscription | undefined;
 
+
+  // --- ADD NEW PROPERTIES FOR THE FAB ---
+  isFabActionsOpen = signal(false);
+  isTouchDevice = false;
+
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       window.scrollTo(0, 0);
+      this.isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
     }
     this.menuModeCompact = this.themeService.isMenuModeCompact();
 
@@ -888,4 +894,53 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
     this.hammerInstanceCalendar?.destroy();
     this.hammerInstanceMode?.destroy(); // Ensure this is also cleaned up
   }
+
+  showBackToTopButton = signal<boolean>(false);
+  @HostListener('window:scroll', [])
+  onWindowScroll(): void {
+    // Check if the user has scrolled down more than a certain amount (e.g., 400 pixels)
+    // You can adjust this value to your liking.
+    const verticalOffset = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+    this.showBackToTopButton.set(verticalOffset > 400);
+  }
+
+  scrollToTop(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth' // For a smooth scrolling animation
+      });
+    }
+  }
+
+
+  // --- ADD NEW HANDLER METHODS FOR THE FAB ---
+
+  /**
+   * Toggles the FAB menu on touch devices.
+   */
+  handleFabClick(): void {
+    if (this.isTouchDevice) {
+      this.isFabActionsOpen.update(v => !v);
+    }
+  }
+
+  /**
+   * Opens the FAB menu on hover for non-touch devices.
+   */
+  handleFabMouseEnter(): void {
+    if (!this.isTouchDevice) {
+      this.isFabActionsOpen.set(true);
+    }
+  }
+
+  /**
+   * Closes the FAB menu on mouse leave for non-touch devices.
+   */
+  handleFabMouseLeave(): void {
+    if (!this.isTouchDevice) {
+      this.isFabActionsOpen.set(false);
+    }
+  }
+
 }

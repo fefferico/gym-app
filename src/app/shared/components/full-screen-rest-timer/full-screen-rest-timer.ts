@@ -16,7 +16,7 @@ export class FullScreenRestTimerComponent implements OnChanges, OnDestroy, After
   @Input() nextUpText: string | null = null;
 
   @Output() timerFinished = new EventEmitter<void>();
-  @Output() timerSkipped = new EventEmitter<void>();
+  @Output() timerSkipped = new EventEmitter<number>();
 
   @ViewChild('progressCircleSvg') progressCircleSvg!: ElementRef<SVGSVGElement>;
 
@@ -110,7 +110,7 @@ export class FullScreenRestTimerComponent implements OnChanges, OnDestroy, After
 
   skipTimer(): void {
     this.stopTimer();
-    this.timerSkipped.emit();
+    this.timerSkipped.emit(this.remainingTime());
   }
 
   ngOnDestroy(): void {

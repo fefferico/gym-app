@@ -32,6 +32,15 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
   templateUrl: './routine-list.html',
   styleUrl: './routine-list.scss',
   animations: [
+    trigger('fabSlideUp', [
+      transition(':enter', [
+        style({ opacity: 0, transform: 'translateY(200%)' }),
+        animate('250ms ease-out', style({ opacity: 1, transform: 'translateY(0)' }))
+      ]),
+      transition(':leave', [
+        animate('200ms ease-in', style({ opacity: 0, transform: 'translateY(100%)' }))
+      ])
+    ]),
     trigger('slideInOutActions', [
       state('void', style({
         height: '0px', opacity: 0, overflow: 'hidden',
@@ -193,9 +202,14 @@ export class RoutineListComponent implements OnInit, OnDestroy {
   }
 
 
+  // --- ADD NEW PROPERTIES FOR THE FAB ---
+  isFabActionsOpen = signal(false);
+  isTouchDevice = false;
+
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       window.scrollTo(0, 0);
+      this.isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
     }
     this.menuModeCompact = this.themeService.isMenuModeCompact();
 
@@ -769,5 +783,34 @@ export class RoutineListComponent implements OnInit, OnDestroy {
 
   protected updateSanitizedDescription(value: string): SafeHtml {
     return this.sanitizer.bypassSecurityTrustHtml(value);
+  }
+
+  // --- ADD NEW HANDLER METHODS FOR THE FAB ---
+
+  /**
+   * Toggles the FAB menu on touch devices.
+   */
+  handleFabClick(): void {
+    if (this.isTouchDevice) {
+      this.isFabActionsOpen.update(v => !v);
+    }
+  }
+
+  /**
+   * Opens the FAB menu on hover for non-touch devices.
+   */
+  handleFabMouseEnter(): void {
+    if (!this.isTouchDevice) {
+      this.isFabActionsOpen.set(true);
+    }
+  }
+
+  /**
+   * Closes the FAB menu on mouse leave for non-touch devices.
+   */
+  handleFabMouseLeave(): void {
+    if (!this.isTouchDevice) {
+      this.isFabActionsOpen.set(false);
+    }
   }
 }

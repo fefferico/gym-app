@@ -180,7 +180,8 @@
                     </p>
                     <p *ngIf="loggedEx.sets && loggedEx.sets.length >= 1 && checkIfTimedExercise(loggedEx)"> Duration
                       (s): {{getSetDurationPerformed(loggedEx)}}</p>
-                    <p *ngIf="loggedEx.sets && loggedEx.sets.length >= 1"> Sets: {{loggedEx.sets.length}} {{ getSetReps(loggedEx) != '0' ? '( Reps: ' + getSetReps(loggedEx) + ' )' : ''  }}</p>
+                    <p *ngIf="loggedEx.sets && loggedEx.sets.length >= 1"> Sets: {{loggedEx.sets.length}} {{
+                      getSetReps(loggedEx) != '0' ? '( Reps: ' + getSetReps(loggedEx) + ' )' : '' }}</p>
                     <p *ngIf="loggedEx.sets && loggedEx.sets.length > 1 && checkIfWeightedExercise(loggedEx)"> Weight
                       ({{unitService.getUnitLabel()}}): {{getSetWeightsUsed(loggedEx)}}</p>
                   </div>
@@ -204,8 +205,8 @@
             </button>
 
             <div *ngIf="loggedEx.isExpanded" [ngClass]="{
-         'grid-cols-5': loggedEx | isWeighted,
-         'grid-cols-4': !(loggedEx | isWeighted)
+         'grid-cols-6': loggedEx | isWeighted,
+         'grid-cols-5': !(loggedEx | isWeighted)
        }" class="grid gap-x-4 gap-y-2 p-4 bg-white rounded-md shadow-md dark:bg-gray-800">
 
               <!-- === GRID HEADER === -->
@@ -218,6 +219,7 @@
               </div>
 
               <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Time</div>
+              <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Rest</div>
               <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Notes</div>
 
 
@@ -250,6 +252,14 @@
                     [class.hover:underline]="isTargetMissed(set, 'duration')"
                     (click)="showComparisonModal(set, 'duration')">
                     {{ set.durationPerformed || '—' }}
+                  </strong>
+                </div>
+                <div>
+                  <strong [ngClass]="checkTextClass(set, 'rest')"
+                    [class.cursor-pointer]="isTargetMissed(set, 'rest')"
+                    [class.hover:underline]="isTargetMissed(set, 'rest')"
+                    (click)="showComparisonModal(set, 'rest')">
+                    {{ set.restAfterSetUsed || '—' }}
                   </strong>
                 </div>
                 <div class="cursor-pointer">

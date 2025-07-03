@@ -39,7 +39,7 @@ interface DisplayLoggedExercise extends LoggedWorkoutExercise {
 }
 
 interface TargetComparisonData {
-  metric: 'Reps' | 'Duration' | 'Weight';
+  metric: 'Reps' | 'Duration' | 'Weight' | 'Rest';
   targetValue: string;
   performedValue: string;
 }
@@ -147,6 +147,10 @@ export class WorkoutLogDetailComponent implements OnInit {
         set.targetWeight = (set.targetWeight && set.targetWeight > 0)
           ? set.targetWeight
           : (routineExerciseSet?.targetWeight ?? 0);
+
+        set.targetRestAfterSet = (set.targetRestAfterSet && set.targetRestAfterSet > 0)
+          ? set.targetRestAfterSet
+          : (routineExerciseSet?.restAfterSet ?? 0);
       }
     }
 
@@ -374,7 +378,7 @@ export class WorkoutLogDetailComponent implements OnInit {
 
 
   // This function is now fast, synchronous, and safe to call from a template.
-  checkTextClass(set: LoggedSet, type: 'reps' | 'duration' | 'weight'): string {
+  checkTextClass(set: LoggedSet, type: 'reps' | 'duration' | 'weight' | 'rest'): string {
     if (!set) {
       return 'text-gray-700 dark:text-gray-300';
     }
@@ -392,6 +396,9 @@ export class WorkoutLogDetailComponent implements OnInit {
     } else if (type === 'weight') {
       performedValue = set.weightUsed ?? 0;
       targetValue = set.targetWeight ?? 0;
+    } else if (type === 'rest') {
+      performedValue = set.restAfterSetUsed ?? 0;
+      targetValue = set.targetRestAfterSet ?? 0;
     }
 
     // The simple comparison logic
@@ -410,9 +417,9 @@ export class WorkoutLogDetailComponent implements OnInit {
    * Checks if a performance target was missed and, if so,
    * prepares and shows the comparison modal.
    * @param set The LoggedSet object.
-   * @param type The metric being checked ('reps', 'duration', 'weight').
+   * @param type The metric being checked ('reps', 'duration', 'weight', 'rest').
    */
-  showComparisonModal(set: LoggedSet, type: 'reps' | 'duration' | 'weight'): void {
+  showComparisonModal(set: LoggedSet, type: 'reps' | 'duration' | 'weight' | 'rest'): void {
     if (!set) return;
 
     let performedValue: number = 0;
@@ -451,6 +458,16 @@ export class WorkoutLogDetailComponent implements OnInit {
           performedValue: `${performedValue} ${unitLabel}`
         };
       }
+    } else if (type === 'rest') {
+      performedValue = set.restAfterSetUsed ?? 0;
+      targetValue = set.targetRestAfterSet ?? 0;
+      if (performedValue < targetValue) {
+        modalData = {
+          metric: 'Rest',
+          targetValue: `${targetValue} s`,
+          performedValue: `${performedValue} s`
+        };
+      }
     }
 
     // If a target was missed, set the signal to open the modal
@@ -463,11 +480,11 @@ export class WorkoutLogDetailComponent implements OnInit {
   /**
    * A simple boolean check to help with styling clickable elements.
    */
-  isTargetMissed(set: LoggedSet, type: 'reps' | 'duration' | 'weight'): boolean {
+  isTargetMissed(set: LoggedSet, type: 'reps' | 'duration' | 'weight' | 'rest'): boolean {
     if (!set) return false;
 
-    const performed = (type === 'reps' ? set.repsAchieved : type === 'duration' ? set.durationPerformed : set.weightUsed) ?? 0;
-    const target = (type === 'reps' ? set.targetReps : type === 'duration' ? set.targetDuration : set.targetWeight) ?? 0;
+    const performed = (type === 'reps' ? set.repsAchieved : type === 'duration' ? set.durationPerformed : type === 'rest' ? set.restAfterSetUsed : set.weightUsed) ?? 0;
+    const target = (type === 'reps' ? set.targetReps : type === 'duration' ? set.targetDuration : type === 'rest' ? set.targetRestAfterSet : set.targetWeight) ?? 0;
 
     return performed < target && target > 0;
   }

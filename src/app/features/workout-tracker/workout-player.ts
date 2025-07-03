@@ -1646,6 +1646,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       targetWeight: activeInfo.setData.weight,
       targetDuration: activeInfo.setData.duration,
       targetTempo: activeInfo.setData.tempo,
+      targetRestAfterSet: activeInfo.setData.restAfterSet,
       notes: formValues.setNotes?.trim() || undefined, // Get notes from form
       timestamp: new Date().toISOString(),
     };
@@ -1801,7 +1802,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       return;
     }
     if (this.isRestTimerVisible() || this.playerSubState() === PlayerSubState.Resting) {
-      this.handleRestTimerSkipped();
+      this.handleRestTimerSkipped(null);
     }
   }
 
@@ -3657,6 +3658,13 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     }
   }
 
+  private getLatestLoggedExercise(): LoggedWorkoutExercise | undefined {
+    if (!this.currentWorkoutLogExercises()) {
+      return undefined;
+    }
+    return this.currentWorkoutLogExercises().find((ex, index) => index === this.currentWorkoutLogExercises().length - 1);
+  }
+
   // New helper to peek at the next set's details without advancing state
   private peekNextSetInfo(): ActiveSetInfo | null {
     const r = this.routine();
@@ -3681,7 +3689,21 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     this.prepareCurrentSet(); // This will handle if a pre-set timer is next, or directly to performing
   }
 
-  handleRestTimerSkipped(): void {
+  addActualRestAfterSet(timeSkipped: number | null): void {
+    // add rest time to current set before moving to next one
+    const justLoggedExercise = this.getLatestLoggedExercise();
+    if (justLoggedExercise) {
+      const justLoggedExerciseSet = justLoggedExercise?.sets.find((set, index) => index === justLoggedExercise.sets.length - 1);
+      if (justLoggedExerciseSet && timeSkipped && this.restDuration()) {
+        const actualRestingTime = Math.ceil(this.restDuration() - timeSkipped);
+        justLoggedExerciseSet.restAfterSetUsed = actualRestingTime;
+        console.log(actualRestingTime);
+      }
+    }
+  }
+
+  handleRestTimerSkipped(timeSkipped: number | null): void {
+    this.addActualRestAfterSet(timeSkipped);
     console.log('Rest timer skipped.');
     this.isRestTimerVisible.set(false);
     this.toastService.clearAll();

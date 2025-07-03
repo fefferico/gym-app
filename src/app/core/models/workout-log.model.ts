@@ -21,7 +21,7 @@ export interface LoggedSet {
   targetDuration?: number;
   targetTempo?: string; // Target tempo from the plan
   targetRestAfterSet?: number; // Target rest after this set, if applicable
-
+  restAfterSetUsed?: number;
   notes?: string;         // User notes specific to this performed set (e.g., "Felt easy", "Form breakdown on last rep")
   // formRating?: 1 | 2 | 3 | 4 | 5; // Optional: User's perceived form rating for the set
   timestamp: string;       // ISO string of when this set was completed/logged.

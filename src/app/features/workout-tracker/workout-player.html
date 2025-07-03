@@ -476,7 +476,7 @@
 
 <app-full-screen-rest-timer [isVisible]="playerSubState() === PlayerSubState.Resting && isRestTimerVisible()"
   [durationSeconds]="restDuration()" [mainText]="restTimerMainText()" [nextUpText]="restTimerNextUpText()"
-  (timerFinished)="handleRestTimerFinished()" (timerSkipped)="handleRestTimerSkipped()">
+  (timerFinished)="handleRestTimerFinished()" (timerSkipped)="handleRestTimerSkipped($event)">
 </app-full-screen-rest-timer>
 
 <div *ngIf="isWorkoutMenuVisible()"
