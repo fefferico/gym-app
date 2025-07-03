@@ -1166,7 +1166,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     const isWarmup = sets.length > 0 && sets.every((set: any) => set.type === 'warmup');
 
     const returnObj = {
-      'p-1.5 sm:p-2': true,
+      // 'p-1.5 sm:p-2': true,
       // 'p-3': !isCompact && this.expandedSetPath()?.exerciseIndex !== exIndex,
       // 'space-y-3': !isCompact,
       // 'border rounded-lg': true,

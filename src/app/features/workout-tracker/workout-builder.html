@@ -252,7 +252,7 @@
                                         {{ (exerciseControl.get('rounds')?.value || 1) === 1 ? 'round' : 'rounds' }}
                                     </div>
                                     <div *ngIf="(isCompactView  || (!isCompactView && expandedSetPath()?.exerciseIndex !== exIndex)) && getSetsFormArray(exerciseControl).controls.length > 0"
-                                        class="flex items-center text-s text-gray-500 dark:text-gray-400 mt-0.5 gap-4">
+                                        class="flex items-center text-s text-gray-500 dark:text-gray-400 mt-0.5 gap-4 pl-2">
                                         <img [src]="getIconPath(exerciseControl.get('exerciseId')?.value) | async"
                                             alt="Exercise Icon" class="w-6 h-6 sm:w-8 sm:h-8 object-contain">
                                         <!-- {{ getSetsFormArray(exerciseControl).controls.length }}
@@ -310,7 +310,7 @@
                                 </div>
                             </div>
                             <!-- EXPANDED CONTENT AREA -->
-                            <div *ngIf="expandedSetPath()?.exerciseIndex === exIndex" class="space-y-3">
+                            <div *ngIf="expandedSetPath()?.exerciseIndex === exIndex" class="p-2">
                                 <div
                                     class="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-2 pt-1 sm:pt-0">
                                     <div class="flex-grow">
@@ -392,7 +392,7 @@
                                 <div *ngIf="!isCompactView && isViewMode" [ngClass]="{
                                         'grid-cols-6': exerciseControl.getRawValue() | isWeighted,
                                         'grid-cols-5': !(exerciseControl.getRawValue() | isWeighted)
-                                    }" class="grid gap-x-4 gap-y-2 p-4 bg-white rounded-md shadow-md dark:bg-gray-800 text-gray-900 dark:text-white">
+                                    }" class="grid gap-x-4 gap-y-2 px-2 py-2 bg-white rounded-md dark:bg-gray-800 text-gray-900 dark:text-white">
 
                                     <!-- === GRID HEADER === -->
                                     <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Set</div>
@@ -461,7 +461,7 @@
 
                                 <!-- EXPANDED Only EDIT MODE - START -->
                                 <div *ngIf="!isCompactView && isEditMode" class="space-y-1">
-                                    <div class="flex justify-between items-center mb-1">
+                                    <div class="flex justify-between items-center py-1">
                                         <h4 class="text-m font-semibold text-gray-700 dark:text-gray-300">Sets:</h4>
                                         <button *ngIf="!isViewMode" type="button"
                                             (click)="addSet(exerciseControl, exIndex); $event.stopPropagation()"
@@ -548,7 +548,7 @@
 
                                             <!-- Expanded Set Form -->
                                             <div #expandedSetElement *ngIf="isSetExpanded(exIndex, setIndex)"
-                                                class="mt-1 p-3 rounded-md border border-gray-300 dark:border-gray-500 shadow-inner space-y-2"
+                                                class="p-1 rounded-md shadow-inner space-y-2"
                                                 [ngClass]="{
                                                         'bg-gray-100 dark:bg-gray-800/50': !['warmup', 'dropset', 'failure', 'amrap', 'myorep', 'restpause'].includes(setControl.get('type')?.value ?? '')
                                                     }">
@@ -703,7 +703,7 @@
             <p class="text-m text-blue-700 dark:text-blue-300">This is a rest day routine. No exercises are needed.</p>
         </section>
 
-        <div *ngIf="!isViewMode" class="pt-6 flex justify-end space-x-3">
+        <div *ngIf="!isViewMode" class="py-2 px-1 flex justify-end space-x-3">
             <button type="button" [routerLink]="mode === 'routineBuilder' ? '/workout' : '/history/list'"
                 class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-m font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-500">
                 CANCEL

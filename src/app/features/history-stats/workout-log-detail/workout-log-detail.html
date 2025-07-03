@@ -128,7 +128,7 @@
             <button (click)="toggleExerciseAccordion(loggedEx)"
               class="w-full flex justify-between items-center p-1 text-left transition-colors focus:outline-none"
               [ngClass]="{
-                'dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700': !loggedEx.supersetId,
+                'dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700': !loggedEx.supersetId,
                 'hover:bg-orange-100 dark:hover:bg-orange-800/40': loggedEx.supersetId,
                 'rounded-b': loggedEx.supersetId && loggedEx.supersetOrder === ((loggedEx.supersetSize ?? 0) - 1) && !loggedEx.isExpanded && (loggedEx.supersetOrder > 0 && loggedEx.supersetOrder < ((loggedEx.supersetSize ?? 0) - 1) ),
               }">
@@ -207,7 +207,7 @@
             <div *ngIf="loggedEx.isExpanded" [ngClass]="{
          'grid-cols-6': loggedEx | isWeighted,
          'grid-cols-5': !(loggedEx | isWeighted)
-       }" class="grid gap-x-4 gap-y-2 p-4 bg-white rounded-md shadow-md dark:bg-gray-800">
+       }" class="grid gap-x-4 gap-y-2 p-4 bg-white rounded-b-md shadow-md dark:bg-gray-800">
 
               <!-- === GRID HEADER === -->
               <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Set</div>
