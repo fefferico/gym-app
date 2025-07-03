@@ -791,10 +791,8 @@ export class RoutineListComponent implements OnInit, OnDestroy {
    * Toggles the FAB menu on touch devices.
    */
   handleFabClick(): void {
-    if (this.isTouchDevice) {
-      this.isFabActionsOpen.update(v => !v);
-    }
-  }
+    this.isFabActionsOpen.update(v => !v);
+  } 
 
   /**
    * Opens the FAB menu on hover for non-touch devices.

@@ -52,6 +52,15 @@ type CalendarDisplayMode = 'week' | 'month';
   templateUrl: './training-program-list.html',
   styleUrls: ['./training-program-list.scss'],
   animations: [
+    trigger('fabSlideUp', [
+      transition(':enter', [
+        style({ opacity: 0, transform: 'translateY(200%)' }),
+        animate('250ms ease-out', style({ opacity: 1, transform: 'translateY(0)' }))
+      ]),
+      transition(':leave', [
+        animate('200ms ease-in', style({ opacity: 0, transform: 'translateY(100%)' }))
+      ])
+    ]),
     trigger('slideUpDown', [
       transition(':enter', [style({ transform: 'translateY(100%)', opacity: 0 }), animate('300ms ease-out', style({ transform: 'translateY(0%)', opacity: 1 }))]),
       transition(':leave', [animate('250ms ease-in', style({ transform: 'translateY(100%)', opacity: 0 }))])
@@ -920,9 +929,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
    * Toggles the FAB menu on touch devices.
    */
   handleFabClick(): void {
-    if (this.isTouchDevice) {
-      this.isFabActionsOpen.update(v => !v);
-    }
+    this.isFabActionsOpen.update(v => !v);
   }
 
   /**

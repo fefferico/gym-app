@@ -59,7 +59,7 @@ export interface WorkoutExercise {
    */
   rounds?: number; // e.g., 3 for 3 rounds
   workoutLogId?: string;
-  sessionStatus?: 'pending' | 'skipped' | 'do_later'; // For in-session tracking
+  sessionStatus?: 'pending' | 'skipped' | 'do_later' | 'completed' | 'started'; // For in-session tracking
   type: 'standard' | 'warmup' | 'amrap' | 'dropset' | 'failure' | 'myorep' | 'restpause' | 'custom' | 'superset' | string; // More flexible
 }
 

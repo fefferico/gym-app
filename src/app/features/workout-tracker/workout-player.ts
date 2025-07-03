@@ -140,6 +140,8 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
   @ViewChild('exerciseSearchFied') myExerciseInput!: ElementRef;
 
+  showNotes = signal<boolean | null>(false);
+
   // --- Timer Signals & Properties ---
   sessionTimerDisplay = signal('00:00:00');
   private workoutStartTime: number = 0;
@@ -237,6 +239,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   private tabataTimerSub: Subscription | undefined;
   // --- END: TABATA MODE STATE SIGNALS ---
 
+  protected headerOverviewString: string = 'JUMP TO EXERCISE';
 
   readonly shouldStartWithPresetTimer = computed<boolean>(() => {
     const activeInfo = this.activeSetInfo();
@@ -440,7 +443,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         actualReps: completedSetLog?.repsAchieved,
         actualWeight: completedSetLog?.weightUsed,
         actualDuration: completedSetLog?.durationPerformed,
-        notes: completedSetLog?.notes, // This is the logged note for this specific set completion
+        notes: completedSetLog?.notes || setData?.notes, // This is the logged note for this specific set completion
       };
     }
     return null;
@@ -1194,6 +1197,34 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     }
   }
 
+  private isExercisePartiallyLogged(exerciseIdName: string, exerciseIndex: number, exerciseId: string): boolean {
+    const routine = this.routine();
+    if (!routine) return false;
+
+    const exercise = routine.exercises.find(ex => ex.exerciseId === exerciseIdName && ex.id === exerciseId);
+    if (!exercise) return false;
+
+    const loggedEx = this.currentWorkoutLogExercises().find(le =>
+      le.exerciseId === exerciseIdName &&
+      exercise.exerciseId === le.exerciseId &&
+      le.id === exerciseId
+    );
+
+    // If there's no log entry OR the entry has 0 sets, it's not even partially logged.
+    if (!loggedEx || loggedEx.sets.length === 0) {
+      return false;
+    }
+
+    // Same logic as before to determine the number of planned sets for this specific exercise.
+    // Note: Your original function didn't seem to use the 'rounds' variable in its final calculation,
+    // so I've kept it consistent here.
+    const totalPlannedSets = exercise.sets.length;
+
+    // An exercise is partially logged if the number of logged sets is LESS THAN the total planned sets.
+    // We already know loggedEx.sets.length > 0 from the check above.
+    return loggedEx.sets.length < totalPlannedSets;
+  }
+
   private isExerciseFullyLogged(exerciseIdName: string, exerciseIndex: number, exerciseId: string): boolean {
     const routine = this.routine();
     if (!routine) return false;
@@ -1292,6 +1323,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
   private async prepareCurrentSet(): Promise<void> {
+    this.showNotes.set(false);
     console.log('prepareCurrentSet: START');
     if (this.sessionState() === SessionState.Paused) {
       console.log("prepareCurrentSet: Session is paused, deferring preparation.");
@@ -3776,7 +3808,10 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     });
   }
 
-  async jumpToExercise(): Promise<void> {
+  async jumpToExercise(headerString: string = ''): Promise<void> {
+    if (headerString) {
+      this.headerOverviewString = headerString;
+    }
     if (this.sessionState() === 'paused') {
       this.toastService.warning("Session is paused. Resume to jump to an exercise.", 3000, "Paused");
       this.closeWorkoutMenu();
@@ -3795,7 +3830,8 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       .map((ex, index) => ({
         ...ex,
         originalIndex: index, // Keep track of original index in the routine.exercises array
-        isFullyLogged: this.isExerciseFullyLogged(ex.exerciseId, index, ex.id)
+        isFullyLogged: this.isExerciseFullyLogged(ex.exerciseId, index, ex.id),
+        isPartiallyLogged: this.isExercisePartiallyLogged(ex.exerciseId, index, ex.id),
       }))
       .filter(ex => !ex.isFullyLogged || ex.sessionStatus === 'pending' || ex.sessionStatus === 'do_later' || ex.sessionStatus === 'skipped'); // Include pending/deferred even if logged, to allow restart
 
@@ -3812,7 +3848,15 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       if (ex.id === this.activeSetInfo()?.exerciseData.id && ex.sessionStatus === 'pending' && !ex.isFullyLogged) {
         statusIndicator = ' (Current)';
       } else if (ex.isFullyLogged && ex.sessionStatus !== 'skipped' && ex.sessionStatus !== 'do_later') {
+        ex.sessionStatus = 'completed';
         statusIndicator = ' (Completed - Restart?)'; // Should ideally not happen if filter is correct
+      } else if (ex.sessionStatus === 'pending') {
+        if (ex.isPartiallyLogged) {
+          ex.sessionStatus = 'started';
+          statusIndicator = ' (Started)';
+        } else {
+          statusIndicator = ' (Pending)';
+        }
       } else if (ex.sessionStatus === 'skipped') {
         statusIndicator = ' (Skipped)';
       } else if (ex.sessionStatus === 'do_later') {
@@ -3831,11 +3875,17 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         case 'pending':
           cssClass = statusIndicator.includes('Current') ? 'bg-blue-600 text-white' : cssClass;
           break;
+        case 'started':
+          cssClass = statusIndicator.includes('Current') ? 'bg-blue-600 text-white' : 'bg-yellow-600 text-white';
+          break;
         case 'do_later':
           cssClass = 'bg-orange-500 hover:bg-orange-600 text-white';
           break;
         case 'skipped':
           cssClass = 'bg-yellow-500 hover:bg-yellow-600 text-black';
+          break;
+        case 'completed':
+          cssClass = 'bg-green-500 dark:bg-green-700 dark:text-green-100 hover:bg-green-300 hover:text-green-500 hover:dark:bg-green-300 hover:dark:text-green-500';
           break;
         default:
           cssClass = 'bg-gray-500 dark:bg-gray-700 dark:text-gray-100 hover:bg-gray-300 hover:text-gray-500 hover:dark:bg-gray-300 hover:dark:text-gray-500';
@@ -3901,7 +3951,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     this.closeWorkoutMenu(); // Close menu before showing dialog
 
     const choice = await this.alertService.showConfirmationDialog(
-      'Jump to Exercise',
+      this.headerOverviewString,
       'Select an exercise to start or continue:',
       exerciseButtons,
       // true // Allow HTML / more buttons

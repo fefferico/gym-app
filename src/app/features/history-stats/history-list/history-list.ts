@@ -570,9 +570,7 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
    * Toggles the FAB menu on touch devices.
    */
   handleFabClick(): void {
-    if (this.isTouchDevice) {
-      this.isFabActionsOpen.update(v => !v);
-    }
+    this.isFabActionsOpen.update(v => !v);
   }
 
   /**

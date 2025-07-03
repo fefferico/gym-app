@@ -7,10 +7,10 @@
     <svg #progressCircleSvg class="w-64 h-64 md:w-80 md:h-80 transform -rotate-90" viewBox="0 0 200 200">
       <!-- Background Circle -->
       <circle cx="100" cy="100" [attr.r]="getCircleRadius()" fill="transparent" stroke="rgba(255, 255, 255, 0.2)"
-        stroke-width="12" />
+        stroke-width="16" />
       <!-- Progress Circle -->
       <circle cx="100" cy="100" [attr.r]="getCircleRadius()" fill="transparent" stroke="currentColor"
-        class="text-primary" stroke-width="14" [attr.stroke-dasharray]="getCircleCircumference()"
+        class="text-primary" stroke-width="18" [attr.stroke-dasharray]="getCircleCircumference()"
         [attr.stroke-dashoffset]="strokeDashoffset()" stroke-linecap="round" />
     </svg>
 
@@ -27,7 +27,7 @@
 
   <!-- Skip Button -->
   <button (click)="skipTimer()"
-    class="mt-12 py-3 px-8 bg-white/20 hover:bg-white/30 text-white font-semibold rounded-md shadow-md transition-colors duration-150 text-lg">
+    class="mt-12 py-3 px-8 bg-yellow-500 hover:bg-yellow-800 text-white font-semibold rounded-full shadow-md transition-colors duration-150 text-lg">
     Skip
   </button>
 

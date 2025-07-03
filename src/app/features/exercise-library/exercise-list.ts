@@ -236,9 +236,7 @@ export class ExerciseListComponent implements OnInit {
    * Toggles the FAB menu on touch devices.
    */
   handleFabClick(): void {
-    if (this.isTouchDevice) {
-      this.isFabActionsOpen.update(v => !v);
-    }
+    this.isFabActionsOpen.update(v => !v);
   }
 
   /**
