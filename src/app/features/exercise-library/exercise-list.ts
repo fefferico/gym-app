@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal, computed, effect, PLATFORM_ID } from '@angular/core';
+import { Component, inject, OnInit, signal, computed, effect, PLATFORM_ID, HostListener } from '@angular/core';
 import { AsyncPipe, CommonModule, isPlatformBrowser, TitleCasePipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { Observable } from 'rxjs';
@@ -17,6 +17,15 @@ import { ThemeService } from '../../core/services/theme.service';
   templateUrl: './exercise-list.html',
   styleUrl: './exercise-list.scss',
   animations: [
+    trigger('fabSlideUp', [
+      transition(':enter', [
+        style({ opacity: 0, transform: 'translateY(200%)' }),
+        animate('250ms ease-out', style({ opacity: 1, transform: 'translateY(0)' }))
+      ]),
+      transition(':leave', [
+        animate('200ms ease-in', style({ opacity: 0, transform: 'translateY(100%)' }))
+      ])
+    ]),
     trigger('slideInOutActions', [
       state('void', style({
         height: '0px',
@@ -104,9 +113,23 @@ export class ExerciseListComponent implements OnInit {
     // });
   }
 
+  showBackToTopButton = signal<boolean>(false);
+  @HostListener('window:scroll', [])
+  onWindowScroll(): void {
+    // Check if the user has scrolled down more than a certain amount (e.g., 400 pixels)
+    // You can adjust this value to your liking.
+    const verticalOffset = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+    this.showBackToTopButton.set(verticalOffset > 400);
+  }
+
+  // --- ADD NEW PROPERTIES FOR THE FAB ---
+  isFabActionsOpen = signal(false);
+  isTouchDevice = false;
+
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       window.scrollTo(0, 0);
+      this.isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
     }
     this.categories$ = this.exerciseService.getUniqueCategories();
     this.primaryMuscleGroups$ = this.exerciseService.getUniquePrimaryMuscleGroups();
@@ -170,8 +193,8 @@ export class ExerciseListComponent implements OnInit {
     this.actionsVisibleId.set(null);
     const exerciseToDelete = this.allExercises().find(ex => ex.id === exerciseId);
     if (!exerciseToDelete) {
-        this.toastService.error("Exercise not found.", 0);
-        return;
+      this.toastService.error("Exercise not found.", 0);
+      return;
     }
     const confirm = await this.alertService.showConfirm(
       'Delete Exercise',
@@ -195,5 +218,48 @@ export class ExerciseListComponent implements OnInit {
   // Method to toggle the filter accordion
   toggleFilterAccordion(): void {
     this.isFilterAccordionOpen.update(isOpen => !isOpen);
+  }
+
+  scrollToTop(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth' // For a smooth scrolling animation
+      });
+    }
+  }
+
+
+  // --- ADD NEW HANDLER METHODS FOR THE FAB ---
+
+  /**
+   * Toggles the FAB menu on touch devices.
+   */
+  handleFabClick(): void {
+    if (this.isTouchDevice) {
+      this.isFabActionsOpen.update(v => !v);
+    }
+  }
+
+  /**
+   * Opens the FAB menu on hover for non-touch devices.
+   */
+  handleFabMouseEnter(): void {
+    if (!this.isTouchDevice) {
+      this.isFabActionsOpen.set(true);
+    }
+  }
+
+  /**
+   * Closes the FAB menu on mouse leave for non-touch devices.
+   */
+  handleFabMouseLeave(): void {
+    if (!this.isTouchDevice) {
+      this.isFabActionsOpen.set(false);
+    }
+  }
+
+  navigateToCreateExercise(): void {
+    this.router.navigate(['/library/new']);
   }
 }

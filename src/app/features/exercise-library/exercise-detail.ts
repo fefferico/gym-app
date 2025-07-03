@@ -11,11 +11,13 @@ import { NgxChartsModule, ScaleType } from '@swimlane/ngx-charts'; // Import Ngx
 import { ChartDataPoint, ChartSeries } from '../../features/history-stats/stats-dashboard/stats-dashboard'; // Reuse chart types if suitable
 import { AlertService } from '../../core/services/alert.service';
 import { AlertButton } from '../../core/models/alert.model';
+import { ActionMenuComponent } from '../../shared/components/action-menu/action-menu';
+import { ActionMenuItem } from '../../core/models/action-menu.model';
 
 @Component({
   selector: 'app-exercise-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, DatePipe, NgxChartsModule], // Added DatePipe, NgxChartsModule
+  imports: [CommonModule, RouterLink, DatePipe, NgxChartsModule, ActionMenuComponent], // Added DatePipe, NgxChartsModule
   templateUrl: './exercise-detail.html',
   styleUrl: './exercise-detail.scss',
 })
@@ -52,6 +54,8 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy {
   @Input() isModal?: boolean = false; // For route parameter binding
   private platformId = inject(PLATFORM_ID); // Inject PLATFORM_ID
 
+  isViewMode = signal<boolean | null>(null);
+
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) { // Check if running in a browser
       if (!this.isModal) { // Only scroll if not in a modal
@@ -66,6 +70,7 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy {
         this.exercisePBs.set([]);
         this.exerciseProgressChartData.set([]);
         if (exerciseId) {
+          this.isViewMode.set(true);
           this.loadExerciseData(exerciseId);
         } else {
           this.exercise.set(null); // No ID, so exercise not found
@@ -230,4 +235,79 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.exerciseDetailSub?.unsubscribe();
   }
+
+
+
+  getExerciseDropdownActionItems(routineId: string, mode: 'dropdown' | 'compact-bar'): ActionMenuItem[] {
+    const defaultBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-primary flex items-center text-sm hover:text-white dark:hover:text-gray-100 dark:hover:text-white';
+    const deleteBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-red-600 flex items-center text-sm hover:text-gray-100 hover:animate-pulse';;
+
+    const editButton = {
+      label: 'EDIT',
+      actionKey: 'edit',
+      iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>`,
+      iconClass: 'w-8 h-8 mr-2',
+      buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+      data: { routineId }
+    };
+
+    const deleteButton = {
+      label: 'DELETE',
+      actionKey: 'delete',
+      iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.58.177-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5Zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5Z" clip-rule="evenodd" /></svg>`,
+      iconClass: 'w-8 h-8 mr-2',
+      buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + deleteBtnClass,
+      data: { routineId }
+    };
+
+    const currentExercise = this.exercise;
+
+    const actionsArray = [
+    ];
+
+    if (this.isViewMode()) {
+      actionsArray.push(editButton);
+      actionsArray.push({isDivider: true});
+    }
+    actionsArray.push(deleteButton);
+
+
+    return actionsArray;
+  }
+
+  handleActionMenuItemClick(event: { actionKey: string, data?: any }, originalMouseEvent?: MouseEvent): void {
+    // originalMouseEvent.stopPropagation(); // Stop original event that opened the menuù
+    const currentExercise = this.exercise();
+    const exerciseId = currentExercise?.id;
+    if (!exerciseId) return;
+
+    switch (event.actionKey) {
+      case 'edit':
+        this.router.navigate(['/library/edit/', exerciseId]);
+        break;
+      case 'delete':
+        this.confirmDeleteExercise(currentExercise);
+        break;
+    }
+    this.activeRoutineIdActions.set(null); // Close the menu
+  }
+
+  // Your existing toggleActions, areActionsVisible, viewRoutineDetails, etc. methods
+  // The toggleActions will now just control a signal like `activeRoutineIdActions`
+  // which is used to show/hide the <app-action-menu>
+  activeRoutineIdActions = signal<string | null>(null); // Store ID of routine whose actions are open
+
+  toggleActions(routineId: string, event: MouseEvent): void {
+    event.stopPropagation();
+    this.activeRoutineIdActions.update(current => (current === routineId ? null : routineId));
+  }
+
+  areActionsVisible(routineId: string): boolean {
+    return this.activeRoutineIdActions() === routineId;
+  }
+  // When closing menu from the component's output
+  onCloseActionMenu() {
+    this.activeRoutineIdActions.set(null);
+  }
+
 }
