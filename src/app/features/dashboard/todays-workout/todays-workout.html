@@ -1,5 +1,6 @@
 <div
-  class="p-4 text-center md:p-6 bg-white dark:bg-gray-700 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700">
+  class="p-4 text-center md:p-6 bg-white dark:bg-gray-700 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700"
+  >
   <!-- Date Navigation -->
   <div class="flex items-center justify-between pb-3 border-b border-gray-200 dark:border-gray-700">
     <button (click)="previousDay()" title="Previous Day"
@@ -31,7 +32,7 @@
     class="mb-4 text-m text-primary dark:text-primary-light hover:underline disabled:opacity-50"
     [disabled]="isAnimating()">Jump to Today</button>
 
-  <div class="relative overflow-hidden">
+  <div class="relative overflow-hidden" data-swipe-card-content-wrapper>
     <div [@slideAnimation]="animationState()">
       <div *ngIf="isLoading()" class="text-center py-8 min-h-[200px] flex flex-col justify-center items-center">
         <p class="text-gray-500 dark:text-gray-400">Checking your schedule...</p>
