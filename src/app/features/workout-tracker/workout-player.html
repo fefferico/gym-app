@@ -294,7 +294,7 @@
               </div>
 
               <!-- Timed Set Duration -->
-              <div *ngIf="activeSet.setData.duration !== undefined">
+              <div *ngIf="activeSet.setData.duration">
                 <!-- ... (existing timed set HTML) ... -->
                 <label for="timedSetDisplay"
                   class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider text-center mb-2">
@@ -307,9 +307,9 @@
                         'text-red-500': isTimedSetOvertime(),
                         'animate-pulse': isTimedSetOvertime() && timedSetTimerState() === 'running',
                         'text-green-500 dark:text-green-400': !isTimedSetOvertime() && timedSetTimerState() === 'running' && (activeSetInfo()?.setData?.duration ?? 0) > 0 && timedSetElapsedSeconds() > 0,
-                        'text-gray-800 dark:text-gray-100': timedSetTimerState() === 'idle' || timedSetTimerState() === 'paused' || !((activeSetInfo()?.setData?.duration ?? 0) > 0 && timedSetElapsedSeconds() > 0 && !isTimedSetOvertime())
+                        'text-gray-800 dark:text-gray-100': timedSetTimerState() === 'idle' || timedSetTimerState() === 'paused'
                      }">
-                  {{ (timedSetDisplay() * 1000) | date:'mm:ss':'UTC' }}
+                  {{ timedSetDisplay() | formatSeconds }}
                 </div>
                 <input type="number" formControlName="actualDuration" class="hidden">
                 <div class="flex space-x-2 mt-2 justify-center">

@@ -28,6 +28,7 @@ import { id } from '@swimlane/ngx-charts';
 import { ExerciseDetailComponent } from '../exercise-library/exercise-detail';
 import { ModalComponent } from '../../shared/components/modal/modal.component';
 import { PressDirective } from '../../shared/directives/press.directive';
+import { FormatSecondsPipe } from '../../shared/pipes/format-seconds-pipe';
 
 
 // Interface to manage the state of the currently active set/exercise
@@ -105,7 +106,9 @@ enum PlayerSubState {
 @Component({
   selector: 'app-workout-player',
   standalone: true,
-  imports: [CommonModule, RouterLink, DatePipe, ReactiveFormsModule, FormsModule, WeightUnitPipe, FullScreenRestTimerComponent, PressDirective, ModalComponent, ExerciseDetailComponent],
+  imports: [CommonModule, RouterLink, DatePipe, ReactiveFormsModule, 
+    FormatSecondsPipe,
+    FormsModule, WeightUnitPipe, FullScreenRestTimerComponent, PressDirective, ModalComponent, ExerciseDetailComponent],
   templateUrl: './workout-player.html',
   styleUrl: './workout-player.scss',
   providers: [DecimalPipe]
@@ -1414,7 +1417,11 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     finalSetParamsForSession.notes = currentPlannedSetData.notes || finalSetParamsForSession.notes;
 
     const updatedRoutineForSession = JSON.parse(JSON.stringify(sessionRoutine)) as Routine;
-    updatedRoutineForSession.exercises[exIndex].sets[sIndex] = finalSetParamsForSession;
+
+    // suggest updated values only if it's not a timed exercise
+    if (!updatedRoutineForSession.exercises[exIndex].sets?.some(set=>set.duration)){
+      updatedRoutineForSession.exercises[exIndex].sets[sIndex] = finalSetParamsForSession;
+    }
     this.routine.set(updatedRoutineForSession); // Update the routine signal
     this.patchActualsFormBasedOnSessionTargets(); // This uses activeSetInfo() which depends on routine()
 
@@ -3691,6 +3698,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
   handleRestTimerFinished(): void {
+    this.addActualRestAfterSet(null);
     console.log('Rest timer finished.');
     this.isRestTimerVisible.set(false);
     // this.playerSubState.set(PlayerSubState.PerformingSet); // prepareCurrentSet will determine the next subState
@@ -3702,10 +3710,15 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     const justLoggedExercise = this.getLatestLoggedExercise();
     if (justLoggedExercise) {
       const justLoggedExerciseSet = justLoggedExercise?.sets.find((set, index) => index === justLoggedExercise.sets.length - 1);
-      if (justLoggedExerciseSet && timeSkipped && this.restDuration()) {
-        const actualRestingTime = Math.ceil(this.restDuration() - timeSkipped);
-        justLoggedExerciseSet.restAfterSetUsed = actualRestingTime;
-        console.log(actualRestingTime);
+      if (justLoggedExerciseSet) {
+        const routineExerciseSet = this.routine()?.exercises.find(ex => ex.id === justLoggedExercise.id)?.sets.find(set => set.id === justLoggedExerciseSet.plannedSetId);
+        if (timeSkipped && this.restDuration()) {
+          const actualRestingTime = Math.ceil(this.restDuration() - timeSkipped);
+          justLoggedExerciseSet.restAfterSetUsed = actualRestingTime;
+        } else {
+          const actualRestingTime = routineExerciseSet?.restAfterSet ?? 60;
+          justLoggedExerciseSet.restAfterSetUsed = actualRestingTime;
+        }
       }
     }
   }

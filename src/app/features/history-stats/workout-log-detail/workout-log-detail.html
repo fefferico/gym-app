@@ -132,7 +132,7 @@
                 'hover:bg-orange-100 dark:hover:bg-orange-800/40': loggedEx.supersetId,
                 'rounded-b': loggedEx.supersetId && loggedEx.supersetOrder === ((loggedEx.supersetSize ?? 0) - 1) && !loggedEx.isExpanded && (loggedEx.supersetOrder > 0 && loggedEx.supersetOrder < ((loggedEx.supersetSize ?? 0) - 1) ),
               }">
-              <div class="flex items-start min-w-0"> <!-- Added min-w-0 for truncation -->
+              <div class="flex items-center min-w-0"> <!-- Added min-w-0 for truncation -->
                 <div class="flex-shrink-0 mr-2 w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-md"
                   [ngClass]="{
                     '': !loggedEx.supersetId,
