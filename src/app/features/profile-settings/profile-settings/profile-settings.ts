@@ -229,16 +229,16 @@ export class ProfileSettingsComponent implements OnInit {
           input.value = ''; return;
         }
 
-        this.alertService.showConfirm("WARNING", "Importing data will OVERWRITE your current data. Are you sure?").then((result) => {
+        this.alertService.showConfirm("WARNING", "Importing data will try to MERGE your current data with the IMPORTED one. Are you sure?").then((result) => {
           if (result && result.data) {
             this.spinnerService.show('Importing data...');
-            this.workoutService.replaceData(importedData.routines);
+            this.workoutService.mergeData(importedData.routines);
             this.trackingService.replaceLogs(importedData.workoutLogs);
             this.trackingService.replacePBs(importedData.personalBests);
 
             if (importedData.version === 3) {
-              this.exerciseService.replaceData(importedData.exercises);
-              this.trainingProgramService.replaceData(importedData.programs);
+              this.exerciseService.mergeData(importedData.exercises);
+              this.trainingProgramService.mergeData(importedData.programs);
             } else if (importedData.version === 2) {
               this.userProfileService.replaceData(importedData.profile as UserProfile | null);
               this.appSettingsService.replaceData(importedData.appSettings as AppSettings | null);

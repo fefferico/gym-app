@@ -8,6 +8,7 @@ import { TrackingService } from './tracking.service';
 import { v4 as uuidv4 } from 'uuid';
 import { EXERCISES_DATA } from './exercises-data';
 import { WorkoutExercise } from '../models/workout.model';
+import { ToastService } from './toast.service';
 
 @Injectable({
   providedIn: 'root',
@@ -16,6 +17,7 @@ export class ExerciseService {
   private http = inject(HttpClient);
   private storageService = inject(StorageService);
   private trackingService = inject(TrackingService);
+  private toastService = inject(ToastService);
 
   private readonly EXERCISES_STORAGE_KEY = 'fitTrackPro_exercises';
   // private readonly EXERCISES_JSON_PATH = 'assets/data/exercises.json'; // Not used if EXERCISES_DATA is primary
@@ -375,17 +377,66 @@ export class ExerciseService {
     return this.exercisesSubject.getValue(); // Get current value from BehaviorSubject
   }
 
-  /** Replaces the current exercises with imported data */
-  public replaceData(newExercises: Exercise[]): void {
-    // Basic validation: check if it's an array
+  /**
+     * Merges imported exercise data with the current data.
+     * - If an imported exercise has an ID that already exists, it will be updated.
+     * - If an imported exercise has a new ID, it will be added.
+     * - Exercises that exist locally but are not in the imported data will be preserved.
+     *
+     * @param newExercises The array of Exercise objects to merge.
+     */
+  public mergeData(newExercises: Exercise[]): void {
+    // 1. Basic validation
     if (!Array.isArray(newExercises)) {
       console.error('ExerciseService: Imported data for exercises is not an array.');
-      // Optionally throw an error or return false
+      this.toastService.error('Import failed: Invalid exercise data file.', 0, "Import Error"); // Added user feedback
       return;
     }
-    // TODO: More robust validation of array content (check if items look like Exercises)
 
-    this._saveExercisesToStorage(newExercises); // Save the new array and update the subject
-    console.log('ExerciseService: Routines replaced with imported data.');
+    // +++ START of new merge logic +++
+
+    // 2. Get current state
+    const currentExercises = this.exercisesSubject.getValue();
+
+    // 3. Create a map of current exercises for efficient lookup and update
+    const exerciseMap = new Map<string, Exercise>(
+      currentExercises.map(ex => [ex.id, ex])
+    );
+
+    let updatedCount = 0;
+    let addedCount = 0;
+
+    // 4. Iterate over the imported exercises and merge them into the map
+    newExercises.forEach(importedExercise => {
+      if (!importedExercise.id || !importedExercise.name) {
+        // Skip invalid entries in the import file
+        console.warn('Skipping invalid exercise during import:', importedExercise);
+        return;
+      }
+
+      if (exerciseMap.has(importedExercise.id)) {
+        updatedCount++;
+      } else {
+        addedCount++;
+      }
+      // Whether it's new or an update, set it in the map.
+      // This overwrites existing entries and adds new ones.
+      exerciseMap.set(importedExercise.id, importedExercise);
+    });
+
+    // 5. Convert the map back to an array
+    const mergedExercises = Array.from(exerciseMap.values());
+
+    // 6. Save the new merged array
+    this._saveExercisesToStorage(mergedExercises);
+
+    // 7. Provide user feedback
+    console.log(`ExerciseService: Merged imported data. Updated: ${updatedCount}, Added: ${addedCount}.`);
+    this.toastService.success(
+      `Import complete. ${updatedCount} exercises updated, ${addedCount} added.`,
+      6000,
+      "Exercises Merged"
+    );
+    // +++ END of new merge logic +++
   }
 }

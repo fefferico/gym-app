@@ -10,6 +10,7 @@ import { LoggedSet } from '../models/workout-log.model';
 import { AlertService } from './alert.service';
 import { ROUTINES_DATA } from './routines-data';
 import { HttpClient } from '@angular/common/http';
+import { ToastService } from './toast.service';
 
 @Injectable({
   providedIn: 'root',
@@ -19,6 +20,7 @@ export class WorkoutService {
   private alertService = inject(AlertService);
   private readonly ROUTINES_STORAGE_KEY = 'fitTrackPro_routines';
   private http = inject(HttpClient);
+  private toastService = inject(ToastService);
 
   // Using a BehaviorSubject to make routines reactively available and to update them
   // It's initialized by loading routines from storage.
@@ -260,19 +262,68 @@ export class WorkoutService {
     return this.routinesSubject.getValue(); // Get current value from BehaviorSubject
   }
 
-  /** Replaces the current routines with imported data */
-  public replaceData(newRoutines: Routine[]): void {
-    // Basic validation: check if it's an array
+  /**
+       * Merges imported routine data with the current data.
+       * - If an imported routine has an ID that already exists, it will be updated.
+       * - If an imported routine has a new ID, it will be added.
+       * - Routines that exist locally but are not in the imported data will be preserved.
+       *
+       * @param newRoutines The array of Routine objects to merge.
+       */
+  public mergeData(newRoutines: Routine[]): void {
+    // 1. Basic validation
     if (!Array.isArray(newRoutines)) {
-      console.error('WorkoutService: Imported data for routines is not an array.');
-      // Optionally throw an error or return false
+      console.error('RoutineService: Imported data for routines is not an array.');
+      this.toastService.error('Import failed: Invalid routine data file.', 0, "Import Error"); // Added user feedback
       return;
     }
-    // TODO: More robust validation of array content (check if items look like Routines)
 
-    this.saveRoutinesToStorage(newRoutines); // Save the new array and update the subject
-    console.log('WorkoutService: Routines replaced with imported data.');
+    // +++ START of new merge logic +++
+
+    // 2. Get current state
+    const currentRoutines = this.routinesSubject.getValue();
+
+    // 3. Create a map of current routines for efficient lookup and update
+    const routineMap = new Map<string, Routine>(
+      currentRoutines.map(p => [p.id, p])
+    );
+
+    let updatedCount = 0;
+    let addedCount = 0;
+
+    // 4. Iterate over the imported routines and merge them into the map
+    newRoutines.forEach(importedRoutine => {
+      if (!importedRoutine.id || !importedRoutine.name) {
+        // Skip invalid entries in the import file
+        console.warn('Skipping invalid routine during import:', importedRoutine);
+        return;
+      }
+
+      if (routineMap.has(importedRoutine.id)) {
+        updatedCount++;
+      } else {
+        addedCount++;
+      }
+      // Whether it's new or an update, set it in the map.
+      routineMap.set(importedRoutine.id, importedRoutine);
+    });
+
+    // 5. Convert the map back to an array
+    const mergedRoutines = Array.from(routineMap.values());
+
+    // 6. Save the new merged array
+    this._saveRoutinesToStorage(mergedRoutines);
+
+    // 7. Provide user feedback
+    console.log(`RoutineService: Merged imported data. Updated: ${updatedCount}, Added: ${addedCount}.`);
+    this.toastService.success(
+      `Import complete. ${updatedCount} routines updated, ${addedCount} added.`,
+      6000,
+      "Routines Merged"
+    );
+    // +++ END of new merge logic +++
   }
+
 
   clearAllRoutines_DEV_ONLY(): Promise<void> { // Changed return type
     return this.alertService.showConfirm("Info", "Are you sure you want to delete ALL routines? This will delete ALL the routines (not just the logs) and cannot be undone.")

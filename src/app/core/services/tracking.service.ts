@@ -10,6 +10,7 @@ import { ExerciseSetParams, Routine } from '../models/workout.model';
 import { parseISO } from 'date-fns';
 import { AlertService } from './alert.service';
 import { WorkoutService } from './workout.service';
+import { ToastService } from './toast.service';
 
 export interface ExercisePerformanceDataPoint {
   date: Date;
@@ -27,6 +28,7 @@ export class TrackingService {
   private storageService = inject(StorageService);
   private alertService = inject(AlertService);
   private workoutService = inject(WorkoutService);
+  private toastService = inject(ToastService);
   private readonly WORKOUT_LOGS_STORAGE_KEY = 'fitTrackPro_workoutLogs';
   private readonly PERSONAL_BESTS_STORAGE_KEY = 'fitTrackPro_personalBests';
 
@@ -402,17 +404,159 @@ export class TrackingService {
   public getLogsForBackup(): WorkoutLog[] { return this.workoutLogsSubject.getValue(); }
   public getPBsForBackup(): Record<string, PersonalBestSet[]> { return this.personalBestsSubject.getValue(); }
 
-  public replaceLogs(newLogs: WorkoutLog[]): void {
-    if (!Array.isArray(newLogs)) { console.error('TrackingService: Imported data for logs is not an array.'); return; }
-    this.saveWorkoutLogsToStorage(newLogs);
-    this.recalculateAllPersonalBests(); // Recalculate PBs after importing logs
-    console.log('TrackingService: Logs replaced, PBs recalculated.');
+  /**
+    * Merges imported workout logs with the current data.
+    * - If an imported log has an ID that already exists, it will be updated.
+    * - If an imported log has a new ID, it will be added.
+    * - Logs that exist locally but are not in the imported data will be preserved.
+    * After merging, it triggers a full recalculation of personal bests.
+    *
+    * @param newLogs The array of WorkoutLog objects to merge.
+    */
+  public async replaceLogs(newLogs: WorkoutLog[]): Promise<void> { // +++ Made async for await
+    // 1. Basic validation
+    if (!Array.isArray(newLogs)) {
+      console.error('TrackingService: Imported data for logs is not an array.');
+      this.toastService.error('Import failed: Invalid workout log file.', 0, "Import Error");
+      return;
+    }
+
+    // +++ START of new merge logic +++
+
+    // 2. Get current state
+    const currentLogs = this.workoutLogsSubject.getValue();
+
+    // 3. Create a map of current logs for efficient lookup and update
+    const logMap = new Map<string, WorkoutLog>(
+      currentLogs.map(log => [log.id, log])
+    );
+
+    let updatedCount = 0;
+    let addedCount = 0;
+
+    // 4. Iterate over the imported logs and merge them into the map
+    newLogs.forEach(importedLog => {
+      if (!importedLog.id || !importedLog.date) {
+        console.warn('Skipping invalid log during import:', importedLog);
+        return;
+      }
+
+      if (logMap.has(importedLog.id)) {
+        updatedCount++;
+      } else {
+        addedCount++;
+      }
+      // Overwrite existing or add new
+      logMap.set(importedLog.id, importedLog);
+    });
+
+    // 5. Convert the map back to an array
+    const mergedLogs = Array.from(logMap.values());
+
+    // 6. Save the new merged array of logs
+    this.saveWorkoutLogsToStorage(mergedLogs);
+
+    // 7. Provide user feedback before the PB recalculation
+    console.log(`TrackingService: Merged logs. Updated: ${updatedCount}, Added: ${addedCount}.`);
+    this.toastService.success(
+      `Logs imported. ${updatedCount} updated, ${addedCount} added.`,
+      6000,
+      "Logs Merged"
+    );
+
+    // 8. Recalculate all PBs from the newly merged history
+    // We do this without a confirmation prompt as it's a necessary step after import.
+    console.log('Recalculating personal bests after log import...');
+    this.toastService.info('Recalculating personal bests...', 2000, "Please Wait");
+
+    // Perform the recalculation (reusing the core logic of the public method)
+    const allMergedLogs = this.workoutLogsSubject.getValue();
+    const sortedLogsForRecalc = [...allMergedLogs].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+    if (sortedLogsForRecalc.length === 0) {
+      this.savePBsToStorage({}); // Clear PBs if no logs exist
+      this.toastService.success('Personal bests cleared as there are no logs.', 3000, "PBs Recalculated");
+      return;
+    }
+
+    // This part is extracted from the public `recalculateAllPersonalBests` to avoid the user prompt
+    const newPBsMaster: Record<string, PersonalBestSet[]> = {};
+    sortedLogsForRecalc.forEach(log => {
+      const logTimestamp = new Date(log.startTime).toISOString();
+      log.exercises.forEach(loggedEx => {
+        if (!newPBsMaster[loggedEx.exerciseId]) {
+          newPBsMaster[loggedEx.exerciseId] = [];
+        }
+        const exercisePBsListForRecalc: PersonalBestSet[] = newPBsMaster[loggedEx.exerciseId];
+        loggedEx.sets.forEach(originalSet => {
+          const candidateSet: LoggedSet = { ...originalSet, timestamp: originalSet.timestamp || logTimestamp, workoutLogId: originalSet.workoutLogId || log.id, exerciseId: originalSet.exerciseId || loggedEx.exerciseId, };
+          if (candidateSet.weightUsed === undefined || candidateSet.weightUsed === null || candidateSet.weightUsed === 0) {
+            if (candidateSet.repsAchieved > 0) this.updateSpecificPB(exercisePBsListForRecalc, candidateSet, `Max Reps (Bodyweight)`);
+            if (candidateSet.durationPerformed && candidateSet.durationPerformed > 0) this.updateSpecificPB(exercisePBsListForRecalc, candidateSet, `Max Duration`);
+            return;
+          }
+          if (candidateSet.repsAchieved === 1) this.updateSpecificPB(exercisePBsListForRecalc, candidateSet, `1RM (Actual)`);
+          if (candidateSet.repsAchieved === 3) this.updateSpecificPB(exercisePBsListForRecalc, candidateSet, `3RM (Actual)`);
+          if (candidateSet.repsAchieved === 5) this.updateSpecificPB(exercisePBsListForRecalc, candidateSet, `5RM (Actual)`);
+          this.updateSpecificPB(exercisePBsListForRecalc, candidateSet, `Heaviest Lifted`);
+          if (candidateSet.repsAchieved > 1) {
+            const e1RM = candidateSet.weightUsed * (1 + candidateSet.repsAchieved / 30);
+            const e1RMSet: LoggedSet = { ...candidateSet, repsAchieved: 1, weightUsed: parseFloat(e1RM.toFixed(2)) };
+            this.updateSpecificPB(exercisePBsListForRecalc, e1RMSet, `1RM (Estimated)`);
+          }
+        });
+      });
+    });
+
+    this.savePBsToStorage(newPBsMaster);
+    console.log('Personal Bests recalculated from all merged logs.');
+    this.toastService.success('Personal bests successfully recalculated!', 3000, "PBs Updated");
+
+    // +++ END of new merge logic +++
   }
 
+  /**
+     * Merges imported Personal Bests data. This is less common to use than merging logs,
+     * but follows the same non-destructive pattern.
+     * It merges the PB list for each exercise ID.
+     *
+     * @param newPBs The imported PB record object.
+     */
   public replacePBs(newPBs: Record<string, PersonalBestSet[]>): void {
-    if (typeof newPBs !== 'object' || newPBs === null || Array.isArray(newPBs)) { console.error('TrackingService: Imported data for PBs is not an object.'); return; }
-    this.savePBsToStorage(newPBs);
-    console.log('TrackingService: PBs replaced with imported data.');
+    if (typeof newPBs !== 'object' || newPBs === null || Array.isArray(newPBs)) {
+      console.error('TrackingService: Imported data for PBs is not an object.');
+      this.toastService.error('Import failed: Invalid personal bests file.', 0, "Import Error");
+      return;
+    }
+
+    // +++ START of new merge logic +++
+    const currentPBs = this.personalBestsSubject.getValue();
+
+    // The newPBs object is the master. We iterate through it.
+    for (const exerciseId in newPBs) {
+      if (Object.prototype.hasOwnProperty.call(newPBs, exerciseId)) {
+        const importedPbList = newPBs[exerciseId];
+        const currentPbList = currentPBs[exerciseId] || [];
+
+        // Create a map of the current PBs for this specific exercise
+        const pbMap = new Map<string, PersonalBestSet>(
+          currentPbList.map(pb => [pb.pbType, pb])
+        );
+
+        // Merge the imported PBs for this exercise into the map
+        importedPbList.forEach(importedPb => {
+          pbMap.set(importedPb.pbType, importedPb);
+        });
+
+        // Update the master PB object with the merged list for this exercise
+        currentPBs[exerciseId] = Array.from(pbMap.values());
+      }
+    }
+
+    this.savePBsToStorage(currentPBs);
+    console.log('TrackingService: PBs merged with imported data.');
+    this.toastService.success('Personal bests data merged successfully.', 3000, "PBs Merged");
+    // +++ END of new merge logic +++
   }
 
   getWorkoutLogsByRoutineId(routineId: string | null | undefined): Observable<WorkoutLog[]> {

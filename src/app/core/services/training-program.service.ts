@@ -221,18 +221,66 @@ export class TrainingProgramService {
     return this.programsSubject.getValue(); // Get current value from BehaviorSubject
   }
 
-  /** Replaces the current programs with imported data */
-  public replaceData(newPrograms: TrainingProgram[]): void {
-    // Basic validation: check if it's an array
+  /**
+     * Merges imported program data with the current data.
+     * - If an imported program has an ID that already exists, it will be updated.
+     * - If an imported program has a new ID, it will be added.
+     * - Programs that exist locally but are not in the imported data will be preserved.
+     *
+     * @param newPrograms The array of TrainingProgram objects to merge.
+     */
+  public mergeData(newPrograms: TrainingProgram[]): void {
+    // 1. Basic validation
     if (!Array.isArray(newPrograms)) {
-      console.error('ExerciseService: Imported data for programs is not an array.');
-      // Optionally throw an error or return false
+      console.error('TrainingProgramService: Imported data for programs is not an array.');
+      this.toastService.error('Import failed: Invalid program data file.', 0, "Import Error"); // Added user feedback
       return;
     }
-    // TODO: More robust validation of array content (check if items look like Programs)
 
-    this._saveProgramsToStorage(newPrograms); // Save the new array and update the subject
-    console.log('ExerciseService: Routines replaced with imported data.');
+    // +++ START of new merge logic +++
+
+    // 2. Get current state
+    const currentPrograms = this.programsSubject.getValue();
+
+    // 3. Create a map of current programs for efficient lookup and update
+    const programMap = new Map<string, TrainingProgram>(
+      currentPrograms.map(p => [p.id, p])
+    );
+
+    let updatedCount = 0;
+    let addedCount = 0;
+
+    // 4. Iterate over the imported programs and merge them into the map
+    newPrograms.forEach(importedProgram => {
+      if (!importedProgram.id || !importedProgram.name) {
+        // Skip invalid entries in the import file
+        console.warn('Skipping invalid program during import:', importedProgram);
+        return;
+      }
+
+      if (programMap.has(importedProgram.id)) {
+        updatedCount++;
+      } else {
+        addedCount++;
+      }
+      // Whether it's new or an update, set it in the map.
+      programMap.set(importedProgram.id, importedProgram);
+    });
+
+    // 5. Convert the map back to an array
+    const mergedPrograms = Array.from(programMap.values());
+
+    // 6. Save the new merged array
+    this._saveProgramsToStorage(mergedPrograms);
+
+    // 7. Provide user feedback
+    console.log(`TrainingProgramService: Merged imported data. Updated: ${updatedCount}, Added: ${addedCount}.`);
+    this.toastService.success(
+      `Import complete. ${updatedCount} programs updated, ${addedCount} added.`,
+      6000,
+      "Programs Merged"
+    );
+    // +++ END of new merge logic +++
   }
 
 
