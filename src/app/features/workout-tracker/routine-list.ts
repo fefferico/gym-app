@@ -24,6 +24,7 @@ import e from 'express';
 import { LongPressDirective } from '../../shared/directives/long-press.directive';
 import { PressDirective } from '../../shared/directives/press.directive';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { TrainingProgramService } from '../../core/services/training-program.service';
 
 @Component({
   selector: 'app-routine-list',
@@ -68,6 +69,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
   private workoutService = inject(WorkoutService);
   private exerciseService = inject(ExerciseService); // Inject ExerciseService
   private trackingService = inject(TrackingService);
+  private trainingService = inject(TrainingProgramService);
   private router = inject(Router);
   private alertService = inject(AlertService);
   private spinnerService = inject(SpinnerService);
@@ -374,9 +376,23 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     }
 
     const associatedLogs = await firstValueFrom(this.trackingService.getWorkoutLogsByRoutineId(routineId).pipe(take(1))) || [];
+    const associatedPrograms = await firstValueFrom(this.trainingService.getProgramsByRoutineId(routineId).pipe(take(1))) || [];
     let confirmationMessage = `Are you sure you want to delete the routine "${routineToDelete.name}"?`;
     if (associatedLogs.length > 0) {
-      confirmationMessage += ` This will also delete ${associatedLogs.length} associated workout log(s). This action cannot be undone.`;
+      confirmationMessage += ` This will also delete ${associatedLogs.length} associated workout log(s).`;
+    }
+    if (associatedPrograms.length > 0) {
+      if (associatedPrograms.length === 1){
+        const associatedProgram = associatedPrograms[0].schedule.find(sched => sched.routineId === routineId);
+        const programName = associatedProgram ? '\'' +  associatedProgram.routineName + '\'' : '';
+        confirmationMessage += ` This will also delete the entries in ${programName ? programName : '1'} associated program(s).`;
+      } else {
+        confirmationMessage += ` This will also delete the entries in ${associatedPrograms.length} associated program(s).`;
+      }
+    }
+
+    if (associatedLogs.length > 0 || associatedPrograms.length > 0){
+       confirmationMessage += ' This action cannot be undone.';
     }
 
     const confirm = await this.alertService.showConfirm('Delete Routine', confirmationMessage, 'Delete');

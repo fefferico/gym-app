@@ -1,7 +1,7 @@
 // src/app/core/services/training-program.service.ts
 import { Injectable, inject } from '@angular/core';
 import { BehaviorSubject, Observable, combineLatest, firstValueFrom, of } from 'rxjs';
-import { map, switchMap, take, tap } from 'rxjs/operators';
+import { map, shareReplay, switchMap, take, tap } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
 
 import { StorageService } from './storage.service';
@@ -26,8 +26,23 @@ export class TrainingProgramService {
   private programsSubject = new BehaviorSubject<TrainingProgram[]>(this._loadProgramsFromStorage());
   public programs$: Observable<TrainingProgram[]> = this.programsSubject.asObservable();
 
+  private isLoadingProgramsSubject = new BehaviorSubject<boolean>(true);
+  public isLoadingPrograms$: Observable<boolean> = this.isLoadingProgramsSubject.asObservable();
+
   constructor() {
-    // console.log('TrainingProgramService initialized. Loaded programs:', this.programsSubject.getValue());
+    this.isLoadingProgramsSubject.next(true);
+
+    // +++ 1. Load initial programs from storage
+    const programsFromStorage = this._loadProgramsFromStorage();
+
+    // +++ 2. Initialize the BehaviorSubject and public observable
+    this.programsSubject = new BehaviorSubject<TrainingProgram[]>(programsFromStorage);
+    this.programs$ = this.programsSubject.asObservable().pipe(
+      shareReplay(1) // +++ Add shareReplay for efficiency
+    );
+
+    // +++ 3. Seed new data if necessary. This will save and update the subject.
+    this._seedAndMergeProgramsFromStaticData(programsFromStorage);
   }
 
   private _loadProgramsFromStorage(): TrainingProgram[] {
@@ -40,8 +55,43 @@ export class TrainingProgramService {
     this.programsSubject.next([...programs]); // Emit a new array reference
   }
 
+  // +++ NEW METHOD: The core merge/seed logic
+  /**
+   * Merges programs from the static PROGRAMS_DATA constant with existing programs from storage.
+   * This ensures default programs are available without overwriting user data.
+   * @param existingPrograms Programs already loaded from storage.
+   */
+  private _seedAndMergeProgramsFromStaticData(existingPrograms: TrainingProgram[]): void {
+    try {
+      const assetPrograms: TrainingProgram[] = [];
+      const existingProgramIds = new Set(existingPrograms.map(p => p.id));
+
+      const newProgramsToSeed = assetPrograms.filter(
+        (assetProgram: TrainingProgram) => !existingProgramIds.has(assetProgram.id)
+      );
+
+      if (newProgramsToSeed.length > 0) {
+        console.log(`Seeding ${newProgramsToSeed.length} new training programs from static data.`);
+        const mergedPrograms = [...existingPrograms, ...newProgramsToSeed];
+        this._saveProgramsToStorage(mergedPrograms);
+      } else {
+        console.log("No new training programs to seed. All default programs are present in storage.");
+      }
+    } catch (error) {
+      console.error('Failed to process or seed training programs from static data:', error);
+    } finally {
+      // +++ Ensure loading is always set to false
+      this.isLoadingProgramsSubject.next(false);
+    }
+  }
+
   getAllPrograms(): Observable<TrainingProgram[]> {
     return this.programs$;
+  }
+
+  getProgramsByRoutineId(routineId: string | null | undefined): Observable<TrainingProgram[]> {
+    if (!routineId) return of([]);
+    return this.programs$.pipe(map(allPrograms => allPrograms.filter(program => program.schedule.some(schedule => schedule.routineId === routineId))));
   }
 
   getProgramById(id: string): Observable<TrainingProgram | undefined> {
@@ -165,6 +215,26 @@ export class TrainingProgramService {
       map(programs => programs.find(p => p.isActive))
     );
   }
+
+  /** Returns the current list of programs for backup */
+  public getDataForBackup(): TrainingProgram[] {
+    return this.programsSubject.getValue(); // Get current value from BehaviorSubject
+  }
+
+  /** Replaces the current programs with imported data */
+  public replaceData(newPrograms: TrainingProgram[]): void {
+    // Basic validation: check if it's an array
+    if (!Array.isArray(newPrograms)) {
+      console.error('ExerciseService: Imported data for programs is not an array.');
+      // Optionally throw an error or return false
+      return;
+    }
+    // TODO: More robust validation of array content (check if items look like Programs)
+
+    this._saveProgramsToStorage(newPrograms); // Save the new array and update the subject
+    console.log('ExerciseService: Routines replaced with imported data.');
+  }
+
 
   /**
    * Gets the scheduled routine for a given date based on the active program.

@@ -6,7 +6,7 @@
 
     <!-- The template is now much cleaner. We no longer need #rla or complex conditions. -->
     <a *ngFor="let item of navItems" [routerLink]="item.path"
-      class="flex flex-col items-center justify-center text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary-light transition-colors p-1 w-16 min-w-[64px]"
+      class="flex w-full flex-col items-center justify-center text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary-light transition-colors p-1 w-16 min-w-[64px]"
       [class.text-primary]="isLinkActive(item)" [class.dark:text-primary-light]="isLinkActive(item)">
 
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"

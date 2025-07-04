@@ -19,6 +19,8 @@ import { ToastService } from '../../../core/services/toast.service';
 import { Gender, UserProfile } from '../../../core/models/user-profile.model';
 import { TrainingProgramService } from '../../../core/services/training-program.service';
 import { UserProfileService } from '../../../core/services/user-profile.service';
+import { ExerciseService } from '../../../core/services/exercise.service';
+import { Exercise } from '../../../core/models/exercise.model';
 
 
 @Component({
@@ -33,6 +35,7 @@ export class ProfileSettingsComponent implements OnInit {
   private workoutService = inject(WorkoutService);
   private trackingService = inject(TrackingService);
   private trainingProgramService = inject(TrainingProgramService);
+  private exerciseService = inject(ExerciseService);
   private storageService = inject(StorageService);
   protected unitsService = inject(UnitsService);
   private alertService = inject(AlertService);
@@ -54,7 +57,7 @@ export class ProfileSettingsComponent implements OnInit {
     { label: 'Prefer not to say', value: 'prefer_not_to_say' },
   ];
 
-  private readonly BACKUP_VERSION = 2;
+  private readonly BACKUP_VERSION = 3;
 
   constructor() {
     this.profileForm = this.fb.group({
@@ -158,9 +161,11 @@ export class ProfileSettingsComponent implements OnInit {
     const backupData = {
       version: this.BACKUP_VERSION, // Updated version
       timestamp: new Date().toISOString(),
-      profile: this.userProfileService.getDataForBackup(),         // NEW
-      appSettings: this.appSettingsService.getDataForBackup(),     // NEW
+      profile: this.userProfileService.getDataForBackup(),
+      appSettings: this.appSettingsService.getDataForBackup(),
       routines: this.workoutService.getDataForBackup(),
+      programs: this.trainingProgramService.getDataForBackup(),
+      exercises: this.exerciseService.getDataForBackup(),
       workoutLogs: this.trackingService.getLogsForBackup(),
       personalBests: this.trackingService.getPBsForBackup(),
     };
@@ -200,7 +205,13 @@ export class ProfileSettingsComponent implements OnInit {
           input.value = ''; return;
         }
 
-        if (importedData.version === 2) {
+        if (importedData.version === 3) {
+          // ... (your V3 validation) ...
+          if (!importedData.exercises || !importedData.routines) {
+            this.alertService.showAlert('Error', "Invalid V3 backup file content. Missing essential data sections.");
+            input.value = ''; return;
+          }
+        } else if (importedData.version === 2) {
           // ... (your V2 validation) ...
           if (!importedData.routines || !importedData.workoutLogs || !importedData.personalBests ||
             importedData.profile === undefined || importedData.appSettings === undefined) {
@@ -214,7 +225,7 @@ export class ProfileSettingsComponent implements OnInit {
             input.value = ''; return;
           }
         } else {
-          this.alertService.showAlert('Error', `Unsupported backup file version. Expected 1 or 2, got ${importedData.version}.`);
+          this.alertService.showAlert('Error', `Unsupported backup file version. Expected 1,2 or 3, got ${importedData.version}.`);
           input.value = ''; return;
         }
 
@@ -225,7 +236,10 @@ export class ProfileSettingsComponent implements OnInit {
             this.trackingService.replaceLogs(importedData.workoutLogs);
             this.trackingService.replacePBs(importedData.personalBests);
 
-            if (importedData.version === 2) {
+            if (importedData.version === 3) {
+              this.exerciseService.replaceData(importedData.exercises);
+              this.trainingProgramService.replaceData(importedData.programs);
+            } else if (importedData.version === 2) {
               this.userProfileService.replaceData(importedData.profile as UserProfile | null);
               this.appSettingsService.replaceData(importedData.appSettings as AppSettings | null);
             } else { // For V1, ensure defaults are applied if no settings/profile
@@ -264,7 +278,6 @@ export class ProfileSettingsComponent implements OnInit {
       if (this.trackingService.clearAllWorkoutLogs_DEV_ONLY) await this.trackingService.clearAllWorkoutLogs_DEV_ONLY();
       if (this.trackingService.clearAllPersonalBests_DEV_ONLY) await this.trackingService.clearAllPersonalBests_DEV_ONLY();
       if (this.workoutService.clearAllRoutines_DEV_ONLY) await this.workoutService.clearAllRoutines_DEV_ONLY();
-      // NEW: Clear profile and app settings
       if (this.userProfileService.clearUserProfile_DEV_ONLY) this.userProfileService.clearUserProfile_DEV_ONLY();
       if (this.appSettingsService.clearAppSettings_DEV_ONLY) this.appSettingsService.clearAppSettings_DEV_ONLY();
       if (this.trainingProgramService.deactivateAllPrograms) this.trainingProgramService.deactivateAllPrograms();

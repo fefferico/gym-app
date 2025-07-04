@@ -369,4 +369,23 @@ export class ExerciseService {
       // All other Exercise properties will be undefined.
     };
   }
+
+  /** Returns the current list of programs for backup */
+  public getDataForBackup(): Exercise[] {
+    return this.exercisesSubject.getValue(); // Get current value from BehaviorSubject
+  }
+
+  /** Replaces the current exercises with imported data */
+  public replaceData(newExercises: Exercise[]): void {
+    // Basic validation: check if it's an array
+    if (!Array.isArray(newExercises)) {
+      console.error('ExerciseService: Imported data for exercises is not an array.');
+      // Optionally throw an error or return false
+      return;
+    }
+    // TODO: More robust validation of array content (check if items look like Exercises)
+
+    this._saveExercisesToStorage(newExercises); // Save the new array and update the subject
+    console.log('ExerciseService: Routines replaced with imported data.');
+  }
 }
