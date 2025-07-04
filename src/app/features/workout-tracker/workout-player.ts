@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, OnDestroy, signal, computed, WritableSignal, ChangeDetectorRef, HostListener, PLATFORM_ID, ViewChildren, QueryList, ElementRef, effect, ViewChild } from '@angular/core';
 import { CommonModule, TitleCasePipe, DatePipe, DecimalPipe, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, NavigationEnd, Router, RouterLink } from '@angular/router';
-import { Subscription, Observable, of, timer, firstValueFrom, interval, Subject } from 'rxjs';
+import { Subscription, Observable, of, timer, firstValueFrom, interval, Subject, combineLatest } from 'rxjs';
 import { switchMap, tap, map, takeWhile, take, filter, takeUntil } from 'rxjs/operators';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { FullScreenRestTimerComponent } from '../../shared/components/full-screen-rest-timer/full-screen-rest-timer';
@@ -128,7 +128,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   private platformId = inject(PLATFORM_ID);
   // --- State Signals ---
   protected routine = signal<Routine | null | undefined>(undefined);
-  program = signal<TrainingProgram | null | undefined>(undefined);
+  program = signal<string | undefined>(undefined);
   sessionState = signal<SessionState>(SessionState.Loading);
   public readonly PlayerSubState = PlayerSubState;
   playerSubState = signal<PlayerSubState>(PlayerSubState.PerformingSet);
@@ -2674,7 +2674,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       durationSeconds: durationSeconds,
       exercises: loggedExercisesForReport, // Use filtered logs
       notes: sessionRoutineValue?.notes,
-      programId: sessionProgramValue?.id,
+      programId: sessionProgramValue,
     };
     const savedLog = this.trackingService.addWorkoutLog(finalLog);
     if (!this.isTabataMode()) {
@@ -2872,6 +2872,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
           const routeSnapshot = this.route.snapshot;
           const navigatedToPlayerUrl = event.urlAfterRedirects.startsWith('/workout/play/');
           const targetRoutineId = routeSnapshot.paramMap.get('routineId');
+          const targetProgramId = routeSnapshot.queryParamMap.get('programId');
           if (navigatedToPlayerUrl) {
             if (this.routineId === targetRoutineId && this.isInitialLoadComplete && this.sessionState() !== SessionState.Playing) {
               const resumedOnReEntry = await this.checkForPausedSession(true);
@@ -2909,23 +2910,42 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
     if (this.routeSub) { this.routeSub.unsubscribe(); }
 
-    this.routeSub = this.route.paramMap.pipe(
-      switchMap(params => {
-        const newRoutineId = params.get('routineId');
+    // +++ 1. Start the pipeline with combineLatest to get both paramMap and queryParamMap
+    this.routeSub = combineLatest([
+      this.route.paramMap,
+      this.route.queryParamMap
+    ]).pipe(
+      // +++ 2. Use 'map' to create a clean object with both IDs
+      map(([params, queryParams]) => {
+        return {
+          routineId: params.get('routineId'),
+          programId: queryParams.get('programId') // This will be the ID string or null
+        };
+      }),
+
+      // +++ 3. The switchMap now receives the object with both IDs
+      switchMap(ids => {
+        const { routineId: newRoutineId, programId } = ids; // Destructure to get both IDs
         console.log('loadNewWorkoutFromRoute - paramMap emitted, newRoutineId:', newRoutineId);
-        // ... (programId logic) ...
+        console.log('loadNewWorkoutFromRoute - queryParamMap emitted, programId:', programId); // You have the programId here!
+
+        if (programId){
+          this.program.set(programId);
+        }
+
         if (!newRoutineId || newRoutineId === "-1") {
           if (newRoutineId === "-1") {
-
+            // Special case handled in tap operator
           } else {
             this.toastService.error("No routine specified to play.", 0, "Error");
             this.router.navigate(['/workout']);
-            this.sessionState.set(SessionState.Error); // Ensure state changes if error
+            this.sessionState.set(SessionState.Error);
             return of(null);
           }
         }
-        // ... (check if same routine already loading/playing) ...
-        this.routineId = newRoutineId;
+
+        this.routineId = newRoutineId; // Assuming you still need this property for other parts of the component
+
         return this.workoutService.getRoutineById(this.routineId).pipe(
           map(originalRoutine => {
             if (originalRoutine) {
@@ -2940,22 +2960,58 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
                   if (!s.type) s.type = 'standard';
                 });
               });
-              return sessionCopy;
+
+              // +++ 4. Return an object containing BOTH the routine and the programId
+              return { sessionRoutineCopy: sessionCopy, programId: programId };
             }
             console.warn('loadNewWorkoutFromRoute: No original routine found for ID:', this.routineId);
-            return null;
+            return null; // If routine not found, the whole result will be null
           })
         );
       }),
-      tap(async (sessionRoutineCopy) => {
-        console.log('loadNewWorkoutFromRoute - tap operator. Session routine copy:', sessionRoutineCopy ? sessionRoutineCopy.name : 'null');
+
+      // +++ 5. The 'tap' operator now receives the object { sessionRoutineCopy, programId } or null
+      tap(async (result) => {
+        // +++ 6. Handle the null case and destructure the result object
+        if (!result) {
+          // This block will run if the routine wasn't found in the switchMap.
+          // We can check for the "-1" case here, which is cleaner.
+          if (this.routineId === "-1") {
+            const emptyNewRoutine = {
+              name: "New session",
+              createdAt: new Date().toISOString(),
+              goal: 'custom',
+              exercises: [] as WorkoutExercise[],
+            } as Routine;
+            this.routine.set(emptyNewRoutine);
+            this.openExerciseSelectionModal();
+          } else if (this.routineId) {
+            console.error('loadNewWorkoutFromRoute - tap: Failed to load routine for ID or routine was null:', this.routineId);
+            this.routine.set(null);
+            this.sessionState.set(SessionState.Error);
+            this.toastService.error("Failed to load workout routine.", 0, "Load Error");
+            if (isPlatformBrowser(this.platformId)) this.router.navigate(['/workout']);
+            this.stopAutoSave();
+          }
+          this.isInitialLoadComplete = true;
+          return; // Exit tap early
+        }
+
+        const { sessionRoutineCopy, programId } = result;
+
+        console.log('loadNewWorkoutFromRoute - tap operator. Session routine copy:', sessionRoutineCopy.name);
+        console.log('loadNewWorkoutFromRoute - tap operator. Program ID:', programId);
+
+        // +++ You can now use the programId to set state
+        // For example, if you have a signal for it:
+        // this.programId.set(programId);
 
         // --- NEW: TABATA MODE CHECK ---
-        if (sessionRoutineCopy?.goal === 'tabata') {
+        if (sessionRoutineCopy.goal === 'tabata') {
           this.setupTabataMode(sessionRoutineCopy);
-          this.startSessionTimer(); // Start the overall workout timer
+          this.startSessionTimer();
           this.isInitialLoadComplete = true;
-          return; // Exit here to prevent running the standard player logic
+          return;
         }
         // --- END: TABATA MODE CHECK ---
 
@@ -2964,72 +3020,50 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
           this.isInitialLoadComplete = true;
           return;
         }
-        if (sessionRoutineCopy) {
+
+        // The rest of your logic uses 'sessionRoutineCopy' and remains unchanged
+        this.exercisesProposedThisCycle = { doLater: false, skipped: false };
+        this.isPerformingDeferredExercise = false;
+        this.lastActivatedDeferredExerciseId = null;
+        this.routine.set(sessionRoutineCopy);
+
+        const firstPending = this.findFirstPendingExerciseAndSet(sessionRoutineCopy);
+        if (firstPending) {
+          this.currentExerciseIndex.set(firstPending.exerciseIndex);
+          this.currentSetIndex.set(firstPending.setIndex);
+          console.log(`loadNewWorkoutFromRoute - Initial pending set to Ex: ${firstPending.exerciseIndex}, Set: ${firstPending.setIndex}`);
+
+          const firstEx = sessionRoutineCopy.exercises[firstPending.exerciseIndex];
+          if (!firstEx.supersetId || firstEx.supersetOrder === 0) {
+            this.totalBlockRounds.set(firstEx.rounds ?? 1);
+          } else {
+            const actualStart = sessionRoutineCopy.exercises.find(ex => ex.supersetId === firstEx.supersetId && ex.supersetOrder === 0);
+            this.totalBlockRounds.set(actualStart?.rounds ?? 1);
+          }
+        } else {
+          console.log("loadNewWorkoutFromRoute: Routine loaded but no initial pending exercises. Will try deferred/finish.");
+          this.currentExerciseIndex.set(0);
+          this.currentSetIndex.set(0);
+          this.totalBlockRounds.set(1);
           this.exercisesProposedThisCycle = { doLater: false, skipped: false };
-          this.isPerformingDeferredExercise = false;
-          this.lastActivatedDeferredExerciseId = null;
-          this.routine.set(sessionRoutineCopy); // Set the routine signal FIRST
-
-          const firstPending = this.findFirstPendingExerciseAndSet(sessionRoutineCopy);
-          if (firstPending) {
-            this.currentExerciseIndex.set(firstPending.exerciseIndex);
-            this.currentSetIndex.set(firstPending.setIndex);
-            console.log(`loadNewWorkoutFromRoute - Initial pending set to Ex: ${firstPending.exerciseIndex}, Set: ${firstPending.setIndex}`);
-
-            const firstEx = sessionRoutineCopy.exercises[firstPending.exerciseIndex];
-            if (!firstEx.supersetId || firstEx.supersetOrder === 0) {
-              this.totalBlockRounds.set(firstEx.rounds ?? 1);
-            } else {
-              const actualStart = sessionRoutineCopy.exercises.find(ex => ex.supersetId === firstEx.supersetId && ex.supersetOrder === 0);
-              this.totalBlockRounds.set(actualStart?.rounds ?? 1);
-            }
-          } else {
-            // No pending exercises in the routine from the start.
-            console.log("loadNewWorkoutFromRoute: Routine loaded but no initial pending exercises. Will try deferred/finish.");
-            this.currentExerciseIndex.set(0); // Default, though it might not be used
-            this.currentSetIndex.set(0);
-            this.totalBlockRounds.set(1);
-            // No need to call prepareCurrentSet, go directly to end-of-workout logic
-            this.exercisesProposedThisCycle = { doLater: false, skipped: false };
-            await this.tryProceedToDeferredExercisesOrFinish(sessionRoutineCopy);
-            this.isInitialLoadComplete = true;
-            return; // Exit tap if no pending exercises
-          }
-
-          this.currentBlockRound.set(1);
-          this.currentWorkoutLogExercises.set([]);
-          await this.prepareCurrentSet(); // This should now work with the correctly set indexes
-
-          // sessionState should be set to Playing inside prepareCurrentSet if successful
-          if (this.sessionState() !== SessionState.Error && this.sessionState() !== SessionState.Paused) {
-            this.startSessionTimer();
-            this.startAutoSave();
-          }
-        } else if (this.routineId) {
-          if (this.routineId === "-1") {
-            const emptyNewRoutine = {
-              name: "New session",
-              createdAt: new Date().toISOString(),
-              goal: 'custom',
-              exercises: [] as WorkoutExercise[],
-            } as Routine;
-
-            this.routine.set(emptyNewRoutine);
-            this.openExerciseSelectionModal();
-          } else {
-            console.error('loadNewWorkoutFromRoute - tap: Failed to load routine for ID or routine was null:', this.routineId);
-            this.routine.set(null); // Explicitly set to null to trigger error display in template
-            this.sessionState.set(SessionState.Error);
-            this.toastService.error("Failed to load workout routine.", 0, "Load Error");
-            if (isPlatformBrowser(this.platformId)) this.router.navigate(['/workout']); // only navigate in browser
-            this.stopAutoSave();
-          }
-
+          await this.tryProceedToDeferredExercisesOrFinish(sessionRoutineCopy);
+          this.isInitialLoadComplete = true;
+          return;
         }
+
+        this.currentBlockRound.set(1);
+        this.currentWorkoutLogExercises.set([]);
+        await this.prepareCurrentSet();
+
+        if (this.sessionState() !== SessionState.Error && this.sessionState() !== SessionState.Paused) {
+          this.startSessionTimer();
+          this.startAutoSave();
+        }
+
         this.isInitialLoadComplete = true;
         console.log('loadNewWorkoutFromRoute - END tap operator. Final sessionState:', this.sessionState());
       }),
-      takeUntil(this.destroy$) // Add this line
+      takeUntil(this.destroy$)
     ).subscribe({
       error: (err) => {
         console.error('loadNewWorkoutFromRoute - Error in observable pipeline:', err);

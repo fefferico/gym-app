@@ -92,8 +92,12 @@ export class TrackingService {
     return this.workoutLogs$.pipe(map(logs => logs.find(log => log.id === id)));
   }
 
+  getLogsForDate(date: string): Observable<WorkoutLog[] | undefined> {
+    return this.workoutLogs$.pipe(map(logs => logs.filter(log => log.date === date)));
+  }
+
   clearAllWorkoutLogs_DEV_ONLY(): Promise<void> {
-    return this.alertService.showConfirm("Info", "DEVELOPMENT: Are you sure you want to delete ALL workout logs? This cannot be undone.")
+    return this.alertService.showConfirm("Infoù", "DEVELOPMENT: Are you sure you want to delete ALL workout logs? This cannot be undone.")
       .then(async (result) => {
         if (result && result.data) {
           this.saveWorkoutLogsToStorage([]);
