@@ -153,7 +153,7 @@
         </button>
       </header>
 
-      <main class="flex-grow overflow-y-auto pt-10 your-main-container">
+      <main class="flex-grow overflow-y-auto pt-11 your-main-container">
         <!-- Increased pb for main action button area -->
         <div class="px-4 max-w-md mx-auto" *ngIf="activeSetInfo() as activeSet; else workoutCompleteOrError">
           <div class="flex text-center justify-center items-center mb-1 hover:cursor-pointer"
@@ -184,6 +184,12 @@
 
 
           <div class="text-center mb-2">
+            <p *ngIf="false" class="flex flex-col">
+              <span class="text-xs text-gray-500 dark:text-gray-400">{{activeSet.exerciseData.id}}</span>
+            <span class="text-xs text-gray-500 dark:text-gray-400">{{activeSet.exerciseData.exerciseId}}</span>
+            <span class="text-xs text-gray-500 dark:text-gray-400">{{activeSet.exerciseData.exerciseName}}</span>
+            </p>
+            
             <p class="text-m text-gray-500 dark:text-gray-400">
               <span *ngIf="activeSet.type === 'warmup'" class="text-blue-500 dark:text-blue-400">
                 Warm-up Set {{ getCurrentWarmupSetNumber() }}
@@ -724,7 +730,7 @@
                 }}:</span>
               <span *ngIf="daySetLog.type === 'warmup'" class="text-blue-600 dark:text-blue-400 font-normal">
                 (Warm-up)</span>
-              Set #{{ (daySetDisplayIndex + 1) }}:
+              Set #{{ (daySetLog.plannedSetId) }}:
               <!-- Use actual set number if available -->
             </p>
             <div class="grid grid-cols-2 gap-x-2 gap-y-1 text-gray-600 dark:text-gray-300">
@@ -757,7 +763,7 @@
               stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            Last time ({{lastPerformanceForCurrentExercise?.lastPerformedDate | date:'dd/MM/yy HH:mm' }}):
+            Last time ({{lastPerformanceForCurrentExercise?.lastPerformedDate | date:'dd/MM/yy' }}):
           </span>
         </p>
         <ul class="list-none space-y-0.5 ml-1 text-blue-600 dark:text-blue-400">

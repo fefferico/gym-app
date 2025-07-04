@@ -92,6 +92,10 @@ export class TrackingService {
     return this.workoutLogs$.pipe(map(logs => logs.find(log => log.id === id)));
   }
 
+  getWorkoutLogByRoutineId(routineId: string): Observable<WorkoutLog | undefined> {
+    return this.workoutLogs$.pipe(map(logs => logs.find(log => log.routineId === routineId)));
+  }
+
   getLogsForDate(date: string): Observable<WorkoutLog[] | undefined> {
     return this.workoutLogs$.pipe(map(logs => logs.filter(log => log.date === date)));
   }

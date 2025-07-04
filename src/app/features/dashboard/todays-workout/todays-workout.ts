@@ -8,7 +8,7 @@ import { Routine } from '../../../core/models/workout.model';
 import { ScheduledRoutineDay, TrainingProgram } from '../../../core/models/training-program.model';
 import { WorkoutLog } from '../../../core/models/workout-log.model';
 import { WorkoutService } from '../../../core/services/workout.service';
-import { catchError, map, Observable, of, Subject, switchMap, takeUntil, tap, combineLatest } from 'rxjs';
+import { catchError, map, Observable, of, Subject, switchMap, takeUntil, tap, combineLatest, ObservedValueOf } from 'rxjs';
 import Hammer from 'hammerjs';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { TrackingService } from '../../../core/services/tracking.service';
@@ -52,7 +52,7 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
   protected activeProgram = signal<TrainingProgram | null>(null);
   isLoading = signal<boolean>(true);
   currentDate = signal<Date>(new Date());
-    private currentDate$: Observable<Date> = toObservable(this.currentDate);
+  private currentDate$: Observable<Date> = toObservable(this.currentDate);
   todaysScheduledWorkout = signal<{ routine: Routine, scheduledDayInfo: ScheduledRoutineDay } | null>(null);
   todaysScheduledWorkoutDone = signal<boolean>(false);
   logsForDay = signal<WorkoutLog[]>([]);
@@ -70,7 +70,7 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
     this.availableRoutines$ = this.workoutService.routines$;
   }
 
-    formatDate = (date: Date) => {
+  formatDate = (date: Date) => {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
     const day = String(date.getDate()).padStart(2, '0');
@@ -84,9 +84,9 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
     this.currentDate$.pipe(
       // On every new date emission, set loading to true.
       tap(() => this.isLoading.set(true)),
-      
+
       // Use switchMap to cancel previous requests and start a new data fetch for the new date.
-      switchMap(date => 
+      switchMap(date =>
         // Fetch all necessary data for the new date in parallel.
         combineLatest([
           this.trainingProgramService.getActiveProgram(),
@@ -97,12 +97,12 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
           map(([activeProgram, routineData, logsForDay]) => {
             // Determine if the *scheduled* workout is done.
             let isDone = false;
-            if (logsForDay){
-              isDone = routineData 
-              ? logsForDay.some(log => log.routineId === routineData.routine.id) 
-              : false;
+            if (logsForDay) {
+              isDone = routineData
+                ? logsForDay.some(log => log.routineId === routineData.routine.id)
+                : false;
             }
-            
+
             // Return a single, clean state object.
             return { activeProgram, routineData, logsForDay, isDone };
           }),
@@ -213,5 +213,15 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
   getRoutineDuration(routine: Routine): number {
     if (routine) { return this.workoutService.getEstimatedRoutineDuration(routine); }
     return 0;
+  }
+
+  secondsToDateTime(seconds: number): Date {
+    const d = new Date(0, 0, 0, 0, 0, 0, 0);
+    d.setSeconds(seconds);
+    return d;
+  }
+
+  findRoutineLog(routineId: string): Observable<WorkoutLog | undefined> {
+    return this.trackingService.getWorkoutLogByRoutineId(routineId);
   }
 }

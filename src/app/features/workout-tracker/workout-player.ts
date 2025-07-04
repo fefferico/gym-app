@@ -239,6 +239,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   private tabataTimerSub: Subscription | undefined;
   // --- END: TABATA MODE STATE SIGNALS ---
 
+  protected HEADER_OVERVIEW_STRING: string = 'JUMP TO EXERCISE';
   protected headerOverviewString: string = 'JUMP TO EXERCISE';
 
   readonly shouldStartWithPresetTimer = computed<boolean>(() => {
@@ -371,6 +372,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
   @HostListener('window:beforeunload', ['$event'])
   unloadNotification($event: BeforeUnloadEvent): void {
+    this.closeWorkoutMenu();
     if (this.sessionState() === SessionState.Playing && this.routine() && this.currentWorkoutLogExercises().length > 0) {
       this.captureAndSaveStateForUnload();
     }
@@ -420,6 +422,10 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     }
     return warmupSetCounter; // Return count up to and including current set
   });
+
+  getWorkingSets(exercise: WorkoutExercise | LoggedWorkoutExercise): number {
+    return exercise.sets ? exercise.sets.filter(set => set.type !== 'warmup').length : 1;
+  }
 
   activeSetInfo = computed<ActiveSetInfo | null>(() => {
     const r = this.routine();
@@ -489,6 +495,14 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         const routine = this.routine();
         if (!routine) continue;
         const exerciseIdx = routine.exercises.findIndex(e => e.exerciseId === exLog.exerciseId);
+        const exercise = routine.exercises.find(e => e.exerciseId === exLog.exerciseId);
+
+        const currentSet = exercise?.sets.find(currSet => currSet.id === set.plannedSetId);
+        const currentSetIndex = currentSet ? exercise?.sets.findIndex(set => set.id === currentSet.id) : -1;
+        if (currentSetIndex !== undefined && currentSetIndex >= 0) {
+          set.plannedSetId = (currentSetIndex + 1) + ' of ' + exercise?.sets.length;
+        }
+
         // const exerciseIdx = routine.exercises.findIndex(e => e.exerciseId === exLog.exerciseId && e.id === (exLog as any).id);
         if (exerciseIdx < 0) continue;
         // If before current exercise, include all sets
@@ -975,7 +989,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       // No future pending exercises. Now check for *any* unlogged 'do_later' or 'skipped' exercises.
       const hasUnfinishedDeferred = currentRoutine.exercises.some(ex =>
         (ex.sessionStatus === 'do_later' || ex.sessionStatus === 'skipped') &&
-        !this.isExerciseFullyLogged(ex.exerciseId, activeInfo.exerciseIndex, ex.id)
+        !this.isExerciseFullyLogged(ex)
       );
       return !hasUnfinishedDeferred; // True (latest) if no unfinished deferred/skipped
     }
@@ -997,7 +1011,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     // Now, check if there are *any* unlogged 'do_later' or 'skipped' exercises in the whole routine.
     const hasUnfinishedDeferred = currentRoutine.exercises.some((ex, index) =>
       (ex.sessionStatus === 'do_later' || ex.sessionStatus === 'skipped') &&
-      !this.isExerciseFullyLogged(ex.exerciseId, index, ex.id)
+      !this.isExerciseFullyLogged(ex)
     );
 
     return !hasUnfinishedDeferred;
@@ -1008,13 +1022,13 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     const unfinishedOtherExercises = this.getUnfinishedExercises().filter(
       ex => ex.id !== currentExercise.id
     );
-    console.log("Unfinished exercises (excluding current):", unfinishedOtherExercises.map(e => e.exerciseName));
+    // console.log("Unfinished exercises (excluding current):", unfinishedOtherExercises.map(e => e.exerciseName));
 
     const unfinishedDeferredOrSkippedExercises = sessionRoutine.exercises
       .map((ex, idx) => ({ ...ex, originalIndex: idx }))
       .filter((ex, innerIdx) =>
         (ex.sessionStatus === 'do_later' || ex.sessionStatus === 'skipped') &&
-        !this.isExerciseFullyLogged(ex.exerciseId, innerIdx, ex.id)
+        !this.isExerciseFullyLogged(ex)
       )
       .sort((a, b) => {
         if (a.sessionStatus === 'do_later' && b.sessionStatus === 'skipped') return -1;
@@ -1045,9 +1059,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
 
   private async tryProceedToDeferredExercisesOrFinish(sessionRoutine: Routine): Promise<void> {
-    console.log("tryProceedToDeferredExercisesOrFinish: ENTERED. Proposed flags before:", JSON.stringify(this.exercisesProposedThisCycle));
     const mergedUnfinishedExercises = this.getUnfinishedOrDeferredExercises(sessionRoutine);
-    console.log("tryProceedToDeferredExercisesOrFinish: Found unfinished deferred/skipped:", mergedUnfinishedExercises.map(e => `${e.exerciseName} (${e.sessionStatus})`));
 
     if (mergedUnfinishedExercises.length > 0) {
       let proceedWithSelectedExercise = false;
@@ -1063,7 +1075,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
           [
             { text: 'Complete It', role: 'confirm', data: singleEx.originalIndex, cssClass: 'bg-blue-500 hover:bg-blue-600 text-white' } as AlertButton,
             { text: 'Finish Workout', role: 'destructive', data: 'finish_now', cssClass: 'bg-green-500 hover:bg-green-600 text-white' } as AlertButton,
-            { text: 'Cancel (Decide Later)', role: 'cancel', data: 'cancel_deferred_choice' } as AlertButton // Added Cancel here too
+            // { text: 'Cancel (Decide Later)', role: 'cancel', data: 'cancel_deferred_choice' } as AlertButton // Added Cancel here too
           ]
         );
         if (confirmSingle && typeof confirmSingle.data === 'number') {
@@ -1077,27 +1089,13 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       } else { // Multiple unfinished exercises
         const exerciseButtons: AlertButton[] = mergedUnfinishedExercises.map(ex => {
           // Convert sessionStatus to a user-friendly label
-          let statusLabel = '';
+          let statusLabel = this.getExerciseStatusIndicator(ex);
+          const cssClass = this.getExerciseButtonCssClass(ex, ex.sessionStatus);
 
-          let cssClass = 'bg-gray-500 dark:bg-gray-700 dark:text-gray-100 hover:bg-gray-300 hover:text-gray-500 hover:dark:bg-gray-300 hover:dark:text-gray-500';
-          switch (ex.sessionStatus) {
-            case 'do_later':
-              statusLabel = 'Do Later';
-              cssClass = 'bg-orange-500 hover:bg-orange-600 text-white';
-              break;
-            case 'skipped':
-              statusLabel = 'Skipped';
-              cssClass = 'bg-yellow-500 hover:bg-yellow-600 text-black';
-              break;
-            case 'pending':
-              statusLabel = 'Pending';
-              cssClass = 'bg-violet-500 hover:bg-violet-600 text-black';
-              break;
-            default:
-              statusLabel = ex.sessionStatus || '';
-          }
+
+
           return {
-            text: `${ex.exerciseName} (${statusLabel})`,
+            text: `${ex.exerciseName} ${statusLabel}`,
             role: 'confirm',
             data: ex.originalIndex,
             cssClass: cssClass
@@ -1106,7 +1104,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         const alertButtons: AlertButton[] = [
           ...exerciseButtons,
           { text: 'Finish Workout Now', role: 'destructive', data: 'finish_now', cssClass: 'bg-green-500 hover:bg-green-600 text-white mt-4' },
-          { text: 'Cancel (Decide Later)', role: 'cancel', data: 'cancel_deferred_choice' }
+          // { text: 'Cancel (Decide Later)', role: 'cancel', data: 'cancel_deferred_choice' }
         ];
 
         const choice = await this.alertService.showConfirmationDialog(
@@ -1127,19 +1125,16 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
       // Handle choices
       if (userChoseToFinishNow) {
-        console.log("tryProceedToDeferredExercisesOrFinish: User chose 'Finish Workout Now'.");
         await this.finishWorkoutAndReportStatus();
         return;
       }
 
       if (userCancelledChoice) {
-        console.log("tryProceedToDeferredExercisesOrFinish: User cancelled choice of deferred exercises. Setting proposal flags.");
         // Mark that proposals happened for *all* categories that were presented in this list.
         mergedUnfinishedExercises.forEach(ex => {
           if (ex.sessionStatus === 'do_later') this.exercisesProposedThisCycle.doLater = true;
           if (ex.sessionStatus === 'skipped') this.exercisesProposedThisCycle.skipped = true;
         });
-        console.log("tryProceedToDeferredExercisesOrFinish: Proposed flags after cancel:", JSON.stringify(this.exercisesProposedThisCycle));
         this.cdr.detectChanges(); // For mainActionButtonLabel update
         // IMPORTANT: Return here to prevent falling through to finishWorkoutAndReportStatus()
         // The user chose to "decide later", so the player should wait for their next action.
@@ -1148,7 +1143,6 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
       if (proceedWithSelectedExercise && selectedExerciseOriginalIndex !== undefined) {
         const exerciseToStart = sessionRoutine.exercises[selectedExerciseOriginalIndex];
-        console.log(`tryProceedToDeferredExercisesOrFinish: User selected exercise: ${exerciseToStart.exerciseName}`);
         this.isPerformingDeferredExercise = true;
         this.lastActivatedDeferredExerciseId = exerciseToStart.id;
 
@@ -1157,7 +1151,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         this.routine.set(updatedRoutine);
 
         this.currentExerciseIndex.set(selectedExerciseOriginalIndex);
-        this.currentSetIndex.set(this.findFirstUnloggedSetIndex(exerciseToStart.exerciseId, exerciseToStart.sets.map(s => s.id)) || 0);
+        this.currentSetIndex.set(this.findFirstUnloggedSetIndex(exerciseToStart.id, exerciseToStart.sets.map(s => s.id)) || 0);
         this.currentBlockRound.set(1); // Reset round for this specific exercise block
         const newBlockStarter = updatedRoutine.exercises[selectedExerciseOriginalIndex];
         if (!newBlockStarter.supersetId || newBlockStarter.supersetOrder === 0) {
@@ -1173,68 +1167,86 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       }
     }
 
-    // If there were no unfinished exercises, or if some edge case led here without a return.
-    console.log("tryProceedToDeferredExercisesOrFinish: No unfinished exercises to propose or all paths handled. Finishing workout.");
+    const endCurrentWorkout = await this.alertService.showConfirmationDialog(
+      `Continue or End`,
+      'The current session is finished! Would you like to add a new exercise or complete it?',
+      [
+        { text: 'Add exercise', role: 'add_exercise', data: 'add_exercise', cssClass: 'bg-primary hover:bg-primary-dark text-white' } as AlertButton,
+        { text: 'End session', role: 'end_session', data: "end_session", cssClass: 'bg-blue-500 hover:bg-blue-600 text-white' } as AlertButton,
+      ],
+    );
 
-    // if (this.routineId === "-1") {
-    if (true) {
-      const endCurrentWorkout = await this.alertService.showConfirmationDialog(
-        `Continue or End`,
-        'The current session is finished! Would you like to add a new exercise or complete it?',
-        [
-          { text: 'Add exercise', role: 'add_exercise', data: 'add_exercise', cssClass: 'bg-primary hover:bg-primary-dark text-white' } as AlertButton,
-          { text: 'End session', role: 'end_session', data: "end_session", cssClass: 'bg-blue-500 hover:bg-blue-600 text-white' } as AlertButton,
-        ],
-      );
-
-      if (endCurrentWorkout && endCurrentWorkout.role === 'end_session') {
-        await this.finishWorkoutAndReportStatus();
-      } else {
-        this.openExerciseSelectionModal();
-      }
-    } else {
+    if (endCurrentWorkout && endCurrentWorkout.role === 'end_session') {
       await this.finishWorkoutAndReportStatus();
+    } else {
+      this.isEndReached.set(true);
+      this.openExerciseSelectionModal();
     }
   }
 
-  private isExercisePartiallyLogged(exerciseIdName: string, exerciseIndex: number, exerciseId: string): boolean {
+  /**
+ * Retrieves the number of sets that have been logged for a specific exercise
+ * during the current workout session.
+ *
+ * This is useful for displaying progress like "2 of 5 sets completed".
+ *
+ * @param id The unique ID of this exercise instance within the current routine (maps to WorkoutExercise.id).
+ * @returns The number of sets logged for this exercise instance, or 0 if none have been logged yet.
+ */
+  public getNumberOfLoggedSets(id: string, filterOutType?: string): number {
+    // Find the corresponding exercise in the array of currently logged exercises for this session.
+    // We use the same robust matching logic as your inspiration method to find the exact instance.
+    const loggedExercise = this.currentWorkoutLogExercises().find(loggedEx =>
+      loggedEx.id === id
+    );
+
+    // If no log entry is found for this specific exercise instance yet,
+    // it means 0 sets have been logged for it.
+    if (!loggedExercise) {
+      return 0;
+    }
+
+    // If an entry is found, the number of logged sets is simply the length of its 'sets' array.
+    // We use optional chaining `?.` for extra safety, returning 0 if `sets` is somehow missing.
+
+
+    if (filterOutType) {
+      return loggedExercise.sets ? loggedExercise.sets.filter(set => set.type !== filterOutType).length : 1;
+    } else {
+      return loggedExercise.sets?.length || 0;
+    }
+  }
+
+  private isExercisePartiallyLogged(currentExercise: WorkoutExercise): boolean {
     const routine = this.routine();
     if (!routine) return false;
 
-    const exercise = routine.exercises.find(ex => ex.exerciseId === exerciseIdName && ex.id === exerciseId);
+    const exercise = routine.exercises.find(ex => ex.exerciseId === currentExercise.exerciseId && ex.id === currentExercise.id);
     if (!exercise) return false;
 
     const loggedEx = this.currentWorkoutLogExercises().find(le =>
-      le.exerciseId === exerciseIdName &&
+      le.exerciseId === currentExercise.exerciseId &&
       exercise.exerciseId === le.exerciseId &&
-      le.id === exerciseId
+      le.id === currentExercise.id
     );
 
     // If there's no log entry OR the entry has 0 sets, it's not even partially logged.
     if (!loggedEx || loggedEx.sets.length === 0) {
       return false;
     }
-
-    // Same logic as before to determine the number of planned sets for this specific exercise.
-    // Note: Your original function didn't seem to use the 'rounds' variable in its final calculation,
-    // so I've kept it consistent here.
     const totalPlannedSets = exercise.sets.length;
-
-    // An exercise is partially logged if the number of logged sets is LESS THAN the total planned sets.
-    // We already know loggedEx.sets.length > 0 from the check above.
     return loggedEx.sets.length < totalPlannedSets;
   }
 
-  private isExerciseFullyLogged(exerciseIdName: string, exerciseIndex: number, exerciseId: string): boolean {
+  private isExerciseFullyLogged(currentExercise: WorkoutExercise): boolean {
     const routine = this.routine();
     if (!routine) return false;
-    const exercise = routine.exercises.find(ex => ex.exerciseId === exerciseIdName && ex.id === exerciseId);
+    const exercise = routine.exercises.find(ex => ex.id === currentExercise.id);
     if (!exercise) return false;
 
     const loggedEx = this.currentWorkoutLogExercises().find(le =>
-      le.exerciseId === exerciseIdName
+      le.id === currentExercise.id
       && exercise.exerciseId === le.exerciseId
-      && le.id === exerciseId
     );
 
     if (!loggedEx) return false;
@@ -1259,7 +1271,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
   private findFirstUnloggedSetIndex(exerciseId: string, plannedSetIds: string[]): number | null {
-    const loggedEx = this.currentWorkoutLogExercises().find(le => le.exerciseId === exerciseId);
+    const loggedEx = this.currentWorkoutLogExercises().find(le => le.id === exerciseId);
     if (!loggedEx) return 0; // No sets logged, start from first
 
     const loggedPlannedSetIds = new Set(loggedEx.sets.map(s => s.plannedSetId));
@@ -1363,8 +1375,13 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     }
 
     if (exIndex >= sessionRoutine.exercises.length || !sessionRoutine.exercises[exIndex] || sIndex >= sessionRoutine.exercises[exIndex].sets.length || !sessionRoutine.exercises[exIndex].sets[sIndex]) {
-      this.currentSetForm.reset({ rpe: null, setNotes: '' }); this.resetTimedSet(); this.currentBaseExercise.set(null);
-      this.exercisePBs.set([]); this.lastPerformanceForCurrentExercise = null; this.rpeValue.set(null); this.showRpeSlider.set(false);
+      this.currentSetForm.reset({ rpe: null, setNotes: '' });
+      this.resetTimedSet();
+      this.currentBaseExercise.set(null);
+      this.exercisePBs.set([]);
+      this.lastPerformanceForCurrentExercise = null;
+      this.rpeValue.set(null);
+      this.showRpeSlider.set(false);
       console.error(`prepareCurrentSet: CRITICAL ERROR - Calculated exIndex ${exIndex} or sIndex ${sIndex} is out of bounds or data is invalid.`);
       this.sessionState.set(SessionState.Error);
       this.toastService.error("Error preparing set: Invalid exercise or set index.", 0, "Load Error");
@@ -1421,7 +1438,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       let prevPlayedExIndex = exIndex - 1;
       let foundPrevPlayed = false;
       while (prevPlayedExIndex >= 0) {
-        if (this.isExerciseFullyLogged(sessionRoutine.exercises[prevPlayedExIndex].exerciseId, prevPlayedExIndex, sessionRoutine.exercises[prevPlayedExIndex].id) ||
+        if (this.isExerciseFullyLogged(sessionRoutine.exercises[prevPlayedExIndex]) ||
           (sessionRoutine.exercises[prevPlayedExIndex].sessionStatus === 'pending' && this.currentWorkoutLogExercises().some(le => le.exerciseId === sessionRoutine.exercises[prevPlayedExIndex].exerciseId))) {
           const prevExercise = sessionRoutine.exercises[prevPlayedExIndex];
           if (prevExercise.sets.length > 0) {
@@ -1469,7 +1486,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     for (let i = 0; i < routine.exercises.length; i++) {
       const exercise = routine.exercises[i];
       if (exercise.sessionStatus === 'pending' && exercise.sets && exercise.sets.length > 0) {
-        const firstUnloggedSetIdx = this.findFirstUnloggedSetIndex(exercise.exerciseId, exercise.sets.map(s => s.id)) ?? 0;
+        const firstUnloggedSetIdx = this.findFirstUnloggedSetIndex(exercise.id, exercise.sets.map(s => s.id)) ?? 0;
         // Ensure firstUnloggedSetIdx is valid
         if (firstUnloggedSetIdx < exercise.sets.length) {
           return { exerciseIndex: i, setIndex: firstUnloggedSetIdx };
@@ -1895,6 +1912,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     }
     // --- END: TABATA RESUME LOGIC ---
 
+    
     this.originalRoutineSnapshot = state.originalRoutineSnapshot ? JSON.parse(JSON.stringify(state.originalRoutineSnapshot)) : [];
 
     this.currentExerciseIndex.set(state.currentExerciseIndex);
@@ -1920,9 +1938,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     this.exercisesProposedThisCycle = { doLater: false, skipped: false };
     this.isPerformingDeferredExercise = false; // RESET HERE
     this.lastActivatedDeferredExerciseId = null;
-    await this.prepareCurrentSet(); // This will also handle if current exIndex is not 'pending'
-    // If prepareCurrentSet navigates, sessionState might change.
-    // Only set to Playing if it didn't error out or navigate away.
+    await this.prepareCurrentSet(); 
     if (this.sessionState() !== SessionState.Error && this.routine()) {
       this.sessionState.set(SessionState.Playing);
       this.startSessionTimer();
@@ -2294,7 +2310,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       }
 
       const newWorkoutExercise: WorkoutExercise = {
-        id: selectedExercise.id, // Unique ID for this session's instance of the exercise
+        id: `custom-exercise-${uuidv4()}`, // Unique ID for this session's instance of the exercise
         exerciseId: selectedExercise.id,
         exerciseName: selectedExercise.name,
         sets: newExerciseSets,
@@ -2359,7 +2375,11 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         this.startSessionTimer();
         this.startAutoSave();
       } else {
-        goToNewEx = await this.alertService.showConfirm("Exercise Added", `"${newWorkoutExercise.exerciseName}" added. Start it now? (Otherwise, it will appear after your current block)`);;
+        if (this.isEndReached()) {
+          await this.alertService.showAlert("Exercise Added", `"${newWorkoutExercise.exerciseName}" added`);;
+          goToNewEx = { data: true };
+          this.isEndReached.set(false);
+        }
       }
       if ((goToNewEx && goToNewEx.data) || this.routineId === "-1") {
         this.currentExerciseIndex.set(insertAtIndex);
@@ -2377,92 +2397,6 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     }
 
   }
-
-
-
-  async addCustomExercise(): Promise<void> {
-    if (this.sessionState() === 'paused') {
-      this.toastService.warning("Session is paused. Resume to add exercise.", 3000, "Paused"); return;
-    }
-    const currentRoutineVal = this.routine();
-    if (!currentRoutineVal) {
-      this.toastService.error("Cannot add exercise: routine data unavailable.", 0, "Error"); return;
-    }
-
-    const inputs: AlertInput[] = [
-      { name: 'exerciseName', type: 'text', placeholder: 'Exercise Name (e.g., Custom Bicep Curl)', value: '', attributes: { required: true } },
-      { name: 'numSets', type: 'number', placeholder: 'Number of Sets (e.g., 3)', value: '3', attributes: { min: '1', required: true } },
-      { name: 'repsPerSet', type: 'number', placeholder: 'Reps per Set (e.g., 10)', value: '10', attributes: { min: '0' } },
-      { name: 'weightPerSet', type: 'number', placeholder: 'Weight (optional)', value: '', attributes: { min: '0', step: 'any' } },
-      { name: 'restAfterSet', type: 'number', placeholder: 'Rest after set (sec, e.g., 60)', value: '60', attributes: { min: '0' } }
-    ];
-
-    const result = await this.alertService.showPromptDialog('Add asdasdds Exercise', 'Define the new exercise:', inputs, 'Add Exercise');
-
-    if (result && result['exerciseName'] && result['numSets']) {
-      const exerciseName = String(result['exerciseName']).trim();
-      const numSets = parseInt(String(result['numSets']), 10);
-      const repsPerSet = result['repsPerSet'] ? parseInt(String(result['repsPerSet']), 10) : null;
-      const weightPerSet = result['weightPerSet'] !== '' && result['weightPerSet'] !== null ? parseFloat(String(result['weightPerSet'])) : null;
-      const restAfterSet = result['restAfterSet'] ? parseInt(String(result['restAfterSet']), 10) : 60;
-
-
-      if (!exerciseName || numSets <= 0) {
-        this.toastService.error("Invalid input for custom exercise.", 0, "Error");
-        return;
-      }
-
-      const newExerciseSets: ExerciseSetParams[] = [];
-      for (let i = 0; i < numSets; i++) {
-        newExerciseSets.push({
-          id: `custom-set-${uuidv4()}`,
-          reps: repsPerSet || 8, // Default to 8 reps if not specified
-          weight: weightPerSet,
-          duration: undefined,
-          restAfterSet: restAfterSet,
-          type: 'standard',
-          notes: ''
-        });
-      }
-
-      const newWorkoutExercise: WorkoutExercise = {
-        id: `custom-ex-${uuidv4()}`,
-        exerciseId: `custom-exercise-${uuidv4()}`,
-        exerciseName: exerciseName,
-        sets: newExerciseSets,
-        rounds: 1,
-        supersetId: null,
-        sessionStatus: 'pending',
-        supersetOrder: null,
-        type: 'standard'
-      };
-
-      const updatedRoutine = JSON.parse(JSON.stringify(currentRoutineVal)) as Routine;
-      let insertAtIndex = this.currentExerciseIndex() + 1;
-      const currentExInfo = this.activeSetInfo();
-      if (currentExInfo && currentExInfo.exerciseData.supersetId && currentExInfo.exerciseData.supersetOrder !== null && currentExInfo.exerciseData.supersetSize) {
-        insertAtIndex = currentExInfo.exerciseIndex - currentExInfo.exerciseData.supersetOrder + currentExInfo.exerciseData.supersetSize;
-      }
-
-      updatedRoutine.exercises.splice(insertAtIndex, 0, newWorkoutExercise);
-      this.routine.set(updatedRoutine);
-
-      const goToNewEx = await this.alertService.showConfirm("Exercise Added", `"${exerciseName}" added. Start it now? (Otherwise, it will appear after your current block)`);
-      if (goToNewEx && goToNewEx.data) {
-        this.currentExerciseIndex.set(insertAtIndex);
-        this.currentSetIndex.set(0);
-        this.currentBlockRound.set(1);
-        this.totalBlockRounds.set(newWorkoutExercise.rounds ?? 1);
-        this.lastPerformanceForCurrentExercise = null;
-        this.playerSubState.set(PlayerSubState.PerformingSet);
-        await this.prepareCurrentSet();
-      } else {
-        this.toastService.success(`"${exerciseName}" added to the queue.`, 3000, "Exercise Added");
-      }
-    }
-    this.closeWorkoutMenu();
-  }
-
 
   async finishWorkoutEarly(): Promise<void> {
     if (this.sessionState() === SessionState.Paused) {
@@ -2929,7 +2863,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         console.log('loadNewWorkoutFromRoute - paramMap emitted, newRoutineId:', newRoutineId);
         console.log('loadNewWorkoutFromRoute - queryParamMap emitted, programId:', programId); // You have the programId here!
 
-        if (programId){
+        if (programId) {
           this.program.set(programId);
         }
 
@@ -3127,7 +3061,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         this.stopAllActivity();
         if (this.routeSub) this.routeSub.unsubscribe();
         await this.loadStateFromPausedSession(pausedState);
-        this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
+        // this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
         this.isInitialLoadComplete = true;
         return true;
       } else {
@@ -3411,7 +3345,13 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       for (let i = searchFrom; i < routine.exercises.length; i++) {
         const ex = routine.exercises[i];
         if (ex.sessionStatus === 'pending') {
-          if (!ex.supersetId || ex.supersetOrder === 0) { nextExIdx = i; break; }
+          if (!ex.supersetId || ex.supersetOrder === 0) {
+            nextExIdx = i;
+            if (this.getNumberOfLoggedSets(ex.id)) {
+              nextSetIdx = this.getNumberOfLoggedSets(ex.id);
+            }
+            break;
+          }
           // If mid-superset, find its actual start if that start is pending
           let actualBlockStartForMidSuperset = i - (ex.supersetOrder || 0);
           if (actualBlockStartForMidSuperset >= 0 && routine.exercises[actualBlockStartForMidSuperset].sessionStatus === 'pending' && routine.exercises[actualBlockStartForMidSuperset].supersetId === ex.supersetId) {
@@ -3443,7 +3383,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   getUnfinishedExercises(): WorkoutExercise[] {
     const routine = this.routine();
     if (!routine) return [];
-    return routine.exercises.filter((ex, idx) => !this.isExerciseFullyLogged(ex.exerciseId, idx, ex.id));
+    return routine.exercises.filter((ex, idx) => !this.isExerciseFullyLogged(ex));
   }
 
   /**
@@ -3460,16 +3400,13 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     });
   }
 
-  // Ensure navigateToNextStepInWorkout correctly resets exercisesProposedThisCycle
-  // when it decides to call tryProceedToDeferredExercisesOrFinish.
-
   private async navigateToNextStepInWorkout(
     completedActiveInfo: ActiveSetInfo,
     currentSessionRoutine: Routine,
     forceAdvanceExerciseBlock: boolean = false
   ): Promise<void> {
     const exerciseJustCompleted = completedActiveInfo.exerciseData;
-    const isNowFullyLogged = this.isExerciseFullyLogged(exerciseJustCompleted.exerciseId, completedActiveInfo.exerciseIndex, exerciseJustCompleted.id);
+    const isNowFullyLogged = this.isExerciseFullyLogged(exerciseJustCompleted);
 
     if (this.isPerformingDeferredExercise && exerciseJustCompleted.id === this.lastActivatedDeferredExerciseId && isNowFullyLogged) {
       console.log("navigateToNextStepInWorkout: Completed an explicitly chosen deferred/skipped exercise. Re-evaluating all remaining.");
@@ -3537,9 +3474,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         if (
           currentSessionRoutine.exercises[i].sessionStatus === 'pending' &&
           !this.isExerciseFullyLogged(
-            currentSessionRoutine.exercises[i].exerciseId,
-            i,
-            currentSessionRoutine.exercises[i].id
+            currentSessionRoutine.exercises[i]
           )
         ) {
           nextUnfinishedIdx = i;
@@ -3589,6 +3524,11 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       this.isPerformingDeferredExercise = false;
       this.lastActivatedDeferredExerciseId = null;
       this.exercisesProposedThisCycle = { doLater: false, skipped: false };
+
+      // forcing completed and save
+      completedActiveInfo.exerciseData.sessionStatus = 'completed';
+      this.savePausedSessionState();
+      
       await this.tryProceedToDeferredExercisesOrFinish(currentSessionRoutine);
       return;
     }
@@ -3612,11 +3552,13 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     }
 
     // Check if the next exercise is already among currentWorkoutLogExercises (by exerciseId and id)
-    const isNextExerciseLogged = this.currentWorkoutLogExercises().some(
-      logEx => logEx.exerciseId === nextExercise?.exerciseId &&
-        currentSessionRoutine.exercises.find(ex => ex.id === nextExercise?.id) && this.isExerciseFullyLogged(nextExercise?.exerciseId, nextExIdx, nextExercise.id)
-    );
-    if (isNextExerciseLogged && !this.checkIfSetIsPartOfRounds()) {
+    const isNextExerciseFullyLogged = this.isExerciseFullyLogged(nextExercise);
+
+    // this.currentWorkoutLogExercises().some(
+    //   logEx => logEx.exerciseId === nextExercise?.exerciseId &&
+    //     currentSessionRoutine.exercises.find(ex => ex.id === nextExercise?.id) && this.isExerciseFullyLogged(nextExercise)
+    // );
+    if (isNextExerciseFullyLogged && !this.checkIfSetIsPartOfRounds()) {
       console.log('Next exercise is already logged in currentWorkoutLogExercises:', nextExercise?.exerciseName);
       // You can add additional logic here if you want to handle this case
       this.tryProceedToDeferredExercisesOrFinish(currentSessionRoutine);
@@ -3842,9 +3784,143 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     });
   }
 
+  getExerciseStatus(currentExercise: WorkoutExercise | LoggedWorkoutExercise): 'pending' | 'skipped' | 'do_later' | 'completed' | 'started' {
+    const routine = this.routine();
+    if (!routine) {
+      return 'pending';
+    }
+    const exerciseInRoutine = routine.exercises?.find(ex => currentExercise.id === ex.id);
+    if (!exerciseInRoutine || !exerciseInRoutine.sessionStatus) {
+      return 'pending';
+    }
+    return exerciseInRoutine.sessionStatus;
+  }
+
+  isExerciseSkipped(currentExercise: WorkoutExercise | LoggedWorkoutExercise): boolean {
+    const routine = this.routine();
+    if (!routine) {
+      return false;
+    }
+    const exerciseInRoutine = routine.exercises?.find(ex => currentExercise.id === ex.id);
+    if (!exerciseInRoutine || !exerciseInRoutine.sessionStatus) {
+      return false;
+    }
+    return exerciseInRoutine.sessionStatus === 'skipped';
+  }
+
+  isExerciseDoLater(currentExercise: WorkoutExercise | LoggedWorkoutExercise): boolean {
+    const routine = this.routine();
+    if (!routine) {
+      return false;
+    }
+    const exerciseInRoutine = routine.exercises?.find(ex => currentExercise.id === ex.id);
+    if (!exerciseInRoutine || !exerciseInRoutine.sessionStatus) {
+      return false;
+    }
+    return exerciseInRoutine.sessionStatus === 'do_later';
+  }
+
+  /**
+ * Determines the status text and updates the sessionStatus for a given exercise.
+ * @param ex The exercise to evaluate.
+ * @returns A string representing the status indicator (e.g., " - Current: 1 of 5 done").
+ */
+  private getExerciseStatusIndicator(ex: WorkoutExercise): string {
+    // Using the optimized logic from the previous answer.
+    const isActive = ex.id === this.activeSetInfo()?.exerciseData.id;
+
+    if (this.isExerciseFullyLogged(ex)) {
+      ex.sessionStatus = 'completed';
+      return ' - Completed';
+    }
+
+    if (this.isExercisePartiallyLogged(ex)) {
+      ex.sessionStatus = this.getExerciseStatus(ex) || 'started';
+      const setsDone = this.getNumberOfLoggedSets(ex.id, 'warmup');
+
+      let prefix = isActive ? 'Current' : 'Started';
+
+      if (this.isExerciseSkipped(ex)) {
+        prefix = 'Started (Skipped)';
+      }
+      if (this.isExerciseDoLater(ex)) {
+        prefix = 'Started (Do Later)';
+      }
+
+      return ` - ${prefix}: ${setsDone} of ${this.getWorkingSets(ex)} done`;
+    }
+
+    if (isActive) {
+      ex.sessionStatus = 'started';
+      return ' - Current';
+    }
+
+    switch (ex.sessionStatus) {
+      case 'skipped': return ' - Skipped';
+      case 'do_later': return ' - Do Later';
+      default: return ' - Pending';
+    }
+  }
+
+  /**
+   * Determines the appropriate CSS classes for an exercise button based on its state.
+   * @param ex The exercise to evaluate (its sessionStatus should be pre-updated).
+   * @param statusIndicator The status text, used to check for "Current".
+   * @returns A string of Tailwind CSS classes.
+   */
+  private getExerciseButtonCssClass(ex: WorkoutExercise, statusIndicator: string): string {
+    const isCurrent = statusIndicator.includes('Current');
+    const isSuperset = !!ex.supersetId;
+
+    // 1. Determine the base color class from the session status.
+    let colorClass = '';
+    switch (ex.sessionStatus) {
+      case 'started': colorClass = 'bg-yellow-500 text-white'; break;
+      case 'pending': colorClass = 'bg-violet-500 text-white'; break;
+      case 'do_later': colorClass = 'bg-orange-500 text-white'; break;
+      case 'skipped': colorClass = 'bg-red-500 text-white'; break;
+      case 'completed': colorClass = 'bg-green-600 text-white'; break;
+      default: colorClass = 'bg-gray-500 dark:bg-gray-700'; break; // Pending
+    }
+
+    // 2. The "current" state has the highest priority and overrides other colors.
+    if (isCurrent) {
+      colorClass = 'bg-blue-600 text-white';
+    }
+
+    // 3. Determine border class for supersets. This is applied independently of color.
+    const borderClass = isSuperset ? 'border-2 border-primary' : '';
+
+    // 4. Combine all parts into the final class string.
+    return `${colorClass} ${borderClass}`;
+  }
+
+  /**
+   * Generates the text suffix for a superset exercise.
+   * @param ex The exercise to evaluate.
+   * @param currentRoutineVal The full routine object to find related exercises.
+   * @returns A string for the superset indicator (e.g., " [Superset #1]").
+   */
+  private getSupersetIndicatorText(ex: WorkoutExercise, currentRoutineVal: Routine): string {
+    if (!ex.supersetId) {
+      return '';
+    }
+
+    const blockExercises = currentRoutineVal.exercises.filter(e => e.supersetId === ex.supersetId);
+    const blockIndex = blockExercises.findIndex(e => e.id === ex.id);
+
+    if (blockIndex !== -1) {
+      return ` [Superset #${blockIndex + 1}]`;
+    }
+
+    return '';
+  }
+
   async jumpToExercise(headerString: string = ''): Promise<void> {
     if (headerString) {
       this.headerOverviewString = headerString;
+    } else {
+      this.headerOverviewString = this.HEADER_OVERVIEW_STRING;
     }
     if (this.sessionState() === 'paused') {
       this.toastService.warning("Session is paused. Resume to jump to an exercise.", 3000, "Paused");
@@ -3859,136 +3935,38 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Filter for exercises that are not yet fully completed
+    // --- No changes to this part ---
+    // Filter for exercises that are not yet fully completed or can be restarted.
     const availableExercises = currentRoutineVal.exercises
       .map((ex, index) => ({
         ...ex,
-        originalIndex: index, // Keep track of original index in the routine.exercises array
-        isFullyLogged: this.isExerciseFullyLogged(ex.exerciseId, index, ex.id),
-        isPartiallyLogged: this.isExercisePartiallyLogged(ex.exerciseId, index, ex.id),
+        originalIndex: index,
+        isFullyLogged: this.isExerciseFullyLogged(ex), // Assuming isExerciseFullyLogged needs these params
+        isPartiallyLogged: this.isExercisePartiallyLogged(ex), // Assuming this is correct
       }))
-      .filter(ex => !ex.isFullyLogged || ex.sessionStatus === 'pending' || ex.sessionStatus === 'do_later' || ex.sessionStatus === 'skipped'); // Include pending/deferred even if logged, to allow restart
 
-
-    if (availableExercises.length === 0) {
-      this.toastService.info("All exercises are completed or no suitable exercises to jump to.", 3000);
-      this.closeWorkoutMenu();
-      return;
-    }
-
+    // --- No changes to button creation, but note the role assignment ---
     const exerciseButtons: AlertButton[] = availableExercises.map(ex => {
-      let statusIndicator = '';
-      let setTypeIndicator = '';
-      if (ex.id === this.activeSetInfo()?.exerciseData.id && ex.sessionStatus === 'pending' && !ex.isFullyLogged) {
-        statusIndicator = ' (Current)';
-      } else if (ex.isFullyLogged && ex.sessionStatus !== 'skipped' && ex.sessionStatus !== 'do_later') {
-        ex.sessionStatus = 'completed';
-        statusIndicator = ' (Completed - Restart?)'; // Should ideally not happen if filter is correct
-      } else if (ex.sessionStatus === 'pending') {
-        if (ex.isPartiallyLogged) {
-          ex.sessionStatus = 'started';
-          statusIndicator = ' (Started)';
-        } else {
-          statusIndicator = ' (Pending)';
-        }
-      } else if (ex.sessionStatus === 'skipped') {
-        statusIndicator = ' (Skipped)';
-      } else if (ex.sessionStatus === 'do_later') {
-        statusIndicator = ' (Do Later)';
-      }
-
-      // Always use blue background for current or superset exercises
-      let superSetClass = '';
-      if (ex.supersetId && ex.supersetOrder !== null) {
-        superSetClass = ' border-2 border-primary bg-primary/50 text-white';
-      }
-
-      let cssClass = 'bg-gray-500 dark:bg-gray-700 dark:text-gray-100 hover:bg-gray-300 hover:text-gray-500 hover:dark:bg-gray-300 hover:dark:text-gray-500';
-
-      switch (ex.sessionStatus) {
-        case 'pending':
-          cssClass = statusIndicator.includes('Current') ? 'bg-blue-600 text-white' : cssClass;
-          break;
-        case 'started':
-          cssClass = statusIndicator.includes('Current') ? 'bg-blue-600 text-white' : 'bg-yellow-600 text-white';
-          break;
-        case 'do_later':
-          cssClass = 'bg-orange-500 hover:bg-orange-600 text-white';
-          break;
-        case 'skipped':
-          cssClass = 'bg-yellow-500 hover:bg-yellow-600 text-black';
-          break;
-        case 'completed':
-          cssClass = 'bg-green-500 dark:bg-green-700 dark:text-green-100 hover:bg-green-300 hover:text-green-500 hover:dark:bg-green-300 hover:dark:text-green-500';
-          break;
-        default:
-          cssClass = 'bg-gray-500 dark:bg-gray-700 dark:text-gray-100 hover:bg-gray-300 hover:text-gray-500 hover:dark:bg-gray-300 hover:dark:text-gray-500';
-          break;
-      }
-
-      // If superset, always force blue bg (overrides above)
-      if (superSetClass && !statusIndicator.includes('Current')) {
-        cssClass = superSetClass;
-      } else if (statusIndicator.includes('Current')) {
-        cssClass = cssClass + ' bg-blue-600 text-white' + (superSetClass ? ' border-2 border-primary' : '');
-      }
-
-      let supersetIndexText = '';
-      let groupKey: string | undefined = undefined;
-      if (ex.supersetId) {
-        // Use the index of this exercise within the superset block (1-based)
-        const blockExercises = currentRoutineVal.exercises.filter(e => e.supersetId === ex.supersetId);
-        const blockIndex = blockExercises.findIndex(e => e.id === ex.id);
-        // Extract round index for this exercise (if applicable)
-        let roundIndex = 1;
-        if (ex.rounds && ex.rounds > 1) {
-          // If the exercise has multiple rounds, show the current round
-          // Try to get the current roundIndex from the exercise in the log
-          const logEx = this.currentWorkoutLogExercises().find(le => le.exerciseId === ex.exerciseId && le.id === ex.id);
-          if (logEx && typeof logEx.rounds === 'number' && logEx.rounds > 1) {
-            roundIndex = logEx.rounds;
-          } else {
-            roundIndex = this.currentBlockRound ? this.currentBlockRound() : 1;
-          }
-        }
-        if (blockIndex !== -1) {
-          supersetIndexText = ` [SuperSet #${blockIndex + 1}${ex.rounds && ex.rounds > 1 ? `, Round ${roundIndex}/${ex.rounds}` : ''}]`;
-        }
-        // Group key for adjacent styling: supersetId + round
-        groupKey = `${ex.supersetId}-round${roundIndex}`;
-      }
-
-      // Add a custom property for grouping in the dialog template (if supported)
-      // If your dialog supports custom properties, you can use groupKey for adjacent styling.
-      // If not, you can add a custom CSS class for superset grouping.
-
-      // Example CSS class for superset grouping (add this to your global styles or component SCSS):
-      // .superset-group-[groupKey] {
-      //   border-left: 4px solid #6366f1; /* Example: indigo-500 */
-      //   background-color: #eef2ff;      /* Example: indigo-50 */
-      // }
-      if (groupKey) {
-        cssClass += ` superset-group-${groupKey}`;
-      }
+      const statusIndicator = this.getExerciseStatusIndicator(ex);
+      const supersetIndicator = this.getSupersetIndicatorText(ex, currentRoutineVal);
+      const cssClass = this.getExerciseButtonCssClass(ex, statusIndicator);
 
       return {
-        text: `${ex.exerciseName}${statusIndicator}${supersetIndexText}`,
-        role: 'confirm',
-        data: ex.originalIndex, // Pass the original index
+        text: `${ex.exerciseName}${statusIndicator}${supersetIndicator}`,
+        // The role is 'restart' only if the exercise is already fully logged.
+        role: ex.isFullyLogged ? 'restart' : 'confirm',
+        data: ex.originalIndex,
         cssClass: cssClass,
-        groupKey // Optional: for template logic if needed
       };
     });
 
     exerciseButtons.push({ text: 'Cancel', role: 'cancel', data: 'cancel_jump' });
-
-    this.closeWorkoutMenu(); // Close menu before showing dialog
+    this.closeWorkoutMenu();
 
     const choice = await this.alertService.showConfirmationDialog(
       this.headerOverviewString,
-      'Select an exercise to start or continue:',
+      'Select an exercise to start, continue, or restart:', // Updated prompt text
       exerciseButtons,
-      // true // Allow HTML / more buttons
     );
 
     if (choice && choice.data !== 'cancel_jump' && typeof choice.data === 'number') {
@@ -4000,41 +3978,66 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         return;
       }
 
-      console.log(`Jumping to exercise: ${exerciseToJumpTo.exerciseName} at index ${selectedExerciseOriginalIndex}`);
+      // +++ START: RESTART LOGIC +++
+      // Check if the action was a restart.
+      if (choice.role === 'restart') {
+        const restartChoice = await this.alertService.showConfirmationDialog(
+          `Restart ${exerciseToJumpTo.exerciseName}`,
+          'Are you sure you want to restart the selected exercise? By doing so the previous logged sets will be removed', // Updated prompt text
+          [{ text: 'Cancel', role: 'cancel', data: 'cancel' }, { text: 'OK', role: 'confirm', data: 'confirm' }],
+        );
 
-      // Stop any current timers (rest, preset, timed set)
+        if (restartChoice?.data !== 'confirm') {
+          return;
+        }
+
+        console.log(`Restarting exercise: ${exerciseToJumpTo.exerciseName}. Removing its previous log entry.`);
+
+        // Update the signal by filtering out the exercise we are restarting.
+        // It's crucial to match by the unique `id` of the exercise instance.
+        this.currentWorkoutLogExercises.update(logs => {
+          return logs.filter(loggedEx => loggedEx.id !== exerciseToJumpTo.id);
+        });
+
+        this.toastService.info(`Restarting ${exerciseToJumpTo.exerciseName}.`, 2000, "Restarting");
+      }
+      // +++ END: RESTART LOGIC +++
+
+
+      console.log(`Jumping to exercise: ${exerciseToJumpTo.exerciseName} at index ${selectedExerciseOriginalIndex}`);
       this.stopOngoingTimers();
 
-
-      // Update routine state for the chosen exercise
       const updatedRoutine = JSON.parse(JSON.stringify(currentRoutineVal)) as Routine;
       const targetExerciseInUpdatedRoutine = updatedRoutine.exercises[selectedExerciseOriginalIndex];
-
       const wasDeferred = targetExerciseInUpdatedRoutine.sessionStatus === 'do_later' || targetExerciseInUpdatedRoutine.sessionStatus === 'skipped';
-      targetExerciseInUpdatedRoutine.sessionStatus = 'pending'; // Set to pending to play it
+      targetExerciseInUpdatedRoutine.sessionStatus = 'pending';
       this.routine.set(updatedRoutine);
 
-      // Update player state
       this.currentExerciseIndex.set(selectedExerciseOriginalIndex);
-      this.currentSetIndex.set(this.findFirstUnloggedSetIndex(exerciseToJumpTo.exerciseId, exerciseToJumpTo.sets.map(s => s.id)) || 0);
-      this.currentBlockRound.set(1); // Reset round for this exercise, or could try to be smarter if part of a multi-round block
+      // When restarting, we always start from set index 0.
+      // When continuing, findFirstUnloggedSetIndex will find the correct partial progress.
+
+      const firstUnloggedSetIdx = this.findFirstUnloggedSetIndex(exerciseToJumpTo.id, exerciseToJumpTo.sets.map(s => s.id)) || 0;
+      const finalUnloggedSetIdx = choice.role === 'restart' ? 0 : firstUnloggedSetIdx;
+      this.currentSetIndex.set(finalUnloggedSetIdx);
+
+      // --- Rest of your logic is unchanged ---
+      this.currentBlockRound.set(1);
       if (!exerciseToJumpTo.supersetId || exerciseToJumpTo.supersetOrder === 0) {
         this.totalBlockRounds.set(exerciseToJumpTo.rounds ?? 1);
       } else {
         const actualBlockStart = updatedRoutine.exercises.find(ex => ex.supersetId === exerciseToJumpTo.supersetId && ex.supersetOrder === 0);
         this.totalBlockRounds.set(actualBlockStart?.rounds ?? 1);
       }
-      this.lastPerformanceForCurrentExercise = null; // Force reload for the new exercise
-
-      // Set deferred flags if jumping to a previously deferred/skipped item
+      this.lastPerformanceForCurrentExercise = null;
       this.isPerformingDeferredExercise = wasDeferred;
       this.lastActivatedDeferredExerciseId = wasDeferred ? exerciseToJumpTo.id : null;
-      // Don't reset exercisesProposedThisCycle here, as user is making an explicit jump.
+      this.playerSubState.set(PlayerSubState.PerformingSet);
 
-      this.playerSubState.set(PlayerSubState.PerformingSet); // Default to performing set
-      await this.prepareCurrentSet(); // This will handle preset timers if applicable
-
-      this.toastService.info(`Jumped to ${exerciseToJumpTo.exerciseName}.`, 2500);
+      await this.prepareCurrentSet();
+      if (choice.role !== 'restart') {
+        this.toastService.info(`Jumped to ${exerciseToJumpTo.exerciseName}, set ${finalUnloggedSetIdx + 1} of ${exerciseToJumpTo.sets?.length}.`, 2500);
+      }
     }
   }
 
@@ -4062,6 +4065,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
   // --- Modal Methods for Workout Player ---
+  isEndReached = signal<boolean>(false);
   openExerciseSelectionModal(): void {
     if (this.sessionState() === 'paused') {
       this.toastService.warning("Session is paused. Resume to add exercise.", 3000, "Paused");

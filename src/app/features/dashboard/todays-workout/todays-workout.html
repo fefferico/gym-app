@@ -184,8 +184,12 @@
                 <div class="space-y-2">
                   <div *ngFor="let log of logsForDay()"
                     class="p-3 bg-gray-200/50 dark:bg-gray-800 rounded-md flex justify-between items-center">
-                    <span class="font-medium text-gray-800 dark:text-gray-100 truncate pr-2">{{ log.routineName
-                      }}</span>
+                    <p class="flex flex-col font-medium text-gray-800 dark:text-gray-100 truncate pr-2">{{ log.routineName
+                      }}
+                      <span class="text-sm" *ngIf="log.durationSeconds">Duration: {{
+                            secondsToDateTime(log.durationSeconds) |
+                            date:'HH:mm:ss' }}</span></p>
+                     
                     <button (click)="viewLogDetails(log.id)"
                       class="flex items-center text-xs font-semibold bg-sky-200 dark:bg-sky-700 text-sky-800 dark:text-sky-100 px-2 py-1 rounded hover:bg-sky-300">
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -226,6 +230,11 @@
                         <span class="block text-left text-xs text-gray-500 dark:text-gray-400">{{
                           routine.exercises.length
                           }} exercises - Est: ~{{ getRoutineDuration(routine)}} min</span>
+                        <span *ngIf="findRoutineLog(routine.id) | async as routineLog"
+                          class="block text-left text-xs text-gray-500 dark:text-gray-400">
+                          <span *ngIf="routineLog.durationSeconds">Latest: {{
+                            secondsToDateTime(routineLog.durationSeconds) |
+                            date:'HH:mm:ss' }}</span> </span>
                       </div>
                       <button (click)="startWorkoutProgram(routine.id, $event)" [disabled]="isAnimating()"
                         class="flex items-center ml-2 text-m bg-primary hover:bg-green-200 text-white dark:hover:bg-primary-dark font-semibold py-1 px-2.5 rounded-md disabled:opacity-50">

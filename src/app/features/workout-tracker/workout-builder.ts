@@ -63,6 +63,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   routine: Routine | null = null;
   builderForm!: FormGroup;
   mode: BuilderMode = 'routineBuilder';
+  isEditableMode = signal<boolean>(false);
   isEditMode = false;
   isNewMode = true;
   isViewMode = false; // Only for routineBuilder mode
@@ -153,6 +154,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         this.isViewMode = (this.mode === 'routineBuilder' && !!this.currentRoutineId && !this.isNewMode && this.route.snapshot.routeConfig?.path?.includes('view')) || false;
         // isEditMode is true if not new and not view (i.e. editing a routine or a log)
         this.isEditMode = !this.isNewMode && !this.isViewMode;
+        this.isEditableMode.set(this.isEditMode || this.isNewMode);
 
         this.configureFormValidatorsAndFieldsForMode();
         this.expandedSetPath.set(null);
@@ -999,7 +1001,9 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
           startTimeMs = parsedDate.getTime();
         } catch (e) { this.toastService.error("Invalid date or time format.", 0, "Error"); this.spinnerService.hide(); return; }
         let endTimeMs: number | undefined = undefined;
-        if (formValue.durationMinutes) endTimeMs = new Date(startTimeMs).setMinutes(new Date(startTimeMs).getMinutes() + formValue.durationMinutes);
+        if (formValue.durationMinutes) {
+          endTimeMs = new Date(startTimeMs).setMinutes(new Date(startTimeMs).getMinutes() + formValue.durationMinutes);
+        }
 
 
         const logExercises: LoggedWorkoutExercise[] = formValue.exercises.map((exInput: any): LoggedWorkoutExercise => ({
@@ -1304,7 +1308,9 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     const routinePayload: Routine = {
       id: this.currentRoutineId || uuidv4(), name: formValue.name, description: formValue.description, goal: formValue.goal,
       exercises: (formValue.goal === 'rest') ? [] : formValue.exercises.map((exInput: any) => ({
-        ...exInput, sets: exInput.sets.map((setInput: any) => ({
+        ...exInput, 
+        id: exInput.id || uuidv4(),
+        sets: exInput.sets.map((setInput: any) => ({
           ...setInput, // This includes 'type', 'reps', 'duration', 'tempo', 'restAfterSet', 'notes'
           weight: this.unitService.convertToKg(setInput.weight, this.unitService.currentUnit()) ?? null,
         }))

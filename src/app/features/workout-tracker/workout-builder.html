@@ -48,7 +48,7 @@
                     <label
                         class="block text-xl font-black text-gray-700 dark:text-gray-300">{{builderForm.get('name')?.value}}</label>
                 </div>
-                <div *ngIf="isEditMode || isNewMode">
+                <div *ngIf="isEditableMode()">
                     <label for="routineName" class="block text-m font-medium text-gray-700 dark:text-gray-300">Routine
                         Name</label>
                     <input type="text" id="routineName" formControlName="name" placeholder="Routine name"
@@ -65,7 +65,7 @@
                         [innerHTML]="sanitizedDescription">
                     </p>
                 </div>
-                <div *ngIf="isEditMode || isNewMode">
+                <div *ngIf="isEditableMode()">
                     <label for="description"
                         class="block text-m font-medium text-gray-700 dark:text-gray-300">Description (Optional)</label>
                     <textarea id="description" formControlName="description" rows="3"
@@ -78,7 +78,7 @@
                         <span class="font-medium">Goal: </span>
                         {{ builderForm.get('goal')?.value?.toUpperCase() || ''}}</label>
                 </div>
-                <div *ngIf="isEditMode || isNewMode">
+                <div *ngIf="isEditableMode()">
                     <!-- <label for="goal" class="block text-m font-medium text-gray-700 dark:text-gray-300">Primary
                         Goal</label> -->
                     <select id="goal" formControlName="goal"
@@ -184,7 +184,7 @@
                         [ngClass]="{
                                         'superset-spacing': isSupersetSpacing(exIndex)
                                         }">
-                        <div *ngIf="mode === 'routineBuilder' && (isEditMode || isNewMode) && selectedExerciseIndicesForSuperset().length >= 2 && exIndex === firstSelectedExerciseIndexForSuperset"
+                        <div *ngIf="mode === 'routineBuilder' && (isEditableMode()) && selectedExerciseIndicesForSuperset().length >= 2 && exIndex === firstSelectedExerciseIndexForSuperset"
                             class="absolute left-1/2 -translate-x-1/2 z-20" style="top: -1.25rem;">
                             <button *ngIf="!canUngroupSelectedExercises()" type="button"
                                 (click)="groupSelectedAsSuperset()" [disabled]="isViewMode"
@@ -199,8 +199,8 @@
                         </div>
 
                         <div cdkDrag
-                            [cdkDragDisabled]="mode !== 'routineBuilder' || isViewMode || !isEditMode || isSetExpanded(exIndex, 0)"
-                            appLongPressDrag [longPressEnabled]="isEditMode && !isSetExpanded(exIndex, 0)"
+                            [cdkDragDisabled]="mode !== 'routineBuilder' || isViewMode || !isEditableMode() || isSetExpanded(exIndex, 0)"
+                            appLongPressDrag [longPressEnabled]="isEditableMode() && !isSetExpanded(exIndex, 0)"
                             [longPressDelay]="150" longPressClass="is-long-pressing" [cdkDragData]="exerciseControl"
                             [formGroupName]="exIndex" [cdkDragStartDelay]="110"
                             class="exercise-item relative transition-all cursor-grab"
@@ -208,11 +208,11 @@
                             <!-- COMPACT VIEW / HEADER AREA -->
                             <div class="flex items-center space-x-2">
                                 <!-- DRAG HANDLE ICON (Now just a visual cue) -->
-                                <div *ngIf="mode === 'routineBuilder' && isEditMode && !isViewMode"
+                                <div *ngIf="mode === 'routineBuilder' && isEditableMode() && !isViewMode"
                                     class="p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 flex-shrink-0 top-1 right-1 sm:static"
                                     [ngClass]="{
                                         'absolute top-1 right-1 sm:static': isCompactView,
-                                        'absolute top-2 right-2': !isCompactView && (mode !== 'routineBuilder' || !isEditMode || isViewMode)
+                                        'absolute top-2 right-2': !isCompactView && (mode !== 'routineBuilder' || !isEditableMode() || isViewMode)
                                     }" title="Drag to reorder">
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-5 h-5">
                                         <path d="M 7 17 L 7 3 M 4 6 L 7 3 L 10 6 M 17 7 L 17 21 M 14 18 L 17 21 L 20 18"
@@ -221,7 +221,7 @@
                                     </svg>
                                 </div>
                                 <!-- CHECKBOX (if applicable) -->
-                                <input *ngIf="mode === 'routineBuilder' && (isEditMode || isNewMode) && !isViewMode"
+                                <input *ngIf="mode === 'routineBuilder' && (isEditableMode() || isNewMode) && !isViewMode"
                                     type="checkbox" title="Select the exercise for the Superset"
                                     [id]="'superset-select-' + exIndex"
                                     (change)="toggleExerciseSelectionForSuperset(exIndex, $event)"
@@ -362,7 +362,7 @@
                                             Remove
                                         </button>
                                         <button
-                                            *ngIf="mode === 'routineBuilder' && (isEditMode || isNewMode) && exerciseControl.get('supersetId')?.value"
+                                            *ngIf="mode === 'routineBuilder' && isEditableMode() && exerciseControl.get('supersetId')?.value"
                                             type="button" (click)="ungroupSuperset(exIndex)" [disabled]="isViewMode"
                                             class="flex bg-violet-200 items-center text-xs text-violet-600 hover:text-violet-700 dark:text-violet-400 dark:hover:text-violet-300 font-medium py-1 px-2 rounded-md hover:bg-violet-100 dark:hover:bg-violet-900/50 disabled:opacity-50">
                                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -376,7 +376,7 @@
                                 </div>
 
                                 <!-- Exercise Notes -->
-                                <div *ngIf="builderForm.get('notes')?.value || isEditMode">
+                                <div *ngIf="builderForm.get('notes')?.value || isEditableMode()">
                                     <label [for]="'exerciseNotes-' + exIndex"
                                         class="block text-s font-medium text-gray-600 dark:text-gray-400 mb-0.5">
                                         {{ mode === 'routineBuilder' ? 'Exercise Notes (Optional)' : 'Notes for this
@@ -462,7 +462,7 @@
                                 <!-- EXPANDED Only VIEW MODE - END -->
 
                                 <!-- EXPANDED Only EDIT MODE - START -->
-                                <div *ngIf="!isCompactView && isEditMode" class="space-y-1">
+                                <div *ngIf="!isCompactView && isEditableMode()" class="space-y-1">
                                     <div class="flex justify-between items-center py-1">
                                         <h4 class="text-m font-semibold text-gray-700 dark:text-gray-300">Sets:</h4>
                                         <button *ngIf="!isViewMode" type="button"
@@ -600,7 +600,7 @@
                                                             class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
                                                     </div>
                                                     <div
-                                                        *ngIf="mode === 'routineBuilder' && (setControl.get('tempo')?.value || isEditMode)">
+                                                        *ngIf="mode === 'routineBuilder' && (setControl.get('tempo')?.value || isEditableMode())">
                                                         <label [for]="'tempo-exp-' + exIndex + '-' + setIndex"
                                                             class="block text-s font-medium text-gray-600 dark:text-gray-400">Tempo</label>
                                                         <input type="text"
@@ -620,7 +620,7 @@
                                                             class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
                                                     </div>
                                                     <div class="col-span-full"
-                                                        *ngIf="(setControl.get('notes')?.value || isEditMode)">
+                                                        *ngIf="(setControl.get('notes')?.value || isEditableMode())">
                                                         <label [for]="'setNotes-exp-' + exIndex + '-' + setIndex"
                                                             class="block text-s font-medium text-gray-600 dark:text-gray-400">Set
                                                             Notes</label>

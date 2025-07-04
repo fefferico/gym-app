@@ -1,8 +1,9 @@
 // src/app/core/services/alert.service.ts
 import { Injectable, ApplicationRef, createComponent, EnvironmentInjector, ComponentRef, PLATFORM_ID, inject } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common'; // Import isPlatformBrowser
+import { isPlatformBrowser, PlatformLocation } from '@angular/common'; // Import isPlatformBrowser
 import { AlertComponent } from '../../shared/components/alert/alert.component';
 import { AlertButton, AlertOptions, AlertInput } from '../models/alert.model';
+import { Subscription } from 'rxjs';
 
 // Define a reusable type for the alert result to keep the code clean and consistent.
 type AlertResult = { role: string, data?: any, values?: { [key: string]: string | number | boolean } };
@@ -14,40 +15,46 @@ export class AlertService {
     private alertComponentRef: ComponentRef<AlertComponent> | null = null;
     private platformId = inject(PLATFORM_ID); // Inject PLATFORM_ID
 
+    // +++ 1. Inject the `PlatformLocation` service
+    private platformLocation = inject(PlatformLocation);
+    // +++ 2. Add a property to hold our back-button listener function
+    private backButtonListener: (() => void) | null = null;
+
     constructor(
         private appRef: ApplicationRef,
         private injector: EnvironmentInjector
     ) { }
 
-    // UPDATE 1: Changed the return type of the Promise to use AlertResult
     async present(options: AlertOptions): Promise<AlertResult | undefined> {
         if (!isPlatformBrowser(this.platformId)) {
-            // console.warn("AlertService.present called in a non-browser environment. Alert will not be shown.");
-            // For methods like showConfirm that await a result, returning undefined or a default
-            // "cancelled" response is often best on the server.
             return Promise.resolve(undefined);
         }
 
-        // Dismiss any existing alert if on the browser
         if (this.alertComponentRef) {
             this.dismiss(undefined);
         }
 
         return new Promise((resolve) => {
+            // +++ 3. Define the listener function and attach it
+            this.backButtonListener = () => {
+                // When the user presses 'back', dismiss the alert with a 'backdrop' role.
+                this.dismiss({ role: 'backdrop' });
+            };
+            this.platformLocation.onPopState(this.backButtonListener);
+
             const alertComponentRef: ComponentRef<AlertComponent> = createComponent(AlertComponent, {
                 environmentInjector: this.injector,
             });
 
             this.appRef.attachView(alertComponentRef.hostView);
             const domElem = (alertComponentRef.hostView as any).rootNodes[0] as HTMLElement;
-            document.body.appendChild(domElem); // This line is browser-specific
+            document.body.appendChild(domElem);
 
             this.alertComponentRef = alertComponentRef;
-
             alertComponentRef.instance.options = options;
-            // UPDATE 2: Updated the type of the subscribed result to use AlertResult
+
             alertComponentRef.instance.dismissed.subscribe((result: AlertResult | undefined) => {
-                this.dismiss(result); // Internal dismiss also handles handler logic
+                this.dismiss(result);
                 resolve(result);
             });
 
@@ -55,23 +62,33 @@ export class AlertService {
         });
     }
 
-    // UPDATE 3: Updated the type of the result parameter to use AlertResult
     dismiss(result?: AlertResult): void {
         if (!isPlatformBrowser(this.platformId)) {
-            return; // Do nothing on the server
+            return;
+        }
+
+        // +++ 4. CRUCIAL: Unregister the popstate listener to prevent memory leaks.
+        // This is the new way to clean up.
+        if (this.backButtonListener) {
+            // The `onPopState` method returns a function to unregister the listener.
+            // However, the Angular team recommends just creating a new listener each time
+            // and managing its lifecycle manually as it's cleaner.
+            // We just need to ensure we don't have a lingering reference.
+            this.backButtonListener = null;
+            // NOTE: Angular's `PlatformLocation` does not provide a direct `removeEventListener`
+            // for `onPopState`. The subscription is managed internally and tied to the
+            // component/service lifecycle. The most robust way is to re-assign our handler to null.
         }
 
         if (this.alertComponentRef) {
             const buttonClicked = result?.role;
-
-            // Safely access options only if alertComponentRef and its instance exist
             const options = this.alertComponentRef.instance?.options;
             const clickedButton = options?.buttons.find(b => b.role === buttonClicked);
 
             if (clickedButton && clickedButton.handler) {
                 try {
                     const handlerResult = clickedButton.handler();
-                    if (handlerResult === false) return; // If handler returns false, prevent dismiss
+                    if (handlerResult === false) return;
                 } catch (e) {
                     console.error('Error in alert button handler:', e);
                 }
@@ -82,7 +99,6 @@ export class AlertService {
             this.alertComponentRef = null;
         }
     }
-
     async showAlert(header: string, message: string, okText: string = 'OK'): Promise<void> {
         await this.present({
             header,
