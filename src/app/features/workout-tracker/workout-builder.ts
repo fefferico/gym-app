@@ -30,13 +30,14 @@ import { ActionMenuItem } from '../../core/models/action-menu.model';
 import { IsWeightedPipe } from '../../shared/pipes/is-weighted-pipe';
 import { ModalComponent } from '../../shared/components/modal/modal.component';
 import { ClickOutsideDirective } from '../../shared/directives/click-outside.directive';
+import { ExerciseDetailComponent } from '../exercise-library/exercise-detail';
 
 type BuilderMode = 'routineBuilder' | 'manualLogEntry';
 
 @Component({
   selector: 'app-workout-builder',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, FormsModule, DragDropModule, WeightUnitPipe, TitleCasePipe, LongPressDragDirective, AutoGrowDirective, ActionMenuComponent, IsWeightedPipe, ModalComponent, ClickOutsideDirective],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, FormsModule, DragDropModule, WeightUnitPipe, TitleCasePipe, LongPressDragDirective, AutoGrowDirective, ActionMenuComponent, IsWeightedPipe, ModalComponent, ClickOutsideDirective, ExerciseDetailComponent],
   templateUrl: './workout-builder.html',
   styleUrl: './workout-builder.scss',
   providers: [DecimalPipe]
@@ -605,12 +606,19 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   ngAfterViewInit(): void {
     // This can be used to scroll to the expanded set after it's rendered
     this.expandedSetElements.changes.subscribe((elems: QueryList<ElementRef<HTMLDivElement>>) => {
-      if (elems.first) {
-        // Check if expandedSetPath is not null to ensure we only scroll when a set is truly expanded
+      // Capture the element reference at the exact moment the change happens.
+      const elementToScroll = elems.first;
+
+      // Now, check if that specific element reference exists.
+      if (elementToScroll) {
+        // Also check if the component's state still intends for a set to be expanded.
         if (this.expandedSetPath()) {
-          setTimeout(() => { // Timeout ensures DOM is fully ready
-            elems.first.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          }, 0);
+          setTimeout(() => {
+            // Use the captured 'elementToScroll' constant inside the timeout.
+            // This is safe because it holds the reference from when the subscription fired,
+            // even if the main 'elems' QueryList has changed since.
+            elementToScroll.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }, 100); // Reduced timeout slightly, often doesn't need to be that long.
         }
       }
     });
@@ -1546,5 +1554,16 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     }
     const currentPath = this.expandedSetPath();
     return currentPath?.exerciseIndex === exIndex;
+  }
+
+
+  isExerciseDetailModalOpen = signal(false);
+  isSimpleModalOpen = signal(false);
+  exerciseDetailsId: string = '';
+  exerciseDetailsName: string = '';
+  openModal(exerciseData: any) {
+    this.exerciseDetailsId = exerciseData.exerciseId;
+    this.exerciseDetailsName = exerciseData.exerciseName || 'Exercise details';
+    this.isSimpleModalOpen.set(true);
   }
 }

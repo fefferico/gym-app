@@ -277,26 +277,127 @@ export class WorkoutLogDetailComponent implements OnInit {
 
     forkJoin(detailFetchers$).subscribe({
       next: (exercisesWithDetails) => {
-        this.displayExercises.set(exercisesWithDetails);
+
+        // 1. Add originalIndex to preserve workout order before splitting/sorting
+        const exercisesWithOriginalIndex = exercisesWithDetails.map((ex, index) => ({ ...ex, originalIndex: index }));
+
+        // 2. Use flatMap to split multi-round supersets into individual round objects
+        const processedExercises = exercisesWithOriginalIndex.flatMap(le => {
+          if (le.supersetId && le.supersetRounds && le.supersetRounds > 1) {
+            const splitByRound: any = [];
+            for (let i = 1; i <= le.supersetRounds; i++) {
+              const roundSet = le.sets[i - 1];
+              if (roundSet) {
+                splitByRound.push({
+                  ...le, // This now includes originalIndex and supersetOrder
+                  id: `${le.id}-round-${i}`,
+                  supersetCurrentRound: i,
+                  sets: [roundSet],
+                  workingSets: [roundSet],
+                  warmupSets: [],
+                  isExpanded: true,
+                });
+              }
+            }
+            return splitByRound;
+          } else {
+            return [{
+              ...le,
+              isExpanded: true,
+              workingSets: le.sets.filter(s => s.type !== 'warmup'),
+              warmupSets: le.sets.filter(s => s.type === 'warmup'),
+              showWarmups: le.sets.some(s => s.type === 'warmup'),
+            }];
+          }
+        });
+
+        // 3. NEW: Sort by exercise "block", then by round, then by order within the round.
+        processedExercises.sort((a, b) => {
+          // Determine the starting index of the block each item belongs to.
+          // For a standard exercise, its block index is its own original index.
+          // For a superset exercise, its block index is its original index minus its order within the superset.
+          const blockIndexA = a.supersetId ? (a.originalIndex - (a.supersetOrder || 0)) : a.originalIndex;
+          const blockIndexB = b.supersetId ? (b.originalIndex - (b.supersetOrder || 0)) : b.originalIndex;
+
+          // If the items are in different blocks, sort by the block's starting position.
+          if (blockIndexA !== blockIndexB) {
+            return blockIndexA - blockIndexB;
+          }
+
+          // If they are in the same block, they must be part of the same superset.
+          // Now sort them internally: first by round number...
+          if (a.supersetCurrentRound !== b.supersetCurrentRound) {
+            return a.supersetCurrentRound - b.supersetCurrentRound;
+          }
+
+          // ...then by the exercise's intended order within the superset round.
+          return (a.supersetOrder || 0) - (b.supersetOrder || 0);
+        });
+
+        this.displayExercises.set(processedExercises as DisplayLoggedExercise[]);
       },
       error: (err) => {
         console.error("Error fetching exercise details for log display:", err);
-        // Fallback: display logged exercises without baseExercise details
-        this.displayExercises.set(processedExercises.map((le, index) => {
-          const warmupSets = le.sets?.filter(s => s.type === 'warmup') || [];
-          const workingSets = le.sets?.filter(s => s.type !== 'warmup') || [];
-          return {
-            ...(le as LoggedWorkoutExercise),
-            baseExercise: null,
-            // isExpanded: index === 0,
-            isExpanded: true,
-            showWarmups: warmupSets.length > 0,
-            warmupSets: warmupSets,
-            workingSets: workingSets,
-            iconName: this.exerciseService.determineExerciseIcon(null, le.exerciseName ?? ''),
-            // Superset props are already on le
-          } as DisplayLoggedExercise;
-        }));
+
+        const initialLoggedExercises = this.workoutLog()?.exercises || [];
+        const exercisesWithOriginalIndex = initialLoggedExercises.map((ex, index) => ({ ...ex, originalIndex: index }));
+
+        const fallbackExercises = exercisesWithOriginalIndex.flatMap(le => {
+          if (le.supersetId && le.supersetRounds && le.supersetRounds > 1 && le.sets) {
+            const splitByRound = [];
+            for (let i = 1; i <= le.supersetRounds; i++) {
+              const roundSet = le.sets[i - 1];
+              if (roundSet) {
+                splitByRound.push({
+                  ...(le as LoggedWorkoutExercise),
+                  originalIndex: le.originalIndex,
+                  baseExercise: null,
+                  id: `${le.id}-round-${i}`,
+                  supersetCurrentRound: i,
+                  sets: [roundSet],
+                  workingSets: [roundSet],
+                  warmupSets: [],
+                  isExpanded: true,
+                  showWarmups: false,
+                  iconName: this.exerciseService.determineExerciseIcon(null, le.exerciseName ?? ''),
+                });
+              }
+            }
+            return splitByRound;
+          } else {
+            const warmupSets = le.sets?.filter(s => s.type === 'warmup') || [];
+            const workingSets = le.sets?.filter(s => s.type !== 'warmup') || [];
+            return [{
+              ...(le as LoggedWorkoutExercise),
+              originalIndex: le.originalIndex,
+              baseExercise: null,
+              isExpanded: true,
+              showWarmups: warmupSets.length > 0,
+              warmupSets: warmupSets,
+              workingSets: workingSets,
+              iconName: this.exerciseService.determineExerciseIcon(null, le.exerciseName ?? ''),
+            }];
+          }
+        });
+
+        // Apply the same robust sorting logic in the error handler
+        fallbackExercises.sort((a, b) => {
+          const blockIndexA = a.supersetId ? (a.originalIndex - (a.supersetOrder || 0)) : a.originalIndex;
+          const blockIndexB = b.supersetId ? (b.originalIndex - (b.supersetOrder || 0)) : b.originalIndex;
+
+          if (blockIndexA !== blockIndexB) {
+            return blockIndexA - blockIndexB;
+          }
+
+          if ((a.supersetCurrentRound !== undefined && a.supersetCurrentRound !== null) &&
+            (b.supersetCurrentRound !== undefined && b.supersetCurrentRound !== null) && a.supersetCurrentRound !== b.supersetCurrentRound) {
+            return a.supersetCurrentRound - b.supersetCurrentRound;
+          }
+
+          return (a.supersetOrder || 0) - (b.supersetOrder || 0);
+        });
+
+        this.displayExercises.set(fallbackExercises as DisplayLoggedExercise[]);
       }
     });
   }

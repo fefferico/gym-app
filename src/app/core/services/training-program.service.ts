@@ -164,21 +164,39 @@ export class TrainingProgramService {
     }
   }
 
-  async setActiveProgram(programId: string): Promise<void> {
+  /**
+   * Toggles the active status of a single program without affecting others.
+   * This allows for multiple programs to be active simultaneously.
+   * @param programId The ID of the program to activate or deactivate.
+   */
+  async toggleProgramActivation(programId: string): Promise<void> {
     const currentPrograms = this.programsSubject.getValue();
     const targetProgram = currentPrograms.find(p => p.id === programId);
 
     if (!targetProgram) {
-      this.toastService.error("Program not found to activate.", 0, "Activation Error");
+      this.toastService.error("Program not found to update.", 0, "Update Error");
       return;
     }
 
-    const updatedPrograms = currentPrograms.map(p => ({
-      ...p,
-      isActive: p.id === programId,
-    }));
+    // Map through the programs and toggle the 'isActive' property for the target program.
+    const updatedPrograms = currentPrograms.map(p => {
+      if (p.id === programId) {
+        // Return a new object for the target program with the isActive status flipped.
+        return { ...p, isActive: !p.isActive };
+      }
+      // Return all other programs unchanged.
+      return p;
+    });
+
     this._saveProgramsToStorage(updatedPrograms);
-    this.toastService.success(`Program "${targetProgram.name}" is now active.`, 3000, "Program Activated");
+
+    // Provide a more descriptive toast message based on the action performed.
+    // We check the original state of the program before it was toggled.
+    if (!targetProgram.isActive) {
+      this.toastService.success(`Program "${targetProgram.name}" is now active.`, 3000, "Program Activated");
+    } else {
+      this.toastService.info(`Program "${targetProgram.name}" has been deactivated.`, 3000, "Program Deactivated");
+    }
   }
 
   async deactivateAllPrograms(): Promise<void> {

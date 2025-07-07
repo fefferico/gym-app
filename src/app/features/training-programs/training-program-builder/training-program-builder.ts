@@ -416,7 +416,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
             this.spinnerService.show("Setting active program...");
             // The service method should handle setting the new active program,
             // updating isActive flags on all programs, and emitting the updated list.
-            await this.trainingProgramService.setActiveProgram(this.currentProgramId);
+            await this.trainingProgramService.toggleProgramActivation(this.currentProgramId);
         } catch (error) { this.toastService.error("Failed to set active program.", 0, "Error"); }
         finally { this.spinnerService.hide(); }
     }

@@ -1772,6 +1772,17 @@ export const EXERCISES_DATA = [
     "equipmentNeeded": ["Kettlebell"],
     "imageUrls": []
   },
+{
+    "id": "slow-kettlebell-floor-skullcrusher",
+    "name": "Slow Eccentric Floor Skullcrusher",
+    "description": "A slow controlled tricep isolation exercise performed lying on the floor, lowering one or two kettlebells towards the forehead.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Triceps",
+    "muscleGroups": ["Triceps"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": []
+  },
+  
   {
     "id": "kettlebell-close-grip-floor-press",
     "name": "Kettlebell Close Grip Floor Press",

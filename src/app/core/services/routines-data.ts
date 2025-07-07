@@ -175,7 +175,7 @@ export const ROUTINES_DATA: Routine[] = [
         "exercises": [
             {
                 "id": "e3a3b3c3-1",
-                "exerciseId": "kettlebell-floor-skullcrusher",
+                "exerciseId": "slow-kettlebell-floor-skullcrusher",
                 "exerciseName": "Slow Eccentric Floor Skullcrusher",
                 "notes": "Split from combo exercise 'Slow Eccentric Floor Skullcrusher to Close Grip Floor Press'.",
                 "sets": [{ "id": "s3a1", "reps": 5, "weight": 71, "restAfterSet": 0, "type": "standard", "tempo": "4010" }],

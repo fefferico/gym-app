@@ -78,7 +78,7 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
     return `${year}-${month}-${day}`;
   };
 
-  ngOnInit(): void {
+ngOnInit(): void {
     // Convert the `currentDate` signal into an observable. This is the new source of truth.
 
     this.currentDate$.pipe(
@@ -103,8 +103,27 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
                 : false;
             }
 
-            // Return a single, clean state object.
-            return { activeProgram, routineData, logsForDay, isDone };
+            // --- START: NEW CONDITIONAL LOGIC ---
+            let finalRoutineData = null; // Default to showing no scheduled routine
+
+            // Check if the program is active and has a valid start date.
+            if (activeProgram && activeProgram.startDate) {
+              // Create date objects for comparison, resetting the time to avoid timezone issues.
+              const programStartDate = new Date(activeProgram.startDate);
+              programStartDate.setHours(0, 0, 0, 0);
+
+              const streamDate = new Date(date);
+              streamDate.setHours(0, 0, 0, 0);
+
+              // Only assign the routineData if the program start date is on or before the current stream's date.
+              if (programStartDate <= streamDate) {
+                finalRoutineData = routineData;
+              }
+            }
+            // --- END: NEW CONDITIONAL LOGIC ---
+
+            // Return a single, clean state object using the potentially nullified routine data.
+            return { activeProgram, routineData: finalRoutineData, logsForDay, isDone };
           }),
           // If fetching data for a specific day fails, return a safe state and don't kill the stream.
           catchError(err => {
@@ -118,6 +137,7 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
     ).subscribe(state => {
       // Set all state signals at once from the final processed object.
       this.activeProgram.set(state.activeProgram ?? null);
+      // This will now correctly be set to null if the date condition failed.
       this.todaysScheduledWorkout.set(state.routineData);
       this.todaysScheduledWorkoutDone.set(state.isDone);
       this.logsForDay.set(state.logsForDay ?? []);

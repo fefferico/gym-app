@@ -56,7 +56,7 @@ export class StatsDashboardComponent implements OnInit, OnDestroy {
     dateTo: null,
   });
 
-  isStatsFilterAccordionOpen = signal(false); // For the filter accordion
+  isFilterAccordionOpen = signal(false); // For the filter accordion
 
   // Computed signal for logs filtered by date
   filteredLogsForStats = computed(() => {
@@ -199,11 +199,11 @@ export class StatsDashboardComponent implements OnInit, OnDestroy {
     this.statsFilterForm.reset({ dateFrom: null, dateTo: null });
     // The valueChanges subscription will call applyStatsFiltersFromForm with nulls,
     // which will update this.dateFilters.set({ dateFrom: null, dateTo: null });
-    this.isStatsFilterAccordionOpen.set(false);
+    this.isFilterAccordionOpen.set(false);
   }
 
   toggleStatsFilterAccordion(): void {
-    this.isStatsFilterAccordionOpen.update(isOpen => !isOpen);
+    this.isFilterAccordionOpen.update(isOpen => !isOpen);
   }
 
   hasActiveDateFilters(): boolean {

@@ -154,10 +154,10 @@
                       <span *ngIf="loggedEx.supersetId"
                         class="text-xs font-normal text-orange-600 dark:text-orange-400 block leading-tight">
                         <ng-container
-                          *ngIf="loggedEx.supersetRounds && loggedEx.supersetRounds > 1 && loggedEx.supersetCurrentRound">
+                          *ngIf="loggedEx.supersetRounds && loggedEx.supersetRounds > 1 && loggedEx.supersetCurrentRound !== null">
                           Round {{ loggedEx.supersetCurrentRound }} of {{ loggedEx.supersetRounds }} |
                         </ng-container>
-                        Superset ({{ (loggedEx.supersetOrder ?? 0) + 1 }} of {{ loggedEx.supersetSize }})
+                        Superset exercise {{ (loggedEx.supersetOrder ?? 0) + 1 }} of {{ loggedEx.supersetSize }}
                       </span>
                       {{ loggedEx.exerciseName }}
                     </h3>

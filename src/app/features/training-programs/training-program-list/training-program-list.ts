@@ -1,4 +1,3 @@
-// src/app/features/training-programs/training-program-list/training-program-list.component.ts
 import { Component, inject, OnInit, PLATFORM_ID, signal, computed, ChangeDetectorRef, OnDestroy, ElementRef, AfterViewInit, NgZone, ViewChild, HostListener } from '@angular/core';
 import { CommonModule, DatePipe, isPlatformBrowser, TitleCasePipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
@@ -26,6 +25,7 @@ import { ExerciseService } from '../../../core/services/exercise.service';
 import Hammer from 'hammerjs';
 import { ActionMenuItem } from '../../../core/models/action-menu.model';
 import { ActionMenuComponent } from '../../../shared/components/action-menu/action-menu';
+import { AlertButton } from '../../../core/models/alert.model';
 
 interface ScheduledItemWithLogs {
   routine: Routine;
@@ -125,38 +125,23 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
   private hammerInstanceCalendar: HammerManager | null = null;
   private hammerInstanceMode: HammerManager | null = null;
 
-  // Use ViewChild with a setter
   @ViewChild('calendarSwipeContainerEl')
   set calendarSwipeContainer(element: ElementRef<HTMLDivElement> | undefined) {
     if (element && isPlatformBrowser(this.platformId)) {
-      // If Hammer instance already exists, destroy it first to avoid duplicates
-      if (this.hammerInstanceCalendar) {
-        this.hammerInstanceCalendar.destroy();
-        this.hammerInstanceCalendar = null;
-      }
+      if (this.hammerInstanceCalendar) { this.hammerInstanceCalendar.destroy(); this.hammerInstanceCalendar = null; }
       this.setupCalendarSwipe(element.nativeElement);
     } else if (!element && this.hammerInstanceCalendar) {
-      // Element is removed from DOM, clean up HammerJS
-      this.hammerInstanceCalendar.destroy();
-      this.hammerInstanceCalendar = null;
-      console.log("HammerJS for calendar swipe destroyed because element was removed.");
+      this.hammerInstanceCalendar.destroy(); this.hammerInstanceCalendar = null;
     }
   }
 
   @ViewChild('viewSwipeContainerEl')
   set modeSwipeContainer(element: ElementRef<HTMLDivElement> | undefined) {
     if (element && isPlatformBrowser(this.platformId)) {
-      // If Hammer instance already exists, destroy it first to avoid duplicates
-      if (this.hammerInstanceMode) {
-        this.hammerInstanceMode.destroy();
-        this.hammerInstanceMode = null;
-      }
+      if (this.hammerInstanceMode) { this.hammerInstanceMode.destroy(); this.hammerInstanceMode = null; }
       this.setupModeSwipe(element.nativeElement);
     } else if (!element && this.hammerInstanceMode) {
-      // Element is removed from DOM, clean up HammerJS
-      this.hammerInstanceMode.destroy();
-      this.hammerInstanceMode = null;
-      console.log("HammerJS for MODE swipe destroyed because element was removed.");
+      this.hammerInstanceMode.destroy(); this.hammerInstanceMode = null;
     }
   }
 
@@ -182,35 +167,26 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
     const goalFilter = this.selectedProgramGoal();
     const muscleFilter = this.selectedProgramMuscleGroup();
 
-    if (searchTerm) {
-      programs = programs.filter(p => p.name.toLowerCase().includes(searchTerm));
-    }
+    if (searchTerm) { programs = programs.filter(p => p.name.toLowerCase().includes(searchTerm)); }
     if (cycleType) {
-      if (cycleType === 'weekly') {
-        programs = programs.filter(p => !p.cycleLength || p.cycleLength === 0);
-      } else if (cycleType === 'cycled') {
-        programs = programs.filter(p => p.cycleLength && p.cycleLength > 0);
-      }
+      if (cycleType === 'weekly') { programs = programs.filter(p => !p.cycleLength || p.cycleLength === 0); }
+      else if (cycleType === 'cycled') { programs = programs.filter(p => p.cycleLength && p.cycleLength > 0); }
     }
     if (goalFilter) {
-      programs = programs.filter(p =>
-        p.schedule.some(day => {
-          const routine = this.allRoutinesMap.get(day.routineId);
-          return routine?.goal?.toLowerCase() === goalFilter.toLowerCase();
-        })
-      );
+      programs = programs.filter(p => p.schedule.some(day => {
+        const routine = this.allRoutinesMap.get(day.routineId);
+        return routine?.goal?.toLowerCase() === goalFilter.toLowerCase();
+      }));
     }
     if (muscleFilter) {
-      programs = programs.filter(p =>
-        p.schedule.some(day => {
-          const routine = this.allRoutinesMap.get(day.routineId);
-          if (!routine) return false;
-          return routine.exercises.some(exDetail => {
-            const fullExercise = this.allExercisesMap.get(exDetail.exerciseId);
-            return fullExercise?.primaryMuscleGroup?.toLowerCase() === muscleFilter.toLowerCase();
-          });
-        })
-      );
+      programs = programs.filter(p => p.schedule.some(day => {
+        const routine = this.allRoutinesMap.get(day.routineId);
+        if (!routine) return false;
+        return routine.exercises.some(exDetail => {
+          const fullExercise = this.allExercisesMap.get(exDetail.exerciseId);
+          return fullExercise?.primaryMuscleGroup?.toLowerCase() === muscleFilter.toLowerCase();
+        });
+      }));
     }
     return programs;
   });
@@ -223,26 +199,39 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
   calendarViewDate = signal<Date>(new Date());
   calendarDays = signal<CalendarDay[]>([]);
   calendarLoading = signal<boolean>(false);
-  activeProgramForCalendar = signal<TrainingProgram | null | undefined>(null);
+  
+  // --- STATE MANAGEMENT CHANGES for Multiple Active Programs ---
+  activePrograms = signal<TrainingProgram[]>([]);
+  calendarViewProgram = signal<TrainingProgram | null>(null);
+
+  // This computed signal intelligently determines which single program (if any) to display on the calendar
+  activeProgramForCalendar = computed<TrainingProgram | null>(() => {
+    const active = this.activePrograms();
+    if (active.length === 1) {
+      return active[0]; // If only one program is active, use it automatically.
+    }
+    if (active.length > 1) {
+      return this.calendarViewProgram(); // If multiple are active, use the one the user selected.
+    }
+    return null; // If zero programs are active.
+  });
+  // --- END STATE MANAGEMENT CHANGES ---
+
   weekStartsOn: 0 | 1 = 1;
   calendarDisplayMode = signal<CalendarDisplayMode>('week');
   selectedCalendarDayDetails = signal<CalendarDay | null>(null);
   calendarAnimationState = signal<'center' | 'outLeft' | 'outRight' | 'preloadFromLeft' | 'preloadFromRight'>('center');
-  protected isCalendarAnimating = false; // Using a simple boolean, not a signal here for internal logic
-  protected isCardAnimating = false; // Using a simple boolean, not a signal here for internal logic
+  protected isCalendarAnimating = false;
+  protected isCardAnimating = false;
 
   protected weekDayNames: string[] = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  readonly calendarHeaderFormat = computed(() => {
-    return this.calendarDisplayMode() === 'month' ? 'MMMM yyyy' : 'MMMM yyyy';
-  });
+  readonly calendarHeaderFormat = computed(() => this.calendarDisplayMode() === 'month' ? 'MMMM yyyy' : 'MMMM yyyy');
 
   constructor() { }
 
   protected allWorkoutLogs = signal<WorkoutLog[]>([]);
   private workoutLogsSubscription: Subscription | undefined;
 
-
-  // --- ADD NEW PROPERTIES FOR THE FAB ---
   isFabActionsOpen = signal(false);
   isTouchDevice = false;
 
@@ -253,76 +242,42 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
     }
     this.menuModeCompact = this.themeService.isMenuModeCompact();
 
+    this.workoutLogsSubscription = this.trackingService.workoutLogs$.subscribe(logs => this.allWorkoutLogs.set(logs));
 
-    this.workoutLogsSubscription = this.trackingService.workoutLogs$.subscribe(logs => {
-      this.allWorkoutLogs.set(logs);
-    });
-
-    // Initial load of routines and exercises for mapping (can remain take(1))
     this.dataSubscription = forkJoin({
-      // programs: this.trainingProgramService.getAllPrograms().pipe(take(1)), // We'll get programs from the live observable
       routines: this.workoutService.routines$.pipe(take(1)),
       exercises: this.exerciseService.getExercises().pipe(take(1)),
     }).subscribe(({ routines, exercises }) => {
-      // this.allProgramsForList.set(programs.sort((a, b) => a.name.localeCompare(b.name))); // Set by the live observable
       routines.forEach(r => this.allRoutinesMap.set(r.id, r));
       exercises.forEach(e => this.allExercisesMap.set(e.id, e));
-      // Populate filters once programs are loaded by the live observable
-      // this.populateFilterOptions(); // Moved to the programsListSubscription
     });
 
-    this.programs$ = this.trainingProgramService.programs$; // Assign directly
-    // Subscribe to the live programs$ observable from the service
+    this.programs$ = this.trainingProgramService.programs$;
     this.programsListSubscription = this.trainingProgramService.programs$.subscribe(programs => {
-      console.log('Received updated programs from service for signal:', programs.length);
       this.allProgramsForList.set(programs.sort((a, b) => a.name.localeCompare(b.name)));
       this.populateFilterOptions();
-      // If view is calendar and active program might have changed, refresh calendar
-      if (this.currentView() === 'calendar') {
-        const currentActiveId = this.activeProgramForCalendar()?.id;
-        const newActiveProgram = programs.find(p => p.isActive);
-        if (newActiveProgram?.id !== currentActiveId || (currentActiveId && !newActiveProgram)) {
-          this.activeProgramForCalendar.set(newActiveProgram); // Update active program for calendar
-          this.generateCalendarDays(true); // Regenerate calendar
-        } else if (!newActiveProgram && currentActiveId) { // Active program was removed/deactivated
-          this.activeProgramForCalendar.set(null);
-          this.generateCalendarDays(true);
-        }
-      }
-    });
+      
+      const newActivePrograms = programs.filter(p => p.isActive);
+      this.activePrograms.set(newActivePrograms);
 
-
-    // Active program for calendar still uses its own subscription
-    this.trainingProgramService.getActiveProgram().subscribe(program => {
-      const oldActiveProgramId = this.activeProgramForCalendar()?.id;
-      this.activeProgramForCalendar.set(program);
       if (this.currentView() === 'calendar') {
-        if (program && (!oldActiveProgramId || oldActiveProgramId !== program.id)) {
-          this.generateCalendarDays(true);
-        } else if (!program && oldActiveProgramId) { // Active program became null
-          this.calendarDays.set([]);
-          this.calendarLoading.set(false);
-          this.calendarAnimationState.set('center');
+        // If the program being viewed in the calendar is no longer active, clear it.
+        const currentCalendarProgId = this.calendarViewProgram()?.id;
+        if (currentCalendarProgId && !newActivePrograms.some(p => p.id === currentCalendarProgId)) {
+          this.calendarViewProgram.set(null);
         }
+        this.generateCalendarDays(true);
       }
     });
   }
 
-  ngAfterViewInit(): void {
-    // if (isPlatformBrowser(this.platformId)) {
-    //     this.setupCalendarSwipe();
-    // }
-  }
+  ngAfterViewInit(): void { }
 
-  // Modified setupCalendarSwipe to accept the element
   private setupCalendarSwipe(calendarSwipeElement: HTMLElement): void {
-    let lastSwipeTime = 0;
-    const swipeDebounce = 350;
-
+    let lastSwipeTime = 0; const swipeDebounce = 350;
     this.ngZone.runOutsideAngular(() => {
       this.hammerInstanceCalendar = new Hammer(calendarSwipeElement);
       this.hammerInstanceCalendar.get('swipe').set({ direction: Hammer.DIRECTION_HORIZONTAL, threshold: 30, velocity: 0.2 });
-
       this.hammerInstanceCalendar.on('swipeleft', () => {
         const now = Date.now();
         if (now - lastSwipeTime < swipeDebounce || this.isCalendarAnimating) return;
@@ -335,43 +290,18 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
         lastSwipeTime = now;
         this.ngZone.run(() => this.previousPeriod());
       });
-      console.log("HammerJS successfully attached to calendar swipe container via ViewChild.");
     });
   }
 
-  private setupModeSwipe(modeSwipeElement: HTMLElement): void {
-    // let lastSwipeTime = 0;
-    // const swipeDebounce = 350;
-
-    // this.ngZone.runOutsideAngular(() => {
-    //     this.hammerInstanceMode = new Hammer(modeSwipeElement);
-    //     this.hammerInstanceMode.get('swipe').set({ direction: Hammer.DIRECTION_HORIZONTAL, threshold: 30, velocity: 0.2 });
-
-    //     this.hammerInstanceMode.on('swipeleft', () => {
-    //         const now = Date.now();
-    //         if (now - lastSwipeTime < swipeDebounce || this.isCardAnimating) return;
-    //         lastSwipeTime = now;
-    //         this.ngZone.run(() => this.setView('calendar'));
-    //     });
-    //     this.hammerInstanceMode.on('swiperight', () => {
-    //         const now = Date.now();
-    //         if (now - lastSwipeTime < swipeDebounce || this.isCardAnimating) return;
-    //         lastSwipeTime = now;
-    //         this.ngZone.run(() => this.setView('list'));
-    //     });
-    //     console.log("HammerJS successfully attached to MODE swipe container via ViewChild.");
-    // });
-  }
+  private setupModeSwipe(modeSwipeElement: HTMLElement): void { }
 
   private populateFilterOptions(): void {
     const programs = this.allProgramsForList();
     if (programs.length === 0 || this.allRoutinesMap.size === 0) {
-      this.uniqueProgramGoals.set([]);
-      this.uniqueProgramMuscleGroups.set([]);
+      this.uniqueProgramGoals.set([]); this.uniqueProgramMuscleGroups.set([]);
       return;
     }
-    const goals = new Set<string>();
-    const muscles = new Set<string>();
+    const goals = new Set<string>(); const muscles = new Set<string>();
     programs.forEach(program => {
       program.schedule.forEach(day => {
         const routine = this.allRoutinesMap.get(day.routineId);
@@ -389,10 +319,10 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
   }
 
   toggleFilterAccordion(): void { this.isFilterAccordionOpen.update(isOpen => !isOpen); }
-  onProgramSearchTermChange(event: Event): void { const target = event.target as HTMLInputElement; this.programSearchTerm.set(target.value); }
-  onProgramCycleTypeChange(event: Event): void { const target = event.target as HTMLSelectElement; this.selectedProgramCycleType.set(target.value || null); }
-  onProgramGoalChange(event: Event): void { const target = event.target as HTMLSelectElement; this.selectedProgramGoal.set(target.value || null); }
-  onProgramMuscleGroupChange(event: Event): void { const target = event.target as HTMLSelectElement; this.selectedProgramMuscleGroup.set(target.value || null); }
+  onProgramSearchTermChange(event: Event): void { this.programSearchTerm.set((event.target as HTMLInputElement).value); }
+  onProgramCycleTypeChange(event: Event): void { this.selectedProgramCycleType.set((event.target as HTMLSelectElement).value || null); }
+  onProgramGoalChange(event: Event): void { this.selectedProgramGoal.set((event.target as HTMLSelectElement).value || null); }
+  onProgramMuscleGroupChange(event: Event): void { this.selectedProgramMuscleGroup.set((event.target as HTMLSelectElement).value || null); }
   clearProgramFilters(): void {
     this.programSearchTerm.set(''); this.selectedProgramCycleType.set(null); this.selectedProgramGoal.set(null); this.selectedProgramMuscleGroup.set(null);
     (document.getElementById('program-search-term') as HTMLInputElement).value = '';
@@ -400,10 +330,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
     (document.getElementById('program-goal-filter') as HTMLSelectElement).value = '';
     (document.getElementById('program-muscle-filter') as HTMLSelectElement).value = '';
   }
-  navigateToCreateProgram(): void {
-    this.router.navigate(['/training-programs/new']);
-
-  }
+  navigateToCreateProgram(): void { this.router.navigate(['/training-programs/new']); }
 
   viewProgramDetails(programId: string, event?: MouseEvent): void {
     event?.stopPropagation();
@@ -425,38 +352,96 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
     } catch (error) { this.toastService.error("An unexpected error occurred.", 0, "Deletion Error"); }
     finally { this.spinnerService.hide(); }
   }
-  async toggleActiveProgram(programId: string, currentIsActive: boolean, event?: MouseEvent): Promise<void> {
+
+  async toggleActiveProgram(programId: string, event?: MouseEvent): Promise<void> {
     event?.stopPropagation();
     this.activeProgramActions.set(null);
-    if (currentIsActive) {
-      // Option to deactivate
-      const confirmDeactivate = await this.alertService.showConfirm("Deactivate Program?", "Do you want to deactivate this program? No program will be active.", "Deactivate");
-      if (confirmDeactivate && confirmDeactivate.data) {
-        try {
-          this.spinnerService.show("Deactivating program...");
-          await this.trainingProgramService.deactivateProgram(programId); // Assumes service has this
-          // Service emits updated list
-        } catch (error) { this.toastService.error("Failed to deactivate.", 0, "Error"); }
-        finally { this.spinnerService.hide(); }
-      }
-      return;
-    }
-    // Activate new program
+    this.spinnerService.show("Updating program...");
     try {
-      this.spinnerService.show("Setting active program...");
-      // The service method should handle setting the new active program,
-      // updating isActive flags on all programs, and emitting the updated list.
-      await this.trainingProgramService.setActiveProgram(programId);
-    } catch (error) { this.toastService.error("Failed to set active program.", 0, "Error"); }
-    finally { this.spinnerService.hide(); }
+      // The service now simply toggles the state for one program.
+      await this.trainingProgramService.toggleProgramActivation(programId);
+    } catch (error) {
+      this.toastService.error("Failed to update program status.", 0, "Error");
+    } finally {
+      this.spinnerService.hide();
+    }
   }
 
-  refreshPrograms(): void {
-    this.programs$ = this.trainingProgramService.getAllPrograms();
+  async setView(view: ProgramListView): Promise<void> {
+    const current = this.currentView();
+    if (current === view) return;
+    
+    // --- CALENDAR VIEW LOGIC ---
+    if (view === 'calendar') {
+        const activeProgs = this.activePrograms();
+        if (activeProgs.length > 1) {
+            // Prompt user to select a program for the calendar view
+            const programButtons: AlertButton[] = activeProgs.map(p => ({
+                text: p.name,
+                role: 'confirm',
+                data: p, // Pass the whole program object
+                cssClass: 'bg-primary-light'
+            }));
+            programButtons.push({ text: 'Cancel', role: 'cancel', data: null });
+
+            const choice = await this.alertService.showConfirmationDialog(
+                'Select Program',
+                'You have multiple active programs. Please choose one to view on the calendar.',
+                programButtons
+            );
+            
+            if (choice && choice.data) {
+                this.calendarViewProgram.set(choice.data as TrainingProgram);
+            } else {
+                // User cancelled, so we don't switch the view.
+                // this.toastService.info("Calendar view cancelled.", 2000);
+                return; 
+            }
+        } else {
+            // If 0 or 1 active programs, no selection is needed. The computed signal handles it.
+            this.calendarViewProgram.set(null); // Clear any previous selection
+        }
+    }
+    // --- END CALENDAR VIEW LOGIC ---
+
+    let enterTransform = 'translateX(100%)', leaveTransform = 'translateX(-100%)';
+    if (view === 'list') { enterTransform = 'translateX(-100%)'; leaveTransform = 'translateX(100%)'; }
+
+    this.viewAnimationParams.set({ value: view, params: { enterTransform, leaveTransform } });
+    this.currentView.set(view);
+    this.isFilterAccordionOpen.set(false);
+
+    if (view === 'calendar') {
+      this.calendarDisplayMode.set('week');
+      this.calendarAnimationState.set('center');
+      this.generateCalendarDays(true);
+    }
   }
 
 
-  // toggleActions(programId: string, event: MouseEvent): void { event.stopPropagation(); this.activeProgramActions.update(current => current === programId ? null : programId); }
+handleActionMenuItemClick(event: { actionKey: string, data?: any }, originalMouseEvent?: MouseEvent): void {
+    const programId = event.data?.programId;
+    if (!programId) return;
+
+    switch (event.actionKey) {
+      case 'view': this.viewProgramDetails(programId); break;
+      case 'activate': this.toggleActiveProgram(programId); break; // Simplified
+      case 'deactivate': this.toggleActiveProgram(programId); break; // Simplified
+      case 'edit': this.editProgram(programId); break;
+      case 'delete': this.deleteProgram(programId); break;
+    }
+    this.activeProgramIdActions.set(null);
+  }
+
+
+
+
+
+
+
+
+
+
   getDaysScheduled(program: TrainingProgram): string {
     if (!program.schedule || program.schedule.length === 0) return '0 days';
     const count = new Set(program.schedule.map(s => s.dayOfWeek)).size;
@@ -478,25 +463,6 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
     });
     return Array.from(muscles);
   }
-
-  setView(view: ProgramListView): void {
-    const current = this.currentView();
-    if (current === view) return;
-    let enterTransform = 'translateX(100%)', leaveTransform = 'translateX(-100%)';
-    if (view === 'list') { enterTransform = 'translateX(-100%)'; leaveTransform = 'translateX(100%)'; }
-
-    this.viewAnimationParams.set({ value: view, params: { enterTransform, leaveTransform } });
-    this.currentView.set(view);
-    this.isFilterAccordionOpen.set(false);
-
-    if (view === 'calendar') {
-      this.calendarDisplayMode.set('week');
-      this.calendarAnimationState.set('center'); // Reset calendar animation state when switching to it
-      if (this.activeProgramForCalendar()) this.generateCalendarDays(true);
-      else { this.calendarDays.set([]); this.calendarLoading.set(false); }
-    }
-  }
-
   setCalendarDisplayMode(mode: CalendarDisplayMode): void {
     if (this.isCalendarAnimating || this.calendarDisplayMode() === mode) return;
     this.isCalendarAnimating = true;
@@ -711,16 +677,9 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
     };
   }
 
-  /**
-   * Merges scheduledItems from a CalendarDay with past workout sessions as ScheduledItemWithLogs for the same date.
-   * Ensures no duplicate routineId entries; past sessions not already in scheduledItems are appended.
-   * @param selectedDay The CalendarDay to merge for.
-   * @returns Merged ScheduledItemWithLogs[]
-   */
   mergeScheduledItemsWithPastSessions(selectedDay: CalendarDay): ScheduledItemWithLogs[] {
     if (!selectedDay) return [];
 
-    // Map of routineId to ScheduledItemWithLogs from scheduledItems
     const scheduledMap = new Map<string, ScheduledItemWithLogs>();
     selectedDay.scheduledItems.forEach(item => {
       if (item.routine?.id) {
@@ -728,23 +687,17 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
       }
     });
 
-    // Find all past sessions for each routine on this date
     const allPastSessions: ScheduledItemWithLogs[] = []
     for (const item of selectedDay.scheduledItems) {
       const routineId = item.routine?.id;
       if (routineId) {
         const pastSessions = this.getPastWorkoutSessionsAsScheduledItemsForRoutineOnDate(routineId, selectedDay.date);
         for (const session of pastSessions) {
-          // Only add if not already in scheduledMap (avoid duplicates)
-          // if (!scheduledMap.has(routineId)) {
           allPastSessions.push(session);
-          // }
         }
       }
     }
 
-    // Also check for routines that had past sessions but are not in scheduledItems (e.g., ad-hoc workouts)
-    // We'll scan all routines in allWorkoutLogs for this date
     const allLogs = this.allWorkoutLogs();
     const seenRoutineIds = new Set(selectedDay.scheduledItems.map(i => i.routine.id));
     allLogs.forEach(log => {
@@ -759,7 +712,6 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
       }
     });
 
-    // Merge: scheduledItems first, then any unique past sessions
     return [...selectedDay.scheduledItems, ...allPastSessions];
   }
 
@@ -806,7 +758,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
         label: 'VIEW',
         actionKey: 'view',
         iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5Z" /><path fill-rule="evenodd" d="M.664 10.59a1.651 1.651 0 010-1.186A10.004 10.004 0 0110 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0110 17c-4.257 0-7.893-2.66-9.336-6.41ZM14 10a4 4 0 11-8 0 4 4 0 018 0Z" clip-rule="evenodd" /></svg>`,
-        iconClass: 'w-8 h-8 mr-2', // Adjusted for consistency if needed,
+        iconClass: 'w-8 h-8 mr-2',
         buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
         data: { programId: programId }
       },
@@ -839,35 +791,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
     return actionsArray;
   }
 
-  handleActionMenuItemClick(event: { actionKey: string, data?: any }, originalMouseEvent?: MouseEvent): void {
-    // originalMouseEvent.stopPropagation(); // Stop original event that opened the menu
-    const programId = event.data?.programId;
-    if (!programId) return;
-
-    switch (event.actionKey) {
-      case 'view':
-        this.viewProgramDetails(programId);
-        break;
-      case 'activate':
-        this.toggleActiveProgram(programId, this.activeProgramForCalendar() !== undefined && this.activeProgramForCalendar()?.id == programId);
-        break;
-      case 'deactivate':
-        this.toggleActiveProgram(programId, this.activeProgramForCalendar() !== undefined && this.activeProgramForCalendar()?.id == programId);
-        break;
-      case 'edit':
-        this.editProgram(programId);
-        break;
-      case 'delete':
-        this.deleteProgram(programId);
-        break;
-    }
-    this.activeProgramIdActions.set(null); // Close the menu
-  }
-
-  // Your existing toggleActions, areActionsVisible, viewRoutineDetails, etc. methods
-  // The toggleActions will now just control a signal like `activeRoutineIdActions`
-  // which is used to show/hide the <app-action-menu>
-  activeProgramIdActions = signal<string | null>(null); // Store ID of routine whose actions are open
+  activeProgramIdActions = signal<string | null>(null);
 
   toggleActions(routineId: string, event: MouseEvent): void {
     event.stopPropagation();
@@ -878,76 +802,41 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
     return this.activeProgramIdActions() === routineId;
   }
 
-  // When closing menu from the component's output
-  onCloseActionMenu() {
-    this.activeProgramIdActions.set(null);
-  }
+  onCloseActionMenu() { this.activeProgramIdActions.set(null); }
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
-    // If an action menu is open AND the click was outside the menu container...
     if (this.activeProgramIdActions() !== null) {
-      // Find the menu element. We need a way to identify it. Let's give it a class.
-      // We check if the clicked element or any of its parents have the 'action-menu-container' class.
       const clickedElement = event.target as HTMLElement;
       if (!clickedElement.closest('.action-menu-container')) {
-        this.activeProgramIdActions.set(null); // ...then close it.
+        this.activeProgramIdActions.set(null);
       }
     }
   }
 
   ngOnDestroy(): void {
     this.dataSubscription?.unsubscribe();
-    this.programsListSubscription?.unsubscribe(); // UNSUBSCRIBE from the new subscription
+    this.programsListSubscription?.unsubscribe();
     this.workoutLogsSubscription?.unsubscribe();
     this.hammerInstanceCalendar?.destroy();
-    this.hammerInstanceMode?.destroy(); // Ensure this is also cleaned up
+    this.hammerInstanceMode?.destroy();
   }
 
   showBackToTopButton = signal<boolean>(false);
   @HostListener('window:scroll', [])
   onWindowScroll(): void {
-    // Check if the user has scrolled down more than a certain amount (e.g., 400 pixels)
-    // You can adjust this value to your liking.
     const verticalOffset = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
     this.showBackToTopButton.set(verticalOffset > 400);
   }
 
   scrollToTop(): void {
     if (isPlatformBrowser(this.platformId)) {
-      window.scrollTo({
-        top: 0,
-        behavior: 'smooth' // For a smooth scrolling animation
-      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
 
-
-  // --- ADD NEW HANDLER METHODS FOR THE FAB ---
-
-  /**
-   * Toggles the FAB menu on touch devices.
-   */
-  handleFabClick(): void {
-    this.isFabActionsOpen.update(v => !v);
-  }
-
-  /**
-   * Opens the FAB menu on hover for non-touch devices.
-   */
-  handleFabMouseEnter(): void {
-    if (!this.isTouchDevice) {
-      this.isFabActionsOpen.set(true);
-    }
-  }
-
-  /**
-   * Closes the FAB menu on mouse leave for non-touch devices.
-   */
-  handleFabMouseLeave(): void {
-    if (!this.isTouchDevice) {
-      this.isFabActionsOpen.set(false);
-    }
-  }
+  handleFabClick(): void { this.isFabActionsOpen.update(v => !v); }
+  handleFabMouseEnter(): void { if (!this.isTouchDevice) { this.isFabActionsOpen.set(true); } }
+  handleFabMouseLeave(): void { if (!this.isTouchDevice) { this.isFabActionsOpen.set(false); } }
 
 }

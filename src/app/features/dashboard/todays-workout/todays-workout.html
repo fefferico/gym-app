@@ -1,6 +1,5 @@
 <div
-  class="p-4 text-center md:p-6 bg-white dark:bg-gray-700 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700"
-  >
+  class="p-4 text-center md:p-6 bg-white dark:bg-gray-700 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700">
   <!-- Date Navigation -->
   <div class="flex items-center justify-between pb-3 border-b border-gray-200 dark:border-gray-700">
     <button (click)="previousDay()" title="Previous Day"
@@ -13,8 +12,11 @@
     </button>
     <div class="text-center px-2">
       <span *ngIf="activeProgram()"
-        class="block font-bold uppercase tracking-wider text-xs text-gray-500 dark:text-gray-400 mb-0.5">Program: {{
+        class="block font-bold uppercase tracking-wider text-sm text-gray-500 dark:text-gray-400 mb-0.5">Program: {{
         activeProgram()?.name}}</span>
+      <span *ngIf="activeProgram() && activeProgram()?.startDate"
+        class="block font-bold uppercase tracking-wider text-xs text-gray-500 dark:text-gray-400 mb-0.5">Started on: {{
+        activeProgram()?.startDate | date:'dd-MM-yyyy':'UTC'}}</span>
       <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200">{{ currentDate() | date:'fullDate' }}
         <span *ngIf="isToday(currentDate())" class="text-m text-primary dark:text-primary-light">(Today)</span>
       </h2>
@@ -145,13 +147,62 @@
           <!-- #### SUBCASE 1.2: NO workout is scheduled for this day (Rest Day) #### -->
           <ng-template #noScheduledWorkoutInProgramBlock>
             <div class="text-center py-8">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                stroke="currentColor" class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-3">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                  d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Zm0-6h.008v.008H12V9Z" />
+              <!-- License: CC Attribution. Made by Subhajit Das: https://www.instagram.com/subhosketchbook/ -->
+              <svg viewBox="0 0 25 25" xmlns="http://www.w3.org/2000/svg" stroke-width="1.5" stroke="currentColor"
+                class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-3">
+                <g id="sleep">
+                  <path class="cls-1"
+                    d="M13.5,12H5.34L13.42,2a.61.61,0,0,0,.08-.66A.63.63,0,0,0,12.93,1H4.5a.5.5,0,0,0,0,1h7.66L4.08,12a.61.61,0,0,0-.08.66.63.63,0,0,0,.57.36H13.5a.5.5,0,0,0,0-1Z" />
+                  <path class="cls-1"
+                    d="M13.05,16.35a.62.62,0,0,0-.56-.35h-5a.5.5,0,0,0,0,1h4.23L7.07,23a.63.63,0,0,0,.5,1H12.5a.5.5,0,0,0,0-1H8.33L13,17A.61.61,0,0,0,13.05,16.35Z" />
+                  <path class="cls-1"
+                    d="M22.41,9.35A.62.62,0,0,0,21.85,9H15.5a.5.5,0,0,0,0,1h5.59l-6.21,8a.63.63,0,0,0-.07.67.64.64,0,0,0,.57.35H21.5a.5.5,0,0,0,0-1H16.13l6.22-8A.63.63,0,0,0,22.41,9.35Z" />
+                </g>
               </svg>
               <h3 class="text-lg font-medium text-gray-700 dark:text-gray-300">Rest Day</h3>
               <p class="text-m text-gray-500 dark:text-gray-400">No workout planned in your program for this day.</p>
+            </div>
+            <div *ngIf="isToday(currentDate())">
+              <p class="text-m text-gray-500 dark:text-gray-400">
+                Feel free to
+                <button (click)="browseRoutines()" class="text-primary dark:text-primary-light hover:underline">pick
+                  any
+                  other
+                  routine</button>, if you'd prefer
+              </p>
+              <div class="mt-6 pt-4 border-t dark:border-gray-700 text-left"
+                *ngIf="availableRoutines$ | async as routines">
+                <h4 class="text-md font-semibold text-gray-600 dark:text-gray-200 mb-2">Or, pick one from below:</h4>
+                <div class="max-h-60 overflow-y-auto space-y-2 pr-2 py-2 custom-scrollbar">
+                  <div (click)="viewRoutineDetails(routine.id)" *ngFor="let routine of routines"
+                    class="p-3 bg-gray-200/50 dark:bg-gray-600 rounded-md shadow-sm hover:shadow-md transition-shadow flex justify-between items-center transform hover:-translate-y-1">
+                    <div class="truncate">
+                      <span class="font-medium text-gray-800 dark:text-gray-100">{{ routine.name }}</span>
+                      <span class="block text-left text-xs text-gray-500 dark:text-gray-400">{{
+                        routine.exercises.length
+                        }} exercises - Est: ~{{ getRoutineDuration(routine)}} min</span>
+                      <span *ngIf="findRoutineLog(routine.id) | async as routineLog"
+                        class="block text-left text-xs text-gray-500 dark:text-gray-400">
+                        <span *ngIf="routineLog.durationSeconds">Latest: {{
+                          secondsToDateTime(routineLog.durationSeconds) |
+                          date:'HH:mm:ss' }}
+                        </span>
+                      </span>
+                    </div>
+                    <button (click)="startWorkoutProgram(routine.id, $event)" [disabled]="isAnimating()"
+                      class="flex items-center ml-2 text-m bg-primary hover:bg-green-200 text-white dark:hover:bg-primary-dark font-semibold py-1 px-2.5 rounded-md disabled:opacity-50">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                        stroke="currentColor" class="size-4 mr-1">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 010 1.972l-11.54 6.347a1.125 1.125 0 01-1.667-.986V5.653z" />
+                      </svg>
+                      START
+                    </button>
+                  </div>
+                  <p *ngIf="!routines || routines.length === 0" class="text-m text-gray-400 dark:text-gray-500">No
+                    routines available</p>
+                </div>
+              </div>
             </div>
           </ng-template>
         </ng-container>
@@ -185,12 +236,14 @@
                 <div class="space-y-2">
                   <div *ngFor="let log of logsForDay()"
                     class="p-3 bg-gray-200/50 dark:bg-gray-800 rounded-md flex justify-between items-center">
-                    <p class="flex flex-col font-medium text-gray-800 dark:text-gray-100 truncate pr-2">{{ log.routineName
+                    <p class="flex flex-col font-medium text-gray-800 dark:text-gray-100 truncate pr-2">{{
+                      log.routineName
                       }}
                       <span class="text-sm" *ngIf="log.durationSeconds">Duration: {{
-                            secondsToDateTime(log.durationSeconds) |
-                            date:'HH:mm:ss' }}</span></p>
-                     
+                        secondsToDateTime(log.durationSeconds) |
+                        date:'HH:mm:ss' }}</span>
+                    </p>
+
                     <button (click)="viewLogDetails(log.id)"
                       class="flex items-center text-xs font-semibold bg-sky-200 dark:bg-sky-700 text-sky-800 dark:text-sky-100 px-2 py-1 rounded hover:bg-sky-300">
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -235,7 +288,9 @@
                           class="block text-left text-xs text-gray-500 dark:text-gray-400">
                           <span *ngIf="routineLog.durationSeconds">Latest: {{
                             secondsToDateTime(routineLog.durationSeconds) |
-                            date:'HH:mm:ss' }}</span> </span>
+                            date:'HH:mm:ss' }}
+                          </span>
+                        </span>
                       </div>
                       <button (click)="startWorkoutProgram(routine.id, $event)" [disabled]="isAnimating()"
                         class="flex items-center ml-2 text-m bg-primary hover:bg-green-200 text-white dark:hover:bg-primary-dark font-semibold py-1 px-2.5 rounded-md disabled:opacity-50">

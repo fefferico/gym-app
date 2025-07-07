@@ -199,7 +199,7 @@
               <span *ngIf="activeSet.type !== 'warmup'">
                 Set {{ getCurrentWorkingSetNumber() }}/{{ getWorkingSetCountForCurrentExercise() }}
               </span>
-              <span *ngIf="totalBlockRounds() >= 1 && currentBlockRound() > 0" class="ml-2">
+              <span *ngIf="totalBlockRounds() > 1 && currentBlockRound() > 0" class="ml-2">
                 (Round {{currentBlockRound()}}/{{totalBlockRounds()}})
               </span>
               <span *ngIf="activeSet.exerciseData.supersetId" class="ml-2 text-purple-500 dark:text-purple-400 italic">
@@ -382,8 +382,8 @@
                 [disabled]="sessionState() === 'paused' || (playerSubState() === PlayerSubState.PresetCountdown && presetTimerCountdownDisplay() !== '0' && presetTimerCountdownDisplay() !== null) || (playerSubState() === PlayerSubState.Resting && isRestTimerVisible())"
                 class="w-full font-bold py-3.5 px-4 rounded-full shadow-md text-lg transition-colors focus:outline-none focus:ring-2 disabled:opacity-70 text-white  transition-colors duration-150"
                 [ngClass]="{
-                'bg-primary hover:bg-primary-dark active:bg-primary-dark focus:outline-none focus:ring-0': playerSubState() === PlayerSubState.PerformingSet && !checkIfLatestSetOfWorkoutConsideringPending(),
-                'bg-green-500 hover:bg-green-600 focus:ring-green-400': playerSubState() === PlayerSubState.PerformingSet && checkIfLatestSetOfWorkoutConsideringPending(),
+                'bg-primary hover:bg-primary-dark active:bg-primary-dark focus:outline-none focus:ring-0': playerSubState() === PlayerSubState.PerformingSet && !checkIfLatestOfEverything(),
+                'bg-green-500 hover:bg-green-600 focus:ring-green-400': playerSubState() === PlayerSubState.PerformingSet && checkIfLatestOfEverything(),
                 'bg-blue-500 hover:bg-blue-600 focus:ring-blue-400': playerSubState() === PlayerSubState.PresetCountdown,
                 'bg-gray-400 dark:bg-gray-600 text-gray-800 dark:text-gray-200 cursor-not-allowed': playerSubState() === PlayerSubState.Resting && isRestTimerVisible()
             }">
@@ -532,7 +532,7 @@
     PAUSE WORKOUT
   </button>
 
-  <button (click)="jumpToExercise()" [disabled]="sessionState() === 'paused' || !routine()?.exercises?.length"
+  <button *ngIf="!checkIfSuperSetIsStarted()" (click)="jumpToExercise()" [disabled]="sessionState() === 'paused' || !routine()?.exercises?.length"
     class="flex justify-center items-center w-full max-w-xs bg-fuchsia-500 hover:bg-fuchsia-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" width="55" height="20" fill="white">
       <!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.-->
@@ -540,6 +540,7 @@
         d="M96 64c0-17.7 14.3-32 32-32l32 0c17.7 0 32 14.3 32 32l0 160 0 64 0 160c0 17.7-14.3 32-32 32l-32 0c-17.7 0-32-14.3-32-32l0-64-32 0c-17.7 0-32-14.3-32-32l0-64c-17.7 0-32-14.3-32-32s14.3-32 32-32l0-64c0-17.7 14.3-32 32-32l32 0 0-64zm448 0l0 64 32 0c17.7 0 32 14.3 32 32l0 64c17.7 0 32 14.3 32 32s-14.3 32-32 32l0 64c0 17.7-14.3 32-32 32l-32 0 0 64c0 17.7-14.3 32-32 32l-32 0c-17.7 0-32-14.3-32-32l0-160 0-64 0-160c0-17.7 14.3-32 32-32l32 0c17.7 0 32 14.3 32 32zM416 224l0 64-192 0 0-64 192 0z" />
     </svg>
     JUMP TO EXERCISE
+    <p *ngIf="checkIfSuperSetIsStarted()">Can't do that in the middle of a superset</p>
   </button>
 
   <button (click)="openPerformanceInsightsFromMenu()" [disabled]="sessionState() === 'paused' || !activeSetInfo()"
@@ -552,7 +553,7 @@
     PERFORMANCE INSIGHTS
   </button>
 
-  <button (click)="addWarmupSet()" [disabled]="!canAddWarmupSet() || sessionState() === 'paused' || !activeSetInfo()"
+  <button *ngIf="!checkIfSuperSetIsStarted()" (click)="addWarmupSet()" [disabled]="!canAddWarmupSet() || sessionState() === 'paused' || !activeSetInfo()"
     class="w-full items-center max-w-xs bg-sky-500 hover:bg-sky-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed">
     <p>+ ADD WARM-UP SET</p>
     <span *ngIf="!canAddWarmupSet()" class="text-xs text-white ml-2">(already started main sets)</span>
@@ -595,26 +596,25 @@
     ADD EXERCISE TO SESSION
   </button>
 
-  <button (click)="skipCurrentSet()" [disabled]="!activeSetInfo() || sessionState() === 'paused'"
+  <button *ngIf="!checkIfSetIsPartOfRounds()" (click)="skipCurrentSet()" [disabled]="!activeSetInfo() || sessionState() === 'paused'"
     class="w-full max-w-xs bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed">
     SKIP CURRENT SET
   </button>
 
-  <button (click)="skipCurrentExercise()" [disabled]="!activeSetInfo() || sessionState() === 'paused'"
+  <button *ngIf="!checkIfSetIsPartOfRounds()" (click)="skipCurrentExercise()" [disabled]="!activeSetInfo() || sessionState() === 'paused'"
     class="w-full max-w-xs bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed">
     MARK EXERCISE AS SKIPPED
   </button>
 
-  <button (click)="markCurrentExerciseDoLater()" [disabled]="!activeSetInfo() || sessionState() === 'paused'"
+  <button *ngIf="!checkIfSetIsPartOfRounds()" (click)="markCurrentExerciseDoLater()" [disabled]="!activeSetInfo() || sessionState() === 'paused'"
     class="w-full max-w-xs bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed">
     MARK EXERCISE FOR LATER
   </button>
 
-  <button (click)="finishWorkoutEarly()"
+  <button *ngIf="currentWorkoutLogExercises().length > 0" (click)="finishWorkoutEarly()"
     [disabled]="sessionState() === 'paused' || currentWorkoutLogExercises().length === 0"
     class="w-full max-w-xs bg-teal-500 hover:bg-teal-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed">
     FINISH WORKOUT EARLY
-    <span *ngIf="currentWorkoutLogExercises().length === 0">(No exercises logged yet)</span>
   </button>
 
   <button (click)="quitWorkout()"
