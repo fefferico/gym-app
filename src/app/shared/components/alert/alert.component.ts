@@ -19,14 +19,11 @@ export class AlertComponent implements OnInit {
   inputValues: { [key: string]: string | number | boolean } = {};
 
   ngOnInit(): void {
-    // Initialize inputValues from options
     if (this.options?.inputs) {
       this.options.inputs.forEach(input => {
-        // Handle checkbox initialization
         if (input.type === 'checkbox') {
           this.inputValues[input.name] = input.value !== undefined ? !!input.value : false;
         } else {
-          // Handle other inputs
           this.inputValues[input.name] = input.value !== undefined ? input.value : (input.type === 'number' ? 0 : '');
         }
       });
@@ -42,16 +39,32 @@ export class AlertComponent implements OnInit {
     }
   }
 
+  /**
+   * Handles the Enter key press on the alert.
+   * Finds the primary confirmation button and triggers its click.
+   * @param event The keyboard event.
+   */
+  handleEnterPress(event?: Event): void {
+    // Prevent the default Enter key action (like form submission)
+    event?.preventDefault();
+
+    // Find the primary confirmation button. It's either the one with role 'confirm'
+    // or the first button if no specific 'confirm' role is present.
+    const confirmButton = this.options?.buttons?.find(b => b.role === 'confirm') || this.options?.buttons?.[0];
+
+    if (confirmButton) {
+      // Simulate a click on that button to reuse the validation and dismissal logic
+      this.onButtonClick(confirmButton);
+    }
+  }
+
   onButtonClick(button: AlertButton): void {
-    // Basic validation for required inputs
-    if (button.role === 'confirm' || button.role !== 'cancel') { // Or check for specific roles that need validation
+    if (button.role === 'confirm' || button.role !== 'cancel') {
       if (this.options?.inputs) {
         for (const input of this.options.inputs) {
-          // Skip validation for checkboxes, as 'required' isn't standard for them
           if (input.type !== 'checkbox' && input.required && (this.inputValues[input.name] === undefined || String(this.inputValues[input.name]).trim() === '')) {
-            alert(`Please fill in the '${input.label || input.name}' field.`); // Simple browser alert for now
-            // Or use a more sophisticated inline error display within the alert
-            return; // Prevent dismiss
+            alert(`Please fill in the '${input.label || input.name}' field.`);
+            return;
           }
         }
       }

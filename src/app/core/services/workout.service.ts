@@ -131,6 +131,16 @@ export class WorkoutService {
     );
   }
 
+  /**
+   * Synchronously retrieves a routine from the current state.
+   * Useful for internal service helpers where the data is already loaded.
+   * @param id The ID of the routine to retrieve.
+   * @returns The Routine object or undefined if not found.
+   */
+  public getRoutineByIdSync(id: string): Routine | undefined {
+    return this.routinesSubject.getValue().find(r => r.id === id);
+  }
+
   addRoutine(newRoutineData: Omit<Routine, 'id'>): Routine {
     const currentRoutines = this.routinesSubject.getValue();
     const newRoutine: Routine = {

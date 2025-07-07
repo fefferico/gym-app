@@ -1,3 +1,5 @@
+<!-- src/app/features/dashboard/todays-workout/todays-workout.html -->
+
 <div
   class="p-4 text-center md:p-6 bg-white dark:bg-gray-700 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700">
   <!-- Date Navigation -->
@@ -14,6 +16,9 @@
       <span *ngIf="activeProgram()"
         class="block font-bold uppercase tracking-wider text-sm text-gray-500 dark:text-gray-400 mb-0.5">Program: {{
         activeProgram()?.name}}</span>
+      <span *ngIf="allActivePrograms().length > 1 && !activeProgram()"
+        class="block font-bold uppercase tracking-wider text-sm text-gray-500 dark:text-gray-400 mb-0.5">{{allActivePrograms().length}}
+        Active Programs</span>
       <span *ngIf="activeProgram() && activeProgram()?.startDate"
         class="block font-bold uppercase tracking-wider text-xs text-gray-500 dark:text-gray-400 mb-0.5">Started on: {{
         activeProgram()?.startDate | date:'dd-MM-yyyy':'UTC'}}</span>
@@ -37,6 +42,7 @@
   <div class="relative overflow-hidden" data-swipe-card-content-wrapper>
     <div [@slideAnimation]="animationState()">
       <div *ngIf="isLoading()" class="text-center py-8 min-h-[200px] flex flex-col justify-center items-center">
+        <!-- Loading spinner remains the same -->
         <p class="text-gray-500 dark:text-gray-400">Checking your schedule...</p>
         <svg class="animate-spin h-8 w-8 text-primary dark:text-primary-light mx-auto mt-2"
           xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -47,107 +53,101 @@
         </svg>
       </div>
 
-      <!-- === MAIN CONTENT AREA === -->
       <div *ngIf="!isLoading()" class="min-h-[200px]">
+        <ng-container *ngIf="allActivePrograms().length > 0; else noProgramBlock">
 
-        <!-- ############################################################# -->
-        <!-- ### CASE 1: ACTIVE PROGRAM IS SET                         ### -->
-        <!-- ############################################################# -->
-        <ng-container *ngIf="activeProgram(); else noProgramBlock">
+          <!-- ### Main Change: Loop over the array of scheduled workouts ### -->
+          <div *ngIf="todaysScheduledWorkouts().length > 0; else noScheduledWorkoutInProgramBlock" class="space-y-4">
+            <div *ngFor="let workoutInfo of todaysScheduledWorkouts()"
+              class="border border-primary dark:border-primary-light bg-primary-50 dark:bg-gray-700/30 p-4 rounded-md shadow-md">
+              <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-100 mb-1">Scheduled: <span
+                  class="text-primary dark:text-primary-light">{{ workoutInfo.routine.name }}</span></h3>
+              <p *ngIf="workoutInfo.routine.description"
+                class="text-m text-gray-600 dark:text-gray-400 mb-2 line-clamp-2"
+                [title]="workoutInfo.routine.description">{{ workoutInfo.routine.description }}</p>
 
-          <!-- #### SUBCASE 1.1: A workout IS scheduled for this day #### -->
-          <div *ngIf="todaysScheduledWorkout() as workoutInfo; else noScheduledWorkoutInProgramBlock"
-            class="border border-primary dark:border-primary-light bg-primary-50 dark:bg-gray-700/30 p-4 rounded-md shadow-md">
-            <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-100 mb-1">Scheduled: <span
-                class="text-primary dark:text-primary-light">{{ workoutInfo.routine.name }}</span></h3>
-            <p *ngIf="workoutInfo.routine.description" class="text-m text-gray-600 dark:text-gray-400 mb-2 line-clamp-2"
-              [title]="workoutInfo.routine.description">{{ workoutInfo.routine.description }}</p>
-
-            <div class="mt-4">
-              <!-- COMPLETED -->
-              <ng-container *ngIf="todaysScheduledWorkoutDone()">
-                <div
-                  class="p-3 bg-green-100 dark:bg-green-900/50 rounded-md text-green-700 dark:text-green-300 flex items-center justify-center gap-x-3">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                    stroke="currentColor" class="w-6 h-6">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                      d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                  </svg>
-                  <span class="font-semibold text-m">Workout Completed!</span>
-                  <button (click)="viewLogDetails(logsForDay()[0].id)"
-                    class="ml-auto flex items-center text-xs font-semibold bg-sky-200 dark:bg-sky-700 text-sky-800 dark:text-sky-100 px-2 py-1 rounded hover:bg-sky-300">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                      stroke="currentColor" class="w-5 h-5 mr-2">
-                      <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                    DETAILS</button>
-                </div>
-              </ng-container>
-
-              <!-- NOT COMPLETED -->
-              <ng-container *ngIf="!todaysScheduledWorkoutDone()">
-                <!-- FUTURE DATE -->
-                <ng-container *ngIf="isFutureDate(currentDate())">
-                  <div class="flex flex-col sm:flex-row gap-2">
-                    <button disabled
-                      class="flex-1 bg-gray-400 text-white font-semibold py-2.5 px-4 rounded-md shadow-sm flex items-center justify-center text-m cursor-not-allowed"><svg
-                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                        stroke="currentColor" class="w-5 h-5 mr-2">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
-                      </svg>PLANNED</button>
-                    <button (click)="viewRoutineDetails(workoutInfo.routine.id)"
-                      class="flex-1 bg-sky-500 hover:bg-sky-600 text-white font-semibold py-2.5 px-4 rounded-md shadow-sm flex items-center justify-center text-m"><svg
-                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                        stroke="currentColor" class="w-5 h-5 mr-2">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>DETAILS</button>
-                  </div>
-                </ng-container>
-                <!-- PAST DATE (and not today) -->
-                <ng-container *ngIf="!isToday(currentDate()) && !isFutureDate(currentDate())">
+              <div class="mt-4">
+                <!-- ### Use the new helper function to check status for THIS specific workout ### -->
+                <ng-container *ngIf="isWorkoutLogged(workoutInfo.routine.id)">
                   <div
-                    class="p-3 bg-yellow-100 dark:bg-yellow-900/50 rounded-md text-yellow-700 dark:text-yellow-300 flex items-center justify-center gap-x-3">
+                    class="p-3 bg-green-100 dark:bg-green-900/50 rounded-md text-green-700 dark:text-green-300 flex items-center justify-center gap-x-3">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                       stroke="currentColor" class="w-6 h-6">
                       <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                        d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                     </svg>
-                    <span class="font-semibold text-m">Session Skipped</span>
-                  </div>
-                </ng-container>
-                <!-- TODAY -->
-                <ng-container *ngIf="isToday(currentDate())">
-                  <div class="flex flex-col sm:flex-row gap-2">
-                    <button (click)="startWorkoutProgram(workoutInfo.routine.id, $event)"
-                      class="flex-1 bg-green-500 hover:bg-green-600 text-white font-semibold py-2.5 px-4 rounded-md shadow-sm flex items-center justify-center text-m"><svg
-                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                        stroke="currentColor" class="w-5 h-5 mr-2">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 010 1.972l-11.54 6.347a1.125 1.125 0 01-1.667-.986V5.653z" />
-                      </svg>START</button>
-                    <button (click)="viewRoutineDetails(workoutInfo.routine.id)"
-                      class="flex-1 bg-sky-500 hover:bg-sky-600 text-white font-semibold py-2.5 px-4 rounded-md shadow-sm flex items-center justify-center text-m"><svg
-                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                    <span class="font-semibold text-m">Workout Completed!</span>
+                    <button (click)="viewLogDetails(logsForDay()[0].id)"
+                      class="ml-auto flex items-center text-xs font-semibold bg-sky-200 dark:bg-sky-700 text-sky-800 dark:text-sky-100 px-2 py-1 rounded hover:bg-sky-300">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                         stroke="currentColor" class="w-5 h-5 mr-2">
                         <path stroke-linecap="round" stroke-linejoin="round"
                           d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>DETAILS</button>
+                      </svg>
+                      DETAILS</button>
                   </div>
                 </ng-container>
-              </ng-container>
+
+                <ng-container *ngIf="!isWorkoutLogged(workoutInfo.routine.id)">
+                  <!-- All other conditional logic for START/PLANNED/SKIPPED remains the same inside the loop -->
+                  <ng-container *ngIf="isFutureDate(currentDate())">
+                    <div class="flex flex-col sm:flex-row gap-2">
+                      <button disabled
+                        class="flex-1 bg-gray-400 text-white font-semibold py-2.5 px-4 rounded-md shadow-sm flex items-center justify-center text-m cursor-not-allowed"><svg
+                          xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                          stroke="currentColor" class="w-5 h-5 mr-2">
+                          <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+                        </svg>PLANNED</button>
+                      <button (click)="viewRoutineDetails(workoutInfo.routine.id)"
+                        class="flex-1 bg-sky-500 hover:bg-sky-600 text-white font-semibold py-2.5 px-4 rounded-md shadow-sm flex items-center justify-center text-m"><svg
+                          xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                          stroke="currentColor" class="w-5 h-5 mr-2">
+                          <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>DETAILS</button>
+                    </div>
+                  </ng-container>
+                  <ng-container *ngIf="!isToday(currentDate()) && !isFutureDate(currentDate())">
+                    <div
+                      class="p-3 bg-yellow-100 dark:bg-yellow-900/50 rounded-md text-yellow-700 dark:text-yellow-300 flex items-center justify-center gap-x-3">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                      </svg>
+                      <span class="font-semibold text-m">Session Skipped</span>
+                    </div>
+                  </ng-container>
+                  <ng-container *ngIf="isToday(currentDate())">
+                    <div class="flex flex-col sm:flex-row gap-2">
+                      <button (click)="startWorkoutProgram(workoutInfo.routine.id, $event)"
+                        class="flex-1 bg-green-500 hover:bg-green-600 text-white font-semibold py-2.5 px-4 rounded-md shadow-sm flex items-center justify-center text-m"><svg
+                          xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                          stroke="currentColor" class="w-5 h-5 mr-2">
+                          <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 010 1.972l-11.54 6.347a1.125 1.125 0 01-1.667-.986V5.653z" />
+                        </svg>START</button>
+                      <button (click)="viewRoutineDetails(workoutInfo.routine.id)"
+                        class="flex-1 bg-sky-500 hover:bg-sky-600 text-white font-semibold py-2.5 px-4 rounded-md shadow-sm flex items-center justify-center text-m"><svg
+                          xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                          stroke="currentColor" class="w-5 h-5 mr-2">
+                          <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>DETAILS</button>
+                    </div>
+                  </ng-container>
+                </ng-container>
+              </div>
             </div>
           </div>
 
-          <!-- #### SUBCASE 1.2: NO workout is scheduled for this day (Rest Day) #### -->
           <ng-template #noScheduledWorkoutInProgramBlock>
+            <!-- Content for Rest Day... (unchanged) -->
             <div class="text-center py-8">
-              <!-- License: CC Attribution. Made by Subhajit Das: https://www.instagram.com/subhosketchbook/ -->
               <svg viewBox="0 0 25 25" xmlns="http://www.w3.org/2000/svg" stroke-width="1.5" stroke="currentColor"
                 class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-3">
                 <g id="sleep">
@@ -163,56 +163,83 @@
               <p class="text-m text-gray-500 dark:text-gray-400">No workout planned in your program for this day.</p>
             </div>
             <div *ngIf="isToday(currentDate())">
-              <p class="text-m text-gray-500 dark:text-gray-400">
-                Feel free to
-                <button (click)="browseRoutines()" class="text-primary dark:text-primary-light hover:underline">pick
-                  any
-                  other
-                  routine</button>, if you'd prefer
-              </p>
-              <div class="mt-6 pt-4 border-t dark:border-gray-700 text-left"
-                *ngIf="availableRoutines$ | async as routines">
-                <h4 class="text-md font-semibold text-gray-600 dark:text-gray-200 mb-2">Or, pick one from below:</h4>
-                <div class="max-h-60 overflow-y-auto space-y-2 pr-2 py-2 custom-scrollbar">
-                  <div (click)="viewRoutineDetails(routine.id)" *ngFor="let routine of routines"
-                    class="p-3 bg-gray-200/50 dark:bg-gray-600 rounded-md shadow-sm hover:shadow-md transition-shadow flex justify-between items-center transform hover:-translate-y-1">
-                    <div class="truncate">
-                      <span class="font-medium text-gray-800 dark:text-gray-100">{{ routine.name }}</span>
-                      <span class="block text-left text-xs text-gray-500 dark:text-gray-400">{{
-                        routine.exercises.length
-                        }} exercises - Est: ~{{ getRoutineDuration(routine)}} min</span>
-                      <span *ngIf="findRoutineLog(routine.id) | async as routineLog"
-                        class="block text-left text-xs text-gray-500 dark:text-gray-400">
-                        <span *ngIf="routineLog.durationSeconds">Latest: {{
-                          secondsToDateTime(routineLog.durationSeconds) |
-                          date:'HH:mm:ss' }}
-                        </span>
-                      </span>
-                    </div>
-                    <button (click)="startWorkoutProgram(routine.id, $event)" [disabled]="isAnimating()"
-                      class="flex items-center ml-2 text-m bg-primary hover:bg-green-200 text-white dark:hover:bg-primary-dark font-semibold py-1 px-2.5 rounded-md disabled:opacity-50">
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                        stroke="currentColor" class="size-4 mr-1">
+              <div *ngIf="logsForDay().length > 0" class="mb-6 text-left">
+                <h4 *ngIf="isToday(currentDate())" class="text-md font-semibold text-gray-600 dark:text-gray-200 mb-2">
+                  Logged today:</h4>
+                <h4 *ngIf="!isToday(currentDate())" class="text-md font-semibold text-gray-600 dark:text-gray-200 mb-2">
+                  Logged on this day:</h4>
+                <div class="space-y-2">
+                  <div *ngFor="let log of logsForDay()"
+                    class="p-3 bg-gray-200/50 dark:bg-gray-800 rounded-md flex justify-between items-center">
+                    <p class="flex flex-col font-medium text-gray-800 dark:text-gray-100 truncate pr-2">{{
+                      log.routineName
+                      }}
+                      <span class="text-sm" *ngIf="log.durationSeconds">Duration: {{
+                        secondsToDateTime(log.durationSeconds) |
+                        date:'HH:mm:ss' }}</span>
+                    </p>
+
+                    <button (click)="viewLogDetails(log.id)"
+                      class="flex items-center text-xs font-semibold bg-sky-200 dark:bg-sky-700 text-sky-800 dark:text-sky-100 px-2 py-1 rounded hover:bg-sky-300">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="w-5 h-5 mr-2">
                         <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 010 1.972l-11.54 6.347a1.125 1.125 0 01-1.667-.986V5.653z" />
-                      </svg>
-                      START
-                    </button>
+                          d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>DETAILS</button>
                   </div>
-                  <p *ngIf="!routines || routines.length === 0" class="text-m text-gray-400 dark:text-gray-500">No
-                    routines available</p>
                 </div>
               </div>
+              <div *ngIf="logsForDay().length === 0">
+                <p class="text-m text-gray-500 dark:text-gray-400">
+                  Feel free to
+                  <button (click)="browseRoutines()" class="text-primary dark:text-primary-light hover:underline">pick
+                    any
+                    other
+                    routine</button>, if you'd prefer
+                </p>
+                <div class="mt-6 pt-4 border-t dark:border-gray-700 text-left"
+                  *ngIf="availableRoutines$ | async as routines">
+                  <h4 class="text-md font-semibold text-gray-600 dark:text-gray-200 mb-2">Or, pick one from below:</h4>
+                  <div class="max-h-60 overflow-y-auto space-y-2 pr-2 py-2 custom-scrollbar">
+                    <div (click)="viewRoutineDetails(routine.id)" *ngFor="let routine of routines"
+                      class="p-3 bg-gray-200/50 dark:bg-gray-600 rounded-md shadow-sm hover:shadow-md transition-shadow flex justify-between items-center transform hover:-translate-y-1">
+                      <div class="truncate">
+                        <span class="font-medium text-gray-800 dark:text-gray-100">{{ routine.name }}</span>
+                        <span class="block text-left text-xs text-gray-500 dark:text-gray-400">{{
+                          routine.exercises.length
+                          }} exercises - Est: ~{{ getRoutineDuration(routine)}} min</span>
+                        <span *ngIf="findRoutineLog(routine.id) | async as routineLog"
+                          class="block text-left text-xs text-gray-500 dark:text-gray-400">
+                          <span *ngIf="routineLog.durationSeconds">Latest: {{
+                            secondsToDateTime(routineLog.durationSeconds) |
+                            date:'HH:mm:ss' }}
+                          </span>
+                        </span>
+                      </div>
+                      <button (click)="startWorkoutProgram(routine.id, $event)" [disabled]="isAnimating()"
+                        class="flex items-center ml-2 text-m bg-primary hover:bg-green-200 text-white dark:hover:bg-primary-dark font-semibold py-1 px-2.5 rounded-md disabled:opacity-50">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                          stroke="currentColor" class="size-4 mr-1">
+                          <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 010 1.972l-11.54 6.347a1.125 1.125 0 01-1.667-.986V5.653z" />
+                        </svg>
+                        START
+                      </button>
+                    </div>
+                    <p *ngIf="!routines || routines.length === 0" class="text-m text-gray-400 dark:text-gray-500">No
+                      routines available</p>
+                  </div>
+                </div>
+              </div>
+
             </div>
           </ng-template>
         </ng-container>
 
-        <!-- ############################################################# -->
-        <!-- ### CASE 2: NO ACTIVE PROGRAM IS SET                      ### -->
-        <!-- ############################################################# -->
         <ng-template #noProgramBlock>
+          <!-- Content for No Program Active... (unchanged) -->
           <div class="text-center py-4">
-            <!-- FUTURE DATE -->
             <div *ngIf="isFutureDate(currentDate())">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                 stroke="currentColor" class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-3">
@@ -226,7 +253,6 @@
                 Programs</button>
             </div>
 
-            <!-- TODAY OR PAST DATE -->
             <div *ngIf="!isFutureDate(currentDate())">
               <div *ngIf="logsForDay().length > 0" class="mb-6 text-left">
                 <h4 *ngIf="isToday(currentDate())" class="text-md font-semibold text-gray-600 dark:text-gray-200 mb-2">

@@ -118,7 +118,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
             goals: [''],
             description: [''],
             programNotes: [''],
-            startDate: [null], // Store as YYYY-MM-DD string
+            startDate: ['', Validators.required], // Store as YYYY-MM-DD string
             cycleLength: [null, [Validators.min(1)]], // Default to weekly (null or 0)
             schedule: this.fb.array([])
         });
@@ -320,7 +320,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
             goals: this.selectedGoals(),
             description: formValue.description,
             programNotes: formValue.programNotes,
-            startDate: formValue.startDate || null, // Ensure null if empty
+            startDate: formValue.startDate || new Date(), // Ensure null if empty
             cycleLength: formValue.cycleLength || null, // Ensure null if 0 or empty
             schedule: formValue.schedule.map((s: ScheduledRoutineDay) => ({ // Ensure 'any' or proper type for s
                 id: s.id || uuidv4(),

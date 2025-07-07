@@ -130,11 +130,11 @@ export class TrainingProgramService {
       programsArray[index] = programToSave;
 
       // If this program is being set to active, deactivate others
-      if (programToSave.isActive) {
-        programsArray = programsArray.map(p =>
-          p.id === programToSave.id ? p : { ...p, isActive: false }
-        );
-      }
+      // if (programToSave.isActive) {
+      //   programsArray = programsArray.map(p =>
+      //     p.id === programToSave.id ? p : { ...p, isActive: false }
+      //   );
+      // }
       this._saveProgramsToStorage(programsArray);
       this.toastService.success(`Program "${programToSave.name}" updated.`, 3000, "Program Updated");
       return programToSave;
@@ -234,6 +234,12 @@ export class TrainingProgramService {
     );
   }
 
+  getActivePrograms(): Observable<TrainingProgram[] | undefined> {
+    return this.programs$.pipe(
+      map(programs => programs.filter(p => p.isActive))
+    );
+  }
+
   /** Returns the current list of programs for backup */
   public getDataForBackup(): TrainingProgram[] {
     return this.programsSubject.getValue(); // Get current value from BehaviorSubject
@@ -301,6 +307,64 @@ export class TrainingProgramService {
     // +++ END of new merge logic +++
   }
 
+
+  /**
+   * Finds the scheduled routine and its details for a specific program on a given date.
+   * This is a synchronous helper method that works on a single, provided program object.
+   *
+   * @param targetDate The date to check the schedule for.
+   * @param program The TrainingProgram object to check against.
+   * @returns An object containing the Routine and ScheduledRoutineDay if a workout is scheduled, otherwise null.
+   */
+  public findRoutineForDayInProgram(targetDate: Date, program: TrainingProgram): { routine: Routine, scheduledDayInfo: ScheduledRoutineDay } | null {
+    if (!program || !program.schedule || program.schedule.length === 0) {
+      return null;
+    }
+
+    let scheduledDayInfo: ScheduledRoutineDay | undefined;
+
+    // Check if the program uses a custom n-day cycle
+    if (program.cycleLength && program.cycleLength > 0 && program.startDate) {
+      const startDate = parseISO(program.startDate); // Use date-fns for reliable parsing
+
+      // Ensure the target date is on or after the program's start date
+      if (targetDate < startDate) {
+        return null;
+      }
+
+      // Calculate the difference in days from the start date
+      const diffTime = Math.abs(targetDate.getTime() - startDate.getTime());
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+      // Determine the current day within the cycle (1-indexed)
+      const currentCycleDayNumber = (diffDays % program.cycleLength) + 1;
+
+      // Find the schedule entry that matches the calculated cycle day
+      scheduledDayInfo = program.schedule.find(s => s.dayOfWeek === currentCycleDayNumber);
+
+    } else {
+      // Logic for a standard weekly cycle
+      const dayOfWeekForTargetDate = getDay(targetDate); // date-fns: 0 for Sunday, 1 for Monday, etc.
+
+      // Find the schedule entry that matches the day of the week
+      scheduledDayInfo = program.schedule.find(s => s.dayOfWeek === dayOfWeekForTargetDate);
+    }
+
+    // If a schedule entry was found, retrieve the full routine details from the WorkoutService
+    if (scheduledDayInfo) {
+      // This assumes workoutService can synchronously provide the routine map or has a similar helper.
+      // If getRoutineById is async, this whole method must be async.
+      // Let's assume you have a synchronous way to get routine details, like from a map.
+      const routine = this.workoutService.getRoutineByIdSync(scheduledDayInfo.routineId); // You would need to create getRoutineByIdSync
+
+      if (routine) {
+        return { routine, scheduledDayInfo };
+      }
+    }
+
+    // Return null if no scheduled day was found or the routine couldn't be retrieved
+    return null;
+  }
 
   /**
    * Gets the scheduled routine for a given date based on the active program.

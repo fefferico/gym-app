@@ -49,12 +49,12 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
   private ngZone = inject(NgZone);
 
   // --- Signals for State Management ---
-  protected activeProgram = signal<TrainingProgram | null>(null);
+  allActivePrograms = signal<TrainingProgram[]>([]);
+  activeProgram = signal<TrainingProgram | null>(null);
   isLoading = signal<boolean>(true);
   currentDate = signal<Date>(new Date());
   private currentDate$: Observable<Date> = toObservable(this.currentDate);
-  todaysScheduledWorkout = signal<{ routine: Routine, scheduledDayInfo: ScheduledRoutineDay } | null>(null);
-  todaysScheduledWorkoutDone = signal<boolean>(false);
+  todaysScheduledWorkouts = signal<{ routine: Routine, scheduledDayInfo: ScheduledRoutineDay }[]>([]);
   logsForDay = signal<WorkoutLog[]>([]);
 
   // --- Other Properties ---
@@ -72,77 +72,80 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
 
   formatDate = (date: Date) => {
     const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+    const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
-
     return `${year}-${month}-${day}`;
   };
 
-ngOnInit(): void {
-    // Convert the `currentDate` signal into an observable. This is the new source of truth.
-
+  ngOnInit(): void {
     this.currentDate$.pipe(
-      // On every new date emission, set loading to true.
       tap(() => this.isLoading.set(true)),
-
-      // Use switchMap to cancel previous requests and start a new data fetch for the new date.
       switchMap(date =>
-        // Fetch all necessary data for the new date in parallel.
         combineLatest([
-          this.trainingProgramService.getActiveProgram(),
-          this.trainingProgramService.getRoutineForDay(date),
-          this.trackingService.getLogsForDate(this.formatDate(date)) // Gets all logs for the given day
+          this.trainingProgramService.getActivePrograms(),
+          this.trackingService.getLogsForDate(this.formatDate(date))
         ]).pipe(
-          // Process the combined results.
-          map(([activeProgram, routineData, logsForDay]) => {
-            // Determine if the *scheduled* workout is done.
-            let isDone = false;
-            if (logsForDay) {
-              isDone = routineData
-                ? logsForDay.some(log => log.routineId === routineData.routine.id)
-                : false;
-            }
+          map(([activePrograms, logsForDay]) => {
+            const foundWorkouts: { routine: Routine, scheduledDayInfo: ScheduledRoutineDay }[] = [];
+            let programForDisplay: TrainingProgram | null = null;
 
-            // --- START: NEW CONDITIONAL LOGIC ---
-            let finalRoutineData = null; // Default to showing no scheduled routine
+            if (activePrograms) {
+              for (const prog of activePrograms) {
+                const routineData = this.trainingProgramService.findRoutineForDayInProgram(date, prog);
+                if (routineData && prog.startDate) {
+                  const programStartDate = new Date(prog.startDate);
+                  programStartDate.setHours(0, 0, 0, 0);
+                  const streamDate = new Date(date);
+                  streamDate.setHours(0, 0, 0, 0);
 
-            // Check if the program is active and has a valid start date.
-            if (activeProgram && activeProgram.startDate) {
-              // Create date objects for comparison, resetting the time to avoid timezone issues.
-              const programStartDate = new Date(activeProgram.startDate);
-              programStartDate.setHours(0, 0, 0, 0);
-
-              const streamDate = new Date(date);
-              streamDate.setHours(0, 0, 0, 0);
-
-              // Only assign the routineData if the program start date is on or before the current stream's date.
-              if (programStartDate <= streamDate) {
-                finalRoutineData = routineData;
+                  if (programStartDate <= streamDate) {
+                    foundWorkouts.push(routineData);
+                  }
+                }
               }
             }
-            // --- END: NEW CONDITIONAL LOGIC ---
 
-            // Return a single, clean state object using the potentially nullified routine data.
-            return { activeProgram, routineData: finalRoutineData, logsForDay, isDone };
+            if (foundWorkouts.length > 0) {
+              // If workouts are found, set the program for display to the one from the first found workout.
+              const firstProgramId = foundWorkouts[0].scheduledDayInfo.id;
+              programForDisplay = activePrograms?.find(p => p.id === firstProgramId) ?? null;
+            } else if (activePrograms && activePrograms.length > 0) {
+              // If no workouts scheduled but programs are active, use the first for context.
+              programForDisplay = activePrograms[0];
+            }
+
+            return {
+              allActivePrograms: activePrograms || [],
+              programForDisplay: programForDisplay,
+              routineData: foundWorkouts,
+              logsForDay,
+            };
           }),
-          // If fetching data for a specific day fails, return a safe state and don't kill the stream.
           catchError(err => {
             console.error("Error loading workout data for date:", date, err);
-            return of({ activeProgram: null, routineData: null, logsForDay: [], isDone: false });
+            return of({ allActivePrograms: [], programForDisplay: null, routineData: [], logsForDay: [] });
           })
         )
       ),
-      // Ensure the entire stream is cleaned up when the component is destroyed.
       takeUntil(this.destroy$)
     ).subscribe(state => {
-      // Set all state signals at once from the final processed object.
-      this.activeProgram.set(state.activeProgram ?? null);
-      // This will now correctly be set to null if the date condition failed.
-      this.todaysScheduledWorkout.set(state.routineData);
-      this.todaysScheduledWorkoutDone.set(state.isDone);
-      this.logsForDay.set(state.logsForDay ?? []);
-      this.isLoading.set(false);
+      if (state) {
+        this.allActivePrograms.set(state.allActivePrograms);
+        this.activeProgram.set(state.programForDisplay);
+        this.todaysScheduledWorkouts.set(state.routineData);
+        this.logsForDay.set(state.logsForDay ?? []);
+        this.isLoading.set(false);
+      }
     });
+  }
+
+  /**
+   * Helper function for the template to check if a specific routine has been logged today.
+   * @param routineId The ID of the routine to check.
+   * @returns True if a log exists for this routine on the current day.
+   */
+  isWorkoutLogged(routineId: string): boolean {
+    return this.logsForDay().some(log => log.routineId === routineId);
   }
 
   ngAfterViewInit(): void {
@@ -163,7 +166,6 @@ ngOnInit(): void {
     this.hammerInstance?.destroy();
   }
 
-  // Date navigation methods now ONLY update the signal. The reactive stream in ngOnInit does the rest.
   private changeDay(swipeDirection: 'left' | 'right'): void {
     if (this.isAnimating()) return;
     this.isAnimating.set(true);
@@ -201,7 +203,6 @@ ngOnInit(): void {
     }, this.ANIMATION_OUT_DURATION);
   }
 
-  // --- Navigation and Helper Methods ---
   startWorkoutProgram(routineId: string | undefined, event: Event): void {
     event?.stopPropagation();
     if (routineId) {
@@ -209,10 +210,7 @@ ngOnInit(): void {
     }
   }
 
-  viewRoutineDetails(routineId: string | undefined): void {
-    if (routineId) { this.router.navigate(['/workout/routine/view', routineId]); }
-  }
-
+  viewRoutineDetails(routineId: string | undefined): void { if (routineId) { this.router.navigate(['/workout/routine/view', routineId]); } }
   viewLogDetails(logId: string): void { this.router.navigate(['/history/log', logId]); }
   managePrograms(): void { this.router.navigate(['/training-programs']); }
   browseRoutines(): void { this.router.navigate(['/workout']); }

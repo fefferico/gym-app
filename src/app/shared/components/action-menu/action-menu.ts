@@ -1,11 +1,11 @@
 // src/app/shared/components/action-menu/action-menu.component.ts
-import { Component, Input, Output, EventEmitter, HostListener, ElementRef, ChangeDetectionStrategy, SecurityContext, inject } from '@angular/core';
+import { Component, Input, Output, EventEmitter, HostListener, ElementRef, ChangeDetectionStrategy, SecurityContext, inject, OnChanges, SimpleChanges, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { ActionMenuItem } from '../../../core/models/action-menu.model';
 
-// Animation for dropdown mode
+// ... (animations remain the same)
 export const dropdownMenuAnimation = trigger('dropdownMenu', [
   transition(':enter', [
     style({ opacity: 0, transform: 'scale(0.95) translateY(-10px)' }),
@@ -15,45 +15,63 @@ export const dropdownMenuAnimation = trigger('dropdownMenu', [
     animate('75ms ease-in', style({ opacity: 0, transform: 'scale(0.95) translateY(-10px)' })),
   ]),
 ]);
-
-// Animation for compact bar (e.g., slide in from bottom)
 export const compactBarAnimation = trigger('compactBar', [
-      state('void', style({
-        height: '0px', opacity: 0, overflow: 'hidden',
-        paddingTop: '0', paddingBottom: '0', marginTop: '0', marginBottom: '0'
-      })),
-      state('*', style({
-        height: '*', opacity: 1, overflow: 'hidden',
-        paddingTop: '0.5rem', paddingBottom: '0.5rem'
-      })),
-      transition('void <=> *', animate('200ms ease-in-out'))
-    ]);
+  state('void', style({
+    height: '0px', opacity: 0, overflow: 'hidden',
+    paddingTop: '0', paddingBottom: '0', marginTop: '0', marginBottom: '0'
+  })),
+  state('*', style({
+    height: '*', opacity: 1, overflow: 'hidden',
+    paddingTop: '0.5rem', paddingBottom: '0.5rem'
+  })),
+  transition('void <=> *', animate('200ms ease-in-out'))
+]);
+
 
 @Component({
   selector: 'app-action-menu',
   standalone: true,
   imports: [CommonModule],
   templateUrl: './action-menu.html',
-  animations: [dropdownMenuAnimation, compactBarAnimation], // Add both animations
+  animations: [dropdownMenuAnimation, compactBarAnimation],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ActionMenuComponent {
+export class ActionMenuComponent implements OnChanges, OnDestroy {
   private sanitizer = inject(DomSanitizer);
   private elRef = inject(ElementRef);
 
   @Input() items: ActionMenuItem[] = [];
   @Input() isVisible: boolean = false;
   @Input() displayMode: 'dropdown' | 'compact-bar' = 'dropdown';
-  
-  // Default classes for dropdown mode
-  @Input() dropdownMenuClass: string = 'origin-top-right absolute right-0 top-full mt-1 sm:mt-2 w-40 sm:w-48 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black dark:ring-gray-600 ring-opacity-5 focus:outline-none py-1 z-[60]';
-  
-  // Default classes for compact-bar mode
-@Input() compactBarClass: string = 'flex flex-wrap gap-1.5 justify-center z-20 rounded-b-lg grid-cols-3';
 
+  @Input() dropdownMenuClass: string = 'origin-top-right absolute right-0 top-full mt-1 sm:mt-2 w-40 sm:w-48 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black dark:ring-gray-600 ring-opacity-5 focus:outline-none py-1 z-[60]';
+
+  @Input() compactBarClass: string = 'flex flex-wrap gap-1.5 justify-center z-20 rounded-b-lg grid-cols-3';
 
   @Output() itemClick = new EventEmitter<{ actionKey: string, data?: any }>();
   @Output() closeMenu = new EventEmitter<void>();
+
+  // A bound reference to the event handler function.
+  // This is crucial for addEventListener and removeEventListener to work correctly.
+  private _boundOnEnterKey = this.handleEnterKey.bind(this);
+
+  ngOnChanges(changes: SimpleChanges): void {
+    // We watch for changes to the `isVisible` input property.
+    if (changes['isVisible']) {
+      if (changes['isVisible'].currentValue === true) {
+        // When the menu becomes visible, add the global keydown listener.
+        document.addEventListener('keydown', this._boundOnEnterKey);
+      } else {
+        // When the menu becomes hidden, remove the listener to prevent it from firing unnecessarily.
+        document.removeEventListener('keydown', this._boundOnEnterKey);
+      }
+    }
+  }
+
+  ngOnDestroy(): void {
+    // Always clean up the listener when the component is destroyed to prevent memory leaks.
+    document.removeEventListener('keydown', this._boundOnEnterKey);
+  }
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
@@ -62,13 +80,28 @@ export class ActionMenuComponent {
     }
   }
 
+  // This method is now called by our manually-managed event listener.
+  handleEnterKey(event: KeyboardEvent): void {
+    // We only care about the "Enter" key.
+    if (event.key !== 'Enter') {
+      return;
+    }
+
+    event.preventDefault();
+
+    // Find the first clickable action in the menu.
+    const primaryAction = this.items.find(item => !item.isDivider);
+
+    if (primaryAction) {
+      // Simulate a click on that item to reuse all existing logic.
+      this.onItemClicked({ stopPropagation: () => { } } as MouseEvent, primaryAction);
+    }
+  }
+
   onItemClicked(event: MouseEvent, item: ActionMenuItem): void {
     event.stopPropagation();
     if (!item.isDivider) {
       this.itemClick.emit({ actionKey: item.actionKey ?? '', data: item.data });
-      // For compact bar, we might not want to auto-close after every click,
-      // depending on UX. Parent can decide by calling closeMenu.
-      // For dropdown, it usually closes.
       if (this.displayMode === 'dropdown') {
         this.closeMenu.emit();
       }
@@ -80,11 +113,7 @@ export class ActionMenuComponent {
     return this.sanitizer.bypassSecurityTrustHtml(svgString);
   }
 
-  // Helper for compact mode to decide if icon and label or just icon
   showLabelInCompact(item: ActionMenuItem): boolean {
-    // Example logic: show label if icon is not present, or if a specific flag is set.
-    // For now, let's assume compact buttons always show labels if provided.
-    // You can make this more sophisticated.
     return !!item.label;
   }
 }
