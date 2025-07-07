@@ -618,6 +618,13 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
   addSet(exerciseControl: AbstractControl, exerciseIndex: number): void {
     if (this.isViewMode) return;
+
+    // Prevent adding more than one set to an exercise that is part of a superset.
+    if (!!exerciseControl.get('supersetId')?.value) {
+      this.toastService.warning("Exercises in a superset can only have one set.", 4000, "Action Blocked");
+      return;
+    }
+
     const setsArray = this.getSetsFormArray(exerciseControl);
     let newSet;
     if (setsArray.length > 0) {
@@ -909,6 +916,14 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       });
       this.updateRoundsControlability(exerciseControl);
       const setsArray = exerciseControl.get('sets') as FormArray;
+
+      // If an exercise is part of a superset, it should only have one set.
+      // Remove any additional sets, keeping only the first one.
+      while (setsArray.length > 1) {
+        setsArray.removeAt(1);
+      }
+
+      // This loop will now only run for the single set (if it exists)
       setsArray.controls.forEach((setControl) => {
         if (orderInSuperset < supersetSize - 1) {
           (setControl as FormGroup).get('restAfterSet')?.setValue(0);
@@ -916,7 +931,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       });
     });
     this.selectedExerciseIndicesForSuperset.set([]);
-    this.toastService.success("Superset created!", 3000, "Success");
+    this.toastService.success("Superset created! Each exercise is now limited to one set.", 4000, "Success");
   }
 
   ungroupSuperset(exerciseIndex: number): void {
@@ -1308,7 +1323,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     const routinePayload: Routine = {
       id: this.currentRoutineId || uuidv4(), name: formValue.name, description: formValue.description, goal: formValue.goal,
       exercises: (formValue.goal === 'rest') ? [] : formValue.exercises.map((exInput: any) => ({
-        ...exInput, 
+        ...exInput,
         id: exInput.id || uuidv4(),
         sets: exInput.sets.map((setInput: any) => ({
           ...setInput, // This includes 'type', 'reps', 'duration', 'tempo', 'restAfterSet', 'notes'
