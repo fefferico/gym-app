@@ -371,7 +371,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
 
     const routineToDelete = this.allRoutinesForList().find(r => r.id === routineId); // Use signal value
     if (!routineToDelete) {
-      this.toastService.error("Routine not found for deletion.", 0, "Error");
+      this.toastService.error("Routine not found for deletion", 0, "Error");
       return;
     }
 
@@ -407,7 +407,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
         this.toastService.success(`Routine "${routineToDelete.name}" deleted successfully.`, 4000, "Routine Deleted");
       } catch (error) {
         console.error("Error during deletion:", error);
-        this.toastService.error("Failed to delete routine or its logs.", 0, "Deletion Failed");
+        this.toastService.error("Failed to delete routine or its logs", 0, "Deletion Failed");
       } finally {
         this.spinnerService.hide();
       }
@@ -546,7 +546,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
 
     const originalRoutine = this.allRoutinesForList().find(r => r.id === routineId);
     if (!originalRoutine) {
-      this.toastService.error("Routine not found for cloning.", 0, "Error");
+      this.toastService.error("Routine not found for cloning", 0, "Error");
       return;
     }
 
@@ -566,7 +566,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
       this.visibleActionsRutineId.set(null);
     } catch (error) {
       console.error("Error during routine cloning:", error);
-      this.toastService.error("Failed to clone routine.", 0, "Clone Failed");
+      this.toastService.error("Failed to clone routine", 0, "Clone Failed");
     } finally {
       this.spinnerService.hide();
     }

@@ -410,7 +410,7 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
       this.showPastLoggedWorkouts = true;
       this.pastLoggedWorkoutsDay = day;
       // this.setView('list'); this.isFilterAccordionOpen.set(false);
-    } else { this.toastService.info("No workouts logged on this day.", 2000); }
+    } else { this.toastService.info("No workouts logged on this day", 2000); }
   }
 
   // Expose isSameMonth to the template
@@ -438,7 +438,7 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
   }
   async deleteLogDetails(logId: string, event?: MouseEvent): Promise<void> {
     event?.stopPropagation(); this.visibleActionsRutineId.set(null);
-    const confirm = await this.alertService.showConfirm("Delete Workout Log", "Are you sure you want to delete this workout log? This action cannot be undone.", "Delete");
+    const confirm = await this.alertService.showConfirm("Delete Workout Log", "Are you sure you want to delete this workout log? This action cannot be undone", "Delete");
     if (confirm && confirm.data) {
       try {
         this.spinnerService.show(); await this.trackingService.deleteWorkoutLog(logId);

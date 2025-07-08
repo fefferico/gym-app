@@ -146,7 +146,7 @@ export class TrainingProgramService {
   async deleteProgram(programId: string): Promise<void> {
     const programToDelete = await firstValueFrom(this.getProgramById(programId).pipe(take(1)));
     if (!programToDelete) {
-      this.toastService.error("Program not found.", 0, "Delete Error");
+      this.toastService.error("Program not found", 0, "Delete Error");
       return;
     }
 
@@ -174,7 +174,7 @@ export class TrainingProgramService {
     const targetProgram = currentPrograms.find(p => p.id === programId);
 
     if (!targetProgram) {
-      this.toastService.error("Program not found to update.", 0, "Update Error");
+      this.toastService.error("Program not found to update", 0, "Update Error");
       return;
     }
 
@@ -212,7 +212,7 @@ export class TrainingProgramService {
     const targetProgram = currentPrograms.find(p => p.id === programId);
 
     if (!targetProgram) {
-      this.toastService.error("Program not found to deactivate.", 0, "Deactivation Error");
+      this.toastService.error("Program not found to deactivate", 0, "Deactivation Error");
       return;
     }
 

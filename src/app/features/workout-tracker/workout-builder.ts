@@ -635,7 +635,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
     // Prevent adding more than one set to an exercise that is part of a superset.
     if (!!exerciseControl.get('supersetId')?.value) {
-      this.toastService.warning("Exercises in a superset can only have one set.", 4000, "Action Blocked");
+      this.toastService.warning("Exercises in a superset can only have one set", 4000, "Action Blocked");
       return;
     }
 
@@ -906,12 +906,12 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     if (this.isViewMode) return;
     const selectedIndices = this.selectedExerciseIndicesForSuperset().sort((a, b) => a - b);
     if (selectedIndices.length < 2) {
-      this.toastService.warning("Select at least two exercises.", 3000, "Superset Error");
+      this.toastService.warning("Select at least two exercises", 3000, "Superset Error");
       return;
     }
     for (let i = 1; i < selectedIndices.length; i++) {
       if (selectedIndices[i] !== selectedIndices[i - 1] + 1) {
-        this.toastService.warning("Selected exercises must be next to each other to form a superset.", 5000, "Superset Error");
+        this.toastService.warning("Selected exercises must be next to each other to form a superset", 5000, "Superset Error");
         return;
       }
     }
@@ -945,7 +945,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       });
     });
     this.selectedExerciseIndicesForSuperset.set([]);
-    this.toastService.success("Superset created! Each exercise is now limited to one set.", 4000, "Success");
+    this.toastService.success("Superset created! Each exercise is now limited to one set", 4000, "Success");
   }
 
   ungroupSuperset(exerciseIndex: number): void {
@@ -961,7 +961,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       }
     });
     this.selectedExerciseIndicesForSuperset.set([]);
-    this.toastService.info("Superset ungrouped.", 3000, "Ungrouped");
+    this.toastService.info("Superset ungrouped", 3000, "Ungrouped");
   }
 
   removeExercise(exerciseIndex: number): void {
@@ -973,13 +973,13 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     if (removedSupersetId) {
       this.recalculateSupersetOrders();
     }
-    this.toastService.info("Exercise removed.", 2000);
+    this.toastService.info("Exercise removed", 2000);
     this.expandedSetPath.set(null); // Collapse if an exercise is removed
   }
   errorMessage = signal<string | null>(null);
 
   async onSubmit(): Promise<void> {
-    if (this.isViewMode) { this.toastService.info("View mode. No changes.", 3000, "View Mode"); return; }
+    if (this.isViewMode) { this.toastService.info("View mode. No changes", 3000, "View Mode"); return; }
 
     if (this.mode === 'routineBuilder') this.recalculateSupersetOrders();
 
@@ -1028,7 +1028,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
           const parsedDate = parseISO(combinedDateTimeStr);
           if (!isValidDate(parsedDate)) throw new Error("Invalid date/time for log entry");
           startTimeMs = parsedDate.getTime();
-        } catch (e) { this.toastService.error("Invalid date or time format.", 0, "Error"); this.spinnerService.hide(); return; }
+        } catch (e) { this.toastService.error("Invalid date or time format", 0, "Error"); this.spinnerService.hide(); return; }
         let endTimeMs: number | undefined = undefined;
         if (formValue.durationMinutes) {
           endTimeMs = new Date(startTimeMs).setMinutes(new Date(startTimeMs).getMinutes() + formValue.durationMinutes);
@@ -1170,7 +1170,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     if (this.currentRoutineId) {
       this.router.navigate(['/workout/play', this.currentRoutineId]);
     } else {
-      this.toastService.error("Cannot start workout: Routine ID is missing.", 0, "Error");
+      this.toastService.error("Cannot start workout: Routine ID is missing", 0, "Error");
     }
   }
 
@@ -1179,7 +1179,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       this.isViewMode = false;
       this.isEditMode = true;
       this.toggleFormState(false);
-      this.toastService.info("Edit mode enabled.", 3000, "Mode Changed");
+      this.toastService.info("Edit mode enabled", 3000, "Mode Changed");
     }
   }
 
@@ -1271,7 +1271,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     ];
 
     if (showError) {
-      this.toastService.error("Invalid input for custom exercise.", 0, "Error");
+      this.toastService.error("Invalid input for custom exercise", 0, "Error");
     }
     const result = await this.alertService.showPromptDialog('Add New Custom Exercise', 'Define exercise name and sets:', inputs, 'Add Exercise');
 
@@ -1280,7 +1280,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       const description = String(result['description']).trim();
       const numSets = result['numSets'] ? parseInt(String(result['numSets']), 10) : 3;
       if (!exerciseName || numSets <= 0) {
-        this.toastService.error("Invalid input for custom exercise.", 0, "Error"); return;
+        this.toastService.error("Invalid input for custom exercise", 0, "Error"); return;
       }
       const newExerciseSets: ExerciseSetParams[] = Array.from({ length: numSets }, () => ({
         id: `custom-adhoc-set-${uuidv4()}`, reps: 8, weight: null, duration: undefined, restAfterSet: 60, type: 'standard', notes: '',
@@ -1433,7 +1433,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   async cloneAndEditRoutine(routineId: string, event?: MouseEvent): Promise<void> {
     const originalRoutine = this.routine;
     if (!originalRoutine) {
-      this.toastService.error("Routine not found for cloning.", 0, "Error");
+      this.toastService.error("Routine not found for cloning", 0, "Error");
       return;
     }
 
@@ -1452,7 +1452,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       this.router.navigate(['/workout/routine/edit', clonedRoutine.id]);
     } catch (error) {
       console.error("Error during routine cloning:", error);
-      this.toastService.error("Failed to clone routine.", 0, "Clone Failed");
+      this.toastService.error("Failed to clone routine", 0, "Clone Failed");
     } finally {
       this.spinnerService.hide();
     }

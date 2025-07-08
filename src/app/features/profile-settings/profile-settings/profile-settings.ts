@@ -132,7 +132,7 @@ export class ProfileSettingsComponent implements OnInit {
 
   saveProfileSettings(): void { /* ... as before ... */
     if (this.profileForm.invalid) {
-      this.toastService.error("Please correct errors in the profile form.", 3000, "Validation Error");
+      this.toastService.error("Please correct errors in the profile form", 3000, "Validation Error");
       this.profileForm.markAllAsTouched(); return;
     }
     this.userProfileService.saveProfile(this.profileForm.value as UserProfile);
@@ -142,7 +142,7 @@ export class ProfileSettingsComponent implements OnInit {
 
   saveAppSettings(): void {
     if (this.appSettingsForm.invalid) {
-      this.toastService.error("Please correct errors in the app settings form.", 3000, "Validation Error");
+      this.toastService.error("Please correct errors in the app settings form", 3000, "Validation Error");
       this.appSettingsForm.markAllAsTouched();
       return;
     }
@@ -180,7 +180,7 @@ export class ProfileSettingsComponent implements OnInit {
     a.click();
     URL.revokeObjectURL(url);
     this.spinnerService.hide();
-    this.toastService.success("Data export initiated.", 3000);
+    this.toastService.success("Data export initiated", 3000);
   }
 
   importData(event: Event): void {
@@ -252,7 +252,7 @@ export class ProfileSettingsComponent implements OnInit {
             this.spinnerService.hide();
             this.toastService.success("Data imported successfully!", 5000, "Import Complete");
           } else {
-            this.toastService.info("Data import cancelled.", 2000);
+            this.toastService.info("Data import cancelled", 2000);
           }
         });
       } catch (error) {

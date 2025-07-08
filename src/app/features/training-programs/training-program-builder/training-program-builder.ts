@@ -305,7 +305,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
 
         if (this.programForm.invalid) {
             this.programForm.markAllAsTouched();
-            this.toastService.error("Please fill all required fields and ensure each scheduled day has a routine selected.", 0, "Validation Error");
+            this.toastService.error("Please fill all required fields and ensure each scheduled day has a routine selected", 0, "Validation Error");
             console.log("Form errors:", this.programForm.errors, this.scheduleFormArray.errors);
             this.scheduleFormArray.controls.forEach((ctrl, i) => {
                 if (ctrl.invalid) console.log(`Schedule Day ${i + 1} errors:`, ctrl.errors);
@@ -348,7 +348,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
             this.router.navigate(['/training-programs']);
         } catch (error) {
             console.error("Error saving program:", error);
-            this.toastService.error("Failed to save program.", 0, "Save Error");
+            this.toastService.error("Failed to save program", 0, "Save Error");
         } finally {
             this.spinnerService.hide();
         }
@@ -356,7 +356,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
 
     async deleteProgram(): Promise<void> {
         if (!this.currentProgramId) {
-            this.toastService.error("No program selected for deletion.", 0, "Deletion Error");
+            this.toastService.error("No program selected for deletion", 0, "Deletion Error");
             return;
         }
         // Confirmation and actual deletion logic is now fully in the service.
@@ -378,7 +378,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
             // This catch block might not be strictly necessary if the service handles all errors with toasts.
             // However, it can catch unexpected issues from the service call itself.
             console.error("Error during program deletion process in component:", error);
-            this.toastService.error("An unexpected error occurred while deleting the program.", 0, "Deletion Error");
+            this.toastService.error("An unexpected error occurred while deleting the program", 0, "Deletion Error");
         } finally {
             this.spinnerService.hide();
         }
@@ -402,13 +402,13 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         }
         if (this.isCurrentProgramActive()) {
             // Option to deactivate
-            const confirmDeactivate = await this.alertService.showConfirm("Deactivate Program?", "Do you want to deactivate this program? No program will be active.", "Deactivate");
+            const confirmDeactivate = await this.alertService.showConfirm("Deactivate Program?", "Do you want to deactivate this program? No program will be active", "Deactivate");
             if (confirmDeactivate && confirmDeactivate.data) {
                 try {
                     this.spinnerService.show("Deactivating program...");
                     await this.trainingProgramService.deactivateProgram(this.currentProgramId); // Assumes service has this
                     // Service emits updated list
-                } catch (error) { this.toastService.error("Failed to deactivate.", 0, "Error"); }
+                } catch (error) { this.toastService.error("Failed to deactivate", 0, "Error"); }
                 finally { this.spinnerService.hide(); }
             }
             return;
@@ -419,7 +419,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
             // The service method should handle setting the new active program,
             // updating isActive flags on all programs, and emitting the updated list.
             await this.trainingProgramService.toggleProgramActivation(this.currentProgramId);
-        } catch (error) { this.toastService.error("Failed to set active program.", 0, "Error"); }
+        } catch (error) { this.toastService.error("Failed to set active program", 0, "Error"); }
         finally { this.spinnerService.hide(); }
     }
 

@@ -237,7 +237,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     const index = this.currentTabataIntervalIndex();
     return intervals[index] || null;
   });
-  private tabataIntervalMap: [number, number][] = [];
+  private tabataIntervalMap: [number, number, number][] = [];
 
   private tabataTimerSub: Subscription | undefined;
   // --- END: TABATA MODE STATE SIGNALS ---
@@ -782,7 +782,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
   toggleTimedSetTimer(): void {
     if (this.sessionState() === SessionState.Paused) {
-      this.toastService.warning("Session is paused. Please resume to use the timer.", 3000, "Paused");
+      this.toastService.warning("Session is paused. Please resume to use the timer", 3000, "Paused");
       return;
     }
     const currentState = this.timedSetTimerState();
@@ -1384,7 +1384,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     this.showNotes.set(false);
     console.log('prepareCurrentSet: START');
     if (this.sessionState() === SessionState.Paused) {
-      console.log("prepareCurrentSet: Session is paused, deferring preparation.");
+      console.log("prepareCurrentSet: Session is paused, deferring preparation");
       return;
     }
 
@@ -1392,7 +1392,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     if (!sessionRoutine || sessionRoutine.exercises.length === 0) {
       console.warn('prepareCurrentSet: No sessionRoutine or no exercises in routine. Current routine:', sessionRoutine);
       this.sessionState.set(SessionState.Error);
-      this.toastService.error("Cannot prepare set: Routine data is missing or empty.", 0, "Error");
+      this.toastService.error("Cannot prepare set: Routine data is missing or empty", 0, "Error");
       return;
     }
 
@@ -1413,7 +1413,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         this.isPerformingDeferredExercise = false; // Reset if we had to find a new starting point
         console.log(`prepareCurrentSet: Found first pending - exIndex: ${exIndex} (name: ${sessionRoutine.exercises[exIndex]?.exerciseName}), sIndex: ${sIndex}`);
       } else {
-        console.log("prepareCurrentSet: No 'pending' exercises found in the entire routine. Proceeding to deferred/finish evaluation.");
+        console.log("prepareCurrentSet: No 'pending' exercises found in the entire routine. Proceeding to deferred/finish evaluation");
         this.exercisesProposedThisCycle = { doLater: false, skipped: false };
         await this.tryProceedToDeferredExercisesOrFinish(sessionRoutine);
         return;
@@ -1535,7 +1535,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       if (activeInfoForPreset) {
         this.startPresetTimer(presetDurationValue, activeInfoForPreset);
       } else {
-        console.error("prepareCurrentSet: ActiveSetInfo is null before starting preset timer. Aborting preset.");
+        console.error("prepareCurrentSet: ActiveSetInfo is null before starting preset timer. Aborting preset");
         this.playerSubState.set(PlayerSubState.PerformingSet);
       }
     } else {
@@ -1544,7 +1544,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     }
 
     if (this.sessionState() !== SessionState.Playing && this.sessionState() !== SessionState.Paused) {
-      console.log("prepareCurrentSet: Setting sessionState to Playing.");
+      console.log("prepareCurrentSet: Setting sessionState to Playing");
       this.sessionState.set(SessionState.Playing);
     }
     console.log('prepareCurrentSet: END');
@@ -1575,7 +1575,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
   private patchActualsFormBasedOnSessionTargets(): void {
     if (this.sessionState() === SessionState.Paused) {
-      console.log("patchActualsFormBasedOnSessionTargets: Session is paused, deferring preparation.");
+      console.log("patchActualsFormBasedOnSessionTargets: Session is paused, deferring preparation");
       return;
     }
     // Do not reset the entire form here, only specific fields. Keep setNotes if user typed something.
@@ -1648,7 +1648,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
   async editRepsWithPrompt(): Promise<void> {
     if (this.getDisabled() || this.playerSubState() !== PlayerSubState.PerformingSet) {
-      this.toastService.warning("Cannot edit reps now.", 2000);
+      this.toastService.warning("Cannot edit reps now", 2000);
       return;
     }
     const activeInfo = this.activeSetInfo();
@@ -1680,7 +1680,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
   async editWeightWithPrompt(): Promise<void> {
     if (this.getDisabled() || this.playerSubState() !== PlayerSubState.PerformingSet) {
-      this.toastService.warning("Cannot edit weight now.", 2000);
+      this.toastService.warning("Cannot edit weight now", 2000);
       return;
     }
     const activeInfo = this.activeSetInfo();
@@ -1754,7 +1754,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   completeAndLogCurrentSet(): void {
     const activeInfo = this.activeSetInfo();
     const currentRoutineValue = this.routine();
-    if (!activeInfo || !currentRoutineValue) { this.toastService.error("Cannot log set: data unavailable.", 0); return; }
+    if (!activeInfo || !currentRoutineValue) { this.toastService.error("Cannot log set: data unavailable", 0); return; }
 
     if (activeInfo.setData.duration && activeInfo.setData.duration > 0 &&
       (this.timedSetTimerState() === TimedSetState.Running || this.timedSetTimerState() === TimedSetState.Paused)) {
@@ -1784,9 +1784,12 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     }
 
     const loggedSetData: LoggedSet = {
-      id: uuidv4(), // Unique ID for this specific logged instance
+      id: uuidv4(),
       exerciseName: activeInfo.exerciseData.exerciseName,
-      plannedSetId: this.checkIfSetIsPartOfRounds() ? activeInfo.setData.id + '-round-' + (this.currentBlockRound() - 1) : activeInfo.setData.id,
+      // For Tabata, combine plannedSetId and round to make it unique per pass
+      plannedSetId: this.isTabataMode()
+        ? `${activeInfo.setData.id}-round-${this.getIndexedCurrentBlock()}`
+        : activeInfo.setData.id,
       exerciseId: activeInfo.exerciseData.exerciseId,
       type: activeInfo.setData.type,
       repsAchieved: formValues.actualReps ?? (activeInfo.setData.type === 'warmup' ? 0 : activeInfo.setData.reps ?? 0),
@@ -1798,9 +1801,10 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       targetDuration: activeInfo.setData.duration,
       targetTempo: activeInfo.setData.tempo,
       targetRestAfterSet: activeInfo.setData.restAfterSet,
-      notes: formValues.setNotes?.trim() || undefined, // Get notes from form
+      notes: formValues.setNotes?.trim() || undefined,
       timestamp: new Date().toISOString(),
-      supersetCurrentRound: this.checkIfSetIsPartOfRounds() ? (this.currentBlockRound() - 1) : 0
+      supersetCurrentRound: this.checkIfSetIsPartOfRounds() || this.isTabataMode() ? this.getIndexedCurrentBlock() : 0
+      // Add a specific field for Tabata round
     };
     this.addLoggedSetToCurrentLog(activeInfo.exerciseData, loggedSetData);
 
@@ -1814,7 +1818,46 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     // Do not reset setNotes here, it will be reset when new set is prepared by patchActualsFormBasedOnSessionTargets or patchCurrentSetFormWithData
     this.currentSetForm.patchValue({ setNotes: '' }, { emitEvent: false }); // Clear notes after logging for current set form visually.
 
-    this.navigateToNextStepInWorkout(activeInfo, currentRoutineValue);
+    if (!this.isTabataMode()) { // Don't navigate if in Tabata mode, nextTabataInterval handles it
+      this.navigateToNextStepInWorkout(activeInfo, currentRoutineValue);
+    }
+  }
+
+  getIndexedCurrentBlock(): number {
+    return (this.currentBlockRound() ?? 1) - 1;
+  }
+
+  // NEW HELPER METHOD (Updated) - This needs to also set the totalBlockRounds
+  private setPlayerStateFromTabataIndex(tabataIndex: number): void {
+    this.currentTabataIntervalIndex.set(tabataIndex);
+
+    // Use the map to find the corresponding standard player indices
+    const mappedIndices = this.tabataIntervalMap[tabataIndex];
+    if (mappedIndices) {
+      const [exerciseIndex, setIndex, round] = mappedIndices;
+      this.currentExerciseIndex.set(exerciseIndex);
+      this.currentSetIndex.set(setIndex);
+      this.currentBlockRound.set(round);
+
+      // Also update the total rounds for the current block for the UI
+      if (this.routine()) {
+        this.totalBlockRounds.set(this.getRoundsForExerciseBlock(exerciseIndex, this.routine()!));
+      }
+
+      console.log(`Tabata Sync: Interval ${tabataIndex} maps to Ex ${exerciseIndex}, Set ${setIndex}, Round ${round}`);
+    } else {
+      // Fallback for the end of the workout
+      const lastValidMap = this.tabataIntervalMap[this.tabataIntervalMap.length - 1];
+      if (lastValidMap) {
+        const [lastEx, lastSet, lastRound] = lastValidMap;
+        this.currentExerciseIndex.set(lastEx);
+        this.currentSetIndex.set(lastSet);
+        this.currentBlockRound.set(lastRound);
+        if (this.routine()) {
+          this.totalBlockRounds.set(this.getRoundsForExerciseBlock(lastEx, this.routine()!));
+        }
+      }
+    }
   }
 
   private findNextExerciseBlockStartIndex(currentExerciseGlobalIndex: number, routine: Routine): number {
@@ -1951,7 +1994,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
   skipRest(): void {
     if (this.sessionState() === SessionState.Paused) {
-      this.toastService.warning("Session is paused. Resume to skip rest.", 3000, "Paused");
+      this.toastService.warning("Session is paused. Resume to skip rest", 3000, "Paused");
       return;
     }
     if (this.isRestTimerVisible() || this.playerSubState() === PlayerSubState.Resting) {
@@ -1996,7 +2039,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
     // --- NEW: Check if the resumed session is already fully logged ---
     if (this.isEntireWorkoutFullyLogged(state.sessionRoutine, state.currentWorkoutLogExercises)) {
-      console.log("Paused session is already fully logged. Transitioning directly to finish flow.");
+      console.log("Paused session is already fully logged. Transitioning directly to finish flow");
       this.sessionState.set(SessionState.End); // Set state to prevent other actions
       await this.tryProceedToDeferredExercisesOrFinish(state.sessionRoutine);
       return; // Stop further execution of this method
@@ -2005,7 +2048,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
     // --- NEW: TABATA RESUME LOGIC ---
     if (state.isTabataMode) {
-      console.log("Resuming a paused Tabata session.");
+      console.log("Resuming a paused Tabata session");
 
       this.sessionState.set(SessionState.Playing);
       this.workoutStartTime = Date.now();
@@ -2080,7 +2123,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     }
     const currentRoutine = this.routine();
     if (!currentRoutine) {
-      console.warn("Cannot save paused state: routine data is not available.");
+      console.warn("Cannot save paused state: routine data is not available");
       return;
     }
 
@@ -2143,11 +2186,11 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
   async addWarmupSet(): Promise<void> {
     if (this.sessionState() === SessionState.Paused) {
-      this.toastService.warning("Session is paused. Resume to add warm-up.", 3000, "Paused"); return;
+      this.toastService.warning("Session is paused. Resume to add warm-up", 3000, "Paused"); return;
     }
     const currentRoutineVal = this.routine(); const activeInfo = this.activeSetInfo();
     if (!currentRoutineVal || !activeInfo) {
-      this.toastService.error("Cannot add warm-up: data unavailable.", 0, "Error"); return;
+      this.toastService.error("Cannot add warm-up: data unavailable", 0, "Error"); return;
     }
     const currentExercise = currentRoutineVal.exercises[activeInfo.exerciseIndex];
     const firstWorkingSetIndex = currentExercise.sets.findIndex(s => s.type !== 'warmup');
@@ -2184,7 +2227,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
 
       this.addExerciseToCurrentRoutine(warmupExercise, supersetBlockStartIdx);
-      this.toastService.success("Warm-up set added as a separate exercise before superset.", 4000, "Warm-up Added");
+      this.toastService.success("Warm-up set added as a separate exercise before superset", 4000, "Warm-up Added");
       this.closeWorkoutMenu();
       this.closePerformanceInsights();
       return;
@@ -2202,7 +2245,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     const exerciseToUpdate = updatedRoutineForSession.exercises[activeInfo.exerciseIndex];
     exerciseToUpdate.sets.splice(activeInfo.setIndex, 0, newWarmupSet);
     this.routine.set(updatedRoutineForSession);
-    this.toastService.success("Warm-up set added. Fill details & complete.", 4000, "Warm-up Added");
+    this.toastService.success("Warm-up set added. Fill details & complete", 4000, "Warm-up Added");
     await this.prepareCurrentSet(); // This will use the new currentSetIndex implicitly
     this.closeWorkoutMenu(); this.closePerformanceInsights();
   }
@@ -2260,9 +2303,9 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
   async skipCurrentSet(): Promise<void> {
-    if (this.sessionState() === 'paused') { this.toastService.warning("Session is paused. Resume to skip set.", 3000, "Paused"); return; }
+    if (this.sessionState() === 'paused') { this.toastService.warning("Session is paused. Resume to skip set", 3000, "Paused"); return; }
     const activeInfo = this.activeSetInfo(); const currentRoutineVal = this.routine();
-    if (!activeInfo || !currentRoutineVal) { this.toastService.error("Cannot skip set: No active set information.", 0, "Error"); return; }
+    if (!activeInfo || !currentRoutineVal) { this.toastService.error("Cannot skip set: No active set information", 0, "Error"); return; }
 
     // If it's the last set of the exercise and the exercise is 'pending', prompt to skip exercise instead
     if (activeInfo.setIndex === activeInfo.exerciseData.sets.length - 1 && activeInfo.exerciseData.sessionStatus === 'pending') {
@@ -2311,7 +2354,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     const activeInfo = this.activeSetInfo(); // This is the exercise being marked
 
     if (!currentRoutineVal || !activeInfo) {
-      this.toastService.error("Cannot update exercise status: data unavailable.", 0, "Error"); return;
+      this.toastService.error("Cannot update exercise status: data unavailable", 0, "Error"); return;
     }
 
     const exName = activeInfo.exerciseData.exerciseName;
@@ -2362,7 +2405,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   // Replaces the old addCustomExercise, now it opens the modal first
   async addExerciseDuringSession(): Promise<void> {
     if (this.sessionState() === 'paused') {
-      this.toastService.warning("Session is paused. Resume to add exercise.", 3000, "Paused");
+      this.toastService.warning("Session is paused. Resume to add exercise", 3000, "Paused");
       this.closeWorkoutMenu();
       return;
     }
@@ -2375,7 +2418,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     this.closeExerciseSelectionModal();
     const currentRoutineVal = this.routine();
     if (!currentRoutineVal) {
-      this.toastService.error("Cannot add exercise: routine data unavailable.", 0, "Error"); return;
+      this.toastService.error("Cannot add exercise: routine data unavailable", 0, "Error"); return;
     }
 
     const defaultWeight = this.unitService.currentUnit() === 'kg' ? 10 : 22.2;
@@ -2404,7 +2447,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         (numReps === null || numReps === undefined || isNaN(numReps)) ||
         (weight === null || weight === undefined || isNaN(weight)) ||
         (rest === null || rest === undefined || isNaN(rest))) {
-        this.toastService.info("Exercise addition cancelled or invalid parameter.", 2000);
+        this.toastService.info("Exercise addition cancelled or invalid parameter", 2000);
         this.selectExerciseToAddFromModal(selectedExercise);
         return;
       }
@@ -2513,19 +2556,19 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
   async finishWorkoutEarly(): Promise<void> {
     if (this.sessionState() === SessionState.Paused) {
-      this.toastService.warning("Please resume before finishing early.", 3000, "Paused");
+      this.toastService.warning("Please resume before finishing early", 3000, "Paused");
       return;
     }
     const confirmFinishEarly = await this.alertService.showConfirm(
       "Finish Workout Early",
-      "Finish workout now? Current progress will be saved."
+      "Finish workout now? Current progress will be saved"
     );
     if (confirmFinishEarly && confirmFinishEarly.data) {
       this.closeWorkoutMenu();
       this.closePerformanceInsights();
       const didLog = await this.finishWorkoutAndReportStatus();
       if (!didLog) {
-        this.toastService.info("Workout finished early. Paused session cleared.", 4000);
+        this.toastService.info("Workout finished early. Paused session cleared", 4000);
         this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
         if (this.router.url.includes('/play')) {
           this.router.navigate(['/workout']);
@@ -2572,13 +2615,13 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   async finishWorkoutAndReportStatus(): Promise<boolean> {
     this.stopAutoSave();
     if (this.sessionState() === SessionState.Paused) {
-      this.toastService.warning("Please resume workout before finishing.", 3000, "Session Paused");
+      this.toastService.warning("Please resume workout before finishing", 3000, "Session Paused");
       // If user tries to finish while paused, maybe offer to resume or just return false
       // For now, let's assume they need to resume via the resume button first.
       return false; // Did not log
     }
     if (this.sessionState() === SessionState.Loading) {
-      this.toastService.info("Workout is still loading.", 3000, "Loading");
+      this.toastService.info("Workout is still loading", 3000, "Loading");
       return false; // Did not log
     }
     const loggedExercisesForReport = this.currentWorkoutLogExercises().filter(ex => ex.sets.length > 0);
@@ -2589,7 +2632,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     }
 
     if (loggedExercisesForReport.length === 0) {
-      this.toastService.info("No sets logged. Workout not saved.", 3000, "Empty Workout");
+      this.toastService.info("No sets logged. Workout not saved", 3000, "Empty Workout");
       this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
       if (this.router.url.includes('/play')) {
         this.router.navigate(['/workout']);
@@ -2681,7 +2724,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     }
 
     if (!proceedToLog) {
-      this.toastService.info("Finish workout cancelled. Session remains active/paused.", 3000, "Cancelled");
+      this.toastService.info("Finish workout cancelled. Session remains active/paused", 3000, "Cancelled");
       if (this.sessionState() === SessionState.Playing) {
         this.startAutoSave();
       }
@@ -2755,13 +2798,13 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       this.closeWorkoutMenu();
       this.closePerformanceInsights();
       this.router.navigate(['/workout']);
-      this.toastService.info("Workout quit. No progress saved for this session.", 4000);
+      this.toastService.info("Workout quit. No progress saved for this session", 4000);
     }
   }
 
   toggleCompletedSetsInfo(): void { this.showCompletedSetsInfo.update(v => !v); }
   openPerformanceInsights(): void {
-    if (this.sessionState() === 'paused') { this.toastService.warning("Session is paused. Resume to view insights.", 3000, "Paused"); return; }
+    if (this.sessionState() === 'paused') { this.toastService.warning("Session is paused. Resume to view insights", 3000, "Paused"); return; }
     this.isPerformanceInsightsVisible.set(true);
     this.isWorkoutMenuVisible.set(false);
   }
@@ -2780,7 +2823,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
   goBack(): void {
     if (this.currentWorkoutLogExercises().length > 0 && this.sessionState() === SessionState.Playing) {
-      this.alertService.showConfirm("Exit Workout?", "You have an active workout. Are you sure you want to exit? Your progress might be lost unless you pause first.")
+      this.alertService.showConfirm("Exit Workout?", "You have an active workout. Are you sure you want to exit? Your progress might be lost unless you pause first")
         .then(confirmation => {
           if (confirmation && confirmation.data) {
             this.router.navigate(['/workout']);
@@ -2982,7 +3025,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
           if (newRoutineId === "-1") {
             // Special case handled in tap operator
           } else {
-            this.toastService.error("No routine specified to play.", 0, "Error");
+            this.toastService.error("No routine specified to play", 0, "Error");
             this.router.navigate(['/workout']);
             this.sessionState.set(SessionState.Error);
             return of(null);
@@ -3034,7 +3077,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
             console.error('loadNewWorkoutFromRoute - tap: Failed to load routine for ID or routine was null:', this.routineId);
             this.routine.set(null);
             this.sessionState.set(SessionState.Error);
-            this.toastService.error("Failed to load workout routine.", 0, "Load Error");
+            this.toastService.error("Failed to load workout routine", 0, "Load Error");
             if (isPlatformBrowser(this.platformId)) this.router.navigate(['/workout']);
             this.stopAutoSave();
           }
@@ -3086,7 +3129,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
             this.totalBlockRounds.set(actualStart?.rounds ?? 1);
           }
         } else {
-          console.log("loadNewWorkoutFromRoute: Routine loaded but no initial pending exercises. Will try deferred/finish.");
+          console.log("loadNewWorkoutFromRoute: Routine loaded but no initial pending exercises. Will try deferred/finish");
           this.currentExerciseIndex.set(0);
           this.currentSetIndex.set(0);
           this.totalBlockRounds.set(1);
@@ -3114,7 +3157,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         console.error('loadNewWorkoutFromRoute - Error in observable pipeline:', err);
         this.routine.set(null);
         this.sessionState.set(SessionState.Error);
-        this.toastService.error("Critical error loading workout.", 0, "Load Error");
+        this.toastService.error("Critical error loading workout", 0, "Load Error");
         if (isPlatformBrowser(this.platformId)) this.router.navigate(['/workout']);
         this.isInitialLoadComplete = true;
       }
@@ -3356,7 +3399,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   }
   skipPresetTimer(): void {
     if (this.playerSubState() === PlayerSubState.PresetCountdown) {
-      // this.toastService.info("Pre-set countdown skipped.", 1500);
+      // this.toastService.info("Pre-set countdown skipped", 1500);
       if (this.presetTimerSub) {
         this.presetTimerSub.unsubscribe();
         this.presetTimerSub = undefined;
@@ -3521,7 +3564,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   //   const isNowFullyLogged = this.isExerciseFullyLogged(exerciseJustCompleted);
 
   //   if (this.isPerformingDeferredExercise && exerciseJustCompleted.id === this.lastActivatedDeferredExerciseId && isNowFullyLogged) {
-  //     console.log("navigateToNextStepInWorkout: Completed an explicitly chosen deferred/skipped exercise. Re-evaluating all remaining.");
+  //     console.log("navigateToNextStepInWorkout: Completed an explicitly chosen deferred/skipped exercise. Re-evaluating all remaining");
   //     this.isPerformingDeferredExercise = false;
   //     this.lastActivatedDeferredExerciseId = null;
   //     this.exercisesProposedThisCycle = { doLater: false, skipped: false };
@@ -3632,7 +3675,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   //   );
 
   //   if (isEndOfAllPending) {
-  //     console.log("navigateToNextStepInWorkout: No more 'pending' exercises in main sequence. Attempting to proceed to deferred or finish.");
+  //     console.log("navigateToNextStepInWorkout: No more 'pending' exercises in main sequence. Attempting to proceed to deferred or finish");
   //     this.isPerformingDeferredExercise = false;
   //     this.lastActivatedDeferredExerciseId = null;
   //     this.exercisesProposedThisCycle = { doLater: false, skipped: false };
@@ -3719,7 +3762,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     const isNowFullyLogged = this.isExerciseFullyLogged(exerciseJustCompleted);
 
     if (this.isPerformingDeferredExercise && exerciseJustCompleted.id === this.lastActivatedDeferredExerciseId && isNowFullyLogged) {
-      console.log("navigateToNextStepInWorkout: Completed a deferred exercise. Re-evaluating all remaining.");
+      console.log("navigateToNextStepInWorkout: Completed a deferred exercise. Re-evaluating all remaining");
       this.isPerformingDeferredExercise = false;
       this.lastActivatedDeferredExerciseId = null;
       this.exercisesProposedThisCycle = { doLater: false, skipped: false };
@@ -3741,7 +3784,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     );
 
     if (isEndOfAllPending) {
-      console.log("navigateToNextStepInWorkout: No more 'pending' exercises. Proceeding to finish.");
+      console.log("navigateToNextStepInWorkout: No more 'pending' exercises. Proceeding to finish");
       this.isPerformingDeferredExercise = false;
       this.lastActivatedDeferredExerciseId = null;
       this.exercisesProposedThisCycle = { doLater: false, skipped: false };
@@ -3754,7 +3797,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     // --- SAFETY CHECK ---
     // Add a guard clause to prevent using an invalid index if the helper returns one unexpectedly.
     if (nextExIdx === -1 || !currentSessionRoutine.exercises[nextExIdx] || !currentSessionRoutine.exercises[nextExIdx].sets[nextSetIdx]) {
-      console.error("navigateToNextStepInWorkout: findNextPlayableItemIndices returned an invalid index, but did not signal end of workout. Fallback to finish flow.", { nextExIdx, nextSetIdx });
+      console.error("navigateToNextStepInWorkout: findNextPlayableItemIndices returned an invalid index, but did not signal end of workout. Fallback to finish flow", { nextExIdx, nextSetIdx });
       await this.tryProceedToDeferredExercisesOrFinish(currentSessionRoutine);
       return;
     }
@@ -3942,7 +3985,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     console.log('Rest timer skipped.');
     this.isRestTimerVisible.set(false);
     this.toastService.clearAll();
-    this.toastService.info("Rest skipped.", 2000);
+    this.toastService.info("Rest skipped", 2000);
     this.playerSubState.set(PlayerSubState.PerformingSet);
     this.prepareCurrentSet();
   }
@@ -3956,7 +3999,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
   handleMainAction(): void {
     if (this.sessionState() === SessionState.Paused) {
-      this.toastService.warning("Session is paused. Please resume to continue.", 3000, "Paused");
+      this.toastService.warning("Session is paused. Please resume to continue", 3000, "Paused");
       return;
     } switch (this.playerSubState()) {
       case PlayerSubState.PerformingSet: {
@@ -4150,14 +4193,14 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       this.headerOverviewString = this.HEADER_OVERVIEW_STRING;
     }
     if (this.sessionState() === 'paused') {
-      this.toastService.warning("Session is paused. Resume to jump to an exercise.", 3000, "Paused");
+      this.toastService.warning("Session is paused. Resume to jump to an exercise", 3000, "Paused");
       this.closeWorkoutMenu();
       return;
     }
 
     const currentRoutineVal = this.routine();
     if (!currentRoutineVal || !currentRoutineVal.exercises || currentRoutineVal.exercises.length === 0) {
-      this.toastService.error("No exercises available to jump to.", 0, "Error");
+      this.toastService.error("No exercises available to jump to", 0, "Error");
       this.closeWorkoutMenu();
       return;
     }
@@ -4201,7 +4244,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       const exerciseToJumpTo = currentRoutineVal.exercises[selectedExerciseOriginalIndex];
 
       if (!exerciseToJumpTo) {
-        this.toastService.error("Selected exercise not found.", 0, "Error");
+        this.toastService.error("Selected exercise not found", 0, "Error");
         return;
       }
 
@@ -4295,7 +4338,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   isEndReached = signal<boolean>(false);
   openExerciseSelectionModal(): void {
     if (this.sessionState() === 'paused') {
-      this.toastService.warning("Session is paused. Resume to add exercise.", 3000, "Paused");
+      this.toastService.warning("Session is paused. Resume to add exercise", 3000, "Paused");
       return;
     }
     if (this.availableExercises.length === 0) { // Lazy load if not already loaded
@@ -4348,15 +4391,24 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
 
+  // NEW HELPER METHOD: To find the total rounds for any given exercise block
+  private getRoundsForExerciseBlock(exerciseIndex: number, routine: Routine): number {
+    const exercise = routine.exercises[exerciseIndex];
+    if (!exercise) return 1;
+
+    // If it's a superset, find the first exercise in that superset block
+    if (exercise.supersetId) {
+      const firstInSuperset = routine.exercises.find(ex => ex.supersetId === exercise.supersetId && ex.supersetOrder === 0);
+      return firstInSuperset?.rounds ?? 1;
+    }
+
+    // If it's a standard exercise, use its own rounds property
+    return exercise.rounds ?? 1;
+  }
+
   /**
-   * Transforms a standard routine into a flat list of HIIT intervals and starts the player.
-   */
-  /**
-  * Transforms a standard routine into a flat list of HIIT intervals and starts the player.
-  */
-  /**
-   * Transforms a routine into a flat list of HIIT intervals and starts the player.
-   * Can start from a specific index and time if resuming.
+   * Transforms a routine into a flat list of HIIT intervals FOR ALL ROUNDS and starts the player.
+   * This version correctly handles rounds defined on a per-exercise or per-superset-block basis.
    */
   private setupTabataMode(
     routine: Routine,
@@ -4364,53 +4416,63 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     startTimeRemaining?: number
   ): void {
     const intervals: Omit<HIITInterval, 'totalIntervals' | 'currentIntervalNumber'>[] = [];
-    this.startOrResumeTimedSet();
+    this.tabataIntervalMap = []; // The map now stores [exerciseIndex, setIndex, roundNumber]
 
-    // This map will store the [exerciseIndex, setIndex] for each interval.
-    // It will be the same size as the 'intervals' array.
-    const intervalMap: [number, number][] = [];
-
-    // 1. Add "Prepare" interval and its map entry.
-    // It maps to the very first exercise and set for context.
+    // 1. Add "Prepare" interval
     intervals.push({ type: 'prepare', duration: 10, exerciseName: 'Get Ready' });
-    intervalMap.push([0, 0]);
+    this.tabataIntervalMap.push([0, 0, 1]);
 
-    // 2. Iterate through exercises and sets to build the intervals and the map.
-    const totalExercises = routine.exercises.length;
-    routine.exercises.forEach((exercise, exerciseIndex) => {
-      const totalSetsInExercise = exercise.sets.length;
+    // 2. Main loop now iterates through exercise BLOCKS
+    let exerciseIndex = 0;
+    while (exerciseIndex < routine.exercises.length) {
+      const currentExercise = routine.exercises[exerciseIndex];
+      const totalRoundsForBlock = this.getRoundsForExerciseBlock(exerciseIndex, routine);
+      const isSuperset = !!currentExercise.supersetId;
+      const supersetSize = isSuperset ? (currentExercise.supersetSize ?? 1) : 1;
 
-      exercise.sets.forEach((set, setIndex) => {
-        // A. Add the "Work" interval.
-        intervals.push({
-          type: 'work',
-          duration: set.duration || 5, // Default duration
-          exerciseName: exercise.exerciseName
-        });
-        // Map this "Work" interval directly to its source set.
-        intervalMap.push([exerciseIndex, setIndex]);
+      // Loop for the number of rounds for this specific block
+      for (let round = 1; round <= totalRoundsForBlock; round++) {
+        // Loop through all exercises within this block (will be 1 for standard exercises)
+        for (let i = 0; i < supersetSize; i++) {
+          const blockExerciseIndex = exerciseIndex + i;
+          const blockExercise = routine.exercises[blockExerciseIndex];
+          if (!blockExercise) continue; // Safety check
 
-        // B. Conditionally add the "Rest" interval.
-        const isLastExercise = exerciseIndex === totalExercises - 1;
-        const isLastSet = setIndex === totalSetsInExercise - 1;
+          const isLastRound = round === totalRoundsForBlock;
 
-        if (set.restAfterSet > 0 && !(isLastExercise && isLastSet)) {
-          intervals.push({
-            type: 'rest',
-            duration: set.restAfterSet || 20, // Default rest
-            exerciseName: 'Rest'
+          blockExercise.sets.forEach((set, setIndex) => {
+            // A. Add the "Work" interval for the current round
+            intervals.push({
+              type: 'work',
+              duration: set.duration || 5,
+              exerciseName: blockExercise.exerciseName
+            });
+            this.tabataIntervalMap.push([blockExerciseIndex, setIndex, round]);
+
+            // B. Conditionally add the "Rest" interval
+            const isLastExerciseOfEntireWorkout = blockExerciseIndex === routine.exercises.length - 1;
+            const isLastSetOfBlockExercise = setIndex === blockExercise.sets.length - 1;
+
+            // Don't add rest after the absolute final work interval of the entire workout
+            if (!(isLastRound && isLastExerciseOfEntireWorkout && isLastSetOfBlockExercise)) {
+              if (set.restAfterSet > 0) {
+                intervals.push({
+                  type: 'rest',
+                  duration: set.restAfterSet || 20,
+                  exerciseName: 'Rest'
+                });
+                this.tabataIntervalMap.push([blockExerciseIndex, setIndex, round]);
+              }
+            }
           });
-          // CRITICAL: The "Rest" interval maps to the SAME set that preceded it.
-          // This keeps the context correct during rest periods.
-          intervalMap.push([exerciseIndex, setIndex]);
         }
-      });
-    });
+      }
+      // Move the main index to the start of the next block
+      exerciseIndex += supersetSize;
+    }
 
-    // Store the generated map in the component property for later use.
-    this.tabataIntervalMap = intervalMap;
 
-    // 3. Finalize the intervals list with total counts (no changes here).
+    // 3. Finalize the intervals list with total counts
     const totalIntervals = intervals.length;
     const finalIntervals = intervals.map((interval, index) => ({
       ...interval,
@@ -4419,23 +4481,22 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     }));
     this.tabataIntervals.set(finalIntervals);
 
-    // 4. Set the initial state of the player.
+    // 4. Set the initial state of the player
     this.sessionState.set(SessionState.Playing);
-    this.routine.set(routine); // Ensure the routine is set
-    this.isTabataMode.set(true)
+    this.routine.set(routine);
+    this.isTabataMode.set(true);
 
-    // 5. Use the new helper to set the correct state for BOTH players.
-    // This replaces the scattered state-setting logic.
+    // 5. Use the helper to set the correct state for BOTH players.
     this.setPlayerStateFromTabataIndex(startAtIndex);
 
-
-    // 6. Start the timer.
+    // 6. Start the timer
     if (startTimeRemaining !== undefined && startTimeRemaining > 0) {
       this.startCurrentTabataInterval(startTimeRemaining);
     } else {
       this.startCurrentTabataInterval();
     }
   }
+
 
   /**
  * Starts the timer for the currently active Tabata interval.
@@ -4473,30 +4534,30 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Navigates to the next interval in the Tabata sequence.
-   */
+    * Navigates to the next interval in the Tabata sequence.
+    */
   nextTabataInterval(): void {
-    const nextIndex = this.currentTabataIntervalIndex() + 1;
-    if (nextIndex <= this.tabataIntervals().length) {
-      if (nextIndex === this.tabataIntervals().length) {
-        // ending logging
-        this.completeAndLogCurrentSet();
-        // Reached the end
-        this.tabataTimeRemaining.set(0);
-        if (this.tabataTimerSub) this.tabataTimerSub.unsubscribe();
-        this.sessionState.set(SessionState.End);
-      } else {
-        if (this.currentTabataInterval() !== null &&
-          (this.currentTabataInterval()?.type !== 'prepare' && this.currentTabataInterval()?.type !== 'rest')) {
-          this.completeAndLogCurrentSet();
-        }
-        this.currentTabataIntervalIndex.set(nextIndex);
-        this.startCurrentTabataInterval();
-      }
+    // First, if the interval that just finished was a "work" interval, log it.
+    if (this.currentTabataInterval()?.type === 'work') {
+      this.completeAndLogCurrentSet();
+    }
 
+    const nextIndex = this.currentTabataIntervalIndex() + 1;
+
+    if (nextIndex < this.tabataIntervals().length) {
+      // There are more intervals, so proceed to the next one.
+      // The helper function will set the currentExerciseIndex, setIndex, AND the currentBlockRound.
+      this.setPlayerStateFromTabataIndex(nextIndex);
+      this.startCurrentTabataInterval();
+    } else {
+      // Reached the end of the very last interval.
+      this.tabataTimeRemaining.set(0);
+      if (this.tabataTimerSub) this.tabataTimerSub.unsubscribe();
+      this.sessionState.set(SessionState.End);
+      // Now that the session is truly over, finalize and save.
+      this.finishWorkoutAndReportStatus();
     }
   }
-
   /**
    * Navigates to the previous interval in the Tabata sequence.
    */
@@ -4554,26 +4615,5 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       };
     }
     return null;
-  }
-
-  // NEW HELPER METHOD
-  private setPlayerStateFromTabataIndex(tabataIndex: number): void {
-    this.currentTabataIntervalIndex.set(tabataIndex);
-
-    // Use the map to find the corresponding standard player indices
-    const mappedIndices = this.tabataIntervalMap[tabataIndex];
-    if (mappedIndices) {
-      const [exerciseIndex, setIndex] = mappedIndices;
-      this.currentExerciseIndex.set(exerciseIndex);
-      this.currentSetIndex.set(setIndex);
-      console.log(`Tabata Sync: Interval ${tabataIndex} maps to Exercise ${exerciseIndex}, Set ${setIndex}`);
-    } else {
-      // Fallback for the end of the workout
-      const lastValidMap = this.tabataIntervalMap[this.tabataIntervalMap.length - 1];
-      if (lastValidMap) {
-        this.currentExerciseIndex.set(lastValidMap[0]);
-        this.currentSetIndex.set(lastValidMap[1]);
-      }
-    }
   }
 }

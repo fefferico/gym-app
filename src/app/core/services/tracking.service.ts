@@ -101,7 +101,7 @@ export class TrackingService {
   }
 
   clearAllWorkoutLogs_DEV_ONLY(): Promise<void> {
-    return this.alertService.showConfirm("Infoù", "DEVELOPMENT: Are you sure you want to delete ALL workout logs? This cannot be undone.")
+    return this.alertService.showConfirm("Info", "DEVELOPMENT: Are you sure you want to delete ALL workout logs? This cannot be undone")
       .then(async (result) => {
         if (result && result.data) {
           this.saveWorkoutLogsToStorage([]);
@@ -264,7 +264,7 @@ export class TrackingService {
   }
 
   public async recalculateAllPersonalBests(): Promise<void> {
-    const conf = await this.alertService.showAlert("PBs Recalculation", "All your personal bests from your entire workout history will be now recalculated: this may take a moment.");
+    const conf = await this.alertService.showAlert("PBs Recalculation", "All your personal bests from your entire workout history will be now recalculated: this may take a moment");
     // reset PBs
     this.savePBsToStorage({});
 
@@ -355,7 +355,7 @@ export class TrackingService {
   }
 
   clearAllPersonalBests_DEV_ONLY(): Promise<void> {
-    return this.alertService.showConfirm("Info", "DEVELOPMENT: Are you sure you want to delete ALL personal bests? This cannot be undone.")
+    return this.alertService.showConfirm("Info", "DEVELOPMENT: Are you sure you want to delete ALL personal bests? This cannot be undone")
       .then(async (result) => {
         if (result && result.data) {
           this.savePBsToStorage({});
@@ -570,7 +570,7 @@ export class TrackingService {
 
   public async clearWorkoutLogsByRoutineId(routineId: string): Promise<boolean> {
     if (!routineId) {
-      this.alertService.showAlert("Warning", "No routine ID provided to clear logs.");
+      this.alertService.showAlert("Warning", "No routine ID provided to clear logs");
       return false;
     }
     const currentLogs = this.workoutLogsSubject.getValue();

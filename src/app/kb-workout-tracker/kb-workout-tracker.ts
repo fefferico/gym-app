@@ -162,7 +162,7 @@ export class KettleBellWorkoutTrackerComponent implements OnInit, OnDestroy {
               this.changeDetectorRef.detectChanges();
             }).catch(playError => {
               console.error("Error playing video:", playError);
-              this.addFeedback('error', "Could not start video playback.");
+              this.addFeedback('error', "Could not start video playback");
             });
           };
         }

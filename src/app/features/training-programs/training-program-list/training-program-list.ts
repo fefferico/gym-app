@@ -349,7 +349,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
     try {
       this.spinnerService.show("Deleting program...");
       await this.trainingProgramService.deleteProgram(programId);
-    } catch (error) { this.toastService.error("An unexpected error occurred.", 0, "Deletion Error"); }
+    } catch (error) { this.toastService.error("An unexpected error occurred", 0, "Deletion Error"); }
     finally { this.spinnerService.hide(); }
   }
 
@@ -361,7 +361,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
       // The service now simply toggles the state for one program.
       await this.trainingProgramService.toggleProgramActivation(programId);
     } catch (error) {
-      this.toastService.error("Failed to update program status.", 0, "Error");
+      this.toastService.error("Failed to update program status", 0, "Error");
     } finally {
       this.spinnerService.hide();
     }
@@ -394,7 +394,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
                 this.calendarViewProgram.set(choice.data as TrainingProgram);
             } else {
                 // User cancelled, so we don't switch the view.
-                // this.toastService.info("Calendar view cancelled.", 2000);
+                // this.toastService.info("Calendar view cancelled", 2000);
                 return; 
             }
         } else {
@@ -596,7 +596,7 @@ handleActionMenuItemClick(event: { actionKey: string, data?: any }, originalMous
       this.calendarDays.set(days);
     } catch (error) {
       console.error("Error generating calendar days:", error);
-      this.toastService.error("Could not load calendar schedule.", 0, "Error");
+      this.toastService.error("Could not load calendar schedule", 0, "Error");
       this.calendarDays.set([]);
     } finally {
       this.calendarLoading.set(false);

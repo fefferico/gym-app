@@ -193,7 +193,7 @@ export class ExerciseListComponent implements OnInit {
     this.actionsVisibleId.set(null);
     const exerciseToDelete = this.allExercises().find(ex => ex.id === exerciseId);
     if (!exerciseToDelete) {
-      this.toastService.error("Exercise not found.", 0);
+      this.toastService.error("Exercise not found", 0);
       return;
     }
     const confirm = await this.alertService.showConfirm(
@@ -208,7 +208,7 @@ export class ExerciseListComponent implements OnInit {
         this.toastService.success(`Exercise "${exerciseToDelete.name}" deleted successfully.`, 3000, "Deleted");
       } catch (error) {
         console.error("Error deleting exercise:", error);
-        this.toastService.error("Failed to delete exercise. It might be in use.", 0, "Error");
+        this.toastService.error("Failed to delete exercise. It might be in use", 0, "Error");
       } finally {
         this.spinnerService.hide();
       }

@@ -716,7 +716,7 @@ export class WorkoutLogDetailComponent implements OnInit {
   }
 
   async deleteLogDetails(logId: string, event?: MouseEvent): Promise<void> {
-    const confirm = await this.alertService.showConfirm("Delete Workout Log", "Are you sure you want to delete this workout log? This action cannot be undone.", "Delete");
+    const confirm = await this.alertService.showConfirm("Delete Workout Log", "Are you sure you want to delete this workout log? This action cannot be undone", "Delete");
     if (confirm && confirm.data) {
       try {
         this.spinnerService.show(); await this.trackingService.deleteWorkoutLog(logId);

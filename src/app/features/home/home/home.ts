@@ -93,7 +93,7 @@ export class HomeComponent implements OnInit {
         this.router.navigate(['/workout/play'], { queryParams: { resume: 'true' } });
       }
     } else {
-      this.toastService.warning("No paused workout found to resume.", 3000);
+      this.toastService.warning("No paused workout found to resume", 3000);
     }
   }
 
