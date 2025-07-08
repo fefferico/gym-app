@@ -1,5 +1,5 @@
 // src/app/shared/alert/alert.component.ts
-import { Component, Input, Output, EventEmitter, HostListener, ChangeDetectionStrategy, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, HostListener, ChangeDetectionStrategy, OnInit, QueryList, ElementRef, ViewChildren } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms'; // <-- Import FormsModule
 import { AlertButton, AlertOptions, AlertInput } from '../../../core/models/alert.model';
@@ -15,6 +15,7 @@ import { AlertButton, AlertOptions, AlertInput } from '../../../core/models/aler
 export class AlertComponent implements OnInit {
   @Input() options: AlertOptions | null = null;
   @Output() dismissed = new EventEmitter<{ role: string, data?: any, values?: { [key: string]: string | number | boolean } } | undefined>();
+  @ViewChildren('alertInput') inputElements!: QueryList<ElementRef<HTMLInputElement | HTMLTextAreaElement>>;
 
   inputValues: { [key: string]: string | number | boolean } = {};
 
@@ -27,6 +28,29 @@ export class AlertComponent implements OnInit {
           this.inputValues[input.name] = input.value !== undefined ? input.value : (input.type === 'number' ? 0 : '');
         }
       });
+    }
+  }
+
+  // This lifecycle hook runs after the view is initialized and the *ngFor is rendered
+  ngAfterViewInit(): void {
+    if (!this.options?.inputs || !this.inputElements) {
+      return;
+    }
+
+    // Find the index of the input that has autofocus: true
+    const focusIndex = this.options.inputs.findIndex(input => input.autofocus);
+
+    if (focusIndex > -1) {
+      // Use setTimeout to make sure the focus happens after the current change detection cycle.
+      // This is a robust way to avoid timing issues with rendering or animations.
+      setTimeout(() => {
+        const inputToFocus = this.inputElements.get(focusIndex);
+        if (inputToFocus) {
+          inputToFocus.nativeElement.focus();
+          // Bonus: Also select the text in the input for easy replacement.
+          inputToFocus.nativeElement.select();
+        }
+      }, 0);
     }
   }
 

@@ -1663,6 +1663,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         type: 'number',
         placeholder: `Current: ${currentReps ?? '0'}`,
         value: currentReps ?? undefined,
+        autofocus: true,
         attributes: { step: 0.5, min: '0', inputmode: 'decimal' }
       }] as AlertInput[],
       'Set Reps'
@@ -1693,6 +1694,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       [{
         name: 'newWeight',
         type: 'number',
+        autofocus: true,
         placeholder: `Current: ${currentWeight ?? '0'} ${this.weightUnitDisplaySymbol}`,
         value: currentWeight ?? undefined,
         attributes: { step: 0.5, min: '0', inputmode: 'decimal' }
@@ -2422,6 +2424,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     }
 
     const defaultWeight = this.unitService.currentUnit() === 'kg' ? 10 : 22.2;
+    const defaultDuration = 0;
     const defaultRest = 60;
     const defaultReps = 10;
     const defaultSets = 3;
@@ -2433,6 +2436,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         { label: 'Number of Reps', name: 'numReps', type: 'number', placeholder: 'Number of Reps (e.g., 10)', value: 10, attributes: { min: 0, required: true } },
         { label: 'Number of Sets', name: 'numSets', type: 'number', placeholder: 'Number of Sets (e.g., 3)', value: 3, attributes: { min: 1, required: true } },
         { label: 'Target weight', name: 'weight', type: 'number', placeholder: 'e.g., 10', value: defaultWeight, attributes: { min: 0, required: true } },
+        { label: 'Target duration', name: 'duration', type: 'number', placeholder: 'e.g., 30 secs', value: defaultDuration, attributes: { min: 0, required: false } },
         { label: 'Rest between sets', name: 'rest', type: 'number', placeholder: 'e.g., 60', value: '60', attributes: { min: '1', required: true } }
       ] as AlertInput[]);
 
@@ -2441,10 +2445,12 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       const numSets = isNaN(parseInt(String(exerciseData['numSets']))) ? defaultSets : parseInt(String(exerciseData['numSets']));
       const numReps = isNaN(parseInt(String(exerciseData['numReps']))) ? defaultReps : parseInt(String(exerciseData['numReps']));
       const weight = isNaN(parseInt(String(exerciseData['weight']))) ? defaultWeight : parseInt(String(exerciseData['weight']));
+      const duration = isNaN(parseInt(String(exerciseData['duration']))) ? defaultDuration : parseInt(String(exerciseData['duration']));
       const rest = isNaN(parseInt(String(exerciseData['rest']))) ? defaultRest : parseInt(String(exerciseData['rest']));
 
       if (!exerciseName || (numSets === null || numSets === undefined || isNaN(numSets)) ||
         (numReps === null || numReps === undefined || isNaN(numReps)) ||
+        (duration === null || duration === undefined || isNaN(duration)) ||
         (weight === null || weight === undefined || isNaN(weight)) ||
         (rest === null || rest === undefined || isNaN(rest))) {
         this.toastService.info("Exercise addition cancelled or invalid parameter", 2000);
@@ -2456,9 +2462,9 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       for (let i = 0; i < numSets; i++) {
         newExerciseSets.push({
           id: `custom-set-${uuidv4()}`, // Or generate based on planned set ID if this was a template
-          reps: 8, // Default reps
+          reps: numReps,
           weight: weight,
-          duration: undefined,
+          duration: duration,
           restAfterSet: rest,
           type: 'standard',
           notes: ''

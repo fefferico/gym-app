@@ -18,7 +18,8 @@ export interface AlertInput {
   max?: number | string; // For number/date types
   required?: boolean; // Basic required validation indicator
   // Add more attributes as needed: pattern, step, rows (for textarea), etc.
-  attributes?: any
+  attributes?: any;
+  autofocus?: boolean;
 }
 
 export interface AlertOptions {

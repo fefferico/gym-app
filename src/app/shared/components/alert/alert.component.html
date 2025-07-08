@@ -24,7 +24,7 @@
         </ul>
 
         <!-- Inputs Section (logic is unchanged) -->
-        <div *ngIf="options.inputs && options.inputs.length > 0" class="space-y-4">
+        <div *ngIf="options.inputs && options.inputs.length > 0" class="space-y-1">
           <div *ngFor="let input of options.inputs; let i = index">
             <ng-container [ngSwitch]="input.type">
 
@@ -45,7 +45,7 @@
                   class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   {{ input.label }}
                 </label>
-                <textarea [id]="input.id || ('alert-input-' + i)" [name]="input.name"
+                <textarea #alertInput [id]="input.id || ('alert-input-' + i)" [name]="input.name"
                   [placeholder]="input.placeholder || ''" [(ngModel)]="inputValues[input.name]"
                   [required]="input.required ? true : false" rows="3"
                   class="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-m dark:bg-gray-800 dark:text-gray-200">
@@ -58,7 +58,7 @@
                   class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   {{ input.label }}
                 </label>
-                <input [type]="input.type || 'text'" [id]="input.id || ('alert-input-' + i)" [name]="input.name"
+                <input #alertInput [type]="input.type || 'text'" [id]="input.id || ('alert-input-' + i)" [name]="input.name"
                   [placeholder]="input.placeholder || ''" [(ngModel)]="inputValues[input.name]"
                   [required]="input.required ? true : false" [min]="input.min" [max]="input.max"
                   class="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-m dark:bg-gray-800 dark:text-gray-200">
@@ -72,7 +72,7 @@
     </div>
 
     <footer *ngIf="options.buttons && options.buttons.length > 0"
-      class="overflow-y-auto border-t border-gray-200 dark:border-gray-600 p-6 pt-4 custom-scrollbar"
+      class="overflow-y-auto p-6 pt-4 custom-scrollbar"
       [ngClass]="options.buttons.length === 2 ? 'flex justify-center gap-2 sm:gap-3' : 'grid grid-cols-1 gap-2 sm:gap-3'">
       <button *ngFor="let button of options.buttons" [ngClass]="getButtonClass(button)" (click)="onButtonClick(button)"
         class="min-w-[80px] h-14 flex items-center justify-center rounded-md transition-colors text-center"
