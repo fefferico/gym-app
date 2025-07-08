@@ -50,7 +50,6 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
 
   // --- Signals for State Management ---
   allActivePrograms = signal<TrainingProgram[]>([]);
-  activeProgram = signal<TrainingProgram | null>(null);
   isLoading = signal<boolean>(true);
   currentDate = signal<Date>(new Date());
   private currentDate$: Observable<Date> = toObservable(this.currentDate);
@@ -131,7 +130,6 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
     ).subscribe(state => {
       if (state) {
         this.allActivePrograms.set(state.allActivePrograms);
-        this.activeProgram.set(state.programForDisplay);
         this.todaysScheduledWorkouts.set(state.routineData);
         this.logsForDay.set(state.logsForDay ?? []);
         this.isLoading.set(false);
@@ -203,10 +201,10 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
     }, this.ANIMATION_OUT_DURATION);
   }
 
-  startWorkoutProgram(routineId: string | undefined, event: Event): void {
+  startWorkoutProgram(routineId: string | undefined, programId: string | undefined = undefined, event: Event): void {
     event?.stopPropagation();
     if (routineId) {
-      this.router.navigate(['/workout/play', routineId], { queryParams: { programId: this.activeProgram()?.id } });
+      this.router.navigate(['/workout/play', routineId], { queryParams: { programId: programId } });
     }
   }
 

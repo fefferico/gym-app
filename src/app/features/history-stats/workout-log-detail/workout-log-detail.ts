@@ -3,9 +3,10 @@ import { Component, inject, Input, OnInit, signal, SimpleChanges } from '@angula
 import { CommonModule, DatePipe, DecimalPipe, TitleCasePipe } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { firstValueFrom, forkJoin, Observable, of } from 'rxjs';
-import { map, switchMap, tap, catchError } from 'rxjs/operators';
+import { map, switchMap, tap, catchError, take } from 'rxjs/operators';
 import { Exercise } from '../../../core/models/exercise.model';
-import { LoggedWorkoutExercise, WorkoutLog, LoggedSet } from '../../../core/models/workout-log.model';
+// MODIFICATION: Import PersonalBestSet
+import { LoggedWorkoutExercise, WorkoutLog, LoggedSet, PersonalBestSet } from '../../../core/models/workout-log.model';
 import { TrackingService } from '../../../core/services/tracking.service';
 import { ExerciseService } from '../../../core/services/exercise.service';
 import { WeightUnitPipe } from '../../../shared/pipes/weight-unit-pipe';
@@ -54,7 +55,8 @@ interface TargetComparisonData {
 export class WorkoutLogDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private trackingService = inject(TrackingService);
+  // MODIFICATION: trackingService is now used directly in the component
+  protected trackingService = inject(TrackingService);
   private exerciseService = inject(ExerciseService);
   private workoutService = inject(WorkoutService);
   protected unitService = inject(UnitsService);
@@ -72,6 +74,8 @@ export class WorkoutLogDetailComponent implements OnInit {
 
   workoutLog = signal<WorkoutLog | null | undefined>(undefined);
   displayExercises = signal<DisplayLoggedExercise[]>([]);
+  // NEW: Signal to store PB data for the exercises in this log
+  personalBestsForLog = signal<Record<string, PersonalBestSet[]>>({});
 
   @Input() logId?: string;
 
@@ -335,6 +339,8 @@ export class WorkoutLogDetailComponent implements OnInit {
         });
 
         this.displayExercises.set(processedExercises as DisplayLoggedExercise[]);
+        // NEW: After setting exercises, fetch their PBs for display
+        this.fetchPersonalBestsForLog(processedExercises as DisplayLoggedExercise[]);
       },
       error: (err) => {
         console.error("Error fetching exercise details for log display:", err);
@@ -398,8 +404,50 @@ export class WorkoutLogDetailComponent implements OnInit {
         });
 
         this.displayExercises.set(fallbackExercises as DisplayLoggedExercise[]);
+        // NEW: Also fetch PBs in the error case
+        this.fetchPersonalBestsForLog(fallbackExercises as DisplayLoggedExercise[]);
       }
     });
+  }
+
+  // NEW: Method to fetch PBs for the exercises in the log
+  private fetchPersonalBestsForLog(exercises: DisplayLoggedExercise[]): void {
+    const exerciseIds = [...new Set(exercises.map(ex => ex.exerciseId).filter(id => !!id))];
+    if (exerciseIds.length === 0) {
+      this.personalBestsForLog.set({});
+      return;
+    }
+
+    const pbObservables = exerciseIds.map(id =>
+      this.trackingService.getAllPersonalBestsForExercise(id!).pipe(
+        take(1),
+        map(pbs => ({ exerciseId: id!, pbs }))
+      )
+    );
+
+    forkJoin(pbObservables).subscribe(results => {
+      const pbMap: Record<string, PersonalBestSet[]> = {};
+      results.forEach(result => {
+        console.log("results", result)
+        if (result.pbs.length > 0) {
+          pbMap[result.exerciseId] = result.pbs;
+        }
+      });
+      this.personalBestsForLog.set(pbMap);
+    });
+  }
+
+  // NEW: Method for the template to check if a set was a PB
+  getPersonalBestTypesForSet(set: LoggedSet, exerciseId: string): string[] {
+    const pbsForExercise = this.personalBestsForLog()[exerciseId];
+    if (!pbsForExercise || !set.id) {
+      return [];
+    }
+
+    // Find all PBs that originated from this exact set instance by matching the set's unique ID.
+    return pbsForExercise
+      .filter(pb => pb.id === set.id)
+      .map(pb => pb.pbType);
   }
 
 
@@ -621,7 +669,7 @@ export class WorkoutLogDetailComponent implements OnInit {
     const currentLog = this.workoutLog();
     const actionsArray = [
       {
-        label: 'VIEW',
+        label: 'SUMMARY',
         actionKey: 'view',
         iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5Z" /><path fill-rule="evenodd" d="M.664 10.59a1.651 1.651 0 010-1.186A10.004 10.004 0 0110 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0110 17c-4.257 0-7.893-2.66-9.336-6.41ZM14 10a4 4 0 11-8 0 4 4 0 018 0Z" clip-rule="evenodd" /></svg>`,
         iconClass: 'w-8 h-8 mr-2', // Adjusted for consistency if needed,

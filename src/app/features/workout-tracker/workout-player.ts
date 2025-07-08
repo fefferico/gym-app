@@ -1646,6 +1646,38 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     }
   }
 
+  async editRepsWithPrompt(): Promise<void> {
+    if (this.getDisabled() || this.playerSubState() !== PlayerSubState.PerformingSet) {
+      this.toastService.warning("Cannot edit reps now.", 2000);
+      return;
+    }
+    const activeInfo = this.activeSetInfo();
+    if (!activeInfo) return;
+
+    const currentReps = this.csf['actualReps'].value;
+    const promptResult = await this.alertService.showPromptDialog(
+      'Enter Reps',
+      ``,
+      [{
+        name: 'newReps',
+        type: 'number',
+        placeholder: `Current: ${currentReps ?? '0'}`,
+        value: currentReps ?? undefined,
+        attributes: { step: 0.5, min: '0', inputmode: 'decimal' }
+      }] as AlertInput[],
+      'Set Reps'
+    );
+
+    if (promptResult && promptResult['newReps'] !== undefined && promptResult['newReps'] !== null) {
+      const newRepsValue = parseFloat(String(promptResult['newReps']));
+      if (!isNaN(newRepsValue) && newRepsValue >= 0) {
+        this.currentSetForm.patchValue({ actualReps: newRepsValue });
+      } else {
+        this.toastService.error('Invalid reps entered.', 3000, 'Error');
+      }
+    }
+  }
+
   async editWeightWithPrompt(): Promise<void> {
     if (this.getDisabled() || this.playerSubState() !== PlayerSubState.PerformingSet) {
       this.toastService.warning("Cannot edit weight now.", 2000);
@@ -1663,7 +1695,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         type: 'number',
         placeholder: `Current: ${currentWeight ?? '0'} ${this.weightUnitDisplaySymbol}`,
         value: currentWeight ?? undefined,
-        attributes: { step: 1, min: '0', inputmode: 'decimal' }
+        attributes: { step: 0.5, min: '0', inputmode: 'decimal' }
         // attributes: { step: this.appSettingsService.weightStep(), min: '0', inputmode: 'decimal' }
       }] as AlertInput[],
       'Set Weight'
@@ -4304,7 +4336,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     this.isSimpleModalOpen.set(true);
   }
 
-  showCompletedSetsForExerciseInfo = signal(false);
+  showCompletedSetsForExerciseInfo = signal(true);
   toggleCompletedSetsForExerciseInfo(): void {
     this.showCompletedSetsForExerciseInfo.update(s => !s);
   }

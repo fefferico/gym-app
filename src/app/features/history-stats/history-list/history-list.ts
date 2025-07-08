@@ -30,6 +30,8 @@ import Hammer from 'hammerjs';
 import { SpinnerService } from '../../../core/services/spinner.service';
 import { ActionMenuComponent } from '../../../shared/components/action-menu/action-menu';
 import { ActionMenuItem } from '../../../core/models/action-menu.model';
+import { TrainingProgramService } from '../../../core/services/training-program.service';
+import { TrainingProgram } from '../../../core/models/training-program.model';
 
 
 interface HistoryCalendarDay {
@@ -124,6 +126,7 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
   private ngZone = inject(NgZone);
   private elementRef = inject(ElementRef);
   private spinnerService = inject(SpinnerService);
+  private trainingProgramService = inject(TrainingProgramService);
 
   protected allWorkoutLogs = signal<WorkoutLog[]>([]);
   private workoutLogsSubscription: Subscription | undefined;
@@ -137,6 +140,7 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   filterForm: FormGroup;
   private filterValuesSignal = signal<any>({});
+  availableProgramsForFilter = signal<TrainingProgram[]>([]);
 
   currentHistoryView = signal<HistoryListView>('list');
   historyViewAnimationParams = signal<{ value: HistoryListView, params: { enterTransform: string, leaveTransform: string } }>({
@@ -177,14 +181,20 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
   filteredWorkoutLogs = computed(() => {
     let logs = this.allWorkoutLogs();
     const filters = this.filterValuesSignal();
+
     if (!logs || logs.length === 0) return [];
     if (!filters) return logs;
+
+    // Add goal property for display (this part is good)
     logs = logs.map(log => ({
       ...log,
       goal: this.availableRoutines.find(r => r.id === log.routineId)?.goal || '',
     }));
+
     const filtered = logs.filter(log => {
       let match = true;
+
+      // Date filtering
       if (filters.dateFrom) {
         const filterDateFrom = new Date(filters.dateFrom); filterDateFrom.setHours(0, 0, 0, 0);
         if (!isNaN(filterDateFrom.getTime())) {
@@ -198,21 +208,36 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
           match &&= new Date(log.startTime).getTime() <= filterDateTo.getTime();
         }
       }
+
+      // Routine name filtering
       const routineNameFilter = filters.routineName?.trim().toLowerCase();
       if (routineNameFilter) {
         match &&= (log.routineName || '').toLowerCase().includes(routineNameFilter);
       }
+
+      // Exercise filtering
       if (filters.exerciseId) {
         match &&= log.exercises.some(ex => ex.exerciseId === filters.exerciseId);
       }
+
+      // NEW: Program filtering logic
+      if (filters.programId) {
+        match &&= log.programId === filters.programId;
+      }
+
       return match;
     });
+
     return filtered.sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
   });
 
   constructor() {
     this.filterForm = this.fb.group({
-      dateFrom: [''], dateTo: [''], routineName: [''], exerciseId: ['']
+      dateFrom: [''],
+      dateTo: [''],
+      routineName: [''],
+      exerciseId: [''],
+      programId: ['']
     });
     this.filterValuesSignal.set(this.filterForm.value);
     this.filterForm.valueChanges.pipe(
@@ -244,14 +269,18 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
       map(exercises => exercises.sort((a, b) => a.name.localeCompare(b.name)))
     );
 
+    this.trainingProgramService.getAllPrograms().pipe(take(1)).subscribe(programs => {
+      this.availableProgramsForFilter.set(programs);
+    });
+
     this.route.queryParamMap.pipe(take(1)).subscribe(params => {
       const programId = params.get('programId');
       if (programId) {
         console.log("HistoryListComponent: Should filter by programId", programId);
-        // Implement programId filtering if needed here by modifying filterValuesSignal
-        // For example:
-        // this.filterValuesSignal.update(currentFilters => ({...currentFilters, programId: programId}));
-        // this.filterForm.patchValue({ programId: programId }, { emitEvent: false }); // if you add programId to form
+        // Patch the form with the programId from the URL.
+        // This will automatically trigger the computed signal to filter the logs.
+        this.filterForm.patchValue({ programId: programId });
+        this.isFilterAccordionOpen.set(true); // Open the filters to show the user why the list is filtered
       }
     });
   }
@@ -395,7 +424,9 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   toggleFilterAccordion(): void { this.isFilterAccordionOpen.update(isOpen => !isOpen); }
-  resetFilters(): void { this.filterForm.reset({ dateFrom: '', dateTo: '', routineName: '', exerciseId: '' }); }
+  resetFilters(): void {
+    this.filterForm.reset({ dateFrom: '', dateTo: '', routineName: '', exerciseId: '', programId: '' });
+  }
   viewLogDetails(logId: string, event?: MouseEvent): void {
     event?.stopPropagation(); this.router.navigate(['/history/log', logId]);
     this.visibleActionsRutineId.set(null);

@@ -280,7 +280,7 @@
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
                     </svg>
                   </button>
-                  <input type="number" formControlName="actualReps" readonly
+                  <input (click)="editRepsWithPrompt()" type="number" formControlName="actualReps" readonly
                     class="w-20 text-center text-3xl font-bold bg-transparent border-none p-0 focus:ring-0 text-gray-800 dark:text-gray-100"
                     placeholder="0">
                   <button type="button" [disabled]="getDisabled()" appPress (shortPress)="onShortPressRepsIncrement()"

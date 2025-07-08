@@ -314,8 +314,9 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         }
 
         const formValue = this.programForm.getRawValue();
+        const programId = this.currentProgramId || uuidv4();
         const programPayload: TrainingProgram = {
-            id: this.currentProgramId || uuidv4(), // Use existing ID for edit, new for new
+            id: programId, // Use existing ID for edit, new for new
             name: formValue.name,
             goals: this.selectedGoals(),
             description: formValue.description,
@@ -327,6 +328,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
                 dayOfWeek: Number(s.dayOfWeek),
                 routineId: s.routineId,
                 routineName: s.routineName, // This should ideally be updated from WorkoutService if routine name changes
+                programId: programId,
                 notes: s.notes,
                 timeOfDay: s.timeOfDay
             })),

@@ -625,8 +625,17 @@ handleActionMenuItemClick(event: { actionKey: string, data?: any }, originalMous
       this.selectCalendarDay(null);
     }
   }
-  logPreviousSession(routineId: string, workoutDate: Date): void { this.router.navigate(['/workout/log/manual/new', { routineId, workoutDate: format(workoutDate, 'yyyy-MM-dd') }]); this.selectCalendarDay(null); }
-  goToPreviousProgramSession(programId: string | undefined): void { this.router.navigate(['/history/list'], programId ? { queryParams: { programId: programId } } : {}); this.selectCalendarDay(null); }
+  
+  logPreviousSession(routineId: string, workoutDate: Date): void { 
+    this.router.navigate(['/workout/log/manual/new', { routineId, workoutDate: format(workoutDate, 'yyyy-MM-dd') }]); 
+    this.selectCalendarDay(null); 
+  }
+
+  goToPreviousProgramSession(programId: string | undefined): void { 
+    this.router.navigate(['/history/list'], programId ? { queryParams: { programId: programId } } : {}); 
+    this.selectCalendarDay(null); 
+  }
+
   isToday(date: Date): boolean { return isToday(date); }
   isPast(date: Date): boolean { return isPast(date) && !isToday(date); }
   isFuture(date: Date): boolean { return isFuture(date); }

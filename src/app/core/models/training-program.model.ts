@@ -13,6 +13,8 @@ export interface ScheduledRoutineDay {
   dayOfWeek: number;
   /** ID of the Routine to be performed on this day. */
   routineId: string;
+  /** ID of the Program to be performed on this day. */
+  programId: string;
   /** Denormalized routine name for easier display. Should be updated if the source routine name changes. */
   routineName?: string;
   /** Specific notes or instructions for this day within the program (e.g., "Focus on form", "Go heavy"). */

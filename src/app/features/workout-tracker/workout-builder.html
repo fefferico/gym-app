@@ -176,7 +176,7 @@
 
             <div *ngIf="exercisesFormArray.length>0" cdkDropList [cdkDropListData]="exercisesFormArray.controls"
                 (cdkDropListDropped)="onExerciseDrop($event)"
-                [cdkDropListDisabled]="mode !== 'routineBuilder' || isViewMode" formArrayName="exercises"
+                [cdkDropListDisabled]="!isEditableMode" formArrayName="exercises"
                 class="exercise-list-container space-y-4">
                 <ng-container *ngFor="let exerciseControl of exercisesFormArray.controls; let exIndex = index;">
                     <div class="relative group exercise-card-wrapper" (click)="toggleSetExpansion(exIndex,0, $event)"
@@ -199,20 +199,19 @@
                         </div>
 
                         <div cdkDrag
-                            [cdkDragDisabled]="mode !== 'routineBuilder' || isViewMode || !isEditableMode() || isSetExpanded(exIndex, 0)"
+                            [cdkDragDisabled]="!isEditableMode() || isSetExpanded(exIndex, 0)"
                             appLongPressDrag [longPressEnabled]="isEditableMode() && !isSetExpanded(exIndex, 0)"
                             [longPressDelay]="150" longPressClass="is-long-pressing" [cdkDragData]="exerciseControl"
                             [formGroupName]="exIndex" [cdkDragStartDelay]="110"
                             class="exercise-item relative transition-all cursor-grab"
                             [ngClass]="getExerciseCardClasses(exerciseControl, exIndex)">
                             <!-- COMPACT VIEW / HEADER AREA -->
-                            <div class="flex items-center space-x-2">
+                            <div class="flex items-center space-x-1">
                                 <!-- DRAG HANDLE ICON (Now just a visual cue) -->
-                                <div *ngIf="mode === 'routineBuilder' && isEditableMode() && !isViewMode"
+                                <div *ngIf="isEditableMode()"
                                     class="p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 flex-shrink-0 top-1 right-1 sm:static"
                                     [ngClass]="{
                                         'absolute top-1 right-1 sm:static': isCompactView,
-                                        'absolute top-2 right-2': !isCompactView && (mode !== 'routineBuilder' || !isEditableMode() || isViewMode)
                                     }" title="Drag to reorder">
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-5 h-5">
                                         <path d="M 7 17 L 7 3 M 4 6 L 7 3 L 10 6 M 17 7 L 17 21 M 14 18 L 17 21 L 20 18"
@@ -230,7 +229,7 @@
                                     class="h-4 w-4 text-orange-600 border-gray-300 dark:border-gray-600 rounded focus:ring-orange-500 flex-shrink-0 disabled:opacity-50"
                                     [disabled]="isViewMode">
                                 <!-- EXERCISE NAME & SUPERSET INFO / SETS SUMMARY FOR COMPACT -->
-                                <div *ngIf="!shouldShowExpandedExercise(exIndex)" class="flex-grow min-w-0 p-2">
+                                <div *ngIf="!shouldShowExpandedExercise(exIndex)" class="flex-grow min-w-0 py-2 px-0">
                                     <!-- COMPACT: Show SETS SUMMARY if in compact view -->
                                     <div *ngIf="exerciseControl.get('supersetId')?.value && getSetsFormArray(exerciseControl).controls.length > 0 
                                         && exerciseControl.get('supersetOrder')?.value === 0"

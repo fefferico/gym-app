@@ -13,15 +13,25 @@
       </svg>
     </button>
     <div class="text-center px-2">
-      <span *ngIf="activeProgram()"
+      <span *ngIf="allActivePrograms().length === 1"
         class="block font-bold uppercase tracking-wider text-sm text-gray-500 dark:text-gray-400 mb-0.5">Program: {{
-        activeProgram()?.name}}</span>
-      <span *ngIf="allActivePrograms().length > 1 && !activeProgram()"
+        allActivePrograms()[0]?.name}}</span>
+      <span *ngIf="allActivePrograms().length > 1"
         class="block font-bold uppercase tracking-wider text-sm text-gray-500 dark:text-gray-400 mb-0.5">{{allActivePrograms().length}}
         Active Programs</span>
-      <span *ngIf="activeProgram() && activeProgram()?.startDate"
-        class="block font-bold uppercase tracking-wider text-xs text-gray-500 dark:text-gray-400 mb-0.5">Started on: {{
-        activeProgram()?.startDate | date:'dd-MM-yyyy':'UTC'}}</span>
+      <div *ngIf="allActivePrograms().length > 0" class="space-y-2">
+        <div *ngFor="let program of allActivePrograms()"
+          class="p-2 rounded-md bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800">
+          <!-- Program Name -->
+          <span class="block font-bold uppercase tracking-wider text-xs text-green-600 dark:text-green-400">
+            {{ program.name }}
+          </span>
+          <!-- Program Start Date (if available) -->
+          <span *ngIf="program.startDate" class="block text-xs text-gray-500 dark:text-gray-400">
+            Started on: {{ program.startDate | date:'dd-MM-yyyy':'UTC' }}
+          </span>
+        </div>
+      </div>
       <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200">{{ currentDate() | date:'fullDate' }}
         <span *ngIf="isToday(currentDate())" class="text-m text-primary dark:text-primary-light">(Today)</span>
       </h2>
@@ -123,7 +133,8 @@
                   </ng-container>
                   <ng-container *ngIf="isToday(currentDate())">
                     <div class="flex flex-col sm:flex-row gap-2">
-                      <button (click)="startWorkoutProgram(workoutInfo.routine.id, $event)"
+                      <button
+                        (click)="startWorkoutProgram(workoutInfo.routine.id, workoutInfo.scheduledDayInfo.programId, $event)"
                         class="flex-1 bg-green-500 hover:bg-green-600 text-white font-semibold py-2.5 px-4 rounded-md shadow-sm flex items-center justify-center text-m"><svg
                           xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                           stroke="currentColor" class="w-5 h-5 mr-2">
@@ -217,7 +228,7 @@
                           </span>
                         </span>
                       </div>
-                      <button (click)="startWorkoutProgram(routine.id, $event)" [disabled]="isAnimating()"
+                      <button (click)="startWorkoutProgram(routine.id, undefined, $event)" [disabled]="isAnimating()"
                         class="flex items-center ml-2 text-m bg-primary hover:bg-green-200 text-white dark:hover:bg-primary-dark font-semibold py-1 px-2.5 rounded-md disabled:opacity-50">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
                           stroke="currentColor" class="size-4 mr-1">
@@ -286,13 +297,13 @@
                   No workouts logged</h3>
               </div>
               <div *ngIf="isToday(currentDate())">
-                <p *ngIf="!activeProgram()" class="text-m text-gray-500 dark:text-gray-400">
+                <p *ngIf="allActivePrograms().length === 0" class="text-m text-gray-500 dark:text-gray-400">
                   You can <button (click)="managePrograms()"
                     class="text-primary dark:text-primary-light hover:underline">set an active program</button> or
                   <button (click)="browseRoutines()"
                     class="text-primary dark:text-primary-light hover:underline">browser the available routines</button>
                 </p>
-                <p *ngIf="activeProgram()" class="text-m text-gray-500 dark:text-gray-400">
+                <p *ngIf="allActivePrograms().length > 0" class="text-m text-gray-500 dark:text-gray-400">
                   Feel free to
                   <button (click)="browseRoutines()" class="text-primary dark:text-primary-light hover:underline">pick
                     any
@@ -318,7 +329,7 @@
                           </span>
                         </span>
                       </div>
-                      <button (click)="startWorkoutProgram(routine.id, $event)" [disabled]="isAnimating()"
+                      <button (click)="startWorkoutProgram(routine.id, undefined, $event)" [disabled]="isAnimating()"
                         class="flex items-center ml-2 text-m bg-primary hover:bg-green-200 text-white dark:hover:bg-primary-dark font-semibold py-1 px-2.5 rounded-md disabled:opacity-50">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
                           stroke="currentColor" class="size-4 mr-1">

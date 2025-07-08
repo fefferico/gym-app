@@ -264,11 +264,7 @@ export class TrackingService {
   }
 
   public async recalculateAllPersonalBests(): Promise<void> {
-    const conf = await this.alertService.showConfirm("Confirm Recalculation", "Recalculate all personal bests from your entire workout history? This may take a moment.");
-    if (!conf || !conf.data) {
-      return;
-    }
-
+    const conf = await this.alertService.showAlert("PBs Recalculation", "All your personal bests from your entire workout history will be now recalculated: this may take a moment.");
     // reset PBs
     this.savePBsToStorage({});
 
