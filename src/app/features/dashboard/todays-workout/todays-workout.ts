@@ -13,6 +13,7 @@ import Hammer from 'hammerjs';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { TrackingService } from '../../../core/services/tracking.service';
 import { startOfDay, endOfDay } from 'date-fns';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 export type SlideAnimationState = 'center' | 'exitToLeft' | 'exitToRight' | 'enterFromLeft' | 'enterFromRight';
 
@@ -47,6 +48,9 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
   private router = inject(Router);
   private elementRef = inject(ElementRef);
   private ngZone = inject(NgZone);
+
+  private sanitizer = inject(DomSanitizer);
+  public sanitizedDescription: SafeHtml = '';
 
   // --- Signals for State Management ---
   allActivePrograms = signal<TrainingProgram[]>([]);
@@ -213,6 +217,10 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
   managePrograms(): void { this.router.navigate(['/training-programs']); }
   browseRoutines(): void { this.router.navigate(['/workout']); }
 
+  logPastProgramWorkout(routineId: string | undefined, programId: string | undefined): void {
+    this.router.navigate(['workout/log/manual/new/from/' + routineId], { queryParams: { programId: programId, date: this.currentDate() } });
+  }
+
   isToday(date: Date): boolean {
     const today = new Date();
     return date.getDate() === today.getDate() && date.getMonth() === today.getMonth() && date.getFullYear() === today.getFullYear();
@@ -239,5 +247,10 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
 
   findRoutineLog(routineId: string): Observable<WorkoutLog | undefined> {
     return this.trackingService.getWorkoutLogByRoutineId(routineId);
+  }
+
+  protected updateSanitizedDescription(value: string): SafeHtml {
+    // This tells Angular to trust this HTML string and render it as is.
+    return this.sanitizer.bypassSecurityTrustHtml(value);
   }
 }

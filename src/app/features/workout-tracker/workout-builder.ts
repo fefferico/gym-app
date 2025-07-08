@@ -69,6 +69,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   isNewMode = true;
   isViewMode = false; // Only for routineBuilder mode
   currentRoutineId: string | null = null; // For editing/viewing a Routine
+  currentProgramId: string | null = null;
+  dateParam: Date | null = null;
   currentLogId: string | null = null;     // For editing a WorkoutLog
   private routeSub: Subscription | undefined;
   private initialRoutineIdForLogEdit: string | null | undefined = undefined; // For log edit mode
@@ -150,6 +152,9 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
         this.currentRoutineId = this.route.snapshot.paramMap.get('routineId'); // For editing/viewing a Routine, or prefilling a Log
         this.currentLogId = this.route.snapshot.paramMap.get('logId');         // For editing a WorkoutLog
+        this.currentProgramId = this.route.snapshot.queryParamMap.get('programId');
+        const paramDate = this.route.snapshot.queryParamMap.get('date');
+        this.dateParam = paramDate ? new Date(paramDate) : null;
 
         // isViewMode is specific to viewing a Routine template
         this.isViewMode = (this.mode === 'routineBuilder' && !!this.currentRoutineId && !this.isNewMode && this.route.snapshot.routeConfig?.path?.includes('view')) || false;
@@ -424,8 +429,9 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     };
     if (resetDateTime) {
       const today = new Date();
-      patchData.workoutDate = format(today, 'yyyy-MM-dd');
-      patchData.startTime = format(today, 'HH:mm');
+      const date = this.dateParam ? this.dateParam : today;
+      patchData.workoutDate = format(date, 'yyyy-MM-dd');
+      patchData.startTime = format(date, 'HH:mm');
       patchData.durationMinutes = 60;
     }
     this.builderForm.patchValue(patchData, { emitEvent: false });
