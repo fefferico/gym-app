@@ -720,9 +720,9 @@ export class WorkoutLogDetailComponent implements OnInit {
     if (confirm && confirm.data) {
       try {
         this.spinnerService.show(); await this.trackingService.deleteWorkoutLog(logId);
-        this.toastService.success("Workout log deleted successfully.");
+        this.toastService.success("Workout log deleted successfully");
         this.router.navigate(['/history/list']);
-      } catch (err) { this.toastService.error("Failed to delete workout log."); }
+      } catch (err) { this.toastService.error("Failed to delete workout log"); }
       finally { this.spinnerService.hide(); }
     }
   }

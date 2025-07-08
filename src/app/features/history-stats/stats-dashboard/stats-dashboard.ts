@@ -179,7 +179,7 @@ export class StatsDashboardComponent implements OnInit, OnDestroy {
     }
 
     if (dateFromObj && dateToObj && dateFromObj > dateToObj) {
-      alert("'From Date' cannot be after 'To Date'. Filters not applied.");
+      alert("'From Date' cannot be after 'To Date'. Filters not applied");
       // Optionally reset form or just don't update the signal
       // this.statsFilterForm.reset({ dateFrom: null, dateTo: null }, { emitEvent: false }); // Avoid loop
       // this.dateFilters.set({ dateFrom: null, dateTo: null });

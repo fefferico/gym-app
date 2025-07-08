@@ -604,7 +604,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
         const currentDayIsPast = isPast(date) && !isToday(date);
         const scheduledItemsWithLogs: ScheduledItemWithLogs[] = distinctScheduledForThisDate.map(scheduledEntry => {
           const routineForDay = this.allRoutinesMap.get(scheduledEntry.scheduledDayInfo.routineId);
-          if (!routineForDay) { console.warn(`Routine with ID ${scheduledEntry.scheduledDayInfo.routineId} not found.`); return null; }
+          if (!routineForDay) { console.warn(`Routine with ID ${scheduledEntry.scheduledDayInfo.routineId} not found`); return null; }
           const correspondingLogs: WorkoutLog[] = allLogsForPeriod.filter(log => isSameDay(parseISO(log.date), date) && log.routineId === routineForDay.id)
             .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
           return { routine: routineForDay, scheduledDayInfo: scheduledEntry.scheduledDayInfo, logs: correspondingLogs };

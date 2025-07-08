@@ -461,7 +461,7 @@ export class TrackingService {
     this.saveWorkoutLogsToStorage(mergedLogs);
 
     // 7. Provide user feedback before the PB recalculation
-    console.log(`TrackingService: Merged logs. Updated: ${updatedCount}, Added: ${addedCount}.`);
+    console.log(`TrackingService: Merged logs. Updated: ${updatedCount}, Added: ${addedCount}`);
     this.toastService.success(
       `Logs imported. ${updatedCount} updated, ${addedCount} added.`,
       6000,
@@ -585,7 +585,7 @@ export class TrackingService {
 
 
     if (logsToDeleteCount === 0) {
-      const result = await this.alertService.showConfirm("Confirm Deletion", `Are you sure you want to delete the routine "${routineOriginalName}"? This action cannot be undone.`);
+      const result = await this.alertService.showConfirm("Confirm Deletion", `Are you sure you want to delete the routine "${routineOriginalName}"? This action cannot be undone`);
       if (result && result.data) {
         await this.workoutService.deleteRoutine(routineId);
         this.alertService.showAlert("Info", `Routine "${routineOriginalName}" deleted successfully!`);
@@ -601,7 +601,7 @@ export class TrackingService {
         this.saveWorkoutLogsToStorage(logsToKeep);
         await this.workoutService.deleteRoutine(routineId);
         await this.recalculateAllPersonalBests(); // Recalculate PBs
-        this.alertService.showAlert("Success", `${logsToDeleteCount} workout log(s) and the routine "${routineOriginalName}" have been deleted.`);
+        this.alertService.showAlert("Success", `${logsToDeleteCount} workout log(s) and the routine "${routineOriginalName}" have been deleted`);
         return true;
       }
       return false;
@@ -637,8 +637,8 @@ export class TrackingService {
       await this.recalculateAllPersonalBests();
       console.log('Updated workout log and recalculated PBs:', updatedLog.id);
     } else {
-      console.error(`TrackingService: WorkoutLog with ID ${updatedLog.id} not found for update.`);
-      throw new Error(`WorkoutLog with ID ${updatedLog.id} not found.`);
+      console.error(`TrackingService: WorkoutLog with ID ${updatedLog.id} not found for update`);
+      throw new Error(`WorkoutLog with ID ${updatedLog.id} not found`);
     }
   }
 
@@ -653,7 +653,7 @@ export class TrackingService {
       if (exercisesToKeep.length < originalExerciseCount) {
         logsModified = true;
         if (exercisesToKeep.length === 0) {
-          console.log(`Workout log ${log.id} will be deleted as it becomes empty.`);
+          console.log(`Workout log ${log.id} will be deleted as it becomes empty`);
           return null;
         }
         return { ...log, exercises: exercisesToKeep };
@@ -678,7 +678,7 @@ export class TrackingService {
     const logExists = currentLogs.some(log => log.id === logId);
 
     if (!logExists) {
-      console.warn(`TrackingService: WorkoutLog with ID ${logId} not found for deletion.`);
+      console.warn(`TrackingService: WorkoutLog with ID ${logId} not found for deletion`);
       return;
     }
     const updatedLogs = currentLogs.filter(log => log.id !== logId);

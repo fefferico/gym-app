@@ -203,7 +203,7 @@ export class ExerciseListComponent implements OnInit {
     );
     if (confirm && confirm.data) {
       try {
-        this.spinnerService.show("Deleting exercise...");
+        this.spinnerService.show("Deleting exercise..");
         await this.exerciseService.deleteExercise(exerciseId);
         this.toastService.success(`Exercise "${exerciseToDelete.name}" deleted successfully.`, 3000, "Deleted");
       } catch (error) {

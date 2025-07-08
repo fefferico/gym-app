@@ -66,7 +66,7 @@ export class ExerciseService {
 
       // If there are new exercises to add, merge them and update the state.
       if (newExercisesToSeed.length > 0) {
-        console.log(`Seeding ${newExercisesToSeed.length} new exercises from static data.`);
+        console.log(`Seeding ${newExercisesToSeed.length} new exercises from static data`);
         const mergedExercises = [...existingExercises, ...newExercisesToSeed];
 
         // Update the subject with the full, merged list.
@@ -74,7 +74,7 @@ export class ExerciseService {
         // Save the merged list back to storage for the next session.
         this._saveExercisesToStorage(mergedExercises);
       } else {
-        console.log("No new exercises to seed from static data. All are present in storage.");
+        console.log("No new exercises to seed from static data. All are present in storage");
       }
     } catch (error) {
       console.error('Failed to process or seed exercises from static data:', error);
@@ -152,14 +152,14 @@ export class ExerciseService {
 
     // 2. Check for duplicate ID if an ID is provided
     if (exerciseData.id && currentExercises.some(ex => ex.id === exerciseData.id)) {
-      console.warn(`An exercise with the ID '${exerciseData.id}' already exists. Add operation aborted.`);
+      console.warn(`An exercise with the ID '${exerciseData.id}' already exists. Add operation aborted`);
       return of(null);
     }
 
     // 3. Check for duplicate name (case-insensitive check for better UX)
     const normalizedName = exerciseData.name.trim().toLowerCase();
     if (currentExercises.some(ex => ex.name.trim().toLowerCase() === normalizedName)) {
-      console.warn(`An exercise with the name '${exerciseData.name}' already exists. Add operation aborted.`);
+      console.warn(`An exercise with the name '${exerciseData.name}' already exists. Add operation aborted`);
       return of(null);
     }
 
@@ -205,7 +205,7 @@ export class ExerciseService {
       const exerciseToDelete = currentExercises.find(ex => ex.id === exerciseId);
 
       if (!exerciseToDelete) {
-        console.warn(`ExerciseService: Exercise with id ${exerciseId} not found for deletion.`);
+        console.warn(`ExerciseService: Exercise with id ${exerciseId} not found for deletion`);
         throw new Error('Exercise not found'); // Throw to be caught by finalize and caller
       }
 
@@ -431,7 +431,7 @@ export class ExerciseService {
     this._saveExercisesToStorage(mergedExercises);
 
     // 7. Provide user feedback
-    console.log(`ExerciseService: Merged imported data. Updated: ${updatedCount}, Added: ${addedCount}.`);
+    console.log(`ExerciseService: Merged imported data. Updated: ${updatedCount}, Added: ${addedCount}`);
     this.toastService.success(
       `Import complete. ${updatedCount} exercises updated, ${addedCount} added.`,
       6000,

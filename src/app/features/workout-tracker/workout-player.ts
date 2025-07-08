@@ -704,12 +704,12 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
 
     if (performedExercisesThatWereInOriginal.length !== original.length || addedCustomExercises.length > 0) {
-      details.push(`Number of exercises or their content changed [Original number exercises: ${original.length}, performed number exercises: ${performedExercisesThatWereInOriginal.length}].`);
+      details.push(`Number of exercises or their content changed [Original number exercises: ${original.length}, performed number exercises: ${performedExercisesThatWereInOriginal.length}]`);
       majorDifference = true;
     }
     if (addedCustomExercises.length > 0) {
       for (const cEx of addedCustomExercises) {
-        details.push(`${cEx.exerciseName} exercise added.`);
+        details.push(`${cEx.exerciseName} exercise added`);
       }
     }
 
@@ -718,21 +718,21 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     for (const originalEx of original) {
       const performedEx = performed.find(p => p.exerciseId === originalEx.exerciseId);
       if (!performedEx) {
-        details.push(`Exercise "${originalEx.exerciseName || originalEx.exerciseId}" was in the plan but not performed.`);
+        details.push(`Exercise "${originalEx.exerciseName || originalEx.exerciseId}" was in the plan but not performed`);
         majorDifference = true; // Could be true or just a note depending on strictness
         continue;
       }
 
       // Compare sets for warmup status or count differences
       if (performedEx.sets.length !== originalEx.sets.length && performedEx.rounds !== originalEx.rounds) {
-        details.push(`Set count for "${performedEx.exerciseName || performedEx.exerciseId}" changed (was ${originalEx.sets.length}, now ${performedEx.sets.length}).`);
+        details.push(`Set count for "${performedEx.exerciseName || performedEx.exerciseId}" changed (was ${originalEx.sets.length}, now ${performedEx.sets.length})`);
         majorDifference = true;
       } else {
         for (let j = 0; j < performedEx.sets.length; j++) {
           const originalIsWarmup = originalEx.sets[j]?.type === 'warmup';
           const performedIsWarmup = performedEx.sets[j]?.type === 'warmup';
           if (originalIsWarmup !== performedIsWarmup) {
-            details.push(`Warm-up status for set ${j + 1} of "${performedEx.exerciseName}" changed.`);
+            details.push(`Warm-up status for set ${j + 1} of "${performedEx.exerciseName}" changed`);
             majorDifference = true;
             break;
           }
@@ -1402,7 +1402,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     console.log(`prepareCurrentSet: Initial target - exIndex: ${exIndex}, sIndex: ${sIndex}, sessionStatus: ${sessionRoutine.exercises[exIndex]?.sessionStatus}`);
 
     if (sessionRoutine.exercises[exIndex]?.sessionStatus !== 'pending') {
-      console.log(`prepareCurrentSet: Initial target Ex ${exIndex} (name: ${sessionRoutine.exercises[exIndex]?.exerciseName}) is ${sessionRoutine.exercises[exIndex]?.sessionStatus}. Finding first 'pending'.`);
+      console.log(`prepareCurrentSet: Initial target Ex ${exIndex} (name: ${sessionRoutine.exercises[exIndex]?.exerciseName}) is ${sessionRoutine.exercises[exIndex]?.sessionStatus}. Finding first 'pending'`);
       const firstPendingInfo = this.findFirstPendingExerciseAndSet(sessionRoutine);
 
       if (firstPendingInfo) {
@@ -1424,7 +1424,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       // This condition is often met when a workout is completed and then resumed.
       // Instead of throwing a critical error, we treat it as the end of the planned workout
       // and transition to the finish/deferred exercises flow.
-      console.warn(`prepareCurrentSet: Indices [ex: ${exIndex}, set: ${sIndex}] are out of bounds. This is expected for a completed session. Transitioning to finish flow.`);
+      console.warn(`prepareCurrentSet: Indices [ex: ${exIndex}, set: ${sIndex}] are out of bounds. This is expected for a completed session. Transitioning to finish flow`);
 
       // Perform cleanup to ensure a clean state before the next step.
       this.currentSetForm.reset({ rpe: null, setNotes: '' });
@@ -1563,7 +1563,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         } else {
           // This case means all sets are logged, but exercise is still 'pending' - shouldn't happen if logic is correct elsewhere.
           // Or exercise has sets but findFirstUnloggedSetIndex returned null unexpectedly.
-          console.warn(`Exercise ${exercise.exerciseName} is pending, but all sets appear logged or index is invalid.`);
+          console.warn(`Exercise ${exercise.exerciseName} is pending, but all sets appear logged or index is invalid`);
           // To be safe, we could mark it as non-pending here or let outer logic handle it.
           // For now, just continue searching.
         }
@@ -2328,7 +2328,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       }
       // else proceed to skip set only
     } else {
-      const confirm = await this.alertService.showConfirm("Skip Current Set", `Skip current ${activeInfo.type === 'warmup' ? 'warm-up' : 'set ' + this.getCurrentWorkingSetNumber()} of "${activeInfo.exerciseData.exerciseName}"? It won't be logged.`);
+      const confirm = await this.alertService.showConfirm("Skip Current Set", `Skip current ${activeInfo.type === 'warmup' ? 'warm-up' : 'set ' + this.getCurrentWorkingSetNumber()} of "${activeInfo.exerciseData.exerciseName}"? It won't be logged`);
       if (!confirm || !confirm.data) return;
     }
 
@@ -2385,7 +2385,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
       // NEW LOGIC: If the exercise being marked was the one we were actively performing as a deferred item
       if (this.isPerformingDeferredExercise && activeInfo.exerciseData.id === this.lastActivatedDeferredExerciseId) {
-        console.log(`markCurrentExerciseStatus: Re-marking a deferred exercise (${exName}) as ${status}. Re-evaluating all deferred.`);
+        console.log(`markCurrentExerciseStatus: Re-marking a deferred exercise (${exName}) as ${status}. Re-evaluating all deferred`);
         this.isPerformingDeferredExercise = false;
         this.lastActivatedDeferredExerciseId = null;
         this.exercisesProposedThisCycle = { doLater: false, skipped: false }; // Fresh proposal cycle
@@ -2393,7 +2393,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       } else {
         // This was a main sequence exercise being marked, or some other edge case.
         // Use navigateToNextStepInWorkout to find the next *main sequence* pending item.
-        console.log(`markCurrentExerciseStatus: Marking main sequence exercise (${exName}) as ${status}. Advancing.`);
+        console.log(`markCurrentExerciseStatus: Marking main sequence exercise (${exName}) as ${status}. Advancing`);
         await this.navigateToNextStepInWorkout(activeInfo, updatedRoutine, true /* forceAdvanceExerciseBlock */);
       }
     }
@@ -4267,7 +4267,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
           return;
         }
 
-        console.log(`Restarting exercise: ${exerciseToJumpTo.exerciseName}. Removing its previous log entry.`);
+        console.log(`Restarting exercise: ${exerciseToJumpTo.exerciseName}. Removing its previous log entry`);
 
         // Update the signal by filtering out the exercise we are restarting.
         // It's crucial to match by the unique `id` of the exercise instance.

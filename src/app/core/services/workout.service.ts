@@ -101,13 +101,13 @@ export class WorkoutService {
       );
 
       if (newRoutinesToSeed.length > 0) {
-        console.log(`Seeding ${newRoutinesToSeed.length} new routines from static data.`);
+        console.log(`Seeding ${newRoutinesToSeed.length} new routines from static data`);
         const mergedRoutines = [...existingRoutines, ...newRoutinesToSeed];
 
         // This single call now handles sorting, saving, and updating the subject
         this.saveRoutinesToStorage(mergedRoutines);
       } else {
-        console.log("No new routines to seed from static data. All are present in storage.");
+        console.log("No new routines to seed from static data. All are present in storage");
       }
     } catch (error) {
       console.error('Failed to process or seed routines from static data:', error);
@@ -163,7 +163,7 @@ export class WorkoutService {
       console.log('Updated routine:', updatedRoutine);
       return updatedRoutine;
     }
-    console.warn(`WorkoutService: Routine with id ${updatedRoutine.id} not found for update.`);
+    console.warn(`WorkoutService: Routine with id ${updatedRoutine.id} not found for update`);
     return undefined;
   }
 
@@ -174,7 +174,7 @@ export class WorkoutService {
       this.saveRoutinesToStorage(updatedRoutines);
       console.log('Deleted routine with id:', id);
     } else {
-      console.warn(`WorkoutService: Routine with id ${id} not found for deletion.`);
+      console.warn(`WorkoutService: Routine with id ${id} not found for deletion`);
     }
   }
 
@@ -225,12 +225,12 @@ export class WorkoutService {
         suggestedParams.weight = parseFloat((lastWeight + weightIncrement).toFixed(2));
         // When increasing weight, often aim for the lower end of the rep range or the original target.
         suggestedParams.reps = targetRepsInPlan;
-        console.log(`Suggesting weight increase to ${suggestedParams.weight}kg for ${suggestedParams.reps} reps.`);
+        console.log(`Suggesting weight increase to ${suggestedParams.weight}kg for ${suggestedParams.reps} reps`);
       } else {
         // Did not meet target reps last time, suggest staying at the same weight and trying to hit target reps.
         suggestedParams.weight = lastWeight;
         suggestedParams.reps = targetRepsInPlan; // Re-attempt target reps
-        console.log(`Suggesting same weight ${suggestedParams.weight}kg, aiming for ${suggestedParams.reps} reps.`);
+        console.log(`Suggesting same weight ${suggestedParams.weight}kg, aiming for ${suggestedParams.reps} reps`);
       }
     }
     // Rule 2: For bodyweight rep-based sets (where plannedSet.weight is undefined or 0)
@@ -239,11 +239,11 @@ export class WorkoutService {
       // If last time reps met or exceeded target:
       if (lastReps >= targetRepsInPlan) {
         suggestedParams.reps = lastReps + repIncrement; // Suggest more reps
-        console.log(`Suggesting rep increase to ${suggestedParams.reps} for bodyweight exercise.`);
+        console.log(`Suggesting rep increase to ${suggestedParams.reps} for bodyweight exercise`);
       } else {
         // Did not meet target reps, suggest re-attempting target reps.
         suggestedParams.reps = targetRepsInPlan;
-        console.log(`Suggesting re-attempt of ${suggestedParams.reps} reps for bodyweight exercise.`);
+        console.log(`Suggesting re-attempt of ${suggestedParams.reps} reps for bodyweight exercise`);
       }
     }
     // Rule 3: For duration-based sets
@@ -252,11 +252,11 @@ export class WorkoutService {
       // If last time duration met or exceeded target:
       if (lastPerformedSet.durationPerformed >= plannedSet.duration) {
         suggestedParams.duration = plannedSet.duration + durationIncrement;
-        console.log(`Suggesting duration increase to ${suggestedParams.duration}s.`);
+        console.log(`Suggesting duration increase to ${suggestedParams.duration}s`);
       } else {
         // Did not meet target duration, suggest re-attempting target duration.
         suggestedParams.duration = plannedSet.duration;
-        console.log(`Suggesting re-attempt of ${suggestedParams.duration}s duration.`);
+        console.log(`Suggesting re-attempt of ${suggestedParams.duration}s duration`);
       }
     }
 
@@ -325,7 +325,7 @@ export class WorkoutService {
     this._saveRoutinesToStorage(mergedRoutines);
 
     // 7. Provide user feedback
-    console.log(`RoutineService: Merged imported data. Updated: ${updatedCount}, Added: ${addedCount}.`);
+    console.log(`RoutineService: Merged imported data. Updated: ${updatedCount}, Added: ${addedCount}`);
     this.toastService.success(
       `Import complete. ${updatedCount} routines updated, ${addedCount} added.`,
       6000,

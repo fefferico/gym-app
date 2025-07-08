@@ -592,7 +592,7 @@ export class KettleBellWorkoutTrackerComponent implements OnInit, OnDestroy {
       if (stableRacked) {
         // Only count rep when returning from lockout to rack
         this.incrementRep();
-        this.addFeedback('success', `Press: Rep complete! Returned to rack.`);
+        this.addFeedback('success', `Press: Rep complete! Returned to rack`);
         this.currentRepCycleState = RepState.START;
         this.lastFramesStates = {};
       } else if (stableOverhead) {

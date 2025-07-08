@@ -71,11 +71,11 @@ export class TrainingProgramService {
       );
 
       if (newProgramsToSeed.length > 0) {
-        console.log(`Seeding ${newProgramsToSeed.length} new training programs from static data.`);
+        console.log(`Seeding ${newProgramsToSeed.length} new training programs from static data`);
         const mergedPrograms = [...existingPrograms, ...newProgramsToSeed];
         this._saveProgramsToStorage(mergedPrograms);
       } else {
-        console.log("No new training programs to seed. All default programs are present in storage.");
+        console.log("No new training programs to seed. All default programs are present in storage");
       }
     } catch (error) {
       console.error('Failed to process or seed training programs from static data:', error);
@@ -298,7 +298,7 @@ export class TrainingProgramService {
     this._saveProgramsToStorage(mergedPrograms);
 
     // 7. Provide user feedback
-    console.log(`TrainingProgramService: Merged imported data. Updated: ${updatedCount}, Added: ${addedCount}.`);
+    console.log(`TrainingProgramService: Merged imported data. Updated: ${updatedCount}, Added: ${addedCount}`);
     this.toastService.success(
       `Import complete. ${updatedCount} programs updated, ${addedCount} added.`,
       6000,
@@ -410,7 +410,7 @@ export class TrainingProgramService {
               // console.log('Routine details fetched:', routine.name);
               return { routine, scheduledDayInfo };
             }
-            console.warn(`Routine with ID ${scheduledDayInfo.routineId} not found for scheduled day.`);
+            console.warn(`Routine with ID ${scheduledDayInfo.routineId} not found for scheduled day`);
             return null;
           })
         );

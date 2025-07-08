@@ -208,24 +208,24 @@ export class ProfileSettingsComponent implements OnInit {
         if (importedData.version === 3) {
           // ... (your V3 validation) ...
           if (!importedData.exercises || !importedData.routines) {
-            this.alertService.showAlert('Error', "Invalid V3 backup file content. Missing essential data sections.");
+            this.alertService.showAlert('Error', "Invalid V3 backup file content. Missing essential data sections");
             input.value = ''; return;
           }
         } else if (importedData.version === 2) {
           // ... (your V2 validation) ...
           if (!importedData.routines || !importedData.workoutLogs || !importedData.personalBests ||
             importedData.profile === undefined || importedData.appSettings === undefined) {
-            this.alertService.showAlert('Error', "Invalid V2 backup file content. Missing essential data sections.");
+            this.alertService.showAlert('Error', "Invalid V2 backup file content. Missing essential data sections");
             input.value = ''; return;
           }
         } else if (importedData.version === 1) {
           // ... (your V1 validation) ...
           if (!importedData.routines || !importedData.workoutLogs || !importedData.personalBests) {
-            this.alertService.showAlert('Error', "Invalid V1 backup file content. Missing essential data sections.");
+            this.alertService.showAlert('Error', "Invalid V1 backup file content. Missing essential data sections");
             input.value = ''; return;
           }
         } else {
-          this.alertService.showAlert('Error', `Unsupported backup file version. Expected 1,2 or 3, got ${importedData.version}.`);
+          this.alertService.showAlert('Error', `Unsupported backup file version. Expected 1,2 or 3, got ${importedData.version}`);
           input.value = ''; return;
         }
 
@@ -285,7 +285,7 @@ export class ProfileSettingsComponent implements OnInit {
       this.loadProfileData(); // Reload empty/default profile
       this.loadAppSettingsData(); // Reload default app settings
 
-      await this.alertService.showAlert("Info", "All application data has been cleared.");
+      await this.alertService.showAlert("Info", "All application data has been cleared");
     }
   }
 

@@ -309,7 +309,7 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
         lastSwipeTime = now;
         this.ngZone.run(() => this.previousHistoryMonth());
       });
-      console.log("HammerJS attached to HISTORY calendar swipe container.");
+      console.log("HammerJS attached to HISTORY calendar swipe container");
     });
   }
 
@@ -442,8 +442,8 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
     if (confirm && confirm.data) {
       try {
         this.spinnerService.show(); await this.trackingService.deleteWorkoutLog(logId);
-        this.toastService.success("Workout log deleted successfully.");
-      } catch (err) { this.toastService.error("Failed to delete workout log."); }
+        this.toastService.success("Workout log deleted successfully");
+      } catch (err) { this.toastService.error("Failed to delete workout log"); }
       finally { this.spinnerService.hide(); }
     }
   }

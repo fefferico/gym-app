@@ -65,7 +65,7 @@ export class ThemeService {
     if (isPlatformBrowser(this.platformId)) { // Guard toggle as well, though it usually implies user interaction
       this.isDarkTheme.update(isDark => !isDark);
     } else {
-      console.warn("ThemeService: toggleTheme called in non-browser environment. No action taken.");
+      console.warn("ThemeService: toggleTheme called in non-browser environment. No action taken");
     }
   }
 
@@ -73,7 +73,7 @@ export class ThemeService {
     if (isPlatformBrowser(this.platformId)) { // Guard toggle as well, though it usually implies user interaction
       this.isMenuModeCompact.update(isMenuModeCompact => !isMenuModeCompact);
     } else {
-      console.warn("ThemeService: toggleMenuMode called in non-browser environment. No action taken.");
+      console.warn("ThemeService: toggleMenuMode called in non-browser environment. No action taken");
     }
   }
 }

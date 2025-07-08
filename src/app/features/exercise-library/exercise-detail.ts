@@ -223,7 +223,7 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy {
     if (confirmation && confirmation.data === true) {
       try {
         await this.exerciseService.deleteExercise(exerciseToDelete.id);
-        this.alertService.showAlert('Success', `Exercise "${exerciseToDelete.name}" deleted successfully.`);
+        this.alertService.showAlert('Success', `Exercise "${exerciseToDelete.name}" deleted successfully`);
         this.router.navigate(['/library']);
       } catch (error) {
         console.error('Error deleting exercise:', error);

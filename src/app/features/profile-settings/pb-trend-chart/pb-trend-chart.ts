@@ -163,7 +163,7 @@ export class PbTrendChartComponent implements OnInit {
             if (pb) {
                 this.prepareChartData(pb);
             } else {
-                this.errorMessage.set(`No Personal Best data found for "${this.currentExerciseName()}" of type "${this.currentPbType}".`);
+                this.errorMessage.set(`No Personal Best data found for "${this.currentExerciseName()}" of type "${this.currentPbType}"`);
             }
             this.isLoading.set(false);
         });
@@ -215,12 +215,12 @@ export class PbTrendChartComponent implements OnInit {
         }
 
         if (seriesData.length === 0) {
-            this.errorMessage.set(`Not enough data points to plot a trend for "${this.currentExerciseName()}" - ${pb.pbType}.`);
+            this.errorMessage.set(`Not enough data points to plot a trend for "${this.currentExerciseName()}" - ${pb.pbType}`);
             this.chartData.set(null);
             return;
         }
         if (seriesData.length === 1) {
-            this.errorMessage.set(`Only one data point available for "${this.currentExerciseName()}" - ${pb.pbType}. Trend line cannot be drawn.`);
+            this.errorMessage.set(`Only one data point available for "${this.currentExerciseName()}" - ${pb.pbType}. Trend line cannot be drawn`);
             // We can still show the single point, or just the message.
             // For ngx-charts to draw a "line", it needs at least two points.
             // Let's create a "flat line" by duplicating the point with a slight time offset for visualization
