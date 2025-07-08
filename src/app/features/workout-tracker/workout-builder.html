@@ -149,8 +149,18 @@
                         (Optional)</label>
                     <select id="routineIdForLog" formControlName="routineIdForLog"
                         class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200">
-                        <option value="">-- Log Ad-hoc Exercises --</option>
+                        <option value="">-- Log Ad-hoc Routine --</option>
                         <option *ngFor="let r of availableRoutines" [value]="r.id">{{ r.name }}</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="programIdForLog"
+                        class="block text-sm font-medium text-gray-700 dark:text-gray-300">Based on Program
+                        (Optional)</label>
+                    <select id="programIdForLog" formControlName="programIdForLog"
+                        class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200">
+                        <option value="">-- Log Ad-hoc Program --</option>
+                        <option *ngFor="let program of availablePrograms" [value]="program.id">{{ program.name }}</option>
                     </select>
                 </div>
                 <div>

@@ -249,19 +249,22 @@
 
       <div *ngSwitchCase="'calendar'">
         <div *ngIf="activeProgramForCalendar() as activeProgram; else noActiveProgramForCalendar"
-          class="bg-white dark:bg-gray-700 rounded-md shadow-md p-2 sm:p-4">
-          <div
-            class="mb-3 sm:mb-4 flex justify-center sm:justify-start space-x-1 p-1 bg-gray-100 dark:bg-gray-700 rounded-md max-w-xs mx-auto sm:mx-0">
-            <button (click)="setCalendarDisplayMode('week')"
-              class="px-3 py-1.5 text-xs sm:text-sm font-medium rounded-md flex-1 transition-colors disabled:opacity-60"
-              [ngClass]="calendarDisplayMode() === 'week' ? 'bg-primary text-white shadow' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'"
-              [disabled]="isCalendarAnimating">WEEK</button>
-            <button (click)="setCalendarDisplayMode('month')"
-              class="px-3 py-1.5 text-xs sm:text-sm font-medium rounded-md flex-1 transition-colors disabled:opacity-60"
-              [ngClass]="calendarDisplayMode() === 'month' ? 'bg-primary text-white shadow' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'"
-              [disabled]="isCalendarAnimating">MONTH</button>
+          class="bg-white dark:bg-gray-700 rounded-md shadow-md p-2 sm:p-4 flex flex-col justify-center items-center">
+          <!-- Main container is now a flex container that centers its content -->
+          <div class="flex justify-between items-center mb-3 sm:mb-4">
+            <div class="inline-flex space-x-1 p-1 bg-gray-100 dark:bg-gray-800 rounded-md">
+              <button (click)="setCalendarDisplayMode('week')"
+                class="px-3 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-colors disabled:opacity-60"
+                [ngClass]="calendarDisplayMode() === 'week' ? 'bg-primary text-white shadow' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'"
+                [disabled]="isCalendarAnimating">WEEK</button>
+              <button (click)="setCalendarDisplayMode('month')"
+                class="px-3 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-colors disabled:opacity-60"
+                [ngClass]="calendarDisplayMode() === 'month' ? 'bg-primary text-white shadow' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'"
+                [disabled]="isCalendarAnimating">MONTH</button>
+            </div>
           </div>
-          <div class="relative overflow-hidden min-h-[300px]" #calendarSwipeContainerEl data-calendar-swipe-container>
+          <div class="relative overflow-hidden min-h-[300px] w-full" #calendarSwipeContainerEl
+            data-calendar-swipe-container>
             <div [@calendarPeriodSlide]="calendarAnimationState()">
               <div>
                 <div class="flex justify-between items-center mb-3 sm:mb-4">
@@ -300,39 +303,92 @@
                     </path>
                   </svg>
                 </div>
-                <div *ngIf="!calendarLoading() || isCalendarAnimating">
+                <div *ngIf="!calendarLoading() || isCalendarAnimating" class="w-full">
                   <div *ngIf="calendarDisplayMode() === 'week' && calendarDays().length > 0"
                     class="grid grid-cols-7 gap-1 sm:gap-2">
                     <div *ngFor="let day of calendarDays()" (click)="!isCalendarAnimating && selectCalendarDay(day)"
                       class="py-3 px-1 text-center rounded-md transition-all border border-transparent"
                       [class.cursor-pointer]="!isCalendarAnimating" [class.hover:border-gray-300]="!isCalendarAnimating"
-                      [class.dark:hover:border-gray-600]="!isCalendarAnimating"
-                      [ngClass]="{'bg-primary-50 dark:bg-primary-900/30 ring-1 ring-inset ring-primary dark:ring-primary-light': day.isToday, 'bg-white dark:bg-gray-700': !day.isToday, 'font-semibold text-primary dark:text-primary-light': day.hasWorkout && day.isToday, 'font-semibold text-gray-700 dark:text-gray-200': day.hasWorkout && !day.isToday, 'text-gray-500 dark:text-gray-400': !day.hasWorkout }">
-                      <span class="block text-2xs sm:text-xs uppercase">{{ day.date | date:'EEE' }}</span><span
-                        class="block text-lg sm:text-xl font-bold mt-0.5">{{ day.date | date:'d' }}</span>
-                      <div class="mt-1 h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full mx-auto"
-                        [ngClass]="{'bg-primary dark:bg-primary-light': day.hasWorkout, 'bg-gray-300 dark:bg-gray-700': !day.hasWorkout}">
+                      [class.dark:hover:border-gray-600]="!isCalendarAnimating" [ngClass]="{
+        'bg-white dark:bg-gray-700': !day.isToday,
+        'bg-primary-50 dark:bg-primary-900/30 ring-1 ring-inset ring-primary dark:ring-primary-light': day.isToday
+    }">
+
+                      <!-- Day of Week (e.g., MON) -->
+                      <span class="block text-2xs sm:text-xs uppercase" [ngClass]="{
+            'text-gray-500 dark:text-gray-400': !day.hasWorkout,
+            'text-gray-700 dark:text-gray-300 font-medium': day.hasWorkout
+          }">
+                        {{ day.date | date:'EEE' }}
+                      </span>
+
+                      <!-- Day Number (e.g., 8) -->
+                      <span class="block text-lg sm:text-xl font-bold mt-0.5" [ngClass]="{
+            'text-primary dark:text-primary-light': day.isToday,
+            'text-gray-800 dark:text-gray-100': !day.isToday
+          }">
+                        {{ day.date | date:'d' }}
+                      </span>
+
+                      <!-- 
+      NEW: Status Indicator Dot
+      This replaces the entire block that showed the routine name.
+    -->
+                      <div *ngIf="day.hasWorkout; else noWorkoutPlaceholder" class="mt-1.5 h-2 w-2 rounded-full mx-auto"
+                        [ngClass]="{
+            'bg-green-500': day.isLogged, 
+            'bg-primary': !day.isLogged
+         }">
                       </div>
+
+                      <!-- This placeholder ensures consistent height for all day cells -->
+                      <ng-template #noWorkoutPlaceholder>
+                        <div class="mt-1.5 h-2 w-2"></div>
+                      </ng-template>
+
                     </div>
                   </div>
                   <div *ngIf="calendarDisplayMode() === 'month' && calendarDays().length > 0"
                     class="grid grid-cols-7 gap-px border dark:border-gray-700 rounded-md overflow-hidden bg-gray-200 dark:bg-gray-700">
                     <div *ngFor="let dayName of weekDayNames"
-                      class="text-center py-1.5 sm:py-2 text-2xs sm:text-xs font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-750">
+                      class="text-center py-1.5 sm:py-2 text-2xs sm:text-xs font-medium text-gray-600 dark:text-gray-500 bg-gray-100 dark:bg-gray-750">
                       {{ dayName }}</div>
                     <div *ngFor="let day of calendarDays()" (click)="!isCalendarAnimating && selectCalendarDay(day)"
-                      class="p-1 sm:p-2 min-h-[60px] sm:min-h-[80px] relative transition-colors text-left"
-                      [class.cursor-pointer]="!isCalendarAnimating" [class.hover:bg-opacity-80]="!isCalendarAnimating"
-                      [ngClass]="{'bg-white dark:bg-gray-700': day.isCurrentMonth, 'bg-gray-50 dark:bg-gray-700/60 opacity-70': !day.isCurrentMonth && calendarDisplayMode() === 'month', 'ring-1 ring-inset ring-primary dark:ring-primary-light': day.isToday && day.isCurrentMonth }">
-                      <span class="text-xs sm:text-sm font-semibold"
-                        [ngClass]="{'text-primary dark:text-primary-light': day.isToday && day.isCurrentMonth, 'text-gray-700 dark:text-gray-200': !day.isToday && day.isCurrentMonth, 'text-gray-400 dark:text-gray-500': !day.isCurrentMonth}">{{
+                      class="p-1 sm:p-2 min-h-[60px] sm:min-h-[80px] relative transition-colors text-left rounded-md"
+                      [class.cursor-pointer]="!isCalendarAnimating" [ngClass]="{
+                        'bg-white dark:bg-gray-700 ring-1 ring-inset ring-primary dark:ring-primary-light hover:bg-primary/10 dark:hover:bg-primary-light/20': 
+                          day.isToday && day.isCurrentMonth,
+                        'bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600': 
+                          !day.isToday && day.isCurrentMonth,
+                        'bg-gray-50 dark:bg-gray-700/60 opacity-70': 
+                          !day.isCurrentMonth
+                      }">
+                      <span class="text-xs sm:text-sm font-semibold" [ngClass]="{
+                            'text-primary dark:text-primary-light': day.isToday && day.isCurrentMonth, 
+                            'text-gray-700 dark:text-gray-200': !day.isToday && day.isCurrentMonth, 
+                            'text-gray-400 dark:text-gray-500': !day.isCurrentMonth
+                        }">{{
                         day.date | date:'d' }}</span>
                       <div *ngIf="day.hasWorkout && day.isCurrentMonth" class="mt-0.5 space-y-px sm:space-y-1">
-                        <div *ngFor="let item of day.scheduledItems" class="p-0.5 sm:p-1 rounded text-2xs sm:text-xs"
-                          [ngClass]="day.isCurrentMonth ? 'bg-blue-100 dark:bg-blue-900/70' : 'bg-gray-200 dark:bg-gray-700/50'">
-                          <p class="font-semibold truncate" [title]="item.routine.name"
-                            [ngClass]="day.isCurrentMonth ? 'text-blue-700 dark:text-blue-300' : 'text-gray-500 dark:text-gray-400'">
-                            {{ item.routine.name }}</p>
+                        <div *ngFor="let item of day.scheduledItems" class="p-0.5 sm:p-1 rounded text-2xs sm:text-xs">
+
+                          <!-- If the routine has been logged, show a green background -->
+                          <div *ngIf="item.logs.length > 0"
+                            class="bg-green-100 dark:bg-green-900/70 p-0.5 sm:p-1 rounded">
+                            <p class="font-semibold truncate text-green-800 dark:text-green-200"
+                              [title]="item.routine.name">
+                              {{ item.routine.name }}
+                            </p>
+                          </div>
+
+                          <!-- If the routine is scheduled but not logged, show a blue background -->
+                          <div *ngIf="item.logs.length === 0"
+                            class="bg-blue-100 dark:bg-blue-900/70 p-0.5 sm:p-1 rounded">
+                            <p class="font-semibold truncate text-blue-700 dark:text-blue-300"
+                              [title]="item.routine.name">
+                              {{ item.routine.name }}
+                            </p>
+                          </div>
                         </div>
                       </div>
                       <div *ngIf="day.hasWorkout && !day.isCurrentMonth"
@@ -378,6 +434,7 @@
     <div @slideUpDown
       class="fixed inset-x-0 bottom-0 mb-[65px] z-40 bg-white dark:bg-gray-700 shadow-2xl rounded-t-2xl border-t-2 border-primary dark:border-primary-light max-h-[75vh] flex flex-col"
       style="min-height: 500px;">
+      <!-- Header of the bottom sheet -->
       <div class="p-4 sm:p-5 flex-shrink-0">
         <div class="flex justify-between items-center mb-2">
           <h3 class="text-lg sm:text-xl font-semibold text-gray-800 dark:text-gray-100">{{ selectedDay.date |
@@ -391,103 +448,114 @@
             </svg></button>
         </div>
       </div>
+      <!-- Scrollable content area of the bottom sheet -->
       <div class="overflow-y-auto px-4 sm:px-5 pb-4 flex-grow min-h-0 custom-scrollbar">
+
+        <!-- Display scheduled items if there are any -->
         <div *ngIf="selectedDay.scheduledItems.length > 0; else noWorkoutScheduledForSelectedDay">
+
+          <!-- Loop through each scheduled item (e.g., "Push Day", "Leg Day") -->
           <div *ngFor="let item of selectedDay.scheduledItems; let i = index"
             class="mb-4 last:mb-0 p-3 bg-gray-50 dark:bg-gray-700/70 rounded-md">
+
+            <!-- Scheduled Routine Info -->
             <h4 class="text-md sm:text-lg font-semibold text-primary dark:text-primary-light mb-1">{{ item.routine.name
-              }}<span *ngIf="item.logs.length > 1" class="text-xs text-gray-500 dark:text-gray-400">({{ item.logs.length
+              }}<span *ngIf="item.logs.length > 1" class="text-xs text-gray-500 dark:text-gray-400"> ({{
+                item.logs.length
                 }} sessions logged)</span></h4>
             <p *ngIf="item.routine.description"
               class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-1.5 line-clamp-3"
-              [title]="item.routine.description">{{ item.routine.description }}</p>
+              [title]="item.routine.description" [innerHTML]="updateSanitizedDescription(item.routine.description)"></p>
             <p *ngIf="item.scheduledDayInfo.notes"
               class="text-xs sm:text-sm text-blue-600 dark:text-blue-400 italic mb-1.5">Program Note: {{
               item.scheduledDayInfo.notes }}</p>
             <p *ngIf="item.scheduledDayInfo.timeOfDay"
               class="text-2xs sm:text-xs text-gray-500 dark:text-gray-400 mb-2">Suggested Time: {{
               item.scheduledDayInfo.timeOfDay }}</p>
-            <div *ngIf="item.logs && item.logs.length > 0" class="mt-2 space-y-2 mb-2">
+
+            <!-- ============================================= -->
+            <!-- OPTIMIZED: Logged Sessions for this Routine   -->
+            <!-- ============================================= -->
+            <div *ngIf="item.logs.length > 0" class="mt-2 space-y-2 mb-2">
               <p class="text-xs font-medium text-gray-700 dark:text-gray-300">Logged Session(s):</p>
+
+              <!-- Iterate over the pre-calculated `item.logs` array -->
               <div *ngFor="let log of item.logs"
                 class="p-2 bg-sky-50 dark:bg-sky-900/50 rounded-md border border-sky-200 dark:border-sky-700">
                 <div class="flex justify-between items-center">
                   <span class="text-xs text-sky-700 dark:text-sky-300">Logged: {{ log.startTime | date:'shortTime' }}
                     ({{ log.durationMinutes }} min)</span>
                   <button (click)="viewSessionSummary(log.id)"
-                    class="text-2xs sm:text-xs bg-sky-500 hover:bg-sky-600 text-white font-semibold py-1 px-2 rounded shadow-sm flex items-center"><svg
-                      xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                    class="text-2xs sm:text-xs bg-sky-500 hover:bg-sky-600 text-white font-semibold py-1 px-2 rounded shadow-sm flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
                       stroke="currentColor" class="size-3 sm:size-4 mr-1">
                       <path stroke-linecap="round" stroke-linejoin="round"
                         d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
                       <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                    </svg>VIEW</button>
+                    </svg>VIEW
+                  </button>
                 </div>
               </div>
             </div>
-            <div class="space-y-2">
-              <div *ngIf="getPastWorkoutSessionsForRoutineOnDate(item.routine.id,selectedDay.date).length > 0">
-                <div *ngFor="let item of mergeScheduledItemsWithPastSessions(selectedDay); let i = index"
-                  class="p-1 bg-gray-50 dark:bg-gray-700/70 rounded-md">
-                  <div *ngIf="item.logs && item.logs.length > 0" class="mt-2 space-y-2 mb-2">
-                    <p class="text-xs font-medium text-gray-700 dark:text-gray-300">Logged Session(s):</p>
-                    <div *ngFor="let log of item.logs"
-                      class="p-2 bg-sky-50 dark:bg-sky-900/50 rounded-md border border-sky-200 dark:border-sky-700">
-                      <div class="flex justify-between items-center">
-                        <span class="text-xs text-sky-700 dark:text-sky-300">Logged: {{ log.startTime | date:'shortTime'
-                          }}
-                          ({{ log.durationMinutes }} min)</span>
-                        <button (click)="viewSessionSummary(log.id)"
-                          class="text-2xs sm:text-xs bg-sky-500 hover:bg-sky-600 text-white font-semibold py-1 px-2 rounded shadow-sm flex items-center"><svg
-                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                            stroke="currentColor" class="size-3 sm:size-4 mr-1">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                              d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                              d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                          </svg>VIEW</button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
 
-              <div class="flex flex-col justify-center gap-4 w-full max-w-md mx-auto text-md">
-                <!-- Optimized Snippet -->
-                <button
-                  *ngIf="getPastWorkoutSessionsForRoutineOnDate(item.routine.id, selectedDay.date).length === 0 && (selectedDay.isPastDay || selectedDay.isToday)"
+            <!-- ========================================================= -->
+            <!-- OPTIMIZED: Actions for when NO sessions are logged yet    -->
+            <!-- ========================================================= -->
+            <div *ngIf="item.logs.length === 0" class="mt-3">
+
+              <!-- MODIFIED: Replaced flex with grid for better control over button widths -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-sm mx-auto">
+
+                <!-- "Start" or "Not Logged" button -->
+                <!-- Removed flex-1 -->
+                <button *ngIf="selectedDay.isToday || selectedDay.isPastDay"
                   (click)="startScheduledWorkout(item.routine.id, activeProgramForCalendar()?.id)"
                   [disabled]="selectedDay.isPastDay && !selectedDay.isToday"
-                  class="mt-2 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-md shadow-sm flex items-center justify-center disabled:bg-gray-400 disabled:dark:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-70 py-2.5 px-4">
+                  class="bg-green-500 hover:bg-green-600 text-white font-semibold rounded-md shadow-sm flex items-center justify-center disabled:bg-gray-400 disabled:dark:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-70 py-2.5 px-4">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                     stroke="currentColor" class="w-4 h-4 sm:w-5 sm:h-5 mr-2">
                     <path stroke-linecap="round" stroke-linejoin="round"
                       d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 010 1.972l-11.54 6.347a1.125 1.125 0 01-1.667-.986V5.653z" />
                   </svg>
-                  {{ selectedDay.isToday ? 'START WORKOUT' : 'ROUTINE NOT LOGGED' }}
+                  {{ selectedDay.isToday ? 'START' : 'NOT LOGGED' }}
                 </button>
-                <button *ngIf="selectedDay.isPastDay && item.logs.length === 0"
-                  (click)="logPreviousSession(item.routine.id, selectedDay.date)"
-                  class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-3 rounded-md shadow-sm flex items-center justify-center"><svg
-                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+
+                <!-- "Log Past Session" button -->
+                <!-- Removed flex-1 -->
+                <!-- Added sm:col-start-2 to place it in the second column on small screens and up if the START button is not present -->
+                <button *ngIf="selectedDay.isPastDay" (click)="logPreviousSession(item.routine.id, selectedDay.date)"
+                  [class.sm:col-start-2]="!selectedDay.isToday"
+                  class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-3 rounded-md shadow-sm flex items-center justify-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                     stroke="currentColor" class="w-4 h-4 sm:w-5 sm:h-5 mr-2">
                     <path stroke-linecap="round" stroke-linejoin="round"
                       d="M2 17.25V21h3.75L17.81 9.94l-3.75-3.75L2 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
-                  </svg>Log This Past Session</button>
-                <button (click)="goToPreviousProgramSession(activeProgramForCalendar()?.id)"
-                  class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-3 rounded-md shadow-sm flex items-center justify-center  py-2.5 px-4"><svg
-                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                    stroke="currentColor" class="w-4 h-4 sm:w-5 sm:h-5 mr-2">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                      d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                  </svg>ALL LOGS FOR THIS PROGRAM</button>
+                  </svg>
+                  LOG PAST
+                </button>
               </div>
-
             </div>
+
             <hr *ngIf="selectedDay.scheduledItems.length > 1 && i < selectedDay.scheduledItems.length - 1"
               class="my-4 border-gray-300 dark:border-gray-600">
           </div>
+          <div class="mt-4 border-t border-gray-200 dark:border-gray-600 pt-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-sm mx-auto">
+              <button (click)="goToPreviousProgramSession(activeProgramForCalendar()?.id)"
+                class="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-3 rounded-md shadow-sm flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                  stroke="currentColor" class="w-4 h-4 sm:w-5 sm:h-5 mr-2">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                </svg>
+                ALL LOGS FOR THIS PROGRAM
+              </button>
+            </div>
+
+          </div>
         </div>
+
+        <!-- Fallback for when no workout is scheduled on the selected day -->
         <ng-template #noWorkoutScheduledForSelectedDay>
           <p class="text-sm text-gray-500 dark:text-gray-400 text-center py-5">{{ selectedDay.isPastDay &&
             !selectedDay.isToday ? 'It was a' : "It's a" }} rest day!</p>

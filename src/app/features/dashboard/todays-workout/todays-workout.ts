@@ -50,7 +50,6 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
   private ngZone = inject(NgZone);
 
   private sanitizer = inject(DomSanitizer);
-  public sanitizedDescription: SafeHtml = '';
 
   // --- Signals for State Management ---
   allActivePrograms = signal<TrainingProgram[]>([]);

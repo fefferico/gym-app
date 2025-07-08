@@ -31,6 +31,8 @@ import { IsWeightedPipe } from '../../shared/pipes/is-weighted-pipe';
 import { ModalComponent } from '../../shared/components/modal/modal.component';
 import { ClickOutsideDirective } from '../../shared/directives/click-outside.directive';
 import { ExerciseDetailComponent } from '../exercise-library/exercise-detail';
+import { TrainingProgram } from '../../core/models/training-program.model';
+import { TrainingProgramService } from '../../core/services/training-program.service';
 
 type BuilderMode = 'routineBuilder' | 'manualLogEntry';
 
@@ -47,6 +49,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private workoutService = inject(WorkoutService);
+  private trainingService = inject(TrainingProgramService);
   private exerciseService = inject(ExerciseService);
   protected unitService = inject(UnitsService);
   protected spinnerService = inject(SpinnerService);
@@ -74,6 +77,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   currentLogId: string | null = null;     // For editing a WorkoutLog
   private routeSub: Subscription | undefined;
   private initialRoutineIdForLogEdit: string | null | undefined = undefined; // For log edit mode
+  private initialProgramIdForLogEdit: string | null | undefined = undefined; // For log edit mode
 
   isCompactView: boolean = true;
 
@@ -108,6 +112,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   isExerciseModalOpen = false;
   availableExercises: Exercise[] = [];
   availableRoutines: Routine[] = []; // For selecting a base routine when logging manually
+  availablePrograms: TrainingProgram[] = [];
   modalSearchTerm = signal('');
   filteredAvailableExercises = computed(() => {
     const term = this.modalSearchTerm().toLowerCase();
@@ -134,6 +139,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       durationMinutes: [60, [Validators.min(1)]], // Only for manualLogEntry
       overallNotesLog: [''], // Only for manualLogEntry
       routineIdForLog: [''], // For selecting base routine in manualLogEntry
+      programIdForLog: [''], // For selecting base routine in manualLogEntry
 
       exercises: this.fb.array([]), // Validated based on mode/goal
     });
@@ -143,6 +149,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     if (isPlatformBrowser(this.platformId)) { window.scrollTo(0, 0); }
     this.loadAvailableExercises(); // For exercise selection modal
     this.workoutService.routines$.pipe(take(1)).subscribe(routines => this.availableRoutines = routines); // For routine selection in log mode
+    this.trainingService.programs$.pipe(take(1)).subscribe(programs => this.availablePrograms = programs); // For routine selection in log mode
 
     this.routeSub = this.route.data.pipe(
       switchMap(data => {
@@ -212,7 +219,11 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         if (this.isEditMode && routineId === this.initialRoutineIdForLogEdit && !this.builderForm.get('routineIdForLog')?.dirty) {
           return;
         }
+        if (this.isEditMode && routineId === this.initialProgramIdForLogEdit && !this.builderForm.get('programIdForLog')?.dirty) {
+          return;
+        }        
         const selectedRoutine = this.availableRoutines.find(r => r.id === routineId);
+        // const selectedProgram = this.availablePrograms.find(p => p.id === routineId);
         if (selectedRoutine) {
           this.prefillLogFormFromRoutine(selectedRoutine, false); // Don't reset date/time if user already set them
         } else {
@@ -263,12 +274,13 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         durationMinutes: 60,
         overallNotesLog: '',
         routineIdForLog: '',
+        programIdForLog: '',
         exercises: []
       };
     } else { // routineBuilder
       return {
         name: '', description: '', goal: '',
-        workoutDate: '', startTime: '', durationMinutes: 60, overallNotesLog: '', routineIdForLog: '',
+        workoutDate: '', startTime: '', durationMinutes: 60, overallNotesLog: '', routineIdForLog: '', programIdForLog: '',
         exercises: []
       };
     }
@@ -313,6 +325,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         this.builderForm.get('durationMinutes')?.disable({ emitEvent: false });
         this.builderForm.get('overallNotesLog')?.disable({ emitEvent: false });
         this.builderForm.get('routineIdForLog')?.disable({ emitEvent: false });
+        this.builderForm.get('programIdForLog')?.disable({ emitEvent: false });
       } else { // manualLogEntry
         // Name field is used for WorkoutLog's title, so it should be enabled or prefilled
         // this.builderForm.get('name')?.enable({ emitEvent: false });
@@ -403,6 +416,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
   patchFormWithLogData(log: WorkoutLog): void {
     this.initialRoutineIdForLogEdit = log.routineId;
+    this.initialProgramIdForLogEdit = log.programId;
     this.builderForm.patchValue({
       name: log.routineName || 'Logged Workout',
       workoutDate: format(parseISO(log.date), 'yyyy-MM-dd'),
@@ -410,6 +424,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       durationMinutes: log.durationMinutes || 60,
       overallNotesLog: log.notes || '',
       routineIdForLog: log.routineId || '',
+      programIdForLog: log.programId || '',
     }, { emitEvent: false });
 
     this.exercisesFormArray.clear({ emitEvent: false });
@@ -1069,8 +1084,9 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
           durationMinutes: formValue.durationMinutes,
           routineId: formValue.routineIdForLog || undefined,
           routineName: formValue.routineIdForLog ?
-            (this.availableRoutines.find(r => r.id === formValue.routineIdForLog)?.name || formValue.name || 'Workout from Routine') :
-            (formValue.name || 'Ad-hoc Workout'), // Use form 'name' as log title if no routine
+          (this.availableRoutines.find(r => r.id === formValue.routineIdForLog)?.name || formValue.name || 'Workout from Routine') :
+          (formValue.name || 'Ad-hoc Workout'), // Use form 'name' as log title if no routine
+          programId: formValue.programIdForLog || undefined,
           notes: formValue.overallNotesLog, // Overall log notes
           exercises: logExercises
         };

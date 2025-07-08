@@ -26,6 +26,7 @@ import Hammer from 'hammerjs';
 import { ActionMenuItem } from '../../../core/models/action-menu.model';
 import { ActionMenuComponent } from '../../../shared/components/action-menu/action-menu';
 import { AlertButton } from '../../../core/models/alert.model';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 interface ScheduledItemWithLogs {
   routine: Routine;
@@ -39,6 +40,7 @@ interface CalendarDay {
   isToday: boolean;
   isPastDay: boolean;
   hasWorkout: boolean;
+  isLogged: boolean;
   scheduledItems: ScheduledItemWithLogs[];
 }
 
@@ -117,6 +119,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
   private exerciseService = inject(ExerciseService);
   private elementRef = inject(ElementRef);
   private ngZone = inject(NgZone);
+  private sanitizer = inject(DomSanitizer);
 
   programs$: Observable<TrainingProgram[]> | undefined;
   allProgramsForList = signal<TrainingProgram[]>([]);
@@ -128,7 +131,10 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
   @ViewChild('calendarSwipeContainerEl')
   set calendarSwipeContainer(element: ElementRef<HTMLDivElement> | undefined) {
     if (element && isPlatformBrowser(this.platformId)) {
-      if (this.hammerInstanceCalendar) { this.hammerInstanceCalendar.destroy(); this.hammerInstanceCalendar = null; }
+      if (this.hammerInstanceCalendar) {
+        this.hammerInstanceCalendar.destroy();
+        this.hammerInstanceCalendar = null;
+      }
       this.setupCalendarSwipe(element.nativeElement);
     } else if (!element && this.hammerInstanceCalendar) {
       this.hammerInstanceCalendar.destroy(); this.hammerInstanceCalendar = null;
@@ -138,10 +144,14 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
   @ViewChild('viewSwipeContainerEl')
   set modeSwipeContainer(element: ElementRef<HTMLDivElement> | undefined) {
     if (element && isPlatformBrowser(this.platformId)) {
-      if (this.hammerInstanceMode) { this.hammerInstanceMode.destroy(); this.hammerInstanceMode = null; }
+      if (this.hammerInstanceMode) {
+        this.hammerInstanceMode.destroy();
+        this.hammerInstanceMode = null;
+      }
       this.setupModeSwipe(element.nativeElement);
     } else if (!element && this.hammerInstanceMode) {
-      this.hammerInstanceMode.destroy(); this.hammerInstanceMode = null;
+      this.hammerInstanceMode.destroy();
+      this.hammerInstanceMode = null;
     }
   }
 
@@ -199,7 +209,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
   calendarViewDate = signal<Date>(new Date());
   calendarDays = signal<CalendarDay[]>([]);
   calendarLoading = signal<boolean>(false);
-  
+
   // --- STATE MANAGEMENT CHANGES for Multiple Active Programs ---
   activePrograms = signal<TrainingProgram[]>([]);
   calendarViewProgram = signal<TrainingProgram | null>(null);
@@ -220,6 +230,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
   weekStartsOn: 0 | 1 = 1;
   calendarDisplayMode = signal<CalendarDisplayMode>('week');
   selectedCalendarDayDetails = signal<CalendarDay | null>(null);
+  selectedCalendarDayLoggedWorkouts = signal<CalendarDay | null>(null);
   calendarAnimationState = signal<'center' | 'outLeft' | 'outRight' | 'preloadFromLeft' | 'preloadFromRight'>('center');
   protected isCalendarAnimating = false;
   protected isCardAnimating = false;
@@ -256,7 +267,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
     this.programsListSubscription = this.trainingProgramService.programs$.subscribe(programs => {
       this.allProgramsForList.set(programs.sort((a, b) => a.name.localeCompare(b.name)));
       this.populateFilterOptions();
-      
+
       const newActivePrograms = programs.filter(p => p.isActive);
       this.activePrograms.set(newActivePrograms);
 
@@ -370,37 +381,37 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
   async setView(view: ProgramListView): Promise<void> {
     const current = this.currentView();
     if (current === view) return;
-    
+
     // --- CALENDAR VIEW LOGIC ---
     if (view === 'calendar') {
-        const activeProgs = this.activePrograms();
-        if (activeProgs.length > 1) {
-            // Prompt user to select a program for the calendar view
-            const programButtons: AlertButton[] = activeProgs.map(p => ({
-                text: p.name,
-                role: 'confirm',
-                data: p, // Pass the whole program object
-                cssClass: 'bg-primary-light'
-            }));
-            programButtons.push({ text: 'Cancel', role: 'cancel', data: null });
+      const activeProgs = this.activePrograms();
+      if (activeProgs.length > 1) {
+        // Prompt user to select a program for the calendar view
+        const programButtons: AlertButton[] = activeProgs.map(p => ({
+          text: p.name,
+          role: 'confirm',
+          data: p, // Pass the whole program object
+          cssClass: 'bg-primary hover:bg-primary-dark'
+        }));
+        programButtons.push({ text: 'Cancel', role: 'cancel', data: null, cssClass: 'bg-gray-400 hover:bg-gray-600' });
 
-            const choice = await this.alertService.showConfirmationDialog(
-                'Select Program',
-                'You have multiple active programs. Please choose one to view on the calendar.',
-                programButtons
-            );
-            
-            if (choice && choice.data) {
-                this.calendarViewProgram.set(choice.data as TrainingProgram);
-            } else {
-                // User cancelled, so we don't switch the view.
-                // this.toastService.info("Calendar view cancelled", 2000);
-                return; 
-            }
+        const choice = await this.alertService.showConfirmationDialog(
+          'Select Program',
+          'You have multiple active programs. Please choose one to view on the calendar.',
+          programButtons
+        );
+
+        if (choice && choice.data) {
+          this.calendarViewProgram.set(choice.data as TrainingProgram);
         } else {
-            // If 0 or 1 active programs, no selection is needed. The computed signal handles it.
-            this.calendarViewProgram.set(null); // Clear any previous selection
+          // User cancelled, so we don't switch the view.
+          // this.toastService.info("Calendar view cancelled", 2000);
+          return;
         }
+      } else {
+        // If 0 or 1 active programs, no selection is needed. The computed signal handles it.
+        this.calendarViewProgram.set(null); // Clear any previous selection
+      }
     }
     // --- END CALENDAR VIEW LOGIC ---
 
@@ -416,10 +427,11 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
       this.calendarAnimationState.set('center');
       this.generateCalendarDays(true);
     }
+    this.goToTodayCalendar();
   }
 
 
-handleActionMenuItemClick(event: { actionKey: string, data?: any }, originalMouseEvent?: MouseEvent): void {
+  handleActionMenuItemClick(event: { actionKey: string, data?: any }, originalMouseEvent?: MouseEvent): void {
     const programId = event.data?.programId;
     if (!programId) return;
 
@@ -464,7 +476,9 @@ handleActionMenuItemClick(event: { actionKey: string, data?: any }, originalMous
     return Array.from(muscles);
   }
   setCalendarDisplayMode(mode: CalendarDisplayMode): void {
-    if (this.isCalendarAnimating || this.calendarDisplayMode() === mode) return;
+    if (this.isCalendarAnimating || this.calendarDisplayMode() === mode) {
+      return;
+    }
     this.isCalendarAnimating = true;
 
     const oldMode = this.calendarDisplayMode();
@@ -480,8 +494,12 @@ handleActionMenuItemClick(event: { actionKey: string, data?: any }, originalMous
     setTimeout(() => {
       this.calendarDisplayMode.set(mode);
       this.calendarAnimationState.set(preloadState);
-      if (this.activeProgramForCalendar()) this.generateCalendarDays();
-      else this.isCalendarAnimating = false; // Reset if no program to load
+      if (this.activeProgramForCalendar()) {
+        this.generateCalendarDays();
+      }
+      else {
+        this.isCalendarAnimating = false; // Reset if no program to load
+      }
       // isCalendarAnimating will be reset in generateCalendarDays' finally block or here
     }, 200); // out animation duration
   }
@@ -591,7 +609,19 @@ handleActionMenuItemClick(event: { actionKey: string, data?: any }, originalMous
             .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
           return { routine: routineForDay, scheduledDayInfo: scheduledEntry.scheduledDayInfo, logs: correspondingLogs };
         }).filter(item => item !== null) as ScheduledItemWithLogs[];
-        return { date: date, isCurrentMonth: this.calendarDisplayMode() === 'month' ? isSameMonth(date, viewDate) : true, isToday: isToday(date), isPastDay: currentDayIsPast, hasWorkout: scheduledItemsWithLogs.length > 0, scheduledItems: scheduledItemsWithLogs };
+
+        const dayIsLogged = scheduledItemsWithLogs.some(item => item.logs.length > 0);
+
+
+        return {
+          date: date,
+          isCurrentMonth: this.calendarDisplayMode() === 'month' ? isSameMonth(date, viewDate) : true,
+          isToday: isToday(date),
+          isPastDay: currentDayIsPast,
+          hasWorkout: scheduledItemsWithLogs.length > 0,
+          isLogged: dayIsLogged,
+          scheduledItems: scheduledItemsWithLogs
+        };
       });
       this.calendarDays.set(days);
     } catch (error) {
@@ -610,11 +640,35 @@ handleActionMenuItemClick(event: { actionKey: string, data?: any }, originalMous
     }
   }
 
-  viewSessionSummary(logId: string | undefined): void { if (logId) { this.router.navigate(['/workout/summary', logId]); this.selectCalendarDay(null); } }
+  viewSessionSummary(logId: string | undefined): void {
+    if (logId) {
+      this.router.navigate(['/workout/summary', logId]);
+      this.selectCalendarDay(null);
+    }
+  }
+
+  checkCalendarDayForLogs(day: CalendarDay | null): boolean {
+    if (this.isCalendarAnimating) null;
+
+    if (day?.hasWorkout) {
+      this.selectedCalendarDayLoggedWorkouts.set(day);
+      return this.selectedCalendarDayLoggedWorkouts()?.scheduledItems?.some(sched => sched.logs.length > 0) || false;
+    }
+    else if (day && !day.hasWorkout) {
+      this.toastService.info("It's a rest day!", 2000, format(day.date, 'EEEE'));
+      this.selectedCalendarDayLoggedWorkouts.set(null);
+    }
+    else this.selectedCalendarDayLoggedWorkouts.set(null);
+    return false;
+  }
+
   selectCalendarDay(day: CalendarDay | null): void {
     if (this.isCalendarAnimating) return; // Prevent opening sheet during slide
     if (day?.hasWorkout) this.selectedCalendarDayDetails.set(day);
-    else if (day && !day.hasWorkout) { this.toastService.info("It's a rest day!", 2000, format(day.date, 'EEEE')); this.selectedCalendarDayDetails.set(null); }
+    else if (day && !day.hasWorkout) {
+      this.toastService.info("It's a rest day!", 2000, format(day.date, 'EEEE'));
+      this.selectedCalendarDayDetails.set(null);
+    }
     else this.selectedCalendarDayDetails.set(null);
   }
   startScheduledWorkout(routineId: string | undefined, programId: string | undefined): void {
@@ -625,15 +679,15 @@ handleActionMenuItemClick(event: { actionKey: string, data?: any }, originalMous
       this.selectCalendarDay(null);
     }
   }
-  
-  logPreviousSession(routineId: string, workoutDate: Date): void { 
-    this.router.navigate(['/workout/log/manual/new', { routineId, workoutDate: format(workoutDate, 'yyyy-MM-dd') }]); 
-    this.selectCalendarDay(null); 
+
+  logPreviousSession(routineId: string, workoutDate: Date): void {
+    this.router.navigate(['/workout/log/manual/new', { routineId, workoutDate: format(workoutDate, 'yyyy-MM-dd') }]);
+    this.selectCalendarDay(null);
   }
 
-  goToPreviousProgramSession(programId: string | undefined): void { 
-    this.router.navigate(['/history/list'], programId ? { queryParams: { programId: programId } } : {}); 
-    this.selectCalendarDay(null); 
+  goToPreviousProgramSession(programId: string | undefined): void {
+    this.router.navigate(['/history/list'], programId ? { queryParams: { programId: programId } } : {});
+    this.selectCalendarDay(null);
   }
 
   isToday(date: Date): boolean { return isToday(date); }
@@ -685,45 +739,6 @@ handleActionMenuItemClick(event: { actionKey: string, data?: any }, originalMous
       logs: [log]
     };
   }
-
-  mergeScheduledItemsWithPastSessions(selectedDay: CalendarDay): ScheduledItemWithLogs[] {
-    if (!selectedDay) return [];
-
-    const scheduledMap = new Map<string, ScheduledItemWithLogs>();
-    selectedDay.scheduledItems.forEach(item => {
-      if (item.routine?.id) {
-        scheduledMap.set(item.routine.id, item);
-      }
-    });
-
-    const allPastSessions: ScheduledItemWithLogs[] = []
-    for (const item of selectedDay.scheduledItems) {
-      const routineId = item.routine?.id;
-      if (routineId) {
-        const pastSessions = this.getPastWorkoutSessionsAsScheduledItemsForRoutineOnDate(routineId, selectedDay.date);
-        for (const session of pastSessions) {
-          allPastSessions.push(session);
-        }
-      }
-    }
-
-    const allLogs = this.allWorkoutLogs();
-    const seenRoutineIds = new Set(selectedDay.scheduledItems.map(i => i.routine.id));
-    allLogs.forEach(log => {
-      if (isSameDay(parseISO(log.date), selectedDay.date)) {
-        if (log.routineId && !seenRoutineIds.has(log.routineId)) {
-          const session = this.mapWorkoutLogToScheduledItemWithLogs(log);
-          if (session) {
-            allPastSessions.push(session);
-            seenRoutineIds.add(log.routineId);
-          }
-        }
-      }
-    });
-
-    return [...selectedDay.scheduledItems, ...allPastSessions];
-  }
-
 
   getProgramDropdownActionItems(programId: string, mode: 'dropdown' | 'compact-bar'): ActionMenuItem[] {
     const defaultBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-primary flex items-center text-sm hover:text-white dark:hover:text-gray-100 dark:hover:text-white';
@@ -847,5 +862,10 @@ handleActionMenuItemClick(event: { actionKey: string, data?: any }, originalMous
   handleFabClick(): void { this.isFabActionsOpen.update(v => !v); }
   handleFabMouseEnter(): void { if (!this.isTouchDevice) { this.isFabActionsOpen.set(true); } }
   handleFabMouseLeave(): void { if (!this.isTouchDevice) { this.isFabActionsOpen.set(false); } }
+
+  protected updateSanitizedDescription(value: string): SafeHtml {
+    // This tells Angular to trust this HTML string and render it as is.
+    return this.sanitizer.bypassSecurityTrustHtml(value);
+  }
 
 }

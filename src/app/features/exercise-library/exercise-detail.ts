@@ -276,7 +276,7 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy {
   }
 
   handleActionMenuItemClick(event: { actionKey: string, data?: any }, originalMouseEvent?: MouseEvent): void {
-    // originalMouseEvent.stopPropagation(); // Stop original event that opened the menuù
+    // originalMouseEvent.stopPropagation(); // Stop original event that opened the menu
     const currentExercise = this.exercise();
     const exerciseId = currentExercise?.id;
     if (!exerciseId) return;
