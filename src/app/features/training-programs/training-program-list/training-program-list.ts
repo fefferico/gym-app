@@ -27,11 +27,13 @@ import { ActionMenuItem } from '../../../core/models/action-menu.model';
 import { ActionMenuComponent } from '../../../shared/components/action-menu/action-menu';
 import { AlertButton } from '../../../core/models/alert.model';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { v4 as uuidv4 } from 'uuid';
 
 interface ScheduledItemWithLogs {
   routine: Routine;
   scheduledDayInfo: ScheduledRoutineDay;
   logs: WorkoutLog[];
+  isUnscheduled?: boolean;
 }
 
 interface CalendarDay {
@@ -599,28 +601,53 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
       const allLogsForPeriod = await firstValueFrom(
         this.trackingService.getWorkoutLogsByProgramIdForDateRange(activeProg.id, rangeStart, rangeEnd).pipe(take(1))
       );
+
       const days: CalendarDay[] = dateRange.map(date => {
+        // --- START OF MODIFIED LOGIC ---
+
+        // 1. Find routines scheduled for THIS specific day.
         const distinctScheduledForThisDate = scheduledEntriesFromProgram.filter(entry => isSameDay(entry.date, date));
-        const currentDayIsPast = isPast(date) && !isToday(date);
+        const scheduledRoutineIds = new Set(distinctScheduledForThisDate.map(d => d.scheduledDayInfo.routineId));
+
+        // 2. Map the SCHEDULED routines to our display interface, finding their corresponding logs.
         const scheduledItemsWithLogs: ScheduledItemWithLogs[] = distinctScheduledForThisDate.map(scheduledEntry => {
           const routineForDay = this.allRoutinesMap.get(scheduledEntry.scheduledDayInfo.routineId);
-          if (!routineForDay) { console.warn(`Routine with ID ${scheduledEntry.scheduledDayInfo.routineId} not found`); return null; }
-          const correspondingLogs: WorkoutLog[] = allLogsForPeriod.filter(log => isSameDay(parseISO(log.date), date) && log.routineId === routineForDay.id)
-            .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
-          return { routine: routineForDay, scheduledDayInfo: scheduledEntry.scheduledDayInfo, logs: correspondingLogs };
+          if (!routineForDay) { return null; }
+            const correspondingLogs: WorkoutLog[] = allLogsForPeriod.filter(log =>
+            isSameDay(parseISO(log.date), date) && log.routineId === routineForDay.id
+            ).sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
+          return {
+            routine: routineForDay,
+            scheduledDayInfo: scheduledEntry.scheduledDayInfo,
+            logs: correspondingLogs,
+            isUnscheduled: false // This was scheduled
+          };
         }).filter(item => item !== null) as ScheduledItemWithLogs[];
 
-        const dayIsLogged = scheduledItemsWithLogs.some(item => item.logs.length > 0);
+        // 3. Find UNSCHEDULED logs for this day that still belong to the active program.
+        const unscheduledLogsForThisDate: WorkoutLog[] = allLogsForPeriod.filter(log =>
+          isSameDay(parseISO(log.date), date) && // Happened today
+          log.programId === activeProg.id &&   // Belongs to the program
+          log.routineId &&                      // Has a routineId
+          !scheduledRoutineIds.has(log.routineId) // And was NOT scheduled for today
+        );
 
+        // 4. Group unscheduled logs by their routineId and map them to our display interface.
+        const unscheduledItemsWithLogs = this.mapWorkoutLogToScheduledItemWithLogs(unscheduledLogsForThisDate);
+
+        // 5. Combine the two lists.
+        const allItemsForThisDay = [...scheduledItemsWithLogs, ...unscheduledItemsWithLogs];
+        const dayIsLogged = allItemsForThisDay.some(item => item.logs.length > 0);
+        // --- END OF MODIFIED LOGIC ---
 
         return {
           date: date,
           isCurrentMonth: this.calendarDisplayMode() === 'month' ? isSameMonth(date, viewDate) : true,
           isToday: isToday(date),
-          isPastDay: currentDayIsPast,
-          hasWorkout: scheduledItemsWithLogs.length > 0,
+          isPastDay: isPast(date) && !isToday(date),
+          hasWorkout: allItemsForThisDay.length > 0,
           isLogged: dayIsLogged,
-          scheduledItems: scheduledItemsWithLogs
+          scheduledItems: allItemsForThisDay // Use the combined list
         };
       });
       this.calendarDays.set(days);
@@ -709,35 +736,47 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
     return filteredLogs;
   }
 
-  getPastWorkoutSessionsAsScheduledItemsForRoutineOnDate(
-    routineId: string, date: Date, filterByActiveProgram: boolean = true
-  ): ScheduledItemWithLogs[] {
-    const logs = this.getPastWorkoutSessionsForRoutineOnDate(routineId, date, filterByActiveProgram);
+mapWorkoutLogToScheduledItemWithLogs(logs: WorkoutLog[]): ScheduledItemWithLogs[] {
     if (logs.length === 0) return [];
-    return logs
-      .map(log => this.mapWorkoutLogToScheduledItemWithLogs(log))
-      .filter((item): item is ScheduledItemWithLogs => !!item);
-  }
-
-  mapWorkoutLogToScheduledItemWithLogs(log: WorkoutLog): ScheduledItemWithLogs | null {
-    if (!log.routineId) return null;
-    const routine = this.allRoutinesMap.get(log.routineId);
-    if (!routine) return null;
-
-    // Try to find the scheduled day info from the active program's schedule
+    
     const activeProg = this.activeProgramForCalendar();
-    if (!activeProg) return null;
+    if (!activeProg) return [];
 
-    const scheduledDayInfo = activeProg.schedule.find(
-      s => s.routineId === log.routineId
-    );
-    if (!scheduledDayInfo) return null;
+    // Group logs by their routine ID
+    const logsByRoutine = new Map<string, WorkoutLog[]>();
+    for (const log of logs) {
+      if (!log.routineId) continue;
+      if (!logsByRoutine.has(log.routineId)) {
+        logsByRoutine.set(log.routineId, []);
+      }
+      logsByRoutine.get(log.routineId)!.push(log);
+    }
 
-    return {
-      routine,
-      scheduledDayInfo,
-      logs: [log]
-    };
+    const result: ScheduledItemWithLogs[] = [];
+
+    for (const [routineId, groupedLogs] of logsByRoutine.entries()) {
+      const routine = this.allRoutinesMap.get(routineId);
+      if (!routine) continue;
+      
+      // For unscheduled items, we create a "dummy" scheduledDayInfo
+      // as it's required by the interface.
+      const dummyScheduledDayInfo: ScheduledRoutineDay = {
+        id: uuidv4(),
+        routineId: routineId,
+        dayOfWeek: parseISO(groupedLogs[0].date).getDay(), // Get day of week from the log
+        programId: activeProg.id,
+        // cycleDay: 0 // Not applicable, but required
+      };
+
+      result.push({
+        routine,
+        scheduledDayInfo: dummyScheduledDayInfo,
+        logs: groupedLogs.sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime()),
+        isUnscheduled: true // Mark this item as not originally scheduled
+      });
+    }
+
+    return result;
   }
 
   getProgramDropdownActionItems(programId: string, mode: 'dropdown' | 'compact-bar'): ActionMenuItem[] {

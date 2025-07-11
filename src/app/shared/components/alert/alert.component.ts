@@ -87,7 +87,7 @@ export class AlertComponent implements OnInit {
       if (this.options?.inputs) {
         for (const input of this.options.inputs) {
           if (input.type !== 'checkbox' && input.required && (this.inputValues[input.name] === undefined || String(this.inputValues[input.name]).trim() === '')) {
-            alert(`Please fill in the '${input.label || input.name}' field.`);
+            alert(`Please fill in the '${input.label || input.name}' field`);
             return;
           }
         }

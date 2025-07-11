@@ -15,12 +15,12 @@
 
   <div class="mb-2 flex">
     <button (click)="setView('list')"
-      class="px-3 sm:px-4 py-2 sm:py-3 -mb-px text-xs sm:text-sm font-semibold focus:outline-none"
+      class="px-3 sm:px-4 py-2 sm:py-3 -mb-px text-md font-semibold focus:outline-none"
       [ngClass]="{ 'border-b-2 border-primary text-primary dark:text-primary-light dark:border-primary-light': currentView() === 'list', 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200  border-b border-gray-200 dark:border-gray-700': currentView() !== 'list' }">
       MY PROGRAMS
     </button>
     <button (click)="setView('calendar')"
-      class="px-3 sm:px-4 py-2 sm:py-3 -mb-px text-xs sm:text-sm font-semibold focus:outline-none"
+      class="px-3 sm:px-4 py-2 sm:py-3 -mb-px text-md font-semibold focus:outline-none"
       [ngClass]="{ 'border-b-2 border-primary text-primary dark:text-primary-light dark:border-primary-light': currentView() === 'calendar', 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200  border-b border-gray-200 dark:border-gray-700': currentView() !== 'calendar' }">
       CALENDAR
     </button>
@@ -254,11 +254,11 @@
           <div class="flex justify-between items-center mb-3 sm:mb-4">
             <div class="inline-flex space-x-1 p-1 bg-gray-100 dark:bg-gray-800 rounded-md">
               <button (click)="setCalendarDisplayMode('week')"
-                class="px-3 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-colors disabled:opacity-60"
+                class="px-3 py-1.5 text-md font-medium rounded-md transition-colors disabled:opacity-60"
                 [ngClass]="calendarDisplayMode() === 'week' ? 'bg-primary text-white shadow' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'"
                 [disabled]="isCalendarAnimating">WEEK</button>
               <button (click)="setCalendarDisplayMode('month')"
-                class="px-3 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-colors disabled:opacity-60"
+                class="px-3 py-1.5 text-md font-medium rounded-md transition-colors disabled:opacity-60"
                 [ngClass]="calendarDisplayMode() === 'month' ? 'bg-primary text-white shadow' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'"
                 [disabled]="isCalendarAnimating">MONTH</button>
             </div>
@@ -459,10 +459,16 @@
             class="mb-4 last:mb-0 p-3 bg-gray-50 dark:bg-gray-700/70 rounded-md">
 
             <!-- Scheduled Routine Info -->
-            <h4 class="text-md sm:text-lg font-semibold text-primary dark:text-primary-light mb-1">{{ item.routine.name
-              }}<span *ngIf="item.logs.length > 1" class="text-xs text-gray-500 dark:text-gray-400"> ({{
+            <h4 class="text-md sm:text-lg font-semibold text-primary dark:text-primary-light mb-1">
+              {{ item.routine.name}}
+              <span *ngIf="item.isUnscheduled"
+                class="text-xs font-semibold bg-yellow-200 text-yellow-800 dark:bg-yellow-700 dark:text-yellow-100 px-2 py-1 rounded-full">
+                Not Scheduled
+              </span>
+              <span *ngIf="item.logs.length > 1" class="text-xs text-gray-500 dark:text-gray-400"> ({{
                 item.logs.length
-                }} sessions logged)</span></h4>
+                }} sessions logged)</span>
+            </h4>
             <p *ngIf="item.routine.description"
               class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-1.5 line-clamp-3"
               [title]="item.routine.description" [innerHTML]="updateSanitizedDescription(item.routine.description)"></p>

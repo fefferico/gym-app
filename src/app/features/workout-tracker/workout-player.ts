@@ -3916,6 +3916,22 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
           }
 
           resultText = `${isWarmup ? 'Warm-up ' : ''}Set ${setNumber}/${totalSets} of ${exerciseName}${roundText}`;
+
+          // adding next set info like weights, reps, etc.
+          if (nextSetInfo.setData) {
+            resultText += ' [';
+            const setData = nextSetInfo.setData;
+            if (setData.weight && setData.reps) {
+              resultText += `${setData.weight}${this.unitService.getUnitLabel()} x ${setData.reps} reps`;
+            }
+            if (!setData.weight && setData.reps) {
+              resultText += `${setData.reps} reps`;
+            }
+            if (setData.duration) {
+              resultText += `, duration ${setData.duration}`;
+            }
+            resultText += ']';
+          }
         }
         this.restTimerNextUpText.set(resultText);
 
