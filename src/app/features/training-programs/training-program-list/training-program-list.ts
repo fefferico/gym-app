@@ -682,6 +682,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
       return this.selectedCalendarDayLoggedWorkouts()?.scheduledItems?.some(sched => sched.logs.length > 0) || false;
     }
     else if (day && !day.hasWorkout) {
+      this.toastService.clearAll();
       this.toastService.info("It's a rest day!", 2000, format(day.date, 'EEEE'));
       this.selectedCalendarDayLoggedWorkouts.set(null);
     }
@@ -693,6 +694,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
     if (this.isCalendarAnimating) return; // Prevent opening sheet during slide
     if (day?.hasWorkout) this.selectedCalendarDayDetails.set(day);
     else if (day && !day.hasWorkout) {
+      this.toastService.clearAll();
       this.toastService.info("It's a rest day!", 2000, format(day.date, 'EEEE'));
       this.selectedCalendarDayDetails.set(null);
     }

@@ -314,9 +314,15 @@
                     [class.hover:bg-gray-100]="day.isCurrentMonth && !day.hasLog && !isHistoryCalendarAnimating"
                     [class.dark:hover:bg-gray-600]="day.isCurrentMonth && !day.hasLog && !isHistoryCalendarAnimating"
                     [class.dark:hover:bg-primary-light]="day.isCurrentMonth && day.hasLog && !isHistoryCalendarAnimating"
-                    [ngClass]="{'bg-white dark:bg-gray-700': day.isCurrentMonth, 'bg-gray-50 dark:bg-gray-700/60 opacity-70': !day.isCurrentMonth, 'ring-1 ring-inset ring-primary dark:ring-primary-light': day.isToday && day.isCurrentMonth}">
+                    [ngClass]="{
+                      'bg-white dark:bg-gray-700': day.isCurrentMonth, 
+                      'bg-gray-50 dark:bg-gray-700/60 opacity-70': !day.isCurrentMonth, 
+                      'ring-1 ring-inset ring-primary dark:ring-primary-light': day.isToday && day.isCurrentMonth
+                      }">
                     <span class="text-xs sm:text-sm font-semibold"
-                      [ngClass]="{'text-primary hover:text-white': day.isToday && day.isCurrentMonth, 'text-gray-700 dark:text-gray-200': !day.isToday && day.isCurrentMonth, 'text-gray-400 dark:text-gray-500': !day.isCurrentMonth}">{{
+                      [ngClass]="{'text-primary hover:text-white': day.isToday && day.isCurrentMonth, 
+                      'text-gray-700 dark:text-gray-200': !day.isToday && day.isCurrentMonth, 
+                      'text-gray-400 dark:text-gray-500': !day.isCurrentMonth}">{{
                       day.date | date:'d' }}</span>
                     <div *ngIf="day.hasLog && day.isCurrentMonth"
                       class="absolute bottom-1 right-1 sm:bottom-1.5 sm:right-1.5 flex items-center justify-center w-4 h-4 sm:w-5 sm:h-5 rounded-full text-2xs sm:text-xs font-bold"
