@@ -10,6 +10,35 @@ import { EXERCISES_DATA } from './exercises-data';
 import { WorkoutExercise } from '../models/workout.model';
 import { ToastService } from './toast.service';
 
+/**
+ * Maps standardized muscle group names to the unique IDs of the paths in muscle-anatomy.svg.
+ * This allows the service to return the correct SVG element IDs for highlighting.
+ */
+const MUSCLE_GROUP_TO_ID_MAP: Record<string, string[]> = {
+  'shoulders': ['shoulders-front-left', 'shoulders-front-right', 'shoulders-back-left', 'shoulders-back-right'],
+  'chest': ['chest-left', 'chest-right'],
+  'abs': ['abs-upper', 'abs-middle', 'abs-lower'],
+  'obliques': ['obliques-left', 'obliques-right'],
+  'biceps': ['biceps-left', 'biceps-right'],
+  'triceps': ['triceps-left', 'triceps-right'],
+  'forearms': ['forearms-left', 'forearms-right', 'forearms-back-left', 'forearms-back-right'],
+  'quadriceps': ['quads-left', 'quads-right'],
+  'hamstrings': ['hamstrings-left', 'hamstrings-right'],
+  'glutes': ['glutes-left', 'glutes-right'],
+  'calves': ['calves-front-left', 'calves-front-right', 'calves-back-left', 'calves-back-right'],
+  'adductors': ['adductors-left', 'adductors-right'],
+  'traps': ['traps-upper', 'traps-middle', 'traps-lower'],
+  'lats': ['lats-left', 'lats-right'],
+  'lower back': ['lower-back'],
+  'neck': ['neck-front']
+};
+
+export interface MuscleHighlightData {
+  primary: string[];
+  secondary: string[];
+}
+
+
 @Injectable({
   providedIn: 'root',
 })
@@ -243,6 +272,60 @@ export class ExerciseService {
     );
   }
 
+  /**
+   * Retrieves a list of similar exercises based on matching muscle groups.
+   *
+   * The similarity is determined by a scoring system:
+   * - A significant score is awarded if the primary muscle group matches.
+   * - A smaller score is awarded for each shared secondary muscle group.
+   *
+   * The method returns a specified number of the highest-scoring exercises.
+   *
+   * @param baseExercise The exercise to find similar matches for.
+   * @param count The number of similar exercises to return.
+   * @returns An Observable emitting an array of similar Exercise objects.
+   */
+  getSimilarExercises(baseExercise: Exercise, count: number): Observable<Exercise[]> {
+    return this.exercises$.pipe(
+      map(allExercises => {
+        // 1. Filter out the base exercise itself to avoid self-matching
+        const otherExercises = allExercises.filter(ex => ex.id !== baseExercise.id);
+
+        // 2. Score each exercise based on muscle group similarity
+        const scoredExercises = otherExercises.map(candidateExercise => {
+          let score = 0;
+
+          // Award a high score for a matching primary muscle group
+          if (candidateExercise.primaryMuscleGroup && baseExercise.primaryMuscleGroup &&
+            candidateExercise.primaryMuscleGroup === baseExercise.primaryMuscleGroup) {
+            score += 3;
+          }
+
+          // Award a smaller score for each overlapping secondary muscle group
+          if (candidateExercise.muscleGroups && baseExercise.muscleGroups) {
+            const baseMuscleGroups = new Set(baseExercise.muscleGroups);
+            candidateExercise.muscleGroups.forEach(group => {
+              if (baseMuscleGroups.has(group)) {
+                score += 1;
+              }
+            });
+          }
+
+          return { exercise: candidateExercise, score };
+        });
+
+        // 3. Filter out exercises with no matching muscles and sort by score
+        const relevantExercises = scoredExercises
+          .filter(item => item.score > 0)
+          .sort((a, b) => b.score - a.score);
+
+        // 4. Return the top 'count' exercises
+        return relevantExercises.slice(0, count).map(item => item.exercise);
+      }),
+      take(1) // Ensures the observable completes after emitting the list once
+    );
+  }
+
   determineExerciseIcon(baseExercise: Exercise | null, exerciseName: string): string {
     const nameLower = exerciseName.toLowerCase();
 
@@ -439,4 +522,41 @@ export class ExerciseService {
     );
     // +++ END of new merge logic +++
   }
+
+   /**
+   * Returns the SVG path IDs for given primary and secondary muscle groups
+   * for highlighting on the muscle anatomy chart.
+   *
+   * @param primaryMuscle The main muscle group worked (will be highlighted distinctly).
+   * @param secondaryMuscles An array of supporting muscle groups.
+   * @returns An object containing arrays of SVG path IDs for primary and secondary muscles.
+   */
+  public getMuscleHighlightData(primaryMuscle: string, secondaryMuscles: string[]): MuscleHighlightData {
+    const highlightData: MuscleHighlightData = {
+      primary: [],
+      secondary: []
+    };
+
+    const normalizedPrimary = primaryMuscle.toLowerCase();
+    if (MUSCLE_GROUP_TO_ID_MAP[normalizedPrimary]) {
+      highlightData.primary = MUSCLE_GROUP_TO_ID_MAP[normalizedPrimary];
+    }
+
+    const secondaryIds = new Set<string>();
+    secondaryMuscles.forEach(muscle => {
+      const normalizedSecondary = muscle.toLowerCase();
+      if (MUSCLE_GROUP_TO_ID_MAP[normalizedSecondary]) {
+        MUSCLE_GROUP_TO_ID_MAP[normalizedSecondary].forEach(id => {
+          // Avoid adding a path to secondary if it's already in primary
+          if (!highlightData.primary.includes(id)) {
+            secondaryIds.add(id);
+          }
+        });
+      }
+    });
+    highlightData.secondary = Array.from(secondaryIds);
+
+    return highlightData;
+  }
+  
 }

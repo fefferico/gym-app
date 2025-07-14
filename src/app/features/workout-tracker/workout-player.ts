@@ -4542,7 +4542,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     this.tabataTimerSub = timer(0, 1000)
       .pipe(
         take(interval.duration + 1), // Keep your existing take()
-        takeUntil(this.destroy$)      // Add this line after it
+        takeUntil(this.destroy$)      // Add this line
       ).subscribe({
         next: () => {
           this.tabataTimeRemaining.update(t => t - 1);
@@ -4638,4 +4638,149 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     }
     return null;
   }
+  // --- NEW: LOGIC FOR EXERCISE SWITCHING ---
+
+  // --- For Exercise Switching Modal ---
+  isSwitchExerciseModalOpen = signal(false);
+  switchModalSearchTerm = signal('');
+  isShowingSimilarInSwitchModal = signal(false);
+  exercisesForSwitchModal = signal<Exercise[]>([]);
+
+
+  // --- Add this new computed signal for filtering in the switch modal ---
+  filteredExercisesForSwitchModal = computed(() => {
+    const term = this.switchModalSearchTerm().toLowerCase();
+    // If we're showing similar exercises, just return that list without filtering by search term
+    if (this.isShowingSimilarInSwitchModal()) {
+      return this.exercisesForSwitchModal();
+    }
+    // Otherwise, filter the main list of available exercises by the search term
+    if (!term) {
+      return this.availableExercises;
+    }
+    return this.availableExercises.filter(ex =>
+      ex.name.toLowerCase().includes(term) ||
+      ex.category.toLowerCase().includes(term) ||
+      (ex.primaryMuscleGroup && ex.primaryMuscleGroup.toLowerCase().includes(term))
+    );
+  });
+
+  // --- This is the new functionality to implement the switch/change exercise feature ---
+
+  /**
+   * Opens the modal for switching the current exercise.
+   * Resets the modal's state before showing it.
+   */
+  async openSwitchExerciseModal(): Promise<void> {
+    this.closeWorkoutMenu();
+    if (!this.canSwitchExercise()) {
+      this.toastService.warning("Cannot switch exercise after starting it.", 3000, "Action not allowed");
+      return;
+    }
+
+    // Reset the state for the switch modal each time it's opened
+    this.isShowingSimilarInSwitchModal.set(false);
+    this.switchModalSearchTerm.set('');
+    this.exercisesForSwitchModal.set([]); // Clear any previous "similar" results
+    this.isSwitchExerciseModalOpen.set(true); // Open the modal
+  }
+
+  /**
+   * Closes the exercise switching modal.
+   */
+  closeSwitchExerciseModal(): void {
+    this.isSwitchExerciseModalOpen.set(false);
+  }
+
+  /**
+   * Fetches exercises similar to the current one and displays them in the modal.
+   */
+  async findAndShowSimilarExercises(): Promise<void> {
+    const activeInfo = this.activeSetInfo();
+    if (!activeInfo) return;
+
+    // Ensure we have the full base exercise definition
+    let baseExercise = this.currentBaseExercise();
+    if (!baseExercise) {
+      baseExercise = await firstValueFrom(this.exerciseService.getExerciseById(activeInfo.exerciseData.exerciseId));
+      if (!baseExercise) {
+        this.toastService.error("Could not load details for the current exercise.", 0, "Error");
+        return;
+      }
+    }
+
+    try {
+      const similarExercises = await firstValueFrom(this.exerciseService.getSimilarExercises(baseExercise, 12));
+
+      if (similarExercises.length === 0) {
+        this.toastService.info("No similar exercises found based on muscle groups.", 4000, "Not Found");
+      }
+
+      this.exercisesForSwitchModal.set(similarExercises);
+      this.isShowingSimilarInSwitchModal.set(true); // Set the flag to display the 'similar' list
+    } catch (error) {
+      console.error("Error fetching similar exercises:", error);
+      this.toastService.error("Could not load similar exercises.", 0, "Error");
+    }
+  }
+
+  /**
+   * Handles the selection of a new exercise from the switch modal,
+   * triggering the replacement logic.
+   * @param newExercise The exercise chosen to replace the current one.
+   */
+  async selectExerciseToSwitch(newExercise: Exercise): Promise<void> {
+    this.closeSwitchExerciseModal();
+    await this.replaceCurrentExerciseInRoutine(newExercise);
+  }
+
+  /**
+   * Replaces the current exercise in the routine's state with a new one.
+   * @param newExercise The new exercise to substitute in.
+   */
+  private async replaceCurrentExerciseInRoutine(newExercise: Exercise): Promise<void> {
+    const currentRoutineVal = this.routine();
+    const activeInfo = this.activeSetInfo();
+
+    if (!currentRoutineVal || !activeInfo) {
+      this.toastService.error("Failed to switch exercise: Routine data missing.", 0, "Error");
+      return;
+    }
+
+    const updatedRoutine = JSON.parse(JSON.stringify(currentRoutineVal)) as Routine;
+    const exerciseToUpdate = updatedRoutine.exercises[activeInfo.exerciseIndex];
+
+    if (exerciseToUpdate) {
+      console.log(`Switching '${exerciseToUpdate.exerciseName}' with '${newExercise.name}'`);
+      exerciseToUpdate.exerciseId = newExercise.id;
+      exerciseToUpdate.exerciseName = newExercise.name;
+
+      const snapshotExerciseToUpdate = this.originalRoutineSnapshot.find(ex => ex.id === exerciseToUpdate.id);
+      if (snapshotExerciseToUpdate) {
+        snapshotExerciseToUpdate.exerciseId = newExercise.id;
+        snapshotExerciseToUpdate.exerciseName = newExercise.name;
+      }
+
+      this.routine.set(updatedRoutine);
+      this.lastPerformanceForCurrentExercise = null;
+      this.currentBaseExercise.set(null); // Force a reload
+      this.exercisePBs.set([]);
+
+      await this.prepareCurrentSet();
+      this.toastService.success(`Switched to ${newExercise.name}`, 3000, "Exercise Switched");
+    } else {
+      this.toastService.error("Could not find the exercise to replace in the routine.", 0, "Error");
+    }
+  }
+
+  // --- NEW COMPUTED SIGNAL TO CONTROL THE BUTTON'S VISIBILITY ---
+  readonly canSwitchExercise = computed<boolean>(() => {
+    const activeInfo = this.activeSetInfo();
+    if (!activeInfo || this.sessionState() === 'paused') {
+      return false;
+    }
+    // Allow switching only if no sets for THIS specific exercise instance have been logged yet.
+    const loggedSetCount = this.getNumberOfLoggedSets(activeInfo.exerciseData.id);
+    return loggedSetCount === 0;
+  });
 }
