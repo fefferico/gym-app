@@ -1,10 +1,11 @@
 import { Component, Input, Output, EventEmitter, OnChanges, OnDestroy, SimpleChanges, ElementRef, ViewChild, AfterViewInit, ChangeDetectionStrategy, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { PressDirective } from '../../directives/press.directive';
 
 @Component({
   selector: 'app-full-screen-rest-timer',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, PressDirective],
   templateUrl: './full-screen-rest-timer.html',
   styleUrls: ['./full-screen-rest-timer.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

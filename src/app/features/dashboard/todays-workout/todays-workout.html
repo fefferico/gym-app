@@ -9,7 +9,7 @@
   <div class="flex-shrink-0">
     <!-- Date Navigation -->
     <div class="flex items-center justify-between pb-3 border-b border-gray-200 dark:border-gray-700">
-      <button (click)="previousDay()" title="Previous Day"
+      <button  appPress (shortPress)="previousDay()" title="Previous Day"
         class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 disabled:opacity-50"
         [disabled]="isAnimating()">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
@@ -33,7 +33,7 @@
           <span *ngIf="isToday(currentDate())" class="text-m text-primary dark:text-primary-light">(Today)</span>
         </h2>
       </div>
-      <button (click)="nextDay()" title="Next Day"
+      <button  appPress (shortPress)="nextDay()" title="Next Day"
         class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 disabled:opacity-50"
         [disabled]="isAnimating()">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
@@ -42,7 +42,7 @@
         </svg>
       </button>
     </div>
-    <button *ngIf="!isToday(currentDate())" (click)="goToToday()"
+    <button *ngIf="!isToday(currentDate())"  appPress (shortPress)="goToToday()"
       class="text-m text-primary dark:text-primary-light hover:underline disabled:opacity-50"
       [disabled]="isAnimating()">Jump to Today</button>
   </div>
@@ -69,10 +69,21 @@
           <div *ngIf="todaysScheduledWorkouts().length > 0; else noScheduledWorkoutInProgramBlock" class="space-y-4">
             <div *ngFor="let workoutInfo of todaysScheduledWorkouts()"
               class="bg-primary-50 dark:bg-gray-700/30 p-4 rounded-md">
-              <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-100 mb-1">Scheduled: <span
-                  class="text-primary dark:text-primary-light">{{ workoutInfo.routine.name }}</span></h3>
+
+              <!-- MODIFIED: Header text now changes based on whether the workout was scheduled -->
+              <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-100 mb-1">
+                <ng-container *ngIf="!workoutInfo.scheduledDayInfo.isUnscheduled; else unscheduledHeader">
+                  Scheduled:
+                </ng-container>
+                <ng-template #unscheduledHeader>
+                  <span class="text-blue-500 dark:text-blue-400">Logged (Unscheduled):</span>
+                </ng-template>
+                <span class="text-primary dark:text-primary-light ml-1">{{ workoutInfo.routine.name }}</span>
+              </h3>
+
               <p *ngIf="workoutInfo.routine.description"
-                class="text-sm text-gray-600 dark:text-gray-400 mb-2 line-clamp-2" [innerHTML]="updateSanitizedDescription(workoutInfo.routine.description)"
+                class="text-sm text-gray-600 dark:text-gray-400 mb-2 line-clamp-2"
+                [innerHTML]="updateSanitizedDescription(workoutInfo.routine.description)"
                 [title]="workoutInfo.routine.description"></p>
 
               <div class="mt-4">
@@ -85,7 +96,7 @@
                         d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                     </svg>
                     <span class="font-semibold text-m">Workout Completed!</span>
-                    <button (click)="viewLogDetails(logsForDay()[0].id)"
+                    <button  appPress (shortPress)="viewLogDetails(getLogForRoutine(workoutInfo.routine.id).id)"
                       class="ml-auto flex items-center text-xs font-semibold bg-sky-200 dark:bg-sky-700 text-sky-800 dark:text-sky-100 px-2 py-1 rounded hover:bg-sky-300">
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                         stroke="currentColor" class="w-5 h-5 mr-2">
@@ -100,14 +111,7 @@
                 <ng-container *ngIf="!isWorkoutLogged(workoutInfo.routine.id)">
                   <ng-container *ngIf="isFutureDate(currentDate())">
                     <div class="flex flex-col sm:flex-row gap-2">
-                      <!-- <button disabled
-                        class="flex-1 bg-gray-400 text-white font-semibold py-2.5 px-4 rounded-md shadow-sm flex items-center justify-center text-m cursor-not-allowed"><svg
-                          xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                          stroke="currentColor" class="w-5 h-5 mr-2">
-                          <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
-                        </svg>PLANNED</button> -->
-                      <button (click)="viewRoutineDetails(workoutInfo.routine.id)"
+                      <button  appPress (shortPress)="viewRoutineDetails(workoutInfo.routine.id)"
                         class="flex-1 bg-sky-500 hover:bg-sky-600 text-white font-semibold py-2.5 px-4 rounded-md shadow-sm flex items-center justify-center text-m"><svg
                           xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                           stroke="currentColor" class="w-5 h-5 mr-2">
@@ -117,7 +121,9 @@
                         </svg>DETAILS</button>
                     </div>
                   </ng-container>
-                  <ng-container *ngIf="!isToday(currentDate()) && !isFutureDate(currentDate())">
+                  <!-- MODIFIED: Ensure "Session Skipped" only shows for workouts that were actually scheduled -->
+                  <ng-container
+                    *ngIf="!isToday(currentDate()) && !isFutureDate(currentDate()) && !workoutInfo.scheduledDayInfo.isUnscheduled">
                     <div
                       class="p-3 bg-yellow-100 dark:bg-yellow-900/50 rounded-md text-yellow-700 dark:text-yellow-300 flex items-center justify-center gap-x-3">
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -128,23 +134,22 @@
                       <span class="font-semibold text-m">Session Skipped</span>
                     </div>
                     <span class="text-m text-gray-500 dark:text-gray-400">
-                      <button
-                        (click)="logPastProgramWorkout(workoutInfo?.scheduledDayInfo?.routineId, workoutInfo?.scheduledDayInfo?.programId)"
-                        class="text-primary dark:text-primary-light hover:underline mt-2">Log it</button>, if you haven't
+                      <button appPress (shortPress)="logPastProgramWorkout(workoutInfo?.scheduledDayInfo?.routineId, workoutInfo?.scheduledDayInfo?.programId)"
+                        class="text-primary dark:text-primary-light hover:underline mt-2">Log it</button>, if you
+                      haven't
                       already
                     </span>
                   </ng-container>
                   <ng-container *ngIf="isToday(currentDate())">
                     <div class="flex flex-col sm:flex-row gap-2">
-                      <button
-                        (click)="startWorkoutProgram(workoutInfo.routine.id, workoutInfo.scheduledDayInfo.programId, $event)"
+                      <button appPress (shortPress)="startWorkoutProgram(workoutInfo.routine.id, workoutInfo.scheduledDayInfo.programId, $event)"
                         class="flex-1 bg-green-500 hover:bg-green-600 text-white font-semibold py-2.5 px-4 rounded-md shadow-sm flex items-center justify-center text-m"><svg
                           xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                           stroke="currentColor" class="w-5 h-5 mr-2">
                           <path stroke-linecap="round" stroke-linejoin="round"
                             d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 010 1.972l-11.54 6.347a1.125 1.125 0 01-1.667-.986V5.653z" />
                         </svg>START</button>
-                      <button (click)="viewRoutineDetails(workoutInfo.routine.id)"
+                      <button appPress (shortPress)="viewRoutineDetails(workoutInfo.routine.id)"
                         class="flex-1 bg-sky-500 hover:bg-sky-600 text-white font-semibold py-2.5 px-4 rounded-md shadow-sm flex items-center justify-center text-m"><svg
                           xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                           stroke="currentColor" class="w-5 h-5 mr-2">
@@ -194,7 +199,7 @@
                         date:'HH:mm:ss' }}</span>
                     </p>
 
-                    <button (click)="viewLogDetails(log.id)"
+                    <button  appPress (shortPress)="viewLogDetails(log.id)"
                       class="flex items-center text-xs font-semibold bg-sky-200 dark:bg-sky-700 text-sky-800 dark:text-sky-100 px-2 py-1 rounded hover:bg-sky-300">
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                         stroke="currentColor" class="w-5 h-5 mr-2">
@@ -208,7 +213,7 @@
               <div *ngIf="logsForDay().length === 0">
                 <p class="text-m text-gray-500 dark:text-gray-400">
                   Feel free to
-                  <button (click)="browseRoutines()" class="text-primary dark:text-primary-light hover:underline">pick
+                  <button  appPress (shortPress)="browseRoutines()" class="text-primary dark:text-primary-light hover:underline">pick
                     any
                     other
                     routine</button>, if you'd prefer
@@ -217,7 +222,7 @@
                   *ngIf="availableRoutines$ | async as routines">
                   <h4 class="text-md font-semibold text-gray-600 dark:text-gray-200 mb-2">Or, pick one from below:</h4>
                   <div class="max-h-60 overflow-y-auto space-y-2 pr-2 py-2 custom-scrollbar">
-                    <div (click)="viewRoutineDetails(routine.id)" *ngFor="let routine of routines"
+                    <div  appPress (shortPress)="viewRoutineDetails(routine.id)" *ngFor="let routine of routines"
                       class="p-3 bg-gray-200/50 dark:bg-gray-600 rounded-md shadow-sm hover:shadow-md transition-shadow flex justify-between items-center transform hover:-translate-y-1">
                       <div class="truncate">
                         <span class="font-medium text-gray-800 dark:text-gray-100">{{ routine.name }}</span>
@@ -232,7 +237,8 @@
                           </span>
                         </span>
                       </div>
-                      <button (click)="startWorkoutProgram(routine.id, undefined, $event)" [disabled]="isAnimating()"
+                      <button [disabled]="isAnimating()"
+                        appPress (shortPress)="startWorkoutProgram(routine.id, undefined, $event)"
                         class="flex items-center ml-2 text-m bg-primary hover:bg-green-200 text-white dark:hover:bg-primary-dark font-semibold py-1 px-2.5 rounded-md disabled:opacity-50">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
                           stroke="currentColor" class="size-4 mr-1">
@@ -263,7 +269,7 @@
               </svg>
               <h3 class="text-lg font-medium text-gray-700 dark:text-gray-300">No Program Active</h3>
               <p class="text-m text-gray-500 dark:text-gray-400">Activate a program to see your future schedule.</p>
-              <button (click)="managePrograms()"
+              <button  appPress (shortPress)="managePrograms()"
                 class="mt-4 text-white bg-primary hover:bg-primary-dark font-medium rounded-lg text-sm px-5 py-2.5">Manage
                 Programs</button>
             </div>
@@ -285,7 +291,7 @@
                         date:'HH:mm:ss' }}</span>
                     </p>
 
-                    <button (click)="viewLogDetails(log.id)"
+                    <button  appPress (shortPress)="viewLogDetails(log.id)"
                       class="flex items-center text-xs font-semibold bg-sky-200 dark:bg-sky-700 text-sky-800 dark:text-sky-100 px-2 py-1 rounded hover:bg-sky-300">
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                         stroke="currentColor" class="w-5 h-5 mr-2">
@@ -302,14 +308,14 @@
               </div>
               <div *ngIf="isToday(currentDate())">
                 <p *ngIf="allActivePrograms().length === 0" class="text-m text-gray-500 dark:text-gray-400">
-                  You can <button (click)="managePrograms()"
+                  You can <button  appPress (shortPress)="managePrograms()"
                     class="text-primary dark:text-primary-light hover:underline">set an active program</button> or
-                  <button (click)="browseRoutines()"
+                  <button  appPress (shortPress)="browseRoutines()"
                     class="text-primary dark:text-primary-light hover:underline">browser the available routines</button>
                 </p>
                 <p *ngIf="allActivePrograms().length > 0" class="text-m text-gray-500 dark:text-gray-400">
                   Feel free to
-                  <button (click)="browseRoutines()" class="text-primary dark:text-primary-light hover:underline">pick
+                  <button  appPress (shortPress)="browseRoutines()" class="text-primary dark:text-primary-light hover:underline">pick
                     any
                     other
                     routine</button>, if you'd prefer
@@ -318,7 +324,7 @@
                   *ngIf="availableRoutines$ | async as routines">
                   <h4 class="text-md font-semibold text-gray-600 dark:text-gray-200 mb-2">Or, pick one from below:</h4>
                   <div class="max-h-60 overflow-y-auto space-y-2 pr-2 py-2 custom-scrollbar">
-                    <div (click)="viewRoutineDetails(routine.id)" *ngFor="let routine of routines"
+                    <div  appPress (shortPress)="viewRoutineDetails(routine.id)" *ngFor="let routine of routines"
                       class="p-3 bg-gray-200/50 dark:bg-gray-600 rounded-md shadow-sm hover:shadow-md transition-shadow flex justify-between items-center transform hover:-translate-y-1">
                       <div class="truncate">
                         <span class="font-medium text-gray-800 dark:text-gray-100">{{ routine.name }}</span>
@@ -333,7 +339,7 @@
                           </span>
                         </span>
                       </div>
-                      <button (click)="startWorkoutProgram(routine.id, undefined, $event)" [disabled]="isAnimating()"
+                      <button  appPress (shortPress)="startWorkoutProgram(routine.id, undefined, $event)" [disabled]="isAnimating()"
                         class="flex items-center ml-2 text-m bg-primary hover:bg-green-200 text-white dark:hover:bg-primary-dark font-semibold py-1 px-2.5 rounded-md disabled:opacity-50">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
                           stroke="currentColor" class="size-4 mr-1">

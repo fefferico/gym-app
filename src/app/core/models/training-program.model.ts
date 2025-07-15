@@ -21,6 +21,7 @@ export interface ScheduledRoutineDay {
   notes?: string;
   /** Optional: Specific time of day suggestion, e.g., "AM" or "PM" or "08:00" */
   timeOfDay?: string;
+  isUnscheduled?: boolean; // Indicates if this is an unscheduled routine (e.g., from workout logs)
 }
 
 /**

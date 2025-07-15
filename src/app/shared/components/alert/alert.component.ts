@@ -3,11 +3,12 @@ import { Component, Input, Output, EventEmitter, HostListener, ChangeDetectionSt
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms'; // <-- Import FormsModule
 import { AlertButton, AlertOptions, AlertInput } from '../../../core/models/alert.model';
+import { PressDirective } from '../../directives/press.directive';
 
 @Component({
   selector: 'app-alert',
   standalone: true,
-  imports: [CommonModule, FormsModule], // <-- Add FormsModule
+  imports: [CommonModule, FormsModule, PressDirective], // <-- Add FormsModule
   templateUrl: './alert.component.html',
   styleUrls: ['./alert.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

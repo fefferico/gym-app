@@ -8,19 +8,21 @@ import { Routine } from '../../../core/models/workout.model';
 import { ScheduledRoutineDay, TrainingProgram } from '../../../core/models/training-program.model';
 import { WorkoutLog } from '../../../core/models/workout-log.model';
 import { WorkoutService } from '../../../core/services/workout.service';
-import { catchError, map, Observable, of, Subject, switchMap, takeUntil, tap, combineLatest, ObservedValueOf } from 'rxjs';
+import { catchError, map, Observable, of, Subject, switchMap, takeUntil, tap, combineLatest, ObservedValueOf, take } from 'rxjs';
 import Hammer from 'hammerjs';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { TrackingService } from '../../../core/services/tracking.service';
 import { startOfDay, endOfDay } from 'date-fns';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { v4 as uuidv4 } from 'uuid';
+import { PressDirective } from '../../../shared/directives/press.directive';
 
 export type SlideAnimationState = 'center' | 'exitToLeft' | 'exitToRight' | 'enterFromLeft' | 'enterFromRight';
 
 @Component({
   selector: 'app-todays-workout',
   standalone: true,
-  imports: [CommonModule, DatePipe],
+  imports: [CommonModule, DatePipe, PressDirective],
   templateUrl: './todays-workout.html',
   styleUrls: ['./todays-workout.scss'],
   animations: [
@@ -85,12 +87,17 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
       switchMap(date =>
         combineLatest([
           this.trainingProgramService.getActivePrograms(),
-          this.trackingService.getLogsForDate(this.formatDate(date))
+          this.trackingService.getLogsForDate(this.formatDate(date)),
+          this.workoutService.routines$.pipe(take(1)) // Fetch all routines to build a lookup map
         ]).pipe(
-          map(([activePrograms, logsForDay]) => {
-            const foundWorkouts: { routine: Routine, scheduledDayInfo: ScheduledRoutineDay }[] = [];
-            let programForDisplay: TrainingProgram | null = null;
+          map(([activePrograms, logsForDay, allRoutines]) => {
+            const allRoutinesMap = new Map<string, Routine>();
+            allRoutines.forEach(r => allRoutinesMap.set(r.id, r));
 
+            const allWorkoutsForDay: { routine: Routine, scheduledDayInfo: ScheduledRoutineDay & { isUnscheduled?: boolean } }[] = [];
+            const activeProgramIds = new Set((activePrograms || []).map(p => p.id));
+
+            // 1. Find regularly scheduled workouts from active programs.
             if (activePrograms) {
               for (const prog of activePrograms) {
                 const routineData = this.trainingProgramService.findRoutineForDayInProgram(date, prog);
@@ -99,33 +106,59 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
                   programStartDate.setHours(0, 0, 0, 0);
                   const streamDate = new Date(date);
                   streamDate.setHours(0, 0, 0, 0);
-
                   if (programStartDate <= streamDate) {
-                    foundWorkouts.push(routineData);
+                    allWorkoutsForDay.push({ ...routineData, scheduledDayInfo: { ...routineData.scheduledDayInfo, isUnscheduled: false } });
                   }
                 }
               }
             }
 
-            if (foundWorkouts.length > 0) {
-              // If workouts are found, set the program for display to the one from the first found workout.
-              const firstProgramId = foundWorkouts[0].scheduledDayInfo.id;
-              programForDisplay = activePrograms?.find(p => p.id === firstProgramId) ?? null;
-            } else if (activePrograms && activePrograms.length > 0) {
-              // If no workouts scheduled but programs are active, use the first for context.
-              programForDisplay = activePrograms[0];
+            const scheduledRoutineIds = new Set(allWorkoutsForDay.map(w => w.routine.id));
+
+            // 2. Find unscheduled workouts that were logged today under an active program.
+            const unscheduledLogs = (logsForDay ?? []).filter(log =>
+              log.programId &&
+              activeProgramIds.has(log.programId) &&
+              log.routineId &&
+              !scheduledRoutineIds.has(log.routineId)
+            );
+
+            // 3. Group unscheduled logs by routine to handle multiple logs for the same routine.
+            const unscheduledLogsByRoutine = new Map<string, WorkoutLog[]>();
+            for (const log of unscheduledLogs) {
+              if (!log.routineId) continue;
+              if (!unscheduledLogsByRoutine.has(log.routineId)) {
+                unscheduledLogsByRoutine.set(log.routineId, []);
+              }
+              unscheduledLogsByRoutine.get(log.routineId)!.push(log);
+            }
+
+            // 4. Create workout items for these unscheduled logs.
+            for (const [routineId, logs] of unscheduledLogsByRoutine.entries()) {
+              const routine = allRoutinesMap.get(routineId);
+              const program = activePrograms?.find(p => p.id === logs[0].programId);
+
+              if (routine && program) {
+                const dummyScheduledDayInfo: ScheduledRoutineDay & { isUnscheduled?: boolean } = {
+                  id: uuidv4(),
+                  routineId: routineId,
+                  dayOfWeek: date.getDay(),
+                  programId: program.id,
+                  isUnscheduled: true
+                };
+                allWorkoutsForDay.push({ routine: routine, scheduledDayInfo: dummyScheduledDayInfo });
+              }
             }
 
             return {
               allActivePrograms: activePrograms || [],
-              programForDisplay: programForDisplay,
-              routineData: foundWorkouts,
+              routineData: allWorkoutsForDay,
               logsForDay,
             };
           }),
           catchError(err => {
             console.error("Error loading workout data for date:", date, err);
-            return of({ allActivePrograms: [], programForDisplay: null, routineData: [], logsForDay: [] });
+            return of({ allActivePrograms: [], routineData: [], logsForDay: [] });
           })
         )
       ),
@@ -246,6 +279,10 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
 
   findRoutineLog(routineId: string): Observable<WorkoutLog | undefined> {
     return this.trackingService.getWorkoutLogByRoutineId(routineId);
+  }
+
+  getLogForRoutine(routineId: string): WorkoutLog {
+    return this.logsForDay().find(log => log.routineId === routineId) || {} as WorkoutLog;
   }
 
   protected updateSanitizedDescription(value: string): SafeHtml {

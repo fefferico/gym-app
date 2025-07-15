@@ -33,13 +33,14 @@ import { ClickOutsideDirective } from '../../shared/directives/click-outside.dir
 import { ExerciseDetailComponent } from '../exercise-library/exercise-detail';
 import { TrainingProgram } from '../../core/models/training-program.model';
 import { TrainingProgramService } from '../../core/services/training-program.service';
+import { PressDirective } from '../../shared/directives/press.directive';
 
 type BuilderMode = 'routineBuilder' | 'manualLogEntry';
 
 @Component({
   selector: 'app-workout-builder',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, FormsModule, DragDropModule, WeightUnitPipe, TitleCasePipe, LongPressDragDirective, AutoGrowDirective, ActionMenuComponent, IsWeightedPipe, ModalComponent, ClickOutsideDirective, ExerciseDetailComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, FormsModule, DragDropModule, WeightUnitPipe, TitleCasePipe, LongPressDragDirective, AutoGrowDirective, ActionMenuComponent, IsWeightedPipe, ModalComponent, ClickOutsideDirective, ExerciseDetailComponent, PressDirective],
   templateUrl: './workout-builder.html',
   styleUrl: './workout-builder.scss',
   providers: [DecimalPipe]
@@ -720,7 +721,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     }
   }
 
-  toggleSetExpansion(exerciseIndex: number, setIndex: number, event?: MouseEvent): void {
+  toggleSetExpansion(exerciseIndex: number, setIndex: number, event?: Event): void {
     this.isAllExpandedInViewMode.set(false); // <-- ADD THIS LINE
     event?.stopPropagation();
 
@@ -1432,7 +1433,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   // which is used to show/hide the <app-action-menu>
   activeRoutineIdActions = signal<string | null>(null); // Store ID of routine whose actions are open
 
-  toggleActions(routineId: string, event: MouseEvent): void {
+  toggleActions(routineId: string, event: Event): void {
     event.stopPropagation();
     this.activeRoutineIdActions.update(current => (current === routineId ? null : routineId));
   }

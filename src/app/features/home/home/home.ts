@@ -9,12 +9,13 @@ import { ToastService } from '../../../core/services/toast.service';
 import { WorkoutService } from '../../../core/services/workout.service';
 import { PausedWorkoutState } from '../../workout-tracker/workout-player';
 import { UserProfileService } from '../../../core/services/user-profile.service';
+import { PressDirective } from '../../../shared/directives/press.directive';
 
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterLink, TodaysWorkoutComponent, DatePipe], // Added DatePipe
+  imports: [CommonModule, RouterLink, TodaysWorkoutComponent, DatePipe, PressDirective], // Added DatePipe
   templateUrl: './home.html',
   styleUrls: ['./home.scss']
 })

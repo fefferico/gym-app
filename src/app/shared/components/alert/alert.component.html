@@ -74,7 +74,7 @@
     <footer *ngIf="options.buttons && options.buttons.length > 0"
       class="overflow-y-auto p-6 pt-4 custom-scrollbar"
       [ngClass]="options.buttons.length === 2 ? 'flex justify-center gap-2 sm:gap-3' : 'grid grid-cols-1 gap-2 sm:gap-3'">
-      <button *ngFor="let button of options.buttons" [ngClass]="getButtonClass(button)" (click)="onButtonClick(button)"
+      <button *ngFor="let button of options.buttons" [ngClass]="getButtonClass(button)" appPress (shortPress)="onButtonClick(button)"
         class="min-w-[80px] h-14 flex items-center justify-center rounded-md transition-colors text-center"
         style="line-height: 1.25;">
         {{ button.text }}
