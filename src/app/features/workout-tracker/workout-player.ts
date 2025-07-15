@@ -4252,7 +4252,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       };
     });
 
-    exerciseButtons.push({ text: 'Cancel', role: 'cancel', data: 'cancel_jump' });
+    exerciseButtons.push({ text: 'CANCEL', role: 'cancel', data: 'cancel_jump' });
     this.closeWorkoutMenu();
 
     const choice = await this.alertService.showConfirmationDialog(
@@ -4276,7 +4276,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         const restartChoice = await this.alertService.showConfirmationDialog(
           `Restart ${exerciseToJumpTo.exerciseName}`,
           'Are you sure you want to restart the selected exercise? By doing so the previous logged sets will be removed', // Updated prompt text
-          [{ text: 'Cancel', role: 'cancel', data: 'cancel' }, { text: 'OK', role: 'confirm', data: 'confirm' }],
+          [{ text: 'CANCEL', role: 'cancel', data: 'cancel' }, { text: 'OK', role: 'confirm', data: 'confirm' }],
         );
 
         if (restartChoice?.data !== 'confirm') {
@@ -4783,4 +4783,8 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     const loggedSetCount = this.getNumberOfLoggedSets(activeInfo.exerciseData.id);
     return loggedSetCount === 0;
   });
+
+  backToRoutines(): void {
+    this.router.navigate(['/workout']);
+  }
 }

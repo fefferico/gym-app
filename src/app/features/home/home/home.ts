@@ -133,4 +133,8 @@ export class HomeComponent implements OnInit {
       );
     }
   }
+
+  startNewSession(): void {
+    this.router.navigate(['/workout/play', -1], { queryParams: { newSession: 'true' } });
+  }
 }

@@ -4,6 +4,7 @@ import { Component } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router'; // Ensure Router is imported
+import { PressDirective } from '../../directives/press.directive';
 
 interface NavItem {
   path: string;
@@ -15,7 +16,7 @@ interface NavItem {
 @Component({
   selector: 'app-navigation',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, CommonModule],
+  imports: [RouterLink, RouterLinkActive, CommonModule, PressDirective],
   templateUrl: './navigation.html',
   styleUrls: ['./navigation.scss']
 })
@@ -52,5 +53,9 @@ export class NavigationComponent {
 
     // For all other links, just return their normal active state.
     return isActive;
+  }
+
+  onNavItemClick(item: NavItem): void {
+    this.router.navigate([item.path]);
   }
 }

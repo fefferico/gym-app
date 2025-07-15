@@ -11,7 +11,7 @@
     <!-- +++ 2. Scrollable content wrapper +++ -->
     <div class="p-6 pb-4 flex-shrink-0">
       <header *ngIf="options.header" class="mb-4">
-        <h3 class="text-xl font-semibold text-gray-800 dark:text-gray-100">{{ options.header }}</h3>
+        <h3 class="text-xl font-semibold text-gray-800 dark:text-gray-100">{{ options.header | uppercase}}</h3>
       </header>
 
       <main *ngIf="options.message || (options.inputs && options.inputs.length > 0)">
@@ -77,7 +77,7 @@
       <button *ngFor="let button of options.buttons" [ngClass]="getButtonClass(button)" appPress (shortPress)="onButtonClick(button)"
         class="min-w-[80px] h-14 flex items-center justify-center rounded-md transition-colors text-center"
         style="line-height: 1.25;">
-        {{ button.text }}
+        {{ button.text | uppercase}}
       </button>
     </footer>
 
