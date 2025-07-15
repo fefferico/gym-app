@@ -10,6 +10,7 @@ import { ExerciseService } from '../../../core/services/exercise.service';
 import { StatsService } from '../../../core/services/stats.service';
 import { UnitsService } from '../../../core/services/units.service';
 import { WeightUnitPipe } from '../../../shared/pipes/weight-unit-pipe';
+import { PressDirective } from '../../../shared/directives/press.directive';
 
 
 interface DisplayLoggedExerciseSummary extends LoggedWorkoutExercise {
@@ -27,7 +28,7 @@ interface SessionPbInfo {
 @Component({
   selector: 'app-workout-summary',
   standalone: true,
-  imports: [CommonModule, DatePipe, RouterLink],
+  imports: [CommonModule, DatePipe, RouterLink, PressDirective],
   templateUrl: './workout-summary.html',
   styleUrl: './workout-summary.scss',
 })

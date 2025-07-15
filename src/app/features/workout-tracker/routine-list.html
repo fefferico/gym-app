@@ -414,7 +414,7 @@
         <!-- 1. "Back to Top" Button -->
         <!-- It's now inside the container, so we remove its individual `fixed` positioning. -->
         <!-- It will appear only when the condition is met, stacked on top due to flex-col. -->
-        <button *ngIf="showBackToTopButton()" (click)="scrollToTop()" type="button"
+        <button *ngIf="showBackToTopButton()" appPress (shortPress)="scrollToTop()" type="button"
             class="bg-primary dark:bg-primary-dark text-white rounded-full p-3 shadow-lg hover:bg-primary-dark dark:hover:bg-primary-light focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-focus dark:focus:ring-offset-gray-900 transition-opacity animate-fade-in">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5"
                 stroke="currentColor" class="w-6 h-6">
@@ -431,7 +431,7 @@
             (mouseleave)="handleFabMouseLeave()">
 
             <!-- Main FAB (The "Plus" button) -->
-            <button (click)="handleFabClick()" type="button"
+            <button appPress (shortPress)="handleFabClick()" type="button"
                 class="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-xl transition-all duration-300 hover:bg-primary-dark hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary-focus focus:ring-offset-2 dark:ring-offset-gray-900">
                 <!-- Icon rotates to an "X" when open -->
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 transition-transform duration-300"
@@ -452,7 +452,7 @@
                         style="margin-right: -10px;">
                         CREATE ROUTINE
                     </span>
-                    <button (click)="navigateToCreateRoutine()" type="button"
+                    <button appPress (shortPress)="navigateToCreateRoutine()" type="button"
                         class="flex h-14 w-14 items-center justify-center rounded-full bg-blue-500 text-white shadow-lg transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 dark:ring-offset-gray-900">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-7 w-7">
                             <path
@@ -469,7 +469,7 @@
                         style="margin-right: -10px;">
                         START NEW SESSION
                     </span>
-                    <button routerLink="/workout/play/-1" type="button"
+                    <button appPress (shortPress)="startNewSession()" routerLink="/workout/play/-1" type="button"
                         class="flex h-14 w-14 items-center justify-center rounded-full bg-green-500 text-white shadow-lg transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 dark:ring-offset-gray-900">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
                             class="h-7 w-7 pl-0.5">

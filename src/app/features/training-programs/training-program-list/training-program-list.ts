@@ -28,6 +28,7 @@ import { ActionMenuComponent } from '../../../shared/components/action-menu/acti
 import { AlertButton } from '../../../core/models/alert.model';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { v4 as uuidv4 } from 'uuid';
+import { PressDirective } from '../../../shared/directives/press.directive';
 
 interface ScheduledItemWithLogs {
   routine: Routine;
@@ -52,7 +53,7 @@ type CalendarDisplayMode = 'week' | 'month';
 @Component({
   selector: 'app-training-program-list',
   standalone: true,
-  imports: [CommonModule, DatePipe, RouterLink, TitleCasePipe, DayOfWeekPipe, ActionMenuComponent],
+  imports: [CommonModule, DatePipe, TitleCasePipe, ActionMenuComponent, PressDirective],
   templateUrl: './training-program-list.html',
   styleUrls: ['./training-program-list.scss'],
   animations: [

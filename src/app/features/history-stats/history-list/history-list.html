@@ -1,7 +1,7 @@
 <div class="container mx-auto p-2 sm:p-4">
   <header class="flex justify-between items-center pb-2">
     <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">Workout History</h1>
-    <button *ngIf="currentHistoryView() === 'list'" (click)="toggleFilterAccordion()" type="button"
+    <button *ngIf="currentHistoryView() === 'list'" appPress (shortPress)="toggleFilterAccordion()" type="button"
       class="rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-light transition-all duration-300 ease-in-out">
       <svg stroke="currentColor" class="w-8 h-8 transition-transform duration-300" viewBox="0 0 24 24"
         stroke-width="0.02" fill="currentColor" xmlns="http://www.w3.org/2000/svg"
@@ -402,7 +402,7 @@
       <!-- 1. "Back to Top" Button -->
       <!-- It's now inside the container, so we remove its individual `fixed` positioning. -->
       <!-- It will appear only when the condition is met, stacked on top due to flex-col. -->
-      <button *ngIf="showBackToTopButton()" (click)="scrollToTop()" type="button"
+      <button *ngIf="showBackToTopButton()" appPress (shortPress)="scrollToTop()" type="button"
         class="bg-primary dark:bg-primary-dark text-white rounded-full p-3 shadow-lg hover:bg-primary-dark dark:hover:bg-primary-light focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-focus dark:focus:ring-offset-gray-900 transition-opacity animate-fade-in">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"
           class="w-6 h-6">
@@ -419,7 +419,7 @@
         (mouseleave)="handleFabMouseLeave()">
 
         <!-- Main FAB (The "Plus" button) -->
-        <button (click)="handleFabClick()" type="button"
+        <button appPress (shortPress)="handleFabClick()" type="button"
           class="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-xl transition-all duration-300 hover:bg-primary-dark hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary-focus focus:ring-offset-2 dark:ring-offset-gray-900">
           <!-- Icon rotates to an "X" when open -->
           <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 transition-transform duration-300"
@@ -440,7 +440,7 @@
               style="margin-right: -10px;">
               LOG PAST WORKOUT
             </span>
-            <button (click)="logPastWorkout()" type="button"
+            <button appPress (shortPress)="logPastWorkout()" type="button"
               class="flex h-14 w-14 items-center justify-center rounded-full bg-blue-500 text-white shadow-lg transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 dark:ring-offset-gray-900">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-7 w-7">
                 <path

@@ -13,6 +13,7 @@ import { MuscleGroupPerformance, StatsService, WeeklySummary, DatedVolume, Strea
 import { TrackingService } from '../../../core/services/tracking.service';
 import { WorkoutLog } from '../../../core/models/workout-log.model';
 import { UnitsService } from '../../../core/services/units.service';
+import { PressDirective } from '../../../shared/directives/press.directive';
 
 export interface ChartDataPoint {
   name: string | Date;
@@ -29,7 +30,8 @@ export interface ChartSeries { name: string; series: ChartDataPoint[]; }
     DecimalPipe,
     DatePipe, // Add DatePipe here
     NgxChartsModule,
-    ReactiveFormsModule // Add ReactiveFormsModule here
+    ReactiveFormsModule, // Add ReactiveFormsModule here
+    PressDirective
   ],
   templateUrl: './stats-dashboard.html',
   styleUrl: './stats-dashboard.scss',

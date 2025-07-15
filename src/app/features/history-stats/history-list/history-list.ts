@@ -32,6 +32,7 @@ import { ActionMenuComponent } from '../../../shared/components/action-menu/acti
 import { ActionMenuItem } from '../../../core/models/action-menu.model';
 import { TrainingProgramService } from '../../../core/services/training-program.service';
 import { TrainingProgram } from '../../../core/models/training-program.model';
+import { PressDirective } from '../../../shared/directives/press.directive';
 
 
 interface HistoryCalendarDay {
@@ -47,7 +48,7 @@ type HistoryListView = 'list' | 'calendar';
 @Component({
   selector: 'app-history-list',
   standalone: true,
-  imports: [CommonModule, RouterLink, DatePipe, TitleCasePipe, FormsModule, ReactiveFormsModule, ActionMenuComponent],
+  imports: [CommonModule, DatePipe, TitleCasePipe, FormsModule, ReactiveFormsModule, ActionMenuComponent, PressDirective],
   templateUrl: './history-list.html',
   styleUrl: './history-list.scss',
   providers: [DecimalPipe],
@@ -621,5 +622,4 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
       this.isFabActionsOpen.set(false);
     }
   }
-
 }

@@ -21,6 +21,7 @@ import { ActionMenuItem } from '../../../core/models/action-menu.model';
 import { AlertService } from '../../../core/services/alert.service';
 import { SpinnerService } from '../../../core/services/spinner.service';
 import { ToastService } from '../../../core/services/toast.service';
+import { PressDirective } from '../../../shared/directives/press.directive';
 // DomSanitizer is not explicitly used in this version after previous edits, but good to keep if you plan to use [innerHTML] with dynamic SVGs later.
 // import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
@@ -48,7 +49,7 @@ interface TargetComparisonData {
 @Component({
   selector: 'app-workout-log-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, DatePipe, TitleCasePipe, WeightUnitPipe, ModalComponent, ExerciseDetailComponent, IsWeightedPipe, ActionMenuComponent],
+  imports: [CommonModule, RouterLink, DatePipe, TitleCasePipe, ModalComponent, ExerciseDetailComponent, IsWeightedPipe, ActionMenuComponent, PressDirective],
   templateUrl: './workout-log-detail.html',
   providers: [DecimalPipe] // DecimalPipe if used directly in template; WeightUnitPipe already handles it
 })

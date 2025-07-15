@@ -827,4 +827,8 @@ export class RoutineListComponent implements OnInit, OnDestroy {
       this.isFabActionsOpen.set(false);
     }
   }
+
+  startNewSession(): void {
+    this.router.navigate(['/workout/play', -1], { queryParams: { newSession: 'true' } });
+  }
 }

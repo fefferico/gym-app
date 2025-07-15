@@ -104,7 +104,7 @@
             titlecase }}</p>
           <p *ngIf='exercise.equipmentNeeded'
             class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-1 capitalize">
-            Equipment: {{ (exercise.equipmentNeeded?.join(', ') || 'None') | titlecase }}
+            Equipment: {{ (exercise.equipmentNeeded.join(', ') || 'None') | titlecase }}
           </p>
           <p class="text-xs sm:text-sm text-gray-700 dark:text-gray-300 mb-2 sm:mb-3">Primary: {{
             exercise.primaryMuscleGroup | titlecase }}</p>

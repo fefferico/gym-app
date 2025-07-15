@@ -16,13 +16,13 @@ interface NavItem {
 @Component({
   selector: 'app-navigation',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, CommonModule, PressDirective],
+  imports: [RouterLink, CommonModule, PressDirective],
   templateUrl: './navigation.html',
   styleUrls: ['./navigation.scss']
 })
 export class NavigationComponent {
   // Inject Router and make it public to use in the template
-  constructor(public router: Router) {}
+  constructor(public router: Router) { }
 
   statsPath = '/history/dashboard';
 
@@ -55,7 +55,28 @@ export class NavigationComponent {
     return isActive;
   }
 
-  onNavItemClick(item: NavItem): void {
-    this.router.navigate([item.path]);
+  /**
+   * Navigates to the given path.
+   * This is triggered by the (shortPress) event from the appPress directive.
+   */
+  onNavigate(path: string): void {
+    this.router.navigate([path]);
+  }
+
+  /**
+   * Handles the long press event on a navigation item.
+   */
+  onLongPress(item: NavItem): void {
+    // You can add any custom logic for a long press here.
+    // For example, showing a tooltip or a context menu.
+    console.log('Long pressed:', item.label);
+  }
+
+  /**
+   * Handles the press release event on a navigation item.
+   */
+  onPressRelease(item: NavItem): void {
+    // You can add any custom logic for the press release here.
+    console.log('Press released on:', item.label);
   }
 }

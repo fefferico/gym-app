@@ -19,6 +19,7 @@ import { DayOfWeekPipe } from '../../../shared/pipes/day-of-week-pipe';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ActionMenuItem } from '../../../core/models/action-menu.model';
 import { ActionMenuComponent } from '../../../shared/components/action-menu/action-menu';
+import { PressDirective } from '../../../shared/directives/press.directive';
 
 interface DayOption {
     value: number;
@@ -38,7 +39,8 @@ interface ProgramGoal { value: Routine['goal'], label: string }
         DragDropModule,
         DayOfWeekPipe,
         FormsModule,
-        ActionMenuComponent
+        ActionMenuComponent,
+        PressDirective
     ],
     templateUrl: './training-program-builder.html',
     styleUrls: ['./training-program-builder.scss']

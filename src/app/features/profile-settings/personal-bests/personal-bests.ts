@@ -15,6 +15,7 @@ import { UnitsService } from '../../../core/services/units.service';
 import { WeightUnitPipe } from '../../../shared/pipes/weight-unit-pipe'; // Not directly used in formatPbValue but good to have if template uses it elsewhere
 import { ToastService } from '../../../core/services/toast.service';
 import { animate, state, style, transition, trigger } from '@angular/animations';
+import { PressDirective } from '../../../shared/directives/press.directive';
 
 
 // Interface to combine PB data with Exercise details
@@ -27,7 +28,7 @@ interface DisplayPersonalBest extends PersonalBestSet {
 @Component({
   selector: 'app-personal-bests',
   standalone: true,
-  imports: [CommonModule, RouterLink, DatePipe, TitleCasePipe, DecimalPipe], // Add DecimalPipe to imports if not already
+  imports: [CommonModule, RouterLink, DatePipe, TitleCasePipe, PressDirective], // Add DecimalPipe to imports if not already
   templateUrl: './personal-bests.html',
   styleUrl: './personal-bests.scss',
   animations: [

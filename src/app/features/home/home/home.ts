@@ -137,4 +137,21 @@ export class HomeComponent implements OnInit {
   startNewSession(): void {
     this.router.navigate(['/workout/play', -1], { queryParams: { newSession: 'true' } });
   }
+
+  navigateToRoutines(): void {
+    this.router.navigate(['/workout']);
+  }
+
+  navigateToPrograms(): void {
+    this.router.navigate(['/training-programs']);
+  }
+
+  navigateToHistory(): void {
+    this.router.navigate(['/history']);
+  }
+
+  navigateToProfile(): void {
+    this.router.navigate(['/profile']);
+  }
+
 }

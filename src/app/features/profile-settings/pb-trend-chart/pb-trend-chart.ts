@@ -34,7 +34,6 @@ interface ChartData {
     standalone: true,
     imports: [
         CommonModule,
-        RouterLink,
         NgxChartsModule, // Import NgxChartsModule here for standalone component
         DatePipe
     ],

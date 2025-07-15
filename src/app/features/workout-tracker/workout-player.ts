@@ -106,7 +106,7 @@ enum PlayerSubState {
 @Component({
   selector: 'app-workout-player',
   standalone: true,
-  imports: [CommonModule, RouterLink, DatePipe, ReactiveFormsModule,
+  imports: [CommonModule, DatePipe, ReactiveFormsModule,
     FormatSecondsPipe,
     FormsModule, WeightUnitPipe, FullScreenRestTimerComponent, PressDirective, ModalComponent, ExerciseDetailComponent],
   templateUrl: './workout-player.html',

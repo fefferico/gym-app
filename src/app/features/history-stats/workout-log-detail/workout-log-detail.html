@@ -163,7 +163,7 @@
                     </h3>
                     <svg class="ml-2 cursor-pointer dark:text-white" title="Exercise details"
                       *ngIf="loggedEx.exerciseId" width="20" height="20" viewBox="0 0 20 20"
-                      xmlns="http://www.w3.org/2000/svg" (click)="openModal(loggedEx)">
+                      xmlns="http://www.w3.org/2000/svg" appPress (shortPress)="openModal(loggedEx)">
                       <!-- Outer circle -->
                       <title>Exercise details and progression</title>
                       <circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="2" fill="none" />
@@ -240,7 +240,7 @@
                 </div>
                 <div>
                   <strong [ngClass]="checkTextClass(set, 'reps')" [class.cursor-pointer]="isTargetMissed(set, 'reps')"
-                    [class.hover:underline]="isTargetMissed(set, 'reps')" (click)="showComparisonModal(set, 'reps')">
+                    [class.hover:underline]="isTargetMissed(set, 'reps')" appPress (shortPress)="showComparisonModal(set, 'reps')">
                     {{ set.repsAchieved || '—' }}
                   </strong>
                 </div>
@@ -250,7 +250,7 @@
                   <strong [ngClass]="checkTextClass(set, 'weight')"
                     [class.cursor-pointer]="isTargetMissed(set, 'weight')"
                     [class.hover:underline]="isTargetMissed(set, 'weight')"
-                    (click)="showComparisonModal(set, 'weight')">
+                    appPress (shortPress)="showComparisonModal(set, 'weight')">
                     {{ set.weightUsed != null ? (set.weightUsed + ' ' + unitService.getUnitLabel()) : '—' }}
                   </strong>
 
@@ -260,18 +260,18 @@
                   <strong [ngClass]="checkTextClass(set, 'duration')"
                     [class.cursor-pointer]="isTargetMissed(set, 'duration')"
                     [class.hover:underline]="isTargetMissed(set, 'duration')"
-                    (click)="showComparisonModal(set, 'duration')">
+                    appPress (shortPress)="showComparisonModal(set, 'duration')">
                     {{ set.durationPerformed || '—' }}
                   </strong>
                 </div>
                 <div>
                   <strong [ngClass]="checkTextClass(set, 'rest')" [class.cursor-pointer]="isTargetMissed(set, 'rest')"
-                    [class.hover:underline]="isTargetMissed(set, 'rest')" (click)="showComparisonModal(set, 'rest')">
+                    [class.hover:underline]="isTargetMissed(set, 'rest')" appPress (shortPress)="showComparisonModal(set, 'rest')">
                     {{ set.restAfterSetUsed || '—' }}
                   </strong>
                 </div>
                 <div class="cursor-pointer">
-                  <svg (click)="showNotesModal(set.notes)" *ngIf="set.notes" xmlns="http://www.w3.org/2000/svg"
+                  <svg appPress (shortPress)="showNotesModal(set.notes)" *ngIf="set.notes" xmlns="http://www.w3.org/2000/svg"
                     class="h-8 w-8 text-gray-500 dark:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"
                     stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -326,7 +326,7 @@
   <div class="flex flex-col p-4 text-left text-gray-700 dark:text-gray-200">
     <textarea [disabled]="true" class="font-semibold pb-2 dark:border-gray-600 dark:bg-gray-800" name=""
       id="">{{data}}</textarea>
-    <button (click)="notesModalsData.set(null)"
+    <button appPress (shortPress)="notesModalsData.set(null)"
       class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary-light">
       CLOSE
     </button>
@@ -346,9 +346,9 @@
       <div class="text-gray-500 dark:text-gray-400">{{ data.targetValue }}</div>
       <div class="text-red-500 dark:text-red-400 font-bold">{{ data.performedValue }}</div>
     </div>
-    <button (click)="comparisonModalData.set(null)"
+    <button appPress (shortPress)="comparisonModalData.set(null)"
       class="mt-6 w-full px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary-light">
-      Close
+      CLOSE
     </button>
   </div>
 
