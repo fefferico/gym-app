@@ -1,5 +1,3 @@
-// press.directive.ts - FINAL VERSION
-
 import { Directive, ElementRef, EventEmitter, HostListener, Output, Renderer2 } from '@angular/core';
 
 @Directive({
@@ -8,56 +6,80 @@ import { Directive, ElementRef, EventEmitter, HostListener, Output, Renderer2 } 
 export class PressDirective {
   @Output() shortPress = new EventEmitter<Event>();
   @Output() longPress = new EventEmitter<Event>();
-  @Output() pressRelease = new EventEmitter<Event>(); // Fired on mouseup/touchend ALWAYS
+  @Output() pressRelease = new EventEmitter<Event>();
 
   private timeoutId: any;
   private isLongPress = false;
+  private isScrolling = false;
+  private startY = 0;
+  private startX = 0;
 
   constructor(private el: ElementRef, private renderer: Renderer2) { }
 
-  @HostListener('mousedown')
+  @HostListener('mousedown', ['$event'])
   @HostListener('touchstart', ['$event'])
-  onPressStart(event?: Event): void {
+  onPressStart(event: MouseEvent | TouchEvent): void {
     // Prevent context menu on mobile
-    event?.preventDefault();
+    if (event instanceof TouchEvent) {
+      this.startY = event.touches[0].clientY;
+      this.startX = event.touches[0].clientX;
+    }
 
     this.isLongPress = false;
+    this.isScrolling = false;
 
     this.renderer.addClass(this.el.nativeElement, 'is-pressed');
     if (navigator.vibrate) {
-      navigator.vibrate(50); // Vibrate for 50 milliseconds
+      navigator.vibrate(50);
     }
 
     this.timeoutId = setTimeout(() => {
       this.isLongPress = true;
-      this.longPress.emit();
+      if (!this.isScrolling) {
+        this.longPress.emit(event);
+      }
     }, 500);
   }
 
-    @HostListener('mouseup', ['$event'])
-    @HostListener('mouseleave', ['$event'])
-    @HostListener('touchend', ['$event'])
-    @HostListener('touchcancel', ['$event'])
-    onPressEnd(event?: Event): void { 
+  @HostListener('touchmove', ['$event'])
+  onTouchMove(event: TouchEvent): void {
+    if (this.isScrolling) {
+      return;
+    }
+
+    const y = event.touches[0].clientY;
+    const x = event.touches[0].clientX;
+    const yDiff = Math.abs(y - this.startY);
+    const xDiff = Math.abs(x - this.startX);
+
+    // If movement is more than a few pixels, treat it as a scroll
+    if (yDiff > 10 || xDiff > 10) {
+      this.isScrolling = true;
+      clearTimeout(this.timeoutId);
+      this.renderer.removeClass(this.el.nativeElement, 'is-pressed');
+    }
+  }
+
+  @HostListener('mouseup', ['$event'])
+  @HostListener('touchend', ['$event'])
+  @HostListener('touchcancel', ['$event'])
+  onPressEnd(event: Event): void {
     clearTimeout(this.timeoutId);
     this.renderer.removeClass(this.el.nativeElement, 'is-pressed');
-    // Check if the event is a mouseleave event
-    // Angular HostListener does not pass event by default for mouseup/mouseleave
-    // So, to detect mouseleave, you need to add ['$event'] to HostListener and accept event param
 
     document.querySelectorAll('.is-pressed').forEach(el => {
       el.classList.remove('is-pressed');
     });
-    if (event?.type === 'mouseleave') {
+
+    if (event.type === 'mouseleave' || this.isScrolling) {
+      this.isScrolling = false; // Reset for next touch
       return;
     }
 
-    // Only emit shortPress if a longPress hasn't already been fired.
     if (!this.isLongPress) {
       this.shortPress.emit(event);
     }
-    
-    // ALWAYS emit that the press has been released.
+
     this.pressRelease.emit(event);
   }
 }
