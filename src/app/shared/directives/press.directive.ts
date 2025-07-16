@@ -1,11 +1,12 @@
 // press.directive.ts - FINAL VERSION
 
-import { Directive, ElementRef, EventEmitter, HostListener, Output, Renderer2 } from '@angular/core';
+import { Directive, ElementRef, EventEmitter, HostListener, Input, Output, Renderer2 } from '@angular/core';
 
 @Directive({
   selector: '[appPress]'
 })
 export class PressDirective {
+  @Input() pressDisabled: boolean = false;
   @Output() shortPress = new EventEmitter<Event>();
   @Output() longPress = new EventEmitter<Event>();
   @Output() pressRelease = new EventEmitter<Event>(); // Fired on mouseup/touchend ALWAYS
@@ -18,6 +19,9 @@ export class PressDirective {
   @HostListener('mousedown')
   @HostListener('touchstart', ['$event'])
   onPressStart(event?: Event): void {
+    if (this.pressDisabled) {
+      return; // Do nothing if the directive is disabled
+    }
     // Prevent context menu on mobile
     event?.preventDefault();
 

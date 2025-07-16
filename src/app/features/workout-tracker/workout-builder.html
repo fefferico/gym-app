@@ -188,9 +188,10 @@
                 (cdkDropListDropped)="onExerciseDrop($event)"
                 [cdkDropListDisabled]="!isEditableMode" formArrayName="exercises"
                 class="exercise-list-container space-y-4">
-                <ng-container *ngFor="let exerciseControl of exercisesFormArray.controls; let exIndex = index;">
+                <ng-container *ngFor="let exerciseControl of exercisesFormArray.controls; let exIndex = index;"
+                    >
                     <div class="relative group exercise-card-wrapper" (click)="toggleSetExpansion(exIndex,0, $event)"
-                        appClickOutside (clickOutside)="collapseExpandedSet(false,$event)" [title]="'Drag to reorder'"
+                        appClickOutside (clickOutside)="collapseExpandedSet(false,$event)" [title]="isEditableMode() ? 'Drag to reorder' : ''"
                         [ngClass]="{
                                         'superset-spacing': isSupersetSpacing(exIndex)
                                         }">
@@ -213,7 +214,7 @@
                             appLongPressDrag [longPressEnabled]="isEditableMode() && !isSetExpanded(exIndex, 0)"
                             [longPressDelay]="150" longPressClass="is-long-pressing" [cdkDragData]="exerciseControl"
                             [formGroupName]="exIndex" [cdkDragStartDelay]="110"
-                            class="exercise-item relative transition-all cursor-grab"
+                            class="exercise-item relative transition-all"
                             [ngClass]="getExerciseCardClasses(exerciseControl, exIndex)">
                             <!-- COMPACT VIEW / HEADER AREA -->
                             <div class="flex items-center space-x-1">

@@ -1,11 +1,12 @@
 // press-scroll.directive.ts - FINAL CORRECTED VERSION
 
-import { Directive, ElementRef, EventEmitter, HostListener, Output, Renderer2 } from '@angular/core';
+import { Directive, ElementRef, EventEmitter, HostListener, Input, Output, Renderer2 } from '@angular/core';
 
 @Directive({
   selector: '[appPressScroll]'
 })
 export class PressScrollDirective {
+  @Input() pressDisabled: boolean = false;
   @Output() shortPress = new EventEmitter<Event>();
   @Output() longPress = new EventEmitter<Event>();
   @Output() pressRelease = new EventEmitter<Event>();
@@ -27,6 +28,9 @@ export class PressScrollDirective {
   @HostListener('mousedown', ['$event'])
   @HostListener('touchstart', ['$event'])
   onPressStart(event: MouseEvent | TouchEvent): void {
+    if (this.pressDisabled) {
+      return; // Do nothing if the directive is disabled
+    }
     if (event instanceof TouchEvent) {
       this.startX = event.touches[0].clientX;
       this.startY = event.touches[0].clientY;

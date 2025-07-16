@@ -34,13 +34,14 @@ import { ExerciseDetailComponent } from '../exercise-library/exercise-detail';
 import { TrainingProgram } from '../../core/models/training-program.model';
 import { TrainingProgramService } from '../../core/services/training-program.service';
 import { PressDirective } from '../../shared/directives/press.directive';
+import { PressScrollDirective } from '../../shared/directives/press-scroll.directive';
 
 type BuilderMode = 'routineBuilder' | 'manualLogEntry';
 
 @Component({
   selector: 'app-workout-builder',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, FormsModule, DragDropModule, WeightUnitPipe, TitleCasePipe, LongPressDragDirective, AutoGrowDirective, ActionMenuComponent, IsWeightedPipe, ModalComponent, ClickOutsideDirective, ExerciseDetailComponent, PressDirective],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, FormsModule, DragDropModule, WeightUnitPipe, TitleCasePipe, LongPressDragDirective, AutoGrowDirective, ActionMenuComponent, IsWeightedPipe, ModalComponent, ClickOutsideDirective, ExerciseDetailComponent, PressDirective, PressScrollDirective],
   templateUrl: './workout-builder.html',
   styleUrl: './workout-builder.scss',
   providers: [DecimalPipe]
@@ -222,7 +223,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         }
         if (this.isEditMode && routineId === this.initialProgramIdForLogEdit && !this.builderForm.get('programIdForLog')?.dirty) {
           return;
-        }        
+        }
         const selectedRoutine = this.availableRoutines.find(r => r.id === routineId);
         // const selectedProgram = this.availablePrograms.find(p => p.id === routineId);
         if (selectedRoutine) {
@@ -725,6 +726,10 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     this.isAllExpandedInViewMode.set(false); // <-- ADD THIS LINE
     event?.stopPropagation();
 
+    if (navigator.vibrate) {
+      navigator.vibrate(50); // Use a distinct vibration for long press if desired, e.g., [100, 50, 100]
+    }
+
     // If the event is from a checkbox (superset selection), do not expand/collapse set
     if (
       event &&
@@ -1085,8 +1090,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
           durationMinutes: formValue.durationMinutes,
           routineId: formValue.routineIdForLog || undefined,
           routineName: formValue.routineIdForLog ?
-          (this.availableRoutines.find(r => r.id === formValue.routineIdForLog)?.name || formValue.name || 'Workout from Routine') :
-          (formValue.name || 'Ad-hoc Workout'), // Use form 'name' as log title if no routine
+            (this.availableRoutines.find(r => r.id === formValue.routineIdForLog)?.name || formValue.name || 'Workout from Routine') :
+            (formValue.name || 'Ad-hoc Workout'), // Use form 'name' as log title if no routine
           programId: formValue.programIdForLog || undefined,
           notes: formValue.overallNotesLog, // Overall log notes
           exercises: logExercises
@@ -1243,7 +1248,9 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       'border-x border-t':
         isSuperset &&
         isFirstInSuperset,
-      'mb-2': !isSuperset || (isSuperset && isLastInSuperset)
+      'mb-2': !isSuperset || (isSuperset && isLastInSuperset),
+      'cursor-grab': this.isEditableMode(),
+      'cursor-pointer': !this.isEditableMode(),
     };
     return returnObj;
   }
