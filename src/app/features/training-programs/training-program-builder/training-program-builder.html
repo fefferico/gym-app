@@ -63,26 +63,26 @@
                 <textarea id="description" formControlName="description" rows="3" placeholder="Description (optional)"
                     class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200"></textarea>
             </div>
-                <!-- GOAL -->
-                <div *ngIf="(isViewMode && currentProgram?.goals) || (isEditMode)" class="mt-4">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Goals</label>
-                    <div class="flex flex-wrap gap-2">
-                        <!-- Loop through available equipment to create a button/chip for each -->
-                        <button *ngFor="let goal of programGoals"
-                            [disabled]="isViewMode"
-                            (click)="toggleGoal(goal)" type="button"
-                            class="px-3 py-1.5 text-xs font-semibold rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
-                            [ngClass]="{
+            <!-- GOAL -->
+            <div *ngIf="(isViewMode && currentProgram?.goals) || (isEditMode)" class="mt-4">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Goals</label>
+                <div class="flex flex-wrap gap-2">
+                    <!-- Loop through available equipment to create a button/chip for each -->
+                    <button *ngFor="let goal of programGoals" [disabled]="isViewMode" (click)="toggleGoal(goal)"
+                        type="button"
+                        class="px-3 py-1.5 text-xs font-semibold rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+                        [ngClass]="{
                     'bg-primary text-white focus:ring-primary-dark': goal && goal.value !== undefined && selectedGoals().includes(goal.value),
                     'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500 focus:ring-gray-400': goal && goal.value !== undefined && !selectedGoals().includes(goal.value)
                 }">
-                            {{ goal.label| titlecase }}
-                        </button>
-                    </div>
+                        {{ goal.label| titlecase }}
+                    </button>
                 </div>
+            </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div *ngIf="programForm.get('startDate')?.value || isEditMode">
-                    <label for="startDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Start Date</label>
+                    <label for="startDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Start
+                        Date</label>
                     <input type="date" id="startDate" formControlName="startDate"
                         class="mt-1 block w-full p-2 border rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:[color-scheme:dark]">
                 </div>
@@ -141,9 +141,7 @@
                                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                         </svg>
                     </div>
-                    <div class="flex justify-between items-center mb-1"
-                        [ngClass]="{'mt-5': isEditMode}"
-                        >
+                    <div class="flex justify-between items-center mb-1" [ngClass]="{'mt-5': isEditMode}">
                         <h4 class="text-md font-medium text-gray-800 dark:text-gray-100">
                             {{ (getScheduleDayControl(i).get('dayOfWeek')?.value | dayOfWeek : (f['cycleLength'].value >
                             0) ) || 'Scheduled Day ' + (i + 1) }}
@@ -187,7 +185,8 @@
                               focus:outline-none focus:ring-0 focus:border-gray-300"
                                     [ngClass]="{'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 placeholder-red-400': getScheduleDayControl(i).get('routineId')?.invalid && (getScheduleDayControl(i).get('routineId')?.touched || submitted), 'rounded-r-md':isViewMode}">
 
-                                <button *ngIf="!isViewMode" type="button" appPress (shortPress)="openRoutineSelectionModal(i)"
+                                <button *ngIf="!isViewMode" type="button" appPress
+                                    (shortPress)="openRoutineSelectionModal(i)"
                                     class="inline-flex items-center px-3 py-2 border border-l-0 rounded-r-md text-sm transition-colors duration-150"
                                     [ngClass]="{
                             'border-blue-300 dark:border-blue-500 bg-blue-50 dark:bg-blue-500 text-white hover:bg-blue-100 dark:hover:bg-blue-400': !getScheduleDayControl(i).get('routineId')?.value && !(getScheduleDayControl(i).get('routineId')?.invalid && (getScheduleDayControl(i).get('routineId')?.touched || submitted)),
@@ -234,11 +233,12 @@
 
         <!-- Actions -->
         <div *ngIf="!isViewMode" class="pt-6 flex justify-end space-x-3">
-            <a routerLink="/training-programs"
+            <button appPress (shortPress)="navigateToPrograms()"
                 class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700">
                 CANCEL
-            </a>
-            <button type="submit" [disabled]="programForm.invalid && (programForm.touched || programForm.dirty)"
+            </button>
+            <button type="submit" appPress (shortPress)="onSubmit()"
+                [disabled]="programForm.invalid && (programForm.touched || programForm.dirty)"
                 class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark disabled:opacity-50">
                 {{ isNewMode ? 'CREATE PROGRAM' : 'SAVE CHANGES' }}
             </button>

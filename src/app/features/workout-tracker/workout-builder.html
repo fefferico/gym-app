@@ -261,7 +261,7 @@
                                                     title="Exercise details"
                                                     *ngIf="exerciseControl.get('exerciseId')?.value" width="20"
                                                     height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"
-                                                    (click)="openModal(exerciseControl.value)">
+                                                    appPress (shortPress)="openModal(exerciseControl.value)">
                                                     <!-- Outer circle -->
                                                     <title>Exercise details and progression</title>
                                                     <circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="2"
@@ -340,7 +340,7 @@
                                             <svg class="ml-2 cursor-pointer dark:text-white" title="Exercise details"
                                                 *ngIf="exerciseControl.get('exerciseId')?.value" width="20" height="20"
                                                 viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"
-                                                (click)="openModal(exerciseControl.value)">
+                                                appPress (shortPress)="openModal(exerciseControl.value)">
                                                 <!-- Outer circle -->
                                                 <title>Exercise details and progression</title>
                                                 <circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="2"

@@ -33,6 +33,7 @@ import { ActionMenuItem } from '../../../core/models/action-menu.model';
 import { TrainingProgramService } from '../../../core/services/training-program.service';
 import { TrainingProgram } from '../../../core/models/training-program.model';
 import { PressDirective } from '../../../shared/directives/press.directive';
+import { PressScrollDirective } from '../../../shared/directives/press-scroll.directive';
 
 
 interface HistoryCalendarDay {
@@ -48,7 +49,7 @@ type HistoryListView = 'list' | 'calendar';
 @Component({
   selector: 'app-history-list',
   standalone: true,
-  imports: [CommonModule, DatePipe, TitleCasePipe, FormsModule, ReactiveFormsModule, ActionMenuComponent, PressDirective],
+  imports: [CommonModule, DatePipe, TitleCasePipe, FormsModule, ReactiveFormsModule, ActionMenuComponent, PressDirective, PressScrollDirective],
   templateUrl: './history-list.html',
   styleUrl: './history-list.scss',
   providers: [DecimalPipe],
@@ -411,7 +412,9 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
       this.showPastLoggedWorkouts = true;
       this.pastLoggedWorkoutsDay = day;
       // this.setView('list'); this.isFilterAccordionOpen.set(false);
-    } else { this.toastService.info("No workouts logged on this day", 2000); }
+    } else { 
+      this.toastService.clearAll();
+      this.toastService.info("No workouts logged on this day", 2000); }
   }
 
   // Expose isSameMonth to the template

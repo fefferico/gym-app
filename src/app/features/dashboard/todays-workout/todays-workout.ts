@@ -16,13 +16,14 @@ import { startOfDay, endOfDay } from 'date-fns';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { v4 as uuidv4 } from 'uuid';
 import { PressDirective } from '../../../shared/directives/press.directive';
+import { PressScrollDirective } from '../../../shared/directives/press-scroll.directive';
 
 export type SlideAnimationState = 'center' | 'exitToLeft' | 'exitToRight' | 'enterFromLeft' | 'enterFromRight';
 
 @Component({
   selector: 'app-todays-workout',
   standalone: true,
-  imports: [CommonModule, DatePipe, PressDirective],
+  imports: [CommonModule, DatePipe, PressScrollDirective],
   templateUrl: './todays-workout.html',
   styleUrls: ['./todays-workout.scss'],
   animations: [

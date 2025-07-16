@@ -22,7 +22,10 @@ export class ToastService {
     }
   }
 
-  success(message: string, duration?: number, title?: string): void {
+  success(message: string, duration?: number, title?: string, hideOtherMessages: boolean = true): void {
+    if (hideOtherMessages) {
+      this.clearAll(); // Clear existing toasts if specified
+    }
     this.show(message, 'success', duration, title);
   }
 
@@ -34,7 +37,10 @@ export class ToastService {
     this.show(message, 'warning', duration, title);
   }
 
-  info(message: string, duration?: number, title?: string): void {
+  info(message: string, duration?: number, title?: string, hideOtherMessages: boolean = true): void {
+    if (hideOtherMessages) {
+      this.clearAll(); // Clear existing toasts if specified
+    }
     this.show(message, 'info', duration, title);
   }
 

@@ -1674,7 +1674,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       if (!isNaN(newRepsValue) && newRepsValue >= 0) {
         this.currentSetForm.patchValue({ actualReps: newRepsValue });
       } else {
-        this.toastService.error('Invalid reps entered.', 3000, 'Error');
+        this.toastService.error('Invalid reps entered', 3000, 'Error');
       }
     }
   }
@@ -1708,7 +1708,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       if (!isNaN(newWeightValue) && newWeightValue >= 0) {
         this.currentSetForm.patchValue({ actualWeight: newWeightValue });
       } else {
-        this.toastService.error('Invalid weight entered.', 3000, 'Error');
+        this.toastService.error('Invalid weight entered', 3000, 'Error');
       }
     }
   }
@@ -1772,7 +1772,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
           firstInvalidControl = key; break;
         }
       }
-      this.toastService.error(`Please correct input: ${firstInvalidControl ? firstInvalidControl + ' is invalid.' : 'form invalid.'}`, 0, 'Validation Error');
+      this.toastService.error(`Please correct input: ${firstInvalidControl ? firstInvalidControl + ' is invalid' : 'form invalid'}`, 0, 'Validation Error');
       return;
     }
 
@@ -2064,7 +2064,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       );
 
       this.startSessionTimer();
-      this.toastService.success('Tabata session resumed.', 3000, "Resumed");
+      this.toastService.success('Tabata session resumed', 3000, "Resumed");
       // We are done for Tabata mode, so we return early.
       return;
     }
@@ -2115,7 +2115,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       this.startRestPeriod(this.restTimerRemainingSecondsOnPause, true);
     }
     this.cdr.detectChanges();
-    this.toastService.success('Workout session resumed.', 3000, "Resumed");
+    this.toastService.success('Workout session resumed', 3000, "Resumed");
   }
 
   private savePausedSessionState(): void {
@@ -2171,7 +2171,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     }
 
     this.storageService.setItem(this.PAUSED_WORKOUT_KEY, stateToSave);
-    console.log('Paused session state saved.', stateToSave);
+    console.log('Paused session state saved', stateToSave);
   }
 
   private captureAndSaveStateForUnload(): void {
@@ -2183,7 +2183,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     this.sessionTimerElapsedSecondsBeforePause = currentTotalSessionElapsed;
     this.savePausedSessionState();
     this.sessionTimerElapsedSecondsBeforePause = originalElapsed;
-    console.log('Session state attempt saved via beforeunload.');
+    console.log('Session state attempt saved via beforeunload');
   }
 
   async addWarmupSet(): Promise<void> {
@@ -2796,7 +2796,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
   async quitWorkout(): Promise<void> {
-    const confirmQuit = await this.alertService.showConfirm("Quit Workout", 'Quit workout? Unsaved progress (if not paused) will be lost.');
+    const confirmQuit = await this.alertService.showConfirm("Quit Workout", 'Quit workout? Unsaved progress (if not paused) will be lost');
     if (confirmQuit && confirmQuit.data) {
       this.stopAllActivity();
       this.isSessionConcluded = true;
@@ -3110,7 +3110,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         // --- END: TABATA MODE CHECK ---
 
         if (this.sessionState() === SessionState.Paused) {
-          console.log('loadNewWorkoutFromRoute - tap: Session is paused, skipping setup.');
+          console.log('loadNewWorkoutFromRoute - tap: Session is paused, skipping setup');
           this.isInitialLoadComplete = true;
           return;
         }
@@ -3181,19 +3181,19 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       // --- Sanity Checks for Relevancy ---
       // 1. If current route has a routineId, but paused session is ad-hoc (null routineId) -> discard paused
       if (routeRoutineId && pausedState.routineId === null) {
-        console.log('WorkoutPlayer.checkForPausedSession - Current route is for a specific routine, but paused session was ad-hoc. Discarding paused session.');
+        console.log('WorkoutPlayer.checkForPausedSession - Current route is for a specific routine, but paused session was ad-hoc. Discarding paused session');
         this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
         return false;
       }
       // 2. If current route is ad-hoc (null routineId), but paused session was for a specific routine -> discard paused
       if (!routeRoutineId && pausedState.routineId !== null) {
-        console.log('WorkoutPlayer.checkForPausedSession - Current route is ad-hoc, but paused session was for a specific routine. Discarding paused session.');
+        console.log('WorkoutPlayer.checkForPausedSession - Current route is ad-hoc, but paused session was for a specific routine. Discarding paused session');
         this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
         return false;
       }
       // 3. If both have routineIds, but they don't match -> discard paused
       if (routeRoutineId && pausedState.routineId && routeRoutineId !== pausedState.routineId) {
-        console.log('WorkoutPlayer.checkForPausedSession - Paused session routine ID does not match current route routine ID. Discarding paused session.');
+        console.log('WorkoutPlayer.checkForPausedSession - Paused session routine ID does not match current route routine ID. Discarding paused session');
         this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
         return false;
       }
@@ -3226,7 +3226,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         return true;
       } else {
         this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
-        this.toastService.info('Paused session discarded.', 3000);
+        this.toastService.info('Paused session discarded', 3000);
         return false;
       }
     }
@@ -3235,7 +3235,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
   private stopAllActivity(): void {
     this.isSessionConcluded = true;
-    console.log('stopAllActivity - Stopping timers and auto-save.');
+    console.log('stopAllActivity - Stopping timers and auto-save');
     this.stopAutoSave();
     if (this.timerSub) this.timerSub.unsubscribe();
     if (this.timedSetIntervalSub) this.timedSetIntervalSub.unsubscribe();
@@ -3264,7 +3264,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
       this.closeWorkoutMenu();
       this.closePerformanceInsights();
-      this.toastService.info('Workout session resumed.', 3000);
+      this.toastService.info('Workout session resumed', 3000);
     } else {
       const resumed = await this.checkForPausedSession(true);
       if (!resumed && this.sessionState() !== SessionState.Playing && this.routineId) {
@@ -3300,7 +3300,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       // Check for AudioContext (standard) or webkitAudioContext (older Safari)
       const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
       if (!AudioContext) {
-        console.warn('Web Audio API not supported in this browser.');
+        console.warn('Web Audio API not supported in this browser');
         return;
       }
       const ctx = new AudioContext();
@@ -3332,7 +3332,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     try {
       const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
       if (!AudioContext) {
-        console.warn('Web Audio API not supported in this browser.');
+        console.warn('Web Audio API not supported in this browser');
         return;
       }
       const ctx = new AudioContext();
@@ -3401,7 +3401,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     // patchActualsFormBasedOnSessionTargets was also called in prepareCurrentSet.
     // We might not need to do much here other than setting the state.
     this.cdr.detectChanges(); // Ensure UI updates for button text, etc.
-    console.log('Pre-set timer finished. Player state set to PerformingSet.');
+    console.log('Pre-set timer finished. Player state set to PerformingSet');
   }
   skipPresetTimer(): void {
     if (this.playerSubState() === PlayerSubState.PresetCountdown) {
@@ -3978,7 +3978,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
   handleRestTimerFinished(): void {
     this.addActualRestAfterSet(null);
-    console.log('Rest timer finished.');
+    console.log('Rest timer finished');
     this.isRestTimerVisible.set(false);
     // this.playerSubState.set(PlayerSubState.PerformingSet); // prepareCurrentSet will determine the next subState
     this.prepareCurrentSet(); // This will handle if a pre-set timer is next, or directly to performing
@@ -4004,7 +4004,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
   handleRestTimerSkipped(timeSkipped: number | null): void {
     this.addActualRestAfterSet(timeSkipped);
-    console.log('Rest timer skipped.');
+    console.log('Rest timer skipped');
     this.isRestTimerVisible.set(false);
     this.toastService.clearAll();
     this.toastService.info("Rest skipped", 2000);

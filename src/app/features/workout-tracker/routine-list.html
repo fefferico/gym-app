@@ -162,7 +162,7 @@
         <div *ngIf="filteredRoutines().length > 0; else noRoutines"
             class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
             <!-- Card -->
-            <div *ngFor="let routine of filteredRoutines()" (click)="viewRoutineDetails(routine.id, $event)"
+            <div *ngFor="let routine of filteredRoutines()" appPressScroll (shortPress)="viewRoutineDetails(routine.id, $event)"
                 class="bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow duration-200 relative group transform hover:-translate-y-1 cursor-pointer"
                 [style.zIndex]="areActionsVisible(routine.id) ? 50 : 'auto'">
                 <!-- Main content area, make this clickable -->
@@ -376,8 +376,7 @@
                     {{ routineSearchTerm() || selectedRoutineGoal() || selectedRoutineMuscleGroup() ? 'Try adjusting
                     your filters.' : 'Get started by creating your first workout routine.' }}
                 </p>
-                <button *ngIf="!(routineSearchTerm() || selectedRoutineGoal() || selectedRoutineMuscleGroup())"
-                    (click)="navigateToCreateRoutine()"
+                <button appPress (shortPress)="navigateToCreateRoutine()" *ngIf="!(routineSearchTerm() || selectedRoutineGoal() || selectedRoutineMuscleGroup())"
                     class="bg-primary hover:bg-primary-dark text-white font-semibold py-2 px-6 rounded-md shadow-md hover:shadow-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary-light focus:ring-opacity-75">
                     CREATE YOUR FIRST ROUTINE
                 </button>

@@ -1,7 +1,7 @@
 // src/app/features/profile-settings/profile-settings.component.ts
 import { Component, inject, OnInit, PLATFORM_ID, signal, WritableSignal } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { format } from 'date-fns';
 import { debounceTime, filter, tap } from 'rxjs';
@@ -20,18 +20,19 @@ import { Gender, UserProfile } from '../../../core/models/user-profile.model';
 import { TrainingProgramService } from '../../../core/services/training-program.service';
 import { UserProfileService } from '../../../core/services/user-profile.service';
 import { ExerciseService } from '../../../core/services/exercise.service';
-import { Exercise } from '../../../core/models/exercise.model';
+import { PressDirective } from '../../../shared/directives/press.directive';
 
 
 @Component({
   selector: 'app-profile-settings',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule],
+  imports: [CommonModule, RouterLink, ReactiveFormsModule, PressDirective],
   templateUrl: './profile-settings.html',
   styleUrl: './profile-settings.scss',
 })
 export class ProfileSettingsComponent implements OnInit {
   private fb = inject(FormBuilder);
+  private router = inject(Router);
   private workoutService = inject(WorkoutService);
   private trackingService = inject(TrackingService);
   private trainingProgramService = inject(TrainingProgramService);
@@ -45,6 +46,8 @@ export class ProfileSettingsComponent implements OnInit {
   protected appSettingsService = inject(AppSettingsService); // Already injected
   private platformId = inject(PLATFORM_ID);
   private toastService = inject(ToastService);
+
+  protected currentVibrator = navigator;
 
   profileForm!: FormGroup;
   appSettingsForm!: FormGroup;
@@ -303,5 +306,13 @@ export class ProfileSettingsComponent implements OnInit {
 
     // 2. Update the service with the opposite state
     this.userProfileService.updateHideWipDisclaimer(!isCurrentlyHidden);
+  }
+
+  navigateToExerciseLibrary(): void {
+    this.router.navigate(['/library']);
+  }
+
+  navigateToPersonalBests(): void {
+    this.router.navigate(['/profile/personal-bests']);
   }
 }

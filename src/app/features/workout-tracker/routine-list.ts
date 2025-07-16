@@ -25,11 +25,12 @@ import { LongPressDirective } from '../../shared/directives/long-press.directive
 import { PressDirective } from '../../shared/directives/press.directive';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { TrainingProgramService } from '../../core/services/training-program.service';
+import { PressScrollDirective } from '../../shared/directives/press-scroll.directive';
 
 @Component({
   selector: 'app-routine-list',
   standalone: true,
-  imports: [CommonModule, DatePipe, TitleCasePipe, RouterLink, ActionMenuComponent, PressDirective],
+  imports: [CommonModule, DatePipe, TitleCasePipe, RouterLink, ActionMenuComponent, PressDirective, PressScrollDirective],
   templateUrl: './routine-list.html',
   styleUrl: './routine-list.scss',
   animations: [
@@ -452,7 +453,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     }
   }
 
-  viewRoutineDetails(routineId: string, event?: MouseEvent): void {
+  viewRoutineDetails(routineId: string, event?: Event): void {
     event?.stopPropagation();
     if (event && event.target) {
       const elem = event.target as HTMLElement;
