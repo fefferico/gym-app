@@ -1,7 +1,11 @@
 <div *ngIf="isVisible"
   class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/70 backdrop-blur-sm transition-opacity duration-300 ease-in-out"
   [class.opacity-100]="isVisible" [class.opacity-0]="!isVisible">
-
+  <div class="absolute top-8 left-0 right-0 flex justify-center pointer-events-none">
+    <div class="text-3xl text-gray-500 dark:text-gray-200">
+      Session time: {{ mainTimer() }}
+    </div>
+  </div>
   <div class="relative flex flex-col items-center justify-center text-white">
     <!-- Circular Timer SVG -->
     <svg #progressCircleSvg class="w-64 h-64 md:w-80 md:h-80 transform -rotate-90" viewBox="0 0 200 200">
@@ -27,12 +31,12 @@
 
   <!-- Skip Button -->
   <button appPress (shortPress)="skipTimer()"
-    class="mt-12 py-3 px-8 bg-yellow-500 hover:bg-yellow-800 text-white font-semibold rounded-full shadow-md transition-colors duration-150 text-lg">
-    Skip
+    class="mt-12 py-3 px-10 bg-yellow-500 hover:bg-yellow-800 text-white font-semibold rounded-full shadow-md transition-colors duration-150 text-lg">
+    SKIP
   </button>
 
-  <div *ngIf="nextUpText" class="mt-5 px-1 text-center text-m md:text-base text-gray-300">
-        Prepare for: {{ nextUpText }}
-      </div>
+  <div *ngIf="nextUpText" class="mt-5 px-1 text-center text-xl text-gray-300">
+    Prepare for: {{ nextUpText }}
+  </div>
 
 </div>

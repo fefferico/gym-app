@@ -16,7 +16,7 @@ import { PressScrollDirective } from '../../../shared/directives/press-scroll.di
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, TodaysWorkoutComponent, DatePipe, PressScrollDirective], // Added DatePipe
+  imports: [CommonModule, TodaysWorkoutComponent, DatePipe, PressScrollDirective, PressDirective], // Added DatePipe
   templateUrl: './home.html',
   styleUrls: ['./home.scss']
 })

@@ -39,7 +39,7 @@ export class PressDirective {
   }
 
     @HostListener('mouseup', ['$event'])
-    @HostListener('mouseleave', ['$event'])
+    // @HostListener('mouseleave', ['$event'])
     @HostListener('touchend', ['$event'])
     @HostListener('touchcancel', ['$event'])
     onPressEnd(event?: Event): void { 

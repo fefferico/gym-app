@@ -428,6 +428,7 @@
 </ng-container>
 
 <app-full-screen-rest-timer [isVisible]="playerSubState() === PlayerSubState.Resting && isRestTimerVisible()"
+  [mainTimer]="sessionTimerDisplay"
   [durationSeconds]="restDuration()" [mainText]="restTimerMainText()" [nextUpText]="restTimerNextUpText()"
   (timerFinished)="handleRestTimerFinished()" (timerSkipped)="handleRestTimerSkipped($event)">
 </app-full-screen-rest-timer>
@@ -909,8 +910,8 @@
       </div>
       <div class="mt-2 max-h-60 sm:max-h-80 overflow-y-auto pr-2">
         <ul class="space-y-1">
-          <li *ngFor="let ex of filteredAvailableExercises()" appPress (shortPress)="selectExerciseToAddFromModal(ex)"
-            class="p-3 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md cursor-pointer transition-all duration-150 ease-in-out flex justify-between items-center">
+          <li *ngFor="let ex of filteredAvailableExercises()" appPressScroll (shortPress)="selectExerciseToAddFromModal(ex)"
+            class="p-3 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md cursor-pointer transition-all duration-150 ease-in-out flex justify-between items-center custom-scrollbar">
             <div>
               <span class="font-medium text-gray-800 dark:text-gray-200">{{ ex.name }}</span>
               <span *ngIf="ex.category" class="block text-xs text-gray-500 dark:text-gray-400">{{ ex.category |

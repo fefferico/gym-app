@@ -29,6 +29,7 @@ import { ExerciseDetailComponent } from '../exercise-library/exercise-detail';
 import { ModalComponent } from '../../shared/components/modal/modal.component';
 import { PressDirective } from '../../shared/directives/press.directive';
 import { FormatSecondsPipe } from '../../shared/pipes/format-seconds-pipe';
+import { PressScrollDirective } from '../../shared/directives/press-scroll.directive';
 
 
 // Interface to manage the state of the currently active set/exercise
@@ -108,7 +109,8 @@ enum PlayerSubState {
   standalone: true,
   imports: [CommonModule, DatePipe, ReactiveFormsModule,
     FormatSecondsPipe,
-    FormsModule, WeightUnitPipe, FullScreenRestTimerComponent, PressDirective, ModalComponent, ExerciseDetailComponent],
+    FormsModule, WeightUnitPipe, FullScreenRestTimerComponent, PressDirective, ModalComponent, ExerciseDetailComponent,
+    PressScrollDirective],
   templateUrl: './workout-player.html',
   styleUrl: './workout-player.scss',
   providers: [DecimalPipe]
@@ -146,7 +148,10 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   showNotes = signal<boolean | null>(false);
 
   // --- Timer Signals & Properties ---
-  sessionTimerDisplay = signal('00:00:00');
+  // Show "MM:SS" if under 1 hour, otherwise "HH:MM:SS"
+  sessionTimerDisplay = signal('00:00');
+
+  // ... update startSessionTimer to set the display accordingly ...
   private workoutStartTime: number = 0;
   private sessionTimerElapsedSecondsBeforePause = 0;
   private timerSub: Subscription | undefined;
@@ -189,9 +194,15 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   availableExercises: Exercise[] = [];
   modalSearchTerm = signal('');
   filteredAvailableExercises = computed(() => {
-    const term = this.modalSearchTerm().toLowerCase();
+    let term = this.modalSearchTerm().toLowerCase();
     if (!term) {
       return this.availableExercises;
+    }
+    if (term.toLowerCase() === 'kb') {
+      term = 'kettlebell'; // Special case for "kb" to match "kettlebell"
+    }
+    if (term.toLowerCase() === 'db') {
+      term = 'dumbbell';
     }
     return this.availableExercises.filter(ex =>
       ex.name.toLowerCase().includes(term) ||
@@ -579,9 +590,16 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         const hours = Math.floor(totalElapsedSeconds / 3600);
         const minutes = Math.floor((totalElapsedSeconds % 3600) / 60);
         const seconds = totalElapsedSeconds % 60;
-        this.sessionTimerDisplay.set(
-          `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
-        );
+        // Show "MM:SS" if under 1 hour, otherwise "H:MM:SS" (no leading zero for hours)
+        if (hours > 0) {
+          this.sessionTimerDisplay.set(
+            `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+          );
+        } else {
+          this.sessionTimerDisplay.set(
+            `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+          );
+        }
       }
     });
   }
@@ -2423,17 +2441,24 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       this.toastService.error("Cannot add exercise: routine data unavailable", 0, "Error"); return;
     }
 
-    const defaultWeight = this.unitService.currentUnit() === 'kg' ? 10 : 22.2;
+    // check wheter has been done at least on exercise before this one
+    const hasPreviousExercises = this.currentWorkoutLogExercises().length > 0;
+    const kbRelated = hasPreviousExercises && selectedExercise.category === 'kettlebells';
+    // if so and it's a kettlebell related exercise, it will suggest same weight and reps as the last one
+    const lastEx = this.currentWorkoutLogExercises().length > 0 ? this.currentWorkoutLogExercises()[this.currentWorkoutLogExercises().length - 1] : null;
+    const lastExSet = lastEx ? lastEx.sets[lastEx.sets.length - 1] : null;
+
+    const defaultWeight = kbRelated && lastExSet ? (lastExSet.targetWeight || lastExSet.weightUsed) : (this.unitService.currentUnit() === 'kg' ? 10 : 22.2);
     const defaultDuration = 0;
-    const defaultRest = 60;
-    const defaultReps = 10;
+    const defaultRest = kbRelated ? 45 : 60;
+    const defaultReps = kbRelated && lastExSet ? (lastExSet.targetReps || lastExSet.repsAchieved) : 10;
     const defaultSets = 3;
     const exerciseData = await this.alertService.showPromptDialog(
       `Add ${selectedExercise.name}`,
       '',
       [
         { label: 'Exercise name', name: 'name', type: 'string', placeholder: 'Exercise name', value: selectedExercise.name, attributes: { required: true } },
-        { label: 'Number of Reps', name: 'numReps', type: 'number', placeholder: 'Number of Reps (e.g., 10)', value: 10, attributes: { min: 0, required: true } },
+        { label: 'Number of Reps', name: 'numReps', type: 'number', placeholder: 'Number of Reps (e.g., 10)', value: defaultReps, attributes: { min: 0, required: true } },
         { label: 'Number of Sets', name: 'numSets', type: 'number', placeholder: 'Number of Sets (e.g., 3)', value: 3, attributes: { min: 1, required: true } },
         { label: 'Target weight', name: 'weight', type: 'number', placeholder: 'e.g., 10', value: defaultWeight, attributes: { min: 0, required: true } },
         { label: 'Target duration', name: 'duration', type: 'number', placeholder: 'e.g., 30 secs', value: defaultDuration, attributes: { min: 0, required: false } },

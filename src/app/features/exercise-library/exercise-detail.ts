@@ -1,4 +1,4 @@
-import { Component, inject, Input, OnInit, signal, OnDestroy, PLATFORM_ID } from '@angular/core'; // Added OnDestroy
+import { Component, inject, Input, OnInit, signal, OnDestroy, PLATFORM_ID, OnChanges, SimpleChanges } from '@angular/core'; // Added OnDestroy
 import { CommonModule, TitleCasePipe, DatePipe, isPlatformBrowser } from '@angular/common'; // Added DatePipe
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Observable, of, Subscription, forkJoin, map, take, tap } from 'rxjs'; // Added Subscription, forkJoin
@@ -21,7 +21,7 @@ import { ActionMenuItem } from '../../core/models/action-menu.model';
   templateUrl: './exercise-detail.html',
   styleUrl: './exercise-detail.scss',
 })
-export class ExerciseDetailComponent implements OnInit, OnDestroy {
+export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
   private route = inject(ActivatedRoute);
   private router = inject(Router); // Inject Router if you want to navigate from chart clicks
   private exerciseService = inject(ExerciseService);
@@ -52,31 +52,68 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy {
 
   @Input() id?: string; // For route parameter binding
   @Input() isModal?: boolean = false; // For route parameter binding
+  private exerciseIdForLoad: string | null = null;
+
   private platformId = inject(PLATFORM_ID); // Inject PLATFORM_ID
 
   isViewMode = signal<boolean | null>(null);
 
+  // This hook is called whenever an @Input() property changes.
+  ngOnChanges(changes: SimpleChanges): void {
+    // Check if the 'id' input property has changed.
+    if (changes['id']) {
+      const newId = changes['id'].currentValue;
+      const previousId = changes['id'].previousValue;
+
+      // Only reload if the new ID is different from the one we already loaded.
+      // This prevents unnecessary reloads.
+      if (newId && newId !== this.exerciseIdForLoad) {
+        this.exerciseIdForLoad = newId;
+        this.loadInitialData(); // Call the loading logic with the new ID
+      }
+    }
+  }
+
   ngOnInit(): void {
-    if (isPlatformBrowser(this.platformId)) { // Check if running in a browser
-      if (!this.isModal) { // Only scroll if not in a modal
+    if (isPlatformBrowser(this.platformId)) {
+      if (!this.isModal) {
         window.scrollTo(0, 0);
       }
     }
-    const idSource$ = this.id ? of(this.id) : this.route.paramMap.pipe(map(params => params.get('id')));
+
+    // The initial data load is now handled by ngOnChanges as well,
+    // but we can keep a call here for non-input-based loading (e.g., from route params).
+    this.loadInitialData();
+  }
+
+  private loadInitialData(): void {
+    // This logic determines whether to get the ID from the @Input or the route.
+    const idSource$ = this.id
+      ? of(this.id)
+      : this.route.paramMap.pipe(map(params => params.get('id')));
+
+    // Unsubscribe from any previous subscription to prevent memory leaks.
+    this.exerciseDetailSub?.unsubscribe();
 
     this.exerciseDetailSub = idSource$.pipe(
-      tap(exerciseId => { // Reset data when ID changes
-        this.exercise.set(undefined);
-        this.exercisePBs.set([]);
-        this.exerciseProgressChartData.set([]);
+      tap(exerciseId => {
+        this.exerciseIdForLoad = exerciseId; // Keep track of the currently loaded ID
+        this.resetComponentState(); // Reset signals before loading new data
+
         if (exerciseId) {
           this.isViewMode.set(true);
           this.loadExerciseData(exerciseId);
         } else {
-          this.exercise.set(null); // No ID, so exercise not found
+          this.exercise.set(null); // No ID, exercise not found
         }
       })
     ).subscribe();
+  }
+
+  private resetComponentState(): void {
+    this.exercise.set(undefined);
+    this.exercisePBs.set([]);
+    this.exerciseProgressChartData.set([]);
   }
 
   loadExercise(exerciseId: string): void {
@@ -267,7 +304,7 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy {
 
     if (this.isViewMode()) {
       actionsArray.push(editButton);
-      actionsArray.push({isDivider: true});
+      actionsArray.push({ isDivider: true });
     }
     actionsArray.push(deleteButton);
 

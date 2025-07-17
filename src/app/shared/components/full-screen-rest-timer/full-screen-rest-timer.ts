@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnChanges, OnDestroy, SimpleChanges, ElementRef, ViewChild, AfterViewInit, ChangeDetectionStrategy, signal, computed } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, OnDestroy, SimpleChanges, ElementRef, ViewChild, AfterViewInit, ChangeDetectionStrategy, signal, computed, Signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PressDirective } from '../../directives/press.directive';
 
@@ -12,6 +12,7 @@ import { PressDirective } from '../../directives/press.directive';
 })
 export class FullScreenRestTimerComponent implements OnChanges, OnDestroy, AfterViewInit {
   @Input() isVisible: boolean = false;
+  @Input() mainTimer = signal('00:00:00');
   @Input() durationSeconds: number = 60;
   @Input() mainText: string = 'RESTING';
   @Input() nextUpText: string | null = null;

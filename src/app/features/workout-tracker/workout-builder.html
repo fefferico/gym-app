@@ -220,10 +220,8 @@
                             <div class="flex items-center space-x-1">
                                 <!-- DRAG HANDLE ICON (Now just a visual cue) -->
                                 <div *ngIf="isEditableMode()"
-                                    class="p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 flex-shrink-0 top-1 right-1 sm:static"
-                                    [ngClass]="{
-                                        'absolute top-1 right-1 sm:static': isCompactView,
-                                    }" title="Drag to reorder">
+                                    class="p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 flex-shrink-0"
+                                    title="Drag to reorder">
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-5 h-5">
                                         <path d="M 7 17 L 7 3 M 4 6 L 7 3 L 10 6 M 17 7 L 17 21 M 14 18 L 17 21 L 20 18"
                                             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
