@@ -26,7 +26,7 @@ import { PressDirective } from '../../../shared/directives/press.directive';
 @Component({
   selector: 'app-profile-settings',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule, PressDirective],
+  imports: [CommonModule, ReactiveFormsModule, PressDirective],
   templateUrl: './profile-settings.html',
   styleUrl: './profile-settings.scss',
 })

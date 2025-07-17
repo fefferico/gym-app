@@ -147,7 +147,7 @@
                     <label for="preset-timer-toggle" class="inline-flex items-center cursor-pointer">
                         <span class="sr-only">Toggle Pre-Set Timer</span>
                         <input type="checkbox" id="preset-timer-toggle" class="sr-only peer"
-                            formControlName="enablePresetTimer">
+                            formControlName="enablePresetTimer" (change)="currentVibrator.vibrate(50)">
                         <div
                             class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary dark:peer-checked:bg-primary-dark">
                         </div>
@@ -179,7 +179,7 @@
                         <label for="preset-timer-toggle-after-rest" class="inline-flex items-center cursor-pointer">
                             <span class="sr-only">Toggle Pre-Set Timer after rest</span>
                             <input type="checkbox" id="preset-timer-toggle-after-rest" class="sr-only peer"
-                                formControlName="enablePresetTimerAfterRest">
+                                formControlName="enablePresetTimerAfterRest" (change)="currentVibrator.vibrate(50)">
                             <div
                                 class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary dark:peer-checked:bg-primary-dark">
                             </div>
@@ -213,8 +213,8 @@
                 </div>
                 <div>
                     <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Restore your data from a JSON
-                        backup file</p>
-                    <input type="file" (change)="importData($event)" accept="application/json"
+                        backup file</p> 
+                    <input type="file" (change)="importData($event); currentVibrator.vibrate(50)" accept="application/json"
                         class="block w-full text-sm text-gray-700 dark:text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-200 file:text-gray-700 hover:file:bg-gray-300 dark:file:bg-gray-600 dark:file:text-gray-200 dark:hover:file:bg-gray-700">
                 </div>
                 <div class="pt-4 border-t border-gray-200 dark:border-gray-700">

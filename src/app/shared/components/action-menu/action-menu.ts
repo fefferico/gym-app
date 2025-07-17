@@ -101,6 +101,9 @@ export class ActionMenuComponent implements OnChanges, OnDestroy {
   onItemClicked(event: MouseEvent, item: ActionMenuItem): void {
     event.stopPropagation();
     if (!item.isDivider) {
+      if (navigator.vibrate) {
+        navigator.vibrate(50); // Use a distinct vibration for long press if desired, e.g., [100, 50, 100]
+      }
       this.itemClick.emit({ actionKey: item.actionKey ?? '', data: item.data });
       if (this.displayMode === 'dropdown') {
         this.closeMenu.emit();

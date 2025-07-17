@@ -41,7 +41,7 @@ type BuilderMode = 'routineBuilder' | 'manualLogEntry';
 @Component({
   selector: 'app-workout-builder',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, FormsModule, DragDropModule, WeightUnitPipe, TitleCasePipe, LongPressDragDirective, AutoGrowDirective, ActionMenuComponent, IsWeightedPipe, ModalComponent, ClickOutsideDirective, ExerciseDetailComponent, PressDirective, PressScrollDirective],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, FormsModule, DragDropModule, WeightUnitPipe, TitleCasePipe, LongPressDragDirective, AutoGrowDirective, ActionMenuComponent, IsWeightedPipe, ModalComponent, ClickOutsideDirective, ExerciseDetailComponent, PressDirective],
   templateUrl: './workout-builder.html',
   styleUrl: './workout-builder.scss',
   providers: [DecimalPipe]

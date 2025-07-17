@@ -250,7 +250,7 @@ export class PersonalBestsComponent implements OnInit {
     return value || 'N/A';
   }
 
-  navigateToLogDetail(workoutLogId: string | undefined, event?: MouseEvent): void {
+  navigateToLogDetail(workoutLogId: string | undefined, event?: Event): void {
     event?.stopPropagation();
     if (workoutLogId) {
       this.router.navigate(['/workout/summary', workoutLogId]);

@@ -7,8 +7,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
             </svg>
         </button>
-        <header
-            class="flex justify-between items-center pb-2 ng-tns-c47381853-11">
+        <header class="flex justify-between items-center pb-2 ng-tns-c47381853-11">
             <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200 ml-2">Personal Bests</h1>
             <button appPress (shortPress)="toggleFiltersVisibility()" type="button"
                 class="rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 focus:ring-primary dark:focus:ring-primary-light transition-all duration-300 ease-in-out">
@@ -21,7 +20,8 @@
                 <span class="sr-only">Toggle Filters</span>
             </button>
 
-            <button appPress (shortPress)="triggerRecalculatePBs()" title="Recalculate all Personal Bests from your workout history"
+            <button appPress (shortPress)="triggerRecalculatePBs()"
+                title="Recalculate all Personal Bests from your workout history"
                 class="ml-2 p-2 text-sm text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary-light rounded-md border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                     stroke="currentColor" class="w-8 h-8 transition-transform duration-300">
@@ -115,7 +115,7 @@
     <div *ngIf="displayPersonalBests().length > 0; else noPBsOrFilters">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             <div *ngFor="let pb of displayPersonalBests()"
-                class="bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow duration-200 relative group transform hover:-translate-y-1"
+                class="flex flex-col bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow duration-200 relative group transform hover:-translate-y-1"
                 [style.zIndex]="filtersVisible() ? 50 : 'auto'">
                 <div class="p-3 flex-grow">
                     <div class="flex justify-between items-start mb-1">
@@ -143,7 +143,8 @@
                         class="mt-2 pt-1 border-t border-gray-200 dark:border-gray-600 text-xs text-gray-500 dark:text-gray-400">
                         <span class="font-medium">Prev:</span>
                         <span *ngFor="let prevPb of pb.history.slice(0,1); let isLast = last">
-                            {{ formatPbValue(prevPb, pb.pbType) }} ({{ prevPb.timestamp | date:'shortDate' | date:'dd-MM-yy':'UTC' }}){{ !isLast
+                            {{ formatPbValue(prevPb, pb.pbType) }} ({{ prevPb.timestamp | date:'shortDate' |
+                            date:'dd-MM-yy':'UTC' }}){{ !isLast
                             ? ', ' : '' }}
                         </span>
                         <span *ngIf="pb.history.length > 1"> ...</span>
@@ -160,9 +161,9 @@
                 </div>
 
                 <div *ngIf="pb.pbType !== '1RM (Estimated)' && pb.workoutLogId"
-                    class="flex px-3 py-2 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 rounded-b dark:border-gray-600">
-                    <button (click)="navigateToLogDetail(pb.workoutLogId, $event)"
-                        class="flex items-center justify-center px-2 py-1 border border-transparent rounded-md shadow-sm text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-indigo-500 dark:hover:bg-indigo-600 dark:focus:ring-offset-gray-800 transition-colors duration-150"
+                    class="flex flex-col items-center justify-center px-8 py-2 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 rounded-b dark:border-gray-600 space-y-2">
+                    <button appPress (shortPress)="navigateToLogDetail(pb.workoutLogId, $event)"
+                        class="flex w-full items-center justify-center px-2 py-1 border border-transparent rounded-md shadow-sm text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-indigo-500 dark:hover:bg-indigo-600 dark:focus:ring-offset-gray-800 transition-colors duration-150"
                         title="View Workout Log">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
                             class="w-4 h-4 mr-1">
@@ -175,7 +176,7 @@
                     </button>
                     <!-- Trend Chart Button -->
                     <button appPress (shortPress)="showPbTrend(pb.exerciseId, pb.pbType)" title="Show Trend for this PB"
-                        class="ml-2 flex items-center justify-center px-2 py-1 border border-transparent rounded-md shadow-sm text-xs font-medium text-white bg-primary hover:bg-primary-light focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary dark:bg-primary dark:hover:bg-primary-light dark:focus:ring-offset-gray-800 transition-colors duration-150"
+                        class="flex w-full items-center justify-center px-2 py-1 border border-transparent rounded-md shadow-sm text-xs font-medium text-white bg-primary hover:bg-primary-light focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary dark:bg-primary dark:hover:bg-primary-light dark:focus:ring-offset-gray-800 transition-colors duration-150"
                         title="View trend Log">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                             stroke="currentColor" class="w-5 h-5 mr-2">
@@ -201,8 +202,8 @@
                 <ng-template #noPBsMessage>No Personal Bests Yet!</ng-template>
             </h2>
             <p class="text-gray-500 dark:text-gray-400 px-4">
-                <span *ngIf="hasActiveFilters()">Try adjusting your filter criteria or <button
-                        appPress (shortPress)="resetFiltersAndShow()"
+                <span *ngIf="hasActiveFilters()">Try adjusting your filter criteria or <button appPress
+                        (shortPress)="resetFiltersAndShow()"
                         class="text-primary dark:text-primary-light hover:underline">reset all filters</button>.</span>
                 <span *ngIf="!hasActiveFilters() && allPersonalBestsSignalEmpty()">Keep logging your workouts to track
                     your progress and achievements here</span>
