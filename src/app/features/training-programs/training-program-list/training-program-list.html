@@ -3,7 +3,7 @@
     <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">Training</h1>
     <button *ngIf="currentView() === 'list'" appPress (shortPress)="toggleFilterAccordion()" type="button"
       class="rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-light transition-all duration-300 ease-in-out">
-      <svg stroke="currentColor" class="w-8 h-8 transition-transform duration-300" viewBox="0 0 24 24"
+      <svg stroke="currentColor" class="w-10 h-10 transition-transform duration-300" viewBox="0 0 24 24"
         stroke-width="0.02" fill="currentColor" xmlns="http://www.w3.org/2000/svg"
         [class.rotate-180]="isFilterAccordionOpen()">
         <path stroke-linecap="round" stroke-linejoin="round"
@@ -122,7 +122,7 @@
                 <p *ngIf="program.description"
                   class="text-sm sm:text-xs text-gray-600 dark:text-gray-400 mb-2 line-clamp-2"
                   [title]="program.description">{{ program.description }}</p>
-                <div class="space-y-0.5 text-sm sm:text-xs text-gray-500 dark:text-gray-300">
+                <div class="space-y-0.5 text-sm text-gray-500 dark:text-gray-300">
 
                   <div class="flex items-center gap-1">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500 dark:text-gray-400" fill="none"

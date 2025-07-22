@@ -242,13 +242,18 @@ export class ProfileSettingsComponent implements OnInit {
             if (importedData.version === 3) {
               this.exerciseService.mergeData(importedData.exercises);
               this.trainingProgramService.mergeData(importedData.programs);
+              // import profile and app settings
+              this.userProfileService.replaceData(importedData.profile as UserProfile | null);
+              this.appSettingsService.replaceData(importedData.appSettings as AppSettings | null);
             } else if (importedData.version === 2) {
+              // import profile and app settings
               this.userProfileService.replaceData(importedData.profile as UserProfile | null);
               this.appSettingsService.replaceData(importedData.appSettings as AppSettings | null);
             } else { // For V1, ensure defaults are applied if no settings/profile
               this.userProfileService.replaceData(null); // Reset to default/empty
               this.appSettingsService.replaceData(null); // Reset to default
             }
+
             // Reload data into forms
             this.loadProfileData();
             this.loadAppSettingsData();

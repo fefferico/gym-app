@@ -770,6 +770,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
   toggleOnlyFavouriteRoutines(event: Event): void {
     event?.stopPropagation();
     this.showFavouriteRoutinesOnly.set(!this.showFavouriteRoutinesOnly());
+    this.toastService.info(`Showing ${this.showFavouriteRoutinesOnly() ? 'only favourite' : 'all'} routines`, 3000, "Filter Update");
   }
 
   toggleOnlyHiddenRoutines(event: Event): void {

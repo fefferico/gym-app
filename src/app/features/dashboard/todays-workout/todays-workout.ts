@@ -108,7 +108,7 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
                   const streamDate = new Date(date);
                   streamDate.setHours(0, 0, 0, 0);
                   if (programStartDate <= streamDate) {
-                    allWorkoutsForDay.push({ ...routineData, scheduledDayInfo: { ...routineData.scheduledDayInfo, isUnscheduled: false } });
+                    allWorkoutsForDay.push({ ...routineData, scheduledDayInfo: { ...routineData.scheduledDayInfo, isUnscheduled: false, programId: prog.id } });
                   }
                 }
               }

@@ -1493,18 +1493,33 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   getSetReps(loggedEx: any): string {
-    const loggedExActual = loggedEx?.getRawValue() as WorkoutExercise;
-    return loggedExActual?.sets.map(set => set.reps).join(' - ');
+    if (this.currentLogId) {
+      const loggedExActual = loggedEx?.getRawValue() as LoggedWorkoutExercise;
+      return loggedExActual?.sets.map(set => set.repsAchieved).join(' - ');
+    } else {
+      const loggedExActual = loggedEx?.getRawValue() as WorkoutExercise;
+      return loggedExActual?.sets.map(set => set.reps).join(' - ');
+    }
   }
 
   getSetWeightsUsed(loggedEx: any): string {
-    const loggedExActual = loggedEx?.getRawValue() as WorkoutExercise;
-    return loggedExActual?.sets.map(set => set.weight).join(' - ');
+    if (this.currentLogId) {
+      const loggedExActual = loggedEx?.getRawValue() as LoggedWorkoutExercise;
+      return loggedExActual?.sets.map(set => set.weightUsed).join(' - ');
+    } else {
+      const loggedExActual = loggedEx?.getRawValue() as WorkoutExercise;
+      return loggedExActual?.sets.map(set => set.weight).join(' - ');
+    }
   }
 
   getSetDurationPerformed(loggedEx: any): string {
-    const loggedExActual = loggedEx?.getRawValue() as WorkoutExercise;
-    return loggedExActual?.sets.map(set => set.duration).join(' - ');
+    if (this.currentLogId) {
+      const loggedExActual = loggedEx?.getRawValue() as LoggedWorkoutExercise;
+      return loggedExActual?.sets.map(set => set.durationPerformed).join(' - ');
+    } else {
+      const loggedExActual = loggedEx?.getRawValue() as WorkoutExercise;
+      return loggedExActual?.sets.map(set => set.duration).join(' - ');
+    }
   }
 
   getIconPath(exerciseId: string | undefined): Observable<string> {

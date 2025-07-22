@@ -3953,7 +3953,11 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
               resultText += `${setData.reps} reps`;
             }
             if (setData.duration) {
-              resultText += `, duration ${setData.duration}`;
+              if (resultText.length > 2 && !resultText.endsWith('[')) {
+                resultText += `, duration ${setData.duration} seconds`;
+              } else {
+                resultText += `duration ${setData.duration} seconds`;
+              }
             }
             resultText += ']';
           }
