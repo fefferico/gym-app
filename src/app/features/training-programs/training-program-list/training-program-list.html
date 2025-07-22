@@ -268,7 +268,7 @@
             <div [@calendarPeriodSlide]="calendarAnimationState()">
               <div>
                 <div class="flex justify-between items-center mb-3 sm:mb-4">
-                  <button (click)="previousPeriod()" [title]="'Previous ' + (calendarDisplayMode() | titlecase)"
+                  <button appPress (shortPress)="previousPeriod()" [title]="'Previous ' + (calendarDisplayMode() | titlecase)"
                     class="p-1.5 sm:p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 disabled:opacity-50"
                     [disabled]="isCalendarAnimating"><svg xmlns="http://www.w3.org/2000/svg" fill="none"
                       viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 sm:w-5 sm:h-5">
@@ -280,17 +280,17 @@
                     <p class="text-2xs sm:text-xs text-gray-500 dark:text-gray-400">Active Program: <strong
                         class="text-primary dark:text-primary-light truncate max-w-[150px] sm:max-w-xs inline-block align-bottom hover:cursor-pointer hover:underline"
                         [title]="'Go to program ' + activeProgram.name"
-                        (click)="viewProgramDetails(activeProgram.id)">{{
+                        appPress (shortPress)="viewProgramDetails(activeProgram.id)">{{
                         activeProgram.name }}</strong></p>
                   </div>
-                  <button (click)="nextPeriod()" [title]="'Next ' + (calendarDisplayMode() | titlecase)"
+                  <button appPress (shortPress)="nextPeriod()" [title]="'Next ' + (calendarDisplayMode() | titlecase)"
                     class="p-1.5 sm:p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 disabled:opacity-50"
                     [disabled]="isCalendarAnimating"><svg xmlns="http://www.w3.org/2000/svg" fill="none"
                       viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 sm:w-5 sm:h-5">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
                     </svg></button>
                 </div>
-                <button (click)="goToTodayCalendar()" *ngIf="!isTodayDisplayedInCalendar()"
+                <button appPress (shortPress)="goToTodayCalendar()" *ngIf="!isTodayDisplayedInCalendar()"
                   class="text-xs text-primary dark:text-primary-light hover:underline mb-2 sm:mb-3 block text-center mx-auto disabled:opacity-50"
                   [disabled]="isCalendarAnimating">Jump to Current {{ calendarDisplayMode() | titlecase }}</button>
                 <div *ngIf="calendarLoading() && !isCalendarAnimating" class="text-center py-6">
@@ -493,7 +493,7 @@
                 <div class="flex justify-between items-center">
                   <span class="text-xs text-sky-700 dark:text-sky-300">Logged: {{ log.startTime | date:'shortTime' }}
                     ({{ log.durationMinutes }} min)</span>
-                  <button (click)="viewSessionSummary(log.id)"
+                  <button appPress (shortPress)="viewSessionSummary(log.id)"
                     class="text-2xs sm:text-xs bg-sky-500 hover:bg-sky-600 text-white font-semibold py-1 px-2 rounded shadow-sm flex items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
                       stroke="currentColor" class="size-3 sm:size-4 mr-1">
@@ -517,7 +517,7 @@
                 <!-- "Start" or "Not Logged" button -->
                 <!-- Removed flex-1 -->
                 <button *ngIf="selectedDay.isToday || selectedDay.isPastDay"
-                  (click)="startScheduledWorkout(item.routine.id, activeProgramForCalendar()?.id)"
+                  appPress (shortPress)="startScheduledWorkout(item.routine.id, activeProgramForCalendar()?.id)"
                   [disabled]="selectedDay.isPastDay && !selectedDay.isToday"
                   class="bg-green-500 hover:bg-green-600 text-white font-semibold rounded-md shadow-sm flex items-center justify-center disabled:bg-gray-400 disabled:dark:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-70 py-2.5 px-4">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -531,7 +531,7 @@
                 <!-- "Log Past Session" button -->
                 <!-- Removed flex-1 -->
                 <!-- Added sm:col-start-2 to place it in the second column on small screens and up if the START button is not present -->
-                <button *ngIf="selectedDay.isPastDay" (click)="logPreviousSession(item.routine.id, selectedDay.date)"
+                <button *ngIf="selectedDay.isPastDay" appPress (shortPress)="logPreviousSession(item.routine.id, selectedDay.date)"
                   [class.sm:col-start-2]="!selectedDay.isToday"
                   class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-3 rounded-md shadow-sm flex items-center justify-center">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -549,7 +549,7 @@
           </div>
           <div class="mt-4 border-t border-gray-200 dark:border-gray-600 pt-3">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-sm mx-auto">
-              <button (click)="goToPreviousProgramSession(activeProgramForCalendar()?.id)"
+              <button appPress (shortPress)="goToPreviousProgramSession(activeProgramForCalendar()?.id)"
                 class="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-3 rounded-md shadow-sm flex items-center justify-center">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                   stroke="currentColor" class="w-4 h-4 sm:w-5 sm:h-5 mr-2">
