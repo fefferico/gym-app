@@ -693,6 +693,11 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
 
   selectCalendarDay(day: CalendarDay | null): void {
     if (this.isCalendarAnimating) return; // Prevent opening sheet during slide
+    const currentVibrator = navigator;
+    if (currentVibrator && 'vibrate' in currentVibrator) {
+      currentVibrator.vibrate(50); // Optional: provide haptic feedback on selection
+    }
+
     if (day?.hasWorkout) this.selectedCalendarDayDetails.set(day);
     else if (day && !day.hasWorkout) {
       this.toastService.clearAll();
