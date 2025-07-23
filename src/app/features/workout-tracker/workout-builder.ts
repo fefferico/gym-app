@@ -517,7 +517,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         timestampValue = loggedS.timestamp; // Preserve original timestamp for logged sets
         // For logging, tempo and restAfterSet usually come from the plan, not directly part of LoggedSet for achievement
         tempoValue = loggedS.targetTempo || '';
-        restValue = 60; // Default, or could be inferred if prefilling from a plan
+        restValue = loggedS.restAfterSetUsed;
       } else { // It's ExerciseSetParams from routine template
         const plannedS = setData as ExerciseSetParams;
         repsValue = plannedS.reps;
@@ -543,14 +543,30 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     };
 
     if (forLogging) {
-      formGroupConfig['repsAchieved'] = [repsValue ?? null, [Validators.required, Validators.min(0)]];
+      // repsAchieved is required only if both weightUsed and durationPerformed are null
+      formGroupConfig['repsAchieved'] = [
+        repsValue ?? null,
+        [
+          (control: AbstractControl) => {
+        const parent = control.parent;
+        if (!parent) return null;
+        const weightUsed = parent.get('weightUsed')?.value;
+        const durationPerformed = parent.get('durationPerformed')?.value;
+        // Only require repsAchieved if both weightUsed and durationPerformed are null or empty
+        if ((weightUsed == null || weightUsed === '') && (durationPerformed == null || durationPerformed === '')) {
+          return Validators.required(control);
+        }
+        return null;
+          },
+          Validators.min(0)
+        ]
+      ];
       formGroupConfig['weightUsed'] = [this.unitService.convertFromKg(weightValue, this.unitService.currentUnit()) ?? null, [Validators.min(0)]];
       formGroupConfig['durationPerformed'] = [durationValue ?? null, [Validators.min(0)]];
       formGroupConfig['plannedSetId'] = [plannedSetIdValue];
       formGroupConfig['timestamp'] = [timestampValue];
-      // For manual log, tempo and restAfterSet are not primary achievement fields from the form
-      // They might be prefilled if basing on a routine, but not directly editable *as achieved values* here.
-      // If you want them to be editable achievements, add FormControls for them.
+      formGroupConfig['tempo'] = [tempoValue];
+      formGroupConfig['restAfterSet'] = [restValue];
     } else { // For routine builder (planning mode)
       formGroupConfig['reps'] = [repsValue ?? null, [Validators.min(0)]];
       formGroupConfig['targetReps'] = [targetReps ?? null, [Validators.min(0)]];

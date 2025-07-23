@@ -615,7 +615,7 @@
                                                             class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
                                                     </div>
                                                     <div
-                                                        *ngIf="mode === 'routineBuilder' && (setControl.get('tempo')?.value || isEditableMode())">
+                                                        *ngIf="setControl.get('tempo')?.value || isEditableMode()">
                                                         <label [for]="'tempo-exp-' + exIndex + '-' + setIndex"
                                                             class="block text-s font-medium text-gray-600 dark:text-gray-400">Tempo</label>
                                                         <input type="text"
@@ -624,10 +624,12 @@
                                                             [readonly]="isViewMode"
                                                             class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
                                                     </div>
-                                                    <div *ngIf="mode === 'routineBuilder'">
+                                                    <!-- Rest After Set -->
+                                                    <div>
                                                         <label [for]="'rest-exp-' + exIndex + '-' + setIndex"
                                                             class="block text-s font-medium text-gray-600 dark:text-gray-400">Rest
-                                                            (s)</label>
+                                                            (s) {{ mode === 'manualLogEntry' ? '(Done)' :
+                                                            ''}}</label>
                                                         <input type="number"
                                                             [id]="'rest-exp-' + exIndex + '-' + setIndex"
                                                             formControlName="restAfterSet" placeholder="Rest"

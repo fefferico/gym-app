@@ -88,17 +88,6 @@ type HistoryListView = 'list' | 'calendar';
       transition('void => *', [animate('150ms cubic-bezier(0.25, 0.8, 0.25, 1)')]),
       transition('* => void', [animate('100ms cubic-bezier(0.25, 0.8, 0.25, 1)')])
     ]),
-    trigger('viewSlide', [
-      transition('list <=> calendar', [
-        style({ position: 'relative', overflow: 'hidden' }),
-        query(':enter, :leave', [style({ position: 'absolute', top: 0, left: 0, width: '100%' })], { optional: true }),
-        query(':enter', [style({ transform: '{{ enterTransform }}', opacity: 0 })], { optional: true }),
-        group([
-          query(':leave', [animate('300ms ease-out', style({ transform: '{{ leaveTransform }}', opacity: 0 }))], { optional: true }),
-          query(':enter', [animate('300ms ease-out', style({ transform: 'translateX(0%)', opacity: 1 }))], { optional: true })
-        ])
-      ])
-    ]),
     trigger('calendarMonthSlide', [
       state('center', style({ transform: 'translateX(0%)', opacity: 1 })),
       state('outLeft', style({ transform: 'translateX(-100%)', opacity: 0 })),

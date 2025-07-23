@@ -268,7 +268,8 @@
             <div [@calendarPeriodSlide]="calendarAnimationState()">
               <div>
                 <div class="flex justify-between items-center mb-3 sm:mb-4">
-                  <button appPress (shortPress)="previousPeriod()" [title]="'Previous ' + (calendarDisplayMode() | titlecase)"
+                  <button appPress (shortPress)="previousPeriod()"
+                    [title]="'Previous ' + (calendarDisplayMode() | titlecase)"
                     class="p-1.5 sm:p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 disabled:opacity-50"
                     [disabled]="isCalendarAnimating"><svg xmlns="http://www.w3.org/2000/svg" fill="none"
                       viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 sm:w-5 sm:h-5">
@@ -279,8 +280,8 @@
                       | date:calendarHeaderFormat() }}</h2>
                     <p class="text-2xs sm:text-xs text-gray-500 dark:text-gray-400">Active Program: <strong
                         class="text-primary dark:text-primary-light truncate max-w-[150px] sm:max-w-xs inline-block align-bottom hover:cursor-pointer hover:underline"
-                        [title]="'Go to program ' + activeProgram.name"
-                        appPress (shortPress)="viewProgramDetails(activeProgram.id)">{{
+                        [title]="'Go to program ' + activeProgram.name" appPress
+                        (shortPress)="viewProgramDetails(activeProgram.id)">{{
                         activeProgram.name }}</strong></p>
                   </div>
                   <button appPress (shortPress)="nextPeriod()" [title]="'Next ' + (calendarDisplayMode() | titlecase)"
@@ -373,8 +374,7 @@
                         <div *ngFor="let item of day.scheduledItems" class="p-0.5 sm:p-1 rounded text-2xs sm:text-xs">
 
                           <!-- If the routine has been logged, show a green background -->
-                          <div *ngIf="item.logs.length > 0"
-                            class="p-0.5 sm:p-1 rounded">
+                          <div *ngIf="item.logs.length > 0" class="p-0.5 sm:p-1 rounded">
                             <!--<p class="font-semibold truncate text-green-800 dark:text-green-200"
                               [title]="item.routine.name">
                               {{ item.routine.name }}
@@ -383,9 +383,8 @@
                           </div>
 
                           <!-- If the routine is scheduled but not logged, show a blue background -->
-                          <div *ngIf="item.logs.length === 0"
-                            class="p-0.5 sm:p-1 rounded">
-                             <!--<p class="font-semibold truncate text-blue-700 dark:text-blue-300"
+                          <div *ngIf="item.logs.length === 0" class="p-0.5 sm:p-1 rounded">
+                            <!--<p class="font-semibold truncate text-blue-700 dark:text-blue-300"
                               [title]="item.routine.name">
                               {{ item.routine.name }}
                             </p>-->
@@ -407,11 +406,10 @@
         <ng-template #noActiveProgramForCalendar>
           <div class="text-center py-10 bg-white dark:bg-gray-700 rounded-md shadow-md">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-              stroke="currentColor"
-              class="w-16 h-16 mx-auto text-gray-400 dark:text-gray-200 mb-4 ng-tns-c2562215171-13">
+              stroke="currentColor" class="w-16 h-16 mx-auto text-gray-400 dark:text-gray-200 mb-4">
               <path stroke-linecap="round" stroke-linejoin="round"
-                d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5m-9-3.75h.008v.008H12v-.008zM12 15h.008v.008H12V15zm0 2.25h.008v.008H12v-.008zM9.75 15h.008v.008H9.75V15zm0 2.25h.008v.008H9.75v-.008zM7.5 15h.008v.008H7.5V15zm0 2.25h.008v.008H7.5v-.008zm6.75-4.5h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V15zm0 2.25h.008v.008h-.008v-.008zm2.25-4.5h.008v.008H16.5v-.008zm0 2.25h.008v.008H16.5V15z"
-                class="ng-tns-c2562215171-13"></path>
+                d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5m-9-3.75h.008v.008H12v-.008zM12 15h.008v.008H12V15zm0 2.25h.008v.008H12v-.008zM9.75 15h.008v.008H9.75V15zm0 2.25h.008v.008H9.75v-.008zM7.5 15h.008v.008H7.5V15zm0 2.25h.008v.008H7.5v-.008zm6.75-4.5h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V15zm0 2.25h.008v.008h-.008v-.008zm2.25-4.5h.008v.008H16.5v-.008zm0 2.25h.008v.008H16.5V15z">
+              </path>
             </svg>
             <h3 class="text-lg font-medium text-gray-700 dark:text-gray-300 mb-1">
               {{ activePrograms().length > 1 ? 'Select a Program' : 'No Active Program' }}
@@ -516,8 +514,8 @@
 
                 <!-- "Start" or "Not Logged" button -->
                 <!-- Removed flex-1 -->
-                <button *ngIf="selectedDay.isToday || selectedDay.isPastDay"
-                  appPress (shortPress)="startScheduledWorkout(item.routine.id, activeProgramForCalendar()?.id)"
+                <button *ngIf="selectedDay.isToday || selectedDay.isPastDay" appPress
+                  (shortPress)="startScheduledWorkout(item.routine.id, activeProgramForCalendar()?.id)"
                   [disabled]="selectedDay.isPastDay && !selectedDay.isToday"
                   class="bg-green-500 hover:bg-green-600 text-white font-semibold rounded-md shadow-sm flex items-center justify-center disabled:bg-gray-400 disabled:dark:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-70 py-2.5 px-4">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -531,7 +529,8 @@
                 <!-- "Log Past Session" button -->
                 <!-- Removed flex-1 -->
                 <!-- Added sm:col-start-2 to place it in the second column on small screens and up if the START button is not present -->
-                <button *ngIf="selectedDay.isPastDay" appPress (shortPress)="logPreviousSession(item.routine.id, selectedDay.date)"
+                <button *ngIf="selectedDay.isPastDay" appPress
+                  (shortPress)="logPreviousSession(item.routine.id, selectedDay.date)"
                   [class.sm:col-start-2]="!selectedDay.isToday"
                   class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-3 rounded-md shadow-sm flex items-center justify-center">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
