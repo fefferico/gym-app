@@ -149,10 +149,14 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     routines = routinesWithDuration.filter(r => r.estimatedDuration <= durationFilter);
 
     if (searchTerm) {
-      routines = routines.filter(r =>
-        r.name.toLowerCase().includes(searchTerm) ||
-        (r.description && r.description.toLowerCase().includes(searchTerm))
-      );
+      const words = searchTerm.split(/\s+/).filter(Boolean);
+      routines = routines.filter(r => {
+      const searchable = [
+        r.name,
+        r.description || ''
+      ].join(' ').toLowerCase();
+      return words.every(word => searchable.includes(word));
+      });
     }
     if (goalFilter) {
       routines = routines.filter(r => r.goal?.toLowerCase() === goalFilter.toLowerCase());

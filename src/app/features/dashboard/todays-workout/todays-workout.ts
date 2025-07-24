@@ -290,4 +290,9 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
     // This tells Angular to trust this HTML string and render it as is.
     return this.sanitizer.bypassSecurityTrustHtml(value);
   }
+
+  viewProgramDetails(programId: string, event?: MouseEvent): void {
+    event?.stopPropagation();
+    this.router.navigate(['/training-programs/view', programId]);
+  }
 }

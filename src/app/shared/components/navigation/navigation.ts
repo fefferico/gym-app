@@ -76,6 +76,8 @@ export class NavigationComponent {
    * Handles the press release event on a navigation item.
    */
   onPressRelease(item: NavItem): void {
+    // Scroll to the top of the component (or page)
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     // You can add any custom logic for the press release here.
     console.log('Press released on:', item.label);
   }

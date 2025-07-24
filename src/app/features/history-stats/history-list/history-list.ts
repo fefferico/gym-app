@@ -203,7 +203,11 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
       // Routine name filtering
       const routineNameFilter = filters.routineName?.trim().toLowerCase();
       if (routineNameFilter) {
-        match &&= (log.routineName || '').toLowerCase().includes(routineNameFilter);
+        const words = routineNameFilter.split(/\s+/).filter(Boolean);
+        const searchable = [
+          log.routineName || '',
+        ].join(' ').toLowerCase();
+        match &&= words.every((word: any) => searchable.includes(word));
       }
 
       // Exercise filtering

@@ -227,7 +227,7 @@ export const EXERCISES_DATA = [
     "imageUrls": ["assets/images/exercises/db-rdl_1.jpg", "assets/images/exercises/db-rdl_2.jpg"]
   },
   {
-    "id": "goblet-squat",
+    "id": "dumbbell-goblet-squat",
     "name": "Goblet Squat",
     "description": "A squat variation holding a single dumbbell or kettlebell at chest level, promoting an upright torso.",
     "category": "dumbbells",
@@ -257,7 +257,7 @@ export const EXERCISES_DATA = [
     "imageUrls": ["assets/images/exercises/db-front-raise_1.jpg", "assets/images/exercises/db-front-raise_2.jpg"]
   },
   {
-    "id": "kettlebell-swing",
+    "id": "two-handed-kettlebell-swing",
     "name": "Kettlebell Swing (Two-Handed)",
     "description": "A dynamic, explosive exercise targeting the posterior chain (glutes, hamstrings, back) and improving power.",
     "category": "kettlebells",
@@ -355,16 +355,6 @@ export const EXERCISES_DATA = [
     "muscleGroups": ["Core (Obliques, Quadratus Lumborum)", "Forearms (Grip)", "Traps", "Shoulders (stabilizers)", "Hips (stabilizers)"],
     "equipmentNeeded": ["Kettlebells"],
     "imageUrls": ["assets/images/exercises/kb-suitcase-carry_1.jpg", "assets/images/exercises/kb-suitcase-carry_2.jpg"]
-  },
-  {
-    "id": "kettlebell-thruster",
-    "name": "Kettlebell Thruster",
-    "description": "A full-body compound exercise combining a kettlebell front squat with an overhead press in one fluid movement. Can be done with one or two kettlebells.",
-    "category": "kettlebells",
-    "primaryMuscleGroup": "Full Body",
-    "muscleGroups": ["Quadriceps", "Glutes", "Shoulders", "Triceps", "Core"],
-    "equipmentNeeded": ["Kettlebell"],
-    "imageUrls": ["assets/images/exercises/kb-thruster_1.jpg", "assets/images/exercises/kb-thruster_2.jpg"]
   },
   {
     "id": "lat-pulldown-machine",
@@ -1430,16 +1420,6 @@ export const EXERCISES_DATA = [
     imageUrls: ["assets/images/exercises/kettlebell-clean_1.jpg"]
   },
   {
-    "id": "kettlebell-jerk",
-    "name": "Kettlebell Jerk",
-    "description": "An overhead pressing movement that involves a dip, drive, and lockout, developing explosive shoulder and arm strength.",
-    "category": "kettlebells",
-    "primaryMuscleGroup": "Shoulders",
-    "muscleGroups": ["Shoulders", "Triceps", "Core"],
-    "equipmentNeeded": ["Kettlebells"],
-    imageUrls: ["assets/images/exercises/kettlebell-jerk_1.jpg"]
-  },
-  {
     "id": "kettlebell-sumo-deadlift",
     "name": "Kettlebell Sumo Deadlift",
     "description": "A variation of the deadlift emphasizing the inner thighs, hips, and glutes with a wide stance.",
@@ -1468,16 +1448,6 @@ export const EXERCISES_DATA = [
     "muscleGroups": ["Quadriceps", "Glutes", "Core"],
     "equipmentNeeded": ["Kettlebells"],
     imageUrls: ["assets/images/exercises/kettlebell-goblet-squat_1.jpg"]
-  },
-  {
-    "id": "kettlebell-figure-eight",
-    "name": "Kettlebell Figure Eight",
-    "description": "A dynamic movement passing the kettlebell between the legs in a figure-eight pattern, improving coordination and grip.",
-    "category": "kettlebells",
-    "primaryMuscleGroup": "Full Body",
-    "muscleGroups": ["Core", "Forearms", "Hips"],
-    "equipmentNeeded": ["Kettlebells"],
-    imageUrls: ["assets/images/exercises/kettlebell-figure-eight_1.jpg"]
   },
   {
     "id": "kettlebell-clean-and-press",
@@ -1640,24 +1610,68 @@ export const EXERCISES_DATA = [
     imageUrls: ["assets/images/exercises/single-kettlebell-overhead-press_1.jpg"]
   },
   {
-    id: "single-kettlebell-windmill",
-    name: "Single Kettlebell Windmill",
-    description: "Hold the kettlebell overhead and hinge at the hips to touch the opposite foot, improving mobility and core strength.",
-    category: "kettlebells",
-    primaryMuscleGroup: "Core & Shoulders",
-    muscleGroups: ["Obliques", "Shoulders", "Hips"],
-    equipmentNeeded: ["Kettlebell"],
-    imageUrls: ["assets/images/exercises/single-kettlebell-windmill_1.jpg"]
+    "id": "kettlebell-single-leg-deadlift",
+    "name": "Kettlebell Single Leg Deadlift",
+    "description": "A challenging unilateral exercise that heavily targets the hamstrings, glutes, and stabilizer muscles of the hip and core. Improves balance and addresses strength imbalances.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Hamstrings",
+    "muscleGroups": ["Hamstrings", "Glutes", "Core", "Lower Back", "Hips (stabilizers)"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-single-leg-rdl_1.jpg", "assets/images/exercises/kb-single-leg-rdl_2.jpg"],
+    "notes": "Hold the kettlebell in the opposite hand of the standing leg. Hinge at the hip, keeping your back straight as your other leg extends behind you. [8]"
   },
   {
-    id: "single-kettlebell-swing",
+    "id": "kettlebell-single-arm-thruster",
+    "name": "Kettlebell Single Arm Thruster",
+    "description": "A compound movement combining a single-arm front squat with an overhead press. It builds full-body power, coordination, and unilateral strength.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Full Body",
+    "muscleGroups": ["Quadriceps", "Glutes", "Shoulders", "Triceps", "Core"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-single-arm-thruster_1.jpg", "assets/images/exercises/kb-single-arm-thruster_2.jpg"],
+    "notes": "Keep the kettlebell in the rack position during the squat and drive explosively upwards into the press."
+  },
+  {
+    "id": "kettlebell-windmill",
+    "name": "Kettlebell Windmill",
+    "description": "A dynamic mobility and stability exercise that strengthens the shoulders, core (especially the obliques), and hamstrings while improving hip hinge mechanics.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Core (Obliques)",
+    "muscleGroups": ["Core (Obliques)", "Shoulders (stabilizers)", "Glutes", "Hamstrings"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-windmill_1.jpg", "assets/images/exercises/kb-windmill_2.jpg"],
+    "notes": "Keep the arm holding the kettlebell locked and vertical. Hinge at the hips and rotate your torso to lower your free hand towards the floor. [21]"
+  },
+  {
+    "id": "kettlebell-rotational-swing",
+    "name": "Kettlebell Rotational Swing",
+    "description": "A swing variation that incorporates a pivot and slight torso rotation, developing power in the transverse (rotational) plane and targeting the glutes and core.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Glutes",
+    "muscleGroups": ["Glutes", "Core (Obliques)", "Hamstrings", "Adductors"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-rotational-swing_1.jpg", "assets/images/exercises/kb-rotational-swing_2.jpg"],
+    "notes": "As you swing, pivot on your back foot to allow your hips to rotate. It's a subtle, power-generating movement, not an exaggerated twist. [1]"
+  },
+  {
+    id: "one-hand-kettlebell-swing",
     name: "Single Kettlebell Swing",
     description: "Hinge at hips and swing the kettlebell between legs to chest or eye level, building explosive hip power.",
     category: "kettlebells",
     primaryMuscleGroup: "Full Body",
     muscleGroups: ["Hips", "Glutes", "Hamstrings", "Back"],
     equipmentNeeded: ["Kettlebell"],
-    imageUrls: ["assets/images/exercises/single-kettlebell-swing_1.jpg"]
+    imageUrls: ["assets/images/exercises/one-hand-kettlebell-swing_1.jpg"]
+  },
+  {
+    id: "one-hand-kettlebell-alternating-swing",
+    name: "Single Kettlebell Alternating Swing",
+    description: "Hinge at hips and swing the kettlebell between legs to chest or eye level, building explosive hip power. Switch hand at the top of the swing.",
+    category: "kettlebells",
+    primaryMuscleGroup: "Full Body",
+    muscleGroups: ["Hips", "Glutes", "Hamstrings", "Back"],
+    equipmentNeeded: ["Kettlebell"],
+    imageUrls: ["assets/images/exercises/one-hand-kettlebell-alternating-swing_1.jpg"]
   },
 
   // Double kettlebell exercises
@@ -1772,7 +1786,7 @@ export const EXERCISES_DATA = [
     "equipmentNeeded": ["Kettlebell"],
     "imageUrls": []
   },
-{
+  {
     "id": "slow-kettlebell-floor-skullcrusher",
     "name": "Slow Eccentric Floor Skullcrusher",
     "description": "A slow controlled tricep isolation exercise performed lying on the floor, lowering one or two kettlebells towards the forehead.",
@@ -1782,7 +1796,7 @@ export const EXERCISES_DATA = [
     "equipmentNeeded": ["Kettlebell"],
     "imageUrls": []
   },
-  
+
   {
     "id": "kettlebell-close-grip-floor-press",
     "name": "Kettlebell Close Grip Floor Press",
@@ -1874,5 +1888,942 @@ export const EXERCISES_DATA = [
     "equipmentNeeded": [],
     "imageUrls": ["assets/images/exercises/twist-sit-up_1.jpg", "assets/images/exercises/twist-sit-up_2.jpg"],
     "notes": "As you sit up, twist your torso to bring your opposite elbow towards your knee."
-  }
+  },
+
+  {
+    "id": "kettlebell-bent-press",
+    "name": "Kettlebell Bent Press",
+    "description": "An advanced, old-time strongman lift that builds exceptional shoulder stability, thoracic mobility, and total-body strength by pressing the kettlebell overhead while hinging and rotating away from the weight.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Shoulders",
+    "muscleGroups": ["Shoulders (Deltoids, Rotator Cuff)", "Triceps", "Lats", "Core (Obliques)", "Hips", "Spine"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-bent-press_1.jpg", "assets/images/exercises/kb-bent-press_2.jpg"],
+    "notes": "This is a highly technical lift. It's more of a 'get under' the weight than a 'press up' movement. Focus on mobility and start with a very light weight."
+  },
+  {
+    "id": "kettlebell-bottoms-up-press",
+    "name": "Kettlebell Bottoms-Up Press",
+    "description": "An advanced pressing variation where the kettlebell is held upside down, dramatically increasing the demand for grip strength, wrist stability, and shoulder control.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Shoulders (stabilizers)",
+    "muscleGroups": ["Shoulders (Rotator Cuff)", "Forearms (Grip)", "Triceps", "Core"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-bottoms-up-press_1.jpg", "assets/images/exercises/kb-bottoms-up-press_2.jpg"],
+    "notes": "Requires intense focus and a very strong grip. Start with a light kettlebell and focus on keeping the bell perfectly vertical."
+  },
+  {
+    "id": "kettlebell-tactical-lunge",
+    "name": "Kettlebell Tactical Lunge",
+    "description": "A dynamic lunge variation that involves passing the kettlebell from one hand to the other under the front leg, enhancing coordination, core stability, and unilateral leg strength.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Quadriceps",
+    "muscleGroups": ["Quadriceps", "Glutes", "Core (Obliques)", "Forearms (Grip)"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-tactical-lunge_1.jpg", "assets/images/exercises/kb-tactical-lunge_2.jpg"],
+    "notes": "Perform a reverse lunge and pass the kettlebell under the front thigh to the other hand. Keep the torso upright and stable."
+  },
+  {
+    "id": "kettlebell-bottoms-up-carry",
+    "name": "Kettlebell Bottoms-Up Carry",
+    "description": "A loaded carry where the kettlebell is held in the unstable bottoms-up position, significantly challenging grip, wrist, shoulder, and core stability while walking.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Core",
+    "muscleGroups": ["Forearms (Grip)", "Shoulders (Rotator Cuff)", "Core (Obliques, Transverse Abdominis)"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-bottoms-up-carry_1.jpg", "assets/images/exercises/kb-bottoms-up-carry_2.jpg"],
+    "notes": "Maintain a tight grip and walk slowly and deliberately, keeping the kettlebell stable and upright."
+  },
+  {
+    "id": "kettlebell-slingshot",
+    "name": "Kettlebell Slingshot",
+    "description": "A foundational mobility and warm-up drill, also known as 'Around the World,' that involves passing a kettlebell around the body to improve grip, shoulder mobility, and core stability.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Core",
+    "muscleGroups": ["Core (Obliques)", "Shoulders (stabilizers)", "Forearms (Grip)", "Upper Back"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-slingshot_1.jpg", "assets/images/exercises/kb-slingshot_2.jpg"],
+    "notes": "Keep the core tight to prevent your hips from swaying. Pass the kettlebell from hand to hand smoothly in both directions."
+  },
+  {
+    "id": "kettlebell-goblet-clean",
+    "name": "Kettlebell Goblet Clean",
+    "description": "A variation of the clean where the kettlebell is lifted from the floor or a swing into the two-handed goblet position, serving as an excellent transition into goblet squats.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Glutes",
+    "muscleGroups": ["Glutes", "Hamstrings", "Back (Upper)", "Biceps", "Core"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-goblet-clean_1.jpg", "assets/images/exercises/kb-goblet-clean_2.jpg"],
+    "notes": "Use a powerful hip drive to elevate the kettlebell, then guide it with your hands into the goblet hold at chest height."
+  },
+  {
+    "id": "double-kettlebell-renegade-row",
+    "name": "Double Kettlebell Renegade Row",
+    "description": "A highly demanding full-body exercise combining a plank with an alternating row. It builds a strong back and biceps while intensely challenging core stability and anti-rotation.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Lats",
+    "muscleGroups": ["Lats", "Rhomboids", "Core (Obliques, Transverse Abdominis)", "Biceps", "Shoulders (stabilizers)"],
+    "equipmentNeeded": ["Kettlebells"],
+    "imageUrls": ["assets/images/exercises/dkb-renegade-row_1.jpg", "assets/images/exercises/dkb-renegade-row_2.jpg"],
+    "notes": "Start with feet wide for stability and progress to a narrower stance. Focus on preventing the hips from rotating during the row. [2, 6]"
+  },
+  {
+    "id": "double-kettlebell-see-saw-press",
+    "name": "Double Kettlebell See-Saw Press",
+    "description": "An overhead press variation where as one kettlebell is pressed up, the other is pulled down, creating a see-saw motion that builds shoulder strength and stability.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Shoulders",
+    "muscleGroups": ["Shoulders (Deltoids)", "Triceps", "Core (Obliques)", "Lats"],
+    "equipmentNeeded": ["Kettlebells"],
+    "imageUrls": ["assets/images/exercises/dkb-see-saw-press_1.jpg", "assets/images/exercises/dkb-see-saw-press_2.jpg"],
+    "notes": "This exercise allows for a continuous rhythm and places high demand on core stability to manage the alternating load. [23, 31, 46]"
+  },
+  {
+    "id": "double-kettlebell-snatch",
+    "name": "Double Kettlebell Snatch",
+    "description": "An advanced, explosive full-body movement that involves snatching two kettlebells from a swing position to an overhead lockout in one fluid motion. [13, 43]",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Full Body",
+    "muscleGroups": ["Glutes", "Hamstrings", "Quadriceps", "Back", "Shoulders", "Core"],
+    "equipmentNeeded": ["Kettlebells"],
+    "imageUrls": ["assets/images/exercises/dkb-snatch_1.jpg", "assets/images/exercises/dkb-snatch_2.jpg"],
+    "notes": "Requires mastery of the single kettlebell snatch first. This is a high-power, high-skill movement for advanced athletes. [43]"
+  },
+  {
+    "id": "double-kettlebell-walking-lunge",
+    "name": "Double Kettlebell Walking Lunge",
+    "description": "A walking lunge performed while holding two kettlebells, either in the rack position or farmer's carry style, to build robust leg strength, core stability, and endurance.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Quadriceps",
+    "muscleGroups": ["Quadriceps", "Glutes", "Hamstrings", "Core", "Forearms (Grip)"],
+    "equipmentNeeded": ["Kettlebells"],
+    "imageUrls": ["assets/images/exercises/dkb-walking-lunge_1.jpg", "assets/images/exercises/dkb-walking-lunge_2.jpg"],
+    "notes": "Holding the kettlebells in the front rack position will challenge the core and upper back more, while a farmer's carry focuses more on grip and traps."
+  },
+  {
+    "id": "kettlebell-dead-clean",
+    "name": "Kettlebell Dead Clean",
+    "description": "A kettlebell clean initiated from a dead stop on the floor for each repetition. This variation builds explosive power from the ground up without the momentum of a swing.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Full Body",
+    "muscleGroups": ["Hamstrings", "Glutes", "Lower Back", "Traps", "Core"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-dead-clean_1.jpg", "assets/images/exercises/kb-dead-clean_2.jpg"],
+    "notes": "Set up like a deadlift. Drive powerfully through the hips to lift the bell, then guide it into the rack position."
+  },
+  {
+    "id": "kettlebell-upright-row",
+    "name": "Kettlebell Upright Row",
+    "description": "An exercise that targets the shoulders (deltoids) and upper back (traps) by pulling a single kettlebell vertically up towards the chin, leading with the elbows.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Shoulders",
+    "muscleGroups": ["Shoulders (Deltoids)", "Traps", "Biceps"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-upright-row_1.jpg", "assets/images/exercises/kb-upright-row_2.jpg"],
+    "notes": "Hold the kettlebell by the handle with both hands. Keep the bell close to your body as you pull it upwards."
+  },
+  {
+    "id": "kettlebell-sumo-deadlift-high-pull",
+    "name": "Kettlebell Sumo Deadlift High Pull",
+    "description": "A compound, high-intensity movement combining a sumo deadlift with an upright row. It develops power through the posterior chain, upper back, and shoulders.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Full Body",
+    "muscleGroups": ["Hamstrings", "Glutes", "Adductors", "Shoulders", "Traps", "Core"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-sdhp_1.jpg", "assets/images/exercises/kb-sdhp_2.jpg"],
+    "notes": "Start with a wide sumo stance. Explode upwards from the deadlift, using the momentum to help pull the kettlebell to your chin."
+  },
+  {
+    "id": "double-kettlebell-clean-and-jerk",
+    "name": "Double Kettlebell Clean and Jerk",
+    "description": "The quintessential kettlebell sport lift. A highly technical and powerful movement that involves cleaning two kettlebells to the rack and then driving them overhead with a 'jerk'.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Full Body",
+    "muscleGroups": ["Glutes", "Quadriceps", "Shoulders", "Triceps", "Core", "Upper Back"],
+    "equipmentNeeded": ["Kettlebells"],
+    "imageUrls": ["assets/images/exercises/dkb-clean-jerk_1.jpg", "assets/images/exercises/dkb-clean-jerk_2.jpg"],
+    "notes": "The jerk involves a 'double dip' of the knees to drive the weight up and get underneath it. A true test of power-endurance."
+  },
+  {
+    "id": "double-kettlebell-bent-over-row",
+    "name": "Double Kettlebell Bent-Over Row",
+    "description": "A foundational strength builder for the entire back and biceps. Performing it with two kettlebells allows for heavy loading and balanced muscular development.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Lats",
+    "muscleGroups": ["Lats", "Rhomboids", "Traps", "Biceps", "Lower Back (stabilizer)"],
+    "equipmentNeeded": ["Kettlebells"],
+    "imageUrls": ["assets/images/exercises/dkb-row_1.jpg", "assets/images/exercises/dkb-row_2.jpg"],
+    "notes": "Hinge at the hips, maintaining a flat back. Pull both kettlebells towards your torso, squeezing your shoulder blades together."
+  },
+  {
+    "id": "double-kettlebell-floor-press",
+    "name": "Double Kettlebell Floor Press",
+    "description": "A pressing variation that limits the range of motion, making it easier on the shoulders while building raw pressing strength in the chest and triceps.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Chest",
+    "muscleGroups": ["Chest", "Triceps", "Shoulders (Anterior)"],
+    "equipmentNeeded": ["Kettlebells"],
+    "imageUrls": ["assets/images/exercises/dkb-floor-press_1.jpg", "assets/images/exercises/dkb-floor-press_2.jpg"],
+    "notes": "Lie on the floor with knees bent. Start with the kettlebells held over your chest and lower them until your triceps touch the floor, then press back up."
+  },
+  {
+    "id": "kettlebell-clean-and-jerk",
+    "name": "Kettlebell Clean and Jerk (Single Arm)",
+    "description": "A classic kettlebell lift combining a clean to the rack position followed by a jerk to drive the weight overhead. It develops full-body power, coordination, and strength endurance.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Full Body",
+    "muscleGroups": ["Glutes", "Hamstrings", "Quadriceps", "Shoulders", "Triceps", "Core"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-clean-jerk-single_1.jpg", "assets/images/exercises/kb-clean-jerk-single_2.jpg"],
+    "notes": "The jerk uses a 'double dip' with the legs to powerfully drive the kettlebell overhead, making it more efficient than a strict press."
+  },
+  {
+    "id": "kettlebell-cossack-squat",
+    "name": "Kettlebell Cossack Squat",
+    "description": "A deep lateral squat that improves hip mobility, adductor flexibility, and single-leg strength. The kettlebell is typically held in the goblet position for counterbalance.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Adductors",
+    "muscleGroups": ["Adductors", "Glutes", "Quadriceps", "Hamstrings", "Core"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-cossack-squat_1.jpg", "assets/images/exercises/kb-cossack-squat_2.jpg"],
+    "notes": "Shift your weight to one side, squatting as low as possible while keeping the other leg straight. Keep your chest up and back straight. [6]"
+  },
+  {
+    "id": "kettlebell-bottoms-up-clean",
+    "name": "Kettlebell Bottoms-Up Clean",
+    "description": "An advanced clean variation where the kettlebell is caught and held in the unstable bottoms-up position. It intensely develops grip strength, wrist stability, and total body tension.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Forearms (Grip)",
+    "muscleGroups": ["Forearms (Grip)", "Shoulders (stabilizers)", "Core", "Lats"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-bottoms-up-clean_1.jpg", "assets/images/exercises/kb-bottoms-up-clean_2.jpg"],
+    "notes": "Requires immense concentration. The key is a strong, crushing grip and a perfectly vertical forearm upon catching the kettlebell. [28]"
+  },
+  {
+    "id": "kettlebell-overhead-lunge",
+    "name": "Kettlebell Overhead Lunge",
+    "description": "A lunge performed while holding a kettlebell locked out overhead. This exercise heavily challenges shoulder stability, core strength, and balance in addition to working the legs.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Quadriceps",
+    "muscleGroups": ["Quadriceps", "Glutes", "Shoulders (stabilizers)", "Core"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-overhead-lunge_1.jpg", "assets/images/exercises/kb-overhead-lunge_2.jpg"],
+    "notes": "Keep your arm locked and bicep close to your ear throughout the lunge. Move slowly and with control. [25]"
+  },
+  {
+    "id": "kettlebell-deadstop-swing",
+    "name": "Kettlebell Deadstop Swing",
+    "description": "A swing variation where the kettlebell is returned to a dead stop on the floor after each rep. This eliminates the stretch reflex, forcing you to generate maximum power for every single swing.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Hamstrings",
+    "muscleGroups": ["Hamstrings", "Glutes", "Lower Back", "Core"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-deadstop-swing_1.jpg", "assets/images/exercises/kb-deadstop-swing_2.jpg"],
+    "notes": "This builds explosive power from a static position, which is excellent for athletic development. Reset your form before each rep. [16]"
+  },
+  {
+    "id": "kettlebell-standing-pullover",
+    "name": "Kettlebell Standing Pullover",
+    "description": "A unique exercise that targets the lats and serratus anterior while also challenging core stability. The kettlebell is held by the horns and lowered behind the head.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Lats",
+    "muscleGroups": ["Lats", "Serratus Anterior", "Core", "Triceps"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-standing-pullover_1.jpg", "assets/images/exercises/kb-standing-pullover_2.jpg"],
+    "notes": "Keep your core braced and avoid arching your lower back as you lower the kettlebell. This move can also be done lying on a bench. [12]"
+  },
+  {
+    "id": "double-kettlebell-push-press",
+    "name": "Double Kettlebell Push Press",
+    "description": "An explosive overhead press that uses a slight dip and drive from the legs to help propel two kettlebells overhead. This allows for heavier weight to be lifted than a strict press.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Shoulders",
+    "muscleGroups": ["Shoulders", "Triceps", "Glutes", "Quadriceps", "Core"],
+    "equipmentNeeded": ["Kettlebells"],
+    "imageUrls": ["assets/images/exercises/dkb-push-press_1.jpg", "assets/images/exercises/dkb-push-press_2.jpg"],
+    "notes": "The movement starts with a quick, shallow dip of the knees, followed by a powerful upward drive to create momentum for the press. [4]"
+  },
+  {
+    "id": "double-kettlebell-alternating-clean",
+    "name": "Double Kettlebell Alternating Clean",
+    "description": "An advanced clean variation where you clean one kettlebell at a time while holding both. This challenges coordination, timing, and core stability as you manage the uneven load.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Full Body",
+    "muscleGroups": ["Glutes", "Hamstrings", "Back", "Core", "Shoulders"],
+    "equipmentNeeded": ["Kettlebells"],
+    "imageUrls": ["assets/images/exercises/dkb-alternating-clean_1.jpg", "assets/images/exercises/dkb-alternating-clean_2.jpg"],
+    "notes": "Focus on maintaining a stable torso and avoid rotating as you clean each kettlebell up to the rack position."
+  },
+  {
+    "id": "double-kettlebell-overhead-carry",
+    "name": "Double Kettlebell Overhead Carry",
+    "description": "A demanding loaded carry where two kettlebells are held locked out overhead while walking. It builds exceptional shoulder and core stability, as well as mental toughness.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Shoulders (stabilizers)",
+    "muscleGroups": ["Shoulders", "Core", "Upper Back", "Triceps"],
+    "equipmentNeeded": ["Kettlebells"],
+    "imageUrls": ["assets/images/exercises/dkb-overhead-carry_1.jpg", "assets/images/exercises/dkb-overhead-carry_2.jpg"],
+    "notes": "Keep your ribs down, core tight, and biceps aligned with your ears. Take slow, deliberate steps to maintain balance. [14]"
+  },
+  {
+    "id": "kettlebell-side-press",
+    "name": "Kettlebell Side Press",
+    "description": "A classic lift focused on leveraging thoracic mobility and lateral strength to press a heavy weight overhead. It builds a powerful connection between the lat, obliques, and pressing muscles.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Shoulders",
+    "muscleGroups": ["Shoulders (Deltoids)", "Triceps", "Lats", "Core (Obliques)", "Serratus Anterior"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-side-press_1.jpg", "assets/images/exercises/kb-side-press_2.jpg"],
+    "notes": "Unlike a standard press, you lean your torso away from the kettlebell as you press it upwards, using your lat as a shelf. This is a technical lift; start light."
+  },
+  {
+    "id": "kettlebell-single-arm-swing-to-snatch",
+    "name": "Kettlebell Swing to Snatch",
+    "description": "A fluid combination that teaches the transition from a single-arm swing directly into a snatch. This drill enhances power, timing, and efficiency for the full snatch.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Full Body",
+    "muscleGroups": ["Glutes", "Hamstrings", "Shoulders", "Back", "Core"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-swing-to-snatch_1.jpg", "assets/images/exercises/kb-swing-to-snatch_2.jpg"],
+    "notes": "Perform a powerful single-arm swing and as the bell reaches chest height, use the momentum to punch your hand through and up, finishing in a stable overhead lockout."
+  },
+  {
+    "id": "kettlebell-gorilla-clean",
+    "name": "Kettlebell Gorilla Clean",
+    "description": "An explosive clean performed from a deep squatting stance with the kettlebell between the feet. This develops power from a compressed position and targets the entire posterior chain.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Hamstrings",
+    "muscleGroups": ["Hamstrings", "Glutes", "Quadriceps", "Lower Back", "Upper Back"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-gorilla-clean_1.jpg", "assets/images/exercises/kb-gorilla-clean_2.jpg"],
+    "notes": "Often performed in an alternating fashion with two kettlebells, but can be done with one. Stay low and drive hard with the legs to initiate the clean."
+  },
+  {
+    "id": "kettlebell-deck-squat",
+    "name": "Kettlebell Deck Squat",
+    "description": "A dynamic movement combining a squat with a backward roll, followed by an explosive forward movement to return to a standing position. It builds agility, core strength, and power.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Quadriceps",
+    "muscleGroups": ["Quadriceps", "Glutes", "Core", "Hamstrings", "Hip Flexors"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-deck-squat_1.jpg", "assets/images/exercises/kb-deck-squat_2.jpg"],
+    "notes": "Hold the kettlebell by the horns in the goblet position. Squat down, roll onto your back, and use the momentum and the weight as a counterbalance to help you stand back up."
+  },
+  {
+    "id": "kettlebell-sport-style-swing",
+    "name": "Kettlebell Sport Style Swing",
+    "description": "A highly efficient swing variation used in Girevoy Sport (GS). It emphasizes relaxation on the downswing and a more fluid, pendulum-like motion to conserve energy for high-repetition sets.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Glutes",
+    "muscleGroups": ["Glutes", "Hamstrings", "Core", "Upper Back (for stabilization)"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-gs-swing_1.jpg", "assets/images/exercises/kb-gs-swing_2.jpg"],
+    "notes": "The movement is often less aggressive than a hardstyle swing, with a focus on breathing mechanics and efficient energy transfer over hundreds of reps."
+  },
+  {
+    "id": "double-kettlebell-gorilla-row",
+    "name": "Double Kettlebell Gorilla Row",
+    "description": "An explosive, alternating row performed from a low, wide-legged 'gorilla' stance. This exercise builds a strong back and biceps while heavily engaging the legs and core isometrically.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Middle Back",
+    "muscleGroups": ["Lats", "Rhomboids", "Biceps", "Hamstrings", "Glutes", "Core"],
+    "equipmentNeeded": ["Kettlebells"],
+    "imageUrls": ["assets/images/exercises/dkb-gorilla-row_1.jpg", "assets/images/exercises/dkb-gorilla-row_2.jpg"],
+    "notes": "Maintain a flat back and a deep hip hinge. Row one kettlebell powerfully to your torso while the other remains on the ground, then alternate."
+  },
+  {
+    "id": "double-kettlebell-thruster",
+    "name": "Double Kettlebell Thruster",
+    "description": "A demanding full-body exercise combining a double kettlebell front squat with a powerful double overhead press. It is a true test of strength, stamina, and coordination.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Full Body",
+    "muscleGroups": ["Quadriceps", "Glutes", "Shoulders", "Triceps", "Core"],
+    "equipmentNeeded": ["Kettlebells"],
+    "imageUrls": ["assets/images/exercises/dkb-thruster_1.jpg", "assets/images/exercises/dkb-thruster_2.jpg"],
+    "notes": "Use the explosive power from the squat to drive both kettlebells overhead in one fluid motion. Maintain a strong rack position at the bottom."
+  },
+  {
+    "id": "double-kettlebell-alternating-floor-press",
+    "name": "Double Kettlebell Alternating Floor Press",
+    "description": "A floor press variation where one arm presses while the other arm holds a kettlebell isometrically. This increases time under tension and challenges core and shoulder stability.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Chest",
+    "muscleGroups": ["Chest", "Triceps", "Shoulders", "Core (Obliques)"],
+    "equipmentNeeded": ["Kettlebells"],
+    "imageUrls": ["assets/images/exercises/dkb-alt-floor-press_1.jpg", "assets/images/exercises/dkb-alt-floor-press_2.jpg"],
+    "notes": "Press one bell up and down while keeping the other locked out overhead, or alternate presses for a see-saw motion. Both variations challenge the body differently."
+  },
+  {
+    "id": "kettlebell-figure-eight-to-hold",
+    "name": "Kettlebell Figure Eight to a Hold",
+    "description": "A dynamic flow exercise that combines the hip and core work of the figure eight with the stability challenge of catching and holding the kettlebell in the rack or goblet position.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Core",
+    "muscleGroups": ["Core", "Hips", "Glutes", "Forearms (Grip)", "Coordination"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-figure-eight-to-hold_1.jpg", "assets/images/exercises/kb-figure-eight-to-hold_2.jpg"],
+    "notes": "Perform a figure eight through the legs, but instead of continuing the motion, fluidly transition the kettlebell into a clean, catching it at chest level."
+  },
+  {
+    "id": "kettlebell-tall-kneeling-press",
+    "name": "Kettlebell Tall Kneeling Press",
+    "description": "An overhead press performed from a tall kneeling position (both knees on the floor). This removes leg drive and intensely challenges core and hip stability.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Shoulders",
+    "muscleGroups": ["Shoulders", "Triceps", "Core (stabilizer)", "Glutes (stabilizer)"],
+    "equipmentNeeded": ["Kettlebell", "Mat (optional)"],
+    "imageUrls": ["assets/images/exercises/kb-tall-kneeling-press_1.jpg", "assets/images/exercises/kb-tall-kneeling-press_2.jpg"],
+    "notes": "Squeeze your glutes and brace your core tightly to create a stable base. Avoid leaning back as you press the weight overhead."
+  },
+  {
+    "id": "kettlebell-plank-drag",
+    "name": "Kettlebell Plank Drag (Pull Through)",
+    "description": "A core-focused anti-rotation exercise performed in a high plank position. Dragging the kettlebell from side to side challenges the obliques and deep core stabilizers.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Core (Obliques)",
+    "muscleGroups": ["Core (Obliques, Transverse Abdominis)", "Shoulders (stabilizers)", "Glutes"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-plank-drag_1.jpg", "assets/images/exercises/kb-plank-drag_2.jpg"],
+    "notes": "From a plank, reach under your body with one arm to grab the kettlebell and drag it to that side. Keep your hips as still as possible."
+  },
+  {
+    "id": "kettlebell-crush-grip-curl",
+    "name": "Kettlebell Crush Grip Curl",
+    "description": "A bicep curl where the kettlebell is held by the 'ball' instead of the handle. The crush grip creates intense isometric tension in the chest and forearms while working the biceps.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Biceps",
+    "muscleGroups": ["Biceps", "Forearms", "Chest (isometric)"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-crush-grip-curl_1.jpg", "assets/images/exercises/kb-crush-grip-curl_2.jpg"],
+    "notes": "Squeeze the kettlebell with both palms throughout the entire range of motion to maximize tension."
+  },
+  {
+    "id": "kettlebell-dead-swing",
+    "name": "Kettlebell Dead Swing",
+    "description": "A swing that starts and ends with the kettlebell 'dead' on the floor for each rep. This builds explosive power from a static position, removing the momentum of the backswing.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Glutes",
+    "muscleGroups": ["Glutes", "Hamstrings", "Lower Back", "Core"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-dead-swing_1.jpg", "assets/images/exercises/kb-dead-swing_2.jpg"],
+    "notes": "Set up for each swing as you would for a deadlift. Hike the bell back and explode into a single powerful swing. Park it safely after each rep."
+  },
+  {
+    "id": "kettlebell-lying-triceps-extension",
+    "name": "Kettlebell Lying Triceps Extension",
+    "description": "A triceps isolation exercise performed lying on the floor or a bench. Holding the kettlebell by the horns provides a unique grip compared to dumbbells or a barbell.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Triceps",
+    "muscleGroups": ["Triceps"],
+    "equipmentNeeded": ["Kettlebell", "Bench (optional)"],
+    "imageUrls": ["assets/images/exercises/kb-lying-triceps-ext_1.jpg", "assets/images/exercises/kb-lying-triceps-ext_2.jpg"],
+    "notes": "Hold the kettlebell by the horns with both hands and lower it towards your forehead, keeping your elbows stationary. Extend back to the start."
+  },
+  {
+    "id": "kettlebell-crush-grip-floor-press",
+    "name": "Kettlebell Crush Grip Floor Press",
+    "description": "A floor press variation where the kettlebell is held by the body (the 'ball') instead of the handle. This crush grip creates intense isometric contraction in the chest.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Chest",
+    "muscleGroups": ["Chest", "Triceps", "Shoulders (Anterior)"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-crush-grip-floor-press_1.jpg", "assets/images/exercises/kb-crush-grip-floor-press_2.jpg"],
+    "notes": "Lie on the floor and actively squeeze the kettlebell with both hands as you press it upwards. This is great for chest adduction."
+  },
+  {
+    "id": "kettlebell-pullover-sit-up-press",
+    "name": "Kettlebell Pullover to Sit-up to Press",
+    "description": "A three-part complex that combines a pullover for the lats, a sit-up for the abs, and a press for the shoulders, creating a challenging full-body abdominal sequence.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Abs (Rectus Abdominis)",
+    "muscleGroups": ["Abs (Rectus Abdominis)", "Lats", "Chest", "Shoulders"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-pullover-sit-up-press_1.jpg", "assets/images/exercises/kb-pullover-sit-up-press_2.jpg"],
+    "notes": "Start lying down holding the kettlebell by the horns. Perform a pullover, then use the momentum to perform a sit-up, finishing with an overhead press at the top."
+  },
+  {
+    "id": "double-kettlebell-split-snatch",
+    "name": "Double Kettlebell Split Snatch",
+    "description": "A highly advanced snatch variation where the feet move into a split stance to receive the kettlebells overhead. This allows for heavier loads by lowering the receiving position.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Full Body",
+    "muscleGroups": ["Shoulders", "Glutes", "Quadriceps", "Core", "Back"],
+    "equipmentNeeded": ["Kettlebells"],
+    "imageUrls": ["assets/images/exercises/dkb-split-snatch_1.jpg", "assets/images/exercises/dkb-split-snatch_2.jpg"],
+    "notes": "As the bells travel upwards, quickly split your legs into a lunge position to catch them overhead, then recover your feet. Requires significant skill and mobility."
+  },
+  {
+    "id": "double-kettlebell-see-saw-row",
+    "name": "Double Kettlebell See-Saw Row",
+    "description": "A bent-over row where as one arm pulls a kettlebell up, the other arm lowers one. This creates continuous tension on the back and core and challenges stability.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Lats",
+    "muscleGroups": ["Lats", "Rhomboids", "Biceps", "Core (stabilizer)"],
+    "equipmentNeeded": ["Kettlebells"],
+    "imageUrls": ["assets/images/exercises/dkb-see-saw-row_1.jpg", "assets/images/exercises/dkb-see-saw-row_2.jpg"],
+    "notes": "Maintain a strict, flat back throughout. The see-saw motion should be controlled, not jerky, focusing on the contraction in the back."
+  },
+  {
+    "id": "double-kettlebell-clean-and-push-press",
+    "name": "Double Kettlebell Clean and Push Press",
+    "description": "A classic power complex. The athlete performs a double clean, then uses a leg drive (push press) to explosively press the kettlebells overhead.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Full Body",
+    "muscleGroups": ["Shoulders", "Glutes", "Quadriceps", "Triceps", "Core"],
+    "equipmentNeeded": ["Kettlebells"],
+    "imageUrls": ["assets/images/exercises/dkb-clean-push-press_1.jpg", "assets/images/exercises/dkb-clean-push-press_2.jpg"],
+    "notes": "This complex is a great developer of total-body power and allows you to lift heavier weight overhead than with a strict press."
+  },
+  {
+    "id": "double-kettlebell-deadlift-to-swing-complex",
+    "name": "Double Kettlebell Deadlift to Swing",
+    "description": "A two-part movement that teaches the transition from a powerful deadlift into an explosive swing, reinforcing the hip hinge pattern under heavy load.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Hamstrings",
+    "muscleGroups": ["Hamstrings", "Glutes", "Lower Back", "Core", "Lats"],
+    "equipmentNeeded": ["Kettlebells"],
+    "imageUrls": ["assets/images/exercises/dkb-deadlift-to-swing_1.jpg", "assets/images/exercises/dkb-deadlift-to-swing_2.jpg"],
+    "notes": "Perform a powerful double kettlebell deadlift. From the top position, hinge and transition immediately into a double kettlebell swing."
+  },
+  {
+    "id": "double-kettlebell-offset-squat",
+    "name": "Double Kettlebell Offset Squat (Rack/Suitcase)",
+    "description": "A squat performed while holding one kettlebell in the front rack position and the other at your side in a suitcase grip. This asymmetrical load intensely challenges core stability.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Core",
+    "muscleGroups": ["Core (Obliques)", "Quadriceps", "Glutes", "Upper Back"],
+    "equipmentNeeded": ["Kettlebells"],
+    "imageUrls": ["assets/images/exercises/dkb-offset-squat_1.jpg", "assets/images/exercises/dkb-offset-squat_2.jpg"],
+    "notes": "Fight the urge to lean or twist. The goal is to maintain a perfectly upright and square torso despite the uneven load."
+  },
+  {
+    "id": "double-kettlebell-split-jerk",
+    "name": "Double Kettlebell Split Jerk",
+    "description": "An advanced jerk variation where the lifter moves their feet into a split or lunge stance to receive the kettlebells overhead. This allows for heavier loads and greater stability.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Shoulders",
+    "muscleGroups": ["Shoulders", "Triceps", "Quadriceps", "Glutes", "Core"],
+    "equipmentNeeded": ["Kettlebells"],
+    "imageUrls": ["assets/images/exercises/dkb-split-jerk_1.jpg", "assets/images/exercises/dkb-split-jerk_2.jpg"],
+    "notes": "After the initial dip and drive, quickly move one foot forward and the other back as you lock out the kettlebells overhead, then recover your feet."
+  },
+  {
+    "id": "double-kettlebell-suitcase-deadlift",
+    "name": "Double Kettlebell Suitcase Deadlift",
+    "description": "A deadlift performed with a kettlebell in each hand at your sides, like carrying two suitcases. This variation heavily loads the posterior chain while intensely challenging grip and traps.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Hamstrings",
+    "muscleGroups": ["Hamstrings", "Glutes", "Lower Back", "Traps", "Forearms (Grip)", "Core"],
+    "equipmentNeeded": ["Kettlebells"],
+    "imageUrls": ["assets/images/exercises/dkb-suitcase-deadlift_1.jpg", "assets/images/exercises/dkb-suitcase-deadlift_2.jpg"],
+    "notes": "Keep your back straight and chest up. The load is outside your center of gravity, requiring significant core stabilization."
+  },
+  {
+    "id": "double-kettlebell-complex-clean-squat-press",
+    "name": "Double Kettlebell Complex (Clean-Squat-Press)",
+    "description": "A classic kettlebell complex where a clean, front squat, and overhead press are performed sequentially without setting the bells down. This builds strength, endurance, and mental fortitude.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Full Body",
+    "muscleGroups": ["Quadriceps", "Glutes", "Shoulders", "Triceps", "Back", "Core"],
+    "equipmentNeeded": ["Kettlebells"],
+    "imageUrls": ["assets/images/exercises/dkb-complex-csp_1.jpg", "assets/images/exercises/dkb-complex-csp_2.jpg"],
+    "notes": "Perform one rep of each exercise in order: Clean the bells, perform a front squat, then perform an overhead press. That is one rep of the complex."
+  },
+  {
+    "id": "kettlebell-half-kneeling-press",
+    "name": "Kettlebell Half-Kneeling Press",
+    "description": "An overhead press from a half-kneeling lunge position. This stance narrows the base of support and challenges hip and core stability to prevent lateral tilting.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Shoulders",
+    "muscleGroups": ["Shoulders", "Triceps", "Core (Obliques)", "Hips (stabilizers)"],
+    "equipmentNeeded": ["Kettlebell", "Mat (optional)"],
+    "imageUrls": ["assets/images/exercises/kb-half-kneeling-press_1.jpg", "assets/images/exercises/kb-half-kneeling-press_2.jpg"],
+    "notes": "Press on the same side as the knee that is on the ground. Squeeze the glute of the kneeling leg to maintain stability."
+  },
+  {
+    "id": "kettlebell-hang-clean",
+    "name": "Kettlebell Hang Clean",
+    "description": "A clean variation that starts from a 'hang' position (kettlebell off the floor, arm extended) instead of a swing. This isolates the hip hinge and builds explosive power from a static position.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Hamstrings",
+    "muscleGroups": ["Hamstrings", "Glutes", "Lower Back", "Traps"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-hang-clean_1.jpg", "assets/images/exercises/kb-hang-clean_2.jpg"],
+    "notes": "With the kettlebell just below your hips, perform an aggressive hip snap to drive the bell up to the rack position. It's a shorter, more powerful movement than a swing clean."
+  },
+  {
+    "id": "half-turkish-get-up",
+    "name": "Half Turkish Get-Up",
+    "description": "Performing the first half of the Turkish Get-Up, from lying on the floor to a seated, single-knee supported position (lunge). This isolates the core and shoulder stability aspects of the full TGU.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Core",
+    "muscleGroups": ["Core", "Shoulders (stabilizers)", "Glutes", "Triceps"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-half-tgu_1.jpg", "assets/images/exercises/kb-half-tgu_2.jpg"],
+    "notes": "Focus on smooth, deliberate transitions between each step: the press, the roll to the elbow, the post to the hand, and the hip bridge. Return to the start with the same control."
+  },
+  {
+    "id": "kettlebell-two-hand-bottoms-up-squat",
+    "name": "Kettlebell Two-Hand Bottoms-Up Squat",
+    "description": "A squat variation where a single kettlebell is held upside down with both hands. This creates an intense challenge for grip strength, wrist stability, and total-body tension.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Quadriceps",
+    "muscleGroups": ["Quadriceps", "Glutes", "Forearms (Grip)", "Shoulders (stabilizers)", "Core"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-2h-bu-squat_1.jpg", "assets/images/exercises/kb-2h-bu-squat_2.jpg"],
+    "notes": "Crush the handle of the kettlebell to maintain its stability. Keep the torso upright and squat with control. This is a self-limiting exercise; form is paramount."
+  },
+  {
+    "id": "kettlebell-rotational-deadlift",
+    "name": "Kettlebell Rotational Deadlift",
+    "description": "A deadlift variation that involves pivoting the feet and rotating the torso to lift the kettlebell from the outside of one foot. This builds strength in the transverse (rotational) plane.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Glutes",
+    "muscleGroups": ["Glutes", "Hamstrings", "Core (Obliques)", "Adductors", "Lower Back"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-rotational-deadlift_1.jpg", "assets/images/exercises/kb-rotational-deadlift_2.jpg"],
+    "notes": "Place the bell outside one foot. Pivot both feet and hinge at the hips to grab the bell with both hands. Drive through the hips and pivot back to the front to stand up."
+  },
+  {
+    "id": "double-kettlebell-alternating-rotational-press",
+    "name": "Double Kettlebell Alternating Rotational Press",
+    "description": "An advanced pressing exercise that involves rotating the torso as you press one kettlebell overhead at a time. It builds shoulder strength while improving thoracic mobility and rotational power.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Shoulders",
+    "muscleGroups": ["Shoulders", "Core (Obliques)", "Triceps", "Serratus Anterior"],
+    "equipmentNeeded": ["Kettlebells"],
+    "imageUrls": ["assets/images/exercises/dkb-alt-rotational-press_1.jpg", "assets/images/exercises/dkb-alt-rotational-press_2.jpg"],
+    "notes": "From the rack position, pivot your feet and torso as you press one bell up, allowing your body to rotate with the press. Return to the rack and repeat on the other side."
+  },
+  {
+    "id": "double-kettlebell-clean-to-reverse-lunge",
+    "name": "Double Kettlebell Clean to Reverse Lunge",
+    "description": "A powerful complex that combines a double kettlebell clean directly into a reverse lunge on each leg. This builds full-body strength and metabolic conditioning.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Full Body",
+    "muscleGroups": ["Quadriceps", "Glutes", "Hamstrings", "Back", "Core"],
+    "equipmentNeeded": ["Kettlebells"],
+    "imageUrls": ["assets/images/exercises/dkb-clean-to-lunge_1.jpg", "assets/images/exercises/dkb-clean-to-lunge_2.jpg"],
+    "notes": "Clean both kettlebells to the rack position. Immediately step back into a reverse lunge with one leg, then the other, before returning the bells to the start. That is one rep."
+  },
+  {
+    "id": "kettlebell-lunge-pass-through",
+    "name": "Kettlebell Lunge Pass-Through",
+    "description": "A dynamic lunge variation that improves coordination and core stability by passing the kettlebell under the front leg from one hand to the other.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Quadriceps",
+    "muscleGroups": ["Quadriceps", "Glutes", "Core", "Coordination"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-lunge-pass-through_1.jpg", "assets/images/exercises/kb-lunge-pass-through_2.jpg"],
+    "notes": "Step into a forward lunge. At the bottom, pass the kettlebell under your front thigh. Push back to the start and alternate legs."
+  },
+  {
+    "id": "kettlebell-jefferson-curl",
+    "name": "Kettlebell Jefferson Curl",
+    "description": "A loaded stretch and spinal articulation drill. It involves slowly rolling the spine down, vertebra by vertebra, to stretch the entire posterior chain.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Hamstrings",
+    "muscleGroups": ["Hamstrings", "Spine", "Lower Back", "Glutes (stretch)"],
+    "equipmentNeeded": ["Kettlebell", "Box (optional)"],
+    "imageUrls": ["assets/images/exercises/kb-jefferson-curl_1.jpg", "assets/images/exercises/kb-jefferson-curl_2.jpg"],
+    "notes": "This is a mobility drill, not a heavy lift. Use a very light kettlebell. Tuck your chin and focus on a slow, controlled roll down and up."
+  },
+  {
+    "id": "kettlebell-stacked-stance-deadlift",
+    "name": "Kettlebell Stacked Stance Deadlift",
+    "description": "A deadlift variation using a staggered stance (one foot slightly behind the other) to increase the load on the front leg, targeting the glutes and hamstrings unilaterally.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Glutes",
+    "muscleGroups": ["Glutes", "Hamstrings", "Core", "Lower Back"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-stacked-stance-deadlift_1.jpg", "assets/images/exercises/kb-stacked-stance-deadlift_2.jpg"],
+    "notes": "The rear foot is used for balance only, like a kickstand. Hold the kettlebell on the same side as the back foot to create a contralateral load."
+  },
+  {
+    "id": "kettlebell-turkish-sit-up",
+    "name": "Kettlebell Turkish Sit-up",
+    "description": "An isolation of the first part of the Turkish Get-Up, focusing on the powerful sit-up motion while stabilizing the kettlebell overhead. Excellent for core and shoulder strength.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Core",
+    "muscleGroups": ["Core (Rectus Abdominis, Obliques)", "Shoulders (stabilizers)", "Hip Flexors"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-turkish-sit-up_1.jpg", "assets/images/exercises/kb-turkish-sit-up_2.jpg"],
+    "notes": "Lie on your back with the kettlebell pressed up. Keep the arm locked and vertical as you perform a controlled sit-up, driving through your off-hand's elbow."
+  },
+  {
+    "id": "kettlebell-sots-press",
+    "name": "Kettlebell Sot's Press",
+    "description": "An advanced overhead press performed from the bottom of a deep squat. It demands exceptional thoracic and shoulder mobility, hip stability, and core strength.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Shoulders (stabilizers)",
+    "muscleGroups": ["Shoulders (Deltoids, Rotator Cuff)", "Triceps", "Core", "Spine (Thoracic)", "Hips"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-sots-press_1.jpg", "assets/images/exercises/kb-sots-press_2.jpg"],
+    "notes": "Start with a very light weight. The ability to maintain an upright torso in a deep squat is a prerequisite. The press is slow and controlled."
+  },
+  {
+    "id": "double-kettlebell-offset-carry",
+    "name": "Double Kettlebell Offset Carry (Overhead/Rack)",
+    "description": "An incredibly challenging loaded carry with one kettlebell held overhead and the other in the front rack position. This creates a significant asymmetrical load, demanding immense core and shoulder stability.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Core",
+    "muscleGroups": ["Core (Obliques, Quadratus Lumborum)", "Shoulders (stabilizers)", "Upper Back"],
+    "equipmentNeeded": ["Kettlebells"],
+    "imageUrls": ["assets/images/exercises/dkb-offset-carry-or_1.jpg", "assets/images/exercises/dkb-offset-carry-or_2.jpg"],
+    "notes": "Keep the overhead arm locked and the rack-position elbow tight to your body. Walk slowly and deliberately, fighting the urge to lean."
+  },
+  {
+    "id": "kettlebell-waiters-walk",
+    "name": "Kettlebell Waiter's Walk",
+    "description": "A loaded carry where the kettlebell is held overhead with a bent elbow, palm facing up, as if carrying a tray. It builds exceptional stability in the rotator cuff and shoulder.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Shoulders (stabilizers)",
+    "muscleGroups": ["Shoulders (Rotator Cuff)", "Triceps", "Core", "Upper Back"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-waiters-walk_1.jpg", "assets/images/exercises/kb-waiters-walk_2.jpg"],
+    "notes": "Keep your wrist straight and elbow directly under the kettlebell. Move slowly and deliberately, focusing on keeping the bell stable."
+  },
+  {
+    "id": "kettlebell-single-arm-deadlift",
+    "name": "Kettlebell Single Arm Deadlift",
+    "description": "A deadlift variation performed with a single kettlebell, creating an offset load that challenges the core to resist rotation. Can be performed with the bell between the feet or to the side (suitcase style).",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Hamstrings",
+    "muscleGroups": ["Hamstrings", "Glutes", "Core (Obliques, Quadratus Lumborum)", "Lats"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-single-arm-deadlift_1.jpg", "assets/images/exercises/kb-single-arm-deadlift_2.jpg"],
+    "notes": "Engage your lats and core to keep your torso and shoulders square to the front throughout the lift."
+  },
+  {
+    "id": "kettlebell-lateral-lunge",
+    "name": "Kettlebell Lateral Lunge",
+    "description": "A lunge performed by stepping directly to the side, targeting the inner and outer thighs (adductors and abductors) and improving mobility in the frontal plane.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Adductors",
+    "muscleGroups": ["Adductors", "Glutes (Medius)", "Quadriceps", "Hamstrings"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-lateral-lunge_1.jpg", "assets/images/exercises/kb-lateral-lunge_2.jpg"],
+    "notes": "Hold the kettlebell in the goblet position. Keep the trailing leg straight as you hinge at the hip and bend the lunging knee."
+  },
+  {
+    "id": "kettlebell-clean-squat-press-complex",
+    "name": "Kettlebell Single Arm Complex (Clean-Squat-Press)",
+    "description": "A fluid complex combining three major movements: a clean, a front squat, and an overhead press, all performed on one side without setting the bell down. Excellent for metabolic conditioning.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Full Body",
+    "muscleGroups": ["Quadriceps", "Glutes", "Shoulders", "Core", "Back"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-single-arm-complex_1.jpg", "assets/images/exercises/kb-single-arm-complex_2.jpg"],
+    "notes": "Perform all three movements sequentially for the desired number of reps on one arm before switching to the other."
+  },
+  {
+    "id": "kettlebell-curtsy-lunge",
+    "name": "Kettlebell Curtsy Lunge",
+    "description": "A lunge variation where the rear leg crosses behind the front leg, targeting the glute medius and adductors more than a traditional lunge. The kettlebell adds load and a balance challenge.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Glutes (Medius)",
+    "muscleGroups": ["Glutes (Medius)", "Quadriceps", "Adductors"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-curtsy-lunge_1.jpg", "assets/images/exercises/kb-curtsy-lunge_2.jpg"],
+    "notes": "Hold the kettlebell in the goblet position or in the racked position on the same side as the front leg."
+  },
+  {
+    "id": "kettlebell-arm-bar",
+    "name": "Kettlebell Arm Bar",
+    "description": "A mobility and stability drill for the shoulder and thoracic spine. It involves lying on the floor and rolling the body away from the arm holding the kettlebell overhead.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Shoulders (stabilizers)",
+    "muscleGroups": ["Shoulders (Rotator Cuff)", "Spine (Thoracic)", "Pectorals (stretch)"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-arm-bar_1.jpg", "assets/images/exercises/kb-arm-bar_2.jpg"],
+    "notes": "This is a slow, controlled stretch and stability exercise, not a strength lift. Use a very light weight."
+  },
+  {
+    "id": "kettlebell-goblet-squat-curl",
+    "name": "Kettlebell Goblet Squat with Curl",
+    "description": "A variation of the goblet squat that adds a bicep curl at the bottom of the squat, increasing time under tension for the legs and adding upper body work.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Quadriceps",
+    "muscleGroups": ["Quadriceps", "Glutes", "Biceps", "Core"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-goblet-squat-curl_1.jpg", "assets/images/exercises/kb-goblet-squat-curl_2.jpg"],
+    "notes": "Hold the kettlebell by the horns. Descend into a full squat, and while holding the bottom position, perform a bicep curl before standing up."
+  },
+  {
+    "id": "kettlebell-mace-360",
+    "name": "Kettlebell 360 (Mace Style)",
+    "description": "A dynamic rotational movement that mimics using a steel mace. The kettlebell is swung around the head in a 360-degree arc, developing shoulder mobility, grip, and core strength.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Shoulders",
+    "muscleGroups": ["Shoulders (Rotator Cuff)", "Core (Obliques)", "Forearms (Grip)", "Lats"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-mace-360_1.jpg", "assets/images/exercises/kb-mace-360_2.jpg"],
+    "notes": "Hold the kettlebell by the horns and one side of the handle. Use a light weight to master the fluid motion and avoid hitting yourself."
+  },
+  {
+    "id": "kettlebell-straight-leg-sit-up",
+    "name": "Kettlebell Straight-Leg Sit-up",
+    "description": "A sit-up performed with straight legs while holding a kettlebell at the chest. This variation increases the challenge on the abdominals and hip flexors.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Abs (Rectus Abdominis)",
+    "muscleGroups": ["Abs (Rectus Abdominis)", "Hip Flexors"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-straight-leg-sit-up_1.jpg", "assets/images/exercises/kb-straight-leg-sit-up_2.jpg"],
+    "notes": "Hold the kettlebell at your chest to add resistance. For an added challenge, press the kettlebell overhead at the top of the sit-up."
+  },
+  {
+    "id": "kettlebell-goblet-alternating-reverse-lunge",
+    "name": "Kettlebell Goblet Alternating Reverse Lunge",
+    "description": "A fundamental lower body exercise where you step backward into a lunge while holding a kettlebell in the goblet position, alternating legs with each repetition.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Quadriceps",
+    "muscleGroups": ["Quadriceps", "Glutes", "Hamstrings", "Core"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-goblet-alt-lunge_1.jpg", "assets/images/exercises/kb-goblet-alt-lunge_2.jpg"],
+    "notes": "Keep your torso upright and core engaged. The goblet hold helps reinforce good posture throughout the movement."
+  },
+  {
+    "id": "double-kettlebell-alternating-snatch",
+    "name": "Double Kettlebell Alternating Snatch",
+    "description": "An advanced drill where one kettlebell is snatched overhead while the other is held in the rack position, then alternated. This builds unilateral power, coordination, and serious conditioning.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Full Body",
+    "muscleGroups": ["Glutes", "Hamstrings", "Back", "Shoulders", "Core"],
+    "equipmentNeeded": ["Kettlebells"],
+    "imageUrls": ["assets/images/exercises/dkb-alt-snatch_1.jpg", "assets/images/exercises/dkb-alt-snatch_2.jpg"],
+    "notes": "Requires excellent core stability to manage the offset and alternating load. Master the single-arm snatch before attempting."
+  },
+  {
+    "id": "double-kettlebell-farmers-squat",
+    "name": "Double Kettlebell Farmer's Squat",
+    "description": "A squat variation where two kettlebells are held at your sides (farmer's carry position). This places a unique load on the legs and core, different from a front-loaded squat.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Quadriceps",
+    "muscleGroups": ["Quadriceps", "Glutes", "Traps", "Forearms (Grip)"],
+    "equipmentNeeded": ["Kettlebells"],
+    "imageUrls": ["assets/images/exercises/dkb-farmers-squat_1.jpg", "assets/images/exercises/dkb-farmers-squat_2.jpg"],
+    "notes": "You may need to use a slightly wider stance to accommodate the kettlebells. Focus on keeping your chest up."
+  },
+  {
+    "id": "double-kettlebell-push-up-renegade-row-complex",
+    "name": "Double Kettlebell Push-up to Renegade Row",
+    "description": "A demanding complex that combines a push-up on the kettlebell handles, followed by an alternating renegade row. This targets the chest, back, and core in one seamless sequence.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Full Body",
+    "muscleGroups": ["Chest", "Lats", "Core", "Triceps", "Shoulders"],
+    "equipmentNeeded": ["Kettlebells"],
+    "imageUrls": ["assets/images/exercises/dkb-push-up-row-complex_1.jpg", "assets/images/exercises/dkb-push-up-row-complex_2.jpg"],
+    "notes": "Perform one push-up, then row with the right arm, then row with the left arm. That is one rep. Use kettlebells with a stable, flat base."
+  },
+  {
+    "id": "double-kettlebell-front-squat-to-press-out",
+    "name": "Double Kettlebell Front Squat to Press-Out",
+    "description": "A squat variation where you hold the bottom position and perform a horizontal press-out with both kettlebells, intensely challenging core and shoulder stability.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Core",
+    "muscleGroups": ["Core", "Quadriceps", "Glutes", "Shoulders (Anterior)"],
+    "equipmentNeeded": ["Kettlebells"],
+    "imageUrls": ["assets/images/exercises/dkb-squat-press-out_1.jpg", "assets/images/exercises/dkb-squat-press-out_2.jpg"],
+    "notes": "Descend into a front squat, and at the bottom, press both kettlebells straight out in front of you and pull them back in before standing up."
+  },
+  {
+    "id": "kettlebell-snatch-to-reverse-lunge",
+    "name": "Kettlebell Snatch to Reverse Lunge",
+    "description": "An advanced complex that combines an explosive snatch directly into a stabilizing reverse lunge, challenging power, coordination, and unilateral stability.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Full Body",
+    "muscleGroups": ["Glutes", "Hamstrings", "Quadriceps", "Shoulders", "Core"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-snatch-to-lunge_1.jpg", "assets/images/exercises/kb-snatch-to-lunge_2.jpg"],
+    "notes": "After locking out the snatch, absorb the momentum and smoothly step back into a reverse lunge with the opposite leg. Control is key."
+  },
+  {
+    "id": "kettlebell-get-up-sit-up",
+    "name": "Kettlebell Get-Up Sit-Up",
+    "description": "An isolated component of the Turkish Get-Up, this movement focuses on the powerful sit-up while keeping the kettlebell stable overhead, intensely targeting the core and shoulder.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Abs (Rectus Abdominis)",
+    "muscleGroups": ["Abs (Rectus Abdominis)", "Obliques", "Shoulders (stabilizers)"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-get-up-sit-up_1.jpg", "assets/images/exercises/kb-get-up-sit-up_2.jpg"],
+    "notes": "From the TGU starting position, drive through your elbow to perform a sit-up, keeping the kettlebell-arm vertical. Lower with control."
+  },
+  {
+    "id": "kettlebell-half-kneeling-halo",
+    "name": "Kettlebell Half-Kneeling Halo",
+    "description": "Performing a halo from a half-kneeling position increases the demand on core and hip stability by narrowing the base of support, improving thoracic mobility under tension.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Shoulders (stabilizers)",
+    "muscleGroups": ["Shoulders (Rotator Cuff)", "Core (Obliques)", "Hips (stabilizers)"],
+    "equipmentNeeded": ["Kettlebell", "Mat (optional)"],
+    "imageUrls": ["assets/images/exercises/kb-half-kneeling-halo_1.jpg", "assets/images/exercises/kb-half-kneeling-halo_2.jpg"],
+    "notes": "Squeeze the glute of the down-leg to maintain a stable pelvis and avoid arching your back as the kettlebell circles your head."
+  },
+  {
+    "id": "kettlebell-deck-front-roll",
+    "name": "Kettlebell Deck Front Roll",
+    "description": "An agile movement where you perform a deck squat but continue the momentum into a forward roll, finishing in a standing position. This builds total-body coordination and power.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Full Body",
+    "muscleGroups": ["Core", "Quadriceps", "Glutes", "Hip Flexors", "Spinal Erectors"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-deck-front-roll_1.jpg", "assets/images/exercises/kb-deck-front-roll_2.jpg"],
+    "notes": "Use the kettlebell held at the chest as a counterbalance. This is an advanced drill that requires proficiency with both deck squats and forward rolls."
+  },
+  {
+    "id": "kettlebell-outside-swing",
+    "name": "Kettlebell Outside Swing",
+    "description": "A single-arm swing where the kettlebell travels outside the leg instead of between them. This variation challenges the core to resist rotation and works the hips in a different plane.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Glutes",
+    "muscleGroups": ["Glutes", "Core (Obliques)", "Hamstrings", "Adductors"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-outside-swing_1.jpg", "assets/images/exercises/kb-outside-swing_2.jpg"],
+    "notes": "Stand with feet closer together. Hinge at the hips and swing the bell on the outside of your body, fighting the urge to twist your torso."
+  },
+  {
+    "id": "kettlebell-dead-bug-pullover",
+    "name": "Kettlebell Dead Bug Pullover",
+    "description": "A core exercise combining the dead bug's anti-extension challenge with a pullover. It improves motor control, core stability, and lat activation.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Core (Transverse Abdominis)",
+    "muscleGroups": ["Core", "Lats", "Serratus Anterior", "Coordination"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-dead-bug-pullover_1.jpg", "assets/images/exercises/kb-dead-bug-pullover_2.jpg"],
+    "notes": "Lie on your back, holding the kettlebell by the horns over your chest. As you lower opposite arm and leg, simultaneously perform a pullover with the bell. Keep your lower back flat."
+  },
+  {
+    "id": "kettlebell-glute-bridge-floor-press",
+    "name": "Kettlebell Glute Bridge with Floor Press",
+    "description": "A combination movement that targets the glutes isometrically while performing a press, building chest and triceps strength in a position of high stability.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Glutes",
+    "muscleGroups": ["Glutes", "Chest", "Triceps", "Hamstrings", "Core"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-bridge-floor-press_1.jpg", "assets/images/exercises/kb-bridge-floor-press_2.jpg"],
+    "notes": "Hold a glute bridge with hips high. From this position, perform a two-handed floor press, holding the kettlebell by the body."
+  },
+  {
+    "id": "kettlebell-good-morning-squat",
+    "name": "Kettlebell Good Morning Squat",
+    "description": "A complex that combines a hip-hinge (Good Morning) with a squat pattern. It's excellent for warming up the entire lower body and reinforcing correct movement mechanics.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Hamstrings",
+    "muscleGroups": ["Hamstrings", "Glutes", "Spinal Erectors", "Quadriceps"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-good-morning-squat_1.jpg", "assets/images/exercises/kb-good-morning-squat_2.jpg"],
+    "notes": "Hold the kettlebell in the goblet position. Hinge at the hips into a Good Morning, then drop your hips into a goblet squat before returning to the start."
+  },
+  {
+    "id": "kettlebell-slingshot-to-goblet-squat",
+    "name": "Kettlebell Slingshot to Goblet Squat",
+    "description": "A flow that combines the rotational core work of the slingshot with a goblet squat, teaching a smooth transition between movements under load.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Full Body",
+    "muscleGroups": ["Core", "Quadriceps", "Glutes", "Shoulders"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": ["assets/images/exercises/kb-slingshot-to-squat_1.jpg", "assets/images/exercises/kb-slingshot-to-squat_2.jpg"],
+    "notes": "Perform one full revolution of the slingshot, then seamlessly transition the kettlebell into the goblet position and perform a squat."
+  },
+
 ];

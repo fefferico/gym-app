@@ -99,10 +99,14 @@ export class ExerciseListComponent implements OnInit {
     }
     const term = this.searchTerm();
     if (term) {
-      exercises = exercises.filter(ex =>
-        ex.name.toLowerCase().includes(term) ||
-        (ex.description && ex.description.toLowerCase().includes(term))
-      );
+      const words = term.split(/\s+/).filter(Boolean);
+      exercises = exercises.filter(ex => {
+      const searchable = [
+        ex.name,
+        ex.description || ''
+      ].join(' ').toLowerCase();
+      return words.every(word => searchable.includes(word));
+      });
     }
     return exercises.map(ex => ({
       ...ex,

@@ -1,6 +1,6 @@
 // workout-log-detail.ts
-import { Component, inject, Input, OnInit, signal, SimpleChanges } from '@angular/core';
-import { CommonModule, DatePipe, DecimalPipe, TitleCasePipe } from '@angular/common';
+import { Component, HostListener, inject, Input, OnInit, PLATFORM_ID, signal, SimpleChanges } from '@angular/core';
+import { CommonModule, DatePipe, DecimalPipe, isPlatformBrowser, TitleCasePipe } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { firstValueFrom, forkJoin, Observable, of } from 'rxjs';
 import { map, switchMap, tap, catchError, take } from 'rxjs/operators';
@@ -65,6 +65,7 @@ export class WorkoutLogDetailComponent implements OnInit {
   private spinnerService = inject(SpinnerService);
   private toastService = inject(ToastService);
   // private sanitizer = inject(DomSanitizer); // Keep if needed for other purposes
+  private platformId = inject(PLATFORM_ID);
 
   comparisonModalData = signal<TargetComparisonData | null>(null);
   notesModalsData = signal<string | null>(null);
@@ -725,6 +726,24 @@ export class WorkoutLogDetailComponent implements OnInit {
         this.router.navigate(['/history/list']);
       } catch (err) { this.toastService.error("Failed to delete workout log"); }
       finally { this.spinnerService.hide(); }
+    }
+  }
+
+  showBackToTopButton = signal<boolean>(false);
+  @HostListener('window:scroll', [])
+  onWindowScroll(): void {
+    // Check if the user has scrolled down more than a certain amount (e.g., 400 pixels)
+    // You can adjust this value to your liking.
+    const verticalOffset = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+    this.showBackToTopButton.set(verticalOffset > 400);
+  }
+
+  scrollToTop(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth' // For a smooth scrolling animation
+      });
     }
   }
 
