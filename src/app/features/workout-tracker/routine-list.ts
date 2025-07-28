@@ -121,6 +121,29 @@ export class RoutineListComponent implements OnInit, OnDestroy {
   showHiddenRoutines = signal<boolean>(false);
   showFavouriteRoutinesOnly = signal<boolean>(false);
 
+  hideRoutines = (hide: boolean): void => {
+    this.showHiddenRoutines.set(hide);
+    if (hide) {
+      this.toastService.info('Showing hidden routines', 2000, 'Hidden Routines');
+    } else {
+      this.toastService.info('Hiding hidden routines', 2000, 'Hidden Routines');
+    }
+    this.closeFilterAndScrollToTop();
+  }
+
+  showFavouriteOnlyRoutines = (show: boolean): void => {
+    this.showFavouriteRoutinesOnly.set(show);
+    if (show) {
+      this.toastService.info('Showing only favourite routines', 2000, 'Hidden Routines');
+    }
+    this.closeFilterAndScrollToTop();
+  }
+
+  closeFilterAndScrollToTop(): void {
+    this.isFilterAccordionOpen.set(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
   // Computed signal for filtered routines
   filteredRoutines = computed(() => {
     let routines = this.allRoutinesForList();
@@ -346,6 +369,8 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     this.selectedRoutineGoal.set(null);
     this.selectedRoutineMuscleGroup.set(null);
     this.selectedEquipment.set([]);
+    this.showHiddenRoutines.set(false);
+    this.showFavouriteRoutinesOnly.set(false);
     this.selectedMaxDuration.set(this.maxDuration()); // Reset slider to its max value
 
     const searchInput = document.getElementById('routine-search-term') as HTMLInputElement;

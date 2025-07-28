@@ -16,8 +16,8 @@
     </header>
 
     <!-- Filter Accordion Section for Routines -->
-    <div class="overflow-y-auto transition-all duration-500 ease-in-out"
-        [style.maxHeight]="isFilterAccordionOpen() ? '1000px' : '0px'" [class.mb-6]="isFilterAccordionOpen()">
+    <div class="overflow-y-auto transition-all duration-500 ease-in-out rounded-md"
+        [style.maxHeight]="isFilterAccordionOpen() ? '500px' : '0px'" [class.mb-6]="isFilterAccordionOpen()">
         <div class="p-4 bg-white dark:bg-gray-700 rounded-md shadow-md border dark:border-gray-600 mt-2">
             <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">Filter Routines</h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
@@ -56,7 +56,7 @@
                     <div class="flex flex-wrap gap-2">
                         <!-- Loop through available equipment to create a button/chip for each -->
                         <button *ngFor="let equipment of uniqueRoutineEquipments()"
-                            (click)="toggleEquipmentFilter(equipment)" type="button"
+                            appPress (shortPress)="toggleEquipmentFilter(equipment)" type="button"
                             class="px-3 py-1.5 text-xs font-semibold rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
                             [ngClass]="{
                     'bg-primary text-white focus:ring-primary-dark': selectedEquipment().includes(equipment),
@@ -84,8 +84,8 @@
                         </div>
                         <label for="show-hidden-routine" class="inline-flex items-center cursor-pointer mt-2">
                             <input type="checkbox" id="show-hidden-routine" class="sr-only peer"
-                                [checked]="showHiddenRoutines()"
-                                (change)="showHiddenRoutines.set(!showHiddenRoutines())">
+                                appPress (change)="hideRoutines(!showHiddenRoutines())"
+                                [checked]="showHiddenRoutines()">
                             <div
                                 class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary dark:peer-checked:bg-primary-dark">
                             </div>
@@ -100,8 +100,7 @@
                         </div>
                         <label for="show-favourite-routine" class="inline-flex items-center cursor-pointer mt-2">
                             <input type="checkbox" id="show-favourite-routine" class="sr-only peer"
-                                [checked]="showFavouriteRoutinesOnly()"
-                                (change)="showFavouriteRoutinesOnly.set(!showFavouriteRoutinesOnly())">
+                                appPress (change)="showFavouriteOnlyRoutines(!showFavouriteRoutinesOnly())">
                             <div
                                 class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary dark:peer-checked:bg-primary-dark">
                             </div>
