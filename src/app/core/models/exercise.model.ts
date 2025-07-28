@@ -30,4 +30,9 @@ export interface Exercise {
   notes?: string; // Optional: Tips, common mistakes, variations
   equipment?: string; // << NEW: e.g., 'Barbell', 'Dumbbell', 'Machine', 'Bodyweight/Calisthenics'
   iconName?: string;
+  isCustom?: boolean; // Flag to indicate if this is a user-defined exercise
+  createdAt?: string; // Timestamp for when the exercise was created
+  updatedAt?: string; // Timestamp for when the exercise was last updated
+  lastUsedAt?: string; // Timestamp for when the exercise was last used in a workout
+  isHidden?: boolean; // Flag to indicate if the exercise is hidden from the main list
 }

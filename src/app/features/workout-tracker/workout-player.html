@@ -133,13 +133,14 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
           </svg>
         </button>
-        <div class="text-center cursor-pointer" appPress (shortPress)="jumpToExercise('Session overview')"
+        <div class="flex flex-col items-center cursor-pointer" appPress (shortPress)="jumpToExercise('Session overview')"
           [title]="'Click for session overview'">
           <h1
             class="text-m font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider truncate max-w-[calc(100vw-120px)]">
             {{ currentRoutine.name || 'Workout' }}
           </h1>
-          <div class="text-xs text-gray-500 dark:text-gray-400">{{ sessionTimerDisplay() }}</div>
+          <div class="text-lg text-white dark:text-gray-200 bg-primary-dark rounded-md w-32 text-center">{{ sessionTimerDisplay()
+            }}</div>
         </div>
         <button appPress (shortPress)="toggleWorkoutMenu()"
           [disabled]="sessionState() === 'loading' || sessionState() === 'error' || (sessionState() === 'paused' && !isWorkoutMenuVisible())"
@@ -916,6 +917,13 @@
               <span class="font-medium text-gray-800 dark:text-gray-200">{{ ex.name }}</span>
               <span *ngIf="ex.category" class="block text-xs text-gray-500 dark:text-gray-400">{{ ex.category |
                 titlecase }} {{ ex.primaryMuscleGroup ? (' - ' + ex.primaryMuscleGroup | titlecase) : '' }}</span>
+              <span *ngIf="ex.isCustom || ex.lastUsedAt" class="block text-xs text-gray-500 dark:text-gray-400 italic">
+                [
+                <ng-container *ngIf="ex.isCustom">Custom Exercise</ng-container>
+                <ng-container *ngIf="ex.isCustom && ex.lastUsedAt"> | </ng-container>
+                <ng-container *ngIf="ex.lastUsedAt">Last used {{ex.lastUsedAt | date:'dd-MM-yyyy':'UTC'}}</ng-container>
+                ]
+              </span>
             </div>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
               class="w-5 h-5 text-primary dark:text-primary-light">

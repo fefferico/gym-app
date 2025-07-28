@@ -320,4 +320,15 @@ export class ProfileSettingsComponent implements OnInit {
   navigateToPersonalBests(): void {
     this.router.navigate(['/profile/personal-bests']);
   }
+
+  async onSyncExerciseHistoryClick(): Promise<void> {
+    const confirmation = await this.alertService.showConfirm(
+      'Sync Exercise History',
+      'This will scan your workout logs to update the "Last Used" date for all exercises. This may take a moment. Proceed?'
+    );
+
+    if (confirmation && confirmation.data) {
+      await this.trackingService.backfillLastUsedExerciseTimestamps();
+    }
+  }
 }

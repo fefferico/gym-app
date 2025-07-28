@@ -405,9 +405,10 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
       this.showPastLoggedWorkouts = true;
       this.pastLoggedWorkoutsDay = day;
       // this.setView('list'); this.isFilterAccordionOpen.set(false);
-    } else { 
+    } else {
       this.toastService.clearAll();
-      this.toastService.info("No workouts logged on this day", 2000); }
+      this.toastService.info("No workouts logged on this day", 2000);
+    }
   }
 
   // Expose isSameMonth to the template
@@ -501,6 +502,14 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
         buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
         data: { routineId }
       },
+      {
+        label: 'CREATE ROUTINE',
+        actionKey: 'create_routine',
+        iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10.5v6m3-3H9m4.06-7.19-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z" /></svg>`,
+        iconClass: 'w-8 h-8 mr-2',
+        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+        data: { routineId }
+      },
       { isDivider: true },
       {
         label: 'DELETE',
@@ -548,6 +557,9 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
       // case 'clone':
       //   this.cloneAndEditRoutine(routineId);
       //   break;
+      case 'create_routine':
+        this.createRoutineFromLog(logId);
+        break;
       case 'delete':
         this.deleteLogDetails(logId);
         break;
@@ -561,6 +573,13 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // When closing menu from the component's output
   onCloseActionMenu() {
+    this.activeRoutineIdActions.set(null);
+  }
+
+  createRoutineFromLog(logId: string, event?: MouseEvent): void {
+    event?.stopPropagation();
+    // This will navigate to a new route that the workout builder will handle
+    this.router.navigate(['/workout/routine/new-from-log', logId]);
     this.activeRoutineIdActions.set(null);
   }
 

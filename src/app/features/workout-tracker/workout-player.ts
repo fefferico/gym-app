@@ -198,12 +198,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     if (!term) {
       return this.availableExercises;
     }
-    if (term.toLowerCase() === 'kb') {
-      term = 'kettlebell'; // Special case for "kb" to match "kettlebell"
-    }
-    if (term.toLowerCase() === 'db') {
-      term = 'dumbbell';
-    }
+    term = this.exerciseService.normalizeExerciseNameForSearch(term);
     return this.availableExercises.filter(ex =>
       ex.name.toLowerCase().includes(term) ||
       ex.category.toLowerCase().includes(term) ||
@@ -2734,7 +2729,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
           proceedToLog = false;
         }
       }
-    } else if (!this.routineId && loggedExercisesForReport.length > 0) { // Ad-hoc
+    } else if ((!this.routineId || this.routineId == '-1') && loggedExercisesForReport.length > 0) { // Ad-hoc
       logAsNewRoutine = true;
       const nameInput = await this.alertService.showPromptDialog(
         "Save as New Routine",
@@ -2748,10 +2743,24 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
             attributes: { required: true }
           }
         ],
-        "Save Routine"
+        "Create new Routine and log",
+        'CANCEL',
+        [
+          // do not save as new routine button
+          { text: "Just log", role: "no_save", data: "cancel", cssClass: "bg-red-600" } as AlertButton
+        ]
       );
-      if (nameInput && String(nameInput['newRoutineName']).trim()) { newRoutineName = String(nameInput['newRoutineName']).trim(); }
-      else if (!nameInput) { proceedToLog = false; }
+      if (nameInput && nameInput['newRoutineName'] && String(nameInput['newRoutineName']).trim()) {
+        newRoutineName = String(nameInput['newRoutineName']).trim();
+      }
+      else {
+        proceedToLog = false;
+        if (nameInput && nameInput['role'] === 'no_save') {
+          proceedToLog = true;
+          logAsNewRoutine = false;
+          this.toastService.info("New corresponding routine has not been created. Log saved", 3000, "Log saved", false);
+        }
+      }
     }
 
     if (!proceedToLog) {
@@ -2797,9 +2806,9 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     };
     const savedLog = this.trackingService.addWorkoutLog(finalLog);
     if (!this.isTabataMode()) {
-      this.toastService.success(`Congrats! Workout completed!`, 5000, "Workout Finished");
+      this.toastService.success(`Congrats! Workout completed!`, 5000, "Workout Finished", false);
     } else {
-      this.toastService.success("Tabata Workout Complete!", 5000, "Workout Finished");
+      this.toastService.success("Tabata Workout Complete!", 5000, "Workout Finished", false);
     }
 
     if (finalRoutineIdToLog) {
@@ -3085,7 +3094,8 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
             }
             console.warn('loadNewWorkoutFromRoute: No original routine found for ID:', this.routineId);
             return null; // If routine not found, the whole result will be null
-          })
+          }),
+          take(1) // Ensure we only take the first emission
         );
       }),
 
@@ -3586,203 +3596,6 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     });
   }
 
-  // private async navigateToNextStepInWorkout(
-  //   completedActiveInfo: ActiveSetInfo,
-  //   currentSessionRoutine: Routine,
-  //   forceAdvanceExerciseBlock: boolean = false
-  // ): Promise<void> {
-  //   const exerciseJustCompleted = completedActiveInfo.exerciseData;
-  //   const isNowFullyLogged = this.isExerciseFullyLogged(exerciseJustCompleted);
-
-  //   if (this.isPerformingDeferredExercise && exerciseJustCompleted.id === this.lastActivatedDeferredExerciseId && isNowFullyLogged) {
-  //     console.log("navigateToNextStepInWorkout: Completed an explicitly chosen deferred/skipped exercise. Re-evaluating all remaining");
-  //     this.isPerformingDeferredExercise = false;
-  //     this.lastActivatedDeferredExerciseId = null;
-  //     this.exercisesProposedThisCycle = { doLater: false, skipped: false };
-  //     await this.tryProceedToDeferredExercisesOrFinish(currentSessionRoutine);
-  //     return;
-  //   }
-
-  //   // If there are unfinished exercises and we're at the last set of the last exercise of the round,
-  //   // prompt the user what to do before proceeding.
-  //   const isLastSetOfRound = this.checkIfLatestSetOfRound();
-  //   const unfinishedExercises = this.getUnfinishedOrDeferredExercises(currentSessionRoutine);
-  //   if (
-  //     unfinishedExercises.length > 0 &&
-  //     isLastSetOfRound &&
-  //     this.currentBlockRound() < this.totalBlockRounds()
-  //   ) {
-  //     // If there are more rounds, advance to the first exercise of the next round
-  //     if (this.currentBlockRound() < this.totalBlockRounds()) {
-  //       this.currentBlockRound.update(r => r + 1);
-  //       // Find the first pending exercise in the current block
-  //       let blockStartIdx = completedActiveInfo.exerciseIndex;
-  //       const currentExercise = currentSessionRoutine.exercises[completedActiveInfo.exerciseIndex];
-  //       if (currentExercise.supersetId && currentExercise.supersetOrder !== null) {
-  //         blockStartIdx = completedActiveInfo.exerciseIndex - currentExercise.supersetOrder;
-  //       }
-  //       let foundPending = false;
-  //       for (let i = blockStartIdx; i < currentSessionRoutine.exercises.length; i++) {
-  //         const ex = currentSessionRoutine.exercises[i];
-  //         if (
-  //           (currentExercise.supersetId
-  //             ? ex.supersetId === currentExercise.supersetId
-  //             : i === blockStartIdx) &&
-  //           ex.sessionStatus === 'pending'
-  //         ) {
-  //           this.currentExerciseIndex.set(i);
-  //           this.currentSetIndex.set(0);
-  //           this.lastPerformanceForCurrentExercise = null;
-  //           foundPending = true;
-  //           break;
-  //         }
-  //         // Stop if we leave the block
-  //         if (
-  //           currentExercise.supersetId &&
-  //           ex.supersetId !== currentExercise.supersetId
-  //         ) {
-  //           break;
-  //         }
-  //         if (!currentExercise.supersetId && i > blockStartIdx) {
-  //           break;
-  //         }
-  //       }
-  //       if (foundPending) {
-  //         await this.prepareCurrentSet();
-  //         return;
-  //       }
-  //       // If not found, fall through to check for unfinished exercises after rounds
-  //     }
-
-  //     // After all rounds, check for next unfinished exercise right after the rounds
-  //     let nextUnfinishedIdx = -1;
-  //     for (let i = completedActiveInfo.exerciseIndex + 1; i < currentSessionRoutine.exercises.length; i++) {
-  //       if (
-  //         currentSessionRoutine.exercises[i].sessionStatus === 'pending' &&
-  //         !this.isExerciseFullyLogged(
-  //           currentSessionRoutine.exercises[i]
-  //         )
-  //       ) {
-  //         nextUnfinishedIdx = i;
-  //         break;
-  //       }
-  //     }
-  //     if (nextUnfinishedIdx !== -1) {
-  //       this.currentExerciseIndex.set(nextUnfinishedIdx);
-  //       this.currentSetIndex.set(0);
-  //       this.currentBlockRound.set(1);
-  //       this.lastPerformanceForCurrentExercise = null;
-  //       await this.prepareCurrentSet();
-  //       return;
-  //     }
-
-  //     // Otherwise, prompt for what to do
-  //     const confirm = await this.alertService.showConfirmationDialog(
-  //       "End of Round",
-  //       "You have unfinished exercises in this round. What would you like to do?",
-  //       [
-  //         { text: "Continue to Next Round", role: "confirm", data: "continue", cssClass: "bg-blue-600 text-white" } as AlertButton,
-  //         { text: "Review Unfinished Exercises", role: "destructive", data: "review", cssClass: "bg-orange-500 text-white" } as AlertButton,
-  //       ]
-  //     );
-  //     if (confirm && confirm.data === "review") {
-  //       await this.jumpToExercise();
-  //       return;
-  //     }
-  //     // If "continue", fall through to proceed as normal
-  //   }
-
-  //   const {
-  //     nextExIdx,
-  //     nextSetIdx,
-  //     blockChanged,
-  //     isEndOfAllPending,
-  //     roundIncremented
-  //   } = this.findNextPlayableItemIndices(
-  //     completedActiveInfo.exerciseIndex,
-  //     completedActiveInfo.setIndex,
-  //     currentSessionRoutine,
-  //     forceAdvanceExerciseBlock
-  //   );
-
-  //   if (isEndOfAllPending) {
-  //     console.log("navigateToNextStepInWorkout: No more 'pending' exercises in main sequence. Attempting to proceed to deferred or finish");
-  //     this.isPerformingDeferredExercise = false;
-  //     this.lastActivatedDeferredExerciseId = null;
-  //     this.exercisesProposedThisCycle = { doLater: false, skipped: false };
-
-  //     // forcing completed and save
-  //     completedActiveInfo.exerciseData.sessionStatus = 'completed';
-  //     this.savePausedSessionState();
-  //     await this.tryProceedToDeferredExercisesOrFinish(currentSessionRoutine);
-  //     return;
-  //   }
-
-  //   // If the nextExIdx points to the same exercise as just completed, but the set index is different,
-  //   // OR if the nextExIdx points to a different exercise but it's actually the same exercise (e.g., due to duplicate IDs in routine),
-  //   // we want to ensure we are not repeating the same exercise unintentionally.
-
-  //   // Defensive: If the nextExIdx is -1, do nothing (should be handled above)
-  //   if (nextExIdx === -1) {
-  //     // Already handled above with isEndOfAllPending
-  //     return;
-  //   }
-
-  //   // Check if the next exercise is the same as the one just completed (by id)
-  //   const nextExercise = currentSessionRoutine.exercises[nextExIdx];
-  //   if (nextExercise && exerciseJustCompleted && nextExercise.id === exerciseJustCompleted.id) {
-  //     // Optionally, you could add logic here if you want to handle repeated exercises differently
-  //     // For now, just log for debugging
-  //     console.log('Next exercise is the same as just completed:', nextExercise.exerciseName);
-  //   }
-
-  //   // Check if the next exercise is already among currentWorkoutLogExercises (by exerciseId and id)
-  //   const isNextExerciseFullyLogged = this.isExerciseFullyLogged(nextExercise);
-
-  //   // this.currentWorkoutLogExercises().some(
-  //   //   logEx => logEx.exerciseId === nextExercise?.exerciseId &&
-  //   //     currentSessionRoutine.exercises.find(ex => ex.id === nextExercise?.id) && this.isExerciseFullyLogged(nextExercise)
-  //   // );
-  //   if (isNextExerciseFullyLogged && !this.checkIfSetIsPartOfRounds()) {
-  //     console.log('Next exercise is already logged in currentWorkoutLogExercises:', nextExercise?.exerciseName);
-  //     // You can add additional logic here if you want to handle this case
-  //     this.tryProceedToDeferredExercisesOrFinish(currentSessionRoutine);
-  //   }
-
-  //   this.currentExerciseIndex.set(nextExIdx);
-  //   this.currentSetIndex.set(nextSetIdx);
-
-  //   if (completedActiveInfo.exerciseIndex !== nextExIdx) {
-  //     // If the new exercise is NOT the one we explicitly marked as lastActivatedDeferredExerciseId,
-  //     // then we are no longer in that specific deferred context.
-  //     if (currentSessionRoutine.exercises[nextExIdx].id !== this.lastActivatedDeferredExerciseId) {
-  //       this.isPerformingDeferredExercise = false;
-  //       this.lastActivatedDeferredExerciseId = null;
-  //     }
-  //   }
-
-
-  //   if (blockChanged || roundIncremented || forceAdvanceExerciseBlock || completedActiveInfo.exerciseIndex !== nextExIdx) {
-  //     this.lastPerformanceForCurrentExercise = null;
-  //   }
-  //   if (blockChanged) {
-  //     const newBlockStarterExercise = currentSessionRoutine.exercises[nextExIdx];
-  //     if (!newBlockStarterExercise.supersetId || newBlockStarterExercise.supersetOrder === 0) {
-  //       this.totalBlockRounds.set(newBlockStarterExercise.rounds ?? 1);
-  //     } else {
-  //       const actualBlockStart = currentSessionRoutine.exercises.find(ex => ex.supersetId === newBlockStarterExercise.supersetId && ex.supersetOrder === 0);
-  //       this.totalBlockRounds.set(actualBlockStart?.rounds ?? 1);
-  //     }
-  //   }
-
-  //   const restDurationAfterCompletedSet = completedActiveInfo.setData.restAfterSet;
-  //   if (restDurationAfterCompletedSet > 0 && !forceAdvanceExerciseBlock) {
-  //     this.startRestPeriod(restDurationAfterCompletedSet);
-  //   } else {
-  //     this.playerSubState.set(PlayerSubState.PerformingSet);
-  //     await this.prepareCurrentSet();
-  //   }
-  // }
 
   private async navigateToNextStepInWorkout(
     completedActiveInfo: ActiveSetInfo,
@@ -4381,7 +4194,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
   private loadAvailableExercises(): void {
     this.exerciseService.getExercises().pipe(take(1)).subscribe(exercises => {
-      this.availableExercises = exercises;
+      this.availableExercises = exercises.filter(ex => !ex.isHidden);
     });
   }
 
@@ -4399,7 +4212,9 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     this.isExerciseModalOpen.set(true);
     this.closeWorkoutMenu(); // Close main menu when opening modal
 
-    setTimeout(() => this.myExerciseInput.nativeElement?.focus());
+    setTimeout(() => {
+      this.myExerciseInput.nativeElement?.focus();
+    });
 
   }
 

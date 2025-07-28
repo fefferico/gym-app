@@ -58,20 +58,15 @@ export class ExerciseService {
   private isLoadingExercisesSubject = new BehaviorSubject<boolean>(true); // Start as true
   public isLoadingExercises$: Observable<boolean> = this.isLoadingExercisesSubject.asObservable();
 
-  constructor(
-  ) {
+  constructor() {
     this.isLoadingExercisesSubject.next(true);
-
-    // Load initial exercises from storage
     const exercisesFromStorage = this._loadExercisesFromStorage();
-
-    // Initialize the BehaviorSubject with exercises from storage
     this.exercisesSubject = new BehaviorSubject<Exercise[]>(exercisesFromStorage);
+
     this.exercises$ = this.exercisesSubject.asObservable().pipe(
       shareReplay(1)
     );
 
-    // Call the new, synchronous seeding method
     this._seedAndMergeExercisesFromStaticData(exercisesFromStorage);
   }
 
@@ -158,71 +153,106 @@ export class ExerciseService {
   }
 
   /**
-   * Adds a new exercise to the collection, preventing duplicates by ID or name.
-   * 
-   * - If `exerciseData.id` is provided, it will be used. The method will fail if an
-   *   exercise with this ID already exists.
-   * - If `exerciseData.id` is not provided, a new UUID will be generated.
-   * - The method will also fail if an exercise with the same name (case-insensitive)
-   *   already exists to prevent user-created duplicates.
+   * Adds a new user-defined exercise to the collection.
+   * The new exercise is automatically marked as `isCustom: true`.
+   * It will fail if an exercise with the same name already exists.
    *
-   * @param exerciseData - A partial Exercise object. Must contain at least a `name`.
-   * @returns An Observable emitting the newly created Exercise, or `null` if the
-   *          exercise was not added due to a duplicate ID or name.
+   * @param exerciseData - A partial Exercise object, must contain at least a `name`.
+   * @returns An Observable emitting the newly created Exercise or `null` if it wasn't added.
    */
   addExercise(exerciseData: Partial<Exercise>): Observable<Exercise | null> {
     const currentExercises = this.exercisesSubject.getValue();
 
-    // 1. Check for a valid name - an exercise must have a name.
     if (!exerciseData.name || exerciseData.name.trim() === '') {
-      console.error('Exercise name is required and cannot be empty.');
+      console.error('Exercise name is required.');
       return of(null);
     }
 
-    // 2. Check for duplicate ID if an ID is provided
     if (exerciseData.id && currentExercises.some(ex => ex.id === exerciseData.id)) {
-      console.warn(`An exercise with the ID '${exerciseData.id}' already exists. Add operation aborted`);
+      console.warn(`An exercise with the ID '${exerciseData.id}' already exists.`);
       return of(null);
     }
 
-    // 3. Check for duplicate name (case-insensitive check for better UX)
     const normalizedName = exerciseData.name.trim().toLowerCase();
     if (currentExercises.some(ex => ex.name.trim().toLowerCase() === normalizedName)) {
-      console.warn(`An exercise with the name '${exerciseData.name}' already exists. Add operation aborted`);
+      console.warn(`An exercise with the name '${exerciseData.name}' already exists.`);
       return of(null);
     }
 
-    // 4. All checks passed. Create the new exercise.
+    const now = new Date().toISOString(); // --- Get current timestamp ---
+
     const newExercise: Exercise = {
-      // Provide default values for required fields to ensure type safety
       description: '',
       category: 'custom',
       muscleGroups: [],
       primaryMuscleGroup: '',
       imageUrls: [],
-      ...exerciseData, // Spread the provided data, which will overwrite defaults
-      name: exerciseData.name,
-      id: exerciseData.id || uuidv4(), // Use the provided ID or generate a new one
+      ...exerciseData,
+      name: exerciseData.name.trim(),
+      id: exerciseData.id || uuidv4(),
+      isCustom: true,
+      isHidden: false,
+      // --- NEW: Set timestamps on creation ---
+      createdAt: now,
+      updatedAt: now,
+      lastUsedAt: undefined // A new exercise has not been used yet
     };
 
-    // 5. Update state and persist
     const updatedExercises = [...currentExercises, newExercise];
-    this._saveExercisesToStorage(updatedExercises); // Assuming this updates the subject internally
+    this._saveExercisesToStorage(updatedExercises);
 
     return of(newExercise);
   }
 
+
   updateExercise(updatedExercise: Exercise): Observable<Exercise> {
-    // Similar to addExercise, set loading if it were an async API operation
     const currentExercises = this.exercisesSubject.getValue();
     const index = currentExercises.findIndex(ex => ex.id === updatedExercise.id);
+
     if (index > -1) {
       const newExercisesArray = [...currentExercises];
-      newExercisesArray[index] = { ...updatedExercise };
+      // --- Ensure original createdAt is preserved and set new updatedAt ---
+      const exerciseToUpdate = {
+        ...currentExercises[index], // Preserve original fields like createdAt
+        ...updatedExercise,        // Apply incoming changes
+        updatedAt: new Date().toISOString() // Set new updated timestamp
+      };
+      newExercisesArray[index] = exerciseToUpdate;
       this._saveExercisesToStorage(newExercisesArray);
-      return of(updatedExercise);
+      return of(exerciseToUpdate);
     }
+
     return throwError(() => new Error(`Exercise with id ${updatedExercise.id} not found for update.`));
+  }
+
+  /**
+   * --- NEW METHOD ---
+   * Specifically updates the `lastUsedAt` timestamp for one or more exercises.
+   * This should be called by the TrackingService when a workout is logged.
+   * @param exerciseIds An array of exercise IDs that were used.
+   */
+  public updateLastUsedTimestamp(exerciseIds: string[]): void {
+    const uniqueExerciseIds = [...new Set(exerciseIds)]; // Ensure no duplicates
+    if (uniqueExerciseIds.length === 0) {
+      return;
+    }
+
+    const currentExercises = this.exercisesSubject.getValue();
+    let exercisesWereUpdated = false;
+    const now = new Date().toISOString();
+
+    const updatedExercises = currentExercises.map(ex => {
+      if (uniqueExerciseIds.includes(ex.id)) {
+        exercisesWereUpdated = true;
+        return { ...ex, lastUsedAt: now };
+      }
+      return ex;
+    });
+
+    if (exercisesWereUpdated) {
+      console.log(`Updating lastUsedAt for exercises:`, uniqueExerciseIds);
+      this._saveExercisesToStorage(updatedExercises);
+    }
   }
 
   async deleteExercise(exerciseId: string): Promise<void> {
@@ -523,14 +553,14 @@ export class ExerciseService {
     // +++ END of new merge logic +++
   }
 
-   /**
-   * Returns the SVG path IDs for given primary and secondary muscle groups
-   * for highlighting on the muscle anatomy chart.
-   *
-   * @param primaryMuscle The main muscle group worked (will be highlighted distinctly).
-   * @param secondaryMuscles An array of supporting muscle groups.
-   * @returns An object containing arrays of SVG path IDs for primary and secondary muscles.
-   */
+  /**
+  * Returns the SVG path IDs for given primary and secondary muscle groups
+  * for highlighting on the muscle anatomy chart.
+  *
+  * @param primaryMuscle The main muscle group worked (will be highlighted distinctly).
+  * @param secondaryMuscles An array of supporting muscle groups.
+  * @returns An object containing arrays of SVG path IDs for primary and secondary muscles.
+  */
   public getMuscleHighlightData(primaryMuscle: string, secondaryMuscles: string[]): MuscleHighlightData {
     const highlightData: MuscleHighlightData = {
       primary: [],
@@ -558,5 +588,112 @@ export class ExerciseService {
 
     return highlightData;
   }
-  
+
+  normalizeExerciseNameForSearch(term: string): string {
+    if (!term) {
+      return '';
+    }
+    // Normalize the term to lowercase and trim whitespace
+    term = term.trim().toLowerCase();
+
+    // Replace common abbreviations with full terms
+    term = term.replace(/\bkb\b/g, 'kettlebell');
+    term = term.replace(/\bdb\b/g, 'dumbbell');
+    term = term.replace(/\bbb\b/g, 'barbell');
+    term = term.replace(/\bdl\b/g, 'deadlift');
+    term = term.replace(/\bdrl\b/g, 'romanian deadlift');
+    term = term.replace(/\bbp\b/g, 'bench press');
+    term = term.replace(/\bsq\b/g, 'squat');
+    term = term.replace(/\bbw\b/g, 'bodyweight');
+
+    // Return the modified search term
+    return term;
+  }
+
+  /**
+   * Hides an exercise by setting its `isHidden` flag to true.
+   * The exercise is filtered out from the main `exercises$` observable but remains in storage.
+   * @param exerciseId The ID of the exercise to hide.
+   * @returns An Observable of the updated exercise or undefined if not found.
+   */
+  public hideExercise(exerciseId: string): Observable<Exercise | undefined> {
+    const currentExercises = this.exercisesSubject.getValue();
+    const exerciseIndex = currentExercises.findIndex(ex => ex.id === exerciseId);
+
+    if (exerciseIndex === -1) {
+      this.toastService.error('Failed to hide exercise: not found.', 0, "Error");
+      return of(undefined);
+    }
+
+    const updatedExercises = [...currentExercises];
+    const exerciseToUpdate = { ...updatedExercises[exerciseIndex], isHidden: true };
+    updatedExercises[exerciseIndex] = exerciseToUpdate;
+
+    this._saveExercisesToStorage(updatedExercises);
+    this.toastService.info(`'${exerciseToUpdate.name}' is now hidden.`, 3000, "Hidden");
+    return of(exerciseToUpdate);
+  }
+
+  /**
+   * Un-hides an exercise by setting its `isHidden` flag to false.
+   * The exercise will reappear in the main `exercises$` observable.
+   * @param exerciseId The ID of the exercise to make visible.
+   * @returns An Observable of the updated exercise or undefined if not found.
+   */
+  public unhideExercise(exerciseId: string): Observable<Exercise | undefined> {
+    const currentExercises = this.exercisesSubject.getValue();
+    const exerciseIndex = currentExercises.findIndex(ex => ex.id === exerciseId);
+
+    if (exerciseIndex === -1) {
+      this.toastService.error('Failed to un-hide exercise: not found.', 0, "Error");
+      return of(undefined);
+    }
+
+    const updatedExercises = [...currentExercises];
+    const exerciseToUpdate = { ...updatedExercises[exerciseIndex], isHidden: false };
+    updatedExercises[exerciseIndex] = exerciseToUpdate;
+
+    this._saveExercisesToStorage(updatedExercises);
+    this.toastService.success(`'${exerciseToUpdate.name}' is now visible.`, 3000, "Visible");
+    return of(exerciseToUpdate);
+  }
+
+  /**
+   * Returns an observable list of ONLY the exercises that are currently hidden.
+   * This is useful for a management page where a user can un-hide them.
+   * @returns An Observable emitting an array of hidden Exercise objects.
+   */
+  public getHiddenExercises(): Observable<Exercise[]> {
+    return this.exercisesSubject.asObservable().pipe(
+      map(exercises => exercises.filter(ex => ex.isHidden))
+    );
+  }
+
+  /**
+  * --- NEW METHOD for Batch Updates ---
+  * Updates the `lastUsedAt` timestamp for multiple exercises at once.
+  * This is more efficient than updating them one by one.
+  * @param lastUsedMap A Map where the key is the exerciseId and the value is the ISO date string.
+  */
+  public async batchUpdateLastUsedTimestamps(lastUsedMap: Map<string, string>): Promise<void> {
+    const currentExercises = this.exercisesSubject.getValue();
+    let exercisesWereUpdated = false;
+
+    const updatedExercises = currentExercises.map(exercise => {
+      if (lastUsedMap.has(exercise.id)) {
+        const newTimestamp = lastUsedMap.get(exercise.id);
+        // Only update if the timestamp is different to avoid unnecessary writes
+        if (exercise.lastUsedAt !== newTimestamp) {
+          exercisesWereUpdated = true;
+          return { ...exercise, lastUsedAt: newTimestamp };
+        }
+      }
+      return exercise;
+    });
+
+    if (exercisesWereUpdated) {
+      this._saveExercisesToStorage(updatedExercises);
+    }
+  }
+
 }

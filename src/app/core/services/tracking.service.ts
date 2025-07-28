@@ -1,5 +1,5 @@
 // src/app/core/services/tracking.service.ts
-import { Injectable, inject } from '@angular/core';
+import { Injectable, Injector, inject } from '@angular/core';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { map, take, tap } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
@@ -11,6 +11,7 @@ import { parseISO } from 'date-fns';
 import { AlertService } from './alert.service';
 import { WorkoutService } from './workout.service';
 import { ToastService } from './toast.service';
+import { ExerciseService } from './exercise.service';
 
 export interface ExercisePerformanceDataPoint {
   date: Date;
@@ -28,6 +29,7 @@ export class TrackingService {
   private storageService = inject(StorageService);
   private alertService = inject(AlertService);
   private workoutService = inject(WorkoutService);
+  private injector = inject(Injector); // Inject the Injector
   private toastService = inject(ToastService);
   private readonly WORKOUT_LOGS_STORAGE_KEY = 'fitTrackPro_workoutLogs';
   private readonly PERSONAL_BESTS_STORAGE_KEY = 'fitTrackPro_personalBests';
@@ -47,6 +49,13 @@ export class TrackingService {
     return logs ? logs.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) : [];
   }
 
+
+  private get exerciseService(): ExerciseService {
+    return this.injector.get(ExerciseService);
+  }
+
+
+
   private saveWorkoutLogsToStorage(logs: WorkoutLog[]): void {
     this.storageService.setItem(this.WORKOUT_LOGS_STORAGE_KEY, logs);
     this.workoutLogsSubject.next([...logs].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
@@ -64,8 +73,8 @@ export class TrackingService {
         ...set,
         id: set.id ?? uuidv4(),
         workoutLogId: newWorkoutLogId,
-        timestamp: logStartTimeISO, // Set timestamp for each LoggedSet
-        exerciseId: ex.exerciseId,  // Ensure exerciseId is on the set
+        timestamp: logStartTimeISO,
+        exerciseId: ex.exerciseId,
       }))
     }));
 
@@ -83,7 +92,15 @@ export class TrackingService {
 
     const updatedLogs = [newLog, ...currentLogs];
     this.saveWorkoutLogsToStorage(updatedLogs);
-    this.updateAllPersonalBestsFromLog(newLog); // Call PB update incrementally
+    this.updateAllPersonalBestsFromLog(newLog);
+
+    // --- NEW: UPDATE EXERCISE TIMESTAMPS ---
+    if (newLog.exercises && newLog.exercises.length > 0) {
+      const usedExerciseIds = newLog.exercises.map(ex => ex.exerciseId);
+      this.exerciseService.updateLastUsedTimestamp(usedExerciseIds);
+    }
+    // -------------------------------------
+
     console.log('Added workout log:', newLog.id);
     return newLog;
   }
@@ -229,13 +246,7 @@ export class TrackingService {
         if ((candidateSet.durationPerformed ?? 0) > (existingPb.durationPerformed ?? 0)) isBetter = true;
       } else { // Weight-based (XRM, Heaviest Lifted)
         if ((candidateSet.weightUsed ?? -1) > (existingPb.weightUsed ?? -1)) {
-          isBetter = true;
-        } else if (
-          (candidateSet.weightUsed ?? -1) === (existingPb.weightUsed ?? -1) &&
-          new Date(candidateSet.timestamp).getTime() > new Date(existingPb.timestamp).getTime()
-          // Optional: Could add reps as a tie-breaker for same weight, same date if desired for 'Heaviest Lifted'
-        ) {
-          isBetter = true; // Same weight, newer date wins (or same performance on a later log)
+            isBetter = true;
         }
       }
 
@@ -468,6 +479,10 @@ export class TrackingService {
       "Logs Merged"
     );
 
+   // --- NEW: Trigger the backfill for lastUsedAt timestamps ---
+    await this.backfillLastUsedExerciseTimestamps();
+    // -----------------------------------------------------------
+
     // 8. Recalculate all PBs from the newly merged history
     // We do this without a confirmation prompt as it's a necessary step after import.
     console.log('Recalculating personal bests after log import...');
@@ -632,8 +647,14 @@ export class TrackingService {
       const newLogsArray = [...currentLogs];
       newLogsArray[logIndex] = fullyUpdatedLog;
       this.saveWorkoutLogsToStorage(newLogsArray);
-      // For best accuracy after an edit, a full recalculation is ideal.
-      // updateAllPersonalBestsFromLog(fullyUpdatedLog) is faster but might not catch all edge cases (e.g., if a PB was reduced).
+
+      // --- NEW: UPDATE EXERCISE TIMESTAMPS ON LOG EDIT ---
+      if (fullyUpdatedLog.exercises && fullyUpdatedLog.exercises.length > 0) {
+        const usedExerciseIds = fullyUpdatedLog.exercises.map(ex => ex.exerciseId);
+        this.exerciseService.updateLastUsedTimestamp(usedExerciseIds);
+      }
+      // ------------------------------------------------
+
       await this.recalculateAllPersonalBests();
       console.log('Updated workout log and recalculated PBs:', updatedLog.id);
     } else {
@@ -704,5 +725,42 @@ export class TrackingService {
         })
       )
     );
+  }
+
+
+  /**
+   * --- NEW METHOD for Backfilling Data ---
+   * Scans all workout logs to find the most recent usage date for each exercise
+   * and updates the `lastUsedAt` property on the exercises via the ExerciseService.
+   * This is an intensive operation and should be run manually or after data imports.
+   */
+  public async backfillLastUsedExerciseTimestamps(): Promise<void> {
+    console.log('Starting backfill of lastUsedAt timestamps for all exercises...');
+    this.toastService.info('Updating exercise history...', 2000, "Please Wait");
+
+    const allLogs = this.workoutLogsSubject.getValue();
+    if (!allLogs || allLogs.length === 0) {
+      console.log('No logs found. Aborting backfill.');
+      return;
+    }
+
+    // The logs are already sorted newest first, which is perfect.
+    // We will iterate and the first time we see an exercise ID, that's its most recent use.
+    const lastUsedMap = new Map<string, string>(); // Map<exerciseId, lastUsedTimestamp>
+
+    for (const log of allLogs) {
+      for (const loggedEx of log.exercises) {
+        // If we haven't already found a newer log for this exercise, record this one.
+        if (!lastUsedMap.has(loggedEx.exerciseId)) {
+          lastUsedMap.set(loggedEx.exerciseId, log.date);
+        }
+      }
+    }
+
+    // Now, tell the ExerciseService to perform the batch update
+    await this.exerciseService.batchUpdateLastUsedTimestamps(lastUsedMap);
+
+    console.log(`Backfill complete. Updated timestamps for ${lastUsedMap.size} exercises.`);
+    this.toastService.success('Exercise history has been updated!', 3000, "Update Complete");
   }
 }

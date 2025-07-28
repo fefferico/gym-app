@@ -171,7 +171,8 @@ export class AlertService {
         message: string,
         inputs: AlertInput[],
         okText: string = 'OK',
-        cancelText: string = 'Cancel'
+        cancelText: string = 'Cancel',
+        customButtons: AlertButton[] = []
     ): Promise<{ [key: string]: string | number | boolean } | null> {
         const result = await this.present({
             header,
@@ -179,7 +180,8 @@ export class AlertService {
             inputs,
             buttons: [
                 { text: cancelText, role: 'cancel', data: false },
-                { text: okText, role: 'confirm', data: true }
+                { text: okText, role: 'confirm', data: true },
+                ...customButtons
             ],
             backdropDismiss: false
         });
@@ -187,6 +189,12 @@ export class AlertService {
         if (result && result.role === 'confirm' && result.data === true) {
             return result.values || {};
         }
-        return null;
+        // return customButton role if it exists, otherwise return null
+        if (result && result.role) {
+            return { role: result.role, data: result.data };
+        } else {
+            // If no valid result, return null
+            return null;
+        }
     }
 }

@@ -117,8 +117,11 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   availablePrograms: TrainingProgram[] = [];
   modalSearchTerm = signal('');
   filteredAvailableExercises = computed(() => {
-    const term = this.modalSearchTerm().toLowerCase();
-    if (!term) return this.availableExercises;
+    let term = this.modalSearchTerm().toLowerCase();
+    if (!term) {
+      return this.availableExercises;
+    }
+    term = this.exerciseService.normalizeExerciseNameForSearch(term);
     return this.availableExercises.filter(ex =>
       ex.name.toLowerCase().includes(term) ||
       ex.category.toLowerCase().includes(term) ||
@@ -160,7 +163,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         console.log(`Builder ngOnInit: Mode=${this.mode}, isNewMode=${this.isNewMode}`);
 
         this.currentRoutineId = this.route.snapshot.paramMap.get('routineId'); // For editing/viewing a Routine, or prefilling a Log
-        this.currentLogId = this.route.snapshot.paramMap.get('logId');         // For editing a WorkoutLog
+        this.currentLogId = this.route.snapshot.paramMap.get('logId');         // For editing a WorkoutLog or creating a routine from a log
         this.currentProgramId = this.route.snapshot.queryParamMap.get('programId');
         const paramDate = this.route.snapshot.queryParamMap.get('date');
         this.dateParam = paramDate ? new Date(paramDate) : null;
@@ -177,6 +180,9 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         this.builderForm.reset(this.getDefaultFormValuesForMode(), { emitEvent: false });
 
         if (this.mode === 'routineBuilder') {
+          if (this.currentLogId && this.isNewMode) { // Creating a new Routine from a Log
+            return this.trackingService.getWorkoutLogById(this.currentLogId);
+          }
           if (this.currentRoutineId && (this.isEditMode || this.isViewMode)) { // Editing or Viewing a Routine
             return this.workoutService.getRoutineById(this.currentRoutineId);
           }
@@ -191,7 +197,9 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       }),
       tap(loadedData => { // data can be Routine, WorkoutLog, or null
         if (loadedData) {
-          if (this.mode === 'routineBuilder') {
+          if (this.mode === 'routineBuilder' && this.currentLogId && this.isNewMode) {
+            this.prefillRoutineFormFromLog(loadedData as WorkoutLog);
+          } else if (this.mode === 'routineBuilder') {
             this.routine = loadedData as Routine;
             this.patchFormWithRoutineData(loadedData as Routine);
           } else if (this.mode === 'manualLogEntry' && this.isEditMode && this.currentLogId) {
@@ -459,6 +467,67 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     this.builderForm.markAsDirty();
   }
 
+  prefillRoutineFormFromLog(log: WorkoutLog): void {
+    this.builderForm.patchValue({
+      // Suggest a name for the new routine based on the log
+      name: `${log.routineName || 'Logged Workout'} - As Routine`,
+      // Use the log's notes as a starting point for the routine description
+      description: log.notes || '',
+      // Try to find the original goal, otherwise default to 'custom'
+      goal: this.availableRoutines.find(r => r.id === log.routineId)?.goal || 'custom',
+    }, { emitEvent: false });
+
+    this.updateSanitizedDescription(log.notes || '');
+
+    this.exercisesFormArray.clear({ emitEvent: false });
+
+    log.exercises.forEach(loggedEx => {
+      const newRoutineExercise = this.createRoutineExerciseFromLoggedExercise(loggedEx);
+      this.exercisesFormArray.push(newRoutineExercise, { emitEvent: false });
+    });
+
+    this.toggleFormState(false); // Enable the form for editing
+    this.builderForm.markAsDirty(); // Mark as dirty since it's a new, unsaved routine
+  }
+
+  private createRoutineExerciseFromLoggedExercise(loggedEx: LoggedWorkoutExercise): FormGroup {
+    const sets = loggedEx.sets.map(loggedSet => {
+      // For the new routine, the 'target' is what was 'achieved' in the log.
+      const newSetParams: ExerciseSetParams = {
+        id: this.workoutService.generateExerciseSetId(), // New ID for the routine set
+        reps: loggedSet.repsAchieved,
+        weight: loggedSet.weightUsed ?? null,
+        duration: loggedSet.durationPerformed,
+        restAfterSet: loggedSet.targetRestAfterSet ?? 60, // Use original target rest, or default
+        type: loggedSet.type,
+        notes: loggedSet.notes,
+        tempo: loggedSet.targetTempo,
+      };
+      // Return a FormGroup for the set
+      return this.createSetFormGroup(newSetParams, false); // forLogging = false
+    });
+
+    const exerciseFg = this.fb.group({
+      id: this.workoutService.generateWorkoutExerciseId(), // New ID
+      exerciseId: [loggedEx.exerciseId, Validators.required],
+      exerciseName: [loggedEx.exerciseName],
+      notes: [loggedEx.notes || ''],
+      sets: this.fb.array(sets),
+      // Carry over superset info from the log
+      supersetId: [loggedEx.supersetId || null],
+      supersetOrder: [loggedEx.supersetOrder ?? null],
+      supersetSize: [loggedEx.supersetSize ?? null],
+      rounds: [loggedEx.rounds || 0, [Validators.min(0)]],
+    });
+
+    // Add listeners and update controls as needed, similar to createExerciseFormGroup
+    exerciseFg.get('supersetId')?.valueChanges.subscribe(() => this.updateRoundsControlability(exerciseFg));
+    this.updateRoundsControlability(exerciseFg);
+    this.addRepsListener(exerciseFg);
+
+    return exerciseFg;
+  }
+
   private createExerciseFormGroup(exerciseData?: WorkoutExercise, isFromRoutineTemplate: boolean = false, forLogging: boolean = false): FormGroup {
     const baseExercise = exerciseData?.exerciseId ? this.availableExercises.find(e => e.id === exerciseData.exerciseId) : null;
     const sets = exerciseData?.sets || [];
@@ -548,15 +617,15 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         repsValue ?? null,
         [
           (control: AbstractControl) => {
-        const parent = control.parent;
-        if (!parent) return null;
-        const weightUsed = parent.get('weightUsed')?.value;
-        const durationPerformed = parent.get('durationPerformed')?.value;
-        // Only require repsAchieved if both weightUsed and durationPerformed are null or empty
-        if ((weightUsed == null || weightUsed === '') && (durationPerformed == null || durationPerformed === '')) {
-          return Validators.required(control);
-        }
-        return null;
+            const parent = control.parent;
+            if (!parent) return null;
+            const weightUsed = parent.get('weightUsed')?.value;
+            const durationPerformed = parent.get('durationPerformed')?.value;
+            // Only require repsAchieved if both weightUsed and durationPerformed are null or empty
+            if ((weightUsed == null || weightUsed === '') && (durationPerformed == null || durationPerformed === '')) {
+              return Validators.required(control);
+            }
+            return null;
           },
           Validators.min(0)
         ]
@@ -1509,7 +1578,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   getSetReps(loggedEx: any): string {
-    if (this.currentLogId) {
+    if (this.currentLogId && !this.isNewMode) { // If we're viewing a logged workout or editing a routine created from a log
       const loggedExActual = loggedEx?.getRawValue() as LoggedWorkoutExercise;
       return loggedExActual?.sets.map(set => set.repsAchieved).join(' - ');
     } else {

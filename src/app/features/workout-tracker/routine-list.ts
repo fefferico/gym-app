@@ -365,13 +365,11 @@ export class RoutineListComponent implements OnInit, OnDestroy {
   }
 
   editRoutine(routineId: string, event?: MouseEvent): void {
-    // event.stopPropagation();
     this.router.navigate(['/workout/routine/edit', routineId]);
     this.visibleActionsRutineId.set(null);
   }
 
-  async deleteRoutine(routineId: string, event?: MouseEvent): Promise<void> {
-    // event.stopPropagation();
+  async deleteRoutine(routineId: string, event?: Event): Promise<void> {
     this.visibleActionsRutineId.set(null);
 
     const routineToDelete = this.allRoutinesForList().find(r => r.id === routineId); // Use signal value
@@ -420,7 +418,6 @@ export class RoutineListComponent implements OnInit, OnDestroy {
   }
 
   async startWorkout(newRoutineId: string, event?: MouseEvent): Promise<void> {
-    // event.stopPropagation();
     this.visibleActionsRutineId.set(null);
 
     if (!isPlatformBrowser(this.platformId)) {
@@ -458,12 +455,16 @@ export class RoutineListComponent implements OnInit, OnDestroy {
   }
 
   viewRoutineDetails(routineId: string, event?: Event): void {
-    event?.stopPropagation();
+    // event?.stopPropagation();
     if (event && event.target) {
       const elem = event.target as HTMLElement;
       if (elem.className && elem.className.includes('bg-primary')) {
         return;
       }
+    }
+    const currentVibrator = navigator;
+    if (currentVibrator && 'vibrate' in currentVibrator) {
+      currentVibrator.vibrate(50);
     }
     this.router.navigate(['/workout/routine/view', routineId, { isView: 'routineBuilder' }]); // Pass isView flag
     this.visibleActionsRutineId.set(null);
@@ -546,7 +547,6 @@ export class RoutineListComponent implements OnInit, OnDestroy {
   }
 
   async cloneAndEditRoutine(routineId: string, event?: MouseEvent): Promise<void> {
-    // event.stopPropagation();
     this.visibleActionsRutineId.set(null);
 
     const originalRoutine = this.allRoutinesForList().find(r => r.id === routineId);

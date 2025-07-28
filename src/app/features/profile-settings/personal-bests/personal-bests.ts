@@ -265,6 +265,7 @@ export class PersonalBestsComponent implements OnInit {
       await this.trackingService.recalculateAllPersonalBests();
       // Success/loading messages are handled by the service.
       // The component will automatically update due to the personalBests$ subscription.
+      this.filtersVisible.set(false);
     } catch (error) {
       console.error('Error initiating PB recalculation:', error);
       this.toastService.error('An error occurred while trying to recalculate personal bests.');

@@ -19,6 +19,12 @@ export const WORKOUT_TRACKER_ROUTES: Routes = [
     data: { mode: 'routineBuilder', isNew: true }, // Pass mode and isNew
     title: 'Create New Routine'
   },
+    {
+    path: 'routine/new-from-log/:logId',
+    component: WorkoutBuilderComponent,
+    data: { mode: 'routineBuilder', isNew: true },
+    title: 'Create New Routine'
+  },
   {
     path: 'routine/edit/:routineId', // Changed path for clarity
     component: WorkoutBuilderComponent,

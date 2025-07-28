@@ -1,3 +1,4 @@
+// src/app/features/exercises/exercise-list/exercise-list.ts
 import { Component, inject, OnInit, signal, computed, effect, PLATFORM_ID, HostListener } from '@angular/core';
 import { AsyncPipe, CommonModule, isPlatformBrowser, TitleCasePipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
@@ -83,12 +84,24 @@ export class ExerciseListComponent implements OnInit {
   searchTerm = signal<string>('');
   allExercises = signal<Exercise[]>([]);
 
+  // --- NEW ---
+  showHiddenExercises = signal<boolean>(false);
+  // -----------
+
   actionsVisibleId = signal<string | null>(null);
   menuModeCompact: boolean = false;
-  isFilterAccordionOpen = signal(false); // Signal for accordion state
+  isFilterAccordionOpen = signal(false);
 
   filteredExercises = computed(() => {
     let exercises = this.allExercises();
+    const showHidden = this.showHiddenExercises(); // Get value once
+
+    // --- NEW: Filter by isHidden status first ---
+    if (!showHidden) {
+      exercises = exercises.filter(ex => !ex.isHidden);
+    }
+    // ------------------------------------------
+
     const category = this.selectedCategory();
     if (category) {
       exercises = exercises.filter(ex => ex.category === category);
@@ -97,39 +110,35 @@ export class ExerciseListComponent implements OnInit {
     if (muscleGroup) {
       exercises = exercises.filter(ex => ex.primaryMuscleGroup === muscleGroup);
     }
-    const term = this.searchTerm();
+
+    let term = this.searchTerm();
+    term = this.exerciseService.normalizeExerciseNameForSearch(term);
     if (term) {
       const words = term.split(/\s+/).filter(Boolean);
       exercises = exercises.filter(ex => {
-      const searchable = [
-        ex.name,
-        ex.description || ''
-      ].join(' ').toLowerCase();
-      return words.every(word => searchable.includes(word));
+        const searchable = [
+          ex.name,
+          ex.description || ''
+        ].join(' ').toLowerCase();
+        return words.every(word => searchable.includes(word));
       });
     }
+
     return exercises.map(ex => ({
       ...ex,
       iconName: this.exerciseService.determineExerciseIcon(ex, ex?.name)
     }));
   });
 
-  constructor() {
-    // effect(() => { // Keep for debugging if needed
-    //   console.log('Filtered exercises updated:', this.filteredExercises().length);
-    // });
-  }
+  constructor() { }
 
   showBackToTopButton = signal<boolean>(false);
   @HostListener('window:scroll', [])
   onWindowScroll(): void {
-    // Check if the user has scrolled down more than a certain amount (e.g., 400 pixels)
-    // You can adjust this value to your liking.
     const verticalOffset = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
     this.showBackToTopButton.set(verticalOffset > 400);
   }
 
-  // --- ADD NEW PROPERTIES FOR THE FAB ---
   isFabActionsOpen = signal(false);
   isTouchDevice = false;
 
@@ -142,7 +151,8 @@ export class ExerciseListComponent implements OnInit {
     this.primaryMuscleGroups$ = this.exerciseService.getUniquePrimaryMuscleGroups();
     this.menuModeCompact = this.themeService.isMenuModeCompact();
 
-    this.exerciseService.getExercises().subscribe(exercises => {
+    // This subscription now gets ALL exercises from the service
+    this.exerciseService.exercises$.subscribe(exercises => {
       this.allExercises.set(exercises);
     });
   }
@@ -166,6 +176,7 @@ export class ExerciseListComponent implements OnInit {
     this.selectedCategory.set(null);
     this.selectedMuscleGroup.set(null);
     this.searchTerm.set('');
+    this.showHiddenExercises.set(false); // Also reset the hidden toggle
     const categorySelect = document.getElementById('category-filter') as HTMLSelectElement;
     if (categorySelect) categorySelect.value = '';
     const muscleGroupSelect = document.getElementById('muscle-group-filter') as HTMLSelectElement;
@@ -175,7 +186,6 @@ export class ExerciseListComponent implements OnInit {
   }
 
   goToExerciseDetails(id: string): void {
-    // event?.stopPropagation();
     this.router.navigate(['/library', id]);
     this.actionsVisibleId.set(null);
   }
@@ -185,13 +195,11 @@ export class ExerciseListComponent implements OnInit {
   }
 
   editExercise(exerciseId: string): void {
-    // event.stopPropagation();
     this.router.navigate(['/library/edit', exerciseId]);
     this.actionsVisibleId.set(null);
   }
 
   async deleteExercise(exerciseId: string): Promise<void> {
-    // event.stopPropagation();
     this.actionsVisibleId.set(null);
     const exerciseToDelete = this.allExercises().find(ex => ex.id === exerciseId);
     if (!exerciseToDelete) {
@@ -217,42 +225,38 @@ export class ExerciseListComponent implements OnInit {
     }
   }
 
-  // Method to toggle the filter accordion
+  // --- NEW: Hide/Unhide methods ---
+  hideExercise(exerciseId: string): void {
+    this.exerciseService.hideExercise(exerciseId).subscribe();
+    this.activeExerciseIdActions.set(null);
+  }
+
+  unhideExercise(exerciseId: string): void {
+    this.exerciseService.unhideExercise(exerciseId).subscribe();
+    this.activeExerciseIdActions.set(null);
+  }
+  // --------------------------------
+
   toggleFilterAccordion(): void {
     this.isFilterAccordionOpen.update(isOpen => !isOpen);
   }
 
   scrollToTop(): void {
     if (isPlatformBrowser(this.platformId)) {
-      window.scrollTo({
-        top: 0,
-        behavior: 'smooth' // For a smooth scrolling animation
-      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
 
-
-  // --- ADD NEW HANDLER METHODS FOR THE FAB ---
-
-  /**
-   * Toggles the FAB menu on touch devices.
-   */
   handleFabClick(): void {
     this.isFabActionsOpen.update(v => !v);
   }
 
-  /**
-   * Opens the FAB menu on hover for non-touch devices.
-   */
   handleFabMouseEnter(): void {
     if (!this.isTouchDevice) {
       this.isFabActionsOpen.set(true);
     }
   }
 
-  /**
-   * Closes the FAB menu on mouse leave for non-touch devices.
-   */
   handleFabMouseLeave(): void {
     if (!this.isTouchDevice) {
       this.isFabActionsOpen.set(false);
@@ -264,63 +268,95 @@ export class ExerciseListComponent implements OnInit {
   }
 
   getExerciseDropdownActionItems(exerciseId: string, mode: 'dropdown' | 'compact-bar'): ActionMenuItem[] {
-      const defaultBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-primary flex items-center text-sm hover:text-white dark:hover:text-gray-100 dark:hover:text-white';
-      const deleteBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-red-600 flex items-center text-sm hover:text-gray-100 hover:animate-pulse';;
-  
-      const actionsArray = [
-        {
-          label: 'VIEW',
-          actionKey: 'view',
-          iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5Z" /><path fill-rule="evenodd" d="M.664 10.59a1.651 1.651 0 010-1.186A10.004 10.004 0 0110 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0110 17c-4.257 0-7.893-2.66-9.336-6.41ZM14 10a4 4 0 11-8 0 4 4 0 018 0Z" clip-rule="evenodd" /></svg>`,
-          iconClass: 'w-8 h-8 mr-2', // Adjusted for consistency if needed,
-          buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
-          data: { exerciseId: exerciseId }
-        },
-        {
-          label: 'EDIT',
-          actionKey: 'edit',
-          iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>`,
-          iconClass: 'w-8 h-8 mr-2',
-          buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
-          data: { exerciseId: exerciseId }
-        },
-        { isDivider: true },
-        {
-          label: 'DELETE',
-          actionKey: 'delete',
-          iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.58.177-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5Zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5Z" clip-rule="evenodd" /></svg>`,
-          iconClass: 'w-8 h-8 mr-2',
-          buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + deleteBtnClass,
-          data: { exerciseId: exerciseId }
-        }
-      ];
-  
-      return actionsArray;
-    }
-  
-    handleActionMenuItemClick(event: { actionKey: string, data?: any }, originalMouseEvent?: MouseEvent): void {
-      // originalMouseEvent.stopPropagation(); // Stop original event that opened the menu
-      const exerciseId = event.data?.exerciseId;
-      if (!exerciseId) return;
-  
-      switch (event.actionKey) {
-        case 'view':
-          this.goToExerciseDetails(exerciseId);
-          break;
-        case 'edit':
-          this.editExercise(exerciseId);
-          break;
-        case 'delete':
-          this.deleteExercise(exerciseId);
-          break;
-      }
-      this.activeExerciseIdActions.set(null); // Close the menu
-    }
+    const defaultBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-primary flex items-center text-sm hover:text-white dark:hover:text-gray-100 dark:hover:text-white';
+    const deleteBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-red-600 flex items-center text-sm hover:text-gray-100 hover:animate-pulse';
 
-  // Your existing toggleActions, areActionsVisible, viewRoutineDetails, etc. methods
-  // The toggleActions will now just control a signal like `activeExerciseIdActions`
-  // which is used to show/hide the <app-action-menu>
-  activeExerciseIdActions = signal<string | null>(null); // Store ID of exercise whose actions are open
+    // --- NEW: Find the current exercise to check its status ---
+    const currentExercise = this.allExercises().find(ex => ex.id === exerciseId);
+    // --------------------------------------------------------
+
+    const actionsArray: ActionMenuItem[] = [
+      {
+        label: 'VIEW',
+        actionKey: 'view',
+        iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5Z" /><path fill-rule="evenodd" d="M.664 10.59a1.651 1.651 0 010-1.186A10.004 10.004 0 0110 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0110 17c-4.257 0-7.893-2.66-9.336-6.41ZM14 10a4 4 0 11-8 0 4 4 0 018 0Z" clip-rule="evenodd" /></svg>`,
+        iconClass: 'w-8 h-8 mr-2',
+        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+        data: { exerciseId: exerciseId }
+      },
+      {
+        label: 'EDIT',
+        actionKey: 'edit',
+        iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>`,
+        iconClass: 'w-8 h-8 mr-2',
+        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+        data: { exerciseId: exerciseId }
+      },
+      { isDivider: true },
+    ];
+
+    // --- NEW: Conditionally add Hide/Unhide button ---
+    if (currentExercise?.isHidden) {
+      actionsArray.push({
+        label: 'UNHIDE',
+        actionKey: 'unhide',
+        iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5Z" /><path fill-rule="evenodd" d="M.664 10.59a1.651 1.651 0 010-1.186A10.004 10.004 0 0110 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0110 17c-4.257 0-7.893-2.66-9.336-6.41ZM14 10a4 4 0 11-8 0 4 4 0 018 0Z" clip-rule="evenodd" /></svg>`,
+        iconClass: 'w-8 h-8 mr-2',
+        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+        data: { exerciseId }
+      });
+    } else {
+      actionsArray.push({
+        label: 'HIDE',
+        actionKey: 'hide',
+        iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3.28 2.22a.75.75 0 00-1.06 1.06l14.5 14.5a.75.75 0 101.06-1.06l-1.745-1.745a10.029 10.029 0 003.3-4.38 1.651 1.651 0 000-1.185A10.004 10.004 0 009.999 3a9.956 9.956 0 00-4.744 1.194L3.28 2.22zM7.752 6.69l1.092 1.092a2.5 2.5 0 013.374 3.373l1.091 1.092a4 4 0 00-5.557-5.557z" clip-rule="evenodd" /><path d="M10.748 13.93l2.523 2.523a9.987 9.987 0 01-3.27.547c-4.257 0-7.893-2.66-9.336-6.41a1.651 1.651 0 010-1.186A10.007 10.007 0 012.839 6.02L6.07 9.252a4 4 0 004.678 4.678z" /></svg>`,
+        iconClass: 'w-8 h-8 mr-2',
+        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+        data: { exerciseId }
+      });
+    }
+    // ---------------------------------------------
+
+    // Add Delete button at the end
+    actionsArray.push({
+      label: 'DELETE',
+      actionKey: 'delete',
+      iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.58.177-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5Zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5Z" clip-rule="evenodd" /></svg>`,
+      iconClass: 'w-8 h-8 mr-2',
+      buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + deleteBtnClass,
+      data: { exerciseId: exerciseId }
+    });
+
+    return actionsArray;
+  }
+
+  handleActionMenuItemClick(event: { actionKey: string, data?: any }, originalMouseEvent?: MouseEvent): void {
+    const exerciseId = event.data?.exerciseId;
+    if (!exerciseId) return;
+
+    switch (event.actionKey) {
+      case 'view':
+        this.goToExerciseDetails(exerciseId);
+        break;
+      case 'edit':
+        this.editExercise(exerciseId);
+        break;
+      case 'delete':
+        this.deleteExercise(exerciseId);
+        break;
+      // --- NEW: Handle hide/unhide actions ---
+      case 'hide':
+        this.hideExercise(exerciseId);
+        break;
+      case 'unhide':
+        this.unhideExercise(exerciseId);
+        break;
+      // -------------------------------------
+    }
+    this.activeExerciseIdActions.set(null); // Close the menu
+  }
+
+  activeExerciseIdActions = signal<string | null>(null);
 
   toggleActions(exerciseId: string, event: MouseEvent): void {
     event.stopPropagation();
@@ -331,7 +367,6 @@ export class ExerciseListComponent implements OnInit {
     return this.activeExerciseIdActions() === exerciseId;
   }
 
-  // When closing menu from the component's output
   onCloseActionMenu() {
     this.activeExerciseIdActions.set(null);
   }
