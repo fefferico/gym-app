@@ -128,6 +128,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     } else {
       this.toastService.info('Hiding hidden routines', 2000, 'Hidden Routines');
     }
+    this.vibrate();
     this.closeFilterAndScrollToTop();
   }
 
@@ -136,12 +137,13 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     if (show) {
       this.toastService.info('Showing only favourite routines', 2000, 'Hidden Routines');
     }
+    this.vibrate();
     this.closeFilterAndScrollToTop();
   }
 
   closeFilterAndScrollToTop(): void {
-    this.isFilterAccordionOpen.set(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    this.isFilterAccordionOpen.set(false);
   }
 
   // Computed signal for filtered routines
@@ -174,11 +176,11 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     if (searchTerm) {
       const words = searchTerm.split(/\s+/).filter(Boolean);
       routines = routines.filter(r => {
-      const searchable = [
-        r.name,
-        r.description || ''
-      ].join(' ').toLowerCase();
-      return words.every(word => searchable.includes(word));
+        const searchable = [
+          r.name,
+          r.description || ''
+        ].join(' ').toLowerCase();
+        return words.every(word => searchable.includes(word));
       });
     }
     if (goalFilter) {
@@ -361,10 +363,12 @@ export class RoutineListComponent implements OnInit, OnDestroy {
   onDurationFilterChange(event: Event): void {
     const target = event.target as HTMLInputElement;
     this.selectedMaxDuration.set(Number(target.value));
+    this.vibrate();
   }
 
   // --- UPDATE the clear filters method ---
-  clearRoutineFilters(): void {
+  clearFilters(): void {
+    this.vibrate();
     this.routineSearchTerm.set('');
     this.selectedRoutineGoal.set(null);
     this.selectedRoutineMuscleGroup.set(null);
@@ -410,17 +414,17 @@ export class RoutineListComponent implements OnInit, OnDestroy {
       confirmationMessage += ` This will also delete ${associatedLogs.length} associated workout log(s).`;
     }
     if (associatedPrograms.length > 0) {
-      if (associatedPrograms.length === 1){
+      if (associatedPrograms.length === 1) {
         const associatedProgram = associatedPrograms[0].schedule.find(sched => sched.routineId === routineId);
-        const programName = associatedProgram ? '\'' +  associatedProgram.routineName + '\'' : '';
+        const programName = associatedProgram ? '\'' + associatedProgram.routineName + '\'' : '';
         confirmationMessage += ` This will also delete the entries in ${programName ? programName : '1'} associated program(s).`;
       } else {
         confirmationMessage += ` This will also delete the entries in ${associatedPrograms.length} associated program(s).`;
       }
     }
 
-    if (associatedLogs.length > 0 || associatedPrograms.length > 0){
-       confirmationMessage += ' This action cannot be undone.';
+    if (associatedLogs.length > 0 || associatedPrograms.length > 0) {
+      confirmationMessage += ' This action cannot be undone.';
     }
 
     const confirm = await this.alertService.showConfirm('Delete Routine', confirmationMessage, 'Delete');
@@ -479,6 +483,13 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     }
   }
 
+  vibrate(): void {
+    const currentVibrator = navigator;
+    if (currentVibrator && 'vibrate' in currentVibrator) {
+      currentVibrator.vibrate(50);
+    }
+  }
+
   viewRoutineDetails(routineId: string, event?: Event): void {
     // event?.stopPropagation();
     if (event && event.target) {
@@ -487,10 +498,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
         return;
       }
     }
-    const currentVibrator = navigator;
-    if (currentVibrator && 'vibrate' in currentVibrator) {
-      currentVibrator.vibrate(50);
-    }
+    this.vibrate();
     this.router.navigate(['/workout/routine/view', routineId, { isView: 'routineBuilder' }]); // Pass isView flag
     this.visibleActionsRutineId.set(null);
   }
@@ -839,7 +847,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
    */
   handleFabClick(): void {
     this.isFabActionsOpen.update(v => !v);
-  } 
+  }
 
   /**
    * Opens the FAB menu on hover for non-touch devices.
