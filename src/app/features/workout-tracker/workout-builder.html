@@ -56,7 +56,7 @@
                         [ngClass]="{'border-red-500 dark:border-red-400': builderForm.get('name')?.invalid && builderForm.get('name')?.touched, 'border-gray-300 dark:border-gray-500': !(builderForm.get('name')?.invalid && builderForm.get('name')?.touched) }">
                     <div *ngIf="builderForm.get('name')?.invalid && (builderForm.get('name')?.dirty || builderForm.get('name')?.touched)"
                         class="text-red-500 dark:text-red-400 text-xs mt-1">
-                        <span *ngIf="builderForm.get('name')?.errors?.['required']">Routine name is required.</span>
+                        <span *ngIf="builderForm.get('name')?.errors?.['required']">Routine name is required</span>
                     </div>
                 </div>
                 <!-- DESCRIPTION -->
@@ -108,7 +108,7 @@
                             [ngClass]="{'border-red-500 dark:border-red-400': builderForm.get('workoutDate')?.invalid && builderForm.get('workoutDate')?.touched, 'border-gray-300 dark:border-gray-500': !(builderForm.get('workoutDate')?.invalid && builderForm.get('workoutDate')?.touched) }">
                         <div *ngIf="builderForm.get('workoutDate')?.invalid && (builderForm.get('workoutDate')?.dirty || builderForm.get('workoutDate')?.touched)"
                             class="text-red-500 dark:text-red-400 text-xs mt-1">
-                            <span *ngIf="builderForm.get('workoutDate')?.errors?.['required']">Date is required.</span>
+                            <span *ngIf="builderForm.get('workoutDate')?.errors?.['required']">Date is required</span>
                         </div>
                     </div>
                     <div>
@@ -120,7 +120,7 @@
                         <div *ngIf="builderForm.get('startTime')?.invalid && (builderForm.get('startTime')?.dirty || builderForm.get('startTime')?.touched)"
                             class="text-red-500 dark:text-red-400 text-xs mt-1">
                             <span *ngIf="builderForm.get('startTime')?.errors?.['required']">Start time is
-                                required.</span>
+                                required</span>
                         </div>
                     </div>
                     <div>
@@ -131,7 +131,7 @@
                             [ngClass]="{'border-red-500 dark:border-red-400': builderForm.get('durationMinutes')?.invalid && builderForm.get('durationMinutes')?.touched, 'border-gray-300 dark:border-gray-500': !(builderForm.get('durationMinutes')?.invalid && builderForm.get('durationMinutes')?.touched) }">
                         <div *ngIf="builderForm.get('durationMinutes')?.invalid && (builderForm.get('durationMinutes')?.dirty || builderForm.get('durationMinutes')?.touched)"
                             class="text-red-500 dark:text-red-400 text-xs mt-1">
-                            <span *ngIf="builderForm.get('durationMinutes')?.errors?.['min']">Min duration is 1.</span>
+                            <span *ngIf="builderForm.get('durationMinutes')?.errors?.['min']">Min duration is 1</span>
                         </div>
                     </div>
                 </div>
@@ -680,7 +680,7 @@
 
             <div *ngIf="!isViewMode && exercisesFormArray.length === 0 && (mode === 'routineBuilder' && builderForm.get('goal')?.value !== 'rest')"
                 class="text-center py-6 text-gray-500 dark:text-gray-400 border border-dashed dark:border-gray-700 rounded-md mt-4">
-                <p class="mb-2">No exercises added yet.</p>
+                <p class="mb-2">No exercises added yet</p>
                 <button type="button" (click)="openExerciseSelectionModal()"
                     class="bg-green-500 hover:bg-green-600 text-white text-m font-medium py-2 px-3 rounded-md">
                     + ADD FIRST EXERCISE
@@ -688,7 +688,7 @@
             </div>
             <div *ngIf="mode === 'manualLogEntry' && exercisesFormArray.length === 0 && !builderForm.get('routineIdForLog')?.value"
                 class="text-center py-6 text-gray-500 dark:text-gray-400 border border-dashed dark:border-gray-700 rounded-md mt-4">
-                <p class="mb-2">Select a routine or ADD EXERCISEs manually to log.</p>
+                <p class="mb-2">Select a routine or ADD EXERCISEs manually to log</p>
                 <button type="button" (click)="openExerciseSelectionModal()"
                     class="bg-green-500 hover:bg-green-600 text-white text-m font-medium py-2 px-3 rounded-md">
                     + ADD FIRST EXERCISE TO LOG
@@ -716,7 +716,7 @@
 
         <section *ngIf="mode === 'routineBuilder' && builderForm.get('goal')?.value === 'rest'"
             class="p-4 bg-blue-50 dark:bg-blue-900/30 rounded-md text-center">
-            <p class="text-m text-blue-700 dark:text-blue-300">This is a rest day routine. No exercises are needed.</p>
+            <p class="text-m text-blue-700 dark:text-blue-300">This is a rest day routine. No exercises are needed</p>
         </section>
 
         <div *ngIf="!isViewMode" class="py-2 px-1 flex justify-end space-x-3">
@@ -799,7 +799,7 @@
                         </li>
                         <li *ngIf="filteredAvailableExercises().length === 0"
                             class="text-gray-500 dark:text-gray-400 text-center p-4">No exercises match your search or
-                            library is empty.</li>
+                            library is empty</li>
                     </ul>
                 </div>
 

@@ -6,7 +6,7 @@
             </header>
         </div>
         <div>
-            <button appPress (shortPress)="goToPBs()" type="button"
+            <button appPress (shortPress)="goToPBs()" type="button" [title]="'Personal Bests'"
                 class="rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary">
                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke-width="1.5"
                     stroke="currentColor" class="w-10 h-10 transition-transform duration-300">
@@ -36,7 +36,7 @@
                 <span class="sr-only">Personal Bests</span>
             </button>
             <button appPress (shortPress)="toggleStatsFilterAccordion()" type="button"
-                class="rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary">
+                class="rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary ml-1">
                 <svg stroke="currentColor" class="w-10 h-10 transition-transform duration-300" viewBox="0 0 24 24"
                     stroke-width="0.02" fill="currentColor" xmlns="http://www.w3.org/2000/svg"
                     [class.rotate-180]="isFilterAccordionOpen()">
@@ -132,7 +132,7 @@
                         </span>
                     </div>
                     <p *ngIf="currentWorkoutStreakInfo().length === 0"
-                        class="text-xs text-gray-500 dark:text-gray-400 mt-1">No current streak.</p>
+                        class="text-xs text-gray-500 dark:text-gray-400 mt-1">No current streak</p>
                 </div>
 
                 <!-- Longest Streak Card with Cup Icon -->
@@ -170,7 +170,7 @@
                         To: {{ longestWorkoutStreakInfo().endDate | date:'mediumDate' }}
                     </div>
                     <p *ngIf="longestWorkoutStreakInfo().length === 0"
-                        class="text-xs text-gray-500 dark:text-gray-400 mt-1">No workouts logged yet.</p>
+                        class="text-xs text-gray-500 dark:text-gray-400 mt-1">No workouts logged yet</p>
                 </div>
             </section>
 
@@ -253,7 +253,7 @@
                     </table>
                 </div>
                 <ng-template #noWeeklyDataMsg>
-                    <p class="text-gray-500 dark:text-gray-400 italic">No weekly data to display for this period.</p>
+                    <p class="text-gray-500 dark:text-gray-400 italic">No weekly data to display for this period</p>
                 </ng-template>
             </section>
 
@@ -292,7 +292,7 @@
                 </div>
                 <ng-template #noMuscleDataMsg>
                     <p class="text-gray-500 dark:text-gray-400 italic">No muscle group performance data to display for
-                        this period.</p>
+                        this period</p>
                 </ng-template>
             </section>
         </div> <!-- End of *ngIf="filteredLogsForStats().length > 0 || !hasActiveDateFilters()" -->
@@ -309,7 +309,7 @@
                 <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">No Workout Data in Selected
                     Period</h3>
                 <p class="text-gray-500 dark:text-gray-400">Try adjusting the date range or reset filters to view
-                    all-time statistics.</p>
+                    all-time statistics</p>
             </div>
         </ng-template>
 

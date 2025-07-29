@@ -277,16 +277,6 @@ export const EXERCISES_DATA = [
     "imageUrls": ["assets/images/exercises/turkish-get-up_1.jpg", "assets/images/exercises/turkish-get-up_2.jpg", "assets/images/exercises/turkish-get-up_3.jpg"]
   },
   {
-    "id": "farmers-walk",
-    "name": "Farmer's Walk",
-    "description": "A full-body exercise involving walking for a distance while holding heavy weights (dumbbells, kettlebells, or farmer's walk handles). Improves grip strength, core stability, and overall conditioning.",
-    "category": "other",
-    "primaryMuscleGroup": "Full Body",
-    "muscleGroups": ["Forearms (Grip)", "Traps", "Core", "Shoulders (stabilizers)", "Legs"],
-    "equipmentNeeded": ["Heavy Dumbbells", "Kettlebells", "Farmer's Walk Handles"],
-    "imageUrls": ["assets/images/exercises/farmers-walk_1.jpg", "assets/images/exercises/farmers-walk_2.jpg"]
-  },
-  {
     "id": "kettlebell-single-arm-row",
     "name": "Kettlebell Single Arm Row",
     "description": "A unilateral back exercise targeting lats, rhomboids, and biceps, performed by pulling a kettlebell towards the torso, often with one hand and knee supported on a bench.",
@@ -345,16 +335,6 @@ export const EXERCISES_DATA = [
     "muscleGroups": ["Shoulders (Deltoids, Traps)", "Glutes", "Hamstrings", "Back (Upper)", "Biceps", "Core"],
     "equipmentNeeded": ["Kettlebells"],
     "imageUrls": ["assets/images/exercises/kb-high-pull_1.jpg", "assets/images/exercises/kb-high-pull_2.jpg"]
-  },
-  {
-    "id": "kettlebell-suitcase-carry",
-    "name": "Kettlebell Suitcase Carry",
-    "description": "A unilateral loaded carry exercise that challenges core stability, grip strength, and posture by carrying a single heavy kettlebell in one hand, like a suitcase.",
-    "category": "kettlebells",
-    "primaryMuscleGroup": "Core (Obliques)",
-    "muscleGroups": ["Core (Obliques, Quadratus Lumborum)", "Forearms (Grip)", "Traps", "Shoulders (stabilizers)", "Hips (stabilizers)"],
-    "equipmentNeeded": ["Kettlebells"],
-    "imageUrls": ["assets/images/exercises/kb-suitcase-carry_1.jpg", "assets/images/exercises/kb-suitcase-carry_2.jpg"]
   },
   {
     "id": "lat-pulldown-machine",
@@ -1318,16 +1298,6 @@ export const EXERCISES_DATA = [
     muscleGroups: ["Deltoids", "Arms", "Core"],
     equipmentNeeded: ["Wall or open space"],
     imageUrls: ["assets/images/exercises/handstand_1.jpg"]
-  },
-  {
-    "id": "clapping-push-up",
-    "name": "Clapping Push-up",
-    "description": "A plyometric push-up that develops explosive upper body power by clapping hands mid-air.",
-    "category": "bodyweight/calisthenics",
-    "primaryMuscleGroup": "Chest",
-    "muscleGroups": ["Chest", "Triceps", "Shoulders"],
-    "equipmentNeeded": [],
-    imageUrls: ["assets/images/exercises/clapping-push-up_1.jpg"]
   },
   {
     "id": "shrimp-squat",
@@ -2825,5 +2795,561 @@ export const EXERCISES_DATA = [
     "imageUrls": ["assets/images/exercises/kb-slingshot-to-squat_1.jpg", "assets/images/exercises/kb-slingshot-to-squat_2.jpg"],
     "notes": "Perform one full revolution of the slingshot, then seamlessly transition the kettlebell into the goblet position and perform a squat."
   },
-
+  {
+    "id": "kettlebell-somersault-squat",
+    "name": "Kettlebell Somersault Squat",
+    "description": "The somersault squat, also known as the Joe Daniels squat or the quad burner squat, is a variation of the squat that isolates the quadriceps by emphasizing knee flexion while minimizing hip involvement. It involves a unique movement pattern where the body tips forward as the knees bend, maintaining a relatively constant hip and spine angle. This exercise can be performed with a barbell, kettlebell, or dumbbell, often with the weight positioned on the thighs or in a neutral grip.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Full Body",
+    "muscleGroups": ["Quadriceps", "Glutes", "Hamstrings", "Core", "Spine (Thoracic)", "Shoulders (stabilizers)"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": [],
+    "videoUrl": "",
+    "notes": "This is an advanced mobility drill. Focus on fluid movement and start with a very light weight."
+  },
+  {
+    "id": "kettlebell-single-arm-shrug",
+    "name": "Kettlebell Single Arm Shrug",
+    "description": "An isolation exercise for the upper trapezius muscles using a single kettlebell, which challenges core stability due to the unilateral load.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Traps (Upper)",
+    "muscleGroups": ["Traps (Upper)", "Forearms (Grip)", "Core (Obliques)"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": [],
+    "videoUrl": "",
+    "notes": "Focus on elevating the shoulder directly upwards towards the ear. Avoid rolling the shoulder forward or back."
+  },
+  {
+    "id": "kettlebell-double-shrug",
+    "name": "Kettlebell Double Shrug",
+    "description": "A powerful isolation exercise for building the upper trapezius muscles by shrugging two heavy kettlebells.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Traps (Upper)",
+    "muscleGroups": ["Traps (Upper)", "Forearms (Grip)"],
+    "equipmentNeeded": ["Kettlebells"],
+    "imageUrls": [],
+    "videoUrl": "",
+    "notes": "Use a heavy load and focus on a powerful contraction at the peak of the movement."
+  },
+  {
+    "id": "kettlebell-bicep-curl",
+    "name": "Kettlebell Bicep Curl",
+    "description": "An isolation exercise for the biceps using a kettlebell, often held by the horns or handle, which challenges grip and forearm stability.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Biceps",
+    "muscleGroups": ["Biceps", "Brachialis", "Forearms"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": [],
+    "videoUrl": "",
+    "notes": "Can be performed with one or two hands, holding the kettlebell by the handle (standard curl) or by the body (crush grip curl)."
+  },
+  {
+    "id": "kettlebell-single-arm-overhead-squat",
+    "name": "Kettlebell Single Arm Overhead Squat",
+    "description": "A demanding full-body exercise that challenges shoulder stability, thoracic mobility, and core strength by squatting with a single kettlebell held overhead.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Quadriceps",
+    "muscleGroups": ["Quadriceps", "Glutes", "Shoulders (stabilizers)", "Core", "Upper Back", "Hamstrings"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": [],
+    "videoUrl": "",
+    "notes": "Keep the overhead arm locked and actively push the kettlebell towards the ceiling throughout the squat."
+  },
+  {
+    "id": "kettlebell-double-overhead-squat",
+    "name": "Kettlebell Double Overhead Squat",
+    "description": "An ultimate test of mobility and stability, this exercise involves performing a squat while holding two kettlebells locked out overhead.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Quadriceps",
+    "muscleGroups": ["Quadriceps", "Glutes", "Shoulders (stabilizers)", "Core", "Upper Back", "Hamstrings"],
+    "equipmentNeeded": ["Kettlebells"],
+    "imageUrls": [],
+    "videoUrl": "",
+    "notes": "Requires excellent mobility in the shoulders, thoracic spine, and hips. Master the single-arm version first."
+  },
+  {
+    "id": "kettlebell-tate-press",
+    "name": "Kettlebell Tate Press",
+    "description": "A triceps exercise performed lying on a bench, lowering two kettlebells towards the chest with flared elbows, effectively targeting the triceps muscles.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Triceps",
+    "muscleGroups": ["Triceps", "Chest", "Shoulders"],
+    "equipmentNeeded": ["Kettlebells", "Bench"],
+    "imageUrls": [],
+    "videoUrl": "",
+    "notes": "The unique shape of the kettlebell provides a different wrist and elbow angle compared to the dumbbell version."
+  },
+  {
+    "id": "dumbbell-tate-press",
+    "name": "Dumbbell Tate Press",
+    "description": "A triceps exercise performed lying on a bench, lowering two dumbbells towards the chest with flared elbows, effectively targeting the triceps muscles.",
+    "category": "dumbbells",
+    "primaryMuscleGroup": "Triceps",
+    "muscleGroups": ["Triceps", "Chest", "Shoulders"],
+    "equipmentNeeded": ["Dumbbells", "Bench"],
+    "imageUrls": [],
+    "videoUrl": "",
+    "notes": "Keep the movement controlled, especially during the eccentric (lowering) phase."
+  },
+  {
+    "id": "kettlebell-row-to-deadlift-complex",
+    "name": "Kettlebell Row to Deadlift Complex",
+    "description": "A compound movement combining a bent-over row immediately followed by a deadlift, targeting the entire posterior chain in one fluid motion.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Full Body",
+    "muscleGroups": ["Hamstrings", "Glutes", "Lower Back", "Lats", "Rhomboids", "Biceps"],
+    "equipmentNeeded": ["Kettlebells"],
+    "imageUrls": [],
+    "videoUrl": "",
+    "notes": "Perform one row, then stand up into a full deadlift. That completes one repetition."
+  },
+  {
+    "id": "dumbbell-row-to-deadlift-complex",
+    "name": "Dumbbell Row to Deadlift Complex",
+    "description": "A compound movement combining a bent-over row immediately followed by a deadlift using dumbbells, targeting the entire posterior chain.",
+    "category": "dumbbells",
+    "primaryMuscleGroup": "Full Body",
+    "muscleGroups": ["Hamstrings", "Glutes", "Lower Back", "Lats", "Rhomboids", "Biceps"],
+    "equipmentNeeded": ["Dumbbells"],
+    "imageUrls": [],
+    "videoUrl": "",
+    "notes": "Maintain a flat back during both the row and the deadlift portions of the lift."
+  },
+  {
+    "id": "kettlebell-farmer-carry",
+    "name": "Kettlebell Suitcase/Farmer's Carry",
+    "description": "A unilateral loaded carry exercise that challenges core stability, grip strength, and posture by carrying a single heavy kettlebell in one hand, like a suitcase.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Core (Obliques)",
+    "muscleGroups": ["Core (Obliques, Quadratus Lumborum)", "Forearms (Grip)", "Traps", "Shoulders (stabilizers)", "Hips (stabilizers)"],
+    "equipmentNeeded": ["Kettlebells"],
+    "imageUrls": ["assets/images/exercises/kb-suitcase-carry_1.jpg", "assets/images/exercises/kb-suitcase-carry_2.jpg"]
+  },
+  {
+    "id": "kettlebell-double-farmers-walk",
+    "name": "Kettlebell Double Farmer's Walk",
+    "description": "A foundational loaded carry exercise involving walking for distance while holding a heavy kettlebell in each hand to build grip, core, and trap strength.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Full Body",
+    "muscleGroups": ["Forearms (Grip)", "Traps", "Core", "Shoulders (stabilizers)", "Legs"],
+    "equipmentNeeded": ["Kettlebells"],
+    "imageUrls": [],
+    "videoUrl": "",
+    "notes": "Keep your chest up, shoulders pulled back, and walk with short, quick steps."
+  },
+  {
+    "id": "kettlebell-single-pistol-squat",
+    "name": "Kettlebell Pistol Squat (Single)",
+    "description": "A single-leg squat performed while holding one kettlebell, typically in the goblet position, to act as a counterbalance and add resistance.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Quadriceps",
+    "muscleGroups": ["Quadriceps", "Glutes", "Hamstrings", "Core", "Hips (stabilizers)"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": [],
+    "videoUrl": "",
+    "notes": "The weight held in front makes balancing easier than a bodyweight pistol squat."
+  },
+  {
+    "id": "kettlebell-double-pistol-squat",
+    "name": "Kettlebell Pistol Squat (Double)",
+    "description": "An extremely challenging variation of the single-leg squat performed while holding two kettlebells in the rack position.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Quadriceps",
+    "muscleGroups": ["Quadriceps", "Glutes", "Hamstrings", "Core", "Upper Back"],
+    "equipmentNeeded": ["Kettlebells"],
+    "imageUrls": [],
+    "videoUrl": "",
+    "notes": "This is an advanced display of strength, stability, and mobility. Mastery of other pistol squat variations is required."
+  },
+  {
+    "id": "dumbbell-single-pistol-squat",
+    "name": "Dumbbell Pistol Squat (Single)",
+    "description": "A single-leg squat performed while holding one dumbbell to act as a counterbalance and add resistance.",
+    "category": "dumbbells",
+    "primaryMuscleGroup": "Quadriceps",
+    "muscleGroups": ["Quadriceps", "Glutes", "Hamstrings", "Core", "Hips (stabilizers)"],
+    "equipmentNeeded": ["Dumbbell"],
+    "imageUrls": [],
+    "videoUrl": "",
+    "notes": "Hold the dumbbell at chest height to help maintain your balance as you descend."
+  },
+  {
+    "id": "dumbbell-double-pistol-squat",
+    "name": "Dumbbell Pistol Squat (Double)",
+    "description": "A highly advanced variation of the single-leg squat performed while holding two dumbbells, typically at the shoulders or by the sides.",
+    "category": "dumbbells",
+    "primaryMuscleGroup": "Quadriceps",
+    "muscleGroups": ["Quadriceps", "Glutes", "Hamstrings", "Core"],
+    "equipmentNeeded": ["Dumbbells"],
+    "imageUrls": [],
+    "videoUrl": "",
+    "notes": "Requires exceptional single-leg strength and stability."
+  },
+  {
+    "id": "macebell-360",
+    "name": "Macebell 360",
+    "description": "A foundational macebell exercise that involves swinging the mace in a 360-degree arc around the head, building shoulder mobility, grip strength, and rotational core power.",
+    "category": "clubs-maces",
+    "primaryMuscleGroup": "Shoulders",
+    "muscleGroups": ["Shoulders (Rotator Cuff, Deltoids)", "Core (Obliques, Transverse Abdominis)", "Forearms (Grip)", "Lats", "Upper Back"],
+    "equipmentNeeded": ["Steel Mace"],
+    "imageUrls": [],
+    "notes": "Start with a light weight to master the pendulum motion. Keep your core tight and pivot slightly with your hips, not your lower back."
+  },
+  {
+    "id": "macebell-10-to-2",
+    "name": "Macebell 10-to-2",
+    "description": "A controlled, pendulum-like swing in front of the body, moving the mace from one shoulder to the other like the hands of a clock. Excellent for anti-rotation core strength.",
+    "category": "clubs-maces",
+    "primaryMuscleGroup": "Core (Obliques)",
+    "muscleGroups": ["Core (Obliques)", "Shoulders (stabilizers)", "Forearms (Grip)", "Lats"],
+    "equipmentNeeded": ["Steel Mace"],
+    "imageUrls": []
+  },
+  {
+    "id": "clubbell-mill",
+    "name": "Clubbell Mill",
+    "description": "A circular swinging movement performed at the side of the body, excellent for developing shoulder mobility, strength, and stability through a large range of motion.",
+    "category": "clubs-maces",
+    "primaryMuscleGroup": "Shoulders (Rotator Cuff)",
+    "muscleGroups": ["Shoulders (Rotator Cuff, Deltoids)", "Lats", "Core", "Forearms (Grip)"],
+    "equipmentNeeded": ["Steel Clubs"],
+    "imageUrls": [],
+    "notes": "Focus on a smooth, fluid motion, keeping the elbow tight to the body as the club swings behind you."
+  },
+  {
+    "id": "clubbell-shield-cast",
+    "name": "Clubbell Shield Cast",
+    "description": "A foundational clubbell exercise where the club is cast over the shoulder, mimicking the motion of drawing a shield. It targets the lats, triceps, and grip.",
+    "category": "clubs-maces",
+    "primaryMuscleGroup": "Lats",
+    "muscleGroups": ["Lats", "Triceps", "Shoulders", "Forearms (Grip)"],
+    "equipmentNeeded": ["Steel Clubs"],
+    "imageUrls": []
+  },
+  {
+    "id": "indian-club-heart-shapes",
+    "name": "Indian Club Heart Shapes",
+    "description": "A mobility-focused exercise using light Indian clubs, drawing a heart-shaped pattern in front of the body to improve shoulder and wrist mobility and coordination.",
+    "category": "clubs-maces",
+    "primaryMuscleGroup": "Shoulders (stabilizers)",
+    "muscleGroups": ["Shoulders (Rotator Cuff)", "Wrists", "Forearms"],
+    "equipmentNeeded": ["Indian Clubs"],
+    "imageUrls": [],
+    "notes": "This is a mobility drill, not a strength lift. Focus on perfect, graceful circles."
+  },
+  {
+    "id": "sandbag-clean",
+    "name": "Sandbag Clean",
+    "description": "An explosive full-body movement to lift a sandbag from the floor to the shoulder or front-rack position. The unstable load heavily challenges stabilizer muscles.",
+    "category": "other",
+    "primaryMuscleGroup": "Full Body",
+    "muscleGroups": ["Glutes", "Hamstrings", "Lower Back", "Upper Back", "Core", "Shoulders"],
+    "equipmentNeeded": ["Sandbag"],
+    "imageUrls": []
+  },
+  {
+    "id": "sandbag-bear-hug-squat",
+    "name": "Sandbag Bear Hug Squat",
+    "description": "A squat performed while hugging a sandbag tightly to the chest. This variation heavily taxes the upper back, core, and arms to maintain posture.",
+    "category": "other",
+    "primaryMuscleGroup": "Quadriceps",
+    "muscleGroups": ["Quadriceps", "Glutes", "Upper Back", "Core", "Biceps", "Forearms (Grip)"],
+    "equipmentNeeded": ["Sandbag"],
+    "imageUrls": []
+  },
+  {
+    "id": "sandbag-shouldering",
+    "name": "Sandbag Shouldering",
+    "description": "A strongman-style exercise where you lift a sandbag from the floor and heave it onto one shoulder, developing raw, total-body power.",
+    "category": "other",
+    "primaryMuscleGroup": "Full Body",
+    "muscleGroups": ["Posterior Chain", "Glutes", "Lower Back", "Upper Back", "Core"],
+    "equipmentNeeded": ["Sandbag"],
+    "imageUrls": []
+  },
+  {
+    "id": "bulgarian-bag-spin",
+    "name": "Bulgarian Bag Spin",
+    "description": "The signature Bulgarian Bag exercise, involving a dynamic spin of the bag around the head and body to build rotational power, grip endurance, and cardiovascular fitness.",
+    "category": "other",
+    "primaryMuscleGroup": "Core (Obliques)",
+    "muscleGroups": ["Core (Obliques)", "Shoulders", "Forearms (Grip)", "Cardiovascular System"],
+    "equipmentNeeded": ["Bulgarian Bag"],
+    "imageUrls": []
+  },
+  {
+    "id": "bulgarian-bag-suplex",
+    "name": "Bulgarian Bag Suplex",
+    "description": "An explosive movement where you swing the bag and powerfully throw it over your shoulder, mimicking a suplex. It develops full-body explosive power and coordination.",
+    "category": "other",
+    "primaryMuscleGroup": "Full Body",
+    "muscleGroups": ["Glutes", "Hamstrings", "Lats", "Shoulders", "Core"],
+    "equipmentNeeded": ["Bulgarian Bag"],
+    "imageUrls": []
+  },
+  {
+    "id": "parallette-deep-push-up",
+    "name": "Parallette Deep Push-up",
+    "description": "A push-up performed on parallettes, allowing for an increased range of motion that provides a deeper stretch and contraction for the chest muscles.",
+    "category": "bodyweight/calisthenics",
+    "primaryMuscleGroup": "Chest",
+    "muscleGroups": ["Chest", "Triceps", "Shoulders (Anterior)"],
+    "equipmentNeeded": ["Parallettes"],
+    "imageUrls": []
+  },
+  {
+    "id": "parallette-l-sit",
+    "name": "Parallette L-Sit",
+    "description": "An isometric core exercise performed on parallettes, requiring significant strength in the abs, hip flexors, and triceps to hold the body in an 'L' shape.",
+    "category": "bodyweight/calisthenics",
+    "primaryMuscleGroup": "Core",
+    "muscleGroups": ["Rectus Abdominis (Abs)", "Hip Flexors", "Triceps", "Shoulders"],
+    "equipmentNeeded": ["Parallettes"],
+    "imageUrls": []
+  },
+  {
+    "id": "ring-dip",
+    "name": "Ring Dip",
+    "description": "A highly challenging dip variation on gymnastic rings that demands exceptional shoulder and elbow stability in addition to chest and tricep strength.",
+    "category": "bodyweight/calisthenics",
+    "primaryMuscleGroup": "Triceps",
+    "muscleGroups": ["Triceps", "Chest", "Shoulders (stabilizers)", "Core"],
+    "equipmentNeeded": ["Gymnastic Rings"],
+    "imageUrls": [],
+    "notes": "Keep the rings close to your body and focus on turning the rings out at the top (RTO) for maximum stability."
+  },
+  {
+    "id": "ring-row",
+    "name": "Ring Row",
+    "description": "A back and biceps exercise similar to an inverted row, where the instability of the rings forces greater muscle recruitment for stabilization.",
+    "category": "bodyweight/calisthenics",
+    "primaryMuscleGroup": "Lats",
+    "muscleGroups": ["Lats", "Rhomboids", "Biceps", "Posterior Deltoids", "Core"],
+    "equipmentNeeded": ["Gymnastic Rings"],
+    "imageUrls": []
+  },
+  {
+    "id": "ring-muscle-up",
+    "name": "Ring Muscle-up",
+    "description": "An advanced gymnastic movement combining a powerful pull-up with a transition into a deep ring dip. Requires significant strength, skill, and coordination.",
+    "category": "bodyweight/calisthenics",
+    "primaryMuscleGroup": "Upper Body",
+    "muscleGroups": ["Lats", "Biceps", "Triceps", "Chest", "Shoulders", "Core"],
+    "equipmentNeeded": ["Gymnastic Rings"],
+    "imageUrls": []
+  },
+  {
+    "id": "vipr-cylinder-lift",
+    "name": "ViPR Cylinder Lift",
+    "description": "A full-body loaded movement that mimics lifting an object from the ground to an overhead position, integrating the lower body, core, and upper body.",
+    "category": "other",
+    "primaryMuscleGroup": "Full Body",
+    "muscleGroups": ["Quadriceps", "Glutes", "Core", "Shoulders", "Triceps"],
+    "equipmentNeeded": ["ViPR"],
+    "imageUrls": []
+  },
+  {
+    "id": "vipr-thread-the-needle",
+    "name": "ViPR Thread the Needle",
+    "description": "A rotational core exercise where the ViPR is passed through the legs in a lunge or squat position, enhancing rotational strength and hip mobility.",
+    "category": "other",
+    "primaryMuscleGroup": "Core (Obliques)",
+    "muscleGroups": ["Core (Obliques)", "Glutes", "Quadriceps", "Adductors", "Shoulders"],
+    "equipmentNeeded": ["ViPR"],
+    "imageUrls": []
+  },
+  {
+    "id": "vipr-shoveling",
+    "name": "ViPR Shoveling",
+    "description": "A functional movement that mimics the action of shoveling, developing power in a diagonal, rotational pattern across the body.",
+    "category": "other",
+    "primaryMuscleGroup": "Core (Obliques)",
+    "muscleGroups": ["Core (Obliques)", "Glutes", "Lower Back", "Shoulders"],
+    "equipmentNeeded": ["ViPR"],
+    "imageUrls": []
+  },
+  {
+    "id": "macebell-gravedigger",
+    "name": "Macebell Gravedigger",
+    "description": "A powerful, full-body rotational exercise that mimics the motion of digging with a shovel, heavily engaging the obliques, lats, and posterior chain.",
+    "category": "clubs-maces",
+    "primaryMuscleGroup": "Core (Obliques)",
+    "muscleGroups": ["Core (Obliques)", "Lats", "Glutes", "Hamstrings", "Shoulders"],
+    "equipmentNeeded": ["Steel Mace"],
+    "imageUrls": [],
+    "notes": "Hinge at the hips and pivot your feet to generate power, keeping your spine long. The movement should be explosive and rhythmic."
+  },
+  {
+    "id": "macebell-spear-stab",
+    "name": "Macebell Spear Stab",
+    "description": "A dynamic, anti-rotation press that challenges core stability and unilateral shoulder strength by pressing the mace forward horizontally.",
+    "category": "clubs-maces",
+    "primaryMuscleGroup": "Core",
+    "muscleGroups": ["Core (Transverse Abdominis, Obliques)", "Shoulders (Anterior)", "Chest", "Triceps"],
+    "equipmentNeeded": ["Steel Mace"],
+    "imageUrls": []
+  },
+  {
+    "id": "clubbell-barbarian-squat",
+    "name": "Clubbell Barbarian Squat",
+    "description": "A squat performed while holding two clubs in a front rack position. The unique leverage of the clubs intensely challenges upper back and core strength to maintain an upright torso.",
+    "category": "clubs-maces",
+    "primaryMuscleGroup": "Quadriceps",
+    "muscleGroups": ["Quadriceps", "Glutes", "Upper Back", "Core", "Shoulders"],
+    "equipmentNeeded": ["Steel Clubs"],
+    "imageUrls": []
+  },
+  {
+    "id": "clubbell-gamma-cast",
+    "name": "Clubbell Gamma Cast",
+    "description": "A rotational cast of the club across the body, excellent for developing shoulder strength, thoracic mobility, and power in the transverse plane.",
+    "category": "clubs-maces",
+    "primaryMuscleGroup": "Shoulders",
+    "muscleGroups": ["Shoulders", "Core (Obliques)", "Lats", "Serratus Anterior", "Forearms (Grip)"],
+    "equipmentNeeded": ["Steel Clubs"],
+    "imageUrls": []
+  },
+  {
+    "id": "indian-club-double-circles",
+    "name": "Indian Club Double Circles",
+    "description": "Performing synchronized circles (inside or outside) with two Indian clubs simultaneously. This is a classic pattern for improving shoulder health, coordination, and posture.",
+    "category": "clubs-maces",
+    "primaryMuscleGroup": "Shoulders (Rotator Cuff)",
+    "muscleGroups": ["Shoulders (Rotator Cuff)", "Upper Back", "Wrists", "Coordination"],
+    "equipmentNeeded": ["Indian Clubs"],
+    "imageUrls": []
+  },
+  {
+    "id": "sandbag-zercher-squat",
+    "name": "Sandbag Zercher Squat",
+    "description": "A squat variation where the sandbag is held in the crook of the elbows. This anterior load intensely engages the core, upper back, and biceps to maintain an upright posture.",
+    "category": "other",
+    "primaryMuscleGroup": "Quadriceps",
+    "muscleGroups": ["Quadriceps", "Glutes", "Core", "Upper Back", "Erector Spinae", "Biceps (isometric)"],
+    "equipmentNeeded": ["Sandbag"],
+    "imageUrls": []
+  },
+  {
+    "id": "sandbag-over-shoulder-carry",
+    "name": "Sandbag Over-the-Shoulder Carry",
+    "description": "A brutal, full-body loaded carry that builds conditioning and raw strength by carrying a heavy sandbag on one shoulder for distance.",
+    "category": "other",
+    "primaryMuscleGroup": "Full Body",
+    "muscleGroups": ["Core", "Upper Back", "Glutes", "Legs", "Forearms (Grip)"],
+    "equipmentNeeded": ["Sandbag"],
+    "imageUrls": []
+  },
+  {
+    "id": "sandbag-rotational-lunge",
+    "name": "Sandbag Rotational Lunge",
+    "description": "A lunge that incorporates a rotation of the sandbag over the front leg, challenging core stability, balance, and power in the transverse plane.",
+    "category": "other",
+    "primaryMuscleGroup": "Core (Obliques)",
+    "muscleGroups": ["Quadriceps", "Glutes", "Core (Obliques)", "Hips (stabilizers)"],
+    "equipmentNeeded": ["Sandbag"],
+    "imageUrls": []
+  },
+  {
+    "id": "bulgarian-bag-snatch",
+    "name": "Bulgarian Bag Snatch",
+    "description": "An explosive movement where the bag is swung between the legs and pulled overhead into a locked-out position, developing full-body power and coordination.",
+    "category": "other",
+    "primaryMuscleGroup": "Full Body",
+    "muscleGroups": ["Glutes", "Hamstrings", "Shoulders", "Upper Back", "Core"],
+    "equipmentNeeded": ["Bulgarian Bag"],
+    "imageUrls": []
+  },
+  {
+    "id": "bulgarian-bag-arm-throw",
+    "name": "Bulgarian Bag Arm Throw",
+    "description": "A dynamic rotational throw that targets the shoulders, lats, and obliques, building power and endurance for grappling and throwing sports.",
+    "category": "other",
+    "primaryMuscleGroup": "Shoulders",
+    "muscleGroups": ["Shoulders", "Lats", "Core (Obliques)", "Forearms (Grip)"],
+    "equipmentNeeded": ["Bulgarian Bag"],
+    "imageUrls": []
+  },
+  {
+    "id": "parallette-shoot-through",
+    "name": "Parallette Shoot-Through",
+    "description": "A dynamic movement combining a push-up or support hold with swinging the legs through the parallettes into an L-Sit position, building core and upper body strength.",
+    "category": "bodyweight/calisthenics",
+    "primaryMuscleGroup": "Core",
+    "muscleGroups": ["Core", "Triceps", "Shoulders", "Chest", "Hip Flexors"],
+    "equipmentNeeded": ["Parallettes"],
+    "imageUrls": []
+  },
+  {
+    "id": "parallette-tuck-planche",
+    "name": "Parallette Tuck Planche",
+    "description": "An advanced calisthenics progression towards the full planche. It involves holding the body horizontally with tucked knees, requiring immense shoulder and straight-arm strength.",
+    "category": "bodyweight/calisthenics",
+    "primaryMuscleGroup": "Shoulders",
+    "muscleGroups": ["Shoulders (Anterior)", "Core", "Biceps", "Triceps"],
+    "equipmentNeeded": ["Parallettes"],
+    "imageUrls": []
+  },
+  {
+    "id": "ring-skin-the-cat",
+    "name": "Ring Skin the Cat",
+    "description": "A fundamental gymnastic movement for shoulder mobility and strength. It involves passing the entire body through the arms in a tuck position, ending in a passive hang.",
+    "category": "bodyweight/calisthenics",
+    "primaryMuscleGroup": "Shoulders (stabilizers)",
+    "muscleGroups": ["Shoulders", "Lats", "Biceps", "Core"],
+    "equipmentNeeded": ["Gymnastic Rings"],
+    "imageUrls": [],
+    "notes": "This is excellent for building shoulder extension strength and preparing the joints for advanced movements."
+  },
+  {
+    "id": "ring-archer-pull-up",
+    "name": "Ring Archer Pull-up",
+    "description": "An advanced pull-up variation that builds unilateral pulling strength by pulling towards one hand while the other arm remains straight, like an archer drawing a bow.",
+    "category": "bodyweight/calisthenics",
+    "primaryMuscleGroup": "Lats",
+    "muscleGroups": ["Lats", "Biceps", "Upper Back", "Shoulders (stabilizers)"],
+    "equipmentNeeded": ["Gymnastic Rings"],
+    "imageUrls": []
+  },
+  {
+    "id": "ring-support-hold",
+    "name": "Ring Support Hold",
+    "description": "A foundational isometric hold at the top of a dip position. It develops crucial stability and strength in the shoulders, chest, and triceps needed for all ring work.",
+    "category": "bodyweight/calisthenics",
+    "primaryMuscleGroup": "Shoulders (stabilizers)",
+    "muscleGroups": ["Shoulders", "Triceps", "Chest", "Core"],
+    "equipmentNeeded": ["Gymnastic Rings"],
+    "imageUrls": [],
+    "notes": "Focus on keeping the rings turned out (RTO) to engage the external rotators of the shoulder for maximum stability."
+  },
+  {
+    "id": "vipr-lateral-shift-with-rip",
+    "name": "ViPR Lateral Shift with Rip",
+    "description": "A dynamic, full-body movement combining a lateral lunge (shift) with a powerful push-pull (rip) of the ViPR, building strength and coordination in the frontal plane.",
+    "category": "other",
+    "primaryMuscleGroup": "Full Body",
+    "muscleGroups": ["Glutes (Medius)", "Adductors", "Quadriceps", "Core", "Back", "Shoulders"],
+    "equipmentNeeded": ["ViPR"],
+    "imageUrls": []
+  },
+  {
+    "id": "vipr-ice-skater",
+    "name": "ViPR Ice Skater",
+    "description": "A plyometric exercise mimicking the motion of ice skating, where you bound from side to side while swinging the ViPR, developing lateral power and agility.",
+    "category": "other",
+    "primaryMuscleGroup": "Glutes (Medius)",
+    "muscleGroups": ["Glutes (Medius)", "Quadriceps", "Hamstrings", "Calves", "Core"],
+    "equipmentNeeded": ["ViPR"],
+    "imageUrls": []
+  },
+  {
+    "id": "vipr-cylinder-drop-squat",
+    "name": "ViPR Cylinder Drop Squat",
+    "description": "An exercise that challenges reactive strength and proper squatting mechanics by dropping the ViPR from an overhead position and catching it in a deep squat.",
+    "category": "other",
+    "primaryMuscleGroup": "Quadriceps",
+    "muscleGroups": ["Quadriceps", "Glutes", "Core", "Upper Back", "Shoulders"],
+    "equipmentNeeded": ["ViPR"],
+    "imageUrls": []
+  }
 ];

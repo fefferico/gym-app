@@ -257,7 +257,21 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
 
     this.programs$ = this.trainingProgramService.programs$;
     this.programsListSubscription = this.trainingProgramService.programs$.subscribe(programs => {
-      this.allProgramsForList.set(programs.sort((a, b) => a.name.localeCompare(b.name)));
+      this.allProgramsForList.set(
+        programs.sort((a, b) => {
+          // Primary sort: by isActive status (true comes first)
+          if (a.isActive && !b.isActive) {
+            return -1; // a is active, b is not -> a should come before b
+          }
+          if (!a.isActive && b.isActive) {
+            return 1; // b is active, a is not -> b should come before a
+          }
+
+          // Secondary sort: by name (alphabetical)
+          // This part is only reached if both programs have the same isActive status
+          return a.name.localeCompare(b.name);
+        })
+      );
       this.populateFilterOptions();
 
       const newActivePrograms = programs.filter(p => p.isActive);
@@ -603,9 +617,9 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
         const scheduledItemsWithLogs: ScheduledItemWithLogs[] = distinctScheduledForThisDate.map(scheduledEntry => {
           const routineForDay = this.allRoutinesMap.get(scheduledEntry.scheduledDayInfo.routineId);
           if (!routineForDay) { return null; }
-            const correspondingLogs: WorkoutLog[] = allLogsForPeriod.filter(log =>
+          const correspondingLogs: WorkoutLog[] = allLogsForPeriod.filter(log =>
             isSameDay(parseISO(log.date), date) && log.routineId === routineForDay.id
-            ).sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
+          ).sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
           return {
             routine: routineForDay,
             scheduledDayInfo: scheduledEntry.scheduledDayInfo,
@@ -733,9 +747,9 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
     return filteredLogs;
   }
 
-mapWorkoutLogToScheduledItemWithLogs(logs: WorkoutLog[]): ScheduledItemWithLogs[] {
+  mapWorkoutLogToScheduledItemWithLogs(logs: WorkoutLog[]): ScheduledItemWithLogs[] {
     if (logs.length === 0) return [];
-    
+
     const activeProg = this.activeProgramForCalendar();
     if (!activeProg) return [];
 
@@ -754,7 +768,7 @@ mapWorkoutLogToScheduledItemWithLogs(logs: WorkoutLog[]): ScheduledItemWithLogs[
     for (const [routineId, groupedLogs] of logsByRoutine.entries()) {
       const routine = this.allRoutinesMap.get(routineId);
       if (!routine) continue;
-      
+
       // For unscheduled items, we create a "dummy" scheduledDayInfo
       // as it's required by the interface.
       const dummyScheduledDayInfo: ScheduledRoutineDay = {

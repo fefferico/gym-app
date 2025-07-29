@@ -1502,8 +1502,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     this.patchActualsFormBasedOnSessionTargets(); // This uses activeSetInfo() which depends on routine()
 
     // Pre-set timer logic...
-    const enablePreset = this.appSettingsService.enablePresetTimer();
-    const enablePresetAfterRest = this.appSettingsService.enablePresetTimerAfterRest();
+    const enablePresetRest = this.appSettingsService.enablePresetTimer();
     const presetDurationValue = this.appSettingsService.presetTimerDurationSeconds();
     // Determine if it's the absolute first set of the *entire workout session* for preset timer
     const isEffectivelyFirstSetInWorkout =
@@ -1536,9 +1535,8 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     }
 
 
-    const shouldRunPresetTimer = enablePreset && presetDurationValue > 0 &&
-      ((this.playerSubState() !== PlayerSubState.Resting &&
-        (isEffectivelyFirstSetInWorkout || previousSetRestDuration === 0)) || enablePresetAfterRest);
+    const shouldRunPresetTimer = enablePresetRest && presetDurationValue > 0 &&
+      ((this.playerSubState() !== PlayerSubState.Resting));
 
     if (shouldRunPresetTimer) {
       console.log('prepareCurrentSet: Starting pre-set timer for:', currentExerciseData.exerciseName, 'Set:', sIndex + 1);
@@ -1897,6 +1895,43 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     const round = this.currentBlockRound ? this.currentBlockRound() : 1;
     return { round, totalRounds };
   };
+
+  getCurrentUpText(): string {
+    const activeInfo = this.activeSetInfo();
+
+    // If there's no active set information, return a default string.
+    if (!activeInfo) {
+      return 'Current Exercise';
+    }
+
+    const { exerciseData, setIndex, type } = activeInfo;
+    const exerciseName = exerciseData.exerciseName || 'Unnamed Exercise';
+
+    let setTypeLabel: string;
+    let currentSetOfType: number;
+    let totalSetsOfType: number;
+
+    // Differentiate between warm-up and working sets for accurate numbering.
+    if (type === 'warmup') {
+      setTypeLabel = 'Warm-up';
+      currentSetOfType = this.getWarmupSetNumberForDisplay(exerciseData, setIndex);
+      totalSetsOfType = this.getTotalWarmupSetsForExercise(exerciseData);
+    } else {
+      setTypeLabel = 'Set';
+      currentSetOfType = this.getWorkingSetNumberForDisplay(exerciseData, setIndex);
+      totalSetsOfType = this.getWorkingSetCountForExercise(exerciseData);
+    }
+
+    // Get round information, which handles supersets correctly.
+    const { round, totalRounds } = this.getRoundInfo(exerciseData);
+    const roundText = totalRounds > 1 ? ` (Round ${round}/${totalRounds})` : '';
+    // get weight and duration info, if available
+    const weight = activeInfo.setData.weight ? `, ${activeInfo.setData.weight} ${this.weightUnitDisplaySymbol}` : '';
+    const duration = activeInfo.setData.duration ? `, ${activeInfo.setData.duration} seconds` : '';
+
+    // Construct the final descriptive string.
+    return `${setTypeLabel} ${currentSetOfType}/${totalSetsOfType} of ${exerciseName}${roundText}${weight}${duration}`;
+  }
 
   getNextUpText(completedActiveSetInfo: ActiveSetInfo | null, currentSessionRoutine: Routine | null): string {
     if (!completedActiveSetInfo || !currentSessionRoutine) return 'Next Set/Exercise';

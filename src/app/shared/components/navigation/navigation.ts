@@ -5,6 +5,7 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router'; // Ensure Router is imported
 import { PressDirective } from '../../directives/press.directive';
+import { TooltipDirective } from '../../directives/tooltip.directive';
 
 interface NavItem {
   path: string;
@@ -16,7 +17,7 @@ interface NavItem {
 @Component({
   selector: 'app-navigation',
   standalone: true,
-  imports: [RouterLink, CommonModule, PressDirective],
+  imports: [RouterLink, CommonModule, PressDirective, TooltipDirective],
   templateUrl: './navigation.html',
   styleUrls: ['./navigation.scss']
 })

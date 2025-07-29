@@ -35,7 +35,7 @@
 
     <form [formGroup]="programForm" (ngSubmit)="onSubmit()" class="space-y-6 mb-6">
         <!-- Program Details Section -->
-        <section class="space-y-4 p-2 rounded-md shadow-sm">
+        <section class="space-y-4 p-2 rounded-md">
             <!-- Program NAME -->
             <div *ngIf="isViewMode">
                 <label
@@ -49,12 +49,12 @@
                     [ngClass]="{'border-red-500 dark:border-red-400': programForm.get('name')?.invalid && programForm.get('name')?.touched, 'border-gray-300 dark:border-gray-500': !(programForm.get('name')?.invalid && programForm.get('name')?.touched) }">
                 <div *ngIf="programForm.get('name')?.invalid && (programForm.get('name')?.dirty || programForm.get('name')?.touched)"
                     class="text-red-500 dark:text-red-400 text-xs mt-1">
-                    <span *ngIf="programForm.get('name')?.errors?.['required']">Program name is required.</span>
+                    <span *ngIf="programForm.get('name')?.errors?.['required']">Program name is required</span>
                 </div>
             </div>
             <!-- DESCRIPTION -->
             <div *ngIf="isViewMode">
-                <p class="mt-1 block w-full shadow-sm dark:text-gray-200" [innerHTML]="sanitizedDescription">
+                <p class="mt-1 block w-full dark:text-gray-200" [innerHTML]="sanitizedDescription">
                 </p>
             </div>
             <div *ngIf="isEditMode || isNewMode">
@@ -90,41 +90,42 @@
                     <label for="cycleLength"
                         class="block text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center">
                         Cycle Length (Optional)
-                        <span class="ml-1 group relative">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                        <span class="ml-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" [appTooltip]="infoTooltipString"
                                 class="w-4 h-4 text-gray-400 dark:text-gray-500 cursor-help">
                                 <path fill-rule="evenodd"
                                     d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-7-4a1 1 0 1 1-2 0 1 1 0 0 1 2 0ZM9 9a.75.75 0 0 0 0 1.5h.253a.25.25 0 0 1 .244.304l-.459 2.066A1.75 1.75 0 0 0 10.747 15H11a.75.75 0 0 0 0-1.5h-.253a.25.25 0 0 1-.244-.304l.459-2.066A1.75 1.75 0 0 0 9.253 9H9Z"
                                     clip-rule="evenodd" />
                             </svg>
-                            <span
-                                class="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-48 p-2 text-xs text-white bg-gray-700 dark:bg-gray-900 rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
-                                Leave blank for a weekly (7-day) schedule. Enter a number (e.g., 3) for a custom N-day
-                                cycle. 'Day of Week' selectors will update accordingly.
-                            </span>
                         </span>
                     </label>
                     <input type="number" id="cycleLength" formControlName="cycleLength" min="1"
                         placeholder="e.g., 7 for weekly"
-                        class="mt-1 block w-full p-2 border rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700 dark:border-gray-600">
+                        class="mt-1 block w-full p-2 border rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:[color-scheme:dark]">
                     <!-- The <p> tag below it also explains this -->
                 </div>
             </div>
             <div *ngIf="programForm.get('programNotes')?.value || isEditMode">
                 <label for="programNotes" class="block text-sm font-medium text-gray-700 dark:text-gray-300">General
                     Program Notes (Optional)</label>
-                <textarea id="programNotes" formControlName="programNotes" rows="2"
-                    class="mt-1 block w-full p-2 border rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700 dark:border-gray-600"></textarea>
+                <textarea id="programNotes" formControlName="programNotes" rows="3"
+                    class="mt-1 block w-full p-2 border rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:[color-scheme:dark]"></textarea>
             </div>
         </section>
 
         <!-- Schedule Section -->
-        <section class="shadow-md">
+        <section>
             <div class="flex justify-between items-center mb-1">
                 <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300">Schedule</h2>
                 <button *ngIf="!isViewMode" type="button" appPress (shortPress)="addScheduledDay()"
-                    class="bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium py-1.5 px-3 rounded-md shadow-sm">
-                    + ADD DAY TO SCHEDULE
+                    class="flex items-center justify-center bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium py-1.5 px-3 rounded-md shadow-sm">
+                    <svg *ngIf="isNewMode" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" class="mr-2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="16"></line>
+                        <line x1="8" y1="12" x2="16" y2="12"></line>
+                    </svg>ADD DAY TO SCHEDULE
                 </button>
             </div>
 
@@ -134,7 +135,7 @@
                     [cdkDragDisabled]="isViewMode"
                     class="scheduled-day-card p-3 border rounded-md shadow-sm bg-gray-50 dark:bg-gray-600/70 dark:border-gray-600 relative">
                     <div *ngIf="!isViewMode" cdkDragHandle
-                        class="p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 flex-shrink-0"
+                        class="p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 flex-shrink-0 cursor-pointer"
                         title="Drag to reorder day">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-5 h-5">
                             <path d="M 7 17 L 7 3 M 4 6 L 7 3 L 10 6 M 17 7 L 17 21 M 14 18 L 17 21 L 20 18" fill="none"
@@ -184,7 +185,6 @@
                                     class="flex-1 min-w-0 block w-full px-3 py-2 text-sm rounded-none rounded-l-md border-gray-300 dark:border-gray-200 dark:bg-gray-400 cursor-default
                               focus:outline-none focus:ring-0 focus:border-gray-300"
                                     [ngClass]="{'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 placeholder-red-400': getScheduleDayControl(i).get('routineId')?.invalid && (getScheduleDayControl(i).get('routineId')?.touched || submitted), 'rounded-r-md':isViewMode}">
-
                                 <button *ngIf="!isViewMode" type="button" appPress
                                     (shortPress)="openRoutineSelectionModal(i)"
                                     class="inline-flex items-center px-3 py-2 border border-l-0 rounded-r-md text-sm transition-colors duration-150"
@@ -193,6 +193,14 @@
                             'border-green-500 dark:border-green-400 bg-green-50 dark:bg-green-700 text-green-700 dark:text-green-100 hover:bg-green-100 dark:hover:bg-green-600': getScheduleDayControl(i).get('routineId')?.value,
                             'border-red-500 dark:border-red-400 bg-red-100 dark:bg-red-600 text-red-700 dark:text-red-200 hover:bg-red-200 dark:hover:bg-red-500': getScheduleDayControl(i).get('routineId')?.invalid && (getScheduleDayControl(i).get('routineId')?.touched || submitted) 
                         }">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <polyline points="23 4 23 10 17 10"></polyline>
+                                        <polyline points="1 20 1 14 7 14"></polyline>
+                                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"></path>
+                                        <path d="M20.49 15a9 9 0 0 1-14.85 3.36L1 14"></path>
+                                    </svg>
                                     {{ getScheduleDayControl(i).get('routineId')?.value ? 'CHANGE' : 'SELECT' }}
                                 </button>
                             </div>
@@ -223,7 +231,7 @@
 
             <div *ngIf="scheduleFormArray.length === 0"
                 class="text-center py-6 text-gray-500 dark:text-gray-400 border border-dashed dark:border-gray-700 rounded-md">
-                <p>No days scheduled for this program yet.</p>
+                <p>No days scheduled for this program yet</p>
                 <button *ngIf="!isViewMode" type="button" (click)="addScheduledDay()"
                     class="mt-2 text-sm text-primary hover:underline">
                     Add the first scheduled day
@@ -239,7 +247,24 @@
             </button>
             <button type="submit" appPress (shortPress)="onSubmit()"
                 [disabled]="programForm.invalid && (programForm.touched || programForm.dirty)"
-                class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark disabled:opacity-50">
+                class="flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark disabled:opacity-50">
+                <svg *ngIf="isNewMode" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="mr-2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="16"></line>
+                    <line x1="8" y1="12" x2="16" y2="12"></line>
+                </svg>
+
+                <!-- Save Icon (visible when isNewMode is false) -->
+                <svg *ngIf="!isNewMode" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="mr-2">
+                    <path d="M15.2 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8.8" />
+                    <path d="M16 3.1 21 8" />
+                    <path d="M8 21v-7h8v7" />
+                    <path d="M8 3v5h8V3" />
+                </svg>
                 {{ isNewMode ? 'CREATE PROGRAM' : 'SAVE CHANGES' }}
             </button>
         </div>
@@ -288,7 +313,7 @@
                                 </li>
                                 <li *ngIf="filteredAvailableRoutines().length === 0 && availableRoutines.length > 0"
                                     class="text-gray-500 dark:text-gray-400 text-center p-4">No routines match your
-                                    search.</li>
+                                    search</li>
                                 <li *ngIf="availableRoutines.length === 0"
                                     class="text-gray-500 dark:text-gray-400 text-center p-4">No routines available to
                                     select. Create some routines first!</li>

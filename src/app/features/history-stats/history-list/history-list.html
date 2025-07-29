@@ -252,7 +252,7 @@
               <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">No Workouts Match Your Filters
               </h3>
               <p class="text-gray-500 dark:text-gray-400">Try adjusting your filters or view all workouts by resetting
-                them.</p>
+                them</p>
             </div>
           </ng-template>
         </div>
@@ -337,7 +337,7 @@
                   </div>
                 </div>
                 <div *ngIf="!historyCalendarLoading() && historyCalendarDays().length === 0"
-                  class="text-center py-6 text-gray-500 dark:text-gray-400">No logs in this month.</div>
+                  class="text-center py-6 text-gray-500 dark:text-gray-400">No logs in this month</div>
               </div>
             </div>
           </div>
@@ -376,7 +376,8 @@
                       date:'shortTime' }}
                       ({{ item.durationMinutes }} min)</span>
                     <button (click)="viewLogDetails(item.id)"
-                      class="text-2xs sm:text-xs bg-sky-500 hover:bg-sky-600 text-white font-semibold py-1 px-2 rounded shadow-sm flex items-center"><svg
+                      class="text-2xs sm:text-xs bg-sky-500 hover:bg-sky-600 text-white font-semibold py-1 px-2 rounded shadow-sm flex items-center">
+                      <svg
                         xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
                         stroke="currentColor" class="size-3 sm:size-4 mr-1">
                         <path stroke-linecap="round" stroke-linejoin="round"

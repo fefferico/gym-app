@@ -2,14 +2,14 @@
     <header class="flex justify-between items-center pb-2">
         <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">My Routines</h1>
         <!-- Filter Accordion Toggle Button -->
-        <button appPress (shortPress)="toggleFilterAccordion()" type="button"
+        <button appPress (shortPress)="toggleFilterAccordion()" aria-label="Toggle filter accordion"
             class="rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-light transition-all duration-300 ease-in-out">
             <!-- License: PD. Made by mono-company: https://github.com/mono-company/mono-icons -->
-            <svg stroke="currentColor" class="w-10 h-10 transition-transform duration-300" viewBox="0 0 24 24" stroke-width="0.02" fill="currentColor" xmlns="http://www.w3.org/2000/svg"
+            <svg stroke="currentColor" class="w-10 h-10 transition-transform duration-300" viewBox="0 0 24 24"
+                stroke-width="0.02" fill="currentColor" xmlns="http://www.w3.org/2000/svg"
                 [class.rotate-180]="isFilterAccordionOpen()">
                 <path stroke-linecap="round" stroke-linejoin="round"
-                    d="M9 5a1 1 0 1 0 0 2 1 1 0 0 0 0-2zM6.17 5a3.001 3.001 0 0 1 5.66 0H19a1 1 0 1 1 0 2h-7.17a3.001 3.001 0 0 1-5.66 0H5a1 1 0 0 1 0-2h1.17zM15 11a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm-2.83 0a3.001 3.001 0 0 1 5.66 0H19a1 1 0 1 1 0 2h-1.17a3.001 3.001 0 0 1-5.66 0H5a1 1 0 1 1 0-2h7.17zM9 17a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm-2.83 0a3.001 3.001 0 0 1 5.66 0H19a1 1 0 1 1 0 2h-7.17a3.001 3.001 0 0 1-5.66 0H5a1 1 0 1 1 0-2h1.17z"
-                    />
+                    d="M9 5a1 1 0 1 0 0 2 1 1 0 0 0 0-2zM6.17 5a3.001 3.001 0 0 1 5.66 0H19a1 1 0 1 1 0 2h-7.17a3.001 3.001 0 0 1-5.66 0H5a1 1 0 0 1 0-2h1.17zM15 11a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm-2.83 0a3.001 3.001 0 0 1 5.66 0H19a1 1 0 1 1 0 2h-1.17a3.001 3.001 0 0 1-5.66 0H5a1 1 0 1 1 0-2h7.17zM9 17a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm-2.83 0a3.001 3.001 0 0 1 5.66 0H19a1 1 0 1 1 0 2h-7.17a3.001 3.001 0 0 1-5.66 0H5a1 1 0 1 1 0-2h1.17z" />
             </svg>
             <span class="sr-only">Toggle Filters</span>
         </button>
@@ -50,22 +50,6 @@
                             titlecase }}</option>
                     </select>
                 </div>
-                <!-- NEW: Equipment Chip Filter Section (replaces the <select>) -->
-                <div class="mt-4">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Equipment</label>
-                    <div class="flex flex-wrap gap-2">
-                        <!-- Loop through available equipment to create a button/chip for each -->
-                        <button *ngFor="let equipment of uniqueRoutineEquipments()"
-                            appPress (shortPress)="toggleEquipmentFilter(equipment)" type="button"
-                            class="px-3 py-1.5 text-xs font-semibold rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
-                            [ngClass]="{
-                    'bg-primary text-white focus:ring-primary-dark': selectedEquipment().includes(equipment),
-                    'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500 focus:ring-gray-400': !selectedEquipment().includes(equipment)
-                }">
-                            {{ equipment | titlecase }}
-                        </button>
-                    </div>
-                </div>
                 <!-- NEW: DURATION SLIDER SECTION -->
                 <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600 md:border-none">
                     <label for="duration-filter"
@@ -83,9 +67,8 @@
                             <p class="text-sm text-gray-500 dark:text-gray-400 mr-1">Hidden routines</p>
                         </div>
                         <label for="show-hidden-routine" class="inline-flex items-center cursor-pointer mt-2">
-                            <input type="checkbox" id="show-hidden-routine" class="sr-only peer"
-                                appPress (change)="hideRoutines(!showHiddenRoutines())"
-                                [checked]="showHiddenRoutines()">
+                            <input type="checkbox" id="show-hidden-routine" class="sr-only peer" appPress
+                                (change)="hideRoutines(!showHiddenRoutines())" [checked]="showHiddenRoutines()">
                             <div
                                 class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary dark:peer-checked:bg-primary-dark">
                             </div>
@@ -99,8 +82,8 @@
                             <p class="text-sm text-gray-500 dark:text-gray-400 mr-1">Favourite routines</p>
                         </div>
                         <label for="show-favourite-routine" class="inline-flex items-center cursor-pointer mt-2">
-                            <input type="checkbox" id="show-favourite-routine" class="sr-only peer"
-                                appPress (change)="showFavouriteOnlyRoutines(!showFavouriteRoutinesOnly())">
+                            <input type="checkbox" id="show-favourite-routine" class="sr-only peer" appPress
+                                (change)="showFavouriteOnlyRoutines(!showFavouriteRoutinesOnly())">
                             <div
                                 class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary dark:peer-checked:bg-primary-dark">
                             </div>
@@ -109,6 +92,22 @@
                             </span>
                         </label>
                     </div>
+                </div>
+            </div>
+            <!-- NEW: Equipment Chip Filter Section (replaces the <select>) -->
+            <div class="mt-4">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Equipment</label>
+                <div class="flex flex-wrap gap-2">
+                    <!-- Loop through available equipment to create a button/chip for each -->
+                    <button *ngFor="let equipment of uniqueRoutineEquipments()" appPress
+                        (shortPress)="toggleEquipmentFilter(equipment)" type="button"
+                        class="px-3 py-1.5 text-xs font-semibold rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+                        [ngClass]="{
+                    'bg-primary text-white focus:ring-primary-dark': selectedEquipment().includes(equipment),
+                    'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500 focus:ring-gray-400': !selectedEquipment().includes(equipment)
+                }">
+                        {{ equipment | titlecase }}
+                    </button>
                 </div>
             </div>
             <div class="mt-4 flex justify-between items-center">
@@ -151,8 +150,7 @@
                         class="text-gray-600 dark:text-gray-400 mb-2 line-clamp-2 text-sm sm:text-xs"
                         [title]="routine.description"></p>
 
-                    <div
-                        class="flex justify-between text-sm text-gray-500 dark:text-gray-300 mb-2 space-x-2">
+                    <div class="flex justify-between text-sm text-gray-500 dark:text-gray-300 mb-2 space-x-2">
                         <div *ngIf="routine.goal" class="flex items-center gap-1">
                             <!DOCTYPE svg
                                 PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
@@ -240,9 +238,8 @@
                             {{ muscle | titlecase }}
                         </span>
                     </div>
-                    <div *ngIf="routine.lastPerformed"
-                        class="text-sm text-gray-500 dark:text-gray-300 flex gap-1">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-5 0 32 32" stroke-width="1.5"
+                    <div *ngIf="routine.lastPerformed" class="text-sm text-gray-500 dark:text-gray-300 flex gap-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-5 -5 32 32" stroke-width="1.5"
                             stroke="currentColor" class="w-6 h-6 transition-all">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5m-9-3.75h.008v.008H12v-.008zM12 15h.008v.008H12V15zm0 2.25h.008v.008H12v-.008zM9.75 15h.008v.008H9.75V15zm0 2.25h.008v.008H9.75v-.008zM7.5 15h.008v.008H7.5V15zm0 2.25h.008v.008H7.5v-.008zm6.75-4.5h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V15zm0 2.25h.008v.008h-.008v-.008zm2.25-4.5h.008v.008H16.5v-.008zm0 2.25h.008v.008H16.5V15z">
@@ -254,7 +251,7 @@
                     <div>
                         <div *ngIf="routine && getRoutineDuration(routine) > 0"
                             class="text-sm text-gray-500 dark:text-gray-300 flex gap-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-5 0 32 32" stroke-width="1.5"
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-5 -5 32 32" stroke-width="1.5"
                                 stroke="currentColor" class="w-6 h-6 transition-all mb-1">
                                 <path stroke-linecap="round" stroke-linejoin="round"
                                     d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"></path>
@@ -264,7 +261,7 @@
                     </div>
                     <div *ngIf="!routine.lastPerformed"
                         class="text-sm text-gray-500 dark:text-gray-300 italic flex gap-1">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-5 0 32 32" stroke-width="1.5"
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-5 -5 32 32" stroke-width="1.5"
                             stroke="currentColor" class="w-6 h-6 transition-all">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5m-9-3.75h.008v.008H12v-.008zM12 15h.008v.008H12V15zm0 2.25h.008v.008H12v-.008zM9.75 15h.008v.008H9.75V15zm0 2.25h.008v.008H9.75v-.008zM7.5 15h.008v.008H7.5V15zm0 2.25h.008v.008H7.5v-.008zm6.75-4.5h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V15zm0 2.25h.008v.008h-.008v-.008zm2.25-4.5h.008v.008H16.5v-.008zm0 2.25h.008v.008H16.5V15z">
@@ -350,7 +347,8 @@
                     {{ routineSearchTerm() || selectedRoutineGoal() || selectedRoutineMuscleGroup() ? 'Try adjusting
                     your filters.' : 'Get started by creating your first workout routine.' }}
                 </p>
-                <button appPress (shortPress)="navigateToCreateRoutine()" *ngIf="!(routineSearchTerm() || selectedRoutineGoal() || selectedRoutineMuscleGroup())"
+                <button appPress (shortPress)="navigateToCreateRoutine()"
+                    *ngIf="!(routineSearchTerm() || selectedRoutineGoal() || selectedRoutineMuscleGroup())"
                     class="bg-primary hover:bg-primary-dark text-white font-semibold py-2 px-6 rounded-md shadow-md hover:shadow-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary-light focus:ring-opacity-75">
                     CREATE YOUR FIRST ROUTINE
                 </button>

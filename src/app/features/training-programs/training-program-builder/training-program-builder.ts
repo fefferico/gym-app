@@ -20,6 +20,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ActionMenuItem } from '../../../core/models/action-menu.model';
 import { ActionMenuComponent } from '../../../shared/components/action-menu/action-menu';
 import { PressDirective } from '../../../shared/directives/press.directive';
+import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
 
 interface DayOption {
     value: number;
@@ -40,7 +41,8 @@ interface ProgramGoal { value: Routine['goal'], label: string }
         DayOfWeekPipe,
         FormsModule,
         ActionMenuComponent,
-        PressDirective
+        PressDirective,
+        TooltipDirective
     ],
     templateUrl: './training-program-builder.html',
     styleUrls: ['./training-program-builder.scss']
@@ -69,6 +71,8 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
 
     private sanitizer = inject(DomSanitizer);
     public sanitizedDescription: SafeHtml = '';
+
+    infoTooltipString: string = 'Leave blank for a weekly (7-day) schedule. Enter a number (e.g., 3) for a custom N-day cycle. \'Day of Week\' selectors will update accordingly.';
 
     // For routine selection modal
     isRoutineModalOpen = signal(false);

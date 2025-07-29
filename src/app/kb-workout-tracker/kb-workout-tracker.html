@@ -18,8 +18,8 @@
         </div>
         <div *ngIf="isCameraReady && !isWorkoutActive && (!videoStream?.active || !modelReady)"
             class="video-placeholder">
-            <p *ngIf="!videoStream?.active">Camera access was lost or denied. Please reload or check permissions.</p>
-            <p *ngIf="!modelReady && videoStream?.active">AI Model failed to load. Try reloading.</p>
+            <p *ngIf="!videoStream?.active">Camera access was lost or denied. Please reload or check permissions</p>
+            <p *ngIf="!modelReady && videoStream?.active">AI Model failed to load. Try reloading</p>
             <button (click)="setupCamera()" *ngIf="!videoStream?.active" class="action-btn retry-btn">Retry
                 Camera</button>
             <button (click)="loadPoseDetectionModel()" *ngIf="!modelReady && videoStream?.active"

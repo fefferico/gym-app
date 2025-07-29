@@ -35,44 +35,44 @@
                             <label for="age"
                                 class="block text-xs font-medium text-gray-600 dark:text-gray-400">Age</label>
                             <input type="number" min="0" id="age" formControlName="age" placeholder="Years"
-                                class="mt-1 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-600">
+                                class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200">
                         </div>
                         <div>
                             <label for="heightCm"
                                 class="block text-xs font-medium text-gray-600 dark:text-gray-400">Height (cm)</label>
                             <input type="number" min="0" id="heightCm" formControlName="heightCm" placeholder="cm"
-                                class="mt-1 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-600">
+                                class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200">
                         </div>
                         <div>
                             <label for="weightKg"
                                 class="block text-xs font-medium text-gray-600 dark:text-gray-400">Weight (kg)</label>
                             <input type="number" min="0" id="weightKg" formControlName="weightKg" placeholder="kg"
-                                class="mt-1 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-600">
+                                class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200">
                         </div>
                         <div>
                             <label for="chestCm"
                                 class="block text-xs font-medium text-gray-600 dark:text-gray-400">Chest (cm)</label>
                             <input type="number" min="0" id="chestCm" formControlName="chestCm" placeholder="cm"
-                                class="mt-1 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-600">
+                                class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200">
                         </div>
                         <div>
                             <label for="waistCm"
                                 class="block text-xs font-medium text-gray-600 dark:text-gray-400">Waist (cm)</label>
                             <input type="number" min="0" id="waistCm" formControlName="waistCm" placeholder="cm"
-                                class="mt-1 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-600">
+                                class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200">
                         </div>
                         <div>
                             <label for="hipsCm" class="block text-xs font-medium text-gray-600 dark:text-gray-400">Hips
                                 (cm)</label>
                             <input type="number" min="0" id="hipsCm" formControlName="hipsCm" placeholder="cm"
-                                class="mt-1 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-600">
+                                class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200">
                         </div>
                         <div>
                             <label for="rightArmCm"
                                 class="block text-xs font-medium text-gray-600 dark:text-gray-400">Right Arm
                                 (cm)</label>
                             <input type="number" min="0" id="rightArmCm" formControlName="rightArmCm" placeholder="cm"
-                                class="mt-1 w-full p-1.5 text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-600">
+                                class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200">
                         </div>
                     </div>
                 </div>
@@ -95,7 +95,7 @@
                     <label for="weightStep" class="block text-md font-medium text-gray-700 dark:text-gray-300">Weight
                         Increment Step</label>
                     <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">Default step for +/- weight buttons in
-                        player (in {{unitsService.currentUnit() | uppercase}}).</p>
+                        player (in {{unitsService.currentUnit() | uppercase}})</p>
                     <input type="number" id="weightStep" formControlName="weightStep" min="0.01" step="any"
                         (change)="currentVibrator.vibrate(50)"
                         class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200">
@@ -110,7 +110,7 @@
                     <div>
                         <h3 class="text-md font-medium text-gray-700 dark:text-gray-300">Timed Set Countdown Sound</h3>
                         <p class="text-sm text-gray-500 dark:text-gray-400 mr-1">Play sound X seconds before a timed set
-                            ends.</p>
+                            ends</p>
                     </div>
                     <label for="countdown-sound-toggle" class="inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="countdown-sound-toggle" class="sr-only peer"
@@ -142,7 +142,7 @@
                     <div>
                         <h3 class="text-md font-medium text-gray-700 dark:text-gray-300">Pre-Set Timer</h3>
                         <p class="text-sm text-gray-500 dark:text-gray-400 mr-1">Show a countdown before each set
-                            starts.</p>
+                            starts</p>
                     </div>
                     <label for="preset-timer-toggle" class="inline-flex items-center cursor-pointer">
                         <span class="sr-only">Toggle Pre-Set Timer</span>
@@ -167,28 +167,6 @@
                         Must be 3-60s.
                     </div>
                 </div>
-                <div *ngIf="appSettingsForm.get('enablePresetTimer')?.value" class="text-gray-700 dark:text-gray-300">
-                    <div class="flex items-center justify-between"> <!-- Changed for better alignment -->
-                        <div>
-                            <h3 class="text-md font-medium">Pre-Set Timer after Rest
-                            </h3>
-                            <p class="text-sm text-gray-500 dark:text-gray-400 mr-1">Show countdown after each rest
-                                ends.</p>
-                        </div>
-                        <label for="preset-timer-toggle-after-rest" class="inline-flex items-center cursor-pointer">
-                            <span class="sr-only">Toggle Pre-Set Timer after rest</span>
-                            <input type="checkbox" id="preset-timer-toggle-after-rest" class="sr-only peer"
-                                formControlName="enablePresetTimerAfterRest" (change)="currentVibrator.vibrate(50)">
-                            <div
-                                class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary dark:peer-checked:bg-primary-dark">
-                            </div>
-                            <span class="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
-                                {{ appSettingsForm.get('enablePresetTimerAfterRest')?.value ? 'On' : 'Off' }}
-                            </span>
-                        </label>
-                    </div>
-                </div>
-
                 <div class="pt-3 text-right">
                     <button type="button" appPress (shortPress)="saveAppSettings()"
                         [disabled]="appSettingsForm.pristine || appSettingsForm.invalid"
@@ -245,7 +223,7 @@
             <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">Exercise library</h2>
             <div>
                 <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">View all the available exercise and
-                    add your own ones.</p>
+                    add your own ones</p>
                 <button appPress (shortPress)="navigateToExerciseLibrary()"
                     class="px-4 py-2 bg-primary hover:bg-primary-dark text-white font-semibold rounded-md shadow-sm transition-colors inline-flex items-center text-sm">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -263,7 +241,7 @@
             <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">Your Achievements</h2>
             <div>
                 <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">View all your tracked Personal
-                    Bests.</p>
+                    Bests</p>
                 <button appPress (shortPress)="navigateToPersonalBests()"
                     class="px-4 py-2 bg-primary hover:bg-primary-dark text-white font-semibold rounded-md shadow-sm transition-colors inline-flex items-center text-sm">
                     <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
@@ -316,7 +294,7 @@
                     <div>
                         <h3 class="text-md font-medium text-gray-700 dark:text-gray-300">WIP Message</h3>
                         <p class="text-sm text-gray-500 dark:text-gray-400 mr-1">Toggle between showing or hiding WIP
-                            message.</p>
+                            message</p>
                     </div>
                     <label for="show-wip-message" class="inline-flex items-center cursor-pointer">
                         <span class="sr-only">Show WIP Disclaimer</span>
@@ -340,7 +318,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <h3 class="text-md font-medium text-gray-700 dark:text-gray-300">Dark Mode</h3>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mr-1">Toggle between light and dark themes.</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mr-1">Toggle between light and dark themes</p>
                 </div>
                 <label for="theme-toggle" class="inline-flex items-center cursor-pointer">
                     <span class="sr-only">Toggle Dark Mode</span>

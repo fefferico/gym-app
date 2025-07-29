@@ -1810,5 +1810,306 @@ export const ROUTINES_DATA: Routine[] = [
                 "type": "standard"
             }
         ]
+    },
+    {
+        "id": "wendler-531-day1-ohp",
+        "name": "5/3/1 - Overhead Press Day",
+        "description": "This routine focuses on the Barbell Overhead Press as the main strength lift. Accessory work is designed to build the shoulders and the supporting muscles of the upper back and arms.",
+        "goal": "strength",
+        "exercises": [
+            {
+                "id": "w1-ex1",
+                "exerciseId": "overhead-press-barbell",
+                "exerciseName": "Overhead Press (Barbell)",
+                "sets": [
+                    { "id": "w1-s1", "reps": 5, "weight": null, "restAfterSet": 180, "type": "standard", "notes": "Main lift: Focus on progressive overload week to week." },
+                    { "id": "w1-s2", "reps": 5, "weight": null, "restAfterSet": 180, "type": "standard" },
+                    { "id": "w1-s3", "reps": 5, "weight": null, "restAfterSet": 180, "type": "standard", "notes": "On the final set, aim for as many reps as possible (AMRAP) with good form." }
+                ],
+                "supersetId": null, "supersetOrder": null, "type": "standard"
+            },
+            {
+                "id": "w1-ex2",
+                "exerciseId": "lat-pulldown-machine",
+                "exerciseName": "Lat Pulldown",
+                "sets": [
+                    { "id": "w1-s4", "reps": 10, "weight": null, "restAfterSet": 90, "type": "standard" },
+                    { "id": "w1-s5", "reps": 10, "weight": null, "restAfterSet": 90, "type": "standard" },
+                    { "id": "w1-s6", "reps": 10, "weight": null, "restAfterSet": 90, "type": "standard" }
+                ],
+                "supersetId": null, "supersetOrder": null, "type": "standard"
+            },
+            {
+                "id": "w1-ex3",
+                "exerciseId": "dumbbell-lateral-raise",
+                "exerciseName": "Dumbbell Lateral Raise",
+                "sets": [
+                    { "id": "w1-s7", "reps": 15, "weight": null, "restAfterSet": 60, "type": "standard" },
+                    { "id": "w1-s8", "reps": 15, "weight": null, "restAfterSet": 60, "type": "standard" },
+                    { "id": "w1-s9", "reps": 15, "weight": null, "restAfterSet": 60, "type": "standard" }
+                ],
+                "supersetId": null, "supersetOrder": null, "type": "standard"
+            },
+            {
+                "id": "w1-ex4",
+                "exerciseId": "cable-face-pull",
+                "exerciseName": "Face Pulls",
+                "sets": [
+                    { "id": "w1-s10", "reps": 20, "weight": null, "restAfterSet": 60, "type": "standard" },
+                    { "id": "w1-s11", "reps": 20, "weight": null, "restAfterSet": 60, "type": "standard" }
+                ],
+                "supersetId": null, "supersetOrder": null, "type": "standard"
+            }
+        ],
+        "notes": "A strong back and healthy shoulders are key to a big press. Don't neglect the accessory work."
+    },
+    {
+        "id": "wendler-531-day2-deadlift",
+        "name": "5/3/1 - Deadlift Day",
+        "description": "This routine is built around the Barbell Deadlift. Accessory exercises focus on strengthening the posterior chain, quads, and core to support a heavy pull.",
+        "goal": "strength",
+        "exercises": [
+            {
+                "id": "w2-ex1",
+                "exerciseId": "barbell-deadlift",
+                "exerciseName": "Barbell Deadlift (Conventional)",
+                "sets": [
+                    { "id": "w2-s1", "reps": 5, "weight": null, "restAfterSet": 180, "type": "standard", "notes": "Main lift: Focus on a flat back and powerful hip drive." },
+                    { "id": "w2-s2", "reps": 5, "weight": null, "restAfterSet": 180, "type": "standard" },
+                    { "id": "w2-s3", "reps": 5, "weight": null, "restAfterSet": 180, "type": "standard", "notes": "On the final set, aim for as many reps as possible (AMRAP) without form breakdown." }
+                ],
+                "supersetId": null, "supersetOrder": null, "type": "standard"
+            },
+            {
+                "id": "w2-ex2",
+                "exerciseId": "leg-press-machine",
+                "exerciseName": "Leg Press",
+                "sets": [
+                    { "id": "w2-s4", "reps": 12, "weight": null, "restAfterSet": 90, "type": "standard" },
+                    { "id": "w2-s5", "reps": 12, "weight": null, "restAfterSet": 90, "type": "standard" },
+                    { "id": "w2-s6", "reps": 12, "weight": null, "restAfterSet": 90, "type": "standard" }
+                ],
+                "supersetId": null, "supersetOrder": null, "type": "standard"
+            },
+            {
+                "id": "w2-ex3",
+                "exerciseId": "lying-leg-curl-machine",
+                "exerciseName": "Lying Leg Curls",
+                "sets": [
+                    { "id": "w2-s7", "reps": 15, "weight": null, "restAfterSet": 60, "type": "standard" },
+                    { "id": "w2-s8", "reps": 15, "weight": null, "restAfterSet": 60, "type": "standard" },
+                    { "id": "w2-s9", "reps": 15, "weight": null, "restAfterSet": 60, "type": "standard" }
+                ],
+                "supersetId": null, "supersetOrder": null, "type": "standard"
+            },
+            {
+                "id": "w2-ex4",
+                "exerciseId": "plank",
+                "exerciseName": "Plank",
+                "sets": [
+                    { "id": "w2-s10", "duration": 60, "weight": null, "restAfterSet": 60, "type": "standard", "notes": "Hold for max time." },
+                    { "id": "w2-s11", "duration": 60, "weight": null, "restAfterSet": 60, "type": "standard", "notes": "Hold for max time." },
+                    { "id": "w2-s12", "duration": 60, "weight": null, "restAfterSet": 60, "type": "standard", "notes": "Hold for max time." }
+                ],
+                "supersetId": null, "supersetOrder": null, "type": "standard"
+            }
+        ],
+        "notes": "Deadlifts are taxing. Ensure proper warm-up and focus on maintaining a neutral spine throughout the main lift."
+    },
+    {
+        "id": "wendler-531-day3-bench",
+        "name": "5/3/1 - Bench Press Day",
+        "description": "This routine is centered around the Barbell Bench Press. Accessory work targets the chest from different angles, builds the back for stability, and strengthens the triceps.",
+        "goal": "strength",
+        "exercises": [
+            {
+                "id": "w3-ex1",
+                "exerciseId": "barbell-bench-press",
+                "exerciseName": "Barbell Bench Press",
+                "sets": [
+                    { "id": "w3-s1", "reps": 5, "weight": null, "restAfterSet": 180, "type": "standard", "notes": "Main lift: Keep your shoulders pinned back and down." },
+                    { "id": "w3-s2", "reps": 5, "weight": null, "restAfterSet": 180, "type": "standard" },
+                    { "id": "w3-s3", "reps": 5, "weight": null, "restAfterSet": 180, "type": "standard", "notes": "On the final set, aim for as many reps as possible (AMRAP) with good form." }
+                ],
+                "supersetId": null, "supersetOrder": null, "type": "standard"
+            },
+            {
+                "id": "w3-ex2",
+                "exerciseId": "dumbbell-incline-press",
+                "exerciseName": "Dumbbell Incline Press",
+                "sets": [
+                    { "id": "w3-s4", "reps": 10, "weight": null, "restAfterSet": 90, "type": "standard" },
+                    { "id": "w3-s5", "reps": 10, "weight": null, "restAfterSet": 90, "type": "standard" },
+                    { "id": "w3-s6", "reps": 10, "weight": null, "restAfterSet": 90, "type": "standard" }
+                ],
+                "supersetId": null, "supersetOrder": null, "type": "standard"
+            },
+            {
+                "id": "w3-ex3",
+                "exerciseId": "dumbbell-row",
+                "exerciseName": "Dumbbell Row (Single Arm)",
+                "sets": [
+                    { "id": "w3-s7", "reps": 12, "weight": null, "restAfterSet": 60, "type": "standard", "notes": "Perform 12 reps per arm." },
+                    { "id": "w3-s8", "reps": 12, "weight": null, "restAfterSet": 60, "type": "standard", "notes": "Perform 12 reps per arm." },
+                    { "id": "w3-s9", "reps": 12, "weight": null, "restAfterSet": 60, "type": "standard", "notes": "Perform 12 reps per arm." }
+                ],
+                "supersetId": null, "supersetOrder": null, "type": "standard"
+            },
+            {
+                "id": "w3-ex4",
+                "exerciseId": "barbell-skull-crusher",
+                "exerciseName": "Skull Crushers",
+                "sets": [
+                    { "id": "w3-s10", "reps": 15, "weight": null, "restAfterSet": 60, "type": "standard" },
+                    { "id": "w3-s11", "reps": 15, "weight": null, "restAfterSet": 60, "type": "standard" }
+                ],
+                "supersetId": null, "supersetOrder": null, "type": "standard"
+            }
+        ],
+        "notes": "A strong bench press requires a strong back. The dumbbell rows are just as important as the pressing movements."
+    },
+    {
+        "id": "wendler-531-day4-squat",
+        "name": "5/3/1 - Squat Day",
+        "description": "This routine is built around the Barbell Back Squat. Accessory work is included to strengthen the quads, hamstrings, and core, all of which are critical for a strong squat.",
+        "goal": "strength",
+        "exercises": [
+            {
+                "id": "w4-ex1",
+                "exerciseId": "barbell-back-squat",
+                "exerciseName": "Barbell Back Squat",
+                "sets": [
+                    { "id": "w4-s1", "reps": 5, "weight": null, "restAfterSet": 180, "type": "standard", "notes": "Main lift: Focus on hitting depth (hip crease below knee)." },
+                    { "id": "w4-s2", "reps": 5, "weight": null, "restAfterSet": 180, "type": "standard" },
+                    { "id": "w4-s3", "reps": 5, "weight": null, "restAfterSet": 180, "type": "standard", "notes": "On the final set, aim for as many reps as possible (AMRAP) with good form." }
+                ],
+                "supersetId": null, "supersetOrder": null, "type": "standard"
+            },
+            {
+                "id": "w4-ex2",
+                "exerciseId": "dumbbell-bulgarian-split-squat",
+                "exerciseName": "Bulgarian Split Squat",
+                "sets": [
+                    { "id": "w4-s4", "reps": 10, "weight": null, "restAfterSet": 90, "type": "standard", "notes": "Perform 10 reps per leg." },
+                    { "id": "w4-s5", "reps": 10, "weight": null, "restAfterSet": 90, "type": "standard", "notes": "Perform 10 reps per leg." },
+                    { "id": "w4-s6", "reps": 10, "weight": null, "restAfterSet": 90, "type": "standard", "notes": "Perform 10 reps per leg." }
+                ],
+                "supersetId": null, "supersetOrder": null, "type": "standard"
+            },
+            {
+                "id": "w4-ex3",
+                "exerciseId": "barbell-good-morning",
+                "exerciseName": "Good Mornings",
+                "sets": [
+                    { "id": "w4-s7", "reps": 12, "weight": null, "restAfterSet": 60, "type": "standard" },
+                    { "id": "w4-s8", "reps": 12, "weight": null, "restAfterSet": 60, "type": "standard" },
+                    { "id": "w4-s9", "reps": 12, "weight": null, "restAfterSet": 60, "type": "standard" }
+                ],
+                "supersetId": null, "supersetOrder": null, "type": "standard"
+            },
+            {
+                "id": "w4-ex4",
+                "exerciseId": "leg-raises",
+                "exerciseName": "Hanging Leg Raises",
+                "sets": [
+                    { "id": "w4-s10", "reps": 15, "weight": null, "restAfterSet": 60, "type": "standard" },
+                    { "id": "w4-s11", "reps": 15, "weight": null, "restAfterSet": 60, "type": "standard" }
+                ],
+                "supersetId": null, "supersetOrder": null, "type": "standard"
+            }
+        ],
+        "notes": "Control the descent on your squats. The unilateral work (split squats) will help improve stability and balance."
+    },
+    {
+        "id": "5x5-workout-a",
+        "name": "5x5 Strength - Workout A",
+        "description": "A full-body routine based on the 5x5 strength training methodology. This workout focuses on the Squat, Bench Press, and Barbell Row. The primary goal is linear progression by adding weight each session.",
+        "goal": "strength",
+        "exercises": [
+            {
+                "id": "5x5-a-ex1",
+                "exerciseId": "barbell-back-squat",
+                "exerciseName": "Barbell Back Squat",
+                "sets": [
+                    { "id": "5x5-a-s1", "reps": 5, "weight": null, "restAfterSet": 180, "type": "standard", "notes": "Work set 1 of 5." },
+                    { "id": "5x5-a-s2", "reps": 5, "weight": null, "restAfterSet": 180, "type": "standard", "notes": "Work set 2 of 5." },
+                    { "id": "5x5-a-s3", "reps": 5, "weight": null, "restAfterSet": 180, "type": "standard", "notes": "Work set 3 of 5." },
+                    { "id": "5x5-a-s4", "reps": 5, "weight": null, "restAfterSet": 180, "type": "standard", "notes": "Work set 4 of 5." },
+                    { "id": "5x5-a-s5", "reps": 5, "weight": null, "restAfterSet": 180, "type": "standard", "notes": "Work set 5 of 5." }
+                ],
+                "supersetId": null, "supersetOrder": null, "type": "standard"
+            },
+            {
+                "id": "5x5-a-ex2",
+                "exerciseId": "barbell-bench-press",
+                "exerciseName": "Barbell Bench Press",
+                "sets": [
+                    { "id": "5x5-a-s6", "reps": 5, "weight": null, "restAfterSet": 180, "type": "standard", "notes": "Work set 1 of 5." },
+                    { "id": "5x5-a-s7", "reps": 5, "weight": null, "restAfterSet": 180, "type": "standard", "notes": "Work set 2 of 5." },
+                    { "id": "5x5-a-s8", "reps": 5, "weight": null, "restAfterSet": 180, "type": "standard", "notes": "Work set 3 of 5." },
+                    { "id": "5x5-a-s9", "reps": 5, "weight": null, "restAfterSet": 180, "type": "standard", "notes": "Work set 4 of 5." },
+                    { "id": "5x5-a-s10", "reps": 5, "weight": null, "restAfterSet": 180, "type": "standard", "notes": "Work set 5 of 5." }
+                ],
+                "supersetId": null, "supersetOrder": null, "type": "standard"
+            },
+            {
+                "id": "5x5-a-ex3",
+                "exerciseId": "bent-over-row-barbell",
+                "exerciseName": "Barbell Bent-Over Row",
+                "sets": [
+                    { "id": "5x5-a-s11", "reps": 5, "weight": null, "restAfterSet": 180, "type": "standard", "notes": "Work set 1 of 5." },
+                    { "id": "5x5-a-s12", "reps": 5, "weight": null, "restAfterSet": 180, "type": "standard", "notes": "Work set 2 of 5." },
+                    { "id": "5x5-a-s13", "reps": 5, "weight": null, "restAfterSet": 180, "type": "standard", "notes": "Work set 3 of 5." },
+                    { "id": "5x5-a-s14", "reps": 5, "weight": null, "restAfterSet": 180, "type": "standard", "notes": "Work set 4 of 5." },
+                    { "id": "5x5-a-s15", "reps": 5, "weight": null, "restAfterSet": 180, "type": "standard", "notes": "Work set 5 of 5." }
+                ],
+                "supersetId": null, "supersetOrder": null, "type": "standard"
+            }
+        ],
+        "notes": "Perform 2-3 warm-up sets with lighter weight before starting your 5x5 work sets for each exercise."
+    },
+    {
+        "id": "5x5-workout-b",
+        "name": "5x5 Strength - Workout B",
+        "description": "The second full-body routine in the 5x5 system. This workout features the Squat, Overhead Press, and one heavy set of Deadlifts.",
+        "goal": "strength",
+        "exercises": [
+            {
+                "id": "5x5-b-ex1",
+                "exerciseId": "barbell-back-squat",
+                "exerciseName": "Barbell Back Squat",
+                "sets": [
+                    { "id": "5x5-b-s1", "reps": 5, "weight": null, "restAfterSet": 180, "type": "standard", "notes": "Work set 1 of 5." },
+                    { "id": "5x5-b-s2", "reps": 5, "weight": null, "restAfterSet": 180, "type": "standard", "notes": "Work set 2 of 5." },
+                    { "id": "5x5-b-s3", "reps": 5, "weight": null, "restAfterSet": 180, "type": "standard", "notes": "Work set 3 of 5." },
+                    { "id": "5x5-b-s4", "reps": 5, "weight": null, "restAfterSet": 180, "type": "standard", "notes": "Work set 4 of 5." },
+                    { "id": "5x5-b-s5", "reps": 5, "weight": null, "restAfterSet": 180, "type": "standard", "notes": "Work set 5 of 5." }
+                ],
+                "supersetId": null, "supersetOrder": null, "type": "standard"
+            },
+            {
+                "id": "5x5-b-ex2",
+                "exerciseId": "overhead-press-barbell",
+                "exerciseName": "Overhead Press (Barbell)",
+                "sets": [
+                    { "id": "5x5-b-s6", "reps": 5, "weight": null, "restAfterSet": 180, "type": "standard", "notes": "Work set 1 of 5." },
+                    { "id": "5x5-b-s7", "reps": 5, "weight": null, "restAfterSet": 180, "type": "standard", "notes": "Work set 2 of 5." },
+                    { "id": "5x5-b-s8", "reps": 5, "weight": null, "restAfterSet": 180, "type": "standard", "notes": "Work set 3 of 5." },
+                    { "id": "5x5-b-s9", "reps": 5, "weight": null, "restAfterSet": 180, "type": "standard", "notes": "Work set 4 of 5." },
+                    { "id": "5x5-b-s10", "reps": 5, "weight": null, "restAfterSet": 180, "type": "standard", "notes": "Work set 5 of 5." }
+                ],
+                "supersetId": null, "supersetOrder": null, "type": "standard"
+            },
+            {
+                "id": "5x5-b-ex3",
+                "exerciseId": "barbell-deadlift",
+                "exerciseName": "Barbell Deadlift (Conventional)",
+                "sets": [
+                    { "id": "5x5-b-s11", "reps": 5, "weight": null, "restAfterSet": 240, "type": "standard", "notes": "One heavy work set of 5 reps after warming up." }
+                ],
+                "supersetId": null, "supersetOrder": null, "type": "standard"
+            }
+        ],
+        "notes": "Perform warm-up sets for Squat and OHP. For the Deadlift, warm up thoroughly before attempting your single heavy set of 5."
     }
 ]

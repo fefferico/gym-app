@@ -8,7 +8,6 @@ const DEFAULT_APP_SETTINGS: AppSettings = {
     enableTimerCountdownSound: true,
     countdownSoundSeconds: 5,
     enablePresetTimer: false,        // NEW Default
-    enablePresetTimerAfterRest: false,        // NEW Default
     presetTimerDurationSeconds: 10,  // NEW Default (e.g., 10 seconds)
     weightStep: 1
 };
@@ -27,7 +26,6 @@ export class AppSettingsService {
     public enableTimerCountdownSound = signal<boolean>(DEFAULT_APP_SETTINGS.enableTimerCountdownSound);
     public countdownSoundSeconds = signal<number>(DEFAULT_APP_SETTINGS.countdownSoundSeconds);
     public enablePresetTimer = signal<boolean>(DEFAULT_APP_SETTINGS.enablePresetTimer);             // NEW
-    public enablePresetTimerAfterRest = signal<boolean>(DEFAULT_APP_SETTINGS.enablePresetTimerAfterRest);             // NEW
     public presetTimerDurationSeconds = signal<number>(DEFAULT_APP_SETTINGS.presetTimerDurationSeconds); // NEW
 
 
@@ -40,7 +38,6 @@ export class AppSettingsService {
         this.enableTimerCountdownSound.set(initialSettings.enableTimerCountdownSound);
         this.countdownSoundSeconds.set(initialSettings.countdownSoundSeconds);
         this.enablePresetTimer.set(initialSettings.enablePresetTimer);                 // NEW
-        this.enablePresetTimerAfterRest.set(initialSettings.enablePresetTimerAfterRest);                 // NEW
         this.presetTimerDurationSeconds.set(initialSettings.presetTimerDurationSeconds); // NEW
     }
 
@@ -58,7 +55,6 @@ export class AppSettingsService {
         if (settings.enableTimerCountdownSound !== undefined) this.enableTimerCountdownSound.set(settings.enableTimerCountdownSound);
         if (settings.countdownSoundSeconds !== undefined) this.countdownSoundSeconds.set(settings.countdownSoundSeconds);
         if (settings.enablePresetTimer !== undefined) this.enablePresetTimer.set(settings.enablePresetTimer);             // NEW
-        if (settings.enablePresetTimerAfterRest !== undefined) this.enablePresetTimerAfterRest.set(settings.enablePresetTimerAfterRest);             // NEW
         if (settings.presetTimerDurationSeconds !== undefined) this.presetTimerDurationSeconds.set(settings.presetTimerDurationSeconds); // NEW
     }
 
@@ -85,7 +81,6 @@ export class AppSettingsService {
         this.enableTimerCountdownSound.set(settingsToSave.enableTimerCountdownSound);
         this.countdownSoundSeconds.set(settingsToSave.countdownSoundSeconds);
         this.enablePresetTimer.set(settingsToSave.enablePresetTimer);                 // NEW
-        this.enablePresetTimerAfterRest.set(settingsToSave.enablePresetTimerAfterRest);                 // NEW
         this.presetTimerDurationSeconds.set(settingsToSave.presetTimerDurationSeconds); // NEW
     }
 
@@ -100,9 +95,5 @@ export class AppSettingsService {
     }
     setPresetTimerDurationSeconds(seconds: number): void {
         this.saveSettings({ presetTimerDurationSeconds: seconds });
-    }
-
-    setEnablePresetTimerAfterRest(enabled: boolean): void {
-        this.saveSettings({ enablePresetTimerAfterRest: enabled });
     }
 }

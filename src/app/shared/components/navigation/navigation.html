@@ -8,7 +8,8 @@
     <a *ngFor="let item of navItems" [routerLink]="item.path" appPress (shortPress)="onNavigate(item.path)"
       (longPress)="onLongPress(item)" (pressRelease)="onPressRelease(item)"
       class="flex w-full flex-col items-center justify-center text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary-light cursor-pointer transition-colors p-1 w-16 min-w-[64px]"
-      [class.text-primary]="isLinkActive(item)" [class.dark:text-primary-light]="isLinkActive(item)">
+      [class.text-primary]="isLinkActive(item)" [class.dark:text-primary-light]="isLinkActive(item)"
+      [appTooltip]="'Go to ' + item.label">
 
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
         class="w-6 h-6 transition-all duration-200"

@@ -42,7 +42,7 @@ export interface TrainingProgram {
   /** Indicates if this is the program the user is currently actively following. Only one program can be active at a time. */
   isActive: boolean;
   /** Optional: The date (ISO string YYYY-MM-DD) when the user started or intends to start this program. */
-  startDate: string;
+  startDate?: string;
   /**
    * Optional: Defines the length of the program's cycle in days if it's not a standard 7-day week.
    * For example, a 3-day on, 1-day off cycle might have a cycleLength of 4.

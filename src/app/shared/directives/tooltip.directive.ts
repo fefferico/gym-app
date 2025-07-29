@@ -1,10 +1,10 @@
-import { Directive, Input, ElementRef, HostListener, Renderer2 } from '@angular/core';
+import { Directive, Input, ElementRef, HostListener, Renderer2, OnDestroy } from '@angular/core'; // 1. Import OnDestroy
 
 @Directive({
   selector: '[appTooltip]',
   standalone: true,
 })
-export class TooltipDirective {
+export class TooltipDirective implements OnDestroy { // 2. Implement OnDestroy
   @Input('appTooltip') tooltipText: string = '';
   @Input() tooltipPosition: 'top' | 'bottom' | 'left' | 'right' = 'top';
   @Input() tooltipDelay: number = 200;
@@ -15,13 +15,11 @@ export class TooltipDirective {
   constructor(
     private el: ElementRef,
     private renderer: Renderer2
-  ) {}
+  ) { }
 
   @HostListener('mouseenter')
   onMouseEnter(): void {
-    // Clear any lingering timeout from rapid mouse movements
     clearTimeout(this.delayTimeout);
-    
     this.delayTimeout = setTimeout(() => {
       this.createTooltip();
     }, this.tooltipDelay);
@@ -32,36 +30,42 @@ export class TooltipDirective {
     clearTimeout(this.delayTimeout);
     this.removeTooltip();
   }
+  
+  // +++ 3. ADD THE ngOnDestroy METHOD +++
+  /**
+   * This lifecycle hook is called by Angular right before the directive is destroyed.
+   * It's the perfect place to clean up our tooltip element to prevent memory leaks
+   * or orphaned elements on the page, especially during route navigation.
+   */
+  ngOnDestroy(): void {
+    // Cancel any pending tooltip creation
+    clearTimeout(this.delayTimeout);
+
+    // Immediately remove the tooltip if it exists
+    if (this.tooltipElement) {
+      this.renderer.removeChild(document.body, this.tooltipElement);
+      this.tooltipElement = null;
+    }
+  }
 
   private createTooltip(): void {
     if (this.tooltipElement || !this.tooltipText) {
       return;
     }
-
-    // 1. Create element and add content
+    
     this.tooltipElement = this.renderer.createElement('span');
     this.renderer.appendChild(
       this.tooltipElement,
       this.renderer.createText(this.tooltipText)
     );
-
-    // 2. Append to body so it can be measured
     this.renderer.appendChild(document.body, this.tooltipElement);
-    
-    // --- THE FIX IS HERE ---
-    // 3. Add a special 'preparing' class that sets visibility: hidden.
-    // This makes the browser calculate its full size without showing it.
     this.renderer.addClass(this.tooltipElement, 'tooltip-container');
     this.renderer.addClass(this.tooltipElement, 'tooltip-preparing');
 
-    // 4. NOW we can measure it and position it correctly.
-    // Because it's fully rendered (just invisible), getBoundingClientRect() will be accurate.
     this.positionTooltip();
 
-    // 5. Finally, swap the classes to trigger the fade-in animation.
-    // We use a tiny delay to ensure the browser registers the position change before the transition starts.
     setTimeout(() => {
-      if(this.tooltipElement) {
+      if (this.tooltipElement) {
         this.renderer.removeClass(this.tooltipElement, 'tooltip-preparing');
         this.renderer.addClass(this.tooltipElement, 'tooltip-active');
       }
@@ -72,28 +76,25 @@ export class TooltipDirective {
     if (!this.tooltipElement) {
       return;
     }
-    
     this.renderer.removeClass(this.tooltipElement, 'tooltip-active');
-
     setTimeout(() => {
       if (this.tooltipElement) {
         this.renderer.removeChild(document.body, this.tooltipElement);
         this.tooltipElement = null;
       }
-    }, 200); // Should match CSS transition duration
+    }, 200);
   }
 
   private positionTooltip(): void {
     if (!this.tooltipElement) return;
 
     const hostPos = this.el.nativeElement.getBoundingClientRect();
-    const tooltipPos = this.tooltipElement.getBoundingClientRect(); // This is now ACCURATE
+    const tooltipPos = this.tooltipElement.getBoundingClientRect();
     const scrollY = window.scrollY;
     const scrollX = window.scrollX;
-
+    
     let top, left;
 
-    // The positioning math remains the same, but now it has the correct tooltipPos.height
     switch (this.tooltipPosition) {
       case 'bottom':
         top = hostPos.bottom + scrollY + 8;
@@ -113,7 +114,7 @@ export class TooltipDirective {
         left = hostPos.left + scrollX + (hostPos.width - tooltipPos.width) / 2;
         break;
     }
-
+    
     this.renderer.setStyle(this.tooltipElement, 'top', `${top}px`);
     this.renderer.setStyle(this.tooltipElement, 'left', `${left}px`);
   }
