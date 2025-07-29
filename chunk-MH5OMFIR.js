@@ -1,0 +1,136 @@
+import{M as i,Mb as d,Q as o,_ as c,aa as l,la as a,qa as h}from"./chunk-L2DHHQHV.js";var v={"eye-off":`
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+      <path fill-rule="evenodd" d="M3.28 2.22a.75.75 0 00-1.06 1.06l14.5 14.5a.75.75 0 101.06-1.06l-1.745-1.745a10.029 10.029 0 003.3-4.38 1.651 1.651 0 000-1.185A10.004 10.004 0 009.999 3a9.956 9.956 0 00-4.744 1.194L3.28 2.22zM7.752 6.69l1.092 1.092a2.5 2.5 0 013.374 3.373l1.091 1.092a4 4 0 00-5.557-5.557z" clip-rule="evenodd" />
+      <path d="M10.748 13.93l2.523 2.523a9.987 9.987 0 01-3.27.547c-4.257 0-7.893-2.66-9.336-6.41a1.651 1.651 0 010-1.186A10.007 10.007 0 012.839 6.02L6.07 9.252a4 4 0 004.678 4.678z" />
+    </svg>
+  `,"plus-circle":`
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-11.25a.75.75 0 00-1.5 0v2.5h-2.5a.75.75 0 000 1.5h2.5v2.5a.75.75 0 001.5 0v-2.5h2.5a.75.75 0 000-1.5h-2.5v-2.5z" clip-rule="evenodd" />
+    </svg>
+  `,trash:`
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                        </svg>
+  `,hidden:`
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd"
+            d="M3.28 2.22a.75.75 0 00-1.06 1.06l14.5 14.5a.75.75 0 101.06-1.06l-1.745-1.745a10.029 10.029 0 003.3-4.38 1.651 1.651 0 000-1.185A10.004 10.004 0 009.999 3a9.956 9.956 0 00-4.744 1.194L3.28 2.22zM7.752 6.69l1.092 1.092a2.5 2.5 0 013.374 3.373l1.091 1.092a4 4 0 00-5.557-5.557z"
+            clip-rule="evenodd" />
+        <path
+            d="M10.748 13.93l2.523 2.523a9.987 9.987 0 01-3.27.547c-4.257 0-7.893-2.66-9.336-6.41a1.651 1.651 0 010-1.186A10.007 10.007 0 012.839 6.02L6.07 9.252a4 4 0 004.678 4.678z" />
+    </svg>
+                                    `,favourite:`
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round"
+        stroke-linejoin="round">
+        <path
+            d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+    </svg>
+    `,menu_action:`
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+      stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <path stroke-linecap="round" stroke-linejoin="round"
+          d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+  </svg>
+    `,routines:`
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                    stroke="currentColor" 
+                    aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 0 1 0 3.75H5.625a1.875 1.875 0 0 1 0-3.75Z" />
+                </svg>
+    `,save:`
+    <svg *ngIf="!isNewMode" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M15.2 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8.8" />
+                    <path d="M16 3.1 21 8" />
+                    <path d="M8 21v-7h8v7" />
+                    <path d="M8 3v5h8V3" />
+                </svg>
+          `,create:`
+<svg *ngIf="isNewMode" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="16"></line>
+                    <line x1="8" y1="12" x2="16" y2="12"></line>
+                </svg>
+          `,cancel:`
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <line x1="18" y1="6" x2="6" y2="18"></line>
+  <line x1="6" y1="6" x2="18" y2="18"></line>
+</svg>
+`,info:`
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                                class="w-4 h-4 text-gray-400 dark:text-gray-500 cursor-help">
+                                <path fill-rule="evenodd"
+                                    d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-7-4a1 1 0 1 1-2 0 1 1 0 0 1 2 0ZM9 9a.75.75 0 0 0 0 1.5h.253a.25.25 0 0 1 .244.304l-.459 2.066A1.75 1.75 0 0 0 10.747 15H11a.75.75 0 0 0 0-1.5h-.253a.25.25 0 0 1-.244-.304l.459-2.066A1.75 1.75 0 0 0 9.253 9H9Z"
+                                    clip-rule="evenodd" />
+                            </svg>
+       `,change:`
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <polyline points="23 4 23 10 17 10"></polyline>
+                                        <polyline points="1 20 1 14 7 14"></polyline>
+                                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"></path>
+                                        <path d="M20.49 15a9 9 0 0 1-14.85 3.36L1 14"></path>
+                                    </svg>
+       `,back:`
+<svg
+                    fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+                `,filter:`
+                <svg stroke="currentColor" class="w-10 h-10 transition-transform duration-300" viewBox="0 0 24 24"
+        stroke-width="0.02" fill="currentColor" xmlns="http://www.w3.org/2000/svg"
+        [class.rotate-180]="currentView() === 'list' && isFilterAccordionOpen()">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="M9 5a1 1 0 1 0 0 2 1 1 0 0 0 0-2zM6.17 5a3.001 3.001 0 0 1 5.66 0H19a1 1 0 1 1 0 2h-7.17a3.001 3.001 0 0 1-5.66 0H5a1 1 0 0 1 0-2h1.17zM15 11a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm-2.83 0a3.001 3.001 0 0 1 5.66 0H19a1 1 0 1 1 0 2h-1.17a3.001 3.001 0 0 1-5.66 0H5a1 1 0 1 1 0-2h7.17zM9 17a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm-2.83 0a3.001 3.001 0 0 1 5.66 0H19a1 1 0 1 1 0 2h-7.17a3.001 3.001 0 0 1-5.66 0H5a1 1 0 1 1 0-2h1.17z" />
+      </svg>
+       `,goal:`
+       <svg fill="currentColor" viewBox="0 0 72 72" aria-hidden="true">
+                                    <g>
+                                        <path
+                                            d="M21.929,10.583h3c0.553,0,1-0.447,1-1s-0.447-1-1-1h-3c-0.553,0-1,0.447-1,1S21.376,10.583,21.929,10.583z" />
+                                        <path
+                                            d="M29.929,10.583h8c0.553,0,1-0.447,1-1s-0.447-1-1-1h-8c-0.553,0-1,0.447-1,1S29.376,10.583,29.929,10.583z" />
+                                        <path
+                                            d="M41.074,43.893l-2.971-0.443l-1.287-2.796C36.49,39.944,35.78,39.49,35,39.49s-1.49,0.454-1.816,1.163l-1.288,2.796 l-2.97,0.443c-0.746,0.112-1.366,0.635-1.604,1.352c-0.236,0.717-0.049,1.506,0.484,2.04l2.165,2.168l-0.708,3.16 c-0.175,0.78,0.133,1.591,0.782,2.059c0.348,0.251,0.759,0.378,1.17,0.378c0.355,0,0.712-0.095,1.03-0.285l2.769-1.664l2.964,1.688 c0.308,0.176,0.649,0.262,0.989,0.262c0.435,0,0.867-0.142,1.226-0.42c0.639-0.495,0.917-1.326,0.704-2.105l-0.844-3.097 l2.14-2.143c0.533-0.534,0.721-1.323,0.484-2.04C42.44,44.527,41.82,44.005,41.074,43.893z M38.202,48.451 c-0.216,0.216-0.313,0.52-0.264,0.818l1.029,3.779l-3.496-1.99c-0.146-0.078-0.309-0.117-0.472-0.117s-0.325,0.039-0.472,0.117 l-3.313,1.99l0.846-3.779c0.05-0.299-0.048-0.603-0.264-0.818l-2.576-2.58l3.515-0.525c0.321-0.049,0.598-0.25,0.735-0.537 L35,41.49l1.528,3.318c0.138,0.287,0.414,0.488,0.735,0.537l3.515,0.525L38.202,48.451z" />
+                                        <path
+                                            d="M47.874,32.213l3.275-3.227c0.389-0.377,0.434-0.895,0.434-1.436v-9.054c3-1.049,5.453-4.214,5.453-7.757 c0-4.411-3.608-8.157-7.999-8.157H20.962c-4.391,0-7.926,3.746-7.926,8.157c0,3.552,2.547,6.725,5.547,7.766v9.045 c0,0.541,0.392,1.059,0.78,1.436l3.142,2.914c-4.463,3.64-7.329,9.176-7.329,15.369c0,10.936,8.893,19.833,19.829,19.833 c10.936,0,19.831-8.897,19.831-19.833C54.835,41.247,52.125,35.854,47.874,32.213z M40.583,28.231v-9.648h7v8.122l-3.041,3.145 C43.299,29.17,41.583,28.634,40.583,28.231z M38.583,18.583v9.184c-1-0.205-2.312-0.33-3.512-0.33 c-1.192,0-2.488,0.124-3.488,0.326v-9.18H38.583z M17,10.583c0-2.209,1.774-4,3.962-4h27.55l0.316-0.025 c2.189,0,4.067,1.999,4.067,4.208c0,2.208-1.669,3.817-3.858,3.817H20.962C18.774,14.583,17,12.791,17,10.583z M22.583,26.705 v-8.122h7v9.643c-1,0.374-2.536,0.871-3.708,1.488L22.583,26.705z M35,63.103c-8.745,0-15.833-7.087-15.833-15.833 S26.255,31.437,35,31.437s15.833,7.087,15.833,15.833S43.745,63.103,35,63.103z" />
+                                        <path
+                                            d="M32.5,36.637c0.027,0,0.055-0.001,0.083-0.003c0.246-0.021,0.498-0.031,0.75-0.031c0.553,0,1-0.447,1-1s-0.447-1-1-1 c-0.307,0-0.613,0.013-0.914,0.037c-0.55,0.046-0.96,0.528-0.915,1.079C31.547,36.241,31.984,36.637,32.5,36.637z" />
+                                        <path
+                                            d="M29.584,37.419c0.502-0.23,0.723-0.824,0.492-1.326c-0.231-0.503-0.826-0.721-1.326-0.492 c-3.898,1.789-6.417,5.715-6.417,10.003c0,0.553,0.447,1,1,1s1-0.447,1-1C24.333,42.095,26.395,38.883,29.584,37.419z" />
+                                    </g>
+                                </svg> `,muscle:`
+                                <svg stroke="currentColor" stroke-width="1.5" viewBox="-3 0 60 60"
+                                aria-hidden="true">
+                                <g>
+                                    <path
+                                        d="M1.434,28.084c1.527,0.188,3.644,0.847,3.644,1.587c0,0.207,0.128,0.393,0.321,0.467c0.189,0.073,0.412,0.021,0.551-0.133 c0.026-0.027,2.688-2.917,7.878-2.917c5.405,0,8.5,2.556,8.5,3.25c0,0.241,0.172,0.447,0.408,0.491 c0.24,0.044,0.471-0.087,0.559-0.312c0.019-0.051,1.904-4.85,4.922-4.85c0.01,0,0.021,0,0.027,0 c1.557,0.018,4.362,0.042,6.073,2.143c0.193,0.269,0.318,0.438,0.354,0.486c0.16,0.223,0.467,0.271,0.688,0.116 s0.281-0.456,0.136-0.686c-0.118-0.184-0.243-0.354-0.372-0.518c-1.658-2.314-8.548-12.151-8.548-15.794 c0-0.194-0.112-0.371-0.288-0.453c-0.175-0.083-0.382-0.056-0.531,0.068c-0.058,0.047-5.736,4.688-10.149,1.041 c-0.052-0.056-1.274-1.379-0.466-2.437c0.094-0.123,0.124-0.282,0.085-0.432s-0.146-0.272-0.289-0.333 c-0.008-0.003-0.812-0.354-1.062-1.093c-0.164-0.483-0.062-1.055,0.304-1.7c1.356-2.392,3.701-4.431,3.779-4.506 c0.012-0.014,1.186-1.341,3.882,0.116c0.351,0.189,0.768,0.409,1.236,0.656c3.612,1.901,10.334,5.439,12.925,9.109 c0.548,0.773,1.248,1.658,2.062,2.682c3.635,4.578,9.113,11.486,9.43,19.683c-0.25,0.541-1.715,3.412-5.574,5.773 c-3.948,2.418-11.291,4.786-23.824,2.332c-0.13-0.025-0.272,0.002-0.385,0.082c-0.113,0.079-0.187,0.2-0.206,0.338 c-0.006,0.039-0.591,3.967-2.71,6.318c-0.185,0.205-0.168,0.521,0.037,0.706c0.096,0.086,0.216,0.128,0.335,0.128 c0.137,0,0.272-0.056,0.372-0.166c1.867-2.074,2.626-5.123,2.865-6.331c3.566,0.67,6.729,0.956,9.533,0.956 c16.356-0.001,20.479-9.74,20.523-9.854c0.026-0.064,0.038-0.135,0.036-0.203c-0.276-8.578-5.917-15.683-9.646-20.385 c-0.806-1.012-1.496-1.887-2.025-2.638c-2.729-3.866-9.592-7.477-13.278-9.417c-0.465-0.245-0.879-0.463-1.228-0.651 c-3.397-1.837-5.051,0.036-5.063,0.062c-0.102,0.087-2.499,2.169-3.941,4.715c-0.515,0.908-0.643,1.758-0.378,2.525 c0.237,0.689,0.741,1.144,1.126,1.405c-0.558,1.27,0.255,2.644,0.868,3.285c4.082,3.376,8.941,0.736,10.749-0.476 c0.651,3.412,4.48,9.436,6.937,13.036c-1.628-0.668-3.354-0.686-4.443-0.695c-2.725-0.035-4.565,2.925-5.363,4.513 c-1.268-1.495-4.704-3.096-8.974-3.096c-4.277,0-6.947,1.781-8.048,2.708c-0.904-1.229-3.599-1.627-4.225-1.704 c-0.268-0.035-0.522,0.161-0.557,0.437C0.965,27.799,1.16,28.05,1.434,28.084z" />
+                                    <path
+                                        d="M30.738,39.531c1.036,0,2.114-0.15,3.146-0.551c1.934-0.75,3.356-2.25,4.239-4.457c0.104-0.256-0.021-0.547-0.276-0.65 c-0.256-0.103-0.547,0.021-0.647,0.279c-0.771,1.938-2.013,3.248-3.671,3.895c-3.604,1.402-8.104-0.721-8.146-0.743 c-0.25-0.119-0.549-0.015-0.668,0.233c-0.12,0.249-0.016,0.547,0.233,0.667C25.093,38.275,27.739,39.531,30.738,39.531z" />
+                                </g>
+                            </svg>
+                            `,calendar:`
+                            <svg fill="none" viewBox="-5 -5 32 32" stroke-width="1.5"
+                                stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5m-9-3.75h.008v.008H12v-.008zM12 15h.008v.008H12V15zm0 2.25h.008v.008H12v-.008zM9.75 15h.008v.008H9.75V15zm0 2.25h.008v.008H9.75v-.008zM7.5 15h.008v.008H7.5V15zm0 2.25h.008v.008H7.5v-.008zm6.75-4.5h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V15zm0 2.25h.008v.008h-.008v-.008zm2.25-4.5h.008v.008H16.5v-.008zm0 2.25h.008v.008H16.5V15z" />
+                            </svg>
+`,clock:`
+<svg class="w-6 h-6" fill="none" viewBox="-5 -5 32 32" stroke-width="1.5"
+                                    stroke="currentColor" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                </svg>`,play:`
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" 
+            stroke-width="2" stroke="currentColor" >
+            <path stroke-linecap="round" stroke-linejoin="round" 
+            d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 010 1.972l-11.54 6.347a1.125 1.125 0 01-1.667-.986V5.653z"></path></svg>
+  `,profile:`
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" ><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A1.875 1.875 0 0 1 18.126 22.5H5.874a1.875 1.875 0 0 1-1.373-2.382Z"></path></svg>
+  `};var s=class n{registry=new Map;constructor(){this.registerIcons(v)}registerIcons(t){for(let[e,r]of Object.entries(t))this.registry.set(e,r)}getIconString(t){let e=this.registry.get(t);return e||(console.warn(`Icon '${t}' not found in registry.`),null)}static \u0275fac=function(e){return new(e||n)};static \u0275prov=i({token:n,factory:n.\u0275fac,providedIn:"root"})};var g=class n{registry=o(s);el=o(l).nativeElement;renderer=o(a);name;strokeWidth;class;ngOnChanges(t){this.updateIcon()}updateIcon(){if(this.el.innerHTML="",!this.name)return;let t=this.registry.getIconString(this.name);if(!t)return;let e=this.renderer.createElement("div");this.renderer.setProperty(e,"innerHTML",t);let r=e.querySelector("svg");r&&(this.class&&this.renderer.setAttribute(r,"class",this.class),this.strokeWidth!==void 0&&this.strokeWidth!==null&&r.children&&this.renderer.setStyle(r.children[0],"stroke-width",this.strokeWidth.toString()),this.renderer.setAttribute(r,"aria-hidden","true"),this.renderer.appendChild(this.el,r))}static \u0275fac=function(e){return new(e||n)};static \u0275cmp=h({type:n,selectors:[["app-icon"]],inputs:{name:"name",strokeWidth:"strokeWidth",class:"class"},features:[c],decls:0,vars:0,template:function(e,r){},dependencies:[d],styles:["[_nghost-%COMP%]{display:inline-flex;align-items:center;justify-content:center}[_nghost-%COMP%]   svg[_ngcontent-%COMP%]{width:100%;height:100%}"]})};export{g as a};
