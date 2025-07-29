@@ -14,6 +14,7 @@ import { TrackingService } from '../../../core/services/tracking.service';
 import { WorkoutLog } from '../../../core/models/workout-log.model';
 import { UnitsService } from '../../../core/services/units.service';
 import { PressDirective } from '../../../shared/directives/press.directive';
+import { IconComponent } from '../../../shared/components/icon/icon.component';
 
 export interface ChartDataPoint {
   name: string | Date;
@@ -31,7 +32,8 @@ export interface ChartSeries { name: string; series: ChartDataPoint[]; }
     DatePipe, // Add DatePipe here
     NgxChartsModule,
     ReactiveFormsModule, // Add ReactiveFormsModule here
-    PressDirective
+    PressDirective,
+    IconComponent
   ],
   templateUrl: './stats-dashboard.html',
   styleUrl: './stats-dashboard.scss',

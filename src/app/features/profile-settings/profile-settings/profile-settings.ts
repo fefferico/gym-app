@@ -21,12 +21,13 @@ import { TrainingProgramService } from '../../../core/services/training-program.
 import { UserProfileService } from '../../../core/services/user-profile.service';
 import { ExerciseService } from '../../../core/services/exercise.service';
 import { PressDirective } from '../../../shared/directives/press.directive';
+import { IconComponent } from '../../../shared/components/icon/icon.component';
 
 
 @Component({
   selector: 'app-profile-settings',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, PressDirective],
+  imports: [CommonModule, ReactiveFormsModule, PressDirective, IconComponent],
   templateUrl: './profile-settings.html',
   styleUrl: './profile-settings.scss',
 })

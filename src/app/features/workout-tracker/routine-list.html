@@ -174,14 +174,14 @@
                         <div>
                             <div *ngIf="routine && getRoutineDuration(routine) > 0"
                                 class="text-sm text-gray-500 dark:text-gray-300 flex gap-1">
-                                <app-icon name="clock" class="w-6 h-6"></app-icon>
+                                <app-icon name="clock" class="w-5 h-5"></app-icon>
                                 <span class="font-medium">Est:</span> ~{{ getRoutineDuration(routine)}} min
                             </div>
                         </div>
                         <div *ngIf="!routine.lastPerformed"
                             class="text-sm text-gray-500 dark:text-gray-300 italic flex gap-1">
 
-                            <app-icon name="calendar" class="w-6 h-6"></app-icon>
+                            <app-icon name="calendar" class="w-5 h-5"></app-icon>
 
                             Not performed yet
                         </div>
