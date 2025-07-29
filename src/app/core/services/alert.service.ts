@@ -190,7 +190,7 @@ export class AlertService {
             return result.values || {};
         }
         // return customButton role if it exists, otherwise return null
-        if (result && result.role) {
+        if (result && result.role && result.role !== 'cancel') {
             return { role: result.role, data: result.data };
         } else {
             // If no valid result, return null

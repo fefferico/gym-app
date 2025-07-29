@@ -33,7 +33,7 @@
           <span *ngIf="isToday(currentDate())" class="text-m text-primary dark:text-primary-light">(Today)</span>
         </h2>
       </div>
-      <button  appPressScroll (shortPress)="nextDay()" title="Next Day"
+      <button appPressScroll (shortPress)="nextDay()" title="Next Day"
         class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 disabled:opacity-50"
         [disabled]="isAnimating()">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
@@ -142,7 +142,7 @@
                   </ng-container>
                   <ng-container *ngIf="isToday(currentDate())">
                     <div class="flex flex-col sm:flex-row gap-2">
-                      <button appPressScroll (shortPress)="startWorkoutProgram(workoutInfo.routine.id, workoutInfo.scheduledDayInfo.programId, $event)"
+                      <button appPressScroll (shortPress)="startProgramWorkout(workoutInfo.routine.id, workoutInfo.scheduledDayInfo.programId, $event)"
                         class="flex-1 bg-green-500 hover:bg-green-600 text-white font-semibold py-2.5 px-4 rounded-md shadow-sm flex items-center justify-center text-m"><svg
                           xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                           stroke="currentColor" class="w-5 h-5 mr-2">
@@ -222,8 +222,8 @@
                   *ngIf="availableRoutines$ | async as routines">
                   <h4 class="text-md font-semibold text-gray-600 dark:text-gray-200 mb-2">Or, pick one from below:</h4>
                   <div class="max-h-40 overflow-y-auto space-y-2 px-4 py-2 custom-scrollbar rounded">
-                    <div  appPressScroll (shortPress)="viewRoutineDetails(routine.id)" *ngFor="let routine of routines"
-                      class="p-3 bg-gray-200/50 dark:bg-gray-600 rounded-md shadow-sm hover:shadow-md transition-shadow flex justify-between items-center transform hover:-translate-y-1">
+                    <div appPressScroll (shortPress)="viewRoutineDetails(routine.id)" *ngFor="let routine of routines"
+                      class="p-3 bg-gray-200/50 hover:bg-gray-300 dark:bg-gray-500 hover:dark:bg-gray-600 rounded-md shadow-sm hover:shadow-md transition-shadow flex justify-between items-center transform hover:-translate-y-1">
                       <div class="truncate">
                         <span class="font-medium text-gray-800 dark:text-gray-100">{{ routine.name }}</span>
                         <!-- <span class="block text-left text-xs text-gray-500 dark:text-gray-400">{{
@@ -239,8 +239,8 @@
                         </span>
                       </div>
                       <button [disabled]="isAnimating()"
-                        appPressScroll (shortPress)="startWorkoutProgram(routine.id, undefined, $event)"
-                        class="flex items-center ml-2 text-m bg-primary hover:bg-green-200 text-white dark:hover:bg-primary-dark font-semibold py-1 px-2.5 rounded-md disabled:opacity-50">
+                        appPressScroll (shortPress)="startWorkout(routine.id, $event)"
+                        class="flex items-center ml-2 text-m bg-primary text-white hover:bg-green-600 font-semibold py-1 px-2.5 rounded-md disabled:opacity-50">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
                           stroke="currentColor" class="size-4 mr-1">
                           <path stroke-linecap="round" stroke-linejoin="round"
@@ -326,7 +326,7 @@
                   <h4 class="text-md font-semibold text-gray-600 dark:text-gray-200 mb-2">Or, pick one from below:</h4>
                   <div class="max-h-40 overflow-y-auto space-y-2 px-4 py-2 custom-scrollbar rounded">
                     <div appPressScroll (shortPress)="viewRoutineDetails(routine.id)" *ngFor="let routine of routines"
-                      class="p-3 bg-gray-200/50 dark:bg-gray-600 rounded-md shadow-sm hover:shadow-md transition-shadow flex justify-between items-center transform hover:-translate-y-1">
+                      class="p-3 bg-gray-200/50 hover:bg-gray-300 dark:bg-gray-500 hover:dark:bg-gray-600 rounded-md shadow-sm hover:shadow-md transition-shadow flex justify-between items-center transform hover:-translate-y-1">
                       <div class="truncate">
                         <span class="font-medium text-gray-800 dark:text-gray-100">{{ routine.name }}</span>
                         <!-- <span class="block text-left text-xs text-gray-500 dark:text-gray-400">{{
@@ -341,8 +341,8 @@
                           </span>
                         </span>
                       </div>
-                      <button  appPressScroll (shortPress)="startWorkoutProgram(routine.id, undefined, $event)" [disabled]="isAnimating()"
-                        class="flex items-center ml-2 text-m bg-primary hover:bg-green-200 text-white dark:hover:bg-primary-dark font-semibold py-1 px-2.5 rounded-md disabled:opacity-50">
+                      <button appPressScroll (shortPress)="startWorkout(routine.id, $event)" [disabled]="isAnimating()"
+                        class="flex items-center ml-2 text-m bg-primary text-white hover:bg-green-600 font-semibold py-1 px-2.5 rounded-md disabled:opacity-50">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
                           stroke="currentColor" class="size-4 mr-1">
                           <path stroke-linecap="round" stroke-linejoin="round"

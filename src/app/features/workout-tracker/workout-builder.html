@@ -160,7 +160,8 @@
                     <select id="programIdForLog" formControlName="programIdForLog"
                         class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200">
                         <option value="">-- Log Ad-hoc Program --</option>
-                        <option *ngFor="let program of availablePrograms" [value]="program.id">{{ program.name }}</option>
+                        <option *ngFor="let program of availablePrograms" [value]="program.id">{{ program.name }}
+                        </option>
                     </select>
                 </div>
                 <div>
@@ -185,14 +186,12 @@
             </div>
 
             <div *ngIf="exercisesFormArray.length>0" cdkDropList [cdkDropListData]="exercisesFormArray.controls"
-                (cdkDropListDropped)="onExerciseDrop($event)"
-                [cdkDropListDisabled]="!isEditableMode" formArrayName="exercises"
-                class="exercise-list-container space-y-4">
-                <ng-container *ngFor="let exerciseControl of exercisesFormArray.controls; let exIndex = index;"
-                    >
+                (cdkDropListDropped)="onExerciseDrop($event)" [cdkDropListDisabled]="!isEditableMode"
+                formArrayName="exercises" class="exercise-list-container space-y-4">
+                <ng-container *ngFor="let exerciseControl of exercisesFormArray.controls; let exIndex = index;">
                     <div class="relative group exercise-card-wrapper" (click)="toggleSetExpansion(exIndex,0, $event)"
-                        appClickOutside (clickOutside)="collapseExpandedSet(false,$event)" [title]="isEditableMode() ? 'Drag to reorder' : ''"
-                        [ngClass]="{
+                        appClickOutside (clickOutside)="collapseExpandedSet(false,$event)"
+                        [title]="isEditableMode() ? 'Drag to reorder' : ''" [ngClass]="{
                                         'superset-spacing': isSupersetSpacing(exIndex)
                                         }">
                         <div *ngIf="mode === 'routineBuilder' && (isEditableMode()) && selectedExerciseIndicesForSuperset().length >= 2 && exIndex === firstSelectedExerciseIndexForSuperset"
@@ -209,12 +208,10 @@
                             </button>
                         </div>
 
-                        <div cdkDrag
-                            [cdkDragDisabled]="!isEditableMode() || isSetExpanded(exIndex, 0)"
-                            appLongPressDrag [longPressEnabled]="isEditableMode() && !isSetExpanded(exIndex, 0)"
-                            [longPressDelay]="150" longPressClass="is-long-pressing" [cdkDragData]="exerciseControl"
-                            [formGroupName]="exIndex" [cdkDragStartDelay]="110"
-                            class="exercise-item relative transition-all"
+                        <div cdkDrag [cdkDragDisabled]="!isEditableMode() || isSetExpanded(exIndex, 0)" appLongPressDrag
+                            [longPressEnabled]="isEditableMode() && !isSetExpanded(exIndex, 0)" [longPressDelay]="150"
+                            longPressClass="is-long-pressing" [cdkDragData]="exerciseControl" [formGroupName]="exIndex"
+                            [cdkDragStartDelay]="110" class="exercise-item relative transition-all"
                             [ngClass]="getExerciseCardClasses(exerciseControl, exIndex)">
                             <!-- COMPACT VIEW / HEADER AREA -->
                             <div class="flex items-center space-x-1">
@@ -321,7 +318,8 @@
                                         <span
                                             *ngIf="mode === 'routineBuilder' && exerciseControl.get('supersetId')?.value"
                                             class="text-xs text-orange-600 dark:text-orange-400 font-normal block mb-1">
-                                            Superset exercise ({{ (exerciseControl.get('supersetOrder')?.value ?? 0) + 1 }} of {{
+                                            Superset exercise ({{ (exerciseControl.get('supersetOrder')?.value ?? 0) + 1
+                                            }} of {{
                                             exerciseControl.get('supersetSize')?.value }})
                                         </span>
 
@@ -338,8 +336,8 @@
                                             </h3>
                                             <svg class="ml-2 cursor-pointer dark:text-white" title="Exercise details"
                                                 *ngIf="exerciseControl.get('exerciseId')?.value" width="20" height="20"
-                                                viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"
-                                                appPress (shortPress)="openModal(exerciseControl.value)">
+                                                viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" appPress
+                                                (shortPress)="openModal(exerciseControl.value)">
                                                 <!-- Outer circle -->
                                                 <title>Exercise details and progression</title>
                                                 <circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="2"
@@ -614,8 +612,7 @@
                                                             placeholder="Secs" [readonly]="isViewMode"
                                                             class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
                                                     </div>
-                                                    <div
-                                                        *ngIf="setControl.get('tempo')?.value || isEditableMode()">
+                                                    <div *ngIf="setControl.get('tempo')?.value || isEditableMode()">
                                                         <label [for]="'tempo-exp-' + exIndex + '-' + setIndex"
                                                             class="block text-s font-medium text-gray-600 dark:text-gray-400">Tempo</label>
                                                         <input type="text"
@@ -703,13 +700,14 @@
             </div>
 
 
-            <div *ngIf="!isViewMode && exercisesFormArray.length > 0" class="mt-6 text-center">
+            <div *ngIf="!isViewMode && exercisesFormArray.length > 0" class="flex mt-6 justify-center">
                 <button type="button" (click)="openExerciseSelectionModal()"
-                    class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-6 rounded-md shadow-md hover:shadow-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
-                        class="w-5 h-5 mr-2 inline-block">
-                        <path
-                            d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
+                    class="flex items-center justify-center bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-6 rounded-md shadow-md hover:shadow-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="16"></line>
+                        <line x1="8" y1="12" x2="16" y2="12"></line>
                     </svg>
                     ADD ANOTHER EXERCISE
                 </button>
@@ -728,7 +726,28 @@
             </button>
             <button type="submit"
                 [disabled]="builderForm.invalid || (exercisesFormArray.length === 0 && !(mode === 'routineBuilder' && builderForm.get('goal')?.value === 'rest'))"
-                class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark disabled:opacity-50">
+                class="flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark disabled:opacity-50">
+
+                <!-- Create Icon (visible when isNewMode is true) -->
+                <svg *ngIf="isNewMode" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="mr-2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="16"></line>
+                    <line x1="8" y1="12" x2="16" y2="12"></line>
+                </svg>
+
+                <!-- Save Icon (visible when isNewMode is false) -->
+                <svg *ngIf="!isNewMode" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="mr-2">
+                    <path d="M15.2 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8.8" />
+                    <path d="M16 3.1 21 8" />
+                    <path d="M8 21v-7h8v7" />
+                    <path d="M8 3v5h8V3" />
+                </svg>
+
+                <!-- Button Text -->
                 {{ mode === 'routineBuilder' ? (isNewMode ? 'CREATE ROUTINE' : 'SAVE CHANGES') : (isNewMode ? 'LOG
                 WORKOUT' : 'SAVE LOG CHANGES') }}
             </button>
@@ -737,11 +756,11 @@
 
     <!-- Exercise Selection Modal -->
     <div *ngIf="isExerciseModalOpen"
-        class="fixed inset-0 bg-gray-700 bg-opacity-75 transition-opacity overflow-y-auto h-full w-full z-[70] flex items-center justify-center p-4"
+        class="fixed inset-0 bg-gray-700 bg-opacity-75 transition-opacity overflow-y-auto h-full w-full z-[70] flex items-center justify-center p-4 backdrop-blur-sm"
         (click)="closeExerciseSelectionModal()">
         <div class="relative transform overflow-hidden rounded-md bg-white dark:bg-gray-700 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg"
             (click)="$event.stopPropagation()">
-            <div class="bg-white dark:bg-gray-700 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+            <div class="bg-white dark:bg-gray-600 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <div class="flex justify-between items-center pb-3">
                     <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">ADD EXERCISE</h3>
                     <button type="button" (click)="closeExerciseSelectionModal()"
@@ -752,15 +771,20 @@
                         </svg></button>
                 </div>
                 <div class="my-4">
-                    <input type="text" placeholder="Search exercises..." [ngModel]="modalSearchTerm()"
-                        (ngModelChange)="modalSearchTerm.set($event)"
+                    <input #exerciseSearchFied type="text" placeholder="Search exercises..."
+                        [ngModel]="modalSearchTerm()" (ngModelChange)="modalSearchTerm.set($event)"
                         class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-gray-200" />
                 </div>
-                <div class="mt-2 max-h-80 overflow-y-auto">
-                    <ul class="space-y-1">
-                        <li *ngFor="let ex of filteredAvailableExercises()"
+                <div
+                    class="mt-2 max-h-80 overflow-y-auto transition-all duration-500 ease-in-out rounded-md scrollbar-thin scrollbar-thumb-primary scrollbar-track-gray-200 dark:scrollbar-track-gray-800">
+                    <ul class="space-y-2">
+                        <li *ngFor="let ex of filteredAvailableExercises(); let odd = odd; let even = even"
                             (click)="mode === 'routineBuilder' ? selectExercise(ex) : selectExerciseForLog(ex)"
-                            class="p-3 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md cursor-pointer flex justify-between items-center">
+                            [ngClass]="{
+                                'p-3 mr-1 hover:bg-gray-400 dark:hover:bg-gray-800 rounded-md cursor-pointer transition-all duration-150 ease-in-out flex justify-between items-center scrollbar-thin scrollbar-thumb-primary scrollbar-track-gray-200 dark:scrollbar-track-gray-800 transform hover:-translate-y-1 shadow-sm hover:shadow-md transition-shadow': true,
+                                          'bg-gray-200 dark:bg-gray-600': odd,
+                                          'bg-gray-100 dark:bg-gray-500': even
+                            }">
                             <div>
                                 <span class="font-medium text-gray-800 dark:text-gray-200">{{ ex.name }}</span>
                                 <span class="block text-xs text-gray-500 dark:text-gray-400">{{ ex.category | titlecase
@@ -769,7 +793,7 @@
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
                                 class="w-5 h-5 text-primary dark:text-primary-light">
                                 <path fill-rule="evenodd"
-                                    d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z"
+                                    d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5V4.75Z"
                                     clip-rule="evenodd" />
                             </svg>
                         </li>

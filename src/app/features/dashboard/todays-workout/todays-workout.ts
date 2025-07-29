@@ -238,10 +238,17 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
     }, this.ANIMATION_OUT_DURATION);
   }
 
-  startWorkoutProgram(routineId: string | undefined, programId: string | undefined = undefined, event: Event): void {
+  startProgramWorkout(routineId: string, programId: string | undefined = undefined, event: Event): void {
     event?.stopPropagation();
     if (routineId) {
       this.router.navigate(['/workout/play', routineId], { queryParams: { programId: programId } });
+    }
+  }
+
+  startWorkout(routineId: string, event: Event): void {
+    event?.stopPropagation();
+    if (routineId) {
+      this.router.navigate(['/workout/play', routineId]);
     }
   }
 

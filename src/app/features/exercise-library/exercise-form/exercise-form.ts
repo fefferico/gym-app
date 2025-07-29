@@ -1,17 +1,21 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
-import { CommonModule, TitleCasePipe } from '@angular/common';
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { CommonModule, TitleCasePipe, NgClass } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray } from '@angular/forms';
-import { switchMap, take } from 'rxjs/operators';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray, FormControl } from '@angular/forms';
+import { switchMap, take, startWith, debounceTime, map } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { ExerciseService } from '../../../core/services/exercise.service';
 import { AlertService } from '../../../core/services/alert.service';
 import { Exercise, ExerciseCategory } from '../../../core/models/exercise.model';
+import { Muscle } from '../../../core/models/muscle.model';
+import { MUSCLES_DATA } from '../../../core/services/muscles-data';
+import { Equipment } from '../../../core/models/equipment.model';
+import { EQUIPMENT_DATA } from '../../../core/services/equipment-data';
 
 @Component({
   selector: 'app-exercise-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, TitleCasePipe],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, TitleCasePipe, NgClass],
   templateUrl: './exercise-form.html',
   styleUrls: ['./exercise-form.scss']
 })
@@ -27,27 +31,42 @@ export class ExerciseFormComponent implements OnInit {
   editingExerciseId: string | null = null;
   pageTitle = signal('Add New Exercise');
 
-  // Populate these from constants or a service if they become dynamic
-  categories: ExerciseCategory[] = ['barbells', 'dumbbells', 'bodyweight/calisthenics', 'machines', 'cables', 'kettlebells', 'bands', 'other'];
-  // Example muscle groups - ideally, make this more dynamic or a multi-select component
-  availableMuscleGroups: string[] = [ /* ... populate this array ... */ 'Chest', 'Back', 'Legs', 'Shoulders', 'Biceps', 'Triceps', 'Abs', 'Calves', 'Forearms', 'Glutes', 'Hamstrings', 'Lats', 'Quads', 'Traps'];
+  // --- Muscle Autocomplete ---
+  muscleSearchCtrl = new FormControl('');
+  allMuscles: Muscle[] = MUSCLES_DATA;
+  filteredMuscles = signal<Muscle[]>([]);
+  highlightedMuscleIndex = signal(-1);
 
+  // --- Equipment Autocomplete ---
+  equipmentSearchCtrl = new FormControl('');
+  allEquipment: Equipment[] = EQUIPMENT_DATA;
+  filteredEquipment = signal<Equipment[]>([]);
+  highlightedEquipmentIndex = signal(-1);
+
+  categories: ExerciseCategory[] = ['barbells', 'dumbbells', 'bodyweight/calisthenics', 'machines', 'cables', 'kettlebells', 'bands', 'other', 'stretching', 'cardio'];
+  availableMuscleGroups = computed(() => {
+    return this.allMuscles
+      .map(m => m.name)
+      .filter(name => !name.includes('(') && !name.includes('&'))
+      .sort((a, b) => a.localeCompare(b));
+  });
 
   constructor() {
     this.exerciseForm = this.fb.group({
       name: ['', Validators.required],
-      description: ['', Validators.required],
+      description: [''],
       category: ['bodyweight/calisthenics' as ExerciseCategory, Validators.required],
       primaryMuscleGroup: ['', Validators.required],
-      muscleGroups: this.fb.array([]), // For simplicity, start with primary; multi-select is more UI work
+      muscleGroups: this.fb.array([]),
       equipmentNeeded: this.fb.array([]),
-      imageUrls: this.fb.array([]), // Manage as simple string inputs for now
+      imageUrls: this.fb.array([]),
       videoUrl: [''],
       notes: ['']
     });
   }
 
   ngOnInit(): void {
+    // Existing logic for edit mode
     this.route.paramMap.pipe(
       switchMap(params => {
         this.editingExerciseId = params.get('id');
@@ -64,8 +83,129 @@ export class ExerciseFormComponent implements OnInit {
         this.patchFormForEditing(exercise);
       }
     });
+
+    // Muscle Autocomplete Logic
+    this.muscleSearchCtrl.valueChanges.pipe(
+      debounceTime(200),
+      map(value => this._filterMuscles(value || ''))
+    ).subscribe(muscles => {
+      this.filteredMuscles.set(muscles);
+      this.highlightedMuscleIndex.set(-1);
+    });
+
+    // Equipment Autocomplete Logic
+    this.equipmentSearchCtrl.valueChanges.pipe(
+      debounceTime(200),
+      map(value => this._filterEquipment(value || ''))
+    ).subscribe(equipment => {
+      this.filteredEquipment.set(equipment);
+      this.highlightedEquipmentIndex.set(-1);
+    });
   }
 
+  // --- Muscle Methods ---
+  onMuscleInputClick(): void {
+    if (!this.muscleSearchCtrl.value) {
+      const currentMuscles = this.getFormArray('muscleGroups').value;
+      this.filteredMuscles.set(this.allMuscles.filter(m => !currentMuscles.includes(m.name)));
+    }
+  }
+
+  hideMuscleSuggestions(): void {
+    setTimeout(() => this.filteredMuscles.set([]), 150);
+  }
+
+  onMuscleSearchKeydown(event: KeyboardEvent): void {
+    const key = event.key;
+    const muscles = this.filteredMuscles();
+    if (muscles.length === 0) return;
+    if (key === 'ArrowDown') {
+      event.preventDefault();
+      this.highlightedMuscleIndex.update(i => (i + 1) % muscles.length);
+    } else if (key === 'ArrowUp') {
+      event.preventDefault();
+      this.highlightedMuscleIndex.update(i => (i - 1 + muscles.length) % muscles.length);
+    } else if (key === 'Enter') {
+      event.preventDefault();
+      const index = this.highlightedMuscleIndex();
+      if (index > -1) this.selectMuscle(muscles[index]);
+    }
+  }
+
+  private _filterMuscles(query: string): Muscle[] {
+    if (!query) return [];
+    const lowerCaseQuery = query.toLowerCase();
+    const currentMuscles = this.getFormArray('muscleGroups').value;
+    return this.allMuscles.filter(m => m.name.toLowerCase().includes(lowerCaseQuery) && !currentMuscles.includes(m.name));
+  }
+
+  selectMuscle(muscle: Muscle): void {
+    this.getFormArray('muscleGroups').push(this.fb.control(muscle.name));
+    this.muscleSearchCtrl.setValue('');
+    this.filteredMuscles.set([]);
+  }
+
+  removeMuscle(index: number): void {
+    this.getFormArray('muscleGroups').removeAt(index);
+  }
+
+  // --- Equipment Methods ---
+  onEquipmentInputClick(): void {
+    if (!this.equipmentSearchCtrl.value) {
+      const currentEquipment = this.getFormArray('equipmentNeeded').value;
+      this.filteredEquipment.set(this.allEquipment.filter(e => !currentEquipment.includes(e.name)));
+    }
+  }
+
+  hideEquipmentSuggestions(): void {
+    setTimeout(() => this.filteredEquipment.set([]), 150);
+  }
+
+  onEquipmentSearchKeydown(event: KeyboardEvent): void {
+    const key = event.key;
+    const equipmentList = this.filteredEquipment();
+    const inputValue = this.equipmentSearchCtrl.value?.trim();
+
+    if (key === 'Enter') {
+        event.preventDefault();
+        const index = this.highlightedEquipmentIndex();
+        if (index > -1) {
+            this.selectEquipment(equipmentList[index].name);
+        } else if (inputValue) {
+            this.selectEquipment(inputValue); // Add custom equipment
+        }
+    } else if (equipmentList.length > 0) {
+        if (key === 'ArrowDown') {
+            event.preventDefault();
+            this.highlightedEquipmentIndex.update(i => (i + 1) % equipmentList.length);
+        } else if (key === 'ArrowUp') {
+            event.preventDefault();
+            this.highlightedEquipmentIndex.update(i => (i - 1 + equipmentList.length) % equipmentList.length);
+        }
+    }
+  }
+
+  private _filterEquipment(query: string): Equipment[] {
+    if (!query) return [];
+    const lowerCaseQuery = query.toLowerCase();
+    const currentEquipment = this.getFormArray('equipmentNeeded').value;
+    return this.allEquipment.filter(e => e.name.toLowerCase().includes(lowerCaseQuery) && !currentEquipment.includes(e.name));
+  }
+
+  selectEquipment(equipmentName: string): void {
+    const currentEquipment = this.getFormArray('equipmentNeeded').value;
+    if (!currentEquipment.includes(equipmentName)) {
+        this.getFormArray('equipmentNeeded').push(this.fb.control(equipmentName));
+    }
+    this.equipmentSearchCtrl.setValue('');
+    this.filteredEquipment.set([]);
+  }
+
+  removeEquipment(index: number): void {
+    this.getFormArray('equipmentNeeded').removeAt(index);
+  }
+
+  // --- General Form Methods ---
   patchFormForEditing(exercise: Exercise): void {
     this.exerciseForm.patchValue({
       name: exercise.name,
@@ -75,13 +215,11 @@ export class ExerciseFormComponent implements OnInit {
       videoUrl: exercise.videoUrl || '',
       notes: exercise.notes || ''
     });
-    // For FormArrays (muscleGroups, equipmentNeeded, imageUrls), you'd clear and push controls
     this.setFormArrayControls('muscleGroups', exercise.muscleGroups);
     this.setFormArrayControls('equipmentNeeded', exercise.equipmentNeeded || []);
-    this.setFormArrayControls('imageUrls', exercise.imageUrls);
+    this.setFormArrayControls('imageUrls', exercise.imageUrls || []);
   }
 
-  // Helper for FormArrays
   getFormArray(name: 'muscleGroups' | 'equipmentNeeded' | 'imageUrls'): FormArray {
     return this.exerciseForm.get(name) as FormArray;
   }
@@ -92,27 +230,15 @@ export class ExerciseFormComponent implements OnInit {
     values.forEach(value => formArray.push(this.fb.control(value, Validators.required)));
   }
 
-  addControlToFormArray(arrayName: 'muscleGroups' | 'equipmentNeeded' | 'imageUrls'): void {
-    this.getFormArray(arrayName).push(this.fb.control('', Validators.required));
-  }
-
-  removeControlFromFormArray(arrayName: 'muscleGroups' | 'equipmentNeeded' | 'imageUrls', index: number): void {
-    this.getFormArray(arrayName).removeAt(index);
-  }
-
-
   async onSubmit(): Promise<void> {
+    // ... existing submit logic
     if (this.exerciseForm.invalid) {
       this.exerciseForm.markAllAsTouched();
       this.alertService.showAlert('Error', 'Please fill in all required fields.');
       return;
     }
-
     const formValue = this.exerciseForm.value;
-    const exerciseData = { // Construct the Exercise object
-      ...formValue,
-      // Ensure arrays are correctly formatted if necessary
-    };
+    const exerciseData = { ...formValue };
 
     try {
       if (this.isEditMode() && this.editingExerciseId) {
@@ -121,14 +247,9 @@ export class ExerciseFormComponent implements OnInit {
         this.router.navigate(['/library', this.editingExerciseId]);
       } else {
         const newExercise = await this.exerciseService.addExercise(exerciseData).toPromise();
-        // Add a check or use non-null assertion if you are sure newExercise is always defined
         if (newExercise) {
           this.alertService.showAlert('Success', 'Exercise added successfully!');
           this.router.navigate(['/library', newExercise.id]);
-        } else {
-          // This case should ideally not happen based on your current service impl.
-          console.error('Failed to add exercise, newExercise is undefined.');
-          this.alertService.showAlert('Error', 'Failed to add exercise. Please try again.');
         }
       }
     } catch (error) {
@@ -136,6 +257,4 @@ export class ExerciseFormComponent implements OnInit {
       this.alertService.showAlert('Error', `Failed to save exercise: ${(error as Error).message}`);
     }
   }
-
-  get f() { return this.exerciseForm.controls; }
 }

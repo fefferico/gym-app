@@ -194,6 +194,10 @@
           <p *ngIf="exercise.updatedAt" class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 italic">
             Last updated: {{ exercise.updatedAt | date: 'short' }}
           </p>
+          <!-- last updated -->
+          <p *ngIf="exercise.createdAt" class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 italic">
+            Created: {{ exercise.createdAt | date: 'short' }}
+          </p>
         </div>
 
         <!-- Wrapper for "More Actions" button and its dropdown -->

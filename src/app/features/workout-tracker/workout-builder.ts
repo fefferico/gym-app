@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy, signal, computed, ElementRef, QueryList, ViewChildren, AfterViewInit, ChangeDetectorRef, PLATFORM_ID, Input, HostListener } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal, computed, ElementRef, QueryList, ViewChildren, AfterViewInit, ChangeDetectorRef, PLATFORM_ID, Input, HostListener, ViewChild } from '@angular/core';
 import { CommonModule, DecimalPipe, isPlatformBrowser, TitleCasePipe } from '@angular/common'; // Added TitleCasePipe
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray, AbstractControl, FormsModule, FormControl } from '@angular/forms';
@@ -63,6 +63,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
   @ViewChildren('setRepsInput') setRepsInputs!: QueryList<ElementRef<HTMLInputElement>>;
   @ViewChildren('expandedSetElement') expandedSetElements!: QueryList<ElementRef<HTMLDivElement>>;
+  @ViewChild('exerciseSearchFied') myExerciseInput!: ElementRef;
 
   isAllExpandedInViewMode = signal(false);
 
@@ -653,6 +654,10 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     if (this.isViewMode) return;
     this.modalSearchTerm.set('');
     this.isExerciseModalOpen = true;
+
+    setTimeout(() => {
+      this.myExerciseInput.nativeElement?.focus();
+    });
   }
 
   closeExerciseSelectionModal(): void {

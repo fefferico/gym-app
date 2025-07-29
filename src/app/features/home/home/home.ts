@@ -1,7 +1,7 @@
 // src/app/features/home/home.component.ts
 import { Component, OnInit, PLATFORM_ID, inject, signal, effect, computed } from '@angular/core'; // Added effect
 import { CommonModule, DatePipe, isPlatformBrowser } from '@angular/common'; // Added DatePipe
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { TodaysWorkoutComponent } from '../../dashboard/todays-workout/todays-workout';
 import { StorageService } from '../../../core/services/storage.service';
 import { AlertService } from '../../../core/services/alert.service';
@@ -9,14 +9,13 @@ import { ToastService } from '../../../core/services/toast.service';
 import { WorkoutService } from '../../../core/services/workout.service';
 import { PausedWorkoutState } from '../../workout-tracker/workout-player';
 import { UserProfileService } from '../../../core/services/user-profile.service';
-import { PressDirective } from '../../../shared/directives/press.directive';
 import { PressScrollDirective } from '../../../shared/directives/press-scroll.directive';
 
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, TodaysWorkoutComponent, DatePipe, PressScrollDirective, PressDirective], // Added DatePipe
+  imports: [CommonModule, TodaysWorkoutComponent, DatePipe, PressScrollDirective], // Added DatePipe
   templateUrl: './home.html',
   styleUrls: ['./home.scss']
 })

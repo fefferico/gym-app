@@ -3,7 +3,6 @@ import { Component, inject, OnInit, PLATFORM_ID, signal, computed, OnDestroy, Ho
 import { CommonModule, DatePipe, isPlatformBrowser, TitleCasePipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { firstValueFrom, Observable, Subscription, take } from 'rxjs'; // Added Subscription
-import { map } from 'rxjs/operators';
 import { Routine } from '../../core/models/workout.model'; // Added ExerciseDetail
 import { Exercise } from '../../core/models/exercise.model'; // Added Exercise
 import { WorkoutService } from '../../core/services/workout.service';
@@ -20,17 +19,14 @@ import { PausedWorkoutState } from './workout-player'; // Adjust path as needed
 import { ThemeService } from '../../core/services/theme.service';
 import { ActionMenuItem } from '../../core/models/action-menu.model';
 import { ActionMenuComponent } from '../../shared/components/action-menu/action-menu';
-import e from 'express';
-import { LongPressDirective } from '../../shared/directives/long-press.directive';
 import { PressDirective } from '../../shared/directives/press.directive';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { TrainingProgramService } from '../../core/services/training-program.service';
-import { PressScrollDirective } from '../../shared/directives/press-scroll.directive';
 
 @Component({
   selector: 'app-routine-list',
   standalone: true,
-  imports: [CommonModule, DatePipe, TitleCasePipe, RouterLink, ActionMenuComponent, PressDirective, PressScrollDirective],
+  imports: [CommonModule, DatePipe, TitleCasePipe, RouterLink, ActionMenuComponent, PressDirective],
   templateUrl: './routine-list.html',
   styleUrl: './routine-list.scss',
   animations: [
