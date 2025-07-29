@@ -21,6 +21,7 @@ import { ActionMenuItem } from '../../../core/models/action-menu.model';
 import { ActionMenuComponent } from '../../../shared/components/action-menu/action-menu';
 import { PressDirective } from '../../../shared/directives/press.directive';
 import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
+import { IconComponent } from "../../../shared/components/icon/icon.component";
 
 interface DayOption {
     value: number;
@@ -33,17 +34,18 @@ interface ProgramGoal { value: Routine['goal'], label: string }
     selector: 'app-training-program-builder',
     standalone: true,
     imports: [
-        CommonModule,
-        ReactiveFormsModule,
-        RouterLink,
-        TitleCasePipe,
-        DragDropModule,
-        DayOfWeekPipe,
-        FormsModule,
-        ActionMenuComponent,
-        PressDirective,
-        TooltipDirective
-    ],
+    CommonModule,
+    ReactiveFormsModule,
+    RouterLink,
+    TitleCasePipe,
+    DragDropModule,
+    DayOfWeekPipe,
+    FormsModule,
+    ActionMenuComponent,
+    PressDirective,
+    TooltipDirective,
+    IconComponent
+],
     templateUrl: './training-program-builder.html',
     styleUrls: ['./training-program-builder.scss']
 })

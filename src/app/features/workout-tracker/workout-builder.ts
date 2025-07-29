@@ -34,14 +34,19 @@ import { ExerciseDetailComponent } from '../exercise-library/exercise-detail';
 import { TrainingProgram } from '../../core/models/training-program.model';
 import { TrainingProgramService } from '../../core/services/training-program.service';
 import { PressDirective } from '../../shared/directives/press.directive';
-import { PressScrollDirective } from '../../shared/directives/press-scroll.directive';
+import { IconComponent } from '../../shared/components/icon/icon.component';
+import { TooltipDirective } from '../../shared/directives/tooltip.directive';
 
 type BuilderMode = 'routineBuilder' | 'manualLogEntry';
 
 @Component({
   selector: 'app-workout-builder',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, FormsModule, DragDropModule, WeightUnitPipe, TitleCasePipe, LongPressDragDirective, AutoGrowDirective, ActionMenuComponent, IsWeightedPipe, ModalComponent, ClickOutsideDirective, ExerciseDetailComponent, PressDirective],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, 
+    FormsModule, DragDropModule, WeightUnitPipe, TitleCasePipe, 
+    LongPressDragDirective, AutoGrowDirective, ActionMenuComponent, 
+    IsWeightedPipe, ModalComponent, ClickOutsideDirective, 
+    ExerciseDetailComponent, PressDirective, IconComponent, TooltipDirective],
   templateUrl: './workout-builder.html',
   styleUrl: './workout-builder.scss',
   providers: [DecimalPipe]
@@ -66,6 +71,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   @ViewChild('exerciseSearchFied') myExerciseInput!: ElementRef;
 
   isAllExpandedInViewMode = signal(false);
+
+  exerciseInfoTooltipString = 'Exercise details and progression';
 
   routine: Routine | null = null;
   builderForm!: FormGroup;

@@ -1,14 +1,11 @@
 <div class="container mx-auto p-2 sm:p-4" #viewSwipeContainerEl view-swipe-container>
   <header class="flex justify-between items-center pb-2">
     <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">Training</h1>
-    <button [disabled]="currentView() !== 'list'" [pressDisabled]="currentView() !== 'list'" appPress (shortPress)="toggleFilterAccordion()" type="button"
+    <button [disabled]="currentView() !== 'list'" [pressDisabled]="currentView() !== 'list'" appPress
+      (shortPress)="toggleFilterAccordion()" type="button"
       class="rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-light transition-all duration-300 ease-in-out disabled:opacity-50">
-      <svg stroke="currentColor" class="w-10 h-10 transition-transform duration-300" viewBox="0 0 24 24"
-        stroke-width="0.02" fill="currentColor" xmlns="http://www.w3.org/2000/svg"
-        [class.rotate-180]="currentView() === 'list' && isFilterAccordionOpen()">
-        <path stroke-linecap="round" stroke-linejoin="round"
-          d="M9 5a1 1 0 1 0 0 2 1 1 0 0 0 0-2zM6.17 5a3.001 3.001 0 0 1 5.66 0H19a1 1 0 1 1 0 2h-7.17a3.001 3.001 0 0 1-5.66 0H5a1 1 0 0 1 0-2h1.17zM15 11a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm-2.83 0a3.001 3.001 0 0 1 5.66 0H19a1 1 0 1 1 0 2h-1.17a3.001 3.001 0 0 1-5.66 0H5a1 1 0 1 1 0-2h7.17zM9 17a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm-2.83 0a3.001 3.001 0 0 1 5.66 0H19a1 1 0 1 1 0 2h-7.17a3.001 3.001 0 0 1-5.66 0H5a1 1 0 1 1 0-2h1.17z" />
-      </svg>
+      <app-icon name="filter" class="w-10 h-10 transition-transform duration-300"
+        [class.rotate-180]="currentView() === 'list' && isFilterAccordionOpen()"></app-icon>
       <span class="sr-only">Toggle Filters</span>
     </button>
   </header>
@@ -193,11 +190,7 @@
                 <div class="relative">
                   <button (click)="toggleActions(program.id, $event)"
                     class="p-1.5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full focus:outline-none">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                      stroke="currentColor" stroke-width="2">
-                      <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-                    </svg>
+                    <app-icon name="menu_action" class="h-5 w-5"></app-icon>
                   </button>
                   <app-action-menu *ngIf="areActionsVisible(program.id) && !menuModeCompact" displayMode="dropdown"
                     [items]="getProgramDropdownActionItems(program.id, 'dropdown')"

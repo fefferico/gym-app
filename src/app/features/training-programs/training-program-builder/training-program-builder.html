@@ -2,11 +2,9 @@
     <header class="flex items-center justify-between p-2">
         <div class="flex justify-between items-center">
             <button [routerLink]="'/training-programs'"
-                class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-light p-2 -ml-1"><svg
-                    fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
-                    class="w-6 h-6">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                </svg></button>
+                class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-light p-2 -ml-1">
+                <app-icon name="back" class="w-6 h-6"></app-icon>
+                </button>
             <div class="w-10 h-10"></div> <!-- Spacer -->
         </div>
         <!-- Action Buttons Group -->
@@ -91,12 +89,8 @@
                         class="block text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center">
                         Cycle Length (Optional)
                         <span class="ml-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" [appTooltip]="infoTooltipString"
-                                class="w-4 h-4 text-gray-400 dark:text-gray-500 cursor-help">
-                                <path fill-rule="evenodd"
-                                    d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-7-4a1 1 0 1 1-2 0 1 1 0 0 1 2 0ZM9 9a.75.75 0 0 0 0 1.5h.253a.25.25 0 0 1 .244.304l-.459 2.066A1.75 1.75 0 0 0 10.747 15H11a.75.75 0 0 0 0-1.5h-.253a.25.25 0 0 1-.244-.304l.459-2.066A1.75 1.75 0 0 0 9.253 9H9Z"
-                                    clip-rule="evenodd" />
-                            </svg>
+                            <app-icon name="info" class="h-4 w-4 text-gray-400 dark:text-gray-500 cursor-help"
+                                [appTooltip]="infoTooltipString"></app-icon>
                         </span>
                     </label>
                     <input type="number" id="cycleLength" formControlName="cycleLength" min="1"
@@ -119,13 +113,8 @@
                 <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300">Schedule</h2>
                 <button *ngIf="!isViewMode" type="button" appPress (shortPress)="addScheduledDay()"
                     class="flex items-center justify-center bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium py-1.5 px-3 rounded-md shadow-sm">
-                    <svg *ngIf="isNewMode" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round" class="mr-2">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <line x1="12" y1="8" x2="12" y2="16"></line>
-                        <line x1="8" y1="12" x2="16" y2="12"></line>
-                    </svg>ADD DAY TO SCHEDULE
+                    <app-icon name="create" class="h-4 w-4 mr-1"></app-icon>
+                    ADD DAY TO SCHEDULE
                 </button>
             </div>
 
@@ -148,7 +137,7 @@
                             0) ) || 'Scheduled Day ' + (i + 1) }}
                         </h4>
                         <button *ngIf="!isViewMode" type="button" appPress (shortPress)="removeScheduledDay(i)"
-                            class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 text-xs font-medium p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30">
+                            class="flex items-center text-xs text-red-600 bg-red-200 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 font-medium py-1 px-2 rounded-md hover:enabled:bg-red-100 dark:enabled:hover:bg-red-900/50 disabled:opacity-50 ng-star-inserted">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"
                                 class="w-4 h-4 inline-block mr-1">
                                 <path fill-rule="evenodd"
@@ -193,14 +182,7 @@
                             'border-green-500 dark:border-green-400 bg-green-50 dark:bg-green-700 text-green-700 dark:text-green-100 hover:bg-green-100 dark:hover:bg-green-600': getScheduleDayControl(i).get('routineId')?.value,
                             'border-red-500 dark:border-red-400 bg-red-100 dark:bg-red-600 text-red-700 dark:text-red-200 hover:bg-red-200 dark:hover:bg-red-500': getScheduleDayControl(i).get('routineId')?.invalid && (getScheduleDayControl(i).get('routineId')?.touched || submitted) 
                         }">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24"
-                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round">
-                                        <polyline points="23 4 23 10 17 10"></polyline>
-                                        <polyline points="1 20 1 14 7 14"></polyline>
-                                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"></path>
-                                        <path d="M20.49 15a9 9 0 0 1-14.85 3.36L1 14"></path>
-                                    </svg>
+                                    <app-icon name="change" class="h-4 w-4 mr-1"></app-icon>
                                     {{ getScheduleDayControl(i).get('routineId')?.value ? 'CHANGE' : 'SELECT' }}
                                 </button>
                             </div>
@@ -242,29 +224,15 @@
         <!-- Actions -->
         <div *ngIf="!isViewMode" class="pt-6 flex justify-end space-x-3">
             <button appPress (shortPress)="navigateToPrograms()"
-                class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700">
+                class="flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700">
+                <app-icon name="cancel" class="h-5 w-5"></app-icon>
                 CANCEL
             </button>
             <button type="submit" appPress (shortPress)="onSubmit()"
                 [disabled]="programForm.invalid && (programForm.touched || programForm.dirty)"
                 class="flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark disabled:opacity-50">
-                <svg *ngIf="isNewMode" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                    class="mr-2">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="12" y1="8" x2="12" y2="16"></line>
-                    <line x1="8" y1="12" x2="16" y2="12"></line>
-                </svg>
-
-                <!-- Save Icon (visible when isNewMode is false) -->
-                <svg *ngIf="!isNewMode" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                    class="mr-2">
-                    <path d="M15.2 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8.8" />
-                    <path d="M16 3.1 21 8" />
-                    <path d="M8 21v-7h8v7" />
-                    <path d="M8 3v5h8V3" />
-                </svg>
+                <app-icon *ngIf="isNewMode" name="create" class="h-5 w-5 mr-2"></app-icon>
+                <app-icon *ngIf="!isNewMode" name="save" class="h-5 w-5 mr-2"></app-icon>
                 {{ isNewMode ? 'CREATE PROGRAM' : 'SAVE CHANGES' }}
             </button>
         </div>
@@ -284,10 +252,7 @@
                                 id="modal-title">Select a Routine</h3>
                             <button type="button" (click)="closeRoutineSelectionModal()"
                                 class="p-1 rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                </svg>
+                                <app-icon name="cancel" class="h-6 w-6"></app-icon>
                             </button>
                         </div>
                         <div class="my-4">

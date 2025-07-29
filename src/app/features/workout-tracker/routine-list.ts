@@ -22,11 +22,12 @@ import { ActionMenuComponent } from '../../shared/components/action-menu/action-
 import { PressDirective } from '../../shared/directives/press.directive';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { TrainingProgramService } from '../../core/services/training-program.service';
+import { IconComponent } from '../../shared/components/icon/icon.component';
 
 @Component({
   selector: 'app-routine-list',
   standalone: true,
-  imports: [CommonModule, DatePipe, TitleCasePipe, RouterLink, ActionMenuComponent, PressDirective],
+  imports: [CommonModule, DatePipe, TitleCasePipe, RouterLink, ActionMenuComponent, PressDirective, IconComponent],
   templateUrl: './routine-list.html',
   styleUrl: './routine-list.scss',
   animations: [

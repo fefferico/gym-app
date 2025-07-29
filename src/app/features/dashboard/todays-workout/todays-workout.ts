@@ -18,13 +18,14 @@ import { v4 as uuidv4 } from 'uuid';
 import { PressDirective } from '../../../shared/directives/press.directive';
 import { PressScrollDirective } from '../../../shared/directives/press-scroll.directive';
 import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
+import { IconComponent } from '../../../shared/components/icon/icon.component';
 
 export type SlideAnimationState = 'center' | 'exitToLeft' | 'exitToRight' | 'enterFromLeft' | 'enterFromRight';
 
 @Component({
   selector: 'app-todays-workout',
   standalone: true,
-  imports: [CommonModule, DatePipe, PressScrollDirective, TooltipDirective],
+  imports: [CommonModule, DatePipe, PressScrollDirective, TooltipDirective, IconComponent],
   templateUrl: './todays-workout.html',
   styleUrls: ['./todays-workout.scss'],
   animations: [

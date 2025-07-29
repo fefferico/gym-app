@@ -34,6 +34,7 @@ import { TrainingProgramService } from '../../../core/services/training-program.
 import { TrainingProgram } from '../../../core/models/training-program.model';
 import { PressDirective } from '../../../shared/directives/press.directive';
 import { PressScrollDirective } from '../../../shared/directives/press-scroll.directive';
+import { IconComponent } from '../../../shared/components/icon/icon.component';
 
 
 interface HistoryCalendarDay {
@@ -49,7 +50,7 @@ type HistoryListView = 'list' | 'calendar';
 @Component({
   selector: 'app-history-list',
   standalone: true,
-  imports: [CommonModule, DatePipe, TitleCasePipe, FormsModule, ReactiveFormsModule, ActionMenuComponent, PressDirective, PressScrollDirective],
+  imports: [CommonModule, DatePipe, TitleCasePipe, FormsModule, ReactiveFormsModule, ActionMenuComponent, PressDirective, PressScrollDirective, IconComponent],
   templateUrl: './history-list.html',
   styleUrl: './history-list.scss',
   providers: [DecimalPipe],
