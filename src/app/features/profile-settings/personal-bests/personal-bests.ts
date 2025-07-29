@@ -250,9 +250,17 @@ export class PersonalBestsComponent implements OnInit {
     return value || 'N/A';
   }
 
+  vibrate(): void {
+    const currentVibrator = navigator;
+    if (currentVibrator && 'vibrate' in currentVibrator) {
+      currentVibrator.vibrate(50);
+    }
+  }
+
   navigateToLogDetail(workoutLogId: string | undefined, event?: Event): void {
     event?.stopPropagation();
     if (workoutLogId) {
+      this.vibrate();
       this.router.navigate(['/workout/summary', workoutLogId]);
     } else {
       this.toastService.error('Could not find the associated workout log for this personal best. It\'s possible that the related workout session has been removed.', 0, 'Navigation Error');
@@ -288,11 +296,8 @@ export class PersonalBestsComponent implements OnInit {
     }
     // Encode pbType to make it URL-safe, especially if it contains spaces or special characters
     const encodedPbType = encodeURIComponent(pbType);
+    this.vibrate();
     this.router.navigate(['/profile/pb-trend', exerciseId, encodedPbType]);
-    // Alternative: Open a modal
-    // this.selectedExerciseIdForTrend.set(exerciseId);
-    // this.selectedPbTypeForTrend.set(pbType);
-    // this.isTrendModalVisible.set(true);
     console.log(`Requesting trend for Exercise ID: ${exerciseId}, PB Type: ${pbType}`);
   }
 

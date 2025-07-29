@@ -350,8 +350,16 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
   }
   navigateToCreateProgram(): void { this.router.navigate(['/training-programs/new']); }
 
+  vibrate(): void {
+    const currentVibrator = navigator;
+    if (currentVibrator && 'vibrate' in currentVibrator) {
+      currentVibrator.vibrate(50);
+    }
+  }
+
   viewProgramDetails(programId: string, event?: MouseEvent): void {
     event?.stopPropagation();
+    this.vibrate();
     this.router.navigate(['/training-programs/view', programId]);
     this.activeProgramActions.set(null);
   }

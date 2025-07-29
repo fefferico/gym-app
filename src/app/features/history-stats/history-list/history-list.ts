@@ -426,7 +426,16 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
   resetFilters(): void {
     this.filterForm.reset({ dateFrom: '', dateTo: '', routineName: '', exerciseId: '', programId: '' });
   }
+
+  vibrate(): void {
+    const currentVibrator = navigator;
+    if (currentVibrator && 'vibrate' in currentVibrator) {
+      currentVibrator.vibrate(50);
+    }
+  }
+
   viewLogDetails(logId: string, event?: MouseEvent): void {
+    this.vibrate();
     event?.stopPropagation(); this.router.navigate(['/history/log', logId]);
     this.visibleActionsRutineId.set(null);
   }

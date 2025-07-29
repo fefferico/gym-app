@@ -241,8 +241,8 @@
                 </div>
                 <div>
                   <strong [ngClass]="checkTextClass(set, 'reps')" [class.cursor-pointer]="isTargetMissed(set, 'reps')"
-                    [class.hover:underline]="isTargetMissed(set, 'reps')" appPress
-                    (shortPress)="showComparisonModal(set, 'reps')">
+                    [class.cursor-default]="!isTargetMissed(set, 'reps')"
+                    [class.hover:underline]="isTargetMissed(set, 'reps')" (click)="showComparisonModal(set, 'reps')">
                     {{ set.repsAchieved || '—' }}
                   </strong>
                 </div>
@@ -251,8 +251,9 @@
                 <div *ngIf="loggedEx | isWeighted">
                   <strong [ngClass]="checkTextClass(set, 'weight')"
                     [class.cursor-pointer]="isTargetMissed(set, 'weight')"
-                    [class.hover:underline]="isTargetMissed(set, 'weight')" appPress
-                    (shortPress)="showComparisonModal(set, 'weight')">
+                    [class.cursor-default]="!isTargetMissed(set, 'weight')"
+                    [class.hover:underline]="isTargetMissed(set, 'weight')"
+                    (click)="showComparisonModal(set, 'weight')">
                     {{ set.weightUsed != null ? (set.weightUsed + ' ' + unitService.getUnitLabel()) : '—' }}
                   </strong>
 
@@ -261,15 +262,16 @@
                 <div>
                   <strong [ngClass]="checkTextClass(set, 'duration')"
                     [class.cursor-pointer]="isTargetMissed(set, 'duration')"
-                    [class.hover:underline]="isTargetMissed(set, 'duration')" appPress
-                    (shortPress)="showComparisonModal(set, 'duration')">
+                    [class.cursor-default]="!isTargetMissed(set, 'duration')"
+                    [class.hover:underline]="isTargetMissed(set, 'duration')"
+                    (click)="showComparisonModal(set, 'duration')">
                     {{ set.durationPerformed || '—' }}
                   </strong>
                 </div>
                 <div>
                   <strong [ngClass]="checkTextClass(set, 'rest')" [class.cursor-pointer]="isTargetMissed(set, 'rest')"
-                    [class.hover:underline]="isTargetMissed(set, 'rest')" appPress
-                    (shortPress)="showComparisonModal(set, 'rest')">
+                    [class.hover:underline]="isTargetMissed(set, 'rest')" (click)="showComparisonModal(set, 'rest')"
+                    [class.cursor-default]="!isTargetMissed(set, 'rest')">
                     {{ set.restAfterSetUsed || '—' }}
                   </strong>
                 </div>
