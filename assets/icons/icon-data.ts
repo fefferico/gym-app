@@ -189,4 +189,10 @@ export const ICONS: Record<string, string> = {
 'drag': `
 <svg  xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" ><path d="M 7 17 L 7 3 M 4 6 L 7 3 L 10 6 M 17 7 L 17 21 M 14 18 L 17 21 L 20 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
 `,
+'pause':`
+<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="2" />
+      <rect x="7" y="6" width="2" height="9" rx="4" ry="4" fill="currentColor" />
+      <rect x="11" y="6" width="2" height="9" rx="4" ry="4" fill="currentColor" />
+    </svg>`
 };
