@@ -4,7 +4,7 @@
             <button [routerLink]="'/training-programs'"
                 class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-light p-2 -ml-1">
                 <app-icon name="back" class="w-6 h-6"></app-icon>
-                </button>
+            </button>
             <div class="w-10 h-10"></div> <!-- Spacer -->
         </div>
         <!-- Action Buttons Group -->
@@ -39,7 +39,7 @@
                 <label
                     class="block text-xl font-black text-gray-700 dark:text-gray-300">{{programForm.get('name')?.value}}</label>
             </div>
-            <div *ngIf="isEditMode || isNewMode">
+            <div *ngIf="isEditableMode()">
                 <label for="programName" class="block text-m font-medium text-gray-700 dark:text-gray-300">Program
                     Name</label>
                 <input type="text" id="programName" formControlName="name" placeholder="Program name"
@@ -55,14 +55,14 @@
                 <p class="mt-1 block w-full dark:text-gray-200" [innerHTML]="sanitizedDescription">
                 </p>
             </div>
-            <div *ngIf="isEditMode || isNewMode">
+            <div *ngIf="isEditableMode()">
                 <label for="description" class="block text-m font-medium text-gray-700 dark:text-gray-300">Description
                     (Optional)</label>
                 <textarea id="description" formControlName="description" rows="3" placeholder="Description (optional)"
                     class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200"></textarea>
             </div>
             <!-- GOAL -->
-            <div *ngIf="(isViewMode && currentProgram?.goals) || (isEditMode)" class="mt-4">
+            <div *ngIf="(isViewMode && currentProgram?.goals) || (isEditableMode())" class="mt-4">
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Goals</label>
                 <div class="flex flex-wrap gap-2">
                     <!-- Loop through available equipment to create a button/chip for each -->
@@ -78,13 +78,19 @@
                 </div>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div *ngIf="programForm.get('startDate')?.value || isEditMode">
+                <div *ngIf="programForm.get('startDate')?.value || isEditableMode()">
                     <label for="startDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Start
                         Date</label>
                     <input type="date" id="startDate" formControlName="startDate"
                         class="mt-1 block w-full p-2 border rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:[color-scheme:dark]">
                 </div>
-                <div *ngIf="programForm.get('cycleLength')?.value || isEditMode">
+                <div *ngIf="programForm.get('endDate')?.value || isEditableMode()">
+                    <label for="endDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Start
+                        Date</label>
+                    <input type="date" id="endDate" formControlName="endDate"
+                        class="mt-1 block w-full p-2 border rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:[color-scheme:dark]">
+                </div>
+                <div *ngIf="programForm.get('cycleLength')?.value || isEditableMode()">
                     <label for="cycleLength"
                         class="block text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center">
                         Cycle Length (Optional)
@@ -99,7 +105,7 @@
                     <!-- The <p> tag below it also explains this -->
                 </div>
             </div>
-            <div *ngIf="programForm.get('programNotes')?.value || isEditMode">
+            <div *ngIf="programForm.get('programNotes')?.value || isEditableMode()">
                 <label for="programNotes" class="block text-sm font-medium text-gray-700 dark:text-gray-300">General
                     Program Notes (Optional)</label>
                 <textarea id="programNotes" formControlName="programNotes" rows="3"
@@ -113,8 +119,10 @@
                 <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300">Schedule</h2>
                 <button *ngIf="!isViewMode" type="button" appPress (shortPress)="addScheduledDay()"
                     class="flex items-center justify-center bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium py-1.5 px-3 rounded-md shadow-sm">
-                    <app-icon name="create" class="h-4 w-4 mr-1"></app-icon>
-                    ADD DAY TO SCHEDULE
+                    <app-icon name="create" class="h-4 w-4"></app-icon>
+                    <span class="ml-1">
+                        ADD DAY TO SCHEDULE
+                    </span>
                 </button>
             </div>
 
@@ -131,7 +139,7 @@
                                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                         </svg>
                     </div>
-                    <div class="flex justify-between items-center mb-1" [ngClass]="{'mt-5': isEditMode}">
+                    <div class="flex justify-between items-center mb-1" [ngClass]="{'mt-5': isEditableMode()}">
                         <h4 class="text-md font-medium text-gray-800 dark:text-gray-100">
                             {{ (getScheduleDayControl(i).get('dayOfWeek')?.value | dayOfWeek : (f['cycleLength'].value >
                             0) ) || 'Scheduled Day ' + (i + 1) }}
@@ -182,8 +190,10 @@
                             'border-green-500 dark:border-green-400 bg-green-50 dark:bg-green-700 text-green-700 dark:text-green-100 hover:bg-green-100 dark:hover:bg-green-600': getScheduleDayControl(i).get('routineId')?.value,
                             'border-red-500 dark:border-red-400 bg-red-100 dark:bg-red-600 text-red-700 dark:text-red-200 hover:bg-red-200 dark:hover:bg-red-500': getScheduleDayControl(i).get('routineId')?.invalid && (getScheduleDayControl(i).get('routineId')?.touched || submitted) 
                         }">
-                                    <app-icon name="change" class="h-4 w-4 mr-1"></app-icon>
-                                    {{ getScheduleDayControl(i).get('routineId')?.value ? 'CHANGE' : 'SELECT' }}
+                                    <app-icon name="change" class="h-4 w-4"></app-icon>
+                                    <span class="ml-1">
+                                        {{ getScheduleDayControl(i).get('routineId')?.value ? 'CHANGE' : 'SELECT' }}
+                                    </span>
                                 </button>
                             </div>
                             <!-- Validation message for routineId -->
@@ -192,7 +202,7 @@
                                 Routine selection is required.
                             </div>
                         </div>
-                        <div class="sm:col-span-2" *ngIf="programForm.get('timeOfDay')?.value || isEditMode">
+                        <div class="sm:col-span-2" *ngIf="programForm.get('timeOfDay')?.value || isEditableMode()">
                             <label [for]="'timeOfDay-' + i"
                                 class="block text-xs font-medium text-gray-700 dark:text-gray-300">Time
                                 (Optional)</label>
@@ -200,7 +210,7 @@
                                 placeholder="e.g., AM, PM, 08:00"
                                 class="mt-1 block w-full p-2 text-sm border rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700 dark:border-gray-500">
                         </div>
-                        <div class="sm:col-span-2" *ngIf="programForm.get('notes')?.value || isEditMode">
+                        <div class="sm:col-span-2" *ngIf="programForm.get('notes')?.value || isEditableMode()">
                             <label [for]="'dayNotes-' + i"
                                 class="block text-xs font-medium text-gray-700 dark:text-gray-300">Notes for this Day
                                 (Optional)</label>
@@ -221,6 +231,16 @@
             </div>
         </section>
 
+        <div class="flex justify-center items-center mb-1">
+            <button *ngIf="!isViewMode" type="button" appPress (shortPress)="addScheduledDay()"
+                class="flex items-center justify-center bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium py-1.5 px-3 rounded-md shadow-sm">
+                <app-icon name="create" class="h-4 w-4"></app-icon>
+                <span class="ml-1">
+                    ADD DAY TO SCHEDULE
+                </span>
+            </button>
+        </div>
+
         <!-- Actions -->
         <div *ngIf="!isViewMode" class="pt-6 flex justify-end space-x-3">
             <button appPress (shortPress)="navigateToPrograms()"
@@ -231,9 +251,11 @@
             <button type="submit" appPress (shortPress)="onSubmit()"
                 [disabled]="programForm.invalid && (programForm.touched || programForm.dirty)"
                 class="flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark disabled:opacity-50">
-                <app-icon *ngIf="isNewMode" name="create" class="h-5 w-5 mr-2"></app-icon>
-                <app-icon *ngIf="!isNewMode" name="save" class="h-5 w-5 mr-2"></app-icon>
-                {{ isNewMode ? 'CREATE PROGRAM' : 'SAVE CHANGES' }}
+                <app-icon *ngIf="isNewMode" name="create" class="h-5 w-5"></app-icon>
+                <app-icon *ngIf="!isNewMode" name="save" class="h-5 w-5"></app-icon>
+                <span class="ml-1">
+                    {{ isNewMode ? 'CREATE PROGRAM' : 'SAVE CHANGES' }}
+                </span>
             </button>
         </div>
     </form>

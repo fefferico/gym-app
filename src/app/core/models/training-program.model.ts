@@ -39,10 +39,12 @@ export interface TrainingProgram {
    * The order in this array might also imply a sequence if not strictly tied to dayOfWeek.
    */
   schedule: ScheduledRoutineDay[];
-  /** Indicates if this is the program the user is currently actively following. Only one program can be active at a time. */
+  /** Indicates if this is the program the user is currently actively following. */
   isActive: boolean;
   /** Optional: The date (ISO string YYYY-MM-DD) when the user started or intends to start this program. */
   startDate?: string;
+  /** Optional: The date (ISO string YYYY-MM-DD) when the user intends to end this program. */
+  endDate?: string;
   /**
    * Optional: Defines the length of the program's cycle in days if it's not a standard 7-day week.
    * For example, a 3-day on, 1-day off cycle might have a cycleLength of 4.
@@ -51,5 +53,17 @@ export interface TrainingProgram {
   cycleLength?: number;
   /** Optional: General notes for the entire program. */
   programNotes?: string;
-  goals?: string[]
+  goals?: string[];
+  history?: TrainingProgramHistoryEntry[];
+}
+
+export interface TrainingProgramHistoryEntry {
+  /** Unique identifier for the history entry. */
+  id: string;
+  /** The ID of the training program this entry is associated with. */
+  programId: string;
+  /** The date when this history entry was created or logged. */
+  date: string; // ISO string YYYY-MM-DD
+  startDate: string; // ISO string YYYY-MM-DD
+  endDate: string; // ISO string YYYY-MM-DD
 }

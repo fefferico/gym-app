@@ -77,6 +77,7 @@ export class HomeComponent implements OnInit {
   resumePausedWorkout(): void {
     const pausedInfo = this.pausedWorkoutInfo();
     if (pausedInfo) {
+      this.vibrate();
       // Set the pausedWorkoutInfo to null immediately on the Home page
       // so the "paused workout" card disappears, giving immediate feedback.
       // The WorkoutPlayerComponent will handle the actual resume or re-display
@@ -100,6 +101,7 @@ export class HomeComponent implements OnInit {
   }
 
   async discardPausedWorkout(): Promise<void> {
+    this.vibrate();
     const confirm = await this.alertService.showConfirm(
       'Discard Paused Workout?',
       'Are you sure you want to discard this paused workout session? This action cannot be undone.',
@@ -121,6 +123,7 @@ export class HomeComponent implements OnInit {
     // Or, you could show a modal with some basic info from pausedWorkoutInfo.
     const pausedInfo = this.pausedWorkoutInfo();
     if (pausedInfo) {
+      this.vibrate();
       const routineName = pausedInfo.sessionRoutine?.name || 'Ad-hoc Workout';
       const exercisesDone = pausedInfo.currentWorkoutLogExercises.length;
       const setsDone = pausedInfo.currentWorkoutLogExercises.reduce((acc, ex) => acc + ex.sets.length, 0);
@@ -135,23 +138,35 @@ export class HomeComponent implements OnInit {
     }
   }
 
+  vibrate(): void {
+    const currentVibrator = navigator;
+    if (currentVibrator && 'vibrate' in currentVibrator) {
+      currentVibrator.vibrate(50);
+    }
+  }
+
   startNewSession(): void {
+    this.vibrate();
     this.router.navigate(['/workout/play', -1], { queryParams: { newSession: 'true' } });
   }
 
   navigateToRoutines(): void {
+    this.vibrate();
     this.router.navigate(['/workout']);
   }
 
   navigateToPrograms(): void {
+    this.vibrate();
     this.router.navigate(['/training-programs']);
   }
 
   navigateToHistory(): void {
+    this.vibrate();
     this.router.navigate(['/history']);
   }
 
   navigateToProfile(): void {
+    this.vibrate();
     this.router.navigate(['/profile']);
   }
 

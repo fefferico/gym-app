@@ -1,7 +1,7 @@
 // src/app/features/profile-settings/profile-settings.component.ts
-import { Component, inject, OnInit, PLATFORM_ID, signal, WritableSignal } from '@angular/core';
+import { Component, inject, OnInit, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { format } from 'date-fns';
 import { debounceTime, filter, tap } from 'rxjs';
@@ -22,6 +22,7 @@ import { UserProfileService } from '../../../core/services/user-profile.service'
 import { ExerciseService } from '../../../core/services/exercise.service';
 import { PressDirective } from '../../../shared/directives/press.directive';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
+import { ProgressiveOverloadService, ProgressiveOverloadSettings, ProgressiveOverloadStrategy } from '../../../core/services/progressive-overload.service.ts';
 
 
 @Component({
@@ -44,7 +45,8 @@ export class ProfileSettingsComponent implements OnInit {
   private spinnerService = inject(SpinnerService);
   protected themeService = inject(ThemeService);
   protected userProfileService = inject(UserProfileService);
-  protected appSettingsService = inject(AppSettingsService); // Already injected
+  protected appSettingsService = inject(AppSettingsService);
+  protected progressiveOverloadService = inject(ProgressiveOverloadService);
   private platformId = inject(PLATFORM_ID);
   private toastService = inject(ToastService);
 
@@ -52,6 +54,7 @@ export class ProfileSettingsComponent implements OnInit {
 
   profileForm!: FormGroup;
   appSettingsForm!: FormGroup;
+  progressiveOverloadForm!: FormGroup;
 
   currentUnit = this.unitsService.currentUnit;
   readonly genders: { label: string, value: Gender }[] = [
@@ -60,8 +63,12 @@ export class ProfileSettingsComponent implements OnInit {
     { label: 'Other', value: 'other' },
     { label: 'Prefer not to say', value: 'prefer_not_to_say' },
   ];
+  protected readonly progressiveOverloadStrategies = [
+    { label: 'Increase Weight', value: ProgressiveOverloadStrategy.WEIGHT },
+    { label: 'Increase Reps', value: ProgressiveOverloadStrategy.REPS }
+  ];
 
-  private readonly BACKUP_VERSION = 3;
+  private readonly BACKUP_VERSION = 4;
 
   constructor() {
     this.profileForm = this.fb.group({
@@ -80,12 +87,18 @@ export class ProfileSettingsComponent implements OnInit {
 
     this.appSettingsForm = this.fb.group({
       enableTimerCountdownSound: [true],
-      enableShowWIP: [true],
       countdownSoundSeconds: [5, [Validators.required, Validators.min(1), Validators.max(60)]],
       enablePresetTimer: [false],
-      enablePresetTimerAfterRest: [false],
       presetTimerDurationSeconds: [10, [Validators.required, Validators.min(3), Validators.max(60)]],
-      weightStep: [2.5, [Validators.required, Validators.min(0.01), Validators.max(50)]] // <<< ADDED weightStep
+      weightStep: [2.5, [Validators.required, Validators.min(0.01), Validators.max(50)]]
+    });
+
+    this.progressiveOverloadForm = this.fb.group({
+      enabled: [false],
+      strategy: [null as ProgressiveOverloadStrategy | null],
+      weightIncrement: [null as number | null, [Validators.min(0.1)]],
+      repsIncrement: [null as number | null, [Validators.min(1), Validators.pattern("^[0-9]*$")]],
+      sessionsToIncrement: [1, [Validators.required, Validators.min(1)]]
     });
   }
 
@@ -95,6 +108,7 @@ export class ProfileSettingsComponent implements OnInit {
     }
     this.loadProfileData();
     this.loadAppSettingsData();
+    this.loadProgressiveOverloadSettings();
 
     this.profileForm.valueChanges.pipe(
       debounceTime(700),
@@ -115,9 +129,62 @@ export class ProfileSettingsComponent implements OnInit {
         this.toastService.info("App settings auto-saved", 1500);
       })
     ).subscribe();
+
+    this.listenForProgressiveOverloadChanges();
   }
 
-  loadProfileData(): void { /* ... as before ... */
+  /**
+   * Sets up listeners for the progressive overload form.
+   * - Handles auto-saving on value changes.
+   * - Manages dynamic validators based on user selections.
+   */
+  listenForProgressiveOverloadChanges(): void {
+    this.progressiveOverloadForm.valueChanges.pipe(
+      debounceTime(700),
+      filter(() => this.progressiveOverloadForm.valid && this.progressiveOverloadForm.dirty),
+      tap(settings => {
+        this.progressiveOverloadService.saveSettings(settings as ProgressiveOverloadSettings);
+        this.progressiveOverloadForm.markAsPristine({ onlySelf: false });
+        this.toastService.info("Progressive Overload settings auto-saved", 1500);
+      })
+    ).subscribe();
+
+    const enabledControl = this.progressiveOverloadForm.get('enabled');
+    const strategyControl = this.progressiveOverloadForm.get('strategy');
+    const weightIncrementControl = this.progressiveOverloadForm.get('weightIncrement');
+    const repsIncrementControl = this.progressiveOverloadForm.get('repsIncrement');
+
+    enabledControl?.valueChanges.subscribe(enabled => {
+      if (enabled) {
+        strategyControl?.setValidators(Validators.required);
+      } else {
+        strategyControl?.clearValidators();
+        strategyControl?.setValue(null, { emitEvent: false });
+      }
+      strategyControl?.updateValueAndValidity();
+    });
+
+    strategyControl?.valueChanges.subscribe(strategy => {
+      if (strategy === ProgressiveOverloadStrategy.WEIGHT) {
+        weightIncrementControl?.setValidators([Validators.required, Validators.min(0.1)]);
+        repsIncrementControl?.clearValidators();
+        repsIncrementControl?.setValue(null, { emitEvent: false });
+      } else if (strategy === ProgressiveOverloadStrategy.REPS) {
+        repsIncrementControl?.setValidators([Validators.required, Validators.min(1), Validators.pattern("^[0-9]*$")]);
+        weightIncrementControl?.clearValidators();
+        weightIncrementControl?.setValue(null, { emitEvent: false });
+      } else {
+        weightIncrementControl?.clearValidators();
+        repsIncrementControl?.clearValidators();
+        weightIncrementControl?.setValue(null, { emitEvent: false });
+        repsIncrementControl?.setValue(null, { emitEvent: false });
+      }
+      weightIncrementControl?.updateValueAndValidity();
+      repsIncrementControl?.updateValueAndValidity();
+    });
+  }
+
+  loadProfileData(): void {
     const profile = this.userProfileService.getProfile();
     if (profile) {
       this.profileForm.reset(profile, { emitEvent: false });
@@ -134,46 +201,25 @@ export class ProfileSettingsComponent implements OnInit {
     this.appSettingsForm.reset(settings, { emitEvent: false });
   }
 
-  saveProfileSettings(): void { /* ... as before ... */
-    if (this.profileForm.invalid) {
-      this.toastService.error("Please correct errors in the profile form", 3000, "Validation Error");
-      this.profileForm.markAllAsTouched(); return;
-    }
-    this.userProfileService.saveProfile(this.profileForm.value as UserProfile);
-    this.profileForm.markAsPristine();
-    this.toastService.success("Profile saved successfully!", 2000);
-  }
-
-  saveAppSettings(): void {
-    if (this.appSettingsForm.invalid) {
-      this.toastService.error("Please correct errors in the app settings form", 3000, "Validation Error");
-      this.appSettingsForm.markAllAsTouched();
-      return;
-    }
-    this.appSettingsService.saveSettings(this.appSettingsForm.value as AppSettings);
-    this.appSettingsForm.markAsPristine();
-    this.toastService.success("App settings saved successfully!", 2000);
-  }
-
-  selectUnit(unit: WeightUnit): void {
-    this.unitsService.setUnitPreference(unit);
-    // No form to save here, unit service handles its own persistence
+  loadProgressiveOverloadSettings(): void {
+    const settings = this.progressiveOverloadService.getSettings();
+    this.progressiveOverloadForm.reset(settings, { emitEvent: false });
   }
 
   exportData(): void {
     this.spinnerService.show('Exporting data...');
     const backupData = {
-      version: this.BACKUP_VERSION, // Updated version
+      version: this.BACKUP_VERSION,
       timestamp: new Date().toISOString(),
       profile: this.userProfileService.getDataForBackup(),
       appSettings: this.appSettingsService.getDataForBackup(),
+      progressiveOverload: this.progressiveOverloadService.getDataForBackup(),
       routines: this.workoutService.getDataForBackup(),
       programs: this.trainingProgramService.getDataForBackup(),
       exercises: this.exerciseService.getDataForBackup(),
       workoutLogs: this.trackingService.getLogsForBackup(),
       personalBests: this.trackingService.getPBsForBackup(),
     };
-    // ... rest of existing exportData logic ...
     const jsonString = JSON.stringify(backupData, null, 2);
     const blob = new Blob([jsonString], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -209,27 +255,9 @@ export class ProfileSettingsComponent implements OnInit {
           input.value = ''; return;
         }
 
-        if (importedData.version === 3) {
-          // ... (your V3 validation) ...
-          if (!importedData.exercises || !importedData.routines) {
-            this.alertService.showAlert('Error', "Invalid V3 backup file content. Missing essential data sections");
-            input.value = ''; return;
-          }
-        } else if (importedData.version === 2) {
-          // ... (your V2 validation) ...
-          if (!importedData.routines || !importedData.workoutLogs || !importedData.personalBests ||
-            importedData.profile === undefined || importedData.appSettings === undefined) {
-            this.alertService.showAlert('Error', "Invalid V2 backup file content. Missing essential data sections");
-            input.value = ''; return;
-          }
-        } else if (importedData.version === 1) {
-          // ... (your V1 validation) ...
-          if (!importedData.routines || !importedData.workoutLogs || !importedData.personalBests) {
-            this.alertService.showAlert('Error', "Invalid V1 backup file content. Missing essential data sections");
-            input.value = ''; return;
-          }
-        } else {
-          this.alertService.showAlert('Error', `Unsupported backup file version. Expected 1,2 or 3, got ${importedData.version}`);
+        const version = importedData.version;
+        if (version > this.BACKUP_VERSION) {
+          this.alertService.showAlert('Error', `Backup version ${version} is newer than the app's supported version ${this.BACKUP_VERSION}. Please update the app.`);
           input.value = ''; return;
         }
 
@@ -240,24 +268,28 @@ export class ProfileSettingsComponent implements OnInit {
             this.trackingService.replaceLogs(importedData.workoutLogs);
             this.trackingService.replacePBs(importedData.personalBests);
 
-            if (importedData.version === 3) {
-              this.exerciseService.mergeData(importedData.exercises);
-              this.trainingProgramService.mergeData(importedData.programs);
-              // import profile and app settings
-              this.userProfileService.replaceData(importedData.profile as UserProfile | null);
-              this.appSettingsService.replaceData(importedData.appSettings as AppSettings | null);
-            } else if (importedData.version === 2) {
-              // import profile and app settings
-              this.userProfileService.replaceData(importedData.profile as UserProfile | null);
-              this.appSettingsService.replaceData(importedData.appSettings as AppSettings | null);
-            } else { // For V1, ensure defaults are applied if no settings/profile
-              this.userProfileService.replaceData(null); // Reset to default/empty
-              this.appSettingsService.replaceData(null); // Reset to default
+            if (version >= 4) {
+              this.progressiveOverloadService.replaceData(importedData.progressiveOverload as ProgressiveOverloadSettings | null);
+            } else {
+              this.progressiveOverloadService.replaceData(null);
             }
 
-            // Reload data into forms
+            if (version >= 3) {
+              this.exerciseService.mergeData(importedData.exercises);
+              this.trainingProgramService.mergeData(importedData.programs);
+            }
+
+            if (version >= 2) {
+              this.userProfileService.replaceData(importedData.profile as UserProfile | null);
+              this.appSettingsService.replaceData(importedData.appSettings as AppSettings | null);
+            } else {
+              this.userProfileService.replaceData(null);
+              this.appSettingsService.replaceData(null);
+            }
+
             this.loadProfileData();
             this.loadAppSettingsData();
+            this.loadProgressiveOverloadSettings();
             this.spinnerService.hide();
             this.toastService.success("Data imported successfully!", 5000, "Import Complete");
           } else {
@@ -289,28 +321,23 @@ export class ProfileSettingsComponent implements OnInit {
       if (this.workoutService.clearAllRoutines_DEV_ONLY) await this.workoutService.clearAllRoutines_DEV_ONLY();
       if (this.userProfileService.clearUserProfile_DEV_ONLY) this.userProfileService.clearUserProfile_DEV_ONLY();
       if (this.appSettingsService.clearAppSettings_DEV_ONLY) this.appSettingsService.clearAppSettings_DEV_ONLY();
+      if (this.progressiveOverloadService.clearSettings_DEV_ONLY) this.progressiveOverloadService.clearSettings_DEV_ONLY();
       if (this.trainingProgramService.deactivateAllPrograms) this.trainingProgramService.deactivateAllPrograms();
 
-      this.loadProfileData(); // Reload empty/default profile
-      this.loadAppSettingsData(); // Reload default app settings
+      this.loadProfileData();
+      this.loadAppSettingsData();
+      this.loadProgressiveOverloadSettings();
 
       await this.alertService.showAlert("Info", "All application data has been cleared");
     }
   }
 
-  get measForm(): FormGroup { // Helper to get measurements form group
-    return this.profileForm.get('measurements') as FormGroup;
+  selectUnit(unit: WeightUnit): void {
+    this.unitsService.setUnitPreference(unit);
   }
 
-  /**
-   * Toggles the 'hideWipDisclaimer' setting in the user profile.
-   * This method is called by the (change) event on the toggle switch.
-   */
   toggleWipDisclaimer(): void {
-    // 1. Get the current state
     const isCurrentlyHidden = this.userProfileService.getHideWipDisclaimer();
-
-    // 2. Update the service with the opposite state
     this.userProfileService.updateHideWipDisclaimer(!isCurrentlyHidden);
   }
 

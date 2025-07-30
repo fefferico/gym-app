@@ -34,18 +34,18 @@ interface ProgramGoal { value: Routine['goal'], label: string }
     selector: 'app-training-program-builder',
     standalone: true,
     imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    RouterLink,
-    TitleCasePipe,
-    DragDropModule,
-    DayOfWeekPipe,
-    FormsModule,
-    ActionMenuComponent,
-    PressDirective,
-    TooltipDirective,
-    IconComponent
-],
+        CommonModule,
+        ReactiveFormsModule,
+        RouterLink,
+        TitleCasePipe,
+        DragDropModule,
+        DayOfWeekPipe,
+        FormsModule,
+        ActionMenuComponent,
+        PressDirective,
+        TooltipDirective,
+        IconComponent
+    ],
     templateUrl: './training-program-builder.html',
     styleUrls: ['./training-program-builder.scss']
 })
@@ -66,6 +66,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
     isEditMode = false;
     isNewMode = false;
     isViewMode = false;
+    isEditableMode = computed(() => this.isEditMode || this.isNewMode);
     currentProgramId: string | null = null;
     currentProgram: TrainingProgram | null | undefined = null;
     isCurrentProgramActive = signal<boolean>(false);
@@ -127,6 +128,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
             description: [''],
             programNotes: [''],
             startDate: ['', Validators.required], // Store as YYYY-MM-DD string
+            endDate: ['', Validators.required], // Store as YYYY-MM-DD string
             cycleLength: [null, [Validators.min(1)]], // Default to weekly (null or 0)
             schedule: this.fb.array([])
         });
@@ -196,6 +198,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
             description: program.description ? this.updateSanitizedDescription(program.description) : '',
             programNotes: program.programNotes,
             startDate: program.startDate ? new Date(program.startDate).toISOString().split('T')[0] : null,
+            endDate: program.endDate ? new Date(program.endDate).toISOString().split('T')[0] : null,
             cycleLength: program.cycleLength ?? null,
         });
 
@@ -227,29 +230,60 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
 
     }
 
-    createScheduledDayGroup(day?: ScheduledRoutineDay): FormGroup {
+createScheduledDayGroup(day?: Partial<ScheduledRoutineDay>): FormGroup {
         const defaultDayValue = this.currentDayOptions()[0]?.value || 1;
         return this.fb.group({
-            id: [day?.id || uuidv4()], // Keep existing ID or generate new
+            id: [day?.id || uuidv4()],
             dayOfWeek: [day?.dayOfWeek ?? defaultDayValue, Validators.required],
             routineId: [day?.routineId ?? '', Validators.required],
-            routineName: [day?.routineName ?? ''], // For display
+            routineName: [day?.routineName ?? ''],
             notes: [day?.notes ?? ''],
-            timeOfDay: [day?.timeOfDay ?? '']
+            timeOfDay: [day?.timeOfDay ?? ''],
+            programId: [day?.programId ?? this.currentProgramId],
+            isUnscheduled: [day?.isUnscheduled || false]
         });
     }
 
     addScheduledDay(): void {
         if (this.isViewMode) return;
-        this.scheduleFormArray.push(this.createScheduledDayGroup());
+
+        const isWeeklySchedule = !this.programForm.get('cycleLength')?.value;
+
+        if (isWeeklySchedule) {
+            // --- INTELLIGENT WEEKLY LOGIC ---
+            if (this.scheduleFormArray.length >= 7) {
+                this.toastService.info("All 7 days of the week have been scheduled.", 3000);
+                return;
+            }
+
+            const usedDays = new Set(this.scheduleFormArray.controls.map(control => control.get('dayOfWeek')?.value));
+
+            // Logical order of the week starting from Monday
+            const weekSequence = [1, 2, 3, 4, 5, 6, 0]; // Mon, Tue, Wed, Thu, Fri, Sat, Sun
+
+            let nextAvailableDay = 1; // Default to Monday
+            for (const day of weekSequence) {
+                if (!usedDays.has(day)) {
+                    nextAvailableDay = day;
+                    break; // Found the first available day, so we stop looking
+                }
+            }
+            this.scheduleFormArray.push(this.createScheduledDayGroup({ dayOfWeek: nextAvailableDay }));
+
+        } else {
+            // --- ORIGINAL CYCLED PROGRAM LOGIC ---
+            this.scheduleFormArray.push(this.createScheduledDayGroup());
+        }
+
         this.cdr.detectChanges(); // Ensure the new element is in the DOM for scrolling
+
         // Scroll to the newly added day
         setTimeout(() => {
             const elements = document.querySelectorAll('.scheduled-day-card');
             if (elements.length > 0) {
                 elements[elements.length - 1].scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
-        }, 0);
+        }, 50); // A small delay can help ensure rendering is complete
     }
 
     removeScheduledDay(index: number): void {
@@ -330,6 +364,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
             description: formValue.description,
             programNotes: formValue.programNotes,
             startDate: formValue.startDate || new Date(), // Ensure null if empty
+            endDate: formValue.endDate || new Date(), // Ensure null if empty
             cycleLength: formValue.cycleLength || null, // Ensure null if 0 or empty
             schedule: formValue.schedule.map((s: ScheduledRoutineDay) => ({ // Ensure 'any' or proper type for s
                 id: s.id || uuidv4(),
@@ -353,7 +388,8 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
                 programPayload.isActive = existingProgram?.isActive ?? false;
                 await this.trainingProgramService.updateProgram(programPayload);
             }
-            this.router.navigate(['/training-programs']);
+            this.toastService.success("Program saved successfully", 0, "Success");
+            // this.router.navigate(['/training-programs']);
         } catch (error) {
             console.error("Error saving program:", error);
             this.toastService.error("Failed to save program", 0, "Save Error");

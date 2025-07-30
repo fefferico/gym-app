@@ -30,6 +30,7 @@ import { ModalComponent } from '../../shared/components/modal/modal.component';
 import { PressDirective } from '../../shared/directives/press.directive';
 import { FormatSecondsPipe } from '../../shared/pipes/format-seconds-pipe';
 import { PressScrollDirective } from '../../shared/directives/press-scroll.directive';
+import { ProgressiveOverloadService } from '../../core/services/progressive-overload.service.ts';
 
 
 // Interface to manage the state of the currently active set/exercise
@@ -130,6 +131,8 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
 
   protected appSettingsService = inject(AppSettingsService);
+  protected progressiveOverloadService = inject(ProgressiveOverloadService);
+
   private platformId = inject(PLATFORM_ID);
   // --- State Signals ---
   protected routine = signal<Routine | null | undefined>(undefined);
@@ -562,14 +565,6 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         });
       }
     });
-  }
-
-  private resetAndPatchCurrentSetForm(): void { // May be largely covered by patchActuals...
-    this.currentSetForm.reset({ rpe: null, setNotes: '' }); // Include setNotes reset
-    this.rpeValue.set(null);
-    this.showRpeSlider.set(false);
-    this.resetTimedSet();
-    this.patchActualsFormBasedOnSessionTargets(); // This will handle most patching
   }
 
   private startSessionTimer(): void {
@@ -1472,26 +1467,50 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
     console.log(`prepareCurrentSet: Preparing for Ex: "${currentExerciseData.exerciseName}", Set: ${sIndex + 1}, Type: ${currentPlannedSetData.type}`);
 
-
+    // Step 1: Get the planned set data from the original routine template.
     const originalExerciseForSuggestions = this.originalRoutineSnapshot.find(oe => oe.exerciseId === currentExerciseData.exerciseId) || currentExerciseData;
     const plannedSetForSuggestions = originalExerciseForSuggestions?.sets[sIndex] || currentPlannedSetData;
 
     this.loadBaseExerciseAndPBs(currentExerciseData.exerciseId);
 
+    // Step 2: Fetch the complete workout log from the last time this exercise was performed.
     if (!this.lastPerformanceForCurrentExercise || this.lastPerformanceForCurrentExercise.sets[0]?.exerciseId !== currentExerciseData.exerciseId) {
       this.lastPerformanceForCurrentExercise = await firstValueFrom(this.trackingService.getLastPerformanceForExercise(currentExerciseData.exerciseId).pipe(take(1)));
     }
+
+    // Step 3: Find the specific set from the last session that corresponds to the set we are about to do now (e.g., the 2nd set of the exercise).
     const historicalSetPerformance = this.trackingService.findPreviousSetPerformance(this.lastPerformanceForCurrentExercise, plannedSetForSuggestions, sIndex);
     let finalSetParamsForSession: ExerciseSetParams;
     if (plannedSetForSuggestions.type === 'warmup') {
+      // For warm-up sets, we don't apply progressive overload. We just use the planned values.
       finalSetParamsForSession = { ...plannedSetForSuggestions };
     } else {
-      finalSetParamsForSession = this.workoutService.suggestNextSetParameters(historicalSetPerformance, plannedSetForSuggestions, sessionRoutine.goal);
+      // *** THIS IS THE CORE LOGIC ***
+      // Step 4: Call the service to calculate the suggested parameters for the new set.
+      // It takes the historical performance, the original plan for today, and the routine's goal to make a suggestion.
+    const progressiveOverloadSettings = this.progressiveOverloadService.getSettings();
+
+      if (progressiveOverloadSettings){
+        finalSetParamsForSession = this.workoutService.suggestNextSetParameters(historicalSetPerformance, plannedSetForSuggestions, sessionRoutine.goal);
+      } else {
+        console.warn("prepareCurrentSet: Progressive overload settings are not available. Using default suggestion logic.");
+        // Fallback to default suggestion logic if settings are not available
+        finalSetParamsForSession = {
+          ...plannedSetForSuggestions,
+          reps: plannedSetForSuggestions.reps || 0,
+          weight: plannedSetForSuggestions.weight || 0,
+          duration: plannedSetForSuggestions.duration || 0,
+          restAfterSet: plannedSetForSuggestions.restAfterSet || 0
+        };
+      }
     }
+
+    // Step 5: Ensure the unique ID and type from the current session's plan are preserved.
     finalSetParamsForSession.id = currentPlannedSetData.id; // Ensure ID from current routine set is used
     finalSetParamsForSession.type = currentPlannedSetData.type;
     finalSetParamsForSession.notes = currentPlannedSetData.notes || finalSetParamsForSession.notes;
 
+    // Step 6: Update the live routine signal with the newly suggested set parameters.
     const updatedRoutineForSession = JSON.parse(JSON.stringify(sessionRoutine)) as Routine;
 
     // suggest updated values only if it's not a timed exercise
@@ -1499,6 +1518,8 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       updatedRoutineForSession.exercises[exIndex].sets[sIndex] = finalSetParamsForSession;
     }
     this.routine.set(updatedRoutineForSession); // Update the routine signal
+
+    // Step 7: Update the form controls (the input boxes for reps/weight) to display the new suggested values.
     this.patchActualsFormBasedOnSessionTargets(); // This uses activeSetInfo() which depends on routine()
 
     // Pre-set timer logic...
@@ -3713,34 +3734,6 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       this.playerSubState.set(PlayerSubState.PerformingSet);
       await this.prepareCurrentSet();
     }
-  }
-
-  /**
-   * NEW, ROBUST HELPER: Finds the next pending exercise block in the routine.
-   * It searches forward first, then "wraps around" to search from the beginning.
-   * This correctly handles cases where the user jumps ahead, leaving pending exercises behind.
-   */
-  private _findNextPendingBlock(searchAfterIndex: number, routine: Routine): { exerciseIndex: number; setIndex: number } | null {
-    // 1. Search forward from the current position to the end of the routine
-    for (let i = searchAfterIndex + 1; i < routine.exercises.length; i++) {
-      const ex = routine.exercises[i];
-      if (ex.sessionStatus === 'pending' && (ex.sets?.length ?? 0) > 0) {
-        const setIdx = this.findFirstUnloggedSetIndex(ex.id, ex.sets.map(s => s.id)) ?? 0;
-        return { exerciseIndex: i, setIndex: setIdx };
-      }
-    }
-
-    // 2. If nothing found, wrap around and search from the beginning up to the original position
-    for (let i = 0; i <= searchAfterIndex; i++) {
-      const ex = routine.exercises[i];
-      if (ex.sessionStatus === 'pending' && (ex.sets?.length ?? 0) > 0 && !this.isExerciseFullyLogged(ex)) {
-        const setIdx = this.findFirstUnloggedSetIndex(ex.id, ex.sets.map(s => s.id)) ?? 0;
-        return { exerciseIndex: i, setIndex: setIdx };
-      }
-    }
-
-    // 3. If still nothing found, there are no pending exercises left.
-    return null;
   }
 
   private startRestPeriod(duration: number, isResumingPausedRest: boolean = false): void {
