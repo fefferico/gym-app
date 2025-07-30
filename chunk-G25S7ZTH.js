@@ -1,0 +1,1 @@
+import{c as a}from"./chunk-YCVMOBSQ.js";import{a as n}from"./chunk-4FI6LC3I.js";import{Tc as i,Uc as f}from"./chunk-TEG5VV6I.js";function m(r,t,e){let o=f(r,e?.in);return isNaN(t)?i(e?.in||r,NaN):(t&&o.setDate(o.getDate()+t),o)}function x(r,t,e){let[o,s]=n(e?.in,r,t);return+a(o)==+a(s)}function N(r,t,e){return m(r,-t,e)}export{m as a,x as b,N as c};
