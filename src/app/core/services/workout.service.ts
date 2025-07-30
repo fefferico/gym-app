@@ -1,7 +1,7 @@
 // src/app/core/services/workout.service.ts
 import { Injectable, inject } from '@angular/core';
 import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
-import { catchError, finalize, map, shareReplay, tap } from 'rxjs/operators';
+import { map, shareReplay } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid'; // For generating unique IDs
 
 import { ExerciseSetParams, Routine, WorkoutExercise } from '../models/workout.model'; // Ensure this path is correct
@@ -9,7 +9,6 @@ import { StorageService } from './storage.service';
 import { LoggedSet } from '../models/workout-log.model';
 import { AlertService } from './alert.service';
 import { ROUTINES_DATA } from './routines-data';
-import { HttpClient } from '@angular/common/http';
 import { ToastService } from './toast.service';
 import { ProgressiveOverloadService } from './progressive-overload.service.ts';
 
@@ -20,7 +19,6 @@ export class WorkoutService {
   private storageService = inject(StorageService);
   private alertService = inject(AlertService);
   private readonly ROUTINES_STORAGE_KEY = 'fitTrackPro_routines';
-  private http = inject(HttpClient);
   private toastService = inject(ToastService);
   private progressiveOverloadService = inject(ProgressiveOverloadService); // +++ INJECT THE SERVICE
 
@@ -192,13 +190,11 @@ export class WorkoutService {
    * Suggests parameters for the next set based on last performance and user's progressive overload settings.
    * @param lastPerformedSet The actual performance of the corresponding set last time. Can be null if no history.
    * @param plannedSet The originally planned parameters for the current set (from the routine).
-   * @param exerciseGoal The goal of the overall routine/exercise (e.g., 'strength', 'hypertrophy').
    * @returns Updated ExerciseSetParams with suggested values for the current session.
    */
   suggestNextSetParameters(
     lastPerformedSet: LoggedSet | null,
     plannedSet: ExerciseSetParams,
-    exerciseGoal?: Routine['goal']
   ): ExerciseSetParams {
     // Start with a copy of the planned set. This is our fallback.
     const suggestedParams: ExerciseSetParams = JSON.parse(JSON.stringify(plannedSet));
@@ -218,7 +214,7 @@ export class WorkoutService {
       console.log('No last performance found. Using planned set.');
       return suggestedParams;
     }
-    
+
     // Note: The logic for 'sessionsToIncrement' should be handled by the TrackingService 
     // before this function is even called. This function assumes that if lastPerformedSet is provided,
     // it's the correct one to base progression on.
@@ -262,7 +258,7 @@ export class WorkoutService {
           console.log(`PO Suggestion (Reps): Failure last time. Sticking to ${suggestedParams.reps} reps`);
         }
         break;
-      
+
       // === FALLBACK: NO STRATEGY SELECTED ===
       default:
         console.log('Progressive Overload enabled, but no strategy selected. Using planned set.');

@@ -31,6 +31,7 @@ import { PressDirective } from '../../shared/directives/press.directive';
 import { FormatSecondsPipe } from '../../shared/pipes/format-seconds-pipe';
 import { PressScrollDirective } from '../../shared/directives/press-scroll.directive';
 import { ProgressiveOverloadService } from '../../core/services/progressive-overload.service.ts';
+import { IconComponent } from '../../shared/components/icon/icon.component';
 
 
 // Interface to manage the state of the currently active set/exercise
@@ -111,7 +112,7 @@ enum PlayerSubState {
   imports: [CommonModule, DatePipe, ReactiveFormsModule,
     FormatSecondsPipe,
     FormsModule, WeightUnitPipe, FullScreenRestTimerComponent, PressDirective, ModalComponent, ExerciseDetailComponent,
-    PressScrollDirective],
+    PressScrollDirective, IconComponent],
   templateUrl: './workout-player.html',
   styleUrl: './workout-player.scss',
   providers: [DecimalPipe]
@@ -1485,23 +1486,32 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       // For warm-up sets, we don't apply progressive overload. We just use the planned values.
       finalSetParamsForSession = { ...plannedSetForSuggestions };
     } else {
-      // *** THIS IS THE CORE LOGIC ***
       // Step 4: Call the service to calculate the suggested parameters for the new set.
       // It takes the historical performance, the original plan for today, and the routine's goal to make a suggestion.
     const progressiveOverloadSettings = this.progressiveOverloadService.getSettings();
-
-      if (progressiveOverloadSettings){
-        finalSetParamsForSession = this.workoutService.suggestNextSetParameters(historicalSetPerformance, plannedSetForSuggestions, sessionRoutine.goal);
+      if (progressiveOverloadSettings && progressiveOverloadSettings.enabled) {
+        finalSetParamsForSession = this.workoutService.suggestNextSetParameters(historicalSetPerformance, plannedSetForSuggestions);
       } else {
         console.warn("prepareCurrentSet: Progressive overload settings are not available. Using default suggestion logic.");
-        // Fallback to default suggestion logic if settings are not available
-        finalSetParamsForSession = {
-          ...plannedSetForSuggestions,
-          reps: plannedSetForSuggestions.reps || 0,
-          weight: plannedSetForSuggestions.weight || 0,
-          duration: plannedSetForSuggestions.duration || 0,
-          restAfterSet: plannedSetForSuggestions.restAfterSet || 0
-        };
+        // Fallback to historicalSetPerformance or default suggestion logic if settings are not available
+        if (historicalSetPerformance) {
+          // use historicalSetPerformance
+          finalSetParamsForSession = {
+            ...plannedSetForSuggestions,
+            reps: historicalSetPerformance.repsAchieved || plannedSetForSuggestions.reps || 0,
+            weight: historicalSetPerformance.weightUsed || plannedSetForSuggestions.weight || 0,
+            duration: historicalSetPerformance.durationPerformed || plannedSetForSuggestions.duration || 0,
+            restAfterSet: plannedSetForSuggestions.restAfterSet || 0
+          };
+        } else {
+          finalSetParamsForSession = {
+            ...plannedSetForSuggestions,
+            reps: plannedSetForSuggestions.reps || 0,
+            weight: plannedSetForSuggestions.weight || 0,
+            duration: plannedSetForSuggestions.duration || 0,
+            restAfterSet: plannedSetForSuggestions.restAfterSet || 0
+          };
+        }
       }
     }
 

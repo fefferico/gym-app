@@ -126,7 +126,7 @@
 
       <!-- Top Bar -->
       <header
-        class="fixed top-0 left-0 right-0 z-30 bg-gray-50 dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 p-2 flex items-center justify-between h-12">
+        class="fixed top-0 left-0 right-0 z-30 bg-gray-50 dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 p-2 flex items-center justify-between h-15">
         <button appPress (shortPress)="goBack()"
           class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-light p-2 -ml-1">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -153,7 +153,7 @@
         </button>
       </header>
 
-      <main class="flex-grow overflow-y-auto pt-11 your-main-container">
+      <main class="flex-grow overflow-y-auto your-main-container" style="transform: translateY(80px);">
         <!-- Increased pb for main action button area -->
         <div class="px-2 max-w-md mx-auto" *ngIf="activeSetInfo() as activeSet; else workoutCompleteOrError">
           <div class="flex text-center justify-center items-center mb-1 hover:cursor-pointer" appPress
@@ -234,7 +234,7 @@
                 <div class="flex items-center justify-center space-x-2">
                   <button type="button" [disabled]="getDisabled()" appPress (shortPress)="onShortPressWeightDecrement()"
                     (longPress)="onLongPressWeightDecrement()" (pressRelease)="onPressRelease()"
-                    class="p-4 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 rounded-r-sm rounded-l-2xl">
+                    class="p-4 bg-gray-400 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 rounded-r-sm rounded-l-2xl">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
                     </svg>
@@ -246,7 +246,7 @@
                   <input type="number" formControlName="actualWeight" class="hidden">
                   <button type="button" [disabled]="getDisabled()" appPress (shortPress)="onShortPressWeightIncrement()"
                     (longPress)="onLongPressWeightIncrement()" (pressRelease)="onPressRelease()"
-                    class="p-4 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 rounded-l-sm rounded-r-2xl">
+                    class="p-4 bg-gray-400 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 rounded-l-sm rounded-r-2xl">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                     </svg>
@@ -261,7 +261,7 @@
                 <div class="flex items-center justify-center space-x-2">
                   <button type="button" [disabled]="getDisabled()" appPress (shortPress)="onShortPressRepsDecrement()"
                     (longPress)="onLongPressRepsDecrement()" (pressRelease)="onPressRelease()"
-                    class="p-4 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 rounded-r-sm rounded-l-2xl">
+                    class="p-4 bg-gray-400 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 rounded-r-sm rounded-l-2xl">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
                     </svg>
@@ -272,7 +272,7 @@
                     placeholder="0">
                   <button type="button" [disabled]="getDisabled()" appPress (shortPress)="onShortPressRepsIncrement()"
                     (longPress)="onLongPressRepsIncrement()" (pressRelease)="onPressRelease()"
-                    class="p-4 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 rounded-l-sm rounded-r-2xl">
+                    class="p-4 bg-gray-400 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 rounded-l-sm rounded-r-2xl">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                     </svg>
@@ -301,15 +301,17 @@
                 <div class="flex space-x-2 mt-2 justify-center">
                   <button type="button" (click)="toggleTimedSetTimer()" [ngClass]="{
                               'bg-green-500 hover:bg-green-600': timedSetTimerState() === 'idle' || timedSetTimerState() === 'paused',
-                              'bg-yellow-500 hover:bg-yellow-600 text-black': timedSetTimerState() === 'running'
+                              'bg-yellow-500 hover:bg-yellow-600 text-white': timedSetTimerState() === 'running'
                             }"
-                    class="flex-grow max-w-[150px] text-white font-medium p-3 rounded-full transition-colors text-m disabled:opacity-50">
+                    class="flex items-center justify-center flex-grow min-w-[150px] max-w-[150px] gap-x-2 font-medium py-2 px-3 rounded-full transition-colors text-m disabled:opacity-50">
+                    <app-icon name="pause" class="h-8 w-8 text-white"></app-icon>
                     <span *ngIf="timedSetTimerState() === 'idle'">START TIMER</span>
                     <span *ngIf="timedSetTimerState() === 'running'">PAUSE TIMER</span>
                     <span *ngIf="timedSetTimerState() === 'paused'">RESUME TIMER</span>
                   </button>
                   <button type="button" appPress (shortPress)="resetTimedSet()" *ngIf="timedSetTimerState() !== 'idle'"
-                    class="flex-grow max-w-[150px] bg-gray-300 hover:bg-gray-400 dark:bg-gray-700 dark:hover:bg-gray-500 text-gray-800 dark:text-gray-200 font-medium py-2 px-3  rounded-full transition-colors text-m disabled:opacity-50">
+                    class="flex items-center justify-center min-w-[150px] max-w-[150px] gap-x-2 bg-gray-300 hover:bg-gray-400 dark:bg-gray-700 dark:hover:bg-gray-500 text-white font-medium py-2 px-3 rounded-full transition-colors text-m disabled:opacity-50">
+                    <app-icon name="change" class="w-5 h-5"></app-icon>
                     RESET
                   </button>
                 </div>
