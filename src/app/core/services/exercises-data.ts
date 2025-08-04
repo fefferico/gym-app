@@ -89,7 +89,7 @@ export const EXERCISES_DATA = [
     "category": "barbells",
     "primaryMuscleGroup": "Chest",
     "muscleGroups": ["Chest", "Triceps", "Shoulders (Anterior)"],
-    "equipmentNeeded": ["Barbell", "Bench", "Rack (optional but recommended)"],
+    "equipmentNeeded": ["Barbell", "Bench", "Rack"],
     "imageUrls": ["assets/images/exercises/barbell-bench-press_1.jpg", "assets/images/exercises/barbell-bench-press_2.jpg"],
     "notes": "Maintain 5 points of contact: head, upper back, glutes on bench; both feet on floor."
   },
@@ -122,7 +122,7 @@ export const EXERCISES_DATA = [
     "category": "barbells",
     "primaryMuscleGroup": "Shoulders (Anterior & Medial)",
     "muscleGroups": ["Shoulders (Anterior, Medial)", "Triceps", "Traps (Upper)", "Core"],
-    "equipmentNeeded": ["Barbell", "Rack (optional)"],
+    "equipmentNeeded": ["Barbell", "Rack"],
     "imageUrls": ["assets/images/exercises/overhead-press-barbell_1.jpg", "assets/images/exercises/overhead-press-barbell_2.jpg"]
   },
   {
@@ -142,7 +142,7 @@ export const EXERCISES_DATA = [
     "category": "barbells",
     "primaryMuscleGroup": "Biceps",
     "muscleGroups": ["Biceps", "Forearms (Flexors)"],
-    "equipmentNeeded": ["Barbell", "EZ-Curl Bar (optional)"],
+    "equipmentNeeded": ["Barbell", "EZ-Curl Bar"],
     "imageUrls": ["assets/images/exercises/barbell-bicep-curl_1.jpg", "assets/images/exercises/barbell-bicep-curl_2.jpg"]
   },
   {
@@ -173,7 +173,7 @@ export const EXERCISES_DATA = [
     "category": "dumbbells",
     "primaryMuscleGroup": "Shoulders (Anterior & Medial)",
     "muscleGroups": ["Shoulders (Anterior, Medial)", "Triceps", "Traps (Upper)"],
-    "equipmentNeeded": ["Dumbbells", "Bench (optional)"],
+    "equipmentNeeded": ["Dumbbells", "Bench"],
     "imageUrls": ["assets/images/exercises/db-shoulder-press_1.jpg", "assets/images/exercises/db-shoulder-press_2.jpg"]
   },
   {
@@ -513,7 +513,7 @@ export const EXERCISES_DATA = [
     "category": "bands",
     "primaryMuscleGroup": "Triceps",
     "muscleGroups": ["Triceps"],
-    "equipmentNeeded": ["Resistance Band", "Anchor Point (optional)"],
+    "equipmentNeeded": ["Resistance Band", "Anchor Point"],
     "imageUrls": ["assets/images/exercises/band-tricep-pushdown_1.jpg", "assets/images/exercises/band-tricep-pushdown_2.jpg"]
   },
   {
@@ -634,7 +634,7 @@ export const EXERCISES_DATA = [
     "category": "barbells",
     "primaryMuscleGroup": "Glutes",
     "muscleGroups": ["Glutes", "Hamstrings", "Core"],
-    "equipmentNeeded": ["Barbell", "Bench", "Padding (optional)"],
+    "equipmentNeeded": ["Barbell", "Bench", "Padding"],
     "imageUrls": ["assets/images/exercises/barbell-hip-thrust_1.jpg", "assets/images/exercises/barbell-hip-thrust_2.jpg"]
   },
   {
@@ -654,7 +654,7 @@ export const EXERCISES_DATA = [
     "category": "barbells",
     "primaryMuscleGroup": "Hamstrings",
     "muscleGroups": ["Hamstrings", "Glutes", "Lower Back (Erector Spinae)"],
-    "equipmentNeeded": ["Barbell", "Rack (optional)"],
+    "equipmentNeeded": ["Barbell", "Rack"],
     "imageUrls": ["assets/images/exercises/barbell-good-morning_1.jpg", "assets/images/exercises/barbell-good-morning_2.jpg"]
   },
   {
@@ -815,7 +815,7 @@ export const EXERCISES_DATA = [
     "category": "bands",
     "primaryMuscleGroup": "Chest",
     "muscleGroups": ["Chest", "Triceps", "Shoulders (Anterior)"],
-    "equipmentNeeded": ["Resistance Band", "Anchor Point (optional)"],
+    "equipmentNeeded": ["Resistance Band", "Anchor Point"],
     "imageUrls": ["assets/images/exercises/band-chest-press_1.jpg", "assets/images/exercises/band-chest-press_2.jpg"]
   },
   {
@@ -825,7 +825,7 @@ export const EXERCISES_DATA = [
     "category": "bands",
     "primaryMuscleGroup": "Lats",
     "muscleGroups": ["Lats", "Rhomboids", "Traps (Middle)", "Biceps"],
-    "equipmentNeeded": ["Resistance Band", "Anchor Point (optional)"],
+    "equipmentNeeded": ["Resistance Band", "Anchor Point"],
     "imageUrls": ["assets/images/exercises/band-row_1.jpg", "assets/images/exercises/band-row_2.jpg"]
   },
   {
@@ -936,7 +936,7 @@ export const EXERCISES_DATA = [
     "category": "cardio",
     "primaryMuscleGroup": "Legs",
     "muscleGroups": ["Legs (Quadriceps, Hamstrings, Glutes, Calves)", "Core", "Cardiovascular System"],
-    "equipmentNeeded": ["Treadmill (optional)"],
+    "equipmentNeeded": ["Treadmill"],
     "imageUrls": ["assets/images/cardio/running_1.jpg", "assets/images/cardio/jogging_1.jpg"]
   },
   {
@@ -1240,8 +1240,8 @@ export const EXERCISES_DATA = [
     imageUrls: ["assets/images/exercises/wall-sit_1.jpg"]
   },
   {
-    id: "side-plank",
-    name: "Side Plank",
+    "id": "side-plank",
+    "name": "Side Plank",
     description: "Targets obliques and improves lateral core stability.",
     category: "calisthenics",
     primaryMuscleGroup: "Core",
@@ -1290,8 +1290,8 @@ export const EXERCISES_DATA = [
     imageUrls: ["assets/images/exercises/wall-handstand_1.jpg"]
   },
   {
-    id: "handstand",
-    name: "Handstand",
+    "id": "handstand",
+    "name": "Handstand",
     description: "A balance and strength move targeting shoulders, arms, and core.",
     category: "calisthenics",
     primaryMuscleGroup: "Shoulders",
@@ -1450,8 +1450,8 @@ export const EXERCISES_DATA = [
     imageUrls: ["assets/images/exercises/kettlebell-halifax_1.jpg"]
   },
   {
-    id: "double-kettlebell-front-squat",
-    name: "Double Kettlebell Front Squat",
+    "id": "double-kettlebell-front-squat",
+    "name": "Double Kettlebell Front Squat",
     description: "Holding two kettlebells at shoulder height, perform a squat to target the quads, glutes, and core.",
     category: "kettlebells",
     primaryMuscleGroup: "Lower Body",
@@ -1460,8 +1460,8 @@ export const EXERCISES_DATA = [
     imageUrls: ["assets/images/exercises/double-kettlebell-front-squat_1.jpg"]
   },
   {
-    id: "double-kettlebell-rack-deadlift",
-    name: "Double Kettlebell Rack Deadlift",
+    "id": "double-kettlebell-rack-deadlift",
+    "name": "Double Kettlebell Rack Deadlift",
     description: "Lift two kettlebells from the ground to a rack position, emphasizing posterior chain strength.",
     category: "kettlebells",
     primaryMuscleGroup: "Posterior Chain",
@@ -1470,8 +1470,8 @@ export const EXERCISES_DATA = [
     imageUrls: ["assets/images/exercises/double-kettlebell-rack-deadlift_1.jpg"]
   },
   {
-    id: "double-kettlebell-swing",
-    name: "Double Kettlebell Swing",
+    "id": "double-kettlebell-swing",
+    "name": "Double Kettlebell Swing",
     description: "A powerful hip-hinge movement using two kettlebells to develop explosive strength and endurance.",
     category: "kettlebells",
     primaryMuscleGroup: "Full Body",
@@ -1480,8 +1480,8 @@ export const EXERCISES_DATA = [
     imageUrls: ["assets/images/exercises/double-kettlebell-swing_1.jpg"]
   },
   {
-    id: "single-kettlebell-jerk",
-    name: "Single Kettlebell Jerk",
+    "id": "single-kettlebell-jerk",
+    "name": "Single Kettlebell Jerk",
     description: "An overhead press with a dip and drive movement, improving explosive shoulder power.",
     category: "kettlebells",
     primaryMuscleGroup: "Shoulders",
@@ -1490,8 +1490,8 @@ export const EXERCISES_DATA = [
     imageUrls: ["assets/images/exercises/single-kettlebell-jerk_1.jpg"]
   },
   {
-    id: "single-kettlebell-clean-and-press",
-    name: "Single Kettlebell Clean and Press",
+    "id": "single-kettlebell-clean-and-press",
+    "name": "Single Kettlebell Clean and Press",
     description: "A dynamic full-body movement to build strength, power, and coordination.",
     category: "kettlebells",
     primaryMuscleGroup: "Full Body",
@@ -1500,8 +1500,8 @@ export const EXERCISES_DATA = [
     imageUrls: ["assets/images/exercises/single-kettlebell-clean-and-press_1.jpg"]
   },
   {
-    id: "double-kettlebell-arching-swing",
-    name: "Double Kettlebell Arching Swing",
+    "id": "double-kettlebell-arching-swing",
+    "name": "Double Kettlebell Arching Swing",
     description: "A variation emphasizing controlled movement and grip strength, swinging two kettlebells in an arc.",
     category: "kettlebells",
     primaryMuscleGroup: "Full Body",
@@ -1510,8 +1510,8 @@ export const EXERCISES_DATA = [
     imageUrls: ["assets/images/exercises/double-kettlebell-arching-swing_1.jpg"]
   },
   {
-    id: "single-kettlebell-figure-eight",
-    name: "Single Kettlebell Figure Eight",
+    "id": "single-kettlebell-figure-eight",
+    "name": "Single Kettlebell Figure Eight",
     description: "Passing the kettlebell between the legs in a figure-eight pattern, enhancing coordination and grip.",
     category: "kettlebells",
     primaryMuscleGroup: "Full Body",
@@ -1520,8 +1520,8 @@ export const EXERCISES_DATA = [
     imageUrls: ["assets/images/exercises/single-kettlebell-figure-eight_1.jpg"]
   },
   {
-    id: "double-kettlebell-overhead-lunge",
-    name: "Double Kettlebell Overhead Lunge",
+    "id": "double-kettlebell-overhead-lunge",
+    "name": "Double Kettlebell Overhead Lunge",
     description: "Holding two kettlebells overhead, perform lunges to challenge stability and strength.",
     category: "kettlebells",
     primaryMuscleGroup: "Lower Body",
@@ -1530,8 +1530,8 @@ export const EXERCISES_DATA = [
     imageUrls: ["assets/images/exercises/double-kettlebell-overhead-lunge_1.jpg"]
   },
   {
-    id: "single-kettlebell-high-pull",
-    name: "Single Kettlebell High Pull",
+    "id": "single-kettlebell-high-pull",
+    "name": "Single Kettlebell High Pull",
     description: "A powerful movement pulling the kettlebell to chest level, engaging the back and shoulders.",
     category: "kettlebells",
     primaryMuscleGroup: "Back & Shoulders",
@@ -1540,8 +1540,8 @@ export const EXERCISES_DATA = [
     imageUrls: ["assets/images/exercises/single-kettlebell-high-pull_1.jpg"]
   },
   {
-    id: "double-kettlebell-press",
-    name: "Double Kettlebell Overhead Press",
+    "id": "double-kettlebell-press",
+    "name": "Double Kettlebell Overhead Press",
     description: "Pressing two kettlebells overhead simultaneously for balanced shoulder development.",
     category: "kettlebells",
     primaryMuscleGroup: "Shoulders",
@@ -1550,8 +1550,8 @@ export const EXERCISES_DATA = [
     imageUrls: ["assets/images/exercises/double-kettlebell-press_1.jpg"]
   },
   {
-    id: "single-kettlebell-front-squat",
-    name: "Single Kettlebell Front Squat",
+    "id": "single-kettlebell-front-squat",
+    "name": "Single Kettlebell Front Squat",
     description: "Hold the kettlebell at chest level and perform a squat to target quads, glutes, and core stability.",
     category: "kettlebells",
     primaryMuscleGroup: "Lower Body",
@@ -1560,8 +1560,8 @@ export const EXERCISES_DATA = [
     imageUrls: ["assets/images/exercises/single-kettlebell-front-squat_1.jpg"]
   },
   {
-    id: "single-kettlebell-russian-twist",
-    name: "Single Kettlebell Russian Twist",
+    "id": "single-kettlebell-russian-twist",
+    "name": "Single Kettlebell Russian Twist",
     description: "Sit on the floor, lean back slightly, and twist the kettlebell side to side for oblique engagement.",
     category: "kettlebells",
     primaryMuscleGroup: "Core",
@@ -1570,8 +1570,8 @@ export const EXERCISES_DATA = [
     imageUrls: ["assets/images/exercises/single-kettlebell-russian-twist_1.jpg"]
   },
   {
-    id: "single-kettlebell-overhead-press",
-    name: "Single Kettlebell Overhead Press",
+    "id": "single-kettlebell-overhead-press",
+    "name": "Single Kettlebell Overhead Press",
     description: "Press the kettlebell overhead, focusing on shoulder stability and core engagement.",
     category: "kettlebells",
     primaryMuscleGroup: "Shoulders",
@@ -1624,8 +1624,8 @@ export const EXERCISES_DATA = [
     "notes": "As you swing, pivot on your back foot to allow your hips to rotate. It's a subtle, power-generating movement, not an exaggerated twist. [1]"
   },
   {
-    id: "one-hand-kettlebell-swing",
-    name: "Single Kettlebell Swing",
+    "id": "one-hand-kettlebell-swing",
+    "name": "Single Kettlebell Swing",
     description: "Hinge at hips and swing the kettlebell between legs to chest or eye level, building explosive hip power.",
     category: "kettlebells",
     primaryMuscleGroup: "Full Body",
@@ -1634,8 +1634,8 @@ export const EXERCISES_DATA = [
     imageUrls: ["assets/images/exercises/one-hand-kettlebell-swing_1.jpg"]
   },
   {
-    id: "one-hand-kettlebell-alternating-swing",
-    name: "Single Kettlebell Alternating Swing",
+    "id": "one-hand-kettlebell-alternating-swing",
+    "name": "Single Kettlebell Alternating Swing",
     description: "Hinge at hips and swing the kettlebell between legs to chest or eye level, building explosive hip power. Switch hand at the top of the swing.",
     category: "kettlebells",
     primaryMuscleGroup: "Full Body",
@@ -1646,8 +1646,8 @@ export const EXERCISES_DATA = [
 
   // Double kettlebell exercises
   {
-    id: "double-kettlebell-clean",
-    name: "Double Kettlebell Clean",
+    "id": "double-kettlebell-clean",
+    "name": "Double Kettlebell Clean",
     description: "Lift two kettlebells from the ground to rack position in one explosive movement, engaging full posterior chain.",
     category: "kettlebells",
     primaryMuscleGroup: "Full Body",
@@ -1656,8 +1656,8 @@ export const EXERCISES_DATA = [
     imageUrls: ["assets/images/exercises/double-kettlebell-clean_1.jpg"]
   },
   {
-    id: "double-kettlebell-sumo-deadlift",
-    name: "Double Kettlebell Sumo Deadlift",
+    "id": "double-kettlebell-sumo-deadlift",
+    "name": "Double Kettlebell Sumo Deadlift",
     description: "Wide stance deadlift with two kettlebells to target inner thighs, hips, and glutes.",
     category: "kettlebells",
     primaryMuscleGroup: "Lower Body",
@@ -1666,8 +1666,8 @@ export const EXERCISES_DATA = [
     imageUrls: ["assets/images/exercises/double-kettlebell-sumo-deadlift_1.jpg"]
   },
   {
-    id: "double-kettlebell-windmill",
-    name: "Double Kettlebell Windmill",
+    "id": "double-kettlebell-windmill",
+    "name": "Double Kettlebell Windmill",
     description: "Hold kettlebells overhead in both hands and hinge at the hips to touch the floor, improving mobility and core strength.",
     category: "kettlebells",
     primaryMuscleGroup: "Core & Shoulders",
@@ -1677,8 +1677,8 @@ export const EXERCISES_DATA = [
   },
   // Additional versatile exercises
   {
-    id: "single-kettlebell-overhead-lunge",
-    name: "Single Kettlebell Overhead Lunge",
+    "id": "single-kettlebell-overhead-lunge",
+    "name": "Single Kettlebell Overhead Lunge",
     description: "Hold one kettlebell overhead in one hand and perform lunges to challenge stability and core control.",
     category: "kettlebells",
     primaryMuscleGroup: "Lower Body & Core",
@@ -1687,8 +1687,8 @@ export const EXERCISES_DATA = [
     imageUrls: ["assets/images/exercises/single-kettlebell-overhead-lunge_1.jpg"]
   },
   {
-    id: "double-kettlebell-rotational-press",
-    name: "Double Kettlebell Rotational Press",
+    "id": "double-kettlebell-rotational-press",
+    "name": "Double Kettlebell Rotational Press",
     description: "Press kettlebells overhead while rotating the torso to enhance rotational strength and core stability.",
     category: "kettlebells",
     primaryMuscleGroup: "Core & Shoulders",
@@ -1697,8 +1697,8 @@ export const EXERCISES_DATA = [
     imageUrls: ["assets/images/exercises/double-kettlebell-rotational-press_1.jpg"]
   },
   {
-    id: "front-lever",
-    name: "Front Lever",
+    "id": "front-lever",
+    "name": "Front Lever",
     description: "Isometric hold for core, back, and shoulder strength.",
     category: "calisthenics",
     primaryMuscleGroup: "Back & Core",
@@ -1814,7 +1814,7 @@ export const EXERCISES_DATA = [
     "category": "barbells",
     "primaryMuscleGroup": "Triceps",
     "muscleGroups": ["Triceps"],
-    "equipmentNeeded": ["Barbell", "Bench", "EZ-Curl Bar (recommended)"],
+    "equipmentNeeded": ["Barbell", "Bench", "EZ-Curl Bar"],
     "imageUrls": []
   },
   {
@@ -1824,7 +1824,7 @@ export const EXERCISES_DATA = [
     "category": "bodyweight/calisthenics",
     "primaryMuscleGroup": "Calves",
     "muscleGroups": ["Calves (Gastrocnemius, Soleus)"],
-    "equipmentNeeded": ["Calf Raise Machine", "Dumbbells (optional)"],
+    "equipmentNeeded": ["Calf Raise Machine", "Dumbbells"],
     "imageUrls": []
   },
   {
@@ -2241,7 +2241,7 @@ export const EXERCISES_DATA = [
     "category": "kettlebells",
     "primaryMuscleGroup": "Shoulders",
     "muscleGroups": ["Shoulders", "Triceps", "Core (stabilizer)", "Glutes (stabilizer)"],
-    "equipmentNeeded": ["Kettlebell", "Mat (optional)"],
+    "equipmentNeeded": ["Kettlebell", "Mat"],
     "imageUrls": ["assets/images/exercises/kb-tall-kneeling-press_1.jpg", "assets/images/exercises/kb-tall-kneeling-press_2.jpg"],
     "notes": "Squeeze your glutes and brace your core tightly to create a stable base. Avoid leaning back as you press the weight overhead."
   },
@@ -2285,7 +2285,7 @@ export const EXERCISES_DATA = [
     "category": "kettlebells",
     "primaryMuscleGroup": "Triceps",
     "muscleGroups": ["Triceps"],
-    "equipmentNeeded": ["Kettlebell", "Bench (optional)"],
+    "equipmentNeeded": ["Kettlebell", "Bench"],
     "imageUrls": ["assets/images/exercises/kb-lying-triceps-ext_1.jpg", "assets/images/exercises/kb-lying-triceps-ext_2.jpg"],
     "notes": "Hold the kettlebell by the horns with both hands and lower it towards your forehead, keeping your elbows stationary. Extend back to the start."
   },
@@ -2406,7 +2406,7 @@ export const EXERCISES_DATA = [
     "category": "kettlebells",
     "primaryMuscleGroup": "Shoulders",
     "muscleGroups": ["Shoulders", "Triceps", "Core (Obliques)", "Hips (stabilizers)"],
-    "equipmentNeeded": ["Kettlebell", "Mat (optional)"],
+    "equipmentNeeded": ["Kettlebell", "Mat"],
     "imageUrls": ["assets/images/exercises/kb-half-kneeling-press_1.jpg", "assets/images/exercises/kb-half-kneeling-press_2.jpg"],
     "notes": "Press on the same side as the knee that is on the ground. Squeeze the glute of the kneeling leg to maintain stability."
   },
@@ -2494,7 +2494,7 @@ export const EXERCISES_DATA = [
     "category": "kettlebells",
     "primaryMuscleGroup": "Hamstrings",
     "muscleGroups": ["Hamstrings", "Spine", "Lower Back", "Glutes (stretch)"],
-    "equipmentNeeded": ["Kettlebell", "Box (optional)"],
+    "equipmentNeeded": ["Kettlebell", "Box"],
     "imageUrls": ["assets/images/exercises/kb-jefferson-curl_1.jpg", "assets/images/exercises/kb-jefferson-curl_2.jpg"],
     "notes": "This is a mobility drill, not a heavy lift. Use a very light kettlebell. Tuck your chin and focus on a slow, controlled roll down and up."
   },
@@ -2725,7 +2725,7 @@ export const EXERCISES_DATA = [
     "category": "kettlebells",
     "primaryMuscleGroup": "Shoulders (stabilizers)",
     "muscleGroups": ["Shoulders (Rotator Cuff)", "Core (Obliques)", "Hips (stabilizers)"],
-    "equipmentNeeded": ["Kettlebell", "Mat (optional)"],
+    "equipmentNeeded": ["Kettlebell", "Mat"],
     "imageUrls": ["assets/images/exercises/kb-half-kneeling-halo_1.jpg", "assets/images/exercises/kb-half-kneeling-halo_2.jpg"],
     "notes": "Squeeze the glute of the down-leg to maintain a stable pelvis and avoid arching your back as the kettlebell circles your head."
   },
@@ -3354,18 +3354,17 @@ export const EXERCISES_DATA = [
   },
 
   {
-    id: 'we-2-3',
-    exerciseId: 'kettlebell-single-arm-clean-and-thruster',
-    exerciseName: 'Single Arm Clean & Thruster',
-    sets: [{ id: 'set-2-3-1', reps: 3, notes: 'Perform 3 reps per side.', restAfterSet: 0, type: 'superset' }],
+    "id": 'we-2-3',
+    "name": 'Single Arm Clean & Thruster',
+    sets: [{ "id": 'set-2-3-1', reps: 3, notes: 'Perform 3 reps per side.', restAfterSet: 0, type: 'superset' }],
     supersetId: 'core-circuit-2',
     supersetOrder: 2,
     type: 'superset'
   },
 
   {
-    id: 'kettlebell-suitcase-deadlift-to-anti-rotation-row',
-    name: 'Suitcase Deadlift to Anti-Rotation Row',
+    "id": 'kettlebell-suitcase-deadlift-to-anti-rotation-row',
+    "name": 'Suitcase Deadlift to Anti-Rotation Row',
     description: 'A combination exercise starting with a suitcase deadlift, followed by a row that challenges anti-rotation core strength.',
     category: 'kettlebells',
     primaryMuscleGroup: 'Back',
@@ -3374,8 +3373,8 @@ export const EXERCISES_DATA = [
     imageUrls: [],
   },
   {
-    id: 'kettlebell-slow-eccentric-floor-skullcrusher-to-press',
-    name: 'Slow Eccentric Floor Skullcrusher to Close Grip Floor Press',
+    "id": 'kettlebell-slow-eccentric-floor-skullcrusher-to-press',
+    "name": 'Slow Eccentric Floor Skullcrusher to Close Grip Floor Press',
     description: 'A combination of a slow eccentric skullcrusher directly into a close grip floor press, targeting the triceps.',
     category: 'kettlebells',
     primaryMuscleGroup: 'Triceps',
@@ -3384,8 +3383,8 @@ export const EXERCISES_DATA = [
     imageUrls: [],
   },
   {
-    id: 'proprioceptive-close-grip-push-up',
-    name: 'Proprioceptive Close Grip Push Up',
+    "id": 'proprioceptive-close-grip-push-up',
+    "name": 'Proprioceptive Close Grip Push Up',
     description: 'A close grip push-up performed on an unstable surface like a kettlebell to challenge stability and proprioception.',
     category: 'bodyweight/calisthenics',
     primaryMuscleGroup: 'Triceps',
@@ -3394,8 +3393,8 @@ export const EXERCISES_DATA = [
     imageUrls: [],
   },
   {
-    id: 'kettlebell-cheat-row',
-    name: 'Kettlebell Cheat Row',
+    "id": 'kettlebell-cheat-row',
+    "name": 'Kettlebell Cheat Row',
     description: 'A bent-over row performed with a kettlebell using some momentum or "body english" to handle heavier weights.',
     category: 'kettlebells',
     primaryMuscleGroup: 'Lats',
@@ -3405,8 +3404,8 @@ export const EXERCISES_DATA = [
     notes: 'Use with caution. This is an advanced technique to overload the back muscles.'
   },
   {
-    id: 'proprioceptive-pause-goblet-squat',
-    name: 'Proprioceptive Pause Goblet Squat',
+    "id": 'proprioceptive-pause-goblet-squat',
+    "name": 'Proprioceptive Pause Goblet Squat',
     description: 'A goblet squat with a pause at the bottom, often performed on an unstable surface or with a focus on balance to enhance proprioception.',
     category: 'kettlebells',
     primaryMuscleGroup: 'Quadriceps',
@@ -3415,18 +3414,18 @@ export const EXERCISES_DATA = [
     imageUrls: [],
   },
   {
-    id: 'alternating-proprioceptive-reverse-lunge',
-    name: 'Alternating Proprioceptive Reverse Lunge',
+    "id": 'alternating-proprioceptive-reverse-lunge',
+    "name": 'Alternating Proprioceptive Reverse Lunge',
     description: 'Alternating reverse lunges performed with a focus on balance and stability, potentially on an uneven surface or with an offset load.',
     category: 'bodyweight/calisthenics',
     primaryMuscleGroup: 'Quadriceps',
     muscleGroups: ['Quadriceps', 'Glutes', 'Hamstrings', 'Core'],
-    equipmentNeeded: ['Kettlebell (optional)'],
+    equipmentNeeded: ['Kettlebell'],
     imageUrls: [],
   },
   {
-    id: 'single-kettlebell-clean-press-to-pause-windmill',
-    name: 'Single Kettlebell Clean & Press to Pause Windmill',
+    "id": 'single-kettlebell-clean-press-to-pause-windmill',
+    "name": 'Single Kettlebell Clean & Press to Pause Windmill',
     description: 'A complex movement that combines a single kettlebell clean and press followed by a controlled windmill with a pause.',
     category: 'kettlebells',
     primaryMuscleGroup: 'Full Body',

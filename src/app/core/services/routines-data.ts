@@ -2524,74 +2524,82 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-7-1',
                 exerciseId: 'kettlebell-snatch',
                 exerciseName: 'Single Arm Snatch to Overhead Reverse Lunge',
-                sets: [{ id: 'set-7-1-1', reps: 5, notes: 'Perform 5 reps per side. This is a complex with Overhead Reverse Lunge.', restAfterSet: 0, type: 'superset' }],
+                sets: [{ id: 'set-7-1-1', reps: 5, notes: 'Perform 5 reps per side. This is a complex with Overhead Reverse Lunge.', restAfterSet: 0, type: 'superset', weight: 21 }],
                 supersetId: 'death-set-7',
                 supersetOrder: 0,
-                rounds: 1, // Assuming this is one long set
-                type: 'superset'
+                rounds: 3, // Assuming this is one long set
+                type: 'superset',
+                supersetSize: 8
             },
             {
                 id: 'we-7-2',
                 exerciseId: 'kettlebell-overhead-lunge',
                 exerciseName: 'Single Arm Snatch to Overhead Reverse Lunge',
-                sets: [{ id: 'set-7-2-1', reps: 5, notes: 'Perform 5 reps per side as part of the complex.', restAfterSet: 0, type: 'superset' }],
+                sets: [{ id: 'set-7-2-1', reps: 5, notes: 'Perform 5 reps per side as part of the complex.', restAfterSet: 0, type: 'superset', weight: 21 }],
                 supersetId: 'death-set-7',
                 supersetOrder: 1,
-                type: 'superset'
+                type: 'superset',
+                supersetSize: 8
             },
             {
                 id: 'we-7-3',
                 exerciseId: 'kettlebell-deadlift',
                 exerciseName: 'Deadlift to Row',
-                sets: [{ id: 'set-7-3-1', reps: 5, notes: 'This is a complex with a Row.', restAfterSet: 0, type: 'superset' }],
+                sets: [{ id: 'set-7-3-1', reps: 5, notes: 'This is a complex with a Row.', restAfterSet: 0, type: 'superset', weight: 21 }],
                 supersetId: 'death-set-7',
                 supersetOrder: 2,
-                type: 'superset'
+                type: 'superset',
+                supersetSize: 8
             },
             {
                 id: 'we-7-4',
                 exerciseId: 'kettlebell-single-arm-row',
                 exerciseName: 'Deadlift to Row',
-                sets: [{ id: 'set-7-4-1', reps: 5, notes: 'Performed as part of the complex.', restAfterSet: 0, type: 'superset' }],
+                sets: [{ id: 'set-7-4-1', reps: 5, notes: 'Performed as part of the complex.', restAfterSet: 0, type: 'superset', weight: 21 }],
                 supersetId: 'death-set-7',
                 supersetOrder: 3,
-                type: 'superset'
+                type: 'superset',
+                supersetSize: 8
             },
             {
                 id: 'we-7-5',
                 exerciseId: 'kettlebell-deadlift',
                 exerciseName: 'Deadlift',
-                sets: [{ id: 'set-7-5-1', reps: 5, restAfterSet: 0, type: 'superset' }],
+                sets: [{ id: 'set-7-5-1', reps: 5, restAfterSet: 0, type: 'superset', weight: 21 }],
                 supersetId: 'death-set-7',
                 supersetOrder: 4,
-                type: 'superset'
+                type: 'superset',
+                supersetSize: 8
             },
             {
                 id: 'we-7-6',
                 exerciseId: 'kettlebell-single-arm-row',
                 exerciseName: 'Row',
-                sets: [{ id: 'set-7-6-1', reps: 5, restAfterSet: 0, type: 'superset' }],
+                sets: [{ id: 'set-7-6-1', reps: 5, restAfterSet: 0, type: 'superset', weight: 21 }],
                 supersetId: 'death-set-7',
                 supersetOrder: 5,
-                type: 'superset'
+                type: 'superset',
+                supersetSize: 8
             },
             {
                 id: 'we-7-7',
                 exerciseId: 'kettlebell-double-hand-swing',
                 exerciseName: 'Double Hand Swing',
-                sets: [{ id: 'set-7-7-1', reps: 5, restAfterSet: 0, type: 'superset' }],
+                sets: [{ id: 'set-7-7-1', reps: 5, restAfterSet: 0, type: 'superset', weight: 21 }],
                 supersetId: 'death-set-7',
                 supersetOrder: 6,
-                type: 'superset'
+                type: 'superset',
+                supersetSize: 8
             },
             {
                 id: 'we-7-8',
                 exerciseId: 'kettlebell-deadlift',
                 exerciseName: 'Deadlift',
-                sets: [{ id: 'set-7-8-1', reps: 5, restAfterSet: 150, notes: 'Rest 2-3 Minutes after this exercise.', type: 'superset' }],
+                sets: [{ id: 'set-7-8-1', reps: 5, restAfterSet: 150, notes: 'Rest 2-3 Minutes after this exercise.', type: 'superset', weight: 21 }],
                 supersetId: 'death-set-7',
                 supersetOrder: 7,
-                type: 'superset'
+                type: 'superset',
+                supersetSize: 8
             }
         ],
         goal: 'fat loss / body composition',

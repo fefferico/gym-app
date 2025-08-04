@@ -110,7 +110,11 @@ export class ExerciseService {
 
   private _loadExercisesFromStorage(): Exercise[] {
     const exercises = this.storageService.getItem<Exercise[]>(this.EXERCISES_STORAGE_KEY);
-    return exercises ? exercises.sort((a, b) => a.name.localeCompare(b.name)) : [];
+    if (!exercises) {
+      return [];
+    }
+    const validExercises = exercises.filter(exercise => exercise && typeof exercise.name === 'string');
+    return validExercises.sort((a, b) => a.name.localeCompare(b.name));
   }
 
   private _saveExercisesToStorage(exercises: Exercise[]): void {
