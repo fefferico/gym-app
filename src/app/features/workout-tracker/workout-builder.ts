@@ -132,7 +132,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     term = this.exerciseService.normalizeExerciseNameForSearch(term);
     return this.availableExercises.filter(ex =>
       ex.name.toLowerCase().includes(term) ||
-      ex.category.toLowerCase().includes(term) ||
+      (ex.category && ex.category.toLowerCase().includes(term)) ||
       (ex.primaryMuscleGroup && ex.primaryMuscleGroup.toLowerCase().includes(term))
     );
   });

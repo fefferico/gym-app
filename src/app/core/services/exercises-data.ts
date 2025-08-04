@@ -277,6 +277,30 @@ export const EXERCISES_DATA = [
     "imageUrls": ["assets/images/exercises/turkish-get-up_1.jpg", "assets/images/exercises/turkish-get-up_2.jpg", "assets/images/exercises/turkish-get-up_3.jpg"]
   },
   {
+    "id": "kettlebell-snatch-to-overhead-reverse-lunge",
+    "name": "Kettlebell Snatch to Overhead Reverse Lunge",
+    "description": "A powerful, full-body complex combining an explosive single-arm kettlebell snatch with a stabilizing overhead reverse lunge. One rep consists of snatching the kettlebell overhead, and then performing a reverse lunge on the opposite leg while keeping the weight locked out.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Full Body",
+    "muscleGroups": ["Glutes", "Hamstrings", "Quadriceps", "Shoulders (stabilizers)", "Core", "Lats", "Upper Back"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": [],
+    "videoUrl": "https://www.youtube.com/watch?v=Oo5mfamYm58",
+    "notes": "Focus on a stable lockout after the snatch before initiating the lunge. Keep the core braced and the overhead arm straight throughout the lunge."
+  },
+  {
+    "id": "kettlebell-deadlift-to-row",
+    "name": "Kettlebell Deadlift to Row",
+    "description": "A two-part compound movement that targets the entire posterior chain. One rep consists of performing a full kettlebell deadlift, hinging back down from the standing position, and then performing a bent-over row.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Back",
+    "muscleGroups": ["Lats", "Hamstrings", "Glutes", "Lower Back", "Rhomboids", "Biceps", "Core"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": [],
+    "videoUrl": "https://www.youtube.com/watch?v=Oo5mfamYm58",
+    "notes": "Can be performed with a single kettlebell (unilateral row) or two kettlebells. Maintain a flat back and tight core throughout both the deadlift and the row portion."
+  },
+  {
     "id": "kettlebell-single-arm-row",
     "name": "Kettlebell Single Arm Row",
     "description": "A unilateral back exercise targeting lats, rhomboids, and biceps, performed by pulling a kettlebell towards the torso, often with one hand and knee supported on a bench.",
@@ -3434,4 +3458,16 @@ export const EXERCISES_DATA = [
     imageUrls: [],
     notes: 'This exercise challenges stability, mobility, and strength simultaneously.'
   },
+  {
+    "id": "kettlebell-double-hand-deadlift",
+    "name": "Kettlebell Double Hand Deadlift",
+    "description": "A foundational strength exercise targeting the posterior chain by lifting a single kettlebell with both hands. This movement emphasizes a proper hip hinge and is excellent for building hamstring, glute, and lower back strength.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Hamstrings",
+    "muscleGroups": ["Hamstrings", "Glutes", "Lower Back", "Core", "Traps", "Forearms (Grip)"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": [],
+    "videoUrl": "",
+    "notes": "Place the kettlebell between your feet. Hinge at your hips, keeping your back straight and chest up. Drive through your feet and extend your hips and knees to lift the weight. Squeeze your glutes at the top of the movement."
+  }
 ];

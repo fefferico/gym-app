@@ -9,6 +9,8 @@ export class StorageService {
   private isBrowser: boolean;
   private alertService = inject(AlertService);
 
+  private version = '1.0.0'; // Version of the storage service
+
   constructor(@Inject(PLATFORM_ID) private platformId: Object) {
     this.isBrowser = isPlatformBrowser(this.platformId);
     if (!this.isBrowser) {
@@ -95,5 +97,9 @@ export class StorageService {
         }
       });
     }
+  }
+
+  getVersion(): string {
+    return this.version;
   }
 }

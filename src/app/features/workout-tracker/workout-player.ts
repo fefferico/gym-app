@@ -205,7 +205,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     term = this.exerciseService.normalizeExerciseNameForSearch(term);
     return this.availableExercises.filter(ex =>
       ex.name.toLowerCase().includes(term) ||
-      ex.category.toLowerCase().includes(term) ||
+      (ex.category && ex.category.toLowerCase().includes(term)) ||
       (ex.primaryMuscleGroup && ex.primaryMuscleGroup.toLowerCase().includes(term))
     );
   });
@@ -4542,7 +4542,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     }
     return this.availableExercises.filter(ex =>
       ex.name.toLowerCase().includes(term) ||
-      ex.category.toLowerCase().includes(term) ||
+      (ex.category && ex.category.toLowerCase().includes(term)) ||
       (ex.primaryMuscleGroup && ex.primaryMuscleGroup.toLowerCase().includes(term))
     );
   });

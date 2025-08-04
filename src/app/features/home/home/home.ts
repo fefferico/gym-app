@@ -170,4 +170,8 @@ export class HomeComponent implements OnInit {
     this.router.navigate(['/profile']);
   }
 
+  getVersion(): string {
+    return this.storageService.getVersion();
+  } 
+
 }

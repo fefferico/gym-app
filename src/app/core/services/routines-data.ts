@@ -2522,7 +2522,7 @@ export const ROUTINES_DATA: Routine[] = [
         exercises: [
             {
                 id: 'we-7-1',
-                exerciseId: 'kettlebell-snatch',
+                exerciseId: 'kettlebell-snatch-to-overhead-reverse-lunge',
                 exerciseName: 'Single Arm Snatch to Overhead Reverse Lunge',
                 sets: [{ id: 'set-7-1-1', reps: 5, notes: 'Perform 5 reps per side. This is a complex with Overhead Reverse Lunge.', restAfterSet: 0, type: 'superset', weight: 21 }],
                 supersetId: 'death-set-7',
@@ -2534,7 +2534,7 @@ export const ROUTINES_DATA: Routine[] = [
             {
                 id: 'we-7-2',
                 exerciseId: 'kettlebell-overhead-lunge',
-                exerciseName: 'Single Arm Snatch to Overhead Reverse Lunge',
+                exerciseName: 'Single Overhead Reverse Lunge',
                 sets: [{ id: 'set-7-2-1', reps: 5, notes: 'Perform 5 reps per side as part of the complex.', restAfterSet: 0, type: 'superset', weight: 21 }],
                 supersetId: 'death-set-7',
                 supersetOrder: 1,
@@ -2543,7 +2543,7 @@ export const ROUTINES_DATA: Routine[] = [
             },
             {
                 id: 'we-7-3',
-                exerciseId: 'kettlebell-deadlift',
+                exerciseId: 'kettlebell-deadlift-to-row',
                 exerciseName: 'Deadlift to Row',
                 sets: [{ id: 'set-7-3-1', reps: 5, notes: 'This is a complex with a Row.', restAfterSet: 0, type: 'superset', weight: 21 }],
                 supersetId: 'death-set-7',
@@ -2593,7 +2593,7 @@ export const ROUTINES_DATA: Routine[] = [
             },
             {
                 id: 'we-7-8',
-                exerciseId: 'kettlebell-deadlift',
+                exerciseId: 'kettlebell-double-hand-deadlift',
                 exerciseName: 'Deadlift',
                 sets: [{ id: 'set-7-8-1', reps: 5, restAfterSet: 150, notes: 'Rest 2-3 Minutes after this exercise.', type: 'superset', weight: 21 }],
                 supersetId: 'death-set-7',
