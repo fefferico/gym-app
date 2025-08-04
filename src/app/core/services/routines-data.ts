@@ -2111,5 +2111,705 @@ export const ROUTINES_DATA: Routine[] = [
             }
         ],
         "notes": "Perform warm-up sets for Squat and OHP. For the Deadlift, warm up thoroughly before attempting your single heavy set of 5."
+    },
+
+    // Routine 1: Build 3-Dimensional Shoulders
+    {
+        id: 'build-3-dimensional-shoulders-intense-kettlebell-bodybuilding-routine',
+        name: 'Build 3-Dimensional Shoulders [Intense Kettlebell Bodybuilding Routine]',
+        description: 'An intense kettlebell circuit designed to build 3-dimensional shoulders, incorporating strength, carries, and bodyweight movements.',
+        exercises: [
+            {
+                id: 'we-1-1',
+                exerciseId: 'single-kettlebell-clean-and-press',
+                exerciseName: 'Clean & Overhead Press to Alternating From Top OHP to Alternating From Bottom OHP',
+                sets: [{ id: 'set-1-1-1', reps: 3, restAfterSet: 0, type: 'superset' }],
+                supersetId: 'shoulder-circuit-1',
+                supersetOrder: 0,
+                rounds: 3,
+                type: 'superset'
+            },
+            {
+                id: 'we-1-2',
+                exerciseId: 'kettlebell-rack-carry',
+                exerciseName: 'Rack Carry',
+                sets: [{ id: 'set-1-2-1', duration: 50, notes: 'Duration in feet.', restAfterSet: 0, type: 'superset' }],
+                supersetId: 'shoulder-circuit-1',
+                supersetOrder: 1,
+                type: 'superset'
+            },
+            {
+                id: 'we-1-3',
+                exerciseId: 'push-up',
+                exerciseName: 'Push Up',
+                sets: [{ id: 'set-1-3-1', reps: 6, restAfterSet: 0, type: 'superset' }],
+                supersetId: 'shoulder-circuit-1',
+                supersetOrder: 2,
+                type: 'superset'
+            },
+            {
+                id: 'we-1-4',
+                exerciseId: 'farmers-walk',
+                exerciseName: 'Farmers Walk',
+                sets: [{ id: 'set-1-4-1', duration: 50, notes: 'Duration in feet.', restAfterSet: 0, type: 'superset' }],
+                supersetId: 'shoulder-circuit-1',
+                supersetOrder: 3,
+                type: 'superset'
+            },
+            {
+                id: 'we-1-5',
+                exerciseId: 'kettlebell-double-hand-swing',
+                exerciseName: 'Double Hand Swing',
+                sets: [{ id: 'set-1-5-1', reps: 6, restAfterSet: 150, notes: 'Rest 2-3 minutes after this exercise.', type: 'superset' }],
+                supersetId: 'shoulder-circuit-1',
+                supersetOrder: 4,
+                type: 'superset'
+            }
+        ],
+        goal: 'hypertrophy',
+        targetMuscleGroups: ['Shoulders', 'Core', 'Chest', 'Triceps', 'Full Body'],
+        notes: 'Workout by Chandler Marchman. **Weight Used In Workout: 71 lb. Kettlebells**. Rest 2-3 minutes between rounds - Do 3 Rounds Total. Video: https://www.youtube.com/watch?v=9Ri9Yqc9HZ8'
+    },
+
+    // Routine 2: Kettlebell Core Routine
+    {
+        id: 'kettlebell-core-routine-4-minute-anti-side-bend-oblique-finisher',
+        name: 'Kettlebell Core Routine [4 Minute "Anti-Side Bend" Oblique Finisher]',
+        description: 'A kettlebell circuit focused on anti-rotation and anti-lateral flexion to build a strong, functional core and obliques.',
+        exercises: [
+            {
+                id: 'we-2-1',
+                exerciseId: 'single-kettlebell-clean-press-to-pause-windmill',
+                exerciseName: 'Single Kettlebell Clean & Press To Pause Windmill',
+                sets: [{ id: 'set-2-1-1', reps: 3, notes: 'Perform 3 reps per side.', restAfterSet: 0, type: 'superset' }],
+                supersetId: 'core-circuit-2',
+                supersetOrder: 0,
+                rounds: 3,
+                type: 'superset'
+            },
+            {
+                id: 'we-2-2',
+                exerciseId: 'kettlebell-waiters-walk',
+                exerciseName: 'Single Arm Waiters Walk',
+                sets: [{ id: 'set-2-2-1', duration: 50, notes: 'Duration in feet per arm.', restAfterSet: 0, type: 'superset' }],
+                supersetId: 'core-circuit-2',
+                supersetOrder: 1,
+                type: 'superset'
+            },
+            {
+                id: 'we-2-3',
+                exerciseId: 'kettlebell-single-arm-clean-and-thruster',
+                exerciseName: 'Single Arm Clean & Thruster',
+                sets: [{ id: 'set-2-3-1', reps: 3, notes: 'Perform 3 reps per side.', restAfterSet: 0, type: 'superset' }],
+                supersetId: 'core-circuit-2',
+                supersetOrder: 2,
+                type: 'superset'
+            },
+            {
+                id: 'we-2-4',
+                exerciseId: 'kettlebell-rack-carry',
+                exerciseName: 'Offset Rack Walk',
+                sets: [{ id: 'set-2-4-1', duration: 50, notes: 'Duration in feet per side. This is a single-arm rack carry.', restAfterSet: 0, type: 'superset' }],
+                supersetId: 'core-circuit-2',
+                supersetOrder: 3,
+                type: 'superset'
+            },
+            {
+                id: 'we-2-5',
+                exerciseId: 'kettlebell-suitcase-deadlift-to-anti-rotation-row',
+                exerciseName: 'Suitcase Deadlift to Anti-Rotation Row',
+                sets: [{ id: 'set-2-5-1', reps: 3, notes: 'Perform 3 reps per side.', restAfterSet: 0, type: 'superset' }],
+                supersetId: 'core-circuit-2',
+                supersetOrder: 4,
+                type: 'superset'
+            },
+            {
+                id: 'we-2-6',
+                exerciseId: 'kettlebell-farmer-carry',
+                exerciseName: 'Single Arm Farmers Walk',
+                sets: [{ id: 'set-2-6-1', duration: 50, notes: 'Duration in feet per arm. Rest 2-3 minutes after this exercise.', restAfterSet: 150, type: 'superset' }],
+                supersetId: 'core-circuit-2',
+                supersetOrder: 5,
+                type: 'superset'
+            }
+        ],
+        goal: 'strength',
+        targetMuscleGroups: ['Core', 'Obliques', 'Shoulders', 'Full Body'],
+        notes: 'Workout by Chandler Marchman. **Weight Used In Workout: 71 lb. Kettlebell**. Rest 2-3 minutes between rounds - Do 3 Rounds Total. Video: https://www.youtube.com/watch?v=B5HLwfebDeA'
+    },
+
+    // Routine 3: 50 Rep Kettlebell Arm Blaster
+    {
+        id: '50-rep-kettlebell-arm-blaster-build-muscular-biceps-and-triceps',
+        name: '50 Rep Kettlebell Arm Blaster Build Muscular Biceps & Triceps',
+        description: 'A high-repetition workout focused on building muscular biceps and triceps using a kettlebell and bodyweight exercises.',
+        exercises: [
+            {
+                id: 'we-3-1',
+                exerciseId: 'kettlebell-slow-eccentric-floor-skullcrusher-to-press',
+                exerciseName: 'Slow Eccentric Floor Skullcrusher to Close Grip Floor Press',
+                sets: [{ id: 'set-3-1-1', reps: 5, restAfterSet: 0, type: 'superset' }],
+                supersetId: 'arm-blaster-3',
+                supersetOrder: 0,
+                rounds: 3,
+                type: 'superset'
+            },
+            {
+                id: 'we-3-2',
+                exerciseId: 'kettlebell-floor-skullcrusher',
+                exerciseName: 'Floor Skullcrusher',
+                sets: [{ id: 'set-3-2-1', reps: 10, restAfterSet: 0, type: 'superset' }],
+                supersetId: 'arm-blaster-3',
+                supersetOrder: 1,
+                type: 'superset'
+            },
+            {
+                id: 'we-3-3',
+                exerciseId: 'kettlebell-close-grip-floor-press',
+                exerciseName: 'Close Grip Floor Press',
+                sets: [{ id: 'set-3-3-1', reps: 10, restAfterSet: 0, type: 'superset' }],
+                supersetId: 'arm-blaster-3',
+                supersetOrder: 2,
+                type: 'superset'
+            },
+            {
+                id: 'we-3-4',
+                exerciseId: 'proprioceptive-close-grip-push-up',
+                exerciseName: 'Proprioceptive Close Grip Push Up',
+                sets: [{ id: 'set-3-4-1', reps: 5, restAfterSet: 0, type: 'superset' }],
+                supersetId: 'arm-blaster-3',
+                supersetOrder: 3,
+                type: 'superset'
+            },
+            {
+                id: 'we-3-5',
+                exerciseId: 'push-up',
+                exerciseName: 'Push Up',
+                sets: [{ id: 'set-3-5-1', reps: 5, restAfterSet: 0, type: 'superset' }],
+                supersetId: 'arm-blaster-3',
+                supersetOrder: 4,
+                type: 'superset'
+            },
+            {
+                id: 'we-3-6',
+                exerciseId: 'kettlebell-slow-eccentric-pause-towel-curl',
+                exerciseName: 'Slow Eccentric Pause Towel Curls',
+                sets: [{ id: 'set-3-6-1', reps: 5, restAfterSet: 0, type: 'superset' }],
+                supersetId: 'arm-blaster-3',
+                supersetOrder: 5,
+                type: 'superset'
+            },
+            {
+                id: 'we-3-7',
+                exerciseId: 'kettlebell-towel-curl',
+                exerciseName: 'Towel Curls',
+                sets: [{ id: 'set-3-7-1', reps: 5, restAfterSet: 180, notes: 'Rest no more than 3 minutes after this exercise.', type: 'superset' }],
+                supersetId: 'arm-blaster-3',
+                supersetOrder: 6,
+                type: 'superset'
+            }
+        ],
+        goal: 'hypertrophy',
+        targetMuscleGroups: ['Triceps', 'Biceps', 'Chest', 'Forearms'],
+        notes: 'Workout by Chandler Marchman. **Weight Used During Workout: 71 lb. Kettlebell**. Rest No More Than 3 Minutes Between Rounds - Do 3 Total Rounds. Video: https://www.youtube.com/watch?v=NKrxQWu4iYE'
+    },
+
+    // Routine 4: Kettlebell Back Attack!
+    {
+        id: 'kettlebell-back-attack-builds-monster-lats-and-traps',
+        name: 'Kettlebell Back Attack! [Builds MONSTER Lats & Traps]',
+        description: 'A circuit designed to build a strong and muscular back, focusing on lats and traps with heavy kettlebell movements.',
+        exercises: [
+            {
+                id: 'we-4-1',
+                exerciseId: 'kettlebell-clean-and-press',
+                exerciseName: 'Clean & Press',
+                sets: [{ id: 'set-4-1-1', reps: 5, restAfterSet: 0, type: 'superset' }],
+                supersetId: 'back-attack-4',
+                supersetOrder: 0,
+                rounds: 3,
+                type: 'superset'
+            },
+            {
+                id: 'we-4-2',
+                exerciseId: 'kettlebell-waiters-walk',
+                exerciseName: 'Waiters Walk',
+                sets: [{ id: 'set-4-2-1', duration: 50, notes: 'Duration in feet.', restAfterSet: 0, type: 'superset' }],
+                supersetId: 'back-attack-4',
+                supersetOrder: 1,
+                type: 'superset'
+            },
+            {
+                id: 'we-4-3',
+                exerciseId: 'kettlebell-cheat-row',
+                exerciseName: 'Cheat Rows',
+                sets: [{ id: 'set-4-3-1', reps: 5, restAfterSet: 0, type: 'superset' }],
+                supersetId: 'back-attack-4',
+                supersetOrder: 2,
+                type: 'superset'
+            },
+            {
+                id: 'we-4-4',
+                exerciseId: 'kettlebell-rack-carry',
+                exerciseName: 'Rack Carry',
+                sets: [{ id: 'set-4-4-1', duration: 50, notes: 'Duration in feet.', restAfterSet: 0, type: 'superset' }],
+                supersetId: 'back-attack-4',
+                supersetOrder: 3,
+                type: 'superset'
+            },
+            {
+                id: 'we-4-5',
+                exerciseId: 'barbell-deadlift',
+                exerciseName: 'Deadlift',
+                sets: [{ id: 'set-4-5-1', reps: 5, restAfterSet: 0, type: 'superset' }],
+                supersetId: 'back-attack-4',
+                supersetOrder: 4,
+                type: 'superset'
+            },
+            {
+                id: 'we-4-6',
+                exerciseId: 'farmers-walk',
+                exerciseName: 'Farmers Walk',
+                sets: [{ id: 'set-4-6-1', duration: 50, notes: 'Duration in feet. Rest no more than 3 minutes after this.', restAfterSet: 180, type: 'superset' }],
+                supersetId: 'back-attack-4',
+                supersetOrder: 5,
+                type: 'superset'
+            }
+        ],
+        goal: 'strength',
+        targetMuscleGroups: ['Lats', 'Traps', 'Back', 'Core', 'Shoulders'],
+        notes: 'Workout by Chandler Marchman. **Kettlebell Weight Used: 71 lb. Kettlebell Kings KB\'s**. Rest No More Than 3 Minutes Between Rounds - Do 3 Rounds Total. Video: https://www.youtube.com/watch?v=PdzeItxrws8'
+    },
+
+    // Routine 5: SHOCK Your Legs!
+    {
+        id: 'shock-your-legs-lower-body-kettlebell-strength-circuit',
+        name: 'SHOCK Your Legs! [Lower Body Kettlebell Strength Circuit]',
+        description: 'A lower body circuit that combines weighted kettlebell exercises with bodyweight movements to build strength and endurance in the legs.',
+        exercises: [
+            {
+                id: 'we-5-1',
+                exerciseId: 'proprioceptive-pause-goblet-squat',
+                exerciseName: 'Proprioceptive Pause Goblet Squat',
+                sets: [{ id: 'set-5-1-1', reps: 5, restAfterSet: 0, type: 'superset' }],
+                supersetId: 'leg-shock-5',
+                supersetOrder: 0,
+                rounds: 3,
+                type: 'superset'
+            },
+            {
+                id: 'we-5-2',
+                exerciseId: 'alternating-proprioceptive-reverse-lunge',
+                exerciseName: 'Alternating Proprioceptive Reverse Lunge',
+                sets: [{ id: 'set-5-2-1', reps: 5, notes: 'Perform 5 reps per leg.', restAfterSet: 0, type: 'superset' }],
+                supersetId: 'leg-shock-5',
+                supersetOrder: 1,
+                type: 'superset'
+            },
+            {
+                id: 'we-5-3',
+                exerciseId: 'kettlebell-double-hand-swing',
+                exerciseName: 'Double Hand Swing',
+                sets: [{ id: 'set-5-3-1', reps: 5, restAfterSet: 0, type: 'superset' }],
+                supersetId: 'leg-shock-5',
+                supersetOrder: 2,
+                type: 'superset'
+            },
+            {
+                id: 'we-5-4',
+                exerciseId: 'barbell-deadlift',
+                exerciseName: 'Deadlift',
+                sets: [{ id: 'set-5-4-1', reps: 5, restAfterSet: 0, type: 'superset' }],
+                supersetId: 'leg-shock-5',
+                supersetOrder: 3,
+                type: 'superset'
+            },
+            {
+                id: 'we-5-5',
+                exerciseId: 'bodyweight-squat',
+                exerciseName: 'Pause Bodyweight Squat',
+                sets: [{ id: 'set-5-5-1', reps: 5, notes: 'With a pause at the bottom.', restAfterSet: 0, type: 'superset' }],
+                supersetId: 'leg-shock-5',
+                supersetOrder: 4,
+                type: 'superset'
+            },
+            {
+                id: 'we-5-6',
+                exerciseId: 'bodyweight-squat',
+                exerciseName: 'Bodyweight Squat',
+                sets: [{ id: 'set-5-6-1', reps: 5, restAfterSet: 150, notes: 'Rest 2-3 minutes after this exercise.', type: 'superset' }],
+                supersetId: 'leg-shock-5',
+                supersetOrder: 5,
+                type: 'superset'
+            }
+        ],
+        goal: 'strength',
+        targetMuscleGroups: ['Quadriceps', 'Glutes', 'Hamstrings', 'Core'],
+        notes: 'Workout by Chandler Marchman. **Weight Used During Workout: 71 lb. Kettlebell**. Perform 3 Rounds - Rest 2-3 Minutes Between Rounds. Video: https://www.youtube.com/watch?v=aizRvVEz-m8'
+    },
+    // Routine 6: Home Kettlebell Bodybuilding [Chest & Triceps Routine]
+    {
+        id: 'home-kettlebell-bodybuilding-chest-and-triceps-routine',
+        name: 'Home Kettlebell Bodybuilding [Chest & Triceps Routine]',
+        description: 'A home-based kettlebell routine focused on building the chest and triceps using bands for added resistance.',
+        exercises: [
+            {
+                id: 'we-6-1',
+                exerciseId: 'double-kettlebell-floor-press',
+                exerciseName: 'Banded Slow Eccentric Floor Press',
+                sets: [{ id: 'set-6-1-1', reps: 5, notes: 'Perform with a slow eccentric. Original exercise uses bands.', restAfterSet: 0, type: 'superset' }],
+                supersetId: 'chest-triceps-circuit-6',
+                supersetOrder: 0,
+                rounds: 3,
+                type: 'superset'
+            },
+            {
+                id: 'we-6-2',
+                exerciseId: 'double-kettlebell-alternating-floor-press',
+                exerciseName: 'Banded Alternating From Bottom Floor Press',
+                sets: [{ id: 'set-6-2-1', reps: 5, notes: 'Perform 5 reps per arm. Original exercise uses bands and starts from the bottom.', restAfterSet: 0, type: 'superset' }],
+                supersetId: 'chest-triceps-circuit-6',
+                supersetOrder: 1,
+                type: 'superset'
+            },
+            {
+                id: 'we-6-3',
+                exerciseId: 'kettlebell-close-grip-floor-press',
+                exerciseName: 'Banded Close Grip Floor Press',
+                sets: [{ id: 'set-6-3-1', reps: 10, notes: 'Original exercise uses bands.', restAfterSet: 0, type: 'superset' }],
+                supersetId: 'chest-triceps-circuit-6',
+                supersetOrder: 2,
+                type: 'superset'
+            },
+            {
+                id: 'we-6-4',
+                exerciseId: 'push-up',
+                exerciseName: 'Banded Push Up',
+                sets: [{ id: 'set-6-4-1', reps: 5, notes: 'Original exercise uses bands.', restAfterSet: 0, type: 'superset' }],
+                supersetId: 'chest-triceps-circuit-6',
+                supersetOrder: 3,
+                type: 'superset'
+            },
+            {
+                id: 'we-6-5',
+                exerciseId: 'push-up',
+                exerciseName: 'Push Up',
+                sets: [{ id: 'set-6-5-1', reps: 5, restAfterSet: 0, type: 'superset' }],
+                supersetId: 'chest-triceps-circuit-6',
+                supersetOrder: 4,
+                type: 'superset'
+            },
+            {
+                id: 'we-6-6',
+                exerciseId: 'farmers-walk',
+                exerciseName: 'Farmers Walk',
+                sets: [{ id: 'set-6-6-1', duration: 50, notes: 'Duration in feet. Rest no more than 3 minutes after this.', restAfterSet: 180, type: 'superset' }],
+                supersetId: 'chest-triceps-circuit-6',
+                supersetOrder: 5,
+                type: 'superset'
+            }
+        ],
+        goal: 'hypertrophy',
+        targetMuscleGroups: ['Chest', 'Triceps', 'Core'],
+        notes: 'Workout by Chandler Marchman. **Weight Used During Workout: 71 Lb. Kettlebells**. Rest No More Than 3 Minutes Between Rounds - Perform 3 Rounds Total. Video: https://www.youtube.com/watch?v=QBjT913kc_o'
+    },
+
+    // Routine 7: 50 Rep Kettlebell "DEATH SET"
+    {
+        id: '50-rep-kettlebell-death-set-total-body-strength-cardio',
+        name: '50 Rep Kettlebell "DEATH SET" [Total Body Strength Cardio]',
+        description: 'A high-repetition, total-body strength and conditioning circuit designed to push your limits.',
+        exercises: [
+            {
+                id: 'we-7-1',
+                exerciseId: 'kettlebell-snatch',
+                exerciseName: 'Single Arm Snatch to Overhead Reverse Lunge',
+                sets: [{ id: 'set-7-1-1', reps: 5, notes: 'Perform 5 reps per side. This is a complex with Overhead Reverse Lunge.', restAfterSet: 0, type: 'superset' }],
+                supersetId: 'death-set-7',
+                supersetOrder: 0,
+                rounds: 1, // Assuming this is one long set
+                type: 'superset'
+            },
+            {
+                id: 'we-7-2',
+                exerciseId: 'kettlebell-overhead-lunge',
+                exerciseName: 'Single Arm Snatch to Overhead Reverse Lunge',
+                sets: [{ id: 'set-7-2-1', reps: 5, notes: 'Perform 5 reps per side as part of the complex.', restAfterSet: 0, type: 'superset' }],
+                supersetId: 'death-set-7',
+                supersetOrder: 1,
+                type: 'superset'
+            },
+            {
+                id: 'we-7-3',
+                exerciseId: 'kettlebell-deadlift',
+                exerciseName: 'Deadlift to Row',
+                sets: [{ id: 'set-7-3-1', reps: 5, notes: 'This is a complex with a Row.', restAfterSet: 0, type: 'superset' }],
+                supersetId: 'death-set-7',
+                supersetOrder: 2,
+                type: 'superset'
+            },
+            {
+                id: 'we-7-4',
+                exerciseId: 'kettlebell-single-arm-row',
+                exerciseName: 'Deadlift to Row',
+                sets: [{ id: 'set-7-4-1', reps: 5, notes: 'Performed as part of the complex.', restAfterSet: 0, type: 'superset' }],
+                supersetId: 'death-set-7',
+                supersetOrder: 3,
+                type: 'superset'
+            },
+            {
+                id: 'we-7-5',
+                exerciseId: 'kettlebell-deadlift',
+                exerciseName: 'Deadlift',
+                sets: [{ id: 'set-7-5-1', reps: 5, restAfterSet: 0, type: 'superset' }],
+                supersetId: 'death-set-7',
+                supersetOrder: 4,
+                type: 'superset'
+            },
+            {
+                id: 'we-7-6',
+                exerciseId: 'kettlebell-single-arm-row',
+                exerciseName: 'Row',
+                sets: [{ id: 'set-7-6-1', reps: 5, restAfterSet: 0, type: 'superset' }],
+                supersetId: 'death-set-7',
+                supersetOrder: 5,
+                type: 'superset'
+            },
+            {
+                id: 'we-7-7',
+                exerciseId: 'kettlebell-double-hand-swing',
+                exerciseName: 'Double Hand Swing',
+                sets: [{ id: 'set-7-7-1', reps: 5, restAfterSet: 0, type: 'superset' }],
+                supersetId: 'death-set-7',
+                supersetOrder: 6,
+                type: 'superset'
+            },
+            {
+                id: 'we-7-8',
+                exerciseId: 'kettlebell-deadlift',
+                exerciseName: 'Deadlift',
+                sets: [{ id: 'set-7-8-1', reps: 5, restAfterSet: 150, notes: 'Rest 2-3 Minutes after this exercise.', type: 'superset' }],
+                supersetId: 'death-set-7',
+                supersetOrder: 7,
+                type: 'superset'
+            }
+        ],
+        goal: 'fat loss / body composition',
+        targetMuscleGroups: ['Full Body', 'Core', 'Glutes', 'Hamstrings', 'Back', 'Shoulders'],
+        notes: 'Workout by Chandler Marchman. **Weight Used= 71 lb. Kettlebell Kings powder coated kettlebell**. Rest 2-3 Minutes Between Each Round. Video: https://www.youtube.com/watch?v=Oo5mfamYm58'
+    },
+
+    // Routine 8: Fight Ready! [KILLER MMA Kettlebell Conditioning Routine]
+    {
+        id: 'fight-ready-killer-mma-kettlebell-conditioning-routine',
+        name: 'Fight Ready! [KILLER MMA Kettlebell Conditioning Routine]',
+        description: 'A high-intensity conditioning circuit for fighters, combining kettlebell work with other functional movements.',
+        exercises: [
+            {
+                id: 'we-8-1',
+                exerciseId: 'kettlebell-single-arm-thruster',
+                exerciseName: 'Single Kettlebell Thruster',
+                sets: [
+                    { id: 'set-8-1-1', reps: 5, restAfterSet: 0, type: 'superset' },
+                    { id: 'set-8-1-2', reps: 3, restAfterSet: 0, type: 'superset' },
+                    { id: 'set-8-1-3', reps: 1, restAfterSet: 0, type: 'superset' }
+                ],
+                supersetId: 'mma-conditioning-8',
+                supersetOrder: 0,
+                rounds: 1, // This is one continuous circuit
+                type: 'superset'
+            },
+            {
+                id: 'we-8-2',
+                exerciseId: 'kettlebell-goblet-squat',
+                exerciseName: 'Sandbag Zercher Squat',
+                sets: [{ id: 'set-8-2-1', reps: 5, notes: 'Original exercise is Sandbag Zercher Squat. Substituted with Goblet Squat.', restAfterSet: 0, type: 'superset' }],
+                supersetId: 'mma-conditioning-8',
+                supersetOrder: 1,
+                type: 'superset'
+            },
+            {
+                id: 'we-8-3',
+                exerciseId: 'kettlebell-goblet-walk',
+                exerciseName: 'Sandbag Zercher Carry',
+                sets: [{ id: 'set-8-3-1', duration: 50, notes: 'Duration in feet. Original is Sandbag Zercher Carry. Substituted with Goblet Walk.', restAfterSet: 0, type: 'superset' }],
+                supersetId: 'mma-conditioning-8',
+                supersetOrder: 2,
+                type: 'superset'
+            },
+            {
+                id: 'we-8-4',
+                exerciseId: 'farmers-walk',
+                exerciseName: 'Tire Drag',
+                sets: [{ id: 'set-8-4-1', duration: 50, notes: 'Duration in feet. Original exercise is Tire Drag. Substituted with Farmer\'s Walk.', restAfterSet: 0, type: 'superset' }],
+                supersetId: 'mma-conditioning-8',
+                supersetOrder: 3,
+                type: 'superset'
+            },
+            {
+                id: 'we-8-5',
+                exerciseId: 'medicine-ball-slam',
+                exerciseName: 'Sledgehammer Slams',
+                sets: [{ id: 'set-8-5-1', reps: 10, notes: 'Perform 10 reps per side. Original is Sledgehammer Slams. Substituted with Medicine Ball Slam. Rest 2-3 minutes after this.', restAfterSet: 150, type: 'superset' }],
+                supersetId: 'mma-conditioning-8',
+                supersetOrder: 4,
+                type: 'superset'
+            }
+        ],
+        goal: 'sport-specific performance',
+        targetMuscleGroups: ['Full Body', 'Core', 'Power / explosiveness'],
+        notes: 'Workout by Chandler Marchman. **Weights used in workout: 71 lb. Powder Coated KB from "Kettlebell Kings"**. Perform as fast as possible - Rest 2-3 Minutes Between Each Round. Video: https://www.youtube.com/watch?v=y7Safm7wLqk'
+    },
+
+    // Routine 9: 10 Minute Total Body Kettlebell Workout
+    {
+        id: '10-minute-total-body-kettlebell-workout',
+        name: '10 Minute Total Body Kettlebell Workout',
+        description: 'A quick and effective total body workout using double kettlebells and loaded carries.',
+        exercises: [
+            {
+                id: 'we-9-1',
+                exerciseId: 'kettlebell-strict-press',
+                exerciseName: 'Iso-Rack Overhead Press to Get-Up',
+                sets: [{ id: 'set-9-1-1', reps: 5, notes: 'Perform 5 reps per side. Original is a complex with a Get-Up and an iso-hold.', restAfterSet: 0, type: 'superset' }],
+                supersetId: 'total-body-10min-9',
+                supersetOrder: 0,
+                rounds: 1, // Assuming 3 rounds total for the whole circuit
+                type: 'superset'
+            },
+            {
+                id: 'we-9-2',
+                exerciseId: 'turkish-get-up',
+                exerciseName: 'Iso-Rack Overhead Press to Get-Up',
+                sets: [{ id: 'set-9-2-1', reps: 5, notes: 'Perform 5 reps per side as part of the complex.', restAfterSet: 0, type: 'superset' }],
+                supersetId: 'total-body-10min-9',
+                supersetOrder: 1,
+                type: 'superset'
+            },
+            {
+                id: 'we-9-3',
+                exerciseId: 'kettlebell-waiters-walk',
+                exerciseName: 'Iso-Rack Waiters Walk',
+                sets: [{ id: 'set-9-3-1', duration: 50, notes: 'Duration in feet per side. Original has an iso-hold component.', restAfterSet: 0, type: 'superset' }],
+                supersetId: 'total-body-10min-9',
+                supersetOrder: 2,
+                type: 'superset'
+            },
+            {
+                id: 'we-9-4',
+                exerciseId: 'double-kettlebell-front-squat',
+                exerciseName: 'Front Squat',
+                sets: [{ id: 'set-9-4-1', reps: 5, restAfterSet: 0, type: 'superset' }],
+                supersetId: 'total-body-10min-9',
+                supersetOrder: 3,
+                type: 'superset'
+            },
+            {
+                id: 'we-9-5',
+                exerciseId: 'kettlebell-rack-carry',
+                exerciseName: 'Double Kettlebell Rack Carry',
+                sets: [{ id: 'set-9-5-1', duration: 50, notes: 'Duration in feet.', restAfterSet: 0, type: 'superset' }],
+                supersetId: 'total-body-10min-9',
+                supersetOrder: 4,
+                type: 'superset'
+            },
+            {
+                id: 'we-9-6',
+                exerciseId: 'kettlebell-deadlift',
+                exerciseName: 'Deadlift',
+                sets: [{ id: 'set-9-6-1', reps: 5, restAfterSet: 0, type: 'superset' }],
+                supersetId: 'total-body-10min-9',
+                supersetOrder: 5,
+                type: 'superset'
+            },
+            {
+                id: 'we-9-7',
+                exerciseId: 'kettlebell-double-farmers-walk',
+                exerciseName: 'Double Kettlebell Farmers Walk',
+                sets: [{ id: 'set-9-7-1', duration: 50, notes: 'Duration in feet. Rest no more than 3 minutes after this.', restAfterSet: 180, type: 'superset' }],
+                supersetId: 'total-body-10min-9',
+                supersetOrder: 6,
+                type: 'superset'
+            }
+        ],
+        goal: 'general health & longevity',
+        targetMuscleGroups: ['Full Body', 'Core'],
+        notes: 'Workout by Chandler Marchman. **Weight Used During Workout: 53 lb. Kettlebells**. {Rest no more than 3 minutes between rounds}. Video: https://www.youtube.com/watch?v=IwqIawUrma4'
+    },
+
+    // Routine 10: "MONSTER MAKING" Kettlebell Strongman Routine
+    {
+        id: 'monster-making-kettlebell-strongman-routine',
+        name: '"MONSTER MAKING" Kettlebell Strongman Routine',
+        description: 'A strongman-style routine using heavy kettlebells to build raw strength and power.',
+        exercises: [
+            {
+                id: 'we-10-1',
+                exerciseId: 'kettlebell-sumo-deadlift',
+                exerciseName: 'Banded Sumo Deadlift',
+                sets: [{ id: 'set-10-1-1', reps: 5, notes: 'Original exercise uses bands.', restAfterSet: 0, type: 'superset' }],
+                supersetId: 'monster-maker-10',
+                supersetOrder: 0,
+                rounds: 3,
+                type: 'superset'
+            },
+            {
+                id: 'we-10-2',
+                exerciseId: 'kettlebell-clean',
+                exerciseName: 'Single Arm Clean & Push Press',
+                sets: [{ id: 'set-10-2-1', reps: 5, notes: 'Perform 5 reps per arm. This is a complex with a Push Press.', restAfterSet: 0, type: 'superset' }],
+                supersetId: 'monster-maker-10',
+                supersetOrder: 1,
+                type: 'superset'
+            },
+            {
+                id: 'we-10-3',
+                exerciseId: 'kettlebell-strict-press',
+                exerciseName: 'Single Arm Clean & Push Press',
+                sets: [{ id: 'set-10-3-1', reps: 5, notes: 'Perform 5 reps per arm. Original is a Push Press, substitute with Strict Press.', restAfterSet: 0, type: 'superset' }],
+                supersetId: 'monster-maker-10',
+                supersetOrder: 2,
+                type: 'superset'
+            },
+            {
+                id: 'we-10-4',
+                exerciseId: 'kettlebell-goblet-squat',
+                exerciseName: 'Pause Goblet Squat',
+                sets: [{ id: 'set-10-4-1', reps: 5, notes: 'Perform with a pause at the bottom.', restAfterSet: 0, type: 'superset' }],
+                supersetId: 'monster-maker-10',
+                supersetOrder: 3,
+                type: 'superset'
+            },
+            {
+                id: 'we-10-5',
+                exerciseId: 'kettlebell-goblet-squat',
+                exerciseName: 'Goblet Squat',
+                sets: [{ id: 'set-10-5-1', reps: 5, restAfterSet: 0, type: 'superset' }],
+                supersetId: 'monster-maker-10',
+                supersetOrder: 4,
+                type: 'superset'
+            },
+            {
+                id: 'we-10-6',
+                exerciseId: 'two-handed-kettlebell-swing',
+                exerciseName: 'Swing',
+                sets: [{ id: 'set-10-6-1', reps: 5, restAfterSet: 0, type: 'superset' }],
+                supersetId: 'monster-maker-10',
+                supersetOrder: 5,
+                type: 'superset'
+            },
+            {
+                id: 'we-10-7',
+                exerciseId: 'kettlebell-deadlift',
+                exerciseName: 'Deadlift',
+                sets: [{ id: 'set-10-7-1', reps: 5, restAfterSet: 180, notes: 'Rest No More Than 3 Minutes after this.', type: 'superset' }],
+                supersetId: 'monster-maker-10',
+                supersetOrder: 6,
+                type: 'superset'
+            }
+        ],
+        goal: 'strength',
+        targetMuscleGroups: ['Full Body', 'Glutes', 'Hamstrings', 'Shoulders', 'Core'],
+        notes: 'Workout by Chandler Marchman. **Kettlebells used during this workout: 97 lb. (44 kg) kettlebells**. Rest No More Than 3 Minutes Between Rounds - Do 3 Rounds Total. Video: https://www.youtube.com/watch?v=faqGuUgGEio'
     }
 ]
