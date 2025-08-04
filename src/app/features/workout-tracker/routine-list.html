@@ -301,9 +301,9 @@
             <div *ngIf="isFabActionsOpen()" @fabSlideUp class="flex flex-col items-center gap-4">
                 <div class="group relative flex items-center">
                     <span
-                        class="absolute right-full mr-4 hidden whitespace-nowrap rounded-md bg-gray-700 px-3 py-2 text-sm font-semibold text-white group-hover:block"
-                        role="tooltip">
-                        Create Routine
+                        class="absolute right-full hidden whitespace-nowrap rounded-md bg-blue-500 px-3 py-2 text-sm font-semibold text-white group-hover:block"
+                        style="margin-right: -10px;">
+                        CREATE ROUTINE
                     </span>
                     <button appPress (shortPress)="navigateToCreateRoutine()" type="button"
                         class="flex h-12 w-12 items-center justify-center rounded-full bg-blue-500 text-white shadow-lg transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 dark:ring-offset-gray-900">
@@ -314,9 +314,9 @@
 
                 <div class="group relative flex items-center">
                     <span
-                        class="absolute right-full mr-4 hidden whitespace-nowrap rounded-md bg-gray-700 px-3 py-2 text-sm font-semibold text-white group-hover:block"
-                        role="tooltip">
-                        Start New Session
+                        class="absolute right-full mr-4 hidden whitespace-nowrap rounded-md bg-green-500 px-3 py-2 text-sm font-semibold text-white group-hover:block"
+                        style="margin-right: -10px;">
+                        START NEW SESSION
                     </span>
                     <button appPress (shortPress)="startNewSession()" routerLink="/workout/play/-1" type="button"
                         class="flex h-12 w-12 items-center justify-center rounded-full bg-green-500 text-white shadow-lg transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 dark:ring-offset-gray-900">

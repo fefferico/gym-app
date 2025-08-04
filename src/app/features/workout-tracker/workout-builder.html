@@ -79,8 +79,8 @@
                         {{ builderForm.get('goal')?.value?.toUpperCase() || ''}}</label>
                 </div>
                 <div *ngIf="isEditableMode()">
-                    <!-- <label for="goal" class="block text-m font-medium text-gray-700 dark:text-gray-300">Primary
-                        Goal</label> -->
+                    <label for="goal" class="block text-m font-medium text-gray-700 dark:text-gray-300">Primary
+                        Goal</label>
                     <select id="goal" formControlName="goal"
                         class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200">
                         <option value="">-- Set routine goal --</option>
@@ -91,7 +91,7 @@
                 <!-- TIME TO COMPLETE -->
                 <div>
                     <div *ngIf="routine && getRoutineDuration() > 0" class="text-m text-gray-500 dark:text-gray-300">
-                        <span class="font-medium">Est:</span> ~{{ getRoutineDuration()}} min
+                        <span class="font-medium">Est. duration:</span> ~{{ getRoutineDuration()}} min
                     </div>
                 </div>
 
@@ -233,14 +233,14 @@
                                     [id]="'superset-select-' + exIndex"
                                     (change)="toggleExerciseSelectionForSuperset(exIndex, $event)"
                                     [checked]="selectedExerciseIndicesForSuperset().includes(exIndex)"
-                                    class="h-4 w-4 text-orange-600 border-gray-300 dark:border-gray-600 rounded focus:ring-orange-500 flex-shrink-0 disabled:opacity-50"
+                                    class="h-6 w-6 text-orange-600 border-gray-300 dark:border-gray-600 rounded focus:ring-orange-500 flex-shrink-0 disabled:opacity-50"
                                     [disabled]="isViewMode">
                                 <!-- EXERCISE NAME & SUPERSET INFO / SETS SUMMARY FOR COMPACT -->
                                 <div *ngIf="!shouldShowExpandedExercise(exIndex)" class="flex-grow min-w-0 py-2 px-0">
                                     <!-- COMPACT: Show SETS SUMMARY if in compact view -->
                                     <div *ngIf="exerciseControl.get('supersetId')?.value && getSetsFormArray(exerciseControl).controls.length > 0 
                                         && exerciseControl.get('supersetOrder')?.value === 0"
-                                        class="text-xs text-orange-600 dark:text-orange-400 mt-0.5">
+                                        class="text-md font-medium text-orange-600 dark:text-orange-400 mt-0.5">
                                         {{ exerciseControl.get('rounds')?.value || 1 }}
                                         {{ (exerciseControl.get('rounds')?.value || 1) === 1 ? 'round' : 'rounds' }}
                                     </div>
@@ -269,7 +269,7 @@
                                                 <p
                                                     *ngIf="exerciseControl?.get('sets')?.value && exerciseControl?.get('sets')?.value.length >= 1">
                                                     Sets: {{exerciseControl?.get('sets')?.value.length}} {{
-                                                    getSetReps(exerciseControl) != '0' ? '( Reps: ' +
+                                                    getSetReps(exerciseControl) ? '( Reps: ' +
                                                     getSetReps(exerciseControl) + ' )' : '' }}
                                                 </p>
                                                 <p

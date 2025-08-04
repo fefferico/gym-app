@@ -257,6 +257,21 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         while (this.exercisesFormArray.length) this.exercisesFormArray.removeAt(0);
         this.exercisesFormArray.clearValidators();
       }
+      // if goal is changed to tabata it updates all exercises to have a duration of 40 and rest of 20 seconds
+      if (this.mode === 'routineBuilder' && goalValue === 'tabata') {
+        this.exercisesFormArray.controls.forEach(exerciseControl => {
+          const setsArray = (exerciseControl as FormGroup).get('sets') as FormArray;
+          setsArray.controls.forEach(setControl => {
+            (setControl as FormGroup).patchValue({
+              duration: 40,
+              restAfterSet: 20,
+              reps: null,
+              weight: null
+            });
+          });
+        });
+        this.toastService.info("Exercises updated to standard TABATA schema 40 work / 20 rest")
+      }
       this.exercisesFormArray.updateValueAndValidity();
     });
     this.subscriptions.add(goalSub);
@@ -1136,7 +1151,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
           this.workoutService.updateRoutine(routinePayload);
         }
         this.toastService.success(`Routine ${this.isNewMode ? 'created' : 'updated'}!`, 4000, "Success");
-        this.router.navigate(['/workout']);
+        // this.router.navigate(['/workout']);
       } else { // manualLogEntry
         const workoutDateStr = formValue.workoutDate;
         const startTimeStr = formValue.startTime;
@@ -1589,14 +1604,25 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     return loggedExActual?.sets.some(set => set.targetWeight) || loggedExActual?.sets.some(set => set.weight);
   }
 
-  getSetReps(loggedEx: any): string {
-    if (this.currentLogId && !this.isNewMode) { // If we're viewing a logged workout or editing a routine created from a log
-      const loggedExActual = loggedEx?.getRawValue() as LoggedWorkoutExercise;
-      return loggedExActual?.sets.map(set => set.repsAchieved).join(' - ');
-    } else {
-      const loggedExActual = loggedEx?.getRawValue() as WorkoutExercise;
-      return loggedExActual?.sets.map(set => set.reps).join(' - ');
+    getSetReps(loggedEx: any): string {
+    const rawValue = loggedEx?.getRawValue();
+    if (!rawValue || !rawValue.sets) {
+      return '';
     }
+
+    let reps: (number | null | undefined)[];
+
+    if (this.currentLogId && !this.isNewMode) { // If we're viewing a logged workout
+      const loggedExActual = rawValue as LoggedWorkoutExercise;
+      reps = loggedExActual.sets.map(set => set.repsAchieved);
+    } else { // If we're in the routine builder
+      const loggedExActual = rawValue as WorkoutExercise;
+      reps = loggedExActual.sets.map(set => set.reps);
+    }
+
+    const validReps = reps.filter(rep => rep != null && rep !== undefined);
+
+    return validReps.length > 0 ? validReps.join(' - ') : '';
   }
 
   getSetWeightsUsed(loggedEx: any): string {

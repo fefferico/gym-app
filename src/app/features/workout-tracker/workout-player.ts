@@ -1831,7 +1831,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       id: uuidv4(),
       exerciseName: activeInfo.exerciseData.exerciseName,
       // For Tabata, combine plannedSetId and round to make it unique per pass
-      plannedSetId: this.isTabataMode()
+      plannedSetId: this.isTabataMode() || (activeInfo.exerciseData && activeInfo.exerciseData.supersetId)
         ? `${activeInfo.setData.id}-round-${this.getIndexedCurrentBlock()}`
         : activeInfo.setData.id,
       exerciseId: activeInfo.exerciseData.exerciseId,
@@ -4348,7 +4348,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
             // A. Add the "Work" interval for the current round
             intervals.push({
               type: 'work',
-              duration: set.duration || 5,
+              duration: set.duration || 40,
               exerciseName: blockExercise.exerciseName
             });
             this.tabataIntervalMap.push([blockExerciseIndex, setIndex, round]);
