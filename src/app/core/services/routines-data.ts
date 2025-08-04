@@ -2197,7 +2197,7 @@ export const ROUTINES_DATA: Routine[] = [
                 type: 'superset'
             },
             {
-                id: 'we-2-3',
+                id: 'kettlebell-single-arm-clean-and-thruster',
                 exerciseId: 'kettlebell-single-arm-clean-and-thruster',
                 exerciseName: 'Single Arm Clean & Thruster',
                 sets: [{ id: 'set-2-3-1', reps: 3, notes: 'Perform 3 reps per side.', restAfterSet: 0, type: 'superset' }],

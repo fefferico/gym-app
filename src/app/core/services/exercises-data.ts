@@ -3376,14 +3376,17 @@ export const EXERCISES_DATA = [
     "equipmentNeeded": ["ViPR"],
     "imageUrls": []
   },
-
   {
-    "id": 'we-2-3',
-    "name": 'Single Arm Clean & Thruster',
-    sets: [{ "id": 'set-2-3-1', reps: 3, notes: 'Perform 3 reps per side.', restAfterSet: 0, type: 'superset' }],
-    supersetId: 'core-circuit-2',
-    supersetOrder: 2,
-    type: 'superset'
+    "id": "kettlebell-single-arm-clean-and-thruster",
+    "name": "Kettlebell Single Arm Clean & Thruster",
+    "description": "A dynamic, full-body compound exercise that combines a single-arm kettlebell clean with a powerful thruster (squat to overhead press). This movement is excellent for developing power, strength, and cardiovascular endurance.",
+    "category": "kettlebells",
+    "primaryMuscleGroup": "Full Body",
+    "muscleGroups": ["Quadriceps", "Glutes", "Shoulders", "Core", "Triceps", "Hamstrings", "Back"],
+    "equipmentNeeded": ["Kettlebell"],
+    "imageUrls": [],
+    "videoUrl": "https://www.youtube.com/watch?v=B5HLwfebDeA",
+    "notes": "Perform a single-arm clean to bring the kettlebell to the rack position. Immediately descend into a squat, and then explosively drive up, using the momentum from your legs to press the kettlebell overhead in one fluid motion."
   },
 
   {
