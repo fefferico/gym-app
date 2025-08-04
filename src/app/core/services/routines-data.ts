@@ -2757,6 +2757,7 @@ export const ROUTINES_DATA: Routine[] = [
                 exerciseName: 'Banded Sumo Deadlift',
                 sets: [{ id: 'set-10-1-1', reps: 5, notes: 'Original exercise uses bands.', restAfterSet: 0, type: 'superset' }],
                 supersetId: 'monster-maker-10',
+                supersetSize: 7,
                 supersetOrder: 0,
                 rounds: 3,
                 type: 'superset'
@@ -2768,6 +2769,7 @@ export const ROUTINES_DATA: Routine[] = [
                 sets: [{ id: 'set-10-2-1', reps: 5, notes: 'Perform 5 reps per arm. This is a complex with a Push Press.', restAfterSet: 0, type: 'superset' }],
                 supersetId: 'monster-maker-10',
                 supersetOrder: 1,
+                supersetSize: 7,
                 type: 'superset'
             },
             {
@@ -2777,6 +2779,7 @@ export const ROUTINES_DATA: Routine[] = [
                 sets: [{ id: 'set-10-3-1', reps: 5, notes: 'Perform 5 reps per arm. Original is a Push Press, substitute with Strict Press.', restAfterSet: 0, type: 'superset' }],
                 supersetId: 'monster-maker-10',
                 supersetOrder: 2,
+                supersetSize: 7,
                 type: 'superset'
             },
             {
@@ -2786,6 +2789,7 @@ export const ROUTINES_DATA: Routine[] = [
                 sets: [{ id: 'set-10-4-1', reps: 5, notes: 'Perform with a pause at the bottom.', restAfterSet: 0, type: 'superset' }],
                 supersetId: 'monster-maker-10',
                 supersetOrder: 3,
+                supersetSize: 7,
                 type: 'superset'
             },
             {
@@ -2795,6 +2799,7 @@ export const ROUTINES_DATA: Routine[] = [
                 sets: [{ id: 'set-10-5-1', reps: 5, restAfterSet: 0, type: 'superset' }],
                 supersetId: 'monster-maker-10',
                 supersetOrder: 4,
+                supersetSize: 7,
                 type: 'superset'
             },
             {
@@ -2804,6 +2809,7 @@ export const ROUTINES_DATA: Routine[] = [
                 sets: [{ id: 'set-10-6-1', reps: 5, restAfterSet: 0, type: 'superset' }],
                 supersetId: 'monster-maker-10',
                 supersetOrder: 5,
+                supersetSize: 7,
                 type: 'superset'
             },
             {
@@ -2813,6 +2819,7 @@ export const ROUTINES_DATA: Routine[] = [
                 sets: [{ id: 'set-10-7-1', reps: 5, restAfterSet: 180, notes: 'Rest No More Than 3 Minutes after this.', type: 'superset' }],
                 supersetId: 'monster-maker-10',
                 supersetOrder: 6,
+                supersetSize: 7,
                 type: 'superset'
             }
         ],
