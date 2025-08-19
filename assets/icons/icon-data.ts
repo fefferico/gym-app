@@ -203,5 +203,17 @@ export const ICONS: Record<string, string> = {
               d="M.664 10.59a1.651 1.651 0 010-1.186A10.004 10.004 0 0110 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0110 17c-4.257 0-7.893-2.66-9.336-6.41ZM14 10a4 4 0 11-8 0 4 4 0 018 0Z"
               clip-rule="evenodd"></path>
           </svg>
-`
+`,
+  'done': `
+<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <mask id="tickCutoutMask">
+                <rect x="0" y="0" width="24" height="24" fill="white" />
+                <path d="M7.5 12.5L10.5 15.5L16.5 9.5" stroke="black" stroke-width="2.5" stroke-linecap="round"
+                  stroke-linejoin="round" fill="none" />
+              </mask>
+            </defs>
+            <circle cx="12" cy="12" r="10" fill="currentColor" mask="url(#tickCutoutMask)" />
+          </svg>
+`,
 };
