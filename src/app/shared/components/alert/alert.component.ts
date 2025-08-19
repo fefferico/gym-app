@@ -4,11 +4,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms'; // <-- Import FormsModule
 import { AlertButton, AlertOptions, AlertInput } from '../../../core/models/alert.model';
 import { PressDirective } from '../../directives/press.directive';
+import { IconComponent } from '../icon/icon.component';
 
 @Component({
   selector: 'app-alert',
   standalone: true,
-  imports: [CommonModule, FormsModule, PressDirective], // <-- Add FormsModule
+  imports: [CommonModule, FormsModule, PressDirective, IconComponent], // <-- Add FormsModule
   templateUrl: './alert.component.html',
   styleUrls: ['./alert.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

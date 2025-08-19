@@ -133,13 +133,14 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
           </svg>
         </button>
-        <div class="flex flex-col items-center cursor-pointer" appPress (shortPress)="jumpToExercise('Session overview')"
-          [title]="'Click for session overview'">
+        <div class="flex flex-col items-center cursor-pointer" appPress
+          (shortPress)="jumpToExercise('Session overview')" [title]="'Click for session overview'">
           <h1
             class="text-m font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider truncate max-w-[calc(100vw-120px)]">
             {{ currentRoutine.name || 'Workout' }}
           </h1>
-          <div class="text-lg text-white dark:text-gray-200 bg-primary-dark rounded-md w-32 text-center">{{ sessionTimerDisplay()
+          <div class="text-lg text-white dark:text-gray-200 bg-primary-dark rounded-md w-32 text-center">{{
+            sessionTimerDisplay()
             }}</div>
         </div>
         <button appPress (shortPress)="toggleWorkoutMenu()"
@@ -255,7 +256,7 @@
               </div>
 
               <!-- Reps Input -->
-              <div *ngIf="csf['actualReps'] && activeSet.setData.reps !== undefined">
+              <div *ngIf="csf['actualReps'] && activeSet.setData.reps !== undefined && activeSetInfo()?.baseExerciseInfo?.category !== 'cardio'">
                 <label
                   class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider text-center mb-1">Reps</label>
                 <div class="flex items-center justify-center space-x-2">
@@ -288,7 +289,7 @@
                     {{ (activeSet.setData.duration * 1000) | date:'mm:ss':'UTC' }})</span>
                 </label>
                 <div id="timedSetDisplay"
-                  class="block w-full px-3 py-1 border-none text-6xl font-bold text-center bg-transparent focus:ring-0"
+                  class="block w-full px-3 py-1 border-none text-6xl font-bold text-center bg-transparent focus:ring-0 hover:cursor-default unselectable"
                   [ngClass]="{
                         'text-red-500': isTimedSetOvertime(),
                         'animate-pulse': isTimedSetOvertime() && timedSetTimerState() === 'running',
@@ -303,11 +304,14 @@
                               'bg-green-500 hover:bg-green-600': timedSetTimerState() === 'idle' || timedSetTimerState() === 'paused',
                               'bg-yellow-500 hover:bg-yellow-600 text-white': timedSetTimerState() === 'running'
                             }"
-                    class="flex items-center justify-center flex-grow min-w-[150px] max-w-[150px] gap-x-2 font-medium py-2 px-3 rounded-full transition-colors text-m disabled:opacity-50">
-                    <app-icon name="pause" class="h-8 w-8 text-white"></app-icon>
-                    <span *ngIf="timedSetTimerState() === 'idle'">START TIMER</span>
-                    <span *ngIf="timedSetTimerState() === 'running'">PAUSE TIMER</span>
-                    <span *ngIf="timedSetTimerState() === 'paused'">RESUME TIMER</span>
+                    class="flex items-center justify-center flex-grow min-w-[150px] max-w-[150px] font-medium py-2 px-3 rounded-full transition-colors text-m disabled:opacity-50">
+                    <app-icon *ngIf="timedSetTimerState() === 'idle' || timedSetTimerState() === 'paused'" name="play"
+                      class="h-8 w-8 text-white"></app-icon>
+                    <app-icon *ngIf="timedSetTimerState() === 'running'" name="pause"
+                      class="h-8 w-8 text-white"></app-icon>
+                    <span *ngIf="timedSetTimerState() === 'idle'" class="text-white">START TIMER</span>
+                    <span *ngIf="timedSetTimerState() === 'running'" class="text-white">PAUSE TIMER</span>
+                    <span *ngIf="timedSetTimerState() === 'paused'" class="text-white">RESUME TIMER</span>
                   </button>
                   <button type="button" appPress (shortPress)="resetTimedSet()" *ngIf="timedSetTimerState() !== 'idle'"
                     class="flex items-center justify-center min-w-[150px] max-w-[150px] gap-x-2 bg-gray-300 hover:bg-gray-400 dark:bg-gray-700 dark:hover:bg-gray-500 text-white font-medium py-2 px-3 rounded-full transition-colors text-m disabled:opacity-50">
@@ -381,8 +385,8 @@
               <button appPress (shortPress)="backToRoutines()"
                 *ngIf="sessionState() !== 'error' && currentWorkoutLogExercises().length === 0"
                 class="flex justify-center items-center mt-1 w-full max-w-xs bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"
-                  class="h-6 w-6 mr-1">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                  stroke-width="1.5" class="h-6 w-6 mr-1">
                   <path _ngcontent-ng-c2442506092="" stroke-linecap="round" stroke-linejoin="round"
                     d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 0 1 0 3.75H5.625a1.875 1.875 0 0 1 0-3.75Z">
                   </path>
@@ -434,9 +438,9 @@
 </ng-container>
 
 <app-full-screen-rest-timer [isVisible]="playerSubState() === PlayerSubState.Resting && isRestTimerVisible()"
-  [mainTimer]="sessionTimerDisplay"
-  [durationSeconds]="restDuration()" [mainText]="restTimerMainText()" [nextUpText]="restTimerNextUpText()"
-  (timerFinished)="handleRestTimerFinished()" (timerSkipped)="handleRestTimerSkipped($event)">
+  [mainTimer]="sessionTimerDisplay" [durationSeconds]="restDuration()" [mainText]="restTimerMainText()"
+  [nextUpText]="restTimerNextUpText()" (timerFinished)="handleRestTimerFinished()"
+  (timerSkipped)="handleRestTimerSkipped($event)">
 </app-full-screen-rest-timer>
 
 <div *ngIf="isWorkoutMenuVisible()"
@@ -914,7 +918,8 @@
           (ngModelChange)="modalSearchTerm.set($event)"
           class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-gray-200" />
       </div>
-      <div class="mt-2 max-h-80 overflow-y-auto transition-all duration-500 ease-in-out rounded-md scrollbar-thin scrollbar-thumb-primary scrollbar-track-gray-200 dark:scrollbar-track-gray-800">
+      <div
+        class="mt-2 max-h-80 overflow-y-auto transition-all duration-500 ease-in-out rounded-md scrollbar-thin scrollbar-thumb-primary scrollbar-track-gray-200 dark:scrollbar-track-gray-800">
         <ul class="space-y-1">
           <li *ngFor="let ex of filteredAvailableExercises(); let odd = odd; let even = even" appPressScroll
             (shortPress)="selectExerciseToAddFromModal(ex)" [ngClass]="{

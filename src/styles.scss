@@ -104,9 +104,9 @@ body {
   font-size: 0.875rem;
   z-index: 1000;
   pointer-events: none;
-  
+
   /* Use a consistent width */
-  width: 12rem; 
+  width: 12rem;
   text-align: center;
   /* Or use max-width for more flexibility */
   /* max-width: 200px; */
@@ -136,3 +136,9 @@ body {
 }
 
 // TOOLTIP CSS END
+
+.unselectable {
+  -ms-user-select: none;
+  -webkit-user-select: none;
+  user-select: none;
+}

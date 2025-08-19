@@ -454,13 +454,18 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       const completedExerciseLog = this.currentWorkoutLogExercises().find(logEx => logEx.exerciseId === exerciseData.exerciseId);
       const completedSetLog = completedExerciseLog?.sets.find(logSet => logSet.plannedSetId === setData.id);
 
+      let baseExerciseInfo;
+      this.exerciseService.getExerciseById(exerciseData.exerciseId).subscribe(ex => {
+        baseExerciseInfo = ex;
+      });
+
       return {
         exerciseIndex: exIndex,
         setIndex: sIndex,
         exerciseData: exerciseData,
         setData: setData,
         type: (setData.type as 'standard' | 'warmup' | 'amrap' | 'custom') ?? 'standard',
-        baseExerciseInfo: undefined,
+        baseExerciseInfo: baseExerciseInfo,
         isCompleted: !!completedSetLog,
         actualReps: completedSetLog?.repsAchieved,
         actualWeight: completedSetLog?.weightUsed,
@@ -1188,8 +1193,8 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       `Continue or End`,
       'The current session is finished! Would you like to add a new exercise or complete it?',
       [
-        { text: 'Add exercise', role: 'add_exercise', data: 'add_exercise', cssClass: 'bg-primary hover:bg-primary-dark text-white' } as AlertButton,
-        { text: 'End session', role: 'end_session', data: "end_session", cssClass: 'bg-blue-500 hover:bg-blue-600 text-white' } as AlertButton,
+        { text: 'Add exercise', role: 'add_exercise', data: 'add_exercise', cssClass: 'bg-primary hover:bg-primary-dark text-white', icon: 'plus-circle', iconClass: 'h-8 w-8 mr-1' } as AlertButton,
+        { text: 'End session', role: 'end_session', data: "end_session", cssClass: 'bg-blue-500 hover:bg-blue-600 text-white', icon: 'done', iconClass: 'h-8 w-8 mr-1' } as AlertButton,
       ],
     );
 
@@ -1488,7 +1493,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     } else {
       // Step 4: Call the service to calculate the suggested parameters for the new set.
       // It takes the historical performance, the original plan for today, and the routine's goal to make a suggestion.
-    const progressiveOverloadSettings = this.progressiveOverloadService.getSettings();
+      const progressiveOverloadSettings = this.progressiveOverloadService.getSettings();
       if (progressiveOverloadSettings && progressiveOverloadSettings.enabled) {
         finalSetParamsForSession = this.workoutService.suggestNextSetParameters(historicalSetPerformance, plannedSetForSuggestions);
       } else {
@@ -2514,17 +2519,30 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     const defaultRest = kbRelated ? 45 : 60;
     const defaultReps = kbRelated && lastExSet ? (lastExSet.targetReps || lastExSet.repsAchieved) : 10;
     const defaultSets = 3;
+
+    const isCardioOnly = selectedExercise.category === 'cardio';
+    const exerciseParams: AlertInput[] = isCardioOnly
+      ? [
+        { label: 'Exercise name', name: 'name', type: 'text', placeholder: 'Exercise name', value: selectedExercise.name, attributes: { required: true } },
+        { label: 'Number of Sets', name: 'numSets', type: 'number', placeholder: 'Number of Sets (e.g., 3)', value: defaultSets, attributes: { min: 1, required: true } },
+        { label: 'Target weight', name: 'weight', type: 'number', placeholder: 'e.g., 10', value: defaultWeight, attributes: { min: 0, required: true } },
+        { label: 'Target duration', name: 'duration', type: 'number', placeholder: 'e.g., 30 secs', value: defaultDuration, attributes: { min: 0, required: false } },
+        { label: 'Rest between sets', name: 'rest', type: 'number', placeholder: 'e.g., 60', value: defaultRest, attributes: { min: 1, required: true } }
+      ]
+      : [
+        { label: 'Exercise name', name: 'name', type: 'text', placeholder: 'Exercise name', value: selectedExercise.name, attributes: { required: true } },
+        { label: 'Number of Reps', name: 'numReps', type: 'number', placeholder: 'Number of Reps (e.g., 10)', value: defaultReps, attributes: { min: 0, required: true } },
+        { label: 'Number of Sets', name: 'numSets', type: 'number', placeholder: 'Number of Sets (e.g., 3)', value: defaultSets, attributes: { min: 1, required: true } },
+        { label: 'Target weight', name: 'weight', type: 'number', placeholder: 'e.g., 10', value: defaultWeight, attributes: { min: 0, required: true } },
+        { label: 'Target duration', name: 'duration', type: 'number', placeholder: 'e.g., 30 secs', value: defaultDuration, attributes: { min: 0, required: false } },
+        { label: 'Rest between sets', name: 'rest', type: 'number', placeholder: 'e.g., 60', value: defaultRest, attributes: { min: 1, required: true } }
+      ];
+
     const exerciseData = await this.alertService.showPromptDialog(
       `Add ${selectedExercise.name}`,
       '',
-      [
-        { label: 'Exercise name', name: 'name', type: 'string', placeholder: 'Exercise name', value: selectedExercise.name, attributes: { required: true } },
-        { label: 'Number of Reps', name: 'numReps', type: 'number', placeholder: 'Number of Reps (e.g., 10)', value: defaultReps, attributes: { min: 0, required: true } },
-        { label: 'Number of Sets', name: 'numSets', type: 'number', placeholder: 'Number of Sets (e.g., 3)', value: 3, attributes: { min: 1, required: true } },
-        { label: 'Target weight', name: 'weight', type: 'number', placeholder: 'e.g., 10', value: defaultWeight, attributes: { min: 0, required: true } },
-        { label: 'Target duration', name: 'duration', type: 'number', placeholder: 'e.g., 30 secs', value: defaultDuration, attributes: { min: 0, required: false } },
-        { label: 'Rest between sets', name: 'rest', type: 'number', placeholder: 'e.g., 60', value: '60', attributes: { min: '1', required: true } }
-      ] as AlertInput[]);
+      exerciseParams
+    );
 
     if (exerciseData) {
       const exerciseName = exerciseData['name'];
@@ -3311,8 +3329,8 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
           "Resume Paused Workout?",
           "You have a paused workout session. Would you like to resume it?",
           [
-            { text: "Resume", role: "confirm", data: true, cssClass: "bg-green-600" } as AlertButton,
-            { text: "Discard", role: "cancel", data: false, cssClass: "bg-red-600" } as AlertButton
+            { text: "Resume", role: "confirm", data: true, cssClass: "bg-green-600", icon: 'play', iconClass: 'h-8 w-8 mr-1' } as AlertButton,
+            { text: "Discard", role: "cancel", data: false, cssClass: "bg-red-600", icon: 'trash', iconClass: 'h-8 w-8 mr-1' } as AlertButton
           ]
         );
         shouldAttemptToLoadPausedState = !!(confirmation && confirmation.data === true);
@@ -4251,7 +4269,9 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     this.closeWorkoutMenu(); // Close main menu when opening modal
 
     setTimeout(() => {
-      this.myExerciseInput.nativeElement?.focus();
+      if (this.myExerciseInput && this.myExerciseInput.nativeElement) {
+        this.myExerciseInput.nativeElement?.focus();
+      }
     });
 
   }
