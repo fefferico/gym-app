@@ -16,7 +16,7 @@ import { ThemeService } from '../../../core/services/theme.service';
 import { AppSettingsService } from '../../../core/services/app-settings.service';
 import { AppSettings } from '../../../core/models/app-settings.model';
 import { ToastService } from '../../../core/services/toast.service';
-import { Gender, UserProfile } from '../../../core/models/user-profile.model';
+import { Gender, MeasurementEntry, UserMeasurements, UserProfile } from '../../../core/models/user-profile.model';
 import { TrainingProgramService } from '../../../core/services/training-program.service';
 import { UserProfileService } from '../../../core/services/user-profile.service';
 import { ExerciseService } from '../../../core/services/exercise.service';
@@ -53,6 +53,7 @@ export class ProfileSettingsComponent implements OnInit {
 
   protected currentVibrator = navigator;
 
+  goalsForm!: FormGroup;
   profileForm!: FormGroup;
   appSettingsForm!: FormGroup;
   progressiveOverloadForm!: FormGroup;
@@ -76,14 +77,24 @@ export class ProfileSettingsComponent implements OnInit {
       username: [''],
       gender: [null as Gender | null],
       measurements: this.fb.group({
-        heightCm: [null as number | null, [Validators.min(0)]],
-        weightKg: [null as number | null, [Validators.min(0)]],
-        age: [null as number | null, [Validators.min(0), Validators.max(150)]],
+        heightCm: [null as number | null, [Validators.min(0), Validators.required]],
+        weightKg: [null as number | null, [Validators.min(0), Validators.required]],
+        age: [null as number | null, [Validators.min(0), Validators.max(150), Validators.required]],
         chestCm: [null as number | null, [Validators.min(0)]],
         waistCm: [null as number | null, [Validators.min(0)]],
         hipsCm: [null as number | null, [Validators.min(0)]],
         rightArmCm: [null as number | null, [Validators.min(0)]],
       })
+    });
+
+    const measurementsGroup = this.profileForm.get('measurements') as FormGroup;
+    measurementsGroup.addControl('neckCm', this.fb.control(null as number | null, [Validators.min(0)]));
+
+    // Initialize the new goals form
+    this.goalsForm = this.fb.group({
+      weightKg: [null as number | null, [Validators.min(0)]],
+      waistCm: [null as number | null, [Validators.min(0)]],
+      // Add other goal controls
     });
 
     this.appSettingsForm = this.fb.group({
@@ -111,16 +122,6 @@ export class ProfileSettingsComponent implements OnInit {
     this.loadAppSettingsData();
     this.loadProgressiveOverloadSettings();
 
-    this.profileForm.valueChanges.pipe(
-      debounceTime(700),
-      filter(() => this.profileForm.valid && this.profileForm.dirty),
-      tap(value => {
-        this.userProfileService.saveProfile(value as UserProfile);
-        this.profileForm.markAsPristine({ onlySelf: false });
-        this.toastService.info("Profile auto-saved", 1500);
-      })
-    ).subscribe();
-
     this.appSettingsForm.valueChanges.pipe(
       debounceTime(700),
       filter(() => this.appSettingsForm.valid && this.appSettingsForm.dirty),
@@ -132,6 +133,54 @@ export class ProfileSettingsComponent implements OnInit {
     ).subscribe();
 
     this.listenForProgressiveOverloadChanges();
+
+    // Auto-save logic for username and gender
+    this.profileForm.get('username')?.valueChanges.pipe(debounceTime(700), filter(() => this.profileForm.valid && this.profileForm.dirty)).subscribe(val => this.saveUsernameAndGender());
+    this.profileForm.get('gender')?.valueChanges.pipe(debounceTime(700), filter(() => this.profileForm.valid && this.profileForm.dirty)).subscribe(val => this.saveUsernameAndGender());
+
+    this.loadGoalsData();
+
+    // Add auto-save for goals form
+    this.goalsForm.valueChanges.pipe(
+      debounceTime(700),
+      filter(() => this.goalsForm.valid && this.goalsForm.dirty),
+      tap(goals => {
+        this.userProfileService.saveGoals(goals);
+        this.goalsForm.markAsPristine();
+        this.toastService.info("Goals auto-saved", 1500);
+      })
+    ).subscribe();
+  }
+
+  loadGoalsData(): void {
+    const goals = this.userProfileService.getProfile()?.measurementGoals;
+    if (goals) {
+      this.goalsForm.reset(goals, { emitEvent: false });
+    }
+  }
+
+  saveMeasurements(): void {
+    const measurementsGroup = this.profileForm?.get('measurements');
+    if (!this.profileForm || !measurementsGroup || measurementsGroup.invalid) {
+      this.toastService.error("Please fill in all required fields correctly: at least age, height and weight should be filled.");
+      return;
+    }
+    const measurements = this.profileForm.get('measurements')?.value as UserMeasurements;
+    this.userProfileService.addOrUpdateMeasurementEntry(measurements as MeasurementEntry);
+    this.profileForm.get('measurements')!.markAsPristine(); // Mark as saved
+    this.toastService.info("Measurements history updated", 1500);
+  }
+
+
+  // Helper to save non-measurement profile data
+  private saveUsernameAndGender(): void {
+    const profileData = {
+      username: this.profileForm.get('username')?.value,
+      gender: this.profileForm.get('gender')?.value
+    };
+    this.userProfileService.saveProfile(profileData);
+    this.toastService.info("Profile auto-saved", 1500);
+    this.profileForm.markAsPristine();
   }
 
   /**
@@ -188,7 +237,13 @@ export class ProfileSettingsComponent implements OnInit {
   loadProfileData(): void {
     const profile = this.userProfileService.getProfile();
     if (profile) {
-      this.profileForm.reset(profile, { emitEvent: false });
+      // We load the latest measurements into the form
+      const latestMeasurements = this.userProfileService.getMeasurements();
+      this.profileForm.reset({
+        username: profile.username || '',
+        gender: profile.gender || null,
+        measurements: latestMeasurements || {}
+      }, { emitEvent: false });
     } else {
       this.profileForm.reset({
         username: '', gender: null,
@@ -388,5 +443,9 @@ export class ProfileSettingsComponent implements OnInit {
     if (confirmation && confirmation.data) {
       await this.trackingService.backfillLastUsedExerciseTimestamps();
     }
+  }
+
+  navigateToBodyMeasurements(): void {
+    this.router.navigate(['/profile/measurements']);
   }
 }
