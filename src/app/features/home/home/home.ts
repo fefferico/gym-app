@@ -9,7 +9,6 @@ import { ToastService } from '../../../core/services/toast.service';
 import { WorkoutService } from '../../../core/services/workout.service';
 import { PausedWorkoutState } from '../../workout-tracker/workout-player';
 import { UserProfileService } from '../../../core/services/user-profile.service';
-import { PressScrollDirective } from '../../../shared/directives/press-scroll.directive';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { AlertButton } from '../../../core/models/alert.model';
 
@@ -17,7 +16,7 @@ import { AlertButton } from '../../../core/models/alert.model';
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, TodaysWorkoutComponent, DatePipe, PressScrollDirective, IconComponent], // Added DatePipe
+  imports: [CommonModule, TodaysWorkoutComponent, IconComponent], // Added DatePipe
   templateUrl: './home.html',
   styleUrls: ['./home.scss']
 })

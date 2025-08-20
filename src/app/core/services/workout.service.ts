@@ -72,15 +72,6 @@ export class WorkoutService {
     return routines ? this._sortRoutines(routines) : [];
   }
 
-  /**
- * Loads routines from local storage.
- * @returns An array of Routine objects.
- */
-  private _loadRoutinesFromStorage(): Routine[] {
-    const routines = this.storageService.getItem<Routine[]>(this.ROUTINES_STORAGE_KEY) || [];
-    return routines ? routines.sort((a, b) => a.name.localeCompare(b.name)) : [];
-  }
-
   private _saveRoutinesToStorage(routines: Routine[]): void {
     const sortedRoutines = this._sortRoutines(routines);
     this.storageService.setItem(this.ROUTINES_STORAGE_KEY, sortedRoutines);

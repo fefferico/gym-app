@@ -16,6 +16,7 @@ import { WeightUnitPipe } from '../../../shared/pipes/weight-unit-pipe'; // Not 
 import { ToastService } from '../../../core/services/toast.service';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { PressDirective } from '../../../shared/directives/press.directive';
+import { IconComponent } from '../../../shared/components/icon/icon.component';
 
 
 // Interface to combine PB data with Exercise details
@@ -28,7 +29,7 @@ interface DisplayPersonalBest extends PersonalBestSet {
 @Component({
   selector: 'app-personal-bests',
   standalone: true,
-  imports: [CommonModule, RouterLink, DatePipe, TitleCasePipe, PressDirective], // Add DecimalPipe to imports if not already
+  imports: [CommonModule, RouterLink, DatePipe, TitleCasePipe, PressDirective, IconComponent], // Add DecimalPipe to imports if not already
   templateUrl: './personal-bests.html',
   styleUrl: './personal-bests.scss',
   animations: [

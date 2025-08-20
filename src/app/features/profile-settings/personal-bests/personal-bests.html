@@ -160,32 +160,34 @@
                     </div>
                 </div>
 
+
                 <div *ngIf="pb.pbType !== '1RM (Estimated)' && pb.workoutLogId"
-                    class="flex flex-col items-center justify-center px-8 py-2 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 rounded-b dark:border-gray-600 space-y-2">
+                        class="flex flex-col sm:flex-row justify-center items-center space-y-2 sm:space-y-0 sm:space-x-4 pt-4 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 rounded-b dark:border-gray-600 pb-2">
+                        <!-- 
+                        - flex-col: Stacks buttons vertically by default (for mobile).
+                        - sm:flex-row: Switches to a side-by-side layout on small screens and up.
+                        - space-y-4: Adds vertical space between buttons in the stacked view.
+                        - sm:space-y-0: Removes the vertical space on larger screens.
+                        - sm:space-x-4: Adds horizontal space on larger screens.
+                        -->
+
                     <button (click)="navigateToLogDetail(pb.workoutLogId, $event)"
-                        class="flex w-full items-center justify-center px-2 py-1 border border-transparent rounded-md shadow-sm text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-indigo-500 dark:hover:bg-indigo-600 dark:focus:ring-offset-gray-800 transition-colors duration-150"
-                        title="View Workout Log">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
-                            class="w-4 h-4 mr-1">
-                            <path d="M10 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" />
-                            <path fill-rule="evenodd"
-                                d="M.664 10.59a1.651 1.651 0 0 1 0-1.186A10.004 10.004 0 0 1 10 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0 1 10 17c-4.257 0-7.893-2.66-9.336-6.41ZM14 10a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z"
-                                clip-rule="evenodd" />
-                        </svg>
-                        VIEW LOG
-                    </button>
-                    <!-- Trend Chart Button -->
+                            class="flex justify-center items-center min-w-[310px] sm:w-auto px-6 py-3 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-md shadow-sm text-lg disabled:opacity-50 disabled:cursor-not-allowed">
+                            <!--
+                            - w-full sm:w-auto: Makes the button full-width on mobile and auto-width on larger screens.
+                            - justify-center: Ensures icon and text are centered.
+                            - Increased padding (px-6 py-3) to give the larger text more space.
+                            -->
+                            <app-icon name="eye" class="w-8 h-8 mr-1"></app-icon>
+                            <span>VIEW LOG</span>
+                        </button>
+
                     <button (click)="showPbTrend(pb.exerciseId, pb.pbType)" title="Show Trend for this PB"
-                        class="flex w-full items-center justify-center px-2 py-1 border border-transparent rounded-md shadow-sm text-xs font-medium text-white bg-primary hover:bg-primary-light focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary dark:bg-primary dark:hover:bg-primary-light dark:focus:ring-offset-gray-800 transition-colors duration-150"
-                        title="View trend Log">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                            stroke="currentColor" class="w-5 h-5 mr-2">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941" />
-                        </svg>
-                        TREND
-                    </button>
-                </div>
+                            class="flex justify-center items-center min-w-[310px] sm:w-auto px-6 py-3 bg-primary hover:bg-primary-light text-white font-semibold rounded-md shadow-sm text-lg disabled:opacity-50 disabled:cursor-not-allowed">
+                            <app-icon name="trend" class="w-8 h-8 mr-1"></app-icon>
+                            <span>TREND</span>
+                        </button>
+                    </div>
             </div>
         </div>
     </div>

@@ -267,6 +267,9 @@ export class TrackingService {
         if ((candidateSet.weightUsed ?? -1) > (existingPb.weightUsed ?? -1)) {
             isBetter = true;
         }
+        if ((candidateSet.weightUsed ?? -1) >= (existingPb.weightUsed ?? -1) && (candidateSet.repsAchieved ?? -1) >= (existingPb.repsAchieved ?? -1)) {
+            isBetter = true;
+        }
       }
 
       if (isBetter) {

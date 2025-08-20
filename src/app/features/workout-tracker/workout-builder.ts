@@ -73,6 +73,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   isAllExpandedInViewMode = signal(false);
 
   exerciseInfoTooltipString = 'Exercise details and progression';
+  lastRoutineDuration: number = 0;
 
   routine: Routine | undefined = undefined;
   builderForm!: FormGroup;
@@ -290,6 +291,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       this.getRoutineDuration();
     });
     this.subscriptions.add(roundsSub);
+
+    this.getLastRoutineDuration();
 
   }
 
@@ -1517,6 +1520,19 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     }
   }
 
+  async getLastRoutineDuration(): Promise<void> {
+    this.lastRoutineDuration = 0;
+    if (this.routine) {
+      const lastRoutineLogged = await firstValueFrom(
+        this.trackingService.getLastPerformanceForRoutine(this.routine.id).pipe(take(1))
+      );
+      if (lastRoutineLogged && lastRoutineLogged.lastPerformedDate && lastRoutineLogged.durationMinutes) {
+        // const totalMinutes = Math.round(lastRoutineLogged.durationMinutes / 60);
+        this.lastRoutineDuration = lastRoutineLogged.durationMinutes;
+      } 
+    } 
+  }
+
   private mapFormToRoutine(formValue: any): Routine {
     const routinePayload: Routine = {
       id: this.currentRoutineId || uuidv4(), name: formValue.name, description: formValue.description, goal: formValue.goal,
@@ -1530,6 +1546,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       })),
       isFavourite: this.routine?.isFavourite,
       isHidden: this.routine?.isHidden,
+      lastPerformed: this.routine?.lastPerformed || '',
     };
     return routinePayload;
   }

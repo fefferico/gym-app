@@ -125,8 +125,7 @@
                       </span>
                       {{ loggedEx.exerciseName }}
                     </h3>
-                    <app-icon name="info" class="h-4 w-4 text-gray-400 dark:text-gray-300 cursor-help" *ngIf="loggedEx" appPress
-                      (shortPress)="openModal(loggedEx)" [appTooltip]="exerciseInfoTooltipString"></app-icon>
+                    <app-icon name="info" class="h-4 w-4 text-gray-400 dark:text-gray-300 cursor-help" *ngIf="loggedEx" (click)="openModal(loggedEx)" [appTooltip]="exerciseInfoTooltipString"></app-icon>
                   </div>
                   <div *ngIf="!loggedEx.isExpanded" class="text-xs text-gray-500 dark:text-gray-400 truncate">
                     <p *ngIf="loggedEx.baseExercise?.category"
@@ -178,7 +177,7 @@
 
                 <!-- MODIFICATION: Add PB indicator next to set number -->
                 <div class="font-medium text-gray-900 dark:text-white flex items-center space-x-2">
-                  <span [ngClass]="{'bg-blue-100 dark:bg-blue-300 p-1 rounded': set.type && set.type === 'warmup'}">{{ i
+                  <span [ngClass]="{'bg-blue-100 dark:bg-blue-400 p-1 rounded': set.type && set.type === 'warmup'}">{{ i
                     + 1 }}{{set.type === 'warmup' ? '*':''}}</span>
                   <!-- PB Indicator -->
                   <div *ngIf="getPersonalBestTypesForSet(set, loggedEx.exerciseId).length > 0" class="flex-shrink-0"
