@@ -24,6 +24,7 @@ import { PressDirective } from '../../../shared/directives/press.directive';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { ProgressiveOverloadService, ProgressiveOverloadSettings, ProgressiveOverloadStrategy } from '../../../core/services/progressive-overload.service.ts';
 import { AlertButton, AlertInput } from '../../../core/models/alert.model';
+import { ImageStorageService } from '../../../core/services/image-storage.service';
 
 
 @Component({
@@ -50,6 +51,7 @@ export class ProfileSettingsComponent implements OnInit {
   protected progressiveOverloadService = inject(ProgressiveOverloadService);
   private platformId = inject(PLATFORM_ID);
   private toastService = inject(ToastService);
+  private imageStorageService = inject(ImageStorageService); // <-- Inject the service
 
   protected currentVibrator = navigator;
 
@@ -70,7 +72,7 @@ export class ProfileSettingsComponent implements OnInit {
     { label: 'Increase Reps', value: ProgressiveOverloadStrategy.REPS }
   ];
 
-  private readonly BACKUP_VERSION = 5;
+  private readonly BACKUP_VERSION = 6;
 
   constructor() {
     this.profileForm = this.fb.group({
@@ -262,12 +264,17 @@ export class ProfileSettingsComponent implements OnInit {
     this.progressiveOverloadForm.reset(settings, { emitEvent: false });
   }
 
-  exportData(): void {
+  async exportData(): Promise<void> { // <-- Make the method async
     this.spinnerService.show('Exporting data...');
+
+        const photos = await this.imageStorageService.getAllImagesForBackup();
+
+
     const backupData = {
       version: this.BACKUP_VERSION,
       timestamp: new Date().toISOString(),
       profile: this.userProfileService.getDataForBackup(),
+            progressPhotos: photos, // <-- Add photos to the backup object
       appSettings: this.appSettingsService.getDataForBackup(),
       progressiveOverload: this.progressiveOverloadService.getDataForBackup(),
       routines: this.workoutService.getDataForBackup(),
@@ -317,9 +324,15 @@ export class ProfileSettingsComponent implements OnInit {
           input.value = ''; return;
         }
 
-        this.alertService.showConfirm("WARNING", "Importing data will try to MERGE your current data with the IMPORTED one. Are you sure?").then((result) => {
+        this.alertService.showConfirm("WARNING", "Importing data will try to MERGE your current data with the IMPORTED one. Are you sure?").then(async (result) => {
           if (result && result.data) {
             this.spinnerService.show('Importing data...');
+
+            // Check for the new version and presence of photo data
+            if (version >= 6 && importedData.progressPhotos) {
+              await this.imageStorageService.importImages(importedData.progressPhotos);
+            }
+
             // --- UPDATED PROFILE IMPORT LOGIC ---
             if (version >= 5) {
               // Use the new smart merge for modern backups
