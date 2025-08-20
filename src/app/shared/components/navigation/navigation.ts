@@ -71,7 +71,7 @@ export class NavigationComponent {
   onLongPress(item: NavItem): void {
     // You can add any custom logic for a long press here.
     // For example, showing a tooltip or a context menu.
-    console.log('Long pressed:', item.label);
+    // console.log('Long pressed:', item.label);
   }
 
   /**
@@ -81,6 +81,6 @@ export class NavigationComponent {
     // Scroll to the top of the component (or page)
     window.scrollTo({ top: 0, behavior: 'smooth' });
     // You can add any custom logic for the press release here.
-    console.log('Press released on:', item.label);
+    // console.log('Press released on:', item.label);
   }
 }

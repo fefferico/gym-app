@@ -207,16 +207,29 @@
     <div
         class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-4 sm:p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
 
-        <!-- Header -->
-        <div class="flex justify-between items-center mb-4">
-            <h2 class="text-xl sm:text-2xl font-bold">Side-by-Side Comparison</h2>
-            <button (click)="comparisonData = null" class="text-gray-500 hover:text-gray-800 dark:hover:text-gray-200">
-                <app-icon name="cancel" class="h-6 w-6"></app-icon>
-            </button>
+        <!-- Header with NEW TOGGLE BUTTON -->
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
+            <div class="flex items-center justify-between w-full sm:w-auto mb-2 sm:mb-0">
+                <h2 class="text-xl sm:text-2xl font-bold mb-2 sm:mb-0">Side-by-Side Comparison</h2>
+                <!-- Close Button -->
+                <button (click)="comparisonData = null"
+                    class="text-gray-500 hover:text-gray-800 dark:hover:text-gray-200">
+                    <app-icon name="cancel" class="h-6 w-6"></app-icon>
+                </button>
+            </div>
+            <div class="flex items-center gap-4">
+                <!-- TOGGLE BUTTON -->
+                <button (click)="toggleComparisonMode()"
+                    class="px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors flex items-center">
+                    <app-icon name="change" class="w-4 h-4 mr-1"></app-icon>
+                    <span *ngIf="comparisonMode === 'slider'">Side-by-Side View</span>
+                    <span *ngIf="comparisonMode === 'side-by-side'">Slider View</span>
+                </button>
+            </div>
         </div>
 
-        <!-- Photo Comparison -->
-        <div class="grid grid-cols-2 gap-4 mb-6">
+        <!-- CONDITIONAL VIEW: Side-by-Side -->
+        <div *ngIf="comparisonMode === 'side-by-side'" class="grid grid-cols-2 gap-4 mb-6">
             <div class="text-center">
                 <img [src]="comparisonData.from.photoUrl || './assets/images/no_data.png'" alt="Start photo"
                     class="w-full h-48 sm:h-64 object-cover rounded-md bg-gray-200 dark:bg-gray-700">
@@ -229,18 +242,61 @@
             </div>
         </div>
 
+        <!-- CONDITIONAL VIEW: Slider -->
+        <div *ngIf="comparisonMode === 'slider'" class="mb-6">
+            <h3 class="font-semibold text-center mb-2">Image Comparison Slider</h3>
+            <div
+                class="relative w-full aspect-[4/3] rounded-md overflow-hidden select-none bg-gray-200 dark:bg-gray-700">
+                <!-- ... entire slider block from previous step remains here ... -->
+                <!-- LAYER 1: Base Image ("Before") Container -->
+                <div class="absolute inset-0 z-10">
+                    <img [src]="comparisonData.from.photoUrl || './assets/images/no_data.png'" alt="Start photo"
+                        class="w-full h-full object-cover max-w-none">
+                    <span
+                        class="absolute top-2 left-2 bg-black/50 text-white text-xs font-bold py-1 px-2 rounded-full z-10">
+                        BEFORE: {{ comparisonData.from.date | date:'shortDate' }}
+                    </span>
+                </div>
+                <!-- LAYER 2: Top Image ("After") Container -->
+                <div class="absolute inset-0 z-20"
+                    [ngStyle]="{'clip-path': 'inset(0 ' + (100 - comparisonSliderValue) + '% 0 0)'}">
+                    <img [src]="comparisonData.to.photoUrl || './assets/images/no_data.png'" alt="End photo"
+                        class="w-full h-full object-cover max-w-none">
+                    <span
+                        class="absolute top-2 right-2 bg-black/50 text-white text-xs font-bold py-1 px-2 rounded-full z-10">
+                        AFTER: {{ comparisonData.to.date | date:'shortDate' }}
+                    </span>
+                </div>
+                <!-- LAYER 3: Slider Handle -->
+                <div class="absolute top-0 bottom-0 bg-white w-1 pointer-events-none z-30"
+                    [ngStyle]="{'left': 'calc(' + comparisonSliderValue + '% - 1px)'}">
+                    <div
+                        class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 bg-white border-2 border-primary rounded-full h-8 w-8 flex items-center justify-center shadow-lg">
+                        <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
+                                d="M8 9l4-4 4 4m0 6l-4 4-4-4"></path>
+                        </svg>
+                    </div>
+                </div>
+                <!-- LAYER 4: Invisible Slider Input Control -->
+                <input type="range" min="0" max="100" [value]="comparisonSliderValue" (input)="onSliderChange($event)"
+                    class="absolute inset-0 w-full h-full cursor-ew-resize appearance-none bg-transparent z-40"
+                    style="--thumb-color: transparent;">
+            </div>
+        </div>
+
         <!-- Measurement Table -->
         <div class="overflow-x-auto">
             <table class="w-full text-sm text-left">
                 <thead
                     class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 rounded-lg">
                     <tr>
-                        <th scope="col" class="px-4 py-3 rounded-l-lg">Metric</th>
-                        <th scope="col" class="px-4 py-3 text-center">{{ comparisonData.from.date | date:'shortDate' }}
+                        <th scope="col" class="px-2 py-3 rounded-l-lg">Metric</th>
+                        <th scope="col" class="px-2 py-3 text-center">{{ comparisonData.from.date | date:'shortDate' }}
                         </th>
-                        <th scope="col" class="px-4 py-3 text-center">{{ comparisonData.to.date | date:'shortDate' }}
+                        <th scope="col" class="px-2 py-3 text-center">{{ comparisonData.to.date | date:'shortDate' }}
                         </th>
-                        <th scope="col" class="px-4 py-3 text-center rounded-r-lg">Change</th>
+                        <th scope="col" class="px-2 py-3 text-center rounded-r-lg">Change</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -250,12 +306,12 @@
                                 'text-gray-500': row.difference === 0 || row.difference === null
                             }" -->
                     <tr *ngFor="let row of comparisonData.rows" class="border-b dark:border-gray-700">
-                        <th scope="row" class="px-4 py-4 font-medium whitespace-nowrap">{{ row.metricLabel }}</th>
-                        <td class="px-4 py-4 text-center">{{ row.fromValue }} <span *ngIf="row.fromValue !== 'N/A'">{{
+                        <th scope="row" class="px-2 py-4 font-medium whitespace-nowrap">{{ row.metricLabel }}</th>
+                        <td class="px-2 py-4 text-center">{{ row.fromValue }} <span *ngIf="row.fromValue !== 'N/A'">{{
                                 row.unit }}</span></td>
-                        <td class="px-4 py-4 text-center">{{ row.toValue }} <span *ngIf="row.toValue !== 'N/A'">{{
+                        <td class="px-2 py-4 text-center">{{ row.toValue }} <span *ngIf="row.toValue !== 'N/A'">{{
                                 row.unit }}</span></td>
-                        <td class="px-4 py-4 text-center font-bold" [ngClass]="{
+                        <td class="px-2 py-4 text-center font-bold" [ngClass]="{
                                 'text-yellow-500': row.difference !== null && row.difference !== null,
                                 'text-gray-500': row.difference === 0 || row.difference === null
                             }">

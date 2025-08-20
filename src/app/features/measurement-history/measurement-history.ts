@@ -68,7 +68,7 @@ export class MeasurementHistoryComponent implements OnInit {
 
   // --- THE FIX IS HERE ---
   // Change the colorScheme property from a complex object to a simple string.
-  colorScheme: string = 'vivid'; 
+  colorScheme: string = 'vivid';
 
   availableMetrics: { key: string, label: string }[] = [];
 
@@ -115,7 +115,7 @@ export class MeasurementHistoryComponent implements OnInit {
       const currentMetric = document.getElementById('metric-select') as HTMLSelectElement;
       this.prepareChartData(currentMetric?.value || 'weightKg');
     } else {
-        this.chartData = []; // Ensure chart is cleared if history is empty
+      this.chartData = []; // Ensure chart is cleared if history is empty
     }
   }
 
@@ -131,10 +131,10 @@ export class MeasurementHistoryComponent implements OnInit {
         let value: number | null = null;
 
         if (metricKey === 'bmi') {
-                if (entry.weightKg && this.userProfile?.heightCm && this.userProfile.heightCm > 0) {
-                    value = this.userProfileService.calculateBMI(entry.weightKg, this.userProfile.heightCm);
-                }
-            } else if (metricKey === 'bodyFat') {
+          if (entry.weightKg && this.userProfile?.heightCm && this.userProfile.heightCm > 0) {
+            value = this.userProfileService.calculateBMI(entry.weightKg, this.userProfile.heightCm);
+          }
+        } else if (metricKey === 'bodyFat') {
           const { gender, heightCm } = this.userProfile || {};
           const { waistCm, neckCm, hipsCm } = entry;
 
@@ -247,10 +247,10 @@ export class MeasurementHistoryComponent implements OnInit {
   closeFullScreenImage(): void { this.fullScreenImageUrl = null; }
 
 
-   /**
-   * Updates the 'compareFromDate' property when the user changes the start date dropdown.
-   * @param event The DOM event from the select element.
-   */
+  /**
+  * Updates the 'compareFromDate' property when the user changes the start date dropdown.
+  * @param event The DOM event from the select element.
+  */
   onCompareFromChange(event: Event): void {
     const selectElement = event.target as HTMLSelectElement;
     this.compareFromDate = selectElement.value;
@@ -274,6 +274,10 @@ export class MeasurementHistoryComponent implements OnInit {
   }
 
   openCompareModal(fromDate: string, toDate: string): void {
+    // Reset state to defaults when opening the modal
+    this.comparisonMode = 'slider';
+    this.comparisonSliderValue = 50;
+
     if (!fromDate || !toDate) {
       this.toastService.error('Please select two dates to compare.');
       return;
@@ -286,10 +290,10 @@ export class MeasurementHistoryComponent implements OnInit {
       this.toastService.error('Could not find the selected entries.');
       return;
     }
-    
+
     // Ensure "from" is always the earlier date for correct calculations
     if (new Date(fromEntry.date) > new Date(toEntry.date)) {
-        [fromEntry, toEntry] = [toEntry, fromEntry];
+      [fromEntry, toEntry] = [toEntry, fromEntry];
     }
 
     const rows = this.calculateComparisonRows(fromEntry, toEntry);
@@ -350,7 +354,7 @@ export class MeasurementHistoryComponent implements OnInit {
     });
     this.isAddEntryModalOpen = true;
   }
-  
+
   /**
    * Shows a confirmation dialog before deleting an entry.
    * If confirmed, it removes the entry and its photo, then refreshes the history.
@@ -370,7 +374,7 @@ export class MeasurementHistoryComponent implements OnInit {
 
         // 2. Delete the associated photo from IndexedDB
         await this.imageStorageService.deleteImage(date);
-        
+
         this.toastService.success('Entry deleted successfully.');
 
         // 3. Refresh the component's view to reflect the changes
@@ -382,4 +386,24 @@ export class MeasurementHistoryComponent implements OnInit {
       }
     }
   }
+
+  comparisonSliderValue: number = 50;
+  comparisonMode: 'slider' | 'side-by-side' = 'slider';
+  // --- ADD THIS METHOD TO HANDLE SLIDER INPUT ---
+  /**
+   * Updates the comparison slider value when the user interacts with the range input.
+   * @param event The DOM input event from the range slider.
+   */
+  onSliderChange(event: Event): void {
+    const value = (event.target as HTMLInputElement).value;
+    this.comparisonSliderValue = Number(value);
+  }
+
+  /**
+   * Toggles the image comparison view between the slider and side-by-side modes.
+   */
+  toggleComparisonMode(): void {
+    this.comparisonMode = this.comparisonMode === 'slider' ? 'side-by-side' : 'slider';
+  }
+
 }
