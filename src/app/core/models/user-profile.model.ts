@@ -4,7 +4,6 @@ export type Gender = 'male' | 'female' | 'other' | 'prefer_not_to_say';
 export interface UserMeasurements {
   heightCm?: number | null;
   weightKg?: number | null;
-  age?: number | null;
   // Body measurements (optional, in cm or inches based on user preference - store in a consistent unit like cm)
   chestCm?: number | null;
   waistCm?: number | null;
@@ -26,6 +25,7 @@ export interface MeasurementEntry extends UserMeasurements {
 export interface UserProfile {
   username?: string | null;
   gender?: Gender | null;
+  age?: Gender | null;
   measurements?: UserMeasurements;
   hideWipDisclaimer?: boolean;
   measurementHistory?: MeasurementEntry[];

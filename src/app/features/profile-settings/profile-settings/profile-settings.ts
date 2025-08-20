@@ -79,21 +79,21 @@ export class ProfileSettingsComponent implements OnInit {
 
   constructor() {
     this.profileForm = this.fb.group({
-      username: [''],
-      gender: [null as Gender | null],
+      general: this.fb.group({
+        username: [''],
+        gender: [null as Gender | null],
+        age: [null as number | null, [Validators.min(0), Validators.max(150), Validators.required]]
+      }),
       measurements: this.fb.group({
         heightCm: [null as number | null, [Validators.min(0), Validators.required]],
         weightKg: [null as number | null, [Validators.min(0), Validators.required]],
-        age: [null as number | null, [Validators.min(0), Validators.max(150), Validators.required]],
         chestCm: [null as number | null, [Validators.min(0)]],
+        neckCm: [null as number | null, [Validators.min(0)]],
         waistCm: [null as number | null, [Validators.min(0)]],
         hipsCm: [null as number | null, [Validators.min(0)]],
         rightArmCm: [null as number | null, [Validators.min(0)]],
       })
     });
-
-    const measurementsGroup = this.profileForm.get('measurements') as FormGroup;
-    measurementsGroup.addControl('neckCm', this.fb.control(null as number | null, [Validators.min(0)]));
 
     // Initialize the new goals form
     this.goalsForm = this.fb.group({
@@ -139,9 +139,10 @@ export class ProfileSettingsComponent implements OnInit {
 
     this.listenForProgressiveOverloadChanges();
 
-    // Auto-save logic for username and gender
-    this.profileForm.get('username')?.valueChanges.pipe(debounceTime(700), filter(() => this.profileForm.valid && this.profileForm.dirty)).subscribe(val => this.saveUsernameAndGender());
-    this.profileForm.get('gender')?.valueChanges.pipe(debounceTime(700), filter(() => this.profileForm.valid && this.profileForm.dirty)).subscribe(val => this.saveUsernameAndGender());
+    // Auto-save logic for username, gender and age (optimized)
+    this.profileForm.get('general')?.valueChanges.pipe(
+      debounceTime(700),
+    ).subscribe(() => this.saveGeneralData());
 
     this.loadGoalsData();
 
@@ -178,10 +179,11 @@ export class ProfileSettingsComponent implements OnInit {
 
 
   // Helper to save non-measurement profile data
-  private saveUsernameAndGender(): void {
+  private saveGeneralData(): void {
     const profileData = {
-      username: this.profileForm.get('username')?.value,
-      gender: this.profileForm.get('gender')?.value
+      username: this.profileForm.get('general.username')?.value,
+      gender: this.profileForm.get('general.gender')?.value,
+      age: this.profileForm.get('general.age')?.value
     };
     this.userProfileService.saveProfile(profileData);
     this.toastService.info("Profile auto-saved", 1500);
@@ -245,13 +247,20 @@ export class ProfileSettingsComponent implements OnInit {
       // We load the latest measurements into the form
       const latestMeasurements = this.userProfileService.getMeasurements();
       this.profileForm.reset({
-        username: profile.username || '',
-        gender: profile.gender || null,
+        general: {
+          username: profile.username || '',
+          gender: profile.gender || null,
+          age: profile.age || null,
+        },
         measurements: latestMeasurements || {}
       }, { emitEvent: false });
     } else {
       this.profileForm.reset({
-        username: '', gender: null,
+        general: {
+          username: null,
+          gender: null,
+          age: null,
+        },
         measurements: { heightCm: null, weightKg: null, age: null, chestCm: null, waistCm: null, hipsCm: null, rightArmCm: null }
       }, { emitEvent: false });
     }
@@ -270,14 +279,13 @@ export class ProfileSettingsComponent implements OnInit {
   async exportData(): Promise<void> { // <-- Make the method async
     this.spinnerService.show('Exporting data...');
 
-        const photos = await this.imageStorageService.getAllImagesForBackup();
-
+    const photos = await this.imageStorageService.getAllImagesForBackup();
 
     const backupData = {
       version: this.BACKUP_VERSION,
       timestamp: new Date().toISOString(),
       profile: this.userProfileService.getDataForBackup(),
-            progressPhotos: photos, // <-- Add photos to the backup object
+      progressPhotos: photos, // <-- Add photos to the backup object
       appSettings: this.appSettingsService.getDataForBackup(),
       progressiveOverload: this.progressiveOverloadService.getDataForBackup(),
       routines: this.workoutService.getDataForBackup(),
@@ -346,12 +354,12 @@ export class ProfileSettingsComponent implements OnInit {
             } else {
               this.userProfileService.replaceData(null);
             }
-            
+
             // Other data can still use their existing merge/replace logic
             this.workoutService.mergeData(importedData.routines);
             this.trackingService.replaceLogs(importedData.workoutLogs);
             this.trackingService.replacePBs(importedData.personalBests);
-            
+
             if (version >= 4) {
               this.progressiveOverloadService.replaceData(importedData.progressiveOverload);
             }
@@ -474,8 +482,16 @@ export class ProfileSettingsComponent implements OnInit {
   showSyncHistoryTooltip(): void {
     // show only if on mobile 
     if (this.platformId === 'browser' && window.innerWidth <= 768) {
+      this.vibrate();
       this.alertService.showAlert("Sync Exercise History", this.syncHistoryTooltipString);
       return;
+    }
+  }
+
+  vibrate(): void {
+    const currentVibrator = navigator;
+    if (currentVibrator && 'vibrate' in currentVibrator) {
+      currentVibrator.vibrate(50);
     }
   }
 }

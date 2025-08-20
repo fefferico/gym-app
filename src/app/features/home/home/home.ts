@@ -11,6 +11,7 @@ import { PausedWorkoutState } from '../../workout-tracker/workout-player';
 import { UserProfileService } from '../../../core/services/user-profile.service';
 import { PressScrollDirective } from '../../../shared/directives/press-scroll.directive';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
+import { AlertButton } from '../../../core/models/alert.model';
 
 
 @Component({
@@ -102,10 +103,16 @@ export class HomeComponent implements OnInit {
 
   async discardPausedWorkout(): Promise<void> {
     this.vibrate();
-    const confirm = await this.alertService.showConfirm(
+
+    const buttons: AlertButton[] = [
+      { text: 'Cancel', role: 'cancel', data: false, icon: 'cancel' },
+      { text: 'Discard', role: 'confirm', data: true, cssClass: 'bg-red-500 hover:bg-red-600 text-white', icon: 'trash' },
+    ];
+
+    const confirm = await this.alertService.showConfirmationDialog(
       'Discard Paused Workout?',
       'Are you sure you want to discard this paused workout session? This action cannot be undone.',
-      'Discard', 'Cancel'
+      buttons
     );
     if (confirm && confirm.data) {
       if (isPlatformBrowser(this.platformId)) {
@@ -172,6 +179,6 @@ export class HomeComponent implements OnInit {
 
   getVersion(): string {
     return this.storageService.getVersion();
-  } 
+  }
 
 }

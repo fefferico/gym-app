@@ -9,47 +9,46 @@
         <section class="bg-white dark:bg-gray-700 p-4 sm:p-6 rounded-md shadow-md">
             <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">User Profile</h2>
             <form [formGroup]="profileForm" class="space-y-4 dark:text-gray-300">
-                <div>
-                    <label for="username"
-                        class="block text-sm font-medium text-gray-700 dark:text-gray-300">Username</label>
-                    <input type="text" id="username" formControlName="username" (change)="currentVibrator.vibrate(50)"
-                        placeholder="Your display name"
-                        class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600">
-                </div>
+                <div formGroupName="general" class="space-y-4 pt-4 border-t border-gray-200 dark:border-gray-600">
+                    <div>
+                        <label for="username"
+                            class="block text-md font-medium text-gray-700 dark:text-gray-300">Username</label>
+                        <input type="text" id="username" formControlName="username"
+                            (change)="currentVibrator.vibrate(50)" placeholder="Your display name"
+                            class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg">
+                    </div>
 
-                <div class=" dark:text-gray-300">
-                    <label for="gender"
-                        class="block text-sm font-medium text-gray-700 dark:text-gray-300">Gender</label>
-                    <select id="gender" formControlName="gender" (change)="currentVibrator.vibrate(50)"
-                        class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600">
-                        <option [ngValue]="null">Select Gender...</option>
-                        <option *ngFor="let genderOpt of genders" [value]="genderOpt.value">{{ genderOpt.label }}
-                        </option>
-                    </select>
+                    <div class=" dark:text-gray-300">
+                        <label for="gender"
+                            class="block text-md font-medium text-gray-700 dark:text-gray-300">Gender</label>
+                        <select id="gender" formControlName="gender" (change)="currentVibrator.vibrate(50)"
+                            class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg">
+                            <option [ngValue]="null">Select Gender...</option>
+                            <option *ngFor="let genderOpt of genders" [value]="genderOpt.value">{{ genderOpt.label }}
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class=" dark:text-gray-300">
+                        <label for="saveAppSettings"
+                            class="block text-md font-medium text-gray-700 dark:text-gray-300">Age</label>
+                        <input type="number" min="0" id="age" formControlName="age" placeholder="Years" required
+                            class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200 text-lg">
+                    </div>
                 </div>
 
                 <div formGroupName="measurements" class="space-y-4 pt-4 border-t border-gray-200 dark:border-gray-600">
                     <h3 class="text-lg font-medium text-gray-700 dark:text-gray-300">Measurements</h3>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div>
-                            <label for="age"
-                                class="block text-md font-medium text-gray-600 dark:text-gray-400">
-                                Age <span class="text-red-500">*</span>
-                            </label>
-                            <input type="number" min="0" id="age" formControlName="age" placeholder="Years" required
-                                class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200 text-lg">
-                            </div>
-                        <div>
-                            <label for="heightCm"
-                                class="block text-md font-medium text-gray-600 dark:text-gray-400">
+                            <label for="heightCm" class="block text-md font-medium text-gray-600 dark:text-gray-400">
                                 Height (cm)<span class="text-red-500">*</span>
                             </label>
                             <input type="number" min="0" id="heightCm" formControlName="heightCm" placeholder="cm"
                                 class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200 text-lg">
                         </div>
                         <div>
-                            <label for="weightKg"
-                                class="block text-md font-medium text-gray-600 dark:text-gray-400">
+                            <label for="weightKg" class="block text-md font-medium text-gray-600 dark:text-gray-400">
                                 Weight (kg)<span class="text-red-500">*</span>
                             </label>
                             <input type="number" min="0" id="weightKg" formControlName="weightKg" placeholder="kg"
@@ -87,7 +86,8 @@
                                 class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200 text-lg">
                         </div>
                     </div>
-                    <div class="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4 pt-4">
+                    <div
+                        class="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4 pt-4">
                         <!-- 
                         - flex-col: Stacks buttons vertically by default (for mobile).
                         - sm:flex-row: Switches to a side-by-side layout on small screens and up.
@@ -113,7 +113,7 @@
                             <span>MEASUREMENTS HISTORY</span>
                         </button>
                     </div>
-                    
+
 
                 </div>
                 <!-- <div class="pt-3 flex justify-end">
@@ -127,12 +127,15 @@
             <form [formGroup]="goalsForm" class="space-y-4">
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                     <div>
-                        <label for="goalWeightKg" class="block text-md font-medium text-gray-600 dark:text-gray-400">Target Weight (kg)</label>
+                        <label for="goalWeightKg"
+                            class="block text-md font-medium text-gray-600 dark:text-gray-400">Target Weight
+                            (kg)</label>
                         <input type="number" min="0" id="goalWeightKg" formControlName="weightKg" placeholder="kg"
                             class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200 text-lg">
                     </div>
                     <div>
-                        <label for="goalWaistCm" class="block text-md font-medium text-gray-600 dark:text-gray-400">Target Waist (cm)</label>
+                        <label for="goalWaistCm"
+                            class="block text-md font-medium text-gray-600 dark:text-gray-400">Target Waist (cm)</label>
                         <input type="number" min="0" id="goalWaistCm" formControlName="waistCm" placeholder="cm"
                             class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200 text-lg">
                     </div>
@@ -350,9 +353,9 @@
                         class="block w-full text-sm text-gray-700 dark:text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-200 file:text-gray-700 hover:file:bg-gray-300 dark:file:bg-gray-600 dark:file:text-gray-200 dark:hover:file:bg-gray-700">
                 </div>
                 <div class="pt-4 border-t border-gray-200 dark:border-gray-600">
-                    <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Sync Exercise History<app-icon name="info"
-                        class="h-4 w-4 text-gray-400 dark:text-gray-300 cursor-help" appPress (shortPress)="showSyncHistoryTooltip()"
-                      [appTooltip]="syncHistoryTooltipString"></app-icon></p>
+                    <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Sync Exercise History<app-icon
+                            name="info" class="h-4 w-4 text-gray-400 dark:text-gray-300 cursor-help"
+                            (click)="showSyncHistoryTooltip()" [appTooltip]="syncHistoryTooltipString"></app-icon></p>
                     <button appPress (shortPress)="onSyncExerciseHistoryClick()"
                         class="flex items-center px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-md shadow-sm transition-colors text-sm">
                         <app-icon name="change" class="w-6 h-6 mr-1"></app-icon>
