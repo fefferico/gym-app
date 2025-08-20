@@ -254,7 +254,7 @@
                         class="w-full h-full object-cover max-w-none">
                     <span
                         class="absolute top-2 left-2 bg-black/50 text-white text-xs font-bold py-1 px-2 rounded-full z-10">
-                        BEFORE: {{ comparisonData.from.date | date:'shortDate' }}
+                        BEFORE: {{ comparisonData.from.date | date:'dd-MM-yy':'UTC' }}
                     </span>
                 </div>
                 <!-- LAYER 2: Top Image ("After") Container -->
@@ -264,7 +264,7 @@
                         class="w-full h-full object-cover max-w-none">
                     <span
                         class="absolute top-2 right-2 bg-black/50 text-white text-xs font-bold py-1 px-2 rounded-full z-10">
-                        AFTER: {{ comparisonData.to.date | date:'shortDate' }}
+                        AFTER: {{ comparisonData.to.date | date:'dd-MM-yy':'UTC' }}
                     </span>
                 </div>
                 <!-- LAYER 3: Slider Handle -->
