@@ -25,12 +25,13 @@ import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { ProgressiveOverloadService, ProgressiveOverloadSettings, ProgressiveOverloadStrategy } from '../../../core/services/progressive-overload.service.ts';
 import { AlertButton, AlertInput } from '../../../core/models/alert.model';
 import { ImageStorageService } from '../../../core/services/image-storage.service';
+import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
 
 
 @Component({
   selector: 'app-profile-settings',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, PressDirective, IconComponent],
+  imports: [CommonModule, ReactiveFormsModule, PressDirective, IconComponent, TooltipDirective],
   templateUrl: './profile-settings.html',
   styleUrl: './profile-settings.scss',
 })
@@ -54,6 +55,8 @@ export class ProfileSettingsComponent implements OnInit {
   private imageStorageService = inject(ImageStorageService); // <-- Inject the service
 
   protected currentVibrator = navigator;
+
+  syncHistoryTooltipString = 'This will scan all workout logs to update the "Last Used" date for every exercise in your library. Run this if the dates seem out of sync after an import or an update.'
 
   goalsForm!: FormGroup;
   profileForm!: FormGroup;
@@ -466,5 +469,13 @@ export class ProfileSettingsComponent implements OnInit {
 
   navigateToBodyMeasurements(): void {
     this.router.navigate(['/profile/measurements']);
+  }
+
+  showSyncHistoryTooltip(): void {
+    // show only if on mobile 
+    if (this.platformId === 'browser' && window.innerWidth <= 768) {
+      this.alertService.showAlert("Sync Exercise History", this.syncHistoryTooltipString);
+      return;
+    }
   }
 }
