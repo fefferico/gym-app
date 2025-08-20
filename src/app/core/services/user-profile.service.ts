@@ -86,19 +86,7 @@ export class UserProfileService {
     return this.userProfileSubject.getValue();
   }
 
-  saveProfile(profile: UserProfile): void {
-    const currentProfile = this.getProfile() || {};
-    // use the most recent profile data, merging with existing data
-    if (profile.measurementHistory && profile.measurementHistory.length > 0) {
-      // Ensure measurementHistory is sorted by date
-      profile.measurementHistory.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-      profile.measurements = {...profile.measurements, ...profile.measurementHistory[profile.measurementHistory.length - 1] };
-    }
-    // Merge the new profile data with the existing one
-    const updatedProfile = { ...currentProfile, ...profile };
-    this.storageService.setItem(this.USER_PROFILE_KEY, updatedProfile);
-    this.userProfileSubject.next(updatedProfile);
-  }
+
 
   getUsername(): string | null | undefined {
     return this.userProfileSubject.getValue()?.username;
@@ -125,16 +113,7 @@ export class UserProfileService {
     return this.getProfile();
   }
 
-  // Method to replace profile data from backup
-  public replaceData(newProfile: UserProfile | null): void {
-    if (newProfile) {
-      this.storageService.setItem(this.USER_PROFILE_KEY, newProfile);
-      this.userProfileSubject.next(newProfile);
-    } else {
-      this.storageService.removeItem(this.USER_PROFILE_KEY);
-      this.userProfileSubject.next(null);
-    }
-  }
+
 
   // Method to clear profile data (used by ProfileSettingsComponent)
   public clearUserProfile_DEV_ONLY(): void {
@@ -254,5 +233,82 @@ export class UserProfileService {
     const updatedHistory = currentProfile.measurementHistory.filter(e => e.date !== date);
 
     this.saveProfile({ ...currentProfile, measurementHistory: updatedHistory });
+  }
+
+  saveProfile(profile: Partial<UserProfile>): void {
+    const currentProfile = this.getProfile() || {};
+
+    // use the most recent profile data, merging with existing data
+    if (profile.measurementHistory && profile.measurementHistory.length > 0) {
+      // Ensure measurementHistory is sorted by date
+      profile.measurementHistory.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      profile.measurements = {...profile.measurements, ...profile.measurementHistory[profile.measurementHistory.length - 1] };
+    }
+
+    // Merge the new profile data with the existing one
+    const updatedProfile = { ...currentProfile, ...profile };
+    
+    // Ensure measurementHistory is always sorted when saved
+    if (updatedProfile.measurementHistory) {
+      updatedProfile.measurementHistory.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    }
+
+    this.storageService.setItem(this.USER_PROFILE_KEY, updatedProfile);
+    this.userProfileSubject.next(updatedProfile);
+  }
+
+
+  /**
+   * Replaces all profile data. Used for legacy imports or full restores.
+   * @param newProfile The new profile data to set.
+   */
+  public replaceData(newProfile: UserProfile | null): void {
+    if (newProfile) {
+      this.storageService.setItem(this.USER_PROFILE_KEY, newProfile);
+      this.userProfileSubject.next(newProfile);
+    } else {
+      this.storageService.removeItem(this.USER_PROFILE_KEY);
+      this.userProfileSubject.next(null);
+    }
+  }
+
+  /**
+   * Intelligently merges an imported profile with the existing one.
+   * Prioritizes imported data for simple fields and merges history/goals.
+   * @param importedProfile The profile data from the backup file.
+   */
+  public mergeData(importedProfile: UserProfile | null): void {
+    if (!importedProfile) return;
+
+    const localProfile = this.getProfile() || {};
+
+    // Merge measurement history intelligently to avoid duplicates
+    const localHistory = localProfile.measurementHistory || [];
+    const importedHistory = importedProfile.measurementHistory || [];
+
+    // Use a Map to handle duplicates, prioritizing the imported entry for any given date
+    const historyMap = new Map<string, MeasurementEntry>();
+    localHistory.forEach(entry => historyMap.set(entry.date, entry));
+    importedHistory.forEach(entry => historyMap.set(entry.date, entry));
+    
+    const mergedHistory = Array.from(historyMap.values());
+
+    // Construct the fully merged profile
+    const mergedProfile: UserProfile = {
+      // Prioritize imported simple fields, but keep local if importer's is missing
+      username: importedProfile.username ?? localProfile.username,
+      gender: importedProfile.gender ?? localProfile.gender,
+      heightCm: importedProfile.heightCm ?? localProfile.heightCm,
+      hideWipDisclaimer: importedProfile.hideWipDisclaimer ?? localProfile.hideWipDisclaimer,
+      
+      // Overwrite local goals with imported goals if they exist
+      measurementGoals: { ...localProfile.measurementGoals, ...importedProfile.measurementGoals },
+
+      // Use the merged and sorted history
+      measurementHistory: mergedHistory,
+    };
+    
+    // Save the final merged profile
+    this.saveProfile(mergedProfile);
   }
 }

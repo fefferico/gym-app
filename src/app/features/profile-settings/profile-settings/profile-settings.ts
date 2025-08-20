@@ -70,7 +70,7 @@ export class ProfileSettingsComponent implements OnInit {
     { label: 'Increase Reps', value: ProgressiveOverloadStrategy.REPS }
   ];
 
-  private readonly BACKUP_VERSION = 4;
+  private readonly BACKUP_VERSION = 5;
 
   constructor() {
     this.profileForm = this.fb.group({
@@ -320,32 +320,38 @@ export class ProfileSettingsComponent implements OnInit {
         this.alertService.showConfirm("WARNING", "Importing data will try to MERGE your current data with the IMPORTED one. Are you sure?").then((result) => {
           if (result && result.data) {
             this.spinnerService.show('Importing data...');
+            // --- UPDATED PROFILE IMPORT LOGIC ---
+            if (version >= 5) {
+              // Use the new smart merge for modern backups
+              this.userProfileService.mergeData(importedData.profile as UserProfile | null);
+            } else if (version >= 2) {
+              // Use the old replace method for legacy backups
+              this.userProfileService.replaceData(importedData.profile as UserProfile | null);
+            } else {
+              this.userProfileService.replaceData(null);
+            }
+            
+            // Other data can still use their existing merge/replace logic
             this.workoutService.mergeData(importedData.routines);
             this.trackingService.replaceLogs(importedData.workoutLogs);
             this.trackingService.replacePBs(importedData.personalBests);
-
+            
             if (version >= 4) {
-              this.progressiveOverloadService.replaceData(importedData.progressiveOverload as ProgressiveOverloadSettings | null);
-            } else {
-              this.progressiveOverloadService.replaceData(null);
+              this.progressiveOverloadService.replaceData(importedData.progressiveOverload);
             }
-
             if (version >= 3) {
               this.exerciseService.mergeData(importedData.exercises);
               this.trainingProgramService.mergeData(importedData.programs);
             }
-
             if (version >= 2) {
-              this.userProfileService.replaceData(importedData.profile as UserProfile | null);
-              this.appSettingsService.replaceData(importedData.appSettings as AppSettings | null);
-            } else {
-              this.userProfileService.replaceData(null);
-              this.appSettingsService.replaceData(null);
+              this.appSettingsService.replaceData(importedData.appSettings);
             }
 
             this.loadProfileData();
             this.loadAppSettingsData();
             this.loadProgressiveOverloadSettings();
+            this.loadGoalsData(); // <-- Reload goals form as well
+
             this.spinnerService.hide();
             this.toastService.success("Data imported successfully!", 5000, "Import Complete");
           } else {

@@ -69,14 +69,6 @@
                     <!-- Left Column: Date, Photo, and DELETE BUTTON -->
                     <div class="flex flex-col items-center">
                         <p class="font-medium text-lg mb-2">{{ entry.date | date:'fullDate' }}</p>
-                        <button (click)="confirmDeleteEntry(entry.date)" title="Delete Entry"
-                            class="p-1 rounded-full text-gray-400 hover:bg-red-100 hover:text-red-500 dark:hover:bg-red-900/50 transition-colors">
-                            <app-icon name="trash" class="w-4 h-4"></app-icon>
-                        </button>
-                        <button (click)="editEntry(entry.date)" title="Edit Entry"
-                            class="p-1 rounded-full text-gray-400 hover:bg-red-100 hover:text-red-500 dark:hover:bg-red-900/50 transition-colors">
-                            <app-icon name="edit" class="w-4 h-4"></app-icon>
-                        </button>
                         <img *ngIf="entry.photoUrl" [src]="entry.photoUrl" (click)="openFullScreenImage(entry.photoUrl)"
                             alt="Progress photo"
                             class="w-24 h-24 object-cover rounded-md shadow-lg cursor-pointer hover:opacity-80 transition-opacity">
@@ -85,6 +77,16 @@
                             <input type="file" accept="image/*" (change)="uploadPhoto($event, entry.date)"
                                 class="hidden">
                         </label>
+                        <div>
+                            <button (click)="confirmDeleteEntry(entry.date)" title="Delete Entry"
+                                class="p-1 rounded-full text-gray-400 hover:bg-red-100 hover:text-red-500 dark:hover:bg-red-900/50 transition-colors">
+                                <app-icon name="trash" class="w-4 h-4"></app-icon>
+                            </button>
+                            <button (click)="editEntry(entry.date)" title="Edit Entry"
+                                class="p-1 rounded-full text-gray-400 hover:bg-red-100 hover:text-red-500 dark:hover:bg-red-900/50 transition-colors">
+                                <app-icon name="edit" class="w-4 h-4"></app-icon>
+                            </button>
+                        </div>
                     </div>
                     <!-- Middle Column: Measurements -->
                     <div class="text-sm grid grid-cols-2 gap-x-4 gap-y-1">
@@ -129,37 +131,43 @@
         <form [formGroup]="entryForm" (ngSubmit)="saveEntry()">
             <label for="date" class="block text-xs font-medium text-gray-600 dark:text-gray-400">Date</label>
             <input type="date" formControlName="date" id="date"
-            class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:border-gray-600">
+                class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:border-gray-600">
             <!-- Add inputs for weight, waist, neck, etc. from entryForm -->
             <div class="grid grid-cols-2 gap-4 mb-4">
                 <div>
-                    <label for="weightKg" class="block text-xs font-medium text-gray-600 dark:text-gray-400">Target Weight (kg)</label>
-                <input type="number" formControlName="weightKg" id="weightKg" placeholder="Weight (kg)"
-                    class="p-2 border rounded dark:bg-gray-700 dark:border-gray-600">
+                    <label for="weightKg" class="block text-xs font-medium text-gray-600 dark:text-gray-400">Target
+                        Weight (kg)</label>
+                    <input type="number" formControlName="weightKg" id="weightKg" placeholder="Weight (kg)"
+                        class="p-2 border rounded dark:bg-gray-700 dark:border-gray-600">
                 </div>
                 <!-- Add all other measurement inputs here -->
                 <div>
-                    <label for="chestCm" class="block text-xs font-medium text-gray-600 dark:text-gray-400">Chest (cm)</label>
+                    <label for="chestCm" class="block text-xs font-medium text-gray-600 dark:text-gray-400">Chest
+                        (cm)</label>
                     <input type="number" formControlName="chestCm" id="chestCm" placeholder="Chest (cm)"
                         class="p-2 border rounded dark:bg-gray-700 dark:border-gray-600">
                 </div>
                 <div>
-                    <label for="waistCm" class="block text-xs font-medium text-gray-600 dark:text-gray-400">Waist (cm)</label>
+                    <label for="waistCm" class="block text-xs font-medium text-gray-600 dark:text-gray-400">Waist
+                        (cm)</label>
                     <input type="number" formControlName="waistCm" id="waistCm" placeholder="Waist (cm)"
                         class="p-2 border rounded dark:bg-gray-700 dark:border-gray-600">
                 </div>
                 <div>
-                    <label for="hipsCm" class="block text-xs font-medium text-gray-600 dark:text-gray-400">Hips (cm)</label>
+                    <label for="hipsCm" class="block text-xs font-medium text-gray-600 dark:text-gray-400">Hips
+                        (cm)</label>
                     <input type="number" formControlName="hipsCm" id="hipsCm" placeholder="Hips (cm)"
                         class="p-2 border rounded dark:bg-gray-700 dark:border-gray-600">
                 </div>
                 <div>
-                    <label for="neckCm" class="block text-xs font-medium text-gray-600 dark:text-gray-400">Neck (cm)</label>
+                    <label for="neckCm" class="block text-xs font-medium text-gray-600 dark:text-gray-400">Neck
+                        (cm)</label>
                     <input type="number" formControlName="neckCm" id="neckCm" placeholder="Neck (cm)"
                         class="p-2 border rounded dark:bg-gray-700 dark:border-gray-600">
                 </div>
                 <div>
-                    <label for="rightArmCm" class="block text-xs font-medium text-gray-600 dark:text-gray-400">Right Arm (cm)</label>
+                    <label for="rightArmCm" class="block text-xs font-medium text-gray-600 dark:text-gray-400">Right Arm
+                        (cm)</label>
                     <input type="number" formControlName="rightArmCm" id="rightArmCm" placeholder="Right Arm (cm)"
                         class="p-2 border rounded dark:bg-gray-700 dark:border-gray-600">
                 </div>
@@ -183,7 +191,7 @@
                 class="w-full p-2 border rounded mb-4 h-24 dark:bg-gray-700 dark:border-gray-600"></textarea>
             <div class="flex justify-end gap-4 text-white">
                 <button type="button" (click)="isAddEntryModalOpen = false" class="px-4 py-2 rounded flex items-center">
-                <app-icon name="cancel" class="h-6 w-6 text-white"></app-icon>
+                    <app-icon name="cancel" class="h-6 w-6 text-white"></app-icon>
                     CANCEL</button>
                 <button type="submit" [disabled]="entryForm.invalid"
                     class="px-4 py-2 bg-primary text-white rounded disabled:opacity-50 flex items-center">
