@@ -23,6 +23,7 @@ import { PressDirective } from '../../shared/directives/press.directive';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { TrainingProgramService } from '../../core/services/training-program.service';
 import { IconComponent } from '../../shared/components/icon/icon.component';
+import { LastPerformanceSummary } from '../../core/models/workout-log.model';
 
 @Component({
   selector: 'app-routine-list',
@@ -253,15 +254,16 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     this.routines$ = this.workoutService.routines$;
   }
 
-  private loadRoutinesAndPopulateFilters(): void {
-    this.routinesSubscription = this.workoutService.routines$.subscribe(routines => {
+  private async loadRoutinesAndPopulateFilters(): Promise<void> {
+    this.routinesSubscription = this.workoutService.routines$.subscribe(async routines => {
       // routines.map(routine => ({
       //   ...routine,
       //   description: this.updateSanitizedDescription(routine.description || '')
       // }));
 
-      this.allRoutinesForList.set(routines); // Update the signal with all routines
+      this.allRoutinesForList.set(routines);
       this.populateRoutineFilterOptions(routines);
+      await this.populateLastRoutineDurations(routines);
     });
   }
 
@@ -456,9 +458,9 @@ export class RoutineListComponent implements OnInit, OnDestroy {
       const pausedRoutineName = pausedState.sessionRoutine?.name || 'a previous session';
       const pausedDate = pausedState.workoutDate ? ` from ${format(new Date(pausedState.workoutDate), 'MMM d, HH:mm')}` : '';
       const buttons: AlertButton[] = [
-        { text: 'Cancel', role: 'cancel', data: 'cancel' },
-        { text: 'Discard Paused & Start New', role: 'confirm', data: 'discard_start_new', cssClass: 'bg-red-500 hover:bg-red-600 text-white' },
-        { text: `Resume: ${pausedRoutineName.substring(0, 15)}${pausedRoutineName.length > 15 ? '...' : ''}`, role: 'confirm', data: 'resume_paused', cssClass: 'bg-green-500 hover:bg-green-600 text-white' },
+        { text: `Resume: ${pausedRoutineName.substring(0, 15)}${pausedRoutineName.length > 15 ? '...' : ''}`, role: 'confirm', data: 'resume_paused', cssClass: 'bg-green-500 hover:bg-green-600 text-white', icon: 'play' },
+        { text: 'Discard Paused & Start New', role: 'confirm', data: 'discard_start_new', cssClass: 'bg-red-500 hover:bg-red-600 text-white', icon: 'change' },
+        { text: 'Cancel', role: 'cancel', data: 'cancel', icon: 'cancel' },
       ];
       const confirmation = await this.alertService.showConfirmationDialog('Workout in Progress', `You have a paused workout ("${pausedRoutineName}"${pausedDate}). What would you like to do?`, buttons);
 
@@ -470,7 +472,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
         this.toastService.info('Previous paused workout discarded.', 3000);
         this.router.navigate(['/workout/play', newRoutineId]);
       } else {
-        this.toastService.info('Starting new workout cancelled.', 2000);
+        // this.toastService.info('Starting new workout cancelled.', 2000);
       }
     } else {
       // Use absolute path for player
@@ -655,7 +657,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
       data: { routineId }
     };
     const unmarkAsFavouriteRoutineButton = {
-      label: 'REMOVE',
+      label: 'UNMARK',
       actionKey: 'unmarkAsFavourite',
       iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
@@ -790,6 +792,30 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     } else {
       return 0;
     }
+  }
+
+  lastRoutineDurations = signal<{ [id: string]: number }>({});
+  private async populateLastRoutineDurations(routines: Routine[]): Promise<void> {
+    const durations: { [id: string]: number } = {};
+    const routineData: { [id: string]: {duration: number, name: string} } = {};
+    await Promise.all(
+      routines.map(async routine => {
+        const lastRoutineLogged = await firstValueFrom(
+          this.trackingService.getLastPerformanceForRoutine(routine.id).pipe(take(1))
+        );
+        if (lastRoutineLogged && lastRoutineLogged.lastPerformedDate && lastRoutineLogged.durationMinutes) {
+              // const totalMinutes = Math.round(lastRoutineLogged.durationMinutes / 60);
+              durations[routine.id] = lastRoutineLogged.durationMinutes;
+        } else {
+          durations[routine.id] = 0;
+        }
+        routineData[routine.id] = {
+          duration: durations[routine.id],
+          name: routine.name
+        };
+      })
+    );
+    this.lastRoutineDurations.set(durations);
   }
 
   scrollToTop(): void {

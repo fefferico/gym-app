@@ -167,23 +167,28 @@
                                 {{ muscle | titlecase }}
                             </button>
                         </div>
-                        <div *ngIf="routine.lastPerformed" class="text-sm text-gray-500 dark:text-gray-300 flex gap-1">
+                        <div *ngIf="routine.lastPerformed" class="text-sm text-gray-500 dark:text-gray-300 flex gap-1 mb-2">
                             <app-icon name="calendar" class="w-6 h-6"></app-icon>
                             <span class="font-medium">Last:</span> {{ routine.lastPerformed | date:'dd/MM/yy HH:mm' }}
                         </div>
+                        <div *ngIf="!routine.lastPerformed"
+                            class="text-sm text-gray-500 dark:text-gray-300 italic flex gap-1 mb-2">
+                            <app-icon name="calendar" class="w-6 h-6"></app-icon>
+                            Not performed yet
+                        </div>
                         <div>
                             <div *ngIf="routine && getRoutineDuration(routine) > 0"
-                                class="text-sm text-gray-500 dark:text-gray-300 flex gap-1">
-                                <app-icon name="clock" class="w-5 h-5"></app-icon>
-                                <span class="font-medium">Est:</span> ~{{ getRoutineDuration(routine)}} min
+                                class="text-sm text-gray-500 dark:text-gray-300 flex gap-1 mb-1">
+                                <app-icon name="clock" class="w-6 h-6"></app-icon>
+                                <span class="font-medium">Est. duration:</span> ~{{ getRoutineDuration(routine)}} min
                             </div>
                         </div>
-                        <div *ngIf="!routine.lastPerformed"
-                            class="text-sm text-gray-500 dark:text-gray-300 italic flex gap-1">
-
-                            <app-icon name="calendar" class="w-5 h-5"></app-icon>
-
-                            Not performed yet
+                        <div>
+                            <div *ngIf="lastRoutineDurations()[routine.id]"
+                                class="text-sm text-gray-500 dark:text-gray-300 flex gap-1">
+                                <app-icon name="schedule" class="w-6 h-6"></app-icon>
+                                <span class="font-medium">Last duration:</span> {{ lastRoutineDurations()[routine.id]}} min
+                            </div>
                         </div>
                         <div class="flex my-2 text-sm sm:text-xs text-gray-500 dark:text-gray-300">
                             <div *ngIf="routine.isHidden" (click)="toggleOnlyHiddenRoutines($event)" appPress
@@ -280,7 +285,7 @@
     <div class="fixed bottom-20 right-6 z-40 flex flex-col items-center gap-4">
 
         <button *ngIf="showBackToTopButton()" appPress (shortPress)="scrollToTop()" type="button"
-            class="bg-primary dark:bg-primary-dark text-white rounded-full p-3 shadow-lg hover:bg-primary-dark dark:hover:bg-primary-light focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-focus dark:focus:ring-offset-gray-900 transition-opacity animate-fade-in">
+            class="bg-primary dark:bg-primary text-white rounded-full p-3 shadow-lg hover:bg-primary-dark dark:hover:bg-primary-light focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-focus dark:focus:ring-offset-gray-900 transition-opacity animate-fade-in flex items-center">
             <app-icon name="back" [class.rotate-90]="true" class="w-6 h-6" [strokeWidth]="2.5"></app-icon>
             <span class="sr-only">Back to Top</span>
         </button>

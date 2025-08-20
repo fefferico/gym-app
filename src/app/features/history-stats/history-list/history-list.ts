@@ -35,6 +35,7 @@ import { TrainingProgram } from '../../../core/models/training-program.model';
 import { PressDirective } from '../../../shared/directives/press.directive';
 import { PressScrollDirective } from '../../../shared/directives/press-scroll.directive';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
+import { AlertButton } from '../../../core/models/alert.model';
 
 
 interface HistoryCalendarDay {
@@ -446,7 +447,15 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
   }
   async deleteLogDetails(logId: string, event?: MouseEvent): Promise<void> {
     event?.stopPropagation(); this.visibleActionsRutineId.set(null);
-    const confirm = await this.alertService.showConfirm("Delete Workout Log", "Are you sure you want to delete this workout log? This action cannot be undone", "Delete");
+
+    const confirm = await this.alertService.showConfirmationDialog(
+              "Delete Workout Log",
+              `Are you sure you want to delete this workout log? This action cannot be undone`,
+              [
+                { text: "Cancel", role: "cancel", data: false, icon: 'cancel' } as AlertButton,
+                { text: "Delete", role: "confirm", data: true, cssClass: "bg-red-600", icon: 'trash' } as AlertButton,
+              ],
+            );
     if (confirm && confirm.data) {
       try {
         this.spinnerService.show(); await this.trackingService.deleteWorkoutLog(logId);

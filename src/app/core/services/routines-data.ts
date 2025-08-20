@@ -2764,7 +2764,7 @@ export const ROUTINES_DATA: Routine[] = [
             },
             {
                 id: 'we-10-2',
-                exerciseId: 'kettlebell-clean',
+                exerciseId: 'single-kettlebell-clean-and-press',
                 exerciseName: 'Single Arm Clean & Push Press',
                 sets: [{ id: 'set-10-2-1', reps: 5, notes: 'Perform 5 reps per arm. This is a complex with a Push Press.', restAfterSet: 0, type: 'superset' }],
                 supersetId: 'monster-maker-10',
@@ -2775,7 +2775,7 @@ export const ROUTINES_DATA: Routine[] = [
             {
                 id: 'we-10-3',
                 exerciseId: 'kettlebell-strict-press',
-                exerciseName: 'Single Arm Clean & Push Press',
+                exerciseName: 'Kettlebell Strict Press (Single Arm)',
                 sets: [{ id: 'set-10-3-1', reps: 5, notes: 'Perform 5 reps per arm. Original is a Push Press, substitute with Strict Press.', restAfterSet: 0, type: 'superset' }],
                 supersetId: 'monster-maker-10',
                 supersetOrder: 2,

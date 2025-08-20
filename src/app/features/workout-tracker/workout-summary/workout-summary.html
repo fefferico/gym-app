@@ -1,6 +1,6 @@
 <div class="container mx-auto p-2">
   <ng-container *ngIf="workoutLog() as log; else loadingOrNotFoundSummary">
-    <div class="bg-white dark:bg-gray-700 rounded-xl shadow-2xl p-6 md:p-8 max-w-2xl mx-auto">
+    <div class="bg-white dark:bg-gray-700 rounded-xl shadow-2xl p-4 md:p-8 max-w-2xl mx-auto">
       <button [routerLink]="'/history/log/'+logId"
         class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-light p-2 -ml-1"><svg
           fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6">

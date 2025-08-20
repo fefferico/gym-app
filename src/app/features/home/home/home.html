@@ -12,55 +12,38 @@
   <!-- Paused Workout Session Card -->
   <section *ngIf="pausedWorkoutInfo() as pausedInfo" class="mb-6 md:mb-8">
     <div
-      class="bg-yellow-50 dark:bg-yellow-900/30 border-2 border-yellow-400 dark:border-yellow-600 rounded-xl shadow-lg p-4 sm:p-6 animate-pulse-slow">
-      <div class="flex flex-col sm:flex-row items-center">
-        <div class="flex-shrink-0 mb-3 sm:mb-0 sm:mr-4">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
-            class="w-10 h-10 sm:w-12 sm:h-12 text-yellow-500 dark:text-yellow-400">
-            <path fill-rule="evenodd"
-              d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12ZM12 8.25a.75.75 0 0 1 .75.75v3.75a.75.75 0 0 1-1.5 0V9a.75.75 0 0 1 .75-.75Zm0 8.25a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z"
-              clip-rule="evenodd" />
-          </svg>
-        </div>
-        <div class="flex-grow text-center sm:text-left">
-          <h2 class="text-lg sm:text-xl font-semibold text-yellow-700 dark:text-yellow-200">
-            You have a workout in progress!
-          </h2>
-          <p class="text-m text-yellow-600 dark:text-yellow-300 mt-1">
-            Routine: <strong class="font-medium">{{ pausedRoutineName() }}</strong>
-          </p>
-          <p class="text-sm text-yellow-500 dark:text-yellow-400 mt-0.5">
-            Logged on the: {{ pausedInfo.workoutDate | date:'dd-MM-yyyy':'UTC' }}
-          </p>
-          <p class="text-sm text-yellow-500 dark:text-yellow-400 mt-0.5">
-            Paused at: {{ pausedInfo.sessionTimerElapsedSecondsBeforePause * 1000 | date:'HH:mm:ss':'UTC' }}
-          </p>
+      class="bg-yellow-50 dark:bg-yellow-900/30 border-2 border-yellow-400 dark:border-yellow-600 rounded-xl shadow-lg p-4 sm:p-6 animate-pulse">
+      <!-- This container now has 'justify-center' to center its children horizontally -->
+      <div class="flex flex-col sm:flex-row items-center justify-center">
+        <app-icon name="alert-filled" class="w-10 h-10 sm:w-12 sm:h-12 text-yellow-500 dark:text-yellow-400"></app-icon>
+        <!-- Removed 'flex-grow' and 'sm:text-left' to allow the text to be centered -->
+        <div class="text-center sm:text-left py-2 sm:px-8">
+          <h2 class="text-lg sm:text-xl font-semibold text-yellow-700 dark:text-yellow-200"> You have a workout in
+            progress! </h2>
+          <p class="text-m text-yellow-600 dark:text-yellow-300 mt-1"> Routine: <strong class="font-medium">New
+              session</strong></p>
+          <p class="text-sm text-yellow-500 dark:text-yellow-400 mt-0.5"> Logged on the: 19-08-2025 </p>
+          <p class="text-sm text-yellow-500 dark:text-yellow-400 mt-0.5"> Paused at: 00:00:04 </p>
         </div>
       </div>
-      <div class="mt-4 flex flex-col sm:flex-row sm:justify-end gap-2 sm:gap-3">
-        <button appPressScroll (shortPress)="viewPausedSummary()"
+      <div class="mt-4 flex flex-col sm:flex-row justify-center gap-2 sm:gap-3">
+        <button
           class="flex justify-center items-center w-full sm:w-auto order-3 sm:order-1 px-4 py-2 text-xs sm:text-sm font-medium text-yellow-700 dark:text-yellow-200 bg-yellow-200 dark:bg-yellow-700/50 hover:bg-yellow-300 dark:hover:bg-yellow-600/50 rounded-md shadow-sm transition-colors">
           <app-icon name="eye" class="w-6 h-6">
           </app-icon>
-          <span class="ml-1">
-            DETAILS
-          </span>
+          <span class="ml-1"> DETAILS </span>
         </button>
-        <button (click)="discardPausedWorkout()"
-          class="flex justify-center items-center w-full sm:w-auto order-2 sm:order-2 px-4 py-2 text-xs sm:text-sm font-medium text-red-600 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-700/30 rounded-md border border-red-300 dark:border-red-500 transition-colors">
+        <button
+          class="flex justify-center items-center w-full sm:w-auto order-2 sm:order-2 px-4 py-2 text-xs sm:text-sm font-medium text-red-600 dark:text-red-300 bg-red-800 hover:bg-red-100 dark:hover:bg-red-700/30 rounded-md border border-red-300 dark:border-red-500 transition-colors">
           <app-icon name="trash" class="w-6 h-6">
           </app-icon>
-          <span class="ml-1">
-            DISCARD
-          </span>
+          <span class="ml-1"> DISCARD </span>
         </button>
-        <button appPressScroll (shortPress)="resumePausedWorkout()"
+        <button
           class="flex justify-center items-center w-full sm:w-auto order-1 sm:order-3 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-md shadow-sm text-m transition-colors">
           <app-icon name="play" class="w-6 h-6">
           </app-icon>
-          <span class="ml-1">
-            RESUME WORKOUT
-          </span>
+          <span class="ml-1"> RESUME WORKOUT </span>
         </button>
       </div>
     </div>
@@ -138,7 +121,6 @@
 
 
   <footer>
-        <label class="text-white dark:text-gray-100">AppVersion: {{getVersion()}}</label>
-    </footer>
+    <label class="text-white dark:text-gray-100">AppVersion: {{getVersion()}}</label>
+  </footer>
 </div>
-

@@ -22,6 +22,8 @@ import { AlertService } from '../../../core/services/alert.service';
 import { SpinnerService } from '../../../core/services/spinner.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { PressDirective } from '../../../shared/directives/press.directive';
+import { IconComponent } from '../../../shared/components/icon/icon.component';
+import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
 // DomSanitizer is not explicitly used in this version after previous edits, but good to keep if you plan to use [innerHTML] with dynamic SVGs later.
 // import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
@@ -49,7 +51,7 @@ interface TargetComparisonData {
 @Component({
   selector: 'app-workout-log-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, DatePipe, TitleCasePipe, ModalComponent, ExerciseDetailComponent, IsWeightedPipe, ActionMenuComponent, PressDirective],
+  imports: [CommonModule, RouterLink, DatePipe, TitleCasePipe, ModalComponent, ExerciseDetailComponent, IsWeightedPipe, ActionMenuComponent, PressDirective, IconComponent, TooltipDirective],
   templateUrl: './workout-log-detail.html',
   providers: [DecimalPipe] // DecimalPipe if used directly in template; WeightUnitPipe already handles it
 })
@@ -80,6 +82,7 @@ export class WorkoutLogDetailComponent implements OnInit {
   personalBestsForLog = signal<Record<string, PersonalBestSet[]>>({});
 
   @Input() logId?: string;
+  exerciseInfoTooltipString = 'Exercise details and progression';
 
 
 
@@ -679,7 +682,7 @@ export class WorkoutLogDetailComponent implements OnInit {
         data: { routineId }
       },
       {
-        label: 'EDIT',
+        label: 'EDIT LOG',
         actionKey: 'edit',
         iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>`,
         iconClass: 'w-8 h-8 mr-2',

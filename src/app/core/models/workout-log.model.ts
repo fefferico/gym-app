@@ -97,6 +97,14 @@ export interface LastPerformanceSummary {
   lastPerformedDate: string;
   workoutLogId: string;       // Ensure this is present
   sets: LoggedSet[];          // Ensure this is LoggedSet[]
+  durationMinutes?: number; // Total duration of the last performance in minutes
+  startTime?: number;      // Timestamp (milliseconds since epoch) of when the last performance started
+  endTime?: number;       // Timestamp (milliseconds since epoch) of when the last performance ended
+  notes?: string;         // Optional notes for the last performance
+  goal?: string;          // Optional: Goal of the last performance (e.g., "Strength", "Hypertrophy", "Endurance")
+  programId?: string;     // ID of the program this last performance belongs to, if applicable
+  routineId?: string;     // If this was based on a saved Routine
+  routineName?: string;   // Denormalized routine name for display
 }
 
 

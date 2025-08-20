@@ -12,6 +12,7 @@ import { AlertService } from './alert.service';
 import { WorkoutService } from './workout.service';
 import { ToastService } from './toast.service';
 import { ExerciseService } from './exercise.service';
+import { start } from 'repl';
 
 export interface ExercisePerformanceDataPoint {
   date: Date;
@@ -146,6 +147,24 @@ export class TrackingService {
       })
     );
   }
+
+  getLastPerformanceForRoutine(routineId: string): Observable<LastPerformanceSummary | null> {
+    return this.workoutLogs$.pipe(
+      map(logs => {
+        const routineLog = [...logs].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).find(log => log.routineId === routineId);
+        if (!routineLog) return null;
+        return {
+          lastPerformedDate: routineLog.date,
+          workoutLogId: routineLog.id,
+          sets: routineLog.exercises.flatMap(ex => ex.sets),
+          startTime: routineLog.startTime,
+          endTime: routineLog.endTime,
+          durationMinutes: routineLog.durationMinutes,
+        };
+      })
+    );
+  }
+
 
   findPreviousSetPerformance(lastPerformance: LastPerformanceSummary | null, currentSetTarget: ExerciseSetParams, currentSetIndexInRoutine: number): LoggedSet | null {
     if (!lastPerformance || !lastPerformance.sets || lastPerformance.sets.length === 0) {

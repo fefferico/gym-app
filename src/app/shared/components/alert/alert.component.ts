@@ -1,5 +1,5 @@
 // src/app/shared/alert/alert.component.ts
-import { Component, Input, Output, EventEmitter, HostListener, ChangeDetectionStrategy, OnInit, QueryList, ElementRef, ViewChildren } from '@angular/core';
+import { Component, Input, Output, EventEmitter, HostListener, ChangeDetectionStrategy, OnInit, QueryList, ElementRef, ViewChildren, ViewChild, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms'; // <-- Import FormsModule
 import { AlertButton, AlertOptions, AlertInput } from '../../../core/models/alert.model';
@@ -18,6 +18,7 @@ export class AlertComponent implements OnInit {
   @Input() options: AlertOptions | null = null;
   @Output() dismissed = new EventEmitter<{ role: string, data?: any, values?: { [key: string]: string | number | boolean } } | undefined>();
   @ViewChildren('alertInput') inputElements!: QueryList<ElementRef<HTMLInputElement | HTMLTextAreaElement>>;
+  @ViewChild('singleButton') singleButton?: ElementRef<HTMLButtonElement>;
 
   inputValues: { [key: string]: string | number | boolean } = {};
 
@@ -33,8 +34,22 @@ export class AlertComponent implements OnInit {
     }
   }
 
+  ngOnChanges(changes: SimpleChanges): void {
+    // If the 'options' input changes and we now have a single button
+    if (changes['options']) {
+      // We need a timeout to allow Angular to render the button first
+      setTimeout(() => this.focusButton(), 0);
+    }
+  }
+
+  private focusButton(): void {
+    // When the component loads, if the single button exists, focus it.
+    this.singleButton?.nativeElement.focus();
+  }
+
   // This lifecycle hook runs after the view is initialized and the *ngFor is rendered
   ngAfterViewInit(): void {
+    this.focusButton();
     if (!this.options?.inputs || !this.inputElements) {
       return;
     }

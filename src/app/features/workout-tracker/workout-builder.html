@@ -124,6 +124,19 @@
                         </div>
                     </div>
                     <div>
+                        <label for="endTime" class="block text-sm font-medium text-gray-700 dark:text-gray-300">End
+                            Time</label>
+                        <input type="time" id="endTime" formControlName="endTime"
+                            class="mt-1 block w-full p-2 border rounded-md shadow-sm dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200"
+                            [ngClass]="{'border-red-500 dark:border-red-400': builderForm.get('endTime')?.invalid && builderForm.get('endTime')?.touched, 'border-gray-300 dark:border-gray-500': !(builderForm.get('endTime')?.invalid && builderForm.get('endTime')?.touched) }"
+                            (change)="handleEndTimeChange()">
+                        <div *ngIf="builderForm.get('endTime')?.invalid && (builderForm.get('endTime')?.dirty || builderForm.get('endTime')?.touched)"
+                            class="text-red-500 dark:text-red-400 text-xs mt-1">
+                            <span *ngIf="builderForm.get('endTime')?.errors?.['required']">End time is
+                                required</span>
+                        </div>
+                    </div>
+                    <!-- <div>
                         <label for="durationMinutes"
                             class="block text-sm font-medium text-gray-700 dark:text-gray-300">Duration (min)</label>
                         <input type="number" id="durationMinutes" formControlName="durationMinutes"
@@ -133,7 +146,7 @@
                             class="text-red-500 dark:text-red-400 text-xs mt-1">
                             <span *ngIf="builderForm.get('durationMinutes')?.errors?.['min']">Min duration is 1</span>
                         </div>
-                    </div>
+                    </div> -->
                 </div>
                 <div>
                     <label for="logWorkoutName"
@@ -174,7 +187,7 @@
             </ng-container>
         </section>
 
-        <section class="pt-4 px-2" *ngIf="mode === 'manualLogEntry' || builderForm.get('goal')?.value !== 'rest'">
+        <section class="px-2" *ngIf="mode === 'manualLogEntry' || builderForm.get('goal')?.value !== 'rest'">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300">{{ mode === 'routineBuilder' ?
                     'Exercises' : 'Logged Exercises' }}</h2>
@@ -215,7 +228,7 @@
                             [cdkDragStartDelay]="110" class="exercise-item relative transition-all"
                             [ngClass]="getExerciseCardClasses(exerciseControl, exIndex)">
                             <!-- COMPACT VIEW / HEADER AREA -->
-                            <div class="flex items-center space-x-1">
+                            <div class="flex items-center space-x-1" [ngClass]="{'pt-1': isSetExpanded(exIndex, 0)}">
                                 <!-- DRAG HANDLE ICON (Now just a visual cue) -->
                                 <div *ngIf="isEditableMode()"
                                     class="p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 flex-shrink-0"
@@ -254,7 +267,7 @@
                                                     [title]="exerciseControl.get('exerciseName')?.value">
                                                     {{ exerciseControl.get('exerciseName')?.value }}
                                                 </h3>
-                                                <app-icon name="info" class="h-4 w-4 text-gray-400 dark:text-gray-500 cursor-help"
+                                                <app-icon name="info" class="h-4 w-4 text-gray-400 dark:text-gray-300 cursor-help"
                                                     *ngIf="exerciseControl.get('exerciseId')?.value" width="20" height="20" viewBox="0 0 20 20"
                                                     xmlns="http://www.w3.org/2000/svg" appPress (shortPress)="openModal(exerciseControl.value)"
                                                     [appTooltip]="exerciseInfoTooltipString"></app-icon>
@@ -269,7 +282,7 @@
                                                 <p
                                                     *ngIf="exerciseControl?.get('sets')?.value && exerciseControl?.get('sets')?.value.length >= 1">
                                                     Sets: {{exerciseControl?.get('sets')?.value.length}} {{
-                                                    getSetReps(exerciseControl) ? '( Reps: ' +
+                                                    !isExerciseCardioOnlyCtrl(exerciseControl) && getSetReps(exerciseControl) ? '( Reps: ' +
                                                     getSetReps(exerciseControl) + ' )' : '' }}
                                                 </p>
                                                 <p
@@ -325,7 +338,7 @@
                                             <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">
                                                 {{ exerciseControl.get('exerciseName')?.value || 'Select Exercise' }}
                                             </h3>
-                                            <app-icon name="info" class="h-4 w-4 text-gray-400 dark:text-gray-500 cursor-help"
+                                            <app-icon name="info" class="h-4 w-4 text-gray-400 dark:text-gray-300 cursor-help"
                                                 *ngIf="exerciseControl.get('exerciseId')?.value" width="20" height="20" viewBox="0 0 20 20"
                                                 xmlns="http://www.w3.org/2000/svg" appPress (shortPress)="openModal(exerciseControl.value)"
                                                 [appTooltip]="exerciseInfoTooltipString"></app-icon>
@@ -415,7 +428,7 @@
                                         <div class="font-medium">{{ i + 1 }}</div>
                                         <div>
                                             <strong>
-                                                {{ set.reps || '—' }}
+                                                {{ set.reps || '-' }}
                                             </strong>
                                         </div>
 
@@ -423,19 +436,19 @@
                                         <div *ngIf="exerciseControl.getRawValue() | isWeighted">
                                             <strong>
                                                 {{ set.weight != null ? (set.weight + ' ' +
-                                                unitService.getUnitLabel()) : '—' }}
+                                                unitService.getUnitLabel()) : '-' }}
                                             </strong>
 
                                         </div>
 
                                         <div>
                                             <strong>
-                                                {{ set.duration || '—' }}
+                                                {{ set.duration || '-' }}
                                             </strong>
                                         </div>
                                         <div>
                                             <strong>
-                                                {{ set.restAfterSet || '—' }}
+                                                {{ set.restAfterSet || '-' }}
                                             </strong>
                                         </div>
                                         <div class="cursor-pointer">
@@ -562,7 +575,7 @@
                                                         </select>
                                                     </div>
                                                     <!-- Other inputs for reps, weight, duration, tempo, rest, notes -->
-                                                    <div>
+                                                    <div *ngIf="!isExerciseCardioOnlyCtrl(exerciseControl)">
                                                         <label [for]="'reps-exp-' + exIndex + '-' + setIndex"
                                                             class="block text-s font-medium text-gray-600 dark:text-gray-400">Reps
                                                             {{ mode === 'manualLogEntry' ? '(Achieved)' : ''}}</label>
@@ -645,16 +658,6 @@
                                 </div>
                                 <!-- EXPANDED Only EDIT MODE - END -->
                             </div> <!-- End of *ngIf="!isCompactView" -->
-                            <!--<button *ngIf="!isCompactView && expandedSetPath()?.exerciseIndex === exIndex" type="button"
-                                (click)="collapseExpandedSet(true, $event)" title="Collapse exercise"
-                                class="bg-blue-200 mt-1 p-1 text-blue-600 hover:text-gray-500 dark:text-gray-400 dark:hover:text-gray-200 flex-shrink-0  rounded-md">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
-                                    <path d="M 12 5 L 12 10 M 9 7 L 12 10 L 15 7 M 12 19 L 12 14 M 9 17 L 12 14 L 15 17"
-                                        fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
-                                        stroke-linejoin="round" />
-                                </svg>
-                            </button> 
-                                                -->
                         </div>
                     </div>
                 </ng-container>
@@ -736,14 +739,15 @@
                 </div>
                 <div class="my-4">
                     <input #exerciseSearchFied type="text" placeholder="Search exercises..."
-                        [ngModel]="modalSearchTerm()" (ngModelChange)="modalSearchTerm.set($event)"
-                        class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-gray-200" />
+        [ngModel]="modalSearchTerm()" (ngModelChange)="modalSearchTerm.set($event)"
+        (keydown.enter)="onSearchEnter()"
+        class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-gray-200" />
                 </div>
                 <div
                     class="mt-2 max-h-80 overflow-y-auto transition-all duration-500 ease-in-out rounded-md scrollbar-thin scrollbar-thumb-primary scrollbar-track-gray-200 dark:scrollbar-track-gray-800">
                     <ul class="space-y-2">
                         <li *ngFor="let ex of filteredAvailableExercises(); let odd = odd; let even = even"
-                            (click)="mode === 'routineBuilder' ? selectExercise(ex) : selectExerciseForLog(ex)"
+                            (click)="selectExerciseFromLibrary(ex)"
                             [ngClass]="{
                                 'p-3 mr-1 hover:bg-gray-400 dark:hover:bg-gray-800 rounded-md cursor-pointer transition-all duration-150 ease-in-out flex justify-between items-center scrollbar-thin scrollbar-thumb-primary scrollbar-track-gray-200 dark:scrollbar-track-gray-800 transform hover:-translate-y-1 shadow-sm hover:shadow-md transition-shadow': true,
                                           'bg-gray-200 dark:bg-gray-600': odd,

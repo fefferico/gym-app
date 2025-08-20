@@ -66,6 +66,14 @@ export const ICONS: Record<string, string> = {
                     <path d="M8 3v5h8V3" />
                 </svg>
           `,
+  'update': `
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M20 3H4C3.44772 3 3 3.44772 3 4V20C3 20.5523 3.44772 21 4 21H20C20.5523 21 21 20.5523 21 20V4C21 3.44772 20.5523 3 20 3Z" stroke="#33363F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M16 3V9H8V3" stroke="#33363F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M12 18C13.6569 18 15 16.6569 15 15C15 13.3431 13.6569 12 12 12C10.3431 12 9 13.3431 9 15C9 16.6569 10.3431 18 12 18Z" stroke="#33363F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M14 15.5C14 16.3284 13.3284 17 12.5 17C11.6716 17 11 16.3284 11 15.5C11 14.6716 11.6716 14 12.5 14" stroke="#33363F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+    `,
   'create': `
 <svg *ngIf="isNewMode" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -74,6 +82,9 @@ export const ICONS: Record<string, string> = {
                     <line x1="8" y1="12" x2="16" y2="12"></line>
                 </svg>
           `,
+  'create-folder': `
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10.5v6m3-3H9m4.06-7.19-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z" /></svg>
+`,
   'cancel': `
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
   <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -129,6 +140,12 @@ export const ICONS: Record<string, string> = {
                                             d="M29.584,37.419c0.502-0.23,0.723-0.824,0.492-1.326c-0.231-0.503-0.826-0.721-1.326-0.492 c-3.898,1.789-6.417,5.715-6.417,10.003c0,0.553,0.447,1,1,1s1-0.447,1-1C24.333,42.095,26.395,38.883,29.584,37.419z" />
                                     </g>
                                 </svg> `,
+  'dumbbell': `
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 650 500" fill="white">
+      <path
+        d="M96 64c0-17.7 14.3-32 32-32l32 0c17.7 0 32 14.3 32 32l0 160 0 64 0 160c0 17.7-14.3 32-32 32l-32 0c-17.7 0-32-14.3-32-32l0-64-32 0c-17.7 0-32-14.3-32-32l0-64c-17.7 0-32-14.3-32-32s14.3-32 32-32l0-64c0-17.7 14.3-32 32-32l32 0 0-64zm448 0l0 64 32 0c17.7 0 32 14.3 32 32l0 64c17.7 0 32 14.3 32 32s-14.3 32-32 32l0 64c0 17.7-14.3 32-32 32l-32 0 0 64c0 17.7-14.3 32-32 32l-32 0c-17.7 0-32-14.3-32-32l0-160 0-64 0-160c0-17.7 14.3-32 32-32l32 0c17.7 0 32 14.3 32 32zM416 224l0 64-192 0 0-64 192 0z" />
+    </svg>
+  `,
   'muscle': `
                                 <svg stroke="currentColor" stroke-width="1.5" viewBox="-3 0 60 60"
                                 aria-hidden="true">
@@ -215,5 +232,36 @@ export const ICONS: Record<string, string> = {
             </defs>
             <circle cx="12" cy="12" r="10" fill="currentColor" mask="url(#tickCutoutMask)" />
           </svg>
+`,
+  'skip': `
+<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M5 18L13 12L5 6V18Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M13 18L21 12L13 6V18Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M21 6V18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+`,
+  'skip-filled': `
+<svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+<path d="M5 6V18L13 12L5 6Z"/>
+<path d="M13 6V18L21 12L13 6Z"/>
+<path d="M21 6H23V18H21V6Z"/>
+</svg>
+`,
+'collapse-card': `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd"
+                    d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z"
+                    clip-rule="evenodd" />
+                </svg>
+`,
+'alert': `
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+</svg>
+`,
+'alert-filled': `
+<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-exclamation-triangle-fill" viewBox="0 0 16 16">
+  <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+</svg>
 `,
 };

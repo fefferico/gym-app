@@ -23,7 +23,7 @@ import { ToastContainerComponent } from './shared/components/toast/toast.compone
       </header> -->
 
       <!-- Main Content Area -->
-      <main class="flex-grow container mx-auto py-2 mb-16"> 
+      <main class="flex-grow container mx-auto mb-16"> 
         <!-- mb-16 to prevent overlap with fixed bottom nav -->
         <app-toast-container></app-toast-container>
         <router-outlet></router-outlet>

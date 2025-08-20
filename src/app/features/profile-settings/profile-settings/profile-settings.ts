@@ -23,6 +23,7 @@ import { ExerciseService } from '../../../core/services/exercise.service';
 import { PressDirective } from '../../../shared/directives/press.directive';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { ProgressiveOverloadService, ProgressiveOverloadSettings, ProgressiveOverloadStrategy } from '../../../core/services/progressive-overload.service.ts';
+import { AlertButton, AlertInput } from '../../../core/models/alert.model';
 
 
 @Component({
@@ -311,11 +312,40 @@ export class ProfileSettingsComponent implements OnInit {
   }
 
   async clearAllAppData(): Promise<void> {
+
     const initialConfirmation = await this.alertService.showConfirmationDialog(
       "WARNING",
-      "This will delete ALL your workout data, profile, and settings. This cannot be undone. Are you sure?"
+      `This will delete ALL your workout data, profile, and settings. This cannot be undone. Are you sure?`,
+      [
+        { text: "Cancel", role: "cancel", data: false, icon: 'cancel' } as AlertButton,
+        { text: "Clear all data", role: "confirm", data: true, cssClass: "bg-red-600", icon: 'trash' } as AlertButton,
+      ],
     );
+
     if (initialConfirmation && initialConfirmation.data) {
+      // show a second confirmation dialog asking the user to exactly type "DELETE" to confirm
+
+      const absoluteConfirmation = await this.alertService.showPromptDialog(
+        'Confirm Data Deletion',
+        `To confirm, please type "DELETE" in the input below. This will delete ALL your workout data, profile, and settings. This cannot be undone.`,
+        [{
+          name: 'confirmDialogInput',
+          type: 'text',
+          placeholder: `Type DELETE to confirm`,
+          value: '',
+          autofocus: true,
+        }] as AlertInput[],
+        'CLEAR ALL DATA'
+      );
+
+      const response: string | null = absoluteConfirmation && typeof absoluteConfirmation['confirmDialogInput'] === 'string'
+        ? absoluteConfirmation['confirmDialogInput']
+        : null;
+      if (!response || response.toUpperCase() !== 'DELETE') {
+        this.alertService.showAlert("Cancelled", "Data clearing cancelled. No changes made.");
+        return;
+      }
+
       if (this.trackingService.clearAllWorkoutLogs_DEV_ONLY) await this.trackingService.clearAllWorkoutLogs_DEV_ONLY();
       if (this.trackingService.clearAllPersonalBests_DEV_ONLY) await this.trackingService.clearAllPersonalBests_DEV_ONLY();
       if (this.workoutService.clearAllRoutines_DEV_ONLY) await this.workoutService.clearAllRoutines_DEV_ONLY();

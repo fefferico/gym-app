@@ -339,7 +339,7 @@
       <!-- It's now inside the container, so we remove its individual `fixed` positioning. -->
       <!-- It will appear only when the condition is met, stacked on top due to flex-col. -->
       <button *ngIf="showBackToTopButton()" appPress (shortPress)="scrollToTop()" type="button"
-        class="bg-primary dark:bg-primary-dark text-white rounded-full p-3 shadow-lg hover:bg-primary-dark dark:hover:bg-primary-light focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-focus dark:focus:ring-offset-gray-900 transition-opacity animate-fade-in">
+        class="bg-primary dark:bg-primary text-white rounded-full p-3 shadow-lg hover:bg-primary-dark dark:hover:bg-primary-light focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-focus dark:focus:ring-offset-gray-900 transition-opacity animate-fade-in">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"
           class="w-6 h-6">
           <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />

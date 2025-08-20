@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy, signal, computed, ElementRef, QueryList, ViewChildren, AfterViewInit, ChangeDetectorRef, PLATFORM_ID, Input, HostListener, ViewChild } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal, computed, ElementRef, QueryList, ViewChildren, AfterViewInit, ChangeDetectorRef, PLATFORM_ID, Input, HostListener, ViewChild, effect, AfterViewChecked } from '@angular/core';
 import { CommonModule, DecimalPipe, isPlatformBrowser, TitleCasePipe } from '@angular/common'; // Added TitleCasePipe
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray, AbstractControl, FormsModule, FormControl } from '@angular/forms';
@@ -74,7 +74,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
   exerciseInfoTooltipString = 'Exercise details and progression';
 
-  routine: Routine | null = null;
+  routine: Routine | undefined = undefined;
   builderForm!: FormGroup;
   mode: BuilderMode = 'routineBuilder';
   isEditableMode = signal<boolean>(false);
@@ -149,7 +149,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
       workoutDate: [''], // Only for manualLogEntry
       startTime: [''],   // Only for manualLogEntry
-      durationMinutes: [60, [Validators.min(1)]], // Only for manualLogEntry
+      endTime: [''],   // Only for manualLogEntry
+      // durationMinutes: [60, [Validators.min(1)]], // Only for manualLogEntry
       overallNotesLog: [''], // Only for manualLogEntry
       routineIdForLog: [''], // For selecting base routine in manualLogEntry
       programIdForLog: [''], // For selecting base routine in manualLogEntry
@@ -292,6 +293,23 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
   }
 
+  /**
+   * This method is triggered when the user presses "Enter"
+   * inside the exercise search input field.
+   */
+  onSearchEnter(): void {
+    const filteredList = this.filteredAvailableExercises();
+
+    // Check if there is exactly one exercise in the filtered list
+    if (filteredList.length === 1) {
+      // If so, select that exercise
+      const singleExercise = filteredList[0];
+      this.selectExerciseFromLibrary(singleExercise);
+    }
+    // If there are 0 or more than 1 results, pressing Enter does nothing,
+    // which is the desired behavior.
+  }
+
   private updateSanitizedDescription(value: string): void {
     // This tells Angular to trust this HTML string and render it as is.
     this.sanitizedDescription = this.sanitizer.bypassSecurityTrustHtml(value);
@@ -304,7 +322,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         name: '', description: '', goal: 'custom',
         workoutDate: format(today, 'yyyy-MM-dd'),
         startTime: format(today, 'HH:mm'),
-        durationMinutes: 60,
+        endTime: format(today, 'HH:mm'),
+        // durationMinutes: 60,
         overallNotesLog: '',
         routineIdForLog: '',
         programIdForLog: '',
@@ -313,24 +332,28 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     } else { // routineBuilder
       return {
         name: '', description: '', goal: '',
-        workoutDate: '', startTime: '', durationMinutes: 60, overallNotesLog: '', routineIdForLog: '', programIdForLog: '',
+        workoutDate: '', startTime: '', endTime:'', 
+        // durationMinutes: 60,
+         overallNotesLog: '', routineIdForLog: '', programIdForLog: '',
         exercises: []
       };
     }
   }
 
-  private configureFormValidatorsAndFieldsForMode(): void { /* ... (as previously defined) ... */
+  private configureFormValidatorsAndFieldsForMode(): void {
     const nameCtrl = this.builderForm.get('name');
     const goalCtrl = this.builderForm.get('goal');
     const dateCtrl = this.builderForm.get('workoutDate');
-    const timeCtrl = this.builderForm.get('startTime');
-    const durationCtrl = this.builderForm.get('durationMinutes');
+    const startTimeCtrl = this.builderForm.get('startTime');
+    const endTimeCtrl = this.builderForm.get('endTime');
+    // const durationCtrl = this.builderForm.get('durationMinutes');
 
     nameCtrl?.clearValidators();
     goalCtrl?.clearValidators();
     dateCtrl?.clearValidators();
-    timeCtrl?.clearValidators();
-    durationCtrl?.clearValidators();
+    startTimeCtrl?.clearValidators();
+    endTimeCtrl?.clearValidators();
+    // durationCtrl?.clearValidators();
 
 
     if (this.mode === 'routineBuilder') {
@@ -339,8 +362,9 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       this.builderForm.get('exercises')?.setValidators(Validators.nullValidator); // Exercises not strictly required if goal is 'rest'
     } else { // manualLogEntry
       dateCtrl?.setValidators(Validators.required);
-      timeCtrl?.setValidators(Validators.required);
-      durationCtrl?.setValidators([Validators.required, Validators.min(1)]);
+      startTimeCtrl?.setValidators(Validators.required);
+      endTimeCtrl?.setValidators(Validators.required);
+      // durationCtrl?.setValidators([Validators.required, Validators.min(1)]);
       this.builderForm.get('exercises')?.setValidators(Validators.required); // Exercises always required for a log
     }
     this.builderForm.updateValueAndValidity({ emitEvent: false });
@@ -355,7 +379,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       if (this.mode === 'routineBuilder') {
         this.builderForm.get('workoutDate')?.disable({ emitEvent: false });
         this.builderForm.get('startTime')?.disable({ emitEvent: false });
-        this.builderForm.get('durationMinutes')?.disable({ emitEvent: false });
+        this.builderForm.get('endTime')?.disable({ emitEvent: false });
+        // this.builderForm.get('durationMinutes')?.disable({ emitEvent: false });
         this.builderForm.get('overallNotesLog')?.disable({ emitEvent: false });
         this.builderForm.get('routineIdForLog')?.disable({ emitEvent: false });
         this.builderForm.get('programIdForLog')?.disable({ emitEvent: false });
@@ -454,7 +479,12 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       name: log.routineName || 'Logged Workout',
       workoutDate: format(parseISO(log.date), 'yyyy-MM-dd'),
       startTime: format(new Date(log.startTime), 'HH:mm'),
-      durationMinutes: log.durationMinutes || 60,
+      endTime: log.endTime
+        ? format(new Date(log.endTime), 'HH:mm')
+        : (log.startTime && log.durationMinutes
+            ? format(new Date(new Date(log.startTime).getTime() + log.durationMinutes * 60000), 'HH:mm')
+            : ''),
+      // durationMinutes: log.durationMinutes || 60,
       overallNotesLog: log.notes || '',
       routineIdForLog: log.routineId || '',
       programIdForLog: log.programId || '',
@@ -480,7 +510,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       const date = this.dateParam ? this.dateParam : today;
       patchData.workoutDate = format(date, 'yyyy-MM-dd');
       patchData.startTime = format(date, 'HH:mm');
-      patchData.durationMinutes = 60;
+      // patchData.durationMinutes = 60;
     }
     this.builderForm.patchValue(patchData, { emitEvent: false });
     this.exercisesFormArray.clear({ emitEvent: false });
@@ -672,6 +702,18 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     return this.fb.group(formGroupConfig);
   }
 
+  private scrollIntoVie(): void {
+    // scroll the new exercise into view
+    setTimeout(() => {
+      // Get the last exercise FormGroup and try to scroll its DOM element into view if available
+      const lastExerciseIndex = this.exercisesFormArray.length - 1;
+      const lastExerciseElem = this.expandedSetElements.get(lastExerciseIndex)?.nativeElement;
+      if (lastExerciseElem) {
+        lastExerciseElem.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 2000);
+  }
+
   openExerciseSelectionModal(): void {
     if (this.isViewMode) return;
     this.modalSearchTerm.set('');
@@ -690,51 +732,42 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     const inputElement = event.target as HTMLInputElement;
     this.modalSearchTerm.set(inputElement.value);
   }
-  selectExercise(exercise: Exercise): void { // For Routine Builder
-    const newExerciseFormGroup = this.createExerciseFormGroup({
-      id: this.workoutService.generateWorkoutExerciseId(), exerciseId: exercise.id, exerciseName: exercise.name,
-      sets: [{
-        id: this.workoutService.generateExerciseSetId(),
-        type: 'standard',
-        reps: 8,
-        weight: 0,
-        restAfterSet: 60,
-        duration: undefined,
-        tempo: '',
-        notes: ''
-      }],
-      supersetId: null, supersetOrder: null, supersetSize: null,
-      rounds: 0,
-      type: 'standard'
-    }, true, false);
-    this.addRepsListener(newExerciseFormGroup);
-    this.exercisesFormArray.push(newExerciseFormGroup);
+  selectExerciseFromLibrary(exerciseFromLibrary: Exercise): void {
+    const isCardio = this.isExerciseCardioOnly(exerciseFromLibrary.id);
+    const baseSet = {
+      id: this.workoutService.generateExerciseSetId(),
+      type: 'standard',
+      reps: isCardio ? 0 : 8,
+      weight: 0,
+      restAfterSet: 60,
+      duration: isCardio ? 60 : undefined,
+      tempo: '',
+      notes: ''
+    };
 
-    this.closeExerciseSelectionModal();
-    this.toggleSetExpansion(this.exercisesFormArray.length - 1, 0);
-  }
-  selectExerciseForLog(exerciseFromLibrary: Exercise): void { // For Manual Log
     const workoutExercise: WorkoutExercise = {
       id: this.workoutService.generateWorkoutExerciseId(),
       exerciseId: exerciseFromLibrary.id,
       exerciseName: exerciseFromLibrary.name,
-      sets: [{
-        id: this.workoutService.generateExerciseSetId(),
-        type: 'standard',
-        reps: 8,
-        weight: 0,
-        restAfterSet: 60,
-        duration: undefined,
-        tempo: '',
-        notes: ''
-      }],
+      sets: [baseSet],
       type: 'standard',
       supersetId: null,
       supersetOrder: null,
       supersetSize: null,
       rounds: 0
     };
-    this.exercisesFormArray.push(this.createExerciseFormGroup(workoutExercise, false, true));
+
+    let newExerciseFormGroup: FormGroup;
+    if (this.mode === 'routineBuilder') {
+      newExerciseFormGroup = this.createExerciseFormGroup(workoutExercise, true, false);
+      this.addRepsListener(newExerciseFormGroup);
+      this.exercisesFormArray.push(newExerciseFormGroup);
+      this.toggleSetExpansion(this.exercisesFormArray.length - 1, 0);
+    } else {
+      newExerciseFormGroup = this.createExerciseFormGroup(workoutExercise, false, true);
+      this.exercisesFormArray.push(newExerciseFormGroup);
+    }
+
     this.closeExerciseSelectionModal();
   }
 
@@ -1119,7 +1152,10 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     const isRestGoalRoutine = this.mode === 'routineBuilder' && this.builderForm.get('goal')?.value === 'rest';
 
     if ((this.mode === 'routineBuilder' && (this.builderForm.get('name')?.invalid || this.builderForm.get('goal')?.invalid)) ||
-      (this.mode === 'manualLogEntry' && (this.builderForm.get('workoutDate')?.invalid || this.builderForm.get('startTime')?.invalid || this.builderForm.get('durationMinutes')?.invalid))) {
+      (this.mode === 'manualLogEntry' && (this.builderForm.get('workoutDate')?.invalid || this.builderForm.get('startTime')?.invalid || this.builderForm.get('endTime')?.invalid
+      //  || this.builderForm.get('durationMinutes')?.invalid
+      )
+      )) {
       this.builderForm.markAllAsTouched();
       this.toastService.error('Please fill all required details.', 0, "Validation Error");
       return;
@@ -1144,29 +1180,40 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
     try {
       if (this.mode === 'routineBuilder') {
-        const routinePayload: Routine = this.mapFormToRoutine(formValue);
+        this.routine = this.mapFormToRoutine(formValue);
         if (this.isNewMode) {
-          this.workoutService.addRoutine(routinePayload);
+          this.routine = this.workoutService.addRoutine(this.routine);
         } else {
-          this.workoutService.updateRoutine(routinePayload);
+          this.routine = this.workoutService.updateRoutine(this.routine);
         }
         this.toastService.success(`Routine ${this.isNewMode ? 'created' : 'updated'}!`, 4000, "Success");
+
+        if (this.isNewMode && this.routine) {
+            this.isEditMode = true;
+            this.isNewMode = false;
+            this.currentRoutineId = this.routine.id;
+        }
+
         // this.router.navigate(['/workout']);
       } else { // manualLogEntry
         const workoutDateStr = formValue.workoutDate;
         const startTimeStr = formValue.startTime;
-        const combinedDateTimeStr = `${workoutDateStr}T${startTimeStr}:00`;
+        const endTimeStr = formValue.endTime;
+        const combinedStartingDateTimeStr = `${workoutDateStr}T${startTimeStr}:00`;
+        const combinedEndingDateTimeStr = `${workoutDateStr}T${endTimeStr}:00`;
         let startTimeMs: number;
         try {
-          const parsedDate = parseISO(combinedDateTimeStr);
-          if (!isValidDate(parsedDate)) throw new Error("Invalid date/time for log entry");
-          startTimeMs = parsedDate.getTime();
-        } catch (e) { this.toastService.error("Invalid date or time format", 0, "Error"); this.spinnerService.hide(); return; }
+          const parsedStartingDate = parseISO(combinedStartingDateTimeStr);
+          if (!isValidDate(parsedStartingDate)) throw new Error("Invalid starting date/time for log entry");
+          startTimeMs = parsedStartingDate.getTime();
+        } catch (e) { this.toastService.error("Invalid starting date or time format", 0, "Error"); this.spinnerService.hide(); return; }
+        
         let endTimeMs: number | undefined = undefined;
-        if (formValue.durationMinutes) {
-          endTimeMs = new Date(startTimeMs).setMinutes(new Date(startTimeMs).getMinutes() + formValue.durationMinutes);
-        }
-
+        try {
+          const parsedEndingDate = parseISO(combinedEndingDateTimeStr);
+          if (!isValidDate(parsedEndingDate)) throw new Error("Invalid ending date/time for log entry");
+          endTimeMs = parsedEndingDate.getTime();
+        } catch (e) { this.toastService.error("Invalid ending date or time format", 0, "Error"); this.spinnerService.hide(); return; }
 
         const logExercises: LoggedWorkoutExercise[] = formValue.exercises.map((exInput: any): LoggedWorkoutExercise => ({
           id: exInput.id,
@@ -1199,7 +1246,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
           date: format(new Date(startTimeMs), 'yyyy-MM-dd'),
           startTime: startTimeMs,
           endTime: endTimeMs,
-          durationMinutes: formValue.durationMinutes,
+          durationMinutes:  // Calculate duration in minutes
+            endTimeMs ? Math.round((endTimeMs - startTimeMs) / 60000) : Math.round((Date.now() - startTimeMs) / 60000),
           routineId: formValue.routineIdForLog || undefined,
           routineName: formValue.routineIdForLog ?
             (this.availableRoutines.find(r => r.id === formValue.routineIdForLog)?.name || formValue.name || 'Workout from Routine') :
@@ -1733,5 +1781,50 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     this.exerciseDetailsId = exerciseData.exerciseId;
     this.exerciseDetailsName = exerciseData.exerciseName || 'Exercise details';
     this.isSimpleModalOpen.set(true);
+  }
+
+  isExerciseCardioOnlyCtrl(exercise: AbstractControl): boolean {
+    // This method should be async or use a callback to handle the Observable.
+    // Here's a synchronous fallback using availableExercises if possible:
+    const exerciseId = exercise.value?.exerciseId;
+    return this.isExerciseCardioOnly(exerciseId);
+  }
+
+  isExerciseCardioOnly(exerciseId: string): boolean {
+    // This method should be async or use a callback to handle the Observable.
+    // Here's a synchronous fallback using availableExercises if possible:
+    if (!exerciseId) return false;
+    const exerciseDetails = this.availableExercises.find(e => e.id === exerciseId);
+    if (exerciseDetails && exerciseDetails.category) {
+      return exerciseDetails.category === 'cardio';
+    }
+    return false;
+  }
+
+  handleEndTimeChange(): void {
+    const dateCtrl = this.builderForm.get('workoutDate');
+    const startTimeCtrl = this.builderForm.get('startTime');
+    const endTimeCtrl = this.builderForm.get('endTime');
+
+    if (!dateCtrl || !startTimeCtrl || !endTimeCtrl) return;
+
+    const workoutDate = dateCtrl.value;
+    const startTime = startTimeCtrl.value;
+    const endTime = endTimeCtrl.value;
+
+    if (!workoutDate || !startTime || !endTime) return;
+
+    // Parse start and end times as Date objects on the same day
+    const startDateTime = new Date(`${workoutDate}T${startTime}:00`);
+    let endDateTime = new Date(`${workoutDate}T${endTime}:00`);
+
+    // If end time is before start time, assume it's the next day
+    if (endDateTime.getTime() < startDateTime.getTime()) {
+      endDateTime.setDate(endDateTime.getDate() + 1);
+      // Update workoutDate to the next day
+      const newDateStr = format(endDateTime, 'yyyy-MM-dd');
+      dateCtrl.setValue(newDateStr, { emitEvent: false });
+      this.toastService.info('End time was before start time, assuming next day');
+    }
   }
 }

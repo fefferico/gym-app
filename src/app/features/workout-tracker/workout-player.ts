@@ -718,12 +718,16 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
 
     if (performedExercisesThatWereInOriginal.length !== original.length || addedCustomExercises.length > 0) {
-      details.push(`Number of exercises or their content changed [Original number exercises: ${original.length}, performed number exercises: ${performedExercisesThatWereInOriginal.length}]`);
+      if (performedExercisesThatWereInOriginal.length !== original.length){
+        details.push(`Number of exercises or their content changed [Original number exercises: ${original.length}, performed number exercises: ${performedExercisesThatWereInOriginal.length}]`);
+      } else {
+        details.push(`Number of exercises or their content changed [Original number exercises: ${original.length}, performed number exercises: ${original.length + addedCustomExercises.length}]`);
+      }
       majorDifference = true;
     }
     if (addedCustomExercises.length > 0) {
       for (const cEx of addedCustomExercises) {
-        details.push(`${cEx.exerciseName} exercise added`);
+        details.push(`Exercise added: ${cEx.exerciseName} `);
       }
     }
 
@@ -2642,7 +2646,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         this.startAutoSave();
       } else {
         if (this.isEndReached()) {
-          await this.alertService.showAlert("Exercise Added", `"${newWorkoutExercise.exerciseName}" added`);;
+          await this.alertService.showAlert("Exercise Added", `"${newWorkoutExercise.exerciseName}" added`);
           goToNewEx = { data: true };
           this.isEndReached.set(false);
         }
@@ -2722,6 +2726,45 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
 
+  // check for invalid workout timing
+  async checkWorkoutTimingValidity(workoutLog: Omit<WorkoutLog, 'id'>): Promise<Omit<WorkoutLog, 'id'>> {
+    if (this.workoutStartTime <= 0) {
+      // try to estimate from the first logged set time
+      const firstLoggedSetTime = this.currentWorkoutLogExercises()[0]?.sets[0]?.timestamp;
+      if (firstLoggedSetTime) {
+        workoutLog.startTime = new Date(firstLoggedSetTime).getTime();
+      } else {
+        workoutLog.startTime = new Date().getTime();
+      }
+      // try to estimate end time from the last logged set time
+      const lastLoggedSetTime = this.currentWorkoutLogExercises().slice(-1)[0]?.sets.slice(-1)[0]?.timestamp;
+      if (lastLoggedSetTime) {
+        workoutLog.endTime = new Date(lastLoggedSetTime).getTime();
+      } else {
+        if (this.routine() !== undefined && this.routine() !== null) {
+          const routineValue = this.routine();
+          if (routineValue) {
+            const routine: Routine = routineValue;
+            const endingTime = this.workoutService.getEstimatedRoutineDuration(routine);
+            workoutLog.endTime = endingTime;
+          }
+        }
+        workoutLog.endTime = new Date().getTime();
+      }
+      const durationMinutes = Math.round((workoutLog.endTime - workoutLog.startTime) / (1000 * 60));
+      const durationSeconds = Math.round((workoutLog.endTime - workoutLog.startTime) / (1000));
+      workoutLog.durationMinutes = durationMinutes;
+      workoutLog.durationSeconds = durationSeconds;
+      workoutLog.date = format(new Date(workoutLog.startTime), 'yyyy-MM-dd'),
+      await this.alertService.showAlert("Workout Timing Adjusted",
+        `Workout start time was not set. Estimated start time is ${format(new Date(workoutLog.startTime), 'MMM d, HH:mm')}. ` +
+        `Estimated end time is ${format(new Date(workoutLog.endTime), 'MMM d, HH:mm')}. Duration: ${durationMinutes} minutes (${durationSeconds} seconds).`
+      )
+
+    }
+    return workoutLog;
+  }
+
   async finishWorkoutAndReportStatus(): Promise<boolean> {
     this.stopAutoSave();
     if (this.sessionState() === SessionState.Paused) {
@@ -2758,6 +2801,26 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     let updateOriginalRoutineStructure = false;
     let newRoutineName = sessionRoutineValue?.name ? `${sessionRoutineValue.name} - ${format(new Date(), 'MMM d')}` : `Ad-hoc Workout - ${format(new Date(), 'MMM d, HH:mm')}`;
 
+    // I have to be sure that the original routine snapshot is available, in case of reloading the page or something else
+    const routineExists = this.routineId && this.routineId !== '-1' && this.routineId !== null;
+    if (!this.originalRoutineSnapshot || this.originalRoutineSnapshot.length === 0 && routineExists) {
+      // try to retrieve the original routine snapshot from the storage
+      const routineId = this.routineId;
+      if (this.routineId) {
+        const routineId: string = this.routineId;
+        const routineResult = await firstValueFrom(this.workoutService.getRoutineById(routineId).pipe(take(1)));
+        if (routineResult && routineResult.exercises && routineResult.exercises.length > 0) {
+          this.originalRoutineSnapshot = JSON.parse(JSON.stringify(routineResult.exercises));
+        }
+      }
+      if (!this.originalRoutineSnapshot || this.originalRoutineSnapshot.length === 0) {
+        this.originalRoutineSnapshot = [];
+      }
+
+
+
+    }
+
     const originalSnapshotToCompare = this.originalRoutineSnapshot.filter(origEx =>
       // Only compare against original exercises that were not marked 'skipped' or 'do_later' unless they were actually logged
       sessionRoutineValue?.exercises.find(sessEx => sessEx.id === origEx.id && sessEx.sessionStatus === 'pending') ||
@@ -2773,11 +2836,12 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
         const confirmation = await this.alertService.showConfirmationDialog(
           "Routine Structure Changed",
-          `You made some changes to the routine structure. Would you like to save this as a new routine, update the original, or cancel?`,
+          `You made some changes to the routine structure. What would you like to do?`,
           [
-            { text: "Simply log", role: "log", data: "log", cssClass: "bg-purple-600" } as AlertButton,
-            { text: "Update Original Routine and log", role: "destructive", data: "update", cssClass: "bg-blue-600" } as AlertButton,
-            { text: "Save as New Routine", role: "confirm", data: "new", cssClass: "bg-green-600" } as AlertButton
+            { text: "Just log", role: "log", data: "log", cssClass: "bg-purple-600", icon: 'schedule' } as AlertButton,
+            { text: "Update Original Routine and log", role: "destructive", data: "update", cssClass: "bg-blue-600", icon: 'save' } as AlertButton,
+            { text: "Save as New Routine", role: "confirm", data: "new", cssClass: "bg-green-600", icon: 'create-folder' } as AlertButton,
+            // { text: "Cancel", role: "cancel", data: false, cssClass: "bg-red-600", icon: 'cancel' } as AlertButton
           ],
           // Pass the details array directly to the new property
           { listItems: differences.details }
@@ -2888,7 +2952,9 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       notes: sessionRoutineValue?.notes,
       programId: sessionProgramValue,
     };
-    const savedLog = this.trackingService.addWorkoutLog(finalLog);
+
+    const fixedLog = await this.checkWorkoutTimingValidity(finalLog); // Ensure start time is valid before proceeding
+    const savedLog = this.trackingService.addWorkoutLog(fixedLog);
     if (!this.isTabataMode()) {
       this.toastService.success(`Congrats! Workout completed!`, 5000, "Workout Finished", false);
     } else {
@@ -4551,7 +4617,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
   // --- Add this new computed signal for filtering in the switch modal ---
   filteredExercisesForSwitchModal = computed(() => {
-    const term = this.switchModalSearchTerm().toLowerCase();
+    let term = this.switchModalSearchTerm().toLowerCase();
     // If we're showing similar exercises, just return that list without filtering by search term
     if (this.isShowingSimilarInSwitchModal()) {
       return this.exercisesForSwitchModal();
@@ -4560,6 +4626,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     if (!term) {
       return this.availableExercises;
     }
+    term = this.exerciseService.normalizeExerciseNameForSearch(term);
     return this.availableExercises.filter(ex =>
       ex.name.toLowerCase().includes(term) ||
       (ex.category && ex.category.toLowerCase().includes(term)) ||

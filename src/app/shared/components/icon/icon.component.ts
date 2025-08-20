@@ -47,6 +47,8 @@ export class IconComponent implements OnChanges {
       // 4. Apply attributes and styles
       if (this.class) {
         this.renderer.setAttribute(svgElement, 'class', this.class);
+      } else {
+        this.renderer.setAttribute(svgElement, 'class', 'h-5 w-5');
       }
       
       // --- THIS IS THE FIX ---
