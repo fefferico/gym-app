@@ -95,7 +95,17 @@ export class TrainingProgramService {
 
   getProgramById(id: string): Observable<TrainingProgram | undefined> {
     return this.programs$.pipe(
-      map(programs => programs.find(p => p.id === id))
+      map(programs => {
+        const program = programs.find(p => p.id === id);
+        if (program && Array.isArray(program.history)) {
+          // Sort history by most recent (descending by date)
+          const sortedHistory = [...program.history].sort((a, b) => {
+            return (b.date ? new Date(b.date).getTime() : 0) - (a.date ? new Date(a.date).getTime() : 0);
+          });
+          return { ...program, history: sortedHistory };
+        }
+        return program;
+      })
     );
   }
 
