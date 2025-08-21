@@ -38,7 +38,7 @@
       </button>
     </div>
     <button *ngIf="!isToday(currentDate())" appPressScroll (shortPress)="goToToday()"
-      class="text-m text-primary dark:text-primary-light hover:underline disabled:opacity-50"
+      class="text-m text-primary dark:text-primary-light hover:underline disabled:opacity-50 pt-2"
       [disabled]="isAnimating()">Jump to Today</button>
   </div>
 
@@ -48,7 +48,7 @@
     <div [@slideAnimation]="animationState()" class="h-full">
 
       <!-- The content inside remains exactly the same -->
-      <div *ngIf="isLoading()" class="text-center py-8 min-h-[200px] flex flex-col justify-center items-center h-full">
+      <div *ngIf="isLoading()" class="text-center py-8 min-h-[100px] flex flex-col justify-center items-center h-full">
         <p class="text-gray-500 dark:text-gray-400">Checking your schedule...</p>
         <svg class="animate-spin h-8 w-8 text-primary dark:text-primary-light mx-auto mt-2"
           xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -59,7 +59,7 @@
         </svg>
       </div>
 
-      <div *ngIf="!isLoading()" class="min-h-[200px]">
+      <div *ngIf="!isLoading()" class="min-h-[100px]">
         <ng-container *ngIf="allActivePrograms().length > 0; else noProgramBlock">
           <div *ngIf="todaysScheduledWorkouts().length > 0; else noScheduledWorkoutInProgramBlock" class="space-y-4">
             <div *ngFor="let workoutInfo of todaysScheduledWorkouts()"
@@ -104,9 +104,9 @@
 
                 <ng-container *ngIf="!isWorkoutLogged(workoutInfo.routine.id)">
                   <ng-container *ngIf="isFutureDate(currentDate())">
-                    <div class="flex flex-col sm:flex-row gap-2">
+                    <div class="flex flex-col sm:flex-row justify-center items-center space-y-2 sm:space-y-0 sm:space-x-4 pt-4">
                       <button appPressScroll (shortPress)="viewRoutineDetails(workoutInfo.routine.id)"
-                        class="flex-1 bg-sky-500 hover:bg-sky-600 text-white font-semibold py-2.5 px-4 rounded-md shadow-sm flex items-center justify-center text-m">
+                        class="flex-1 bg-sky-500 hover:bg-sky-600 text-white font-semibold py-2.5 px-4 rounded-md shadow-sm flex items-center justify-center text-m w-full sm:max-w-[200px]">
                         <app-icon name="eye" class="w-6 h-6">
                         </app-icon>
                         <span class="ml-1">

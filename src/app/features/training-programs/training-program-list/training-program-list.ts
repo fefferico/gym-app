@@ -457,7 +457,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
 
     this.spinnerService.show("Finishing program...");
     try {
-      await this.trainingProgramService.updateProgramHistory(programId, 'completed');
+      await this.trainingProgramService.toggleProgramActivation(programId, 'completed');
       // No need to manually update local array; programs$ will emit updated list.
     } catch (error) {
       this.toastService.error("Failed to finish program", 0, "Error");

@@ -4,65 +4,54 @@
  * Defines a specific day within a training program's schedule.
  */
 export interface ScheduledRoutineDay {
-  /** A unique ID for this scheduled day entry, useful if you need to edit/delete individual schedule days. */
+  /** A unique ID for this scheduled day entry. */
   id: string;
   /**
-   * Day of the week (0 for Sunday, 1 for Monday, ..., 6 for Saturday).
-   * Or, if using a custom cycle (e.g., "Day 1", "Day 2"), this could be the cycle day number.
+   * The day number within the program's cycle this routine falls on.
+   * - For weekly programs (cycleLength=7 or null): 0 is Sunday, 1 is Monday, ..., 6 is Saturday.
+   * - For N-day cycles: 1 is Day 1, 2 is Day 2, etc., up to the cycleLength.
    */
   dayOfWeek: number;
   /** ID of the Routine to be performed on this day. */
   routineId: string;
-  /** ID of the Program to be performed on this day. */
+  /** ID of the Program this schedule entry belongs to. */
   programId: string;
-  /** Denormalized routine name for easier display. Should be updated if the source routine name changes. */
+  /** Denormalized routine name for easier display. */
   routineName?: string;
-  /** Specific notes or instructions for this day within the program (e.g., "Focus on form", "Go heavy"). */
+  /** Specific notes for this day within the program. */
   notes?: string;
-  /** Optional: Specific time of day suggestion, e.g., "AM" or "PM" or "08:00" */
+  /** Optional: Specific time of day suggestion, e.g., "AM" or "PM". */
   timeOfDay?: string;
-  isUnscheduled?: boolean; // Indicates if this is an unscheduled routine (e.g., from workout logs)
+  isUnscheduled?: boolean;
 }
 
 /**
- * Represents a structured training program or plan that a user can follow.
+ * Represents a structured training program or plan.
  */
 export interface TrainingProgram {
-  /** Unique identifier for the training program. */
   id: string;
-  /** User-defined name for the training program (e.g., "Starting Strength", "My 5-Day Split"). */
   name: string;
-  /** Optional detailed description of the program, its goals, or methodology. */
   description?: string;
-  /**
-   * The schedule of routines, defining which routine is planned for which day.
-   * The order in this array might also imply a sequence if not strictly tied to dayOfWeek.
-   */
   schedule: ScheduledRoutineDay[];
-  /** Indicates if this is the program the user is currently actively following. */
   isActive: boolean;
-  /** Optional: The date (ISO string YYYY-MM-DD) when the user started or intends to start this program. */
+  /** The date (ISO string YYYY-MM-DD) when the user started or intends to start this program. */
   startDate?: string;
-  /** Optional: The date (ISO string YYYY-MM-DD) when the user intends to end this program. */
-  endDate?: string;
   /**
-   * Optional: Defines the length of the program's cycle in days if it's not a standard 7-day week.
-   * For example, a 3-day on, 1-day off cycle might have a cycleLength of 4.
-   * If undefined, a 7-day weekly cycle is assumed.
+   * --- KEY CHANGE ---
+   * The total duration of the program's micro-cycle in days, including rest days.
+   * Example: An Upper/Lower split (Upper, Rest, Lower, Rest) has a cycleLength of 4.
+   * If null, empty, or 7, a standard 7-day weekly cycle is assumed.
    */
   cycleLength?: number;
-  /** Optional: General notes for the entire program. */
   programNotes?: string;
   goals?: string[];
   history?: TrainingProgramHistoryEntry[];
 }
 
 export interface TrainingProgramHistoryEntry {
-  /** Unique identifier for the history entry. */
   id: string;
-  /** The ID of the training program this entry is associated with. */
   programId: string;
-  /** The date when this history entry was created or logged. */
+  /** The date when this history entry was logged. */
   date: string; // ISO string YYYY-MM-DD
   startDate: string; // ISO string YYYY-MM-DD
   endDate: string; // ISO string YYYY-MM-DD

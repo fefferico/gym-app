@@ -152,10 +152,13 @@ export class TrainingProgramService {
       return;
     }
 
-    const confirm = await this.alertService.showConfirm(
+    const confirm = await this.alertService.showConfirmationDialog(
       'Delete Program',
       `Are you sure you want to delete the program "${programToDelete.name}"? This action cannot be undone.`,
-      'Delete'
+      [
+        { text: 'Cancel', role: 'cancel', data: false, cssClass: 'bg-gray-400 hover:bg-gray-600', icon: 'cancel' },
+        { text: 'Delete Program', role: 'confirm', data: true, cssClass: 'bg-primary hover:bg-primary-dark', icon: 'done' }
+      ]
     );
 
     if (confirm && confirm.data) {
@@ -175,10 +178,11 @@ export class TrainingProgramService {
       return;
     }
 
-    this.updateProgramHistory(programId, status, new Date().toISOString());
+    const newDate = new Date().toISOString();
+    this.updateProgramHistory(programId, status, newDate);
     const updatedPrograms = this.programsSubject.getValue().map(p => {
       if (p.id === programId) {
-        return { ...p, isActive: !p.isActive };
+        return { ...p, isActive: !p.isActive, startDate: status === 'active' ? newDate : p.startDate, endDate: (status === 'completed' || status === 'cancelled') ? newDate : '-' };
       }
       return p;
     });

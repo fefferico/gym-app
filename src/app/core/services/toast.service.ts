@@ -26,22 +26,22 @@ export class ToastService {
     if (hideOtherMessages) {
       this.clearAll(); // Clear existing toasts if specified
     }
-    this.show(message, 'success', duration, title);
+    this.show(message, 'success', duration ? duration : 3000, title);
   }
 
   error(message: string, duration?: number, title?: string): void {
-    this.show(message, 'error', duration, title);
+    this.show(message, 'error', duration ? duration : 3000, title);
   }
 
   warning(message: string, duration?: number, title?: string): void {
-    this.show(message, 'warning', duration, title);
+    this.show(message, 'warning', duration ? duration : 3000, title);
   }
 
   info(message: string, duration?: number, title?: string, hideOtherMessages: boolean = true): void {
     if (hideOtherMessages) {
       this.clearAll(); // Clear existing toasts if specified
     }
-    this.show(message, 'info', duration, title);
+    this.show(message, 'info', duration ? duration : 3000, title);
   }
 
   remove(toastId: string): void {
