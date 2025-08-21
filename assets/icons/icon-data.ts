@@ -296,5 +296,10 @@ export const ICONS: Record<string, string> = {
                                 d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941" />
                         </svg>
 `,
-
+'deactivate': `
+<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="50" cy="50" r="45" stroke="currentColor" stroke-width="10"/>
+  <line x1="25" y1="50" x2="75" y2="50" stroke="currentColor" stroke-width="10"/>
+</svg>
+`,
 };
