@@ -114,6 +114,13 @@
 
             <!-- MANUAL LOG ENTRY FIELDS -->
             <ng-container *ngIf="mode === 'manualLogEntry'">
+                <!-- HEADER FOR LOG -->
+                <header *ngIf="checkIfLogForProgram()" class="flex items-center justify-between py-2">
+                    <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">
+                        <span *ngIf="isEditableMode">{{getLogTitleForProgramEntry()}}</span>
+                    </h1>
+                </header>
+
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                         <label for="workoutDate"
@@ -737,8 +744,7 @@
                 <app-icon *ngIf="isNewMode" name="create" class="h-5 w-5 mr-1"></app-icon>
                 <app-icon *ngIf="!isNewMode" name="save" class="h-5 w-5 mr-1"></app-icon>
                 <!-- Button Text -->
-                {{ mode === 'routineBuilder' ? (isNewMode ? 'CREATE ROUTINE' : 'SAVE CHANGES') : (isNewMode ? 'LOG
-                WORKOUT' : 'SAVE LOG CHANGES') }}
+                {{ mode === 'routineBuilder' ? (isNewMode ? 'CREATE ROUTINE' : 'SAVE CHANGES') : (isNewMode ? 'LOG WORKOUT' : 'SAVE LOG CHANGES') }}
             </button>
         </div>
     </form>

@@ -31,6 +31,7 @@ export const PROGRAMS_DATA = [
                 "timeOfDay": "", "programId": "7fefb7b9-040f-4043-a1ad-9e9540cb744a"
             }
         ],
+        "programType": 'cycled',
         "isActive": true
     },
     {
@@ -72,6 +73,7 @@ export const PROGRAMS_DATA = [
                 "timeOfDay": "", "programId": "prog-beginner-3day-v1"
             }
         ],
+"programType": 'cycled',
         "isActive": false
     },
     {
@@ -120,6 +122,7 @@ export const PROGRAMS_DATA = [
                 "timeOfDay": "", "programId": "prog-hypertrophy-4day-v1"
             }
         ],
+"programType": 'cycled',
         "isActive": false
     },
     {
@@ -161,6 +164,7 @@ export const PROGRAMS_DATA = [
                 "timeOfDay": "", "programId": "prog-gpp-kettlebell-3day"
             }
         ],
+"programType": 'cycled',
         "isActive": false
     },
     {
@@ -213,6 +217,7 @@ export const PROGRAMS_DATA = [
                 "timeOfDay": "", "programId": "prog-fatloss-5day-hiit"
             }
         ],
+"programType": 'cycled',
         "isActive": false
     },
     {
@@ -257,6 +262,7 @@ export const PROGRAMS_DATA = [
                 "timeOfDay": "", "programId": "prog-advanced-hypertrophy-4day"
             }
         ],
+"programType": 'cycled',
         "isActive": false
     },
     {
@@ -294,6 +300,7 @@ export const PROGRAMS_DATA = [
                 "timeOfDay": "", "programId": "prog-strength-5x5-inspired-3day"
             }
         ],
+"programType": 'cycled',
         "isActive": false
     },
     {
@@ -342,6 +349,7 @@ export const PROGRAMS_DATA = [
                 "timeOfDay": "", "programId": "prog-strength-531-inspired-4day"
             }
         ],
+"programType": 'cycled',
         "isActive": false
     },
     {
@@ -391,6 +399,7 @@ export const PROGRAMS_DATA = [
                 "timeOfDay": "", "programId": "prog-athletic-performance-4day"
             }
         ],
+"programType": 'cycled',
         "isActive": false
     },
     {
@@ -428,6 +437,7 @@ export const PROGRAMS_DATA = [
                 "timeOfDay": "", "programId": "prog-time-crunched-3day"
             }
         ],
+"programType": 'cycled',
         "isActive": false
     },
     {
@@ -484,6 +494,7 @@ export const PROGRAMS_DATA = [
                 "timeOfDay": "", "programId": "prog-bodybuilding-5day-split"
             }
         ],
+"programType": 'cycled',
         "isActive": false
     },
     {
@@ -522,6 +533,7 @@ export const PROGRAMS_DATA = [
                 "timeOfDay": "", "programId": "prog-strength-5x5-classic-3day"
             }
         ],
+"programType": 'cycled',
         "isActive": false
     }
 ]

@@ -42,10 +42,10 @@ type BuilderMode = 'routineBuilder' | 'manualLogEntry';
 @Component({
   selector: 'app-workout-builder',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, 
-    FormsModule, DragDropModule, WeightUnitPipe, TitleCasePipe, 
-    LongPressDragDirective, AutoGrowDirective, ActionMenuComponent, 
-    IsWeightedPipe, ModalComponent, ClickOutsideDirective, 
+  imports: [CommonModule, ReactiveFormsModule, RouterLink,
+    FormsModule, DragDropModule, WeightUnitPipe, TitleCasePipe,
+    LongPressDragDirective, AutoGrowDirective, ActionMenuComponent,
+    IsWeightedPipe, ModalComponent, ClickOutsideDirective,
     ExerciseDetailComponent, PressDirective, IconComponent, TooltipDirective],
   templateUrl: './workout-builder.html',
   styleUrl: './workout-builder.scss',
@@ -335,9 +335,9 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     } else { // routineBuilder
       return {
         name: '', description: '', goal: '',
-        workoutDate: '', startTime: '', endTime:'', 
+        workoutDate: '', startTime: '', endTime: '',
         // durationMinutes: 60,
-         overallNotesLog: '', routineIdForLog: '', programIdForLog: '',
+        overallNotesLog: '', routineIdForLog: '', programIdForLog: '',
         exercises: []
       };
     }
@@ -392,11 +392,33 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         // this.builderForm.get('name')?.enable({ emitEvent: false });
         this.builderForm.get('description')?.disable({ emitEvent: false });
         this.builderForm.get('goal')?.disable({ emitEvent: false });
+
+        if (this.checkIfLogForProgram()) {
+          this.builderForm.get('programIdForLog')?.disable();
+          this.builderForm.get('workoutDate')?.disable();
+          this.builderForm.get('routineIdForLog')?.disable();
+        }
+
       }
       this.exercisesFormArray.controls.forEach(exCtrl => {
         this.updateRoundsControlability(exCtrl as FormGroup);
       });
     }
+  }
+
+  checkIfLogForProgram(): boolean {
+    return !!(this.currentProgramId && this.mode === 'manualLogEntry' && this.dateParam && this.currentRoutineId);
+  }
+
+  getLogTitleForProgramEntry(): string {
+    if (this.checkIfLogForProgram()) {
+      const program = this.availablePrograms.find(p => p.id === this.currentProgramId);
+      const routine = this.availableRoutines.find(p => p.id === this.currentRoutineId);
+      if (program) {
+        return `Log for Program: ${program.name} - Routine: ${routine?.name || 'Ad-hoc'}`;
+      }
+    } 
+    return 'Ad-hoc Workout';
   }
 
   get exercisesFormArray(): FormArray {
@@ -485,8 +507,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       endTime: log.endTime
         ? format(new Date(log.endTime), 'HH:mm')
         : (log.startTime && log.durationMinutes
-            ? format(new Date(new Date(log.startTime).getTime() + log.durationMinutes * 60000), 'HH:mm')
-            : ''),
+          ? format(new Date(new Date(log.startTime).getTime() + log.durationMinutes * 60000), 'HH:mm')
+          : ''),
       // durationMinutes: log.durationMinutes || 60,
       overallNotesLog: log.notes || '',
       routineIdForLog: log.routineId || '',
@@ -511,6 +533,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     if (resetDateTime) {
       const today = new Date();
       const date = this.dateParam ? this.dateParam : today;
+      patchData.programIdForLog = this.currentProgramId || null
       patchData.workoutDate = format(date, 'yyyy-MM-dd');
       patchData.startTime = format(date, 'HH:mm');
       // patchData.durationMinutes = 60;
@@ -1156,7 +1179,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
     if ((this.mode === 'routineBuilder' && (this.builderForm.get('name')?.invalid || this.builderForm.get('goal')?.invalid)) ||
       (this.mode === 'manualLogEntry' && (this.builderForm.get('workoutDate')?.invalid || this.builderForm.get('startTime')?.invalid || this.builderForm.get('endTime')?.invalid
-      //  || this.builderForm.get('durationMinutes')?.invalid
+        //  || this.builderForm.get('durationMinutes')?.invalid
       )
       )) {
       this.builderForm.markAllAsTouched();
@@ -1192,9 +1215,9 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         this.toastService.success(`Routine ${this.isNewMode ? 'created' : 'updated'}!`, 4000, "Success");
 
         if (this.isNewMode && this.routine) {
-            this.isEditMode = true;
-            this.isNewMode = false;
-            this.currentRoutineId = this.routine.id;
+          this.isEditMode = true;
+          this.isNewMode = false;
+          this.currentRoutineId = this.routine.id;
         }
 
         // this.router.navigate(['/workout']);
@@ -1210,7 +1233,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
           if (!isValidDate(parsedStartingDate)) throw new Error("Invalid starting date/time for log entry");
           startTimeMs = parsedStartingDate.getTime();
         } catch (e) { this.toastService.error("Invalid starting date or time format", 0, "Error"); this.spinnerService.hide(); return; }
-        
+
         let endTimeMs: number | undefined = undefined;
         try {
           const parsedEndingDate = parseISO(combinedEndingDateTimeStr);
@@ -1529,8 +1552,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       if (lastRoutineLogged && lastRoutineLogged.lastPerformedDate && lastRoutineLogged.durationMinutes) {
         // const totalMinutes = Math.round(lastRoutineLogged.durationMinutes / 60);
         this.lastRoutineDuration = lastRoutineLogged.durationMinutes;
-      } 
-    } 
+      }
+    }
   }
 
   private mapFormToRoutine(formValue: any): Routine {
@@ -1669,7 +1692,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     return loggedExActual?.sets.some(set => set.targetWeight) || loggedExActual?.sets.some(set => set.weight);
   }
 
-    getSetReps(loggedEx: any): string {
+  getSetReps(loggedEx: any): string {
     const rawValue = loggedEx?.getRawValue();
     if (!rawValue || !rawValue.sets) {
       return '';

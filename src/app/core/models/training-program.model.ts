@@ -32,7 +32,6 @@ export interface TrainingProgram {
   id: string;
   name: string;
   description?: string;
-  schedule: ScheduledRoutineDay[];
   isActive: boolean;
   /** The date (ISO string YYYY-MM-DD) when the user started or intends to start this program. */
   startDate?: string;
@@ -46,6 +45,18 @@ export interface TrainingProgram {
   programNotes?: string;
   goals?: string[];
   history?: TrainingProgramHistoryEntry[];
+  programType: 'cycled' | 'linear';
+  /** 
+     * For 'cycled' programs: The schedule of the repeating cycle.
+     * This property will be used if programType is 'cycled'.
+     */
+  schedule: ScheduledRoutineDay[];
+
+  /**
+   * NEW: For 'linear' programs: An array of weekly blocks.
+   * This property will be used if programType is 'linear'.
+   */
+  weeks?: ProgramWeek[];
 }
 
 export interface TrainingProgramHistoryEntry {
@@ -56,4 +67,15 @@ export interface TrainingProgramHistoryEntry {
   startDate: string; // ISO string YYYY-MM-DD
   endDate: string; // ISO string YYYY-MM-DD
   status: 'active' | 'completed' | 'archived' | 'cancelled';
+}
+
+export interface ProgramWeek {
+  /** A unique ID for this week entry. */
+  id: string;
+  /** The sequential number of the week in the program (e.g., 1, 2, 3). */
+  weekNumber: number;
+  /** A customizable name for the week, e.g., "Volume Accumulation" or "Week 1". */
+  name: string;
+  /** The schedule of routines for this specific week. */
+  schedule: ScheduledRoutineDay[];
 }

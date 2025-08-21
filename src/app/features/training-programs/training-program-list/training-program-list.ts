@@ -13,7 +13,8 @@ import { Exercise } from '../../../core/models/exercise.model';
 import {
   startOfWeek, endOfWeek, addDays, subDays, eachDayOfInterval, format,
   isSameDay, isToday, addMonths, subMonths, startOfMonth, endOfMonth,
-  isSameMonth, isPast, isFuture, parseISO
+  isSameMonth, isPast, isFuture, parseISO,
+  differenceInDays
 } from 'date-fns';
 import { DayOfWeekPipe } from '../../../shared/pipes/day-of-week-pipe';
 import { animate, group, query, state, style, transition, trigger } from '@angular/animations';
@@ -82,6 +83,7 @@ type CalendarDisplayMode = 'week' | 'month';
       transition('void => *', [animate('150ms cubic-bezier(0.25, 0.8, 0.25, 1)')]),
       transition('* => void', [animate('100ms cubic-bezier(0.25, 0.8, 0.25, 1)')])
     ]),
+    // --- CORRECTED TRIGGER ---
     trigger('calendarPeriodSlide', [
       state('center', style({ transform: 'translateX(0%)', opacity: 1 })),
       state('outLeft', style({ transform: 'translateX(-100%)', opacity: 0 })),
@@ -89,12 +91,17 @@ type CalendarDisplayMode = 'week' | 'month';
       state('preloadFromRight', style({ transform: 'translateX(100%)', opacity: 0 })),
       state('preloadFromLeft', style({ transform: 'translateX(-100%)', opacity: 0 })),
 
+      // Transitions for the OUTGOING view
       transition('center => outLeft', animate('200ms ease-in')),
       transition('center => outRight', animate('200ms ease-in')),
+
+      // Transitions for the INCOMING view (from the explicit preload states)
       transition('preloadFromRight => center', animate('200ms ease-out')),
       transition('preloadFromLeft => center', animate('200ms ease-out')),
-      transition('outLeft => center', [style({ transform: 'translateX(100%)', opacity: 0 }), animate('200ms ease-out')]),
-      transition('outRight => center', [style({ transform: 'translateX(-100%)', opacity: 0 }), animate('200ms ease-out')]),
+
+      // --- REMOVED THE FOLLOWING TWO LINES TO PREVENT THE BUG ---
+      // transition('outLeft => center', [style({ transform: 'translateX(100%)', opacity: 0 }), animate('200ms ease-out')]),
+      // transition('outRight => center', [style({ transform: 'translateX(-100%)', opacity: 0 }), animate('200ms ease-out')]),
     ])
   ]
 })
@@ -153,6 +160,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
   isFilterAccordionOpen = signal(false);
 
   programSearchTerm = signal<string>('');
+  selectedProgramType = signal<string | null>(null);
   selectedProgramCycleType = signal<string | null>(null);
   selectedProgramGoal = signal<string | null>(null);
   selectedProgramMuscleGroup = signal<string | null>(null);
@@ -163,33 +171,55 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
   private allRoutinesMap = new Map<string, Routine>();
   private allExercisesMap = new Map<string, Exercise>();
 
-  filteredPrograms = computed(() => {
+filteredPrograms = computed(() => {
     let programs = this.allProgramsForList();
     const searchTerm = this.programSearchTerm().toLowerCase();
-    const cycleType = this.selectedProgramCycleType();
+    const programType = this.selectedProgramType();
     const goalFilter = this.selectedProgramGoal();
     const muscleFilter = this.selectedProgramMuscleGroup();
 
-    if (searchTerm) { programs = programs.filter(p => p.name.toLowerCase().includes(searchTerm)); }
-    if (cycleType) {
-      if (cycleType === 'weekly') { programs = programs.filter(p => !p.cycleLength || p.cycleLength === 0); }
-      else if (cycleType === 'cycled') { programs = programs.filter(p => p.cycleLength && p.cycleLength > 0); }
+    // Helper to get all scheduled days from a program regardless of its type
+    const getAllScheduledDays = (program: TrainingProgram): ScheduledRoutineDay[] => {
+      if (program.programType === 'linear' && program.weeks) {
+        // Use flatMap to get all schedules from all weeks into a single array
+        return program.weeks.flatMap(week => week.schedule);
+      }
+      // Fallback for 'cycled' programs
+      return program.schedule || [];
+    };
+
+    if (searchTerm) {
+      programs = programs.filter(p => p.name.toLowerCase().includes(searchTerm));
     }
+
+    if (programType) {
+      programs = programs.filter(p => p.programType === programType);
+    }
+    
     if (goalFilter) {
-      programs = programs.filter(p => p.schedule.some(day => {
-        const routine = this.allRoutinesMap.get(day.routineId);
-        return routine?.goal?.toLowerCase() === goalFilter.toLowerCase();
-      }));
-    }
-    if (muscleFilter) {
-      programs = programs.filter(p => p.schedule.some(day => {
-        const routine = this.allRoutinesMap.get(day.routineId);
-        if (!routine) return false;
-        return routine.exercises.some(exDetail => {
-          const fullExercise = this.allExercisesMap.get(exDetail.exerciseId);
-          return fullExercise?.primaryMuscleGroup?.toLowerCase() === muscleFilter.toLowerCase();
+      programs = programs.filter(p => {
+        const allDays = getAllScheduledDays(p); // Use helper to get all days
+        return allDays.some(day => {
+          const routine = this.allRoutinesMap.get(day.routineId);
+          return routine?.goal?.toLowerCase() === goalFilter.toLowerCase();
         });
-      }));
+      });
+    }
+
+    if (muscleFilter) {
+      programs = programs.filter(p => {
+        const allDays = getAllScheduledDays(p); // Use helper to get all days
+        if (!allDays.length) return false;
+        
+        return allDays.some(day => {
+          const routine = this.allRoutinesMap.get(day.routineId);
+          if (!routine) return false;
+          return routine.exercises.some(exDetail => {
+            const fullExercise = this.allExercisesMap.get(exDetail.exerciseId);
+            return fullExercise?.primaryMuscleGroup?.toLowerCase() === muscleFilter.toLowerCase();
+          });
+        });
+      });
     }
     return programs;
   });
@@ -219,6 +249,50 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
     return null; // If zero programs are active.
   });
   // --- END STATE MANAGEMENT CHANGES ---
+
+  // --- NEW: COMPUTED SIGNAL TO GET THE WEEK INFO FOR THE CURRENT CALENDAR VIEW ---
+  /**
+   * Calculates the program week information corresponding to the date currently
+   * being displayed in the calendar view.
+   */
+  readonly displayedWeekInfo = computed<{ name: string } | null>(() => {
+    const program = this.activeProgramForCalendar();
+    const viewDate = this.calendarViewDate(); // The reference date for the current calendar view
+
+    // Guard clauses: Ensure we have everything we need to perform the calculation.
+    if (!program || program.programType !== 'linear' || !program.startDate || !program.weeks?.length) {
+      return null;
+    }
+
+    try {
+      const startDate = parseISO(program.startDate);
+      
+      // Calculate how many days have passed from the program start to the currently viewed date.
+      const daysSinceStart = differenceInDays(viewDate, startDate);
+
+      // If the viewed date is before the program started, there's no week to show.
+      if (daysSinceStart < 0) {
+        return null;
+      }
+
+      // Determine the zero-based index of the week.
+      const currentWeekIndex = Math.floor(daysSinceStart / 7);
+      
+      // Retrieve the specific week's data from the program's `weeks` array.
+      const targetWeek = program.weeks[currentWeekIndex];
+
+      // If a week exists at that index, return its name.
+      if (targetWeek) {
+        return { name: targetWeek.name };
+      }
+
+    } catch (error) {
+        console.error("Error parsing start date for week calculation", error);
+    }
+    
+    // If anything fails or if the viewed date is past the end of the program, return null.
+    return null;
+  });
 
   weekStartsOn: 0 | 1 = 1;
   calendarDisplayMode = signal<CalendarDisplayMode>('week');
@@ -338,13 +412,19 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
 
   toggleFilterAccordion(): void { this.isFilterAccordionOpen.update(isOpen => !isOpen); }
   onProgramSearchTermChange(event: Event): void { this.programSearchTerm.set((event.target as HTMLInputElement).value); }
+  onProgramTypeChange(event: Event): void { this.selectedProgramType.set((event.target as HTMLSelectElement).value || null); }
   onProgramCycleTypeChange(event: Event): void { this.selectedProgramCycleType.set((event.target as HTMLSelectElement).value || null); }
   onProgramGoalChange(event: Event): void { this.selectedProgramGoal.set((event.target as HTMLSelectElement).value || null); }
   onProgramMuscleGroupChange(event: Event): void { this.selectedProgramMuscleGroup.set((event.target as HTMLSelectElement).value || null); }
   clearProgramFilters(): void {
-    this.programSearchTerm.set(''); this.selectedProgramCycleType.set(null); this.selectedProgramGoal.set(null); this.selectedProgramMuscleGroup.set(null);
+    this.programSearchTerm.set(''); 
+    this.selectedProgramCycleType.set(null); 
+    this.selectedProgramType.set(null); 
+    this.selectedProgramGoal.set(null); 
+    this.selectedProgramMuscleGroup.set(null);
     (document.getElementById('program-search-term') as HTMLInputElement).value = '';
     (document.getElementById('program-cycle-type-filter') as HTMLSelectElement).value = '';
+    (document.getElementById('program-type-filter') as HTMLSelectElement).value = '';
     (document.getElementById('program-goal-filter') as HTMLSelectElement).value = '';
     (document.getElementById('program-muscle-filter') as HTMLSelectElement).value = '';
   }
@@ -534,21 +614,53 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
     this.activeProgramIdActions.set(null);
   }
 
-
-
-
-
-
-
-
-
-
+ /**
+   * Calculates a descriptive string for the number of scheduled days in a program,
+   * handling both 'linear' and 'cycled' program types.
+   * @param program The program to analyze.
+   * @returns A formatted string like "Avg. 4.5 days/week" or "5 days".
+   */
   getDaysScheduled(program: TrainingProgram): string {
-    if (!program.schedule || program.schedule.length === 0) return '0 days';
-    const count = new Set(program.schedule.map(s => s.dayOfWeek)).size;
-    return `${count} day${count === 1 ? '' : 's'}`;
+    // --- NEW: Logic for 'linear' (week-by-week) programs ---
+    if (program.programType === 'linear') {
+      if (!program.weeks || program.weeks.length === 0) {
+        return '0 days';
+      }
+      
+      const totalWeeks = program.weeks.length;
+      const totalScheduledDays = program.weeks.reduce((accumulator, currentWeek) => accumulator + currentWeek.schedule.length, 0);
+
+      if (totalScheduledDays === 0) {
+        return '0 days';
+      }
+
+      const avgDaysPerWeek = totalScheduledDays / totalWeeks;
+      
+      // Format to one decimal place, but remove '.0' if it's a whole number.
+      // For example, 4.0 becomes "4", but 4.5 remains "4.5".
+      const formattedAvg = avgDaysPerWeek.toFixed(1).replace(/\.0$/, '');
+
+      return `Avg. ${formattedAvg} days/week`;
+    } 
+    // --- EXISTING: Logic for 'cycled' programs (and fallback for old data) ---
+    else { 
+      if (!program.schedule || program.schedule.length === 0) {
+        return '0 days';
+      }
+      // This correctly counts the number of unique active days in the cycle.
+      const count = new Set(program.schedule.map(s => s.dayOfWeek)).size;
+      return `${count} day${count === 1 ? '' : 's'}`;
+    }
   }
-  getCycleInfo(program: TrainingProgram): string { return (program.cycleLength && program.cycleLength > 0) ? `${program.cycleLength}-day cycle` : 'Weekly'; }
+
+  getCycleInfo(program: TrainingProgram): string {
+    if (program.programType === 'linear' && program.weeks?.length) {
+      const weekCount = program.weeks.length;
+      return `${weekCount}-Week Program`;
+    }
+    // Fallback to original 'cycled' logic
+    return (program.cycleLength && program.cycleLength > 0) ? `${program.cycleLength}-day cycle` : 'Weekly';
+  }
   getProgramOverallGoals(program: TrainingProgram): string[] {
     if (this.allRoutinesMap.size === 0 || !program.schedule?.length) return [];
     const goals = new Set<string>();
@@ -802,7 +914,19 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
   }
 
   logPreviousSession(routineId: string, workoutDate: Date): void {
-    this.router.navigate(['/workout/log/manual/new', { routineId, workoutDate: format(workoutDate, 'yyyy-MM-dd') }]);
+    const programId = this.activeProgramForCalendar()?.id;
+    if (!programId) {
+      this.toastService.error("Cannot log session: No active program is being viewed.", 0, "Error");
+      return;
+    }
+    
+    // The route should be an array of path segments
+    this.router.navigate(['workout/log/manual/new/from/', routineId], { 
+      queryParams: { 
+        programId: programId, 
+        date: format(workoutDate, 'yyyy-MM-dd') 
+      } 
+    });
     this.selectCalendarDay(null);
   }
 
@@ -1022,6 +1146,41 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
   protected updateSanitizedDescription(value: string): SafeHtml {
     // This tells Angular to trust this HTML string and render it as is.
     return this.sanitizer.bypassSecurityTrustHtml(value);
+  }
+
+  /**
+     * NEW: Calculates the current week for an active linear program.
+     * @param program The training program to check.
+     * @returns The current week's data or null if not applicable.
+     */
+  getCurrentWeekInfo(program: TrainingProgram): { weekNumber: number; name: string } | null {
+    // Return null if the program is not linear, inactive, has no start date, or no weeks defined.
+    if (program.programType !== 'linear' || !program.isActive || !program.startDate || !program.weeks?.length) {
+      return null;
+    }
+
+    const today = new Date();
+    const startDate = parseISO(program.startDate);
+
+    // Return null if the program hasn't started yet.
+    if (today < startDate) {
+      return null;
+    }
+
+    const daysSinceStart = differenceInDays(today, startDate);
+    const currentWeekIndex = Math.floor(daysSinceStart / 7);
+    const currentWeekData = program.weeks[currentWeekIndex];
+
+    // If a week exists at the calculated index, return its info.
+    if (currentWeekData) {
+      return {
+        weekNumber: currentWeekData.weekNumber,
+        name: currentWeekData.name,
+      };
+    }
+
+    // Otherwise, the program has likely ended.
+    return null;
   }
 
 }

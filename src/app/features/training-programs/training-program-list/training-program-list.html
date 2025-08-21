@@ -52,6 +52,17 @@
                 </select>
               </div>
               <div>
+                <label for="program-type-filter"
+                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Program Type</label>
+                <select id="program-type-filter" (change)="onProgramCycleTypeChange($event)"
+                  [value]="selectedProgramCycleType() || ''"
+                  class="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200">
+                  <option value="">All Program Types</option>
+                  <option value="weekly">Cycled</option>
+                  <option value="cycled">Linear</option>
+                </select>
+              </div>
+              <div>
                 <label for="program-goal-filter"
                   class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Overall Goal</label>
                 <select id="program-goal-filter" (change)="onProgramGoalChange($event)"
@@ -102,7 +113,7 @@
               [ngClass]="{'ring-4 ring-green-500 dark:ring-green-400': program.isActive}">
               <div class="p-4 flex-grow cursor-pointer">
                 <div class="flex flex-col justify-between items-start mb-1.5 space-y-1">
-                  <h2 class="text-lg sm:text-xl font-semibold text-primary dark:text-primary-light truncate pr-10"
+                  <h2 class="text-lg sm:text-xl font-semibold text-primary dark:text-primary-light truncate pr-10 text-wrap"
                     [title]="program.name">{{ program.name }}</h2>
                   <div *ngIf="program.isActive"
                     class="flex items-center bg-green-100 text-green-700 dark:bg-green-700 dark:text-green-100 rounded-full">
@@ -131,6 +142,17 @@
                     <span class="font-medium">Started:</span> {{ program.startDate |
                     date:'mediumDate' }}
                   </div>
+                  <!-- ========================================================== -->
+                  <!-- START: Add This Snippet Here                             -->
+                  <!-- ========================================================== -->
+                  <div *ngIf="getCurrentWeekInfo(program) as weekInfo"
+                    class="flex items-center gap-1 text-green-700 dark:text-green-300 font-semibold animate-pulse">
+                    <app-icon name="track_changes" class="w-5 h-5" [strokeWidth]="2"></app-icon>
+                    <span class="font-medium">Current Week:</span> {{ weekInfo.name }}
+                  </div>
+                  <!-- ========================================================== -->
+                  <!-- END: Add This Snippet Here                               -->
+                  <!-- ========================================================== -->
                   <div *ngIf="program.history && program.history[0] && (program.history[0].status !== 'active' && program.history[0].startDate && program.history[0].endDate)" class="flex items-center gap-1">
                     <app-icon name="clock" class="w-5 h-5 text-gray-500 dark:text-gray-300" [strokeWidth]="2"></app-icon>
                     <span class="font-medium">Last scheduling:</span> {{ 
@@ -214,11 +236,11 @@
           <div class="flex justify-between items-center mb-3 sm:mb-4">
             <div class="inline-flex space-x-1 p-1 bg-gray-100 dark:bg-gray-800 rounded-md">
               <button appPress (shortPress)="setCalendarDisplayMode('week')"
-                class="px-3 py-1.5 text-md font-medium rounded-md transition-colors disabled:opacity-60"
+                class="px-3 py-1.5 text-md font-medium rounded-md transition-colors disabled:opacity-60 min-w-[85px]"
                 [ngClass]="calendarDisplayMode() === 'week' ? 'bg-primary text-white shadow' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'"
                 [disabled]="isCalendarAnimating">WEEK</button>
               <button appPress (shortPress)="setCalendarDisplayMode('month')"
-                class="px-3 py-1.5 text-md font-medium rounded-md transition-colors disabled:opacity-60"
+                class="px-3 py-1.5 text-md font-medium rounded-md transition-colors disabled:opacity-60 min-w-[85px]"
                 [ngClass]="calendarDisplayMode() === 'month' ? 'bg-primary text-white shadow' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'"
                 [disabled]="isCalendarAnimating">MONTH</button>
             </div>
@@ -238,11 +260,23 @@
                   <div class="text-center">
                     <h2 class="text-md sm:text-lg font-semibold text-gray-700 dark:text-gray-200">{{ calendarViewDate()
                       | date:calendarHeaderFormat() }}</h2>
-                    <p class="text-2xs sm:text-xs text-gray-500 dark:text-gray-400">Active Program: <strong
-                        class="text-primary dark:text-primary-light truncate max-w-[150px] sm:max-w-xs inline-block align-bottom hover:cursor-pointer hover:underline"
-                        [title]="'Go to program ' + activeProgram.name" appPress
-                        (shortPress)="viewProgramDetails(activeProgram.id)">{{
-                        activeProgram.name }}</strong></p>
+                    <!-- ========================================================== -->
+                        <!-- START: Modified Line Here                                -->
+                        <!-- ========================================================== -->
+                        <p class="text-2xs sm:text-xs text-gray-500 dark:text-gray-400">
+                            Active Program: 
+                            <strong class="text-primary dark:text-primary-light truncate max-w-[150px] sm:max-w-xs inline-block align-bottom hover:cursor-pointer hover:underline"
+                                    [title]="'Go to program ' + activeProgram.name" appPress
+                                    (shortPress)="viewProgramDetails(activeProgram.id)">{{ activeProgram.name }}</strong>
+                            
+                            <!-- This span will appear only for linear programs and when a valid week is found for the viewDate -->
+                            <span *ngIf="displayedWeekInfo() as weekInfo" class="ml-1">
+                                - <span class="font-semibold">{{ weekInfo.name }}</span>
+                            </span>
+                            <span *ngIf="calendarDisplayMode()!=='month' && activeProgram && activeProgram.programType && activeProgram.programType === 'linear' && activeProgram.weeks && activeProgram.weeks.length > 0 && !displayedWeekInfo()" class="ml-1">
+                                - <span class="font-semibold">No week scheduled here</span>
+                            </span>
+                        </p>
                   </div>
                   <button appPress (shortPress)="nextPeriod()" [title]="'Next ' + (calendarDisplayMode() | titlecase)"
                     class="p-1.5 sm:p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 disabled:opacity-50"
@@ -335,19 +369,11 @@
 
                           <!-- If the routine has been logged, show a green background -->
                           <div *ngIf="item.logs.length > 0" class="p-0.5 sm:p-1 rounded">
-                            <!--<p class="font-semibold truncate text-green-800 dark:text-green-200"
-                              [title]="item.routine.name">
-                              {{ item.routine.name }}
-                            </p>-->
                             <div class="mt-1.5 h-2 w-2 rounded-full mx-auto bg-green-500"></div>
                           </div>
 
                           <!-- If the routine is scheduled but not logged, show a blue background -->
                           <div *ngIf="item.logs.length === 0" class="p-0.5 sm:p-1 rounded">
-                            <!--<p class="font-semibold truncate text-blue-700 dark:text-blue-300"
-                              [title]="item.routine.name">
-                              {{ item.routine.name }}
-                            </p>-->
                             <div class="mt-1.5 h-2 w-2 rounded-full mx-auto bg-primary"></div>
                           </div>
                         </div>
@@ -449,16 +475,12 @@
               <div *ngFor="let log of item.logs"
                 class="p-2 bg-sky-50 dark:bg-sky-900/50 rounded-md border border-sky-200 dark:border-sky-700">
                 <div class="flex justify-between items-center">
-                  <span class="text-xs text-sky-700 dark:text-sky-300">Logged: {{ log.startTime | date:'shortTime' }}
+                  <span class="text-md text-sky-700 dark:text-sky-300">Logged: {{ log.startTime | date:'shortTime' }}
                     ({{ log.durationMinutes }} min)</span>
                   <button appPress (shortPress)="viewSessionSummary(log.id)"
-                    class="text-2xs sm:text-xs bg-sky-500 hover:bg-sky-600 text-white font-semibold py-1 px-2 rounded shadow-sm flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                      stroke="currentColor" class="size-3 sm:size-4 mr-1">
-                      <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                    </svg>VIEW
+                    class="flex justify-center items-center max-w-[200px] sm:w-auto px-6 py-3 bg-sky-500 hover:bg-sky-600 text-white font-semibold rounded-md shadow-sm text-lg disabled:opacity-50 disabled:cursor-not-allowed ng-tns-c2615860199-17">
+                    <app-icon name="eye" class="h-6 w-6 mr-1"></app-icon>
+                    VIEW
                   </button>
                 </div>
               </div>
@@ -470,19 +492,18 @@
             <div *ngIf="item.logs.length === 0" class="mt-3">
 
               <!-- MODIFIED: Replaced flex with grid for better control over button widths -->
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-sm mx-auto">
+              <div class="flex flex-col sm:flex-row justify-center items-center space-y-2 sm:space-y-0 sm:space-x-4 pt-4">
 
                 <!-- "Start" or "Not Logged" button -->
-                <!-- Removed flex-1 -->
                 <button *ngIf="selectedDay.isToday || selectedDay.isPastDay" appPress
                   (shortPress)="startScheduledWorkout(item.routine.id, activeProgramForCalendar()?.id)"
                   [disabled]="selectedDay.isPastDay && !selectedDay.isToday"
-                  class="bg-green-500 hover:bg-green-600 text-white font-semibold rounded-md shadow-sm flex items-center justify-center disabled:bg-gray-400 disabled:dark:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-70 py-2.5 px-4">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                    stroke="currentColor" class="w-10 h-10 sm:w-5 sm:h-5 mr-2">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                      d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 010 1.972l-11.54 6.347a1.125 1.125 0 01-1.667-.986V5.653z" />
-                  </svg>
+                  class="flex justify-center items-center w-full sm:max-w-[200px] px-6 py-3  text-white font-semibold rounded-md shadow-sm text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                [ngClass]="{
+                        'bg-green-500 hover:bg-green-600': selectedDay.isToday,
+                        'bg-gray-500': selectedDay.isPastDay && !selectedDay.isToday
+                    }">
+                  <app-icon name="play" class="h-7 w-7 mr-1"></app-icon>
                   {{ selectedDay.isToday ? 'START' : 'NOT LOGGED' }}
                 </button>
 
@@ -492,7 +513,7 @@
                 <button *ngIf="selectedDay.isPastDay" appPress
                   (shortPress)="logPreviousSession(item.routine.id, selectedDay.date)"
                   [class.sm:col-start-2]="!selectedDay.isToday"
-                  class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-3 rounded-md shadow-sm flex items-center justify-center">
+                  class="flex justify-center items-center w-full sm:max-w-[200px] px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md shadow-sm text-lg disabled:opacity-50 disabled:cursor-not-allowed">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                     stroke="currentColor" class="w-10 h-10 sm:w-5 sm:h-5 mr-2">
                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -507,14 +528,10 @@
               class="my-4 border-gray-300 dark:border-gray-600">
           </div>
           <div class="mt-4 border-t border-gray-200 dark:border-gray-600 pt-3">
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-sm mx-auto">
+            <div class="flex flex-col sm:flex-row justify-center items-center space-y-2 sm:space-y-0 sm:space-x-4 pt-4">
               <button appPress (shortPress)="goToPreviousProgramSession(activeProgramForCalendar()?.id)"
-                class="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-3 rounded-md shadow-sm flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                  stroke="currentColor" class="w-10 h-10 sm:w-5 sm:h-5 mr-2">
-                  <path stroke-linecap="round" stroke-linejoin="round"
-                    d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                </svg>
+                class="flex justify-center items-center w-full sm:w-auto px-6 py-3 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold rounded-md shadow-sm text-lg disabled:opacity-50 disabled:cursor-not-allowed">
+                <app-icon name="clock" class="h-7 w-7 mr-1"></app-icon>
                 ALL LOGS FOR THIS PROGRAM
               </button>
             </div>
