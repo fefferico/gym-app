@@ -1,6 +1,6 @@
 {
-  "name": "gym-app",
-  "short_name": "gym-app",
+  "name": "GymBro",
+  "short_name": "GymBro",
   "display": "standalone",
   "scope": "./",
   "start_url": "./",
