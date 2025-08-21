@@ -5,7 +5,7 @@ import { map, shareReplay, switchMap, take, tap } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
 
 import { StorageService } from './storage.service';
-import { TrainingProgram, ScheduledRoutineDay } from '../models/training-program.model';
+import { TrainingProgram, ScheduledRoutineDay, TrainingProgramHistoryEntry } from '../models/training-program.model';
 import { Routine } from '../models/workout.model';
 import { WorkoutService } from './workout.service';
 import { AlertService } from './alert.service';
@@ -166,7 +166,7 @@ export class TrainingProgramService {
     }
 
     this.updateProgramHistory(programId, status, new Date().toISOString());
-    const updatedPrograms = currentPrograms.map(p => {
+    const updatedPrograms = this.programsSubject.getValue().map(p => {
       if (p.id === programId) {
         return { ...p, isActive: !p.isActive };
       }
@@ -220,7 +220,7 @@ export class TrainingProgramService {
     }
 
     this.updateProgramHistory(programId, status);
-    const updatedPrograms = currentPrograms.map(p =>
+    const updatedPrograms = this.programsSubject.getValue().map(p =>
       p.id === programId ? { ...p, isActive: false } : p
     );
     this._saveProgramsToStorage(updatedPrograms);
@@ -463,61 +463,88 @@ export class TrainingProgramService {
   }
 
   // date:  // ISO string YYYY-MM-DD
-  async updateProgramHistory(programId: string, status: 'active' | 'completed' | 'archived' | 'cancelled' = 'completed',
+  async updateProgramHistory(
+    programId: string,
+    statusOrEntry: ('active' | 'completed' | 'archived' | 'cancelled') | TrainingProgramHistoryEntry,
     startDate?: string,
-    endDate?: string): Promise<void> {
+    endDate?: string
+  ): Promise<void> {
     const currentPrograms = this.programsSubject.getValue();
-    const targetProgram = currentPrograms.find(p => p.id === programId);
+    const programIndex = currentPrograms.findIndex(p => p.id === programId);
 
-    if (!targetProgram) {
-      this.toastService.error("Program not found to finish", 0, "Finish Error");
+    if (programIndex === -1) {
+      this.toastService.error("Program not found to update history", 0, "Update Error");
       return;
     }
 
-    if (!targetProgram.startDate) {
-      this.toastService.error("Program does not have a 'starting date'", 0, "Finish Error");
-      return;
+    const targetProgram = currentPrograms[programIndex];
+    // Ensure history is a mutable array
+    const history = Array.isArray(targetProgram.history) ? [...targetProgram.history] : [];
+    let updatedProgram: TrainingProgram;
+
+    // --- CASE 1: Updating a specific existing entry (from history modal) ---
+    if (typeof statusOrEntry === 'object' && statusOrEntry.id) {
+      const entryToUpdateIndex = history.findIndex(h => h.id === statusOrEntry.id);
+      if (entryToUpdateIndex !== -1) {
+        // Update the specific entry in the history array
+        history[entryToUpdateIndex] = { ...history[entryToUpdateIndex], ...statusOrEntry };
+
+        // After updating the history, we MUST re-evaluate and sync the root isActive flag.
+        // A program is considered active if ANY of its history entries has the status 'active'.
+        const isNowActive = history.some(h => h.status === 'active');
+        
+        updatedProgram = { ...targetProgram, history, isActive: isNowActive };
+        
+        this.toastService.success(`History entry updated.`, 3000, "History Updated");
+      } else {
+        this.toastService.error("History entry not found to update.", 0, "Update Error");
+        return;
+      }
     }
+    // --- CASE 2: Logging a new status change (from toggleProgramActivation etc.) ---
+    else if (typeof statusOrEntry === 'string') {
+      const status = statusOrEntry;
 
-    const finishedDate = new Date().toISOString();
+      if (!targetProgram.startDate && status !== 'active') { // Starting date is needed unless we are activating
+        this.toastService.error("Program does not have a 'starting date'", 0, "Finish Error");
+        return;
+      }
 
-    // Ensure history array exists
-    const history = Array.isArray(targetProgram.history) ? targetProgram.history : [];
+      const finishedDate = new Date().toISOString();
+      const activeHistoryIndex = history.findIndex(entry => entry.status === 'active');
 
-    // Check if there's an active history entry for this program
-    const activeHistoryIndex = history.findIndex(entry => entry.status === 'active');
-    if (activeHistoryIndex !== -1) {
-      // Update the active entry with endDate and new status
-      history[activeHistoryIndex] = {
-        ...history[activeHistoryIndex],
-        endDate: endDate ? endDate : status === 'active' ? '-' : finishedDate,
-        status,
-        date: new Date().toISOString()
-      };
+      if (activeHistoryIndex !== -1) {
+        // An active entry exists, so we update it
+        history[activeHistoryIndex] = {
+          ...history[activeHistoryIndex],
+          endDate: endDate ? endDate : status === 'active' ? '-' : finishedDate,
+          status,
+          date: new Date().toISOString()
+        };
+      } else {
+        // No active entry, so we push a new history record
+        history.push({
+          endDate: endDate ? endDate : status === 'active' ? '-' : finishedDate,
+          programId: targetProgram.id,
+          id: uuidv4(),
+          startDate: startDate ? startDate : targetProgram.startDate!, // Non-null assertion is safe due to check above
+          date: new Date().toISOString(),
+          status: status
+        });
+      }
+
+      // CRITICAL: In this flow, we ONLY update the history. The calling function
+      // (e.g., toggleProgramActivation) is responsible for setting the root `isActive` flag.
+      // This prevents a recursive loop.
+      updatedProgram = { ...targetProgram, history };
     } else {
-      // No active entry, push a new history record
-      history.push({
-        endDate: endDate ? endDate : status === 'active' ? '-' : finishedDate,
-        programId: targetProgram.id,
-        id: uuidv4(),
-        startDate: startDate ? startDate : targetProgram.startDate,
-        date: new Date().toISOString(),
-        status: status
-      });
+      console.error("Invalid call to updateProgramHistory");
+      return;
     }
 
-    const updatedProgram = {
-      ...targetProgram,
-      isActive: false,
-      history,
-    };
-
-    const updatedPrograms = currentPrograms.map(p =>
-      p.id === programId ? updatedProgram : p
-    );
-
+    const updatedPrograms = [...currentPrograms];
+    updatedPrograms[programIndex] = updatedProgram;
     this._saveProgramsToStorage(updatedPrograms);
-    this.toastService.success(`Program "${targetProgram.name}" marked as finished.`, 3000, "Program Finished");
   }
 
 

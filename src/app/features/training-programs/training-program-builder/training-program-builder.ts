@@ -8,7 +8,7 @@ import { switchMap, tap, take } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
 import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 
-import { TrainingProgram, ScheduledRoutineDay } from '../../../core/models/training-program.model';
+import { TrainingProgram, ScheduledRoutineDay, TrainingProgramHistoryEntry } from '../../../core/models/training-program.model';
 import { Routine } from '../../../core/models/workout.model';
 import { TrainingProgramService } from '../../../core/services/training-program.service';
 import { WorkoutService } from '../../../core/services/workout.service';
@@ -121,6 +121,10 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         { value: 'maintenance', label: 'Maintenance' }, { value: 'rest', label: 'Rest' }, { value: 'custom', label: 'Custom' }
     ];
 
+    historyEditForm!: FormGroup; // Form for editing a history entry
+    editingHistoryEntryId = signal<string | null>(null); // ID of the entry being edited
+    statusOptions = ['active', 'completed', 'archived', 'cancelled']; // For the status dropdown
+
     constructor() {
         this.programForm = this.fb.group({
             name: ['', Validators.required],
@@ -131,6 +135,14 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
             endDate: ['', Validators.required], // Store as YYYY-MM-DD string
             cycleLength: [null, [Validators.min(1)]], // Default to weekly (null or 0)
             schedule: this.fb.array([])
+        });
+
+        // Initialize the form for editing history entries
+        this.historyEditForm = this.fb.group({
+            id: [null],
+            startDate: ['', Validators.required],
+            endDate: [''],
+            status: ['', Validators.required]
         });
     }
 
@@ -526,6 +538,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
     // Add this method to close the modal:
     closeProgramHistoryModal(): void {
         this.isProgramHistoryModalOpen.set(false);
+        this.editingHistoryEntryId.set(null); // Reset editing state on close
     }
 
     private updateSanitizedDescription(value: string): void {
@@ -722,5 +735,68 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         }
     }
 
+    /**
+     * Puts a history entry row into edit mode.
+     * @param entry The history entry to edit.
+     */
+    editHistoryEntry(entry: TrainingProgramHistoryEntry): void {
+        this.editingHistoryEntryId.set(entry.id);
+        this.historyEditForm.patchValue({
+            id: entry.id,
+            // Format dates for the HTML date input ('yyyy-MM-dd')
+            startDate: entry.startDate && entry.startDate !== '-' ? new Date(entry.startDate).toISOString().split('T')[0] : '',
+            endDate: entry.endDate && entry.endDate !== '-' ? new Date(entry.endDate).toISOString().split('T')[0] : '',
+            status: entry.status
+        });
+    }
+
+    /**
+     * Cancels the editing of a history entry.
+     */
+    cancelEditHistoryEntry(): void {
+        this.editingHistoryEntryId.set(null);
+    }
+
+    /**
+     * Saves the changes made to a history entry.
+     */
+    async saveHistoryEntry(): Promise<void> {
+        if (this.historyEditForm.invalid) {
+            this.toastService.error("Please ensure all fields are valid.", 0, "Validation Error");
+            return;
+        }
+        if (!this.currentProgramId) return;
+
+        const formValue = this.historyEditForm.getRawValue();
+        const updatedEntry: TrainingProgramHistoryEntry = {
+            ...formValue,
+            programId: this.currentProgramId,
+            endDate: formValue.endDate || '-', // Store empty date as '-'
+            date: new Date().toISOString() // Update the log date
+        };
+
+        try {
+            this.spinnerService.show("Updating history...");
+            await this.trainingProgramService.updateProgramHistory(this.currentProgramId, updatedEntry);
+
+            // Refresh local data to show the update
+            const updatedProgram = await firstValueFrom(this.trainingProgramService.getProgramById(this.currentProgramId).pipe(take(1)));
+            this.currentProgram = updatedProgram;
+
+            this.editingHistoryEntryId.set(null); // Exit edit mode
+        } catch (error) {
+            this.toastService.error("Failed to save history entry.", 0, "Save Error");
+        } finally {
+            this.spinnerService.hide();
+        }
+    }
+
+    forceEndDateToNull(): void {
+        this.historyEditForm.get('endDate')?.setValue(null);
+        this.historyEditForm.get('endDate')?.disable();
+    }
+    enableEndDate(): void {
+        this.historyEditForm.get('endDate')?.enable();
+    }
 
 }
