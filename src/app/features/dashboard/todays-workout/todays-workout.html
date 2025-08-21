@@ -8,24 +8,21 @@
   <!-- This header part is now "part of" the swipeable area, but it will NOT animate. -->
   <div class="flex-shrink-0">
     <!-- Date Navigation -->
-    <div class="flex items-center justify-between pb-3 border-b border-gray-200 dark:border-gray-700">
+    <div class="flex items-center justify-between py-1 border-b border-gray-200 dark:border-gray-700 dark:bg-gray-600 rounded-md">
       <button appPressScroll (shortPress)="previousDay()" title="Previous Day"
-        class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 disabled:opacity-50"
+        class="py-2 mx-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 disabled:opacity-50"
         [disabled]="isAnimating()">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
-          class="w-5 h-5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-        </svg>
+                <app-icon name="back" class="w-6 h-6"></app-icon>
       </button>
       <div class="text-center px-2">
         <div *ngIf="allActivePrograms().length > 0" class="space-y-2 mb-1">
           <div *ngFor="let program of allActivePrograms()" (click)="viewProgramDetails(program.id)"
             [appTooltip]="'Click to navigate to program details'"
-            class="p-1 rounded-md bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 hover:cursor-pointer">
+            class="p-1 rounded-md bg-green-50 dark:bg-green-900/50 border border-green-200 dark:border-green-800 hover:cursor-pointer">
             <span class="block font-bold uppercase tracking-wider text-xs text-green-600 dark:text-green-400">
               {{ program.name }}
             </span>
-            <span *ngIf="program.startDate" class="block text-2xs text-gray-500 dark:text-gray-400">
+            <span *ngIf="program.startDate" class="block text-2xs text-gray-500 dark:text-gray-300">
               Started: {{ program.startDate | date:'dd-MM-yy':'UTC' }}
             </span>
           </div>
@@ -35,12 +32,9 @@
         </h2>
       </div>
       <button appPressScroll (shortPress)="nextDay()" title="Next Day"
-        class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 disabled:opacity-50"
+        class="py-2 mx-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 disabled:opacity-50"
         [disabled]="isAnimating()">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
-          class="w-5 h-5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-        </svg>
+        <app-icon name="back" class="w-6 h-6 rotate-90"></app-icon>
       </button>
     </div>
     <button *ngIf="!isToday(currentDate())" appPressScroll (shortPress)="goToToday()"
@@ -83,7 +77,7 @@
               </h3>
 
               <p *ngIf="workoutInfo.routine.description"
-                class="text-sm text-gray-600 dark:text-gray-400 mb-2 line-clamp-2"
+                class="text-md text-gray-600 dark:text-gray-400 mb-2 line-clamp-2"
                 [innerHTML]="updateSanitizedDescription(workoutInfo.routine.description)"
                 [title]="workoutInfo.routine.description"></p>
 
@@ -142,17 +136,14 @@
                     </span>
                   </ng-container>
                   <ng-container *ngIf="isToday(currentDate())">
-                    <div class="flex flex-col sm:flex-row gap-2">
+                    <div class="flex flex-col sm:flex-row justify-center items-center space-y-2 sm:space-y-0 sm:space-x-4 pt-4">
                       <button appPressScroll
                         (shortPress)="startProgramWorkout(workoutInfo.routine.id, workoutInfo.scheduledDayInfo.programId, $event)"
-                        class="flex-1 bg-green-500 hover:bg-green-600 text-white font-semibold py-2.5 px-4 rounded-md shadow-sm flex items-center justify-center text-m"><svg
-                          xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                          stroke="currentColor" class="w-5 h-5 mr-2">
-                          <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 010 1.972l-11.54 6.347a1.125 1.125 0 01-1.667-.986V5.653z" />
-                        </svg>START</button>
+                        class="flex justify-center items-center w-full sm:max-w-[200px] px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-md shadow-sm text-lg disabled:opacity-50 disabled:cursor-not-allowed">
+                        <app-icon name="play" class="w-6 h-6" [strokeWidth]="2.5"></app-icon>
+                        START</button>
                       <button appPressScroll (shortPress)="viewRoutineDetails(workoutInfo.routine.id)"
-                        class="flex-1 bg-sky-500 hover:bg-sky-600 text-white font-semibold py-2.5 px-4 rounded-md shadow-sm flex items-center justify-center text-m">
+                        class="flex justify-center items-center w-full sm:max-w-[200px] px-6 py-3 bg-sky-500 hover:bg-sky-600 text-white font-semibold rounded-md shadow-sm text-lg disabled:opacity-50 disabled:cursor-not-allowed">
                         <app-icon name="eye" class="w-6 h-6">
                         </app-icon>
                         <span class="ml-1">

@@ -156,7 +156,7 @@ export class TrainingProgramService {
     }
   }
 
-  async toggleProgramActivation(programId: string): Promise<void> {
+  async toggleProgramActivation(programId: string, status: 'active' | 'completed' | 'archived' | 'cancelled' = 'completed'): Promise<void> {
     const currentPrograms = this.programsSubject.getValue();
     const targetProgram = currentPrograms.find(p => p.id === programId);
 
@@ -165,6 +165,7 @@ export class TrainingProgramService {
       return;
     }
 
+    this.updateProgramHistory(programId, status, new Date().toISOString());
     const updatedPrograms = currentPrograms.map(p => {
       if (p.id === programId) {
         return { ...p, isActive: !p.isActive };
@@ -177,7 +178,22 @@ export class TrainingProgramService {
     if (!targetProgram.isActive) {
       this.toastService.success(`Program "${targetProgram.name}" is now active.`, 3000, "Program Activated");
     } else {
-      this.toastService.info(`Program "${targetProgram.name}" has been deactivated.`, 3000, "Program Deactivated");
+      let statusMessage = '';
+      switch (status) {
+        case 'completed':
+          statusMessage = `Program "${targetProgram.name}" marked as completed.`;
+          break;
+        case 'archived':
+          statusMessage = `Program "${targetProgram.name}" archived.`;
+          break;
+        case 'cancelled':
+          statusMessage = `Program "${targetProgram.name}" cancelled.`;
+          break;
+        default:
+          statusMessage = `Program "${targetProgram.name}" deactivated.`;
+          break;
+      }
+      this.toastService.info(statusMessage, 3000, "Program Status Updated");
     }
   }
 
@@ -189,7 +205,7 @@ export class TrainingProgramService {
     }
   }
 
-  async deactivateProgram(programId: string): Promise<void> {
+  async deactivateProgram(programId: string, status: 'active' | 'completed' | 'archived' | 'cancelled' = 'completed'): Promise<void> {
     const currentPrograms = this.programsSubject.getValue();
     const targetProgram = currentPrograms.find(p => p.id === programId);
 
@@ -203,6 +219,7 @@ export class TrainingProgramService {
       return;
     }
 
+    this.updateProgramHistory(programId, status);
     const updatedPrograms = currentPrograms.map(p =>
       p.id === programId ? { ...p, isActive: false } : p
     );
@@ -444,4 +461,99 @@ export class TrainingProgramService {
       })
     );
   }
+
+  // date:  // ISO string YYYY-MM-DD
+  async updateProgramHistory(programId: string, status: 'active' | 'completed' | 'archived' | 'cancelled' = 'completed',
+    startDate?: string,
+    endDate?: string): Promise<void> {
+    const currentPrograms = this.programsSubject.getValue();
+    const targetProgram = currentPrograms.find(p => p.id === programId);
+
+    if (!targetProgram) {
+      this.toastService.error("Program not found to finish", 0, "Finish Error");
+      return;
+    }
+
+    if (!targetProgram.startDate) {
+      this.toastService.error("Program does not have a 'starting date'", 0, "Finish Error");
+      return;
+    }
+
+    const finishedDate = new Date().toISOString();
+
+    // Ensure history array exists
+    const history = Array.isArray(targetProgram.history) ? targetProgram.history : [];
+
+    // Check if there's an active history entry for this program
+    const activeHistoryIndex = history.findIndex(entry => entry.status === 'active');
+    if (activeHistoryIndex !== -1) {
+      // Update the active entry with endDate and new status
+      history[activeHistoryIndex] = {
+        ...history[activeHistoryIndex],
+        endDate: endDate ? endDate : status === 'active' ? '-' : finishedDate,
+        status,
+        date: new Date().toISOString()
+      };
+    } else {
+      // No active entry, push a new history record
+      history.push({
+        endDate: endDate ? endDate : status === 'active' ? '-' : finishedDate,
+        programId: targetProgram.id,
+        id: uuidv4(),
+        startDate: startDate ? startDate : targetProgram.startDate,
+        date: new Date().toISOString(),
+        status: status
+      });
+    }
+
+    const updatedProgram = {
+      ...targetProgram,
+      isActive: false,
+      history,
+    };
+
+    const updatedPrograms = currentPrograms.map(p =>
+      p.id === programId ? updatedProgram : p
+    );
+
+    this._saveProgramsToStorage(updatedPrograms);
+    this.toastService.success(`Program "${targetProgram.name}" marked as finished.`, 3000, "Program Finished");
+  }
+
+
+  async removeProgramHistoryEntry(programId: string, historyEntryId: string): Promise<void> {
+    const currentPrograms = this.programsSubject.getValue();
+    const targetProgram = currentPrograms.find(p => p.id === programId);
+
+    if (!targetProgram) {
+      this.toastService.error("Program not found", 0, "Remove History Error");
+      return;
+    }
+
+    const updatedHistory = (targetProgram.history || []).filter(entry => entry.id !== historyEntryId);
+
+    // If the removed entry was the latest or active, update isActive accordingly
+    let isActive = targetProgram.isActive;
+    if (targetProgram.history && targetProgram.history.length > 0) {
+      const removedEntry = targetProgram.history.find(entry => entry.id === historyEntryId);
+      if (removedEntry && removedEntry.status === 'active') {
+        // If the removed entry was active, set isActive to false
+        isActive = false;
+      }
+    }
+
+    const updatedProgram = {
+      ...targetProgram,
+      history: updatedHistory,
+      isActive: isActive,
+    };
+
+    const updatedPrograms = currentPrograms.map(p =>
+      p.id === programId ? updatedProgram : p
+    );
+
+    this._saveProgramsToStorage(updatedPrograms);
+    this.toastService.success("History entry removed.", 3000, "History Updated");
+  }
+
 }

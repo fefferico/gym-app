@@ -66,4 +66,5 @@ export interface TrainingProgramHistoryEntry {
   date: string; // ISO string YYYY-MM-DD
   startDate: string; // ISO string YYYY-MM-DD
   endDate: string; // ISO string YYYY-MM-DD
+  status: 'active' | 'completed' | 'archived' | 'cancelled';
 }

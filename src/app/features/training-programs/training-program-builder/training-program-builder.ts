@@ -230,7 +230,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
 
     }
 
-createScheduledDayGroup(day?: Partial<ScheduledRoutineDay>): FormGroup {
+    createScheduledDayGroup(day?: Partial<ScheduledRoutineDay>): FormGroup {
         const defaultDayValue = this.currentDayOptions()[0]?.value || 1;
         return this.fb.group({
             id: [day?.id || uuidv4()],
@@ -440,17 +440,62 @@ createScheduledDayGroup(day?: Partial<ScheduledRoutineDay>): FormGroup {
         return this.scheduleFormArray.at(index) as FormGroup;
     }
 
+    async completeProgram(): Promise<void> {
+        if (!this.currentProgramId) {
+            return;
+        }
+        if (!this.isCurrentProgramActive()) {
+            return
+        }
+        try {
+            this.spinnerService.show("Completing program...");
+            await this.trainingProgramService.toggleProgramActivation(this.currentProgramId, 'completed');
+            // Service emits updated list
+        } catch (error) {
+            this.toastService.error("Failed to complete program", 0, "Error");
+        } finally {
+            this.spinnerService.hide();
+        }
+        return;
+    }
+
     async toggleActiveProgram(): Promise<void> {
         if (!this.currentProgramId) {
             return;
         }
         if (this.isCurrentProgramActive()) {
             // Option to deactivate
-            const confirmDeactivate = await this.alertService.showConfirm("Deactivate Program?", "Do you want to deactivate this program? No program will be active", "Deactivate");
-            if (confirmDeactivate && confirmDeactivate.data) {
+
+            const choice = await this.alertService.showConfirmationDialog(
+                "Program is currently active.",
+                "What would you like to do?",
+                [
+                    { text: "Deactivate", role: "deactivate", data: "deactivate", icon: 'deactivate' },
+                    { text: "Complete", role: "complete", data: "complete", icon: 'goal', cssClass: 'bg-green-500 hover:bg-green-600' },
+                    { text: "Cancel", role: "cancel", data: "cancel", icon: 'cancel' },
+                ]
+            );
+
+            if (!choice || !choice.data || choice.data === "cancel") {
+                this.spinnerService.hide();
+                return;
+            }
+
+            if (choice.data === "complete") {
+                try {
+                    this.spinnerService.show("Completing program...");
+                    await this.trainingProgramService.toggleProgramActivation(this.currentProgramId, 'completed');
+                    // Service emits updated list
+                } catch (error) {
+                    this.toastService.error("Failed to complete program", 0, "Error");
+                } finally {
+                    this.spinnerService.hide();
+                }
+                return;
+            } else {
                 try {
                     this.spinnerService.show("Deactivating program...");
-                    await this.trainingProgramService.deactivateProgram(this.currentProgramId); // Assumes service has this
+                    await this.trainingProgramService.deactivateProgram(this.currentProgramId, 'cancelled');
                     // Service emits updated list
                 } catch (error) { this.toastService.error("Failed to deactivate", 0, "Error"); }
                 finally { this.spinnerService.hide(); }
@@ -462,9 +507,25 @@ createScheduledDayGroup(day?: Partial<ScheduledRoutineDay>): FormGroup {
             this.spinnerService.show("Setting active program...");
             // The service method should handle setting the new active program,
             // updating isActive flags on all programs, and emitting the updated list.
-            await this.trainingProgramService.toggleProgramActivation(this.currentProgramId);
+            await this.trainingProgramService.toggleProgramActivation(this.currentProgramId, 'active');
         } catch (error) { this.toastService.error("Failed to set active program", 0, "Error"); }
         finally { this.spinnerService.hide(); }
+    }
+
+    toggleProgramHistory(): void {
+        if (!this.currentProgram?.history || this.currentProgram.history.length === 0) {
+            this.toastService.info("No history available for this program.", 3000);
+            return;
+        }
+        this.isProgramHistoryModalOpen = signal(true);
+    }
+
+    // Add this property to your component class:
+    isProgramHistoryModalOpen = signal(false);
+
+    // Add this method to close the modal:
+    closeProgramHistoryModal(): void {
+        this.isProgramHistoryModalOpen.set(false);
     }
 
     private updateSanitizedDescription(value: string): void {
@@ -521,17 +582,52 @@ createScheduledDayGroup(day?: Partial<ScheduledRoutineDay>): FormGroup {
             data: { programId: programId }
         };
 
+        const historyProgramBtn = {
+            label: 'HISTORY',
+            actionKey: 'history',
+            iconSvg: `<svg fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                      stroke="currentColor" aria-hidden="true">
+                      <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                      </svg>`,
+            iconClass: 'w-8 h-8 mr-2',
+            buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+            data: { programId: programId }
+        };
+
+        const finishProgramBtn = {
+            label: 'FINISH',
+            actionKey: 'finish',
+            iconSvg: `<svg fill="currentColor" viewBox="0 0 72 72" aria-hidden="true">
+                                    <g>
+                                        <path
+                                            d="M21.929,10.583h3c0.553,0,1-0.447,1-1s-0.447-1-1-1h-3c-0.553,0-1,0.447-1,1S21.376,10.583,21.929,10.583z" />
+                                        <path
+                                            d="M29.929,10.583h8c0.553,0,1-0.447,1-1s-0.447-1-1-1h-8c-0.553,0-1,0.447-1,1S29.376,10.583,29.929,10.583z" />
+                                        <path
+                                            d="M41.074,43.893l-2.971-0.443l-1.287-2.796C36.49,39.944,35.78,39.49,35,39.49s-1.49,0.454-1.816,1.163l-1.288,2.796 l-2.97,0.443c-0.746,0.112-1.366,0.635-1.604,1.352c-0.236,0.717-0.049,1.506,0.484,2.04l2.165,2.168l-0.708,3.16 c-0.175,0.78,0.133,1.591,0.782,2.059c0.348,0.251,0.759,0.378,1.17,0.378c0.355,0,0.712-0.095,1.03-0.285l2.769-1.664l2.964,1.688 c0.308,0.176,0.649,0.262,0.989,0.262c0.435,0,0.867-0.142,1.226-0.42c0.639-0.495,0.917-1.326,0.704-2.105l-0.844-3.097 l2.14-2.143c0.533-0.534,0.721-1.323,0.484-2.04C42.44,44.527,41.82,44.005,41.074,43.893z M38.202,48.451 c-0.216,0.216-0.313,0.52-0.264,0.818l1.029,3.779l-3.496-1.99c-0.146-0.078-0.309-0.117-0.472-0.117s-0.325,0.039-0.472,0.117 l-3.313,1.99l0.846-3.779c0.05-0.299-0.048-0.603-0.264-0.818l-2.576-2.58l3.515-0.525c0.321-0.049,0.598-0.25,0.735-0.537 L35,41.49l1.528,3.318c0.138,0.287,0.414,0.488,0.735,0.537l3.515,0.525L38.202,48.451z" />
+                                        <path
+                                            d="M47.874,32.213l3.275-3.227c0.389-0.377,0.434-0.895,0.434-1.436v-9.054c3-1.049,5.453-4.214,5.453-7.757 c0-4.411-3.608-8.157-7.999-8.157H20.962c-4.391,0-7.926,3.746-7.926,8.157c0,3.552,2.547,6.725,5.547,7.766v9.045 c0,0.541,0.392,1.059,0.78,1.436l3.142,2.914c-4.463,3.64-7.329,9.176-7.329,15.369c0,10.936,8.893,19.833,19.829,19.833 c10.936,0,19.831-8.897,19.831-19.833C54.835,41.247,52.125,35.854,47.874,32.213z M40.583,28.231v-9.648h7v8.122l-3.041,3.145 C43.299,29.17,41.583,28.634,40.583,28.231z M38.583,18.583v9.184c-1-0.205-2.312-0.33-3.512-0.33 c-1.192,0-2.488,0.124-3.488,0.326v-9.18H38.583z M17,10.583c0-2.209,1.774-4,3.962-4h27.55l0.316-0.025 c2.189,0,4.067,1.999,4.067,4.208c0,2.208-1.669,3.817-3.858,3.817H20.962C18.774,14.583,17,12.791,17,10.583z M22.583,26.705 v-8.122h7v9.643c-1,0.374-2.536,0.871-3.708,1.488L22.583,26.705z M35,63.103c-8.745,0-15.833-7.087-15.833-15.833 S26.255,31.437,35,31.437s15.833,7.087,15.833,15.833S43.745,63.103,35,63.103z" />
+                                        <path
+                                            d="M32.5,36.637c0.027,0,0.055-0.001,0.083-0.003c0.246-0.021,0.498-0.031,0.75-0.031c0.553,0,1-0.447,1-1s-0.447-1-1-1 c-0.307,0-0.613,0.013-0.914,0.037c-0.55,0.046-0.96,0.528-0.915,1.079C31.547,36.241,31.984,36.637,32.5,36.637z" />
+                                        <path
+                                            d="M29.584,37.419c0.502-0.23,0.723-0.824,0.492-1.326c-0.231-0.503-0.826-0.721-1.326-0.492 c-3.898,1.789-6.417,5.715-6.417,10.003c0,0.553,0.447,1,1,1s1-0.447,1-1C24.333,42.095,26.395,38.883,29.584,37.419z" />
+                                    </g>
+                                </svg>`,
+            iconClass: 'w-8 h-8 mr-2',
+            buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+            data: { programId: programId }
+        };
+
         const deactivateProgramBtn =
         {
             label: 'DEACTIVATE',
             actionKey: 'deactivate',
-            iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
-                        fill="currentColor" class="text-red-500">
-                        <path fill-rule="evenodd"
-                          d="M10 18a8 8 0 100-16 8 8 0 000 16Zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5Z"
-                          clip-rule="evenodd" />
-                      </svg>`,
-            iconClass: 'w-8 h-8 mr-2',
+            iconSvg: `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="50" cy="50" r="45" stroke="currentColor" stroke-width="10"/>
+                    <line x1="25" y1="50" x2="75" y2="50" stroke="currentColor" stroke-width="10"/>
+                    </svg>`,
+            iconClass: 'w-7 h-7 mr-2',
             buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + deactivateBtnClass,
             data: { programId: programId }
         };
@@ -539,9 +635,14 @@ createScheduledDayGroup(day?: Partial<ScheduledRoutineDay>): FormGroup {
         let actionsArray = [] as ActionMenuItem[];
 
         if (currentProgram?.isActive) {
+            actionsArray.push(finishProgramBtn);
             actionsArray.push(deactivateProgramBtn);
         } else {
             actionsArray.push(activateProgramBtn);
+        }
+
+        if (currentProgram?.history && currentProgram.history.length > 0) {
+            actionsArray.push(historyProgramBtn);
         }
 
         if (this.isViewMode) {
@@ -562,6 +663,12 @@ createScheduledDayGroup(day?: Partial<ScheduledRoutineDay>): FormGroup {
                 break;
             case 'deactivate':
                 this.toggleActiveProgram();
+                break;
+            case 'finish':
+                this.completeProgram();
+                break;
+            case 'history':
+                this.toggleProgramHistory();
                 break;
             case 'edit':
                 this.enableEditModeFromView();
@@ -590,6 +697,29 @@ createScheduledDayGroup(day?: Partial<ScheduledRoutineDay>): FormGroup {
 
     navigateToPrograms(): void {
         this.router.navigate(['/training-programs']);
+    }
+
+
+    async removeProgramHistoryEntry(historyId: string): Promise<void> {
+        if (!this.currentProgramId || !historyId) {
+            this.toastService.error("Missing program or history entry ID.", 0, "Error");
+            return;
+        }
+        try {
+            this.spinnerService.show("Removing history entry...");
+            await this.trainingProgramService.removeProgramHistoryEntry(this.currentProgramId, historyId);
+            this.toastService.success("History entry removed.", 0, "Success");
+            // Optionally refresh the program data
+            const updatedProgram = await firstValueFrom(this.trainingProgramService.getProgramById(this.currentProgramId).pipe(take(1)));
+            this.currentProgram = updatedProgram;
+            if (updatedProgram) {
+                this.patchFormWithProgramData(updatedProgram);
+            }
+        } catch (error) {
+            this.toastService.error("Failed to remove history entry.", 0, "Error");
+        } finally {
+            this.spinnerService.hide();
+        }
     }
 
 
