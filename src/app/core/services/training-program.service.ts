@@ -26,27 +26,29 @@ export class TrainingProgramService {
 
   private readonly PROGRAMS_STORAGE_KEY = 'fitTrackPro_trainingPrograms';
 
-  private programsSubject = new BehaviorSubject<TrainingProgram[]>(this._loadProgramsFromStorage());
+  // Initialize with a default empty value. It will be updated by the async method.
+  private programsSubject = new BehaviorSubject<TrainingProgram[]>([]);
   public programs$: Observable<TrainingProgram[]> = this.programsSubject.asObservable();
 
   private isLoadingProgramsSubject = new BehaviorSubject<boolean>(true);
   public isLoadingPrograms$: Observable<boolean> = this.isLoadingProgramsSubject.asObservable();
 
   constructor() {
-    this.isLoadingProgramsSubject.next(true);
+    this._initializePrograms();
+  }
 
-    const programsFromStorage = this._loadProgramsFromStorage();
+  private async _initializePrograms(): Promise<void> {
+    // 1. Await the data from the asynchronous storage service.
+    const programsFromStorage = await this._loadProgramsFromStorage();
 
-    this.programsSubject = new BehaviorSubject<TrainingProgram[]>(programsFromStorage);
-    this.programs$ = this.programsSubject.asObservable().pipe(
-      shareReplay(1)
-    );
-
+    // 2. The seeding logic now runs with the actual data.
+    // This method will call _saveProgramsToStorage, which in turn calls
+    // this.programsSubject.next() with the final, merged data.
     this._seedAndMergeProgramsFromStaticData(programsFromStorage);
   }
 
-  private _loadProgramsFromStorage(): TrainingProgram[] {
-    const programs = this.storageService.getItem<TrainingProgram[]>(this.PROGRAMS_STORAGE_KEY);
+  private async _loadProgramsFromStorage(): Promise<TrainingProgram[]> {
+    const programs = await this.storageService.getItem<TrainingProgram[]>(this.PROGRAMS_STORAGE_KEY);
     return programs ? programs : [];
   }
 
@@ -139,7 +141,7 @@ export class TrainingProgramService {
 
       let programsArray = [...currentPrograms];
       programsArray[index] = programToSave;
-      
+
       this._saveProgramsToStorage(programsArray);
       this.toastService.success(`Program "${programToSave.name}" updated.`, 3000, "Program Updated");
       return programToSave;
@@ -428,8 +430,8 @@ export class TrainingProgramService {
       })
     );
   }
-  
- getScheduledRoutinesForDateRangeByProgramId(programId: string, rangeStart: Date, rangeEnd: Date): Observable<{ date: Date; scheduledDayInfo: ScheduledRoutineDay }[]> {
+
+  getScheduledRoutinesForDateRangeByProgramId(programId: string, rangeStart: Date, rangeEnd: Date): Observable<{ date: Date; scheduledDayInfo: ScheduledRoutineDay }[]> {
     return this.getProgramById(programId).pipe(
       map(program => {
         if (!program || (!program.schedule?.length && !program.weeks?.length)) {
@@ -463,12 +465,12 @@ export class TrainingProgramService {
         // --- MODIFIED: Handle 'cycled' programs (existing logic) ---
         else if (program.programType === 'cycled' && program.schedule?.length) {
           const cycleLength = program.cycleLength && program.cycleLength > 0 ? program.cycleLength : 7;
-          
+
           const scheduleMap = new Map<number, ScheduledRoutineDay>();
           program.schedule.forEach(day => {
             // For weekly cycles (cycleLength=7), key is day of week (0-6). For n-day, it's day number (1-n).
-             const key = cycleLength === 7 ? day.dayOfWeek : day.dayOfWeek;
-             scheduleMap.set(key, day);
+            const key = cycleLength === 7 ? day.dayOfWeek : day.dayOfWeek;
+            scheduleMap.set(key, day);
           });
 
           allDaysInRange.forEach(currentDate => {
@@ -477,12 +479,12 @@ export class TrainingProgramService {
             let scheduledDayInfo: ScheduledRoutineDay | undefined;
 
             if (cycleLength === 7) { // Standard weekly logic
-                const dayOfWeek = getDay(currentDate);
-                scheduledDayInfo = scheduleMap.get(dayOfWeek);
+              const dayOfWeek = getDay(currentDate);
+              scheduledDayInfo = scheduleMap.get(dayOfWeek);
             } else { // N-day cycle logic
-                const daysSinceStart = differenceInDays(currentDate, programStartDate);
-                const currentCycleDayNumber = (daysSinceStart % cycleLength) + 1;
-                scheduledDayInfo = scheduleMap.get(currentCycleDayNumber);
+              const daysSinceStart = differenceInDays(currentDate, programStartDate);
+              const currentCycleDayNumber = (daysSinceStart % cycleLength) + 1;
+              scheduledDayInfo = scheduleMap.get(currentCycleDayNumber);
             }
 
             if (scheduledDayInfo) {
@@ -526,9 +528,9 @@ export class TrainingProgramService {
         // After updating the history, we MUST re-evaluate and sync the root isActive flag.
         // A program is considered active if ANY of its history entries has the status 'active'.
         const isNowActive = history.some(h => h.status === 'active');
-        
+
         updatedProgram = { ...targetProgram, history, isActive: isNowActive };
-        
+
         this.toastService.success(`History entry updated.`, 3000, "History Updated");
       } else {
         this.toastService.error("History entry not found to update.", 0, "Update Error");

@@ -3356,7 +3356,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
   private async checkForPausedSession(isReEntry: boolean = false): Promise<boolean> {
-    const pausedState = this.storageService.getItem<PausedWorkoutState>(this.PAUSED_WORKOUT_KEY);
+    const pausedState = await this.storageService.getItem<PausedWorkoutState>(this.PAUSED_WORKOUT_KEY);
     const routeRoutineId = this.route.snapshot.paramMap.get('routineId');
     const resumeQueryParam = this.route.snapshot.queryParamMap.get('resume') === 'true';
 

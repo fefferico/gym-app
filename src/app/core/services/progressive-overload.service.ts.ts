@@ -1,15 +1,15 @@
 
 export enum ProgressiveOverloadStrategy {
-    WEIGHT = 'weight',
-    REPS = 'reps',
+  WEIGHT = 'weight',
+  REPS = 'reps',
 }
 
 export interface ProgressiveOverloadSettings {
-    enabled: boolean;
-    strategy: ProgressiveOverloadStrategy | null;
-    weightIncrement: number | null;
-    repsIncrement: number | null;
-    sessionsToIncrement: number | null;
+  enabled: boolean;
+  strategy: ProgressiveOverloadStrategy | null;
+  weightIncrement: number | null;
+  repsIncrement: number | null;
+  sessionsToIncrement: number | null;
 }
 
 import { Injectable, inject } from '@angular/core';
@@ -35,9 +35,26 @@ export class ProgressiveOverloadService {
   public settings$: Observable<ProgressiveOverloadSettings>;
 
   constructor() {
-    const storedSettings = this.storageService.getItem<ProgressiveOverloadSettings>(this.SETTINGS_KEY);
-    this.settingsSubject = new BehaviorSubject<ProgressiveOverloadSettings>(storedSettings || this.defaultSettings);
+    // 1. Initialize with default settings immediately. This ensures the app always has a valid state.
+    this.settingsSubject = new BehaviorSubject<ProgressiveOverloadSettings>(this.defaultSettings);
     this.settings$ = this.settingsSubject.asObservable();
+
+    // 2. Call the new async method to load saved settings from storage.
+    this._initializeSettings();
+  }
+
+  /**
+ * Asynchronously loads progressive overload settings from storage and updates the BehaviorSubject.
+ */
+  private async _initializeSettings(): Promise<void> {
+    // 'await' pauses here until the settings are loaded from IndexedDB.
+    const storedSettings = await this.storageService.getItem<ProgressiveOverloadSettings>(this.SETTINGS_KEY);
+
+    // If we found settings in storage, update the subject with them.
+    // Otherwise, it will just keep the default settings from the constructor.
+    if (storedSettings) {
+      this.settingsSubject.next(storedSettings);
+    }
   }
 
   /**

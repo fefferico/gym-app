@@ -1,7 +1,7 @@
 // src/app/core/services/tracking.service.ts
 import { Injectable, Injector, inject } from '@angular/core';
 import { BehaviorSubject, Observable, of } from 'rxjs';
-import { map, take, tap } from 'rxjs/operators';
+import { map, shareReplay, take, tap } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
 
 import { LastPerformanceSummary, LoggedSet, PersonalBestSet, WorkoutLog, PBHistoryInstance } from '../models/workout-log.model'; // Ensure PBHistoryInstance is imported
@@ -35,18 +35,45 @@ export class TrackingService {
   private readonly WORKOUT_LOGS_STORAGE_KEY = 'fitTrackPro_workoutLogs';
   private readonly PERSONAL_BESTS_STORAGE_KEY = 'fitTrackPro_personalBests';
 
-  private workoutLogsSubject = new BehaviorSubject<WorkoutLog[]>(this.loadWorkoutLogsFromStorage());
+  private workoutLogsSubject = new BehaviorSubject<WorkoutLog[]>([]);
   public workoutLogs$: Observable<WorkoutLog[]> = this.workoutLogsSubject.asObservable();
 
-  private personalBestsSubject = new BehaviorSubject<Record<string, PersonalBestSet[]>>(this.loadPBsFromStorage());
+  // --- CORRECT INITIALIZATION FOR PERSONAL BESTS ---
+  private personalBestsSubject = new BehaviorSubject<Record<string, PersonalBestSet[]>>({});
   public personalBests$: Observable<Record<string, PersonalBestSet[]>> = this.personalBestsSubject.asObservable();
 
   constructor() {
-    // console.log('Initial workout logs loaded:', this.workoutLogsSubject.getValue());
+    // 1. Initialize subjects with empty data immediately for early subscribers.
+    this.workoutLogsSubject = new BehaviorSubject<WorkoutLog[]>([]);
+    this.workoutLogs$ = this.workoutLogsSubject.asObservable();
+
+    this.personalBestsSubject = new BehaviorSubject<Record<string, PersonalBestSet[]>>({});
+    this.personalBests$ = this.personalBestsSubject.asObservable();
+
+    // 2. Call the new async methods to handle the actual data loading.
+    this._initializeWorkoutLogs();
+    this._initializePersonalBests();
   }
 
-  private loadWorkoutLogsFromStorage(): WorkoutLog[] {
-    const logs = this.storageService.getItem<WorkoutLog[]>(this.WORKOUT_LOGS_STORAGE_KEY);
+  /**
+   * Asynchronously loads workout logs from storage and updates the BehaviorSubject.
+   */
+  private async _initializeWorkoutLogs(): Promise<void> {
+    const logsFromStorage = await this.loadWorkoutLogsFromStorage();
+    this.workoutLogsSubject.next(logsFromStorage);
+    // console.log('Initial workout logs loaded:', logsFromStorage);
+  }
+
+  /**
+   * Asynchronously loads personal bests from storage and updates the BehaviorSubject.
+   */
+  private async _initializePersonalBests(): Promise<void> {
+    const pbsFromStorage = await this.loadPBsFromStorage();
+    this.personalBestsSubject.next(pbsFromStorage);
+  }
+
+  private async loadWorkoutLogsFromStorage(): Promise<WorkoutLog[]> {
+    const logs = await this.storageService.getItem<WorkoutLog[]>(this.WORKOUT_LOGS_STORAGE_KEY);
     return logs ? logs.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) : [];
   }
 
@@ -176,8 +203,9 @@ export class TrackingService {
     return null;
   }
 
-  private loadPBsFromStorage(): Record<string, PersonalBestSet[]> {
-    return this.storageService.getItem<Record<string, PersonalBestSet[]>>(this.PERSONAL_BESTS_STORAGE_KEY) || {};
+  private async loadPBsFromStorage(): Promise<Record<string, PersonalBestSet[]>> {
+    const pbs = await this.storageService.getItem<Record<string, PersonalBestSet[]>>(this.PERSONAL_BESTS_STORAGE_KEY);
+    return pbs || {};
   }
 
   private savePBsToStorage(pbs: Record<string, PersonalBestSet[]>): void {
@@ -265,10 +293,10 @@ export class TrackingService {
         if ((candidateSet.durationPerformed ?? 0) > (existingPb.durationPerformed ?? 0)) isBetter = true;
       } else { // Weight-based (XRM, Heaviest Lifted)
         if ((candidateSet.weightUsed ?? -1) > (existingPb.weightUsed ?? -1)) {
-            isBetter = true;
+          isBetter = true;
         }
         if ((candidateSet.weightUsed ?? -1) >= (existingPb.weightUsed ?? -1) && (candidateSet.repsAchieved ?? -1) >= (existingPb.repsAchieved ?? -1)) {
-            isBetter = true;
+          isBetter = true;
         }
       }
 
@@ -501,7 +529,7 @@ export class TrackingService {
       "Logs Merged"
     );
 
-   // --- NEW: Trigger the backfill for lastUsedAt timestamps ---
+    // --- NEW: Trigger the backfill for lastUsedAt timestamps ---
     await this.backfillLastUsedExerciseTimestamps();
     // -----------------------------------------------------------
 

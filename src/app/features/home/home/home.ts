@@ -67,9 +67,9 @@ export class HomeComponent implements OnInit {
     }
   }
 
-  checkPausedWorkout(): void {
+  async checkPausedWorkout(): Promise<void> {
     if (isPlatformBrowser(this.platformId)) {
-      const pausedState = this.storageService.getItem<PausedWorkoutState>('fitTrackPro_pausedWorkoutState'); // Use the correct key
+      const pausedState = await this.storageService.getItem<PausedWorkoutState>('fitTrackPro_pausedWorkoutState'); // Use the correct key
       this.pausedWorkoutInfo.set(pausedState);
     }
   }

@@ -1,101 +1,132 @@
-import { Injectable, Inject, PLATFORM_ID, inject } from '@angular/core';
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import { openDB, IDBPDatabase } from 'idb';
 import { AlertService } from './alert.service';
+
+const DB_NAME = 'FitTrackPro-Data';
+const STORE_NAME = 'keyval-store';
+const DB_VERSION = 1;
 
 @Injectable({
   providedIn: 'root',
 })
 export class StorageService {
   private isBrowser: boolean;
-  private alertService = inject(AlertService);
+  private dbPromise: Promise<IDBPDatabase<any>>;
 
-  private version = '1.0.3'; // Version of the storage service
+  // The version is part of the service's code, not stored data.
+  private version = '1.0.3'; 
 
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+  constructor(
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private alertService: AlertService // Keep using DI for AlertService
+  ) {
     this.isBrowser = isPlatformBrowser(this.platformId);
     if (!this.isBrowser) {
-      console.warn('StorageService: localStorage is not available in this environment. Operations will be no-op.');
+      console.warn('StorageService: IndexedDB is not available in this environment.');
+      // Create a dummy promise to prevent errors in non-browser environments
+      this.dbPromise = new Promise(() => {}); 
+    } else {
+      // Initialize the database connection when the service is created.
+      this.dbPromise = openDB(DB_NAME, DB_VERSION, {
+        upgrade(db) {
+          // Create an object store to function as a key-value pair store.
+          if (!db.objectStoreNames.contains(STORE_NAME)) {
+            db.createObjectStore(STORE_NAME);
+          }
+        },
+      });
     }
   }
 
   /**
-   * Saves an item to localStorage.
+   * Saves an item to IndexedDB.
    * @param key The key under which to store the value.
-   * @param value The value to store. Can be any JSON-serializable type.
+   * @param value The value to store.
    */
-  setItem<T>(key: string, value: T): void {
-    if (this.isBrowser) {
-      try {
-        localStorage.setItem(key, JSON.stringify(value));
-      } catch (e) {
-        console.error(`Error saving item "${key}" to localStorage:`, e);
-        // Optionally, you could throw the error or handle it based on app requirements
-        // For example, if localStorage is full (QuotaExceededError)
-      }
+  async setItem<T>(key: string, value: T): Promise<void> {
+    if (!this.isBrowser) return;
+    try {
+      const db = await this.dbPromise;
+      await db.put(STORE_NAME, value, key);
+    } catch (e) {
+      console.error(`Error saving item "${key}" to IndexedDB:`, e);
     }
   }
 
   /**
-   * Retrieves an item from localStorage.
+   * Retrieves an item from IndexedDB.
    * @param key The key of the item to retrieve.
-   * @returns The retrieved item, or null if the key is not found or an error occurs.
+   * @returns A Promise resolving to the item, or null if not found.
    */
-  getItem<T>(key: string): T | null {
-    if (this.isBrowser) {
-      try {
-        const item = localStorage.getItem(key);
-        return item ? (JSON.parse(item) as T) : null;
-      } catch (e) {
-        console.error(`Error getting item "${key}" from localStorage:`, e);
-        return null;
-      }
+  async getItem<T>(key: string): Promise<T | null> {
+    if (!this.isBrowser) return null;
+    try {
+      const db = await this.dbPromise;
+      const value = await db.get(STORE_NAME, key);
+      // idb returns undefined for non-existent keys
+      return value !== undefined ? (value as T) : null;
+    } catch (e) {
+      console.error(`Error getting item "${key}" from IndexedDB:`, e);
+      return null;
     }
-    return null;
   }
 
   /**
-   * Removes an item from localStorage.
+   * Removes an item from IndexedDB.
    * @param key The key of the item to remove.
    */
-  removeItem(key: string): void {
-    if (this.isBrowser) {
+  async removeItem(key: string): Promise<void> {
+    if (!this.isBrowser) return;
+    try {
+      const db = await this.dbPromise;
+      await db.delete(STORE_NAME, key);
+    } catch (e) {
+      console.error(`Error removing item "${key}" from IndexedDB:`, e);
+    }
+  }
+
+  /**
+   * Clears specified items from IndexedDB.
+   * @param knownKeys An array of keys to remove.
+   */
+  async clearAllApplicationData(knownKeys: string[]): Promise<void> {
+    if (!this.isBrowser) return;
+    console.warn('Clearing specified application data from IndexedDB for keys:', knownKeys);
+    try {
+        const db = await this.dbPromise;
+        // Use a transaction for efficiency when deleting multiple items
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        await Promise.all(knownKeys.map(key => tx.store.delete(key)));
+        await tx.done;
+    } catch(e) {
+        console.error('Error clearing application data from IndexedDB:', e);
+    }
+  }
+
+  /**
+   * Clears all items from the application's object store in IndexedDB.
+   */
+  async clearEntireLocalStorage_USE_WITH_CAUTION(): Promise<void> {
+    if (!this.isBrowser) return;
+
+    const result = await this.alertService.showConfirmationDialog(
+      'WARNING',
+      'This will clear ALL locally stored application data. Are you sure you want to proceed?',
+      [
+          { text: 'Cancel', role: 'cancel', data: false },
+          { text: 'Clear Data', role: 'confirm', data: true, cssClass: 'bg-red-600' }
+      ]
+    );
+
+    if (result && result.data) {
       try {
-        localStorage.removeItem(key);
+        const db = await this.dbPromise;
+        await db.clear(STORE_NAME);
+        console.log('Application IndexedDB store has been cleared.');
       } catch (e) {
-        console.error(`Error removing item "${key}" from localStorage:`, e);
+        console.error('Error clearing IndexedDB store:', e);
       }
-    }
-  }
-
-  /**
-   * Clears all items from localStorage managed by this application.
-   * Be cautious with this method if other parts of the domain use localStorage.
-   * A more targeted approach might be to remove specific known keys.
-   */
-  clearAllApplicationData(knownKeys: string[]): void {
-    if (this.isBrowser) {
-      console.warn('Clearing specified application data from localStorage for keys:', knownKeys);
-      knownKeys.forEach(key => this.removeItem(key));
-    }
-  }
-
-  /**
-   * Clears all items from localStorage. USE WITH EXTREME CAUTION.
-   * This will remove data for the entire domain, not just your app.
-   */
-  clearEntireLocalStorage_USE_WITH_CAUTION(): void {
-    if (this.isBrowser) {
-      this.alertService.showConfirm("WARNING", "This will clear ALL data in localStorage for this domain, potentially affecting other applications or settings. Are you sure you want to proceed?").then((result) => {
-        if (result && (result.data)) {
-          // --- Import Data ---
-          try {
-            localStorage.clear();
-            console.log('Entire localStorage has been cleared.');
-          } catch (e) {
-            console.error('Error clearing entire localStorage:', e);
-          }
-        }
-      });
     }
   }
 

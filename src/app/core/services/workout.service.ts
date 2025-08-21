@@ -24,10 +24,10 @@ export class WorkoutService {
 
   // Using a BehaviorSubject to make routines reactively available and to update them
   // It's initialized by loading routines from storage.
-  private routinesSubject = new BehaviorSubject<Routine[]>(this.loadRoutinesFromStorage());
+  private routinesSubject = new BehaviorSubject<Routine[]>([]);
+  public routines$: Observable<Routine[]> = this.routinesSubject.asObservable();
 
   // Public observable that components can subscribe to
-  public routines$: Observable<Routine[]> = this.routinesSubject.asObservable();
 
   private isLoadingRoutinesSubject = new BehaviorSubject<boolean>(true); // Start as true
   public isLoadingRoutines$: Observable<boolean> = this.isLoadingRoutinesSubject.asObservable();
@@ -35,18 +35,30 @@ export class WorkoutService {
   constructor() {
     this.isLoadingRoutinesSubject.next(true);
 
-    // 1. Load initial routines from storage (this now includes sorting)
-    const routinesFromStorage = this.loadRoutinesFromStorage();
+    // 1. Initialize with an empty array immediately for early subscribers.
+    this.routinesSubject = new BehaviorSubject<Routine[]>([]);
+    this.routines$ = this.routinesSubject.asObservable();
 
-    // 2. Initialize the BehaviorSubject with the sorted routines
-    this.routinesSubject = new BehaviorSubject<Routine[]>(routinesFromStorage);
-    this.routines$ = this.routinesSubject.asObservable().pipe(
-      shareReplay(1)
-    );
+    // 2. Call the new async method to handle the actual loading from storage.
+    this._initializeRoutines();
+  }
 
-    // 3. Seed new data if necessary. The save method inside will handle re-sorting.
+  /**
+   * Asynchronously loads routines from storage, merges them with static data,
+   * and updates the main BehaviorSubject.
+   */
+  private async _initializeRoutines(): Promise<void> {
+    // 1. 'await' pauses here until the data is loaded from IndexedDB.
+    const routinesFromStorage = await this.loadRoutinesFromStorage();
+
+    // 2. The BehaviorSubject is already created, so we just push the loaded value to it.
+    // The seeding method will push the final merged value later if needed.
+    this.routinesSubject.next(routinesFromStorage);
+
+    // 3. The seeding logic runs *after* the initial data has been loaded.
     this._seedAndMergeRoutinesFromStaticData(routinesFromStorage);
   }
+
   // Add this helper method inside your WorkoutService class
   private _sortRoutines(routines: Routine[]): Routine[] {
     // Use slice() to create a shallow copy to avoid mutating the original array directly
@@ -67,8 +79,11 @@ export class WorkoutService {
     });
   }
 
-  private loadRoutinesFromStorage(): Routine[] {
-    let routines = this.storageService.getItem<Routine[]>(this.ROUTINES_STORAGE_KEY);
+  private async loadRoutinesFromStorage(): Promise<Routine[]> {
+    // 'await' "unwraps" the Promise from the storage service.
+    const routines = await this.storageService.getItem<Routine[]>(this.ROUTINES_STORAGE_KEY);
+
+    // Now this method correctly returns a Promise containing the sorted routines.
     return routines ? this._sortRoutines(routines) : [];
   }
 

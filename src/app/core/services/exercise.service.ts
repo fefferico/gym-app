@@ -60,13 +60,25 @@ export class ExerciseService {
 
   constructor() {
     this.isLoadingExercisesSubject.next(true);
-    const exercisesFromStorage = this._loadExercisesFromStorage();
-    this.exercisesSubject = new BehaviorSubject<Exercise[]>(exercisesFromStorage);
 
-    this.exercises$ = this.exercisesSubject.asObservable().pipe(
-      shareReplay(1)
-    );
+    // 1. Initialize the BehaviorSubject with an empty array immediately.
+    // This ensures that any early subscribers get a valid initial value.
+    this.exercisesSubject = new BehaviorSubject<Exercise[]>([]);
+    this.exercises$ = this.exercisesSubject.asObservable();
 
+    // 2. Call the new async method to handle the actual data loading and seeding.
+    this._initializeExercises();
+  }
+
+  /**
+   * Asynchronously loads exercises from storage, merges them with static data,
+   * and updates the main BehaviorSubject.
+   */
+  private async _initializeExercises(): Promise<void> {
+    // 1. 'await' pauses execution here until the data is loaded from IndexedDB.
+    const exercisesFromStorage = await this._loadExercisesFromStorage();
+
+    // 2. The seeding logic now runs *after* the initial data has been loaded.
     this._seedAndMergeExercisesFromStaticData(exercisesFromStorage);
   }
 
@@ -108,8 +120,11 @@ export class ExerciseService {
     }
   }
 
-  private _loadExercisesFromStorage(): Exercise[] {
-    const exercises = this.storageService.getItem<Exercise[]>(this.EXERCISES_STORAGE_KEY);
+  private async _loadExercisesFromStorage(): Promise<Exercise[]> {
+    // 'await' "unwraps" the Promise to get the actual value.
+    const exercises = await this.storageService.getItem<Exercise[]>(this.EXERCISES_STORAGE_KEY);
+
+    // The rest of the logic works correctly now because 'exercises' is the actual array.
     if (!exercises) {
       return [];
     }

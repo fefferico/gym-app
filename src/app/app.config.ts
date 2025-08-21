@@ -1,11 +1,12 @@
 // src/app/app.config.ts
-import { ApplicationConfig, importProvidersFrom, provideZoneChangeDetection } from '@angular/core'; // Ensure provideZoneChangeDetection is imported
+import { ApplicationConfig, importProvidersFrom, provideZoneChangeDetection, isDevMode } from '@angular/core'; // Ensure provideZoneChangeDetection is imported
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { provideHttpClient, withFetch } from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { DBConfig, NgxIndexedDBModule } from 'ngx-indexed-db';
 
 import { APP_ROUTES } from './app.routes';
+import { provideServiceWorker } from '@angular/service-worker';
 
 const dbConfig: DBConfig = {
   name: 'FitTrackProDB',
@@ -30,6 +31,9 @@ export const appConfig: ApplicationConfig = {
     provideAnimations(),
     provideHttpClient(withFetch()),
     // ThemeService is providedIn: 'root', so it's available.
-    importProvidersFrom(NgxIndexedDBModule.forRoot(dbConfig))
+    importProvidersFrom(NgxIndexedDBModule.forRoot(dbConfig)), provideServiceWorker('ngsw-worker.js', {
+            enabled: !isDevMode(),
+            registrationStrategy: 'registerWhenStable:30000'
+          })
   ]
 };

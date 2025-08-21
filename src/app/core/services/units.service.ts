@@ -15,18 +15,35 @@ export class UnitsService {
   private readonly UNIT_STORAGE_KEY = 'fitTrackPro_weightUnit';
   private readonly KG_TO_LBS_FACTOR = 2.20462;
 
-  private unitSubject = new BehaviorSubject<WeightUnit>(this.loadUnitPreference());
+  // 1. Initialize with a default value. The async method will update it with the stored value.
+  private unitSubject = new BehaviorSubject<WeightUnit>('kg');
   public unit$: Observable<WeightUnit> = this.unitSubject.asObservable();
 
-  // --- Convert BehaviorSubject to Signal using toSignal ---
-  public currentUnit = toSignal(this.unitSubject, { initialValue: 'kg' }); // Use toSignal
+  // 2. The signal will correctly derive its value from the BehaviorSubject.
+  public currentUnit = toSignal(this.unitSubject, { initialValue: 'kg' });
 
+  // 3. The constructor now simply calls the async initializer.
   constructor() {
+    this._initializeUnit();
+  }
+
+  /**
+  * Asynchronously loads the unit preference from storage and updates the BehaviorSubject.
+  */
+  private async _initializeUnit(): Promise<void> {
+    // 'await' pauses here until the unit preference is loaded from IndexedDB.
+    const storedUnit = await this.loadUnitPreference();
+
+    // Update the stream with the value loaded from storage.
+    this.unitSubject.next(storedUnit);
     // console.log('UnitsService: Initial unit loaded:', this.currentUnit());
   }
 
-  private loadUnitPreference(): WeightUnit {
-    const storedUnit = this.storageService.getItem<WeightUnit>(this.UNIT_STORAGE_KEY);
+  private async loadUnitPreference(): Promise<WeightUnit> {
+    // 'await' "unwraps" the Promise from the storage service.
+    const storedUnit = await this.storageService.getItem<WeightUnit>(this.UNIT_STORAGE_KEY);
+
+    // The rest of the logic works correctly on the actual value.
     return (storedUnit === 'kg' || storedUnit === 'lbs') ? storedUnit : 'kg';
   }
 
@@ -49,10 +66,10 @@ export class UnitsService {
       return kgValue;
     } else if (unit === 'lbs') {
       // Check if kgValue is a finite number before toFixed
-       if (!Number.isFinite(kgValue)) {
-           console.warn('UnitsService: Invalid number passed to convertFromKg:', kgValue);
-           return kgValue;
-       }
+      if (!Number.isFinite(kgValue)) {
+        console.warn('UnitsService: Invalid number passed to convertFromKg:', kgValue);
+        return kgValue;
+      }
       return parseFloat((kgValue * this.KG_TO_LBS_FACTOR).toFixed(2));
     }
     console.warn('UnitsService: Attempted conversion to invalid target unit:', targetUnit);
@@ -60,17 +77,17 @@ export class UnitsService {
   }
 
   convertToKg(value: number | null | undefined, sourceUnit?: WeightUnit): number | null | undefined {
-     if (value === null || value === undefined) {
+    if (value === null || value === undefined) {
       return value;
     }
     const unit = sourceUnit || this.currentUnit(); // Use the signal's value
-     if (unit === 'kg') {
+    if (unit === 'kg') {
       return value;
     } else if (unit === 'lbs') {
-       if (!Number.isFinite(value)) {
-            console.warn('UnitsService: Invalid number passed to convertToKg:', value);
-            return value;
-        }
+      if (!Number.isFinite(value)) {
+        console.warn('UnitsService: Invalid number passed to convertToKg:', value);
+        return value;
+      }
       return parseFloat((value / this.KG_TO_LBS_FACTOR).toFixed(2));
     }
     console.warn('UnitsService: Attempted conversion from invalid source unit:', sourceUnit);

@@ -25,26 +25,41 @@ export class UserProfileService {
   // Add other signals for specific parts of the profile if direct binding is common
 
   constructor() {
-    const storedProfile = this.storageService.getItem<UserProfile>(this.USER_PROFILE_KEY);
-    this.userProfileSubject = new BehaviorSubject<UserProfile | null>(storedProfile);
+    // 1. Initialize with a null value immediately.
+    this.userProfileSubject = new BehaviorSubject<UserProfile | null>(null);
     this.userProfile$ = this.userProfileSubject.asObservable();
 
-    // Update signals when profile changes
+    // 2. Call the new async method to handle the actual loading.
+    this._initializeProfile();
+
+    // Subscribe to profile changes to update signals. This stays the same.
     this.userProfile$.subscribe(profile => {
       this.username.set(profile?.username);
       // Update other derived signals here
     });
-    // Show the disclaimer when the app starts, if necessary
-    this.showWipDisclaimer();
+  }
+
+  /**
+ * Asynchronously loads the user profile from storage, runs migrations,
+ * and handles initial setup logic like showing disclaimers.
+ */
+  private async _initializeProfile(): Promise<void> {
+    // 1. 'await' pauses here until the profile is loaded from IndexedDB.
+    const storedProfile = await this.storageService.getItem<UserProfile>(this.USER_PROFILE_KEY);
+
+    // 2. Push the loaded profile to the BehaviorSubject.
+    this.userProfileSubject.next(storedProfile);
+
+    // 3. Now that the profile is loaded, run subsequent logic.
+    await this.showWipDisclaimer();
     this.migrateLegacyMeasurements();
   }
 
-  // New method to orchestrate showing the disclaimer
+  // Ensure this method is async to handle the promise from the alert service.
   public async showWipDisclaimer(): Promise<void> {
     // Only show if it's a WIP and user hasn't hidden it yet
     if (this.IS_WIP && !this.getHideWipDisclaimer()) {
-      // if (this.IS_WIP) {
-      const result = await this.alertService.present({
+      const result = await this.alertService.present({ // <-- The 'await' is important here
         header: 'Work-in-Progress Disclaimer',
         message: `DISCLAIMER: This is a work-in-progress, browser-based app. This means your workout data won't be saved when you close the browser or clear your browser data. Be sure to regularly export your data and import it again when you return to the app.`,
         backdropDismiss: false,
@@ -151,7 +166,7 @@ export class UserProfileService {
     const currentProfile = this.getProfile() || {};
     const history = currentProfile.measurementHistory || [];
 
-    if (!entry.date){
+    if (!entry.date) {
       entry.date = format(startOfDay(new Date()), 'yyyy-MM-dd'); // Default to today if no date provided
     }
     const entryIndex = history.findIndex(e => e.date === entry.date);
@@ -242,12 +257,12 @@ export class UserProfileService {
     if (profile.measurementHistory && profile.measurementHistory.length > 0) {
       // Ensure measurementHistory is sorted by date
       profile.measurementHistory.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-      profile.measurements = {...profile.measurements, ...profile.measurementHistory[profile.measurementHistory.length - 1] };
+      profile.measurements = { ...profile.measurements, ...profile.measurementHistory[profile.measurementHistory.length - 1] };
     }
 
     // Merge the new profile data with the existing one
     const updatedProfile = { ...currentProfile, ...profile };
-    
+
     // Ensure measurementHistory is always sorted when saved
     if (updatedProfile.measurementHistory) {
       updatedProfile.measurementHistory.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
@@ -290,7 +305,7 @@ export class UserProfileService {
     const historyMap = new Map<string, MeasurementEntry>();
     localHistory.forEach(entry => historyMap.set(entry.date, entry));
     importedHistory.forEach(entry => historyMap.set(entry.date, entry));
-    
+
     const mergedHistory = Array.from(historyMap.values());
 
     // Construct the fully merged profile
@@ -300,14 +315,14 @@ export class UserProfileService {
       gender: importedProfile.gender ?? localProfile.gender,
       heightCm: importedProfile.heightCm ?? localProfile.heightCm,
       hideWipDisclaimer: importedProfile.hideWipDisclaimer ?? localProfile.hideWipDisclaimer,
-      
+
       // Overwrite local goals with imported goals if they exist
       measurementGoals: { ...localProfile.measurementGoals, ...importedProfile.measurementGoals },
 
       // Use the merged and sorted history
       measurementHistory: mergedHistory,
     };
-    
+
     // Save the final merged profile
     this.saveProfile(mergedProfile);
   }

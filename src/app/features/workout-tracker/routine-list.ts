@@ -453,7 +453,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const pausedState = this.storageService.getItem<PausedWorkoutState>(this.PAUSED_WORKOUT_KEY);
+    const pausedState = await this.storageService.getItem<PausedWorkoutState>(this.PAUSED_WORKOUT_KEY);
     if (pausedState) {
       const pausedRoutineName = pausedState.sessionRoutine?.name || 'a previous session';
       const pausedDate = pausedState.workoutDate ? ` from ${format(new Date(pausedState.workoutDate), 'MMM d, HH:mm')}` : '';
