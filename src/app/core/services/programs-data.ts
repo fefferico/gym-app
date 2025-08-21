@@ -349,7 +349,7 @@ export const PROGRAMS_DATA = [
                 "timeOfDay": "", "programId": "prog-strength-531-inspired-4day"
             }
         ],
-"programType": 'cycled',
+        "programType": 'cycled',
         "isActive": false
     },
     {

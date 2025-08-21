@@ -65,7 +65,7 @@ export class TrainingProgramService {
       // +++ 2. USE THE IMPORTED DATA AS THE SOURCE OF TRUTH FOR SEEDING +++
       const assetPrograms: TrainingProgram[] = PROGRAMS_DATA.map(program => ({
         ...program,
-        programType: program.programType === 'cycled' ? 'cycled' : 'linear'
+        programType: !program.programType || program.programType === 'cycled' ? 'cycled' : 'linear'
       }));
       const existingProgramIds = new Set(existingPrograms.map(p => p.id));
 
