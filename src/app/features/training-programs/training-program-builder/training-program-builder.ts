@@ -460,6 +460,17 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
             return
         }
         try {
+
+            const confirm = await this.alertService.showConfirmationDialog(
+                'Finish Program',
+                'Are you sure you want to mark this program as completed?',
+                [
+                    { text: 'Cancel', role: 'cancel', cssClass: 'bg-gray-400 hover:bg-gray-600', icon: 'cancel' },
+                    { text: 'Finish Program', role: 'confirm', cssClass: 'bg-primary hover:bg-primary-dark', icon: 'done' }
+                ]
+            );
+            if (!confirm || confirm.role !== 'confirm') return;
+
             this.spinnerService.show("Completing program...");
             await this.trainingProgramService.toggleProgramActivation(this.currentProgramId, 'completed');
             // Service emits updated list
@@ -477,7 +488,6 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         }
         if (this.isCurrentProgramActive()) {
             // Option to deactivate
-
             const choice = await this.alertService.showConfirmationDialog(
                 "Program is currently active.",
                 "What would you like to do?",

@@ -380,12 +380,61 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
   }
 
   async toggleActiveProgram(programId: string, event?: MouseEvent): Promise<void> {
+    const currentProgram = this.allProgramsForList().find(program => program.id === programId);
+    if (!currentProgram) {
+      return;
+    }
+
     event?.stopPropagation();
     this.activeProgramActions.set(null);
     this.spinnerService.show("Updating program...");
     try {
-      // The service now simply toggles the state for one program.
-      await this.trainingProgramService.toggleProgramActivation(programId);
+      if (currentProgram.isActive) {
+        // Option to deactivate
+        const choice = await this.alertService.showConfirmationDialog(
+          "Program is currently active.",
+          "What would you like to do?",
+          [
+            { text: "Deactivate", role: "deactivate", data: "deactivate", icon: 'deactivate' },
+            { text: "Complete", role: "complete", data: "complete", icon: 'goal', cssClass: 'bg-green-500 hover:bg-green-600' },
+            { text: "Cancel", role: "cancel", data: "cancel", icon: 'cancel' },
+          ]
+        );
+
+        if (!choice || !choice.data || choice.data === "cancel") {
+          this.spinnerService.hide();
+          return;
+        }
+
+        if (choice.data === "complete") {
+          try {
+            this.spinnerService.show("Completing program...");
+            await this.trainingProgramService.toggleProgramActivation(programId, 'completed');
+            // Service emits updated list
+          } catch (error) {
+            this.toastService.error("Failed to complete program", 0, "Error");
+          } finally {
+            this.spinnerService.hide();
+          }
+          return;
+        } else {
+          try {
+            this.spinnerService.show("Deactivating program...");
+            await this.trainingProgramService.deactivateProgram(programId, 'cancelled');
+            // Service emits updated list
+          } catch (error) { this.toastService.error("Failed to deactivate", 0, "Error"); }
+          finally { this.spinnerService.hide(); }
+        }
+        return;
+      }
+      // Activate new program
+      try {
+        this.spinnerService.show("Setting active program...");
+        // The service method should handle setting the new active program,
+        // updating isActive flags on all programs, and emitting the updated list.
+        await this.trainingProgramService.toggleProgramActivation(programId, 'active');
+      } catch (error) { this.toastService.error("Failed to set active program", 0, "Error"); }
+      finally { this.spinnerService.hide(); }
     } catch (error) {
       this.toastService.error("Failed to update program status", 0, "Error");
     } finally {
@@ -397,7 +446,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
     // ask for confirmation before finishing
     const confirm = await this.alertService.showConfirmationDialog(
       'Finish Program',
-      'Are you sure you want to mark this program as completed? This action cannot be undone.',
+      'Are you sure you want to mark this program as completed?',
       [
         { text: 'Cancel', role: 'cancel', cssClass: 'bg-gray-400 hover:bg-gray-600', icon: 'cancel' },
         { text: 'Finish Program', role: 'confirm', cssClass: 'bg-primary hover:bg-primary-dark', icon: 'done' }
@@ -850,13 +899,11 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
     {
       label: 'DEACTIVATE',
       actionKey: 'deactivate',
-      iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
-                        fill="currentColor" class="text-red-500">
-                        <path fill-rule="evenodd"
-                          d="M10 18a8 8 0 100-16 8 8 0 000 16Zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5Z"
-                          clip-rule="evenodd" />
-                      </svg>`,
-      iconClass: 'w-8 h-8 mr-2',
+      iconSvg: `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="50" r="45" stroke="currentColor" stroke-width="10"/>
+        <line x1="25" y1="50" x2="75" y2="50" stroke="currentColor" stroke-width="10"/>
+      </svg>`,
+      iconClass: 'w-7 h-7 mr-2',
       buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + deactivateBtnClass,
       data: { programId: programId }
     };

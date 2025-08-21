@@ -96,12 +96,12 @@
                     <input type="date" id="startDate" formControlName="startDate"
                         class="mt-1 block w-full p-2 border rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:[color-scheme:dark]">
                 </div>
-                <div *ngIf="programForm.get('endDate')?.value || isEditableMode()">
-                    <label for="endDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Start
+                <!-- <div *ngIf="programForm.get('endDate')?.value || isEditableMode()">
+                    <label for="endDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300">End
                         Date</label>
                     <input type="date" id="endDate" formControlName="endDate"
                         class="mt-1 block w-full p-2 border rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:[color-scheme:dark]">
-                </div>
+                </div> -->
                 <div *ngIf="programForm.get('cycleLength')?.value || isEditableMode()">
                     <label for="cycleLength"
                         class="block text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center">
