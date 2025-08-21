@@ -361,7 +361,7 @@
                                     <div class="mt-1 flex rounded-md shadow-sm">
                                         <input type="text" [id]="'routineName-' + weekIndex + '-' + dayIndex" readonly
                                             [value]="getWeekScheduleDayControl(weekIndex, dayIndex).get('routineName')?.value || 'No Routine'"
-                                            class="flex-1 block w-full px-3 py-2 text-sm rounded-none rounded-l-md dark:bg-gray-400 cursor-default dark:text-gray-800 font-medium">
+                                            class="flex-1 block w-full px-3 py-2 text-sm rounded-md dark:bg-gray-400 cursor-default dark:text-gray-800 font-medium">
                                         <button *ngIf="!isViewMode" type="button" appPress
                                             (shortPress)="openRoutineSelectionModal(weekIndex, dayIndex)"
                                             class="inline-flex items-center px-3 py-2 border border-l-0 rounded-r-md text-sm">
