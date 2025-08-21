@@ -52,6 +52,69 @@
                         class="text-2xs sm:text-xs font-semibold px-1.5 sm:px-2.5 py-0.5">Active</span><!--container-->
                 </div>
             </div>
+
+            <!-- Original Progress Bar (now primarily for Cycled programs) -->
+            <div *ngIf="isViewMode && currentProgram?.isActive" class="pt-2">
+                <div *ngIf="programProgress() as progress" class="space-y-1">
+                    <div class="flex justify-between items-baseline">
+                        <h3 class="text-sm font-medium text-gray-600 dark:text-gray-300">
+                            {{ currentProgram?.programType === 'linear' ? 'Overall Workout Progress' : 'Current Cycle
+                            Progress' }}
+                        </h3>
+                        <span class="text-sm font-semibold text-primary dark:text-primary-light">
+                            {{ progress.completedCount }} / {{ progress.totalCount }}
+                        </span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                        <div class="bg-primary h-2.5 rounded-full transition-all duration-500 ease-out"
+                            [style.width.%]="progress.percentage">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- =================================================================== -->
+            <!-- START: New Segmented Progress Bars for Linear Programs              -->
+            <!-- =================================================================== -->
+            <div *ngIf="isViewMode && currentProgram?.programType === 'linear' && currentProgram?.isActive"
+                class="pt-4 space-y-4">
+
+                <!-- 1. Overall Week Completion Bar -->
+                <div *ngIf="overallWeekProgress() as weeks" class="space-y-1">
+                    <h3 class="text-sm font-medium text-gray-600 dark:text-gray-300">Overall Progress (Weeks Completed)
+                    </h3>
+                    <div class="flex w-full h-4 rounded-md overflow-hidden border border-gray-300 dark:border-gray-600">
+                        <div *ngFor="let week of weeks"
+                            class="flex-1 border-r border-gray-300 dark:border-gray-600 last:border-r-0 transition-colors duration-300"
+                            [ngClass]="week.isCompleted ? 'bg-primary' : 'bg-gray-200 dark:bg-gray-700'"
+                            [title]="week.name + (week.isCompleted ? ' - Completed' : ' - Incomplete')">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Current Week Workout Completion Bar -->
+                <div *ngIf="currentWeekProgress() as currentWeek" class="space-y-1">
+                    <div class="flex justify-between items-baseline">
+                        <h3 class="text-sm font-medium text-gray-600 dark:text-gray-300">
+                            Current Week Progress <span class="font-semibold">({{ currentWeek.weekName }})</span>
+                        </h3>
+                        <span class="text-sm font-semibold text-primary dark:text-primary-light">
+                            {{ currentWeek.completedCount }} / {{ currentWeek.totalCount }} Workouts
+                        </span>
+                    </div>
+                    <div class="flex w-full h-4 rounded-md overflow-hidden border border-gray-300 dark:border-gray-600">
+                        <div *ngFor="let segment of currentWeek.segments"
+                            class="flex-1 border-r border-gray-300 dark:border-gray-600 last:border-r-0 transition-colors duration-300"
+                            [ngClass]="segment.isCompleted ? 'bg-green-500' : 'bg-gray-200 dark:bg-gray-700'">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <!-- =================================================================== -->
+            <!-- END: New Segmented Progress Bars                                    -->
+            <!-- =================================================================== -->
+
             <div *ngIf="isEditableMode()">
                 <label for="programName" class="block text-m font-medium text-gray-700 dark:text-gray-300">Program
                     Name</label>

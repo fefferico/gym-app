@@ -22,6 +22,9 @@ import { ActionMenuComponent } from '../../../shared/components/action-menu/acti
 import { PressDirective } from '../../../shared/directives/press.directive';
 import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
 import { IconComponent } from "../../../shared/components/icon/icon.component";
+import { addDays, differenceInDays, format, getDay, parseISO } from 'date-fns';
+import { TrackingService } from '../../../core/services/tracking.service';
+import { WorkoutLog } from '../../../core/models/workout-log.model';
 
 interface DayOption {
     value: number;
@@ -59,6 +62,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
     private alertService = inject(AlertService);
     private toastService = inject(ToastService);
     private cdr = inject(ChangeDetectorRef);
+    private trackingService = inject(TrackingService);
 
     programForm!: FormGroup;
     submitted = false; // Add this flag
@@ -158,11 +162,162 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
 
     private platformId = inject(PLATFORM_ID); // Inject PLATFORM_ID
 
+    // --- NEW: Computed signal to calculate program progress ---
+    programProgress = computed(() => {
+        const program = this.currentProgram;
+        const logs = this.allWorkoutLogs();
+
+        // Guard clauses: We can't calculate progress without this essential info.
+        if (!program || !program.isActive || !program.startDate) {
+            return { completedCount: 0, totalCount: 0, percentage: 0 };
+        }
+
+        let completedCount = 0;
+        let totalCount = 0;
+        const startDate = parseISO(program.startDate);
+
+        // --- Logic for LINEAR programs ---
+        if (program.programType === 'linear' && program.weeks?.length) {
+            // Total workouts is the sum of all scheduled days across all weeks.
+            totalCount = program.weeks.reduce((sum, week) => sum + week.schedule.length, 0);
+
+            // Get all logs for this program that occurred on or after the start date.
+            const programLogs = logs.filter(log => log.programId === program.id && parseISO(log.date) >= startDate);
+
+            // Count unique logged workouts to prevent counting multiple sessions on the same day as extra progress.
+            const uniqueLogs = new Set(programLogs.map(log => `${log.date}-${log.routineId}`));
+            completedCount = uniqueLogs.size;
+        }
+        // --- Logic for CYCLED programs ---
+        else if (program.programType === 'cycled' && program.schedule.length > 0) {
+            const cycleLength = program.cycleLength || 7;
+            totalCount = program.schedule.length; // Total is the number of workouts in one cycle.
+
+            const daysSinceStart = differenceInDays(new Date(), startDate);
+            if (daysSinceStart >= 0) {
+                // Calculate the start date of the CURRENT cycle.
+                const completedCycles = Math.floor(daysSinceStart / cycleLength);
+                const currentCycleStartDate = addDays(startDate, completedCycles * cycleLength);
+
+                // Filter logs that belong to the current cycle.
+                const cycleLogs = logs.filter(log => {
+                    const logDate = parseISO(log.date);
+                    return log.programId === program.id && logDate >= currentCycleStartDate;
+                });
+
+                const uniqueLogsInCycle = new Set(cycleLogs.map(log => `${log.date}-${log.routineId}`));
+                completedCount = uniqueLogsInCycle.size;
+            }
+        }
+
+        if (totalCount === 0) {
+            return { completedCount: 0, totalCount: 0, percentage: 0 };
+        }
+
+        // Clamp completedCount so it doesn't exceed totalCount
+        completedCount = Math.min(completedCount, totalCount);
+        const percentage = Math.round((completedCount / totalCount) * 100);
+
+        return { completedCount, totalCount, percentage };
+    });
+
+    // --- NEW: Signal for Overall Week-by-Week Progress Bar ---
+    overallWeekProgress = computed(() => {
+        const program = this.currentProgram;
+        const logs = this.allWorkoutLogs();
+
+        if (program?.programType !== 'linear' || !program.isActive || !program.startDate || !program.weeks?.length) {
+            return []; // Return empty array if not applicable
+        }
+
+        const startDate = parseISO(program.startDate);
+        // Create a fast-lookup Set of logged workouts, keyed by 'YYYY-MM-DD-routineId'
+        const loggedWorkouts = new Set(
+            logs.filter(log => log.programId === program.id).map(log => `${log.date}-${log.routineId}`)
+        );
+
+        return program.weeks.map(week => {
+            // A week is considered "completed" if every single scheduled workout in it has been logged.
+            const isCompleted = week.schedule.every(day => {
+                // Calculate the exact date for this scheduled day
+                const daysToAdd = ((week.weekNumber - 1) * 7) + (day.dayOfWeek - getDay(startDate) + 7) % 7;
+                const targetDate = addDays(startDate, daysToAdd);
+                const targetDateKey = format(targetDate, 'yyyy-MM-dd');
+                
+                // Check if a log exists for this routine on this specific date
+                return loggedWorkouts.has(`${targetDateKey}-${day.routineId}`);
+            });
+
+            return {
+                weekNumber: week.weekNumber,
+                name: week.name,
+                isCompleted: isCompleted
+            };
+        });
+    });
+
+    // --- NEW: Signal for Current Week's Workout-by-Workout Progress ---
+    currentWeekProgress = computed(() => {
+        const program = this.currentProgram;
+        const logs = this.allWorkoutLogs();
+        
+        if (program?.programType !== 'linear' || !program.isActive || !program.startDate || !program.weeks?.length) {
+            return null; // Not applicable
+        }
+
+        const today = new Date();
+        const startDate = parseISO(program.startDate);
+
+        if (today < startDate) return null; // Program hasn't started
+
+        const daysSinceStart = differenceInDays(today, startDate);
+        const currentWeekIndex = Math.floor(daysSinceStart / 7);
+        const currentWeekData = program.weeks[currentWeekIndex];
+
+        // If we are past the end of the program, don't show this bar
+        if (!currentWeekData) return null;
+
+        const totalCount = currentWeekData.schedule.length;
+        if (totalCount === 0) return null;
+
+        const weekStartDate = addDays(startDate, currentWeekIndex * 7);
+
+        // Find logs that belong specifically to the current program and occurred during the current week
+        const logsThisWeek = logs.filter(log => {
+            if (log.programId !== program.id) return false;
+            const logDate = parseISO(log.date);
+            const daysFromWeekStart = differenceInDays(logDate, weekStartDate);
+            return daysFromWeekStart >= 0 && daysFromWeekStart < 7;
+        });
+
+        const completedRoutinesThisWeek = new Set(logsThisWeek.map(log => log.routineId));
+        
+        let completedCount = 0;
+        const segments = currentWeekData.schedule.map(day => {
+            const isCompleted = completedRoutinesThisWeek.has(day.routineId);
+            if(isCompleted) completedCount++;
+            return { isCompleted };
+        });
+
+        return {
+            weekName: currentWeekData.name,
+            completedCount,
+            totalCount,
+            segments
+        };
+    });
+
+    protected allWorkoutLogs = signal<WorkoutLog[]>([]);
+    private workoutLogsSubscription: Subscription | undefined;
+
+
     ngOnInit(): void {
         if (isPlatformBrowser(this.platformId)) { // Check if running in a browser
             window.scrollTo(0, 0);
         }
         this.loadAvailableRoutines();
+
+        this.workoutLogsSubscription = this.trackingService.workoutLogs$.subscribe(logs => this.allWorkoutLogs.set(logs));
 
         this.routeSub = this.route.data.pipe(
             switchMap(data => {
@@ -592,6 +747,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         if (this.routeSub) {
             this.routeSub.unsubscribe();
         }
+        this.workoutLogsSubscription?.unsubscribe();
     }
 
     get f() { return this.programForm.controls; }
