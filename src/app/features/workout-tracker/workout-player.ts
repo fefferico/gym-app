@@ -1549,16 +1549,18 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       } else {
         console.warn("prepareCurrentSet: Progressive overload settings are not available. Using default suggestion logic.");
         // Fallback to historicalSetPerformance or default suggestion logic if settings are not available
-        if (historicalSetPerformance) {
-          // use historicalSetPerformance
-          finalSetParamsForSession = {
-            ...plannedSetForSuggestions,
-            reps: historicalSetPerformance.repsAchieved || plannedSetForSuggestions.reps || 0,
-            weight: historicalSetPerformance.weightUsed || plannedSetForSuggestions.weight || 0,
-            duration: historicalSetPerformance.durationPerformed || plannedSetForSuggestions.duration || 0,
-            restAfterSet: plannedSetForSuggestions.restAfterSet || 0
-          };
-        } else {
+
+        // TODO per ora rimuovo
+        // if (historicalSetPerformance) {
+        //   // use historicalSetPerformance
+        //   finalSetParamsForSession = {
+        //     ...plannedSetForSuggestions,
+        //     reps: historicalSetPerformance.repsAchieved || plannedSetForSuggestions.reps || 0,
+        //     weight: historicalSetPerformance.weightUsed || plannedSetForSuggestions.weight || 0,
+        //     duration: historicalSetPerformance.durationPerformed || plannedSetForSuggestions.duration || 0,
+        //     restAfterSet: plannedSetForSuggestions.restAfterSet || 0
+        //   };
+        // } else {
           finalSetParamsForSession = {
             ...plannedSetForSuggestions,
             reps: plannedSetForSuggestions.reps || 0,
@@ -1566,7 +1568,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
             duration: plannedSetForSuggestions.duration || 0,
             restAfterSet: plannedSetForSuggestions.restAfterSet || 0
           };
-        }
+        // }
       }
     }
 
