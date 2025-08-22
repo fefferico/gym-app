@@ -251,7 +251,7 @@
                     {{ dayName }}</div>
                   <div *ngFor="let day of historyCalendarDays()" appPressScroll
                     (shortPress)="!isHistoryCalendarAnimating && selectHistoryDay(day)"
-                    class="p-1 sm:p-2 min-h-[50px] sm:min-h-[70px] relative transition-colors text-left"
+                    class="p-1 sm:p-2 min-h-[50px] sm:min-h-[70px] relative transition-colors text-left rounded-md"
                     [class.cursor-pointer]="!isHistoryCalendarAnimating && day.hasLog"
                     [class.hover:bg-gray-100]="day.isCurrentMonth && !isHistoryCalendarAnimating"
                     [class.dark:hover:bg-gray-600]="day.isCurrentMonth && !isHistoryCalendarAnimating" [ngClass]="{
@@ -259,7 +259,7 @@
                       'bg-gray-50 dark:bg-gray-700/60 opacity-70': !day.isCurrentMonth,
                       'ring-1 ring-inset ring-primary dark:ring-primary-light': day.isToday && day.isCurrentMonth
                       }">
-                    <span class="text-xs sm:text-sm font-semibold" [ngClass]="{'text-primary': day.isToday && day.isCurrentMonth,
+                    <span class="text-sm font-semibold" [ngClass]="{'text-primary': day.isToday && day.isCurrentMonth,
                       'text-gray-700 dark:text-gray-200': !day.isToday && day.isCurrentMonth,
                       'text-gray-400 dark:text-gray-500': !day.isCurrentMonth}">{{
                       day.date | date:'d' }}</span>
@@ -282,7 +282,7 @@
     (click)="toggleShowPastLoggedWorkouts()" aria-hidden="true">
   </div>
   <div @slideUpDown *ngIf="showPastLoggedWorkouts"
-    class="fixed inset-x-0 bottom-0 mb-[65px] z-40 bg-white dark:bg-gray-700 shadow-2xl rounded-t-2xl border-t-2 border-primary dark:border-primary-light max-h-[75vh] flex flex-col"
+    class="fixed inset-x-0 bottom-0 mb-[65px] z-50 bg-white dark:bg-gray-700 shadow-2xl rounded-t-2xl border-t-2 border-primary dark:border-primary-light max-h-[75vh] flex flex-col"
     style="min-height: 500px;">
     <div class="p-4 sm:p-5 flex-shrink-0">
       <div class="flex justify-between items-center mb-2">
@@ -305,13 +305,13 @@
             <h4 class="text-md sm:text-lg font-semibold text-primary dark:text-primary-light mb-1">{{ item.routineName
               }}
             </h4>
-            <div class="flex justify-between items-center">
-              <span *ngIf="item.durationMinutes" class="text-sm text-gray-600 dark:text-gray-300">
+            <div class="flex flex-col justify-between items-center">
+              <span *ngIf="item.durationMinutes" class="text-sm text-gray-600 dark:text-gray-300 mb-2">
                 Duration: {{ item.durationMinutes }} min
               </span>
-              <button (click)="viewLogDetails(item.id)" class="btn btn-secondary btn-sm flex items-center">
-                <app-icon name="eye" class="w-4 h-4 mr-1"></app-icon>
-                View Workout
+              <button (click)="viewLogDetails(item.id)" class="flex justify-center items-center w-full sm:w-auto px-6 py-3 bg-primary hover:bg-primary-dark text-white font-semibold rounded-md shadow-sm text-lg disabled:opacity-50 disabled:cursor-not-allowed">
+                <app-icon name="eye" class="w-6 h-6 mr-1"></app-icon>
+                DETAILS
               </button>
             </div>
           </div>
@@ -320,10 +320,14 @@
             class="p-3 border border-teal-500 dark:border-teal-600 rounded-md bg-teal-50/50 dark:bg-teal-900/20">
             <h4 class="text-md sm:text-lg font-semibold text-teal-600 dark:text-teal-400 mb-1">{{ item.activityName }}
             </h4>
-            <div class="flex justify-between items-center">
-              <span class="text-sm text-gray-600 dark:text-gray-300">
+            <div class="flex flex-col justify-between items-center">
+              <span class="text-sm text-gray-600 dark:text-gray-300 mb-2">
                 Duration: {{ item.durationMinutes }} min
               </span>
+              <button (click)="viewActivityLogDetails(item.id)" class="flex justify-center items-center w-full sm:w-auto px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md shadow-sm text-lg disabled:opacity-50 disabled:cursor-not-allowed">
+                <app-icon name="eye" class="w-6 h-6 mr-1"></app-icon>
+                DETAILS
+              </button>
             </div>
           </div>
         </div>

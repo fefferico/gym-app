@@ -360,7 +360,9 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   generateHistoryCalendarDays(isInitialLoad: boolean = false): void {
     if (!isPlatformBrowser(this.platformId)) {
-      this.historyCalendarDays.set([]); this.historyCalendarLoading.set(false); return;
+      this.historyCalendarDays.set([]);
+      this.historyCalendarLoading.set(false);
+      return;
     }
     this.historyCalendarLoading.set(true);
     const viewDate = this.historyCalendarViewDate();
@@ -369,16 +371,29 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
     const rangeStart = startOfWeek(monthStart, { weekStartsOn: this.weekStartsOn });
     const rangeEnd = endOfWeek(monthEnd, { weekStartsOn: this.weekStartsOn });
     const dateRange = eachDayOfInterval({ start: rangeStart, end: rangeEnd });
-    const logsForMonth = this.allWorkoutLogs().filter(log => {
-      const logDate = parseISO(log.date);
+    
+    // +++ THIS IS THE FIX +++
+    // Use the unified allHistoryItems() signal, which contains both workouts and activities.
+    const logsForMonth = this.allHistoryItems().filter(item => {
+      const logDate = parseISO(item.date); // 'date' is a common property on both models
       return logDate >= monthStart && logDate <= monthEnd;
     });
+
     const days: HistoryCalendarDay[] = dateRange.map(date => {
-      const logsOnThisDay = logsForMonth.filter(log => isSameDay(parseISO(log.date), date));
-      return { date: date, isCurrentMonth: isSameMonth(date, viewDate), isToday: isToday(date), hasLog: logsOnThisDay.length > 0, logCount: logsOnThisDay.length };
+      // Filter the items for this specific day.
+      const logsOnThisDay = logsForMonth.filter(item => isSameDay(parseISO(item.date), date));
+      return {
+        date: date,
+        isCurrentMonth: isSameMonth(date, viewDate),
+        isToday: isToday(date),
+        hasLog: logsOnThisDay.length > 0,
+        logCount: logsOnThisDay.length
+      };
     });
+
     this.historyCalendarDays.set(days);
     this.historyCalendarLoading.set(false);
+    
     if (isInitialLoad) {
       this.historyCalendarAnimationState.set('center');
     } else if (this.historyCalendarAnimationState() === 'preloadFromLeft' || this.historyCalendarAnimationState() === 'preloadFromRight') {
