@@ -36,6 +36,7 @@ import { TrainingProgramService } from '../../core/services/training-program.ser
 import { PressDirective } from '../../shared/directives/press.directive';
 import { IconComponent } from '../../shared/components/icon/icon.component';
 import { TooltipDirective } from '../../shared/directives/tooltip.directive';
+import { ExerciseSelectionModalComponent } from '../../shared/components/exercise-selection-modal/exercise-selection-modal.component';
 
 type BuilderMode = 'routineBuilder' | 'manualLogEntry';
 
@@ -46,7 +47,7 @@ type BuilderMode = 'routineBuilder' | 'manualLogEntry';
     FormsModule, DragDropModule, WeightUnitPipe, TitleCasePipe,
     LongPressDragDirective, AutoGrowDirective, ActionMenuComponent,
     IsWeightedPipe, ModalComponent, ClickOutsideDirective,
-    ExerciseDetailComponent, PressDirective, IconComponent, TooltipDirective],
+    ExerciseDetailComponent, PressDirective, IconComponent, TooltipDirective, ExerciseSelectionModalComponent],
   templateUrl: './workout-builder.html',
   styleUrl: './workout-builder.scss',
   providers: [DecimalPipe]
@@ -756,7 +757,9 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     this.isExerciseModalOpen = true;
 
     setTimeout(() => {
-      this.myExerciseInput.nativeElement?.focus();
+      if (this.myExerciseInput && this.myExerciseInput.nativeElement) {
+        this.myExerciseInput?.nativeElement?.focus();
+      }
     });
   }
 

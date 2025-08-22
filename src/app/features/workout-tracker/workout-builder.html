@@ -749,66 +749,18 @@
         </div>
     </form>
 
-    <!-- Exercise Selection Modal -->
-    <div *ngIf="isExerciseModalOpen"
-        class="fixed inset-0 bg-gray-700 bg-opacity-75 transition-opacity overflow-y-auto h-full w-full z-[70] flex items-center justify-center p-4 backdrop-blur-sm"
-        (click)="closeExerciseSelectionModal()">
-        <div class="relative transform overflow-hidden rounded-md bg-white dark:bg-gray-700 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg"
-            (click)="$event.stopPropagation()">
-            <div class="bg-white dark:bg-gray-600 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                <div class="flex justify-between items-center pb-3">
-                    <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">ADD EXERCISE</h3>
-                    <button type="button" (click)="closeExerciseSelectionModal()"
-                        class="p-1 rounded-full text-gray-400 hover:text-gray-800">
-                        <app-icon name="cancel" class="h-6 w-6"></app-icon>
-                    </button>
-                </div>
-                <div class="my-4">
-                    <input #exerciseSearchFied type="text" placeholder="Search exercises..."
-                        [ngModel]="modalSearchTerm()" (ngModelChange)="modalSearchTerm.set($event)"
-                        (keydown.enter)="onSearchEnter()"
-                        class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-gray-200" />
-                </div>
-                <div
-                    class="mt-2 max-h-80 overflow-y-auto transition-all duration-500 ease-in-out rounded-md scrollbar-thin scrollbar-thumb-primary scrollbar-track-gray-200 dark:scrollbar-track-gray-800">
-                    <ul class="space-y-2">
-                        <li *ngFor="let ex of filteredAvailableExercises(); let odd = odd; let even = even"
-                            (click)="selectExerciseFromLibrary(ex)" [ngClass]="{
-                                'p-3 mr-1 hover:bg-gray-400 dark:hover:bg-gray-800 rounded-md cursor-pointer transition-all duration-150 ease-in-out flex justify-between items-center scrollbar-thin scrollbar-thumb-primary scrollbar-track-gray-200 dark:scrollbar-track-gray-800 transform hover:-translate-y-1 shadow-sm hover:shadow-md transition-shadow': true,
-                                          'bg-gray-200 dark:bg-gray-600': odd,
-                                          'bg-gray-100 dark:bg-gray-500': even
-                            }">
-                            <div>
-                                <span class="font-medium text-gray-800 dark:text-gray-200">{{ ex.name }}</span>
-                                <span class="block text-xs text-gray-500 dark:text-gray-400">{{ ex.category | titlecase
-                                    }} - {{ ex.primaryMuscleGroup | titlecase }}</span>
-                            </div>
-                            <app-icon name="create"
-                                class="h-5 w-5 mr-1 text-primary dark:text-primary-light"></app-icon>
-                        </li>
-                        <li *ngIf="filteredAvailableExercises().length === 0"
-                            class="text-gray-500 dark:text-gray-400 text-center p-4">No exercises match your search or
-                            library is empty</li>
-                    </ul>
-                </div>
-
-                <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600 text-center">
-                    <button type="button" (click)="handleTrulyCustomExerciseEntry()"
-                        class="text-sm text-primary dark:text-primary-light hover:underline">
-                        Or, create a new custom exercise entry...
-                    </button>
-                </div>
-            </div>
-            <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
-                <button type="button" (click)="closeExerciseSelectionModal()"
-                    class="mt-3 inline-flex w-full justify-center rounded-md bg-white dark:bg-gray-700 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-gray-200 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-500 hover:bg-gray-50 dark:hover:bg-gray-500 sm:mt-0 sm:w-auto">
-                    <app-icon name="cancel" class="h-5 w-5"></app-icon>
-                    CANCEL
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
+<app-exercise-selection-modal
+    [isOpen]="isExerciseModalOpen"
+    [(searchTerm)]="modalSearchTerm"
+    title="ADD EXERCISE TO ROUTINE"
+    [exercises]="availableExercises"
+    [showCreateCustomLink]="true"
+    itemIconName="plus-circle"
+    itemIconClass="text-primary dark:text-primary-light"
+    (exerciseSelected)="selectExerciseFromLibrary($event)"
+    (createCustomClicked)="handleTrulyCustomExerciseEntry()"
+    (close)="closeExerciseSelectionModal()">
+</app-exercise-selection-modal>
 
 <!-- NOTES MODAL -->
 <app-modal *ngIf="notesModalsData() as data" [isOpen]="!!data" (isOpenChange)="notesModalsData.set(null)"

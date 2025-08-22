@@ -1,0 +1,101 @@
+<!-- src/app/features/activities/log-activity/log-activity.component.html -->
+<div class="container mx-auto max-w-2xl p-4 sm:p-6">
+    <header class="mb-6">
+         <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-200 flex items-center">
+            <app-icon name="clipboard-list" class="w-8 h-8 mr-3 text-primary"></app-icon>
+            <span *ngIf="!isEditMode()">Log an Activity</span>
+            <span *ngIf="isEditMode()">Edit Activity Log</span>
+        </h1>
+        <p class="text-gray-500 dark:text-gray-400 mt-1">
+            <span *ngIf="!isEditMode()">Record any physical activity you've done.</span>
+            <span *ngIf="isEditMode()">Update the details of your logged activity.</span>
+        </p>
+    </header>
+
+    <form [formGroup]="logActivityForm" (ngSubmit)="onSubmit()"
+        class="space-y-6 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+
+        <!-- Activity Selection -->
+        <div>
+            <label for="activityId"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Activity</label>
+            <select id="activityId" formControlName="activityId" class="input-field"
+                [ngClass]="{ 'input-invalid': f['activityId'].touched && f['activityId'].invalid }">
+                <option value="" disabled>-- Select an Activity --</option>
+                <option *ngFor="let activity of availableActivities$ | async" [value]="activity.id">
+                    {{ activity.name }} ({{ activity.category }})
+                </option>
+            </select>
+            <div *ngIf="f['activityId'].touched && f['activityId'].invalid" class="validation-message">
+                Please select an activity.
+            </div>
+        </div>
+
+        <!-- Date and Duration -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label for="date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date</label>
+                <input type="date" id="date" formControlName="date" class="input-field"
+                    [ngClass]="{ 'input-invalid': f['date'].touched && f['date'].invalid }">
+                <div *ngIf="f['date'].touched && f['date'].invalid" class="validation-message">
+                    A valid date is required.
+                </div>
+            </div>
+            <div>
+                <label for="durationMinutes"
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Duration (minutes)</label>
+                <input type="number" id="durationMinutes" formControlName="durationMinutes" placeholder="e.g., 30"
+                    class="input-field"
+                    [ngClass]="{ 'input-invalid': f['durationMinutes'].touched && f['durationMinutes'].invalid }">
+                <div *ngIf="f['durationMinutes'].touched && f['durationMinutes'].invalid" class="validation-message">
+                    Please enter a valid duration.
+                </div>
+            </div>
+        </div>
+
+        <!-- Intensity -->
+        <div>
+            <label for="intensity" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Perceived
+                Intensity</label>
+            <select id="intensity" formControlName="intensity" class="input-field">
+                <option value="Low">Low</option>
+                <option value="Medium">Medium</option>
+                <option value="High">High</option>
+            </select>
+        </div>
+
+        <!-- Optional Fields: Distance and Calories -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div *ngIf="f['distanceKm'].enabled">
+                <label for="distanceKm" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Distance
+                    (km)</label>
+                <input type="number" id="distanceKm" formControlName="distanceKm" placeholder="e.g., 5.5"
+                    class="input-field">
+            </div>
+            <div *ngIf="f['caloriesBurned'].enabled">
+                <label for="caloriesBurned"
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Calories Burned
+                    (optional)</label>
+                <input type="number" id="caloriesBurned" formControlName="caloriesBurned" placeholder="e.g., 350"
+                    class="input-field">
+            </div>
+        </div>
+
+        <!-- Notes -->
+        <div>
+            <label for="notes" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Notes</label>
+            <textarea id="notes" formControlName="notes" rows="3" class="input-field"
+                placeholder="Any details about your activity..."></textarea>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="pt-4 border-t border-gray-200 dark:border-gray-700 flex justify-center">
+            <button type="submit" [disabled]="logActivityForm.invalid"
+                class="flex items-center text-m bg-primary text-white hover:bg-primary-dark font-semibold rounded-md disabled:opacity-50 p-2">
+                <app-icon name="save" class="w-5 h-5 mr-1"></app-icon>
+                <span *ngIf="!isEditMode()">LOG ACTIVITY</span>
+                <span *ngIf="isEditMode()">UPDATE LOG</span>
+            </button>
+        </div>
+    </form>
+</div>

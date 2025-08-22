@@ -33,11 +33,14 @@ export const APP_ROUTES: Routes = [
     path: 'profile/pb-trend/:exerciseId/:pbType',
     loadComponent: () => import('./features/profile-settings/pb-trend-chart/pb-trend-chart').then(m => m.PbTrendChartComponent),
     // Add canActivate guards if needed
-},
+  },
   {
     path: 'training-programs',
     loadChildren: () => import('./features/training-programs/training-program.routes').then(m => m.TRAINING_PROGRAM_ROUTES)
   },
+  {
+    path: 'activities',
+    loadChildren: () => import('./features/activities/activity.routes').then(m => m.ACTIVITY_ROUTES)
+  },
   { path: '**', redirectTo: '/home' },
-
 ];

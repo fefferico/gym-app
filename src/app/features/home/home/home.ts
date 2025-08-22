@@ -176,6 +176,12 @@ export class HomeComponent implements OnInit {
     this.router.navigate(['/profile']);
   }
 
+  // +++ ADD THIS NEW NAVIGATION METHOD +++
+  navigateToLogActivity(): void {
+    this.vibrate();
+    this.router.navigate(['/activities/log']);
+  }
+
   getVersion(): string {
     return this.storageService.getVersion();
   }

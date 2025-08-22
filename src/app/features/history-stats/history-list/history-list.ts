@@ -36,7 +36,8 @@ import { PressDirective } from '../../../shared/directives/press.directive';
 import { PressScrollDirective } from '../../../shared/directives/press-scroll.directive';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { AlertButton } from '../../../core/models/alert.model';
-
+import { ActivityLog } from '../../../core/models/activity-log.model';
+import { ActivityService } from '../../../core/services/activity.service';
 
 interface HistoryCalendarDay {
   date: Date;
@@ -47,6 +48,7 @@ interface HistoryCalendarDay {
 }
 
 type HistoryListView = 'list' | 'calendar';
+type HistoryListItem = (WorkoutLog & { itemType: 'workout' }) | (ActivityLog & { itemType: 'activity' });
 
 @Component({
   selector: 'app-history-list',
@@ -105,6 +107,7 @@ type HistoryListView = 'list' | 'calendar';
 })
 export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
   protected trackingService = inject(TrackingService);
+  protected activityService = inject(ActivityService);
   protected toastService = inject(ToastService);
   protected workoutService = inject(WorkoutService);
   private exerciseService = inject(ExerciseService);
@@ -121,7 +124,10 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
   private spinnerService = inject(SpinnerService);
   private trainingProgramService = inject(TrainingProgramService);
 
+
+  selectedDayItems = signal<HistoryListItem[]>([]);
   protected allWorkoutLogs = signal<WorkoutLog[]>([]);
+  protected allHistoryItems = signal<HistoryListItem[]>([]);
   private workoutLogsSubscription: Subscription | undefined;
   availableExercisesForFilter$: Observable<Exercise[]> | undefined;
   isFilterAccordionOpen = signal(false);
@@ -158,6 +164,8 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
   weekStartsOn: 0 | 1 = 1;
   readonly todayForCalendar = new Date(); // Property to hold today's date for the template
 
+
+
   @ViewChild('historyCalendarSwipeContainerEl')
   set historyCalendarSwipeContainer(elementRef: ElementRef<HTMLDivElement> | undefined) {
     if (elementRef && isPlatformBrowser(this.platformId) && this.currentHistoryView() === 'calendar') {
@@ -171,61 +179,62 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  filteredWorkoutLogs = computed(() => {
-    let logs = this.allWorkoutLogs();
+  filteredHistoryItems = computed(() => {
+    let items = this.allHistoryItems();
     const filters = this.filterValuesSignal();
 
-    if (!logs || logs.length === 0) return [];
-    if (!filters) return logs;
+    if (!items || items.length === 0) return [];
+    if (!filters) return items;
 
-    // Add goal property for display (this part is good)
-    logs = logs.map(log => ({
-      ...log,
-      goal: this.availableRoutines.find(r => r.id === log.routineId)?.goal || '',
-    }));
-
-    const filtered = logs.filter(log => {
+    const filtered = items.filter(item => {
       let match = true;
+      const itemDate = new Date(item.startTime);
 
-      // Date filtering
+      // --- Universal Filters (Apply to both workouts and activities) ---
       if (filters.dateFrom) {
-        const filterDateFrom = new Date(filters.dateFrom); filterDateFrom.setHours(0, 0, 0, 0);
+        const filterDateFrom = new Date(filters.dateFrom);
+        filterDateFrom.setHours(0, 0, 0, 0);
         if (!isNaN(filterDateFrom.getTime())) {
-          const logDate = new Date(log.startTime); logDate.setHours(0, 0, 0, 0);
-          match &&= logDate.getTime() >= filterDateFrom.getTime();
+          match &&= itemDate.getTime() >= filterDateFrom.getTime();
         }
       }
       if (filters.dateTo) {
-        const filterDateTo = new Date(filters.dateTo); filterDateTo.setHours(23, 59, 59, 999);
+        const filterDateTo = new Date(filters.dateTo);
+        filterDateTo.setHours(23, 59, 59, 999);
         if (!isNaN(filterDateTo.getTime())) {
-          match &&= new Date(log.startTime).getTime() <= filterDateTo.getTime();
+          match &&= itemDate.getTime() <= filterDateTo.getTime();
         }
       }
 
-      // Routine name filtering
-      const routineNameFilter = filters.routineName?.trim().toLowerCase();
-      if (routineNameFilter) {
-        const words = routineNameFilter.split(/\s+/).filter(Boolean);
-        const searchable = [
-          log.routineName || '',
-        ].join(' ').toLowerCase();
-        match &&= words.every((word: any) => searchable.includes(word));
-      }
+      // If the item doesn't match the universal filters, we can stop here.
+      if (!match) return false;
 
-      // Exercise filtering
-      if (filters.exerciseId) {
-        match &&= log.exercises.some(ex => ex.exerciseId === filters.exerciseId);
-      }
-
-      // NEW: Program filtering logic
-      if (filters.programId) {
-        match &&= log.programId === filters.programId;
+      // --- Type-Specific Filters ---
+      if (item.itemType === 'workout') {
+        // Now that we know it's a workout, we can safely access workout properties.
+        const routineNameFilter = filters.routineName?.trim().toLowerCase();
+        if (routineNameFilter) {
+          match &&= (item.routineName || '').toLowerCase().includes(routineNameFilter);
+        }
+        if (filters.exerciseId) {
+          match &&= item.exercises.some(ex => ex.exerciseId === filters.exerciseId);
+        }
+        if (filters.programId) {
+          match &&= item.programId === filters.programId;
+        }
+      } else if (item.itemType === 'activity') {
+        // If any workout-specific filters are active, an activity can't match.
+        if (filters.routineName || filters.exerciseId || filters.programId) {
+          match = false;
+        }
+        // You could add activity-specific filters here in the future
+        // e.g., if (filters.activityName) { ... }
       }
 
       return match;
     });
 
-    return filtered.sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
+    return filtered; // The list is already sorted from the source observable
   });
 
   constructor() {
@@ -254,8 +263,25 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
     }
     this.menuModeCompact = this.themeService.isMenuModeCompact();
 
-    this.workoutLogsSubscription = this.trackingService.workoutLogs$.subscribe(logs => {
-      this.allWorkoutLogs.set(logs);
+    // +++ 2. REBUILD THE DATA FETCHING LOGIC +++
+    this.workoutLogsSubscription = combineLatest([
+      this.trackingService.workoutLogs$,
+      this.activityService.activityLogs$
+    ]).pipe(
+      map(([workouts, activities]) => {
+        // Map workouts to the unified type
+        const workoutItems: HistoryListItem[] = workouts.map(w => ({ ...w, itemType: 'workout' }));
+        // Map activities to the unified type
+        const activityItems: HistoryListItem[] = activities.map(a => ({ ...a, itemType: 'activity' }));
+
+        // Combine and sort the list chronologically
+        const combinedList = [...workoutItems, ...activityItems];
+        combinedList.sort((a, b) => b.startTime - a.startTime);
+
+        return combinedList;
+      })
+    ).subscribe(combinedList => {
+      this.allHistoryItems.set(combinedList);
       if (this.currentHistoryView() === 'calendar') {
         this.generateHistoryCalendarDays(true);
       }
@@ -400,16 +426,20 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   selectHistoryDay(day: HistoryCalendarDay): void {
     if (this.isHistoryCalendarAnimating) return;
+
     if (day.hasLog) {
-      this.filterForm.patchValue({
-        dateFrom: format(day.date, 'yyyy-MM-dd'), dateTo: format(day.date, 'yyyy-MM-dd'), routineName: '', exerciseId: ''
-      });
+      // +++ 2. UPDATE THIS LOGIC +++
+      // Filter the master list to get all items for the selected date
+      const itemsForDay = this.allHistoryItems().filter(item =>
+        isSameDay(new Date(item.startTime), day.date)
+      );
+      this.selectedDayItems.set(itemsForDay); // Set our new signal
+
       this.showPastLoggedWorkouts = true;
       this.pastLoggedWorkoutsDay = day;
-      // this.setView('list'); this.isFilterAccordionOpen.set(false);
     } else {
       this.toastService.clearAll();
-      this.toastService.info("No workouts logged on this day", 2000);
+      this.toastService.info("No activities logged on this day", 2000);
     }
   }
 
@@ -449,13 +479,13 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
     event?.stopPropagation(); this.visibleActionsRutineId.set(null);
 
     const confirm = await this.alertService.showConfirmationDialog(
-              "Delete Workout Log",
-              `Are you sure you want to delete this workout log? This action cannot be undone`,
-              [
-                { text: "Cancel", role: "cancel", data: false, icon: 'cancel' } as AlertButton,
-                { text: "Delete", role: "confirm", data: true, cssClass: "bg-red-600", icon: 'trash' } as AlertButton,
-              ],
-            );
+      "Delete Workout Log",
+      `Are you sure you want to delete this workout log? This action cannot be undone`,
+      [
+        { text: "Cancel", role: "cancel", data: false, icon: 'cancel' } as AlertButton,
+        { text: "Delete", role: "confirm", data: true, cssClass: "bg-red-600", icon: 'trash' } as AlertButton,
+      ],
+    );
     if (confirm && confirm.data) {
       try {
         this.spinnerService.show(); await this.trackingService.deleteWorkoutLog(logId);
@@ -471,10 +501,10 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
   }
   // toggleActions(logId: string, event: MouseEvent): void { event.stopPropagation(); this.visibleActionsRutineId.update(current => (current === logId ? null : logId)); }
 
-  activeRoutineIdActions = signal<string | null>(null); // Store ID of routine whose actions are open
+  activeItemIdActions = signal<string | null>(null); // Store ID of routine whose actions are open
   toggleActions(routineId: string, event: MouseEvent): void {
     event.stopPropagation();
-    this.activeRoutineIdActions.update(current => (current === routineId ? null : routineId));
+    this.activeItemIdActions.update(current => (current === routineId ? null : routineId));
   }
 
   // areActionsVisible(logId: string): boolean { return this.visibleActionsRutineId() === logId; }
@@ -486,6 +516,10 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   logPastWorkout(): void {
     this.router.navigate(['/workout/log/manual/new']);
+  }
+
+  logPastActivity(): void {
+    this.router.navigate(['/activities/log']);
   }
 
   scrollToTop(): void {
@@ -552,66 +586,53 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
     return actionsArray;
   }
 
-  handleActionMenuItemClick(event: { actionKey: string, data?: any }, originalMouseEvent?: MouseEvent): void {
-    // originalMouseEvent.stopPropagation(); // Stop original event that opened the menu
-    const logId = event.data?.routineId;
+  handleActionMenuItemClick(event: { actionKey: string, data?: any }): void {
+    const logId = event.data?.logId || event.data?.routineId; // Handle both old and new data structures
     if (!logId) return;
 
+    // --- Switch based on the unique action key ---
     switch (event.actionKey) {
-      case 'view':
-        this.viewLogDetails(logId);
-        break;
-      // case 'hide':
-      //   this.hideRoutine(routineId);
-      //   break;
-      // case 'unhide':
-      //   this.unhideRoutine(routineId);
-      //   break;
-      // case 'start':
-      //   this.startWorkout(routineId);
-      //   break;
-      case 'edit':
-        this.editLogDetails(logId);
-        break;
-      // case 'clone':
-      //   this.cloneAndEditRoutine(routineId);
-      //   break;
-      case 'create_routine':
-        this.createRoutineFromLog(logId);
-        break;
-      case 'delete':
-        this.deleteLogDetails(logId);
-        break;
+      // Workout Actions
+      case 'view': this.viewLogDetails(logId); break;
+      case 'edit': this.editLogDetails(logId); break;
+      case 'create_routine': this.createRoutineFromLog(logId); break;
+      case 'delete': this.deleteLogDetails(logId); break;
+
+      // Activity Actions
+      case 'view_activity': this.viewActivityLogDetails(logId); break;
+      case 'edit_activity': this.editActivityLog(logId); break;
+      case 'delete_activity': this.deleteActivityLog(logId); break;
     }
-    this.activeRoutineIdActions.set(null); // Close the menu
+
+    this.activeItemIdActions.set(null); // Close the menu
   }
 
   areActionsVisible(routineId: string): boolean {
-    return this.activeRoutineIdActions() === routineId;
+    return this.activeItemIdActions() === routineId;
   }
 
   // When closing menu from the component's output
   onCloseActionMenu() {
-    this.activeRoutineIdActions.set(null);
+    this.activeItemIdActions.set(null);
   }
 
   createRoutineFromLog(logId: string, event?: MouseEvent): void {
     event?.stopPropagation();
     // This will navigate to a new route that the workout builder will handle
     this.router.navigate(['/workout/routine/new-from-log', logId]);
-    this.activeRoutineIdActions.set(null);
+    this.activeItemIdActions.set(null);
   }
 
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
     // If an action menu is open AND the click was outside the menu container...
-    if (this.activeRoutineIdActions() !== null) {
+    if (this.activeItemIdActions() !== null) {
       // Find the menu element. We need a way to identify it. Let's give it a class.
       // We check if the clicked element or any of its parents have the 'action-menu-container' class.
       const clickedElement = event.target as HTMLElement;
       if (!clickedElement.closest('.action-menu-container')) {
-        this.activeRoutineIdActions.set(null); // ...then close it.
+        this.activeItemIdActions.set(null); // ...then close it.
       }
     }
   }
@@ -620,6 +641,7 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.showPastLoggedWorkouts = !this.showPastLoggedWorkouts;
     if (!this.showPastLoggedWorkouts) {
       this.pastLoggedWorkoutsDay = null;
+      this.selectedDayItems.set([]);
     }
   }
 
@@ -656,4 +678,89 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
       this.isFabActionsOpen.set(false);
     }
   }
+
+
+  // +++ ADD a method to generate action items for activities +++
+  getActivityLogDropdownActionItems(logId: string, mode: 'dropdown' | 'compact-bar'): ActionMenuItem[] {
+    const defaultBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-primary flex items-center text-sm hover:text-white dark:hover:text-gray-100';
+    const deleteBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-red-600 flex items-center text-sm hover:text-gray-100 hover:animate-pulse';
+
+    return [
+      {
+        label: 'VIEW',
+        actionKey: 'view_activity', // Use a unique key
+        iconName: 'eye',
+//         iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+//   <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+//   <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+//   <line x1="12" y1="11" x2="12" y2="11"></line>
+//   <line x1="8" y1="11" x2="8" y2="11"></line>
+//   <line x1="8" y1="15" x2="8" y2="15"></line>
+//   <line x1="12" y1="15" x2="16" y2="15"></line>
+//   <line x1="12" y1="11" x2="16" y2="11"></line>
+// </svg>`, // Add your view icon SVG
+        iconClass: 'w-8 h-8 mr-2',
+        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+        data: { logId }
+      },
+      {
+        label: 'EDIT',
+        actionKey: 'edit_activity', // Use a unique key
+        iconName: 'edit',
+        // iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>`, // Add your edit icon SVG
+        iconClass: 'w-8 h-8 mr-2',
+        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+        data: { logId }
+      },
+      { isDivider: true },
+      {
+        label: 'DELETE',
+        actionKey: 'delete_activity', // Use a unique key
+        iconName: 'trash',
+        // iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.58.177-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5Zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5Z" clip-rule="evenodd" /></svg>`, // Add your delete icon SVG
+        iconClass: 'w-8 h-8 mr-2',
+        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + deleteBtnClass,
+        data: { logId }
+      }
+    ];
+  }
+
+
+
+  viewActivityLogDetails(logId: string, event?: MouseEvent): void {
+    this.vibrate();
+    event?.stopPropagation();
+    this.router.navigate(['/activities/log', logId]);
+    this.activeItemIdActions.set(null);
+  }
+
+  editActivityLog(logId: string, event?: MouseEvent): void {
+    event?.stopPropagation();
+    this.router.navigate(['/activities/log/edit', logId]);
+    this.activeItemIdActions.set(null);
+  }
+
+  async deleteActivityLog(logId: string, event?: MouseEvent): Promise<void> {
+    event?.stopPropagation();
+    this.activeItemIdActions.set(null); // Close the menu immediately
+
+    // Find the log to get its name for the confirmation message
+    const logToDelete = this.allHistoryItems().find(item => item.id === logId) as ActivityLog | undefined;
+    if (!logToDelete) return; // Safety check
+
+    const confirm = await this.alertService.showConfirmationDialog(
+      'Delete Activity Log?',
+      `Are you sure you want to delete the log for "${logToDelete.activityName}"? This action cannot be undone.`,
+      [
+        { text: 'Cancel', role: 'cancel', data: false, icon: 'cancel' },
+        { text: 'Delete', role: 'confirm', data: true, cssClass: 'bg-red-500', icon: 'trash' }
+      ] as AlertButton[]
+    );
+
+    if (confirm && confirm.data) {
+      this.activityService.deleteActivityLog(logId);
+      // The list will update automatically via the observable stream from the service.
+    }
+  }
+
 }

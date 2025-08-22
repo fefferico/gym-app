@@ -33,6 +33,7 @@ import { PressScrollDirective } from '../../shared/directives/press-scroll.direc
 import { ProgressiveOverloadService } from '../../core/services/progressive-overload.service.ts';
 import { IconComponent } from '../../shared/components/icon/icon.component';
 import { TrainingProgramService } from '../../core/services/training-program.service';
+import { ExerciseSelectionModalComponent } from '../../shared/components/exercise-selection-modal/exercise-selection-modal.component';
 
 
 // Interface to manage the state of the currently active set/exercise
@@ -113,7 +114,7 @@ enum PlayerSubState {
   imports: [CommonModule, DatePipe, ReactiveFormsModule,
     FormatSecondsPipe,
     FormsModule, WeightUnitPipe, FullScreenRestTimerComponent, PressDirective, ModalComponent, ExerciseDetailComponent,
-    PressScrollDirective, IconComponent],
+    PressScrollDirective, IconComponent,ExerciseSelectionModalComponent],
   templateUrl: './workout-player.html',
   styleUrl: './workout-player.scss',
   providers: [DecimalPipe]
@@ -195,7 +196,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   routineId: string | null = null;
 
   // --- For Exercise Selection Modal ---
-  isExerciseModalOpen = signal(false);
+  isExerciseAddModalOpen = signal(false);
   availableExercises: Exercise[] = [];
   modalSearchTerm = signal('');
   filteredAvailableExercises = computed(() => {
@@ -2518,14 +2519,14 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     // if so and it's a kettlebell related exercise, it will suggest same weight and reps as the last one
     const lastEx = this.currentWorkoutLogExercises().length > 0 ? this.currentWorkoutLogExercises()[this.currentWorkoutLogExercises().length - 1] : null;
     const lastExSet = lastEx ? lastEx.sets[lastEx.sets.length - 1] : null;
-
+    
+    const isCardioOnly = selectedExercise.category === 'cardio';
     const defaultWeight = kbRelated && lastExSet ? (lastExSet.targetWeight || lastExSet.weightUsed) : (this.unitService.currentUnit() === 'kg' ? 10 : 22.2);
-    const defaultDuration = 0;
+    const defaultDuration = isCardioOnly ? 60 : 0;
     const defaultRest = kbRelated ? 45 : 60;
     const defaultReps = kbRelated && lastExSet ? (lastExSet.targetReps || lastExSet.repsAchieved) : 10;
     const defaultSets = 3;
 
-    const isCardioOnly = selectedExercise.category === 'cardio';
     const exerciseParams: AlertInput[] = isCardioOnly
       ? [
         { label: 'Exercise name', name: 'name', type: 'text', placeholder: 'Exercise name', value: selectedExercise.name, attributes: { required: true } },
@@ -4359,25 +4360,47 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       this.loadAvailableExercises();
     }
     this.modalSearchTerm.set('');
-    this.isExerciseModalOpen.set(true);
+    this.isExerciseAddModalOpen.set(true);
     this.closeWorkoutMenu(); // Close main menu when opening modal
 
     setTimeout(() => {
       if (this.myExerciseInput && this.myExerciseInput.nativeElement) {
-        this.myExerciseInput.nativeElement?.focus();
+        this.myExerciseInput?.nativeElement?.focus();
       }
     });
 
   }
 
   closeExerciseSelectionModal(): void {
-    this.isExerciseModalOpen.set(false);
+    this.isExerciseAddModalOpen.set(false);
   }
 
   onModalSearchTermChange(event: Event): void {
     const inputElement = event.target as HTMLInputElement;
     this.modalSearchTerm.set(inputElement.value);
   }
+
+  /**
+   * This method is triggered when the user presses "Enter"
+   * inside the exercise search input field.
+   */
+  onSearchEnter(type: 'add' | 'switch' = 'add'): void {
+    const filteredList = this.filteredAvailableExercises();
+
+    // Check if there is exactly one exercise in the filtered list
+    if (filteredList.length === 1) {
+      // If so, select that exercise
+      const singleExercise = filteredList[0];
+      if (type === 'switch') {
+        this.selectExerciseToSwitch(singleExercise);
+      } else {
+        this.selectExerciseToAddFromModal(singleExercise);
+      }
+    }
+    // If there are 0 or more than 1 results, pressing Enter does nothing,
+    // which is the desired behavior.
+  }
+
   // --- End Modal Methods ---
 
 
@@ -4637,7 +4660,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   // --- NEW: LOGIC FOR EXERCISE SWITCHING ---
 
   // --- For Exercise Switching Modal ---
-  isSwitchExerciseModalOpen = signal(false);
+  isExerciseSwitchModalOpen = signal(false);
   switchModalSearchTerm = signal('');
   isShowingSimilarInSwitchModal = signal(false);
   exercisesForSwitchModal = signal<Exercise[]>([]);
@@ -4679,14 +4702,14 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     this.isShowingSimilarInSwitchModal.set(false);
     this.switchModalSearchTerm.set('');
     this.exercisesForSwitchModal.set([]); // Clear any previous "similar" results
-    this.isSwitchExerciseModalOpen.set(true); // Open the modal
+    this.isExerciseSwitchModalOpen.set(true); // Open the modal
   }
 
   /**
    * Closes the exercise switching modal.
    */
   closeSwitchExerciseModal(): void {
-    this.isSwitchExerciseModalOpen.set(false);
+    this.isExerciseSwitchModalOpen.set(false);
   }
 
   /**
@@ -4764,7 +4787,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       this.exercisePBs.set([]);
 
       await this.prepareCurrentSet();
-      this.toastService.success(`Switched to ${newExercise.name}`, 3000, "Exercise Switched");
+      this.toastService.info(`Switched to ${newExercise.name}`, 3000, "Exercise Switched");
     } else {
       this.toastService.error("Could not find the exercise to replace in the routine.", 0, "Error");
     }

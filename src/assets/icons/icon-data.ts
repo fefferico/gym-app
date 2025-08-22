@@ -165,11 +165,10 @@ export const ICONS: Record<string, string> = {
                             </svg>
 `,
   'clock': `
-<svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                    stroke="currentColor" aria-hidden="true">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                                </svg>`,
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <circle cx="12" cy="12" r="10"></circle>
+  <polyline points="12 6 12 12 16 12"></polyline>
+</svg>`,
   'play': `
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" 
             stroke-width="2" stroke="currentColor" >
@@ -213,8 +212,7 @@ export const ICONS: Record<string, string> = {
       <rect x="11" y="6" width="2" height="9" rx="4" ry="4" fill="currentColor" />
     </svg>`,
   'eye': `
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
-            class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-2">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
             <path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5Z"></path>
             <path fill-rule="evenodd"
               d="M.664 10.59a1.651 1.651 0 010-1.186A10.004 10.004 0 0110 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0110 17c-4.257 0-7.893-2.66-9.336-6.41ZM14 10a4 4 0 11-8 0 4 4 0 018 0Z"
@@ -247,30 +245,30 @@ export const ICONS: Record<string, string> = {
 <path d="M21 6H23V18H21V6Z"/>
 </svg>
 `,
-'collapse-card': `
+  'collapse-card': `
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                   <path fill-rule="evenodd"
                     d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z"
                     clip-rule="evenodd" />
                 </svg>
 `,
-'alert': `
+  'alert': `
 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
   <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
 </svg>
 `,
-'alert-filled': `
+  'alert-filled': `
 <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-exclamation-triangle-fill" viewBox="0 0 16 16">
   <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
 </svg>
 `,
-'chart': `
+  'chart': `
 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.5v-7.5c0-1.105.895-2 2-2h14c1.105 0 2 .895 2 2v10.5c0 1.105-.895 2-2 2h-14a2 2 0 0 1-2-2v-2.5" />
   <path stroke-linecap="round" stroke-linejoin="round" d="M8 16.5v-5.25m4 5.25v-2.25m4 2.25v-1.5" />
 </svg>
 `,
-'chart2': `
+  'chart2': `
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
   <path d="M2 3a1 1 0 0 1 1-1h1.5a1 1 0 0 1 1 1v11.5a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3Z" />
   <path d="M7.5 6a1 1 0 0 1 1-1h1.5a1 1 0 0 1 1 1v8.5a1 1 0 0 1-1 1H8.5a1 1 0 0 1-1-1V6Z" />
@@ -278,28 +276,67 @@ export const ICONS: Record<string, string> = {
 </svg>
 `,
 
-'edit': `
+  'edit': `
 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
   <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10">
   </path>
 </svg>
 `,
-'magnifier': `
+  'magnifier': `
 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
 </svg>
 `,
-'trend': `
+  'trend': `
 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                             stroke="currentColor" >
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941" />
                         </svg>
 `,
-'deactivate': `
+  'deactivate': `
 <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
   <circle cx="50" cy="50" r="45" stroke="currentColor" stroke-width="10"/>
   <line x1="25" y1="50" x2="75" y2="50" stroke="currentColor" stroke-width="10"/>
+</svg>
+`,
+  'clipboard-list': `
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+  <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+  <line x1="12" y1="11" x2="12" y2="11"></line>
+  <line x1="8" y1="11" x2="8" y2="11"></line>
+  <line x1="8" y1="15" x2="8" y2="15"></line>
+  <line x1="12" y1="15" x2="16" y2="15"></line>
+  <line x1="12" y1="11" x2="16" y2="11"></line>
+</svg>
+`,
+  'flame': `
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path>
+</svg>
+`,
+  'map': `
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M12 22s-8-6-8-12a8 8 0 0 1 16 0c0 6-8 12-8 12z"></path>
+  <circle cx="12" cy="10" r="3"></circle>
+</svg>
+`,
+  'ruler': `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <rect x="2" y="8" width="20" height="8" rx="1" ry="1"></rect>
+  <line x1="5" y1="8" x2="5" y2="12"></line>
+  <line x1="9" y1="8" x2="9" y2="12"></line>
+  <line x1="13" y1="8" x2="13" y2="12"></line>
+  <line x1="17" y1="8" x2="17" y2="12"></line>
+  <line x1="21" y1="8" x2="21" y2="12"></line>
+</svg>
+`,
+  'calories': `
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <rect x="3" y="3" width="18" height="18" rx="3" ry="3"></rect>
+  <path d="M7 12a5 5 0 0 1 10 0v0"></path>
+  <line x1="12" y1="12" x2="14" y2="10"></line>
 </svg>
 `,
 };

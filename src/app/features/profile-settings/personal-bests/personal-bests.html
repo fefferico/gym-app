@@ -162,32 +162,21 @@
 
 
                 <div *ngIf="pb.pbType !== '1RM (Estimated)' && pb.workoutLogId"
-                        class="flex flex-col sm:flex-row justify-center items-center space-y-2 sm:space-y-0 sm:space-x-4 pt-4 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 rounded-b dark:border-gray-600 pb-2">
-                        <!-- 
-                        - flex-col: Stacks buttons vertically by default (for mobile).
-                        - sm:flex-row: Switches to a side-by-side layout on small screens and up.
-                        - space-y-4: Adds vertical space between buttons in the stacked view.
-                        - sm:space-y-0: Removes the vertical space on larger screens.
-                        - sm:space-x-4: Adds horizontal space on larger screens.
-                        -->
+                    class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 rounded-b dark:border-gray-600 p-2">
 
+                    <!-- The buttons no longer need any width classes -->
                     <button (click)="navigateToLogDetail(pb.workoutLogId, $event)"
-                            class="flex justify-center items-center min-w-[310px] sm:w-auto px-6 py-3 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-md shadow-sm text-lg disabled:opacity-50 disabled:cursor-not-allowed">
-                            <!--
-                            - w-full sm:w-auto: Makes the button full-width on mobile and auto-width on larger screens.
-                            - justify-center: Ensures icon and text are centered.
-                            - Increased padding (px-6 py-3) to give the larger text more space.
-                            -->
-                            <app-icon name="eye" class="w-8 h-8 mr-1"></app-icon>
-                            <span>VIEW LOG</span>
-                        </button>
+                        class="flex justify-center items-center px-6 py-3 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-md shadow-sm text-lg disabled:opacity-50 disabled:cursor-not-allowed">
+                        <app-icon name="eye" class="w-8 h-8 mr-1"></app-icon>
+                        <span>VIEW LOG</span>
+                    </button>
 
                     <button (click)="showPbTrend(pb.exerciseId, pb.pbType)" title="Show Trend for this PB"
-                            class="flex justify-center items-center min-w-[310px] sm:w-auto px-6 py-3 bg-primary hover:bg-primary-light text-white font-semibold rounded-md shadow-sm text-lg disabled:opacity-50 disabled:cursor-not-allowed">
-                            <app-icon name="trend" class="w-8 h-8 mr-1"></app-icon>
-                            <span>TREND</span>
-                        </button>
-                    </div>
+                        class="flex justify-center items-center px-6 py-3 bg-primary hover:bg-primary-light text-white font-semibold rounded-md shadow-sm text-lg disabled:opacity-50 disabled:cursor-not-allowed">
+                        <app-icon name="trend" class="w-8 h-8 mr-1"></app-icon>
+                        <span>TREND</span>
+                    </button>
+                </div>
             </div>
         </div>
     </div>

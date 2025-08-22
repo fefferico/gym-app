@@ -1,0 +1,16 @@
+// src/app/features/activities/log-activity/log-activity.component.scss
+
+// General styles for form inputs to keep them consistent.
+.input-field {
+  @apply block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-gray-200 disabled:opacity-50;
+}
+
+// Style for invalid form fields to give user feedback.
+.input-invalid {
+  @apply border-red-500 ring-red-500;
+}
+
+// Style for validation error messages.
+.validation-message {
+  @apply text-red-500 text-xs mt-1;
+}

@@ -4,6 +4,8 @@ import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { ActionMenuItem } from '../../../core/models/action-menu.model';
+import { AlertButton } from '../../../core/models/alert.model';
+import { IconRegistryService } from '../../../core/services/icon-registry.service';
 
 // ... (animations remain the same)
 export const dropdownMenuAnimation = trigger('dropdownMenu', [
@@ -119,4 +121,29 @@ export class ActionMenuComponent implements OnChanges, OnDestroy {
   showLabelInCompact(item: ActionMenuItem): boolean {
     return !!item.label;
   }
+
+
+    private iconRegistry = inject(IconRegistryService);
+    
+    /**
+   * Resolves the icon for a button, prioritizing iconName over iconSvg.
+   */
+  getIconHtml(button: ActionMenuItem): SafeHtml | null {
+    let svgString: string | null = null;
+    if (button.iconName) {
+      svgString = this.iconRegistry.getIconString(button.iconName);
+    } else if (button.iconSvg) {
+      svgString = button.iconSvg;
+    }
+
+    if (svgString) {
+      return this.sanitizer.bypassSecurityTrustHtml(svgString);
+    }
+    return null;
+  }
+
+  getPippo(): string {
+    return 'pippo';
+  }
+
 }
