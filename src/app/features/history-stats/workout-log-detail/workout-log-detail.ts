@@ -93,7 +93,7 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
 
 
   weekName = signal<string | null>(null);
-    dayInfo = signal<ProgramDayInfo | null>(null);
+  dayInfo = signal<ProgramDayInfo | null>(null);
 
   constructor() {
     // Initialization if needed
@@ -126,9 +126,8 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
             this.prepareDisplayExercises(log.exercises);
             await this.enrichLoggedExercisesWithTargets();
 
-            // Fetch the week name and set the signal once it arrives
             this.trainingService.getWeekNameForLog(log).pipe(take(1)).subscribe(name => {
-                this.weekName.set(name);
+              this.weekName.set(name);
             });
 
             this.trainingService.getDayOfWeekForLog(log).pipe(take(1)).subscribe(info => {
@@ -139,6 +138,7 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
             // Handle the case where there is no log or no exercises
             this.displayExercises.set([]);
             this.weekName.set(null);
+            this.dayInfo.set(null);
           }
         }),
         catchError(err => {

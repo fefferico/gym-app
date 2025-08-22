@@ -8,11 +8,12 @@
   <!-- This header part is now "part of" the swipeable area, but it will NOT animate. -->
   <div class="flex-shrink-0">
     <!-- Date Navigation -->
-    <div class="flex items-center justify-between py-1 border-b border-gray-200 dark:border-gray-700 dark:bg-gray-600 rounded-md">
+    <div
+      class="flex items-center justify-between py-1 border-b border-gray-200 dark:border-gray-700 dark:bg-gray-600 rounded-md">
       <button appPressScroll (shortPress)="previousDay()" title="Previous Day"
         class="py-2 mx-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 disabled:opacity-50"
         [disabled]="isAnimating()">
-                <app-icon name="back" class="w-6 h-6"></app-icon>
+        <app-icon name="back" class="w-6 h-6"></app-icon>
       </button>
       <div class="text-center px-2">
         <div *ngIf="allActivePrograms().length > 0" class="space-y-2 mb-1">
@@ -104,7 +105,8 @@
 
                 <ng-container *ngIf="!isWorkoutLogged(workoutInfo.routine.id)">
                   <ng-container *ngIf="isFutureDate(currentDate())">
-                    <div class="flex flex-col sm:flex-row justify-center items-center space-y-2 sm:space-y-0 sm:space-x-4 pt-4">
+                    <div
+                      class="flex flex-col sm:flex-row justify-center items-center space-y-2 sm:space-y-0 sm:space-x-4 pt-4">
                       <button appPressScroll (shortPress)="viewRoutineDetails(workoutInfo.routine.id)"
                         class="flex-1 bg-sky-500 hover:bg-sky-600 text-white font-semibold py-2.5 px-4 rounded-md shadow-sm flex items-center justify-center text-m w-full sm:max-w-[200px]">
                         <app-icon name="eye" class="w-6 h-6">
@@ -136,7 +138,8 @@
                     </span>
                   </ng-container>
                   <ng-container *ngIf="isToday(currentDate())">
-                    <div class="flex flex-col sm:flex-row justify-center items-center space-y-2 sm:space-y-0 sm:space-x-4 pt-4">
+                    <div
+                      class="flex flex-col sm:flex-row justify-center items-center space-y-2 sm:space-y-0 sm:space-x-4 pt-4">
                       <button appPressScroll
                         (shortPress)="startProgramWorkout(workoutInfo.routine.id, workoutInfo.scheduledDayInfo.programId, $event)"
                         class="flex justify-center items-center w-full sm:max-w-[200px] px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-md shadow-sm text-lg disabled:opacity-50 disabled:cursor-not-allowed">
@@ -184,7 +187,7 @@
                 <div class="space-y-2">
                   <div *ngFor="let log of logsForDay()"
                     class="p-3 bg-gray-200/50 dark:bg-gray-800 rounded-md flex justify-between items-center">
-                    <p class="flex flex-col font-medium text-gray-800 dark:text-gray-100 truncate pr-2">{{
+                    <p class="flex flex-col font-medium text-gray-800 dark:text-gray-100 text-wrap pr-2">{{
                       log.routineName
                       }}
                       <span class="text-sm" *ngIf="log.durationSeconds">Duration: {{
@@ -274,12 +277,17 @@
                 <div class="space-y-2">
                   <div *ngFor="let log of logsForDay()"
                     class="p-3 bg-gray-200/50 dark:bg-gray-800 rounded-md flex justify-between items-center">
-                    <p class="flex flex-col font-medium text-gray-800 dark:text-gray-100 truncate pr-2">{{
+                    <p class="flex flex-col font-medium text-gray-800 dark:text-gray-100 text-wrap pr-2">{{
                       log.routineName
                       }}
-                      <span class="text-sm" *ngIf="log.durationSeconds">Duration: {{
+                      <span *ngIf="log.programId" class="text-sm text-blue-600 dark:text-blue-400 font-semibold mt-1" (click)="viewProgramDetails(log.programId)" style="cursor: pointer;">
+                        Program: {{ getProgramNameById(log.programId) }}
+                        <ng-container *ngIf="log.weekName"> - {{ log.weekName }}</ng-container>
+                        <ng-container *ngIf="log.dayName"> - {{ log.dayName }}</ng-container>
+                      </span>
+                      <!-- <span class="text-sm" *ngIf="log.durationSeconds">Duration: {{
                         secondsToDateTime(log.durationSeconds) |
-                        date:'HH:mm:ss' }}</span>
+                        date:'HH:mm:ss' }}</span> -->
                     </p>
                     <button appPressScroll (shortPress)="viewLogDetails(log.id)"
                       class="flex items-center text-md font-semibold bg-sky-200 dark:bg-sky-700 text-sky-800 dark:text-sky-100 px-2 py-1 rounded hover:bg-sky-300">

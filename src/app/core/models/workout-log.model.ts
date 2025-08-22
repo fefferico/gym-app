@@ -115,3 +115,9 @@ export interface PBHistoryInstance {
   timestamp: string;    // ISO date string of when this historical PB was achieved
   workoutLogId?: string; // The log ID where this historical PB was achieved
 }
+
+
+export interface EnrichedWorkoutLog extends WorkoutLog {
+  weekName?: string | null;
+  dayName?: string | null;
+}

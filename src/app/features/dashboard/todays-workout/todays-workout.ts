@@ -5,10 +5,10 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { TrainingProgramService } from '../../../core/services/training-program.service';
 import { Routine } from '../../../core/models/workout.model';
-import { ScheduledRoutineDay, TrainingProgram } from '../../../core/models/training-program.model';
-import { WorkoutLog } from '../../../core/models/workout-log.model';
+import { ProgramDayInfo, ScheduledRoutineDay, TrainingProgram } from '../../../core/models/training-program.model';
+import { EnrichedWorkoutLog, WorkoutLog } from '../../../core/models/workout-log.model';
 import { WorkoutService } from '../../../core/services/workout.service';
-import { catchError, map, Observable, of, Subject, switchMap, takeUntil, tap, combineLatest, ObservedValueOf, take } from 'rxjs';
+import { catchError, map, Observable, of, Subject, switchMap, takeUntil, tap, combineLatest, ObservedValueOf, take, forkJoin } from 'rxjs';
 import Hammer from 'hammerjs';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { TrackingService } from '../../../core/services/tracking.service';
@@ -58,11 +58,12 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
 
   // --- Signals for State Management ---
   allActivePrograms = signal<TrainingProgram[]>([]);
+  availablePrograms = signal<TrainingProgram[]>([]);
   isLoading = signal<boolean>(true);
   currentDate = signal<Date>(new Date());
   private currentDate$: Observable<Date> = toObservable(this.currentDate);
   todaysScheduledWorkouts = signal<{ routine: Routine, scheduledDayInfo: ScheduledRoutineDay }[]>([]);
-  logsForDay = signal<WorkoutLog[]>([]);
+  logsForDay = signal<EnrichedWorkoutLog[]>([]);
 
   // --- Other Properties ---
   availableRoutines$: Observable<Routine[]>;
@@ -91,77 +92,115 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
         combineLatest([
           this.trainingProgramService.getActivePrograms(),
           this.trackingService.getLogsForDate(this.formatDate(date)),
-          this.workoutService.routines$.pipe(take(1)) // Fetch all routines to build a lookup map
+          this.workoutService.routines$.pipe(take(1)),
+          this.trainingProgramService.programs$.pipe(take(1)),
         ]).pipe(
-          map(([activePrograms, logsForDay, allRoutines]) => {
+          // +++ 3. ADD A switchMap TO HANDLE THE ASYNC ENRICHMENT +++
+          switchMap(([activePrograms, logs, allRoutines, allPrograms]) => {
+            if (!logs || logs.length === 0) {
+              // If there are no logs, just pass the data through directly.
+              return of({
+                activePrograms,
+                enrichedLogs: [], // Return an empty array of the correct type
+                allRoutines,
+                allPrograms,
+                routineData: [] // Initialize empty
+              });
+            }
+
+            // Create an array of observables to fetch enrichment data for each log in parallel
+            const enrichmentObservables = logs.map(log => {
+              if (!log.programId) {
+                // If the log is not part of a program, return a simple object
+                return of({ ...log, weekName: null, dayName: null });
+              }
+              // If it is part of a program, fetch both week and day info in parallel
+              return combineLatest([
+                this.trainingProgramService.getWeekNameForLog(log),
+                this.trainingProgramService.getDayOfWeekForLog(log)
+              ]).pipe(
+                map(([weekName, dayInfo]) => ({
+                  ...log,
+                  weekName: weekName,
+                  dayName: dayInfo?.dayName || null
+                }))
+              );
+            });
+
+            // Use forkJoin to wait for all enrichment calls to complete
+            return forkJoin(enrichmentObservables).pipe(
+              map(enrichedLogs => ({
+                activePrograms,
+                enrichedLogs,
+                allRoutines,
+                allPrograms,
+                routineData: [] // Initialize empty, will be populated next
+              }))
+            );
+          }),
+          map(({ activePrograms, enrichedLogs, allRoutines, allPrograms }) => {
+            // This part remains mostly the same, but it now uses the enrichedLogs
             const allRoutinesMap = new Map<string, Routine>();
-            allRoutines.forEach(r => allRoutinesMap.set(r.id, r));
+            allRoutines.forEach((r: any) => allRoutinesMap.set(r.id, r));
 
             const allWorkoutsForDay: { routine: Routine, scheduledDayInfo: ScheduledRoutineDay & { isUnscheduled?: boolean } }[] = [];
             const activeProgramIds = new Set((activePrograms || []).map(p => p.id));
-
-            // 1. Find regularly scheduled workouts from active programs.
+            
             if (activePrograms) {
-              for (const prog of activePrograms) {
-                const routineData = this.trainingProgramService.findRoutineForDayInProgram(date, prog);
-                if (routineData && prog.startDate) {
-                  // +++ FIX: Use parseISO for timezone-safe date parsing +++
-                  const programStartDate = parseISO(prog.startDate); 
-                  const streamDate = new Date(date);
-                  // No need to call setHours(0,0,0,0) as parseISO and the streamDate will compare correctly
-                  if (programStartDate <= streamDate) {
-                    allWorkoutsForDay.push({ ...routineData, scheduledDayInfo: { ...routineData.scheduledDayInfo, isUnscheduled: false, programId: prog.id } });
-                  }
+                for (const prog of activePrograms) {
+                    const routineData = this.trainingProgramService.findRoutineForDayInProgram(date, prog);
+                    if (routineData && prog.startDate) {
+                        const programStartDate = parseISO(prog.startDate);
+                        if (programStartDate <= date) {
+                            allWorkoutsForDay.push({ ...routineData, scheduledDayInfo: { ...routineData.scheduledDayInfo, isUnscheduled: false, programId: prog.id } });
+                        }
+                    }
                 }
-              }
             }
 
             const scheduledRoutineIds = new Set(allWorkoutsForDay.map(w => w.routine.id));
 
-            // 2. Find unscheduled workouts that were logged today under an active program.
-            const unscheduledLogs = (logsForDay ?? []).filter(log =>
-              log.programId &&
-              activeProgramIds.has(log.programId) &&
-              log.routineId &&
-              !scheduledRoutineIds.has(log.routineId)
+            const unscheduledLogs = (enrichedLogs ?? []).filter((log: any) =>
+                log.programId &&
+                activeProgramIds.has(log.programId) &&
+                log.routineId &&
+                !scheduledRoutineIds.has(log.routineId)
             );
 
-            // 3. Group unscheduled logs by routine to handle multiple logs for the same routine.
-            const unscheduledLogsByRoutine = new Map<string, WorkoutLog[]>();
+            const unscheduledLogsByRoutine = new Map<string, EnrichedWorkoutLog[]>();
             for (const log of unscheduledLogs) {
-              if (!log.routineId) continue;
-              if (!unscheduledLogsByRoutine.has(log.routineId)) {
-                unscheduledLogsByRoutine.set(log.routineId, []);
-              }
-              unscheduledLogsByRoutine.get(log.routineId)!.push(log);
+                if (!log.routineId) continue;
+                if (!unscheduledLogsByRoutine.has(log.routineId)) {
+                    unscheduledLogsByRoutine.set(log.routineId, []);
+                }
+                unscheduledLogsByRoutine.get(log.routineId)!.push(log);
             }
 
-            // 4. Create workout items for these unscheduled logs.
             for (const [routineId, logs] of unscheduledLogsByRoutine.entries()) {
-              const routine = allRoutinesMap.get(routineId);
-              const program = activePrograms?.find(p => p.id === logs[0].programId);
-
-              if (routine && program) {
-                const dummyScheduledDayInfo: ScheduledRoutineDay & { isUnscheduled?: boolean } = {
-                  id: uuidv4(),
-                  routineId: routineId,
-                  dayOfWeek: date.getDay(),
-                  programId: program.id,
-                  isUnscheduled: true
-                };
-                allWorkoutsForDay.push({ routine: routine, scheduledDayInfo: dummyScheduledDayInfo });
-              }
+                const routine = allRoutinesMap.get(routineId);
+                const program = activePrograms?.find((p: any) => p.id === logs[0].programId);
+                if (routine && program) {
+                    const dummyScheduledDayInfo: ScheduledRoutineDay & { isUnscheduled?: boolean } = {
+                        id: uuidv4(),
+                        routineId: routineId,
+                        dayOfWeek: date.getDay(),
+                        programId: program.id,
+                        isUnscheduled: true
+                    };
+                    allWorkoutsForDay.push({ routine: routine, scheduledDayInfo: dummyScheduledDayInfo });
+                }
             }
-
+            
             return {
               allActivePrograms: activePrograms || [],
               routineData: allWorkoutsForDay,
-              logsForDay,
+              logsForDay: enrichedLogs, // Pass the fully enriched logs
+              allAvailablePrograms: allPrograms
             };
           }),
           catchError(err => {
             console.error("Error loading workout data for date:", date, err);
-            return of({ allActivePrograms: [], routineData: [], logsForDay: [] });
+            return of({ allActivePrograms: [], routineData: [], logsForDay: [], allAvailablePrograms: [] });
           })
         )
       ),
@@ -169,12 +208,13 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
     ).subscribe(state => {
       if (state) {
         this.allActivePrograms.set(state.allActivePrograms);
+        this.availablePrograms.set(state.allAvailablePrograms);
         this.todaysScheduledWorkouts.set(state.routineData);
         this.logsForDay.set(state.logsForDay ?? []);
         this.isLoading.set(false);
       }
     });
-  }
+}
 
   /**
    * Helper function for the template to check if a specific routine has been logged today.
@@ -304,4 +344,10 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
     event?.stopPropagation();
     this.router.navigate(['/training-programs/view', programId]);
   }
+
+
+getProgramNameById(programId: string): string {
+    return this.availablePrograms().find(p => p.id === programId)?.name || '';
+}
+
 }
