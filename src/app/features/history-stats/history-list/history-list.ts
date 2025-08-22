@@ -6,8 +6,8 @@ import {
 } from '@angular/core';
 import { CommonModule, DatePipe, DecimalPipe, isPlatformBrowser, TitleCasePipe } from '@angular/common';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
-import { Observable, combineLatest, Subscription, forkJoin } from 'rxjs';
-import { map, startWith, distinctUntilChanged, take, filter } from 'rxjs/operators';
+import { Observable, combineLatest, Subscription, forkJoin, of } from 'rxjs';
+import { map, startWith, distinctUntilChanged, take, filter, switchMap } from 'rxjs/operators';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { ExerciseService } from '../../../core/services/exercise.service';
 import { TrackingService } from '../../../core/services/tracking.service';
@@ -49,6 +49,13 @@ interface HistoryCalendarDay {
 
 type HistoryListView = 'list' | 'calendar';
 type HistoryListItem = (WorkoutLog & { itemType: 'workout' }) | (ActivityLog & { itemType: 'activity' });
+
+type EnrichedHistoryListItem = HistoryListItem & {
+  programName?: string | null;
+  weekName?: string | null;
+  dayName?: string | null;
+};
+
 
 @Component({
   selector: 'app-history-list',
@@ -125,10 +132,11 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
   private trainingProgramService = inject(TrainingProgramService);
 
 
-  selectedDayItems = signal<HistoryListItem[]>([]);
   protected allWorkoutLogs = signal<WorkoutLog[]>([]);
-  protected allHistoryItems = signal<HistoryListItem[]>([]);
+  selectedDayItems = signal<EnrichedHistoryListItem[]>([]);
+  protected allHistoryItems = signal<EnrichedHistoryListItem[]>([]);
   private workoutLogsSubscription: Subscription | undefined;
+
   availableExercisesForFilter$: Observable<Exercise[]> | undefined;
   isFilterAccordionOpen = signal(false);
   availableRoutines: Routine[] = [];
@@ -266,22 +274,51 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
     // +++ 2. REBUILD THE DATA FETCHING LOGIC +++
     this.workoutLogsSubscription = combineLatest([
       this.trackingService.workoutLogs$,
-      this.activityService.activityLogs$
+      this.activityService.activityLogs$,
+      this.trainingProgramService.programs$.pipe(take(1)) // Get all programs once for name lookups
     ]).pipe(
-      map(([workouts, activities]) => {
-        // Map workouts to the unified type
+      map(([workouts, activities, allPrograms]) => {
+        const programMap = new Map(allPrograms.map(p => [p.id, p.name]));
         const workoutItems: HistoryListItem[] = workouts.map(w => ({ ...w, itemType: 'workout' }));
-        // Map activities to the unified type
         const activityItems: HistoryListItem[] = activities.map(a => ({ ...a, itemType: 'activity' }));
 
-        // Combine and sort the list chronologically
         const combinedList = [...workoutItems, ...activityItems];
         combinedList.sort((a, b) => b.startTime - a.startTime);
 
-        return combinedList;
+        return { combinedList, programMap };
+      }),
+      // Use switchMap to handle the async enrichment process
+      switchMap(({ combinedList, programMap }) => {
+        if (combinedList.length === 0) {
+          return of([]); // Return empty array if there's nothing to process
+        }
+
+        // Create an array of observables, one for each item
+        const enrichmentObservables = combinedList.map(item => {
+          if (item.itemType === 'workout' && item.programId) {
+            // This is a workout log with a program, so we fetch details
+            return combineLatest([
+              this.trainingProgramService.getWeekNameForLog(item),
+              this.trainingProgramService.getDayOfWeekForLog(item)
+            ]).pipe(
+              map(([weekName, dayInfo]) => ({
+                ...item,
+                programName: programMap.get(item.programId!) || null,
+                weekName: weekName,
+                dayName: dayInfo?.dayName || null
+              } as EnrichedHistoryListItem))
+            );
+          } else {
+            // This is an activity or a workout without a program, return as-is
+            return of(item as EnrichedHistoryListItem);
+          }
+        });
+
+        // forkJoin waits for all enrichment observables to complete
+        return forkJoin(enrichmentObservables);
       })
-    ).subscribe(combinedList => {
-      this.allHistoryItems.set(combinedList);
+    ).subscribe(enrichedList => {
+      this.allHistoryItems.set(enrichedList);
       if (this.currentHistoryView() === 'calendar') {
         this.generateHistoryCalendarDays(true);
       }
@@ -371,7 +408,7 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
     const rangeStart = startOfWeek(monthStart, { weekStartsOn: this.weekStartsOn });
     const rangeEnd = endOfWeek(monthEnd, { weekStartsOn: this.weekStartsOn });
     const dateRange = eachDayOfInterval({ start: rangeStart, end: rangeEnd });
-    
+
     // +++ THIS IS THE FIX +++
     // Use the unified allHistoryItems() signal, which contains both workouts and activities.
     const logsForMonth = this.allHistoryItems().filter(item => {
@@ -393,7 +430,7 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.historyCalendarDays.set(days);
     this.historyCalendarLoading.set(false);
-    
+
     if (isInitialLoad) {
       this.historyCalendarAnimationState.set('center');
     } else if (this.historyCalendarAnimationState() === 'preloadFromLeft' || this.historyCalendarAnimationState() === 'preloadFromRight') {
@@ -705,15 +742,15 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
         label: 'VIEW',
         actionKey: 'view_activity', // Use a unique key
         iconName: 'eye',
-//         iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-//   <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
-//   <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
-//   <line x1="12" y1="11" x2="12" y2="11"></line>
-//   <line x1="8" y1="11" x2="8" y2="11"></line>
-//   <line x1="8" y1="15" x2="8" y2="15"></line>
-//   <line x1="12" y1="15" x2="16" y2="15"></line>
-//   <line x1="12" y1="11" x2="16" y2="11"></line>
-// </svg>`, // Add your view icon SVG
+        //         iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        //   <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+        //   <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+        //   <line x1="12" y1="11" x2="12" y2="11"></line>
+        //   <line x1="8" y1="11" x2="8" y2="11"></line>
+        //   <line x1="8" y1="15" x2="8" y2="15"></line>
+        //   <line x1="12" y1="15" x2="16" y2="15"></line>
+        //   <line x1="12" y1="11" x2="16" y2="11"></line>
+        // </svg>`, // Add your view icon SVG
         iconClass: 'w-8 h-8 mr-2',
         buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
         data: { logId }

@@ -280,7 +280,7 @@
                     <p class="flex flex-col font-medium text-gray-800 dark:text-gray-100 text-wrap pr-2">{{
                       log.routineName
                       }}
-                      <span *ngIf="log.programId" class="text-sm text-blue-600 dark:text-blue-400 font-semibold mt-1" (click)="viewProgramDetails(log.programId)" style="cursor: pointer;">
+                      <span *ngIf="log.programId" class="my-2 text-xs font-semibold text-white bg-primary rounded-md p-1 flex-shrink w-fit" (click)="viewProgramDetails(log.programId)" style="cursor: pointer;">
                         Program: {{ getProgramNameById(log.programId) }}
                         <ng-container *ngIf="log.weekName"> - {{ log.weekName }}</ng-container>
                         <ng-container *ngIf="log.dayName"> - {{ log.dayName }}</ng-container>

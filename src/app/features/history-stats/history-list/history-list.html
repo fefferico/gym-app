@@ -96,6 +96,13 @@
                     <h2 class="text-lg sm:text-xl font-semibold text-primary dark:text-primary-light truncate pr-8"
                       [title]="item.routineName || 'Ad-hoc Workout'">{{ item.routineName || 'Ad-hoc Workout' }}</h2>
                   </div>
+
+                  <div *ngIf="item.programId" class="my-2 text-xs font-semibold text-white bg-primary rounded-md p-1 flex-shrink w-fit">
+                    Program: {{ item.programName }}
+                    <ng-container *ngIf="item.weekName"> - {{ item.weekName }}</ng-container>
+                    <ng-container *ngIf="item.dayName"> - {{ item.dayName }}</ng-container>
+                  </div>
+
                   <div class="space-y-1 text-sm text-gray-500 dark:text-gray-300">
                     <p class="flex gap-1 items-center"><app-icon name="calendar" class="w-6 h-6"></app-icon>
                       <span class="font-medium">Date: </span> {{ item.startTime | date:'fullDate' }} at {{
@@ -309,7 +316,8 @@
               <span *ngIf="item.durationMinutes" class="text-sm text-gray-600 dark:text-gray-300 mb-2">
                 Duration: {{ item.durationMinutes }} min
               </span>
-              <button (click)="viewLogDetails(item.id)" class="flex justify-center items-center w-full sm:w-auto px-6 py-3 bg-primary hover:bg-primary-dark text-white font-semibold rounded-md shadow-sm text-lg disabled:opacity-50 disabled:cursor-not-allowed">
+              <button (click)="viewLogDetails(item.id)"
+                class="flex justify-center items-center w-full sm:w-auto px-6 py-3 bg-primary hover:bg-primary-dark text-white font-semibold rounded-md shadow-sm text-lg disabled:opacity-50 disabled:cursor-not-allowed">
                 <app-icon name="eye" class="w-6 h-6 mr-1"></app-icon>
                 DETAILS
               </button>
@@ -324,7 +332,8 @@
               <span class="text-sm text-gray-600 dark:text-gray-300 mb-2">
                 Duration: {{ item.durationMinutes }} min
               </span>
-              <button (click)="viewActivityLogDetails(item.id)" class="flex justify-center items-center w-full sm:w-auto px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md shadow-sm text-lg disabled:opacity-50 disabled:cursor-not-allowed">
+              <button (click)="viewActivityLogDetails(item.id)"
+                class="flex justify-center items-center w-full sm:w-auto px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md shadow-sm text-lg disabled:opacity-50 disabled:cursor-not-allowed">
                 <app-icon name="eye" class="w-6 h-6 mr-1"></app-icon>
                 DETAILS
               </button>
