@@ -1,59 +1,84 @@
-# GymBro
+# GymBro 🏋️‍♂️
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.0.0.
+![Angular Version](https://img.shields.io/badge/Angular-v17-DD0031?logo=angular)![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v3-38B2AC?logo=tailwind-css)![TypeScript](https://img.shields.io/badge/TypeScript-v5-3178C6?logo=typescript)
 
-## Development server
+GymBro is a modern, responsive web application designed to help users track their workouts, discover new exercises, and achieve their fitness goals. Built with Angular and styled with Tailwind CSS, it offers a clean and intuitive user interface.
 
-To start a local development server, run:
+## ✨ Features
 
-```bash
+*   **Workout Tracking:** Log your daily workouts, including exercises, sets, reps, and weight.
+*   **Exercise Library:** Browse a comprehensive library of exercises with instructions and animations.
+*   **Custom Routines:** Create, save, and manage your own personalized workout routines.
+*   **Progress Monitoring:** Visualize your progress over time with charts and statistics for key lifts and measurements.
+*   **Off line capabilities:** This app in intended to completely work offline and keep your data private.
+*   **Responsive Design:** A seamless experience across all devices, from desktop to mobile.
+
+## 🛠️ Technologies Used
+
+*   **Frontend:** [Angular](https://angular.io/)
+*   **Styling:** [Tailwind CSS](https://tailwindcss.com/)
+*   **Language:** [TypeScript](https://www.typescriptlang.org/)
+
+## 🚀 Getting Started
+
+Follow these instructions to get a copy of the project up and running on your local machine for development and testing purposes.
+
+### Prerequisites
+
+You need to have [Node.js](https://nodejs.org/) and the [Angular CLI](https://angular.io/cli) installed on your system.
+
+```sh
+npm install -g @angular/cli
+```
+
+### Installation
+
+1.  **Clone the repository:**
+    ```sh
+    git clone https://github.com/fefferico/gym-app.git
+    ```
+2.  **Navigate to the project directory:**
+    ```sh
+    cd gym-app
+    ```
+3.  **Install NPM packages:**
+    ```sh
+    npm install
+    ```
+
+## 🖥️ Development Server
+
+To start the local development server, run the following command. The application will be available at `http://localhost:4200/`.
+
+```sh
 ng serve
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+The app will automatically reload if you change any of the source files.
 
-## Code scaffolding
+## 📦 Build
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+To build the project for production, use the following command. The build artifacts will be stored in the `dist/` directory.
 
-```bash
-ng generate component component-name
+```sh
+ng build --prod
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## 🧪 Running Tests
 
-```bash
-ng generate --help
-```
+*   **Unit Tests:** To run unit tests via [Karma](https://karma-runner.github.io):
+    ```sh
+    ng test
+    ```
+*   **End-to-End (E2E) Tests:** To run end-to-end tests:
+    ```sh
+    ng e2e
+    ```
 
-## Building
+## 🤝 Contributing
 
-To build the project run:
+Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](https://github.com/fefferico/gym-app/issues).
 
-```bash
-ng build
-```
+## 📄 License
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+This project is licensed under the MIT License - see the `LICENSE.md` file for details (if applicable).

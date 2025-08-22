@@ -1,8 +1,8 @@
 // workout-log-detail.ts
-import { Component, HostListener, inject, Input, OnInit, PLATFORM_ID, signal, SimpleChanges } from '@angular/core';
+import { Component, HostListener, inject, Input, OnDestroy, OnInit, PLATFORM_ID, signal, SimpleChanges } from '@angular/core';
 import { CommonModule, DatePipe, DecimalPipe, isPlatformBrowser, TitleCasePipe } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { firstValueFrom, forkJoin, Observable, of } from 'rxjs';
+import { firstValueFrom, forkJoin, Observable, of, Subscription } from 'rxjs';
 import { map, switchMap, tap, catchError, take } from 'rxjs/operators';
 import { Exercise } from '../../../core/models/exercise.model';
 // MODIFICATION: Import PersonalBestSet
@@ -24,6 +24,8 @@ import { ToastService } from '../../../core/services/toast.service';
 import { PressDirective } from '../../../shared/directives/press.directive';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
+import { TrainingProgramService } from '../../../core/services/training-program.service';
+import { ProgramDayInfo, TrainingProgram } from '../../../core/models/training-program.model';
 // DomSanitizer is not explicitly used in this version after previous edits, but good to keep if you plan to use [innerHTML] with dynamic SVGs later.
 // import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
@@ -55,7 +57,7 @@ interface TargetComparisonData {
   templateUrl: './workout-log-detail.html',
   providers: [DecimalPipe] // DecimalPipe if used directly in template; WeightUnitPipe already handles it
 })
-export class WorkoutLogDetailComponent implements OnInit {
+export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   // MODIFICATION: trackingService is now used directly in the component
@@ -68,6 +70,8 @@ export class WorkoutLogDetailComponent implements OnInit {
   private toastService = inject(ToastService);
   // private sanitizer = inject(DomSanitizer); // Keep if needed for other purposes
   private platformId = inject(PLATFORM_ID);
+
+  private trainingService = inject(TrainingProgramService);
 
   comparisonModalData = signal<TargetComparisonData | null>(null);
   notesModalsData = signal<string | null>(null);
@@ -84,35 +88,68 @@ export class WorkoutLogDetailComponent implements OnInit {
   @Input() logId?: string;
   exerciseInfoTooltipString = 'Exercise details and progression';
 
+  private subscriptions = new Subscription();
+  availablePrograms: TrainingProgram[] = [];
 
+
+  weekName = signal<string | null>(null);
+    dayInfo = signal<ProgramDayInfo | null>(null);
+
+  constructor() {
+    // Initialization if needed
+  }
 
   async ngOnInit(): Promise<void> {
-    const idSource$ = this.logId ? of(this.logId) : this.route.paramMap.pipe(map(params => params.get('logId')));
-
-    idSource$.pipe(
-      switchMap(id => {
-        if (id) {
-          return this.trackingService.getWorkoutLogById(id);
-        }
-        return of(null); // No ID, so no log to fetch
-      }),
-      tap(log => {
-        this.workoutLog.set(log); // Set log, could be null if not found or no ID
-        if (log && log.exercises && log.exercises.length > 0) {
-          this.prepareDisplayExercises(log.exercises);
-        } else {
-          this.displayExercises.set([]); // No exercises or no log
-        }
-      }),
-      catchError(err => {
-        console.error("Error fetching workout log:", err);
-        this.workoutLog.set(null); // Set to null on error
-        this.displayExercises.set([]);
-        return of(null); // Continue the stream gracefully
+    // This subscription is fine as it is.
+    this.subscriptions.add(
+      this.trainingService.programs$.pipe(take(1)).subscribe(programs => {
+        this.availablePrograms = programs;
       })
-    ).subscribe();
+    );
 
-    await this.enrichLoggedExercisesWithTargets();
+    const idSource$ = this.logId ? of(this.logId) : this.route.paramMap.pipe(map(params => params.get('logId')));
+    this.subscriptions.add( // Add the main subscription to the master Subscription object
+      idSource$.pipe(
+        // Get the log by ID
+        switchMap(id => {
+          if (id) {
+            return this.trackingService.getWorkoutLogById(id);
+          }
+          return of(null); // If no ID, emit null
+        }),
+        // Use a single, async tap for all dependent operations
+        tap(async (log) => {
+          this.workoutLog.set(log); // Set the main log signal
+
+          if (log && log.exercises && log.exercises.length > 0) {
+            // All of this logic now correctly waits for the log to be available
+            this.prepareDisplayExercises(log.exercises);
+            await this.enrichLoggedExercisesWithTargets();
+
+            // Fetch the week name and set the signal once it arrives
+            this.trainingService.getWeekNameForLog(log).pipe(take(1)).subscribe(name => {
+                this.weekName.set(name);
+            });
+
+            this.trainingService.getDayOfWeekForLog(log).pipe(take(1)).subscribe(info => {
+              this.dayInfo.set(info);
+            });
+
+          } else {
+            // Handle the case where there is no log or no exercises
+            this.displayExercises.set([]);
+            this.weekName.set(null);
+          }
+        }),
+        catchError(err => {
+          console.error("Error fetching workout log:", err);
+          this.workoutLog.set(null);
+          this.displayExercises.set([]);
+          this.weekName.set(null);
+          return of(null); // Keep the stream alive
+        })
+      ).subscribe()
+    );
   }
 
   async enrichLoggedExercisesWithTargets() {
@@ -748,6 +785,27 @@ export class WorkoutLogDetailComponent implements OnInit {
         behavior: 'smooth' // For a smooth scrolling animation
       });
     }
+  }
+
+
+  checkIfLogForProgram(): boolean {
+    return !!(this.workoutLog()?.programId);
+  }
+
+  getLogTitleForProgramEntry(): string {
+    if (this.checkIfLogForProgram()) {
+      const program = this.availablePrograms.find(p => p.id === this.workoutLog()?.programId);
+
+      // if it's a linear program, show even name and week
+      if (program) {
+        return `Log for Program: ${program.name}${this.weekName() ? ' - ' + this.weekName() : ''}${this.dayInfo() ? ' - Day ' + this.dayInfo()?.dayNumber : ''}`;
+      }
+    }
+    return 'Ad-hoc Workout';
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
   }
 
 }

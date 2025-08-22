@@ -79,3 +79,22 @@ export interface ProgramWeek {
   /** The schedule of routines for this specific week. */
   schedule: ScheduledRoutineDay[];
 }
+
+/**
+ * A generic interface to describe the day of a program that a log corresponds to.
+ */
+export interface ProgramDayInfo {
+  /**
+   * The numeric representation of the day.
+   * - For weekly/linear programs: 0 for Sunday, 1 for Monday, etc.
+   * - For n-day cycles: 1 for Day 1, 2 for Day 2, etc.
+   */
+  dayNumber: number;
+
+  /**
+   * A user-friendly display name for the day.
+   * - e.g., "Wednesday" for weekly/linear programs.
+   * - e.g., "Day 3" for n-day cycles.
+   */
+  dayName: string;
+}

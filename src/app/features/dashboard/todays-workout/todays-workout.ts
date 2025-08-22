@@ -12,7 +12,7 @@ import { catchError, map, Observable, of, Subject, switchMap, takeUntil, tap, co
 import Hammer from 'hammerjs';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { TrackingService } from '../../../core/services/tracking.service';
-import { startOfDay, endOfDay } from 'date-fns';
+import { startOfDay, endOfDay, parseISO } from 'date-fns';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { v4 as uuidv4 } from 'uuid';
 import { PressDirective } from '../../../shared/directives/press.directive';
@@ -105,10 +105,10 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
               for (const prog of activePrograms) {
                 const routineData = this.trainingProgramService.findRoutineForDayInProgram(date, prog);
                 if (routineData && prog.startDate) {
-                  const programStartDate = new Date(prog.startDate);
-                  programStartDate.setHours(0, 0, 0, 0);
+                  // +++ FIX: Use parseISO for timezone-safe date parsing +++
+                  const programStartDate = parseISO(prog.startDate); 
                   const streamDate = new Date(date);
-                  streamDate.setHours(0, 0, 0, 0);
+                  // No need to call setHours(0,0,0,0) as parseISO and the streamDate will compare correctly
                   if (programStartDate <= streamDate) {
                     allWorkoutsForDay.push({ ...routineData, scheduledDayInfo: { ...routineData.scheduledDayInfo, isUnscheduled: false, programId: prog.id } });
                   }

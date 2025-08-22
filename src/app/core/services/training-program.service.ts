@@ -5,15 +5,17 @@ import { map, shareReplay, switchMap, take, tap } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
 
 import { StorageService } from './storage.service';
-import { TrainingProgram, ScheduledRoutineDay, TrainingProgramHistoryEntry } from '../models/training-program.model';
+import { TrainingProgram, ScheduledRoutineDay, TrainingProgramHistoryEntry, ProgramDayInfo } from '../models/training-program.model';
 import { Routine } from '../models/workout.model';
 import { WorkoutService } from './workout.service';
 import { AlertService } from './alert.service';
 import { ToastService } from './toast.service';
-import { isSameDay, getDay, eachDayOfInterval, parseISO, differenceInDays } from 'date-fns';
+import { isSameDay, getDay, eachDayOfInterval, parseISO, differenceInDays, startOfDay, format } from 'date-fns';
 
 // +++ 1. IMPORT THE STATIC PROGRAMS DATA +++
 import { PROGRAMS_DATA } from './programs-data';
+import { TrackingService } from './tracking.service';
+import { WorkoutLog } from '../models/workout-log.model';
 
 @Injectable({
   providedIn: 'root'
@@ -23,6 +25,7 @@ export class TrainingProgramService {
   private workoutService = inject(WorkoutService);
   private alertService = inject(AlertService);
   private toastService = inject(ToastService);
+  private trackingService = inject(TrackingService);
 
   private readonly PROGRAMS_STORAGE_KEY = 'fitTrackPro_trainingPrograms';
 
@@ -139,7 +142,7 @@ export class TrainingProgramService {
 
       let programsArray = [...currentPrograms];
       programsArray[index] = programToSave;
-      
+
       this._saveProgramsToStorage(programsArray);
       this.toastService.success(`Program "${programToSave.name}" updated.`, 3000, "Program Updated");
       return programToSave;
@@ -301,33 +304,60 @@ export class TrainingProgramService {
   }
 
   public findRoutineForDayInProgram(targetDate: Date, program: TrainingProgram): { routine: Routine, scheduledDayInfo: ScheduledRoutineDay } | null {
-    if (!program || !program.schedule || program.schedule.length === 0) {
+    // +++ FIX: The guard clause must check for BOTH linear and cycled schedule data.
+    if (!program || !program.startDate ||
+      (program.programType === 'linear' && (!program.weeks || program.weeks.length === 0)) ||
+      (program.programType !== 'linear' && (!program.schedule || program.schedule.length === 0))
+    ) {
+      return null; // The program is not schedulable.
+    }
+
+    const programStartDate = parseISO(program.startDate);
+    const normalizedTargetDate = startOfDay(targetDate);
+
+    // Universal check: The target date cannot be before the program's start date.
+    if (normalizedTargetDate < startOfDay(programStartDate)) {
       return null;
     }
 
     let scheduledDayInfo: ScheduledRoutineDay | undefined;
 
-    if (program.cycleLength && program.cycleLength > 0 && program.startDate) {
-      const startDate = parseISO(program.startDate);
-      if (targetDate < startDate) {
-        return null;
+    // +++ FIX: Main logic split based on program type. +++
+    if (program.programType === 'linear') {
+      // --- LOGIC FOR LINEAR PROGRAMS ---
+      const daysSinceStart = differenceInDays(normalizedTargetDate, startOfDay(programStartDate));
+      const currentWeekIndex = Math.floor(daysSinceStart / 7);
+      const targetWeek = program.weeks?.[currentWeekIndex]; // Safety check with optional chaining
+
+      if (targetWeek) {
+        const dayOfWeek = getDay(targetDate); // Sunday: 0, Monday: 1...
+        scheduledDayInfo = targetWeek.schedule.find(s => s.dayOfWeek === dayOfWeek);
       }
-      const diffTime = Math.abs(targetDate.getTime() - startDate.getTime());
-      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-      const currentCycleDayNumber = (diffDays % program.cycleLength) + 1;
-      scheduledDayInfo = program.schedule.find(s => s.dayOfWeek === currentCycleDayNumber);
     } else {
-      const dayOfWeekForTargetDate = getDay(targetDate);
-      scheduledDayInfo = program.schedule.find(s => s.dayOfWeek === dayOfWeekForTargetDate);
+      // --- LOGIC FOR CYCLED PROGRAMS (the previously corrected logic) ---
+      const cycleLength = program.cycleLength ?? 7;
+
+      if (cycleLength === 7) {
+        // Standard weekly cycle (day is 0-6)
+        const dayOfWeekForTargetDate = getDay(targetDate);
+        scheduledDayInfo = program.schedule.find(s => s.dayOfWeek === dayOfWeekForTargetDate);
+      } else {
+        // N-day cycle (day is 1-N)
+        const daysSinceStart = differenceInDays(normalizedTargetDate, startOfDay(programStartDate));
+        const currentCycleDayNumber = (daysSinceStart % cycleLength) + 1;
+        scheduledDayInfo = program.schedule.find(s => s.dayOfWeek === currentCycleDayNumber);
+      }
     }
 
+    // Common return logic: If we found a scheduled day, find its corresponding routine.
     if (scheduledDayInfo) {
       const routine = this.workoutService.getRoutineByIdSync(scheduledDayInfo.routineId);
       if (routine) {
         return { routine, scheduledDayInfo };
       }
     }
-    return null;
+
+    return null; // No scheduled routine found for this day.
   }
 
   getRoutineForDay(targetDate: Date): Observable<{ routine: Routine, scheduledDayInfo: ScheduledRoutineDay } | null> {
@@ -428,8 +458,8 @@ export class TrainingProgramService {
       })
     );
   }
-  
- getScheduledRoutinesForDateRangeByProgramId(programId: string, rangeStart: Date, rangeEnd: Date): Observable<{ date: Date; scheduledDayInfo: ScheduledRoutineDay }[]> {
+
+  getScheduledRoutinesForDateRangeByProgramId(programId: string, rangeStart: Date, rangeEnd: Date): Observable<{ date: Date; scheduledDayInfo: ScheduledRoutineDay }[]> {
     return this.getProgramById(programId).pipe(
       map(program => {
         if (!program || (!program.schedule?.length && !program.weeks?.length)) {
@@ -463,12 +493,12 @@ export class TrainingProgramService {
         // --- MODIFIED: Handle 'cycled' programs (existing logic) ---
         else if (program.programType === 'cycled' && program.schedule?.length) {
           const cycleLength = program.cycleLength && program.cycleLength > 0 ? program.cycleLength : 7;
-          
+
           const scheduleMap = new Map<number, ScheduledRoutineDay>();
           program.schedule.forEach(day => {
             // For weekly cycles (cycleLength=7), key is day of week (0-6). For n-day, it's day number (1-n).
-             const key = cycleLength === 7 ? day.dayOfWeek : day.dayOfWeek;
-             scheduleMap.set(key, day);
+            const key = cycleLength === 7 ? day.dayOfWeek : day.dayOfWeek;
+            scheduleMap.set(key, day);
           });
 
           allDaysInRange.forEach(currentDate => {
@@ -477,12 +507,12 @@ export class TrainingProgramService {
             let scheduledDayInfo: ScheduledRoutineDay | undefined;
 
             if (cycleLength === 7) { // Standard weekly logic
-                const dayOfWeek = getDay(currentDate);
-                scheduledDayInfo = scheduleMap.get(dayOfWeek);
+              const dayOfWeek = getDay(currentDate);
+              scheduledDayInfo = scheduleMap.get(dayOfWeek);
             } else { // N-day cycle logic
-                const daysSinceStart = differenceInDays(currentDate, programStartDate);
-                const currentCycleDayNumber = (daysSinceStart % cycleLength) + 1;
-                scheduledDayInfo = scheduleMap.get(currentCycleDayNumber);
+              const daysSinceStart = differenceInDays(currentDate, programStartDate);
+              const currentCycleDayNumber = (daysSinceStart % cycleLength) + 1;
+              scheduledDayInfo = scheduleMap.get(currentCycleDayNumber);
             }
 
             if (scheduledDayInfo) {
@@ -526,9 +556,9 @@ export class TrainingProgramService {
         // After updating the history, we MUST re-evaluate and sync the root isActive flag.
         // A program is considered active if ANY of its history entries has the status 'active'.
         const isNowActive = history.some(h => h.status === 'active');
-        
+
         updatedProgram = { ...targetProgram, history, isActive: isNowActive };
-        
+
         this.toastService.success(`History entry updated.`, 3000, "History Updated");
       } else {
         this.toastService.error("History entry not found to update.", 0, "Update Error");
@@ -615,6 +645,169 @@ export class TrainingProgramService {
 
     this._saveProgramsToStorage(updatedPrograms);
     this.toastService.success("History entry removed.", 3000, "History Updated");
+  }
+
+  /**
+  * Checks if a logged workout completes a linear training program.
+  * If completed, it updates the program's status and history.
+  * @param programId The ID of the program to check.
+  * @param loggedWorkout The workout log that was just saved.
+  * @returns A Promise resolving to `true` if the program was completed, otherwise `false`.
+  */
+  public async checkAndHandleProgramCompletion(programId: string, loggedWorkout: WorkoutLog): Promise<boolean> {
+    const program = await firstValueFrom(this.getProgramById(programId));
+
+    // Proceed only for active, linear programs with defined weeks
+    if (!program || !program.isActive || program.programType !== 'linear' || !program.weeks?.length) {
+      return false;
+    }
+
+    // --- Determine if this was the last workout of the program ---
+
+    // 1. Find the final week (highest weekNumber)
+    const lastWeek = program.weeks.reduce((prev, current) =>
+      (prev.weekNumber > current.weekNumber) ? prev : current
+    );
+
+    // 2. Find the last scheduled day in that week (highest dayOfWeek)
+    const lastScheduledDay = lastWeek.schedule.reduce((prev, current) =>
+      (prev.dayOfWeek > current.dayOfWeek) ? prev : current
+    );
+
+    if (loggedWorkout.routineId !== lastScheduledDay.routineId) {
+      // The logged routine was not the final one scheduled for the program.
+      return false;
+    }
+
+    // 3. Verify that all other routines in the program have been completed.
+    const allProgramRoutineIds = new Set(
+      program.weeks.flatMap(w => w.schedule.map(s => s.routineId))
+    );
+
+    const programLogs = await firstValueFrom(
+      this.trackingService.getWorkoutLogsByProgramIdForDateRange(
+        program.id,
+        parseISO(program.startDate!),
+        new Date() // up to now
+      )
+    );
+
+    const completedRoutineIds = new Set(programLogs.map(log => log.routineId));
+
+    // Check if the set of completed routines contains all unique routines from the program schedule.
+    const allRoutinesCompleted = [...allProgramRoutineIds].every(id => completedRoutineIds.has(id));
+
+    if (allRoutinesCompleted) {
+      console.log(`Program "${program.name}" completed!`);
+      // Use existing method to mark the program as completed.
+      // This will update its status, set the end date, and manage history.
+      await this.toggleProgramActivation(program.id, 'completed');
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+  * Finds the corresponding week name for a given workout log if it's part of a linear program.
+  * @param log The WorkoutLog to analyze.
+  * @returns An Observable emitting the week name as a string, or null if not applicable.
+  */
+  public getWeekNameForLog(log: WorkoutLog): Observable<string | null> {
+    // 1. Check for the essential prerequisite: a programId.
+    if (!log.programId) {
+      return of(null);
+    }
+
+    // 2. Fetch the program and perform the logic within an RxJS pipe.
+    return this.getProgramById(log.programId).pipe(
+      take(1), // We only need the current state of the program.
+      map(program => {
+        // 3. Validate the fetched program.
+        if (
+          !program ||
+          program.programType !== 'linear' ||
+          !program.startDate ||
+          !program.weeks ||
+          program.weeks.length === 0
+        ) {
+          return null; // Not a valid linear program log.
+        }
+
+        try {
+          // 4. Calculate the week index.
+          const logDate = startOfDay(parseISO(log.date));
+          const programStartDate = startOfDay(parseISO(program.startDate));
+
+          // Ensure the log date is not before the program started.
+          if (logDate < programStartDate) {
+            return null;
+          }
+
+          const daysSinceStart = differenceInDays(logDate, programStartDate);
+          const weekIndex = Math.floor(daysSinceStart / 7);
+
+          // 5. Retrieve the week name.
+          const targetWeek = program.weeks[weekIndex];
+
+          return targetWeek ? targetWeek.name : null; // Return name or null if index is out of bounds.
+
+        } catch (error) {
+          console.error("Error calculating week name for log:", log, error);
+          return null;
+        }
+      })
+    );
+  }
+
+  /**
+  * Finds the corresponding day of the routine (e.g., "Wednesday" or "Day 3") for a given workout log.
+  * @param log The WorkoutLog to analyze.
+  * @returns An Observable emitting a ProgramDayInfo object, or null if not applicable.
+  */
+  public getDayOfWeekForLog(log: WorkoutLog): Observable<ProgramDayInfo | null> {
+    if (!log.programId) {
+      return of(null);
+    }
+
+    return this.getProgramById(log.programId).pipe(
+      take(1),
+      map(program => {
+        if (!program || !program.startDate) {
+          return null; // Not a valid program log.
+        }
+
+        try {
+          const logDate = startOfDay(parseISO(log.date));
+          const programStartDate = startOfDay(parseISO(program.startDate));
+
+          if (logDate < programStartDate) {
+            return null; // Log is from before the program started.
+          }
+
+          // --- Logic for Linear or Weekly Cycled Programs ---
+          if (program.programType === 'linear' || (program.programType === 'cycled' && (program.cycleLength === 7 || !program.cycleLength))) {
+            const dayNumber = getDay(logDate); // 0 = Sunday, 1 = Monday...
+            const dayName = format(logDate, 'EEEE'); // e.g., "Wednesday"
+            return { dayNumber, dayName };
+          }
+
+          // --- Logic for N-Day Cycled Programs ---
+          if (program.programType === 'cycled' && program.cycleLength && program.cycleLength !== 7) {
+            const daysSinceStart = differenceInDays(logDate, programStartDate);
+            const dayNumber = (daysSinceStart % program.cycleLength) + 1; // Day 1 to N
+            const dayName = `Day ${dayNumber}`;
+            return { dayNumber, dayName };
+          }
+
+          return null; // Fallback if program type is unknown or invalid.
+
+        } catch (error) {
+          console.error("Error calculating day of week for log:", log, error);
+          return null;
+        }
+      })
+    );
   }
 
 }

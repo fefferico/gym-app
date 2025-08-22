@@ -32,6 +32,7 @@ import { FormatSecondsPipe } from '../../shared/pipes/format-seconds-pipe';
 import { PressScrollDirective } from '../../shared/directives/press-scroll.directive';
 import { ProgressiveOverloadService } from '../../core/services/progressive-overload.service.ts';
 import { IconComponent } from '../../shared/components/icon/icon.component';
+import { TrainingProgramService } from '../../core/services/training-program.service';
 
 
 // Interface to manage the state of the currently active set/exercise
@@ -129,7 +130,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   private storageService = inject(StorageService);
   private cdr = inject(ChangeDetectorRef);
   private unitService = inject(UnitsService);
-
+  private trainingProgramService = inject(TrainingProgramService);
 
   protected appSettingsService = inject(AppSettingsService);
   protected progressiveOverloadService = inject(ProgressiveOverloadService);
@@ -718,7 +719,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
 
     if (performedExercisesThatWereInOriginal.length !== original.length || addedCustomExercises.length > 0) {
-      if (performedExercisesThatWereInOriginal.length !== original.length){
+      if (performedExercisesThatWereInOriginal.length !== original.length) {
         details.push(`Number of exercises or their content changed [Original number exercises: ${original.length}, performed number exercises: ${performedExercisesThatWereInOriginal.length}]`);
       } else {
         details.push(`Number of exercises or their content changed [Original number exercises: ${original.length}, performed number exercises: ${original.length + addedCustomExercises.length}]`);
@@ -2756,10 +2757,10 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       workoutLog.durationMinutes = durationMinutes;
       workoutLog.durationSeconds = durationSeconds;
       workoutLog.date = format(new Date(workoutLog.startTime), 'yyyy-MM-dd'),
-      await this.alertService.showAlert("Workout Timing Adjusted",
-        `Workout start time was not set. Estimated start time is ${format(new Date(workoutLog.startTime), 'MMM d, HH:mm')}. ` +
-        `Estimated end time is ${format(new Date(workoutLog.endTime), 'MMM d, HH:mm')}. Duration: ${durationMinutes} minutes (${durationSeconds} seconds).`
-      )
+        await this.alertService.showAlert("Workout Timing Adjusted",
+          `Workout start time was not set. Estimated start time is ${format(new Date(workoutLog.startTime), 'MMM d, HH:mm')}. ` +
+          `Estimated end time is ${format(new Date(workoutLog.endTime), 'MMM d, HH:mm')}. Duration: ${durationMinutes} minutes (${durationSeconds} seconds).`
+        )
 
     }
     return workoutLog;
@@ -2955,6 +2956,33 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
     const fixedLog = await this.checkWorkoutTimingValidity(finalLog); // Ensure start time is valid before proceeding
     const savedLog = this.trackingService.addWorkoutLog(fixedLog);
+
+    // +++ START: NEW PROGRAM COMPLETION CHECK +++
+    if (savedLog.programId) {
+      try {
+        const isProgramCompleted = await this.trainingProgramService.checkAndHandleProgramCompletion(savedLog.programId, savedLog);
+
+        if (isProgramCompleted) {
+          this.toastService.success(`Congrats! Program completed!`, 5000, "Program Finished", false);
+
+          // Stop all player activity before navigating
+          this.stopAllActivity();
+          this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
+
+          // Navigate to the new completion page with relevant IDs
+          this.router.navigate(['/training-programs/completed', savedLog.programId], {
+            queryParams: { logId: savedLog.id }
+          });
+
+          return true; // Exit the function as we've handled navigation
+        }
+      } catch (error) {
+        console.error("Error during program completion check:", error);
+        // Continue with normal workout summary flow even if the check fails
+      }
+    }
+    // +++ END: NEW PROGRAM COMPLETION CHECK +++
+
     if (!this.isTabataMode()) {
       this.toastService.success(`Congrats! Workout completed!`, 5000, "Workout Finished", false);
     } else {

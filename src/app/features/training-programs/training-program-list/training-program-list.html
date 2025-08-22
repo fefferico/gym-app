@@ -54,12 +54,12 @@
               <div>
                 <label for="program-type-filter"
                   class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Program Type</label>
-                <select id="program-type-filter" (change)="onProgramCycleTypeChange($event)"
-                  [value]="selectedProgramCycleType() || ''"
+                <select id="program-type-filter" (change)="onProgramTypeChange($event)"
+                  [value]="selectedProgramType() || ''"
                   class="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200">
                   <option value="">All Program Types</option>
-                  <option value="weekly">Cycled</option>
-                  <option value="cycled">Linear</option>
+                  <option value="cycled">Cycled</option>
+                  <option value="linear">Linear</option>
                 </select>
               </div>
               <div>

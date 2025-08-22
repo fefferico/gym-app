@@ -163,8 +163,18 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) { window.scrollTo(0, 0); }
     this.loadAvailableExercises(); // For exercise selection modal
-    this.workoutService.routines$.pipe(take(1)).subscribe(routines => this.availableRoutines = routines); // For routine selection in log mode
-    this.trainingService.programs$.pipe(take(1)).subscribe(programs => this.availablePrograms = programs); // For routine selection in log mode
+    
+     this.subscriptions.add(
+      this.workoutService.routines$.pipe(take(1)).subscribe(routines => {
+        this.availableRoutines = routines;
+      })
+    );
+
+    this.subscriptions.add(
+      this.trainingService.programs$.pipe(take(1)).subscribe(programs => {
+        this.availablePrograms = programs;
+      })
+    );
 
     this.routeSub = this.route.data.pipe(
       switchMap(data => {

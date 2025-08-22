@@ -35,12 +35,15 @@
   <ng-container *ngIf="workoutLog() as log; else loadingOrNotFound">
     <div class="bg-white dark:bg-gray-700 rounded-md shadow-xl overflow-hidden">
       <div class="px-2 py-2">
-
-        <h1
-          class="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-100 text-left flex-grow truncate px-2 mb-2"
+        <h1 class="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-100 text-left flex-grow truncate mb-2"
           [title]="workoutLog()?.routineName || 'Ad-hoc Workout'">
           {{ workoutLog()?.routineName || 'Ad-hoc Workout' }}
         </h1>
+      
+        <h2 *ngIf="checkIfLogForProgram()" class="font-bold text-gray-800 dark:text-gray-200 mb-2">
+          <span>{{getLogTitleForProgramEntry()}}</span>
+        </h2>
+      
         <div class="flex items-center align-center text-md text-gray-600 dark:text-gray-400 gap-x-2">
           <app-icon name="calendar" class="w-7 h-7 mr-1"></app-icon>
           <div>
@@ -49,18 +52,18 @@
               From {{ log.startTime | date:'shortTime' }} to {{ log.endTime | date:'shortTime' }}
             </p>
           </div>
-
+      
         </div>
         <!-- EXERCISES DIV -->
         <div class="flex items-center text-md text-gray-600 dark:text-gray-400 mt-1 gap-x-2">
           <app-icon name="muscle" class="h-7 w-7"></app-icon>
           <span class="ml-1"> Exercises: {{ log.exercises.length }}</span>
         </div>
-
+      
         <!-- DURATION DIV -->
         <div class="flex items-center text-md text-gray-600 dark:text-gray-400 mt-1 gap-x-2">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-5 -5 32 32" stroke-width="1.5"
-            stroke="currentColor" class="w-8 h-8 transition-all">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-5 -5 32 32" stroke-width="1.5" stroke="currentColor"
+            class="w-8 h-8 transition-all">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z">
             </path>
           </svg>
@@ -68,7 +71,7 @@
             }}</span>
           <span *ngIf="!log.durationSeconds">Duration: {{ log.durationMinutes }} minutes</span>
         </div>
-
+      
         <p *ngIf="log.notes" class="mt-2 text-m text-gray-600 dark:text-gray-400 italic">
           <strong>Overall Notes:</strong> {{ log.notes }}
         </p>

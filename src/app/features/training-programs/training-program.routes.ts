@@ -25,5 +25,11 @@ export const TRAINING_PROGRAM_ROUTES: Routes = [
     loadComponent: () => import('./training-program-builder/training-program-builder').then(m => m.TrainingProgramBuilderComponent),
     data: { mode: 'view' },
     title: 'View Training Program'
+  },
+  {
+    path: 'completed/:programId',
+    loadComponent: () => import('./program-completion.component').then(m => m.ProgramCompletionComponent),
+    data: { mode: 'view' },
+    title: 'Program Completed'
   }
 ];
