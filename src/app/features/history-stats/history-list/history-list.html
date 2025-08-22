@@ -112,13 +112,7 @@
                     </p>
                     <p class="flex gap-1 items-center">
                       <app-icon name="clock" class="w-6 h-6"></app-icon>
-                      <!-- <span *ngIf="item.durationSeconds"><span class="font-medium">Duration: </span> {{
-                        secondsToDateTime(item.durationSeconds) |
-                        date:'HH:mm:ss' }}</span> -->
                       <span><span class="font-medium">Duration: </span>
-                        <!-- {{
-                        item.startTime |
-                        date:'shortTime' }} -->
                         {{ item.durationMinutes || 0 }} min</span>
                     </p>
                     <p class="flex gap-1 items-center">
@@ -166,6 +160,11 @@
                     <p class="flex gap-1 items-center">
                       <app-icon name="clock" class="w-6 h-6"></app-icon>
                       <span class="font-medium">Duration: </span> {{ item.durationMinutes }} minutes
+                    </p>
+                    <p *ngIf="item.location" class="flex gap-1 items-center">
+                      <app-icon name="map" class="w-6 h-6"></app-icon>
+                      <span><span class="font-medium">Location: </span>
+                        {{ item.location}}</span>
                     </p>
                     <p *ngIf="item.distanceKm" class="flex gap-1 items-center"><app-icon name="ruler"
                         class="w-6 h-6"></app-icon>

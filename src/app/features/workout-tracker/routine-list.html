@@ -155,12 +155,12 @@
                                     class="p-1.5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full focus:outline-none">
                                     <app-icon name="menu_action" class="h-5 w-5"></app-icon>
                                 </button>
-                                <!-- <app-action-menu *ngIf="areActionsVisible(routine.id) && !menuModeCompact"
+                                <app-action-menu *ngIf="areActionsVisible(routine.id) && !menuModeCompact"
                                     displayMode="dropdown"
                                     [items]="getRoutineDropdownActionItems(routine.id, 'dropdown')"
                                     [isVisible]="areActionsVisible(routine.id)"
                                     (itemClick)="handleActionMenuItemClick($event)" (closeMenu)="onCloseActionMenu()">
-                                </app-action-menu> -->
+                                </app-action-menu>
                             </div>
                         </div>
                         <!-- =================== END OF CORRECTION =================== -->
@@ -216,7 +216,8 @@
 
                             <!-- Estimated Duration -->
                             <div>
-                                <div *ngIf="getRoutineDuration(routine) > 0" class="text-sm text-gray-500 dark:text-gray-300 flex gap-1 mb-1">
+                                <div *ngIf="getRoutineDuration(routine) > 0"
+                                    class="text-sm text-gray-500 dark:text-gray-300 flex gap-1 mb-1">
                                     <app-icon name="clock" class="w-6 h-6"></app-icon>
                                     <span class="font-medium">Est. duration:</span>
                                     ~{{ getRoutineDuration(routine) }} min
@@ -225,7 +226,8 @@
 
                             <!-- Last Logged Duration (uses the aliased 'routineInfo') -->
                             <div>
-                                <div *ngIf="routineInfo.duration" class="text-sm text-gray-500 dark:text-gray-300 flex gap-1">
+                                <div *ngIf="routineInfo.duration"
+                                    class="text-sm text-gray-500 dark:text-gray-300 flex gap-1">
                                     <app-icon name="schedule" class="w-6 h-6"></app-icon>
                                     <span class="font-medium">Last duration:</span>
                                     {{ routineInfo.duration }} min
@@ -257,12 +259,17 @@
                                 </span>
                             </div>
                         </div>
+                        <div class="relative">
+                            <app-action-menu *ngIf="areActionsVisible(routine.id) && menuModeCompact"
+                                displayMode="compact-bar"
+                                [items]="getRoutineDropdownActionItems(routine.id, 'compact-bar')"
+                                [isVisible]="areActionsVisible(routine.id)"
+                                (itemClick)="handleActionMenuItemClick($event)" (closeMenu)="onCloseActionMenu()">
+                            </app-action-menu>
+                        </div>
                     </div>
-                    <app-action-menu *ngIf="areActionsVisible(routine.id) && menuModeCompact" displayMode="compact-bar"
-                        [items]="getRoutineDropdownActionItems(routine.id, 'compact-bar')"
-                        [isVisible]="areActionsVisible(routine.id)" (itemClick)="handleActionMenuItemClick($event)"
-                        (closeMenu)="onCloseActionMenu()">
-                    </app-action-menu>
+
+
                 </button>
             </div>
         </div>

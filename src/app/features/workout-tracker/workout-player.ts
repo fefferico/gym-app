@@ -114,7 +114,7 @@ enum PlayerSubState {
   imports: [CommonModule, DatePipe, ReactiveFormsModule,
     FormatSecondsPipe,
     FormsModule, WeightUnitPipe, FullScreenRestTimerComponent, PressDirective, ModalComponent, ExerciseDetailComponent,
-    PressScrollDirective, IconComponent,ExerciseSelectionModalComponent],
+    PressScrollDirective, IconComponent, ExerciseSelectionModalComponent],
   templateUrl: './workout-player.html',
   styleUrl: './workout-player.scss',
   providers: [DecimalPipe]
@@ -651,15 +651,12 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         exerciseName,
         sets: [loggedSet],
         rounds: exerciseData.rounds || 0,
-        type: loggedSet.type || 'standard'
+        type: loggedSet.type || 'standard',
+        supersetId: exerciseData.supersetId || null,
+        supersetOrder: exerciseData.supersetOrder !== null ? exerciseData.supersetOrder : null,
+        supersetSize: exerciseData.supersetSize || 0,
+        supersetRounds: exerciseData.supersetRounds || 0,
       };
-
-      if (exerciseData.rounds && exerciseData.rounds > 0) {
-        newLog.supersetId = exerciseData.supersetId ? exerciseData.supersetId : null;
-        newLog.supersetOrder = exerciseData.supersetOrder !== null ? exerciseData.supersetOrder : null;
-        newLog.supersetSize = exerciseData.supersetSize !== null ? exerciseData.supersetSize : null;
-        newLog.supersetRounds = exerciseData.rounds !== null ? exerciseData.rounds : null;
-      }
 
       // Insert at the same index as in the routine for consistency
       if (typeof exerciseIndex === 'number' && exerciseIndex >= 0 && exerciseIndex <= logs.length) {
@@ -745,8 +742,24 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
       // Compare sets for warmup status or count differences
       if (performedEx.sets.length !== originalEx.sets.length && performedEx.rounds !== originalEx.rounds) {
-        details.push(`Set count for "${performedEx.exerciseName || performedEx.exerciseId}" changed (was ${originalEx.sets.length}, now ${performedEx.sets.length})`);
-        majorDifference = true;
+        // specific check for rounds
+        if (performedEx.supersetId && originalEx.supersetId && performedEx.supersetId === originalEx.supersetId) {
+          // retrieve ex[0] cause it's the only one with set property valued
+          const originalFirstEx = original.find(ex => ex.supersetId && ex.supersetId === performedEx.supersetId);
+          if (originalFirstEx) {
+            const originalRounds = originalFirstEx.rounds;
+            if (originalRounds === performedEx.sets.length) {
+              continue;
+            }
+            if (majorDifference) {
+              details.push(`Set count for "${performedEx.exerciseName || performedEx.exerciseId}" changed (was ${originalEx.sets.length}, now ${performedEx.sets.length})`);
+            }
+          }
+
+        } else {
+          details.push(`Set count for "${performedEx.exerciseName || performedEx.exerciseId}" changed (was ${originalEx.sets.length}, now ${performedEx.sets.length})`);
+          majorDifference = true;
+        }
       } else {
         for (let j = 0; j < performedEx.sets.length; j++) {
           const originalIsWarmup = originalEx.sets[j]?.type === 'warmup';
@@ -762,6 +775,36 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     return { majorDifference, details };
   }
 
+  getFirstExerciseOfSuperset(superSetOrder: number ,supersetId: string, loggedExercises: LoggedWorkoutExercise[]): ExerciseSetParams {
+    const exercise = loggedExercises.find(ex => ex.supersetId && ex.supersetId === supersetId);
+    const exerciseSet = exercise?.sets[0];
+    return {
+      id: uuidv4(), // New ID for the routine template set
+            reps: exerciseSet && exerciseSet.targetReps ? exerciseSet.repsAchieved : 1, 
+            weight: exerciseSet && exerciseSet.weightUsed ? exerciseSet.weightUsed : 1, 
+            duration: exerciseSet && exerciseSet.targetDuration ? exerciseSet.targetDuration : 0, 
+            tempo: '1', 
+            restAfterSet: superSetOrder !== null && superSetOrder !== undefined && exercise && exercise.supersetSize && superSetOrder < exercise.supersetSize - 1 ? 0 : this.getLastExerciseOfSuperset(supersetId, loggedExercises).restAfterSet, 
+            notes: exerciseSet && exerciseSet.notes ? exerciseSet.notes : '', 
+            type: exerciseSet && exerciseSet.type ? 'superset' : 'standard', 
+    };
+  }
+
+    getLastExerciseOfSuperset(supersetId: string, loggedExercises: LoggedWorkoutExercise[]): ExerciseSetParams {
+      const exercise = loggedExercises.find(ex => ex.supersetId && ex.supersetId === supersetId);
+      const exerciseSet = exercise?.sets[exercise.sets.length-1];
+    return {
+      id: uuidv4(), // New ID for the routine template set
+            reps: exerciseSet && exerciseSet.targetReps ? exerciseSet.targetReps : 1, 
+            weight: exerciseSet && exerciseSet.targetWeight ? exerciseSet.targetWeight : 1, 
+            duration: exerciseSet && exerciseSet.targetDuration ? exerciseSet.targetDuration : 1, 
+            tempo: '1', 
+            restAfterSet: exerciseSet && exerciseSet.targetRestAfterSet ? exerciseSet.targetRestAfterSet : 60, 
+            notes: exerciseSet && exerciseSet.notes ? exerciseSet.notes : '', 
+            type: exerciseSet && exerciseSet.type ? 'superset' : 'standard', 
+    };
+  }
+
   private convertLoggedToWorkoutExercises(loggedExercises: LoggedWorkoutExercise[]): WorkoutExercise[] {
     const currentSessionRoutine = this.routine();
     return loggedExercises.map(loggedEx => {
@@ -775,7 +818,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         supersetSize: sessionExercise?.supersetSize ?? null,
         rounds: sessionExercise?.rounds ?? 1,
         notes: sessionExercise?.notes, // Overall exercise notes from session if any
-        sets: loggedEx.sets.map(loggedSet => {
+        sets: !loggedEx.supersetId ? loggedEx.sets.map(loggedSet => {
           const originalPlannedSet = sessionExercise?.sets.find(s => s.id === loggedSet.plannedSetId);
           return {
             id: uuidv4(), // New ID for the routine template set
@@ -787,7 +830,8 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
             notes: loggedSet.notes, // Persist individual logged set notes if saving structure
             type: loggedSet.type as 'standard' | 'warmup' | 'amrap' | 'custom' | string,
           };
-        }),
+        }) : [this.getFirstExerciseOfSuperset((loggedEx.supersetOrder || 0), loggedEx.supersetId, loggedExercises)],
+        // TODO correct number of sets when converting a SUPERSET routine to a new one
         type: (sessionExercise?.supersetSize ?? 0) >= 1 ? 'superset' : 'standard'
         // sessionStatus is NOT included here as it's session-specific
       };
@@ -2519,7 +2563,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     // if so and it's a kettlebell related exercise, it will suggest same weight and reps as the last one
     const lastEx = this.currentWorkoutLogExercises().length > 0 ? this.currentWorkoutLogExercises()[this.currentWorkoutLogExercises().length - 1] : null;
     const lastExSet = lastEx ? lastEx.sets[lastEx.sets.length - 1] : null;
-    
+
     const isCardioOnly = selectedExercise.category === 'cardio';
     const defaultWeight = kbRelated && lastExSet ? (lastExSet.targetWeight || lastExSet.weightUsed) : (this.unitService.currentUnit() === 'kg' ? 10 : 22.2);
     const defaultDuration = isCardioOnly ? 60 : 0;
@@ -2862,7 +2906,11 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
                 attributes: { required: true }
               }
             ],
-            "Save Routine"
+            "Save Routine",
+            'CANCEL',
+            [
+              { text: "Save Routine", role: "confirm", data: true, cssClass: "bg-green-600", icon:'save'} as AlertButton
+            ]
           );
           if (nameInput && String(nameInput['newRoutineName']).trim()) {
             newRoutineName = String(nameInput['newRoutineName']).trim();
