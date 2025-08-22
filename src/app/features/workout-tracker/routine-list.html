@@ -137,11 +137,33 @@
                     class="bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow duration-200 relative group transform hover:-translate-y-1 text-left"
                     [style.zIndex]="areActionsVisible(routine.id) ? 50 : 'auto'">
 
-                    <div class="p-3 text-primary dark:text-primary-light dark:hover:text-yellow-200">
+                    <div class="p-3 text-primary dark:text-primary-light dark:hover:text-yellow-200 h-full">
+                        <!-- 
+                            =================== START OF CORRECTION ===================
+                            The title and the menu are now inside a single flex container.
+                            This ensures they are perfectly aligned with each other.
+                            The 'absolute' positioning on the menu's parent has been removed.
+                            The 'pr-8' padding on the h2 has been removed as it's no longer needed.
+                        -->
                         <div class="flex justify-between items-start mb-1.5">
-                            <h2 class="text-lg font-semibold pr-8"
-                                [title]="routine.name">{{ routine.name }}</h2>
+                            <h2 class="text-lg font-semibold" [title]="routine.name">{{ routine.name }}</h2>
+
+                            <div class="relative">
+                                <button (click)="toggleActions(routine.id, $event)"
+                                    [attr.aria-label]="'Actions for ' + routine.name" aria-haspopup="true"
+                                    [attr.aria-expanded]="areActionsVisible(routine.id)"
+                                    class="p-1.5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full focus:outline-none">
+                                    <app-icon name="menu_action" class="h-5 w-5"></app-icon>
+                                </button>
+                                <!-- <app-action-menu *ngIf="areActionsVisible(routine.id) && !menuModeCompact"
+                                    displayMode="dropdown"
+                                    [items]="getRoutineDropdownActionItems(routine.id, 'dropdown')"
+                                    [isVisible]="areActionsVisible(routine.id)"
+                                    (itemClick)="handleActionMenuItemClick($event)" (closeMenu)="onCloseActionMenu()">
+                                </app-action-menu> -->
+                            </div>
                         </div>
+                        <!-- =================== END OF CORRECTION =================== -->
 
                         <p *ngIf="routine.description" [innerHTML]="updateSanitizedDescription(routine.description)"
                             class="text-gray-600 dark:text-gray-400 mb-2 line-clamp-2 text-sm sm:text-xs"
@@ -167,29 +189,52 @@
                                 {{ muscle | titlecase }}
                             </button>
                         </div>
-                        <div *ngIf="routine.lastPerformed" class="text-sm text-gray-500 dark:text-gray-300 flex gap-1 mb-2">
-                            <app-icon name="calendar" class="w-6 h-6"></app-icon>
-                            <span class="font-medium">Last:</span> {{ routine.lastPerformed | date:'dd/MM/yy HH:mm' }}
-                        </div>
-                        <div *ngIf="!routine.lastPerformed"
-                            class="text-sm text-gray-500 dark:text-gray-300 italic flex gap-1 mb-2">
-                            <app-icon name="calendar" class="w-6 h-6"></app-icon>
-                            Not performed yet
-                        </div>
-                        <div>
-                            <div *ngIf="routine && getRoutineDuration(routine) > 0"
-                                class="text-sm text-gray-500 dark:text-gray-300 flex gap-1 mb-1">
-                                <app-icon name="clock" class="w-6 h-6"></app-icon>
-                                <span class="font-medium">Est. duration:</span> ~{{ getRoutineDuration(routine)}} min
+                        <!-- 
+                            =================== START OF CORRECTION ===================
+                            This <ng-container> uses the traditional *ngIf syntax with 'as'
+                            to create a local variable 'routineInfo'. This is the backwards-compatible
+                            way to achieve the same optimization as the new '@if' block.
+                        -->
+                        <ng-container *ngIf="lastLoggedRoutineInfo()[routine.id] as routineInfo">
+
+                            <!-- Case 1: The routine HAS been performed. We use the 'else' block for the other case. -->
+                            <div *ngIf="routineInfo.startTime; else notPerformedYet">
+                                <div class="text-sm text-gray-500 dark:text-gray-300 flex gap-1 mb-2">
+                                    <app-icon name="calendar" class="w-6 h-6"></app-icon>
+                                    <span class="font-medium">Last:</span>
+                                    <!-- The 'date' pipe correctly receives a number from routineInfo.startTime -->
+                                    {{ routineInfo.startTime | date:'dd/MM/yy HH:mm' }}
+                                </div>
                             </div>
-                        </div>
-                        <div>
-                            <div *ngIf="lastRoutineDurations()[routine.id]"
-                                class="text-sm text-gray-500 dark:text-gray-300 flex gap-1">
-                                <app-icon name="schedule" class="w-6 h-6"></app-icon>
-                                <span class="font-medium">Last duration:</span> {{ lastRoutineDurations()[routine.id]}} min
+                            <!-- This <ng-template> is the 'else' block for the *ngIf above. -->
+                            <ng-template #notPerformedYet>
+                                <div class="text-sm text-gray-500 dark:text-gray-300 italic flex gap-1 mb-2">
+                                    <app-icon name="calendar" class="w-6 h-6"></app-icon>
+                                    Not performed yet
+                                </div>
+                            </ng-template>
+
+                            <!-- Estimated Duration -->
+                            <div>
+                                <div *ngIf="getRoutineDuration(routine) > 0" class="text-sm text-gray-500 dark:text-gray-300 flex gap-1 mb-1">
+                                    <app-icon name="clock" class="w-6 h-6"></app-icon>
+                                    <span class="font-medium">Est. duration:</span>
+                                    ~{{ getRoutineDuration(routine) }} min
+                                </div>
                             </div>
-                        </div>
+
+                            <!-- Last Logged Duration (uses the aliased 'routineInfo') -->
+                            <div>
+                                <div *ngIf="routineInfo.duration" class="text-sm text-gray-500 dark:text-gray-300 flex gap-1">
+                                    <app-icon name="schedule" class="w-6 h-6"></app-icon>
+                                    <span class="font-medium">Last duration:</span>
+                                    {{ routineInfo.duration }} min
+                                </div>
+                            </div>
+
+                        </ng-container>
+                        <!-- =================== END OF CORRECTION =================== -->
+
                         <div class="flex my-2 text-sm sm:text-xs text-gray-500 dark:text-gray-300">
                             <div *ngIf="routine.isHidden" (click)="toggleOnlyHiddenRoutines($event)" appPress
                                 (shortPress)="toggleOnlyHiddenRoutines($event);"
@@ -213,23 +258,6 @@
                             </div>
                         </div>
                     </div>
-
-                    <div class="absolute top-2 right-2">
-                        <div class="relative">
-                            <button (click)="toggleActions(routine.id, $event)"
-                                [attr.aria-label]="'Actions for ' + routine.name" aria-haspopup="true"
-                                [attr.aria-expanded]="areActionsVisible(routine.id)"
-                                class="p-1.5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full focus:outline-none">
-                                <app-icon name="menu_action" class="h-5 w-5"></app-icon>
-                            </button>
-                            <app-action-menu *ngIf="areActionsVisible(routine.id) && !menuModeCompact"
-                                displayMode="dropdown" [items]="getRoutineDropdownActionItems(routine.id, 'dropdown')"
-                                [isVisible]="areActionsVisible(routine.id)"
-                                (itemClick)="handleActionMenuItemClick($event)" (closeMenu)="onCloseActionMenu()">
-                            </app-action-menu>
-                        </div>
-                    </div>
-
                     <app-action-menu *ngIf="areActionsVisible(routine.id) && menuModeCompact" displayMode="compact-bar"
                         [items]="getRoutineDropdownActionItems(routine.id, 'compact-bar')"
                         [isVisible]="areActionsVisible(routine.id)" (itemClick)="handleActionMenuItemClick($event)"

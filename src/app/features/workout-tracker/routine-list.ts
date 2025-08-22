@@ -23,7 +23,7 @@ import { PressDirective } from '../../shared/directives/press.directive';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { TrainingProgramService } from '../../core/services/training-program.service';
 import { IconComponent } from '../../shared/components/icon/icon.component';
-import { LastPerformanceSummary } from '../../core/models/workout-log.model';
+import { LastPerformanceSummary, WorkoutLog } from '../../core/models/workout-log.model';
 
 @Component({
   selector: 'app-routine-list',
@@ -263,7 +263,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
 
       this.allRoutinesForList.set(routines);
       this.populateRoutineFilterOptions(routines);
-      await this.populateLastRoutineDurations(routines);
+      await this.populateLastRoutineLoggedInfo(routines);
     });
   }
 
@@ -794,28 +794,52 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     }
   }
 
-  lastRoutineDurations = signal<{ [id: string]: number }>({});
-  private async populateLastRoutineDurations(routines: Routine[]): Promise<void> {
-    const durations: { [id: string]: number } = {};
-    const routineData: { [id: string]: {duration: number, name: string} } = {};
-    await Promise.all(
-      routines.map(async routine => {
-        const lastRoutineLogged = await firstValueFrom(
-          this.trackingService.getLastPerformanceForRoutine(routine.id).pipe(take(1))
-        );
-        if (lastRoutineLogged && lastRoutineLogged.lastPerformedDate && lastRoutineLogged.durationMinutes) {
-              // const totalMinutes = Math.round(lastRoutineLogged.durationMinutes / 60);
-              durations[routine.id] = lastRoutineLogged.durationMinutes;
-        } else {
-          durations[routine.id] = 0;
-        }
-        routineData[routine.id] = {
-          duration: durations[routine.id],
-          name: routine.name
-        };
-      })
-    );
-    this.lastRoutineDurations.set(durations);
+  lastLoggedRoutineInfo = signal<{ [id: string]: { duration: number, name: string, startTime: number | null } }>({});
+  /**
+   * Efficiently populates the last logged information for a given list of routines.
+   * This optimized version fetches all logs once and processes them in a single pass
+   * to avoid the N+1 query problem.
+   * @param routines The array of routines to find the last log for.
+   */
+  private async populateLastRoutineLoggedInfo(routines: Routine[]): Promise<void> {
+    // Step 1: Get all workout logs just one time.
+    // The workoutLogs$ observable is already sorted from newest to oldest.
+    const allLogs = await firstValueFrom(this.trackingService.workoutLogs$.pipe(take(1)));
+    
+    // If there are no logs, we can set an empty object and exit early.
+    if (!allLogs || allLogs.length === 0) {
+      this.lastLoggedRoutineInfo.set({});
+      return;
+    }
+
+    // Step 2: Create a lookup map for the most recent log of each routine.
+    const lastLogByRoutineId = new Map<string, WorkoutLog>();
+
+    // By iterating through the logs (which are sorted newest to oldest), the *first* time
+    // we see a routineId, we know it's the most recent log for that routine.
+    for (const log of allLogs) {
+      if (log.routineId && !lastLogByRoutineId.has(log.routineId)) {
+        lastLogByRoutineId.set(log.routineId, log);
+      }
+    }
+
+    // Step 3: Build the final data structure using the lookup map.
+    // We use .reduce() for a clean, functional way to build the object.
+    const routineData = routines.reduce((acc, routine) => {
+      const lastLog = lastLogByRoutineId.get(routine.id);
+      
+      acc[routine.id] = {
+        // Use the duration from the found log, or default to 0.
+        duration: lastLog?.durationMinutes ?? 0,
+        name: routine.name,
+        // Use the start time from the found log, or default to an empty string.
+        startTime: lastLog?.startTime ?? null
+      };
+      return acc;
+    }, {} as { [id: string]: { duration: number, name: string, startTime: number | null } });
+
+    // Step 4: Set the signal with the efficiently-built data.
+    this.lastLoggedRoutineInfo.set(routineData);
   }
 
   scrollToTop(): void {

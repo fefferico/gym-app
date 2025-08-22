@@ -37,6 +37,7 @@ import { PressDirective } from '../../shared/directives/press.directive';
 import { IconComponent } from '../../shared/components/icon/icon.component';
 import { TooltipDirective } from '../../shared/directives/tooltip.directive';
 import { ExerciseSelectionModalComponent } from '../../shared/components/exercise-selection-modal/exercise-selection-modal.component';
+import { MillisecondsDatePipe } from '../../shared/pipes/milliseconds-date.pipe';
 
 type BuilderMode = 'routineBuilder' | 'manualLogEntry';
 
@@ -47,7 +48,7 @@ type BuilderMode = 'routineBuilder' | 'manualLogEntry';
     FormsModule, DragDropModule, WeightUnitPipe, TitleCasePipe,
     LongPressDragDirective, AutoGrowDirective, ActionMenuComponent,
     IsWeightedPipe, ModalComponent, ClickOutsideDirective,
-    ExerciseDetailComponent, PressDirective, IconComponent, TooltipDirective, ExerciseSelectionModalComponent],
+    ExerciseDetailComponent, PressDirective, IconComponent, TooltipDirective, ExerciseSelectionModalComponent, MillisecondsDatePipe],
   templateUrl: './workout-builder.html',
   styleUrl: './workout-builder.scss',
   providers: [DecimalPipe]
@@ -76,7 +77,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   exerciseInfoTooltipString = 'Exercise details and progression';
   lastRoutineDuration: number = 0;
 
-  routine: Routine | undefined = undefined;
+  routine = signal<Routine | undefined>(undefined);
+    lastLoggedRoutineInfo = signal<{ [id: string]: { duration: number, name: string, startTime: number | null } }>({});
   builderForm!: FormGroup;
   mode: BuilderMode = 'routineBuilder';
   isEditableMode = signal<boolean>(false);
@@ -97,6 +99,19 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
   expandedSetPath = signal<{ exerciseIndex: number, setIndex: number } | null>(null);
   expandedSetPaths: { exerciseIndex: number, setIndex: number }[] = [];
+
+  lastLogForCurrentRoutine = computed(() => {
+    const currentRoutine = this.routine();
+    const allLogsInfo = this.lastLoggedRoutineInfo();
+
+    // Guard clauses for when data is not yet available
+    if (!currentRoutine || !allLogsInfo) {
+      return null;
+    }
+
+    // Directly look up the info using the routine's ID. This is extremely fast.
+    return allLogsInfo[currentRoutine.id] || null;
+  });
 
   availableSetTypes: { value: string, label: string }[] = [
     { value: 'standard', label: 'Standard' },
@@ -147,7 +162,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     this.builderForm = this.fb.group({
       name: [''], // Validated based on mode
       description: [''], // Only for routineBuilder
-      goal: ['custom' as Routine['goal']], // Only for routineBuilder
+      goal: [''], // Only for routineBuilder
 
       workoutDate: [''], // Only for manualLogEntry
       startTime: [''],   // Only for manualLogEntry
@@ -164,8 +179,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) { window.scrollTo(0, 0); }
     this.loadAvailableExercises(); // For exercise selection modal
-    
-     this.subscriptions.add(
+
+    this.subscriptions.add(
       this.workoutService.routines$.pipe(take(1)).subscribe(routines => {
         this.availableRoutines = routines;
       })
@@ -221,7 +236,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
           if (this.mode === 'routineBuilder' && this.currentLogId && this.isNewMode) {
             this.prefillRoutineFormFromLog(loadedData as WorkoutLog);
           } else if (this.mode === 'routineBuilder') {
-            this.routine = loadedData as Routine;
+            this.routine.set(loadedData as Routine);
             this.patchFormWithRoutineData(loadedData as Routine);
           } else if (this.mode === 'manualLogEntry' && this.isEditMode && this.currentLogId) {
             this.patchFormWithLogData(loadedData as WorkoutLog);
@@ -302,9 +317,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       this.getRoutineDuration();
     });
     this.subscriptions.add(roundsSub);
-
-    this.getLastRoutineDuration();
-
   }
 
   /**
@@ -428,7 +440,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       if (program) {
         return `Log for Program: ${program.name} - Routine: ${routine?.name || 'Ad-hoc'}`;
       }
-    } 
+    }
     return 'Ad-hoc Workout';
   }
 
@@ -1219,18 +1231,36 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
     try {
       if (this.mode === 'routineBuilder') {
-        this.routine = this.mapFormToRoutine(formValue);
+        // First, map the form value to a valid Routine object
+        const routinePayload = this.mapFormToRoutine(formValue);
+        let savedRoutine: Routine; // Variable to hold the result from the service
+
         if (this.isNewMode) {
-          this.routine = this.workoutService.addRoutine(this.routine);
+          // Await the async service call
+          savedRoutine = await this.workoutService.addRoutine(routinePayload);
         } else {
-          this.routine = this.workoutService.updateRoutine(this.routine);
+          // Await the async service call
+          const tmpResult = await this.workoutService.updateRoutine(routinePayload);
+          if (tmpResult){
+            savedRoutine = tmpResult;
+          } else {
+            this.toastService.error(`Routine not found!`, 4000, "Error");
+            return;
+          }
         }
+
+        // Now, correctly update the component's signal with the saved data
+        this.routine.set(savedRoutine);
+
         this.toastService.success(`Routine ${this.isNewMode ? 'created' : 'updated'}!`, 4000, "Success");
 
-        if (this.isNewMode && this.routine) {
+        // This logic correctly transitions the component from "new" to "edit" mode
+        if (this.isNewMode && savedRoutine) {
           this.isEditMode = true;
           this.isNewMode = false;
-          this.currentRoutineId = this.routine.id;
+          this.currentRoutineId = savedRoutine.id;
+          // Optionally navigate to the edit URL to make the state consistent with the URL
+          this.router.navigate(['/workout/routine/edit', savedRoutine.id], { replaceUrl: true });
         }
 
         // this.router.navigate(['/workout']);
@@ -1240,19 +1270,13 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         const endTimeStr = formValue.endTime;
         const combinedStartingDateTimeStr = `${workoutDateStr}T${startTimeStr}:00`;
         const combinedEndingDateTimeStr = `${workoutDateStr}T${endTimeStr}:00`;
-        let startTimeMs: number;
-        try {
-          const parsedStartingDate = parseISO(combinedStartingDateTimeStr);
-          if (!isValidDate(parsedStartingDate)) throw new Error("Invalid starting date/time for log entry");
-          startTimeMs = parsedStartingDate.getTime();
-        } catch (e) { this.toastService.error("Invalid starting date or time format", 0, "Error"); this.spinnerService.hide(); return; }
-
-        let endTimeMs: number | undefined = undefined;
-        try {
-          const parsedEndingDate = parseISO(combinedEndingDateTimeStr);
-          if (!isValidDate(parsedEndingDate)) throw new Error("Invalid ending date/time for log entry");
-          endTimeMs = parsedEndingDate.getTime();
-        } catch (e) { this.toastService.error("Invalid ending date or time format", 0, "Error"); this.spinnerService.hide(); return; }
+        
+        const startTimeMs = parseISO(combinedStartingDateTimeStr).getTime();
+        let endTimeMs: number | undefined = parseISO(combinedEndingDateTimeStr).getTime();
+        
+        if (endTimeMs < startTimeMs) {
+            endTimeMs += 24 * 60 * 60 * 1000; // Add one day if end time is on the next day
+        }
 
         const logExercises: LoggedWorkoutExercise[] = formValue.exercises.map((exInput: any): LoggedWorkoutExercise => ({
           id: exInput.id,
@@ -1303,7 +1327,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
           this.router.navigate(['/history/log', this.currentLogId]);
         } else {
           const newLog: Omit<WorkoutLog, 'id'> = logPayloadBase;
-          const savedLog = this.trackingService.addWorkoutLog(newLog);
+          const savedLog = await this.trackingService.addWorkoutLog(newLog);
           this.toastService.success("Workout logged!", 4000, "Success");
           this.router.navigate(['/history/log', savedLog.id]);
         }
@@ -1548,44 +1572,59 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
 
   getRoutineDuration(): number {
-    if (this.routine) {
-      this.routine = this.mapFormToRoutine(this.builderForm.getRawValue());
-      return this.workoutService.getEstimatedRoutineDuration(this.routine);
+    if (this.routine()) {
+      return this.workoutService.getEstimatedRoutineDuration(this.mapFormToRoutine(this.builderForm.getRawValue()));
     } else {
       return 0;
     }
   }
 
-  async getLastRoutineDuration(): Promise<void> {
-    this.lastRoutineDuration = 0;
-    if (this.routine) {
-      const lastRoutineLogged = await firstValueFrom(
-        this.trackingService.getLastPerformanceForRoutine(this.routine.id).pipe(take(1))
-      );
-      if (lastRoutineLogged && lastRoutineLogged.lastPerformedDate && lastRoutineLogged.durationMinutes) {
-        // const totalMinutes = Math.round(lastRoutineLogged.durationMinutes / 60);
-        this.lastRoutineDuration = lastRoutineLogged.durationMinutes;
-      }
-    }
-  }
+  //   /**
+  //  * Converts a millisecond timestamp into a 'dd/MM/yy HH:mm' formatted string.
+  //  * @param msTime The timestamp in milliseconds (e.g., from Date.now() or log.startTime).
+  //  * @returns The formatted date string, or an empty string if the input is invalid.
+  //  */
+  // formatMilliseconds(msTime: number | undefined | null): string {
+  //   if (msTime === null || msTime === undefined || !isFinite(msTime)) {
+  //     return ''; // Return empty for invalid input
+  //   }
 
-  private mapFormToRoutine(formValue: any): Routine {
+  //   try {
+  //     const date = new Date(msTime);
+  //     return format(date, 'dd/MM/yy HH:mm');
+  //   } catch (error) {
+  //     console.error("Error formatting date from milliseconds:", error);
+  //     return ''; // Return empty on formatting error
+  //   }
+  // }
+
+
+private mapFormToRoutine(formValue: any): Routine {
+    // Get the current state of the routine from the signal
+    const currentRoutine = this.routine(); 
+
     const routinePayload: Routine = {
-      id: this.currentRoutineId || uuidv4(), name: formValue.name, description: formValue.description, goal: formValue.goal,
+      id: this.currentRoutineId || uuidv4(),
+      name: formValue.name,
+      description: formValue.description,
+      goal: formValue.goal,
       exercises: (formValue.goal === 'rest') ? [] : formValue.exercises.map((exInput: any) => ({
         ...exInput,
         id: exInput.id || uuidv4(),
         sets: exInput.sets.map((setInput: any) => ({
-          ...setInput, // This includes 'type', 'reps', 'duration', 'tempo', 'restAfterSet', 'notes'
+          ...setInput,
           weight: this.unitService.convertToKg(setInput.weight, this.unitService.currentUnit()) ?? null,
         }))
       })),
-      isFavourite: this.routine?.isFavourite,
-      isHidden: this.routine?.isHidden,
-      lastPerformed: this.routine?.lastPerformed || '',
+      // Use the value from the signal to preserve these properties
+      isFavourite: currentRoutine?.isFavourite,
+      isHidden: currentRoutine?.isHidden,
+      // lastPerformed should not be part of the form submission.
+      // It is derived data. Let's ensure it's preserved from the signal.
+      lastPerformed: currentRoutine?.lastPerformed,
     };
     return routinePayload;
-  }
+}
 
 
   getRoutineDropdownActionItems(routineId: string, mode: 'dropdown' | 'compact-bar'): ActionMenuItem[] {
@@ -1631,7 +1670,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
   handleActionMenuItemClick(event: { actionKey: string, data?: any }, originalMouseEvent?: MouseEvent): void {
     // originalMouseEvent.stopPropagation(); // Stop original event that opened the menu
-    const routineId = this.routine?.id;
+    const routineId = this.routine()?.id;
     if (!routineId) return;
 
     switch (event.actionKey) {
@@ -1668,7 +1707,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   async cloneAndEditRoutine(routineId: string, event?: MouseEvent): Promise<void> {
-    const originalRoutine = this.routine;
+    const originalRoutine = this.routine();
     if (!originalRoutine) {
       this.toastService.error("Routine not found for cloning", 0, "Error");
       return;
@@ -1753,7 +1792,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     }
 
     // Find the exercise in the local routine data.
-    const exerciseInRoutine = this.routine?.exercises.find(ex => ex.exerciseId === exerciseId);
+    const exerciseInRoutine = this.routine()?.exercises.find(ex => ex.exerciseId === exerciseId);
 
     if (exerciseInRoutine) {
       // If found, get the full exercise details from the service.

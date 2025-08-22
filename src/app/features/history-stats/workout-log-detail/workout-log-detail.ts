@@ -100,6 +100,7 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
   }
 
   async ngOnInit(): Promise<void> {
+    window.scrollTo(0, 0);
     // This subscription is fine as it is.
     this.subscriptions.add(
       this.trainingService.programs$.pipe(take(1)).subscribe(programs => {

@@ -24,8 +24,6 @@
                 <button *ngIf="!item.isDivider" type="button" (click)="onItemClicked($event, item)" [title]="item.label"
                     [ngClass]="item.buttonClass || 'flex-1 text-xs min-w-[60px] flex items-center justify-center p-1.5
                 rounded-md transition-colors '">
-                    <span *ngIf="item.iconSvg || item.iconName" [innerHTML]="sanitizeSvg(item.iconSvg)"
-                        [ngClass]="item.iconClass || 'w-4 h-4'" [class.mr-1.5]="showLabelInCompact(item)"></span>
                     <span *ngIf="getIconHtml(item) as iconHtml" [innerHTML]="iconHtml"
                         [ngClass]="item.iconClass || 'w-5 h-5 mr-2'">
                     </span>

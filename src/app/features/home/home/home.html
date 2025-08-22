@@ -59,7 +59,7 @@
     <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-3">Quick Actions</h2>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       <button (click)="startNewSession()"
-        class="block p-5 bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow transform hover:-translate-y-1">
+        class="block p-5 bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow transform hover:-translate-y-1 dark:hover:bg-gray-600 hover:bg-gray-200">
         <div class="flex items-center mb-2">
           <app-icon name="play" class="w-14 h-14 mr-2 text-primary"></app-icon>
           <div class="text-left">
@@ -73,7 +73,7 @@
       <!-- START: Add This New Button Here                            -->
       <!-- ========================================================== -->
       <button (click)="navigateToLogActivity()"
-        class="block p-5 bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow transform hover:-translate-y-1">
+        class="block p-5 bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow transform hover:-translate-y-1 dark:hover:bg-gray-600 hover:bg-gray-200">
         <div class="flex items-center mb-2">
           <app-icon name="clipboard-list" class="w-14 h-14 text-teal-500 dark:text-teal-400 mr-2"></app-icon>
           <div class="text-left">
@@ -87,7 +87,7 @@
       <!-- ========================================================== -->
        
       <button (click)="navigateToRoutines()"
-        class="block p-5 bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow transform hover:-translate-y-1">
+        class="block p-5 bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow transform hover:-translate-y-1 dark:hover:bg-gray-600 hover:bg-gray-200">
         <div class="flex items-center mb-2">
           <app-icon name="routines" class="w-14 h-14 text-blue-500 dark:text-blue-400 mr-2"></app-icon>
           <div class="text-left">
@@ -98,7 +98,7 @@
       </button>
 
       <button (click)="navigateToPrograms()"
-        class="block p-5 bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow transform hover:-translate-y-1">
+        class="block p-5 bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow transform hover:-translate-y-1 dark:hover:bg-gray-600 hover:bg-gray-200">
         <div class="flex items-center mb-2">
           <app-icon name="calendar" class="w-14 h-14 text-green-500 dark:text-green-400 mr-2"></app-icon>
           <div class="text-left">
@@ -109,7 +109,7 @@
       </button>
 
       <button (click)="navigateToHistory()"
-        class="block p-5 bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow transform hover:-translate-y-1">
+        class="block p-5 bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow transform hover:-translate-y-1 dark:hover:bg-gray-600 hover:bg-gray-200">
         <div class="flex items-center mb-2">
           <app-icon name="clock" class="w-14 h-14  text-purple-500 dark:text-purple-400 mr-2"></app-icon>
           <div class="text-left">
@@ -120,7 +120,7 @@
       </button>
       <!-- Add more quick action cards as needed, e.g., Profile/Settings -->
       <button (click)="navigateToProfile()"
-        class="block p-5 bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow transform hover:-translate-y-1">
+        class="block p-5 bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow transform hover:-translate-y-1 dark:hover:bg-gray-600 hover:bg-gray-200">
         <div class="flex items-center mb-2">
           <app-icon name="profile" class="w-14 h-14 text-orange-500 dark:text-orange-400 mr-2"></app-icon>
           <div class="text-left">
