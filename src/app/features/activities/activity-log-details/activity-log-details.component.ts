@@ -30,7 +30,7 @@ export class ActivityLogDetailsComponent implements OnInit {
 
   activityLog = signal<ActivityLog | null>(null);
   baseActivity = signal<Activity | null>(null);
-  
+
   // +++ ADD STATE FOR ACTION MENU +++
   activeLogIdActions = signal<string | null>(null);
 
@@ -64,7 +64,7 @@ export class ActivityLogDetailsComponent implements OnInit {
   editLog(logId: string): void {
     this.router.navigate(['/activities/log/edit', logId]);
   }
-  
+
   // --- This method will now be called by the action menu handler ---
   async deleteLog(log: ActivityLog): Promise<void> {
     const confirm = await this.alertService.showConfirmationDialog(
@@ -106,6 +106,7 @@ export class ActivityLogDetailsComponent implements OnInit {
         actionKey: 'edit',
         iconSvg: 'asdasd',
         iconName: 'edit',
+        iconClass: 'w-8 h-8 mr-2',
         buttonClass: 'w-full ' + defaultBtnClass,
         data: { log }
       },
@@ -114,6 +115,7 @@ export class ActivityLogDetailsComponent implements OnInit {
         label: 'DELETE',
         actionKey: 'delete',
         iconName: 'trash',
+        iconClass: 'w-8 h-8 mr-2',
         buttonClass: 'w-full ' + deleteBtnClass,
         data: { log }
       }

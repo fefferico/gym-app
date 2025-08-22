@@ -14,7 +14,6 @@ import { isSameDay, getDay, eachDayOfInterval, parseISO, differenceInDays, start
 
 // +++ 1. IMPORT THE STATIC PROGRAMS DATA +++
 import { PROGRAMS_DATA } from './programs-data';
-import { TrackingService } from './tracking.service';
 import { WorkoutLog } from '../models/workout-log.model';
 
 @Injectable({
@@ -25,7 +24,6 @@ export class TrainingProgramService {
   private workoutService = inject(WorkoutService);
   private alertService = inject(AlertService);
   private toastService = inject(ToastService);
-  private trackingService = inject(TrackingService);
 
   private readonly PROGRAMS_STORAGE_KEY = 'fitTrackPro_trainingPrograms';
 
@@ -647,60 +645,28 @@ export class TrainingProgramService {
     this.toastService.success("History entry removed.", 3000, "History Updated");
   }
 
+  // --- 3. MODIFIED: Refactor program completion logic ---
   /**
-  * Checks if a logged workout completes a linear training program.
+  * Checks if a linear training program is now complete.
   * If completed, it updates the program's status and history.
   * @param programId The ID of the program to check.
-  * @param loggedWorkout The workout log that was just saved.
+  * @param loggedWorkout The workout log that was just saved (only its ID is needed now).
   * @returns A Promise resolving to `true` if the program was completed, otherwise `false`.
   */
-  public async checkAndHandleProgramCompletion(programId: string, loggedWorkout: WorkoutLog): Promise<boolean> {
+  public async checkAndHandleProgramCompletion(programId: string, loggedWorkout: Partial<WorkoutLog>): Promise<boolean> {
     const program = await firstValueFrom(this.getProgramById(programId));
 
-    // Proceed only for active, linear programs with defined weeks
     if (!program || !program.isActive || program.programType !== 'linear' || !program.weeks?.length) {
       return false;
     }
 
-    // --- Determine if this was the last workout of the program ---
+    // --- REFACTORED COMPLETION LOGIC ---
+    // The program is complete if every single scheduled day is marked as 'completed'.
+    const allDays = program.weeks.flatMap(w => w.schedule);
+    const isComplete = allDays.every(day => day.completionStatus === 'completed');
 
-    // 1. Find the final week (highest weekNumber)
-    const lastWeek = program.weeks.reduce((prev, current) =>
-      (prev.weekNumber > current.weekNumber) ? prev : current
-    );
-
-    // 2. Find the last scheduled day in that week (highest dayOfWeek)
-    const lastScheduledDay = lastWeek.schedule.reduce((prev, current) =>
-      (prev.dayOfWeek > current.dayOfWeek) ? prev : current
-    );
-
-    if (loggedWorkout.routineId !== lastScheduledDay.routineId) {
-      // The logged routine was not the final one scheduled for the program.
-      return false;
-    }
-
-    // 3. Verify that all other routines in the program have been completed.
-    const allProgramRoutineIds = new Set(
-      program.weeks.flatMap(w => w.schedule.map(s => s.routineId))
-    );
-
-    const programLogs = await firstValueFrom(
-      this.trackingService.getWorkoutLogsByProgramIdForDateRange(
-        program.id,
-        parseISO(program.startDate!),
-        new Date() // up to now
-      )
-    );
-
-    const completedRoutineIds = new Set(programLogs.map(log => log.routineId));
-
-    // Check if the set of completed routines contains all unique routines from the program schedule.
-    const allRoutinesCompleted = [...allProgramRoutineIds].every(id => completedRoutineIds.has(id));
-
-    if (allRoutinesCompleted) {
-      console.log(`Program "${program.name}" completed!`);
-      // Use existing method to mark the program as completed.
-      // This will update its status, set the end date, and manage history.
+    if (isComplete) {
+      console.log(`Program "${program.name}" completed! All scheduled days are fulfilled.`);
       await this.toggleProgramActivation(program.id, 'completed');
       return true;
     }
@@ -808,6 +774,89 @@ export class TrainingProgramService {
         }
       })
     );
+  }
+
+
+
+
+  // +++ 1. NEW: A ROBUST METHOD TO FIND THE NEXT WORKOUT +++
+  /**
+   * Finds the next uncompleted routine for a given linear program.
+   * This becomes the source of truth for "what to do today".
+   * @param program The active linear training program.
+   * @returns An observable of the routine and its schedule info, or null if program is complete or invalid.
+   */
+  public findNextUncompletedRoutineForProgram(program: TrainingProgram): Observable<{ routine: Routine, scheduledDayInfo: ScheduledRoutineDay } | null> {
+    // Validate the program
+    if (!program || program.programType !== 'linear' || !program.weeks?.length) {
+      return of(null);
+    }
+
+    // Flatten the weeks into a single, ordered list of scheduled days
+    const allScheduledDays = program.weeks
+      .sort((a, b) => a.weekNumber - b.weekNumber)
+      .flatMap(week => week.schedule.sort((a, b) => a.dayOfWeek - b.dayOfWeek));
+
+    // Find the first day that isn't marked as 'completed'
+    const nextDay = allScheduledDays.find(day => day.completionStatus !== 'completed');
+
+    if (!nextDay) {
+      // All routines are completed!
+      return of(null);
+    }
+
+    // Fetch the routine details for the next uncompleted day
+    return this.workoutService.getRoutineById(nextDay.routineId).pipe(
+      take(1), 
+      map(routine => {
+        if (!routine) {
+          console.error(`Could not find routine with ID ${nextDay.routineId} for program ${program.id}`);
+          return null;
+        }
+        return { routine, scheduledDayInfo: nextDay };
+      })
+    );
+  }
+
+  // +++ 2. NEW: A METHOD TO UPDATE THE PROGRAM STATE AFTER LOGGING A WORKOUT +++
+  /**
+   * Marks a specific scheduled day within a program as completed.
+   * This should be called after a workout log is successfully saved.
+   * @param programId The ID of the program being updated.
+   * @param scheduledDayId The ID of the ScheduledRoutineDay to mark as complete.
+   * @param workoutLogId The ID of the log that fulfilled this day.
+   * @param completionDate The date of completion (YYYY-MM-DD).
+   */
+  public async markScheduledDayAsCompleted(programId: string, scheduledDayId: string, workoutLogId: string, completionDate: string): Promise<void> {
+    const program = await firstValueFrom(this.getProgramById(programId));
+    if (!program || program.programType !== 'linear' || !program.weeks?.length) {
+      return; // Not a valid program to update
+    }
+
+    let dayFound = false;
+    const updatedWeeks = program.weeks.map(week => ({
+      ...week,
+      schedule: week.schedule.map(day => {
+        if (day.id === scheduledDayId) {
+          dayFound = true;
+          return {
+            ...day,
+            completionStatus: 'completed' as const,
+            completedOnDate: completionDate,
+            workoutLogId: workoutLogId
+          };
+        }
+        return day;
+      })
+    }));
+
+    if (dayFound) {
+      const updatedProgram = { ...program, weeks: updatedWeeks };
+      await this.updateProgram(updatedProgram);
+      console.log(`Marked day ${scheduledDayId} as complete for program ${programId}`);
+      // Now, check if this completion finished the whole program.
+      this.checkAndHandleProgramCompletion(program.id, { id: workoutLogId } as WorkoutLog);
+    }
   }
 
 }

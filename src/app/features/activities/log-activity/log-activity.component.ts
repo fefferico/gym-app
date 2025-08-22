@@ -1,16 +1,27 @@
 // src/app/features/activities/log-activity/log-activity.component.ts
 import { Component, OnInit, inject, signal, effect } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Router, ActivatedRoute } from '@angular/router'; // Import ActivatedRoute
-import { Observable } from 'rxjs';
+import { AbstractControl, FormBuilder, FormGroup, ValidationErrors, Validators, ReactiveFormsModule } from '@angular/forms';
+import { Router, ActivatedRoute } from '@angular/router';
+import { forkJoin, Observable } from 'rxjs';
 import { take } from 'rxjs/operators';
 
 import { Activity } from '../../../core/models/activity.model';
 import { ActivityService } from '../../../core/services/activity.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
-import { ActivityLog } from '../../../core/models/activity-log.model'; // Import ActivityLog
+import { ActivityLog } from '../../../core/models/activity-log.model';
+
+export function timeOrderValidator(startTimeKey: string, endTimeKey: string): (group: AbstractControl) => ValidationErrors | null {
+    return (group: AbstractControl): ValidationErrors | null => {
+        const startTime = group.get(startTimeKey)?.value;
+        const endTime = group.get(endTimeKey)?.value;
+        if (startTime && endTime && startTime >= endTime) {
+            return { timeInvalid: true };
+        }
+        return null;
+    };
+}
 
 @Component({
     selector: 'app-log-activity',
@@ -25,28 +36,27 @@ export class LogActivityComponent implements OnInit {
     private activityService = inject(ActivityService);
     private toastService = inject(ToastService);
     private router = inject(Router);
-    private route = inject(ActivatedRoute); // +++ ADD
+    private route = inject(ActivatedRoute);
 
     // --- Component State ---
     logActivityForm!: FormGroup;
     availableActivities$: Observable<Activity[]>;
     selectedActivity = signal<Activity | null>(null);
-
-    // +++ ADD State for Edit Mode +++
     isEditMode = signal(false);
     private editingLogId: string | null = null;
 
     constructor() {
-        // Form initialization remains the same
         this.logActivityForm = this.fb.group({
             activityId: ['', [Validators.required]],
             date: [new Date().toISOString().split('T')[0], [Validators.required]],
-            durationMinutes: [null, [Validators.required, Validators.min(1)]],
+            startTime: ['12:00', [Validators.required]],
+            endTime: ['13:00', [Validators.required]],
             intensity: ['Medium', [Validators.required]],
+            location: ['', []],
             distanceKm: [{ value: null, disabled: true }, [Validators.min(0)]],
             caloriesBurned: [{ value: null, disabled: true }, [Validators.min(0)]],
             notes: ['']
-        });
+        }, { validators: timeOrderValidator('startTime', 'endTime') });
 
         this.availableActivities$ = this.activityService.getActivities();
 
@@ -56,47 +66,62 @@ export class LogActivityComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        // +++ UPDATE ngOnInit to handle both CREATE and EDIT modes +++
         this.route.paramMap.pipe(take(1)).subscribe(params => {
             const logId = params.get('id');
             if (logId) {
-                // We are in EDIT mode
                 this.isEditMode.set(true);
                 this.editingLogId = logId;
                 this.loadLogForEditing(logId);
             }
         });
 
-        // This part remains the same
         this.logActivityForm.get('activityId')?.valueChanges.subscribe(id => {
-            const activity = this.activityService.getActivityById(id);
-            this.selectedActivity.set(activity || null);
+            this.activityService.getActivities().pipe(take(1)).subscribe(activities => {
+                const activity = activities.find(a => a.id === id);
+                this.selectedActivity.set(activity || null);
+            });
         });
     }
 
-    /**
-     * +++ NEW METHOD to load and pre-fill the form for editing.
-     */
     private loadLogForEditing(logId: string): void {
-        this.activityService.getActivityLogById(logId).pipe(take(1)).subscribe(log => {
-            if (log) {
-                // Pre-fill the form with the existing log data
+        // Use forkJoin to get both the log and the full activity list at the same time.
+        forkJoin({
+            log: this.activityService.getActivityLogById(logId).pipe(take(1)),
+            activities: this.activityService.getActivities().pipe(take(1))
+        }).subscribe(({ log, activities }) => {
+            if (log && activities) {
+                // 1. Find the full Activity object from the list.
+                const loggedActivity = activities.find(activity => activity.id === log.activityId);
+
+                // 2. Set the selectedActivity signal. This is the crucial step you discovered.
+                if (loggedActivity) {
+                    this.selectedActivity.set(loggedActivity);
+                }
+
+                // 3. Now, patch the form with all the data.
+                const startDate = new Date(log.startTime);
+                const endDate = log.endTime ? new Date(log.endTime) : new Date(log.startTime + log.durationMinutes * 60000);
+                const formatTime = (date: Date) => date.toTimeString().substring(0, 5);
+
                 this.logActivityForm.patchValue({
                     activityId: log.activityId,
                     date: log.date,
-                    durationMinutes: log.durationMinutes,
+                    startTime: formatTime(startDate),
+                    endTime: formatTime(endDate),
                     intensity: log.intensity,
+                    location: log.location,
                     distanceKm: log.distanceKm,
                     caloriesBurned: log.caloriesBurned,
                     notes: log.notes
                 });
 
-                // The `valueChanges` subscription will automatically trigger
-                // the `selectedActivity` signal to update, which in turn
-                // correctly enables/disables the optional fields.
+                // The effect watching selectedActivity will run automatically
+                // to enable/disable the correct fields. The updateValueAndValidity()
+                // in that method will ensure the form state is correct.
+
             } else {
                 this.toastService.error('Could not find the activity log to edit.', 0);
-                this.router.navigate(['/history']); // Redirect if log not found
+                this.router.navigate(['/history']);
             }
         });
     }
@@ -106,8 +131,8 @@ export class LogActivityComponent implements OnInit {
      * default tracking metrics.
      */
     private updateFormForSelectedActivity(activity: Activity | null): void {
-        // ... (this method remains exactly the same)
         if (!activity) {
+            // this.logActivityForm.get('location')?.disable();
             this.logActivityForm.get('distanceKm')?.disable();
             this.logActivityForm.get('caloriesBurned')?.disable();
             return;
@@ -120,20 +145,19 @@ export class LogActivityComponent implements OnInit {
         metrics.calories
             ? this.logActivityForm.get('caloriesBurned')?.enable()
             : this.logActivityForm.get('caloriesBurned')?.disable();
+
+        // +++ THE FIX: Manually trigger a validity update for the whole form. +++
+        this.logActivityForm.updateValueAndValidity();
     }
 
-    /**
-     * Handles the form submission. Validates and calls either create or update.
-     */
     onSubmit(): void {
         if (this.logActivityForm.invalid) {
-            this.toastService.error('Please fill out all required fields.', 0, 'Invalid Form');
+            this.toastService.error('Please fill out all required fields and ensure times are valid.', 0, 'Invalid Form');
             Object.values(this.logActivityForm.controls).forEach(control => {
                 control.markAsTouched();
             });
             return;
         }
-
         if (this.isEditMode()) {
             this.updateLog();
         } else {
@@ -141,53 +165,47 @@ export class LogActivityComponent implements OnInit {
         }
     }
 
-    /**
-     * +++ NEW METHOD for creating a log.
-     */
     private createLog(): void {
-        const formValue = this.logActivityForm.getRawValue();
-        const activity = this.selectedActivity();
-        if (!activity) return;
+        const newLog = this.prepareLogData();
+        if (!newLog) return;
 
-        const newLog: Omit<ActivityLog, 'id'> = {
-            activityId: activity.id,
-            activityName: activity.name,
-            date: formValue.date,
-            startTime: new Date(formValue.date).getTime(),
-            durationMinutes: formValue.durationMinutes,
-            intensity: formValue.intensity,
-            distanceKm: formValue.distanceKm,
-            caloriesBurned: formValue.caloriesBurned,
-            notes: formValue.notes
-        };
         this.activityService.addActivityLog(newLog);
-        this.router.navigate(['/history']); // Navigate to history to see the new log
+        this.router.navigate(['/history']);
     }
 
-    /**
-     * +++ NEW METHOD for updating a log.
-     */
     private updateLog(): void {
         if (!this.editingLogId) return;
+        const newLogData = this.prepareLogData();
+        if (!newLogData) return;
 
+        const updatedLog: ActivityLog = { id: this.editingLogId, ...newLogData };
+        this.activityService.updateActivityLog(updatedLog);
+        this.router.navigate(['/activities/log', this.editingLogId]);
+    }
+
+    private prepareLogData(): Omit<ActivityLog, 'id'> | null {
         const formValue = this.logActivityForm.getRawValue();
         const activity = this.selectedActivity();
-        if (!activity) return;
-        
-        const updatedLog: ActivityLog = {
-            id: this.editingLogId,
+        if (!activity) return null;
+
+        const dateString = formValue.date;
+        const startTime = new Date(`${dateString}T${formValue.startTime}`).getTime();
+        const endTime = new Date(`${dateString}T${formValue.endTime}`).getTime();
+        const durationMinutes = Math.round((endTime - startTime) / 60000);
+
+        return {
             activityId: activity.id,
             activityName: activity.name,
             date: formValue.date,
-            startTime: new Date(formValue.date).getTime(),
-            durationMinutes: formValue.durationMinutes,
+            startTime,
+            endTime,
+            durationMinutes,
             intensity: formValue.intensity,
+            location: formValue.location,
             distanceKm: formValue.distanceKm,
             caloriesBurned: formValue.caloriesBurned,
             notes: formValue.notes
         };
-        this.activityService.updateActivityLog(updatedLog);
-        this.router.navigate(['/activities/log', this.editingLogId]); // Navigate back to the details page
     }
 
     get f() {

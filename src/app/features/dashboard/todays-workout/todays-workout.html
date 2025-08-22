@@ -66,7 +66,7 @@
             <div *ngFor="let workoutInfo of todaysScheduledWorkouts()"
               class="bg-primary-50 dark:bg-gray-700/30 p-4 rounded-md">
 
-              <!-- MODIFIED: Header text now changes based on whether the workout was scheduled -->
+              <!-- Header text now changes based on whether the workout was scheduled -->
               <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-100 mb-1">
                 <ng-container *ngIf="!workoutInfo.scheduledDayInfo.isUnscheduled; else unscheduledHeader">
                   Scheduled:
@@ -117,7 +117,8 @@
                       </button>
                     </div>
                   </ng-container>
-                  <!-- MODIFIED: Ensure "Session Skipped" only shows for workouts that were actually scheduled -->
+                  
+                  <!-- MODIFIED: "Session Skipped" logic updated to check for unscheduled workouts -->
                   <ng-container
                     *ngIf="!isToday(currentDate()) && !isFutureDate(currentDate()) && !workoutInfo.scheduledDayInfo.isUnscheduled">
                     <div
@@ -130,18 +131,21 @@
                       <span class="font-semibold text-m">Session Skipped</span>
                     </div>
                     <span class="text-m text-gray-500 dark:text-gray-400">
+                      <!-- UPDATED: Pass the scheduledDayInfo.id to the log function -->
                       <button appPressScroll
-                        (shortPress)="logPastProgramWorkout(workoutInfo?.scheduledDayInfo?.routineId, workoutInfo?.scheduledDayInfo?.programId)"
+                        (shortPress)="logPastProgramWorkout(workoutInfo?.scheduledDayInfo?.routineId, workoutInfo?.scheduledDayInfo?.programId, workoutInfo?.scheduledDayInfo?.id)"
                         class="text-primary dark:text-primary-light hover:underline mt-2">Log it</button>, if you
                       haven't
                       already
                     </span>
                   </ng-container>
+
                   <ng-container *ngIf="isToday(currentDate())">
                     <div
                       class="flex flex-col sm:flex-row justify-center items-center space-y-2 sm:space-y-0 sm:space-x-4 pt-4">
+                      <!-- UPDATED: Pass the scheduledDayInfo.id to the start function -->
                       <button appPressScroll
-                        (shortPress)="startProgramWorkout(workoutInfo.routine.id, workoutInfo.scheduledDayInfo.programId, $event)"
+                        (shortPress)="startProgramWorkout(workoutInfo.routine.id, workoutInfo.scheduledDayInfo.programId, workoutInfo.scheduledDayInfo.id, $event)"
                         class="flex justify-center items-center w-full sm:max-w-[200px] px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-md shadow-sm text-lg disabled:opacity-50 disabled:cursor-not-allowed">
                         <app-icon name="play" class="w-6 h-6" [strokeWidth]="2.5"></app-icon>
                         START</button>
@@ -160,21 +164,10 @@
             </div>
           </div>
 
-          <!-- ... the rest of the file is unchanged ... -->
           <ng-template #noScheduledWorkoutInProgramBlock>
-            <!-- Content for Rest Day... (unchanged) -->
+            <!-- Content for Rest Day -->
             <div class="text-center py-2">
-              <svg viewBox="0 0 25 25" xmlns="http://www.w3.org/2000/svg" stroke-width="1.5" stroke="currentColor"
-                class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-3">
-                <g id="sleep">
-                  <path class="cls-1"
-                    d="M13.5,12H5.34L13.42,2a.61.61,0,0,0,.08-.66A.63.63,0,0,0,12.93,1H4.5a.5.5,0,0,0,0,1h7.66L4.08,12a.61.61,0,0,0,-.08.66.63.63,0,0,0,.57.36H13.5a.5.5,0,0,0,0-1Z" />
-                  <path class="cls-1"
-                    d="M13.05,16.35a.62.62,0,0,0-.56-.35h-5a.5.5,0,0,0,0,1h4.23L7.07,23a.63.63,0,0,0,.5,1H12.5a.5.5,0,0,0,0-1H8.33L13,17A.61.61,0,0,0,13.05,16.35Z" />
-                  <path class="cls-1"
-                    d="M22.41,9.35A.62.62,0,0,0,21.85,9H15.5a.5.5,0,0,0,0,1h5.59l-6.21,8a.63.63,0,0,0-.07.67.64.64,0,0,0,.57.35H21.5a.5.5,0,0,0,0-1H16.13l6.22-8A.63.63,0,0,0,22.41,9.35Z" />
-                </g>
-              </svg>
+              <app-icon name="rest" class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-3"></app-icon>
               <h3 class="text-lg font-medium text-gray-700 dark:text-gray-300">Rest Day</h3>
               <p class="text-m text-gray-500 dark:text-gray-400">No workout planned in your program for this day</p>
             </div>
@@ -247,13 +240,12 @@
                   </div>
                 </div>
               </div>
-
             </div>
           </ng-template>
         </ng-container>
 
         <ng-template #noProgramBlock>
-          <!-- Content for No Program Active... (unchanged) -->
+          <!-- Content for No Program Active -->
           <div class="text-center py-2">
             <div *ngIf="isFutureDate(currentDate())">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -285,9 +277,6 @@
                         <ng-container *ngIf="log.weekName"> - {{ log.weekName }}</ng-container>
                         <ng-container *ngIf="log.dayName"> - {{ log.dayName }}</ng-container>
                       </span>
-                      <!-- <span class="text-sm" *ngIf="log.durationSeconds">Duration: {{
-                        secondsToDateTime(log.durationSeconds) |
-                        date:'HH:mm:ss' }}</span> -->
                     </p>
                     <button appPressScroll (shortPress)="viewLogDetails(log.id)"
                       class="flex items-center text-md font-semibold bg-sky-200 dark:bg-sky-700 text-sky-800 dark:text-sky-100 px-2 py-1 rounded hover:bg-sky-300">

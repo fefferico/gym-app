@@ -23,6 +23,14 @@ export interface ScheduledRoutineDay {
   /** Optional: Specific time of day suggestion, e.g., "AM" or "PM". */
   timeOfDay?: string;
   isUnscheduled?: boolean;
+
+  // +++ NEW PROPERTIES FOR TRACKING STATE +++
+  /** The completion status of this specific scheduled day. */
+  completionStatus?: 'pending' | 'completed' | 'skipped';
+  /** The ISO date (YYYY-MM-DD) on which this was completed. */
+  completedOnDate?: string;
+  /** The ID of the WorkoutLog that fulfilled this scheduled day. */
+  workoutLogId?: string;
 }
 
 /**

@@ -13,6 +13,7 @@ import { WorkoutService } from './workout.service';
 import { ToastService } from './toast.service';
 import { ExerciseService } from './exercise.service';
 import { start } from 'repl';
+import { TrainingProgramService } from './training-program.service';
 
 export interface ExercisePerformanceDataPoint {
   date: Date;
@@ -32,6 +33,8 @@ export class TrackingService {
   private workoutService = inject(WorkoutService);
   private injector = inject(Injector); // Inject the Injector
   private toastService = inject(ToastService);
+  private trainingProgramService = inject(TrainingProgramService);
+
   private readonly WORKOUT_LOGS_STORAGE_KEY = 'fitTrackPro_workoutLogs';
   private readonly PERSONAL_BESTS_STORAGE_KEY = 'fitTrackPro_personalBests';
 
@@ -63,7 +66,7 @@ export class TrackingService {
   }
 
   addWorkoutLog(newLogData: Omit<WorkoutLog, 'id' | 'date'> & { startTime: number }): WorkoutLog {
-    const newWorkoutLogId: string = uuidv4();
+        const newWorkoutLogId: string = uuidv4();
     const currentLogs = this.workoutLogsSubject.getValue();
     const logStartTimeISO = new Date(newLogData.startTime).toISOString();
 
@@ -84,6 +87,8 @@ export class TrackingService {
       exercises: updatedExercises,
       id: newWorkoutLogId,
       date: logStartTimeISO.split('T')[0],
+      // Ensure scheduledDayId is passed through
+      scheduledDayId: newLogData.scheduledDayId
     };
 
     if (newLog.startTime && newLog.endTime && !newLog.durationMinutes) {
@@ -94,6 +99,16 @@ export class TrackingService {
     const updatedLogs = [newLog, ...currentLogs];
     this.saveWorkoutLogsToStorage(updatedLogs);
     this.updateAllPersonalBestsFromLog(newLog);
+
+    // --- NEW: LINK THE LOG TO THE PROGRAM SCHEDULE ---
+    if (newLog.programId && newLog.scheduledDayId) {
+      this.trainingProgramService.markScheduledDayAsCompleted(
+        newLog.programId,
+        newLog.scheduledDayId,
+        newLog.id,
+        newLog.date
+      );
+    }
 
     // --- NEW: UPDATE EXERCISE TIMESTAMPS ---
     if (newLog.exercises && newLog.exercises.length > 0) {

@@ -1,7 +1,7 @@
 <!-- src/app/features/activities/log-activity/log-activity.component.html -->
 <div class="container mx-auto max-w-2xl p-4 sm:p-6">
     <header class="mb-6">
-         <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-200 flex items-center">
+        <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-200 flex items-center">
             <app-icon name="clipboard-list" class="w-8 h-8 mr-3 text-primary"></app-icon>
             <span *ngIf="!isEditMode()">Log an Activity</span>
             <span *ngIf="isEditMode()">Edit Activity Log</span>
@@ -31,8 +31,9 @@
             </div>
         </div>
 
-        <!-- Date and Duration -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Date, Start Time, and End Time -->
+        <!-- --- MODIFIED: Replaced Duration with Start and End Time --- -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
                 <label for="date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date</label>
                 <input type="date" id="date" formControlName="date" class="input-field"
@@ -42,13 +43,22 @@
                 </div>
             </div>
             <div>
-                <label for="durationMinutes"
-                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Duration (minutes)</label>
-                <input type="number" id="durationMinutes" formControlName="durationMinutes" placeholder="e.g., 30"
-                    class="input-field"
-                    [ngClass]="{ 'input-invalid': f['durationMinutes'].touched && f['durationMinutes'].invalid }">
-                <div *ngIf="f['durationMinutes'].touched && f['durationMinutes'].invalid" class="validation-message">
-                    Please enter a valid duration.
+                <label for="startTime" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Start Time</label>
+                <input type="time" id="startTime" formControlName="startTime" class="input-field"
+                    [ngClass]="{ 'input-invalid': f['startTime'].touched && f['startTime'].invalid }">
+                <div *ngIf="f['startTime'].touched && f['startTime'].invalid" class="validation-message">
+                    A start time is required.
+                </div>
+            </div>
+            <div>
+                <label for="endTime" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">End Time</label>
+                <input type="time" id="endTime" formControlName="endTime" class="input-field"
+                    [ngClass]="{ 'input-invalid': (f['endTime'].touched && f['endTime'].invalid) || logActivityForm.hasError('timeInvalid') }">
+                <div *ngIf="f['endTime'].touched && f['endTime'].invalid" class="validation-message">
+                    An end time is required.
+                </div>
+                <div *ngIf="logActivityForm.hasError('timeInvalid') && f['endTime'].touched" class="validation-message">
+                    End time must be after start time.
                 </div>
             </div>
         </div>
@@ -64,8 +74,13 @@
             </select>
         </div>
 
-        <!-- Optional Fields: Distance and Calories -->
+        <!-- Optional Fields -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div *ngIf="f['location'].enabled">
+                <label for="location" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Location (optional)</label>
+                <input type="string" id="location" formControlName="location" placeholder="e.g., Wonderful Street"
+                    class="input-field">
+            </div>
             <div *ngIf="f['distanceKm'].enabled">
                 <label for="distanceKm" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Distance
                     (km)</label>

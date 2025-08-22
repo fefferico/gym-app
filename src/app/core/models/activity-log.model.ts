@@ -6,36 +6,19 @@ import { IntensityLevel } from './activity.model';
  * Represents a single, completed instance of a physical activity logged by the user.
  */
 export interface ActivityLog {
-  /** A unique UUID for this specific log entry. */
   id: string;
-
-  /** The ID of the base Activity that was performed (e.g., 'football'). */
   activityId: string;
-
-  /** Denormalized name of the activity for easier display in lists and history. */
-  activityName: string;
-
-  /** The date the activity was performed (ISO string: YYYY-MM-DD). */
-  date: string;
-
-  /** Timestamp (milliseconds since epoch) of when the activity started. */
-  startTime: number;
-
-  /** Timestamp (milliseconds since epoch) of when the activity ended. */
-  endTime?: number;
-
-  /** The total duration of the activity in minutes. */
-  durationMinutes: number;
-
-  /** Optional: The total distance covered in kilometers. */
+  activityName: string; // Denormalized for easy display
+  date: string; // ISO format: YYYY-MM-DD
+  startTime: number; // Timestamp (milliseconds since epoch)
+  
+  // +++ ADDED +++
+  endTime?: number; // Optional timestamp for the end time
+  
+  durationMinutes: number; // This will now be calculated
+  intensity: 'Low' | 'Medium' | 'High';
   distanceKm?: number;
-
-  /** Optional: The estimated number of calories burned. */
+  location?: string;
   caloriesBurned?: number;
-
-  /** The user's perceived intensity for this specific session. */
-  intensity: IntensityLevel;
-
-  /** Any user-specific notes about this activity session. */
   notes?: string;
 }
