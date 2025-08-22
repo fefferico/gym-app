@@ -89,11 +89,11 @@
 
               <!-- WORKOUT LOG CARD -->
               <div *ngIf="item.itemType === 'workout'"
-                class="bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow duration-200 relative group transform hover:-translate-y-1 border-l-4 border-primary"
+                class="bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow duration-200 relative group transform hover:-translate-y-1 border-l-4 border-primary text-primary dark:text-primary-light dark:hover:text-yellow-200"
                 [style.zIndex]="areActionsVisible(item.id) ? 50 : 'auto'">
                 <div class="p-4 sm:p-6 cursor-pointer" (click)="viewLogDetails(item.id)">
                   <div class="flex justify-between items-start mb-1.5">
-                    <h2 class="text-lg sm:text-xl font-semibold text-primary dark:text-primary-light truncate pr-8"
+                    <h2 class="text-lg sm:text-xl font-semibold truncate pr-8"
                       [title]="item.routineName || 'Ad-hoc Workout'">{{ item.routineName || 'Ad-hoc Workout' }}</h2>
                   </div>
 
@@ -147,11 +147,11 @@
 
               <!-- ACTIVITY LOG CARD -->
               <div *ngIf="item.itemType === 'activity'"
-                class="bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow duration-200 relative group transform hover:-translate-y-1 border-l-4 border-teal-400"
+                class="bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow duration-200 relative group transform hover:-translate-y-1 border-l-4 border-teal-400 text-teal-600 dark:text-teal-400 dark:hover:text-yellow-200"
                 [style.zIndex]="areActionsVisible(item.id) ? 50 : 'auto'">
                 <div class="p-4 sm:p-6 cursor-pointer" (click)="viewActivityLogDetails(item.id)">
                   <div class="flex justify-between items-start mb-1.5">
-                    <h2 class="text-lg sm:text-xl font-semibold text-teal-600 dark:text-teal-400 truncate pr-8"
+                    <h2 class="text-lg sm:text-xl font-semibold truncate pr-8"
                       [title]="item.activityName">
                       {{ item.activityName }}
                     </h2>
