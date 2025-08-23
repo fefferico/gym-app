@@ -710,6 +710,17 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
     const deleteBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-red-600 flex items-center text-sm hover:text-gray-100 hover:animate-pulse';;
 
     const currentLog = this.workoutLog();
+
+
+    const routineDetailsBtn = {
+      label: 'ROUTINE',
+      actionKey: 'routine',
+      iconName: `routines`,
+      iconClass: 'w-8 h-8 mr-2',
+      buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+      data: { routineId }
+    } as ActionMenuItem;
+
     const actionsArray = [
       {
         label: 'SUMMARY',
@@ -727,6 +738,8 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
         buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
         data: { routineId }
       },
+      routineDetailsBtn,
+      { isDivider: true },
       {
         label: 'DELETE',
         actionKey: 'delete',
@@ -754,8 +767,24 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
       case 'delete':
         this.deleteLogDetails(logId);
         break;
+      case 'routine':
+        this.goToRoutineDetails();
+        break;
     }
     this.activeRoutineIdActions.set(null); // Close the menu
+  }
+
+  goToRoutineDetails(): void {
+    if (!this.workoutLog() || !this.workoutLog()?.routineId) {
+      return;
+    } else {
+
+    }
+    const log = this.workoutLog();
+    if (log && log.routineId !== undefined) {
+      const routineId: string = log.routineId;
+      this.router.navigate(['/workout/routine/view/', routineId]);
+    }
   }
 
   async deleteLogDetails(logId: string, event?: MouseEvent): Promise<void> {

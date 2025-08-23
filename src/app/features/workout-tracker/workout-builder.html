@@ -282,7 +282,7 @@
                                     <!-- COMPACT: Show SETS SUMMARY if in compact view -->
                                     <div *ngIf="exerciseControl.get('supersetId')?.value && getSetsFormArray(exerciseControl).controls.length > 0 
                                         && exerciseControl.get('supersetOrder')?.value === 0"
-                                        class="text-md font-medium text-orange-600 dark:text-orange-400 mt-0.5">
+                                        class="px-2 text-md font-medium text-orange-600 dark:text-orange-400 mt-0.5">
                                         {{ exerciseControl.get('rounds')?.value || 1 }}
                                         {{ (exerciseControl.get('rounds')?.value || 1) === 1 ? 'round' : 'rounds' }}
                                     </div>

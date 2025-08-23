@@ -78,7 +78,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   lastRoutineDuration: number = 0;
 
   routine = signal<Routine | undefined>(undefined);
-    lastLoggedRoutineInfo = signal<{ [id: string]: { duration: number, name: string, startTime: number | null } }>({});
+  lastLoggedRoutineInfo = signal<{ [id: string]: { duration: number, name: string, startTime: number | null } }>({});
   builderForm!: FormGroup;
   mode: BuilderMode = 'routineBuilder';
   isEditableMode = signal<boolean>(false);
@@ -1241,7 +1241,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         } else {
           // Await the async service call
           const tmpResult = await this.workoutService.updateRoutine(routinePayload);
-          if (tmpResult){
+          if (tmpResult) {
             savedRoutine = tmpResult;
           } else {
             this.toastService.error(`Routine not found!`, 4000, "Error");
@@ -1270,12 +1270,12 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         const endTimeStr = formValue.endTime;
         const combinedStartingDateTimeStr = `${workoutDateStr}T${startTimeStr}:00`;
         const combinedEndingDateTimeStr = `${workoutDateStr}T${endTimeStr}:00`;
-        
+
         const startTimeMs = parseISO(combinedStartingDateTimeStr).getTime();
         let endTimeMs: number | undefined = parseISO(combinedEndingDateTimeStr).getTime();
-        
+
         if (endTimeMs < startTimeMs) {
-            endTimeMs += 24 * 60 * 60 * 1000; // Add one day if end time is on the next day
+          endTimeMs += 24 * 60 * 60 * 1000; // Add one day if end time is on the next day
         }
 
         const logExercises: LoggedWorkoutExercise[] = formValue.exercises.map((exInput: any): LoggedWorkoutExercise => ({
@@ -1599,9 +1599,9 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   // }
 
 
-private mapFormToRoutine(formValue: any): Routine {
+  private mapFormToRoutine(formValue: any): Routine {
     // Get the current state of the routine from the signal
-    const currentRoutine = this.routine(); 
+    const currentRoutine = this.routine();
 
     const routinePayload: Routine = {
       id: this.currentRoutineId || uuidv4(),
@@ -1624,7 +1624,7 @@ private mapFormToRoutine(formValue: any): Routine {
       lastPerformed: currentRoutine?.lastPerformed,
     };
     return routinePayload;
-}
+  }
 
 
   getRoutineDropdownActionItems(routineId: string, mode: 'dropdown' | 'compact-bar'): ActionMenuItem[] {
@@ -1634,19 +1634,36 @@ private mapFormToRoutine(formValue: any): Routine {
     const editButton = {
       label: 'EDIT',
       actionKey: 'edit',
-      iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>`,
+      iconName: `edit`,
       iconClass: 'w-8 h-8 mr-2',
       buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
       data: { routineId }
-    };
+    } as ActionMenuItem;
 
-    const currentRoutine = this.routine;
+    const deleteButton = {
+      label: 'DELETE',
+      actionKey: 'delete',
+      iconName: `trash`,
+      iconClass: 'w-8 h-8 mr-2',
+      buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + deleteBtnClass,
+      data: { routineId }
+    } as ActionMenuItem;
+
+    const routineHistoryBtn = {
+      label: 'HISTORY',
+      actionKey: 'history',
+      iconName: `clock`,
+      iconClass: 'w-8 h-8 mr-2',
+      buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+      data: { routineId }
+    } as ActionMenuItem;
+
 
     const actionsArray = [
       {
         label: 'START',
         actionKey: 'start',
-        iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" /></svg>`,
+        iconName: 'play',
         iconClass: 'w-8 h-8 mr-2',
         buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
         data: { routineId }
@@ -1654,16 +1671,20 @@ private mapFormToRoutine(formValue: any): Routine {
       {
         label: 'CLONE',
         actionKey: 'clone',
-        iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none"><path d="M 5 3 H 16 A 2 2 0 0 1 18 5 V 16 A 2 2 0 0 1 16 18 H 5 A 2 2 0 0 1 3 16 V 5 A 2 2 0 0 1 5 3 Z M 8 6 H 19 A 2 2 0 0 1 21 8 V 19 A 2 2 0 0 1 19 21 H 8 A 2 2 0 0 1 6 19 V 8 A 2 2 0 0 1 8 6 Z" /></svg>`,
+        iconName: 'copy',
         iconClass: 'w-8 h-8 mr-2',
         buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
         data: { routineId }
-      }
-    ];
+      },
+      routineHistoryBtn
+    ] as ActionMenuItem[];
 
     if (this.isViewMode) {
       actionsArray.push(editButton);
     }
+
+    actionsArray.push({ isDivider: true });
+    actionsArray.push(deleteButton);
 
     return actionsArray;
   }
@@ -1683,8 +1704,18 @@ private mapFormToRoutine(formValue: any): Routine {
       case 'clone':
         this.cloneAndEditRoutine(routineId);
         break;
+      case 'delete':
+        this.deleteRoutine(routineId);
+        break;
+      case 'history':
+        this.goToRoutineHistory(routineId);
+        break;
     }
     this.activeRoutineIdActions.set(null); // Close the menu
+  }
+
+  goToRoutineHistory(routineId: string):void{
+    this.router.navigate(['/history/list'], routineId ? { queryParams: { routineId: routineId } } : {});
   }
 
   // Your existing toggleActions, areActionsVisible, viewRoutineDetails, etc. methods
@@ -1704,6 +1735,18 @@ private mapFormToRoutine(formValue: any): Routine {
   // When closing menu from the component's output
   onCloseActionMenu() {
     this.activeRoutineIdActions.set(null);
+  }
+
+  async deleteRoutine(routineId: string, event?: MouseEvent): Promise<void> {
+    const confirm = await this.alertService.showConfirm("Delete Routine", "Are you sure you want to delete this workout? This action cannot be undone", "Delete");
+    if (confirm && confirm.data) {
+      try {
+        this.spinnerService.show(); await this.workoutService.deleteRoutine(routineId);
+        this.toastService.success("Workout deleted successfully");
+        this.router.navigate(['/workout']);
+      } catch (err) { this.toastService.error("Failed to delete workout"); }
+      finally { this.spinnerService.hide(); }
+    }
   }
 
   async cloneAndEditRoutine(routineId: string, event?: MouseEvent): Promise<void> {

@@ -335,12 +335,25 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.route.queryParamMap.pipe(take(1)).subscribe(params => {
       const programId = params.get('programId');
+      const routineId = params.get('routineId');
       if (programId) {
         console.log("HistoryListComponent: Should filter by programId", programId);
         // Patch the form with the programId from the URL.
         // This will automatically trigger the computed signal to filter the logs.
         this.filterForm.patchValue({ programId: programId });
         this.isFilterAccordionOpen.set(true); // Open the filters to show the user why the list is filtered
+        this.toastService.info("Showing logs filtered out by training program");
+      }
+      if (routineId) {
+        console.log("HistoryListComponent: Should filter by routineId", routineId);
+        const routine = this.availableRoutines.find(routine => routine.id === routineId);
+        if (routine && routine.name) {
+          // Patch the form with the routineId from the URL.
+          // This will automatically trigger the computed signal to filter the logs.
+          this.filterForm.patchValue({ routineName: routine.name });
+          this.isFilterAccordionOpen.set(true); // Open the filters to show the user why the list is filtered
+          this.toastService.info("Showing logs filtered out by routine name");
+        }
       }
     });
   }

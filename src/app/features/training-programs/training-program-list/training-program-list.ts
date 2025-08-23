@@ -930,7 +930,7 @@ filteredPrograms = computed(() => {
     this.selectCalendarDay(null);
   }
 
-  goToPreviousProgramSession(programId: string | undefined): void {
+  goToProgramLogs(programId: string | undefined): void {
     this.router.navigate(['/history/list'], programId ? { queryParams: { programId: programId } } : {});
     this.selectCalendarDay(null);
   }
