@@ -26,7 +26,7 @@ export function timeOrderValidator(startTimeKey: string, endTimeKey: string): (g
 @Component({
     selector: 'app-log-activity',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, DatePipe, IconComponent],
+    imports: [CommonModule, ReactiveFormsModule, IconComponent],
     templateUrl: './log-activity.component.html',
     styleUrls: ['./log-activity.component.scss']
 })

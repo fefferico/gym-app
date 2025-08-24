@@ -1,0 +1,192 @@
+<!-- src/app/features/personal-gym/personal-gym-form/personal-gym-form.component.html -->
+<div class="container mx-auto max-w-2xl p-4 sm:p-6">
+  <header class="mb-6 flex items-center">
+    <button [routerLink]="['/personal-gym']" class="text-gray-600 dark:text-gray-300 hover:text-primary p-2 -ml-2">
+      <app-icon name="back" class="w-6 h-6"></app-icon>
+    </button>
+    <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200 ml-4">{{ pageTitle() }}</h1>
+  </header>
+
+  <form [formGroup]="equipmentForm" (ngSubmit)="onSubmit()"
+    class="space-y-6 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+        <label for="category" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Category</label>
+        <select id="category" formControlName="category" class="input-field mt-1">
+          <option [ngValue]="null" disabled>-- Select a Category --</option>
+          <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+        </select>
+      </div>
+      <div>
+        <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Equipment Name</label>
+        <input type="text" id="name" formControlName="name" class="input-field mt-1"
+          placeholder="e.g., Competition Kettlebell">
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label for="quantity" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Quantity</label>
+        <input type="number" id="quantity" formControlName="quantity" class="input-field mt-1">
+      </div>
+      <div>
+        <label for="brand" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Brand (Optional)</label>
+        <input type="text" id="brand" formControlName="brand" class="input-field mt-1">
+      </div>
+    </div>
+
+    <!-- DYNAMIC FIELDS SECTION -->
+    <ng-container [ngSwitch]="equipmentForm.get('category')?.value">
+
+      <!-- Dumbbell, Kettlebell, Macebell, Club -->
+      <ng-container
+        *ngIf="['Dumbbell', 'Kettlebell', 'Macebell', 'Club'].includes(equipmentForm.get('category')?.value)">
+        <div class="space-y-4 pt-4 border-t dark:border-gray-600">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Weight Type</label>
+          <div class="flex space-x-4">
+            <label *ngFor="let wt of weightTypes" class="flex items-center">
+              <input type="radio" [value]="wt" formControlName="weightType" class="form-radio">
+              <span class="ml-2 capitalize">{{ wt }}</span>
+            </label>
+          </div>
+
+          <div *ngIf="equipmentForm.get('weightType')?.value === 'fixed'">
+            <label for="weightKg" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Weight (kg)</label>
+            <input type="number" id="weightKg" formControlName="weightKg" class="input-field mt-1">
+          </div>
+
+          <div *ngIf="equipmentForm.get('weightType')?.value === 'adjustable'" class="grid grid-cols-3 gap-4">
+            <div>
+              <label for="minWeightKg" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Min
+                (kg)</label>
+              <input type="number" id="minWeightKg" formControlName="minWeightKg" class="input-field mt-1">
+            </div>
+            <div>
+              <label for="maxWeightKg" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Max
+                (kg)</label>
+              <input type="number" id="maxWeightKg" formControlName="maxWeightKg" class="input-field mt-1">
+            </div>
+            <div>
+              <label for="incrementKg" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Step
+                (kg)</label>
+              <input type="number" id="incrementKg" formControlName="incrementKg" class="input-field mt-1">
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-container *ngSwitchCase="'Plate'">
+        <div class="pt-4 border-t dark:border-gray-600">
+          <label for="weightKg" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Weight (kg)</label>
+          <input type="number" id="weightKg" formControlName="weightKg" class="input-field mt-1">
+        </div>
+      </ng-container>
+
+      <ng-container *ngSwitchCase="'Barbell'">
+        <div class="grid grid-cols-2 gap-4 pt-4 border-t dark:border-gray-600">
+          <div>
+            <label for="weightKg" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Bar Weight
+              (kg)</label>
+            <input type="number" id="weightKg" formControlName="weightKg" class="input-field mt-1">
+          </div>
+          <div>
+            <label for="barType" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Bar Type</label>
+            <select id="barType" formControlName="barType" class="input-field mt-1">
+              <option *ngFor="let bt of barTypes" [value]="bt">{{ bt | titlecase }}</option>
+            </select>
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-container *ngSwitchCase="'Band'">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t dark:border-gray-600">
+          <div>
+            <label for="bandType" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Band Type</label>
+            <select id="bandType" formControlName="bandType" class="input-field mt-1">
+              <option *ngFor="let bt of bandTypes" [value]="bt">{{ bt | titlecase }}</option>
+            </select>
+          </div>
+          <div>
+            <label for="resistanceLevel" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Resistance
+              Level</label>
+            <select id="resistanceLevel" formControlName="resistanceLevel" class="input-field mt-1">
+              <option *ngFor="let level of resistanceLevels" [value]="level">{{ level | titlecase }}</option>
+            </select>
+          </div>
+          <div>
+            <label for="resistanceKg" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Resistance (kg,
+              Optional)</label>
+            <input type="number" id="resistanceKg" formControlName="resistanceKg" class="input-field mt-1">
+          </div>
+          <div>
+            <label for="color" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Color
+              (Optional)</label>
+            <input type="text" id="color" formControlName="color" class="input-field mt-1">
+          </div>
+          <div>
+            <label for="lengthCm" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Length (cm,
+              Optional)</label>
+            <input type="number" id="lengthCm" formControlName="lengthCm" class="input-field mt-1">
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-container *ngSwitchCase="'Machine'">
+        <div class="grid grid-cols-2 gap-4 pt-4 border-t dark:border-gray-600">
+          <div>
+            <label for="loadType" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Load Type</label>
+            <select id="loadType" formControlName="loadType" class="input-field mt-1">
+              <option *ngFor="let lt of machineLoadTypes" [value]="lt">{{ lt | titlecase }}</option>
+            </select>
+          </div>
+          <div>
+            <label for="maxLoadKg" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Max Load (kg,
+              Optional)</label>
+            <input type="number" id="maxLoadKg" formControlName="maxLoadKg" class="input-field mt-1">
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-container *ngSwitchCase="'Custom'">
+        <div class="space-y-4 pt-4 border-t dark:border-gray-600">
+          <div>
+            <label for="customCategoryName" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Custom
+              Type Name</label>
+            <input type="text" id="customCategoryName" formControlName="customCategoryName" class="input-field mt-1"
+              placeholder="e.g., Sledgehammer">
+          </div>
+          <div formArrayName="properties" class="space-y-3">
+            <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300">Custom Properties</h3>
+            <div *ngFor="let prop of customProperties.controls; let i = index" [formGroupName]="i"
+              class="flex items-center space-x-2">
+              <input type="text" formControlName="key" class="input-field flex-1" placeholder="Property (e.g., Weight)">
+              <input type="text" formControlName="value" class="input-field flex-1" placeholder="Value (e.g., 10kg)">
+              <button type="button" (click)="removeCustomProperty(i)"
+                class="p-2 text-red-500 hover:bg-red-100 rounded-full">
+                <app-icon name="trash" class="w-5 h-5"></app-icon>
+              </button>
+            </div>
+            <button type="button" (click)="addCustomProperty()" class="text-sm text-primary hover:underline">+ Add
+              Property</button>
+          </div>
+        </div>
+      </ng-container>
+    </ng-container>
+
+    <!-- Notes -->
+    <div>
+      <label for="notes" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Notes (Optional)</label>
+      <textarea id="notes" formControlName="notes" rows="3" class="input-field mt-1"></textarea>
+    </div>
+
+    <!-- Submit Button -->
+    <div class="pt-4 border-t border-gray-200 dark:border-gray-600 flex justify-end">
+      <button type="submit" [disabled]="equipmentForm.invalid"
+        class="flex items-center bg-primary text-white hover:bg-primary-dark font-semibold py-2 px-4 rounded-md disabled:opacity-50">
+        <app-icon name="save" class="h-6 w-6 mr-1"></app-icon>
+        {{ isEditMode() ? 'SAVE CHANGES' : 'ADD TO GYM' }}
+      </button>
+    </div>
+  </form>
+</div>

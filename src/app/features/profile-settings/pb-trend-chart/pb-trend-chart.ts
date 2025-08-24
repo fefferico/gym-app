@@ -2,22 +2,29 @@
 import { Component, OnInit, inject, signal, ChangeDetectionStrategy, PLATFORM_ID, Renderer2, ElementRef, computed } from '@angular/core';
 import { CommonModule, DatePipe, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { NgxChartsModule, ScaleType } from '@swimlane/ngx-charts'; // Import NgxChartsModule and ScaleType
+// ==========================================================
+// START: CORRECTED IMPORTS
+// ==========================================================
+import { NgxChartsModule, ScaleType, TooltipService } from '@swimlane/ngx-charts';
+// ** NOTE: Only TooltipService is needed. InjectionService is internal.
+// ==========================================================
+// END: CORRECTED IMPORTS
+// ==========================================================
 import { combineLatest, of, Subscription } from 'rxjs';
 import { switchMap, map, catchError, take } from 'rxjs/operators';
 
 import { TrackingService } from '../../../core/services/tracking.service';
 import { ExerciseService } from '../../../core/services/exercise.service';
 import { PersonalBestSet, PBHistoryInstance } from '../../../core/models/workout-log.model';
-import { UnitsService } from '../../../core/services/units.service'; // For Y-axis label
+import { UnitsService } from '../../../core/services/units.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { AppSettingsService } from '../../../core/services/app-settings.service';
 import { ThemeService } from '../../../core/services/theme.service';
 
 interface ChartSeriesPoint {
-    name: Date; // X-axis (timestamp)
-    value: number; // Y-axis (PB value)
-    extra?: { // Optional additional data for tooltips, etc.
+    name: Date;
+    value: number;
+    extra?: {
         reps?: number;
         notes?: string;
         workoutLogId?: string;
@@ -25,7 +32,7 @@ interface ChartSeriesPoint {
 }
 
 interface ChartData {
-    name: string; // Series name (e.g., "1RM (Actual) Trend")
+    name: string;
     series: ChartSeriesPoint[];
 }
 
@@ -34,14 +41,25 @@ interface ChartData {
     standalone: true,
     imports: [
         CommonModule,
-        NgxChartsModule, // Import NgxChartsModule here for standalone component
+        NgxChartsModule,
         DatePipe
     ],
     templateUrl: './pb-trend-chart.html',
     styleUrls: ['./pb-trend-chart.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush,
+    // ==========================================================
+    // START: ADD THIS PROVIDERS ARRAY
+    // This is the key change to fix the dependency injection issue.
+    // ==========================================================
+    providers: [TooltipService]
+    // ==========================================================
+    // END: ADD THIS PROVIDERS ARRAY
+    // ==========================================================
 })
 export class PbTrendChartComponent implements OnInit {
+    // ... the rest of your component's code remains exactly the same ...
+    // No other changes are needed in this file.
+
     private route = inject(ActivatedRoute);
     private router = inject(Router);
     private trackingService = inject(TrackingService);
@@ -50,7 +68,7 @@ export class PbTrendChartComponent implements OnInit {
     private toastService = inject(ToastService);
     private platformId = inject(PLATFORM_ID);
     private datePipe = new DatePipe('en-US');
-    private appSettingsService = inject(AppSettingsService); // Inject AppSettingsService
+    private appSettingsService = inject(AppSettingsService);
     private themeService = inject(ThemeService);
     private renderer = inject(Renderer2);
     private el = inject(ElementRef);
@@ -76,22 +94,17 @@ export class PbTrendChartComponent implements OnInit {
     autoScale: boolean = true;
     roundDomains: boolean = true;
 
-    // Dynamically set color scheme based on theme
     chartColorScheme = computed(() => {
-        const isDark = this.themeService.isDarkTheme(); // Assuming this method exists
+        const isDark = this.themeService.isDarkTheme();
         return {
             name: 'pbTrendScheme',
             selectable: true,
             group: ScaleType.Ordinal,
             domain: isDark
-                ? ['#70C0AE', '#E9724C', '#F0C24B', '#CCCCCC'] // Lighter, distinct colors for dark mode
-                : ['#5AA454', '#A10A28', '#C7B42C', '#333333'] // Original or adjusted for light
+                ? ['#70C0AE', '#E9724C', '#F0C24B', '#CCCCCC']
+                : ['#5AA454', '#A10A28', '#C7B42C', '#333333']
         };
     });
-
-    // For ngx-charts text colors, we'll use CSS variables updated by the component
-    // Or rely on ::ng-deep if absolutely necessary and CSS variables don't work well enough
-    // For this example, we'll try to set CSS variables on the host element.
 
     xAxisTickFormatting = (val: string | Date): string => {
         if (val instanceof Date) {
@@ -100,18 +113,11 @@ export class PbTrendChartComponent implements OnInit {
         return String(val);
     };
 
-    constructor() {
-        // If AppSettingsService.isDarkTheme() is a signal or observable, subscribe to it
-        // For this example, assuming it's a synchronous check or a signal that chartColorScheme can react to.
-        // If it's an observable, you'd subscribe and update a local signal for isDark.
-    }
-
+    constructor() {}
 
     ngOnInit(): void {
         if (isPlatformBrowser(this.platformId)) {
             this.view = [window.innerWidth > 768 ? 700 : window.innerWidth - 40, 400];
-            // Subscribe to theme changes to update CSS variables for chart text
-            // Set chart text colors based on current theme
             this.updateChartTextColors(this.themeService.isDarkTheme());
         }
         this.route.paramMap.pipe(
@@ -169,7 +175,7 @@ export class PbTrendChartComponent implements OnInit {
     }
 
     private updateChartTextColors(isDark: boolean): void {
-        const textColor = isDark ? '#E5E7EB' : '#374151'; // Example: gray-200 for dark, gray-700 for light
+        const textColor = isDark ? '#E5E7EB' : '#374151';
         this.renderer.setStyle(this.el.nativeElement, '--ngx-charts-text-color', textColor);
     }
 
@@ -188,7 +194,6 @@ export class PbTrendChartComponent implements OnInit {
     private prepareChartData(pb: PersonalBestSet): void {
         const seriesData: ChartSeriesPoint[] = [];
 
-        // Add current PB to series
         const currentValue = this.extractValueForChart(pb, pb.pbType);
         if (currentValue !== null && pb.timestamp) {
             seriesData.push({
@@ -198,16 +203,14 @@ export class PbTrendChartComponent implements OnInit {
             });
         }
 
-        // Add history to series
         if (pb.history) {
             pb.history.forEach(histInstance => {
-                // Use the main PB's type for context when extracting value from history
                 const histValue = this.extractValueForChart(histInstance, pb.pbType);
                 if (histValue !== null && histInstance.timestamp) {
                     seriesData.push({
                         name: new Date(histInstance.timestamp),
                         value: histValue,
-                        extra: { reps: histInstance.repsAchieved, notes: undefined, workoutLogId: histInstance.workoutLogId } // Notes usually aren't in PBHistoryInstance
+                        extra: { reps: histInstance.repsAchieved, notes: undefined, workoutLogId: histInstance.workoutLogId }
                     });
                 }
             });
@@ -220,20 +223,15 @@ export class PbTrendChartComponent implements OnInit {
         }
         if (seriesData.length === 1) {
             this.errorMessage.set(`Only one data point available for "${this.currentExerciseName()}" - ${pb.pbType}. Trend line cannot be drawn`);
-            // We can still show the single point, or just the message.
-            // For ngx-charts to draw a "line", it needs at least two points.
-            // Let's create a "flat line" by duplicating the point with a slight time offset for visualization
             const singlePoint = seriesData[0];
-            const slightlyEarlierDate = new Date(singlePoint.name.getTime() - (24 * 60 * 60 * 1000)); // One day before
+            const slightlyEarlierDate = new Date(singlePoint.name.getTime() - (24 * 60 * 60 * 1000));
             seriesData.unshift({
                 name: slightlyEarlierDate,
-                value: singlePoint.value, // Keep the same value to make it a point/flat line start
+                value: singlePoint.value,
                 extra: singlePoint.extra
             });
         }
 
-
-        // Sort by date ascending for the chart
         seriesData.sort((a, b) => a.name.getTime() - b.name.getTime());
 
         this.chartData.set([{
@@ -249,12 +247,10 @@ export class PbTrendChartComponent implements OnInit {
         if (pbType.includes('RM') || pbType.includes('Heaviest Lifted')) {
             return item.weightUsed ?? null;
         } else if (pbType.includes('Max Reps')) {
-            // For bodyweight max reps, weightUsed might be 0 or null. The value is reps.
             return item.repsAchieved ?? null;
         } else if (pbType.includes('Max Duration')) {
             return item.durationPerformed ?? null;
         }
-        // Fallback or if pbType is unrecognized for value extraction
         if (item.weightUsed && item.weightUsed > 0) return item.weightUsed;
         if (item.repsAchieved > 0) return item.repsAchieved;
         if (item.durationPerformed && item.durationPerformed > 0) return item.durationPerformed;
@@ -262,7 +258,6 @@ export class PbTrendChartComponent implements OnInit {
     }
 
     onChartSelect(event: any): void {
-        // console.log('Chart item selected:', event);
         if (event && event.extra && event.extra.workoutLogId) {
             this.router.navigate(['/workout/summary', event.extra.workoutLogId]);
         } else if (event && event.extra) {
@@ -274,7 +269,6 @@ export class PbTrendChartComponent implements OnInit {
         this.router.navigate(['/profile/personal-bests']);
     }
 
-    // Adjust view based on window resize
     onResize(event: Event): void {
         if (isPlatformBrowser(this.platformId)) {
             const target = event.target as Window;

@@ -182,8 +182,13 @@ export class HomeComponent implements OnInit {
     this.router.navigate(['/activities/log']);
   }
 
+  
+  navigateToPersonalGym(): void {
+    this.vibrate();
+    this.router.navigate(['/personal-gym']);
+  }
+  
   getVersion(): string {
     return this.storageService.getVersion();
   }
-
 }

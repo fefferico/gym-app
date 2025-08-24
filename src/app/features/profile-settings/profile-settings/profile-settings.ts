@@ -26,6 +26,7 @@ import { ProgressiveOverloadService, ProgressiveOverloadSettings, ProgressiveOve
 import { AlertButton, AlertInput } from '../../../core/models/alert.model';
 import { ImageStorageService } from '../../../core/services/image-storage.service';
 import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
+import { PersonalGymService } from '../../../core/services/personal-gym.service';
 
 
 @Component({
@@ -40,6 +41,7 @@ export class ProfileSettingsComponent implements OnInit {
   private router = inject(Router);
   private workoutService = inject(WorkoutService);
   private trackingService = inject(TrackingService);
+  private personalGymService = inject(PersonalGymService);
   private trainingProgramService = inject(TrainingProgramService);
   private exerciseService = inject(ExerciseService);
   private storageService = inject(StorageService);
@@ -293,6 +295,7 @@ export class ProfileSettingsComponent implements OnInit {
       exercises: this.exerciseService.getDataForBackup(),
       workoutLogs: this.trackingService.getLogsForBackup(),
       personalBests: this.trackingService.getPBsForBackup(),
+      personalGym: this.personalGymService.getDataForBackup(), // <-- ADD THIS LINE
     };
     const jsonString = JSON.stringify(backupData, null, 2);
     const blob = new Blob([jsonString], { type: 'application/json' });
@@ -359,6 +362,9 @@ export class ProfileSettingsComponent implements OnInit {
             this.workoutService.mergeData(importedData.routines);
             this.trackingService.replaceLogs(importedData.workoutLogs);
             this.trackingService.replacePBs(importedData.personalBests);
+            if (importedData.personalGym) {
+              this.personalGymService.mergeData(importedData.personalGym); // <-- ADD THIS LINE
+            }
 
             if (version >= 4) {
               this.progressiveOverloadService.replaceData(importedData.progressiveOverload);
@@ -460,6 +466,10 @@ export class ProfileSettingsComponent implements OnInit {
     this.router.navigate(['/library']);
   }
 
+  navigateToPersonalGym(): void {
+    this.vibrate();
+    this.router.navigate(['/personal-gym']);
+  }
   navigateToPersonalBests(): void {
     this.router.navigate(['/profile/personal-bests']);
   }

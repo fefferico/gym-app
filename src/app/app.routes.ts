@@ -42,5 +42,9 @@ export const APP_ROUTES: Routes = [
     path: 'activities',
     loadChildren: () => import('./features/activities/activity.routes').then(m => m.ACTIVITY_ROUTES)
   },
+  {
+    path: 'personal-gym',
+    loadChildren: () => import('./features/personal-gym/personal-gym.routes').then(m => m.PERSONAL_GYM_ROUTES)
+  },
   { path: '**', redirectTo: '/home' },
 ];

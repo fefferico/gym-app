@@ -14,7 +14,6 @@
 
   <div *ngIf="isLoading()" class="text-center py-10">
     <p class="text-lg text-gray-600 dark:text-gray-400">Loading trend data...</p>
-    <!-- Optional: Add a spinner -->
     <div class="mt-4 animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
   </div>
 
@@ -48,7 +47,16 @@
       [xAxisTickFormatting]="xAxisTickFormatting"
       (select)="onChartSelect($event)"
       class="pb-chart-container">
-      <ng-template #tooltipTemplate let-model="model">
+
+      <!-- 
+        ==========================================================
+        CORRECTED TOOLTIP IMPLEMENTATION
+        The template is INSIDE the chart component and uses the
+        'ngx-charts-tooltip-template' directive. This is the correct
+        pattern that avoids all the errors you've encountered.
+        ==========================================================
+      -->
+      <ng-template ngx-charts-tooltip-template let-model="model">
         <div class="chart-tooltip bg-gray-700 text-white p-2 rounded shadow-lg text-xs">
           <div><strong>{{ model.name | date:'mediumDate' }}</strong></div>
           <div>Value: {{ model.value }} {{ yAxisLabel().split(' ')[0] }}</div>
@@ -57,6 +65,7 @@
            <div *ngIf="model.extra?.workoutLogId" class="mt-1 text-indigo-300">Click to view log</div>
         </div>
       </ng-template>
+
     </ngx-charts-line-chart>
   </div>
 </div>

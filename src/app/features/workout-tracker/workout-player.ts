@@ -114,7 +114,7 @@ enum PlayerSubState {
   imports: [CommonModule, DatePipe, ReactiveFormsModule,
     FormatSecondsPipe,
     FormsModule, WeightUnitPipe, FullScreenRestTimerComponent, PressDirective, ModalComponent, ExerciseDetailComponent,
-    PressScrollDirective, IconComponent, ExerciseSelectionModalComponent],
+    IconComponent, ExerciseSelectionModalComponent],
   templateUrl: './workout-player.html',
   styleUrl: './workout-player.scss',
   providers: [DecimalPipe]

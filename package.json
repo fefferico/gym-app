@@ -25,7 +25,7 @@
     "@angular/router": "^20.0.0",
     "@angular/service-worker": "^20.0.0",
     "@angular/ssr": "^20.0.0",
-    "@swimlane/ngx-charts": "^22.0.0",
+    "@swimlane/ngx-charts": "^23.0.1",
     "@tensorflow-models/pose-detection": "^2.1.3",
     "@tensorflow/tfjs-backend-webgl": "^4.22.0",
     "@tensorflow/tfjs-converter": "^4.22.0",
@@ -35,7 +35,7 @@
     "hammerjs": "^2.0.8",
     "ngx-indexed-db": "^21.0.0",
     "rxjs": "~7.8.0",
-    "tailwind-scrollbar": "^4.0.2",
+    "tailwind-scrollbar": "^3.1.0",
     "tslib": "^2.3.0",
     "uuid": "^11.1.0",
     "uuidv4": "^6.2.13",
@@ -58,7 +58,7 @@
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
-    "tailwindcss": "^3.4.17",
+    "tailwind-scrollbar": "^3.1.0",
     "typescript": "~5.8.2"
   }
 }
