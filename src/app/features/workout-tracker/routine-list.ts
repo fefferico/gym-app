@@ -667,6 +667,16 @@ export class RoutineListComponent implements OnInit, OnDestroy {
       buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
       data: { routineId }
     };
+
+    const routineHistoryBtn = {
+      label: 'HISTORY',
+      actionKey: 'history',
+      iconName: `clock`,
+      iconClass: 'w-8 h-8 mr-2',
+      buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+      data: { routineId }
+    } as ActionMenuItem;
+
     const actionsArray = [
       {
         label: 'VIEW',
@@ -700,6 +710,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
         buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
         data: { routineId }
       },
+      routineHistoryBtn,
       { isDivider: true },
       {
         label: 'DELETE',
@@ -762,8 +773,15 @@ export class RoutineListComponent implements OnInit, OnDestroy {
       case 'delete':
         this.deleteRoutine(routineId);
         break;
+      case 'history':
+        this.goToRoutineHistory(routineId);
+        break;
     }
     this.activeRoutineIdActions.set(null); // Close the menu
+  }
+
+  goToRoutineHistory(routineId: string): void {
+    this.router.navigate(['/history/list'], routineId ? { queryParams: { routineId: routineId } } : {});
   }
 
   // Your existing toggleActions, areActionsVisible, viewRoutineDetails, etc. methods
@@ -805,7 +823,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     // Step 1: Get all workout logs just one time.
     // The workoutLogs$ observable is already sorted from newest to oldest.
     const allLogs = await firstValueFrom(this.trackingService.workoutLogs$.pipe(take(1)));
-    
+
     // If there are no logs, we can set an empty object and exit early.
     if (!allLogs || allLogs.length === 0) {
       this.lastLoggedRoutineInfo.set({});
@@ -827,7 +845,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     // We use .reduce() for a clean, functional way to build the object.
     const routineData = routines.reduce((acc, routine) => {
       const lastLog = lastLogByRoutineId.get(routine.id);
-      
+
       acc[routine.id] = {
         // Use the duration from the found log, or default to 0.
         duration: lastLog?.durationMinutes ?? 0,

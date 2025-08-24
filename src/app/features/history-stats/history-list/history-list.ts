@@ -38,6 +38,8 @@ import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { AlertButton } from '../../../core/models/alert.model';
 import { ActivityLog } from '../../../core/models/activity-log.model';
 import { ActivityService } from '../../../core/services/activity.service';
+import { PausedWorkoutState } from '../../workout-tracker/workout-player';
+import { StorageService } from '../../../core/services/storage.service';
 
 interface HistoryCalendarDay {
   date: Date;
@@ -114,6 +116,7 @@ type EnrichedHistoryListItem = HistoryListItem & {
 })
 export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
   protected trackingService = inject(TrackingService);
+  protected storageService = inject(StorageService);
   protected activityService = inject(ActivityService);
   protected toastService = inject(ToastService);
   protected workoutService = inject(WorkoutService);
@@ -540,6 +543,18 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.router.navigate(['/workout/log/manual/edit', logId]);
     this.visibleActionsRutineId.set(null);
   }
+
+  goToRoutineDetails(logId: string): void {
+    if (!logId) {
+      return;
+    } else {
+      const currentLog = this.allWorkoutLogs().find(log => log.id === logId);
+      if (currentLog && currentLog.routineId) {
+        this.router.navigate(['/workout/routine/view/', currentLog.routineId]);
+      }
+    }
+  }
+
   async deleteLogDetails(logId: string, event?: MouseEvent): Promise<void> {
     event?.stopPropagation(); this.visibleActionsRutineId.set(null);
 
@@ -580,11 +595,43 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   logPastWorkout(): void {
-    this.router.navigate(['/workout/log/manual/new']);
+    // check if there's a pending workout, if so block the user
+    const isWorkoutPending = this.trackingService.checkForPausedWorkout();
+    if (isWorkoutPending){
+      this.discardPausedWorkout();
+    } else {
+      this.navigateToLogWorkout();
+    }
   }
 
   logPastActivity(): void {
     this.router.navigate(['/activities/log']);
+  }
+
+  navigateToLogWorkout(): void {
+    this.router.navigate(['/workout/log/manual/new']);
+  }
+
+  async discardPausedWorkout(): Promise<void> {
+    this.vibrate();
+
+    const buttons: AlertButton[] = [
+      { text: 'Cancel', role: 'cancel', data: false, icon: 'cancel' },
+      { text: 'Discard', role: 'confirm', data: true, cssClass: 'bg-red-500 hover:bg-red-600 text-white', icon: 'trash' },
+    ];
+
+    const confirm = await this.alertService.showConfirmationDialog(
+      'Pending Workout found',
+      'There\'s a pending workout: do you want to discard this paused workout session and log a new one? This action cannot be undone.',
+      buttons
+    );
+    if (confirm && confirm.data) {
+      if (isPlatformBrowser(this.platformId)) {
+        this.storageService.removeItem('fitTrackPro_pausedWorkoutState');
+        this.toastService.info('Paused workout session discarded.', 3000);
+      }
+      this.navigateToLogWorkout();
+    }
   }
 
   scrollToTop(): void {
@@ -600,8 +647,15 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
   getLogDropdownActionItems(routineId: string, mode: 'dropdown' | 'compact-bar'): ActionMenuItem[] {
     const defaultBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-primary flex items-center text-sm hover:text-white dark:hover:text-gray-100 dark:hover:text-white';
     const deleteBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-red-600 flex items-center text-sm hover:text-gray-100 hover:animate-pulse';;
+    const routineDetailsBtn = {
+      label: 'ROUTINE',
+      actionKey: 'routine',
+      iconName: `routines`,
+      iconClass: 'w-8 h-8 mr-2',
+      buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+      data: { routineId }
+    } as ActionMenuItem;
 
-    const currentLog = this.allWorkoutLogs().find(log => log.id === routineId);
 
     const actionsArray = [
       {
@@ -628,6 +682,7 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
         buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
         data: { routineId }
       },
+      routineDetailsBtn,
       { isDivider: true },
       {
         label: 'DELETE',
@@ -662,6 +717,7 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
       case 'edit': this.editLogDetails(logId); break;
       case 'create_routine': this.createRoutineFromLog(logId); break;
       case 'delete': this.deleteLogDetails(logId); break;
+      case 'routine': this.goToRoutineDetails(logId); break;
 
       // Activity Actions
       case 'view_activity': this.viewActivityLogDetails(logId); break;
@@ -755,15 +811,6 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
         label: 'VIEW',
         actionKey: 'view_activity', // Use a unique key
         iconName: 'eye',
-        //         iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        //   <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
-        //   <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
-        //   <line x1="12" y1="11" x2="12" y2="11"></line>
-        //   <line x1="8" y1="11" x2="8" y2="11"></line>
-        //   <line x1="8" y1="15" x2="8" y2="15"></line>
-        //   <line x1="12" y1="15" x2="16" y2="15"></line>
-        //   <line x1="12" y1="11" x2="16" y2="11"></line>
-        // </svg>`, // Add your view icon SVG
         iconClass: 'w-8 h-8 mr-2',
         buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
         data: { logId }
