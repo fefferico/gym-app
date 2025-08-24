@@ -3,9 +3,7 @@ import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { PersonalGymService } from '../../../core/services/personal-gym.service';
-// ==========================================================
-// START: ADD IMPORTS FOR SPECIFIC EQUIPMENT TYPES
-// ==========================================================
+
 import {
   PersonalGymEquipment,
   EquipmentCategory,
@@ -15,16 +13,12 @@ import {
   ResistanceBand,
   CustomEquipment
 } from '../../../core/models/personal-gym.model';
-// ==========================================================
-// END: ADD IMPORTS
-// ==========================================================
 import { IconComponent } from '../../../shared/components/icon/icon.component';
-import { PressDirective } from '../../../shared/directives/press.directive';
 
 @Component({
   selector: 'app-personal-gym-list',
   standalone: true,
-  imports: [CommonModule, IconComponent, PressDirective],
+  imports: [CommonModule, IconComponent],
   templateUrl: './personal-gym-list.component.html',
 })
 export class PersonalGymListComponent implements OnInit {

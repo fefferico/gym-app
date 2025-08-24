@@ -13,14 +13,14 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <div>
         <label for="category" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Category</label>
-        <select id="category" formControlName="category" class="input-field mt-1">
+        <select id="category" formControlName="category" class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
           <option [ngValue]="null" disabled>-- Select a Category --</option>
           <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
         </select>
       </div>
       <div>
         <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Equipment Name</label>
-        <input type="text" id="name" formControlName="name" class="input-field mt-1"
+        <input type="text" id="name" formControlName="name" class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200"
           placeholder="e.g., Competition Kettlebell">
       </div>
     </div>
@@ -28,11 +28,11 @@
     <div class="grid grid-cols-2 gap-4">
       <div>
         <label for="quantity" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Quantity</label>
-        <input type="number" id="quantity" formControlName="quantity" class="input-field mt-1">
+        <input type="number" id="quantity" formControlName="quantity" class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
       </div>
       <div>
         <label for="brand" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Brand (Optional)</label>
-        <input type="text" id="brand" formControlName="brand" class="input-field mt-1">
+        <input type="text" id="brand" formControlName="brand" class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
       </div>
     </div>
 
@@ -47,30 +47,30 @@
           <div class="flex space-x-4">
             <label *ngFor="let wt of weightTypes" class="flex items-center">
               <input type="radio" [value]="wt" formControlName="weightType" class="form-radio">
-              <span class="ml-2 capitalize">{{ wt }}</span>
+              <span class="text-gray-700 dark:text-gray-300 ml-2">{{ wt }}</span>
             </label>
           </div>
 
           <div *ngIf="equipmentForm.get('weightType')?.value === 'fixed'">
             <label for="weightKg" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Weight (kg)</label>
-            <input type="number" id="weightKg" formControlName="weightKg" class="input-field mt-1">
+            <input type="number" id="weightKg" formControlName="weightKg" class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
           </div>
 
           <div *ngIf="equipmentForm.get('weightType')?.value === 'adjustable'" class="grid grid-cols-3 gap-4">
             <div>
               <label for="minWeightKg" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Min
                 (kg)</label>
-              <input type="number" id="minWeightKg" formControlName="minWeightKg" class="input-field mt-1">
+              <input type="number" id="minWeightKg" formControlName="minWeightKg" class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
             </div>
             <div>
               <label for="maxWeightKg" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Max
                 (kg)</label>
-              <input type="number" id="maxWeightKg" formControlName="maxWeightKg" class="input-field mt-1">
+              <input type="number" id="maxWeightKg" formControlName="maxWeightKg" class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
             </div>
             <div>
               <label for="incrementKg" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Step
                 (kg)</label>
-              <input type="number" id="incrementKg" formControlName="incrementKg" class="input-field mt-1">
+              <input type="number" id="incrementKg" formControlName="incrementKg" class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
             </div>
           </div>
         </div>
@@ -79,7 +79,7 @@
       <ng-container *ngSwitchCase="'Plate'">
         <div class="pt-4 border-t dark:border-gray-600">
           <label for="weightKg" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Weight (kg)</label>
-          <input type="number" id="weightKg" formControlName="weightKg" class="input-field mt-1">
+          <input type="number" id="weightKg" formControlName="weightKg" class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
         </div>
       </ng-container>
 
@@ -88,11 +88,11 @@
           <div>
             <label for="weightKg" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Bar Weight
               (kg)</label>
-            <input type="number" id="weightKg" formControlName="weightKg" class="input-field mt-1">
+            <input type="number" id="weightKg" formControlName="weightKg" class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
           </div>
           <div>
             <label for="barType" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Bar Type</label>
-            <select id="barType" formControlName="barType" class="input-field mt-1">
+            <select id="barType" formControlName="barType" class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
               <option *ngFor="let bt of barTypes" [value]="bt">{{ bt | titlecase }}</option>
             </select>
           </div>
@@ -103,31 +103,31 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t dark:border-gray-600">
           <div>
             <label for="bandType" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Band Type</label>
-            <select id="bandType" formControlName="bandType" class="input-field mt-1">
+            <select id="bandType" formControlName="bandType" class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
               <option *ngFor="let bt of bandTypes" [value]="bt">{{ bt | titlecase }}</option>
             </select>
           </div>
           <div>
             <label for="resistanceLevel" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Resistance
               Level</label>
-            <select id="resistanceLevel" formControlName="resistanceLevel" class="input-field mt-1">
+            <select id="resistanceLevel" formControlName="resistanceLevel" class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
               <option *ngFor="let level of resistanceLevels" [value]="level">{{ level | titlecase }}</option>
             </select>
           </div>
           <div>
             <label for="resistanceKg" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Resistance (kg,
               Optional)</label>
-            <input type="number" id="resistanceKg" formControlName="resistanceKg" class="input-field mt-1">
+            <input type="number" id="resistanceKg" formControlName="resistanceKg" class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
           </div>
           <div>
             <label for="color" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Color
               (Optional)</label>
-            <input type="text" id="color" formControlName="color" class="input-field mt-1">
+            <input type="text" id="color" formControlName="color" class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
           </div>
           <div>
             <label for="lengthCm" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Length (cm,
               Optional)</label>
-            <input type="number" id="lengthCm" formControlName="lengthCm" class="input-field mt-1">
+            <input type="number" id="lengthCm" formControlName="lengthCm" class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
           </div>
         </div>
       </ng-container>
@@ -136,14 +136,14 @@
         <div class="grid grid-cols-2 gap-4 pt-4 border-t dark:border-gray-600">
           <div>
             <label for="loadType" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Load Type</label>
-            <select id="loadType" formControlName="loadType" class="input-field mt-1">
+            <select id="loadType" formControlName="loadType" class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
               <option *ngFor="let lt of machineLoadTypes" [value]="lt">{{ lt | titlecase }}</option>
             </select>
           </div>
           <div>
             <label for="maxLoadKg" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Max Load (kg,
               Optional)</label>
-            <input type="number" id="maxLoadKg" formControlName="maxLoadKg" class="input-field mt-1">
+            <input type="number" id="maxLoadKg" formControlName="maxLoadKg" class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
           </div>
         </div>
       </ng-container>
@@ -153,7 +153,7 @@
           <div>
             <label for="customCategoryName" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Custom
               Type Name</label>
-            <input type="text" id="customCategoryName" formControlName="customCategoryName" class="input-field mt-1"
+            <input type="text" id="customCategoryName" formControlName="customCategoryName" class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200"
               placeholder="e.g., Sledgehammer">
           </div>
           <div formArrayName="properties" class="space-y-3">
@@ -177,7 +177,7 @@
     <!-- Notes -->
     <div>
       <label for="notes" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Notes (Optional)</label>
-      <textarea id="notes" formControlName="notes" rows="3" class="input-field mt-1"></textarea>
+      <textarea id="notes" formControlName="notes" rows="3" class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200"></textarea>
     </div>
 
     <!-- Submit Button -->

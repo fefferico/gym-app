@@ -16,12 +16,11 @@ import {
   PersonalGymEquipment 
 } from '../../../core/models/personal-gym.model';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
-import { PressDirective } from '../../../shared/directives/press.directive';
 
 @Component({
   selector: 'app-personal-gym-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, IconComponent, PressDirective, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, IconComponent, RouterLink],
   templateUrl: './personal-gym-form.component.html',
 })
 export class PersonalGymFormComponent implements OnInit, OnDestroy {
