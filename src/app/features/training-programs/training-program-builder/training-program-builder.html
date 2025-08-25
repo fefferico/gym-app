@@ -511,7 +511,7 @@
                             <ul class="space-y-1">
                                 <li *ngFor="let r of filteredAvailableRoutines()" (click)="selectRoutineForDay(r)"
                                     class="p-3 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md cursor-pointer transition-colors flex justify-between items-center">
-                                    <div>
+                                    <div class=" text-left">
                                         <span class="font-medium text-gray-800 dark:text-gray-200">{{ r.name }}</span>
                                         <span class="block text-xs text-gray-500 dark:text-gray-400">{{ r.goal |
                                             titlecase }} - {{ r.exercises.length }} exercises</span>

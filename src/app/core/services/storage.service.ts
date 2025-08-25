@@ -1,6 +1,7 @@
 import { Injectable, Inject, PLATFORM_ID, inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { AlertService } from './alert.service';
+import { PausedWorkoutState } from '../../features/workout-tracker/workout-player';
 
 @Injectable({
   providedIn: 'root',
@@ -9,6 +10,8 @@ export class StorageService {
   private isBrowser: boolean;
   private alertService = inject(AlertService);
 
+  private readonly PAUSED_WORKOUT_KEY = 'fitTrackPro_pausedWorkoutState';
+  private readonly PAUSED_STATE_VERSION = '1.2';
   private version = '1.0.3'; // Version of the storage service
 
   constructor(@Inject(PLATFORM_ID) private platformId: Object) {
@@ -101,5 +104,17 @@ export class StorageService {
 
   getVersion(): string {
     return this.version;
+  }
+
+  checkForPausedWorkout(): boolean {
+    const pausedState = this.getItem<PausedWorkoutState>(this.PAUSED_WORKOUT_KEY);
+    return pausedState !== null && pausedState.version !== null && pausedState.version === this.PAUSED_STATE_VERSION;
+  }
+
+
+  removePausedWorkout(): void {
+    if (this.checkForPausedWorkout()) {
+      this.removeItem(this.PAUSED_WORKOUT_KEY);
+    }
   }
 }

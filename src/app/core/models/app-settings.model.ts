@@ -3,6 +3,7 @@ export interface AppSettings {
   countdownSoundSeconds: number;
   enablePresetTimer: boolean;
   presetTimerDurationSeconds: number;
-  weightStep: number; // <<< NEW PROPERTY
+  weightStep: number;
+  playerMode: boolean;
   // Add other settings as needed
 }

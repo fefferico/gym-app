@@ -1,8 +1,8 @@
-import { Component, inject, OnInit, OnDestroy, signal, computed, WritableSignal, ChangeDetectorRef, HostListener, PLATFORM_ID, ViewChildren, QueryList, ElementRef, effect, ViewChild } from '@angular/core';
-import { CommonModule, TitleCasePipe, DatePipe, DecimalPipe, isPlatformBrowser } from '@angular/common';
-import { ActivatedRoute, NavigationEnd, Router, RouterLink } from '@angular/router';
-import { Subscription, Observable, of, timer, firstValueFrom, interval, Subject, combineLatest } from 'rxjs';
-import { switchMap, tap, map, takeWhile, take, filter, takeUntil } from 'rxjs/operators';
+import { Component, inject, OnInit, OnDestroy, signal, computed, ChangeDetectorRef, HostListener, PLATFORM_ID, ViewChildren, QueryList, ElementRef, effect, ViewChild } from '@angular/core';
+import { CommonModule, DatePipe, DecimalPipe, isPlatformBrowser } from '@angular/common';
+import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
+import { Subscription, of, timer, firstValueFrom, interval, Subject, combineLatest } from 'rxjs';
+import { switchMap, tap, map, take, filter, takeUntil } from 'rxjs/operators';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { FullScreenRestTimerComponent } from '../../shared/components/full-screen-rest-timer/full-screen-rest-timer';
 
@@ -13,7 +13,6 @@ import { ExerciseService } from '../../core/services/exercise.service';
 import { TrackingService } from '../../core/services/tracking.service';
 import { LoggedSet, LoggedWorkoutExercise, WorkoutLog, LastPerformanceSummary, PersonalBestSet } from '../../core/models/workout-log.model';
 import { WeightUnitPipe } from '../../shared/pipes/weight-unit-pipe';
-import { AlertComponent } from '../../shared/components/alert/alert.component';
 import { AlertService } from '../../core/services/alert.service';
 import { StorageService } from '../../core/services/storage.service';
 import { AlertButton, AlertInput } from '../../core/models/alert.model';
@@ -22,14 +21,10 @@ import { ToastService } from '../../core/services/toast.service';
 import { v4 as uuidv4 } from 'uuid';
 import { format } from 'date-fns';
 import { AppSettingsService } from '../../core/services/app-settings.service'; // Import AppSettingsService
-import { TrainingProgram } from '../../core/models/training-program.model';
-import { LongPressDirective } from '../../shared/directives/long-press.directive';
-import { id } from '@swimlane/ngx-charts';
 import { ExerciseDetailComponent } from '../exercise-library/exercise-detail';
 import { ModalComponent } from '../../shared/components/modal/modal.component';
 import { PressDirective } from '../../shared/directives/press.directive';
 import { FormatSecondsPipe } from '../../shared/pipes/format-seconds-pipe';
-import { PressScrollDirective } from '../../shared/directives/press-scroll.directive';
 import { ProgressiveOverloadService } from '../../core/services/progressive-overload.service.ts';
 import { IconComponent } from '../../shared/components/icon/icon.component';
 import { TrainingProgramService } from '../../core/services/training-program.service';
@@ -140,6 +135,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   // --- State Signals ---
   protected routine = signal<Routine | null | undefined>(undefined);
   program = signal<string | undefined>(undefined);
+  scheduledDay = signal<string | undefined>(undefined);
   sessionState = signal<SessionState>(SessionState.Loading);
   public readonly PlayerSubState = PlayerSubState;
   playerSubState = signal<PlayerSubState>(PlayerSubState.PerformingSet);
@@ -2844,6 +2840,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
     const sessionRoutineValue = this.routine();
     const sessionProgramValue = this.program();
+    const sessionScheduledDayProgramValue = this.scheduledDay();
     let proceedToLog = true;
     let logAsNewRoutine = false;
     let updateOriginalRoutineStructure = false;
@@ -3003,6 +3000,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       exercises: loggedExercisesForReport, // Use filtered logs
       notes: sessionRoutineValue?.notes,
       programId: sessionProgramValue,
+      scheduledDayId: sessionScheduledDayProgramValue
     };
 
     const fixedLog = await this.checkWorkoutTimingValidity(finalLog); // Ensure start time is valid before proceeding
@@ -3276,18 +3274,23 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       map(([params, queryParams]) => {
         return {
           routineId: params.get('routineId'),
-          programId: queryParams.get('programId') // This will be the ID string or null
+          programId: queryParams.get('programId'), // This will be the ID string or null
+          scheduledDayId: queryParams.get('scheduledDayId') // This will be the ID string or null
         };
       }),
 
       // +++ 3. The switchMap now receives the object with both IDs
       switchMap(ids => {
-        const { routineId: newRoutineId, programId } = ids; // Destructure to get both IDs
+        const { routineId: newRoutineId, programId, scheduledDayId } = ids; // Destructure to get both IDs
         console.log('loadNewWorkoutFromRoute - paramMap emitted, newRoutineId:', newRoutineId);
+        console.log('loadNewWorkoutFromRoute - paramMap emitted, scheduledDayId:', scheduledDayId);
         console.log('loadNewWorkoutFromRoute - queryParamMap emitted, programId:', programId); // You have the programId here!
 
         if (programId) {
           this.program.set(programId);
+          if (scheduledDayId){
+            this.scheduledDay.set(scheduledDayId);
+          }
         }
 
         if (!newRoutineId || newRoutineId === "-1") {

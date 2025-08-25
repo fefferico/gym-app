@@ -45,9 +45,6 @@ export class TrackingService {
   private personalBestsSubject = new BehaviorSubject<Record<string, PersonalBestSet[]>>(this.loadPBsFromStorage());
   public personalBests$: Observable<Record<string, PersonalBestSet[]>> = this.personalBestsSubject.asObservable();
 
-  private readonly PAUSED_WORKOUT_KEY = 'fitTrackPro_pausedWorkoutState';
-private readonly PAUSED_STATE_VERSION = '1.2';
-
   constructor() {
     // console.log('Initial workout logs loaded:', this.workoutLogsSubject.getValue());
   }
@@ -803,10 +800,5 @@ private readonly PAUSED_STATE_VERSION = '1.2';
 
     console.log(`Backfill complete. Updated timestamps for ${lastUsedMap.size} exercises.`);
     this.toastService.success('Exercise history has been updated!', 3000, "Update Complete");
-  }
-
-  checkForPausedWorkout(): boolean {
-    const pausedState = this.storageService.getItem<PausedWorkoutState>(this.PAUSED_WORKOUT_KEY);
-    return pausedState !== null && pausedState.version !== null && pausedState.version === this.PAUSED_STATE_VERSION;
   }
 }

@@ -115,11 +115,12 @@ export class TrainingProgramService {
 
   async addProgram(programData: Omit<TrainingProgram, 'id' | 'isActive' | 'schedule'> & { schedule: Omit<ScheduledRoutineDay, 'id'>[] }): Promise<TrainingProgram> {
     const currentPrograms = this.programsSubject.getValue();
+    const programId = uuidv4();
     const newProgram: TrainingProgram = {
       ...programData,
-      id: uuidv4(),
+      id: programId,
       isActive: false,
-      schedule: programData.schedule.map(s => ({ ...s, id: uuidv4() })),
+      schedule: programData.schedule.map(s => ({ ...s, id: uuidv4(), programId: programId })),
     };
     const updatedPrograms = [...currentPrograms, newProgram];
     this._saveProgramsToStorage(updatedPrograms);
@@ -173,6 +174,12 @@ export class TrainingProgramService {
     }
   }
 
+  dateToMidnight(currentDate?: Date): string {
+    const now = currentDate ? currentDate : new Date();
+    now.setUTCHours(0, 0, 0, 0);
+    return now.toISOString();
+  }
+
   async toggleProgramActivation(programId: string, status: 'active' | 'completed' | 'archived' | 'cancelled' = 'completed'): Promise<void> {
     const currentPrograms = this.programsSubject.getValue();
     const targetProgram = currentPrograms.find(p => p.id === programId);
@@ -182,14 +189,35 @@ export class TrainingProgramService {
       return;
     }
 
-    const newDate = new Date().toISOString();
+    const newDate = this.dateToMidnight();
+
     this.updateProgramHistory(programId, status, newDate);
+
     const updatedPrograms = this.programsSubject.getValue().map(p => {
       if (p.id === programId) {
-        return { ...p, isActive: !p.isActive, startDate: status === 'active' ? newDate : p.startDate, endDate: (status === 'completed' || status === 'cancelled') ? newDate : '-' };
+        return {
+          ...p, isActive: !p.isActive,
+          startDate: status === 'active' ? newDate : p.startDate,
+          endDate: (status === 'completed' || status === 'cancelled') ? newDate : '-',
+          weeks: status === 'completed' && targetProgram.isActive && p.weeks ? p.weeks?.map(week => {
+            // 2. For each week, return a new week object
+            return {
+              ...week, // Copy all properties from the original week
+
+              // 3. Use .map() on the 'schedule' array within the week
+              schedule: week.schedule.map(day => {
+
+                // 4. The core logic: immutably remove 'completionStatus' from the day
+                const { completionStatus, ...rest } = day;
+                return rest; // Return the new day object without the property
+              })
+            };
+          }) : p.weeks
+        };
       }
       return p;
     });
+
 
     this._saveProgramsToStorage(updatedPrograms);
 
@@ -471,7 +499,8 @@ export class TrainingProgramService {
         // --- NEW: Handle 'linear' (week-by-week) programs ---
         if (program.programType === 'linear' && program.weeks?.length) {
           allDaysInRange.forEach(currentDate => {
-            if (currentDate < programStartDate) return;
+            const tmpCurrenteDate = this.dateToMidnight(currentDate);
+            if (tmpCurrenteDate < this.dateToMidnight(programStartDate)) return;
 
             const daysSinceStart = differenceInDays(currentDate, programStartDate);
             if (daysSinceStart < 0) return;
@@ -653,22 +682,30 @@ export class TrainingProgramService {
   * @param loggedWorkout The workout log that was just saved (only its ID is needed now).
   * @returns A Promise resolving to `true` if the program was completed, otherwise `false`.
   */
-  public async checkAndHandleProgramCompletion(programId: string, loggedWorkout: Partial<WorkoutLog>): Promise<boolean> {
+  public async checkAndHandleProgramCompletion(programId: string, loggedWorkout: WorkoutLog): Promise<boolean> {
     const program = await firstValueFrom(this.getProgramById(programId));
 
     if (!program || !program.isActive || program.programType !== 'linear' || !program.weeks?.length) {
       return false;
     }
 
+    // New Guard Clause: If the logged workout isn't a scheduled session, it cannot complete the program.
+    if (!loggedWorkout.scheduledDayId) {
+      return false;
+    }
+
+
     // --- REFACTORED COMPLETION LOGIC ---
     // The program is complete if every single scheduled day is marked as 'completed'.
     const allDays = program.weeks.flatMap(w => w.schedule);
-    const isComplete = allDays.every(day => day.completionStatus === 'completed');
+    const isNowComplete = allDays.every(day =>
+      day.completionStatus === 'completed' || day.id === loggedWorkout.scheduledDayId
+    );
 
-    if (isComplete) {
-      console.log(`Program "${program.name}" completed! All scheduled days are fulfilled.`);
+    if (isNowComplete) {
+      console.log(`Program "${program.name}" completed! The final workout has been logged.`);
       await this.toggleProgramActivation(program.id, 'completed');
-      return true;
+      return true; // The program was just completed.
     }
 
     return false;
@@ -807,7 +844,7 @@ export class TrainingProgramService {
 
     // Fetch the routine details for the next uncompleted day
     return this.workoutService.getRoutineById(nextDay.routineId).pipe(
-      take(1), 
+      take(1),
       map(routine => {
         if (!routine) {
           console.error(`Could not find routine with ID ${nextDay.routineId} for program ${program.id}`);

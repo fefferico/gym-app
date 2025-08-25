@@ -2,7 +2,7 @@ import { Component, inject, OnInit, OnDestroy, signal, computed, ChangeDetectorR
 import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription, timer, of, lastValueFrom } from 'rxjs';
-import { switchMap, tap, take } from 'rxjs/operators';
+import { switchMap, take } from 'rxjs/operators';
 import {
   Routine,
   WorkoutExercise,
@@ -27,9 +27,10 @@ import { format } from 'date-fns';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { ExerciseSelectionModalComponent } from '../../../shared/components/exercise-selection-modal/exercise-selection-modal.component';
 import { FormsModule } from '@angular/forms';
-import { ClickOutsideDirective } from '../../../shared/directives/click-outside.directive';
 import { ActionMenuComponent } from '../../../shared/components/action-menu/action-menu';
 import { ActionMenuItem } from '../../../core/models/action-menu.model';
+import { TrainingProgramService } from '../../../core/services/training-program.service';
+import { StorageService } from '../../../core/services/storage.service';
 
 enum SessionState {
   Loading = 'loading',
@@ -44,7 +45,7 @@ enum SessionState {
   standalone: true,
   imports: [
     CommonModule, DatePipe, WeightUnitPipe, IconComponent,
-    ExerciseSelectionModalComponent, FormsModule, ActionMenuComponent, ClickOutsideDirective,
+    ExerciseSelectionModalComponent, FormsModule, ActionMenuComponent,
   ],
   templateUrl: './compact-workout-player.component.html',
   styleUrls: ['./compact-workout-player.component.scss'],
@@ -56,6 +57,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   private workoutService = inject(WorkoutService);
   private exerciseService = inject(ExerciseService);
   protected trackingService = inject(TrackingService);
+  protected trainingProgramService = inject(TrainingProgramService);
+  protected storageService = inject(StorageService);
   protected alertService = inject(AlertService);
   protected toastService = inject(ToastService);
   protected unitsService = inject(UnitsService);
@@ -76,6 +79,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   private routeSub: Subscription | undefined;
 
   routineId: string | null = null;
+  programId: string | null = null;
   currentWorkoutLog = signal<Partial<WorkoutLog>>({ exercises: [] });
 
   defaultExercises: Exercise[] = [];
@@ -136,9 +140,15 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadAvailableExercises();
+
+    const routeSnapshot = this.route.snapshot;
+    const targetRoutineId = routeSnapshot.paramMap.get('routineId');
+    const targetProgramId = routeSnapshot.queryParamMap.get('programId');
+
     this.routeSub = this.route.paramMap.pipe(
       switchMap((params) => {
-        this.routineId = params.get('routineId');
+        this.routineId = targetRoutineId;
+        this.programId = targetProgramId;
         return this.routineId ? this.workoutService.getRoutineById(this.routineId) : of(null);
       })
     ).subscribe((routine) => {
@@ -162,6 +172,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     this.sessionState.set(SessionState.Playing);
     this.currentWorkoutLog.set({
       routineId: this.routineId ?? undefined,
+      programId: this.programId ?? undefined,
       routineName: this.routine()?.name,
       startTime: this.workoutStartTime,
       date: format(new Date(), 'yyyy-MM-dd'),
@@ -295,9 +306,39 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       log.exercises = log.exercises!.filter(ex => ex.sets.length > 0);
       if (log.startTime) {
         const savedLog = this.trackingService.addWorkoutLog(log as Omit<WorkoutLog, 'id'> & { startTime: number });
+
         this.sessionState.set(SessionState.End);
         this.timerSub?.unsubscribe();
-        this.router.navigate(['/workout/summary', savedLog.id]);
+
+        // +++ START: NEW PROGRAM COMPLETION CHECK +++
+        if (savedLog.programId) {
+          try {
+            const isProgramCompleted = await this.trainingProgramService.checkAndHandleProgramCompletion(savedLog.programId, savedLog);
+
+            if (isProgramCompleted) {
+              this.toastService.success(`Congrats! Program completed!`, 5000, "Program Finished", false);
+
+              // Stop all player activity before navigating
+              // this.stopAllActivity();
+              this.storageService.removePausedWorkout();
+
+              // Navigate to the new completion page with relevant IDs
+              this.router.navigate(['/training-programs/completed', savedLog.programId], {
+                queryParams: { logId: savedLog.id }
+              });
+
+              // return true; // Exit the function as we've handled navigation
+            } else {
+          this.router.navigate(['/workout/summary', savedLog.id]);
+            }
+          } catch (error) {
+            console.error("Error during program completion check:", error);
+            // Continue with normal workout summary flow even if the check fails
+          }
+          // +++ END: NEW PROGRAM COMPLETION CHECK +++
+        } else {
+          this.router.navigate(['/workout/summary', savedLog.id]);
+        }
       } else {
         this.toastService.error("Could not save: missing start time.");
       }
@@ -393,7 +434,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     // const isEmptySet = setToRemove && ((isCardioExercise && !setToRemove.distance && !setToRemove.duration) || (!isCardioExercise && !setToRemove.reps && !setToRemove.weight));
     const isLoggedSet = setToRemove && this.isSetCompleted(exIndex, setIndex);
 
-    const confirm = isLoggedSet ? await this.alertService.showConfirm("Remove Set", `Are you sure you want to remove logged Set #${setIndex + 1} from ${exercise.exerciseName}?`) : {data: true};
+    const confirm = isLoggedSet ? await this.alertService.showConfirm("Remove Set", `Are you sure you want to remove logged Set #${setIndex + 1} from ${exercise.exerciseName}?`) : { data: true };
     if (confirm?.data) {
       // First, remove from the routine plan
       exercise.sets.splice(setIndex, 1);
@@ -414,7 +455,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
 
-async removeExercise(exIndex: number) {
+  async removeExercise(exIndex: number) {
     const routine = this.routine();
     if (!routine) return;
     const exercise = routine.exercises[exIndex];
@@ -426,12 +467,12 @@ async removeExercise(exIndex: number) {
 
       // Second, remove from workout log
       const log = this.currentWorkoutLog();
-      if(log.exercises) {
-          const logExIndex = log.exercises.findIndex(le => le.id === exercise.id);
-          if (logExIndex > -1) {
-              log.exercises.splice(logExIndex, 1);
-              this.currentWorkoutLog.set({ ...log });
-          }
+      if (log.exercises) {
+        const logExIndex = log.exercises.findIndex(le => le.id === exercise.id);
+        if (logExIndex > -1) {
+          log.exercises.splice(logExIndex, 1);
+          this.currentWorkoutLog.set({ ...log });
+        }
       }
       this.toastService.info(`${exercise.exerciseName} removed`);
     }

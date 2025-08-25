@@ -126,7 +126,7 @@
                   <div class="relative">
                     <button (click)="toggleActions(item.id, $event)"
                       class="p-1.5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full focus:outline-none">
-                      <app-icon name="menu_action" class="h-5 w-5"></app-icon>
+                      <app-icon name="menu-action" class="h-5 w-5"></app-icon>
                     </button>
                     <app-action-menu *ngIf="areActionsVisible(item.id) && !menuModeCompact"
                       class="action-menu-container" displayMode="dropdown"
@@ -178,7 +178,7 @@
                   <div class="relative">
                     <button (click)="toggleActions(item.id, $event)"
                       class="p-1.5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full focus:outline-none">
-                      <app-icon name="menu_action" class="h-5 w-5"></app-icon>
+                      <app-icon name="menu-action" class="h-5 w-5"></app-icon>
                     </button>
                     <app-action-menu *ngIf="areActionsVisible(item.id)" class="action-menu-container"
                       displayMode="dropdown" [items]="getActivityLogDropdownActionItems(item.id, 'dropdown')"

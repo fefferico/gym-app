@@ -85,7 +85,7 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
     return `${year}-${month}-${day}`;
   };
 
-ngOnInit(): void {
+  ngOnInit(): void {
     this.currentDate$.pipe(
       tap(() => this.isLoading.set(true)),
       switchMap(date =>
@@ -129,7 +129,7 @@ ngOnInit(): void {
             return combineLatest([enrichedLogs$, scheduledWorkouts$]).pipe(
               map(([enrichedLogs, scheduledWorkoutsResult]) => {
                 const allRoutinesMap = new Map(allRoutines.map((r: Routine) => [r.id, r]));
-                
+
                 // Process the results from our observables
                 const allWorkoutsForDay = (scheduledWorkoutsResult || [])
                   .filter((data): data is { routine: Routine, scheduledDayInfo: ScheduledRoutineDay } => !!data)
@@ -139,23 +139,23 @@ ngOnInit(): void {
 
                 // This logic for finding and displaying unscheduled logs remains valuable.
                 const unscheduledLogs = (enrichedLogs ?? []).filter(log =>
-                    log.programId &&
-                    (activePrograms || []).some(p => p.id === log.programId) &&
-                    log.routineId &&
-                    !scheduledRoutineIds.has(log.routineId)
+                  log.programId &&
+                  (activePrograms || []).some(p => p.id === log.programId) &&
+                  log.routineId &&
+                  !scheduledRoutineIds.has(log.routineId)
                 );
 
                 for (const log of unscheduledLogs) {
-                    const routine = allRoutinesMap.get(log.routineId!);
-                    if (routine) {
-                        allWorkoutsForDay.push({
-                            routine,
-                            scheduledDayInfo: {
-                                id: uuidv4(), routineId: routine.id, dayOfWeek: date.getDay(),
-                                programId: log.programId!, isUnscheduled: true
-                            }
-                        });
-                    }
+                  const routine = allRoutinesMap.get(log.routineId!);
+                  if (routine) {
+                    allWorkoutsForDay.push({
+                      routine,
+                      scheduledDayInfo: {
+                        id: uuidv4(), routineId: routine.id, dayOfWeek: date.getDay(),
+                        programId: log.programId!, isUnscheduled: true
+                      }
+                    });
+                  }
                 }
 
                 return {
@@ -183,7 +183,7 @@ ngOnInit(): void {
         this.isLoading.set(false);
       }
     });
-}
+  }
 
   /**
    * Helper function for the template to check if a specific routine has been logged today.
@@ -252,14 +252,16 @@ ngOnInit(): void {
   startProgramWorkout(routineId: string, programId: string | undefined, scheduledDayId: string | undefined, event: Event): void {
     event?.stopPropagation();
     if (routineId) {
-      this.router.navigate(['/workout/play', routineId], { queryParams: { programId, scheduledDayId } });
+      const playerRoute = this.workoutService.checkPlayerMode(routineId);
+      this.router.navigate([playerRoute, routineId], { queryParams: { programId, scheduledDayId } });
     }
   }
 
   startWorkout(routineId: string, event: Event): void {
     event?.stopPropagation();
     if (routineId) {
-      this.router.navigate(['/workout/play', routineId]);
+      const playerRoute = this.workoutService.checkPlayerMode(routineId);
+      this.router.navigate([playerRoute, routineId]);
     }
   }
 
@@ -270,8 +272,8 @@ ngOnInit(): void {
 
   logPastProgramWorkout(routineId: string | undefined, programId: string | undefined, scheduledDayId: string | undefined): void {
     if (!routineId || !programId || !scheduledDayId) return;
-    this.router.navigate(['workout/log/manual/new/from/' + routineId], { 
-        queryParams: { programId, date: this.currentDate().toISOString(), scheduledDayId } 
+    this.router.navigate(['workout/log/manual/new/from/' + routineId], {
+      queryParams: { programId, date: this.currentDate().toISOString(), scheduledDayId }
     });
   }
 
@@ -318,8 +320,8 @@ ngOnInit(): void {
   }
 
 
-getProgramNameById(programId: string): string {
+  getProgramNameById(programId: string): string {
     return this.availablePrograms().find(p => p.id === programId)?.name || '';
-}
+  }
 
 }

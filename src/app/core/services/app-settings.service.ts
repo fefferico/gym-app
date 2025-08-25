@@ -9,7 +9,8 @@ const DEFAULT_APP_SETTINGS: AppSettings = {
     countdownSoundSeconds: 5,
     enablePresetTimer: false,        // NEW Default
     presetTimerDurationSeconds: 10,  // NEW Default (e.g., 10 seconds)
-    weightStep: 1
+    weightStep: 1,
+    playerMode: false
 };
 
 @Injectable({
@@ -23,6 +24,7 @@ export class AppSettingsService {
     public appSettings$: Observable<AppSettings>;
 
     // Individual signals
+    public enableCompactModeSignal = signal<boolean>(DEFAULT_APP_SETTINGS.enableTimerCountdownSound);
     public enableTimerCountdownSound = signal<boolean>(DEFAULT_APP_SETTINGS.enableTimerCountdownSound);
     public countdownSoundSeconds = signal<number>(DEFAULT_APP_SETTINGS.countdownSoundSeconds);
     public enablePresetTimer = signal<boolean>(DEFAULT_APP_SETTINGS.enablePresetTimer);             // NEW
@@ -52,6 +54,7 @@ export class AppSettingsService {
         this.appSettingsSubject.next(updatedSettings);
 
         // Update individual signals
+        if (settings.playerMode !== undefined) this.enableCompactModeSignal.set(settings.playerMode);
         if (settings.enableTimerCountdownSound !== undefined) this.enableTimerCountdownSound.set(settings.enableTimerCountdownSound);
         if (settings.countdownSoundSeconds !== undefined) this.countdownSoundSeconds.set(settings.countdownSoundSeconds);
         if (settings.enablePresetTimer !== undefined) this.enablePresetTimer.set(settings.enablePresetTimer);             // NEW

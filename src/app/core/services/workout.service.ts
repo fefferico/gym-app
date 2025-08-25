@@ -11,12 +11,14 @@ import { AlertService } from './alert.service';
 import { ROUTINES_DATA } from './routines-data';
 import { ToastService } from './toast.service';
 import { ProgressiveOverloadService } from './progressive-overload.service.ts';
+import { AppSettingsService } from './app-settings.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class WorkoutService {
   private storageService = inject(StorageService);
+  private appSettingsService = inject(AppSettingsService);
   private alertService = inject(AlertService);
   private readonly ROUTINES_STORAGE_KEY = 'fitTrackPro_routines';
   private toastService = inject(ToastService);
@@ -478,5 +480,17 @@ export class WorkoutService {
     const totalMinutes = Math.round(totalSeconds / 60);
 
     return totalMinutes;
+  }
+
+
+  startWorkout(): void {
+
+  }
+
+  checkPlayerMode(newRoutineId: string): string {
+    const routine = this.getCurrentRoutines().find(routine => routine.id === newRoutineId);
+    const playerMode = this.appSettingsService.getSettings() ? this.appSettingsService.getSettings().playerMode : false;
+    const isTabata = routine?.goal === 'tabata';
+    return !isTabata && playerMode ? '/workout/play/compact' : '/workout/play';
   }
 }

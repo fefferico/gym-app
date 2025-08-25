@@ -24,6 +24,8 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { TrainingProgramService } from '../../core/services/training-program.service';
 import { IconComponent } from '../../shared/components/icon/icon.component';
 import { LastPerformanceSummary, WorkoutLog } from '../../core/models/workout-log.model';
+import { UserProfileService } from '../../core/services/user-profile.service';
+import { AppSettingsService } from '../../core/services/app-settings.service';
 
 @Component({
   selector: 'app-routine-list',
@@ -76,6 +78,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
   private storageService = inject(StorageService);
   private themeService = inject(ThemeService);
   private platformId = inject(PLATFORM_ID);
+  private appSettingsService = inject(AppSettingsService);
 
   private sanitizer = inject(DomSanitizer);
   public sanitizedDescription: SafeHtml = '';
@@ -448,10 +451,9 @@ export class RoutineListComponent implements OnInit, OnDestroy {
   async startWorkout(newRoutineId: string, event?: MouseEvent): Promise<void> {
     this.visibleActionsRutineId.set(null);
 
-    if (!isPlatformBrowser(this.platformId)) {
-      this.router.navigate(['/workout/play', newRoutineId]);
-      return;
-    }
+    // retrieve current player mode before starting
+    // if the retrieved workout it's a "tabata" style I'll force the focus mode
+    const playerRoute = this.workoutService.checkPlayerMode(newRoutineId);
 
     const pausedState = this.storageService.getItem<PausedWorkoutState>(this.PAUSED_WORKOUT_KEY);
     if (pausedState) {
@@ -466,18 +468,23 @@ export class RoutineListComponent implements OnInit, OnDestroy {
 
       if (confirmation && confirmation.data === 'resume_paused') {
         const targetRoutineId = pausedState.routineId || 'ad-hoc';
-        this.router.navigate(['/workout/play', pausedState.routineId || ''], { queryParams: { resume: 'true' } }); // Handle undefined routineId
+        this.router.navigate([playerRoute, pausedState.routineId || ''], { queryParams: { resume: 'true' } }); // Handle undefined routineId
       } else if (confirmation && confirmation.data === 'discard_start_new') {
         this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
         this.toastService.info('Previous paused workout discarded.', 3000);
-        this.router.navigate(['/workout/play', newRoutineId]);
+        this.router.navigate([playerRoute, newRoutineId]);
       } else {
         // this.toastService.info('Starting new workout cancelled.', 2000);
       }
     } else {
+      if (!isPlatformBrowser(this.platformId)) {
+        this.router.navigate([playerRoute, newRoutineId]);
+        return;
+      }
+
       // Use absolute path for player
       if (/* condition to start new */ true) { // Simplified condition
-        this.router.navigate(['/workout/play', newRoutineId]);
+        this.router.navigate([playerRoute, newRoutineId]);
       }
     }
   }

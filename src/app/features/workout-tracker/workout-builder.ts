@@ -38,6 +38,7 @@ import { IconComponent } from '../../shared/components/icon/icon.component';
 import { TooltipDirective } from '../../shared/directives/tooltip.directive';
 import { ExerciseSelectionModalComponent } from '../../shared/components/exercise-selection-modal/exercise-selection-modal.component';
 import { MillisecondsDatePipe } from '../../shared/pipes/milliseconds-date.pipe';
+import { AppSettingsService } from '../../core/services/app-settings.service';
 
 type BuilderMode = 'routineBuilder' | 'manualLogEntry';
 
@@ -67,6 +68,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   private trackingService = inject(TrackingService);
   private cdr = inject(ChangeDetectorRef);
   private platformId = inject(PLATFORM_ID);
+  private appSettingsService = inject(AppSettingsService);
+
 
   @ViewChildren('setRepsInput') setRepsInputs!: QueryList<ElementRef<HTMLInputElement>>;
   @ViewChildren('expandedSetElement') expandedSetElements!: QueryList<ElementRef<HTMLDivElement>>;
@@ -1413,7 +1416,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
   startCurrentWorkout(): void {
     if (this.currentRoutineId) {
-      this.router.navigate(['/workout/play', this.currentRoutineId]);
+      const playerRoute = this.workoutService.checkPlayerMode(this.currentRoutineId);
+      this.router.navigate([playerRoute, this.currentRoutineId]);
     } else {
       this.toastService.error("Cannot start workout: Routine ID is missing", 0, "Error");
     }
@@ -1714,7 +1718,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     this.activeRoutineIdActions.set(null); // Close the menu
   }
 
-  goToRoutineHistory(routineId: string):void{
+  goToRoutineHistory(routineId: string): void {
     this.router.navigate(['/history/list'], routineId ? { queryParams: { routineId: routineId } } : {});
   }
 

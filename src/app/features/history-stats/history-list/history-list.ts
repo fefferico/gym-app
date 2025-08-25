@@ -596,7 +596,7 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   logPastWorkout(): void {
     // check if there's a pending workout, if so block the user
-    const isWorkoutPending = this.trackingService.checkForPausedWorkout();
+    const isWorkoutPending = this.storageService.checkForPausedWorkout();
     if (isWorkoutPending){
       this.discardPausedWorkout();
     } else {

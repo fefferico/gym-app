@@ -5,14 +5,12 @@ import { FormsModule } from '@angular/forms';
 import { Exercise } from '../../../core/models/exercise.model';
 import { ExerciseService } from '../../../core/services/exercise.service';
 import { IconComponent } from '../icon/icon.component';
-import { PressDirective } from '../../directives/press.directive';
-import { PressScrollDirective } from '../../directives/press-scroll.directive';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 
 @Component({
     selector: 'app-exercise-selection-modal',
     standalone: true,
-    imports: [CommonModule, FormsModule, TitleCasePipe, DatePipe, IconComponent, PressDirective, PressScrollDirective, ScrollingModule],
+    imports: [CommonModule, FormsModule, TitleCasePipe, DatePipe, IconComponent, ScrollingModule],
     templateUrl: './exercise-selection-modal.component.html',
 })
 export class ExerciseSelectionModalComponent implements AfterViewInit {
