@@ -32,7 +32,7 @@
   <!-- Equipment List -->
   <div *ngIf="allEquipment().length > 0; else noEquipmentState">
     <div *ngIf="filteredEquipment().length > 0; else noFilterResultsState"
-      class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
       
       <div *ngFor="let item of filteredEquipment(); trackBy: trackById" (click)="navigateToForm(item.id)"
         class="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-xl transition-shadow cursor-pointer p-4 flex flex-col justify-between">

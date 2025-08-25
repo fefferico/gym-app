@@ -1,7 +1,7 @@
 // src/app/core/services/tracking.service.ts
 import { Injectable, Injector, inject } from '@angular/core';
-import { BehaviorSubject, Observable, of } from 'rxjs';
-import { map, take, tap } from 'rxjs/operators';
+import { BehaviorSubject, combineLatest, Observable, of } from 'rxjs';
+import { distinctUntilChanged, map, shareReplay, take, tap } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
 
 import { LastPerformanceSummary, LoggedSet, PersonalBestSet, WorkoutLog, PBHistoryInstance } from '../models/workout-log.model'; // Ensure PBHistoryInstance is imported
@@ -765,6 +765,18 @@ export class TrackingService {
     );
   }
 
+  getWorkoutLogByProgrmIdAndRoutineId(programId: string, routineId: string): Observable<WorkoutLog[]> {
+    if (!programId || !routineId) return of([]);
+    return this.workoutLogs$.pipe(
+      map(allLogs =>
+        allLogs.filter(log => {
+          const logDate = parseISO(log.date);
+          return (log.programId === programId && log.routineId === routineId);
+        })
+      )
+    );
+  } 
+
 
   /**
    * --- NEW METHOD for Backfilling Data ---
@@ -800,5 +812,56 @@ export class TrackingService {
 
     console.log(`Backfill complete. Updated timestamps for ${lastUsedMap.size} exercises.`);
     this.toastService.success('Exercise history has been updated!', 3000, "Update Complete");
+  }
+
+
+  /**
+   * Returns an Observable Map that tracks the logged status of each scheduled day for a given program.
+   * The key of the map is the `scheduledDayId`, and the value is a boolean (true if logged).
+   * This is designed to be used safely in templates with the async pipe.
+   *
+   * @param programId The ID of the training program to check.
+   * @returns An Observable<Map<string, boolean>> that emits whenever the logged status changes.
+   */
+  getScheduledDaysLoggedStatus(programId: string): Observable<Map<string, boolean>> {
+    const program$ = this.trainingProgramService.getProgramById(programId);
+    const allLogs$ = this.workoutLogs$;
+
+    return combineLatest([program$, allLogs$]).pipe(
+      map(([program, allLogs]) => {
+        const loggedStatusMap = new Map<string, boolean>();
+
+        if (!program) {
+          return loggedStatusMap;
+        }
+
+        // Create a highly efficient lookup Set of logged scheduledDayId's for this specific program.
+        const loggedDayIds = new Set(
+          allLogs
+            .filter(log => log.programId === program.id && log.scheduledDayId)
+            .map(log => log.scheduledDayId)
+        );
+
+        const allScheduledDays = program.programType === 'linear'
+            ? program.weeks?.flatMap(w => w.schedule) ?? []
+            : program.schedule;
+
+        allScheduledDays.forEach(day => {
+          // For each scheduled day, check if its unique ID is in our lookup Set.
+          loggedStatusMap.set(day.id, loggedDayIds.has(day.id));
+        });
+
+        return loggedStatusMap;
+      }),
+      // Only emit a new map if its contents have actually changed.
+      distinctUntilChanged((prev, curr) => {
+        if (prev.size !== curr.size) return false;
+        for (const [key, value] of prev) {
+          if (curr.get(key) !== value) return false;
+        }
+        return true;
+      }),
+      shareReplay(1)
+    );
   }
 }

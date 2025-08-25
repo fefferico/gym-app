@@ -8,7 +8,7 @@ import { Routine } from '../../../core/models/workout.model';
 import { ProgramDayInfo, ScheduledRoutineDay, TrainingProgram } from '../../../core/models/training-program.model';
 import { EnrichedWorkoutLog, WorkoutLog } from '../../../core/models/workout-log.model';
 import { WorkoutService } from '../../../core/services/workout.service';
-import { catchError, map, Observable, of, Subject, switchMap, takeUntil, tap, combineLatest, ObservedValueOf, take, forkJoin } from 'rxjs';
+import { catchError, map, Observable, of, Subject, switchMap, takeUntil, tap, combineLatest, ObservedValueOf, take, forkJoin, firstValueFrom } from 'rxjs';
 import Hammer from 'hammerjs';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { TrackingService } from '../../../core/services/tracking.service';
@@ -56,6 +56,10 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
 
   private sanitizer = inject(DomSanitizer);
 
+  loggedStatusMap = signal<Map<string, boolean>>(new Map());
+
+
+
   // --- Signals for State Management ---
   allActivePrograms = signal<TrainingProgram[]>([]);
   availablePrograms = signal<TrainingProgram[]>([]);
@@ -89,20 +93,65 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
     this.currentDate$.pipe(
       tap(() => this.isLoading.set(true)),
       switchMap(date =>
-        combineLatest([
-          this.trainingProgramService.getActivePrograms(),
-          this.trackingService.getLogsForDate(this.formatDate(date)),
-          this.workoutService.routines$.pipe(take(1)),
-          this.trainingProgramService.programs$.pipe(take(1)),
-        ]).pipe(
-          switchMap(([activePrograms, logs, allRoutines, allPrograms]) => {
+        // 1. Start with the active programs as the primary driver
+        this.trainingProgramService.getActivePrograms().pipe(
+          switchMap(activePrograms => {
+            // 2. If there are no active programs, we can simplify the data fetching
+            if (!activePrograms || activePrograms.length === 0) {
+              return combineLatest([
+                this.trackingService.getLogsForDate(this.formatDate(date)),
+                this.workoutService.routines$.pipe(take(1)),
+                this.trainingProgramService.programs$.pipe(take(1))
+              ]).pipe(
+                map(([logs, routines, allPrograms]) => ({
+                  activePrograms: [],
+                  logs: logs || [],
+                  routines,
+                  allPrograms,
+                  statusMap: new Map<string, boolean>() // Empty map
+                }))
+              );
+            }
+
+            // 3. If there ARE active programs, create an observable for each program's status map
+            const statusMapObservables = activePrograms.map(p =>
+              this.trackingService.getScheduledDaysLoggedStatus(p.id)
+            );
+
+            // 4. Combine all data sources together
+            return combineLatest([
+              of(activePrograms),
+              this.trackingService.getLogsForDate(this.formatDate(date)),
+              this.workoutService.routines$.pipe(take(1)),
+              this.trainingProgramService.programs$.pipe(take(1)),
+              // This will emit an array of maps, one for each active program
+              combineLatest(statusMapObservables)
+            ]).pipe(
+              map(([programs, logs, routines, allPrograms, statusMapArrays]) => {
+                // 5. Merge the array of maps into a single, convenient map for easy lookups
+                const combinedStatusMap = new Map<string, boolean>();
+                statusMapArrays.forEach(map => {
+                  map.forEach((value: any, key: any) => combinedStatusMap.set(key, value));
+                });
+                return {
+                  activePrograms: programs,
+                  logs: logs || [],
+                  routines,
+                  allPrograms,
+                  statusMap: combinedStatusMap
+                };
+              })
+            );
+          }),
+          // 6. Process the combined data to build the final state for the view
+          switchMap(({ activePrograms, logs, routines, allPrograms, statusMap }) => {
             const enrichedLogs$ = (logs && logs.length > 0)
               ? forkJoin(logs.map(log =>
                 combineLatest([
                   this.trainingProgramService.getWeekNameForLog(log),
                   this.trainingProgramService.getDayOfWeekForLog(log)
                 ]).pipe(
-                  take(1), // Defensive take(1)
+                  take(1),
                   map(([weekName, dayInfo]) => ({ ...log, weekName, dayName: dayInfo?.dayName || null }))
                 )
               ))
@@ -111,16 +160,9 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
             const workoutObservables$: Observable<{ routine: Routine, scheduledDayInfo: ScheduledRoutineDay } | null>[] = [];
             if (activePrograms) {
               for (const prog of activePrograms) {
-                if (prog.programType === 'linear') {
-                  if (this.isToday(date)) {
-                    // +++ DEFENSIVE FIX: Add take(1) here as well +++
-                    workoutObservables$.push(this.trainingProgramService.findNextUncompletedRoutineForProgram(prog).pipe(take(1)));
-                  }
-                } else {
-                  const routineData = this.trainingProgramService.findRoutineForDayInProgram(date, prog);
-                  if (routineData && prog.startDate && parseISO(prog.startDate) <= date) {
-                    workoutObservables$.push(of(routineData));
-                  }
+                const routineData = this.trainingProgramService.findRoutineForDayInProgram(date, prog);
+                if (routineData && prog.startDate && parseISO(prog.startDate) <= date) {
+                  workoutObservables$.push(of(routineData));
                 }
               }
             }
@@ -128,16 +170,14 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
 
             return combineLatest([enrichedLogs$, scheduledWorkouts$]).pipe(
               map(([enrichedLogs, scheduledWorkoutsResult]) => {
-                const allRoutinesMap = new Map(allRoutines.map((r: Routine) => [r.id, r]));
+                const allRoutinesMap = new Map(routines.map((r: Routine) => [r.id, r]));
 
-                // Process the results from our observables
                 const allWorkoutsForDay = (scheduledWorkoutsResult || [])
                   .filter((data): data is { routine: Routine, scheduledDayInfo: ScheduledRoutineDay } => !!data)
                   .map(data => ({ ...data, scheduledDayInfo: { ...data.scheduledDayInfo, isUnscheduled: false } }));
 
                 const scheduledRoutineIds = new Set(allWorkoutsForDay.map(w => w.routine.id));
 
-                // This logic for finding and displaying unscheduled logs remains valuable.
                 const unscheduledLogs = (enrichedLogs ?? []).filter(log =>
                   log.programId &&
                   (activePrograms || []).some(p => p.id === log.programId) &&
@@ -151,7 +191,8 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
                     allWorkoutsForDay.push({
                       routine,
                       scheduledDayInfo: {
-                        id: uuidv4(), routineId: routine.id, dayOfWeek: date.getDay(),
+                        id: log.scheduledDayId || uuidv4(), // Use the logged scheduledDayId
+                        routineId: routine.id, dayOfWeek: date.getDay(),
                         programId: log.programId!, isUnscheduled: true
                       }
                     });
@@ -159,17 +200,14 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
                 }
 
                 return {
-                  allActivePrograms: activePrograms || [],
+                  allActivePrograms: activePrograms,
                   routineData: allWorkoutsForDay,
                   logsForDay: enrichedLogs,
-                  allAvailablePrograms: allPrograms
+                  allAvailablePrograms: allPrograms,
+                  statusMap: statusMap
                 };
               })
             );
-          }),
-          catchError(err => {
-            console.error("Error loading workout data for date:", date, err);
-            return of({ allActivePrograms: [], routineData: [], logsForDay: [], allAvailablePrograms: [] });
           })
         )
       ),
@@ -179,19 +217,25 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
         this.allActivePrograms.set(state.allActivePrograms);
         this.availablePrograms.set(state.allAvailablePrograms);
         this.todaysScheduledWorkouts.set(state.routineData);
-        this.logsForDay.set(state.logsForDay ?? []);
+        this.logsForDay.set(state.logsForDay as EnrichedWorkoutLog[] ?? []);
+        this.loggedStatusMap.set(state.statusMap);
         this.isLoading.set(false);
       }
     });
   }
 
   /**
-   * Helper function for the template to check if a specific routine has been logged today.
-   * @param routineId The ID of the routine to check.
-   * @returns True if a log exists for this routine on the current day.
+   * Helper function for the template to check if a specific scheduled workout has been logged.
+   * @param scheduledDayId The UNIQUE ID of the scheduled day to check.
+   * @returns True if a log exists for this scheduled day on the current day.
    */
-  isWorkoutLogged(routineId: string): boolean {
-    return this.logsForDay().some(log => log.routineId === routineId);
+  isWorkoutLogged(scheduledDayId: string): boolean {
+    return this.loggedStatusMap().get(scheduledDayId) ?? false;
+  }
+
+  async isProgramWorkoutLogged(programId: string, routineId: string, scheduledId: string): Promise<boolean> {
+    const logsForProgram = await firstValueFrom(this.trackingService.getWorkoutLogByProgrmIdAndRoutineId(programId, routineId));
+    return logsForProgram.some(log => log.routineId === routineId && log.scheduledDayId === scheduledId);
   }
 
   ngAfterViewInit(): void {

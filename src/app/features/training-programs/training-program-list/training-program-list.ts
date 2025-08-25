@@ -171,7 +171,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
   private allRoutinesMap = new Map<string, Routine>();
   private allExercisesMap = new Map<string, Exercise>();
 
-filteredPrograms = computed(() => {
+  filteredPrograms = computed(() => {
     let programs = this.allProgramsForList();
     const searchTerm = this.programSearchTerm().toLowerCase();
     const programType = this.selectedProgramType();
@@ -195,7 +195,7 @@ filteredPrograms = computed(() => {
     if (programType) {
       programs = programs.filter(p => p.programType === programType);
     }
-    
+
     if (goalFilter) {
       programs = programs.filter(p => {
         const allDays = getAllScheduledDays(p); // Use helper to get all days
@@ -210,7 +210,7 @@ filteredPrograms = computed(() => {
       programs = programs.filter(p => {
         const allDays = getAllScheduledDays(p); // Use helper to get all days
         if (!allDays.length) return false;
-        
+
         return allDays.some(day => {
           const routine = this.allRoutinesMap.get(day.routineId);
           if (!routine) return false;
@@ -266,7 +266,7 @@ filteredPrograms = computed(() => {
 
     try {
       const startDate = parseISO(program.startDate);
-      
+
       // Calculate how many days have passed from the program start to the currently viewed date.
       const daysSinceStart = differenceInDays(viewDate, startDate);
 
@@ -277,7 +277,7 @@ filteredPrograms = computed(() => {
 
       // Determine the zero-based index of the week.
       const currentWeekIndex = Math.floor(daysSinceStart / 7);
-      
+
       // Retrieve the specific week's data from the program's `weeks` array.
       const targetWeek = program.weeks[currentWeekIndex];
 
@@ -287,9 +287,9 @@ filteredPrograms = computed(() => {
       }
 
     } catch (error) {
-        console.error("Error parsing start date for week calculation", error);
+      console.error("Error parsing start date for week calculation", error);
     }
-    
+
     // If anything fails or if the viewed date is past the end of the program, return null.
     return null;
   });
@@ -417,10 +417,10 @@ filteredPrograms = computed(() => {
   onProgramGoalChange(event: Event): void { this.selectedProgramGoal.set((event.target as HTMLSelectElement).value || null); }
   onProgramMuscleGroupChange(event: Event): void { this.selectedProgramMuscleGroup.set((event.target as HTMLSelectElement).value || null); }
   clearProgramFilters(): void {
-    this.programSearchTerm.set(''); 
-    this.selectedProgramCycleType.set(null); 
-    this.selectedProgramType.set(null); 
-    this.selectedProgramGoal.set(null); 
+    this.programSearchTerm.set('');
+    this.selectedProgramCycleType.set(null);
+    this.selectedProgramType.set(null);
+    this.selectedProgramGoal.set(null);
     this.selectedProgramMuscleGroup.set(null);
     (document.getElementById('program-search-term') as HTMLInputElement).value = '';
     (document.getElementById('program-cycle-type-filter') as HTMLSelectElement).value = '';
@@ -614,19 +614,19 @@ filteredPrograms = computed(() => {
     this.activeProgramIdActions.set(null);
   }
 
- /**
-   * Calculates a descriptive string for the number of scheduled days in a program,
-   * handling both 'linear' and 'cycled' program types.
-   * @param program The program to analyze.
-   * @returns A formatted string like "Avg. 4.5 days/week" or "5 days".
-   */
+  /**
+    * Calculates a descriptive string for the number of scheduled days in a program,
+    * handling both 'linear' and 'cycled' program types.
+    * @param program The program to analyze.
+    * @returns A formatted string like "Avg. 4.5 days/week" or "5 days".
+    */
   getDaysScheduled(program: TrainingProgram): string {
     // --- NEW: Logic for 'linear' (week-by-week) programs ---
     if (program.programType === 'linear') {
       if (!program.weeks || program.weeks.length === 0) {
         return '0 days';
       }
-      
+
       const totalWeeks = program.weeks.length;
       const totalScheduledDays = program.weeks.reduce((accumulator, currentWeek) => accumulator + currentWeek.schedule.length, 0);
 
@@ -635,15 +635,15 @@ filteredPrograms = computed(() => {
       }
 
       const avgDaysPerWeek = totalScheduledDays / totalWeeks;
-      
+
       // Format to one decimal place, but remove '.0' if it's a whole number.
       // For example, 4.0 becomes "4", but 4.5 remains "4.5".
       const formattedAvg = avgDaysPerWeek.toFixed(1).replace(/\.0$/, '');
 
       return `Avg. ${formattedAvg} days/week`;
-    } 
+    }
     // --- EXISTING: Logic for 'cycled' programs (and fallback for old data) ---
-    else { 
+    else {
       if (!program.schedule || program.schedule.length === 0) {
         return '0 days';
       }
@@ -904,12 +904,21 @@ filteredPrograms = computed(() => {
     }
     else this.selectedCalendarDayDetails.set(null);
   }
-  startScheduledWorkout(routineId: string | undefined, programId: string | undefined): void {
+  startScheduledWorkout(routineId: string | undefined, programId: string | undefined, scheduledDayId: string | undefined): void {
     if (routineId) {
       const navigationExtras: any = {};
-      if (programId) navigationExtras.queryParams = { programId: programId };
-      this.router.navigate(['/workout/play', routineId], navigationExtras);
+      const playerRoute = this.workoutService.checkPlayerMode(routineId);
+      this.router.navigate([playerRoute, routineId], navigationExtras);
+      this.router.navigate([playerRoute, routineId], { queryParams: { programId, scheduledDayId } });
       this.selectCalendarDay(null);
+    }
+  }
+
+  startProgramWorkout(routineId: string, programId: string | undefined, scheduledDayId: string | undefined, event: Event): void {
+    event?.stopPropagation();
+    if (routineId) {
+      const playerRoute = this.workoutService.checkPlayerMode(routineId);
+      this.router.navigate([playerRoute, routineId], { queryParams: { programId, scheduledDayId } });
     }
   }
 
@@ -919,13 +928,13 @@ filteredPrograms = computed(() => {
       this.toastService.error("Cannot log session: No active program is being viewed.", 0, "Error");
       return;
     }
-    
+
     // The route should be an array of path segments
-    this.router.navigate(['workout/log/manual/new/from/', routineId], { 
-      queryParams: { 
-        programId: programId, 
-        date: format(workoutDate, 'yyyy-MM-dd') 
-      } 
+    this.router.navigate(['workout/log/manual/new/from/', routineId], {
+      queryParams: {
+        programId: programId,
+        date: format(workoutDate, 'yyyy-MM-dd')
+      }
     });
     this.selectCalendarDay(null);
   }
