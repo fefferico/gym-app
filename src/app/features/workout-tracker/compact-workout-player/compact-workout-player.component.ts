@@ -99,6 +99,25 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     completedSetsInSession: LoggedSet[];
   } | null>(null);
 
+  workoutProgress = computed(() => {
+    const routine = this.routine();
+    const log = this.currentWorkoutLog();
+
+    if (!routine || routine.exercises.length === 0) {
+      return 0;
+    }
+
+    const totalPlannedSets = routine.exercises.reduce((total, ex) => total + ex.sets.length, 0);
+    if (totalPlannedSets === 0) {
+      return 0; // Avoid division by zero
+    }
+
+    const totalCompletedSets = log.exercises?.reduce((total, ex) => total + ex.sets.length, 0) ?? 0;
+
+    return (totalCompletedSets / totalPlannedSets) * 100;
+  });
+
+
   filteredExercisesForSwitchModal = computed(() => {
     const term = this.modalSearchTerm().toLowerCase();
     if (this.isShowingSimilarInSwitchModal()) {
@@ -268,7 +287,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     if (analysis.incompleteExercises.length || analysis.skippedExercises.length) {
       msg = `You have ${analysis.skippedExercises.length} skipped and ${analysis.incompleteExercises.length} incomplete exercises. Finish anyway?`;
     }
-    const confirm = await this.alertService.showConfirm('Finish Workout', msg, 'Finish Anyway', 'Go Back');
+    const confirm = await this.alertService.showConfirm('Finish Workout', msg, 'Finish', 'Go Back');
     if (confirm?.data) {
       const log = this.currentWorkoutLog();
       log.endTime = Date.now();
@@ -335,47 +354,100 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     }
   }
 
-    addSet(exIndex: number) {
+  addSet(exIndex: number, type: 'standard' | 'warmup' = 'standard') {
     const routine = this.routine();
     if (!routine) return;
     const exercise = routine.exercises[exIndex];
-    const firstSet = exercise.sets[0];
+    const lastSet = exercise.sets[exercise.sets.length - 1] ?? exercise.sets[0];
+
     const newSet: ExerciseSetParams = {
-      id: uuidv4(), reps: 12, weight: firstSet?.weight ? parseFloat((firstSet.weight / 2).toFixed(1)) : 0,
-      restAfterSet: 30, type: 'standard'
+      id: uuidv4(),
+      reps: type === 'warmup' ? 12 : lastSet?.reps ?? 8,
+      weight: type === 'warmup' ? (lastSet?.weight ? parseFloat((lastSet.weight / 2).toFixed(1)) : 0) : (lastSet?.weight ?? 10),
+      restAfterSet: lastSet?.restAfterSet ?? 60,
+      type: type,
     };
-    exercise.sets.push(newSet);
+
+    if (type === 'warmup') {
+      exercise.sets.unshift(newSet);
+    } else {
+      exercise.sets.push(newSet);
+    }
+
     this.routine.set({ ...routine });
-    this.toastService.success(`Set added to ${exercise.exerciseName}`);
+    this.toastService.success(`${type === 'warmup' ? 'Warm-up set' : 'Set'} added to ${exercise.exerciseName}`);
     const expandedIndex = this.expandedExerciseIndex();
     if (expandedIndex === null || expandedIndex !== exIndex) {
       this.toggleExerciseExpansion(exIndex);
     }
   }
 
-  async removeExercise(exIndex: number) {
+  async removeSet(exIndex: number, setIndex: number) {
     const routine = this.routine();
     if (!routine) return;
-    const exerciseName = routine.exercises[exIndex].exerciseName;
-    const confirm = await this.alertService.showConfirm("Remove Exercise", `Are you sure you want to remove ${exerciseName}?`);
+    const exercise = routine.exercises[exIndex];
+    const setToRemove = exercise.sets[setIndex];
+
+    const baseExercise = this.availableExercises.find(ex => ex.id === exercise.exerciseId);
+    const isCardioExercise = baseExercise?.category === 'cardio';
+    // const isEmptySet = setToRemove && ((isCardioExercise && !setToRemove.distance && !setToRemove.duration) || (!isCardioExercise && !setToRemove.reps && !setToRemove.weight));
+    const isLoggedSet = setToRemove && this.isSetCompleted(exIndex, setIndex);
+
+    const confirm = isLoggedSet ? await this.alertService.showConfirm("Remove Set", `Are you sure you want to remove logged Set #${setIndex + 1} from ${exercise.exerciseName}?`) : {data: true};
     if (confirm?.data) {
+      // First, remove from the routine plan
+      exercise.sets.splice(setIndex, 1);
+      this.routine.set({ ...routine });
+
+      // Second, remove from the workout log if it was completed
+      const log = this.currentWorkoutLog();
+      const exerciseLog = log.exercises?.find(e => e.id === exercise.id);
+      if (exerciseLog) {
+        const loggedSetIndex = exerciseLog.sets.findIndex(s => s.plannedSetId === setToRemove.id);
+        if (loggedSetIndex > -1) {
+          exerciseLog.sets.splice(loggedSetIndex, 1);
+          this.currentWorkoutLog.set({ ...log });
+        }
+      }
+      this.toastService.info(`Set removed from ${exercise.exerciseName}`);
+    }
+  }
+
+
+async removeExercise(exIndex: number) {
+    const routine = this.routine();
+    if (!routine) return;
+    const exercise = routine.exercises[exIndex];
+    const confirm = await this.alertService.showConfirm("Remove Exercise", `Are you sure you want to remove ${exercise.exerciseName}?`);
+    if (confirm?.data) {
+      // First, remove from routine plan
       routine.exercises.splice(exIndex, 1);
       this.routine.set({ ...routine });
-      this.toastService.info(`${exerciseName} removed`);
+
+      // Second, remove from workout log
+      const log = this.currentWorkoutLog();
+      if(log.exercises) {
+          const logExIndex = log.exercises.findIndex(le => le.id === exercise.id);
+          if (logExIndex > -1) {
+              log.exercises.splice(logExIndex, 1);
+              this.currentWorkoutLog.set({ ...log });
+          }
+      }
+      this.toastService.info(`${exercise.exerciseName} removed`);
     }
   }
 
   private loadAvailableExercises(): void {
     this.exerciseService.getExercises().pipe(take(1)).subscribe(e => {
-        this.availableExercises = e.filter(ex => !ex.isHidden)
-        this.defaultExercises = e.filter(ex => !ex.isHidden)
+      this.availableExercises = e.filter(ex => !ex.isHidden)
+      this.defaultExercises = e.filter(ex => !ex.isHidden)
     });
   }
 
   openAddExerciseModal(): void { this.isAddExerciseModalOpen.set(true); }
   closeAddExerciseModal(): void {
-      this.isAddExerciseModalOpen.set(false);
-      this.modalSearchTerm.set('');
+    this.isAddExerciseModalOpen.set(false);
+    this.modalSearchTerm.set('');
   }
 
   openSwitchExerciseModal(exIndex: number): void {
@@ -404,7 +476,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       ]);
       const completedSets = this.currentWorkoutLog().exercises?.find(e => e.id === exercise.id)?.sets || [];
 
-      if (!baseExercise){
+      if (!baseExercise) {
         return;
       }
       this.insightsData.set({ exercise, baseExercise, lastPerformance, personalBests, completedSetsInSession: completedSets });
@@ -447,7 +519,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     });
     this.closeSwitchExerciseModal();
   }
-  
+
   formatPbValue(pb: PersonalBestSet): string {
     if (pb.weightUsed != null && pb.weightUsed > 0) {
       let value = this.weightUnitPipe.transform(pb.weightUsed);
@@ -491,7 +563,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return this.activeActionMenuIndex() === exerciseIndex;
   }
 
-    getLogDropdownActionItems(exerciseId: number, mode: 'dropdown' | 'compact-bar'): ActionMenuItem[] {
+  getLogDropdownActionItems(exerciseId: number, mode: 'dropdown' | 'compact-bar'): ActionMenuItem[] {
     const defaultBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-primary flex items-center text-sm hover:text-white dark:hover:text-gray-100 dark:hover:text-white';
     const warmupBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-blue-400 flex items-center text-sm hover:text-white dark:hover:text-gray-100 dark:hover:text-white';
     const deleteBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-red-600 inline-flex items-center text-sm hover:text-gray-100 hover:animate-pulse';;
