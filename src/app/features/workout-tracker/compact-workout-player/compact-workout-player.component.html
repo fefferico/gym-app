@@ -23,7 +23,8 @@
     <div *ngIf="routine() as currentRoutine; else loading" class="space-y-3">
       <!-- FIX: Removed 'overflow-hidden' from this div -->
       <div *ngFor="let exercise of currentRoutine.exercises; let exIndex = index"
-        class="bg-white dark:bg-gray-800 rounded-lg shadow-sm transition-all duration-300 relative">
+        class="bg-white dark:bg-gray-800 rounded-lg shadow-sm transition-all duration-300 relative"
+        [style.zIndex]="areActionsVisible(exIndex) ? 50 : 'auto'">
         <!-- Exercise Header -->
         <div (click)="toggleExerciseExpansion(exIndex)"
           class="p-3 flex items-center justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50">
@@ -33,23 +34,37 @@
               {{ exercise.exerciseName }}
             </h2>
           </div>
-          <div class="flex items-center">
+
+          <!-- Action Menu for Workouts -->
+          <div class="absolute top-2 right-2 z-60">
+            <div class="relative">
+              <app-icon name="chevron-down"
+                class="h-5 w-5 text-gray-500 transition-transform duration-200 flex-shrink-0"
+                [class.rotate-180]="expandedExerciseIndex() === exIndex"></app-icon>
+              <button (click)="toggleActionMenu(exIndex, $event)"
+                class="p-1.5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full focus:outline-none">
+                <app-icon name="menu_action" class="h-5 w-5"></app-icon>
+              </button>
+              <app-action-menu [isVisible]="activeActionMenuIndex() === exIndex" class="action-menu-container"
+                displayMode="dropdown" [items]="getLogDropdownActionItems(exIndex, 'dropdown')"
+                [isVisible]="activeActionMenuIndex() === exIndex" (itemClick)="handleActionMenuItemClick($event)"
+                (closeMenu)="closeActionMenu()">
+              </app-action-menu>
+            </div>
+          </div>
+
+          <!-- <div class="absolute top-2 right-2 z-50">
             <button (click)="toggleActionMenu(exIndex, $event)"
               class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
-              <!-- Refined Icon Name -->
               <app-icon name="menu_action" class="h-5 w-5 text-gray-500"></app-icon>
             </button>
-            <!-- Refined Icon and Rotation Logic -->
             <app-icon name="chevron-down" class="h-5 w-5 text-gray-500 transition-transform duration-200 flex-shrink-0"
               [class.rotate-180]="expandedExerciseIndex() === exIndex"></app-icon>
-          </div>
+          </div> -->
         </div>
 
-        <!-- Action Menu (this will now be visible) -->
-        <app-action-menu [isVisible]="activeActionMenuIndex() === exIndex"
-          (itemClick)="handleActionMenuItemClick($event)" (closeMenu)="closeActionMenu()"
-          [items]="getLogDropdownActionItems(exIndex,'dropdown')">
-        </app-action-menu>
+
+
 
 
         <!-- Sets Container -->
@@ -127,7 +142,7 @@
   <!-- Footer with Action Buttons -->
   <footer
     class="sticky bottom-0 left-0 right-0 z-20 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-3 flex items-center justify-around rounded-t-md">
-    <button (click)="openExerciseSelectionModal()"
+    <button (click)="openAddExerciseModal()"
       class="flex items-center space-x-2 bg-blue-500 text-white font-semibold py-2 px-4 rounded-full shadow-lg hover:bg-blue-600 transition-colors">
       <app-icon name="plus-circle" class="h-6 w-6"></app-icon>
       <span>Add Exercise</span>
@@ -139,11 +154,149 @@
     </button>
   </footer>
 
-  <app-exercise-selection-modal [isOpen]="isExerciseModalOpen()" [(searchTerm)]="modalSearchTerm" title="Add Exercise"
-    [exercises]="availableExercises" (exerciseSelected)="addExerciseToRoutine($event)"
-    (close)="closeExerciseSelectionModal()">
+  <app-exercise-selection-modal [isOpen]="isAddExerciseModalOpen()" [(searchTerm)]="modalSearchTerm"
+    title="ADD EXERCISE" [exercises]="availableExercises" (exerciseSelected)="addExerciseToRoutine($event)"
+    (close)="closeAddExerciseModal()">
+  </app-exercise-selection-modal>
+
+  <app-exercise-selection-modal [isOpen]="isSwitchExerciseModalOpen()" [(searchTerm)]="modalSearchTerm"
+    [title]="isShowingSimilarInSwitchModal() ? 'SIMILAR EXERCISES' : 'SWITCH EXERCISE'" [exercises]="availableExercises"
+    searchPlaceholder="Search for a replacement..." [showSimilarButton]="true"
+    [isShowingSimilarView]="isShowingSimilarInSwitchModal()" itemIconName="change" itemIconClass="text-green-500"
+    (exerciseSelected)="handleExerciseSwitch($event)"
+    (findSimilarClicked)="findAndShowSimilarExercises(exerciseToSwitchIndex())"
+    (backToSearchClicked)="isShowingSimilarInSwitchModal.set(false)" (close)="closeSwitchExerciseModal()">
   </app-exercise-selection-modal>
 
   <!-- You would create and place modals for switch/insights here -->
 
+</div>
+
+
+<!-- =================================================================== -->
+<!--               PERFORMANCE INSIGHTS MODAL                          -->
+<!-- =================================================================== -->
+<div *ngIf="isPerformanceInsightsModalOpen()" style="z-index: 100"
+  class="fixed inset-0 bg-gray-900/70 dark:bg-black/80 backdrop-blur-md flex items-center justify-center p-4 transition-opacity duration-300 ease-in-out">
+
+  <!-- Main Modal Container -->
+  <div *ngIf="insightsData() as data"
+    class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-xl max-h-[90vh] flex flex-col overflow-hidden transform transition-all duration-300 ease-in-out">
+
+    <!-- Modal Header -->
+    <header class="p-5 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center flex-shrink-0">
+      <div class="flex items-center gap-3">
+        <app-icon name="chart" class="h-7 w-7 text-primary dark:text-primary-light"></app-icon>
+        <h3 class="text-xl font-semibold text-gray-800 dark:text-gray-100">Performance Insights</h3>
+      </div>
+      <button (click)="closePerformanceInsightsModal()"
+        class="p-1.5 rounded-full text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700/70 focus:outline-none transition-colors">
+        <app-icon name="cancel" class="h-6 w-6"></app-icon>
+      </button>
+    </header>
+
+    <!-- Modal Body (Scrollable) -->
+    <div class="p-5 overflow-y-auto space-y-6 flex-grow">
+
+      <!-- 1. Completed Sets This Workout Section -->
+      <div class="rounded-md border border-gray-200 dark:border-gray-700/80">
+        <button (click)="toggleCompletedSetsForExerciseInfo()" class="w-full flex items-center justify-between p-3 text-left text-sm font-medium text-gray-700
+          dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors rounded-t-lg">
+          <span class="flex items-center gap-2">
+            <app-icon name="clipboard-list" class="h-6 w-6"></app-icon>
+            <span>Completed Sets in this Session ({{ data.completedSetsInSession.length }})</span>
+          </span>
+          <app-icon name="chevron-down" class="h-5 w-5 transform transition-transform duration-200"
+            [ngClass]="{'rotate-180': showCompletedSetsForExerciseInfo()}"></app-icon>
+        </button>
+        <div *ngIf="showCompletedSetsForExerciseInfo()"
+          class="bg-gray-50 dark:bg-gray-700/30 p-3 border-t border-gray-200 dark:border-gray-700/80 space-y-3 max-h-48 overflow-y-auto rounded-b-lg">
+          <div *ngFor="let setLog of data.completedSetsInSession; let i = index"
+            class="text-xs p-2 bg-white dark:bg-gray-700 rounded-md shadow-sm border border-gray-200 dark:border-gray-600">
+            <p class="font-semibold text-gray-700 dark:text-gray-200 mb-1">
+              Set #{{ i + 1 }}:
+            </p>
+            <div class="grid grid-cols-2 gap-x-2 gap-y-1 text-gray-600 dark:text-gray-300">
+              <span *ngIf="setLog.repsAchieved">Reps: <strong class="dark:text-gray-100">{{ setLog.repsAchieved
+                  }}</strong></span>
+              <span *ngIf="setLog.weightUsed != null">Weight: <strong class="dark:text-gray-100">{{ setLog.weightUsed |
+                  weightUnit }}</strong></span>
+              <span *ngIf="setLog.distanceAchieved">Distance: <strong class="dark:text-gray-100">{{
+                  setLog.distanceAchieved }} km</strong></span>
+              <span *ngIf="setLog.durationPerformed">Time: <strong class="dark:text-gray-100">{{
+                  formatSecondsToTime(setLog.durationPerformed) }}</strong></span>
+            </div>
+          </div>
+          <div *ngIf="data.completedSetsInSession.length === 0"
+            class="p-3 text-xs text-center text-gray-500 dark:text-gray-400">
+            No sets completed yet for this exercise in this workout.
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Last Performance Section -->
+      <div class="rounded-md border border-gray-200 dark:border-gray-700/80">
+        <div class="p-3 text-sm font-medium text-gray-700 dark:text-gray-300">
+          <span class="flex items-center gap-2">
+            <app-icon name="calendar-page" class="h-6 w-6"></app-icon>
+            <span>Last Performance ({{ data.lastPerformance?.lastPerformedDate | date:'shortDate' }})</span>
+          </span>
+        </div>
+        <div *ngIf="data.lastPerformance as lastPerf"
+          class="bg-gray-50 dark:bg-gray-700/30 p-3 border-t border-gray-200 dark:border-gray-700/80 space-y-3 max-h-48 overflow-y-auto rounded-b-lg">
+          <div *ngFor="let setLog of lastPerf.sets; let i = index"
+            class="text-xs p-2 bg-white dark:bg-gray-700 rounded-md shadow-sm border border-gray-200 dark:border-gray-600">
+            <p class="font-semibold text-gray-700 dark:text-gray-200 mb-1">Set #{{ i + 1 }}:</p>
+            <div class="grid grid-cols-2 gap-x-2 gap-y-1 text-gray-600 dark:text-gray-300">
+              <span *ngIf="setLog.repsAchieved">Reps: <strong class="dark:text-gray-100">{{ setLog.repsAchieved
+                  }}</strong></span>
+              <span *ngIf="setLog.weightUsed != null">Weight: <strong class="dark:text-gray-100">{{ setLog.weightUsed |
+                  weightUnit }}</strong></span>
+              <span *ngIf="setLog.distanceAchieved">Distance: <strong class="dark:text-gray-100">{{
+                  setLog.distanceAchieved }} km</strong></span>
+              <span *ngIf="setLog.durationPerformed">Time: <strong class="dark:text-gray-100">{{
+                  formatSecondsToTime(setLog.durationPerformed) }}</strong></span>
+            </div>
+          </div>
+        </div>
+        <div *ngIf="!data.lastPerformance"
+          class="p-3 text-xs text-center text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-700/80 rounded-b-lg">
+          No previous performance recorded for this exercise.
+        </div>
+      </div>
+
+      <!-- 3. Personal Bests Section -->
+      <div class="rounded-md border border-gray-200 dark:border-gray-700/80">
+        <div class="p-3 text-sm font-medium text-gray-700 dark:text-gray-300">
+          <span class="flex items-center gap-2">
+            <app-icon name="pb" class="h-6 w-6 text-yellow-500"></app-icon>
+            <span>Personal Bests</span>
+          </span>
+        </div>
+        <div *ngIf="data.personalBests.length > 0"
+          class="bg-gray-50 dark:bg-gray-700/30 p-3 border-t border-gray-200 dark:border-gray-700/80 grid grid-cols-1 sm:grid-cols-2 gap-3 rounded-b-lg">
+          <div *ngFor="let pb of data.personalBests"
+            class="text-xs p-2 bg-white dark:bg-gray-700 rounded-md shadow-sm border border-gray-200 dark:border-gray-600">
+            <p class="font-semibold text-gray-700 dark:text-gray-200">{{ pb.pbType }}</p>
+            <p class="text-lg font-bold text-primary dark:text-primary-light">{{ formatPbValue(pb) }}</p>
+            <p class="text-2xs text-gray-500 dark:text-gray-400">on {{ pb.timestamp | date:'shortDate' }}</p>
+          </div>
+        </div>
+        <div *ngIf="data.personalBests.length === 0"
+          class="p-3 text-xs text-center text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-700/80 rounded-b-lg">
+          No personal bests recorded for this exercise yet.
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <footer
+      class="p-4 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 text-right flex-shrink-0">
+      <button (click)="closePerformanceInsightsModal()"
+        class="inline-flex items-center bg-primary hover:bg-primary-dark focus:ring-4 focus:ring-primary-focus text-white font-semibold py-2.5 px-6 rounded-md text-sm transition-colors shadow-md hover:shadow-lg">
+        <app-icon name="done" class="h-7 w-7 mr-1"></app-icon>
+        DONE
+      </button>
+    </footer>
+  </div>
 </div>

@@ -128,7 +128,7 @@
 
       <!-- Top Bar -->
       <header
-        class="fixed top-0 left-0 right-0 z-30 bg-gray-50 dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 p-2 flex items-center justify-between h-15">
+        class="fixed top-0 left-0 right-0 z-30 bg-gray-50 dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 p-2 flex items-center justify-between h-15 rounded-b-md">
         <button appPress (shortPress)="goBack()"
           class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-light p-2 -ml-1">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -835,7 +835,7 @@
     <footer class="p-4 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 text-right">
       <button appPress (shortPress)="closePerformanceInsights()"
         class="flex items-center bg-primary hover:bg-primary-dark focus:ring-4 focus:ring-primary-focus text-white font-semibold py-2.5 px-6 rounded-md text-sm transition-colors shadow-md hover:shadow-lg">
-        <app-icon name="done" class="h-6 w-6"></app-icon>
+        <app-icon name="done" class="h-7 w-7 mr-1"></app-icon>
         DONE
       </button>
     </footer>
