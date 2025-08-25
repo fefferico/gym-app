@@ -10,7 +10,8 @@ export interface LoggedSet {
   // Actual performance data
   repsAchieved: number;
   weightUsed?: number | undefined;
-  durationPerformed?: number; // Duration in seconds, if it was a timed set or part of one.
+  durationPerformed?: number; // in seconds
+  distanceAchieved?: number; // in kilometers
   tempoUsed?: string;     // Actual tempo used, if tracked by user.
   // restTaken?: number;  // Actual rest taken before the next set (more complex to track accurately)
 
@@ -19,6 +20,7 @@ export interface LoggedSet {
   targetReps?: number;
   targetWeight?: number | null;
   targetDuration?: number;
+  targetDistance?: number; // in kilometers
   targetTempo?: string; // Target tempo from the plan
   targetRestAfterSet?: number; // Target rest after this set, if applicable
   restAfterSetUsed?: number;

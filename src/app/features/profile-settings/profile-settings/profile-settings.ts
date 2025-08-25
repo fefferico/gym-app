@@ -106,6 +106,7 @@ export class ProfileSettingsComponent implements OnInit {
 
     this.appSettingsForm = this.fb.group({
       enableTimerCountdownSound: [true],
+      playerMode: ['focus'],
       countdownSoundSeconds: [5, [Validators.required, Validators.min(1), Validators.max(60)]],
       enablePresetTimer: [false],
       presetTimerDurationSeconds: [10, [Validators.required, Validators.min(3), Validators.max(60)]],

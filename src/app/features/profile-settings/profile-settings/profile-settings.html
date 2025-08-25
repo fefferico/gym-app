@@ -148,6 +148,26 @@
         <section class="bg-white dark:bg-gray-700 p-4 sm:p-6 rounded-md shadow-md">
             <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">Workout Player Settings</h2>
             <form [formGroup]="appSettingsForm" class="space-y-4">
+                <!-- Player mode -->
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-md font-medium text-gray-700 dark:text-gray-300">Player Mode</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mr-1">Choose the player mode</p>
+                    </div>
+                    <label for="player-mode-toggle" class="inline-flex items-center cursor-pointer">
+                        <span class="sr-only">Toggle Player Mode</span>
+                        <input type="checkbox" id="player-mode-toggle" class="sr-only peer"
+                            formControlName="playerMode" (change)="currentVibrator.vibrate(50)">
+                        <div
+                            class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary dark:peer-checked:bg-primary-dark">
+                        </div>
+                        <span class="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
+                            {{ appSettingsForm.get('playerMode')?.value ? 'Compact' : 'Focus' }}
+                        </span>
+                    </label>
+                </div>
+
+
                 <!-- Weight Step -->
                 <div class="border-b border-gray-200 dark:border-gray-600 pb-4">
                     <label for="weightStep" class="block text-md font-medium text-gray-700 dark:text-gray-300">Weight

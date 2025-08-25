@@ -187,6 +187,10 @@ export class HomeComponent implements OnInit {
     this.vibrate();
     this.router.navigate(['/personal-gym']);
   }
+
+  navigateToCompactMode(): void {
+    this.router.navigate(['/workout/play/compact', 'toning-3-giorno-1']);
+  }
   
   getVersion(): string {
     return this.storageService.getVersion();

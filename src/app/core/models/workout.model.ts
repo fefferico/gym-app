@@ -4,7 +4,8 @@ export interface ExerciseSetParams {
   id: string;
   reps?: number;
   weight?: number | null; // Allow null for bodyweight or if weight is not applicable
-  duration?: number;
+  duration?: number; // in seconds
+  distance?: number; // in kilometers
   tempo?: string;
   restAfterSet: number; // For the set *within* an exercise. For supersets, this might be 0 for intermediate exercises.
   notes?: string;

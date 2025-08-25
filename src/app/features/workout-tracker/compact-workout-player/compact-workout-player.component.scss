@@ -1,0 +1,28 @@
+/* Add a subtle transition for the exercise expansion */
+.sets-container {
+  transition: max-height 0.3s ease-in-out, padding 0.3s ease-in-out;
+  max-height: 0;
+  overflow: hidden;
+  padding: 0 1rem;
+}
+
+.sets-container.expanded {
+  max-height: 1000px; /* Large enough to fit any number of sets */
+  padding: 1rem;
+}
+
+/* Style for the input fields for a cleaner look */
+input[type="number"], input[type="text"] {
+  -moz-appearance: textfield;
+  border: 1px solid;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.rotate-180 {
+    transform: rotate(180deg);
+}

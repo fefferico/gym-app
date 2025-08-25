@@ -5,6 +5,7 @@ import { WorkoutBuilderComponent } from './workout-builder'; // This now serves 
 import { WorkoutPlayerComponent } from './workout-player';
 import { WorkoutSummaryComponent } from './workout-summary/workout-summary';
 import { KettleBellWorkoutTrackerComponent } from '../../kb-workout-tracker/kb-workout-tracker';
+import { CompactWorkoutPlayerComponent } from './compact-workout-player/compact-workout-player.component';
 
 export const WORKOUT_TRACKER_ROUTES: Routes = [
   {
@@ -19,7 +20,7 @@ export const WORKOUT_TRACKER_ROUTES: Routes = [
     data: { mode: 'routineBuilder', isNew: true }, // Pass mode and isNew
     title: 'Create New Routine'
   },
-    {
+  {
     path: 'routine/new-from-log/:logId',
     component: WorkoutBuilderComponent,
     data: { mode: 'routineBuilder', isNew: true },
@@ -76,5 +77,9 @@ export const WORKOUT_TRACKER_ROUTES: Routes = [
   {
     path: 'routine/kb-workout-tracker',
     component: KettleBellWorkoutTrackerComponent
+  },
+  {
+    path: 'play/compact/:routineId',
+    component: CompactWorkoutPlayerComponent
   },
 ];
