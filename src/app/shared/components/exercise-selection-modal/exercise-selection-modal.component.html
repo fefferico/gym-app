@@ -1,15 +1,13 @@
-<div *ngIf="isOpen"
-    class="fixed inset-0 bg-gray-700 bg-opacity-75 transition-opacity overflow-y-auto h-full w-full z-[70] flex items-center justify-center p-4 backdrop-blur-sm"
-    (click)="onClose()">
+<div *ngIf="isOpen()"
+    class="fixed inset-0 bg-gray-700 bg-opacity-75 transition-opacity overflow-y-auto h-full w-full z-[70] flex items-center justify-center p-4 backdrop-blur-sm">
 
-    <div class="relative transform overflow-hidden rounded-md bg-white dark:bg-gray-700 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg flex flex-col max-h-[90vh]"
-        (click)="$event.stopPropagation()">
+    <div (clickOutside)="onClose()" class="relative transform overflow-hidden rounded-md bg-white dark:bg-gray-700 text-left shadow-xl transition-all sm:my-8 w-full flex flex-col max-h-[90vh]">
 
         <!-- Header & Search Section -->
         <div class="px-5 py-2 flex-shrink-0">
             <div class="flex justify-between items-center">
-                <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">{{ title }}</h3>
-                <button type="button" appPress (shortPress)="onClose()"
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">{{ title() }}</h3>
+                <button type="button" (click)="onClose()"
                     class="p-1 rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none">
                     <app-icon name="cancel" class="w-6 h-6"></app-icon>
                 </button>
@@ -17,19 +15,19 @@
 
             <div class="my-4 text-center">
                 <!-- Main Search Bar (visible in default view) -->
-                <input #exerciseSearchFied *ngIf="!isShowingSimilarView" type="text" [placeholder]="searchPlaceholder"
-                    [ngModel]="internalSearchTerm()" (ngModelChange)="onSearchTermChange($event)"
+                <input #exerciseSearchFied *ngIf="!isShowingSimilarView()" type="text" [placeholder]="searchPlaceholder()"
+                    [(ngModel)]="searchTerm"
                     (keydown.enter)="onSearchEnter()"
                     class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-gray-200" />
 
                 <!-- "Show Similar" button (conditionally rendered) -->
-                <button *ngIf="showSimilarButton && !isShowingSimilarView" appPress (shortPress)="onFindSimilar()"
+                <button *ngIf="showSimilarButton() && !isShowingSimilarView()" (click)="onFindSimilar()"
                     class="justify-center inline-flex items-center mt-2 px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700">
                     Or Show Similar Exercises
                 </button>
 
                 <!-- "Back to Search" button (visible in 'similar' view) -->
-                <button *ngIf="isShowingSimilarView" appPress (shortPress)="onBackToSearch()"
+                <button *ngIf="isShowingSimilarView()" (click)="onBackToSearch()"
                     class="justify-center inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md shadow-sm text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                     <app-icon name="back" class="w-5 h-5 mr-2"></app-icon>
                     Back to Search
@@ -39,45 +37,41 @@
 
         <!-- Scrollable Exercise List -->
          <div class="h-80 px-4 sm:px-6 py-2">
-        <cdk-virtual-scroll-viewport itemSize="20" class="h-full custom-scrollbar ">
-            <ul class="space-y-1">
-                <li *cdkVirtualFor="let ex of filteredExercises(); let odd = odd" appPressScroll
-                    (shortPress)="onExerciseClicked(ex)"
-                    class="p-3 rounded-md cursor-pointer transition-all duration-150 ease-in-out flex justify-between items-center transform hover:-translate-y-1 shadow-sm hover:shadow-md"
-                    [ngClass]="{
-                                          'p-3 mr-1 hover:bg-gray-400 dark:hover:bg-gray-800 rounded-md cursor-pointer transition-all duration-150 ease-in-out flex justify-between items-center scrollbar-thin scrollbar-thumb-primary scrollbar-track-gray-200 dark:scrollbar-track-gray-800 transform hover:-translate-y-1 shadow-sm hover:shadow-md transition-shadow': true,
-                                          'bg-gray-200 dark:bg-gray-600': odd,
-                                          'bg-gray-100 dark:bg-gray-500': !odd
-                                      }">
-                    <div>
-                        <span class="font-medium text-gray-800 dark:text-gray-200">{{ ex.name }}</span>
-                        <span *ngIf="ex.category" class="block text-xs text-gray-500 dark:text-gray-400">{{ ex.category
-                            | titlecase }} {{ ex.primaryMuscleGroup ? (' - ' + ex.primaryMuscleGroup | titlecase) : ''
-                            }}</span>
-                        <span *ngIf="ex.isCustom || ex.lastUsedAt"
-                            class="block text-xs text-gray-500 dark:text-gray-400 italic">
-                            [ <ng-container *ngIf="ex.isCustom">Custom</ng-container>
-                            <ng-container *ngIf="ex.isCustom && ex.lastUsedAt"> | </ng-container>
-                            <ng-container *ngIf="ex.lastUsedAt">Used {{ ex.lastUsedAt | date:'dd-MM-yy':'UTC'
-                                }}</ng-container> ]
-                        </span>
-                    </div>
-                    <app-icon [name]="itemIconName" [class]="'h-6 w-6 mr-1 flex-shrink-0 ' + itemIconClass"></app-icon>
-                </li>
-                <li *ngIf="filteredExercises().length === 0" class="text-gray-500 dark:text-gray-400 text-center p-4">
-                    {{ isShowingSimilarView ? 'No similar exercises found.' : 'No exercises match your search.' }}
-                </li>
-            </ul>
-        </cdk-virtual-scroll-viewport>
+            <cdk-virtual-scroll-viewport itemSize="60" class="h-full custom-scrollbar ">
+                <!-- FIXED: Iterate over the reactive computed signal -->
+                <ul class="space-y-1">
+                    <li *cdkVirtualFor="let ex of filteredExercises(); let odd = odd" 
+                        (click)="onExerciseClicked(ex)"
+                        class="p-3 rounded-md cursor-pointer transition-all duration-150 ease-in-out flex justify-between items-center transform hover:-translate-y-1 shadow-sm hover:shadow-md"
+                        [ngClass]="{
+                            'bg-gray-200 dark:bg-gray-600': odd,
+                            'bg-gray-100 dark:bg-gray-500': !odd
+                        }">
+                        <div>
+                            <span class="font-medium text-gray-800 dark:text-gray-200">{{ ex.name }}</span>
+                            <span *ngIf="ex.category" class="block text-xs text-gray-500 dark:text-gray-400">{{ ex.category | titlecase }} {{ ex.primaryMuscleGroup ? (' - ' + ex.primaryMuscleGroup | titlecase) : '' }}</span>
+                            <span *ngIf="ex.isCustom || ex.lastUsedAt" class="block text-xs text-gray-500 dark:text-gray-400 italic">
+                                [ <ng-container *ngIf="ex.isCustom">Custom</ng-container>
+                                <ng-container *ngIf="ex.isCustom && ex.lastUsedAt"> | </ng-container>
+                                <ng-container *ngIf="ex.lastUsedAt">Used {{ ex.lastUsedAt | date:'dd-MM-yy':'UTC' }}</ng-container> ]
+                            </span>
+                        </div>
+                        <app-icon [name]="itemIconName()" [class]="'h-6 w-6 mr-1 flex-shrink-0 ' + itemIconClass()"></app-icon>
+                    </li>
+                    <li *ngIf="filteredExercises().length === 0" class="text-gray-500 dark:text-gray-400 text-center p-4">
+                        {{ isShowingSimilarView() ? 'No similar exercises found.' : 'No exercises match your search.' }}
+                    </li>
+                </ul>
+            </cdk-virtual-scroll-viewport>
         </div>
-        <div *ngIf="showCreateCustomLink" class="py-3 border-t border-gray-200 dark:border-gray-600 text-center">
-            <button type="button" appPress (shortPress)="onCreateCustom()"
+        <div *ngIf="showCreateCustomLink()" class="py-3 border-t border-gray-200 dark:border-gray-600 text-center">
+            <button type="button" (click)="onCreateCustom()"
                 class="text-sm text-primary dark:text-primary-light hover:underline">
                 Or, create a new custom exercise entry...
             </button>
         </div>
 
-        <!-- Footer with optional "Create Custom" link -->
+        <!-- Footer -->
         <div
             class="bg-gray-50 dark:bg-gray-800 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 flex-shrink-0 justify-center">
             <button type="button" (click)="onClose()"

@@ -199,7 +199,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   isExerciseAddModalOpen = signal(false);
   availableExercises: Exercise[] = [];
   modalSearchTerm = signal('');
-  filteredAvailableExercises = computed(() => {
+  filteredExercisesForAddExerciseModal = computed(() => {
     let term = this.modalSearchTerm().toLowerCase();
     if (!term) {
       return this.availableExercises;
@@ -4435,7 +4435,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
    * inside the exercise search input field.
    */
   onSearchEnter(type: 'add' | 'switch' = 'add'): void {
-    const filteredList = this.filteredAvailableExercises();
+    const filteredList = this.filteredExercisesForAddExerciseModal();
 
     // Check if there is exactly one exercise in the filtered list
     if (filteredList.length === 1) {
@@ -4785,7 +4785,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       if (similarExercises.length === 0) {
         this.toastService.info("No similar exercises found based on muscle groups.", 4000, "Not Found");
       }
-
+      this.switchModalSearchTerm.set('');
       this.exercisesForSwitchModal.set(similarExercises);
       this.isShowingSimilarInSwitchModal.set(true); // Set the flag to display the 'similar' list
     } catch (error) {

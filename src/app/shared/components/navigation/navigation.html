@@ -1,16 +1,15 @@
 <!-- In navigation.html -->
 
-<nav
-  class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow- ऊपर-md z-40">
+<!-- The <nav> element no longer needs positioning classes -->
+<nav class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg rounded-t-md">
   <div class="container mx-auto flex justify-around items-center h-16 overflow-x-auto">
 
-    <!-- The template is now much cleaner. We no longer need #rla or complex conditions. -->
+    <!-- The rest of your HTML remains exactly the same -->
     <a *ngFor="let item of navItems" [routerLink]="item.path" appPress (shortPress)="onNavigate(item.path)"
       (longPress)="onLongPress(item)" (pressRelease)="onPressRelease(item)"
       class="flex w-full flex-col items-center justify-center text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary-light cursor-pointer transition-colors p-1 w-16 max-w-[64px]"
       [class.text-primary]="isLinkActive(item)" [class.dark:text-primary-light]="isLinkActive(item)"
-      [ngClass]="{'hover:scale-125': !isLinkActive(item)}"
-      >
+      [ngClass]="{'hover:scale-125': !isLinkActive(item)}">
 
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
         class="w-6 h-6 transition-all duration-200"
@@ -18,8 +17,7 @@
         [class.scale-125]="isLinkActive(item)">
         <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="item.iconSvgPath" />
       </svg>
-
-      <!-- Show/hide the label by calling the same helper method -->
+      
       <span *ngIf="isLinkActive(item)" class="text-xs transition-opacity duration-300 font-medium">
         {{ item.label }}
       </span>

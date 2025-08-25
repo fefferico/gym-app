@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, OnDestroy, signal, computed, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subscription, timer, of, lastValueFrom, firstValueFrom } from 'rxjs';
+import { Subscription, timer, of, lastValueFrom } from 'rxjs';
 import { switchMap, tap, take } from 'rxjs/operators';
 import {
   Routine,
@@ -28,8 +28,8 @@ import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { ExerciseSelectionModalComponent } from '../../../shared/components/exercise-selection-modal/exercise-selection-modal.component';
 import { FormsModule } from '@angular/forms';
 import { ClickOutsideDirective } from '../../../shared/directives/click-outside.directive';
-import { ActionMenuItem } from '../../../core/models/action-menu.model';
 import { ActionMenuComponent } from '../../../shared/components/action-menu/action-menu';
+import { ActionMenuItem } from '../../../core/models/action-menu.model';
 
 enum SessionState {
   Loading = 'loading',
@@ -60,7 +60,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   protected toastService = inject(ToastService);
   protected unitsService = inject(UnitsService);
   private weightUnitPipe = inject(WeightUnitPipe);
-
   private cdr = inject(ChangeDetectorRef);
 
   routine = signal<Routine | null | undefined>(undefined);
@@ -77,7 +76,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   private routeSub: Subscription | undefined;
 
   routineId: string | null = null;
-  currentWorkoutLog = signal<Partial<WorkoutLog>>({});
+  currentWorkoutLog = signal<Partial<WorkoutLog>>({ exercises: [] });
 
   defaultExercises: Exercise[] = [];
   availableExercises: Exercise[] = [];
@@ -101,20 +100,18 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   } | null>(null);
 
   filteredExercisesForSwitchModal = computed(() => {
-    let term = this.modalSearchTerm().toLowerCase();
-    // If we're showing similar exercises, just return that list without filtering by search term
+    const term = this.modalSearchTerm().toLowerCase();
     if (this.isShowingSimilarInSwitchModal()) {
       return this.exercisesForSwitchModal();
     }
-    // Otherwise, filter the main list of available exercises by the search term
     if (!term) {
       return this.availableExercises;
     }
-    term = this.exerciseService.normalizeExerciseNameForSearch(term);
+    const normalizedTerm = this.exerciseService.normalizeExerciseNameForSearch(term);
     return this.availableExercises.filter(ex =>
-      ex.name.toLowerCase().includes(term) ||
-      (ex.category && ex.category.toLowerCase().includes(term)) ||
-      (ex.primaryMuscleGroup && ex.primaryMuscleGroup.toLowerCase().includes(term))
+      ex.name.toLowerCase().includes(normalizedTerm) ||
+      ex.category?.toLowerCase().includes(normalizedTerm) ||
+      ex.primaryMuscleGroup?.toLowerCase().includes(normalizedTerm)
     );
   });
 
@@ -263,7 +260,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
   toggleExerciseExpansion(index: number): void {
     this.expandedExerciseIndex.update(current => current === index ? null : index);
-    this.cdr.detectChanges();
   }
 
   async finishWorkout(): Promise<void> {
@@ -303,7 +299,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return { completedExercises: completed, incompleteExercises: incomplete, skippedExercises: skipped };
   }
 
-  // --- Action Menu Logic ---
   toggleActionMenu(index: number, event: Event) {
     event.stopPropagation();
     this.activeActionMenuIndex.update(current => current === index ? null : index);
@@ -312,11 +307,11 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   closeActionMenu() { this.activeActionMenuIndex.set(null); }
 
   handleActionMenuItemClick(event: { actionKey: string, data?: any }) {
-    const { actionKey, data } = event;
-    const { exIndex } = data;
+    const { actionKey, data: { exIndex } } = event;
     switch (actionKey) {
       case 'switch': this.openSwitchExerciseModal(exIndex); break;
       case 'insights': this.openPerformanceInsightsModal(exIndex); break;
+      case 'add_set': this.addSet(exIndex); break;
       case 'add_warmup': this.addWarmupSet(exIndex); break;
       case 'remove': this.removeExercise(exIndex); break;
     }
@@ -335,7 +330,25 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     this.routine.set({ ...routine });
     this.toastService.success(`Warm-up set added to ${exercise.exerciseName}`);
     const expandedIndex = this.expandedExerciseIndex();
-    if (expandedIndex !== null && expandedIndex !== exIndex) {
+    if (expandedIndex === null || expandedIndex !== exIndex) {
+      this.toggleExerciseExpansion(exIndex);
+    }
+  }
+
+    addSet(exIndex: number) {
+    const routine = this.routine();
+    if (!routine) return;
+    const exercise = routine.exercises[exIndex];
+    const firstSet = exercise.sets[0];
+    const newSet: ExerciseSetParams = {
+      id: uuidv4(), reps: 12, weight: firstSet?.weight ? parseFloat((firstSet.weight / 2).toFixed(1)) : 0,
+      restAfterSet: 30, type: 'standard'
+    };
+    exercise.sets.push(newSet);
+    this.routine.set({ ...routine });
+    this.toastService.success(`Set added to ${exercise.exerciseName}`);
+    const expandedIndex = this.expandedExerciseIndex();
+    if (expandedIndex === null || expandedIndex !== exIndex) {
       this.toggleExerciseExpansion(exIndex);
     }
   }
@@ -344,7 +357,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const routine = this.routine();
     if (!routine) return;
     const exerciseName = routine.exercises[exIndex].exerciseName;
-    const confirm = await this.alertService.showConfirm("Remove Exercise", `Remove ${exerciseName}?`);
+    const confirm = await this.alertService.showConfirm("Remove Exercise", `Are you sure you want to remove ${exerciseName}?`);
     if (confirm?.data) {
       routine.exercises.splice(exIndex, 1);
       this.routine.set({ ...routine });
@@ -352,23 +365,20 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     }
   }
 
-  // --- Modals ---
   private loadAvailableExercises(): void {
     this.exerciseService.getExercises().pipe(take(1)).subscribe(e => {
-      this.availableExercises = e.filter(ex => !ex.isHidden)
-      this.defaultExercises = e.filter(ex => !ex.isHidden)
+        this.availableExercises = e.filter(ex => !ex.isHidden)
+        this.defaultExercises = e.filter(ex => !ex.isHidden)
     });
   }
 
   openAddExerciseModal(): void { this.isAddExerciseModalOpen.set(true); }
   closeAddExerciseModal(): void {
-    this.isAddExerciseModalOpen.set(false);
-    this.availableExercises = this.defaultExercises;
+      this.isAddExerciseModalOpen.set(false);
+      this.modalSearchTerm.set('');
   }
 
   openSwitchExerciseModal(exIndex: number): void {
-    this.exercisesForSwitchModal.set([]); // Clear any previous "similar" results
-
     this.exerciseToSwitchIndex.set(exIndex);
     this.isSwitchExerciseModalOpen.set(true);
   }
@@ -376,19 +386,16 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     this.isSwitchExerciseModalOpen.set(false);
     this.isShowingSimilarInSwitchModal.set(false);
     this.exerciseToSwitchIndex.set(null);
-    this.availableExercises = this.defaultExercises;
+    this.modalSearchTerm.set('');
   }
 
   async openPerformanceInsightsModal(exIndex: number): Promise<void> {
     const routine = this.routine();
     if (!routine) return;
     const exercise = routine.exercises[exIndex];
-
-    // FIX: Add take(1) to ensure observables complete for lastValueFrom
     const baseExercise$ = this.exerciseService.getExerciseById(exercise.exerciseId).pipe(take(1));
     const lastPerformance$ = this.trackingService.getLastPerformanceForExercise(exercise.exerciseId).pipe(take(1));
     const personalBests$ = this.trackingService.getAllPersonalBestsForExercise(exercise.exerciseId).pipe(take(1));
-
     try {
       const [baseExercise, lastPerformance, personalBests] = await Promise.all([
         lastValueFrom(baseExercise$),
@@ -397,7 +404,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       ]);
       const completedSets = this.currentWorkoutLog().exercises?.find(e => e.id === exercise.id)?.sets || [];
 
-      if (!baseExercise || baseExercise === null) {
+      if (!baseExercise){
         return;
       }
       this.insightsData.set({ exercise, baseExercise, lastPerformance, personalBests, completedSetsInSession: completedSets });
@@ -414,12 +421,11 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
   addExerciseToRoutine(exercise: Exercise): void {
+    const isCardioExercise = exercise.category === 'cardio';
     const newWorkoutExercise: WorkoutExercise = {
       id: uuidv4(), exerciseId: exercise.id, exerciseName: exercise.name, sets: [{
-        id: uuidv4(), reps: this.isCardio({ exerciseId: exercise.id } as WorkoutExercise) ? undefined : 8,
-        weight: this.isCardio({ exerciseId: exercise.id } as WorkoutExercise) ? undefined : 10,
-        distance: this.isCardio({ exerciseId: exercise.id } as WorkoutExercise) ? 1 : undefined,
-        duration: this.isCardio({ exerciseId: exercise.id } as WorkoutExercise) ? 300 : undefined,
+        id: uuidv4(), reps: isCardioExercise ? undefined : 8, weight: isCardioExercise ? undefined : 10,
+        distance: isCardioExercise ? 1 : undefined, duration: isCardioExercise ? 300 : undefined,
         restAfterSet: 60, type: 'standard'
       }], type: 'standard', rounds: 1, supersetId: null, supersetOrder: null
     };
@@ -432,33 +438,16 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     if (index === null) return;
     this.routine.update(r => {
       if (r) {
+        const oldExerciseName = r.exercises[index].exerciseName;
         r.exercises[index].exerciseId = newExercise.id;
         r.exercises[index].exerciseName = newExercise.name;
-        this.toastService.success(`Switched to ${newExercise.name}`);
+        this.toastService.success(`Switched ${oldExerciseName} with ${newExercise.name}`);
       }
       return r;
     });
     this.closeSwitchExerciseModal();
-
-    const expandedIndex = this.expandedExerciseIndex();
-    if (expandedIndex !== null && expandedIndex !== index) {
-      this.toggleExerciseExpansion(index);
-    }
   }
-
-  // FIX: Make this a stable property to prevent re-rendering
-  readonly exerciseActionMenuItems: ActionMenuItem[] = [
-    { label: 'Switch Exercise', actionKey: 'switch', iconName: 'change' },
-    { label: 'Performance Insights', actionKey: 'insights', iconName: 'chart' },
-    { label: 'Add Warm-up Set', actionKey: 'add_warmup', iconName: 'plus-circle' },
-    { isDivider: true },
-    { label: 'Remove Exercise', actionKey: 'remove', iconName: 'trash', buttonClass: 'text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-700/50' }
-  ];
-
-  getExerciseActionItemsWithData(exIndex: number): ActionMenuItem[] {
-    return this.exerciseActionMenuItems.map(item => ({ ...item, data: { ...item.data, exIndex } }));
-  }
-
+  
   formatPbValue(pb: PersonalBestSet): string {
     if (pb.weightUsed != null && pb.weightUsed > 0) {
       let value = this.weightUnitPipe.transform(pb.weightUsed);
@@ -470,76 +459,67 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return 'N/A';
   }
 
-  getLogDropdownActionItems(exerciseId: number, mode: 'dropdown' | 'compact-bar'): ActionMenuItem[] {
+  async findAndShowSimilarExercises(exerciseToSwitchIndex: number | null): Promise<void> {
+    if (exerciseToSwitchIndex === null) return;
+    const exercise = this.routine()?.exercises[exerciseToSwitchIndex];
+    if (!exercise) return;
+    let baseExercise = this.availableExercises.find(ex => ex.id === exercise.exerciseId);
+    if (!baseExercise) {
+      baseExercise = await lastValueFrom(this.exerciseService.getExerciseById(exercise.exerciseId).pipe(take(1)));
+      if (!baseExercise) {
+        this.toastService.error("Could not load details for the current exercise.");
+        return;
+      }
+    }
+    try {
+      const similar = await lastValueFrom(this.exerciseService.getSimilarExercises(baseExercise, 12).pipe(take(1)));
+      if (similar.length === 0) {
+        this.toastService.info("No similar exercises found.");
+      }
+      this.modalSearchTerm.set('');
+      this.exercisesForSwitchModal.set(similar);
+      this.isShowingSimilarInSwitchModal.set(true);
+    } catch (error) {
+      this.toastService.error("Could not load similar exercises.");
+    }
+  }
+
+  toggleCompletedSetsForExerciseInfo(): void { this.showCompletedSetsForExerciseInfo.update(v => !v); }
+  toggleCompletedSetsForDayInfo(): void { this.showCompletedSetsForDayInfo.update(v => !v); }
+
+  areActionsVisible(exerciseIndex: number): boolean {
+    return this.activeActionMenuIndex() === exerciseIndex;
+  }
+
+    getLogDropdownActionItems(exerciseId: number, mode: 'dropdown' | 'compact-bar'): ActionMenuItem[] {
     const defaultBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-primary flex items-center text-sm hover:text-white dark:hover:text-gray-100 dark:hover:text-white';
+    const warmupBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-blue-400 flex items-center text-sm hover:text-white dark:hover:text-gray-100 dark:hover:text-white';
     const deleteBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-red-600 inline-flex items-center text-sm hover:text-gray-100 hover:animate-pulse';;
 
-    const defaultIconClass = 'w-6 h-6 mr-2';
     const actionsArray: ActionMenuItem[] = [
       {
-        label: 'Switch Exercise', actionKey: 'switch', iconName: 'change', iconClass: defaultIconClass, data: { exIndex: exerciseId },
+        label: 'Switch Exercise', actionKey: 'switch', iconName: 'change', data: { exIndex: exerciseId },
         buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
       },
       {
-        label: 'Performance Insights', actionKey: 'insights', iconName: 'chart', iconClass: defaultIconClass, data: { exIndex: exerciseId },
+        label: 'Performance Insights', actionKey: 'insights', iconName: 'chart', data: { exIndex: exerciseId },
         buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
       },
       {
-        label: 'Add Warm-up Set', actionKey: 'add_warmup', iconName: 'plus-circle', iconClass: defaultIconClass, data: { exIndex: exerciseId },
+        label: 'Add Warm-up Set', actionKey: 'add_warmup', iconName: 'flame', data: { exIndex: exerciseId },
+        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + warmupBtnClass,
+      },
+      {
+        label: 'Add Set', actionKey: 'add_set', iconName: 'plus-circle', data: { exIndex: exerciseId },
         buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
       },
       { isDivider: true },
       {
-        label: 'Remove Exercise', actionKey: 'remove', iconName: 'trash', iconClass: defaultIconClass, data: { exIndex: exerciseId },
+        label: 'Remove Exercise', actionKey: 'remove', iconName: 'trash', data: { exIndex: exerciseId },
         buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + deleteBtnClass,
       }
     ];
     return actionsArray;
   }
 
-  /**
-     * Fetches exercises similar to the current one and displays them in the modal.
-     */
-  async findAndShowSimilarExercises(exerciseToSwitchIndex: number | null): Promise<void> {
-    if (exerciseToSwitchIndex === undefined || exerciseToSwitchIndex === null) return;
-    const activeInfo: WorkoutExercise | undefined = this.routine()?.exercises.find((ex, index) => index === exerciseToSwitchIndex);
-    if (!activeInfo) return;
-
-    // Ensure we have the full base exercise definition
-    let baseExercise = this.availableExercises.find(ex => ex.id === activeInfo.exerciseId);
-    if (!baseExercise) {
-      baseExercise = await firstValueFrom(this.exerciseService.getExerciseById(activeInfo.exerciseId));
-      if (!baseExercise) {
-        this.toastService.error("Could not load details for the current exercise.", 0, "Error");
-        return;
-      }
-    }
-
-    try {
-      const similarExercises = await firstValueFrom(this.exerciseService.getSimilarExercises(baseExercise, 12));
-      
-      if (similarExercises.length === 0) {
-        this.toastService.info("No similar exercises found based on muscle groups.", 4000, "Not Found");
-      }
-      this.availableExercises = [...similarExercises];
-
-      this.exercisesForSwitchModal.set(similarExercises);
-      this.isShowingSimilarInSwitchModal.set(true); // Set the flag to display the 'similar' list
-    } catch (error) {
-      console.error("Error fetching similar exercises:", error);
-      this.toastService.error("Could not load similar exercises.", 0, "Error");
-    }
-  }
-
-  toggleCompletedSetsForExerciseInfo(): void {
-    this.showCompletedSetsForExerciseInfo.update(v => !v);
-  }
-
-  toggleCompletedSetsForDayInfo(): void {
-    this.showCompletedSetsForDayInfo.update(v => !v);
-  }
-
-  areActionsVisible(exerciseIndex: number): boolean {
-    return this.activeActionMenuIndex() === exerciseIndex;
-  }
 }

@@ -19,7 +19,7 @@
   </header>
 
   <!-- Main Content: Exercises List -->
-  <main class="p-2 pb-24">
+  <main class="p-2 pb-36">
     <div *ngIf="routine() as currentRoutine; else loading" class="space-y-3">
       <!-- FIX: Removed 'overflow-hidden' from this div -->
       <div *ngFor="let exercise of currentRoutine.exercises; let exIndex = index"
@@ -27,7 +27,7 @@
         [style.zIndex]="areActionsVisible(exIndex) ? 50 : 'auto'">
         <!-- Exercise Header -->
         <div (click)="toggleExerciseExpansion(exIndex)"
-          class="p-3 flex items-center justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50">
+          class="p-3 flex items-center justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-t-md rounded-b-md">
           <div class="flex items-center space-x-3 min-w-0">
             <span class="font-semibold text-gray-800 dark:text-gray-100">{{ exIndex + 1 }}</span>
             <h2 class="text-md font-semibold text-gray-800 dark:text-gray-100 truncate">
@@ -69,7 +69,7 @@
 
         <!-- Sets Container -->
         <div *ngIf="expandedExerciseIndex() === exIndex"
-          class="bg-gray-50 dark:bg-gray-700/50 py-3 px-1 border-t border-gray-200 dark:border-gray-700">
+          class="bg-gray-50 dark:bg-gray-700/50 py-2 px-1 border-t border-gray-200 dark:border-gray-700 rounded-t-md rounded-b-md">
           <!-- Set Headers -->
           <div class="grid grid-cols-12 gap-2 text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 px-2">
             <div class="col-span-1 text-center">Set</div>
@@ -87,7 +87,9 @@
           <!-- Sets List -->
           <div class="space-y-2">
             <div *ngFor="let set of exercise.sets; let setIndex = index"
-              class="grid grid-cols-12 gap-2 items-center bg-white dark:bg-gray-800 rounded-md p-2 shadow-sm">
+              class="grid grid-cols-12 gap-2 items-center rounded-md p-2 shadow-sm" [ngClass]="{'bg-blue-100 dark:bg-blue-400': set.type && set.type === 'warmup',
+                'bg-white dark:bg-gray-800': !set.type || set.type !== 'warmup'
+               }">
               <div class="col-span-1 text-center font-semibold text-gray-700 dark:text-gray-200">{{ setIndex + 1 }}
               </div>
 
@@ -140,18 +142,32 @@
   </main>
 
   <!-- Footer with Action Buttons -->
-  <footer
-    class="sticky bottom-0 left-0 right-0 z-20 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-3 flex items-center justify-around rounded-t-md">
-    <button (click)="openAddExerciseModal()"
-      class="flex items-center space-x-2 bg-blue-500 text-white font-semibold py-2 px-4 rounded-full shadow-lg hover:bg-blue-600 transition-colors">
-      <app-icon name="plus-circle" class="h-6 w-6"></app-icon>
-      <span>Add Exercise</span>
-    </button>
-    <button (click)="finishWorkout()"
-      class="flex items-center space-x-2 bg-green-500 text-white font-semibold py-2 px-4 rounded-full shadow-lg hover:bg-green-600 transition-colors">
-      <app-icon name="done" class="h-6 w-6"></app-icon>
-      <span>Finish</span>
-    </button>
+  <footer class="flex justify-center fixed left-0 right-0 z-20" [style.bottom]="'var(--main-nav-height)'">
+
+    <!-- 
+      MODIFICATION 2:
+      - Use 'grid grid-cols-2' to create two equal-width columns.
+      - 'gap-4' adds spacing between the buttons.
+      - 'w-full max-w-sm' (or similar) controls the overall width on small screens.
+    -->
+    <div
+      class="w-full max-w-sm grid grid-cols-2 gap-4 bg-white dark:bg-gray-800/80 dark:backdrop-blur-sm border-t border-x border-gray-200 dark:border-gray-700 p-3 rounded-t-md">
+
+      <!-- Button 1 -->
+      <button (click)="openAddExerciseModal()"
+        class="flex items-center justify-center space-x-2 bg-blue-500 text-white font-semibold py-2 px-4 rounded-full shadow-lg hover:bg-blue-600 transition-colors">
+        <app-icon name="plus-circle" class="h-6 w-6"></app-icon>
+        <span>ADD EXERCISE</span>
+      </button>
+
+      <!-- Button 2 -->
+      <button (click)="finishWorkout()"
+        class="flex items-center justify-center space-x-2 bg-green-500 text-white font-semibold py-2 px-4 rounded-full shadow-lg hover:bg-green-600 transition-colors">
+        <app-icon name="done" class="h-6 w-6"></app-icon>
+        <span>FINISH</span>
+      </button>
+
+    </div>
   </footer>
 
   <app-exercise-selection-modal [isOpen]="isAddExerciseModalOpen()" [(searchTerm)]="modalSearchTerm"
@@ -160,10 +176,10 @@
   </app-exercise-selection-modal>
 
   <app-exercise-selection-modal [isOpen]="isSwitchExerciseModalOpen()" [(searchTerm)]="modalSearchTerm"
-    [title]="isShowingSimilarInSwitchModal() ? 'SIMILAR EXERCISES' : 'SWITCH EXERCISE'" [exercises]="availableExercises"
-    searchPlaceholder="Search for a replacement..." [showSimilarButton]="true"
-    [isShowingSimilarView]="isShowingSimilarInSwitchModal()" itemIconName="change" itemIconClass="text-green-500"
-    (exerciseSelected)="handleExerciseSwitch($event)"
+    [title]="isShowingSimilarInSwitchModal() ? 'SIMILAR EXERCISES' : 'SWITCH EXERCISE'"
+    [exercises]="filteredExercisesForSwitchModal()" searchPlaceholder="Search for a replacement..."
+    [showSimilarButton]="true" [isShowingSimilarView]="isShowingSimilarInSwitchModal()" itemIconName="change"
+    itemIconClass="text-green-500" (exerciseSelected)="handleExerciseSwitch($event)"
     (findSimilarClicked)="findAndShowSimilarExercises(exerciseToSwitchIndex())"
     (backToSearchClicked)="isShowingSimilarInSwitchModal.set(false)" (close)="closeSwitchExerciseModal()">
   </app-exercise-selection-modal>

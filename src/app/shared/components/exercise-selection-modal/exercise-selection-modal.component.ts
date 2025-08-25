@@ -1,8 +1,7 @@
 // src/app/shared/components/exercise-selection-modal/exercise-selection-modal.component.ts
-import { Component, Input, Output, EventEmitter, signal, computed, WritableSignal, ViewChild, ElementRef, AfterViewInit, OnInit, SimpleChanges, OnChanges } from '@angular/core';
+import { Component, computed, inject, input, model, Output, ViewChild, ElementRef, AfterViewInit, EventEmitter } from '@angular/core';
 import { CommonModule, TitleCasePipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
 import { Exercise } from '../../../core/models/exercise.model';
 import { ExerciseService } from '../../../core/services/exercise.service';
 import { IconComponent } from '../icon/icon.component';
@@ -16,49 +15,46 @@ import { ScrollingModule } from '@angular/cdk/scrolling';
     imports: [CommonModule, FormsModule, TitleCasePipe, DatePipe, IconComponent, PressDirective, PressScrollDirective, ScrollingModule],
     templateUrl: './exercise-selection-modal.component.html',
 })
-export class ExerciseSelectionModalComponent implements OnChanges {
+export class ExerciseSelectionModalComponent implements AfterViewInit {
 
-      @ViewChild('exerciseSearchFied') myExerciseInput!: ElementRef;
+    @ViewChild('exerciseSearchFied') myExerciseInput!: ElementRef;
 
-    // --- Inputs: How the parent configures this component ---
-    @Input() isOpen: boolean = false;
-    @Input() title: string = 'Select Exercise';
-    @Input() exercises: Exercise[] = [];
-    @Input() searchPlaceholder: string = 'Search exercises...';
-    @Input() itemIconName: string = 'add';
-    @Input() itemIconClass: string = 'text-primary dark:text-primary-light';
+    // --- Injected Services ---
+    private exerciseService = inject(ExerciseService);
 
+    // --- Inputs: Replaced with modern signal-based inputs ---
+    isOpen = model<boolean>(false);
+    title = input<string>('Select Exercise');
+    exercises = input.required<Exercise[]>();
+    searchPlaceholder = input<string>('Search exercises...');
+    itemIconName = input<string>('plus-circle');
+    itemIconClass = input<string>('text-primary dark:text-primary-light');
+    
     // --- Feature Flags for UI variations ---
-    @Input() showSimilarButton: boolean = false;
-    @Input() showCreateCustomLink: boolean = false;
-    @Input() isShowingSimilarView: boolean = false; // To control the 'Similar' view state from the parent
-
-    // --- Outputs: How this component communicates with the parent ---
+    showSimilarButton = input<boolean>(false);
+    showCreateCustomLink = input<boolean>(false);
+    isShowingSimilarView = input<boolean>(false);
+    
+    // --- Outputs: No change needed here ---
     @Output() close = new EventEmitter<void>();
     @Output() exerciseSelected = new EventEmitter<Exercise>();
     @Output() findSimilarClicked = new EventEmitter<void>();
     @Output() createCustomClicked = new EventEmitter<void>();
     @Output() backToSearchClicked = new EventEmitter<void>();
 
-    // Two-way binding for the search term
-    internalSearchTerm = signal<string>('');
-    @Input()
-    set searchTerm(value: string) {
-        this.internalSearchTerm.set(value);
-    }
-    @Output() searchTermChange = new EventEmitter<string>();
+    // --- Two-way binding for the search term using model() ---
+    searchTerm = model<string>('');
 
     // --- Internal Filtering Logic ---
-    // In a real-world scenario, you might inject this service, but for simplicity, we use a static method.
-    private exerciseService = new ExerciseService();
-
     filteredExercises = computed(() => {
-        const term = this.internalSearchTerm().toLowerCase(); // Read from the signal
+        const term = this.searchTerm()?.toLowerCase() ?? ''; // Read from the model signal
+        const exerciseList = this.exercises(); // Read from the input signal
+
         if (!term) {
-            return this.exercises;
+            return exerciseList;
         }
         const normalizedTerm = this.exerciseService.normalizeExerciseNameForSearch(term);
-        return this.exercises.filter(ex =>
+        return exerciseList.filter(ex =>
             ex.name.toLowerCase().includes(normalizedTerm) ||
             ex.category?.toLowerCase().includes(term) ||
             ex.primaryMuscleGroup?.toLowerCase().includes(term)
@@ -68,9 +64,11 @@ export class ExerciseSelectionModalComponent implements OnChanges {
     // --- Event Handlers ---
     onExerciseClicked(exercise: Exercise): void {
         this.exerciseSelected.emit(exercise);
+        this.onClose();
     }
 
     onClose(): void {
+        this.isOpen.set(false); // Update the model signal
         this.close.emit();
     }
 
@@ -86,45 +84,24 @@ export class ExerciseSelectionModalComponent implements OnChanges {
         this.backToSearchClicked.emit();
     }
 
-    onSearchTermChange(newValue: string): void {
-        // Update both the internal signal (for filtering) and emit to the parent.
-        this.internalSearchTerm.set(newValue);
-        this.searchTermChange.emit(newValue);
-    }
-
+    // This method is no longer needed as ngModel handles the update
+    // onSearchTermChange(newValue: string): void { ... }
 
     onSearchEnter(): void {
         const filteredList = this.filteredExercises();
-        // Check if there is exactly one exercise in the filtered list
         if (filteredList.length === 1) {
-            // If so, select that exercise
-            const singleExercise = filteredList[0];
-            this.onExerciseClicked(singleExercise);
+            this.onExerciseClicked(filteredList[0]);
         }
     }
-
-    focusOnSearchInput(searchInput: HTMLInputElement | null): void {
-        if (searchInput) {
+    
+    ngAfterViewInit(): void {
+        // ngOnChanges is not reliable for focusing. AfterViewInit is better.
+        // We still need a small timeout to ensure the element is truly visible.
+        if (this.isOpen()) {
             setTimeout(() => {
-                searchInput.focus();
-                searchInput.select();
-            }, 0);
+                this.myExerciseInput?.nativeElement.focus();
+                this.myExerciseInput?.nativeElement.select();
+            }, 50);
         }
     }
-
-    ngOnChanges(changes: SimpleChanges): void {
-    // We only care about changes to the 'isOpen' property.
-    if (changes['isOpen']) {
-      // If the modal is being opened (changed to true)...
-      if (this.isOpen) {
-        // ...then we schedule the focus action to happen after the view is stable.
-        // A timeout with 0 delay is a classic and robust way to do this.
-        setTimeout(() => {
-          this.myExerciseInput?.nativeElement.focus();
-          this.myExerciseInput?.nativeElement.select(); // Bonus: select existing text
-        }, 0);
-      }
-    }
-  }
-
 }

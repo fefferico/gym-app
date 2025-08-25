@@ -302,3 +302,12 @@ body {
     color: $color-text-med;
   }
 }
+
+
+:root {
+  /* 
+    Set this to the actual height of your main bottom navigation bar.
+    This variable will be used to offset the workout footer.
+  */
+  --main-nav-height: 60px; 
+}

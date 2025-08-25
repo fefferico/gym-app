@@ -2,3 +2,21 @@
     color: white; // Or your theme's primary color
     background-color: rgba(255, 255, 255, 0.1);
 }
+
+/* src/app/features/navigation/navigation.scss */
+
+:host {
+  /*
+    This is the height of your navigation bar.
+    The `:host` selector ensures this variable is scoped to this component.
+  */
+  --main-nav-height: 64px; /* The bar is 4rem/64px tall based on h-16 in your HTML */
+
+  /* This ensures the navigation component itself is positioned correctly at the bottom */
+  display: block;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 40; /* Make sure it's consistent with your HTML */
+}

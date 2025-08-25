@@ -137,11 +137,12 @@
         </button>
         <div class="flex flex-col items-center cursor-pointer" appPress
           (shortPress)="jumpToExercise('Session overview')" [title]="'Click for session overview'">
+          <!-- class="text-m font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider truncate max-w-[calc(100vw-120px)]"> -->
           <h1
-            class="text-m font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider truncate max-w-[calc(100vw-120px)]">
+            class="text-lg font-bold text-gray-800 dark:text-gray-100 truncate max-w-xs">
             {{ currentRoutine.name || 'Workout' }}
           </h1>
-          <div class="text-lg text-white dark:text-gray-200 bg-primary-dark rounded-md w-32 text-center">{{
+          <div class="text-xl font-mono font-semibold text-primary dark:text-primary-light tracking-wider">{{
             sessionTimerDisplay()
             }}</div>
         </div>
@@ -852,7 +853,7 @@
 
 
 <app-exercise-selection-modal [isOpen]="isExerciseSwitchModalOpen()" [(searchTerm)]="switchModalSearchTerm"
-  [title]="isShowingSimilarInSwitchModal() ? 'SIMILAR EXERCISES' : 'SWITCH EXERCISE'" [exercises]="availableExercises"
+  [title]="isShowingSimilarInSwitchModal() ? 'SIMILAR EXERCISES' : 'SWITCH EXERCISE'" [exercises]="filteredExercisesForSwitchModal()"
   searchPlaceholder="Search for a replacement..." [showSimilarButton]="true"
   [isShowingSimilarView]="isShowingSimilarInSwitchModal()" itemIconName="change" itemIconClass="text-green-500"
   (exerciseSelected)="selectExerciseToSwitch($event)" (findSimilarClicked)="findAndShowSimilarExercises()"
