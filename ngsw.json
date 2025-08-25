@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1756116956405,
+  "timestamp": 1756118798674,
   "index": "/gym-app/index.html",
   "assetGroups": [
     {
@@ -19,7 +19,6 @@
         "/gym-app/chunk-4PTIEP3X.js",
         "/gym-app/chunk-5G3KWPE4.js",
         "/gym-app/chunk-67EFJ4W4.js",
-        "/gym-app/chunk-6D4PIXXL.js",
         "/gym-app/chunk-6H4SOGG7.js",
         "/gym-app/chunk-6IFBRBSN.js",
         "/gym-app/chunk-6KCIRQUG.js",
@@ -37,6 +36,7 @@
         "/gym-app/chunk-MMIGBW4F.js",
         "/gym-app/chunk-MTVPB734.js",
         "/gym-app/chunk-NGY3QYNE.js",
+        "/gym-app/chunk-NPPXGRLZ.js",
         "/gym-app/chunk-OAALUP6S.js",
         "/gym-app/chunk-OBKV5QYY.js",
         "/gym-app/chunk-OPSWPZAV.js",
@@ -49,10 +49,10 @@
         "/gym-app/chunk-XOO6KD7E.js",
         "/gym-app/favicon.ico",
         "/gym-app/index.html",
-        "/gym-app/main-MZN6JOD5.js",
+        "/gym-app/main-A7EMZVMM.js",
         "/gym-app/manifest.webmanifest",
         "/gym-app/polyfills-5CFQRCPP.js",
-        "/gym-app/styles-ISNMJGG7.css"
+        "/gym-app/styles-5DAW2FLV.css"
       ],
       "patterns": []
     },
@@ -121,7 +121,6 @@
     "/gym-app/chunk-4PTIEP3X.js": "4eabd82b951c7241aac125432f279ef37816805d",
     "/gym-app/chunk-5G3KWPE4.js": "8d14d4c093a35803e83c86e67cdf5b25351377d9",
     "/gym-app/chunk-67EFJ4W4.js": "4b2610205b50b853f310a7761dfefc692283979f",
-    "/gym-app/chunk-6D4PIXXL.js": "7fe33c26e4a54a605928c66be761f6f11ad2da65",
     "/gym-app/chunk-6H4SOGG7.js": "44177156d27c04676b0b7073f7c73f9b619adc56",
     "/gym-app/chunk-6IFBRBSN.js": "c461e6ad4b539c4a025c4fd2e354ba00102dc5a0",
     "/gym-app/chunk-6KCIRQUG.js": "d2e4b57b43c65894b2c2e416fb07f874f4ff4bd6",
@@ -139,6 +138,7 @@
     "/gym-app/chunk-MMIGBW4F.js": "e0b5b37ee47856e21f4363e4f5b63ce465c7168c",
     "/gym-app/chunk-MTVPB734.js": "1914ddd43ea6f2b9f38fa83e4d1e5bb001fd9efe",
     "/gym-app/chunk-NGY3QYNE.js": "6bdebb0b9db20ac0e631006f14bd0797e4c79406",
+    "/gym-app/chunk-NPPXGRLZ.js": "a0ef48f321d2f7145a504b22afdf003d7eeaeef7",
     "/gym-app/chunk-OAALUP6S.js": "f63a6a03569bd2fb886bc5cdcb8e62401f30187d",
     "/gym-app/chunk-OBKV5QYY.js": "ff79ebdb01b782cb403f9cc9543c121b4a399827",
     "/gym-app/chunk-OPSWPZAV.js": "5cddfb4bdabddd63b03879e5e2edf3a30899421c",
@@ -159,11 +159,11 @@
     "/gym-app/icons/icon-512x512.png": "1de182f76f7329dfa8f9fcdd1fdcdd695bea6a99",
     "/gym-app/icons/icon-72x72.png": "aa88a6096bd973be7f6d7a5489bfa6bc2463f8c4",
     "/gym-app/icons/icon-96x96.png": "7fb8f59c30ce2ff12c700321a0b39e14b3dc8f95",
-    "/gym-app/index.html": "3ffb7b28aedf20006aaa2cb46d377193a77f8935",
-    "/gym-app/main-MZN6JOD5.js": "3a8260e125bf43173a130e8728ca57826c7d0e76",
+    "/gym-app/index.html": "38ca558e24c4bef6c5b7a949e9fb912490703b20",
+    "/gym-app/main-A7EMZVMM.js": "af250d4350f240235d97a28ce8cdccd0c7bfd8b9",
     "/gym-app/manifest.webmanifest": "651aca4c4893d038fa26ea82650bfdeb1ede434b",
     "/gym-app/polyfills-5CFQRCPP.js": "f2241e9a25858f895ce299d15f6f22e849e2fd72",
-    "/gym-app/styles-ISNMJGG7.css": "7c4d07ae59b155946507cc4fc8284073c2637323"
+    "/gym-app/styles-5DAW2FLV.css": "a50001f04c7e44ef87d5564b3597a0f2314e06cc"
   },
   "navigationUrls": [
     {
