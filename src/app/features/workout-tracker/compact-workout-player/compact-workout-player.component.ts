@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, OnDestroy, signal, computed, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subscription, timer, of, lastValueFrom } from 'rxjs';
+import { Subscription, timer, of, lastValueFrom, firstValueFrom } from 'rxjs';
 import { switchMap, take } from 'rxjs/operators';
 import {
   Routine,
@@ -80,6 +80,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
   routineId: string | null = null;
   programId: string | null = null;
+  scheduledDay: string | null = null;
+
   currentWorkoutLog = signal<Partial<WorkoutLog>>({ exercises: [] });
 
   defaultExercises: Exercise[] = [];
@@ -144,11 +146,13 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const routeSnapshot = this.route.snapshot;
     const targetRoutineId = routeSnapshot.paramMap.get('routineId');
     const targetProgramId = routeSnapshot.queryParamMap.get('programId');
+    const targetProgramScheduledDayId = routeSnapshot.queryParamMap.get('scheduledDayId');
 
     this.routeSub = this.route.paramMap.pipe(
       switchMap((params) => {
         this.routineId = targetRoutineId;
         this.programId = targetProgramId;
+        this.scheduledDay = targetProgramScheduledDayId;
         return this.routineId ? this.workoutService.getRoutineById(this.routineId) : of(null);
       })
     ).subscribe((routine) => {
@@ -173,6 +177,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     this.currentWorkoutLog.set({
       routineId: this.routineId ?? undefined,
       programId: this.programId ?? undefined,
+      scheduledDayId: this.scheduledDay ?? undefined,
       routineName: this.routine()?.name,
       startTime: this.workoutStartTime,
       date: format(new Date(), 'yyyy-MM-dd'),
@@ -218,30 +223,61 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return !!this.getLoggedSet(exIndex, setIndex);
   }
 
-  toggleSetCompletion(exercise: WorkoutExercise, set: ExerciseSetParams, exIndex: number, setIndex: number): void {
+toggleSetCompletion(exercise: WorkoutExercise, set: ExerciseSetParams, exIndex: number, setIndex: number): void {
     const log = this.currentWorkoutLog();
     if (!log.exercises) log.exercises = [];
+
     let exerciseLog = log.exercises.find(e => e.id === exercise.id);
+
     if (!exerciseLog) {
+      // If the exercise log doesn't exist, create it.
       exerciseLog = {
-        id: exercise.id, exerciseId: exercise.exerciseId, exerciseName: exercise.exerciseName!, sets: [],
-        rounds: exercise.rounds ?? 1, type: exercise.type || 'standard'
+        id: exercise.id,
+        exerciseId: exercise.exerciseId,
+        exerciseName: exercise.exerciseName!,
+        sets: [],
+        rounds: exercise.rounds ?? 1,
+        type: exercise.type || 'standard'
       };
       log.exercises.push(exerciseLog);
     }
+
     const existingIndex = exerciseLog.sets.findIndex(s => s.plannedSetId === set.id);
+
     if (existingIndex > -1) {
+      // The set exists, so we are un-checking it (removing it).
       exerciseLog.sets.splice(existingIndex, 1);
+
+      // Check if the exercise log has any sets left.
+      if (exerciseLog.sets.length === 0) {
+        // If there are no sets left, remove the entire exercise log.
+        const emptyExerciseLogIndex = log.exercises.findIndex(e => e.id === exerciseLog!.id);
+        if (emptyExerciseLogIndex > -1) {
+          log.exercises.splice(emptyExerciseLogIndex, 1);
+        }
+      }
     } else {
+      // The set does not exist, so we are checking it (adding it).
       const newLoggedSet: LoggedSet = {
-        id: uuidv4(), exerciseName: exercise.exerciseName, plannedSetId: set.id, exerciseId: exercise.exerciseId,
-        type: set.type, repsAchieved: set.reps ?? 0, weightUsed: set.weight ?? undefined,
-        durationPerformed: set.duration, distanceAchieved: set.distance, timestamp: new Date().toISOString(),
+        id: uuidv4(),
+        exerciseName: exercise.exerciseName,
+        plannedSetId: set.id,
+        exerciseId: exercise.exerciseId,
+        type: set.type,
+        repsAchieved: set.reps ?? 0,
+        weightUsed: set.weight ?? undefined,
+        durationPerformed: set.duration,
+        distanceAchieved: set.distance,
+        timestamp: new Date().toISOString(),
       };
       exerciseLog.sets.push(newLoggedSet);
+
+      // Ensure the sets remain in their original planned order.
       const order = exercise.sets.map(s => s.id);
       exerciseLog.sets.sort((a, b) => order.indexOf(a.plannedSetId!) - order.indexOf(b.plannedSetId!));
     }
+
+    // Update the signal with the modified log to trigger UI updates.
     this.currentWorkoutLog.set({ ...log });
   }
 
@@ -305,6 +341,13 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       log.durationMinutes = Math.round((log.endTime - (log.startTime!)) / 60000);
       log.exercises = log.exercises!.filter(ex => ex.sets.length > 0);
       if (log.startTime) {
+        let iterationId: string | undefined = undefined;
+        if (this.programId) {
+          const program = await firstValueFrom(this.trainingProgramService.getProgramById(this.programId));
+          iterationId = program ? program.iterationId : undefined;
+          log.iterationId = iterationId;
+        }
+
         const savedLog = this.trackingService.addWorkoutLog(log as Omit<WorkoutLog, 'id'> & { startTime: number });
 
         this.sessionState.set(SessionState.End);
@@ -329,7 +372,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
               // return true; // Exit the function as we've handled navigation
             } else {
-          this.router.navigate(['/workout/summary', savedLog.id]);
+              this.router.navigate(['/workout/summary', savedLog.id]);
             }
           } catch (error) {
             console.error("Error during program completion check:", error);

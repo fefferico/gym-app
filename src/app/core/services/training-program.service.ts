@@ -730,16 +730,17 @@ export class TrainingProgramService {
     }
   }
 
-  resetScheduleStatusCompletion(targetProgram: TrainingProgram, status: 'active' | 'completed' | 'cancelled' ): void {
+  resetScheduleStatusCompletion(targetProgram: TrainingProgram, status: 'active' | 'completed' | 'cancelled', iterationId?: string | undefined): void {
     targetProgram.weeks = targetProgram.isActive && targetProgram.weeks ? targetProgram.weeks?.map(week => {
-        return {
-          ...week,
-          schedule: week.schedule.map(day => {
-            const { completionStatus, completedOnDate, ...rest } = day;
-            return rest;
-          })
-        };
-      }) : targetProgram.weeks;
+      return {
+        ...week,
+        schedule: week.schedule.map(day => {
+          const { completionStatus, completedOnDate,workoutLogId, ...rest } = day;
+          return rest;
+        })
+      };
+    }) : targetProgram.weeks;
+    targetProgram.iterationId = iterationId ? iterationId : undefined;
   }
 
   /**
@@ -755,7 +756,7 @@ export class TrainingProgramService {
       return;
     }
 
-    const targetProgram = { ...currentPrograms[programIndex] };
+    const targetProgram = { ...currentPrograms[programIndex] } as TrainingProgram;
     targetProgram.history = Array.isArray(targetProgram.history) ? [...targetProgram.history] : [];
 
     const activeEntryIndex = targetProgram.history.findIndex(h => h.status === 'active');
@@ -766,16 +767,18 @@ export class TrainingProgramService {
         return;
       }
       // Deactivate all other programs first
-      currentPrograms.forEach(p => {
-        if (p.isActive && p.id !== programId) {
-          this.deactivateProgram(p.id, 'cancelled');
-        }
-      });
+      // currentPrograms.forEach(p => {
+      //   if (p.isActive && p.id !== programId) {
+      //     this.deactivateProgram(p.id, 'cancelled');
+      //   }
+      // });
 
+      const newHistoryEntryId = uuidv4();
+      targetProgram.iterationId = newHistoryEntryId;
       const newHistoryEntry: TrainingProgramHistoryEntry = {
-        id: uuidv4(),
+        id: newHistoryEntryId,
         programId: programId,
-        startDate: format(new Date(), 'yyyy-MM-dd'),
+        startDate: this.generateNewDate(),
         endDate: '-',
         status: 'active',
         date: new Date().toISOString()
@@ -783,21 +786,18 @@ export class TrainingProgramService {
       targetProgram.history.push(newHistoryEntry);
       targetProgram.isActive = true;
       targetProgram.startDate = newHistoryEntry.startDate; // Update root start date
-      this.toastService.success(`Program "${targetProgram.name}" is now active.`);
-      this.resetScheduleStatusCompletion(targetProgram, status);
-
+      this.resetScheduleStatusCompletion(targetProgram, status,newHistoryEntryId);
     } else { // 'completed' or 'cancelled'
-      if (activeEntryIndex === -1) {
-        this.toastService.error(`Program "${targetProgram.name}" is not active and cannot be completed.`);
-        return;
-      }
+      // if (activeEntryIndex === -1) {
+      //   this.toastService.error(`Program "${targetProgram.name}" is not active and cannot be completed.`);
+      //   return;
+      // }
       targetProgram.history[activeEntryIndex].status = status;
-      targetProgram.history[activeEntryIndex].endDate = format(new Date(), 'yyyy-MM-dd');
+      targetProgram.history[activeEntryIndex].endDate = this.generateNewDate();
       targetProgram.isActive = false;
-      this.toastService.success(`Program "${targetProgram.name}" marked as ${status}.`);
+      // this.toastService.success(`Program "${targetProgram.name}" marked as ${status}.`);
 
       this.resetScheduleStatusCompletion(targetProgram, status);
-
     }
 
     currentPrograms[programIndex] = targetProgram;
@@ -860,5 +860,10 @@ export class TrainingProgramService {
     currentPrograms[programIndex] = targetProgram;
     this._saveProgramsToStorage(currentPrograms);
     this.toastService.success("Program history updated.");
+  }
+
+
+  generateNewDate(date?: string | Date): string {
+    return format(date? date : new Date(), 'yyyy-MM-dd');
   }
 }

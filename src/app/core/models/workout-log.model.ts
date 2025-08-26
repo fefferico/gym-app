@@ -82,6 +82,7 @@ export interface WorkoutLog {
    // +++ NEW PROPERTY TO LINK LOG TO THE SCHEDULE +++
   /** If part of a program, the ID of the specific ScheduledRoutineDay this log fulfills. */
   scheduledDayId?: string;
+  iterationId?: string;
 }
 
 // For displaying personal bests

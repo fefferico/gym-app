@@ -68,6 +68,7 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
   private currentDate$: Observable<Date> = toObservable(this.currentDate);
   todaysScheduledWorkouts = signal<{ routine: Routine, scheduledDayInfo: ScheduledRoutineDay }[]>([]);
   logsForDay = signal<EnrichedWorkoutLog[]>([]);
+  programLogsForDay = signal<EnrichedWorkoutLog[]>([]);
 
   // --- Other Properties ---
   availableRoutines$: Observable<Routine[]>;
@@ -130,8 +131,16 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
               map(([programs, logs, routines, allPrograms, statusMapArrays]) => {
                 // 5. Merge the array of maps into a single, convenient map for easy lookups
                 const combinedStatusMap = new Map<string, boolean>();
-                statusMapArrays.forEach(map => {
-                  map.forEach((value: any, key: any) => combinedStatusMap.set(key, value));
+                statusMapArrays.forEach((statusMap, index) => {
+                  const program = programs[index];
+                  if (program && program.iterationId) {
+                    statusMap.forEach((isLogged, scheduledDayId) => {
+                      // Use a composite key to uniquely identify a scheduled day within a specific program iteration
+                      const compositeKey = `${scheduledDayId}-${program.iterationId}`;
+
+                      combinedStatusMap.set(compositeKey, isLogged);
+                    });
+                  }
                 });
                 return {
                   activePrograms: programs,
@@ -162,6 +171,7 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
               for (const prog of activePrograms) {
                 const routineData = this.trainingProgramService.findRoutineForDayInProgram(date, prog);
                 if (routineData && prog.startDate && parseISO(prog.startDate) <= date) {
+                  routineData.scheduledDayInfo.iterationId = prog.iterationId;
                   workoutObservables$.push(of(routineData));
                 }
               }
@@ -193,7 +203,8 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
                       scheduledDayInfo: {
                         id: log.scheduledDayId || uuidv4(), // Use the logged scheduledDayId
                         routineId: routine.id, dayOfWeek: date.getDay(),
-                        programId: log.programId!, isUnscheduled: true
+                        programId: log.programId!, isUnscheduled: true,
+                        iterationId: log.iterationId
                       }
                     });
                   }
@@ -225,17 +236,29 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
   }
 
   /**
-   * Helper function for the template to check if a specific scheduled workout has been logged.
-   * @param scheduledDayId The UNIQUE ID of the scheduled day to check.
-   * @returns True if a log exists for this scheduled day on the current day.
-   */
-  isWorkoutLogged(scheduledDayId: string): boolean {
-    return this.loggedStatusMap().get(scheduledDayId) ?? false;
+  * Helper function for the template to check if a specific scheduled workout has been logged.
+  * @param scheduledDayInfo The scheduled day information, including its unique ID and iteration ID.
+  * @returns True if a log exists for this scheduled day on the current day.
+  */
+  isWorkoutLogged(scheduledDayInfo: { id: string, iterationId?: string, isUnscheduled?: boolean }): boolean {
+    // An item marked as "unscheduled" in this list is, by definition, an already-existing log.
+    if (scheduledDayInfo.isUnscheduled) {
+      return true;
+    }
+
+    // For scheduled items, we must have an iterationId to form the unique key.
+    if (scheduledDayInfo.iterationId) {
+      const compositeKey = `${scheduledDayInfo.id}-${scheduledDayInfo.iterationId}`;
+      return this.loggedStatusMap().get(compositeKey) ?? false;
+    }
+
+    // Fallback for any other case, though scheduled items should always have an iterationId.
+    return false;
   }
 
-  async isProgramWorkoutLogged(programId: string, routineId: string, scheduledId: string): Promise<boolean> {
-    const logsForProgram = await firstValueFrom(this.trackingService.getWorkoutLogByProgrmIdAndRoutineId(programId, routineId));
-    return logsForProgram.some(log => log.routineId === routineId && log.scheduledDayId === scheduledId);
+  isProgramWorkoutLogged(scheduledId: string): boolean {
+    const scheduledIds = this.todaysScheduledWorkouts().map(info => { return info.scheduledDayInfo.iterationId });
+    return scheduledIds && scheduledIds.some(entry => entry === scheduledId);
   }
 
   ngAfterViewInit(): void {
@@ -293,9 +316,17 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
     }, this.ANIMATION_OUT_DURATION);
   }
 
+  vibrate(): void {
+    const currentVibrator = navigator;
+    if (currentVibrator && 'vibrate' in currentVibrator) {
+      currentVibrator.vibrate(50);
+    }
+  }
+
   startProgramWorkout(routineId: string, programId: string | undefined, scheduledDayId: string | undefined, event: Event): void {
     event?.stopPropagation();
     if (routineId) {
+      this.vibrate();
       const playerRoute = this.workoutService.checkPlayerMode(routineId);
       this.router.navigate([playerRoute, routineId], { queryParams: { programId, scheduledDayId } });
     }
@@ -310,7 +341,9 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
   }
 
   viewRoutineDetails(routineId: string | undefined): void { if (routineId) { this.router.navigate(['/workout/routine/view', routineId]); } }
-  viewLogDetails(logId: string): void { this.router.navigate(['/history/log', logId]); }
+  viewLogDetails(logId: string): void {
+    this.vibrate();
+    this.router.navigate(['/history/log', logId]); }
   managePrograms(): void { this.router.navigate(['/training-programs']); }
   browseRoutines(): void { this.router.navigate(['/workout']); }
 

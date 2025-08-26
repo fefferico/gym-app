@@ -813,7 +813,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
           const routineForDay = this.allRoutinesMap.get(scheduledEntry.scheduledDayInfo.routineId);
           if (!routineForDay) { return null; }
           const correspondingLogs: WorkoutLog[] = allLogsForPeriod.filter(log =>
-            isSameDay(parseISO(log.date), date) && log.routineId === routineForDay.id
+            isSameDay(parseISO(log.date), date) && log.routineId === routineForDay.id && log.iterationId === activeProg.iterationId
           ).sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
           return {
             routine: routineForDay,

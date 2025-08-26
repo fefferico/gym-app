@@ -185,7 +185,7 @@
       </button>
 
       <!-- Button 2 -->
-      <button (click)="finishWorkout()" [disabled]="this.currentWorkoutLog().exercises?.length === 0"
+      <button (click)="finishWorkout()" [disabled]="!this.currentWorkoutLog() || !this.currentWorkoutLog().exercises || this.currentWorkoutLog().exercises?.length === 0"
         class="flex items-center justify-center space-x-2 bg-green-500 text-white font-semibold py-2 px-4 rounded-full shadow-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
         <app-icon name="done" class="h-6 w-6"></app-icon>
         <span>FINISH</span>

@@ -2989,6 +2989,12 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       this.toastService.success(`New routine "${createdRoutine.name}" created.`, 4000);
     }
 
+    let iterationId: string | undefined = undefined;
+    if (sessionProgramValue){
+      const program = await firstValueFrom(this.trainingProgramService.getProgramById(sessionProgramValue));
+      iterationId = program ? program.iterationId : undefined;
+    }
+
     const finalLog: Omit<WorkoutLog, 'id'> = {
       routineId: finalRoutineIdToLog,
       routineName: finalRoutineNameForLog,
@@ -3000,7 +3006,8 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       exercises: loggedExercisesForReport, // Use filtered logs
       notes: sessionRoutineValue?.notes,
       programId: sessionProgramValue,
-      scheduledDayId: sessionScheduledDayProgramValue
+      scheduledDayId: sessionScheduledDayProgramValue,
+      iterationId: iterationId
     };
 
     const fixedLog = await this.checkWorkoutTimingValidity(finalLog); // Ensure start time is valid before proceeding

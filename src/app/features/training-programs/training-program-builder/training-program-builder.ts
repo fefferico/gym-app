@@ -182,7 +182,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
             totalCount = program.weeks.reduce((sum, week) => sum + week.schedule.length, 0);
 
             // Get all logs for this program that occurred on or after the start date.
-            const programLogs = logs.filter(log => log.programId === program.id && parseISO(log.date) >= startDate);
+            const programLogs = logs.filter(log => log.programId === program.id && parseISO(log.date) >= startDate && program.iterationId === log.iterationId);
 
             // Count unique logged workouts to prevent counting multiple sessions on the same day as extra progress.
             const uniqueLogs = new Set(programLogs.map(log => `${log.date}-${log.routineId}`));
@@ -233,7 +233,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         const startDate = parseISO(program.startDate);
         // Create a fast-lookup Set of logged workouts, keyed by 'YYYY-MM-DD-routineId'
         const loggedWorkouts = new Set(
-            logs.filter(log => log.programId === program.id).map(log => `${log.date}-${log.routineId}`)
+            logs.filter(log => log.programId === program.id && program.iterationId === log.iterationId).map(log => `${log.date}-${log.routineId}`)
         );
 
         return program.weeks.map(week => {
@@ -287,7 +287,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
             if (log.programId !== program.id) return false;
             const logDate = parseISO(log.date);
             const daysFromWeekStart = differenceInDays(logDate, weekStartDate);
-            return daysFromWeekStart >= 0 && daysFromWeekStart < 7;
+            return daysFromWeekStart >= 0 && daysFromWeekStart < 7 && program.iterationId === log.iterationId;
         });
 
         const completedRoutinesThisWeek = new Set(logsThisWeek.map(log => log.routineId));
@@ -812,6 +812,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
                 try {
                     this.spinnerService.show("Completing program...");
                     await this.trainingProgramService.toggleProgramActivation(this.currentProgramId, 'completed');
+                    this.toastService.success(`Program is now completed`);
                 } catch (error) {
                     this.toastService.error("Failed to complete program", 0, "Error");
                 } finally {
@@ -822,6 +823,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
                 try {
                     this.spinnerService.show("Deactivating program...");
                     await this.trainingProgramService.deactivateProgram(this.currentProgramId, 'cancelled');
+                    this.toastService.success(`Program is now deactivated`);
                 } catch (error) { this.toastService.error("Failed to deactivate", 0, "Error"); }
                 finally { this.spinnerService.hide(); }
             }
@@ -830,6 +832,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         try {
             this.spinnerService.show("Setting active program...");
             await this.trainingProgramService.toggleProgramActivation(this.currentProgramId, 'active');
+            this.toastService.success(`Program is now active`);
         } catch (error) { this.toastService.error("Failed to set active program", 0, "Error"); }
         finally { this.spinnerService.hide(); }
     }
@@ -931,9 +934,9 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
             actionsArray.push(activateProgramBtn);
         }
 
-        if (currentProgram?.history && currentProgram.history.length > 0) {
+        // if (currentProgram?.history && currentProgram.history.length > 0) {
             actionsArray.push(historyProgramBtn);
-        }
+        // }
 
         if (this.isViewMode) {
             actionsArray.push(editProgramButton);

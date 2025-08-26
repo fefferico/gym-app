@@ -777,6 +777,18 @@ export class TrackingService {
     );
   } 
 
+    getWorkoutLogByProgrmIdAndRoutineIdAndIterationId(programId: string, routineId: string, iterationId: string): Observable<WorkoutLog[]> {
+    if (!programId || !routineId) return of([]);
+    return this.workoutLogs$.pipe(
+      map(allLogs =>
+        allLogs.filter(log => {
+          const logDate = parseISO(log.date);
+          return (log.programId === programId && log.routineId === routineId && log.iterationId === iterationId);
+        })
+      )
+    );
+  } 
+
 
   /**
    * --- NEW METHOD for Backfilling Data ---

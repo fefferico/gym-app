@@ -579,7 +579,7 @@
                                         class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">
                                         Logged</th>
                                     <th
-                                        class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">
+                                        class="px-4 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-400">
                                         Actions</th>
                                 </tr>
                             </thead>
@@ -597,7 +597,7 @@
                                         <td class="px-4 py-3 text-sm text-gray-700 dark:text-gray-200">{{ entry.date &&
                                             entry.date !== '-' ? (entry.date | date:'dd/MM/yy HH:mm') : '-' }}</td>
                                         <td class="px-4 py-3">
-                                            <div class="flex items-center space-x-2">
+                                            <div class="flex items-center space-x-2 justify-center">
                                                 <button type="button" (click)="editHistoryEntry(entry)"
                                                     title="Edit entry"
                                                     class="p-1.5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md"><app-icon

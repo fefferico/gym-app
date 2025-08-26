@@ -10,7 +10,7 @@
     <!-- Date Navigation -->
     <div
       class="flex items-center justify-between py-1 border-b border-gray-200 dark:border-gray-700 dark:bg-gray-600 rounded-md">
-      <button appPressScroll (shortPress)="previousDay()" title="Previous Day"
+      <button (click)="previousDay()" title="Previous Day"
         class="py-2 mx-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 disabled:opacity-50"
         [disabled]="isAnimating()">
         <app-icon name="back" class="w-6 h-6"></app-icon>
@@ -32,13 +32,13 @@
           <span *ngIf="isToday(currentDate())" class="text-m text-primary dark:text-primary-light">(Today)</span>
         </h2>
       </div>
-      <button appPressScroll (shortPress)="nextDay()" title="Next Day"
+      <button (click)="nextDay()" title="Next Day"
         class="py-2 mx-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 disabled:opacity-50"
         [disabled]="isAnimating()">
         <app-icon name="back" class="w-6 h-6 rotate-90"></app-icon>
       </button>
     </div>
-    <button *ngIf="!isToday(currentDate())" appPressScroll (shortPress)="goToToday()"
+    <button *ngIf="!isToday(currentDate())" (click)="goToToday()"
       class="text-m text-primary dark:text-primary-light hover:underline disabled:opacity-50 pt-2"
       [disabled]="isAnimating()">Jump to Today</button>
   </div>
@@ -83,7 +83,7 @@
                 [title]="workoutInfo.routine.description"></p>
 
               <div class="mt-4">
-                <ng-container *ngIf="isWorkoutLogged(workoutInfo.scheduledDayInfo.id)">
+                <ng-container *ngIf="isWorkoutLogged(workoutInfo.scheduledDayInfo)">
                   <div
                     class="p-3 bg-green-100 dark:bg-green-900/50 rounded-md text-green-700 dark:text-green-300 flex items-center justify-center gap-x-3">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -92,7 +92,7 @@
                         d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                     </svg>
                     <span class="font-semibold text-m">Workout Completed!</span>
-                    <button appPressScroll (shortPress)="viewLogDetails(getLogForRoutine(workoutInfo.routine.id).id)"
+                    <button (click)="viewLogDetails(getLogForRoutine(workoutInfo.routine.id).id)"
                       class="ml-auto flex items-center text-md font-semibold bg-sky-200 dark:bg-sky-700 text-sky-800 dark:text-sky-100 px-2 py-1 rounded hover:bg-sky-300">
                       <app-icon name="eye" class="w-6 h-6">
                       </app-icon>
@@ -103,11 +103,11 @@
                   </div>
                 </ng-container>
 
-                <ng-container *ngIf="!isWorkoutLogged(workoutInfo.scheduledDayInfo.id)">
+                <ng-container *ngIf="!isWorkoutLogged(workoutInfo.scheduledDayInfo) || !isProgramWorkoutLogged(workoutInfo.scheduledDayInfo.id)">
                   <ng-container *ngIf="isFutureDate(currentDate())">
                     <div
                       class="flex flex-col sm:flex-row justify-center items-center space-y-2 sm:space-y-0 sm:space-x-4 pt-4">
-                      <button appPressScroll (shortPress)="viewRoutineDetails(workoutInfo.scheduledDayInfo.id)"
+                      <button (click)="viewRoutineDetails(workoutInfo.scheduledDayInfo.id)"
                         class="flex-1 bg-sky-500 hover:bg-sky-600 text-white font-semibold py-2.5 px-4 rounded-md shadow-sm flex items-center justify-center text-m w-full sm:max-w-[200px]">
                         <app-icon name="eye" class="w-6 h-6">
                         </app-icon>
@@ -144,12 +144,11 @@
                     <div
                       class="flex flex-col sm:flex-row justify-center items-center space-y-2 sm:space-y-0 sm:space-x-4 pt-4">
                       <!-- UPDATED: Pass the scheduledDayInfo.id to the start function -->
-                      <button appPressScroll
-                        (shortPress)="startProgramWorkout(workoutInfo.routine.id, workoutInfo.scheduledDayInfo.programId, workoutInfo.scheduledDayInfo.id, $event)"
+                      <button (click)="startProgramWorkout(workoutInfo.routine.id, workoutInfo.scheduledDayInfo.programId, workoutInfo.scheduledDayInfo.id, $event)"
                         class="flex justify-center items-center w-full sm:max-w-[200px] px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-md shadow-sm text-lg disabled:opacity-50 disabled:cursor-not-allowed">
                         <app-icon name="play" class="w-6 h-6" [strokeWidth]="2.5"></app-icon>
                         START</button>
-                      <button appPressScroll (shortPress)="viewRoutineDetails(workoutInfo.routine.id)"
+                      <button (click)="viewRoutineDetails(workoutInfo.routine.id)"
                         class="flex justify-center items-center w-full sm:max-w-[200px] px-6 py-3 bg-sky-500 hover:bg-sky-600 text-white font-semibold rounded-md shadow-sm text-lg disabled:opacity-50 disabled:cursor-not-allowed">
                         <app-icon name="eye" class="w-6 h-6">
                         </app-icon>
@@ -187,7 +186,7 @@
                         secondsToDateTime(log.durationSeconds) |
                         date:'HH:mm:ss' }}</span>
                     </p>
-                    <button appPressScroll (shortPress)="viewLogDetails(log.id)"
+                    <button (click)="viewLogDetails(log.id)"
                       class="flex items-center text-md font-semibold bg-sky-200 dark:bg-sky-700 text-sky-800 dark:text-sky-100 px-2 py-1 rounded hover:bg-sky-300">
                       <app-icon name="eye" class="w-6 h-6">
                       </app-icon>
@@ -201,7 +200,7 @@
               <div *ngIf="logsForDay().length === 0">
                 <p class="text-m text-gray-500 dark:text-gray-400">
                   Feel free to
-                  <button appPressScroll (shortPress)="browseRoutines()"
+                  <button (click)="browseRoutines()"
                     class="text-primary dark:text-primary-light hover:underline">pick
                     any
                     other
@@ -211,7 +210,7 @@
                   *ngIf="availableRoutines$ | async as routines">
                   <h4 class="text-md font-semibold text-gray-600 dark:text-gray-200 mb-2">Or, pick one from below:</h4>
                   <div class="max-h-40 overflow-y-auto space-y-2 px-4 py-2 custom-scrollbar rounded">
-                    <div appPressScroll (shortPress)="viewRoutineDetails(routine.id)" *ngFor="let routine of routines"
+                    <div (click)="viewRoutineDetails(routine.id)" *ngFor="let routine of routines"
                       class="p-3 bg-gray-200/50 hover:bg-gray-300 dark:bg-gray-500 hover:dark:bg-gray-600 rounded-md shadow-sm hover:shadow-md transition-shadow flex justify-between items-center transform hover:-translate-y-1">
                       <div class="truncate">
                         <span class="font-medium text-gray-800 dark:text-gray-100">{{ routine.name }}</span>
@@ -225,7 +224,7 @@
                           </span>
                         </span>
                       </div>
-                      <button [disabled]="isAnimating()" appPressScroll (shortPress)="startWorkout(routine.id, $event)"
+                      <button [disabled]="isAnimating()" (click)="startWorkout(routine.id, $event)"
                         class="flex items-center ml-2 text-m bg-primary text-white hover:bg-green-600 font-semibold py-1 px-2.5 rounded-md disabled:opacity-50">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
                           stroke="currentColor" class="size-4 mr-1">
@@ -255,7 +254,7 @@
               </svg>
               <h3 class="text-lg font-medium text-gray-700 dark:text-gray-300">No Program Active</h3>
               <p class="text-m text-gray-500 dark:text-gray-400">Activate a program to see your future schedule</p>
-              <button appPressScroll (shortPress)="managePrograms()"
+              <button (click)="managePrograms()"
                 class="mt-4 text-white bg-primary hover:bg-primary-dark font-medium rounded-lg text-sm px-5 py-2.5">MANAGE
                 PROGRAMS</button>
             </div>
@@ -278,7 +277,7 @@
                         <ng-container *ngIf="log.dayName"> - {{ log.dayName }}</ng-container>
                       </span>
                     </p>
-                    <button appPressScroll (shortPress)="viewLogDetails(log.id)"
+                    <button (click)="viewLogDetails(log.id)"
                       class="flex items-center text-md font-semibold bg-sky-200 dark:bg-sky-700 text-sky-800 dark:text-sky-100 px-2 py-1 rounded hover:bg-sky-300">
                       <app-icon name="eye" class="w-6 h-6">
                       </app-icon>
@@ -295,14 +294,14 @@
               </div>
               <div *ngIf="isToday(currentDate())">
                 <p *ngIf="allActivePrograms().length === 0" class="text-m text-gray-500 dark:text-gray-400">
-                  You can <button appPressScroll (shortPress)="managePrograms()"
+                  You can <button (click)="managePrograms()"
                     class="text-primary dark:text-primary-light hover:underline">set an active program</button> or
-                  <button appPressScroll (shortPress)="browseRoutines()"
+                  <button (click)="browseRoutines()"
                     class="text-primary dark:text-primary-light hover:underline">browser the available routines</button>
                 </p>
                 <p *ngIf="allActivePrograms().length > 0" class="text-m text-gray-500 dark:text-gray-400">
                   Feel free to
-                  <button appPressScroll (shortPress)="browseRoutines()"
+                  <button (click)="browseRoutines()"
                     class="text-primary dark:text-primary-light hover:underline">pick
                     any
                     other
@@ -312,7 +311,7 @@
                   *ngIf="availableRoutines$ | async as routines">
                   <h4 class="text-md font-semibold text-gray-600 dark:text-gray-200 mb-2">Or, pick one from below:</h4>
                   <div class="max-h-40 overflow-y-auto space-y-2 px-4 py-2 custom-scrollbar rounded">
-                    <div appPressScroll (shortPress)="viewRoutineDetails(routine.id)" *ngFor="let routine of routines"
+                    <div (click)="viewRoutineDetails(routine.id)" *ngFor="let routine of routines"
                       class="p-3 bg-gray-200/50 hover:bg-gray-300 dark:bg-gray-500 hover:dark:bg-gray-600 rounded-md shadow-sm hover:shadow-md transition-shadow flex justify-between items-center transform hover:-translate-y-1">
                       <div class="truncate">
                         <span class="font-medium text-gray-800 dark:text-gray-100">{{ routine.name }}</span>
@@ -326,7 +325,7 @@
                           </span>
                         </span>
                       </div>
-                      <button appPressScroll (shortPress)="startWorkout(routine.id, $event)" [disabled]="isAnimating()"
+                      <button (click)="startWorkout(routine.id, $event)" [disabled]="isAnimating()"
                         class="flex items-center ml-2 text-m bg-primary text-white hover:bg-green-600 font-semibold py-1 px-2.5 rounded-md disabled:opacity-50">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
                           stroke="currentColor" class="size-4 mr-1">

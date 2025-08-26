@@ -31,6 +31,7 @@ export interface ScheduledRoutineDay {
   completedOnDate?: string;
   /** The ID of the WorkoutLog that fulfilled this scheduled day. */
   workoutLogId?: string;
+  iterationId?: string | undefined; // ID of the program iteration
 }
 
 /**
@@ -65,6 +66,7 @@ export interface TrainingProgram {
    * This property will be used if programType is 'linear'.
    */
   weeks?: ProgramWeek[];
+  iterationId?: string | undefined; // id of current TrainingProgramHistoryEntry
 }
 
 export interface TrainingProgramHistoryEntry {
