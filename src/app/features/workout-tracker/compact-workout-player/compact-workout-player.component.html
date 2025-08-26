@@ -53,30 +53,28 @@
 
           <!-- Action Menu for Workouts -->
           <div class="absolute top-2 right-2 z-60">
-            <div class="relative">
+            <div class="flex">
               <app-icon name="chevron-down"
-                class="h-5 w-5 text-gray-500 transition-transform duration-200 flex-shrink-0"
+                class="h-7 w-7 text-gray-500 transition-transform duration-200 flex-shrink-0"
                 [class.rotate-180]="expandedExerciseIndex() === exIndex"></app-icon>
               <button (click)="toggleActionMenu(exIndex, $event)"
                 class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center">
                 <app-icon name="menu-action" class="h-7 w-7"></app-icon>
               </button>
-              <app-action-menu [isVisible]="activeActionMenuIndex() === exIndex" class="action-menu-container"
+              <app-action-menu [isVisible]="activeActionMenuIndex() === exIndex && menuModeDropdown" class="action-menu-container"
                 displayMode="dropdown" [items]="getLogDropdownActionItems(exIndex, 'dropdown')"
-                [isVisible]="activeActionMenuIndex() === exIndex" (itemClick)="handleActionMenuItemClick($event)"
+                 (itemClick)="handleActionMenuItemClick($event)"
                 (closeMenu)="closeActionMenu()">
+              </app-action-menu>
+              <app-action-menu [isVisible]="activeActionMenuIndex() === exIndex && menuModeModal" class="action-menu-container"
+                displayMode="modal" [items]="getLogDropdownActionItems(exIndex, 'modal')"
+                 (itemClick)="handleActionMenuItemClick($event)"
+                (closeMenu)="closeActionMenu()"
+                [customButtonDivCssClass]="' '"
+                >
               </app-action-menu>
             </div>
           </div>
-
-          <!-- <div class="absolute top-2 right-2 z-50">
-            <button (click)="toggleActionMenu(exIndex, $event)"
-              class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
-              <app-icon name="menu-action" class="h-5 w-5 text-gray-500"></app-icon>
-            </button>
-            <app-icon name="chevron-down" class="h-5 w-5 text-gray-500 transition-transform duration-200 flex-shrink-0"
-              [class.rotate-180]="expandedExerciseIndex() === exIndex"></app-icon>
-          </div> -->
         </div>
 
 

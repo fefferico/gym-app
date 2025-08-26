@@ -32,6 +32,7 @@ import { ActionMenuItem } from '../../../core/models/action-menu.model';
 import { TrainingProgramService } from '../../../core/services/training-program.service';
 import { StorageService } from '../../../core/services/storage.service';
 import { MenuMode } from '../../../core/models/app-settings.model';
+import { AppSettingsService } from '../../../core/services/app-settings.service';
 
 enum SessionState {
   Loading = 'loading',
@@ -65,6 +66,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   protected unitsService = inject(UnitsService);
   private weightUnitPipe = inject(WeightUnitPipe);
   private cdr = inject(ChangeDetectorRef);
+  private appSettingsService = inject(AppSettingsService);
 
   routine = signal<Routine | null | undefined>(undefined);
   sessionState = signal<SessionState>(SessionState.Loading);
@@ -74,6 +76,11 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
   showCompletedSetsForExerciseInfo = signal(true);
   showCompletedSetsForDayInfo = signal(false);
+
+  
+  menuModeDropdown: boolean = false;
+  menuModeCompact: boolean = false;
+  menuModeModal: boolean = false;
 
   private workoutStartTime: number = 0;
   private timerSub: Subscription | undefined;
@@ -143,6 +150,11 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadAvailableExercises();
+
+    
+    this.menuModeDropdown = this.appSettingsService.isMenuModeDropdown();
+    this.menuModeCompact = this.appSettingsService.isMenuModeCompact();
+    this.menuModeModal = this.appSettingsService.isMenuModeModal();
 
     const routeSnapshot = this.route.snapshot;
     const targetRoutineId = routeSnapshot.paramMap.get('routineId');
@@ -649,31 +661,31 @@ toggleSetCompletion(exercise: WorkoutExercise, set: ExerciseSetParams, exIndex: 
   }
 
   getLogDropdownActionItems(exerciseId: number, mode: MenuMode): ActionMenuItem[] {
-    const defaultBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-primary flex items-center text-sm hover:text-white dark:hover:text-gray-100 dark:hover:text-white';
-    const warmupBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-blue-400 flex items-center text-sm hover:text-white dark:hover:text-gray-100 dark:hover:text-white';
-    const deleteBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-red-600 inline-flex items-center text-sm hover:text-gray-100 hover:animate-pulse';;
+    const defaultBtnClass = 'rounded text-left p-3 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-primary flex items-center hover:text-white dark:hover:text-gray-100 dark:hover:text-white';
+    const warmupBtnClass = 'rounded text-left p-3 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-blue-400 flex items-center hover:text-white dark:hover:text-gray-100 dark:hover:text-white';
+    const deleteBtnClass = 'rounded text-left p-3 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-red-600 inline-flex items-center hover:text-gray-100 hover:animate-pulse';;
 
     const actionsArray: ActionMenuItem[] = [
       {
         label: 'Switch Exercise', actionKey: 'switch', iconName: 'change', data: { exIndex: exerciseId },
-        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass, iconClass: 'w-8 h-8 mr-2'
       },
       {
         label: 'Performance Insights', actionKey: 'insights', iconName: 'chart', data: { exIndex: exerciseId },
-        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,iconClass: 'w-8 h-8 mr-2'
       },
       {
         label: 'Add Warm-up Set', actionKey: 'add_warmup', iconName: 'flame', data: { exIndex: exerciseId },
-        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + warmupBtnClass,
+        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + warmupBtnClass,iconClass: 'w-8 h-8 mr-2'
       },
       {
         label: 'Add Set', actionKey: 'add_set', iconName: 'plus-circle', data: { exIndex: exerciseId },
-        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,iconClass: 'w-8 h-8 mr-2'
       },
       { isDivider: true },
       {
         label: 'Remove Exercise', actionKey: 'remove', iconName: 'trash', data: { exIndex: exerciseId },
-        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + deleteBtnClass,
+        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + deleteBtnClass,iconClass: 'w-8 h-8 mr-2'
       }
     ];
     return actionsArray;

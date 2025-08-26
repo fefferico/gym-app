@@ -73,7 +73,7 @@ export class ActionMenuComponent implements OnChanges, OnDestroy {
   // --- No longer needed for modal, but kept for dropdown ---
   @Input() dropdownMenuClass: string = 'origin-top-right absolute right-0 top-full mt-1 sm:mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black dark:ring-gray-600 ring-opacity-5 focus:outline-none py-1 z-[60]';
   @Input() compactBarClass: string = 'flex flex-wrap gap-1.5 justify-center z-20 rounded-b-lg';
-
+  @Input() customButtonDivCssClass: string = 'grid grid-cols-2';
 
   @Output() itemClick = new EventEmitter<{ actionKey: string, data?: any }>();
   @Output() closeMenu = new EventEmitter<void>();
@@ -113,7 +113,7 @@ export class ActionMenuComponent implements OnChanges, OnDestroy {
         role: item.actionKey || '', // Use the actionKey as the unique identifier
         icon: item.iconName,
         iconClass: item.iconClass,
-        overrideCssClass: `justify-start text-2xl ${item.buttonClass || ''}`, // Ensure buttons are styled nicely
+        overrideCssClass: `justify-start text-xl ${item.buttonClass || ''}`, // Ensure buttons are styled nicely
         data: item.data
       }));
       
@@ -122,7 +122,7 @@ export class ActionMenuComponent implements OnChanges, OnDestroy {
       header: this.modalTitle,
       buttons: alertButtons,
       backdropDismiss: true,
-      customButtonDivCssClass: 'grid grid-cols-2',
+      customButtonDivCssClass: this.customButtonDivCssClass ? this.customButtonDivCssClass : 'grid grid-cols-2',
       // The AlertComponent itself is responsible for the full-screen/bottom-sheet styling
     });
 
