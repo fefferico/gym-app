@@ -168,9 +168,10 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         this.scheduledDay = targetProgramScheduledDayId;
         return this.routineId ? this.workoutService.getRoutineById(this.routineId) : of(null);
       })
-    ).subscribe((routine) => {
+    ).subscribe(async (routine) => {
       if (routine) {
         this.routine.set(JSON.parse(JSON.stringify(routine)));
+        await this.prefillRoutineWithLastPerformance();
         this.startWorkout();
       } else {
         this.sessionState.set(SessionState.Error);
@@ -182,6 +183,42 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.timerSub?.unsubscribe();
     this.routeSub?.unsubscribe();
+  }
+
+  private async prefillRoutineWithLastPerformance(): Promise<void> {
+    const currentRoutine = this.routine();
+    if (!currentRoutine) return;
+
+    // Create a deep copy to modify, then update the signal once at the end.
+    const routineCopy = JSON.parse(JSON.stringify(currentRoutine)) as Routine;
+
+    for (const exercise of routineCopy.exercises) {
+      try {
+        const lastPerformance = await firstValueFrom(
+          this.trackingService.getLastPerformanceForExercise(exercise.exerciseId)
+        );
+
+        if (lastPerformance && lastPerformance.sets.length > 0) {
+          exercise.sets.forEach((set, setIndex) => {
+            const historicalSet = lastPerformance.sets[setIndex];
+            if (historicalSet) {
+              // Pre-fill with the actual performance from the last session.
+              // We use the nullish coalescing operator (??) to keep the planned value if there was no historical value.
+              set.reps = historicalSet.repsAchieved ?? set.reps;
+              set.weight = historicalSet.weightUsed ?? set.weight;
+              set.duration = historicalSet.durationPerformed ?? set.duration;
+              set.distance = historicalSet.distanceAchieved ?? set.distance;
+            }
+          });
+        }
+      } catch (error) {
+        console.error(`Failed to prefill data for exercise ${exercise.exerciseName}:`, error);
+      }
+    }
+
+    // Update the signal with the pre-filled routine data.
+    this.routine.set(routineCopy);
+    this.cdr.detectChanges(); // Trigger change detection to be safe.
   }
 
   startWorkout(): void {
