@@ -11,7 +11,7 @@ export class ThemeService {
   // Initialize with a safe default (e.g., false for light theme)
   // The actual theme will be determined and applied in the constructor/effect if on browser
   isDarkTheme = signal<boolean>(false);
-  isMenuModeCompact = signal<boolean>(false);
+  // isMenuModeCompact = signal<boolean>(false);
 
   constructor(
     @Inject(DOCUMENT) private document: Document,
@@ -20,7 +20,7 @@ export class ThemeService {
     if (isPlatformBrowser(this.platformId)) {
       // Determine initial theme ONLY if in browser context
       this.isDarkTheme.set(this.getInitialThemeFromBrowser());
-      this.isMenuModeCompact.set(this.getInitialMenuModeFromBrowser());
+      // this.isMenuModeCompact.set(this.getInitialMenuModeFromBrowser());
     }
     // Else, on server, it remains the default 'false' (light), which is fine as
     // the server doesn't apply CSS classes to document.documentElement anyway.
@@ -28,11 +28,11 @@ export class ThemeService {
     // Effect runs on both server and client, but DOM manipulation is guarded
     effect(() => {
       const isDark = this.isDarkTheme();
-      const isMenuModeCompact = this.isMenuModeCompact();
+      // const isMenuModeCompact = this.isMenuModeCompact();
       if (isPlatformBrowser(this.platformId)) {
         // console.log(`ThemeService Effect: Setting theme to ${isDark ? 'dark' : 'light'}`);
         localStorage.setItem(this.THEME_KEY, isDark ? 'dark' : 'light');
-        localStorage.setItem(this.MENU_MODE_KEY, isMenuModeCompact ? 'true' : 'false');
+        // localStorage.setItem(this.MENU_MODE_KEY, isMenuModeCompact ? 'true' : 'false');
         if (isDark) {
           this.document.documentElement.classList.add('dark');
         } else {
@@ -69,11 +69,11 @@ export class ThemeService {
     }
   }
 
-  toggleMenuMode(): void {
-    if (isPlatformBrowser(this.platformId)) { // Guard toggle as well, though it usually implies user interaction
-      this.isMenuModeCompact.update(isMenuModeCompact => !isMenuModeCompact);
-    } else {
-      console.warn("ThemeService: toggleMenuMode called in non-browser environment. No action taken");
-    }
-  }
+  // toggleMenuMode(): void {
+  //   if (isPlatformBrowser(this.platformId)) { // Guard toggle as well, though it usually implies user interaction
+  //     this.isMenuModeCompact.update(isMenuModeCompact => !isMenuModeCompact);
+  //   } else {
+  //     console.warn("ThemeService: toggleMenuMode called in non-browser environment. No action taken");
+  //   }
+  // }
 }

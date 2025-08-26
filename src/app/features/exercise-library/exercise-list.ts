@@ -13,6 +13,8 @@ import { ThemeService } from '../../core/services/theme.service';
 import { PressDirective } from '../../shared/directives/press.directive';
 import { ActionMenuComponent } from '../../shared/components/action-menu/action-menu';
 import { ActionMenuItem } from '../../core/models/action-menu.model';
+import { AppSettingsService } from '../../core/services/app-settings.service';
+import { MenuMode } from '../../core/models/app-settings.model';
 
 @Component({
   selector: 'app-exercise-list',
@@ -76,6 +78,7 @@ export class ExerciseListComponent implements OnInit {
   private spinnerService = inject(SpinnerService);
   private themeService = inject(ThemeService);
   private platformId = inject(PLATFORM_ID);
+    private appSettingsService = inject(AppSettingsService);
 
   categories$: Observable<string[]> | undefined;
   primaryMuscleGroups$: Observable<string[]> | undefined;
@@ -149,7 +152,7 @@ export class ExerciseListComponent implements OnInit {
     }
     this.categories$ = this.exerciseService.getUniqueCategories();
     this.primaryMuscleGroups$ = this.exerciseService.getUniquePrimaryMuscleGroups();
-    this.menuModeCompact = this.themeService.isMenuModeCompact();
+    this.menuModeCompact = this.appSettingsService.isMenuModeCompact();
 
     // This subscription now gets ALL exercises from the service
     this.exerciseService.exercises$.subscribe(exercises => {
@@ -267,7 +270,7 @@ export class ExerciseListComponent implements OnInit {
     this.router.navigate(['/library/new']);
   }
 
-  getExerciseDropdownActionItems(exerciseId: string, mode: 'dropdown' | 'compact-bar'): ActionMenuItem[] {
+  getExerciseDropdownActionItems(exerciseId: string, mode: MenuMode): ActionMenuItem[] {
     const defaultBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-primary flex items-center text-sm hover:text-white dark:hover:text-gray-100 dark:hover:text-white';
     const deleteBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-red-600 flex items-center text-sm hover:text-gray-100 hover:animate-pulse';
 

@@ -39,6 +39,7 @@ import { TooltipDirective } from '../../shared/directives/tooltip.directive';
 import { ExerciseSelectionModalComponent } from '../../shared/components/exercise-selection-modal/exercise-selection-modal.component';
 import { MillisecondsDatePipe } from '../../shared/pipes/milliseconds-date.pipe';
 import { AppSettingsService } from '../../core/services/app-settings.service';
+import { MenuMode } from '../../core/models/app-settings.model';
 
 type BuilderMode = 'routineBuilder' | 'manualLogEntry';
 
@@ -1631,7 +1632,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
 
-  getRoutineDropdownActionItems(routineId: string, mode: 'dropdown' | 'compact-bar'): ActionMenuItem[] {
+  getRoutineDropdownActionItems(routineId: string, mode: MenuMode): ActionMenuItem[] {
     const defaultBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-primary flex items-center text-sm hover:text-white dark:hover:text-gray-100 dark:hover:text-white';
     const deleteBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-red-600 flex items-center text-sm hover:text-gray-100 hover:animate-pulse';;
 

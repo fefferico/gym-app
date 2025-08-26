@@ -220,8 +220,8 @@
           </div>
         </div>
 
-        <app-action-menu *ngIf="areActionsVisible(exercise.id) && menuModeCompact" displayMode="compact-bar"
-          [items]="getExerciseDropdownActionItems(exercise.id, 'compact-bar')"
+        <app-action-menu *ngIf="areActionsVisible(exercise.id) && menuModeCompact" displayMode="compact"
+          [items]="getExerciseDropdownActionItems(exercise.id, 'compact')"
           [isVisible]="areActionsVisible(exercise.id)" (itemClick)="handleActionMenuItemClick($event)"
           (closeMenu)="onCloseActionMenu()">
         </app-action-menu>

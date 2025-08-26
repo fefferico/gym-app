@@ -26,6 +26,7 @@ import { IconComponent } from '../../shared/components/icon/icon.component';
 import { LastPerformanceSummary, WorkoutLog } from '../../core/models/workout-log.model';
 import { UserProfileService } from '../../core/services/user-profile.service';
 import { AppSettingsService } from '../../core/services/app-settings.service';
+import { MenuMode } from '../../core/models/app-settings.model';
 
 @Component({
   selector: 'app-routine-list',
@@ -99,7 +100,9 @@ export class RoutineListComponent implements OnInit, OnDestroy {
 
   // Signals for menu and accordion
   visibleActionsRutineId = signal<string | null>(null);
+  menuModeDropdown: boolean = false;
   menuModeCompact: boolean = false;
+  menuModeModal: boolean = false;
   isFilterAccordionOpen = signal(false);
 
   // Signals for filter values
@@ -244,7 +247,9 @@ export class RoutineListComponent implements OnInit, OnDestroy {
       window.scrollTo(0, 0);
       this.isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
     }
-    this.menuModeCompact = this.themeService.isMenuModeCompact();
+    this.menuModeDropdown = this.appSettingsService.isMenuModeDropdown();
+    this.menuModeCompact = this.appSettingsService.isMenuModeCompact();
+    this.menuModeModal = this.appSettingsService.isMenuModeModal();
 
     // Fetch all exercises first to build the map
     this.exercisesSubscription = this.exerciseService.getExercises().subscribe(exercises => {
@@ -631,16 +636,15 @@ export class RoutineListComponent implements OnInit, OnDestroy {
   }
 
 
-  getRoutineDropdownActionItems(routineId: string, mode: 'dropdown' | 'compact-bar'): ActionMenuItem[] {
-    const defaultBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-primary flex items-center text-sm hover:text-white dark:hover:text-gray-100 dark:hover:text-white';
-    const deleteBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-red-600 flex items-center text-sm hover:text-gray-100 hover:animate-pulse';;
+  getRoutineDropdownActionItems(routineId: string, mode: MenuMode): ActionMenuItem[] {
+    const defaultBtnClass = 'rounded text-left p-4 font-medium text-gray-600 dark:text-gray-300 hover:bg-primary flex items-center hover:text-white dark:hover:text-gray-100 dark:hover:text-white';
+    const deleteBtnClass = 'rounded text-left p-4 font-medium text-gray-600 dark:text-gray-300 hover:bg-red-600 flex items-center hover:text-gray-100 hover:animate-pulse';;
 
     const currentRoutine = this.allRoutinesForList().find(routine => routine.id === routineId);
     const hideRoutineButton = {
       label: 'HIDE',
       actionKey: 'hide',
-      iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3.28 2.22a.75.75 0 00-1.06 1.06l14.5 14.5a.75.75 0 101.06-1.06l-1.745-1.745a10.029 10.029 0 003.3-4.38 1.651 1.651 0 000-1.185A10.004 10.004 0 009.999 3a9.956 9.956 0 00-4.744 1.194L3.28 2.22zM7.752 6.69l1.092 1.092a2.5 2.5 0 013.374 3.373l1.091 1.092a4 4 0 00-5.557-5.557z" clip-rule="evenodd" />
-        <path d="M10.748 13.93l2.523 2.523a9.987 9.987 0 01-3.27.547c-4.257 0-7.893-2.66-9.336-6.41a1.651 1.651 0 010-1.186A10.007 10.007 0 012.839 6.02L6.07 9.252a4 4 0 004.678 4.678z" /></svg>`,
+      iconName: `eye-off`,
       iconClass: 'w-8 h-8 mr-2', // Adjusted for consistency if needed,
       buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
       data: { routineId }
@@ -648,7 +652,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     const unhideRoutineButton = {
       label: 'UNHIDE',
       actionKey: 'unhide',
-      iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5Z" /><path fill-rule="evenodd" d="M.664 10.59a1.651 1.651 0 010-1.186A10.004 10.004 0 0110 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0110 17c-4.257 0-7.893-2.66-9.336-6.41ZM14 10a4 4 0 11-8 0 4 4 0 018 0Z" clip-rule="evenodd" /></svg>`,
+      iconName: `eye`,
       iconClass: 'w-8 h-8 mr-2', // Adjusted for consistency if needed,
       buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
       data: { routineId }
@@ -656,9 +660,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     const markAsFavouriteRoutineButton = {
       label: 'FAVOURITE',
       actionKey: 'markAsFavourite',
-      iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-        </svg>`,
+      iconName: `favourite`,
       iconClass: 'w-8 h-8 mr-2', // Adjusted for consistency if needed,
       buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
       data: { routineId }
@@ -666,10 +668,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     const unmarkAsFavouriteRoutineButton = {
       label: 'UNMARK',
       actionKey: 'unmarkAsFavourite',
-      iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-        <line x1="2" y1="20" x2="22" y2="4"></line>
-      </svg>`,
+      iconName: 'unmark',
       iconClass: 'w-8 h-8 mr-2', // Adjusted for consistency if needed,
       buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
       data: { routineId }
@@ -688,7 +687,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
       {
         label: 'VIEW',
         actionKey: 'view',
-        iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5Z" /><path fill-rule="evenodd" d="M.664 10.59a1.651 1.651 0 010-1.186A10.004 10.004 0 0110 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0110 17c-4.257 0-7.893-2.66-9.336-6.41ZM14 10a4 4 0 11-8 0 4 4 0 018 0Z" clip-rule="evenodd" /></svg>`,
+        iconName: `eye`,
         iconClass: 'w-8 h-8 mr-2', // Adjusted for consistency if needed,
         buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
         data: { routineId }
@@ -696,7 +695,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
       {
         label: 'START',
         actionKey: 'start',
-        iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" /></svg>`,
+        iconName: `play`,
         iconClass: 'w-8 h-8 mr-2',
         buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
         data: { routineId }
@@ -704,7 +703,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
       {
         label: 'EDIT',
         actionKey: 'edit',
-        iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>`,
+        iconName: `edit`,
         iconClass: 'w-8 h-8 mr-2',
         buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
         data: { routineId }
@@ -712,7 +711,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
       {
         label: 'CLONE',
         actionKey: 'clone',
-        iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none"><path d="M 5 3 H 16 A 2 2 0 0 1 18 5 V 16 A 2 2 0 0 1 16 18 H 5 A 2 2 0 0 1 3 16 V 5 A 2 2 0 0 1 5 3 Z M 8 6 H 19 A 2 2 0 0 1 21 8 V 19 A 2 2 0 0 1 19 21 H 8 A 2 2 0 0 1 6 19 V 8 A 2 2 0 0 1 8 6 Z" /></svg>`,
+        iconName: `copy`,
         iconClass: 'w-8 h-8 mr-2',
         buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
         data: { routineId }
@@ -739,7 +738,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
       {
         label: 'DELETE',
         actionKey: 'delete',
-        iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.58.177-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5Zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5Z" clip-rule="evenodd" /></svg>`,
+        iconName: `trash`,
         iconClass: 'w-8 h-8 mr-2',
         buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + deleteBtnClass,
         data: { routineId }

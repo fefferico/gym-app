@@ -1,13 +1,36 @@
 // src/app/shared/components/action-menu/action-menu.component.ts
-import { Component, Input, Output, EventEmitter, HostListener, ElementRef, ChangeDetectionStrategy, SecurityContext, inject, OnChanges, SimpleChanges, OnDestroy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, HostListener, ElementRef, ChangeDetectionStrategy, inject, OnChanges, SimpleChanges, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { ActionMenuItem } from '../../../core/models/action-menu.model';
-import { AlertButton } from '../../../core/models/alert.model';
 import { IconRegistryService } from '../../../core/services/icon-registry.service';
+import { MenuMode } from '../../../core/models/app-settings.model';
+import { IconComponent } from '../icon/icon.component';
+// +++ 1. Import the AlertService and the AlertButton model +++
+import { AlertService } from '../../../core/services/alert.service';
+import { AlertButton } from '../../../core/models/alert.model';
 
-// ... (animations remain the same)
+
+// ... (animations can remain unchanged) ...
+export const modalOverlayAnimation = trigger('modalOverlay', [
+  transition(':enter', [
+    style({ opacity: 0 }),
+    animate('200ms ease-out', style({ opacity: 1 })),
+  ]),
+  transition(':leave', [
+    animate('150ms ease-in', style({ opacity: 0 })),
+  ]),
+]);
+export const modalContentAnimation = trigger('modalContent', [
+    transition(':enter', [
+        style({ transform: 'translateY(100%)' }),
+        animate('200ms ease-out', style({ transform: 'translateY(0)' })),
+      ]),
+      transition(':leave', [
+        animate('150ms ease-in', style({ transform: 'translateY(100%)' })),
+      ]),
+]);
 export const dropdownMenuAnimation = trigger('dropdownMenu', [
   transition(':enter', [
     style({ opacity: 0, transform: 'scale(0.95) translateY(-10px)' }),
@@ -18,85 +41,118 @@ export const dropdownMenuAnimation = trigger('dropdownMenu', [
   ]),
 ]);
 export const compactBarAnimation = trigger('compactBar', [
-  state('void', style({
-    height: '0px', opacity: 0, overflow: 'hidden',
-    paddingTop: '0', paddingBottom: '0', marginTop: '0', marginBottom: '0'
-  })),
-  state('*', style({
-    height: '*', opacity: 1, overflow: 'hidden',
-    paddingTop: '0.5rem', paddingBottom: '0.5rem'
-  })),
-  transition('void <=> *', animate('200ms ease-in-out'))
+  transition(':enter', [
+    style({ opacity: 0 }),
+    animate('200ms ease-out', style({ opacity: 1 })),
+  ]),
+  transition(':leave', [
+    animate('150ms ease-in', style({ opacity: 0 })),
+  ]),
 ]);
-
 
 @Component({
   selector: 'app-action-menu',
   standalone: true,
   imports: [CommonModule],
   templateUrl: './action-menu.html',
-  animations: [dropdownMenuAnimation, compactBarAnimation],
+  animations: [dropdownMenuAnimation, compactBarAnimation, modalOverlayAnimation, modalContentAnimation],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ActionMenuComponent implements OnChanges, OnDestroy {
   private sanitizer = inject(DomSanitizer);
   private elRef = inject(ElementRef);
+  private iconRegistry = inject(IconRegistryService);
+  // +++ 2. Inject the AlertService +++
+  private alertService = inject(AlertService);
 
   @Input() items: ActionMenuItem[] = [];
   @Input() isVisible: boolean = false;
-  @Input() displayMode: 'dropdown' | 'compact-bar' = 'dropdown';
+  @Input() displayMode: MenuMode = 'dropdown';
+  @Input() modalTitle: string = 'Actions';
 
-  @Input() dropdownMenuClass: string = 'origin-top-right absolute right-0 top-full mt-1 sm:mt-2 w-40 sm:w-48 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black dark:ring-gray-600 ring-opacity-5 focus:outline-none py-1 z-[60]';
+  // --- No longer needed for modal, but kept for dropdown ---
+  @Input() dropdownMenuClass: string = 'origin-top-right absolute right-0 top-full mt-1 sm:mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black dark:ring-gray-600 ring-opacity-5 focus:outline-none py-1 z-[60]';
+  @Input() compactBarClass: string = 'flex flex-wrap gap-1.5 justify-center z-20 rounded-b-lg';
 
-  @Input() compactBarClass: string = 'flex flex-wrap gap-1.5 justify-center z-20 rounded-b-lg grid-cols-3';
 
   @Output() itemClick = new EventEmitter<{ actionKey: string, data?: any }>();
   @Output() closeMenu = new EventEmitter<void>();
 
-  // A bound reference to the event handler function.
-  // This is crucial for addEventListener and removeEventListener to work correctly.
   private _boundOnEnterKey = this.handleEnterKey.bind(this);
 
   ngOnChanges(changes: SimpleChanges): void {
-    // We watch for changes to the `isVisible` input property.
     if (changes['isVisible']) {
-      if (changes['isVisible'].currentValue === true) {
-        // When the menu becomes visible, add the global keydown listener.
+      const isVisible = changes['isVisible'].currentValue;
+
+      // +++ 3. Intercept the visibility change for modal mode +++
+      if (isVisible && this.displayMode === 'modal') {
+        // Use a timeout to avoid any potential expression-changed-after-checked errors
+        setTimeout(() => this.presentAsAlert(), 0);
+      }
+
+      // Keep existing listener logic for other modes
+      if (isVisible && this.displayMode !== 'modal') {
         document.addEventListener('keydown', this._boundOnEnterKey);
       } else {
-        // When the menu becomes hidden, remove the listener to prevent it from firing unnecessarily.
         document.removeEventListener('keydown', this._boundOnEnterKey);
       }
     }
   }
 
   ngOnDestroy(): void {
-    // Always clean up the listener when the component is destroyed to prevent memory leaks.
     document.removeEventListener('keydown', this._boundOnEnterKey);
   }
+  
+  // +++ 4. Add the new method to present the alert +++
+  private async presentAsAlert(): Promise<void> {
+    // Transform ActionMenuItem[] to AlertButton[]
+    const alertButtons: AlertButton[] = this.items
+      .filter(item => !item.isDivider)
+      .map(item => ({
+        text: item.label || '',
+        role: item.actionKey || '', // Use the actionKey as the unique identifier
+        icon: item.iconName,
+        iconClass: item.iconClass,
+        overrideCssClass: `justify-start text-2xl ${item.buttonClass || ''}`, // Ensure buttons are styled nicely
+        data: item.data
+      }));
+      
+    // Use the AlertService to present the options
+    const result = await this.alertService.present({
+      header: this.modalTitle,
+      buttons: alertButtons,
+      backdropDismiss: true,
+      customButtonDivCssClass: 'grid grid-cols-2',
+      // The AlertComponent itself is responsible for the full-screen/bottom-sheet styling
+    });
+
+    // Process the result from the alert
+    if (result && result.role !== 'backdrop' && result.role !== 'cancel') {
+      this.itemClick.emit({
+        actionKey: result.role,
+        data: result.data
+      });
+    }
+
+    // CRITICAL: Always emit closeMenu to reset the parent component's state
+    this.closeMenu.emit();
+  }
+
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
-    if (this.isVisible && !this.elRef.nativeElement.contains(event.target)) {
+    if (this.displayMode === 'dropdown' && this.isVisible && !this.elRef.nativeElement.contains(event.target)) {
       this.closeMenu.emit();
     }
   }
 
-  // This method is now called by our manually-managed event listener.
   handleEnterKey(event: KeyboardEvent): void {
-    // We only care about the "Enter" key.
-    if (event.key !== 'Enter') {
-      return;
-    }
-
-    event.preventDefault();
-
-    // Find the first clickable action in the menu.
-    const primaryAction = this.items.find(item => !item.isDivider);
-
-    if (primaryAction) {
-      // Simulate a click on that item to reuse all existing logic.
-      this.onItemClicked({ stopPropagation: () => { } } as MouseEvent, primaryAction);
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      const primaryAction = this.items.find(item => !item.isDivider);
+      if (primaryAction) {
+        this.onItemClicked({ stopPropagation: () => {} } as MouseEvent, primaryAction);
+      }
     }
   }
 
@@ -104,7 +160,7 @@ export class ActionMenuComponent implements OnChanges, OnDestroy {
     event.stopPropagation();
     if (!item.isDivider) {
       if (navigator.vibrate) {
-        navigator.vibrate(50); // Use a distinct vibration for long press if desired, e.g., [100, 50, 100]
+        navigator.vibrate(50);
       }
       this.itemClick.emit({ actionKey: item.actionKey ?? '', data: item.data });
       if (this.displayMode === 'dropdown') {
@@ -113,21 +169,6 @@ export class ActionMenuComponent implements OnChanges, OnDestroy {
     }
   }
 
-  sanitizeSvg(svgString?: string): SafeHtml | null {
-    if (!svgString) return null;
-    return this.sanitizer.bypassSecurityTrustHtml(svgString);
-  }
-
-  showLabelInCompact(item: ActionMenuItem): boolean {
-    return !!item.label;
-  }
-
-
-    private iconRegistry = inject(IconRegistryService);
-    
-    /**
-   * Resolves the icon for a button, prioritizing iconName over iconSvg.
-   */
   getIconHtml(button: ActionMenuItem): SafeHtml | null {
     let svgString: string | null = null;
     if (button.iconName) {
@@ -135,15 +176,10 @@ export class ActionMenuComponent implements OnChanges, OnDestroy {
     } else if (button.iconSvg) {
       svgString = button.iconSvg;
     }
-
-    if (svgString) {
-      return this.sanitizer.bypassSecurityTrustHtml(svgString);
-    }
-    return null;
+    return svgString ? this.sanitizer.bypassSecurityTrustHtml(svgString) : null;
   }
 
-  getPippo(): string {
-    return 'pippo';
+  showLabelInCompact(item: ActionMenuItem): boolean {
+    return !!item.label;
   }
-
 }

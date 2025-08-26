@@ -3,6 +3,7 @@ export interface AlertButton {
   text: string;
   role: 'confirm' | 'cancel' | 'custom' | string; // Allow custom roles
   cssClass?: string;
+  overrideCssClass?: string;
   handler?: () => boolean | void | Promise<boolean | void>; // Handler can return boolean to prevent dismiss
   data?: any; // Optional data to pass back when button is clicked
   icon?: string; // Optional icon name for the button
@@ -34,5 +35,6 @@ export interface AlertOptions {
   inputs?: AlertInput[]; // <-- ADDED THIS
   backdropDismiss?: boolean; // Default true (dismiss on backdrop click)
   customCssClass?: string; // Optional custom class for the alert box itself
+  customButtonDivCssClass?: string;
   // Add other options like subHeader, custom component, etc. if needed later
 }

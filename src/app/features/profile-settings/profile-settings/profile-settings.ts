@@ -13,8 +13,7 @@ import { UnitsService, WeightUnit } from '../../../core/services/units.service';
 import { AlertService } from '../../../core/services/alert.service';
 import { SpinnerService } from '../../../core/services/spinner.service';
 import { ThemeService } from '../../../core/services/theme.service';
-import { AppSettingsService } from '../../../core/services/app-settings.service';
-import { AppSettings } from '../../../core/models/app-settings.model';
+import { AppSettings, MenuMode } from '../../../core/models/app-settings.model';
 import { ToastService } from '../../../core/services/toast.service';
 import { Gender, MeasurementEntry, UserMeasurements, UserProfile } from '../../../core/models/user-profile.model';
 import { TrainingProgramService } from '../../../core/services/training-program.service';
@@ -27,6 +26,7 @@ import { AlertButton, AlertInput } from '../../../core/models/alert.model';
 import { ImageStorageService } from '../../../core/services/image-storage.service';
 import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
 import { PersonalGymService } from '../../../core/services/personal-gym.service';
+import { AppSettingsService } from '../../../core/services/app-settings.service';
 
 
 @Component({
@@ -54,7 +54,7 @@ export class ProfileSettingsComponent implements OnInit {
   protected progressiveOverloadService = inject(ProgressiveOverloadService);
   private platformId = inject(PLATFORM_ID);
   private toastService = inject(ToastService);
-  private imageStorageService = inject(ImageStorageService); // <-- Inject the service
+  private imageStorageService = inject(ImageStorageService);
 
   protected currentVibrator = navigator;
 
@@ -296,7 +296,7 @@ export class ProfileSettingsComponent implements OnInit {
       exercises: this.exerciseService.getDataForBackup(),
       workoutLogs: this.trackingService.getLogsForBackup(),
       personalBests: this.trackingService.getPBsForBackup(),
-      personalGym: this.personalGymService.getDataForBackup(), // <-- ADD THIS LINE
+      personalGym: this.personalGymService.getDataForBackup(),
     };
     const jsonString = JSON.stringify(backupData, null, 2);
     const blob = new Blob([jsonString], { type: 'application/json' });
@@ -504,5 +504,11 @@ export class ProfileSettingsComponent implements OnInit {
     if (currentVibrator && 'vibrate' in currentVibrator) {
       currentVibrator.vibrate(50);
     }
+  }
+
+  // ADDED: New method to handle menu mode selection
+  selectMenuMode(mode: MenuMode): void {
+    this.vibrate();
+    this.appSettingsService.setMenuMode(mode);
   }
 }

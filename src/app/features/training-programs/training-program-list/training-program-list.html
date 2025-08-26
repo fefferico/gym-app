@@ -113,9 +113,8 @@
               [ngClass]="{'ring-4 ring-green-500 dark:ring-green-400': program.isActive}">
               <div class="p-4 flex-grow cursor-pointer text-primary dark:text-primary-light dark:hover:text-yellow-200">
                 <div class="flex flex-col justify-between items-start mb-1.5 space-y-1">
-                  <h2
-                    class="text-lg sm:text-xl font-semibold truncate pr-10 text-wrap"
-                    [title]="program.name">{{ program.name }}</h2>
+                  <h2 class="text-lg sm:text-xl font-semibold truncate pr-10 text-wrap" [title]="program.name">{{
+                    program.name }}</h2>
                   <div *ngIf="program.isActive"
                     class="flex items-center bg-green-100 text-green-700 dark:bg-green-700 dark:text-green-100 rounded-full">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
@@ -187,16 +186,22 @@
                     class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center">
                     <app-icon name="menu-action" class="h-7 w-7"></app-icon>
                   </button>
-                  <app-action-menu *ngIf="areActionsVisible(program.id) && !menuModeCompact" displayMode="dropdown"
+                  <app-action-menu *ngIf="areActionsVisible(program.id) && menuModeDropdown" displayMode="dropdown"
                     [items]="getProgramDropdownActionItems(program.id, 'dropdown')"
+                    [isVisible]="areActionsVisible(program.id)" (itemClick)="handleActionMenuItemClick($event)"
+                    (closeMenu)="onCloseActionMenu()">
+                  </app-action-menu>
+
+                  <app-action-menu *ngIf="areActionsVisible(program.id) && menuModeModal" displayMode="modal"
+                    [modalTitle]="''" [items]="getProgramDropdownActionItems(program.id, 'modal')"
                     [isVisible]="areActionsVisible(program.id)" (itemClick)="handleActionMenuItemClick($event)"
                     (closeMenu)="onCloseActionMenu()">
                   </app-action-menu>
                 </div>
               </div>
 
-              <app-action-menu *ngIf="areActionsVisible(program.id) && menuModeCompact" displayMode="compact-bar"
-                [items]="getProgramDropdownActionItems(program.id, 'compact-bar')"
+              <app-action-menu *ngIf="areActionsVisible(program.id) && menuModeCompact" displayMode="compact"
+                [items]="getProgramDropdownActionItems(program.id, 'compact')"
                 [isVisible]="areActionsVisible(program.id)" (itemClick)="handleActionMenuItemClick($event)"
                 (closeMenu)="onCloseActionMenu()">
               </app-action-menu>

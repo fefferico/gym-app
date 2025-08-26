@@ -26,6 +26,7 @@ import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
 import { TrainingProgramService } from '../../../core/services/training-program.service';
 import { ProgramDayInfo, TrainingProgram } from '../../../core/models/training-program.model';
+import { MenuMode } from '../../../core/models/app-settings.model';
 // DomSanitizer is not explicitly used in this version after previous edits, but good to keep if you plan to use [innerHTML] with dynamic SVGs later.
 // import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
@@ -705,7 +706,7 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
   }
 
 
-  getLogDropdownActionItems(routineId: string, mode: 'dropdown' | 'compact-bar'): ActionMenuItem[] {
+  getLogDropdownActionItems(routineId: string, mode: MenuMode): ActionMenuItem[] {
     const defaultBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-primary flex items-center text-sm hover:text-white dark:hover:text-gray-100 dark:hover:text-white';
     const deleteBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-red-600 flex items-center text-sm hover:text-gray-100 hover:animate-pulse';;
 

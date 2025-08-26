@@ -31,6 +31,7 @@ import { ActionMenuComponent } from '../../../shared/components/action-menu/acti
 import { ActionMenuItem } from '../../../core/models/action-menu.model';
 import { TrainingProgramService } from '../../../core/services/training-program.service';
 import { StorageService } from '../../../core/services/storage.service';
+import { MenuMode } from '../../../core/models/app-settings.model';
 
 enum SessionState {
   Loading = 'loading',
@@ -647,7 +648,7 @@ toggleSetCompletion(exercise: WorkoutExercise, set: ExerciseSetParams, exIndex: 
     return this.activeActionMenuIndex() === exerciseIndex;
   }
 
-  getLogDropdownActionItems(exerciseId: number, mode: 'dropdown' | 'compact-bar'): ActionMenuItem[] {
+  getLogDropdownActionItems(exerciseId: number, mode: MenuMode): ActionMenuItem[] {
     const defaultBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-primary flex items-center text-sm hover:text-white dark:hover:text-gray-100 dark:hover:text-white';
     const warmupBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-blue-400 flex items-center text-sm hover:text-white dark:hover:text-gray-100 dark:hover:text-white';
     const deleteBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-red-600 inline-flex items-center text-sm hover:text-gray-100 hover:animate-pulse';;

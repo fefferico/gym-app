@@ -128,15 +128,21 @@
                       class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center">
                       <app-icon name="menu-action" class="h-7 w-7"></app-icon>
                     </button>
-                    <app-action-menu *ngIf="areActionsVisible(item.id) && !menuModeCompact"
+                    <app-action-menu *ngIf="areActionsVisible(item.id) && menuModeDropdown"
                       class="action-menu-container" displayMode="dropdown"
                       [items]="getLogDropdownActionItems(item.id, 'dropdown')" [isVisible]="areActionsVisible(item.id)"
                       (itemClick)="handleActionMenuItemClick($event)" (closeMenu)="onCloseActionMenu()">
                     </app-action-menu>
+                    <app-action-menu *ngIf="areActionsVisible(item.id) && menuModeModal"
+                        displayMode="modal" [modalTitle]="''"
+                        [items]="getLogDropdownActionItems(item.id, 'modal')"
+                        [isVisible]="areActionsVisible(item.id)"
+                        (itemClick)="handleActionMenuItemClick($event)" (closeMenu)="onCloseActionMenu()">
+                    </app-action-menu>
                   </div>
                 </div>
-                <app-action-menu *ngIf="areActionsVisible(item.id) && menuModeCompact" displayMode="compact-bar"
-                  [items]="getLogDropdownActionItems(item.id, 'compact-bar')" [isVisible]="areActionsVisible(item.id)"
+                <app-action-menu *ngIf="areActionsVisible(item.id) && menuModeCompact" displayMode="compact"
+                  [items]="getLogDropdownActionItems(item.id, 'compact')" [isVisible]="areActionsVisible(item.id)"
                   (itemClick)="handleActionMenuItemClick($event)" (closeMenu)="onCloseActionMenu()">
                 </app-action-menu>
               </div>
@@ -186,8 +192,8 @@
                       (closeMenu)="onCloseActionMenu()">
                     </app-action-menu>
                   </div>
-                  <app-action-menu *ngIf="areActionsVisible(item.id) && menuModeCompact" displayMode="compact-bar"
-                    [items]="getActivityLogDropdownActionItems(item.id, 'compact-bar')"
+                  <app-action-menu *ngIf="areActionsVisible(item.id) && menuModeCompact" displayMode="compact"
+                    [items]="getActivityLogDropdownActionItems(item.id, 'compact')"
                     [isVisible]="areActionsVisible(item.id)" (itemClick)="handleActionMenuItemClick($event)"
                     (closeMenu)="onCloseActionMenu()">
                   </app-action-menu>

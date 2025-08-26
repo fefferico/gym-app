@@ -155,9 +155,15 @@
                                     class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center">
                                     <app-icon name="menu-action" class="h-7 w-7"></app-icon>
                                 </button>
-                                <app-action-menu *ngIf="areActionsVisible(routine.id) && !menuModeCompact"
+                                <app-action-menu *ngIf="areActionsVisible(routine.id) && menuModeDropdown"
                                     displayMode="dropdown"
                                     [items]="getRoutineDropdownActionItems(routine.id, 'dropdown')"
+                                    [isVisible]="areActionsVisible(routine.id)"
+                                    (itemClick)="handleActionMenuItemClick($event)" (closeMenu)="onCloseActionMenu()">
+                                </app-action-menu>
+                                <app-action-menu *ngIf="areActionsVisible(routine.id) && menuModeModal"
+                                    displayMode="modal" [modalTitle]="''"
+                                    [items]="getRoutineDropdownActionItems(routine.id, 'modal')"
                                     [isVisible]="areActionsVisible(routine.id)"
                                     (itemClick)="handleActionMenuItemClick($event)" (closeMenu)="onCloseActionMenu()">
                                 </app-action-menu>
@@ -261,8 +267,7 @@
                         </div>
                         <div class="relative">
                             <app-action-menu *ngIf="areActionsVisible(routine.id) && menuModeCompact"
-                                displayMode="compact-bar"
-                                [items]="getRoutineDropdownActionItems(routine.id, 'compact-bar')"
+                                displayMode="compact" [items]="getRoutineDropdownActionItems(routine.id, 'compact')"
                                 [isVisible]="areActionsVisible(routine.id)"
                                 (itemClick)="handleActionMenuItemClick($event)" (closeMenu)="onCloseActionMenu()">
                             </app-action-menu>

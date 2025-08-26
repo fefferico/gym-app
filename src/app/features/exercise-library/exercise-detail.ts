@@ -13,6 +13,7 @@ import { AlertService } from '../../core/services/alert.service';
 import { AlertButton } from '../../core/models/alert.model';
 import { ActionMenuComponent } from '../../shared/components/action-menu/action-menu';
 import { ActionMenuItem } from '../../core/models/action-menu.model';
+import { MenuMode } from '../../core/models/app-settings.model';
 
 @Component({
   selector: 'app-exercise-detail',
@@ -275,7 +276,7 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
 
 
 
-  getExerciseDropdownActionItems(routineId: string, mode: 'dropdown' | 'compact-bar'): ActionMenuItem[] {
+  getExerciseDropdownActionItems(routineId: string, mode: MenuMode): ActionMenuItem[] {
     const defaultBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-primary flex items-center text-sm hover:text-white dark:hover:text-gray-100 dark:hover:text-white';
     const deleteBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-red-600 flex items-center text-sm hover:text-gray-100 hover:animate-pulse';;
 
