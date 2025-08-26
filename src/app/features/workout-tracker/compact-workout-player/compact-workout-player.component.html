@@ -205,6 +205,16 @@
     (findSimilarClicked)="findAndShowSimilarExercises(exerciseToSwitchIndex())"
     (backToSearchClicked)="isShowingSimilarInSwitchModal.set(false)" (close)="closeSwitchExerciseModal()">
   </app-exercise-selection-modal>
+  
+  <app-full-screen-rest-timer
+    [isVisible]="isRestTimerVisible()"
+    [mainTimer]="sessionTimerDisplay"
+    [durationSeconds]="restDuration()"
+    [mainText]="restTimerMainText()"
+    [nextUpText]="restTimerNextUpText()"
+    (timerFinished)="handleRestTimerFinished()"
+    (timerSkipped)="handleRestTimerSkipped($event)">
+  </app-full-screen-rest-timer>
 
   <!-- You would create and place modals for switch/insights here -->
 

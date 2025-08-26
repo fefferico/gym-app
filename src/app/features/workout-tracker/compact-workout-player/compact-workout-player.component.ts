@@ -33,6 +33,7 @@ import { TrainingProgramService } from '../../../core/services/training-program.
 import { StorageService } from '../../../core/services/storage.service';
 import { MenuMode } from '../../../core/models/app-settings.model';
 import { AppSettingsService } from '../../../core/services/app-settings.service';
+import { FullScreenRestTimerComponent } from '../../../shared/components/full-screen-rest-timer/full-screen-rest-timer';
 
 enum SessionState {
   Loading = 'loading',
@@ -47,7 +48,7 @@ enum SessionState {
   standalone: true,
   imports: [
     CommonModule, DatePipe, WeightUnitPipe, IconComponent,
-    ExerciseSelectionModalComponent, FormsModule, ActionMenuComponent,
+    ExerciseSelectionModalComponent, FormsModule, ActionMenuComponent, FullScreenRestTimerComponent,
   ],
   templateUrl: './compact-workout-player.component.html',
   styleUrls: ['./compact-workout-player.component.scss'],
@@ -77,6 +78,11 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   showCompletedSetsForExerciseInfo = signal(true);
   showCompletedSetsForDayInfo = signal(false);
 
+  // --- Rest Timer State ---
+  isRestTimerVisible = signal(false);
+  restDuration = signal(0);
+  restTimerMainText = signal('RESTING');
+  restTimerNextUpText = signal<string | null>(null);
   
   menuModeDropdown: boolean = false;
   menuModeCompact: boolean = false;
@@ -188,22 +194,19 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   private async prefillRoutineWithLastPerformance(): Promise<void> {
     const currentRoutine = this.routine();
     if (!currentRoutine) return;
-
-    // Create a deep copy to modify, then update the signal once at the end.
+  
     const routineCopy = JSON.parse(JSON.stringify(currentRoutine)) as Routine;
-
+  
     for (const exercise of routineCopy.exercises) {
       try {
         const lastPerformance = await firstValueFrom(
           this.trackingService.getLastPerformanceForExercise(exercise.exerciseId)
         );
-
+  
         if (lastPerformance && lastPerformance.sets.length > 0) {
           exercise.sets.forEach((set, setIndex) => {
             const historicalSet = lastPerformance.sets[setIndex];
             if (historicalSet) {
-              // Pre-fill with the actual performance from the last session.
-              // We use the nullish coalescing operator (??) to keep the planned value if there was no historical value.
               set.reps = historicalSet.repsAchieved ?? set.reps;
               set.weight = historicalSet.weightUsed ?? set.weight;
               set.duration = historicalSet.durationPerformed ?? set.duration;
@@ -215,10 +218,9 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         console.error(`Failed to prefill data for exercise ${exercise.exerciseName}:`, error);
       }
     }
-
-    // Update the signal with the pre-filled routine data.
+  
     this.routine.set(routineCopy);
-    this.cdr.detectChanges(); // Trigger change detection to be safe.
+    this.cdr.detectChanges();
   }
 
   startWorkout(): void {
@@ -273,61 +275,55 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return !!this.getLoggedSet(exIndex, setIndex);
   }
 
-toggleSetCompletion(exercise: WorkoutExercise, set: ExerciseSetParams, exIndex: number, setIndex: number): void {
+  toggleSetCompletion(exercise: WorkoutExercise, set: ExerciseSetParams, exIndex: number, setIndex: number): void {
     const log = this.currentWorkoutLog();
     if (!log.exercises) log.exercises = [];
 
     let exerciseLog = log.exercises.find(e => e.id === exercise.id);
+    const wasCompleted = !!this.getLoggedSet(exIndex, setIndex);
 
-    if (!exerciseLog) {
-      // If the exercise log doesn't exist, create it.
-      exerciseLog = {
-        id: exercise.id,
-        exerciseId: exercise.exerciseId,
-        exerciseName: exercise.exerciseName!,
-        sets: [],
-        rounds: exercise.rounds ?? 1,
-        type: exercise.type || 'standard'
-      };
-      log.exercises.push(exerciseLog);
-    }
-
-    const existingIndex = exerciseLog.sets.findIndex(s => s.plannedSetId === set.id);
-
-    if (existingIndex > -1) {
-      // The set exists, so we are un-checking it (removing it).
-      exerciseLog.sets.splice(existingIndex, 1);
-
-      // Check if the exercise log has any sets left.
-      if (exerciseLog.sets.length === 0) {
-        // If there are no sets left, remove the entire exercise log.
-        const emptyExerciseLogIndex = log.exercises.findIndex(e => e.id === exerciseLog!.id);
-        if (emptyExerciseLogIndex > -1) {
-          log.exercises.splice(emptyExerciseLogIndex, 1);
+    if (wasCompleted) {
+      // Un-checking the set
+      if (exerciseLog) {
+        const existingIndex = exerciseLog.sets.findIndex(s => s.plannedSetId === set.id);
+        if (existingIndex > -1) {
+          exerciseLog.sets.splice(existingIndex, 1);
+        }
+        if (exerciseLog.sets.length === 0) {
+          const emptyLogIndex = log.exercises.findIndex(e => e.id === exerciseLog!.id);
+          if (emptyLogIndex > -1) {
+            log.exercises.splice(emptyLogIndex, 1);
+          }
         }
       }
     } else {
-      // The set does not exist, so we are checking it (adding it).
+      // Checking the set
+      if (!exerciseLog) {
+        exerciseLog = {
+          id: exercise.id, exerciseId: exercise.exerciseId, exerciseName: exercise.exerciseName!,
+          sets: [], rounds: exercise.rounds ?? 1, type: exercise.type || 'standard'
+        };
+        log.exercises.push(exerciseLog);
+      }
+
       const newLoggedSet: LoggedSet = {
-        id: uuidv4(),
-        exerciseName: exercise.exerciseName,
-        plannedSetId: set.id,
-        exerciseId: exercise.exerciseId,
-        type: set.type,
-        repsAchieved: set.reps ?? 0,
-        weightUsed: set.weight ?? undefined,
-        durationPerformed: set.duration,
-        distanceAchieved: set.distance,
+        id: uuidv4(), exerciseName: exercise.exerciseName, plannedSetId: set.id,
+        exerciseId: exercise.exerciseId, type: set.type,
+        repsAchieved: set.reps ?? 0, weightUsed: set.weight ?? undefined,
+        durationPerformed: set.duration, distanceAchieved: set.distance,
         timestamp: new Date().toISOString(),
       };
       exerciseLog.sets.push(newLoggedSet);
 
-      // Ensure the sets remain in their original planned order.
       const order = exercise.sets.map(s => s.id);
       exerciseLog.sets.sort((a, b) => order.indexOf(a.plannedSetId!) - order.indexOf(b.plannedSetId!));
+
+      // START REST TIMER IF APPLICABLE
+      if (set.restAfterSet && set.restAfterSet > 0) {
+        this.startRestPeriod(set.restAfterSet, exIndex, setIndex);
+      }
     }
 
-    // Update the signal with the modified log to trigger UI updates.
     this.currentWorkoutLog.set({ ...log });
   }
 
@@ -728,4 +724,43 @@ toggleSetCompletion(exercise: WorkoutExercise, set: ExerciseSetParams, exIndex: 
     return actionsArray;
   }
 
+  // --- Rest Timer Methods ---
+  private startRestPeriod(duration: number, completedExIndex: number, completedSetIndex: number): void {
+    this.restDuration.set(duration);
+    this.restTimerMainText.set('RESTING');
+    this.restTimerNextUpText.set(this.peekNextStepInfo(completedExIndex, completedSetIndex));
+    this.isRestTimerVisible.set(true);
+  }
+
+  handleRestTimerFinished(): void {
+    this.isRestTimerVisible.set(false);
+    this.toastService.success("Rest complete!", 2000);
+  }
+
+  handleRestTimerSkipped(timeSkipped: number): void {
+    this.isRestTimerVisible.set(false);
+    this.toastService.info("Rest skipped", 1500);
+  }
+
+  private peekNextStepInfo(completedExIndex: number, completedSetIndex: number): string | null {
+    const routine = this.routine();
+    if (!routine) return null;
+  
+    const currentExercise = routine.exercises[completedExIndex];
+  
+    // Check for next set in the same exercise
+    if (completedSetIndex + 1 < currentExercise.sets.length) {
+      const nextSet = currentExercise.sets[completedSetIndex + 1];
+      return `${currentExercise.exerciseName} - Set ${completedSetIndex + 2}`;
+    }
+  
+    // Check for the first set of the next exercise
+    if (completedExIndex + 1 < routine.exercises.length) {
+      const nextExercise = routine.exercises[completedExIndex + 1];
+      return `${nextExercise.exerciseName} - Set 1`;
+    }
+  
+    // This was the last set of the last exercise
+    return "Workout Complete!";
+  }
 }
