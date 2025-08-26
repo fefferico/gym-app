@@ -12,7 +12,7 @@ export class StorageService {
 
   private readonly PAUSED_WORKOUT_KEY = 'fitTrackPro_pausedWorkoutState';
   private readonly PAUSED_STATE_VERSION = '1.2';
-  private version = '1.0.3'; // Version of the storage service
+  private version = '1.1.0'; // Version of the storage service
 
   constructor(@Inject(PLATFORM_ID) private platformId: Object) {
     this.isBrowser = isPlatformBrowser(this.platformId);
