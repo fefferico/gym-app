@@ -58,8 +58,8 @@
                 class="h-5 w-5 text-gray-500 transition-transform duration-200 flex-shrink-0"
                 [class.rotate-180]="expandedExerciseIndex() === exIndex"></app-icon>
               <button (click)="toggleActionMenu(exIndex, $event)"
-                class="p-1.5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full focus:outline-none">
-                <app-icon name="menu-action" class="h-5 w-5"></app-icon>
+                class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center">
+                <app-icon name="menu-action" class="h-7 w-7"></app-icon>
               </button>
               <app-action-menu [isVisible]="activeActionMenuIndex() === exIndex" class="action-menu-container"
                 displayMode="dropdown" [items]="getLogDropdownActionItems(exIndex, 'dropdown')"

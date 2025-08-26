@@ -138,8 +138,8 @@ export class HomeComponent implements OnInit {
       this.alertService.showAlert(
         `Paused: ${routineName}`,
         `You have ${exercisesDone} exercise(s) with ${setsDone} set(s) logged.
-             Elapsed time: ${timeElapsed}.
-             Resume the workout to see full details or to complete it.`
+         Elapsed time: ${timeElapsed}.
+         Resume the workout to see full details or to complete it.`
       );
     }
   }

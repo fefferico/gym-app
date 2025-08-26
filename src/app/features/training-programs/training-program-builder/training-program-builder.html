@@ -14,7 +14,7 @@
             <div *ngIf="currentProgram as program" class="">
                 <div class="relative">
                     <button (click)="toggleActions(program.id, $event)"
-                        class="p-1.5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full focus:outline-none">
+                        class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -600,7 +600,7 @@
                                             <div class="flex items-center space-x-2 justify-center">
                                                 <button type="button" (click)="editHistoryEntry(entry)"
                                                     title="Edit entry"
-                                                    class="p-1.5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md"><app-icon
+                                                    class="p-1.5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-md flex items-center"><app-icon
                                                         name="edit" class="w-8 h-8"></app-icon></button>
                                                 <button type="button" (click)="removeProgramHistoryEntry(entry.id)"
                                                     title="Delete entry"
@@ -635,7 +635,7 @@
                                                         name="save" class="w-8 h-8"></app-icon></button>
                                                 <button type="button" (click)="cancelEditHistoryEntry()"
                                                     title="Cancel edit"
-                                                    class="p-1.5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md"><app-icon
+                                                    class="p-1.5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-md flex items-center"><app-icon
                                                         name="cancel" class="w-8 h-8"></app-icon></button>
                                             </div>
                                         </td>

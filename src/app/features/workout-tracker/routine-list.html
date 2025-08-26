@@ -111,7 +111,7 @@
                 </div>
                 <div class="mt-4 flex justify-between items-center">
                     <button (click)="clearFilters()"
-                        class="flex px-4 py-2 bg-yellow-200 dark:bg-yellow-700 text-gray-700 dark:text-gray-200 rounded-md hover:bg-yellow-300 dark:hover:bg-yellow-500 text-sm items-center">
+                        class="flex px-4 py-2 bg-yellow-200 dark:bg-yellow-700 text-gray-700 dark:text-gray-200 rounded-md hover:bg-yellow-300 dark:hover:bg-yellow-500 text-sm items-center font-medium">
                         <app-icon name="trash" class="w-5 h-5 mr-1"></app-icon>
                         CLEAR FILTERS
                     </button>
@@ -134,10 +134,10 @@
 
                 <button type="button" *ngFor="let routine of filteredRoutines()"
                     (click)="viewRoutineDetails(routine.id, $event)"
-                    class="bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow duration-200 relative group transform hover:-translate-y-1 text-left"
+                    class="bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow duration-200 relative group transform hover:-translate-y-1 text-left dark:hover:bg-gray-600 hover:bg-gray-200"
                     [style.zIndex]="areActionsVisible(routine.id) ? 50 : 'auto'">
 
-                    <div class="p-3 text-primary dark:text-primary-light dark:hover:text-yellow-200 h-full">
+                    <div class="p-3 text-primary dark:text-primary-light dark:hover:text-yellow-200 h-full ">
                         <!-- 
                             =================== START OF CORRECTION ===================
                             The title and the menu are now inside a single flex container.
@@ -152,8 +152,8 @@
                                 <button (click)="toggleActions(routine.id, $event)"
                                     [attr.aria-label]="'Actions for ' + routine.name" aria-haspopup="true"
                                     [attr.aria-expanded]="areActionsVisible(routine.id)"
-                                    class="p-1.5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full focus:outline-none">
-                                    <app-icon name="menu-action" class="h-5 w-5"></app-icon>
+                                    class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center">
+                                    <app-icon name="menu-action" class="h-7 w-7"></app-icon>
                                 </button>
                                 <app-action-menu *ngIf="areActionsVisible(routine.id) && !menuModeCompact"
                                     displayMode="dropdown"

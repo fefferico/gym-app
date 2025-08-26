@@ -10,8 +10,8 @@
     <div class="flex items-center space-x-2 flex-shrink-0">
       <div class="relative">
         <button (click)="toggleActions(log.id, $event)"
-          class="p-1.5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full focus:outline-none">
-          <app-icon name="menu-action" class="h-5 w-5"></app-icon>
+          class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center">
+          <app-icon name="menu-action" class="h-7 w-7"></app-icon>
         </button>
         <app-action-menu *ngIf="areActionsVisible(log.id)" displayMode="dropdown"
           [items]="getLogDropdownActionItems(log)" [isVisible]="areActionsVisible(log.id)"

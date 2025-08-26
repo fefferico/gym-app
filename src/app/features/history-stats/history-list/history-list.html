@@ -71,7 +71,7 @@
             </div>
             <div class="flex justify-between items-center pt-3">
               <button type="button" (click)="resetFilters()"
-                class="flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                class="flex px-4 py-2 bg-yellow-200 dark:bg-yellow-700 text-gray-700 dark:text-gray-200 rounded-md hover:bg-yellow-300 dark:hover:bg-yellow-500 text-sm items-center font-medium">
                 <app-icon name="trash" class="w-5 h-5 mr-1"></app-icon>
                 CLEAR FILTERS</button>
               <div class="text-sm text-gray-600 dark:text-gray-400">
@@ -89,7 +89,7 @@
 
               <!-- WORKOUT LOG CARD -->
               <div *ngIf="item.itemType === 'workout'"
-                class="bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow duration-200 relative group transform hover:-translate-y-1 border-l-4 border-primary text-primary dark:text-primary-light dark:hover:text-yellow-200"
+                class="bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow duration-200 relative group transform hover:-translate-y-1 border-l-4 border-primary text-primary dark:text-primary-light dark:hover:text-yellow-200 dark:hover:bg-gray-600 hover:bg-gray-200"
                 [style.zIndex]="areActionsVisible(item.id) ? 50 : 'auto'">
                 <div class="p-4 sm:p-6 cursor-pointer" (click)="viewLogDetails(item.id)">
                   <div class="flex justify-between items-start mb-1.5">
@@ -125,8 +125,8 @@
                 <div class="absolute top-2 right-2 z-50">
                   <div class="relative">
                     <button (click)="toggleActions(item.id, $event)"
-                      class="p-1.5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full focus:outline-none">
-                      <app-icon name="menu-action" class="h-5 w-5"></app-icon>
+                      class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center">
+                      <app-icon name="menu-action" class="h-7 w-7"></app-icon>
                     </button>
                     <app-action-menu *ngIf="areActionsVisible(item.id) && !menuModeCompact"
                       class="action-menu-container" displayMode="dropdown"
@@ -177,8 +177,8 @@
                 <div class="absolute top-2 right-2 z-50">
                   <div class="relative">
                     <button (click)="toggleActions(item.id, $event)"
-                      class="p-1.5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full focus:outline-none">
-                      <app-icon name="menu-action" class="h-5 w-5"></app-icon>
+                      class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center">
+                      <app-icon name="menu-action" class="h-7 w-7"></app-icon>
                     </button>
                     <app-action-menu *ngIf="areActionsVisible(item.id)" class="action-menu-container"
                       displayMode="dropdown" [items]="getActivityLogDropdownActionItems(item.id, 'dropdown')"

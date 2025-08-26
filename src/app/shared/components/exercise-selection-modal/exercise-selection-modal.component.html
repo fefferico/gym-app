@@ -23,14 +23,14 @@
                 <!-- "Show Similar" button (conditionally rendered) -->
                 <button *ngIf="showSimilarButton() && !isShowingSimilarView()" (click)="onFindSimilar()"
                     class="justify-center inline-flex items-center mt-2 px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700">
-                    Or Show Similar Exercises
+                    OR SHOW SIMILAR EXERCISES
                 </button>
 
                 <!-- "Back to Search" button (visible in 'similar' view) -->
                 <button *ngIf="isShowingSimilarView()" (click)="onBackToSearch()"
                     class="justify-center inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md shadow-sm text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                     <app-icon name="back" class="w-5 h-5 mr-2"></app-icon>
-                    Back to Search
+                    BACK TO SEARCH
                 </button>
             </div>
         </div>

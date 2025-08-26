@@ -394,32 +394,34 @@
             </div>
         </section>
 
-        <!-- Personal Gym Link Section -->
-        <section class="bg-white dark:bg-gray-700 p-4 sm:p-6 rounded-md shadow-md">
-            <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">Personal Gym</h2>
-            <div>
-                <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">View your own equipment</p>
-                <button appPress (shortPress)="navigateToPersonalGym()"
-                    class="px-4 py-2 bg-indigo-500 hover:bg-indigo-700 text-white font-semibold rounded-md shadow-sm transition-colors inline-flex items-center text-sm">
-                    <app-icon name="dumbbell" class="w-6 h-6 mr-1"></app-icon>
-                    PERSONAL GYM
-                </button>
-            </div>
-        </section>
-
-        <!-- Exercise List Link Section -->
-        <section class="bg-white dark:bg-gray-700 p-4 sm:p-6 rounded-md shadow-md">
-            <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">Exercise library</h2>
-            <div>
-                <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">View all the available exercise and
-                    add your own ones</p>
-                <button appPress (shortPress)="navigateToExerciseLibrary()"
-                    class="px-4 py-2 bg-primary hover:bg-primary-dark text-white font-semibold rounded-md shadow-sm transition-colors inline-flex items-center text-sm">
-                    <app-icon name="exercise-list" class="w-6 h-6 mr-1"></app-icon>
-                    EXERCISES
-                </button>
-            </div>
-        </section>
+        <!-- Personal Gym Link Section & Exercise List Link Section -->
+        <div class="grid sm:grid-cols-2 gap-2">
+            <section class="bg-white dark:bg-gray-700 p-4 sm:p-6 rounded-md shadow-md">
+                <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">Personal Gym</h2>
+                <div>
+                    <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">View your own equipment</p>
+                    <button appPress (shortPress)="navigateToPersonalGym()"
+                        class="px-4 py-2 bg-indigo-500 hover:bg-indigo-700 text-white font-semibold rounded-md shadow-sm transition-colors inline-flex items-center text-sm">
+                        <app-icon name="dumbbell" class="w-6 h-6 mr-1"></app-icon>
+                        PERSONAL GYM
+                    </button>
+                </div>
+            </section>
+        
+            <!-- Exercise List Link Section -->
+            <section class="bg-white dark:bg-gray-700 p-4 sm:p-6 rounded-md shadow-md">
+                <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">Exercise library</h2>
+                <div>
+                    <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">View all the available exercise and
+                        add your own ones</p>
+                    <button appPress (shortPress)="navigateToExerciseLibrary()"
+                        class="px-4 py-2 bg-primary hover:bg-primary-dark text-white font-semibold rounded-md shadow-sm transition-colors inline-flex items-center text-sm">
+                        <app-icon name="exercise-list" class="w-6 h-6 mr-1"></app-icon>
+                        EXERCISES
+                    </button>
+                </div>
+            </section>
+        </div>
 
         <!-- Personal Bests Link Section -->
         <section class="bg-white dark:bg-gray-700 p-4 sm:p-6 rounded-md shadow-md">
