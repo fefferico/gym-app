@@ -693,16 +693,6 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
         data: { routineId }
       }
     ];
-
-    // if (currentRoutine?.isHidden) {
-    //   actionsArray.push(unhideRoutineButton);
-    // } else {
-    //   // Only show the "Hide" button if we are not already in the "Show Hidden" view
-    //   if (!this.showHiddenRoutines()) {
-    //     actionsArray.push(hideRoutineButton);
-    //   }
-    // }
-
     return actionsArray;
   }
 

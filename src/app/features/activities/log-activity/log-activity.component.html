@@ -36,7 +36,7 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
                 <label for="date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date</label>
-                <input type="date" id="date" formControlName="date" class="input-field"
+                <input type="date" id="date" formControlName="date" class="input-field dark:text-gray-300 dark:[color-scheme:dark]"
                     [ngClass]="{ 'input-invalid': f['date'].touched && f['date'].invalid }">
                 <div *ngIf="f['date'].touched && f['date'].invalid" class="validation-message">
                     A valid date is required.
@@ -44,7 +44,7 @@
             </div>
             <div>
                 <label for="startTime" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Start Time</label>
-                <input type="time" id="startTime" formControlName="startTime" class="input-field"
+                <input type="time" id="startTime" formControlName="startTime" class="input-field dark:text-gray-300 dark:[color-scheme:dark]"
                     [ngClass]="{ 'input-invalid': f['startTime'].touched && f['startTime'].invalid }">
                 <div *ngIf="f['startTime'].touched && f['startTime'].invalid" class="validation-message">
                     A start time is required.
@@ -52,7 +52,7 @@
             </div>
             <div>
                 <label for="endTime" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">End Time</label>
-                <input type="time" id="endTime" formControlName="endTime" class="input-field"
+                <input type="time" id="endTime" formControlName="endTime" class="input-field dark:text-gray-300 dark:[color-scheme:dark]"
                     [ngClass]="{ 'input-invalid': (f['endTime'].touched && f['endTime'].invalid) || logActivityForm.hasError('timeInvalid') }">
                 <div *ngIf="f['endTime'].touched && f['endTime'].invalid" class="validation-message">
                     An end time is required.
