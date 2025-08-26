@@ -1,8 +1,8 @@
 import { Component, inject, OnInit, OnDestroy, signal, computed, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subscription, timer, of, lastValueFrom, firstValueFrom } from 'rxjs';
-import { switchMap, take } from 'rxjs/operators';
+import { Subscription, timer, of, lastValueFrom, firstValueFrom, combineLatest } from 'rxjs';
+import { switchMap, take, map } from 'rxjs/operators';
 import {
   Routine,
   WorkoutExercise,
@@ -14,6 +14,7 @@ import { ExerciseService } from '../../../core/services/exercise.service';
 import { TrackingService } from '../../../core/services/tracking.service';
 import {
   LoggedSet,
+  LoggedWorkoutExercise,
   WorkoutLog,
   PersonalBestSet,
   LastPerformanceSummary,
@@ -34,6 +35,19 @@ import { StorageService } from '../../../core/services/storage.service';
 import { MenuMode } from '../../../core/models/app-settings.model';
 import { AppSettingsService } from '../../../core/services/app-settings.service';
 import { FullScreenRestTimerComponent } from '../../../shared/components/full-screen-rest-timer/full-screen-rest-timer';
+
+// Interface for saving the paused state
+export interface PausedCompactWorkoutState {
+  version: string;
+  routineId: string | null;
+  programId: string | null;
+  scheduledDayId: string | null;
+  sessionRoutine: Routine;
+  currentWorkoutLog: Partial<WorkoutLog>;
+  sessionTimerElapsedSecondsBeforePause: number;
+  expandedExerciseIndex: number | null;
+}
+
 
 enum SessionState {
   Loading = 'loading',
@@ -87,7 +101,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
   nextStepInfo: NextStepInfo = { completedExIndex: -1, completedSetIndex: -1, exerciseSetLength: -1, maxExerciseIndex: -1 };
 
-  // --- Rest Timer State ---
   isRestTimerVisible = signal(false);
   restDuration = signal(0);
   restTimerMainText = signal('RESTING');
@@ -98,8 +111,13 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   menuModeModal: boolean = false;
 
   private workoutStartTime: number = 0;
+  private sessionTimerElapsedSecondsBeforePause = 0;
   private timerSub: Subscription | undefined;
   private routeSub: Subscription | undefined;
+  private isSessionConcluded = false;
+
+  private readonly PAUSED_WORKOUT_KEY = 'fitTrackPro_pausedWorkoutState';
+  private readonly PAUSED_STATE_VERSION = '1.0';
 
   routineId: string | null = null;
   programId: string | null = null;
@@ -110,14 +128,12 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   defaultExercises: Exercise[] = [];
   availableExercises: Exercise[] = [];
 
-  // --- Modal States ---
   isAddExerciseModalOpen = signal(false);
   isSwitchExerciseModalOpen = signal(false);
   isPerformanceInsightsModalOpen = signal(false);
   isShowingSimilarInSwitchModal = signal(false);
   exercisesForSwitchModal = signal<Exercise[]>([]);
 
-  // --- Data for Modals ---
   modalSearchTerm = signal('');
   exerciseToSwitchIndex = signal<number | null>(null);
   insightsData = signal<{
@@ -131,21 +147,12 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   workoutProgress = computed(() => {
     const routine = this.routine();
     const log = this.currentWorkoutLog();
-
-    if (!routine || routine.exercises.length === 0) {
-      return 0;
-    }
-
+    if (!routine || routine.exercises.length === 0) return 0;
     const totalPlannedSets = routine.exercises.reduce((total, ex) => total + ex.sets.length, 0);
-    if (totalPlannedSets === 0) {
-      return 0; // Avoid division by zero
-    }
-
-    const totalCompletedSets = log.exercises?.reduce((total, ex) => total + ex.sets.length, 0) ?? 0;
-
+    if (totalPlannedSets === 0) return 0;
+    const totalCompletedSets = log.exercises?.reduce((total, ex) => total + (ex.sets ? ex.sets.length : 0), 0) ?? 0;
     return (totalCompletedSets / totalPlannedSets) * 100;
   });
-
 
   filteredExercisesForSwitchModal = computed(() => {
     const term = this.modalSearchTerm().toLowerCase();
@@ -163,24 +170,44 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     );
   });
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     this.loadAvailableExercises();
-
 
     this.menuModeDropdown = this.appSettingsService.isMenuModeDropdown();
     this.menuModeCompact = this.appSettingsService.isMenuModeCompact();
     this.menuModeModal = this.appSettingsService.isMenuModeModal();
 
-    const routeSnapshot = this.route.snapshot;
-    const targetRoutineId = routeSnapshot.paramMap.get('routineId');
-    const targetProgramId = routeSnapshot.queryParamMap.get('programId');
-    const targetProgramScheduledDayId = routeSnapshot.queryParamMap.get('scheduledDayId');
+    const hasPausedSession = await this.checkForPausedSession();
+    if (!hasPausedSession) {
+      this.loadNewWorkoutFromRoute();
+    }
+  }
 
-    this.routeSub = this.route.paramMap.pipe(
-      switchMap((params) => {
-        this.routineId = targetRoutineId;
-        this.programId = targetProgramId;
-        this.scheduledDay = targetProgramScheduledDayId;
+  ngOnDestroy(): void {
+    if (!this.isSessionConcluded && (this.sessionState() === SessionState.Playing || this.sessionState() === SessionState.Paused)) {
+      this.savePausedSessionState();
+    }
+    this.timerSub?.unsubscribe();
+    this.routeSub?.unsubscribe();
+  }
+
+  private async loadNewWorkoutFromRoute(): Promise<void> {
+    this.sessionState.set(SessionState.Loading);
+    this.isSessionConcluded = false;
+
+    this.routeSub = combineLatest([
+      this.route.paramMap,
+      this.route.queryParamMap
+    ]).pipe(
+      map(([params, queryParams]) => ({
+        routineId: params.get('routineId'),
+        programId: queryParams.get('programId'),
+        scheduledDayId: queryParams.get('scheduledDayId'),
+      })),
+      switchMap(ids => {
+        this.routineId = ids.routineId;
+        this.programId = ids.programId;
+        this.scheduledDay = ids.scheduledDayId;
         return this.routineId ? this.workoutService.getRoutineById(this.routineId) : of(null);
       })
     ).subscribe(async (routine) => {
@@ -191,14 +218,11 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       } else {
         this.sessionState.set(SessionState.Error);
         this.toastService.error('Workout routine not found.');
+        this.router.navigate(['/workout']);
       }
     });
   }
 
-  ngOnDestroy(): void {
-    this.timerSub?.unsubscribe();
-    this.routeSub?.unsubscribe();
-  }
 
   private async prefillRoutineWithLastPerformance(): Promise<void> {
     const currentRoutine = this.routine();
@@ -252,11 +276,13 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
   startSessionTimer(): void {
+    if (this.timerSub) this.timerSub.unsubscribe();
     this.timerSub = timer(0, 1000).subscribe(() => {
       if (this.sessionState() === SessionState.Playing) {
-        const elapsed = Math.floor((Date.now() - this.workoutStartTime) / 1000);
-        const mins = String(Math.floor(elapsed / 60)).padStart(2, '0');
-        const secs = String(elapsed % 60).padStart(2, '0');
+        const currentDeltaSeconds = Math.floor((Date.now() - this.workoutStartTime) / 1000);
+        const totalElapsedSeconds = this.sessionTimerElapsedSecondsBeforePause + currentDeltaSeconds;
+        const mins = String(Math.floor(totalElapsedSeconds / 60)).padStart(2, '0');
+        const secs = String(totalElapsedSeconds % 60).padStart(2, '0');
         this.sessionTimerDisplay.set(`${mins}:${secs}`);
       }
     });
@@ -274,7 +300,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     if (this.isCardio(exercise)) {
       return (set.distance ?? 0) > 0 || (set.duration ?? 0) > 0;
     }
-    return (set.weight ?? 0) > 0 && (set.reps ?? 0) > 0;
+    return (set.reps ?? 0) > 0;
   }
 
   getLoggedSet(exIndex: number, setIndex: number): LoggedSet | undefined {
@@ -296,21 +322,15 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const wasCompleted = !!this.getLoggedSet(exIndex, setIndex);
 
     if (wasCompleted) {
-      // Un-checking the set
       if (exerciseLog) {
         const existingIndex = exerciseLog.sets.findIndex(s => s.plannedSetId === set.id);
-        if (existingIndex > -1) {
-          exerciseLog.sets.splice(existingIndex, 1);
-        }
+        if (existingIndex > -1) exerciseLog.sets.splice(existingIndex, 1);
         if (exerciseLog.sets.length === 0) {
           const emptyLogIndex = log.exercises.findIndex(e => e.id === exerciseLog!.id);
-          if (emptyLogIndex > -1) {
-            log.exercises.splice(emptyLogIndex, 1);
-          }
+          if (emptyLogIndex > -1) log.exercises.splice(emptyLogIndex, 1);
         }
       }
     } else {
-      // Checking the set
       if (!exerciseLog) {
         exerciseLog = {
           id: exercise.id, exerciseId: exercise.exerciseId, exerciseName: exercise.exerciseName!,
@@ -318,26 +338,23 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         };
         log.exercises.push(exerciseLog);
       }
-
       const newLoggedSet: LoggedSet = {
         id: uuidv4(), exerciseName: exercise.exerciseName, plannedSetId: set.id,
         exerciseId: exercise.exerciseId, type: set.type,
-        repsAchieved: set.reps ?? 0, weightUsed: set.weight ?? undefined,
+        repsAchieved: set.reps ?? 0, weightUsed: set.weight || 0,
         durationPerformed: set.duration, distanceAchieved: set.distance,
         timestamp: new Date().toISOString(),
       };
       exerciseLog.sets.push(newLoggedSet);
-
       const order = exercise.sets.map(s => s.id);
       exerciseLog.sets.sort((a, b) => order.indexOf(a.plannedSetId!) - order.indexOf(b.plannedSetId!));
 
-      // START REST TIMER IF APPLICABLE
       if (set.restAfterSet && set.restAfterSet > 0) {
         this.startRestPeriod(set.restAfterSet, exIndex, setIndex);
       }
     }
-
     this.currentWorkoutLog.set({ ...log });
+    this.savePausedSessionState();
   }
 
   updateSetData(exIndex: number, setIndex: number, field: 'reps' | 'weight' | 'distance' | 'time', event: Event): void {
@@ -348,7 +365,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const set = exercise.sets[setIndex];
     switch (field) {
       case 'reps': set.reps = parseFloat(value) || 0; break;
-      case 'weight': set.weight = parseFloat(value) || 0; break;
+      case 'weight': set.weight = parseFloat(value) || undefined; break;
       case 'distance': set.distance = parseFloat(value) || 0; break;
       case 'time': set.duration = this.parseTimeToSeconds(value); break;
     }
@@ -410,34 +427,23 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         const savedLog = this.trackingService.addWorkoutLog(log as Omit<WorkoutLog, 'id'> & { startTime: number });
 
         this.sessionState.set(SessionState.End);
+        this.isSessionConcluded = true;
+        this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
         this.timerSub?.unsubscribe();
 
-        // +++ START: NEW PROGRAM COMPLETION CHECK +++
         if (savedLog.programId) {
           try {
             const isProgramCompleted = await this.trainingProgramService.checkAndHandleProgramCompletion(savedLog.programId, savedLog);
-
             if (isProgramCompleted) {
               this.toastService.success(`Congrats! Program completed!`, 5000, "Program Finished", false);
-
-              // Stop all player activity before navigating
-              // this.stopAllActivity();
-              this.storageService.removePausedWorkout();
-
-              // Navigate to the new completion page with relevant IDs
-              this.router.navigate(['/training-programs/completed', savedLog.programId], {
-                queryParams: { logId: savedLog.id }
-              });
-
-              // return true; // Exit the function as we've handled navigation
+              this.router.navigate(['/training-programs/completed', savedLog.programId], { queryParams: { logId: savedLog.id } });
             } else {
               this.router.navigate(['/workout/summary', savedLog.id]);
             }
           } catch (error) {
             console.error("Error during program completion check:", error);
-            // Continue with normal workout summary flow even if the check fails
+            this.router.navigate(['/workout/summary', savedLog.id]);
           }
-          // +++ END: NEW PROGRAM COMPLETION CHECK +++
         } else {
           this.router.navigate(['/workout/summary', savedLog.id]);
         }
@@ -491,9 +497,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     exercise.sets.unshift(newWarmupSet);
     this.routine.set({ ...routine });
     this.toastService.success(`Warm-up set added to ${exercise.exerciseName}`);
-    const expandedIndex = this.expandedExerciseIndex();
-    if (expandedIndex === null || expandedIndex !== exIndex) {
-      this.toggleExerciseExpansion(exIndex);
+    if (this.expandedExerciseIndex() !== exIndex) {
+      this.expandedExerciseIndex.set(exIndex);
     }
   }
 
@@ -511,17 +516,13 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       type: type,
     };
 
-    if (type === 'warmup') {
-      exercise.sets.unshift(newSet);
-    } else {
-      exercise.sets.push(newSet);
-    }
+    if (type === 'warmup') exercise.sets.unshift(newSet);
+    else exercise.sets.push(newSet);
 
     this.routine.set({ ...routine });
     this.toastService.success(`${type === 'warmup' ? 'Warm-up set' : 'Set'} added to ${exercise.exerciseName}`);
-    const expandedIndex = this.expandedExerciseIndex();
-    if (expandedIndex === null || expandedIndex !== exIndex) {
-      this.toggleExerciseExpansion(exIndex);
+    if (this.expandedExerciseIndex() !== exIndex) {
+      this.expandedExerciseIndex.set(exIndex);
     }
   }
 
@@ -530,19 +531,13 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     if (!routine) return;
     const exercise = routine.exercises[exIndex];
     const setToRemove = exercise.sets[setIndex];
-
-    const baseExercise = this.availableExercises.find(ex => ex.id === exercise.exerciseId);
-    const isCardioExercise = baseExercise?.category === 'cardio';
-    // const isEmptySet = setToRemove && ((isCardioExercise && !setToRemove.distance && !setToRemove.duration) || (!isCardioExercise && !setToRemove.reps && !setToRemove.weight));
-    const isLoggedSet = setToRemove && this.isSetCompleted(exIndex, setIndex);
+    const isLoggedSet = this.isSetCompleted(exIndex, setIndex);
 
     const confirm = isLoggedSet ? await this.alertService.showConfirm("Remove Set", `Are you sure you want to remove logged Set #${setIndex + 1} from ${exercise.exerciseName}?`) : { data: true };
     if (confirm?.data) {
-      // First, remove from the routine plan
       exercise.sets.splice(setIndex, 1);
       this.routine.set({ ...routine });
 
-      // Second, remove from the workout log if it was completed
       const log = this.currentWorkoutLog();
       const exerciseLog = log.exercises?.find(e => e.id === exercise.id);
       if (exerciseLog) {
@@ -563,11 +558,9 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const exercise = routine.exercises[exIndex];
     const confirm = await this.alertService.showConfirm("Remove Exercise", `Are you sure you want to remove ${exercise.exerciseName}?`);
     if (confirm?.data) {
-      // First, remove from routine plan
       routine.exercises.splice(exIndex, 1);
       this.routine.set({ ...routine });
 
-      // Second, remove from workout log
       const log = this.currentWorkoutLog();
       if (log.exercises) {
         const logExIndex = log.exercises.findIndex(le => le.id === exercise.id);
@@ -617,11 +610,10 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         lastValueFrom(lastPerformance$),
         lastValueFrom(personalBests$)
       ]);
-      const completedSets = this.currentWorkoutLog().exercises?.find(e => e.id === exercise.id)?.sets || [];
-
-      if (!baseExercise) {
+      if (!baseExercise){
         return;
       }
+      const completedSets = this.currentWorkoutLog().exercises?.find(e => e.id === exercise.id)?.sets || [];
       this.insightsData.set({ exercise, baseExercise, lastPerformance, personalBests, completedSetsInSession: completedSets });
       this.isPerformanceInsightsModalOpen.set(true);
     } catch (error) {
@@ -644,7 +636,12 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         restAfterSet: 60, type: 'standard'
       }], type: 'standard', rounds: 1, supersetId: null, supersetOrder: null
     };
-    this.routine.update(r => { r?.exercises.push(newWorkoutExercise); return r; });
+    this.routine.update(r => {
+      r?.exercises.push(newWorkoutExercise);
+      // Automatically expand the new exercise
+      if (r) this.expandedExerciseIndex.set(r.exercises.length - 1);
+      return r;
+    });
     this.closeAddExerciseModal();
   }
 
@@ -688,9 +685,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     }
     try {
       const similar = await lastValueFrom(this.exerciseService.getSimilarExercises(baseExercise, 12).pipe(take(1)));
-      if (similar.length === 0) {
-        this.toastService.info("No similar exercises found.");
-      }
+      if (similar.length === 0) this.toastService.info("No similar exercises found.");
       this.modalSearchTerm.set('');
       this.exercisesForSwitchModal.set(similar);
       this.isShowingSimilarInSwitchModal.set(true);
@@ -737,7 +732,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return actionsArray;
   }
 
-  // --- Rest Timer Methods ---
   private startRestPeriod(duration: number, completedExIndex: number, completedSetIndex: number): void {
     this.restDuration.set(duration);
     this.restTimerMainText.set('RESTING');
@@ -745,62 +739,151 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     this.isRestTimerVisible.set(true);
   }
 
-  handleToggleNextExercise(): void {
-    if (this.nextStepInfo && this.nextStepInfo.completedExIndex >=0 && this.nextStepInfo.completedSetIndex >=0) {
-      let expandedExerciseIndex = -1; 
-      if (this.expandedExerciseIndex() !== null){
-        expandedExerciseIndex = this.expandedExerciseIndex()!;
+  private handleAutoExpandNextExercise(): void {
+    if (!this.nextStepInfo || this.nextStepInfo.completedExIndex < 0) return;
+
+    const { completedExIndex, completedSetIndex, exerciseSetLength, maxExerciseIndex } = this.nextStepInfo;
+
+    if (completedSetIndex >= exerciseSetLength - 1) {
+      if (completedExIndex + 1 <= maxExerciseIndex) {
+        this.expandedExerciseIndex.set(completedExIndex + 1);
+      } else {
+        this.expandedExerciseIndex.set(null);
       }
-      if (expandedExerciseIndex >= 0 && expandedExerciseIndex !== this.nextStepInfo.completedExIndex){
-        this.toggleExerciseExpansion(this.nextStepInfo.completedExIndex);
-      }
-      if (this.nextStepInfo.completedSetIndex === (this.nextStepInfo.exerciseSetLength -1)){
-        this.toggleExerciseExpansion(this.nextStepInfo.completedExIndex);
-        if (this.nextStepInfo.completedExIndex + 1 <= this.nextStepInfo.maxExerciseIndex)
-        this.toggleExerciseExpansion(this.nextStepInfo.completedExIndex + 1);
+    } else {
+      if (this.expandedExerciseIndex() !== completedExIndex) {
+        this.expandedExerciseIndex.set(completedExIndex);
       }
     }
   }
 
+
   handleRestTimerFinished(): void {
     this.isRestTimerVisible.set(false);
     this.toastService.success("Rest complete!", 2000);
-    this.handleToggleNextExercise();
+    this.handleAutoExpandNextExercise();
   }
 
   handleRestTimerSkipped(timeSkipped: number): void {
     this.isRestTimerVisible.set(false);
     this.toastService.info("Rest skipped", 1500);
-    this.handleToggleNextExercise();
+    this.handleAutoExpandNextExercise();
   }
 
   private peekNextStepInfo(completedExIndex: number, completedSetIndex: number): string | null {
     const routine = this.routine();
     if (!routine) return null;
-
     const currentExercise = routine.exercises[completedExIndex];
-
     this.nextStepInfo = {
       completedSetIndex: completedSetIndex,
       completedExIndex: completedExIndex,
-      exerciseSetLength: currentExercise.sets ? currentExercise.sets.length : 0,
+      exerciseSetLength: currentExercise.sets?.length ?? 0,
       maxExerciseIndex: routine.exercises.length - 1
-    }
-
-    // Check for next set in the same exercise
+    };
     if (completedSetIndex + 1 < currentExercise.sets.length) {
-      const nextSet = currentExercise.sets[completedSetIndex + 1];
       return `${currentExercise.exerciseName} - Set ${completedSetIndex + 2}`;
     }
-
-    // Check for the first set of the next exercise
     if (completedExIndex + 1 < routine.exercises.length) {
       const nextExercise = routine.exercises[completedExIndex + 1];
       return `${nextExercise.exerciseName} - Set 1`;
     }
-
-    // This was the last set of the last exercise
-    this.nextStepInfo = { completedExIndex: -1, completedSetIndex: -1, exerciseSetLength: 0, maxExerciseIndex: -1};
+    this.nextStepInfo = { completedExIndex: -1, completedSetIndex: -1, exerciseSetLength: -1, maxExerciseIndex: -1 };
     return "Workout Complete!";
+  }
+
+  // --- Pause, Resume, and State Management ---
+
+  async pauseSession(): Promise<void> {
+    if (this.sessionState() !== SessionState.Playing) return;
+    this.sessionTimerElapsedSecondsBeforePause += Math.floor((Date.now() - this.workoutStartTime) / 1000);
+    this.timerSub?.unsubscribe();
+    this.sessionState.set(SessionState.Paused);
+    this.savePausedSessionState();
+    this.toastService.info("Workout Paused", 3000);
+  }
+
+  async resumeSession(): Promise<void> {
+    if (this.sessionState() !== SessionState.Paused) return;
+    this.workoutStartTime = Date.now();
+    this.sessionState.set(SessionState.Playing);
+    this.startSessionTimer();
+    this.toastService.info('Workout Resumed', 3000);
+  }
+
+  private savePausedSessionState(): void {
+    if (this.sessionState() === SessionState.End || !this.routine()) return;
+
+    let currentTotalSessionElapsed = this.sessionTimerElapsedSecondsBeforePause;
+    if (this.sessionState() === SessionState.Playing) {
+      currentTotalSessionElapsed += Math.floor((Date.now() - this.workoutStartTime) / 1000);
+    }
+
+    const stateToSave: PausedCompactWorkoutState = {
+      version: this.PAUSED_STATE_VERSION,
+      routineId: this.routineId,
+      programId: this.programId,
+      scheduledDayId: this.scheduledDay,
+      sessionRoutine: this.routine()!,
+      currentWorkoutLog: this.currentWorkoutLog(),
+      sessionTimerElapsedSecondsBeforePause: currentTotalSessionElapsed,
+      expandedExerciseIndex: this.expandedExerciseIndex(),
+    };
+    this.storageService.setItem(this.PAUSED_WORKOUT_KEY, stateToSave);
+  }
+
+  private async loadStateFromPausedSession(state: PausedCompactWorkoutState): Promise<void> {
+    this.routineId = state.routineId;
+    this.programId = state.programId;
+    this.scheduledDay = state.scheduledDayId;
+    this.routine.set(state.sessionRoutine);
+    this.currentWorkoutLog.set(state.currentWorkoutLog);
+    this.sessionTimerElapsedSecondsBeforePause = state.sessionTimerElapsedSecondsBeforePause;
+    this.expandedExerciseIndex.set(state.expandedExerciseIndex);
+
+    // Set timers but don't start them
+    const totalElapsedSeconds = this.sessionTimerElapsedSecondsBeforePause;
+    const mins = String(Math.floor(totalElapsedSeconds / 60)).padStart(2, '0');
+    const secs = String(totalElapsedSeconds % 60).padStart(2, '0');
+    this.sessionTimerDisplay.set(`${mins}:${secs}`);
+
+    this.sessionState.set(SessionState.Paused); // Ready to be resumed
+    this.toastService.success('Paused session loaded', 3000);
+  }
+
+  private async checkForPausedSession(): Promise<boolean> {
+    const pausedState = this.storageService.getItem<PausedCompactWorkoutState>(this.PAUSED_WORKOUT_KEY);
+    const routeRoutineId = this.route.snapshot.paramMap.get('routineId');
+
+    if (pausedState && pausedState.version === this.PAUSED_STATE_VERSION && pausedState.routineId === routeRoutineId) {
+      const confirmation = await this.alertService.showConfirmationDialog(
+        "Resume Paused Workout?",
+        "You have a paused workout session. Would you like to resume it?",
+        [{ text: "Resume", role: "confirm", data: true, icon: 'play' }, { text: "Discard", role: "cancel", data: false, icon: 'trash'}]
+      );
+      if (confirmation?.data) {
+        await this.loadStateFromPausedSession(pausedState);
+        return true;
+      } else {
+        this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
+        this.toastService.info('Paused session discarded', 3000);
+        return false;
+      }
+    }
+    return false;
+  }
+
+goBack(): void {
+    // The exercises array might not exist on the partial log initially.
+    // Check for its existence and then check its length to satisfy TypeScript's strict checks.
+    if (this.currentWorkoutLog().exercises && this.currentWorkoutLog().exercises!.length > 0 && this.sessionState() === SessionState.Playing) {
+      this.alertService.showConfirm("Exit Workout?", "You have an active workout. Are you sure you want to exit? Your progress might be lost unless you pause first")
+        .then(confirmation => {
+          if (confirmation?.data) {
+            this.router.navigate(['/workout']);
+          }
+        });
+    } else {
+      this.router.navigate(['/workout']);
+    }
   }
 }

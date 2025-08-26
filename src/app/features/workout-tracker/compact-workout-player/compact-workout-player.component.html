@@ -1,11 +1,11 @@
 <div class="compact-player-container bg-gray-100 dark:bg-gray-900 min-h-screen">
   <!-- Header -->
-    <header
+  <header
     class="sticky top-0 z-20 bg-white dark:bg-gray-800 shadow-md px-3 pt-3 pb-2 flex flex-col justify-between rounded-b-md">
-    
-    <!-- Top part of header (unchanged) -->
+
+    <!-- Top part of header -->
     <div class="flex items-center justify-between w-full">
-      <button (click)="router.navigate(['/workout'])" class="p-2">
+      <button (click)="goBack()" class="p-2">
         <app-icon name="cancel" class="h-6 w-6 text-gray-600 dark:text-gray-300"></app-icon>
       </button>
       <div class="text-center">
@@ -16,28 +16,34 @@
           {{ sessionTimerDisplay() }}
         </div>
       </div>
+      <!-- NEW: Pause/Resume Button -->
       <div class="w-10 relative">
-        <!-- Placeholder to balance the header -->
+        <button *ngIf="sessionState() === 'playing'" (click)="pauseSession()" class="p-2">
+          <app-icon name="pause" class="h-6 w-6 text-gray-600 dark:text-gray-300"></app-icon>
+        </button>
+        <button *ngIf="sessionState() === 'paused'" (click)="resumeSession()" class="p-2">
+          <app-icon name="play" class="h-6 w-6 text-primary dark:text-primary-light animate-pulse"></app-icon>
+        </button>
       </div>
     </div>
 
-    <!-- NEW: Workout Progress Bar (Moved inside the header) -->
+    <!-- Workout Progress Bar -->
     <div class="w-full mt-2">
-        <div class="progress-bar-container w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 relative">
-            <div class="progress-bar bg-primary h-2.5 rounded-full" [style.width.%]="workoutProgress()"></div>
-            <span *ngIf="workoutProgress() > 5" class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white">
-                {{ workoutProgress() | number:'1.0-0' }}%
-            </span>
-        </div>
+      <div class="progress-bar-container w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 relative">
+        <div class="progress-bar bg-primary h-2.5 rounded-full" [style.width.%]="workoutProgress()"></div>
+        <span *ngIf="workoutProgress() > 5"
+          class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white">
+          {{ workoutProgress() | number:'1.0-0' }}%
+        </span>
+      </div>
     </div>
   </header>
 
-  
+
 
   <!-- Main Content: Exercises List -->
   <main class="pt-3 px-2 pb-36">
     <div *ngIf="routine() as currentRoutine; else loading" class="space-y-1">
-      <!-- FIX: Removed 'overflow-hidden' from this div -->
       <div *ngFor="let exercise of currentRoutine.exercises; let exIndex = index"
         class="bg-white dark:bg-gray-800 rounded-lg shadow-sm transition-all duration-300 relative"
         [style.zIndex]="areActionsVisible(exIndex) ? 50 : 'auto'">
@@ -61,17 +67,14 @@
                 class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center">
                 <app-icon name="menu-action" class="h-7 w-7"></app-icon>
               </button>
-              <app-action-menu [isVisible]="activeActionMenuIndex() === exIndex && menuModeDropdown" class="action-menu-container"
-                displayMode="dropdown" [items]="getLogDropdownActionItems(exIndex, 'dropdown')"
-                 (itemClick)="handleActionMenuItemClick($event)"
-                (closeMenu)="closeActionMenu()">
+              <app-action-menu [isVisible]="activeActionMenuIndex() === exIndex && menuModeDropdown"
+                class="action-menu-container" displayMode="dropdown" [items]="getLogDropdownActionItems(exIndex, 'dropdown')"
+                (itemClick)="handleActionMenuItemClick($event)" (closeMenu)="closeActionMenu()">
               </app-action-menu>
-              <app-action-menu [isVisible]="activeActionMenuIndex() === exIndex && menuModeModal" class="action-menu-container"
-                displayMode="modal" [items]="getLogDropdownActionItems(exIndex, 'modal')"
-                 (itemClick)="handleActionMenuItemClick($event)"
-                (closeMenu)="closeActionMenu()"
-                [customButtonDivCssClass]="' '"
-                >
+              <app-action-menu [isVisible]="activeActionMenuIndex() === exIndex && menuModeModal"
+                class="action-menu-container" displayMode="modal" [items]="getLogDropdownActionItems(exIndex, 'modal')"
+                (itemClick)="handleActionMenuItemClick($event)" (closeMenu)="closeActionMenu()"
+                [customButtonDivCssClass]="' '">
               </app-action-menu>
             </div>
           </div>
@@ -165,13 +168,6 @@
 
   <!-- Footer with Action Buttons -->
   <footer class="flex justify-center fixed left-0 right-0 z-20" [style.bottom]="'var(--main-nav-height)'">
-
-    <!-- 
-      MODIFICATION 2:
-      - Use 'grid grid-cols-2' to create two equal-width columns.
-      - 'gap-4' adds spacing between the buttons.
-      - 'w-full max-w-sm' (or similar) controls the overall width on small screens.
-    -->
     <div
       class="w-full max-w-sm grid grid-cols-2 gap-4 bg-white dark:bg-gray-800/80 dark:backdrop-blur-sm border-t border-x border-gray-200 dark:border-gray-700 p-3 rounded-t-md">
 
@@ -183,7 +179,8 @@
       </button>
 
       <!-- Button 2 -->
-      <button (click)="finishWorkout()" [disabled]="!this.currentWorkoutLog() || !this.currentWorkoutLog().exercises || this.currentWorkoutLog().exercises?.length === 0"
+      <button (click)="finishWorkout()"
+        [disabled]="!this.currentWorkoutLog() || !this.currentWorkoutLog().exercises || this.currentWorkoutLog().exercises?.length === 0"
         class="flex items-center justify-center space-x-2 bg-green-500 text-white font-semibold py-2 px-4 rounded-full shadow-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
         <app-icon name="done" class="h-6 w-6"></app-icon>
         <span>FINISH</span>
@@ -205,146 +202,123 @@
     (findSimilarClicked)="findAndShowSimilarExercises(exerciseToSwitchIndex())"
     (backToSearchClicked)="isShowingSimilarInSwitchModal.set(false)" (close)="closeSwitchExerciseModal()">
   </app-exercise-selection-modal>
-  
-  <app-full-screen-rest-timer
-    [isVisible]="isRestTimerVisible()"
-    [mainTimer]="sessionTimerDisplay"
-    [durationSeconds]="restDuration()"
-    [mainText]="restTimerMainText()"
-    [nextUpText]="restTimerNextUpText()"
-    (timerFinished)="handleRestTimerFinished()"
-    (timerSkipped)="handleRestTimerSkipped($event)">
+
+  <app-full-screen-rest-timer [isVisible]="isRestTimerVisible()" [mainTimer]="sessionTimerDisplay"
+    [durationSeconds]="restDuration()" [mainText]="restTimerMainText()" [nextUpText]="restTimerNextUpText()"
+    (timerFinished)="handleRestTimerFinished()" (timerSkipped)="handleRestTimerSkipped($event)">
   </app-full-screen-rest-timer>
 
-  <!-- You would create and place modals for switch/insights here -->
-
-</div>
-
-
-<!-- =================================================================== -->
-<!--               PERFORMANCE INSIGHTS MODAL                          -->
-<!-- =================================================================== -->
-<div *ngIf="isPerformanceInsightsModalOpen()" style="z-index: 100"
-  class="fixed inset-0 bg-gray-900/70 dark:bg-black/80 backdrop-blur-md flex items-center justify-center p-4 transition-opacity duration-300 ease-in-out">
-
-  <!-- Main Modal Container -->
-  <div *ngIf="insightsData() as data"
-    class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-xl max-h-[90vh] flex flex-col overflow-hidden transform transition-all duration-300 ease-in-out">
-
-    <!-- Modal Header -->
-    <header class="p-5 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center flex-shrink-0">
-      <div class="flex items-center gap-3">
-        <app-icon name="chart" class="h-7 w-7 text-primary dark:text-primary-light"></app-icon>
-        <h3 class="text-xl font-semibold text-gray-800 dark:text-gray-100">Performance Insights</h3>
-      </div>
-      <button (click)="closePerformanceInsightsModal()"
-        class="p-1.5 rounded-full text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700/70 focus:outline-none transition-colors">
-        <app-icon name="cancel" class="h-6 w-6"></app-icon>
-      </button>
-    </header>
-
-    <!-- Modal Body (Scrollable) -->
-    <div class="p-5 overflow-y-auto space-y-6 flex-grow">
-
-      <!-- 1. Completed Sets This Workout Section -->
-      <div class="rounded-md border border-gray-200 dark:border-gray-700/80">
-        <button (click)="toggleCompletedSetsForExerciseInfo()" class="w-full flex items-center justify-between p-3 text-left text-sm font-medium text-gray-700
-          dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors rounded-t-lg">
-          <span class="flex items-center gap-2">
-            <app-icon name="clipboard-list" class="h-6 w-6"></app-icon>
-            <span>Completed Sets in this Session ({{ data.completedSetsInSession.length }})</span>
-          </span>
-          <app-icon name="chevron-down" class="h-5 w-5 transform transition-transform duration-200"
-            [ngClass]="{'rotate-180': showCompletedSetsForExerciseInfo()}"></app-icon>
+  <!-- Performance Insights Modal -->
+  <div *ngIf="isPerformanceInsightsModalOpen()" style="z-index: 100"
+    class="fixed inset-0 bg-gray-900/70 dark:bg-black/80 backdrop-blur-md flex items-center justify-center p-4 transition-opacity duration-300 ease-in-out">
+    <div *ngIf="insightsData() as data"
+      class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-xl max-h-[90vh] flex flex-col overflow-hidden transform transition-all duration-300 ease-in-out">
+      <header class="p-5 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center flex-shrink-0">
+        <div class="flex items-center gap-3">
+          <app-icon name="chart" class="h-7 w-7 text-primary dark:text-primary-light"></app-icon>
+          <h3 class="text-xl font-semibold text-gray-800 dark:text-gray-100">Performance Insights</h3>
+        </div>
+        <button (click)="closePerformanceInsightsModal()"
+          class="p-1.5 rounded-full text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700/70 focus:outline-none transition-colors">
+          <app-icon name="cancel" class="h-6 w-6"></app-icon>
         </button>
-        <div *ngIf="showCompletedSetsForExerciseInfo()"
-          class="bg-gray-50 dark:bg-gray-700/30 p-3 border-t border-gray-200 dark:border-gray-700/80 space-y-3 max-h-48 overflow-y-auto rounded-b-lg">
-          <div *ngFor="let setLog of data.completedSetsInSession; let i = index"
-            class="text-xs p-2 bg-white dark:bg-gray-700 rounded-md shadow-sm border border-gray-200 dark:border-gray-600">
-            <p class="font-semibold text-gray-700 dark:text-gray-200 mb-1">
-              Set #{{ i + 1 }}:
-            </p>
-            <div class="grid grid-cols-2 gap-x-2 gap-y-1 text-gray-600 dark:text-gray-300">
-              <span *ngIf="setLog.repsAchieved">Reps: <strong class="dark:text-gray-100">{{ setLog.repsAchieved
-                  }}</strong></span>
-              <span *ngIf="setLog.weightUsed != null">Weight: <strong class="dark:text-gray-100">{{ setLog.weightUsed |
-                  weightUnit }}</strong></span>
-              <span *ngIf="setLog.distanceAchieved">Distance: <strong class="dark:text-gray-100">{{
-                  setLog.distanceAchieved }} km</strong></span>
-              <span *ngIf="setLog.durationPerformed">Time: <strong class="dark:text-gray-100">{{
-                  formatSecondsToTime(setLog.durationPerformed) }}</strong></span>
+      </header>
+      <div class="p-5 overflow-y-auto space-y-6 flex-grow">
+        <div class="rounded-md border border-gray-200 dark:border-gray-700/80">
+          <button (click)="toggleCompletedSetsForExerciseInfo()" class="w-full flex items-center justify-between p-3 text-left text-sm font-medium text-gray-700
+          dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors rounded-t-lg">
+            <span class="flex items-center gap-2">
+              <app-icon name="clipboard-list" class="h-6 w-6"></app-icon>
+              <span>Completed Sets in this Session ({{ data.completedSetsInSession.length }})</span>
+            </span>
+            <app-icon name="chevron-down" class="h-5 w-5 transform transition-transform duration-200"
+              [ngClass]="{'rotate-180': showCompletedSetsForExerciseInfo()}"></app-icon>
+          </button>
+          <div *ngIf="showCompletedSetsForExerciseInfo()"
+            class="bg-gray-50 dark:bg-gray-700/30 p-3 border-t border-gray-200 dark:border-gray-700/80 space-y-3 max-h-48 overflow-y-auto rounded-b-lg">
+            <div *ngFor="let setLog of data.completedSetsInSession; let i = index"
+              class="text-xs p-2 bg-white dark:bg-gray-700 rounded-md shadow-sm border border-gray-200 dark:border-gray-600">
+              <p class="font-semibold text-gray-700 dark:text-gray-200 mb-1">
+                Set #{{ i + 1 }}:
+              </p>
+              <div class="grid grid-cols-2 gap-x-2 gap-y-1 text-gray-600 dark:text-gray-300">
+                <span *ngIf="setLog.repsAchieved">Reps: <strong class="dark:text-gray-100">{{ setLog.repsAchieved
+                    }}</strong></span>
+                <span *ngIf="setLog.weightUsed != null">Weight: <strong class="dark:text-gray-100">{{ setLog.weightUsed
+                    |
+                    weightUnit }}</strong></span>
+                <span *ngIf="setLog.distanceAchieved">Distance: <strong class="dark:text-gray-100">{{
+                    setLog.distanceAchieved }} km</strong></span>
+                <span *ngIf="setLog.durationPerformed">Time: <strong class="dark:text-gray-100">{{
+                    formatSecondsToTime(setLog.durationPerformed) }}</strong></span>
+              </div>
             </div>
-          </div>
-          <div *ngIf="data.completedSetsInSession.length === 0"
-            class="p-3 text-xs text-center text-gray-500 dark:text-gray-400">
-            No sets completed yet for this exercise in this workout.
-          </div>
-        </div>
-      </div>
-
-      <!-- 2. Last Performance Section -->
-      <div class="rounded-md border border-gray-200 dark:border-gray-700/80">
-        <div class="p-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-          <span class="flex items-center gap-2">
-            <app-icon name="calendar-page" class="h-6 w-6"></app-icon>
-            <span>Last Performance ({{ data.lastPerformance?.lastPerformedDate | date:'shortDate' }})</span>
-          </span>
-        </div>
-        <div *ngIf="data.lastPerformance as lastPerf"
-          class="bg-gray-50 dark:bg-gray-700/30 p-3 border-t border-gray-200 dark:border-gray-700/80 space-y-3 max-h-48 overflow-y-auto rounded-b-lg">
-          <div *ngFor="let setLog of lastPerf.sets; let i = index"
-            class="text-xs p-2 bg-white dark:bg-gray-700 rounded-md shadow-sm border border-gray-200 dark:border-gray-600">
-            <p class="font-semibold text-gray-700 dark:text-gray-200 mb-1">Set #{{ i + 1 }}:</p>
-            <div class="grid grid-cols-2 gap-x-2 gap-y-1 text-gray-600 dark:text-gray-300">
-              <span *ngIf="setLog.repsAchieved">Reps: <strong class="dark:text-gray-100">{{ setLog.repsAchieved
-                  }}</strong></span>
-              <span *ngIf="setLog.weightUsed != null">Weight: <strong class="dark:text-gray-100">{{ setLog.weightUsed |
-                  weightUnit }}</strong></span>
-              <span *ngIf="setLog.distanceAchieved">Distance: <strong class="dark:text-gray-100">{{
-                  setLog.distanceAchieved }} km</strong></span>
-              <span *ngIf="setLog.durationPerformed">Time: <strong class="dark:text-gray-100">{{
-                  formatSecondsToTime(setLog.durationPerformed) }}</strong></span>
+            <div *ngIf="data.completedSetsInSession.length === 0"
+              class="p-3 text-xs text-center text-gray-500 dark:text-gray-400">
+              No sets completed yet for this exercise in this workout.
             </div>
           </div>
         </div>
-        <div *ngIf="!data.lastPerformance"
-          class="p-3 text-xs text-center text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-700/80 rounded-b-lg">
-          No previous performance recorded for this exercise.
-        </div>
-      </div>
-
-      <!-- 3. Personal Bests Section -->
-      <div class="rounded-md border border-gray-200 dark:border-gray-700/80">
-        <div class="p-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-          <span class="flex items-center gap-2">
-            <app-icon name="pb" class="h-6 w-6 text-yellow-500"></app-icon>
-            <span>Personal Bests</span>
-          </span>
-        </div>
-        <div *ngIf="data.personalBests.length > 0"
-          class="bg-gray-50 dark:bg-gray-700/30 p-3 border-t border-gray-200 dark:border-gray-700/80 grid grid-cols-1 sm:grid-cols-2 gap-3 rounded-b-lg">
-          <div *ngFor="let pb of data.personalBests"
-            class="text-xs p-2 bg-white dark:bg-gray-700 rounded-md shadow-sm border border-gray-200 dark:border-gray-600">
-            <p class="font-semibold text-gray-700 dark:text-gray-200">{{ pb.pbType }}</p>
-            <p class="text-lg font-bold text-primary dark:text-primary-light">{{ formatPbValue(pb) }}</p>
-            <p class="text-2xs text-gray-500 dark:text-gray-400">on {{ pb.timestamp | date:'shortDate' }}</p>
+        <div class="rounded-md border border-gray-200 dark:border-gray-700/80">
+          <div class="p-3 text-sm font-medium text-gray-700 dark:text-gray-300">
+            <span class="flex items-center gap-2">
+              <app-icon name="calendar-page" class="h-6 w-6"></app-icon>
+              <span>Last Performance ({{ data.lastPerformance?.lastPerformedDate | date:'shortDate' }})</span>
+            </span>
+          </div>
+          <div *ngIf="data.lastPerformance as lastPerf"
+            class="bg-gray-50 dark:bg-gray-700/30 p-3 border-t border-gray-200 dark:border-gray-700/80 space-y-3 max-h-48 overflow-y-auto rounded-b-lg">
+            <div *ngFor="let setLog of lastPerf.sets; let i = index"
+              class="text-xs p-2 bg-white dark:bg-gray-700 rounded-md shadow-sm border border-gray-200 dark:border-gray-600">
+              <p class="font-semibold text-gray-700 dark:text-gray-200 mb-1">Set #{{ i + 1 }}:</p>
+              <div class="grid grid-cols-2 gap-x-2 gap-y-1 text-gray-600 dark:text-gray-300">
+                <span *ngIf="setLog.repsAchieved">Reps: <strong class="dark:text-gray-100">{{ setLog.repsAchieved
+                    }}</strong></span>
+                <span *ngIf="setLog.weightUsed != null">Weight: <strong class="dark:text-gray-100">{{ setLog.weightUsed
+                    |
+                    weightUnit }}</strong></span>
+                <span *ngIf="setLog.distanceAchieved">Distance: <strong class="dark:text-gray-100">{{
+                    setLog.distanceAchieved }} km</strong></span>
+                <span *ngIf="setLog.durationPerformed">Time: <strong class="dark:text-gray-100">{{
+                    formatSecondsToTime(setLog.durationPerformed) }}</strong></span>
+              </div>
+            </div>
+          </div>
+          <div *ngIf="!data.lastPerformance"
+            class="p-3 text-xs text-center text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-700/80 rounded-b-lg">
+            No previous performance recorded for this exercise.
           </div>
         </div>
-        <div *ngIf="data.personalBests.length === 0"
-          class="p-3 text-xs text-center text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-700/80 rounded-b-lg">
-          No personal bests recorded for this exercise yet.
+        <div class="rounded-md border border-gray-200 dark:border-gray-700/80">
+          <div class="p-3 text-sm font-medium text-gray-700 dark:text-gray-300">
+            <span class="flex items-center gap-2">
+              <app-icon name="pb" class="h-6 w-6 text-yellow-500"></app-icon>
+              <span>Personal Bests</span>
+            </span>
+          </div>
+          <div *ngIf="data.personalBests.length > 0"
+            class="bg-gray-50 dark:bg-gray-700/30 p-3 border-t border-gray-200 dark:border-gray-700/80 grid grid-cols-1 sm:grid-cols-2 gap-3 rounded-b-lg">
+            <div *ngFor="let pb of data.personalBests"
+              class="text-xs p-2 bg-white dark:bg-gray-700 rounded-md shadow-sm border border-gray-200 dark:border-gray-600">
+              <p class="font-semibold text-gray-700 dark:text-gray-200">{{ pb.pbType }}</p>
+              <p class="text-lg font-bold text-primary dark:text-primary-light">{{ formatPbValue(pb) }}</p>
+              <p class="text-2xs text-gray-500 dark:text-gray-400">on {{ pb.timestamp | date:'shortDate' }}</p>
+            </div>
+          </div>
+          <div *ngIf="data.personalBests.length === 0"
+            class="p-3 text-xs text-center text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-700/80 rounded-b-lg">
+            No personal bests recorded for this exercise yet.
+          </div>
         </div>
       </div>
+      <footer
+        class="p-4 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 text-right flex-shrink-0">
+        <button (click)="closePerformanceInsightsModal()"
+          class="inline-flex items-center bg-primary hover:bg-primary-dark focus:ring-4 focus:ring-primary-focus text-white font-semibold py-2.5 px-6 rounded-md text-sm transition-colors shadow-md hover:shadow-lg">
+          <app-icon name="done" class="h-7 w-7 mr-1"></app-icon>
+          DONE
+        </button>
+      </footer>
     </div>
-
-    <!-- Modal Footer -->
-    <footer
-      class="p-4 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 text-right flex-shrink-0">
-      <button (click)="closePerformanceInsightsModal()"
-        class="inline-flex items-center bg-primary hover:bg-primary-dark focus:ring-4 focus:ring-primary-focus text-white font-semibold py-2.5 px-6 rounded-md text-sm transition-colors shadow-md hover:shadow-lg">
-        <app-icon name="done" class="h-7 w-7 mr-1"></app-icon>
-        DONE
-      </button>
-    </footer>
   </div>
 </div>

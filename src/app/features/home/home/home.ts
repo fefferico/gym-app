@@ -88,9 +88,11 @@ export class HomeComponent implements OnInit {
       // this.pausedWorkoutInfo.set(null); // Optional: immediate UI feedback on Home
 
       if (pausedInfo.routineId) {
+        const playerRoute = this.workoutService.checkPlayerMode(pausedInfo.routineId);
         console.log(`HomeComponent: Resuming paused workout for routineId: ${pausedInfo.routineId}`);
-        this.router.navigate(['/workout/play', pausedInfo.routineId], { queryParams: { resume: 'true' } });
+        this.router.navigate([playerRoute, pausedInfo.routineId], { queryParams: { resume: 'true' } });
       } else {
+        const playerRoute = this.workoutService.checkPlayerMode('');
         // Ad-hoc workout (no routineId in paused state)
         console.log('HomeComponent: Resuming ad-hoc paused workout.');
         this.router.navigate(['/workout/play'], { queryParams: { resume: 'true' } });
@@ -182,7 +184,7 @@ export class HomeComponent implements OnInit {
     this.router.navigate(['/activities/log']);
   }
 
-  
+
   navigateToPersonalGym(): void {
     this.vibrate();
     this.router.navigate(['/personal-gym']);
