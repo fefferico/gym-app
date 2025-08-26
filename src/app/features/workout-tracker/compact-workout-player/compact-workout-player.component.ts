@@ -43,6 +43,13 @@ enum SessionState {
   End = 'end',
 }
 
+export interface NextStepInfo {
+  completedExIndex: number,
+  completedSetIndex: number,
+  exerciseSetLength: number,
+  maxExerciseIndex: number
+}
+
 @Component({
   selector: 'app-compact-workout-player',
   standalone: true,
@@ -78,12 +85,14 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   showCompletedSetsForExerciseInfo = signal(true);
   showCompletedSetsForDayInfo = signal(false);
 
+  nextStepInfo: NextStepInfo = { completedExIndex: -1, completedSetIndex: -1, exerciseSetLength: -1, maxExerciseIndex: -1 };
+
   // --- Rest Timer State ---
   isRestTimerVisible = signal(false);
   restDuration = signal(0);
   restTimerMainText = signal('RESTING');
   restTimerNextUpText = signal<string | null>(null);
-  
+
   menuModeDropdown: boolean = false;
   menuModeCompact: boolean = false;
   menuModeModal: boolean = false;
@@ -157,7 +166,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadAvailableExercises();
 
-    
+
     this.menuModeDropdown = this.appSettingsService.isMenuModeDropdown();
     this.menuModeCompact = this.appSettingsService.isMenuModeCompact();
     this.menuModeModal = this.appSettingsService.isMenuModeModal();
@@ -194,15 +203,15 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   private async prefillRoutineWithLastPerformance(): Promise<void> {
     const currentRoutine = this.routine();
     if (!currentRoutine) return;
-  
+
     const routineCopy = JSON.parse(JSON.stringify(currentRoutine)) as Routine;
-  
+
     for (const exercise of routineCopy.exercises) {
       try {
         const lastPerformance = await firstValueFrom(
           this.trackingService.getLastPerformanceForExercise(exercise.exerciseId)
         );
-  
+
         if (lastPerformance && lastPerformance.sets.length > 0) {
           exercise.sets.forEach((set, setIndex) => {
             const historicalSet = lastPerformance.sets[setIndex];
@@ -218,7 +227,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         console.error(`Failed to prefill data for exercise ${exercise.exerciseName}:`, error);
       }
     }
-  
+
     this.routine.set(routineCopy);
     this.cdr.detectChanges();
   }
@@ -236,6 +245,10 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       exercises: [],
     });
     this.startSessionTimer();
+
+    if (this.routine()) {
+      this.toggleExerciseExpansion(0);
+    }
   }
 
   startSessionTimer(): void {
@@ -261,7 +274,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     if (this.isCardio(exercise)) {
       return (set.distance ?? 0) > 0 || (set.duration ?? 0) > 0;
     }
-    return (set.weight ?? 0) > 0;
+    return (set.weight ?? 0) > 0 && (set.reps ?? 0) > 0;
   }
 
   getLoggedSet(exIndex: number, setIndex: number): LoggedSet | undefined {
@@ -705,20 +718,20 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       },
       {
         label: 'Performance Insights', actionKey: 'insights', iconName: 'chart', data: { exIndex: exerciseId },
-        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,iconClass: 'w-8 h-8 mr-2'
+        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass, iconClass: 'w-8 h-8 mr-2'
       },
       {
         label: 'Add Warm-up Set', actionKey: 'add_warmup', iconName: 'flame', data: { exIndex: exerciseId },
-        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + warmupBtnClass,iconClass: 'w-8 h-8 mr-2'
+        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + warmupBtnClass, iconClass: 'w-8 h-8 mr-2'
       },
       {
         label: 'Add Set', actionKey: 'add_set', iconName: 'plus-circle', data: { exIndex: exerciseId },
-        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,iconClass: 'w-8 h-8 mr-2'
+        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass, iconClass: 'w-8 h-8 mr-2'
       },
       { isDivider: true },
       {
         label: 'Remove Exercise', actionKey: 'remove', iconName: 'trash', data: { exIndex: exerciseId },
-        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + deleteBtnClass,iconClass: 'w-8 h-8 mr-2'
+        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + deleteBtnClass, iconClass: 'w-8 h-8 mr-2'
       }
     ];
     return actionsArray;
@@ -732,35 +745,62 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     this.isRestTimerVisible.set(true);
   }
 
+  handleToggleNextExercise(): void {
+    if (this.nextStepInfo && this.nextStepInfo.completedExIndex >=0 && this.nextStepInfo.completedSetIndex >=0) {
+      let expandedExerciseIndex = -1; 
+      if (this.expandedExerciseIndex() !== null){
+        expandedExerciseIndex = this.expandedExerciseIndex()!;
+      }
+      if (expandedExerciseIndex >= 0 && expandedExerciseIndex !== this.nextStepInfo.completedExIndex){
+        this.toggleExerciseExpansion(this.nextStepInfo.completedExIndex);
+      }
+      if (this.nextStepInfo.completedSetIndex === (this.nextStepInfo.exerciseSetLength -1)){
+        this.toggleExerciseExpansion(this.nextStepInfo.completedExIndex);
+        if (this.nextStepInfo.completedExIndex + 1 <= this.nextStepInfo.maxExerciseIndex)
+        this.toggleExerciseExpansion(this.nextStepInfo.completedExIndex + 1);
+      }
+    }
+  }
+
   handleRestTimerFinished(): void {
     this.isRestTimerVisible.set(false);
     this.toastService.success("Rest complete!", 2000);
+    this.handleToggleNextExercise();
   }
 
   handleRestTimerSkipped(timeSkipped: number): void {
     this.isRestTimerVisible.set(false);
     this.toastService.info("Rest skipped", 1500);
+    this.handleToggleNextExercise();
   }
 
   private peekNextStepInfo(completedExIndex: number, completedSetIndex: number): string | null {
     const routine = this.routine();
     if (!routine) return null;
-  
+
     const currentExercise = routine.exercises[completedExIndex];
-  
+
+    this.nextStepInfo = {
+      completedSetIndex: completedSetIndex,
+      completedExIndex: completedExIndex,
+      exerciseSetLength: currentExercise.sets ? currentExercise.sets.length : 0,
+      maxExerciseIndex: routine.exercises.length - 1
+    }
+
     // Check for next set in the same exercise
     if (completedSetIndex + 1 < currentExercise.sets.length) {
       const nextSet = currentExercise.sets[completedSetIndex + 1];
       return `${currentExercise.exerciseName} - Set ${completedSetIndex + 2}`;
     }
-  
+
     // Check for the first set of the next exercise
     if (completedExIndex + 1 < routine.exercises.length) {
       const nextExercise = routine.exercises[completedExIndex + 1];
       return `${nextExercise.exerciseName} - Set 1`;
     }
-  
+
     // This was the last set of the last exercise
+    this.nextStepInfo = { completedExIndex: -1, completedSetIndex: -1, exerciseSetLength: 0, maxExerciseIndex: -1};
     return "Workout Complete!";
   }
 }
