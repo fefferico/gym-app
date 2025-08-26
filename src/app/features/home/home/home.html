@@ -4,7 +4,7 @@
     <h1 class="text-3xl md:text-4xl font-bold text-gray-800 dark:text-gray-100">
       Welcome Back, <span class="text-primary dark:text-primary-light">{{ userName() }}</span>!
     </h1>
-    <p class="text-md text-gray-600 dark:text-gray-400 mt-1">
+    <p class="text-md text-gray-600 dark:text-gray-400 text-left mt-1">
       Ready to crush your goals today?
     </p>
   </header>
@@ -57,15 +57,15 @@
   <!-- Quick Actions / Navigation Section (Example) -->
   <section>
     <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-3">Quick Actions</h2>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div class="grid grid-cols-2 lg:grid-cols-3 gap-4">
       <button (click)="startNewSession()"
-        class="block p-5 bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow transform hover:-translate-y-1 dark:hover:bg-gray-600 hover:bg-gray-200">
-        <div class="flex items-center mb-2">
-          <app-icon name="play" class="w-14 h-14 mr-2 text-primary"></app-icon>
-          <div class="text-left">
+        class="block p-3 bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow transform hover:-translate-y-1 dark:hover:bg-gray-600 hover:bg-gray-200">
+        <div class="flex flex-col items-start text-center">
+          <div class="flex items-center mb-2 text-left">
+            <app-icon name="play" class="w-14 h-14 mr-2 text-primary"></app-icon>
             <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Start a new session</h3>
-            <p class="text-md text-gray-600 dark:text-gray-400">Start a brand new session and refine it as you do it</p>
           </div>
+          <p class="pl-2 text-md text-gray-600 dark:text-gray-400 text-left">Start a brand new session and refine it as you do it</p>
         </div>
       </button>
 
@@ -73,13 +73,13 @@
       <!-- START: Add This New Button Here                            -->
       <!-- ========================================================== -->
       <button (click)="navigateToLogActivity()"
-        class="block p-5 bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow transform hover:-translate-y-1 dark:hover:bg-gray-600 hover:bg-gray-200">
-        <div class="flex items-center mb-2">
-          <app-icon name="clipboard-list" class="w-14 h-14 text-teal-500 dark:text-teal-400 mr-2"></app-icon>
-          <div class="text-left">
-            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Log an Activity</h3>
-            <p class="text-md text-gray-600 dark:text-gray-400">Record other activities like hiking, football, or yoga</p>
+        class="block p-3 bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow transform hover:-translate-y-1 dark:hover:bg-gray-600 hover:bg-gray-200">
+        <div class="flex flex-col items-start text-center">
+          <div class="flex items-center mb-2">
+            <app-icon name="clipboard-list" class="w-14 h-14 text-teal-500 dark:text-teal-400 mr-2"></app-icon>
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 text-left">Log an Activity</h3>
           </div>
+          <p class="pl-2 text-md text-gray-600 dark:text-gray-400 text-left">Record other activities like hiking, football, or yoga</p>
         </div>
       </button>
       <!-- ========================================================== -->
@@ -87,56 +87,56 @@
       <!-- ========================================================== -->
        
       <button (click)="navigateToRoutines()"
-        class="block p-5 bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow transform hover:-translate-y-1 dark:hover:bg-gray-600 hover:bg-gray-200">
-        <div class="flex items-center mb-2">
-          <app-icon name="routines" class="w-14 h-14 text-blue-500 dark:text-blue-400 mr-2"></app-icon>
-          <div class="text-left">
-            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">My Routines</h3>
-            <p class="text-md text-gray-600 dark:text-gray-400">View, create, or edit your workout routines</p>
+        class="block p-3 bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow transform hover:-translate-y-1 dark:hover:bg-gray-600 hover:bg-gray-200">
+        <div class="flex flex-col items-start text-center">
+          <div class="flex items-center mb-2">
+            <app-icon name="routines" class="w-14 h-14 text-blue-500 dark:text-blue-400 mr-2"></app-icon>
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 text-left">My Routines</h3>
           </div>
+          <p class="pl-2 text-md text-gray-600 dark:text-gray-400 text-left">View, create, or edit your workout routines</p>
         </div>
       </button>
 
       <button (click)="navigateToPrograms()"
-        class="block p-5 bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow transform hover:-translate-y-1 dark:hover:bg-gray-600 hover:bg-gray-200">
-        <div class="flex items-center mb-2">
-          <app-icon name="calendar" class="w-14 h-14 text-green-500 dark:text-green-400 mr-2"></app-icon>
-          <div class="text-left">
-            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Training Programs</h3>
-            <p class="text-md text-gray-600 dark:text-gray-400">Manage your long-term training schedules</p>
+        class="block p-3 bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow transform hover:-translate-y-1 dark:hover:bg-gray-600 hover:bg-gray-200">
+        <div class="flex flex-col items-start text-center">
+          <div class="flex items-center mb-2">
+            <app-icon name="calendar" class="w-14 h-14 text-green-500 dark:text-green-400 mr-2"></app-icon>
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 text-left">Training Programs</h3>
           </div>
+          <p class="pl-2 text-md text-gray-600 dark:text-gray-400 text-left">Manage your long-term training schedules</p>
         </div>
       </button>
 
       <button (click)="navigateToHistory()"
-        class="block p-5 bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow transform hover:-translate-y-1 dark:hover:bg-gray-600 hover:bg-gray-200">
-        <div class="flex items-center mb-2">
-          <app-icon name="clock" class="w-14 h-14  text-purple-500 dark:text-purple-400 mr-2"></app-icon>
-          <div class="text-left">
-            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Workout History</h3>
-            <p class="text-md text-gray-600 dark:text-gray-400">Review your past workout logs and progress</p>
+        class="block p-3 bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow transform hover:-translate-y-1 dark:hover:bg-gray-600 hover:bg-gray-200">
+        <div class="flex flex-col items-start text-center">
+          <div class="flex items-center mb-2">
+            <app-icon name="clock" class="w-14 h-14  text-purple-500 dark:text-purple-400 mr-2"></app-icon>
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 text-left">Workout History</h3>
           </div>
+          <p class="pl-2 text-md text-gray-600 dark:text-gray-400 text-left">Review your past workout logs and progress</p>
         </div>
       </button>
       <!-- Add more quick action cards as needed, e.g., Profile/Settings -->
       <button (click)="navigateToProfile()"
-        class="block p-5 bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow transform hover:-translate-y-1 dark:hover:bg-gray-600 hover:bg-gray-200">
-        <div class="flex items-center mb-2">
-          <app-icon name="profile" class="w-14 h-14 text-orange-500 dark:text-orange-400 mr-2"></app-icon>
-          <div class="text-left">
-            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Profile & Settings</h3>
-            <p class="text-md text-gray-600 dark:text-gray-400">Manage your data and app preferences</p>
+        class="block p-3 bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow transform hover:-translate-y-1 dark:hover:bg-gray-600 hover:bg-gray-200">
+        <div class="flex flex-col items-start text-center">
+          <div class="flex items-center mb-2">
+            <app-icon name="profile" class="w-14 h-14 text-orange-500 dark:text-orange-400 mr-2"></app-icon>
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 text-left">Profile & Settings</h3>
           </div>
+          <p class="pl-2 text-md text-gray-600 dark:text-gray-400 text-left">Manage your data and app preferences</p>
         </div>
       </button>
       <button (click)="navigateToPersonalGym()"
-        class="block p-5 bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow transform hover:-translate-y-1 dark:hover:bg-gray-600 hover:bg-gray-200">
-        <div class="flex items-center mb-2">
-          <app-icon name="dumbbell" class="w-14 h-14 text-indigo-500 dark:text-indigo-400 mr-2"></app-icon>
-          <div class="text-left">
-            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Personal Gym</h3>
-            <p class="text-md text-gray-600 dark:text-gray-400">Manage your available workout equipment</p>
+        class="block p-3 bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow transform hover:-translate-y-1 dark:hover:bg-gray-600 hover:bg-gray-200">
+        <div class="flex flex-col items-start text-center">
+          <div class="flex items-center mb-2">
+            <app-icon name="dumbbell" class="w-14 h-14 text-indigo-500 dark:text-indigo-400 mr-2"></app-icon>
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 text-left">Personal Gym</h3>
           </div>
+          <p class="pl-2 text-md text-gray-600 dark:text-gray-400 text-left">Manage your available workout equipment</p>
         </div>
       </button>
     </div>
