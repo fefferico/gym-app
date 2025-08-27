@@ -159,17 +159,6 @@
                                 required</span>
                         </div>
                     </div>
-                    <!-- <div>
-                        <label for="durationMinutes"
-                            class="block text-sm font-medium text-gray-700 dark:text-gray-300">Duration (min)</label>
-                        <input type="number" id="durationMinutes" formControlName="durationMinutes"
-                            class="mt-1 block w-full p-2 border rounded-md shadow-sm dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200"
-                            [ngClass]="{'border-red-500 dark:border-red-400': builderForm.get('durationMinutes')?.invalid && builderForm.get('durationMinutes')?.touched, 'border-gray-300 dark:border-gray-500': !(builderForm.get('durationMinutes')?.invalid && builderForm.get('durationMinutes')?.touched) }">
-                        <div *ngIf="builderForm.get('durationMinutes')?.invalid && (builderForm.get('durationMinutes')?.dirty || builderForm.get('durationMinutes')?.touched)"
-                            class="text-red-500 dark:text-red-400 text-xs mt-1">
-                            <span *ngIf="builderForm.get('durationMinutes')?.errors?.['min']">Min duration is 1</span>
-                        </div>
-                    </div> -->
                 </div>
                 <div>
                     <label for="logWorkoutName"
@@ -179,7 +168,7 @@
                         placeholder="e.g., Morning Chest Session"
                         class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200">
                 </div>
-                <div>
+                <div *ngIf="!initialProgramIdForLogEdit">
                     <label for="routineIdForLog"
                         class="block text-sm font-medium text-gray-700 dark:text-gray-300">Based on Routine
                         (Optional)</label>
@@ -187,6 +176,16 @@
                         class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200">
                         <option value="">-- Log Ad-hoc Routine --</option>
                         <option *ngFor="let r of availableRoutines" [value]="r.id">{{ r.name }}</option>
+                    </select>
+                </div>
+                <div *ngIf="initialProgramIdForLogEdit">
+                    <label for="routineIdForLog"
+                        class="block text-sm font-medium text-gray-700 dark:text-gray-300">Based on Routine
+                        (Optional)</label>
+                    <select id="routineIdForLog" formControlName="routineIdForLog"
+                        class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200">
+                        <option value="">-- Log Ad-hoc Routine --</option>
+                        <option *ngFor="let r of availableRoutineForProgram" [value]="r.routineId">{{ r.routineName }}</option>
                     </select>
                 </div>
                 <div>
@@ -200,22 +199,35 @@
                         </option>
                     </select>
                 </div>
-                <div>
+                <!-- START: Updated Iteration and Scheduled Day ID fields -->
+                <div *ngIf="initialProgramIdForLogEdit">
                     <label for="iterationIdForLog"
-                        class="block text-sm font-medium text-gray-700 dark:text-gray-300">Based on Program Iteration ID</label>
-                        <span class="text-red dark:text-primary-light">(EDIT IF YOU ONLY KNOW WHAT YOU ARE DOING)</span>
-                    <input type="text" id="iterationIdForLog" formControlName="iterationIdForLog"
-                        placeholder=""
-                        class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200">
+                        class="block text-sm font-medium text-gray-700 dark:text-gray-300">Based on Program Iteration
+                        ID</label>
+                    <span class="text-xs text-red-500 dark:text-primary-light">(Select an iteration if logging for a
+                        specific program cycle)</span>
+                    <select id="iterationIdForLog" formControlName="iterationIdForLog"
+                        [disabled]="!builderForm.get('programIdForLog')?.value || availableIterationIds.length === 0"
+                        class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <option value="">-- Select Iteration (Optional) --</option>
+                        <option *ngFor="let iterationId of availableIterationIds" [value]="iterationId">{{ iterationId
+                            }}</option>
+                    </select>
                 </div>
-                <div>
+                <div *ngIf="initialProgramIdForLogEdit">
                     <label for="scheduledDayIdForLog"
                         class="block text-sm font-medium text-gray-700 dark:text-gray-300">Based on Program Scheduled ID
-                        </label><span class="text-red dark:text-primary-light">(EDIT IF YOU ONLY KNOW WHAT YOU ARE DOING)</span>
-                    <input type="text" id="scheduledDayIdForLog" formControlName="scheduledDayIdForLog"
-                        placeholder=""
-                        class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200">
+                    </label><span class="text-xs text-red-500 dark:text-primary-light">(Select the scheduled day you are
+                        logging)</span>
+                    <select id="scheduledDayIdForLog" formControlName="scheduledDayIdForLog"
+                        [disabled]="!builderForm.get('programIdForLog')?.value || availableScheduledDayIds.length === 0"
+                        class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <option value="">-- Select Scheduled Day (Optional) --</option>
+                        <option *ngFor="let scheduledId of availableScheduledDayIds" [value]="scheduledId">{{
+                            scheduledId }}</option>
+                    </select>
                 </div>
+                <!-- END: Updated fields -->
                 <div>
                     <label for="overallNotesLog"
                         class="block text-sm font-medium text-gray-700 dark:text-gray-300">Overall Notes

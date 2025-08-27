@@ -15,11 +15,12 @@ import { ActionMenuComponent } from '../../shared/components/action-menu/action-
 import { ActionMenuItem } from '../../core/models/action-menu.model';
 import { AppSettingsService } from '../../core/services/app-settings.service';
 import { MenuMode } from '../../core/models/app-settings.model';
+import { IconComponent } from '../../shared/components/icon/icon.component';
 
 @Component({
   selector: 'app-exercise-list',
   standalone: true,
-  imports: [CommonModule, RouterLink, AsyncPipe, TitleCasePipe, PressDirective, ActionMenuComponent],
+  imports: [CommonModule, RouterLink, AsyncPipe, TitleCasePipe, PressDirective, ActionMenuComponent, IconComponent],
   templateUrl: './exercise-list.html',
   styleUrl: './exercise-list.scss',
   animations: [

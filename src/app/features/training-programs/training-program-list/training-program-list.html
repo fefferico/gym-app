@@ -527,7 +527,7 @@
                 <!-- Removed flex-1 -->
                 <!-- Added sm:col-start-2 to place it in the second column on small screens and up if the START button is not present -->
                 <button *ngIf="selectedDay.isPastDay" appPress
-                  (shortPress)="logPreviousSession(item.routine.id, selectedDay.date)"
+                  (shortPress)="logPreviousSession(item, selectedDay.date)"
                   [class.sm:col-start-2]="!selectedDay.isToday"
                   class="flex justify-center items-center w-full sm:max-w-[200px] px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md shadow-sm text-lg disabled:opacity-50 disabled:cursor-not-allowed">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"

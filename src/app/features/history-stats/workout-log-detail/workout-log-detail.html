@@ -17,11 +17,7 @@
         <div class="relative">
           <button (click)="toggleActions(log.id, $event)"
             class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-              stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round"
-                d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-            </svg>
+            <app-icon name="menu-action" class="h-7 w-7"></app-icon>
           </button>
           <app-action-menu *ngIf="areActionsVisible(log.id)" displayMode="dropdown"
             [items]="getLogDropdownActionItems(log.id, 'dropdown')" [isVisible]="areActionsVisible(log.id)"
@@ -39,11 +35,11 @@
           [title]="workoutLog()?.routineName || 'Ad-hoc Workout'">
           {{ workoutLog()?.routineName || 'Ad-hoc Workout' }}
         </h1>
-      
+
         <h2 *ngIf="checkIfLogForProgram()" class="font-bold text-gray-800 dark:text-gray-200 mb-2">
           <span>{{getLogTitleForProgramEntry()}}</span>
         </h2>
-      
+
         <div class="flex items-center align-center text-md text-gray-600 dark:text-gray-400 gap-x-2">
           <app-icon name="calendar" class="w-7 h-7 mr-1"></app-icon>
           <div>
@@ -52,14 +48,14 @@
               From {{ log.startTime | date:'shortTime' }} to {{ log.endTime | date:'shortTime' }}
             </p>
           </div>
-      
+
         </div>
         <!-- EXERCISES DIV -->
         <div class="flex items-center text-md text-gray-600 dark:text-gray-400 mt-1 gap-x-2">
           <app-icon name="muscle" class="h-7 w-7"></app-icon>
           <span class="ml-1"> Exercises: {{ log.exercises.length }}</span>
         </div>
-      
+
         <!-- DURATION DIV -->
         <div class="flex items-center text-md text-gray-600 dark:text-gray-400 mt-1 gap-x-2">
           <app-icon name="clock" class="h-7 w-7 mr-1"></app-icon>
@@ -67,7 +63,7 @@
             }}</span>
           <span *ngIf="!log.durationSeconds">Duration: {{ log.durationMinutes }} minutes</span>
         </div>
-      
+
         <p *ngIf="log.notes" class="mt-2 text-m text-gray-600 dark:text-gray-400 italic">
           <strong>Overall Notes:</strong> {{ log.notes }}
         </p>
@@ -124,7 +120,8 @@
                       </span>
                       {{ loggedEx.exerciseName }}
                     </h3>
-                    <app-icon name="info" class="h-4 w-4 text-gray-400 dark:text-gray-300 cursor-help" *ngIf="loggedEx" (click)="openModal(loggedEx)" [appTooltip]="exerciseInfoTooltipString"></app-icon>
+                    <app-icon name="info" class="h-4 w-4 text-gray-400 dark:text-gray-300 cursor-help" *ngIf="loggedEx"
+                      (click)="openModal(loggedEx)" [appTooltip]="exerciseInfoTooltipString"></app-icon>
                   </div>
                   <div *ngIf="!loggedEx.isExpanded" class="text-xs text-gray-500 dark:text-gray-400 truncate">
                     <p *ngIf="loggedEx.baseExercise?.category"
@@ -143,7 +140,8 @@
               </div>
 
               <div class="flex items-center min-w-0 text-xs text-gray-500 dark:text-gray-400 truncate">
-                    <app-icon name="collapse-card" class="w-5 h-5 transition-transform duration-200 flex-shrink-0 ml-2" [ngClass]="{
+                <app-icon name="collapse-card" class="w-5 h-5 transition-transform duration-200 flex-shrink-0 ml-2"
+                  [ngClass]="{
                 'text-gray-500 dark:text-gray-400': !loggedEx.supersetId,
                 'text-orange-500 dark:text-orange-400': loggedEx.supersetId,
                 'rotate-180': loggedEx.isExpanded
@@ -224,7 +222,8 @@
                   </strong>
                 </div>
                 <div class="cursor-pointer dark:text-white">
-                  <app-icon name="schedule" (click)="showNotesModal(set.notes)" *ngIf="set.notes" class="h-7 w-7"></app-icon>
+                  <app-icon name="schedule" (click)="showNotesModal(set.notes)" *ngIf="set.notes"
+                    class="h-7 w-7"></app-icon>
                   <span class="text-gray-500" *ngIf="!set.notes">-</span>
                 </div>
                 <div *ngIf="!last" class="col-span-full h-px bg-gray-200 dark:bg-gray-700"></div>
@@ -254,7 +253,7 @@
         <button routerLink="/history/list"
           class="inline-flex items-center text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-light p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
           <app-icon name="back"></app-icon>
-           Back to History
+          Back to History
         </button>
       </div>
     </ng-template>

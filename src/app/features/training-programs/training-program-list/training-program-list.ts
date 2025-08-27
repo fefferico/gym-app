@@ -926,7 +926,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
     }
   }
 
-  logPreviousSession(routineId: string, workoutDate: Date): void {
+  logPreviousSession(scheduledDayInfo: ScheduledItemWithLogs, workoutDate: Date): void {
     const programId = this.activeProgramForCalendar()?.id;
     if (!programId) {
       this.toastService.error("Cannot log session: No active program is being viewed.", 0, "Error");
@@ -934,9 +934,12 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
     }
 
     // The route should be an array of path segments
-    this.router.navigate(['workout/log/manual/new/from/', routineId], {
+    this.router.navigate(['workout/log/manual/new/from/', scheduledDayInfo.routine.id], {
       queryParams: {
         programId: programId,
+        pastSession: true,
+        iterationId: this.activeProgramForCalendar()?.iterationId,
+        scheduledDayId: scheduledDayInfo.scheduledDayInfo.id,
         date: format(workoutDate, 'yyyy-MM-dd')
       }
     });

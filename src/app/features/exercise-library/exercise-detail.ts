@@ -14,11 +14,12 @@ import { AlertButton } from '../../core/models/alert.model';
 import { ActionMenuComponent } from '../../shared/components/action-menu/action-menu';
 import { ActionMenuItem } from '../../core/models/action-menu.model';
 import { MenuMode } from '../../core/models/app-settings.model';
+import { IconComponent } from '../../shared/components/icon/icon.component';
 
 @Component({
   selector: 'app-exercise-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, DatePipe, NgxChartsModule, ActionMenuComponent], // Added DatePipe, NgxChartsModule
+  imports: [CommonModule, RouterLink, DatePipe, NgxChartsModule, ActionMenuComponent, IconComponent], // Added DatePipe, NgxChartsModule
   templateUrl: './exercise-detail.html',
   styleUrl: './exercise-detail.scss',
 })

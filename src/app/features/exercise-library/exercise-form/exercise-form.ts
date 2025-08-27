@@ -11,11 +11,12 @@ import { Muscle } from '../../../core/models/muscle.model';
 import { MUSCLES_DATA } from '../../../core/services/muscles-data';
 import { Equipment } from '../../../core/models/equipment.model';
 import { EQUIPMENT_DATA } from '../../../core/services/equipment-data';
+import { IconComponent } from '../../../shared/components/icon/icon.component';
 
 @Component({
   selector: 'app-exercise-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, TitleCasePipe, NgClass],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, TitleCasePipe, NgClass, IconComponent],
   templateUrl: './exercise-form.html',
   styleUrls: ['./exercise-form.scss']
 })
