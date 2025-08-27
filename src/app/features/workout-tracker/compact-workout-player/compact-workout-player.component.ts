@@ -1,3 +1,5 @@
+// compact-workout-player.component.ts
+
 import { Component, inject, OnInit, OnDestroy, signal, computed, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -37,6 +39,7 @@ import { AppSettingsService } from '../../../core/services/app-settings.service'
 import { FullScreenRestTimerComponent } from '../../../shared/components/full-screen-rest-timer/full-screen-rest-timer';
 import { PausedWorkoutState, PlayerSubState } from '../workout-player';
 import { TrainingProgram } from '../../../core/models/training-program.model';
+import { AlertInput } from '../../../core/models/alert.model';
 
 // Interface for saving the paused state
 
@@ -100,6 +103,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   restDuration = signal(0);
   restTimerMainText = signal('RESTING');
   restTimerNextUpText = signal<string | null>(null);
+  // +++ NEW: Signal to hold detailed info for the next set for the rest timer screen
+  restTimerNextSetDetails = signal<ExerciseSetParams | null>(null);
 
   menuModeDropdown: boolean = false;
   menuModeCompact: boolean = false;
@@ -117,7 +122,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   routineId: string | null = null;
   programId: string | null = null;
 
-  currentWorkoutLog = signal<Partial<WorkoutLog>>({ exercises: [] });
+  currentWorkoutLog = signal<Partial<WorkoutLog>>({ exercises: [], notes: '' }); // +++ MODIFIED: Initialize notes
 
   defaultExercises: Exercise[] = [];
   availableExercises: Exercise[] = [];
@@ -272,6 +277,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       startTime: this.workoutStartTime,
       date: format(new Date(), 'yyyy-MM-dd'),
       exercises: [],
+      notes: '', // +++ NEW: Initialize notes field
     });
     this.startSessionTimer();
 
@@ -319,7 +325,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return !!this.getLoggedSet(exIndex, setIndex);
   }
 
-  toggleSetCompletion(exercise: WorkoutExercise, set: ExerciseSetParams, exIndex: number, setIndex: number): void {
+  toggleSetCompletion(exercise: WorkoutExercise, set: ExerciseSetParams, exIndex: number, setIndex: number, fieldUpdated?: string): void {
     const log = this.currentWorkoutLog();
     if (!log.exercises) log.exercises = [];
 
@@ -339,7 +345,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       if (!exerciseLog) {
         exerciseLog = {
           id: exercise.id, exerciseId: exercise.exerciseId, exerciseName: exercise.exerciseName!,
-          sets: [], rounds: exercise.rounds ?? 1, type: exercise.type || 'standard'
+          sets: [], rounds: exercise.rounds ?? 1, type: exercise.type || 'standard',
+          notes: exercise.notes, // +++ NEW: Carry over exercise notes
         };
         log.exercises.push(exerciseLog);
       }
@@ -349,20 +356,23 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         repsAchieved: set.reps ?? 0, weightUsed: set.weight || 0,
         durationPerformed: set.duration, distanceAchieved: set.distance,
         timestamp: new Date().toISOString(),
+        notes: set.notes, // +++ NEW: Carry over set notes
       };
       exerciseLog.sets.push(newLoggedSet);
       const order = exercise.sets.map(s => s.id);
       exerciseLog.sets.sort((a, b) => order.indexOf(a.plannedSetId!) - order.indexOf(b.plannedSetId!));
 
       if (set.restAfterSet && set.restAfterSet > 0) {
-        this.startRestPeriod(set.restAfterSet, exIndex, setIndex);
+        if (fieldUpdated && fieldUpdated !== 'notes'){
+          this.startRestPeriod(set.restAfterSet, exIndex, setIndex);
+        }
       }
     }
     this.currentWorkoutLog.set({ ...log });
     this.savePausedSessionState();
   }
 
-  updateSetData(exIndex: number, setIndex: number, field: 'reps' | 'weight' | 'distance' | 'time', event: Event): void {
+  updateSetData(exIndex: number, setIndex: number, field: 'reps' | 'weight' | 'distance' | 'time' | 'notes', event: Event): void {
     const value = (event.target as HTMLInputElement).value;
     const routine = this.routine();
     if (!routine) return;
@@ -373,21 +383,69 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       case 'weight': set.weight = parseFloat(value) || undefined; break;
       case 'distance': set.distance = parseFloat(value) || 0; break;
       case 'time': set.duration = this.parseTimeToSeconds(value); break;
+      // +++ NEW: Handle notes update
+      case 'notes': set.notes = value; break;
     }
     this.routine.set({ ...routine });
     if (this.isSetCompleted(exIndex, setIndex)) {
-      this.toggleSetCompletion(exercise, set, exIndex, setIndex);
-      this.toggleSetCompletion(exercise, set, exIndex, setIndex);
+      this.toggleSetCompletion(exercise, set, exIndex, setIndex, 'notes');
+      this.toggleSetCompletion(exercise, set, exIndex, setIndex, 'notes');
     }
   }
 
-  getInitialInputValue(exIndex: number, setIndex: number, field: 'reps' | 'weight' | 'distance' | 'time'): string {
+  // +++ NEW: Method to update exercise-level notes
+  updateExerciseNotes(exIndex: number, event: Event) {
+    const value = (event.target as HTMLInputElement).value;
+    this.routine.update(r => {
+      if (r) {
+        r.exercises[exIndex].notes = value;
+
+        // Also update the log in real-time if the exercise is already logged
+        const log = this.currentWorkoutLog();
+        const loggedEx = log.exercises?.find(ex => ex.id === r.exercises[exIndex].id);
+        if (loggedEx) {
+          loggedEx.notes = value;
+          this.currentWorkoutLog.set({ ...log });
+        }
+      }
+      return r;
+    });
+  }
+
+  // +++ NEW: Method to open a prompt for session-level notes
+  async editSessionNotes() {
+    const result = await this.alertService.showPromptDialog(
+      'Session Notes',
+      'Add or edit notes for this entire workout session.',
+          [{
+            name: 'notes',
+            type: 'text',
+            placeholder: `Insert notes here`,
+            value: this.currentWorkoutLog().notes ?? undefined,
+            autofocus: true,
+            attributes: { step: 0.5, min: '0', inputmode: 'decimal' }
+          }] as AlertInput[],
+          'Save Notes'
+        );
+
+    if (result && result['notes'] !== undefined && result['notes'] !== null) {
+      this.currentWorkoutLog.update(log => {
+        log.notes = String(result['notes']) || '';
+        return log;
+      });
+      this.toastService.success("Session notes updated.");
+    }
+  }
+
+  getInitialInputValue(exIndex: number, setIndex: number, field: 'reps' | 'weight' | 'distance' | 'time' | 'notes'): string {
     const set = this.routine()!.exercises[exIndex].sets[setIndex];
     switch (field) {
       case 'reps': return (set.reps ?? '').toString();
       case 'weight': return (set.weight ?? '').toString();
       case 'distance': return (set.distance ?? '').toString();
       case 'time': return this.formatSecondsToTime(set.duration);
+      // +++ NEW: Handle notes initial value
+      case 'notes': return set.notes || '';
     }
     return '';
   }
@@ -407,6 +465,21 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
   toggleExerciseExpansion(index: number): void {
     this.expandedExerciseIndex.update(current => current === index ? null : index);
+  }
+
+  // +++ NEW: Signals and methods to toggle notes visibility for sets and exercises
+  expandedExerciseNotes = signal<number | null>(null);
+  expandedSetNotes = signal<string | null>(null); // Key will be "exIndex-setIndex"
+
+  toggleExerciseNotes(exIndex: number, event: Event) {
+    event.stopPropagation();
+    this.expandedExerciseNotes.update(current => current === exIndex ? null : exIndex);
+  }
+
+  toggleSetNotes(exIndex: number, setIndex: number, event: Event) {
+    event.stopPropagation();
+    const key = `${exIndex}-${setIndex}`;
+    this.expandedSetNotes.update(current => current === key ? null : key);
   }
 
   async finishWorkout(): Promise<void> {
@@ -652,11 +725,37 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   handleExerciseSwitch(newExercise: Exercise) {
     const index = this.exerciseToSwitchIndex();
     if (index === null) return;
+
     this.routine.update(r => {
       if (r) {
-        const oldExerciseName = r.exercises[index].exerciseName;
-        r.exercises[index].exerciseId = newExercise.id;
-        r.exercises[index].exerciseName = newExercise.name;
+        const oldWorkoutExercise = r.exercises[index];
+        const oldExerciseName = oldWorkoutExercise.exerciseName;
+
+        // +++ NEW: Logic to check categories and clear incompatible data
+        const oldBaseExercise = this.availableExercises.find(ex => ex.id === oldWorkoutExercise.exerciseId);
+        const newBaseExercise = this.availableExercises.find(ex => ex.id === newExercise.id);
+
+        if (oldBaseExercise && newBaseExercise && oldBaseExercise.category !== newBaseExercise.category) {
+          this.toastService.info(`Switching exercise type. Set data will be reset.`, 3000);
+          oldWorkoutExercise.sets.forEach(set => {
+            if (newBaseExercise.category === 'cardio') {
+              set.weight = undefined;
+              set.reps = undefined;
+              set.distance = set.distance ?? 1; // Default cardio values
+              set.duration = set.duration ?? 300;
+            } else { // Assuming switch to strength or other non-cardio
+              set.distance = undefined;
+              set.duration = undefined;
+              set.weight = set.weight ?? 10; // Default strength values
+              set.reps = set.reps ?? 8;
+            }
+          });
+        }
+        // +++ END NEW LOGIC
+
+        oldWorkoutExercise.exerciseId = newExercise.id;
+        oldWorkoutExercise.exerciseName = newExercise.name;
+
         this.toastService.success(`Switched ${oldExerciseName} with ${newExercise.name}`);
       }
       return r;
@@ -736,10 +835,13 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return actionsArray;
   }
 
+  // +++ MODIFIED: This method now also sets the next set's details for the rest timer UI
   private startRestPeriod(duration: number, completedExIndex: number, completedSetIndex: number): void {
+    const nextStep = this.peekNextStepInfo(completedExIndex, completedSetIndex);
     this.restDuration.set(duration);
     this.restTimerMainText.set('RESTING');
-    this.restTimerNextUpText.set(this.peekNextStepInfo(completedExIndex, completedSetIndex));
+    this.restTimerNextUpText.set(nextStep.text);
+    this.restTimerNextSetDetails.set(nextStep.details); // +++ NEW
     this.isRestTimerVisible.set(true);
     this.playerSubState.set(PlayerSubState.Resting);
   }
@@ -776,9 +878,11 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     this.playerSubState.set(PlayerSubState.PerformingSet);
   }
 
-  private peekNextStepInfo(completedExIndex: number, completedSetIndex: number): string | null {
+  // +++ MODIFIED: This method now returns an object with both the text and the detailed set info
+  private peekNextStepInfo(completedExIndex: number, completedSetIndex: number): { text: string | null; details: ExerciseSetParams | null } {
     const routine = this.routine();
-    if (!routine) return null;
+    if (!routine) return { text: null, details: null };
+
     const currentExercise = routine.exercises[completedExIndex];
     this.nextStepInfo = {
       completedSetIndex: completedSetIndex,
@@ -786,15 +890,26 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       exerciseSetLength: currentExercise.sets?.length ?? 0,
       maxExerciseIndex: routine.exercises.length - 1
     };
+
     if (completedSetIndex + 1 < currentExercise.sets.length) {
-      return `${currentExercise.exerciseName} - Set ${completedSetIndex + 2}`;
+      const nextSet = currentExercise.sets[completedSetIndex + 1];
+      return {
+        text: `${currentExercise.exerciseName} - Set ${completedSetIndex + 2}`,
+        details: nextSet
+      };
     }
+
     if (completedExIndex + 1 < routine.exercises.length) {
       const nextExercise = routine.exercises[completedExIndex + 1];
-      return `${nextExercise.exerciseName} - Set 1`;
+      const nextSet = nextExercise.sets[0];
+      return {
+        text: `${nextExercise.exerciseName} - Set 1`,
+        details: nextSet
+      };
     }
+
     this.nextStepInfo = { completedExIndex: -1, completedSetIndex: -1, exerciseSetLength: -1, maxExerciseIndex: -1 };
-    return "Workout Complete!";
+    return { text: "Workout Complete!", details: null };
   }
 
   // --- Pause, Resume, and State Management ---

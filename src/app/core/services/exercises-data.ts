@@ -12,6 +12,25 @@ export const EXERCISES_DATA = [
     "notes": "Lower your body until your chest nearly touches the floor. Push back up to the starting position."
   },
   {
+    id: 'barbell-military-press', // Unique slug
+    name: 'Military Press (Barbell)',
+    description: 'A compound overhead press exercise that builds shoulder strength and size. It is performed standing, engaging the core for stability, and pressing a barbell from the upper chest to an overhead position with arms fully extended.',
+    category: 'strength',
+    muscleGroups: ['Shoulders (Anterior)', 'Shoulders (Lateral)', 'Triceps', 'Upper Chest', 'Core'],
+    primaryMuscleGroup: 'Shoulders',
+    equipmentNeeded: ['Barbell', 'Rack'],
+    imageUrls: [
+      'assets/exercises/military-press-1.jpg', // Placeholder path
+      'assets/exercises/military-press-2.jpg'  // Placeholder path
+    ],
+    videoUrl: 'https://www.youtube.com/watch?v=2yjwXTZQDDI', // Example video
+    notes: 'Keep your core tight and glutes squeezed to prevent arching your lower back. Press the bar in a straight line, moving your head slightly back as the bar passes your face.',
+    equipment: 'Barbell',
+    iconName: 'barbell', // Assuming you have a barbell icon
+    isCustom: false,
+    isHidden: false
+  },
+  {
     "id": "pull-up",
     "name": "Pull-up",
     "description": "An advanced bodyweight exercise that targets the back and biceps using an overhand grip.",
