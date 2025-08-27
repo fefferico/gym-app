@@ -1,7 +1,7 @@
 // src/app/core/services/tracking.service.ts
 import { Injectable, Injector, inject } from '@angular/core';
 import { BehaviorSubject, combineLatest, Observable, of } from 'rxjs';
-import { distinctUntilChanged, map, shareReplay, take, tap } from 'rxjs/operators';
+import { distinctUntilChanged, map, shareReplay, take } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
 
 import { LastPerformanceSummary, LoggedSet, PersonalBestSet, WorkoutLog, PBHistoryInstance } from '../models/workout-log.model'; // Ensure PBHistoryInstance is imported
@@ -12,9 +12,7 @@ import { AlertService } from './alert.service';
 import { WorkoutService } from './workout.service';
 import { ToastService } from './toast.service';
 import { ExerciseService } from './exercise.service';
-import { start } from 'repl';
 import { TrainingProgramService } from './training-program.service';
-import { PausedWorkoutState } from '../../features/workout-tracker/workout-player';
 
 export interface ExercisePerformanceDataPoint {
   date: Date;
@@ -67,7 +65,7 @@ export class TrackingService {
   }
 
   addWorkoutLog(newLogData: Omit<WorkoutLog, 'id' | 'date'> & { startTime: number }): WorkoutLog {
-        const newWorkoutLogId: string = uuidv4();
+    const newWorkoutLogId: string = uuidv4();
     const currentLogs = this.workoutLogsSubject.getValue();
     const logStartTimeISO = new Date(newLogData.startTime).toISOString();
 
@@ -281,10 +279,10 @@ export class TrackingService {
         if ((candidateSet.durationPerformed ?? 0) > (existingPb.durationPerformed ?? 0)) isBetter = true;
       } else { // Weight-based (XRM, Heaviest Lifted)
         if ((candidateSet.weightUsed ?? -1) > (existingPb.weightUsed ?? -1)) {
-            isBetter = true;
+          isBetter = true;
         }
         if ((candidateSet.weightUsed ?? -1) >= (existingPb.weightUsed ?? -1) && (candidateSet.repsAchieved ?? -1) >= (existingPb.repsAchieved ?? -1)) {
-            isBetter = true;
+          isBetter = true;
         }
       }
 
@@ -517,7 +515,7 @@ export class TrackingService {
       "Logs Merged"
     );
 
-   // --- NEW: Trigger the backfill for lastUsedAt timestamps ---
+    // --- NEW: Trigger the backfill for lastUsedAt timestamps ---
     await this.backfillLastUsedExerciseTimestamps();
     // -----------------------------------------------------------
 
@@ -753,15 +751,44 @@ export class TrackingService {
    * @param endDate The end date (inclusive) as a Date object.
    * @returns An Observable emitting an array of WorkoutLog objects that match the criteria.
    */
-  getWorkoutLogsByProgramIdForDateRange(programId: string | null | undefined, startDate: Date, endDate: Date): Observable<WorkoutLog[]> {
-    if (!programId || !startDate || !endDate) return of([]);
-    return this.workoutLogs$.pipe(
-      map(allLogs =>
-        allLogs.filter(log => {
+  getWorkoutLogsByProgramIdForDateRange(
+    programId: string | null | undefined,
+    startDate: Date,
+    endDate: Date
+  ): Observable<WorkoutLog[]> {
+    // 1. Guard clause: Return an empty observable immediately if inputs are invalid.
+    if (!programId || !startDate || !endDate) {
+      return of([]);
+    }
+
+    // 2. Get the specific program as an observable, and ensure it completes after one emission.
+    const program$ = this.trainingProgramService.getProgramById(programId).pipe(
+      take(1) // Important: We only need the program info once.
+    );
+
+    // 3. Return the stream.
+    return combineLatest([
+      this.workoutLogs$, // Assuming workoutLogs$ provides the current array of all logs
+      program$
+    ]).pipe(
+      map(([allLogs, program]) => {
+        // 4. Handle the case where the program might not be found.
+        if (!program) {
+          return [];
+        }
+
+        // 5. Filter the logs. The result of this filter is implicitly returned by the map operator.
+        return allLogs.filter(log => {
           const logDate = parseISO(log.date);
-          return (log.programId === programId && logDate >= startDate && logDate <= endDate);
-        })
-      )
+
+          // 6. The boolean expression is now correctly returned by the filter's callback.
+          return log.programId === programId &&
+            logDate >= startDate &&
+            logDate <= endDate &&
+            log.iterationId === program.iterationId; // Use the iterationId from the fetched program
+        });
+      }),
+      take(1) // Optional but recommended: Ensures the entire observable completes after producing one filtered array.
     );
   }
 
@@ -775,9 +802,20 @@ export class TrackingService {
         })
       )
     );
-  } 
+  }
 
-    getWorkoutLogByProgrmIdAndRoutineIdAndIterationId(programId: string, routineId: string, iterationId: string): Observable<WorkoutLog[]> {
+  getWorkoutLogByProgramId(programId: string): Observable<WorkoutLog[]> {
+    if (!programId) return of([]);
+    return this.workoutLogs$.pipe(
+      map(allLogs =>
+        allLogs.filter(log => {
+          return (log.programId === programId);
+        })
+      )
+    );
+  }
+
+  getWorkoutLogByProgrmIdAndRoutineIdAndIterationId(programId: string, routineId: string, iterationId: string): Observable<WorkoutLog[]> {
     if (!programId || !routineId) return of([]);
     return this.workoutLogs$.pipe(
       map(allLogs =>
@@ -787,7 +825,7 @@ export class TrackingService {
         })
       )
     );
-  } 
+  }
 
 
   /**
@@ -855,8 +893,8 @@ export class TrackingService {
         );
 
         const allScheduledDays = program.programType === 'linear'
-            ? program.weeks?.flatMap(w => w.schedule) ?? []
-            : program.schedule;
+          ? program.weeks?.flatMap(w => w.schedule) ?? []
+          : program.schedule;
 
         allScheduledDays.forEach(day => {
           // For each scheduled day, check if its unique ID is in our lookup Set.
@@ -876,4 +914,56 @@ export class TrackingService {
       shareReplay(1)
     );
   }
+
+  /**
+* Generates a new iteration ID (e.g., '#2') for a given program.
+* It does this by finding the highest existing iteration ID among all logs
+* for that program and incrementing it. If no logs exist, it starts with '#1'.
+* @param programId The ID of the program to generate an iteration for.
+* @returns An Observable that emits the new iteration ID string.
+*/
+  generateIterationId(programId: string): Observable<string> {
+    // If there's no programId, we can't look anything up. Return '#1' by default.
+    if (!programId) {
+      return of('#1');
+    }
+
+    const programLogs$ = this.getWorkoutLogByProgramId(programId);
+
+    return programLogs$.pipe(
+      map(logs => {
+        // If there are no logs for this program, the first iteration is #1.
+        if (!logs || logs.length === 0) {
+          return '#1';
+        }
+
+        // Use reduce to find the highest iteration number in the array of logs.
+        const maxIteration = logs.reduce((currentMax, log) => {
+          // We only care about logs that have a valid iterationId string.
+          if (log.iterationId && typeof log.iterationId === 'string' && log.iterationId.startsWith('#')) {
+
+            // Parse the number from the string (e.g., '#3' -> 3).
+            // Use substring(1) to strip the '#' character.
+            const iterationNum = parseInt(log.iterationId.substring(1), 10);
+
+            // If parsing was successful and this log's iteration is higher than our current max,
+            // it becomes the new max.
+            if (!isNaN(iterationNum) && iterationNum > currentMax) {
+              return iterationNum;
+            }
+          }
+
+          // Otherwise, the max remains unchanged for this iteration.
+          return currentMax;
+        }, 0); // The initial value for 'currentMax' is 0.
+
+        // The new iteration is the highest one we found, plus one.
+        const nextIterationNum = maxIteration + 1;
+
+        // Format the result as a string and return it.
+        return `#${nextIterationNum}`;
+      })
+    );
+  }
+
 }

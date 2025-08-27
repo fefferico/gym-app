@@ -280,7 +280,7 @@
                       <strong
                         class="text-primary dark:text-primary-light truncate max-w-[150px] sm:max-w-xs inline-block align-bottom hover:cursor-pointer hover:underline"
                         [title]="'Go to program ' + activeProgram.name" appPress
-                        (shortPress)="viewProgramDetails(activeProgram.id)">{{ activeProgram.name }}</strong>
+                        (shortPress)="viewProgramDetails(activeProgram.id)">{{ activeProgram.name }}<span> {{ activeProgram.iterationId}}</span></strong>
 
                       <!-- This span will appear only for linear programs and when a valid week is found for the viewDate -->
                       <span *ngIf="displayedWeekInfo() as weekInfo" class="ml-1">

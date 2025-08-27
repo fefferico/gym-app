@@ -1,5 +1,5 @@
 // src/app/core/services/training-program.service.ts
-import { Injectable, inject } from '@angular/core';
+import { Injectable, Injector, inject } from '@angular/core';
 import { BehaviorSubject, Observable, combineLatest, firstValueFrom, of } from 'rxjs';
 import { map, shareReplay, switchMap, take, tap } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
@@ -15,6 +15,7 @@ import { isSameDay, getDay, eachDayOfInterval, parseISO, differenceInDays, start
 // +++ 1. IMPORT THE STATIC PROGRAMS DATA +++
 import { PROGRAMS_DATA } from './programs-data';
 import { WorkoutLog } from '../models/workout-log.model';
+import { TrackingService } from './tracking.service';
 
 @Injectable({
   providedIn: 'root'
@@ -24,6 +25,8 @@ export class TrainingProgramService {
   private workoutService = inject(WorkoutService);
   private alertService = inject(AlertService);
   private toastService = inject(ToastService);
+  // private trackingService = inject(TrackingService);
+  private injector = inject(Injector);
 
   private readonly PROGRAMS_STORAGE_KEY = 'fitTrackPro_trainingPrograms';
 
@@ -32,6 +35,14 @@ export class TrainingProgramService {
 
   private isLoadingProgramsSubject = new BehaviorSubject<boolean>(true);
   public isLoadingPrograms$: Observable<boolean> = this.isLoadingProgramsSubject.asObservable();
+
+  private _trackingService: TrackingService | undefined;
+  private get trackingService(): TrackingService {
+    if (!this._trackingService) {
+      this._trackingService = this.injector.get(TrackingService);
+    }
+    return this._trackingService;
+  }
 
   constructor() {
     this.isLoadingProgramsSubject.next(true);
@@ -428,7 +439,7 @@ export class TrainingProgramService {
             if (targetWeek) {
               const dayOfWeek = getDay(currentDate);
               const scheduledDay = targetWeek.schedule.find(s => s.dayOfWeek === dayOfWeek);
-              if (scheduledDay) {
+              if (scheduledDay && program.iterationId === scheduledDay.iterationId) {
                 allOccurrences.push({ date: currentDate, scheduledDayInfo: scheduledDay });
               }
             }
@@ -773,7 +784,8 @@ export class TrainingProgramService {
       //   }
       // });
 
-      const newHistoryEntryId = uuidv4();
+      const newHistoryEntryId = await firstValueFrom(this.trackingService.generateIterationId(programId));
+
       targetProgram.iterationId = newHistoryEntryId;
       const newHistoryEntry: TrainingProgramHistoryEntry = {
         id: newHistoryEntryId,

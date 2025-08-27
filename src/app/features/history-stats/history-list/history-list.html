@@ -99,7 +99,7 @@
 
                   <div *ngIf="item.programId"
                     class="my-2 text-xs font-semibold text-white bg-primary rounded-md p-1 flex-shrink w-fit">
-                    Program: {{ item.programName }}
+                    Program: {{ item.programName }} {{ item.iterationId}}
                     <ng-container *ngIf="item.weekName"> - {{ item.weekName }}</ng-container>
                     <ng-container *ngIf="item.dayName"> - {{ item.dayName }}</ng-container>
                   </div>

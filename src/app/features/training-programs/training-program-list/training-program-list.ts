@@ -520,6 +520,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
         // The service method should handle setting the new active program,
         // updating isActive flags on all programs, and emitting the updated list.
         await this.trainingProgramService.toggleProgramActivation(programId, 'active');
+        this.toastService.success("Program activated", 0, "Error");
       } catch (error) { this.toastService.error("Failed to set active program", 0, "Error"); }
       finally { this.spinnerService.hide(); }
     } catch (error) {
@@ -913,7 +914,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
   }
   startScheduledWorkout(routineId: string | undefined, programId: string | undefined, scheduledDayId: string | undefined): void {
     if (routineId) {
-      this.workoutService.navigateToPlayer(routineId, { queryParams: { programId, scheduledDayId }});
+      this.workoutService.navigateToPlayer(routineId, { queryParams: { programId, scheduledDayId } });
       this.selectCalendarDay(null);
     }
   }
