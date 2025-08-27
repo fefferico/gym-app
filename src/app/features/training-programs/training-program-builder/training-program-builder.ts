@@ -148,6 +148,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
             programNotes: [''],
             startDate: [null],
             cycleLength: [null, [Validators.min(1)]],
+            iterationId: [null],
             schedule: this.fb.array([]), // For 'cycled' programs
             weeks: this.fb.array([])      // For 'linear' programs
         });
@@ -447,6 +448,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
             startDate: program.startDate ? new Date(program.startDate).toISOString().split('T')[0] : null,
             // endDate: program.endDate ? new Date(program.endDate).toISOString().split('T')[0] : null,
             cycleLength: program.cycleLength ?? null,
+            iterationId: program.iterationId ?? null,
             programType: program.programType || 'cycled', // Default to 'cycled' for old data
 
         });
@@ -673,6 +675,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
             description: formValue.description,
             programNotes: formValue.programNotes,
             startDate: formValue.startDate || null,
+            iterationId: formValue.iterationId || null,
             cycleLength: formValue.programType === 'cycled' ? (formValue.cycleLength || null) : null,
             schedule: formValue.schedule.map((s: ScheduledRoutineDay) => ({
                 id: s.id || uuidv4(),

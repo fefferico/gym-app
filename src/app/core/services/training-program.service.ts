@@ -735,7 +735,7 @@ export class TrainingProgramService {
       return {
         ...week,
         schedule: week.schedule.map(day => {
-          const { completionStatus, completedOnDate,workoutLogId, ...rest } = day;
+          const { completionStatus, completedOnDate, workoutLogId, ...rest } = day;
           return rest;
         })
       };
@@ -759,7 +759,7 @@ export class TrainingProgramService {
     const targetProgram = { ...currentPrograms[programIndex] } as TrainingProgram;
     targetProgram.history = Array.isArray(targetProgram.history) ? [...targetProgram.history] : [];
 
-    const activeEntryIndex = targetProgram.history.findIndex(h => h.status === 'active');
+    let activeEntryIndex = targetProgram.history.findIndex(h => h.status === 'active');
 
     if (status === 'active') {
       if (activeEntryIndex > -1) {
@@ -786,12 +786,24 @@ export class TrainingProgramService {
       targetProgram.history.push(newHistoryEntry);
       targetProgram.isActive = true;
       targetProgram.startDate = newHistoryEntry.startDate; // Update root start date
-      this.resetScheduleStatusCompletion(targetProgram, status,newHistoryEntryId);
+      this.resetScheduleStatusCompletion(targetProgram, status, newHistoryEntryId);
     } else { // 'completed' or 'cancelled'
-      // if (activeEntryIndex === -1) {
-      //   this.toastService.error(`Program "${targetProgram.name}" is not active and cannot be completed.`);
-      //   return;
-      // }
+      if (activeEntryIndex === -1) {
+        activeEntryIndex = targetProgram.history && targetProgram.history.length > 0 ? targetProgram.history.length - 1 : 0;
+        // add proper entry
+        const newHistoryEntryId = uuidv4();
+        const newHistoryEntry: TrainingProgramHistoryEntry = {
+          id: newHistoryEntryId,
+          programId: programId,
+          startDate: targetProgram.startDate ? targetProgram.startDate : this.generateNewDate(),
+          endDate: this.generateNewDate(),
+          status: status,
+          date: new Date().toISOString()
+        };
+        targetProgram.history.push(newHistoryEntry);
+        // this.toastService.error(`Program "${targetProgram.name}" is not active and cannot be completed.`);
+        // return;
+      }
       targetProgram.history[activeEntryIndex].status = status;
       targetProgram.history[activeEntryIndex].endDate = this.generateNewDate();
       targetProgram.isActive = false;
@@ -864,6 +876,6 @@ export class TrainingProgramService {
 
 
   generateNewDate(date?: string | Date): string {
-    return format(date? date : new Date(), 'yyyy-MM-dd');
+    return format(date ? date : new Date(), 'yyyy-MM-dd');
   }
 }

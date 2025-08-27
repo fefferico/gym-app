@@ -995,6 +995,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
         routineId: routineId,
         dayOfWeek: parseISO(groupedLogs[0].date).getDay(), // Get day of week from the log
         programId: activeProg.id,
+        programName: activeProg.name,
         // cycleDay: 0 // Not applicable, but required
       };
 

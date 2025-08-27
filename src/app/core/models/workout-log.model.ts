@@ -78,6 +78,7 @@ export interface WorkoutLog {
   // effortLevel?: number; // e.g., RPE 1-10
   // mood?: 'good' | 'average' | 'poor';
   programId?: string; // ID of the program this workout belongs to, if applicable
+  programName?: string;
 
    // +++ NEW PROPERTY TO LINK LOG TO THE SCHEDULE +++
   /** If part of a program, the ID of the specific ScheduledRoutineDay this log fulfills. */

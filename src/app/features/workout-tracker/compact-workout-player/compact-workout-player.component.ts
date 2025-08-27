@@ -36,6 +36,7 @@ import { MenuMode } from '../../../core/models/app-settings.model';
 import { AppSettingsService } from '../../../core/services/app-settings.service';
 import { FullScreenRestTimerComponent } from '../../../shared/components/full-screen-rest-timer/full-screen-rest-timer';
 import { PausedWorkoutState, PlayerSubState } from '../workout-player';
+import { TrainingProgram } from '../../../core/models/training-program.model';
 
 // Interface for saving the paused state
 
@@ -81,6 +82,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   private appSettingsService = inject(AppSettingsService);
 
   routine = signal<Routine | null | undefined>(undefined);
+  program = signal<TrainingProgram | null | undefined>(undefined);
+  scheduledDay = signal<string | undefined>(undefined);
   originalRoutineSnapshot = signal<Routine | null | undefined>(undefined);
   sessionState = signal<SessionState>(SessionState.Loading);
   sessionTimerDisplay = signal('00:00');
@@ -113,7 +116,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
   routineId: string | null = null;
   programId: string | null = null;
-  scheduledDay: string | null = null;
 
   currentWorkoutLog = signal<Partial<WorkoutLog>>({ exercises: [] });
 
@@ -199,7 +201,9 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       switchMap(ids => {
         this.routineId = ids.routineId;
         this.programId = ids.programId;
-        this.scheduledDay = ids.scheduledDayId;
+        if (ids.scheduledDayId){
+          this.scheduledDay.set(ids.scheduledDayId);
+        }
         return this.routineId ? this.workoutService.getRoutineById(this.routineId) : of(null);
       })
     ).subscribe(async (routine) => {
@@ -207,6 +211,9 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         this.routine.set(JSON.parse(JSON.stringify(routine)));
         this.originalRoutineSnapshot.set(JSON.parse(JSON.stringify(routine)));
         await this.prefillRoutineWithLastPerformance();
+        if (this.programId){
+          this.program.set(await firstValueFrom(this.trainingProgramService.getProgramById(this.programId)));
+        }
         this.startWorkout();
       } else {
         const emptyNewRoutine = {
@@ -260,7 +267,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     this.currentWorkoutLog.set({
       routineId: this.routineId ?? undefined,
       programId: this.programId ?? undefined,
-      scheduledDayId: this.scheduledDay ?? undefined,
+      scheduledDayId: this.scheduledDay() ?? undefined,
       routineName: this.routine()?.name,
       startTime: this.workoutStartTime,
       date: format(new Date(), 'yyyy-MM-dd'),
@@ -416,9 +423,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       log.exercises = log.exercises!.filter(ex => ex.sets.length > 0);
       if (log.startTime) {
         let iterationId: string | undefined = undefined;
-        if (this.programId) {
-          const program = await firstValueFrom(this.trainingProgramService.getProgramById(this.programId));
-          iterationId = program ? program.iterationId : undefined;
+        if (this.program()) {
+          iterationId = this.program() ? this.program()?.iterationId : undefined;
           log.iterationId = iterationId;
         }
 
@@ -823,6 +829,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       version: this.PAUSED_STATE_VERSION,
       routineId: this.routineId,
       programId: this.programId,
+      programName: this.program()?.name,
+      scheduledDayId: this.scheduledDay(),
       sessionRoutine: stringifiedRoutine, // Includes sessionStatus
       originalRoutineSnapshot: this.originalRoutineSnapshot() ? JSON.parse(JSON.stringify(this.originalRoutineSnapshot())) : stringifiedRoutine,
       currentExerciseIndex: this.expandedExerciseIndex() || 0,
@@ -847,18 +855,19 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   private async loadStateFromPausedSession(state: PausedWorkoutState): Promise<void> {
     this.routineId = state.routineId;
     this.programId = state.programId ? state.programId : null;
-    this.scheduledDay = state.scheduledDayId ? state.scheduledDayId : null;
+    this.scheduledDay.set(state.scheduledDayId ?? undefined);
     this.routine.set(state.sessionRoutine);
     this.workoutStartTime = state.workoutStartTimeOriginal || new Date().getTime();
     const loggedExercises = state.currentWorkoutLogExercises;
 
+    const startingTime = new Date().getTime() + state.sessionTimerElapsedSecondsBeforePause;
     if (state.currentWorkoutLogExercises) {
       this.currentWorkoutLog.set({
         routineId: this.routineId || '-1',
         programId: this.programId || '',
-        scheduledDayId: this.scheduledDay ?? undefined,
+        scheduledDayId: this.scheduledDay() ?? undefined,
         routineName: this.routine()?.name,
-        startTime: state.sessionTimerElapsedSecondsBeforePause,
+        startTime: startingTime,
         date: format(new Date(), 'yyyy-MM-dd'),
         exercises: loggedExercises,
       });
@@ -881,6 +890,10 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const routeRoutineId = this.route.snapshot.paramMap.get('routineId');
 
     if (pausedState) {
+      this.programId = pausedState.programId || null;
+      if (this.programId){
+        this.program.set(await firstValueFrom(this.trainingProgramService.getProgramById(this.programId)));
+      }
       if (pausedState.version === this.PAUSED_STATE_VERSION && pausedState.routineId === routeRoutineId) {
         await this.loadStateFromPausedSession(pausedState);
         return true;

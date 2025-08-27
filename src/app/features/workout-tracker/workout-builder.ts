@@ -96,6 +96,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   private routeSub: Subscription | undefined;
   private initialRoutineIdForLogEdit: string | null | undefined = undefined; // For log edit mode
   private initialProgramIdForLogEdit: string | null | undefined = undefined; // For log edit mode
+  private initialProgramIterationIdForLogEdit: string | null | undefined = undefined; // For log edit mode
+  private initialProgramScheduledIdForLogEdit: string | null | undefined = undefined; // For log edit mode
 
   isCompactView: boolean = true;
 
@@ -174,8 +176,9 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       // durationMinutes: [60, [Validators.min(1)]], // Only for manualLogEntry
       overallNotesLog: [''], // Only for manualLogEntry
       routineIdForLog: [''], // For selecting base routine in manualLogEntry
-      programIdForLog: [''], // For selecting base routine in manualLogEntry
-
+      programIdForLog: [''], // For selecting base program in manualLogEntry
+      iterationIdForLog: [''], // For selecting base program iteration in manualLogEntry
+      scheduledDayIdForLog: [''], // For selecting base program iteration in manualLogEntry
       exercises: this.fb.array([]), // Validated based on mode/goal
     });
   }
@@ -357,6 +360,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         overallNotesLog: '',
         routineIdForLog: '',
         programIdForLog: '',
+        iterationIdForLog: '',
+        scheduledDayIdForLog: '',
         exercises: []
       };
     } else { // routineBuilder
@@ -364,7 +369,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         name: '', description: '', goal: '',
         workoutDate: '', startTime: '', endTime: '',
         // durationMinutes: 60,
-        overallNotesLog: '', routineIdForLog: '', programIdForLog: '',
+        overallNotesLog: '', routineIdForLog: '', programIdForLog: '', iterationIdForLog: '',scheduledDayIdForLog:'',
         exercises: []
       };
     }
@@ -414,6 +419,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         this.builderForm.get('overallNotesLog')?.disable({ emitEvent: false });
         this.builderForm.get('routineIdForLog')?.disable({ emitEvent: false });
         this.builderForm.get('programIdForLog')?.disable({ emitEvent: false });
+        this.builderForm.get('iterationIdForLog')?.disable({ emitEvent: false });
+        this.builderForm.get('scheduledDayIdForLog')?.disable({ emitEvent: false });
       } else { // manualLogEntry
         // Name field is used for WorkoutLog's title, so it should be enabled or prefilled
         // this.builderForm.get('name')?.enable({ emitEvent: false });
@@ -422,6 +429,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
         if (this.checkIfLogForProgram()) {
           this.builderForm.get('programIdForLog')?.disable();
+          this.builderForm.get('iterationIdForLog')?.disable();
+          this.builderForm.get('scheduledDayIdForLog')?.disable();
           this.builderForm.get('workoutDate')?.disable();
           this.builderForm.get('routineIdForLog')?.disable();
         }
@@ -527,6 +536,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   patchFormWithLogData(log: WorkoutLog): void {
     this.initialRoutineIdForLogEdit = log.routineId;
     this.initialProgramIdForLogEdit = log.programId;
+    this.initialProgramIterationIdForLogEdit = log.iterationId;
+    this.initialProgramScheduledIdForLogEdit = log.scheduledDayId;
     this.builderForm.patchValue({
       name: log.routineName || 'Logged Workout',
       workoutDate: format(parseISO(log.date), 'yyyy-MM-dd'),
@@ -540,6 +551,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       overallNotesLog: log.notes || '',
       routineIdForLog: log.routineId || '',
       programIdForLog: log.programId || '',
+      iterationIdForLog: log.iterationId || '',
+      scheduledDayIdForLog: log.scheduledDayId || '',
     }, { emitEvent: false });
 
     this.exercisesFormArray.clear({ emitEvent: false });
@@ -1321,8 +1334,10 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
             (formValue.name || 'Ad-hoc Workout'), // Use form 'name' as log title if no routine
           programId: formValue.programIdForLog || undefined,
           notes: formValue.overallNotesLog, // Overall log notes
-          exercises: logExercises
-        };
+          exercises: logExercises,
+          iterationId: formValue.iterationIdForLog || undefined,
+          scheduledDayId: formValue.scheduledDayIdForLog || undefined,
+        } as WorkoutLog;
 
         if (this.isEditMode && this.currentLogId) {
           const updatedLog: WorkoutLog = { ...logPayloadBase, id: this.currentLogId };

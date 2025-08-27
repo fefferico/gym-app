@@ -16,6 +16,7 @@ export interface ScheduledRoutineDay {
   routineId: string;
   /** ID of the Program this schedule entry belongs to. */
   programId: string;
+  programName?: string;
   /** Denormalized routine name for easier display. */
   routineName?: string;
   /** Specific notes for this day within the program. */

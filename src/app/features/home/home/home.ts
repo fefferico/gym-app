@@ -35,11 +35,13 @@ export class HomeComponent implements OnInit {
   // Signal to hold information about a paused/active workout
   pausedWorkoutInfo = signal<PausedWorkoutState | null>(null);
   pausedRoutineName = signal<string>('your workout'); // Default name
+  pausedProgramName = signal<string>(''); // Default name
 
   constructor() {
     // Effect to update pausedRoutineName when pausedWorkoutInfo changes
     effect(() => {
       const pausedInfo = this.pausedWorkoutInfo();
+      this.pausedProgramName.set(pausedInfo?.programName || '');
       if (pausedInfo && pausedInfo.sessionRoutine && pausedInfo.sessionRoutine.name) {
         this.pausedRoutineName.set(pausedInfo.sessionRoutine.name);
       } else if (pausedInfo && pausedInfo.routineId) {

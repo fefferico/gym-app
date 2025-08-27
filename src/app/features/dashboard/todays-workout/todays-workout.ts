@@ -56,7 +56,7 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
 
   private sanitizer = inject(DomSanitizer);
 
-  loggedStatusMap = signal<Map<string, boolean>>(new Map());
+  combinedStatusMap = signal<Map<string, boolean>>(new Map());
 
 
 
@@ -90,150 +90,159 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
     return `${year}-${month}-${day}`;
   };
 
-  ngOnInit(): void {
-    this.currentDate$.pipe(
-      tap(() => this.isLoading.set(true)),
-      switchMap(date =>
-        // 1. Start with the active programs as the primary driver
-        this.trainingProgramService.getActivePrograms().pipe(
-          switchMap(activePrograms => {
-            // 2. If there are no active programs, we can simplify the data fetching
-            if (!activePrograms || activePrograms.length === 0) {
-              return combineLatest([
-                this.trackingService.getLogsForDate(this.formatDate(date)),
-                this.workoutService.routines$.pipe(take(1)),
-                this.trainingProgramService.programs$.pipe(take(1))
-              ]).pipe(
-                map(([logs, routines, allPrograms]) => ({
-                  activePrograms: [],
-                  logs: logs || [],
-                  routines,
-                  allPrograms,
-                  statusMap: new Map<string, boolean>() // Empty map
-                }))
-              );
-            }
-
-            // 3. If there ARE active programs, create an observable for each program's status map
-            const statusMapObservables = activePrograms.map(p =>
-              this.trackingService.getScheduledDaysLoggedStatus(p.id)
-            );
-
-            // 4. Combine all data sources together
+ngOnInit(): void {
+  this.currentDate$.pipe(
+    tap(() => this.isLoading.set(true)),
+    switchMap(date =>
+      // 1. Start with the active programs as the primary driver
+      this.trainingProgramService.getActivePrograms().pipe(
+        switchMap(activePrograms => {
+          // 2. If there are no active programs, we can simplify the data fetching
+          if (!activePrograms || activePrograms.length === 0) {
             return combineLatest([
-              of(activePrograms),
               this.trackingService.getLogsForDate(this.formatDate(date)),
               this.workoutService.routines$.pipe(take(1)),
-              this.trainingProgramService.programs$.pipe(take(1)),
-              // This will emit an array of maps, one for each active program
-              combineLatest(statusMapObservables)
+              this.trainingProgramService.programs$.pipe(take(1))
             ]).pipe(
-              map(([programs, logs, routines, allPrograms, statusMapArrays]) => {
-                // 5. Merge the array of maps into a single, convenient map for easy lookups
-                const combinedStatusMap = new Map<string, boolean>();
-                statusMapArrays.forEach((statusMap, index) => {
-                  const program = programs[index];
-                  if (program && program.iterationId) {
-                    statusMap.forEach((isLogged, scheduledDayId) => {
-                      // Use a composite key to uniquely identify a scheduled day within a specific program iteration
-                      const compositeKey = `${scheduledDayId}-${program.iterationId}`;
-
-                      combinedStatusMap.set(compositeKey, isLogged);
-                    });
-                  }
-                });
-                return {
-                  activePrograms: programs,
-                  logs: logs || [],
-                  routines,
-                  allPrograms,
-                  statusMap: combinedStatusMap
-                };
-              })
+              map(([logs, routines, allPrograms]) => ({
+                activePrograms: [],
+                logs: logs || [],
+                routines,
+                allPrograms,
+                statusMap: new Map<string, boolean>() // Empty map
+              }))
             );
-          }),
-          // 6. Process the combined data to build the final state for the view
-          switchMap(({ activePrograms, logs, routines, allPrograms, statusMap }) => {
-            const enrichedLogs$ = (logs && logs.length > 0)
-              ? forkJoin(logs.map(log =>
-                combineLatest([
-                  this.trainingProgramService.getWeekNameForLog(log),
-                  this.trainingProgramService.getDayOfWeekForLog(log)
-                ]).pipe(
-                  take(1),
-                  map(([weekName, dayInfo]) => ({ ...log, weekName, dayName: dayInfo?.dayName || null }))
-                )
-              ))
-              : of([]);
+          }
 
-            const workoutObservables$: Observable<{ routine: Routine, scheduledDayInfo: ScheduledRoutineDay } | null>[] = [];
-            if (activePrograms) {
-              for (const prog of activePrograms) {
-                const routineData = this.trainingProgramService.findRoutineForDayInProgram(date, prog);
-                if (routineData && prog.startDate && parseISO(prog.startDate) <= date) {
-                  routineData.scheduledDayInfo.iterationId = prog.iterationId;
-                  workoutObservables$.push(of(routineData));
+          // 3. If there ARE active programs, create an observable for each program's status map
+          const statusMapObservables = activePrograms.map(p =>
+            this.trackingService.getScheduledDaysLoggedStatus(p.id)
+          );
+
+          // 4. Combine all data sources together
+          return combineLatest([
+            of(activePrograms),
+            this.trackingService.getLogsForDate(this.formatDate(date)),
+            this.workoutService.routines$.pipe(take(1)),
+            this.trainingProgramService.programs$.pipe(take(1)),
+            // This will emit an array of maps, one for each active program
+            combineLatest(statusMapObservables)
+          ]).pipe(
+            map(([programs, logs, routines, allPrograms, statusMapArrays]) => {
+              // 5. Merge the array of maps into a single, convenient map for easy lookups
+              const combinedStatusMap = new Map<string, boolean>();
+              statusMapArrays.forEach((statusMap, index) => {
+                const program = programs[index];
+                if (program && program.iterationId) {
+                  statusMap.forEach((isLogged, scheduledDayId) => {
+                    // Use a composite key to uniquely identify a scheduled day within a specific program iteration
+                    const compositeKey = `${scheduledDayId}-${program.iterationId}`;
+                    combinedStatusMap.set(compositeKey, isLogged);
+                  });
                 }
+              });
+              return {
+                activePrograms: programs,
+                logs: logs || [],
+                routines,
+                allPrograms,
+                statusMap: combinedStatusMap
+              };
+            })
+          );
+        }),
+        // 6. Process the combined data to build the final state for the view
+        switchMap(({ activePrograms, logs, routines, allPrograms, statusMap }) => {
+          const enrichedLogs$ = (logs && logs.length > 0)
+            ? forkJoin(logs.map(log =>
+              combineLatest([
+                this.trainingProgramService.getWeekNameForLog(log),
+                this.trainingProgramService.getDayOfWeekForLog(log),
+                // **FIX:** Fetch the program details here to get the name
+                log.programId ? this.trainingProgramService.getProgramById(log.programId) : of(null)
+              ]).pipe(
+                take(1),
+                map(([weekName, dayInfo, program]) => ({
+                  ...log,
+                  weekName,
+                  dayName: dayInfo?.dayName || null,
+                  programName: program?.name || log.programName || null
+                }))
+              )
+            ))
+            : of([]);
+
+          const workoutObservables$: Observable<{ routine: Routine, scheduledDayInfo: ScheduledRoutineDay } | null>[] = [];
+          if (activePrograms) {
+            for (const prog of activePrograms) {
+              const routineData = this.trainingProgramService.findRoutineForDayInProgram(date, prog);
+              if (routineData && prog.startDate && parseISO(prog.startDate) <= date) {
+                routineData.scheduledDayInfo.iterationId = prog.iterationId;
+                routineData.scheduledDayInfo.programName = prog.name;
+                workoutObservables$.push(of(routineData));
               }
             }
-            const scheduledWorkouts$ = workoutObservables$.length > 0 ? forkJoin(workoutObservables$) : of([]);
+          }
+          const scheduledWorkouts$ = workoutObservables$.length > 0 ? forkJoin(workoutObservables$) : of([]);
 
-            return combineLatest([enrichedLogs$, scheduledWorkouts$]).pipe(
-              map(([enrichedLogs, scheduledWorkoutsResult]) => {
-                const allRoutinesMap = new Map(routines.map((r: Routine) => [r.id, r]));
+          return combineLatest([enrichedLogs$, scheduledWorkouts$]).pipe(
+            map(([enrichedLogs, scheduledWorkoutsResult]) => {
+              const allRoutinesMap = new Map(routines.map((r: Routine) => [r.id, r]));
 
-                const allWorkoutsForDay = (scheduledWorkoutsResult || [])
-                  .filter((data): data is { routine: Routine, scheduledDayInfo: ScheduledRoutineDay } => !!data)
-                  .map(data => ({ ...data, scheduledDayInfo: { ...data.scheduledDayInfo, isUnscheduled: false } }));
+              const allWorkoutsForDay = (scheduledWorkoutsResult || [])
+                .filter((data): data is { routine: Routine, scheduledDayInfo: ScheduledRoutineDay } => !!data)
+                .map(data => ({ ...data, scheduledDayInfo: { ...data.scheduledDayInfo, isUnscheduled: false } }));
 
-                const scheduledRoutineIds = new Set(allWorkoutsForDay.map(w => w.routine.id));
+              const scheduledRoutineIds = new Set(allWorkoutsForDay.map(w => w.routine.id));
 
-                const unscheduledLogs = (enrichedLogs ?? []).filter(log =>
-                  log.programId &&
-                  (activePrograms || []).some(p => p.id === log.programId) &&
-                  log.routineId &&
-                  !scheduledRoutineIds.has(log.routineId)
-                );
+              const unscheduledLogs = (enrichedLogs ?? []).filter(log =>
+                log.programId &&
+                (activePrograms || []).some(p => p.id === log.programId) &&
+                log.routineId &&
+                !scheduledRoutineIds.has(log.routineId)
+              );
 
-                for (const log of unscheduledLogs) {
-                  const routine = allRoutinesMap.get(log.routineId!);
-                  if (routine) {
-                    allWorkoutsForDay.push({
-                      routine,
-                      scheduledDayInfo: {
-                        id: log.scheduledDayId || uuidv4(), // Use the logged scheduledDayId
-                        routineId: routine.id, dayOfWeek: date.getDay(),
-                        programId: log.programId!, isUnscheduled: true,
-                        iterationId: log.iterationId
-                      }
-                    });
-                  }
+              for (const log of unscheduledLogs) {
+                const routine = allRoutinesMap.get(log.routineId!);
+                if (routine) {
+                  allWorkoutsForDay.push({
+                    routine,
+                    scheduledDayInfo: {
+                      id: log.scheduledDayId || uuidv4(),
+                      routineId: routine.id, dayOfWeek: date.getDay(),
+                      programId: log.programId!, isUnscheduled: true,
+                      // **FIX:** Now you can safely access the programName from the enriched log
+                      programName: log.programName || '',
+                      iterationId: log.iterationId
+                    }
+                  });
                 }
+              }
 
-                return {
-                  allActivePrograms: activePrograms,
-                  routineData: allWorkoutsForDay,
-                  logsForDay: enrichedLogs,
-                  allAvailablePrograms: allPrograms,
-                  statusMap: statusMap
-                };
-              })
-            );
-          })
-        )
-      ),
-      takeUntil(this.destroy$)
-    ).subscribe(state => {
-      if (state) {
-        this.allActivePrograms.set(state.allActivePrograms);
-        this.availablePrograms.set(state.allAvailablePrograms);
-        this.todaysScheduledWorkouts.set(state.routineData);
-        this.logsForDay.set(state.logsForDay as EnrichedWorkoutLog[] ?? []);
-        this.loggedStatusMap.set(state.statusMap);
-        this.isLoading.set(false);
-      }
-    });
-  }
+              return {
+                allActivePrograms: activePrograms,
+                routineData: allWorkoutsForDay,
+                logsForDay: enrichedLogs,
+                allAvailablePrograms: allPrograms,
+                statusMap: statusMap
+              };
+            })
+          );
+        })
+      )
+    ),
+    takeUntil(this.destroy$)
+  ).subscribe(state => {
+    if (state) {
+      this.allActivePrograms.set(state.allActivePrograms);
+      this.availablePrograms.set(state.allAvailablePrograms);
+      this.todaysScheduledWorkouts.set(state.routineData);
+      this.logsForDay.set(state.logsForDay as EnrichedWorkoutLog[] ?? []);
+      this.combinedStatusMap.set(state.statusMap);
+      this.isLoading.set(false);
+    }
+  });
+}
 
   /**
   * Helper function for the template to check if a specific scheduled workout has been logged.
@@ -249,16 +258,17 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
     // For scheduled items, we must have an iterationId to form the unique key.
     if (scheduledDayInfo.iterationId) {
       const compositeKey = `${scheduledDayInfo.id}-${scheduledDayInfo.iterationId}`;
-      return this.loggedStatusMap().get(compositeKey) ?? false;
+      return this.combinedStatusMap().get(compositeKey) ?? false;
     }
 
     // Fallback for any other case, though scheduled items should always have an iterationId.
     return false;
   }
 
-  isProgramWorkoutLogged(scheduledId: string): boolean {
-    const scheduledIds = this.todaysScheduledWorkouts().map(info => { return info.scheduledDayInfo.iterationId });
-    return scheduledIds && scheduledIds.some(entry => entry === scheduledId);
+  isProgramWorkoutLogged(scheduledDayInfo: ScheduledRoutineDay): boolean {
+    const iterationIds = this.todaysScheduledWorkouts().map(info => { return info.scheduledDayInfo.iterationId });
+    const scheduledIds = this.todaysScheduledWorkouts().map(info => { return info.scheduledDayInfo.id });
+    return this.logsForDay() && iterationIds && this.logsForDay().find(entry => entry.iterationId === scheduledDayInfo.iterationId && entry.scheduledDayId === scheduledDayInfo.id) !== undefined;
   }
 
   ngAfterViewInit(): void {

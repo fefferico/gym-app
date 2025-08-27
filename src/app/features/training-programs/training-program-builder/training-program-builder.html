@@ -195,6 +195,14 @@
                         Total days in the cycle, including rest. Leave blank for a standard week.
                     </p>
                 </div>
+                <div>
+                    <label for="iterationId"
+                        class="block text-sm font-medium text-gray-700 dark:text-gray-300">Based on Program Iteration
+                        (Optional: EDIT IF YOU ONLY KNOW WHAT YOU ARE DOING)</label>
+                    <input type="text" id="iterationId" formControlName="iterationId"
+                        placeholder=""
+                        class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200">
+                </div>
             </div>
             <div *ngIf="programForm.get('programNotes')?.value || isEditableMode()">
                 <label for="programNotes" class="block text-sm font-medium text-gray-700 dark:text-gray-300">General
