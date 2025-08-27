@@ -45,6 +45,7 @@
     "@angular/build": "^20.0.0",
     "@angular/cli": "^20.0.0",
     "@angular/compiler-cli": "^20.0.0",
+    "@angular/localize": "^20.2.1",
     "@tailwindcss/line-clamp": "^0.4.4",
     "@types/d3": "^7.4.3",
     "@types/express": "^5.0.1",

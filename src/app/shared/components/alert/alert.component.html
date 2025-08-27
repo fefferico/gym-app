@@ -10,13 +10,13 @@
     [ngClass]="options.customCssClass" (click)="$event.stopPropagation()" (keydown.enter)="handleEnterPress()">
 
     <!-- +++ 2. Scrollable content wrapper +++ -->
-    <div *ngIf="options.header && options.message" class="p-6 pb-4 flex-shrink-0">
+    <div *ngIf="options.header || options.message" class="p-6 pb-4 flex-shrink-0">
       <header *ngIf="options.header" class="mb-4">
         <h3 class="text-xl font-semibold text-gray-800 dark:text-gray-100">{{ options.header | uppercase}}</h3>
       </header>
 
       <main *ngIf="options.message || (options.inputs && options.inputs.length > 0)">
-        <p *ngIf="options.message" class="text-m text-gray-600 dark:text-gray-300 whitespace-pre-wrap mb-3">{{
+        <p *ngIf="options.message" class="text-m text-gray-600 dark:text-gray-300 mb-3">{{
           options.message }}</p>
 
         <ul *ngIf="options.listItems && options.listItems.length > 0"

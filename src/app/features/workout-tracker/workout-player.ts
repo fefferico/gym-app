@@ -58,6 +58,8 @@ export interface HIITInterval {
 export interface PausedWorkoutState {
   version: string;
   routineId: string | null;
+  programId?: string | null;
+  scheduledDayId?: string | null;
   sessionRoutine: Routine; // Routine object, its exercises will have sessionStatus
   originalRoutineSnapshot?: WorkoutExercise[]; // Snapshot of the *original* routine's exercises if one was loaded
   currentExerciseIndex: number;
@@ -67,15 +69,15 @@ export interface PausedWorkoutState {
   sessionTimerElapsedSecondsBeforePause: number;
   currentBlockRound: number;
   totalBlockRounds: number;
-  timedSetTimerState: TimedSetState;
-  timedSetElapsedSeconds: number;
+  timedSetTimerState?: TimedSetState;
+  timedSetElapsedSeconds?: number;
   isResting: boolean;
   isRestTimerVisibleOnPause: boolean;
-  restTimerRemainingSecondsOnPause: number;
-  restTimerInitialDurationOnPause: number;
-  restTimerMainTextOnPause: string;
+  restTimerRemainingSecondsOnPause?: number;
+  restTimerInitialDurationOnPause?: number;
+  restTimerMainTextOnPause?: string;
   restTimerNextUpTextOnPause: string | null;
-  lastPerformanceForCurrentExercise: LastPerformanceSummary | null;
+  lastPerformanceForCurrentExercise?: LastPerformanceSummary | null;
   workoutDate: string; // Date of the workout when paused
   // --- NEW: TABATA RESUME FIELDS ---
   isTabataMode?: boolean;
@@ -97,7 +99,7 @@ enum TimedSetState {
   Paused = 'paused',
 }
 
-enum PlayerSubState {
+export enum PlayerSubState {
   PerformingSet = 'performing_set',
   PresetCountdown = 'preset_countdown',
   Resting = 'resting'
@@ -220,7 +222,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   private restTimerNextUpTextOnPause: string | null = null;
   private wasTimedSetRunningOnPause = false;
   private autoSaveSub: Subscription | undefined;
-  private readonly AUTO_SAVE_INTERVAL_MS = 8000;
+  private readonly AUTO_SAVE_INTERVAL_MS = 4000;
   private isSessionConcluded = false;
   private routerEventsSub: Subscription | undefined;
   private isInitialLoadComplete = false;
@@ -771,33 +773,33 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     return { majorDifference, details };
   }
 
-  getFirstExerciseOfSuperset(superSetOrder: number ,supersetId: string, loggedExercises: LoggedWorkoutExercise[]): ExerciseSetParams {
+  getFirstExerciseOfSuperset(superSetOrder: number, supersetId: string, loggedExercises: LoggedWorkoutExercise[]): ExerciseSetParams {
     const exercise = loggedExercises.find(ex => ex.supersetId && ex.supersetId === supersetId);
     const exerciseSet = exercise?.sets[0];
     return {
       id: uuidv4(), // New ID for the routine template set
-            reps: exerciseSet && exerciseSet.targetReps ? exerciseSet.repsAchieved : 1, 
-            weight: exerciseSet && exerciseSet.weightUsed ? exerciseSet.weightUsed : 1, 
-            duration: exerciseSet && exerciseSet.targetDuration ? exerciseSet.targetDuration : 0, 
-            tempo: '1', 
-            restAfterSet: superSetOrder !== null && superSetOrder !== undefined && exercise && exercise.supersetSize && superSetOrder < exercise.supersetSize - 1 ? 0 : this.getLastExerciseOfSuperset(supersetId, loggedExercises).restAfterSet, 
-            notes: exerciseSet && exerciseSet.notes ? exerciseSet.notes : '', 
-            type: exerciseSet && exerciseSet.type ? 'superset' : 'standard', 
+      reps: exerciseSet && exerciseSet.targetReps ? exerciseSet.repsAchieved : 1,
+      weight: exerciseSet && exerciseSet.weightUsed ? exerciseSet.weightUsed : 1,
+      duration: exerciseSet && exerciseSet.targetDuration ? exerciseSet.targetDuration : 0,
+      tempo: '1',
+      restAfterSet: superSetOrder !== null && superSetOrder !== undefined && exercise && exercise.supersetSize && superSetOrder < exercise.supersetSize - 1 ? 0 : this.getLastExerciseOfSuperset(supersetId, loggedExercises).restAfterSet,
+      notes: exerciseSet && exerciseSet.notes ? exerciseSet.notes : '',
+      type: exerciseSet && exerciseSet.type ? 'superset' : 'standard',
     };
   }
 
-    getLastExerciseOfSuperset(supersetId: string, loggedExercises: LoggedWorkoutExercise[]): ExerciseSetParams {
-      const exercise = loggedExercises.find(ex => ex.supersetId && ex.supersetId === supersetId);
-      const exerciseSet = exercise?.sets[exercise.sets.length-1];
+  getLastExerciseOfSuperset(supersetId: string, loggedExercises: LoggedWorkoutExercise[]): ExerciseSetParams {
+    const exercise = loggedExercises.find(ex => ex.supersetId && ex.supersetId === supersetId);
+    const exerciseSet = exercise?.sets[exercise.sets.length - 1];
     return {
       id: uuidv4(), // New ID for the routine template set
-            reps: exerciseSet && exerciseSet.targetReps ? exerciseSet.targetReps : 1, 
-            weight: exerciseSet && exerciseSet.targetWeight ? exerciseSet.targetWeight : 1, 
-            duration: exerciseSet && exerciseSet.targetDuration ? exerciseSet.targetDuration : 1, 
-            tempo: '1', 
-            restAfterSet: exerciseSet && exerciseSet.targetRestAfterSet ? exerciseSet.targetRestAfterSet : 60, 
-            notes: exerciseSet && exerciseSet.notes ? exerciseSet.notes : '', 
-            type: exerciseSet && exerciseSet.type ? 'superset' : 'standard', 
+      reps: exerciseSet && exerciseSet.targetReps ? exerciseSet.targetReps : 1,
+      weight: exerciseSet && exerciseSet.targetWeight ? exerciseSet.targetWeight : 1,
+      duration: exerciseSet && exerciseSet.targetDuration ? exerciseSet.targetDuration : 1,
+      tempo: '1',
+      restAfterSet: exerciseSet && exerciseSet.targetRestAfterSet ? exerciseSet.targetRestAfterSet : 60,
+      notes: exerciseSet && exerciseSet.notes ? exerciseSet.notes : '',
+      type: exerciseSet && exerciseSet.type ? 'superset' : 'standard',
     };
   }
 
@@ -1235,6 +1237,13 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       }
     }
 
+    const currentExercisesLength = this.currentWorkoutLogExercises().length;
+
+    if (currentExercisesLength === 0) {
+      this.forceStartOnEmptyWorkout();
+      return;
+    }
+
     const endCurrentWorkout = await this.alertService.showConfirmationDialog(
       `Continue or End`,
       'The current session is finished! Would you like to add a new exercise or complete it?',
@@ -1557,13 +1566,13 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         //     restAfterSet: plannedSetForSuggestions.restAfterSet || 0
         //   };
         // } else {
-          finalSetParamsForSession = {
-            ...plannedSetForSuggestions,
-            reps: plannedSetForSuggestions.reps || 0,
-            weight: plannedSetForSuggestions.weight || 0,
-            duration: plannedSetForSuggestions.duration || 0,
-            restAfterSet: plannedSetForSuggestions.restAfterSet || 0
-          };
+        finalSetParamsForSession = {
+          ...plannedSetForSuggestions,
+          reps: plannedSetForSuggestions.reps || 0,
+          weight: plannedSetForSuggestions.weight || 0,
+          duration: plannedSetForSuggestions.duration || 0,
+          restAfterSet: plannedSetForSuggestions.restAfterSet || 0
+        };
         // }
       }
     }
@@ -2214,16 +2223,22 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     this.currentBlockRound.set(state.currentBlockRound);
     this.totalBlockRounds.set(state.totalBlockRounds);
 
-    this.timedSetTimerState.set(state.timedSetTimerState);
-    this.timedSetElapsedSeconds.set(state.timedSetElapsedSeconds);
+    if (state.timedSetTimerState){
+      this.timedSetTimerState.set(state.timedSetTimerState);
+    }
+    if (state.timedSetElapsedSeconds){
+      this.timedSetElapsedSeconds.set(state.timedSetElapsedSeconds);
+    }
     this.wasTimedSetRunningOnPause = state.timedSetTimerState === TimedSetState.Running || state.timedSetTimerState === TimedSetState.Paused;
 
-    this.lastPerformanceForCurrentExercise = state.lastPerformanceForCurrentExercise;
+    if (state.lastPerformanceForCurrentExercise){
+      this.lastPerformanceForCurrentExercise = state.lastPerformanceForCurrentExercise;
+    }
 
     this.wasRestTimerVisibleOnPause = state.isRestTimerVisibleOnPause;
-    this.restTimerRemainingSecondsOnPause = state.restTimerRemainingSecondsOnPause;
-    this.restTimerInitialDurationOnPause = state.restTimerInitialDurationOnPause;
-    this.restTimerMainTextOnPause = state.restTimerMainTextOnPause;
+    this.restTimerRemainingSecondsOnPause = state.restTimerRemainingSecondsOnPause || 0;
+    this.restTimerInitialDurationOnPause = state.restTimerInitialDurationOnPause || 0;
+    this.restTimerMainTextOnPause = state.restTimerMainTextOnPause || '';
     this.restTimerNextUpTextOnPause = state.restTimerNextUpTextOnPause;
     this.exercisesProposedThisCycle = { doLater: false, skipped: false };
     this.isPerformingDeferredExercise = false; // RESET HERE
@@ -2302,7 +2317,8 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       stateToSave.tabataTimeRemainingOnPause = this.tabataTimeRemaining();
     }
 
-    this.storageService.setItem(this.PAUSED_WORKOUT_KEY, stateToSave);
+    this.workoutService.savePausedWorkout(stateToSave);
+    // this.storageService.setItem(this.PAUSED_WORKOUT_KEY, stateToSave);
     console.log('Paused session state saved', stateToSave);
   }
 
@@ -2908,7 +2924,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
             "Save Routine",
             'CANCEL',
             [
-              { text: "Save Routine", role: "confirm", data: true, cssClass: "bg-green-600", icon:'save'} as AlertButton
+              { text: "Save Routine", role: "confirm", data: true, cssClass: "bg-green-600", icon: 'save' } as AlertButton
             ]
           );
           if (nameInput && String(nameInput['newRoutineName']).trim()) {
@@ -2990,7 +3006,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     }
 
     let iterationId: string | undefined = undefined;
-    if (sessionProgramValue){
+    if (sessionProgramValue) {
       const program = await firstValueFrom(this.trainingProgramService.getProgramById(sessionProgramValue));
       iterationId = program ? program.iterationId : undefined;
     }
@@ -3252,6 +3268,13 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     this.loadAvailableExercises(); // Load exercises for the modal
   }
 
+  forceStartOnEmptyWorkout(): void {
+    this.workoutStartTime = new Date().getTime();
+    this.startAutoSave();
+    this.sessionState.set(SessionState.Playing);
+    this.startSessionTimer();
+  }
+
   private async loadNewWorkoutFromRoute(): Promise<void> {
     console.log('loadNewWorkoutFromRoute - START');
     this.isInitialLoadComplete = false;
@@ -3295,7 +3318,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
         if (programId) {
           this.program.set(programId);
-          if (scheduledDayId){
+          if (scheduledDayId) {
             this.scheduledDay.set(scheduledDayId);
           }
         }
@@ -3352,7 +3375,9 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
               exercises: [] as WorkoutExercise[],
             } as Routine;
             this.routine.set(emptyNewRoutine);
-            this.openExerciseSelectionModal();
+            // this.openExerciseSelectionModal();
+
+            this.forceStartOnEmptyWorkout();
           } else if (this.routineId) {
             console.error('loadNewWorkoutFromRoute - tap: Failed to load routine for ID or routine was null:', this.routineId);
             this.routine.set(null);

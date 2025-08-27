@@ -913,10 +913,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
   }
   startScheduledWorkout(routineId: string | undefined, programId: string | undefined, scheduledDayId: string | undefined): void {
     if (routineId) {
-      const navigationExtras: any = {};
-      const playerRoute = this.workoutService.checkPlayerMode(routineId);
-      this.router.navigate([playerRoute, routineId], navigationExtras);
-      this.router.navigate([playerRoute, routineId], { queryParams: { programId, scheduledDayId } });
+      this.workoutService.navigateToPlayer(routineId, { queryParams: { programId, scheduledDayId }});
       this.selectCalendarDay(null);
     }
   }
@@ -924,8 +921,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
   startProgramWorkout(routineId: string, programId: string | undefined, scheduledDayId: string | undefined, event: Event): void {
     event?.stopPropagation();
     if (routineId) {
-      const playerRoute = this.workoutService.checkPlayerMode(routineId);
-      this.router.navigate([playerRoute, routineId], { queryParams: { programId, scheduledDayId } });
+      this.workoutService.navigateToPlayer(routineId, { queryParams: { programId, scheduledDayId } });
     }
   }
 
@@ -1079,7 +1075,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
     actionsArray.push({
       label: 'DELETE',
       actionKey: 'delete',
-        iconName: `trash`,
+      iconName: `trash`,
       iconClass: 'w-8 h-8 mr-2',
       buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + deleteBtnClass,
       data: { programId: programId }

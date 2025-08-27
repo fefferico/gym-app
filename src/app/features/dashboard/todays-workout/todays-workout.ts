@@ -327,16 +327,14 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
     event?.stopPropagation();
     if (routineId) {
       this.vibrate();
-      const playerRoute = this.workoutService.checkPlayerMode(routineId);
-      this.router.navigate([playerRoute, routineId], { queryParams: { programId, scheduledDayId } });
+      this.workoutService.navigateToPlayer(routineId, { queryParams: { programId, scheduledDayId } });
     }
   }
 
   startWorkout(routineId: string, event: Event): void {
     event?.stopPropagation();
     if (routineId) {
-      const playerRoute = this.workoutService.checkPlayerMode(routineId);
-      this.router.navigate([playerRoute, routineId]);
+      this.workoutService.navigateToPlayer(routineId);
     }
   }
 

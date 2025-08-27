@@ -88,14 +88,12 @@ export class HomeComponent implements OnInit {
       // this.pausedWorkoutInfo.set(null); // Optional: immediate UI feedback on Home
 
       if (pausedInfo.routineId) {
-        const playerRoute = this.workoutService.checkPlayerMode(pausedInfo.routineId);
         console.log(`HomeComponent: Resuming paused workout for routineId: ${pausedInfo.routineId}`);
-        this.router.navigate([playerRoute, pausedInfo.routineId], { queryParams: { resume: 'true' } });
+        this.workoutService.navigateToPlayer(pausedInfo.routineId, { queryParams: { resume: 'true' }, forceNavigation: true });
       } else {
         const playerRoute = this.workoutService.checkPlayerMode('');
-        // Ad-hoc workout (no routineId in paused state)
         console.log('HomeComponent: Resuming ad-hoc paused workout.');
-        this.router.navigate(['/workout/play'], { queryParams: { resume: 'true' } });
+        this.workoutService.navigateToPlayer('', { queryParams: { resume: 'true' } });
       }
     } else {
       this.toastService.warning("No paused workout found to resume", 3000);
@@ -117,7 +115,7 @@ export class HomeComponent implements OnInit {
     );
     if (confirm && confirm.data) {
       if (isPlatformBrowser(this.platformId)) {
-        this.storageService.removeItem('fitTrackPro_pausedWorkoutState');
+        this.workoutService.removePausedWorkout();
         this.pausedWorkoutInfo.set(null);
         this.toastService.info('Paused workout session discarded.', 3000);
       }
@@ -133,15 +131,16 @@ export class HomeComponent implements OnInit {
     if (pausedInfo) {
       this.vibrate();
       const routineName = pausedInfo.sessionRoutine?.name || 'Ad-hoc Workout';
-      const exercisesDone = pausedInfo.currentWorkoutLogExercises.length;
-      const setsDone = pausedInfo.currentWorkoutLogExercises.reduce((acc, ex) => acc + ex.sets.length, 0);
+      const exercisesAvailable = pausedInfo.sessionRoutine && pausedInfo.sessionRoutine.exercises ? pausedInfo.sessionRoutine.exercises.length : 0;
+      const exercisesDone = pausedInfo.currentWorkoutLogExercises?.length || 0;
+      const setsDone = pausedInfo.currentWorkoutLogExercises?.reduce((acc, ex) => acc + ex.sets.length, 0);
       const timeElapsed = new Date(pausedInfo.sessionTimerElapsedSecondsBeforePause * 1000).toISOString().slice(11, 19);
 
       this.alertService.showAlert(
         `Paused: ${routineName}`,
-        `You have ${exercisesDone} exercise(s) with ${setsDone} set(s) logged.
+        `You have completed ${exercisesDone} of ${exercisesAvailable} exercises, with ${setsDone} set(s) logged.
          Elapsed time: ${timeElapsed}.
-         Resume the workout to see full details or to complete it.`
+         Resume the workout to see full details or continue it.`
       );
     }
   }
@@ -155,7 +154,7 @@ export class HomeComponent implements OnInit {
 
   startNewSession(): void {
     this.vibrate();
-    this.router.navigate(['/workout/play', -1], { queryParams: { newSession: 'true' } });
+    this.workoutService.navigateToPlayer('-1', { queryParams: { resume: 'true' } });
   }
 
   navigateToRoutines(): void {

@@ -20,10 +20,9 @@
         <div class="text-center sm:text-left py-2 sm:px-8">
           <h2 class="text-lg sm:text-xl font-semibold text-yellow-700 dark:text-yellow-200"> You have a workout in
             progress! </h2>
-          <p class="text-m text-yellow-600 dark:text-yellow-300 mt-1"> Routine: <strong class="font-medium">New
-              session</strong></p>
-          <p class="text-sm text-yellow-500 dark:text-yellow-400 mt-0.5"> Logged on the: 19-08-2025 </p>
-          <p class="text-sm text-yellow-500 dark:text-yellow-400 mt-0.5"> Paused at: 00:00:04 </p>
+          <p class="text-m text-yellow-600 dark:text-yellow-300 mt-1"> Routine: <strong class="font-medium"> {{ pausedRoutineName() }} </strong></p>
+          <p class="text-sm text-yellow-500 dark:text-yellow-400 mt-0.5"> Logged on the: {{ pausedInfo.workoutDate | date:'dd-MM-yyyy':'UTC' }} </p>
+          <p class="text-sm text-yellow-500 dark:text-yellow-400 mt-0.5"> Paused at: {{ ((pausedInfo?.sessionTimerElapsedSecondsBeforePause || pausedInfo?.tabataTimeRemainingOnPause || 0) * 1000) | date:'HH:mm:ss':'UTC' }} </p>
         </div>
       </div>
       <div class="flex flex-col sm:flex-row justify-center items-center space-y-2 sm:space-y-0 sm:space-x-4 pt-4">

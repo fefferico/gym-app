@@ -473,23 +473,27 @@ export class RoutineListComponent implements OnInit, OnDestroy {
 
       if (confirmation && confirmation.data === 'resume_paused') {
         const targetRoutineId = pausedState.routineId || 'ad-hoc';
-        this.router.navigate([playerRoute, pausedState.routineId || ''], { queryParams: { resume: 'true' } }); // Handle undefined routineId
+        this.workoutService.navigateToPlayer(targetRoutineId);
+        // this.router.navigate([playerRoute, pausedState.routineId || ''], { queryParams: { resume: 'true' } }); // Handle undefined routineId
       } else if (confirmation && confirmation.data === 'discard_start_new') {
-        this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
+        this.workoutService.removePausedWorkout();
         this.toastService.info('Previous paused workout discarded.', 3000);
-        this.router.navigate([playerRoute, newRoutineId]);
+        // this.router.navigate([playerRoute, newRoutineId]);
+        this.workoutService.navigateToPlayer(newRoutineId);
       } else {
         // this.toastService.info('Starting new workout cancelled.', 2000);
       }
     } else {
       if (!isPlatformBrowser(this.platformId)) {
-        this.router.navigate([playerRoute, newRoutineId]);
+        // this.router.navigate([playerRoute, newRoutineId]);
+        this.workoutService.navigateToPlayer(newRoutineId);
         return;
       }
 
       // Use absolute path for player
       if (/* condition to start new */ true) { // Simplified condition
-        this.router.navigate([playerRoute, newRoutineId]);
+        // this.router.navigate([playerRoute, newRoutineId]);
+        this.workoutService.navigateToPlayer(newRoutineId);
       }
     }
   }

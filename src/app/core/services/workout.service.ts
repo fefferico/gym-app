@@ -12,6 +12,8 @@ import { ROUTINES_DATA } from './routines-data';
 import { ToastService } from './toast.service';
 import { ProgressiveOverloadService } from './progressive-overload.service.ts';
 import { AppSettingsService } from './app-settings.service';
+import { Router } from '@angular/router';
+import { PausedWorkoutState } from '../../features/workout-tracker/workout-player';
 
 @Injectable({
   providedIn: 'root',
@@ -19,8 +21,11 @@ import { AppSettingsService } from './app-settings.service';
 export class WorkoutService {
   private storageService = inject(StorageService);
   private appSettingsService = inject(AppSettingsService);
+  private router = inject(Router);
   private alertService = inject(AlertService);
   private readonly ROUTINES_STORAGE_KEY = 'fitTrackPro_routines';
+  private readonly PAUSED_WORKOUT_KEY = 'fitTrackPro_pausedWorkoutState';
+
   private toastService = inject(ToastService);
   private progressiveOverloadService = inject(ProgressiveOverloadService); // +++ INJECT THE SERVICE
 
@@ -492,5 +497,55 @@ export class WorkoutService {
     const playerMode = this.appSettingsService.getSettings() ? this.appSettingsService.getSettings().playerMode : false;
     const isTabata = routine?.goal === 'tabata';
     return !isTabata && playerMode ? '/workout/play/compact' : '/workout/play';
+  }
+
+  // { queryParams: { newSession: 'true' } }
+  async navigateToPlayer(newRoutineId: string, params?: any): Promise<void> {
+    let playerRoute = this.checkPlayerMode(newRoutineId);
+    const forceNavigation = params && params.forceNavigation;
+    const pausedResult = await this.checkForPausedSession(forceNavigation);
+    if (pausedResult) {
+      const pausedRoutineId = pausedResult.routineId || '-1';
+      playerRoute = this.checkPlayerMode(pausedRoutineId);
+      // this.removePausedWorkout();
+      this.router.navigate([playerRoute, pausedRoutineId], { queryParams: { resume: 'true'} });
+    } else {
+      this.router.navigate([playerRoute, newRoutineId], params ? params : {});
+    }
+  }
+
+  removePausedWorkout(): void {
+    const pausedState = this.storageService.getItem<PausedWorkoutState>(this.PAUSED_WORKOUT_KEY);
+    if (pausedState) {
+      this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
+    }
+  }
+
+  savePausedWorkout(stateToSave: PausedWorkoutState): void {
+    if (stateToSave){
+      this.storageService.setItem(this.PAUSED_WORKOUT_KEY, stateToSave);
+    }
+  }
+
+  private async checkForPausedSession(forceNavigation: boolean = false): Promise<PausedWorkoutState | undefined> {
+    const pausedState = this.storageService.getItem<PausedWorkoutState>(this.PAUSED_WORKOUT_KEY);
+
+    if (pausedState) {
+      if (forceNavigation){
+        return pausedState;
+      }
+      const confirmation = await this.alertService.showConfirmationDialog(
+        "Resume Paused Workout?",
+        "You have a paused workout session. Would you like to resume it?",
+        [{ text: "Resume", role: "confirm", data: true, icon: 'play' }, { text: "Discard", role: "cancel", data: false, icon: 'trash' }]
+      );
+      if (confirmation?.data) {
+        return pausedState;
+      } else {
+        this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
+        return undefined;
+      }
+    }
+    return undefined;
   }
 }
