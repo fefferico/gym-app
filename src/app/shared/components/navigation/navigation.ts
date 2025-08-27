@@ -51,44 +51,46 @@ export class NavigationComponent {
    * It determines if a link should be visually active.
    */
   isLinkActive(item: NavItem): boolean {
-    // Check the default active state from the router.
-    // The second argument to isActive is a boolean for `exact`.
-    // We use `item.exact ?? false` to default to a non-exact match if `exact` is not defined.
-    const isActive = this.router.isActive(item.path, item.exact ?? false);
-    const isSummaryPageActive = this.router.isActive(this.summaryPath, false);
-    const isRoutinePageActive = this.router.isActive(this.routinesPath, false);
-    const isRoutineDetailsPageActive = this.router.isActive(this.routineDetailsPath, false);
+  // First, get the default active state for the item itself.
+  const isActive = this.router.isActive(item.path, item.exact ?? false);
 
-    if (item.path === this.routinesPath) {
-      return isActive || (isRoutineDetailsPageActive && isRoutinePageActive);
-    }
+  // Use a switch statement to handle special cases where a link should
+  // be active even if its own path isn't the current URL.
+  switch (item.path) {
+    // The 'ROUTINES' tab should be active on the main routines page
+    // OR on any specific routine's details page.
+    case this.routinesPath:
+      return (isActive || this.router.isActive(this.routineDetailsPath, false)) && !this.router.isActive(this.summaryPath, false);
 
-    if (item.path === this.historyPath) {
-      return isActive || isSummaryPageActive;
-    }
+    // The 'HISTORY' tab should be active on the main history page
+    // OR on the workout summary page.
+    case this.historyPath:
+      return (isActive || this.router.isActive(this.summaryPath, false)) && !this.router.isActive(this.statsPath, false);
 
-    if (item.path === this.trainingProgramsPath) {
-      const isTrainingProgramPageActive = this.router.isActive(this.trainingProgramsPath, false);
-      return isTrainingProgramPageActive || isActive;
-    }
+    // The 'PROGRAMS' tab should be active for its main page AND any child pages.
+    // By checking with `exact: false`, we cover all routes under '/training-programs'.
+    // This is simpler and more robust than the original check.
+    case this.trainingProgramsPath:
+      return this.router.isActive(item.path, false);
 
+    // The 'STATS' tab should be active on its own page OR on the PB list/trend pages.
+    case this.statsPath:
+      return isActive || 
+             this.router.isActive(this.pbPath, false) || 
+             this.router.isActive(this.pbTrendPath, false);
 
-    if (item.path === this.statsPath) {
-      const isPbPageActive = this.router.isActive(this.pbPath, true);
-      const isPbTrendPageActive = this.router.isActive(this.pbTrendPath, false);
-      return (isPbPageActive || isPbTrendPageActive) || isActive;
-    }
+    // The 'PROFILE' tab should be active on its own page OR on the exercise library/gym pages.
+    case this.profilePath:
+      return isActive ||
+             this.router.isActive(this.exerciseLibraryPath, false) ||
+             this.router.isActive(this.gymPath, false);
 
-    if (item.path === this.profilePath) {
-      const isExercisesPageActive = this.router.isActive(this.exerciseLibraryPath, true);
-      const isGymPageActive = this.router.isActive(this.gymPath, true);
-
-      return (isExercisesPageActive || isGymPageActive) || isActive;
-    }
-
-    // For all other links, just return their normal active state.
-    return isActive;
+    // For all other nav items that don't have special cases,
+    // just return their default active state.
+    default:
+      return isActive;
   }
+}
 
   /**
    * Navigates to the given path.
