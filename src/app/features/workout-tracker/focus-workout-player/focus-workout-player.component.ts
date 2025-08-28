@@ -43,6 +43,7 @@ interface ActiveSetInfo {
   actualDuration?: number;
   notes?: string; // This is for the *individual set's notes*
   type: 'standard' | 'warmup' | 'amrap' | 'custom';
+  historicalSetPerformance?: LoggedSet | null
 }
 
 export interface PausedWorkoutState {
@@ -1422,13 +1423,8 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     if (shouldRunPresetTimer) {
       console.log('prepareCurrentSet: Starting pre-set timer for:', currentExerciseData.exerciseName, 'Set:', sIndex + 1);
       this.playerSubState.set(PlayerSubState.PresetCountdown);
-      const activeInfoForPreset = this.activeSetInfo();
-      if (activeInfoForPreset) {
-        this.startPresetTimer(presetDurationValue, activeInfoForPreset);
-      } else {
-        console.error("prepareCurrentSet: ActiveSetInfo is null before starting preset timer. Aborting preset");
-        this.playerSubState.set(PlayerSubState.PerformingSet);
-      }
+      console.error("prepareCurrentSet: ActiveSetInfo is null before starting preset timer. Aborting preset");
+      this.playerSubState.set(PlayerSubState.PerformingSet);
     } else {
       console.log('prepareCurrentSet: No pre-set timer, setting to PerformingSet for:', currentExerciseData.exerciseName, 'Set:', sIndex + 1);
       this.playerSubState.set(PlayerSubState.PerformingSet);
@@ -3345,39 +3341,6 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     }
   }
 
-  private startPresetTimer(duration: number, forActiveSetDisplay: ActiveSetInfo): void {
-    this.playerSubState.set(PlayerSubState.PresetCountdown);
-    this.presetTimerDuration.set(duration);
-    let remaining = duration;
-    this.presetTimerCountdownDisplay.set(String(remaining));
-
-    this.restTimerMainText.set(`GET READY: ${forActiveSetDisplay.exerciseData.exerciseName}`);
-    const setNumberText = forActiveSetDisplay.type === 'warmup'
-      ? `Warm-up ${this.getWarmupSetNumberForDisplay(forActiveSetDisplay.exerciseData, forActiveSetDisplay.setIndex)}/${this.getTotalWarmupSetsForExercise(forActiveSetDisplay.exerciseData)}`
-      : `Set ${this.getWorkingSetNumberForDisplay(forActiveSetDisplay.exerciseData, forActiveSetDisplay.setIndex)}/${this.getWorkingSetCountForExercise(forActiveSetDisplay.exerciseData)}`;
-    this.restTimerNextUpText.set(setNumberText);
-
-
-    if (this.presetTimerSub) this.presetTimerSub.unsubscribe();
-    this.presetTimerSub = timer(0, 1000).pipe(
-      takeUntil(this.destroy$), // Add this line
-      take(duration + 1)).subscribe({
-        next: () => {
-          this.presetTimerCountdownDisplay.set(String(remaining));
-          if (remaining <= this.appSettingsService.countdownSoundSeconds() && remaining > 0 &&
-            this.appSettingsService.enableTimerCountdownSound() && duration > 5) {
-            this.playClientBeep(600, 150);
-          }
-          remaining--;
-        },
-        complete: () => {
-          if (this.playerSubState() === PlayerSubState.PresetCountdown) { // Check state before auto-finishing
-            this.playClientBeep(1000, 250); // "Go" sound
-            this.handlePresetTimerFinished();
-          }
-        }
-      });
-  }
   handlePresetTimerFinished(): void {
     if (this.presetTimerSub) {
       this.presetTimerSub.unsubscribe();
@@ -3635,7 +3598,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     }
   }
 
-  private startRestPeriod(duration: number, isResumingPausedRest: boolean = false): void {
+  private async startRestPeriod(duration: number, isResumingPausedRest: boolean = false): Promise<void> {
     this.playerSubState.set(PlayerSubState.Resting);
     this.restDuration.set(duration);
 
@@ -3645,7 +3608,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       if (!isResumingPausedRest) {
         this.restTimerMainText.set("RESTING");
         // For "UP NEXT", peek at the next set and handle rounds/supersets
-        const nextSetInfo = this.peekNextSetInfo();
+        const nextSetInfo = await this.peekNextSetInfo();
         let resultText = 'Next Exercise';
 
         if (nextSetInfo && nextSetInfo.exerciseData && nextSetInfo.exerciseData.sets) {
@@ -3683,10 +3646,13 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
           if (nextSetInfo.setData) {
             resultText += ' [';
             const setData = nextSetInfo.setData;
+            const historicalSetData = nextSetInfo.historicalSetPerformance;
             if (setData.weight && setData.reps) {
               resultText += `${setData.weight}${this.unitService.getUnitLabel()} x ${setData.reps} reps`;
+            } else if (historicalSetData && historicalSetData.weightUsed && historicalSetData.repsAchieved) {
+              resultText += `${historicalSetData.weightUsed}${this.unitService.getUnitLabel()} x ${historicalSetData.repsAchieved} reps`;
             }
-            if (!setData.weight && setData.reps) {
+            if (!setData.weight && setData.reps && (!historicalSetData || !historicalSetData.repsAchieved)) {
               resultText += `${setData.reps} reps`;
             }
             if (setData.duration) {
@@ -3695,10 +3661,11 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
               } else {
                 resultText += `duration ${setData.duration} seconds`;
               }
-            }
+            } 
             resultText += ']';
           }
         }
+        
         this.restTimerNextUpText.set(resultText);
 
       } else {
@@ -3726,16 +3693,26 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
   }
 
   // New helper to peek at the next set's details without advancing state
-  private peekNextSetInfo(): ActiveSetInfo | null {
+  async peekNextSetInfo(): Promise<ActiveSetInfo | null> {
     const r = this.routine();
     const exIndex = this.currentExerciseIndex(); // These indices point to the *upcoming* set
     const sIndex = this.currentSetIndex();
 
     if (r && r.exercises[exIndex] && r.exercises[exIndex].sets[sIndex]) {
+
       const exerciseData = r.exercises[exIndex];
       const setData = r.exercises[exIndex].sets[sIndex]; // This is the *planned* set data
+
+      if (!this.lastPerformanceForCurrentExercise || this.lastPerformanceForCurrentExercise.sets[0]?.exerciseId !== exerciseData.exerciseId) {
+        this.lastPerformanceForCurrentExercise = await firstValueFrom(this.trackingService.getLastPerformanceForExercise(exerciseData.exerciseId).pipe(take(1)));
+      }
+
+      const originalExerciseForSuggestions = this.originalRoutineSnapshot.find(oe => oe.exerciseId === exerciseData.exerciseId) || exerciseData;
+      const plannedSetForSuggestions = originalExerciseForSuggestions?.sets[sIndex] || exerciseData;
+      const historicalSetPerformance = this.trackingService.findPreviousSetPerformance(this.lastPerformanceForCurrentExercise, plannedSetForSuggestions, sIndex);
+
       return {
-        exerciseIndex: exIndex, setIndex: sIndex, exerciseData, setData,
+        exerciseIndex: exIndex, setIndex: sIndex, exerciseData, setData, historicalSetPerformance,
         type: (setData.type as 'standard' | 'warmup' | 'amrap' | 'custom') ?? 'standard', isCompleted: false // Dummy values
       };
     }
@@ -4301,6 +4278,16 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
   closeSwitchExerciseModal(): void {
     this.isExerciseSwitchModalOpen.set(false);
   }
+
+  workoutProgress = computed(() => {
+    const routine = this.routine();
+    const log = this.currentWorkoutLogExercises();
+    if (!routine || routine.exercises.length === 0) return 0;
+    const totalPlannedSets = routine.exercises.reduce((total, ex) => total + ex.sets.length, 0);
+    if (totalPlannedSets === 0) return 0;
+    const totalCompletedSets = log?.reduce((total, ex) => total + (ex.sets ? ex.sets.length : 0), 0) ?? 0;
+    return (totalCompletedSets / totalPlannedSets) * 100;
+  });
 
   /**
    * Fetches exercises similar to the current one and displays them in the modal.
