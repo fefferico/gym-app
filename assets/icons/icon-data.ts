@@ -122,7 +122,7 @@ export const ICONS: Record<string, string> = {
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
     <polyline points="9 18 15 12 9 6"></polyline>
 </svg>`,
-'track-changes':  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" stroke="currentColor">
+  'track-changes': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" stroke="currentColor">
   <path d="M0 0h24v24H0z" fill="none"/>
   <path d="M20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83zM3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM5.92 19H5v-.92l9.06-9.06.92.92L5.92 19z"/>
 </svg>`,
@@ -221,7 +221,7 @@ viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" >
   'drag': `
 <svg  xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" ><path d="M 7 17 L 7 3 M 4 6 L 7 3 L 10 6 M 17 7 L 17 21 M 14 18 L 17 21 L 20 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
 `,
-'reorder': `
+  'reorder': `
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><path d="M10 4h4v4h-4zM4 10h4v4H4zM10 10h4v4h-4zM16 10h4v4h-4zM10 16h4v4h-4z"></path></svg>
 `,
   'pause': `
@@ -396,4 +396,30 @@ viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" >
         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
         <line x1="2" y1="20" x2="22" y2="4"></line>
       </svg>`,
+  'chains': `
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <clipPath id="clip1">
+      <path d="M 30 50 A 20 20 0 1 1 70 50 A 20 20 0 1 1 30 50 Z"/>
+    </clipPath>
+    <clipPath id="clip2">
+      <path d="M 50 50 A 20 20 0 1 1 90 50 A 20 20 0 1 1 50 50 Z"/>
+    </clipPath>
+  </defs>
+
+  <circle cx="50" cy="50" r="20" stroke="black" stroke-width="5" fill="none" clip-path="url(#clip1)"/>
+  <circle cx="70" cy="50" r="20" stroke="black" stroke-width="5" fill="none" clip-path="url(#clip2)"/>
+</svg>
+      `,
+  'link': `
+      <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72"/>
+  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72"/>
+</svg>
+      `,
+  'unlink': `
+      <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07"/>
+  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07"/>
+</svg>`
 };
