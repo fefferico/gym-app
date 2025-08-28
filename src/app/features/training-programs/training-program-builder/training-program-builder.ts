@@ -685,8 +685,9 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
                 programId: programId,
                 notes: s.notes,
                 timeOfDay: s.timeOfDay,
-                isUnscheduled: s.isUnscheduled || false
-            })),
+                isUnscheduled: s.isUnscheduled || false,
+                iterationId: formValue.iterationId || null
+            } as ScheduledRoutineDay)),
             weeks: formValue.programType === 'linear'
                 ? formValue.weeks.map((w: any) => ({
                     ...w,
@@ -698,8 +699,9 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
                         programId: programId,
                         notes: d.notes,
                         timeOfDay: d.timeOfDay,
-                        isUnscheduled: d.isUnscheduled || false
-                    }))
+                        isUnscheduled: d.isUnscheduled || false,
+                        iterationId: formValue.iterationId || null
+                    } as ScheduledRoutineDay))
                 }))
                 : [],
             isActive: this.currentProgram?.isActive ?? false

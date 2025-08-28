@@ -363,7 +363,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       exerciseLog.sets.sort((a, b) => order.indexOf(a.plannedSetId!) - order.indexOf(b.plannedSetId!));
 
       if (set.restAfterSet && set.restAfterSet > 0) {
-        if (fieldUpdated && fieldUpdated !== 'notes'){
+        if (!fieldUpdated || fieldUpdated !== 'notes'){
           this.startRestPeriod(set.restAfterSet, exIndex, setIndex);
         }
       }

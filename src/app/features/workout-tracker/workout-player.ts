@@ -1556,24 +1556,25 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         console.warn("prepareCurrentSet: Progressive overload settings are not available. Using default suggestion logic.");
         // Fallback to historicalSetPerformance or default suggestion logic if settings are not available
 
-        // TODO per ora rimuovo
-        // if (historicalSetPerformance) {
-        //   // use historicalSetPerformance
-        //   finalSetParamsForSession = {
-        //     ...plannedSetForSuggestions,
-        //     reps: historicalSetPerformance.repsAchieved || plannedSetForSuggestions.reps || 0,
-        //     weight: historicalSetPerformance.weightUsed || plannedSetForSuggestions.weight || 0,
-        //     duration: historicalSetPerformance.durationPerformed || plannedSetForSuggestions.duration || 0,
-        //     restAfterSet: plannedSetForSuggestions.restAfterSet || 0
-        //   };
-        // } else {
-        finalSetParamsForSession = {
-          ...plannedSetForSuggestions,
-          reps: plannedSetForSuggestions.reps || 0,
-          weight: plannedSetForSuggestions.weight || 0,
-          duration: plannedSetForSuggestions.duration || 0,
-          restAfterSet: plannedSetForSuggestions.restAfterSet || 0
-        };
+        if (historicalSetPerformance && currentExerciseData.exerciseName && currentExerciseData.exerciseName.toLowerCase().indexOf('kb') < 0) {
+          // use historicalSetPerformance
+          finalSetParamsForSession = {
+            ...plannedSetForSuggestions,
+            reps: historicalSetPerformance.repsAchieved || plannedSetForSuggestions.reps || 0,
+            weight: historicalSetPerformance.weightUsed || plannedSetForSuggestions.weight || 0,
+            duration: historicalSetPerformance.durationPerformed || plannedSetForSuggestions.duration || 0,
+            restAfterSet: plannedSetForSuggestions.restAfterSet || 0
+          };
+        } else {
+          finalSetParamsForSession = {
+            ...plannedSetForSuggestions,
+            reps: plannedSetForSuggestions.reps || 0,
+            weight: plannedSetForSuggestions.weight || 0,
+            duration: plannedSetForSuggestions.duration || 0,
+            restAfterSet: plannedSetForSuggestions.restAfterSet || 0
+          };
+        }
+
         // }
       }
     }
@@ -2224,15 +2225,15 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     this.currentBlockRound.set(state.currentBlockRound);
     this.totalBlockRounds.set(state.totalBlockRounds);
 
-    if (state.timedSetTimerState){
+    if (state.timedSetTimerState) {
       this.timedSetTimerState.set(state.timedSetTimerState);
     }
-    if (state.timedSetElapsedSeconds){
+    if (state.timedSetElapsedSeconds) {
       this.timedSetElapsedSeconds.set(state.timedSetElapsedSeconds);
     }
     this.wasTimedSetRunningOnPause = state.timedSetTimerState === TimedSetState.Running || state.timedSetTimerState === TimedSetState.Paused;
 
-    if (state.lastPerformanceForCurrentExercise){
+    if (state.lastPerformanceForCurrentExercise) {
       this.lastPerformanceForCurrentExercise = state.lastPerformanceForCurrentExercise;
     }
 
@@ -3534,15 +3535,14 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
   private stopAllActivity(): void {
-    this.isSessionConcluded = true;
+    // this.isSessionConcluded = true;
     console.log('stopAllActivity - Stopping timers and auto-save');
     this.stopAutoSave();
     if (this.timerSub) this.timerSub.unsubscribe();
     if (this.timedSetIntervalSub) this.timedSetIntervalSub.unsubscribe();
     if (this.tabataTimerSub) this.tabataTimerSub.unsubscribe();
     this.isRestTimerVisible.set(false);
-    this.sessionState.set(SessionState.End);
-    // Don't unsubscribe from routerEventsSub or routeSub here, they manage themselves or are handled by ngOnDestroy
+    // this.sessionState.set(SessionState.End);
   }
   async resumeSession(): Promise<void> {
     if (this.sessionState() === SessionState.Paused) {
@@ -3586,7 +3586,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
     if (isPlatformBrowser(this.platformId) && !this.isSessionConcluded &&
       (this.sessionState() === SessionState.Playing || this.sessionState() === SessionState.Paused) &&
-      this.routine() && this.currentWorkoutLogExercises().length > 0) {
+      this.routine()) {
       console.log('WorkoutPlayer ngOnDestroy - Saving state...');
       this.savePausedSessionState();
     }

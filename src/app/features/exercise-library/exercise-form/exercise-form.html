@@ -4,10 +4,7 @@
     <div class="flex justify-between items-center">
       <button [routerLink]="'/library'"
         class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-light p-2 -ml-1">
-        <svg
-          fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-        </svg>
+        <app-icon name="back" class="h-6 w-6"></app-icon>
       </button>
       <div class="w-10 h-10"></div>
     </div>
@@ -57,9 +54,7 @@
           {{ control.value }}
           <button type="button" (click)="removeMuscle(i)"
             class="flex-shrink-0 ml-1.5 p-0.5 text-primary-light rounded-full inline-flex items-center justify-center hover:bg-white/20 focus:outline-none">
-            <svg class="h-3 w-3" stroke="currentColor" fill="none" viewBox="0 0 8 8">
-              <path stroke-linecap="round" stroke-width="1.5" d="M1 1l6 6m0-6L1 7" />
-            </svg>
+            <app-icon name="cancel" class="h-4 w-4"></app-icon>
           </button>
         </span>
       </div>
@@ -88,9 +83,7 @@
           {{ control.value }}
           <button type="button" (click)="removeEquipment(i)"
             class="flex-shrink-0 ml-1.5 p-0.5 text-blue-700 dark:text-blue-200 rounded-full inline-flex items-center justify-center hover:bg-white/20 focus:outline-none">
-            <svg class="h-3 w-3" stroke="currentColor" fill="none" viewBox="0 0 8 8">
-              <path stroke-linecap="round" stroke-width="1.5" d="M1 1l6 6m0-6L1 7" />
-            </svg>
+            <app-icon name="cancel" class="h-4 w-4"></app-icon>
           </button>
         </span>
       </div>
@@ -129,21 +122,8 @@
         class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-m font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-500">CANCEL</a>
       <button type="submit" [disabled]="exerciseForm.invalid"
         class="flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark disabled:opacity-50">
-        <svg *ngIf="!isEditMode()" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-          fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-          class="mr-2">
-          <circle cx="12" cy="12" r="10"></circle>
-          <line x1="12" y1="8" x2="12" y2="16"></line>
-          <line x1="8" y1="12" x2="16" y2="12"></line>
-        </svg>
-        <svg *ngIf="isEditMode()" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-          fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-          class="mr-2">
-          <path d="M15.2 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8.8" />
-          <path d="M16 3.1 21 8" />
-          <path d="M8 21v-7h8v7" />
-          <path d="M8 3v5h8V3" />
-        </svg>
+        <app-icon *ngIf="isEditMode()" name="save" class="h-7 w-7 mr-1"></app-icon>
+        <app-icon *ngIf="!isEditMode()" name="plus-circle" class="h-7 w-7 mr-1"></app-icon>
         {{ isEditMode() ? 'UPDATE EXERCISE' : 'ADD EXERCISE' }}
       </button>
     </div>
