@@ -155,21 +155,43 @@
                     <input type="date" id="startDate" formControlName="startDate"
                         class="mt-1 block w-full p-2 border rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:[color-scheme:dark]">
                 </div>
-                <!-- --- NEW: Program Type Selector --- -->
-                <div *ngIf="isEditableMode()" class="md:col-span-2">
+                <!-- --- Program Type Selector --- -->
+                <div class="md:col-span-2">
                     <label class="block text-m font-medium text-gray-700 dark:text-gray-300 mb-2">Program
                         Structure</label>
-                    <div class="flex items-center space-x-4 p-2 bg-gray-100 dark:bg-gray-700 rounded-md">
-                        <label class="flex items-center space-x-2 cursor-pointer">
-                            <input type="radio" formControlName="programType" value="cycled"
-                                class="form-radio h-4 w-4 text-primary focus:ring-primary-dark dark:bg-gray-600 dark:border-gray-500">
-                            <span class="text-gray-700 dark:text-gray-300">Repeating Cycle</span>
-                        </label>
-                        <label class="flex items-center space-x-2 cursor-pointer">
-                            <input type="radio" formControlName="programType" value="linear"
-                                class="form-radio h-4 w-4 text-primary focus:ring-primary-dark dark:bg-gray-600 dark:border-gray-500">
-                            <span class="text-gray-700 dark:text-gray-300">Week-by-Week Progression</span>
-                        </label>
+                    <div class="p-2 bg-gray-100 dark:bg-gray-700 rounded-md">
+
+                        <div class="flex items-center space-x-4">
+                            <label class="flex items-center space-x-2 cursor-pointer">
+                                <input type="radio" formControlName="programType" value="cycled"
+                                    class="form-radio h-4 w-4 text-primary focus:ring-primary-dark dark:bg-gray-600 dark:border-gray-500">
+                                <span [ngClass]="{
+                                    'text-primary dark:text-primary-light font-semibold': programForm.get('programType')?.value === 'cycled',
+                                    'text-gray-700 dark:text-gray-300': programForm.get('programType')?.value !== 'cycled'
+                                }">Repeating Cycle</span>
+                            </label>
+                            <label class="flex items-center space-x-2 cursor-pointer">
+                                <input type="radio" formControlName="programType" value="linear"
+                                    class="form-radio h-4 w-4 text-primary focus:ring-primary-dark dark:bg-gray-600 dark:border-gray-500">
+                                <span [ngClass]="{
+                                    'text-primary dark:text-primary-light font-semibold': programForm.get('programType')?.value === 'linear',
+                                    'text-gray-700 dark:text-gray-300': programForm.get('programType')?.value !== 'linear'
+                                }">Week-by-Week Progression</span>
+                            </label>
+                        </div>
+                        <!-- NEW: Repeat option for Linear programs -->
+                        <div *ngIf="programForm.get('programType')?.value === 'linear'" class="mt-3 pl-6">
+                            <label class="flex items-center space-x-2 cursor-pointer">
+                                <input type="checkbox" formControlName="isRepeating"
+                                    class="form-checkbox h-4 w-4 rounded text-primary focus:ring-primary-dark dark:bg-gray-600 dark:border-gray-500">
+                                <span class="text-sm text-gray-700 dark:text-gray-300">Repeat weeks after
+                                    completion</span>
+                            </label>
+                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                If checked, the weekly schedule will loop indefinitely until the program is manually
+                                stopped.
+                            </p>
+                        </div>
                     </div>
                 </div>
 
@@ -194,12 +216,12 @@
                 <div>
                     <label for="iterationId" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Based on
                         Program Iteration</label>
-                        <input type="text" id="iterationId" formControlName="iterationId" placeholder=""
+                    <input type="text" id="iterationId" formControlName="iterationId" placeholder=""
                         class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200">
-                        <p class="mt-1 text-xs text-red dark:text-primary-light">
+                    <p class="mt-1 text-xs text-red dark:text-primary-light">
                         (EDIT IF YOU ONLY KNOW WHAT YOU ARE DOING)
                     </p>
-                        </div>
+                </div>
             </div>
             <div *ngIf="programForm.get('programNotes')?.value || isEditableMode()">
                 <label for="programNotes" class="block text-sm font-medium text-gray-700 dark:text-gray-300">General
@@ -316,7 +338,8 @@
                             </div>
                             <div class="sm:col-span-2" *ngIf="programForm.get('notes')?.value || isEditableMode()">
                                 <label [for]="'dayNotes-' + i"
-                                    class="block text-xs font-medium text-gray-700 dark:text-gray-300">Notes for this Day
+                                    class="block text-xs font-medium text-gray-700 dark:text-gray-300">Notes for this
+                                    Day
                                     (Optional)</label>
                                 <textarea [id]="'dayNotes-' + i" formControlName="notes" rows="2"
                                     class="mt-1 block w-full p-2 text-sm border rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700 dark:border-gray-500"></textarea>
@@ -325,8 +348,8 @@
                     </div>
                     <!-- NEW: Collapsed Preview -->
                     <div *ngIf="!isDayExpanded(dayCtrl.get('id')?.value)" class="mt-2 text-sm">
-                        <span
-                            class="font-medium text-gray-800 dark:text-gray-200">{{ dayCtrl.get('routineName')?.value || 'No Routine Selected' }}</span>
+                        <span class="font-medium text-gray-800 dark:text-gray-200">{{ dayCtrl.get('routineName')?.value
+                            || 'No Routine Selected' }}</span>
                     </div>
                 </div>
             </div>
@@ -460,8 +483,8 @@
                                             <label [for]="'routineName-' + weekIndex + '-' + dayIndex"
                                                 class="block text-xs font-medium text-gray-700 dark:text-gray-300">Routine</label>
                                             <div class="mt-1 flex rounded-md shadow-sm">
-                                                <input type="text"
-                                                    [id]="'routineName-' + weekIndex + '-' + dayIndex" readonly
+                                                <input type="text" [id]="'routineName-' + weekIndex + '-' + dayIndex"
+                                                    readonly
                                                     [value]="getWeekScheduleDayControl(weekIndex, dayIndex).get('routineName')?.value || 'No Routine'"
                                                     class="flex-1 block w-full px-3 py-2 text-sm rounded-l-md dark:bg-gray-400 cursor-default dark:text-gray-800 font-medium">
                                                 <button *ngIf="!isViewMode" type="button" appPress
@@ -474,7 +497,8 @@
                             }">
                                                     <app-icon name="change" class="h-5 w-5 mr-1"></app-icon>
                                                     {{
-                                                    getWeekScheduleDayControl(weekIndex, dayIndex).get('routineName')?.value
+                                                    getWeekScheduleDayControl(weekIndex,
+                                                    dayIndex).get('routineName')?.value
                                                     ? 'CHANGE': 'SELECT'}}
                                                 </button>
                                             </div>
@@ -492,8 +516,8 @@
                                 </div>
                                 <!-- NEW: Collapsed Day Preview -->
                                 <div *ngIf="!isDayExpanded(dayCtrl.get('id')?.value)" class="mt-2 text-sm">
-                                    <span
-                                        class="font-medium text-gray-800 dark:text-gray-200">{{ dayCtrl.get('routineName')?.value || 'No Routine Selected' }}</span>
+                                    <span class="font-medium text-gray-800 dark:text-gray-200">{{
+                                        dayCtrl.get('routineName')?.value || 'No Routine Selected' }}</span>
                                 </div>
                             </div>
                         </div>
@@ -519,7 +543,8 @@
                                     | dayOfWeek : false) }}:</span>
                                 <span class="italic ml-2">{{ day.get('routineName')?.value || 'No routine' }}</span>
                             </li>
-                            <li *ngIf="getWeekScheduleGroups(weekIndex).length === 0" class="text-sm text-gray-500 italic">
+                            <li *ngIf="getWeekScheduleGroups(weekIndex).length === 0"
+                                class="text-sm text-gray-500 italic">
                                 This week is empty.
                             </li>
                         </ul>

@@ -70,6 +70,9 @@ export interface TrainingProgram {
    */
   weeks?: ProgramWeek[];
   iterationId?: string | undefined; // id of current TrainingProgramHistoryEntry
+
+  /** NEW: Determines if a linear program's weeks should repeat. */
+  isRepeating?: boolean;
 }
 
 export interface TrainingProgramHistoryEntry {

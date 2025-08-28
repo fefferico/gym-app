@@ -172,7 +172,7 @@
                   <!-- ========================================================== -->
                   <div *ngIf="getCurrentWeekInfo(program) as weekInfo"
                     class="flex items-center gap-1 text-green-700 dark:text-green-300 font-semibold animate-pulse">
-                    <app-icon name="track_changes" class="w-5 h-5" [strokeWidth]="2"></app-icon>
+                    <app-icon name="calendar-page" class="w-5 h-5" [strokeWidth]="2"></app-icon>
                     <span class="font-medium">Current Week:</span> {{ weekInfo.name }}
                   </div>
                   <!-- ========================================================== -->
@@ -283,14 +283,11 @@
                         (shortPress)="viewProgramDetails(activeProgram.id)">{{ activeProgram.name }}<span> {{ activeProgram.iterationId}}</span></strong>
 
                       <!-- This span will appear only for linear programs and when a valid week is found for the viewDate -->
-                      <span *ngIf="displayedWeekInfo() as weekInfo" class="ml-1">
-                        - <span class="font-semibold">{{ weekInfo.name }}</span>
-                      </span>
-                      <span
-                        *ngIf="calendarDisplayMode()!=='month' && activeProgram && activeProgram.programType && activeProgram.programType === 'linear' && activeProgram.weeks && activeProgram.weeks.length > 0 && !displayedWeekInfo()"
-                        class="ml-1">
-                        - <span class="font-semibold">No week scheduled here</span>
-                      </span>
+                      <ng-container *ngIf="getCurrentWeekInfo(activeProgram) as weekInfo">
+                        <span *ngIf="calendarDisplayMode() !== 'month'" class="ml-1">
+                            - <span class="font-semibold">{{ weekInfo.name }}</span>
+                        </span>
+                      </ng-container>
                     </p>
                   </div>
                   <button appPress (shortPress)="nextPeriod()" [title]="'Next ' + (calendarDisplayMode() | titlecase)"

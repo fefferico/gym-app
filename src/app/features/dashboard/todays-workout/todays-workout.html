@@ -79,7 +79,13 @@
                   <span class="text-blue-500 dark:text-blue-400">Logged (Unscheduled):</span><span class="text-primary dark:text-primary-light ml-1">{{ workoutInfo.routine.name }}</span>
                 </ng-template>
                 
-                <div *ngIf="allActivePrograms().length > 1" class="my-2 text-xs font-semibold text-white bg-primary rounded-md p-1 flex-shrink w-fit"> Program: <strong class="font-medium"> {{ workoutInfo.scheduledDayInfo.programName }} {{ workoutInfo.scheduledDayInfo.iterationId }} </strong></div>
+                <div class="my-2 text-xs font-semibold text-white bg-primary rounded-md p-1 flex-shrink w-fit"> Program: <strong class="font-medium"> {{ workoutInfo.scheduledDayInfo.programName }} {{ workoutInfo.scheduledDayInfo.iterationId }}</strong>
+                  <div *ngIf="getCurrentWeekInfo(workoutInfo.scheduledDayInfo.programId) as weekInfo"
+                    class="flex items-center gap-1 text-green-700 dark:text-green-300 font-semibold animate-pulse">
+                    <app-icon name="calendar-page" class="w-5 h-5" [strokeWidth]="2"></app-icon>
+                    <span class="font-medium">Current Week:</span> {{ weekInfo.name }}{{workoutInfo.scheduledDayInfo.dayName ? ( ' - ' + workoutInfo.scheduledDayInfo.dayName) : ''}}
+                  </div>
+                </div>
               </h3>
 
               <p *ngIf="workoutInfo.routine.description"

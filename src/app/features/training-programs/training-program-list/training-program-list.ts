@@ -14,7 +14,8 @@ import {
   startOfWeek, endOfWeek, addDays, subDays, eachDayOfInterval, format,
   isSameDay, isToday, addMonths, subMonths, startOfMonth, endOfMonth,
   isSameMonth, isPast, isFuture, parseISO,
-  differenceInDays
+  differenceInDays,
+  differenceInCalendarWeeks
 } from 'date-fns';
 import { DayOfWeekPipe } from '../../../shared/pipes/day-of-week-pipe';
 import { animate, group, query, state, style, transition, trigger } from '@angular/animations';
@@ -253,51 +254,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
     }
     return null; // If zero programs are active.
   });
-  // --- END STATE MANAGEMENT CHANGES ---
 
-  // --- NEW: COMPUTED SIGNAL TO GET THE WEEK INFO FOR THE CURRENT CALENDAR VIEW ---
-  /**
-   * Calculates the program week information corresponding to the date currently
-   * being displayed in the calendar view.
-   */
-  readonly displayedWeekInfo = computed<{ name: string } | null>(() => {
-    const program = this.activeProgramForCalendar();
-    const viewDate = this.calendarViewDate(); // The reference date for the current calendar view
-
-    // Guard clauses: Ensure we have everything we need to perform the calculation.
-    if (!program || program.programType !== 'linear' || !program.startDate || !program.weeks?.length) {
-      return null;
-    }
-
-    try {
-      const startDate = parseISO(program.startDate);
-
-      // Calculate how many days have passed from the program start to the currently viewed date.
-      const daysSinceStart = differenceInDays(viewDate, startDate);
-
-      // If the viewed date is before the program started, there's no week to show.
-      if (daysSinceStart < 0) {
-        return null;
-      }
-
-      // Determine the zero-based index of the week.
-      const currentWeekIndex = Math.floor(daysSinceStart / 7);
-
-      // Retrieve the specific week's data from the program's `weeks` array.
-      const targetWeek = program.weeks[currentWeekIndex];
-
-      // If a week exists at that index, return its name.
-      if (targetWeek) {
-        return { name: targetWeek.name };
-      }
-
-    } catch (error) {
-      console.error("Error parsing start date for week calculation", error);
-    }
-
-    // If anything fails or if the viewed date is past the end of the program, return null.
-    return null;
-  });
 
   weekStartsOn: 0 | 1 = 1;
   calendarDisplayMode = signal<CalendarDisplayMode>('week');
@@ -1142,39 +1099,8 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
     return this.sanitizer.bypassSecurityTrustHtml(value);
   }
 
-  /**
-     * NEW: Calculates the current week for an active linear program.
-     * @param program The training program to check.
-     * @returns The current week's data or null if not applicable.
-     */
   getCurrentWeekInfo(program: TrainingProgram): { weekNumber: number; name: string } | null {
-    // Return null if the program is not linear, inactive, has no start date, or no weeks defined.
-    if (program.programType !== 'linear' || !program.isActive || !program.startDate || !program.weeks?.length) {
-      return null;
-    }
-
-    const today = new Date();
-    const startDate = parseISO(program.startDate);
-
-    // Return null if the program hasn't started yet.
-    if (today < startDate) {
-      return null;
-    }
-
-    const daysSinceStart = differenceInDays(today, startDate);
-    const currentWeekIndex = Math.floor(daysSinceStart / 7);
-    const currentWeekData = program.weeks[currentWeekIndex];
-
-    // If a week exists at the calculated index, return its info.
-    if (currentWeekData) {
-      return {
-        weekNumber: currentWeekData.weekNumber,
-        name: currentWeekData.name,
-      };
-    }
-
-    // Otherwise, the program has likely ended.
-    return null;
+    return this.trainingProgramService.getCurrentWeekInfo(program);
   }
 
 }

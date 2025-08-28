@@ -153,6 +153,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
             startDate: [null],
             cycleLength: [null, [Validators.min(1)]],
             iterationId: [null],
+            isRepeating: [false], // NEW form control for the repeat toggle
             schedule: this.fb.array([]), // For 'cycled' programs
             weeks: this.fb.array([])      // For 'linear' programs
         });
@@ -380,16 +381,20 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
     }
 
     handleProgramTypeChange(type: 'cycled' | 'linear'): void {
+        const isRepeatingControl = this.programForm.get('isRepeating');
         if (type === 'linear') {
             this.scheduleFormArray.clear();
             this.programForm.get('cycleLength')?.setValue(null);
             this.programForm.get('cycleLength')?.disable();
+            isRepeatingControl?.enable(); // Enable repeat toggle for linear programs
             if (this.weeksFormArray.length === 0 && !this.isViewMode) {
                 this.addWeek(); // Add the first week automatically in edit/new modes
             }
         } else { // 'cycled'
             this.weeksFormArray.clear();
             this.programForm.get('cycleLength')?.enable();
+            isRepeatingControl?.setValue(false); // Reset and disable for cycled programs
+            isRepeatingControl?.disable();
         }
     }
 
@@ -460,6 +465,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
             cycleLength: program.cycleLength ?? null,
             iterationId: program.iterationId ?? null,
             programType: program.programType || 'cycled', // Default to 'cycled' for old data
+            isRepeating: program.isRepeating ?? false, // Patch the new value
         });
     
         this.cycleLengthSignal.set(program.cycleLength ?? null);
@@ -713,6 +719,8 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
             startDate: formValue.startDate || null,
             iterationId: formValue.iterationId || null,
             cycleLength: formValue.programType === 'cycled' ? (formValue.cycleLength || null) : null,
+            // Set isRepeating based on program type
+            isRepeating: formValue.programType === 'linear' ? formValue.isRepeating : false,
             schedule: formValue.schedule.map((s: ScheduledRoutineDay) => ({
                 id: s.id || uuidv4(),
                 dayOfWeek: Number(s.dayOfWeek),

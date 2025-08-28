@@ -10,7 +10,7 @@ import { Routine } from '../models/workout.model';
 import { WorkoutService } from './workout.service';
 import { AlertService } from './alert.service';
 import { ToastService } from './toast.service';
-import { isSameDay, getDay, eachDayOfInterval, parseISO, differenceInDays, startOfDay, format } from 'date-fns';
+import { isSameDay, getDay, eachDayOfInterval, parseISO, differenceInDays, startOfDay, format, differenceInCalendarWeeks } from 'date-fns';
 
 // +++ 1. IMPORT THE STATIC PROGRAMS DATA +++
 import { PROGRAMS_DATA } from './programs-data';
@@ -172,7 +172,7 @@ export class TrainingProgramService {
       'Delete Program',
       `Are you sure you want to delete the program "${programToDelete.name}"? This action cannot be undone.`,
       [
-        { text: 'Cancel', role: 'cancel', data: false, cssClass: 'bg-gray-400 hover:bg-gray-600', icon: 'cancel', iconClass:'w-4 h-4 mr-1' },
+        { text: 'Cancel', role: 'cancel', data: false, cssClass: 'bg-gray-400 hover:bg-gray-600', icon: 'cancel', iconClass: 'w-4 h-4 mr-1' },
         { text: 'Delete Program', role: 'confirm', data: true, cssClass: 'bg-primary hover:bg-primary-dark', icon: 'done' }
       ]
     );
@@ -258,52 +258,63 @@ export class TrainingProgramService {
   }
 
   public findRoutineForDayInProgram(targetDate: Date, program: TrainingProgram): { routine: Routine, scheduledDayInfo: ScheduledRoutineDay } | null {
-    // +++ FIX: The guard clause must check for BOTH linear and cycled schedule data.
+    // Guard clauses for program validity
     if (!program || !program.startDate ||
       (program.programType === 'linear' && (!program.weeks || program.weeks.length === 0)) ||
-      (program.programType !== 'linear' && (!program.schedule || program.schedule.length === 0))
+      (program.programType === 'cycled' && (!program.schedule || program.schedule.length === 0))
     ) {
-      return null; // The program is not schedulable.
+      return null;
     }
 
     const programStartDate = parseISO(program.startDate);
     const normalizedTargetDate = startOfDay(targetDate);
 
-    // Universal check: The target date cannot be before the program's start date.
+    // Guard clause for dates before the program starts
     if (normalizedTargetDate < startOfDay(programStartDate)) {
       return null;
     }
 
     let scheduledDayInfo: ScheduledRoutineDay | undefined;
 
-    // +++ FIX: Main logic split based on program type. +++
-    if (program.programType === 'linear') {
-      // --- LOGIC FOR LINEAR PROGRAMS ---
-      const daysSinceStart = differenceInDays(normalizedTargetDate, startOfDay(programStartDate));
-      const currentWeekIndex = Math.floor(daysSinceStart / 7);
-      const targetWeek = program.weeks?.[currentWeekIndex]; // Safety check with optional chaining
+    // --- LOGIC FOR LINEAR PROGRAMS (CORRECTED) ---
+    if (program.programType === 'linear' && program.weeks && program.weeks.length > 0) {
+      const sortedWeeks = [...program.weeks].sort((a, b) => a.weekNumber - b.weekNumber);
+      const totalWeeks = sortedWeeks.length;
+
+      // *** THE FIX: Use differenceInCalendarWeeks for consistency ***
+      const calendarWeekIndex = differenceInCalendarWeeks(normalizedTargetDate, startOfDay(programStartDate));
+      
+      let programWeekIndex = calendarWeekIndex;
+      if (program.isRepeating) {
+        programWeekIndex = calendarWeekIndex % totalWeeks;
+      }
+
+      if (programWeekIndex >= totalWeeks) {
+        return null; // Past the end of a non-repeating program
+      }
+
+      const targetWeek = sortedWeeks[programWeekIndex];
 
       if (targetWeek) {
-        const dayOfWeek = getDay(targetDate); // Sunday: 0, Monday: 1...
+        const dayOfWeek = getDay(targetDate); // 0=Sun, 1=Mon...
         scheduledDayInfo = targetWeek.schedule.find(s => s.dayOfWeek === dayOfWeek);
       }
-    } else {
-      // --- LOGIC FOR CYCLED PROGRAMS (the previously corrected logic) ---
+    
+    // --- LOGIC FOR CYCLED PROGRAMS (UNCHANGED) ---
+    } else if (program.programType === 'cycled' && program.schedule) {
       const cycleLength = program.cycleLength ?? 7;
 
       if (cycleLength === 7) {
-        // Standard weekly cycle (day is 0-6)
         const dayOfWeekForTargetDate = getDay(targetDate);
         scheduledDayInfo = program.schedule.find(s => s.dayOfWeek === dayOfWeekForTargetDate);
       } else {
-        // N-day cycle (day is 1-N)
         const daysSinceStart = differenceInDays(normalizedTargetDate, startOfDay(programStartDate));
         const currentCycleDayNumber = (daysSinceStart % cycleLength) + 1;
         scheduledDayInfo = program.schedule.find(s => s.dayOfWeek === currentCycleDayNumber);
       }
     }
 
-    // Common return logic: If we found a scheduled day, find its corresponding routine.
+    // Common return logic
     if (scheduledDayInfo) {
       const routine = this.workoutService.getRoutineByIdSync(scheduledDayInfo.routineId);
       if (routine) {
@@ -312,7 +323,7 @@ export class TrainingProgramService {
     }
 
     return null; // No scheduled routine found for this day.
-  }
+}
 
   getRoutineForDay(targetDate: Date): Observable<{ routine: Routine, scheduledDayInfo: ScheduledRoutineDay } | null> {
     return this.getActiveProgram().pipe(
@@ -416,47 +427,61 @@ export class TrainingProgramService {
   getScheduledRoutinesForDateRangeByProgramId(programId: string, rangeStart: Date, rangeEnd: Date): Observable<{ date: Date; scheduledDayInfo: ScheduledRoutineDay }[]> {
     return this.getProgramById(programId).pipe(
       map(program => {
-        if (!program || (!program.schedule?.length && !program.weeks?.length)) {
+        if (!program || (!program.schedule?.length && (!program.weeks || program.weeks.length === 0))) {
           return [];
         }
 
         const allOccurrences: { date: Date; scheduledDayInfo: ScheduledRoutineDay }[] = [];
 
-        // --- Handle 'linear' (week-by-week) programs ---
-        if (program.programType === 'linear' && program.weeks?.length) {
-          // A linear program cannot be scheduled without a start date.
+        if (program.programType === 'linear' && program.weeks && program.weeks.length > 0) {
           if (!program.startDate) {
             console.warn(`Linear program "${program.name}" has no start date and cannot be scheduled.`);
             return [];
           }
-          const programStartDate = startOfDay(parseISO(program.startDate));
 
-          // Adjust the iteration range to only include days from the program's start date onwards.
+          const sortedWeeks = [...program.weeks].sort((a, b) => a.weekNumber - b.weekNumber);
+          const totalWeeks = sortedWeeks.length;
+          const programStartDate = startOfDay(parseISO(program.startDate));
           const effectiveStartDate = rangeStart > programStartDate ? rangeStart : programStartDate;
 
           if (effectiveStartDate > rangeEnd) {
-            return []; // The entire requested range is before the program starts.
+            return [];
           }
+
           const daysToSchedule = eachDayOfInterval({ start: effectiveStartDate, end: rangeEnd });
 
           daysToSchedule.forEach(currentDate => {
-            const daysSinceStart = differenceInDays(currentDate, programStartDate);
-            if (daysSinceStart < 0) return;
+            // *** THE FIX IS HERE ***
+            // Use differenceInCalendarWeeks to correctly align with the calendar.
+            // This correctly identifies being in the 0th, 1st, 2nd, etc., calendar week since the start.
+            const calendarWeekIndex = differenceInCalendarWeeks(currentDate, programStartDate);
 
-            const currentWeekIndex = Math.floor(daysSinceStart / 7);
-            const targetWeek = program.weeks![currentWeekIndex];
+            let programWeekIndex;
+            if (program.isRepeating) {
+              // Use modulo to loop back to the first week of the program
+              programWeekIndex = calendarWeekIndex % totalWeeks;
+            } else {
+              programWeekIndex = calendarWeekIndex;
+            }
+
+            // For non-repeating programs, stop if we are past the defined duration
+            if (programWeekIndex >= totalWeeks) {
+              return;
+            }
+
+            const targetWeek = sortedWeeks[programWeekIndex];
 
             if (targetWeek) {
-              const dayOfWeek = getDay(currentDate);
+              const dayOfWeek = getDay(currentDate); // 0=Sun, 1=Mon, etc.
               const scheduledDay = targetWeek.schedule.find(s => s.dayOfWeek === dayOfWeek);
-              if (scheduledDay && program.iterationId === scheduledDay.iterationId) {
+
+              if (scheduledDay) {
                 allOccurrences.push({ date: currentDate, scheduledDayInfo: scheduledDay });
               }
             }
           });
-        }
-        // --- Handle 'cycled' programs (existing logic) ---
-        else if (program.programType === 'cycled' && program.schedule?.length) {
+        } else if (program.programType === 'cycled' && program.schedule?.length) {
+          // This logic for 'cycled' programs was already correct.
           const programStartDate = program.startDate ? startOfDay(parseISO(program.startDate)) : new Date(1970, 0, 1);
           const allDaysInRange = eachDayOfInterval({ start: rangeStart, end: rangeEnd });
           const cycleLength = program.cycleLength && program.cycleLength > 0 ? program.cycleLength : 7;
@@ -472,10 +497,10 @@ export class TrainingProgramService {
 
             let scheduledDayInfo: ScheduledRoutineDay | undefined;
 
-            if (cycleLength === 7) { // Standard weekly logic
+            if (cycleLength === 7) {
               const dayOfWeek = getDay(currentDate);
               scheduledDayInfo = scheduleMap.get(dayOfWeek);
-            } else { // N-day cycle logic
+            } else {
               const daysSinceStart = differenceInDays(currentDate, programStartDate);
               const currentCycleDayNumber = (daysSinceStart % cycleLength) + 1;
               scheduledDayInfo = scheduleMap.get(currentCycleDayNumber);
@@ -491,10 +516,6 @@ export class TrainingProgramService {
       })
     );
   }
-
-
-
-
   async removeProgramHistoryEntry(programId: string, historyEntryId: string): Promise<void> {
     const currentPrograms = this.programsSubject.getValue();
     const targetProgram = currentPrograms.find(p => p.id === programId);
@@ -900,5 +921,55 @@ export class TrainingProgramService {
 
   generateNewDate(date?: string | Date): string {
     return format(date ? date : new Date(), 'yyyy-MM-dd');
+  }
+
+  /**
+   * CORRECTED: Calculates the current week for an active linear program.
+   * @param program The training program to check.
+   * @returns The current week's data or null if not applicable.
+   */
+  getCurrentWeekInfo(program: TrainingProgram): { weekNumber: number; name: string } | null {
+    // Return null if the program is not linear, inactive, has no start date, or no weeks defined.
+    if (program.programType !== 'linear' || !program.isActive || !program.startDate || !program.weeks?.length) {
+      return null;
+    }
+
+    const today = new Date();
+    const startDate = parseISO(program.startDate);
+
+    // Return null if the program hasn't started yet.
+    if (today < startDate) {
+      return null;
+    }
+    
+    const totalWeeks = program.weeks.length;
+    // --- THE FIX ---
+    // Use differenceInCalendarWeeks to align with the service and calendar view logic.
+    const calendarWeekIndex = differenceInCalendarWeeks(today, startDate);
+
+    let programWeekIndex = calendarWeekIndex;
+
+    // If the program repeats, use the modulo operator to loop the week index.
+    if (program.isRepeating) {
+      programWeekIndex = calendarWeekIndex % totalWeeks;
+    }
+
+    // If we are past the end of a non-repeating program, return null.
+    if (programWeekIndex >= totalWeeks) {
+      return null;
+    }
+
+    const currentWeekData = program.weeks[programWeekIndex];
+
+    // If a week exists at the calculated index, return its info.
+    if (currentWeekData) {
+      return {
+        weekNumber: currentWeekData.weekNumber,
+        name: currentWeekData.name,
+      };
+    }
+
+    // Fallback if something goes wrong.
+    return null;
   }
 }
