@@ -864,14 +864,23 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
   // +++ MODIFIED: This method now also sets the next set's details for the rest timer UI
-  private startRestPeriod(duration: number, completedExIndex: number, completedSetIndex: number): void {
-    const nextStep = this.peekNextStepInfo(completedExIndex, completedSetIndex);
+    // +++ MODIFIED: This method now also sets the next set's details for the rest timer UI
+  private async startRestPeriod(duration: number, completedExIndex: number, completedSetIndex: number): Promise<void> {
+    this.playerSubState.set(PlayerSubState.Resting);
     this.restDuration.set(duration);
     this.restTimerMainText.set('RESTING');
-    this.restTimerNextUpText.set(nextStep.text);
-    this.restTimerNextSetDetails.set(nextStep.details); // +++ NEW
+
+    // Show a loading state while fetching next step info
+    this.restTimerNextUpText.set('Loading next set...');
+    this.restTimerNextSetDetails.set(null);
     this.isRestTimerVisible.set(true);
-    this.playerSubState.set(PlayerSubState.Resting);
+
+    // Await the async peek method
+    const nextStep = await this.peekNextStepInfo(completedExIndex, completedSetIndex);
+
+    // Update the UI with the fetched info
+    this.restTimerNextUpText.set(nextStep.text);
+    this.restTimerNextSetDetails.set(nextStep.details);
   }
 
   private handleAutoExpandNextExercise(): void {
@@ -907,7 +916,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
   // +++ MODIFIED: This method now returns an object with both the text and the detailed set info
-  private peekNextStepInfo(completedExIndex: number, completedSetIndex: number): { text: string | null; details: ExerciseSetParams | null } {
+  // +++ MODIFIED: This method now returns an object with both the text and the detailed set info
+  private async peekNextStepInfo(completedExIndex: number, completedSetIndex: number): Promise<{ text: string | null; details: ExerciseSetParams | null }> {
     const routine = this.routine();
     if (!routine) return { text: null, details: null };
 
@@ -919,23 +929,57 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       maxExerciseIndex: routine.exercises.length - 1
     };
 
+    let nextExercise: WorkoutExercise | undefined;
+    let nextSetIndex: number | undefined;
+
+    // Is there another set in the current exercise?
     if (completedSetIndex + 1 < currentExercise.sets.length) {
-      const nextSet = currentExercise.sets[completedSetIndex + 1];
-      return {
-        text: `${currentExercise.exerciseName} - Set ${completedSetIndex + 2}`,
-        details: nextSet
-      };
+      nextExercise = currentExercise;
+      nextSetIndex = completedSetIndex + 1;
+    }
+    // Is there another exercise in the routine?
+    else if (completedExIndex + 1 < routine.exercises.length) {
+      nextExercise = routine.exercises[completedExIndex + 1];
+      nextSetIndex = 0;
     }
 
-    if (completedExIndex + 1 < routine.exercises.length) {
-      const nextExercise = routine.exercises[completedExIndex + 1];
-      const nextSet = nextExercise.sets[0];
-      return {
-        text: `${nextExercise.exerciseName} - Set 1`,
-        details: nextSet
-      };
+    // If we found a next step
+    if (nextExercise && nextSetIndex !== undefined) {
+      const plannedNextSet = nextExercise.sets[nextSetIndex];
+
+      // --- NEW LOGIC: Fetch historical data and create a suggested set ---
+      try {
+        const lastPerformance = await firstValueFrom(
+          this.trackingService.getLastPerformanceForExercise(nextExercise.exerciseId)
+        );
+
+        // Find the specific historical data for the upcoming set index
+        const historicalSet = this.trackingService.findPreviousSetPerformance(lastPerformance, plannedNextSet, nextSetIndex);
+
+        // Create a new object for the rest timer details, prioritizing historical data
+        const suggestedSetDetails: ExerciseSetParams = { ...plannedNextSet };
+        if (historicalSet) {
+          suggestedSetDetails.reps = historicalSet.repsAchieved ?? plannedNextSet.reps;
+          suggestedSetDetails.weight = historicalSet.weightUsed ?? plannedNextSet.weight;
+          suggestedSetDetails.duration = historicalSet.durationPerformed ?? plannedNextSet.duration;
+          suggestedSetDetails.distance = historicalSet.distanceAchieved ?? plannedNextSet.distance;
+        }
+
+        const nextSetDisplayNumber = nextSetIndex + 1;
+        const text = `${nextExercise.exerciseName} - Set ${nextSetDisplayNumber}`;
+
+        return { text, details: suggestedSetDetails };
+
+      } catch (error) {
+        // If fetching fails, just return the planned set
+        console.error("Could not fetch last performance for next set:", error);
+        const nextSetDisplayNumber = nextSetIndex + 1;
+        const text = `${nextExercise.exerciseName} - Set ${nextSetDisplayNumber}`;
+        return { text, details: plannedNextSet };
+      }
     }
 
+    // If no next step
     this.nextStepInfo = { completedExIndex: -1, completedSetIndex: -1, exerciseSetLength: -1, maxExerciseIndex: -1 };
     return { text: "Workout Complete!", details: null };
   }

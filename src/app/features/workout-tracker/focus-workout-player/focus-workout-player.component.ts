@@ -31,7 +31,7 @@ import { format } from 'date-fns';
 
 
 // Interface to manage the state of the currently active set/exercise
-interface ActiveSetInfo {
+export interface ActiveSetInfo {
   exerciseIndex: number;
   setIndex: number;
   exerciseData: WorkoutExercise; // This WorkoutExercise will have sessionStatus
@@ -3598,87 +3598,74 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     }
   }
 
-  private async startRestPeriod(duration: number, isResumingPausedRest: boolean = false): Promise<void> {
+  private startRestPeriod(duration: number, isResumingPausedRest: boolean = false): void {
     this.playerSubState.set(PlayerSubState.Resting);
     this.restDuration.set(duration);
 
-    if (isPlatformBrowser(this.platformId) && duration > 0) { // Ensure duration > 0 for timer
-      const routineVal = this.routine();
-
-      if (!isResumingPausedRest) {
+    if (isPlatformBrowser(this.platformId) && duration > 0) {
+      if (isResumingPausedRest) {
+        this.restTimerMainText.set(this.restTimerMainTextOnPause);
+        this.restTimerNextUpText.set(this.restTimerNextUpTextOnPause);
+      } else {
         this.restTimerMainText.set("RESTING");
-        // For "UP NEXT", peek at the next set and handle rounds/supersets
-        const nextSetInfo = await this.peekNextSetInfo();
-        let resultText = 'Next Exercise';
+        // Set a default/loading text immediately
+        this.restTimerNextUpText.set('Next Exercise');
 
-        if (nextSetInfo && nextSetInfo.exerciseData && nextSetInfo.exerciseData.sets) {
-          const isWarmup = nextSetInfo.type === 'warmup';
-          const setNumber = isWarmup
-            ? this.getWarmupSetNumberForDisplay(nextSetInfo.exerciseData, nextSetInfo.setIndex)
-            : this.getWorkingSetNumberForDisplay(nextSetInfo.exerciseData, nextSetInfo.setIndex);
-          const totalSets = isWarmup
-            ? this.getTotalWarmupSetsForExercise(nextSetInfo.exerciseData)
-            : this.getWorkingSetCountForExercise(nextSetInfo.exerciseData);
-          const exerciseName = nextSetInfo.exerciseData.exerciseName || 'Exercise';
+        // Asynchronously fetch and update the detailed "next up" text
+        this.peekNextSetInfo().then(nextSetInfo => {
+          if (!nextSetInfo) return; // Exit if no next set info is found
 
-          // Handle rounds/supersets
+          const routineVal = this.routine();
+          let resultText = 'Next Exercise'; // Default text
+          const { exerciseData, setIndex, type, setData, historicalSetPerformance } = nextSetInfo;
+
+          const isWarmup = type === 'warmup';
+          const setNumber = isWarmup ? this.getWarmupSetNumberForDisplay(exerciseData, setIndex) : this.getWorkingSetNumberForDisplay(exerciseData, setIndex);
+          const totalSets = isWarmup ? this.getTotalWarmupSetsForExercise(exerciseData) : this.getWorkingSetCountForExercise(exerciseData);
+          const exerciseName = exerciseData.exerciseName || 'Exercise';
+
           let roundText = '';
           if (routineVal) {
-            const ex = nextSetInfo.exerciseData;
-            let rounds = ex.rounds ?? 0;
-            // If part of a superset, get rounds from block start
-            if (ex.supersetId && ex.supersetOrder !== null) {
-              const blockStart = routineVal.exercises.find(e =>
-                e.supersetId === ex.supersetId && e.supersetOrder === 0
-              );
-              if (blockStart) {
-                rounds = blockStart.rounds ?? 1;
-              }
-            }
-            if (rounds >= 1 && ex.supersetSize !== undefined && ex.supersetSize !== null && ex.supersetSize > 0) {
-              roundText = ` (Round ${this.currentBlockRound()}/${rounds})`;
+            const { round, totalRounds } = this.getRoundInfo(exerciseData);
+            if (totalRounds > 1) {
+              roundText = ` (Round ${this.currentBlockRound()}/${totalRounds})`;
             }
           }
 
           resultText = `${isWarmup ? 'Warm-up ' : ''}Set ${setNumber}/${totalSets} of ${exerciseName}${roundText}`;
 
-          // adding next set info like weights, reps, etc.
-          if (nextSetInfo.setData) {
-            resultText += ' [';
-            const setData = nextSetInfo.setData;
-            const historicalSetData = nextSetInfo.historicalSetPerformance;
-            if (setData.weight && setData.reps) {
-              resultText += `${setData.weight}${this.unitService.getUnitLabel()} x ${setData.reps} reps`;
-            } else if (historicalSetData && historicalSetData.weightUsed && historicalSetData.repsAchieved) {
-              resultText += `${historicalSetData.weightUsed}${this.unitService.getUnitLabel()} x ${historicalSetData.repsAchieved} reps`;
-            }
-            if (!setData.weight && setData.reps && (!historicalSetData || !historicalSetData.repsAchieved)) {
-              resultText += `${setData.reps} reps`;
-            }
-            if (setData.duration) {
-              if (resultText.length > 2 && !resultText.endsWith('[')) {
-                resultText += `, duration ${setData.duration} seconds`;
-              } else {
-                resultText += `duration ${setData.duration} seconds`;
-              }
-            } 
-            resultText += ']';
+          // --- OPTIMIZED: Prioritize historical data for display ---
+          const detailsParts: string[] = [];
+          // 1. Prioritize historical weight/reps
+          if (historicalSetPerformance?.weightUsed !== undefined && historicalSetPerformance.weightUsed !== null && historicalSetPerformance.repsAchieved !== undefined) {
+            detailsParts.push(`${historicalSetPerformance.weightUsed}${this.unitService.getUnitLabel()} x ${historicalSetPerformance.repsAchieved} reps`);
           }
-        }
-        
-        this.restTimerNextUpText.set(resultText);
+          // 2. Fallback to planned weight/reps
+          else if (setData.weight !== undefined && setData.weight !== null && setData.reps !== undefined) {
+            detailsParts.push(`${setData.weight}${this.unitService.getUnitLabel()} x ${setData.reps} reps`);
+          }
+          // 3. Handle planned reps only
+          else if (setData.reps !== undefined) {
+            detailsParts.push(`${setData.reps} reps`);
+          }
+          // 4. Handle planned duration (always a target)
+          if (setData.duration) {
+            detailsParts.push(`for ${setData.duration}s`);
+          }
 
-      } else {
-        this.restTimerMainText.set(this.restTimerMainTextOnPause);
-        this.restTimerNextUpText.set(this.restTimerNextUpTextOnPause);
+          if (detailsParts.length > 0) {
+            resultText += ` [${detailsParts.join(', ')}]`;
+          }
+          // --- END OPTIMIZATION ---
+
+          this.restTimerNextUpText.set(resultText);
+        });
       }
-
-      this.playerSubState.set(PlayerSubState.Resting);
-      this.restDuration.set(duration);
 
       this.isRestTimerVisible.set(true); // Show full-screen timer
       this.updateRestTimerDisplay(duration); // For footer
     } else {
+      // If no rest, immediately prepare the next set
       this.isRestTimerVisible.set(false);
       this.playerSubState.set(PlayerSubState.PerformingSet);
       this.prepareCurrentSet();
@@ -3693,7 +3680,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
   }
 
   // New helper to peek at the next set's details without advancing state
-  async peekNextSetInfo(): Promise<ActiveSetInfo | null> {
+ async peekNextSetInfo(): Promise<ActiveSetInfo | null> {
     const r = this.routine();
     const exIndex = this.currentExerciseIndex(); // These indices point to the *upcoming* set
     const sIndex = this.currentSetIndex();
@@ -3708,7 +3695,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       }
 
       const originalExerciseForSuggestions = this.originalRoutineSnapshot.find(oe => oe.exerciseId === exerciseData.exerciseId) || exerciseData;
-      const plannedSetForSuggestions = originalExerciseForSuggestions?.sets[sIndex] || exerciseData;
+      const plannedSetForSuggestions = originalExerciseForSuggestions?.sets[sIndex] || setData;
       const historicalSetPerformance = this.trackingService.findPreviousSetPerformance(this.lastPerformanceForCurrentExercise, plannedSetForSuggestions, sIndex);
 
       return {
