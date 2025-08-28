@@ -167,6 +167,10 @@
                       ...
                     </span>
                   </div>
+                  <div *ngIf="program.iterationId" class="flex items-center gap-1">
+                    <app-icon name="change" class="w-5 h-5 text-gray-500 dark:text-gray-300" [strokeWidth]="2"></app-icon>
+                    <span class="font-medium">Iteration:</span> {{ program.iterationId }}
+                  </div>
                   <!-- ========================================================== -->
                   <!-- START: Add This Snippet Here                             -->
                   <!-- ========================================================== -->
