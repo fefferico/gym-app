@@ -86,7 +86,7 @@ export const ICONS: Record<string, string> = {
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10.5v6m3-3H9m4.06-7.19-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z" /></svg>
 `,
   'cancel': `
-          <svg stroke="currentColor" fill="none" viewBox="0 0 8 8">
+          <svg stroke="currentColor" fill="none" viewBox="0 0 8 8" class="w-4 h-4">
               <path stroke-linecap="round" stroke-width="1.5" d="M1 1l6 6m0-6L1 7" />
             </svg>
 `,
@@ -212,6 +212,9 @@ viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" >
 `,
   'drag': `
 <svg  xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" ><path d="M 7 17 L 7 3 M 4 6 L 7 3 L 10 6 M 17 7 L 17 21 M 14 18 L 17 21 L 20 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+`,
+'reorder': `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><path d="M10 4h4v4h-4zM4 10h4v4H4zM10 10h4v4h-4zM16 10h4v4h-4zM10 16h4v4h-4z"></path></svg>
 `,
   'pause': `
 <svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
