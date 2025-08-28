@@ -205,7 +205,7 @@
                         class="block text-sm font-medium text-gray-700 dark:text-gray-300">Based on Program Iteration
                         ID</label>
                     <span class="text-xs text-red-500 dark:text-primary-light">(Select an iteration if logging for a
-                        specific program cycle)</span>
+                        specific program cycle - EDIT IF YOU ONLY KNOW WHAT YOU ARE DOING)</span>
                     <select id="iterationIdForLog" formControlName="iterationIdForLog"
                         [disabled]="!builderForm.get('programIdForLog')?.value || availableIterationIds.length === 0"
                         class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200 disabled:opacity-50 disabled:cursor-not-allowed">
@@ -218,7 +218,7 @@
                     <label for="scheduledDayIdForLog"
                         class="block text-sm font-medium text-gray-700 dark:text-gray-300">Based on Program Scheduled ID
                     </label><span class="text-xs text-red-500 dark:text-primary-light">(Select the scheduled day you are
-                        logging)</span>
+                        logging - EDIT IF YOU ONLY KNOW WHAT YOU ARE DOING)</span>
                     <select id="scheduledDayIdForLog" formControlName="scheduledDayIdForLog"
                         [disabled]="!builderForm.get('programIdForLog')?.value || availableScheduledDayIds.length === 0"
                         class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200 disabled:opacity-50 disabled:cursor-not-allowed">
@@ -284,12 +284,9 @@
                                 <div *ngIf="isEditableMode()"
                                     class="p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 flex-shrink-0"
                                     title="Drag to reorder">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-5 h-5">
-                                        <path d="M 7 17 L 7 3 M 4 6 L 7 3 L 10 6 M 17 7 L 17 21 M 14 18 L 17 21 L 20 18"
-                                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                            stroke-linejoin="round" />
-                                    </svg>
-                                </div>
+                                    <app-icon name="reorder"></app-icon>
+                                </div>                                        
+
                                 <!-- CHECKBOX (if applicable) -->
                                 <input
                                     *ngIf="mode === 'routineBuilder' && (isEditableMode() || isNewMode) && !isViewMode"
@@ -352,20 +349,18 @@
                                 </div>
                                 <!-- COMPACT: Minimal actions for compact view (e.g., small remove icon) -->
                                 <div *ngIf="!shouldShowExpandedExercise(exIndex) && !isViewMode"
-                                    class="flex-shrink-0 ml-auto">
+                                    class="flex-shrink-0 ml-auto pr-1">
                                     <!-- ml-auto to push to the right -->
                                     <button type="button" (click)="removeExercise(exIndex); $event.stopPropagation()"
                                         title="Remove Exercise"
-                                        class="p-1 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30 disabled:opacity-50">
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" class="w-4 h-4">
-                                            <!-- Rounded square background in red -->
-                                            <rect width="16" height="16" rx="3" ry="3" fill="red" />
-                                            <!-- White "X" shape centered -->
-                                            <path fill="#ffffff" fill-rule="evenodd" clip-rule="evenodd"
-                                                d="M4.22 4.22a.75.75 0 0 1 1.06 0L8 7.94l2.72-2.72a.75.75 0 1 1 1.06 1.06L9.06 9l2.72 2.72a.75.75 0 1 1-1.06 1.06L8 10.06 5.28 12.78a.75.75 0 0 1-1.06-1.06L6.94 9 4.22 6.28a.75.75 0 0 1 0-1.06z" />
-                                        </svg>
+                                        class="flex items-center p-1 hover:text-red-700 dark:hover:text-red-300 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30 disabled:opacity-50 bg-red-500 text-white">
+                                        <app-icon name="cancel" class="h-4 w-4"></app-icon>
                                     </button>
                                 </div>
+                                <div *ngIf="!isViewMode && shouldShowExpandedExercise(exIndex)" class="w-full flex justify-end pr-2"><button type="button" (click)="removeExercise(exIndex)" title="Remove Exercise"
+                                            class="flex items-center p-1 hover:text-red-700 dark:hover:text-red-300 rounded-md hover:bg-red-100 dark:hover:bg-red-900/30 disabled:opacity-50 bg-red-500 text-white">
+                                            <app-icon name="cancel" class="h-5 w-5 mr-1"></app-icon>REMOVE
+                                        </button></div>
                             </div>
                             <!-- EXPANDED CONTENT AREA -->
                             <div *ngIf="shouldShowExpandedExercise(exIndex)" class="p-2">
@@ -413,18 +408,10 @@
                                                 [readonly]="(exerciseControl.get('supersetId')?.value && (exerciseControl.get('supersetOrder')?.value ?? 0) > 0) || isViewMode"
                                                 (change)="syncSupersetRounds(exerciseControl.get('supersetId')?.value, exerciseControl.get('rounds')?.value, exIndex)">
                                         </div>
-                                        <button *ngIf="!isViewMode" type="button" (click)="removeExercise(exIndex)"
-                                            class="flex items-center text-xs text-red-600 bg-red-200 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 font-medium py-1 px-2 rounded-md hover:enabled:bg-red-100 dark:enabled:hover:bg-red-900/50 disabled:opacity-50">
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"
-                                                class="w-4 h-4 mr-2">
-                                                <!-- Rounded square background in red -->
-                                                <rect width="16" height="16" rx="3" ry="3" fill="red" />
-                                                <!-- White "X" shape centered -->
-                                                <path fill="#ffffff" fill-rule="evenodd" clip-rule="evenodd"
-                                                    d="M4.22 4.22a.75.75 0 0 1 1.06 0L8 7.94l2.72-2.72a.75.75 0 1 1 1.06 1.06L9.06 9l2.72 2.72a.75.75 0 1 1-1.06 1.06L8 10.06 5.28 12.78a.75.75 0 0 1-1.06-1.06L6.94 9 4.22 6.28a.75.75 0 0 1 0-1.06z" />
-                                            </svg>
-                                            Remove
-                                        </button>
+                                        <!-- <button *ngIf="!isViewMode" type="button" (click)="removeExercise(exIndex)" title="Remove Exercise"
+                                            class="flex items-center p-1 hover:text-red-700 dark:hover:text-red-300 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30 disabled:opacity-50 bg-red-500 text-white">
+                                            <app-icon name="cancel" class="h-5 w-5 mr-1"></app-icon>REMOVE
+                                        </button> -->
                                         <button
                                             *ngIf="mode === 'routineBuilder' && isEditableMode() && exerciseControl.get('supersetId')?.value"
                                             type="button" (click)="ungroupSuperset(exIndex)" [disabled]="isViewMode"
@@ -531,8 +518,9 @@
                                         <h4 class="text-m font-semibold text-gray-700 dark:text-gray-300">Sets:</h4>
                                         <button *ngIf="!isViewMode" type="button"
                                             (click)="addSet(exerciseControl, exIndex); $event.stopPropagation()"
-                                            class="text-xs bg-blue-200 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium py-0.5 px-1.5 rounded-md hover:enabled:bg-blue-100 dark:hover:bg-blue-900/50">
-                                            + Add Set
+                                            class="inline-flex items-center text-xs bg-blue-200 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium py-0.5 px-1.5 rounded-md hover:enabled:bg-blue-100 dark:hover:bg-blue-900/50">
+                                            <app-icon name="plus-circle"></app-icon>
+                                            ADD SET
                                         </button>
                                     </div>
 
@@ -599,14 +587,7 @@
                                                         (click)="removeSet(exerciseControl, exIndex, setIndex); $event.stopPropagation()"
                                                         title="Remove Set"
                                                         class="flex items-center text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 p-0.5 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30 disabled:opacity-50">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"
-                                                            class="w-4 h-4">
-                                                            <!-- Rounded square background in red -->
-                                                            <rect width="16" height="16" rx="3" ry="3" fill="red" />
-                                                            <!-- White "X" shape centered -->
-                                                            <path fill="#ffffff" fill-rule="evenodd" clip-rule="evenodd"
-                                                                d="M4.22 4.22a.75.75 0 0 1 1.06 0L8 7.94l2.72-2.72a.75.75 0 1 1 1.06 1.06L9.06 9l2.72 2.72a.75.75 0 1 1-1.06 1.06L8 10.06 5.28 12.78a.75.75 0 0 1-1.06-1.06L6.94 9 4.22 6.28a.75.75 0 0 1 0-1.06z" />
-                                                        </svg>
+                                                        <app-icon name="cancel" class="h-4 w-4"></app-icon>
                                                     </button>
                                                 </div>
                                                 <div *ngIf="isViewMode" class="col-span-1"></div>
@@ -764,14 +745,14 @@
         <div *ngIf="!isViewMode" class="py-2 px-1 flex justify-end space-x-3">
             <button type="button" [routerLink]="mode === 'routineBuilder' ? '/workout' : '/history/list'"
                 class="flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-m font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-500">
-                <app-icon name="cancel" class="h-5 w-5"></app-icon>
+                <app-icon name="cancel" class="h-5 w-5 mr-1"></app-icon>
                 CANCEL
             </button>
             <button type="submit"
                 [disabled]="builderForm.invalid || (exercisesFormArray.length === 0 && !(mode === 'routineBuilder' && builderForm.get('goal')?.value === 'rest'))"
                 class="flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark disabled:opacity-50">
-                <app-icon *ngIf="isNewMode" name="create" class="h-5 w-5 mr-1"></app-icon>
-                <app-icon *ngIf="!isNewMode" name="save" class="h-5 w-5 mr-1"></app-icon>
+                <app-icon *ngIf="isNewMode" name="create" class="h-6 w-6 mr-1"></app-icon>
+                <app-icon *ngIf="!isNewMode" name="save" class="h-6 w-6 mr-1"></app-icon>
                 <!-- Button Text -->
                 {{ mode === 'routineBuilder' ? (isNewMode ? 'CREATE ROUTINE' : 'SAVE CHANGES') : (isNewMode ? 'LOG
                 WORKOUT' : 'SAVE LOG CHANGES') }}

@@ -172,7 +172,7 @@ export class TrainingProgramService {
       'Delete Program',
       `Are you sure you want to delete the program "${programToDelete.name}"? This action cannot be undone.`,
       [
-        { text: 'Cancel', role: 'cancel', data: false, cssClass: 'bg-gray-400 hover:bg-gray-600', icon: 'cancel' },
+        { text: 'Cancel', role: 'cancel', data: false, cssClass: 'bg-gray-400 hover:bg-gray-600', icon: 'cancel', iconClass:'w-4 h-4 mr-1' },
         { text: 'Delete Program', role: 'confirm', data: true, cssClass: 'bg-primary hover:bg-primary-dark', icon: 'done' }
       ]
     );
@@ -420,16 +420,26 @@ export class TrainingProgramService {
           return [];
         }
 
-        const allDaysInRange = eachDayOfInterval({ start: rangeStart, end: rangeEnd });
         const allOccurrences: { date: Date; scheduledDayInfo: ScheduledRoutineDay }[] = [];
-        const programStartDate = program.startDate ? parseISO(program.startDate) : new Date(1970, 0, 1);
 
-        // --- NEW: Handle 'linear' (week-by-week) programs ---
+        // --- Handle 'linear' (week-by-week) programs ---
         if (program.programType === 'linear' && program.weeks?.length) {
-          allDaysInRange.forEach(currentDate => {
-            const tmpCurrenteDate = this.dateToMidnight(currentDate);
-            if (tmpCurrenteDate < this.dateToMidnight(programStartDate)) return;
+          // A linear program cannot be scheduled without a start date.
+          if (!program.startDate) {
+            console.warn(`Linear program "${program.name}" has no start date and cannot be scheduled.`);
+            return [];
+          }
+          const programStartDate = startOfDay(parseISO(program.startDate));
 
+          // Adjust the iteration range to only include days from the program's start date onwards.
+          const effectiveStartDate = rangeStart > programStartDate ? rangeStart : programStartDate;
+
+          if (effectiveStartDate > rangeEnd) {
+            return []; // The entire requested range is before the program starts.
+          }
+          const daysToSchedule = eachDayOfInterval({ start: effectiveStartDate, end: rangeEnd });
+
+          daysToSchedule.forEach(currentDate => {
             const daysSinceStart = differenceInDays(currentDate, programStartDate);
             if (daysSinceStart < 0) return;
 
@@ -445,13 +455,14 @@ export class TrainingProgramService {
             }
           });
         }
-        // --- MODIFIED: Handle 'cycled' programs (existing logic) ---
+        // --- Handle 'cycled' programs (existing logic) ---
         else if (program.programType === 'cycled' && program.schedule?.length) {
+          const programStartDate = program.startDate ? startOfDay(parseISO(program.startDate)) : new Date(1970, 0, 1);
+          const allDaysInRange = eachDayOfInterval({ start: rangeStart, end: rangeEnd });
           const cycleLength = program.cycleLength && program.cycleLength > 0 ? program.cycleLength : 7;
 
           const scheduleMap = new Map<number, ScheduledRoutineDay>();
           program.schedule.forEach(day => {
-            // For weekly cycles (cycleLength=7), key is day of week (0-6). For n-day, it's day number (1-n).
             const key = cycleLength === 7 ? day.dayOfWeek : day.dayOfWeek;
             scheduleMap.set(key, day);
           });

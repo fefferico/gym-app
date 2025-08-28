@@ -192,13 +192,14 @@
                     </p>
                 </div>
                 <div>
-                    <label for="iterationId"
-                        class="block text-sm font-medium text-gray-700 dark:text-gray-300">Based on Program Iteration</label>
-                        <span class="text-red dark:text-primary-light">(EDIT IF YOU ONLY KNOW WHAT YOU ARE DOING)</span>
-                    <input type="text" id="iterationId" formControlName="iterationId"
-                        placeholder=""
+                    <label for="iterationId" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Based on
+                        Program Iteration</label>
+                        <input type="text" id="iterationId" formControlName="iterationId" placeholder=""
                         class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200">
-                </div>
+                        <p class="mt-1 text-xs text-red dark:text-primary-light">
+                        (EDIT IF YOU ONLY KNOW WHAT YOU ARE DOING)
+                    </p>
+                        </div>
             </div>
             <div *ngIf="programForm.get('programNotes')?.value || isEditableMode()">
                 <label for="programNotes" class="block text-sm font-medium text-gray-700 dark:text-gray-300">General
@@ -229,29 +230,23 @@
                 <div *ngFor="let dayCtrl of scheduleFormArray.controls; let i = index" [formGroupName]="i" cdkDrag
                     [cdkDragDisabled]="isViewMode"
                     class="scheduled-day-card p-3 border rounded-md shadow-sm bg-gray-50 dark:bg-gray-600/70 dark:border-gray-600 relative">
-                    <div *ngIf="!isViewMode" cdkDragHandle
-                        class="p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 flex-shrink-0 cursor-pointer"
-                        title="Drag to reorder day">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-5 h-5">
-                            <path d="M 7 17 L 7 3 M 4 6 L 7 3 L 10 6 M 17 7 L 17 21 M 14 18 L 17 21 L 20 18" fill="none"
-                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                        </svg>
+                    <div class="flex justify-between">
+                        <div *ngIf="!isViewMode" cdkDragHandle
+                            class="p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 flex-shrink-0 cursor-pointer"
+                            title="Drag to reorder day">
+                            <app-icon name="drag"></app-icon>
+                        </div>
+                        <button *ngIf="!isViewMode" type="button" appPress (shortPress)="removeScheduledDay(i)"
+                            title="Remove DAY"
+                            class="flex px-1 items-center hover:text-red-700 dark:hover:text-red-300 rounded-md hover:bg-red-100 dark:hover:bg-red-900/30 disabled:opacity-50 bg-red-500 text-white text-sm font-medium">
+                            <app-icon name="cancel" class="h-5 w-5 mr-1"></app-icon><span>REMOVE DAY</span>
+                        </button>
                     </div>
                     <div class="flex justify-between items-center mb-1" [ngClass]="{'mt-5': isEditableMode()}">
                         <h4 class="text-md font-medium text-gray-800 dark:text-gray-100">
                             {{ (getScheduleDayControl(i).get('dayOfWeek')?.value | dayOfWeek : (f['cycleLength'].value >
                             0) ) || 'Scheduled Day ' + (i + 1) }}
                         </h4>
-                        <button *ngIf="!isViewMode" type="button" appPress (shortPress)="removeScheduledDay(i)"
-                            class="flex items-center text-xs text-red-600 bg-red-200 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 font-medium py-1 px-2 rounded-md hover:enabled:bg-red-100 dark:enabled:hover:bg-red-900/50 disabled:opacity-50">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"
-                                class="w-4 h-4 inline-block mr-1">
-                                <path fill-rule="evenodd"
-                                    d="M5 3.25A2.25 2.25 0 002.75 5.5v5A2.25 2.25 0 005 12.75h6a2.25 2.25 0 002.25-2.25v-5A2.25 2.25 0 0011 3.25H5Zm.97 3.97a.75.75 0 011.06 0L8 8.28l.97-.97a.75.75 0 111.06 1.06L9.06 9.25l.97.97a.75.75 0 11-1.06 1.06L8 10.43l-.97.97a.75.75 0 01-1.06-1.06L6.94 9.25l-.97-.97a.75.75 0 010-1.06Z"
-                                    clip-rule="evenodd" />
-                            </svg>
-                            REMOVE DAY
-                        </button>
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 dark:text-gray-300">
@@ -282,7 +277,7 @@
                                     [ngClass]="{'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 placeholder-red-400': getScheduleDayControl(i).get('routineId')?.invalid && (getScheduleDayControl(i).get('routineId')?.touched || submitted), 'rounded-r-md':isViewMode}">
                                 <button *ngIf="!isViewMode" type="button" appPress
                                     (shortPress)="openRoutineSelectionModal(i)"
-                                    class="inline-flex items-center px-3 py-2 border border-l-0 rounded-r-md text-sm transition-colors duration-150"
+                                    class="inline-flex items-center px-3 py-2 border border-l-0 rounded-r-md text-sm font-medium transition-colors duration-150"
                                     [ngClass]="{
                             'border-blue-300 dark:border-blue-500 bg-blue-50 dark:bg-blue-500 text-white hover:bg-blue-100 dark:hover:bg-blue-400': !getScheduleDayControl(i).get('routineId')?.value && !(getScheduleDayControl(i).get('routineId')?.invalid && (getScheduleDayControl(i).get('routineId')?.touched || submitted)),
                             'border-green-500 dark:border-green-400 bg-green-50 dark:bg-green-700 text-green-700 dark:text-green-100 hover:bg-green-100 dark:hover:bg-green-600': getScheduleDayControl(i).get('routineId')?.value,
@@ -318,7 +313,7 @@
                 </div>
             </div>
 
-            <div *ngIf="scheduleFormArray.length === 0"
+            <div *ngIf="scheduleFormArray.length === 0; else addDayToSchedule"
                 class="text-center py-6 text-gray-500 dark:text-gray-400 border border-dashed dark:border-gray-700 rounded-md">
                 <p>No days scheduled for this program yet</p>
                 <button *ngIf="!isViewMode" type="button" (click)="addScheduledDay()"
@@ -326,6 +321,15 @@
                     Add the first scheduled day
                 </button>
             </div>
+            <ng-template #addDayToSchedule>
+                <div class="flex justify-center mt-2">
+                    <button *ngIf="!isViewMode" type="button" appPress (shortPress)="addScheduledDay()"
+                        class="flex items-center justify-center bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium py-1.5 px-3 rounded-md shadow-sm">
+                        <app-icon name="create" class="h-4 w-4"></app-icon>
+                        <span class="ml-1">ADD DAY TO SCHEDULE</span>
+                    </button>
+                </div>
+            </ng-template>
         </section>
 
         <!-- --- NEW: UI for 'linear' week-by-week programs --- -->
@@ -362,14 +366,9 @@
                                 class="text-lg font-bold bg-transparent border-0 border-b-2 border-gray-300 dark:border-gray-500 focus:ring-0 focus:border-primary dark:text-gray-100 p-1 w-full sm:w-1/2">
                         </div>
                         <button *ngIf="!isViewMode" type="button" appPress (shortPress)="removeWeek(weekIndex)"
-                            class="flex items-center text-xs text-red-600 bg-red-200 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 font-medium py-1 px-2 rounded-md hover:enabled:bg-red-100 dark:enabled:hover:bg-red-900/50 disabled:opacity-50">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"
-                                class="w-4 h-4 inline-block mr-1">
-                                <path fill-rule="evenodd"
-                                    d="M5 3.25A2.25 2.25 0 002.75 5.5v5A2.25 2.25 0 005 12.75h6a2.25 2.25 0 002.25-2.25v-5A2.25 2.25 0 0011 3.25H5Zm.97 3.97a.75.75 0 011.06 0L8 8.28l.97-.97a.75.75 0 111.06 1.06L9.06 9.25l.97.97a.75.75 0 11-1.06 1.06L8 10.43l-.97.97a.75.75 0 01-1.06-1.06L6.94 9.25l-.97-.97a.75.75 0 010-1.06Z"
-                                    clip-rule="evenodd" />
-                            </svg>
-                            REMOVE WEEK
+                            title="Remove WEEK"
+                            class="flex items-center p-1 hover:text-red-700 dark:hover:text-red-300 rounded-md hover:bg-red-100 dark:hover:bg-red-900/30 disabled:opacity-50 bg-red-500 text-white">
+                            <app-icon name="cancel" class="h-5 w-5 mr-1"></app-icon>REMOVE WEEK
                         </button>
                     </div>
 
@@ -381,14 +380,17 @@
                             [formGroupName]="dayIndex" cdkDrag [cdkDragDisabled]="isViewMode"
                             class="scheduled-day-card p-3 border rounded-md shadow-sm bg-white dark:bg-gray-600/70 dark:border-gray-600 relative">
                             <!-- This is the inner day card, same as the original but with updated indices -->
-                            <div *ngIf="!isViewMode" cdkDragHandle
-                                class="p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 flex-shrink-0 cursor-grab"
-                                title="Drag to reorder day">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-5 h-5">
-                                    <path d="M 7 17 L 7 3 M 4 6 L 7 3 L 10 6 M 17 7 L 17 21 M 14 18 L 17 21 L 20 18"
-                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round" />
-                                </svg>
+                            <div class="flex justify-between">
+                                <div *ngIf="!isViewMode" cdkDragHandle
+                                    class="p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 flex-shrink-0 cursor-grab"
+                                    title="Drag to reorder day">
+                                    <app-icon name="drag"></app-icon>
+                                </div>
+                                <button *ngIf="!isViewMode" type="button" appPress
+                                    (shortPress)="removeScheduledDay(dayIndex, weekIndex)" title="Remove DAY"
+                                    class="flex px-1 items-center hover:text-red-700 dark:hover:text-red-300 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30 disabled:opacity-50 bg-red-500 text-white">
+                                    <app-icon name="cancel" class="h-5 w-5"></app-icon>
+                                </button>
                             </div>
                             <div class="flex justify-between items-center mb-1" [ngClass]="{'mt-5': isEditableMode()}">
                                 <h4 class="text-md font-medium text-gray-800 dark:text-gray-100">
@@ -396,17 +398,6 @@
                                     {{ (getWeekScheduleDayControl(weekIndex, dayIndex).get('dayOfWeek')?.value |
                                     dayOfWeek : false ) || 'Scheduled Day ' + (dayIndex + 1) }}
                                 </h4>
-                                <button *ngIf="!isViewMode" type="button" appPress
-                                    (shortPress)="removeScheduledDay(dayIndex, weekIndex)"
-                                    class="flex items-center text-xs text-red-600 bg-red-200 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 font-medium py-1 px-2 rounded-md hover:enabled:bg-red-100 dark:enabled:hover:bg-red-900/50 disabled:opacity-50">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"
-                                        class="w-4 h-4 inline-block mr-1">
-                                        <path fill-rule="evenodd"
-                                            d="M5 3.25A2.25 2.25 0 002.75 5.5v5A2.25 2.25 0 005 12.75h6a2.25 2.25 0 002.25-2.25v-5A2.25 2.25 0 0011 3.25H5Zm.97 3.97a.75.75 0 011.06 0L8 8.28l.97-.97a.75.75 0 111.06 1.06L9.06 9.25l.97.97a.75.75 0 11-1.06 1.06L8 10.43l-.97.97a.75.75 0 01-1.06-1.06L6.94 9.25l-.97-.97a.75.75 0 010-1.06Z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                    REMOVE DAY
-                                </button>
                             </div>
 
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 dark:text-gray-300">
@@ -428,11 +419,18 @@
                                     <div class="mt-1 flex rounded-md shadow-sm">
                                         <input type="text" [id]="'routineName-' + weekIndex + '-' + dayIndex" readonly
                                             [value]="getWeekScheduleDayControl(weekIndex, dayIndex).get('routineName')?.value || 'No Routine'"
-                                            class="flex-1 block w-full px-3 py-2 text-sm rounded-md dark:bg-gray-400 cursor-default dark:text-gray-800 font-medium">
+                                            class="flex-1 block w-full px-3 py-2 text-sm rounded-l-md dark:bg-gray-400 cursor-default dark:text-gray-800 font-medium">
                                         <button *ngIf="!isViewMode" type="button" appPress
                                             (shortPress)="openRoutineSelectionModal(weekIndex, dayIndex)"
-                                            class="inline-flex items-center px-3 py-2 border border-l-0 rounded-r-md text-sm">
-                                            SELECT
+                                            class="inline-flex items-center px-3 py-2 border border-l-0 rounded-r-md text-sm transition-colors duration-150 border-green-500 dark:border-green-400 bg-green-50 dark:bg-green-700 text-green-700 dark:text-green-100 hover:bg-green-100 dark:hover:bg-green-600 font-medium "
+                                            [ngClass]="{
+                            'border-blue-300 dark:border-blue-500 bg-blue-50 dark:bg-blue-500 text-white hover:bg-blue-100 dark:hover:bg-blue-400': !getWeekScheduleDayControl(weekIndex, dayIndex).get('routineName')?.value && !(getWeekScheduleDayControl(weekIndex, dayIndex).get('routineName')?.invalid && (getWeekScheduleDayControl(weekIndex, dayIndex).get('routineName')?.touched || submitted)),
+                            'border-green-500 dark:border-green-400 bg-green-50 dark:bg-green-700 text-green-700 dark:text-green-100 hover:bg-green-100 dark:hover:bg-green-600': getWeekScheduleDayControl(weekIndex, dayIndex).get('routineName')?.value,
+                            'border-red-500 dark:border-red-400 bg-red-100 dark:bg-red-600 text-red-700 dark:text-red-200 hover:bg-red-200 dark:hover:bg-red-500': getWeekScheduleDayControl(weekIndex, dayIndex).get('routineName')?.invalid && (getWeekScheduleDayControl(weekIndex, dayIndex).get('routineName')?.touched || submitted) 
+                        }">
+                                            <app-icon name="change" class="h-5 w-5 mr-1"></app-icon>
+                                            {{ getWeekScheduleDayControl(weekIndex, dayIndex).get('routineName')?.value
+                                            ? 'CHANGE': 'SELECT'}}
                                         </button>
                                     </div>
                                 </div>
@@ -459,9 +457,11 @@
                     </div>
                     <div *ngIf="getWeekScheduleGroups(weekIndex).length === 0"
                         class="text-center text-sm text-gray-500 dark:text-gray-400 py-4">This week is empty.</div>
+
+
                 </div>
             </div>
-            <div *ngIf="weeksFormArray.length === 0"
+            <div *ngIf="weeksFormArray.length === 0; else addWeekButton"
                 class="text-center py-6 text-gray-500 dark:text-gray-400 border border-dashed dark:border-gray-700 rounded-md">
                 <p>No weeks created for this program yet.</p>
                 <button *ngIf="!isViewMode" type="button" (click)="addWeek()"
@@ -469,13 +469,21 @@
                     Add the first week
                 </button>
             </div>
+            <ng-template #addWeekButton>
+                <div class="flex justify-center mt-2">
+                    <button *ngIf="!isViewMode" type="button" appPress (shortPress)="addWeek()"
+                        class="flex items-center justify-center bg-green-500 hover:bg-green-600 text-white text-sm font-medium py-1.5 px-3 rounded-md shadow-sm">
+                        <app-icon name="create" class="h-7 w-7 mr-1"></app-icon>ADD WEEK
+                    </button>
+                </div>
+            </ng-template>
         </section>
 
         <!-- Final Action Buttons -->
         <div *ngIf="!isViewMode" class="pt-6 flex justify-end space-x-3">
             <button appPress (shortPress)="navigateToPrograms()"
                 class="flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700">
-                <app-icon name="cancel" class="h-5 w-5"></app-icon>
+                <app-icon name="cancel" class="h-5 w-5 mr-1"></app-icon>
                 CANCEL
             </button>
             <button type="submit" appPress (shortPress)="onSubmit()" [disabled]="programForm.invalid"

@@ -569,7 +569,7 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
       "Delete Workout Log",
       `Are you sure you want to delete this workout log? This action cannot be undone`,
       [
-        { text: "Cancel", role: "cancel", data: false, icon: 'cancel' } as AlertButton,
+        { text: "Cancel", role: "cancel", data: false, icon: 'cancel', iconClass:'w-4 h-4 mr-1' } as AlertButton,
         { text: "Delete", role: "confirm", data: true, cssClass: "bg-red-600", icon: 'trash' } as AlertButton,
       ],
     );

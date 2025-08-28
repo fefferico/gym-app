@@ -48,15 +48,18 @@ export class IconComponent implements OnChanges {
       if (this.class) {
         this.renderer.setAttribute(svgElement, 'class', this.class);
       } else {
-        this.renderer.setAttribute(svgElement, 'class', 'h-5 w-5');
+        // svgElement.classList.value if available, otherwise fallback to h-5 w-5
+        if (svgElement && svgElement.classList && svgElement.classList.value){
+          this.renderer.setAttribute(svgElement, 'class', svgElement.classList.value);
+        } else {
+          this.renderer.setAttribute(svgElement, 'class', 'h-5 w-5');
+        }
       }
       
-      // --- THIS IS THE FIX ---
       // Use setStyle to apply stroke-width as an inline CSS style.
       if (this.strokeWidth !== undefined && this.strokeWidth !== null && svgElement.children) {
         this.renderer.setStyle(svgElement.children[0], 'stroke-width', this.strokeWidth.toString());
       }
-      // --- END OF FIX ---
       
       this.renderer.setAttribute(svgElement, 'aria-hidden', 'true');
 

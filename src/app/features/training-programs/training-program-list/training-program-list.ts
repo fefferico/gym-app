@@ -569,7 +569,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
           data: p, // Pass the whole program object
           cssClass: 'bg-primary hover:bg-primary-dark'
         }));
-        programButtons.push({ text: 'Cancel', role: 'cancel', data: null, cssClass: 'bg-gray-400 hover:bg-gray-600' });
+        programButtons.push({ text: 'Cancel', role: 'cancel', data: null, cssClass: 'bg-gray-400 hover:bg-gray-600', icon:'cancel', iconClass:'w-4 h-4 mr-1' });
 
         const choice = await this.alertService.showConfirmationDialog(
           'Select Program',
