@@ -94,10 +94,8 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
     this.currentDate$.pipe(
       tap(() => this.isLoading.set(true)),
       switchMap(date =>
-        // 1. Start with the active programs as the primary driver
         this.trainingProgramService.getActivePrograms().pipe(
           switchMap(activePrograms => {
-            // 2. If there are no active programs, we can simplify the data fetching
             if (!activePrograms || activePrograms.length === 0) {
               return combineLatest([
                 this.trackingService.getLogsForDate(this.formatDate(date)),
@@ -109,33 +107,28 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
                   logs: logs || [],
                   routines,
                   allPrograms,
-                  statusMap: new Map<string, boolean>() // Empty map
+                  statusMap: new Map<string, boolean>()
                 }))
               );
             }
 
-            // 3. If there ARE active programs, create an observable for each program's status map
             const statusMapObservables = activePrograms.map(p =>
               this.trackingService.getScheduledDaysLoggedStatus(p.id)
             );
 
-            // 4. Combine all data sources together
             return combineLatest([
               of(activePrograms),
               this.trackingService.getLogsForDate(this.formatDate(date)),
               this.workoutService.routines$.pipe(take(1)),
               this.trainingProgramService.programs$.pipe(take(1)),
-              // This will emit an array of maps, one for each active program
               combineLatest(statusMapObservables)
             ]).pipe(
               map(([programs, logs, routines, allPrograms, statusMapArrays]) => {
-                // 5. Merge the array of maps into a single, convenient map for easy lookups
                 const combinedStatusMap = new Map<string, boolean>();
                 statusMapArrays.forEach((statusMap, index) => {
                   const program = programs[index];
                   if (program && program.iterationId) {
                     statusMap.forEach((isLogged, scheduledDayId) => {
-                      // Use a composite key to uniquely identify a scheduled day within a specific program iteration
                       const compositeKey = `${scheduledDayId}-${program.iterationId}`;
                       combinedStatusMap.set(compositeKey, isLogged);
                     });
@@ -151,26 +144,54 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
               })
             );
           }),
-          // 6. Process the combined data to build the final state for the view
           switchMap(({ activePrograms, logs, routines, allPrograms, statusMap }) => {
+            // ==========================================================
+            // START: MODIFIED LOGIC
+            // ==========================================================
             const enrichedLogs$ = (logs && logs.length > 0)
-              ? forkJoin(logs.map(log =>
-                combineLatest([
-                  this.trainingProgramService.getWeekNameForLog(log),
-                  this.trainingProgramService.getDayOfWeekForLog(log),
-                  // **FIX:** Fetch the program details here to get the name
-                  log.programId ? this.trainingProgramService.getProgramById(log.programId) : of(null)
-                ]).pipe(
-                  take(1),
-                  map(([weekName, dayInfo, program]) => ({
-                    ...log,
-                    weekName,
-                    dayName: dayInfo?.dayName || null,
-                    programName: program?.name || log.programName || null
-                  }))
-                )
-              ))
+              ? forkJoin(logs.map(log => {
+                  if (!log.programId) {
+                    return of({ ...log, weekName: null, dayName: null, programName: null });
+                  }
+                  
+                  return this.trainingProgramService.getProgramById(log.programId).pipe(
+                    take(1),
+                    switchMap(program => {
+                      if (!program) {
+                        return of({ ...log, weekName: null, dayName: null, programName: log.programName || null });
+                      }
+
+                      let specificDayName: string | null = null;
+                      if (log.scheduledDayId) {
+                        let scheduledDay: ScheduledRoutineDay | undefined;
+                        if (program.programType === 'linear' && program.weeks) {
+                          scheduledDay = program.weeks.flatMap(w => w.schedule).find(d => d.id === log.scheduledDayId);
+                        } else if (program.programType === 'cycled' && program.schedule) {
+                          scheduledDay = program.schedule.find(d => d.id === log.scheduledDayId);
+                        }
+                        if (scheduledDay?.dayName) {
+                          specificDayName = scheduledDay.dayName;
+                        }
+                      }
+                      
+                      return combineLatest([
+                        this.trainingProgramService.getWeekNameForLog(log),
+                        this.trainingProgramService.getDayOfWeekForLog(log)
+                      ]).pipe(
+                        map(([weekName, genericDayInfo]) => ({
+                          ...log,
+                          weekName: weekName,
+                          dayName: specificDayName || genericDayInfo?.dayName || null,
+                          programName: program.name
+                        }))
+                      );
+                    })
+                  );
+                }))
               : of([]);
+            // ==========================================================
+            // END: MODIFIED LOGIC
+            // ==========================================================
 
             const workoutObservables$: Observable<{ routine: Routine, scheduledDayInfo: ScheduledRoutineDay } | null>[] = [];
             if (activePrograms) {
@@ -211,7 +232,6 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
                         id: log.scheduledDayId || uuidv4(),
                         routineId: routine.id, dayOfWeek: date.getDay(),
                         programId: log.programId!, isUnscheduled: true,
-                        // **FIX:** Now you can safely access the programName from the enriched log
                         programName: log.programName || '',
                         iterationId: log.iterationId
                       }

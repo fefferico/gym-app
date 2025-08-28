@@ -231,344 +231,362 @@
             </div>
         </section>
 
-        <!-- ============================================= -->
-        <!-- SCHEDULE SECTION: Conditionally Rendered      -->
-        <!-- ============================================= -->
-
-        <!-- --- UI for 'cycled' programs (Original UI) --- -->
-        <section *ngIf="programForm.get('programType')?.value === 'cycled'">
-            <div class="flex justify-between items-center mb-1">
-                <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300">Schedule</h2>
-                <button *ngIf="!isViewMode" type="button" appPress (shortPress)="addScheduledDay()"
-                    class="flex items-center justify-center bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium py-1.5 px-3 rounded-md shadow-sm">
-                    <app-icon name="create" class="h-4 w-4"></app-icon>
-                    <span class="ml-1">ADD DAY TO SCHEDULE</span>
-                </button>
-            </div>
-
-            <div *ngIf="scheduleFormArray.length > 0" cdkDropList [cdkDropListData]="scheduleFormGroups"
-                (cdkDropListDropped)="onScheduleDrop($event)" formArrayName="schedule" class="space-y-4">
-                <!-- This is a direct copy of the original day card -->
-                <div *ngFor="let dayCtrl of scheduleFormArray.controls; let i = index" [formGroupName]="i" cdkDrag
-                    [cdkDragDisabled]="isViewMode"
-                    class="scheduled-day-card p-3 border rounded-md shadow-sm bg-gray-50 dark:bg-gray-600/70 dark:border-gray-600 relative">
-                    <!-- MODIFIED: Card header with toggle -->
-                    <div class="flex justify-between items-start">
-                        <div class="flex items-center flex-shrink-0">
-                            <div *ngIf="!isViewMode" cdkDragHandle
-                                class="p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 flex-shrink-0 cursor-grab"
-                                title="Drag to reorder day">
-                                <app-icon name="drag"></app-icon>
-                            </div>
-                            <!-- NEW: Day Toggle Button -->
-                            <button type="button" (click)="toggleDay(dayCtrl.get('id')?.value)"
-                                class="p-1 -ml-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-500 focus:outline-none">
-                                <app-icon
-                                    [name]="isDayExpanded(dayCtrl.get('id')?.value) ? 'chevron-down' : 'chevron-right'"
-                                    class="w-5 h-5 text-gray-500 dark:text-gray-400"></app-icon>
-                            </button>
-                        </div>
-                        <button *ngIf="!isViewMode" type="button" appPress (shortPress)="removeScheduledDay(i)"
-                            title="Remove DAY"
-                            class="flex px-1 items-center hover:text-red-700 dark:hover:text-red-300 rounded-md hover:bg-red-100 dark:hover:bg-red-900/30 disabled:opacity-50 bg-red-500 text-white text-sm font-medium">
-                            <app-icon name="cancel" class="h-5 w-5 mr-1"></app-icon><span>REMOVE DAY</span>
-                        </button>
-                    </div>
-                    <div class="flex justify-between items-center mb-1" [ngClass]="{'mt-1': isEditableMode()}">
-                        <h4 class="text-md font-medium text-gray-800 dark:text-gray-100">
-                            {{ (getScheduleDayControl(i).get('dayOfWeek')?.value | dayOfWeek : (f['cycleLength'].value >
-                            0) ) || 'Scheduled Day ' + (i + 1) }}
-                        </h4>
-                    </div>
-
-                    <!-- NEW: Collapsible content -->
-                    <div *ngIf="isDayExpanded(dayCtrl.get('id')?.value)">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 dark:text-gray-300">
-                            <div>
-                                <label [for]="'dayOfWeek-' + i"
-                                    class="block text-xs font-medium text-gray-700 dark:text-gray-300">
-                                    {{ f['cycleLength'].value > 0 ? 'Cycle Day Number' : 'Day of Week' }}
-                                </label>
-                                <select [id]="'dayOfWeek-' + i" formControlName="dayOfWeek"
-                                    class="mt-1 block w-full p-2 text-sm border rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700 dark:border-gray-500 dark:text-gray-300">
-                                    <option *ngFor="let dayOpt of currentDayOptions()" [value]="dayOpt.value">{{
-                                        dayOpt.label }}</option>
-                                </select>
-                                <div *ngIf="getScheduleDayControl(i).get('dayOfWeek')?.invalid && getScheduleDayControl(i).get('dayOfWeek')?.touched"
-                                    class="text-red-500 dark:text-red-400 text-xs mt-1">
-                                    Day is required.
-                                </div>
-                            </div>
-                            <div> <!-- This div wraps the entire routine selection block for one scheduled day -->
-                                <label [for]="'routineName-' + i"
-                                    class="block text-xs font-medium text-gray-700 dark:text-gray-300">Routine</label>
-                                <div class="mt-1 flex rounded-md shadow-sm"
-                                    [ngClass]="{'ring-2 ring-offset-1 ring-red-500 dark:ring-red-400': getScheduleDayControl(i).get('routineId')?.invalid && (getScheduleDayControl(i).get('routineId')?.touched || submitted)}">
-                                    <input type="text" [id]="'routineName-' + i" readonly
-                                        [value]="getScheduleDayControl(i).get('routineName')?.value || (getScheduleDayControl(i).get('routineId')?.value ? 'Loading routine...' : 'No Routine Selected')"
-                                        class="flex-1 min-w-0 block w-full px-3 py-2 text-sm rounded-none rounded-l-md border-gray-300 dark:border-gray-200 dark:bg-gray-400 cursor-default
-                                  focus:outline-none focus:ring-0 focus:border-gray-300 dark:text-gray-800 font-medium"
-                                        [ngClass]="{'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 placeholder-red-400': getScheduleDayControl(i).get('routineId')?.invalid && (getScheduleDayControl(i).get('routineId')?.touched || submitted), 'rounded-r-md':isViewMode}">
-                                    <button *ngIf="!isViewMode" type="button" appPress
-                                        (shortPress)="openRoutineSelectionModal(i)"
-                                        class="inline-flex items-center px-3 py-2 border border-l-0 rounded-r-md text-sm font-medium transition-colors duration-150"
-                                        [ngClass]="{
-                                'border-blue-300 dark:border-blue-500 bg-blue-50 dark:bg-blue-500 text-white hover:bg-blue-100 dark:hover:bg-blue-400': !getScheduleDayControl(i).get('routineId')?.value && !(getScheduleDayControl(i).get('routineId')?.invalid && (getScheduleDayControl(i).get('routineId')?.touched || submitted)),
-                                'border-green-500 dark:border-green-400 bg-green-50 dark:bg-green-700 text-green-700 dark:text-green-100 hover:bg-green-100 dark:hover:bg-green-600': getScheduleDayControl(i).get('routineId')?.value,
-                                'border-red-500 dark:border-red-400 bg-red-100 dark:bg-red-600 text-red-700 dark:text-red-200 hover:bg-red-200 dark:hover:bg-red-500': getScheduleDayControl(i).get('routineId')?.invalid && (getScheduleDayControl(i).get('routineId')?.touched || submitted) 
-                            }">
-                                        <app-icon name="change" class="h-4 w-4"></app-icon>
-                                        <span class="ml-1">
-                                            {{ getScheduleDayControl(i).get('routineId')?.value ? 'CHANGE' : 'SELECT' }}
-                                        </span>
-                                    </button>
-                                </div>
-                                <div *ngIf="getScheduleDayControl(i).get('routineId')?.invalid && (getScheduleDayControl(i).get('routineId')?.touched || submitted)"
-                                    class="text-red-500 dark:text-red-400 text-xs mt-1">
-                                    Routine selection is required.
-                                </div>
-                            </div>
-                            <div class="sm:col-span-2" *ngIf="programForm.get('timeOfDay')?.value || isEditableMode()">
-                                <label [for]="'timeOfDay-' + i"
-                                    class="block text-xs font-medium text-gray-700 dark:text-gray-300">Time
-                                    (Optional)</label>
-                                <input type="text" [id]="'timeOfDay-' + i" formControlName="timeOfDay"
-                                    placeholder="e.g., AM, PM, 08:00"
-                                    class="mt-1 block w-full p-2 text-sm border rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700 dark:border-gray-500">
-                            </div>
-                            <div class="sm:col-span-2" *ngIf="programForm.get('notes')?.value || isEditableMode()">
-                                <label [for]="'dayNotes-' + i"
-                                    class="block text-xs font-medium text-gray-700 dark:text-gray-300">Notes for this
-                                    Day
-                                    (Optional)</label>
-                                <textarea [id]="'dayNotes-' + i" formControlName="notes" rows="2"
-                                    class="mt-1 block w-full p-2 text-sm border rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700 dark:border-gray-500"></textarea>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- NEW: Collapsed Preview -->
-                    <div *ngIf="!isDayExpanded(dayCtrl.get('id')?.value)" class="mt-2 text-sm">
-                        <span class="font-medium text-gray-800 dark:text-gray-200">{{ dayCtrl.get('routineName')?.value
-                            || 'No Routine Selected' }}</span>
-                    </div>
-                </div>
-            </div>
-
-            <div *ngIf="scheduleFormArray.length === 0; else addDayToSchedule"
-                class="text-center py-6 text-gray-500 dark:text-gray-400 border border-dashed dark:border-gray-700 rounded-md">
-                <p>No days scheduled for this program yet</p>
-                <button *ngIf="!isViewMode" type="button" (click)="addScheduledDay()"
-                    class="mt-2 text-sm text-primary hover:underline">
-                    Add the first scheduled day
-                </button>
-            </div>
-            <ng-template #addDayToSchedule>
-                <div class="flex justify-center mt-2">
+        <!-- ========================================================== -->
+        <!-- START: MODIFIED SCHEDULE SECTION WRAPPER                   -->
+        <!-- This container now hides the entire schedule UI until a    -->
+        <!-- program type (cycled/linear) has been selected.            -->
+        <!-- ========================================================== -->
+        <ng-container *ngIf="programForm.get('programType')?.value">
+            <!-- --- UI for 'cycled' programs --- -->
+            <section *ngIf="programForm.get('programType')?.value === 'cycled'">
+                <div class="flex justify-between items-center mb-1">
+                    <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300">Schedule</h2>
                     <button *ngIf="!isViewMode" type="button" appPress (shortPress)="addScheduledDay()"
                         class="flex items-center justify-center bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium py-1.5 px-3 rounded-md shadow-sm">
                         <app-icon name="create" class="h-4 w-4"></app-icon>
                         <span class="ml-1">ADD DAY TO SCHEDULE</span>
                     </button>
                 </div>
-            </ng-template>
-        </section>
 
-        <!-- --- NEW: UI for 'linear' week-by-week programs --- -->
-        <section *ngIf="programForm.get('programType')?.value === 'linear'">
-            <div class="flex justify-between items-center mb-1">
-                <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300">Weekly Schedule</h2>
-                <button *ngIf="!isViewMode" type="button" appPress (shortPress)="addWeek()"
-                    class="flex items-center justify-center bg-green-500 hover:bg-green-600 text-white text-sm font-medium py-1.5 px-3 rounded-md shadow-sm">
-                    <app-icon name="create" class="h-4 w-4"></app-icon>
-                    <span class="ml-1">ADD WEEK</span>
-                </button>
-            </div>
-
-            <div cdkDropList (cdkDropListDropped)="onWeekDrop($event)" formArrayName="weeks" class="space-y-6 mt-4">
-                <div *ngFor="let weekCtrl of weeksFormArray.controls; let weekIndex = index" [formGroupName]="weekIndex"
-                    cdkDrag [cdkDragDisabled]="isViewMode"
-                    class="p-4 border-2 border-dashed dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800/50">
-
-                    <!-- Week Header with Drag Handle and Toggle -->
-                    <div class="flex justify-between items-center mb-3">
-                        <div class="flex items-center">
-                            <div *ngIf="!isViewMode" cdkDragHandle
-                                class="p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 flex-shrink-0 cursor-move"
-                                title="Drag to reorder week">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
-                                    class="w-6 h-6">
-                                    <path d="M10 4h4v4h-4zM4 10h4v4H4zM10 10h4v4h-4zM16 10h4v4h-4zM10 16h4v4h-4z" />
-                                </svg>
+                <div *ngIf="scheduleFormArray.length > 0" cdkDropList [cdkDropListData]="scheduleFormGroups"
+                    (cdkDropListDropped)="onScheduleDrop($event)" formArrayName="schedule" class="space-y-4">
+                    <div *ngFor="let dayCtrl of scheduleFormArray.controls; let i = index" [formGroupName]="i" cdkDrag
+                        [cdkDragDisabled]="isViewMode"
+                        class="scheduled-day-card p-3 border rounded-md shadow-sm bg-gray-50 dark:bg-gray-600/70 dark:border-gray-600 relative">
+                        <!-- Card header with toggle -->
+                        <div class="flex justify-between items-start">
+                            <div class="flex items-center flex-shrink-0">
+                                <div *ngIf="!isViewMode" cdkDragHandle
+                                    class="p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 flex-shrink-0 cursor-grab"
+                                    title="Drag to reorder day">
+                                    <app-icon name="drag"></app-icon>
+                                </div>
+                                <button type="button" (click)="toggleDay(dayCtrl.get('id')?.value)"
+                                    class="p-1 -ml-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-500 focus:outline-none">
+                                    <app-icon
+                                        [name]="isDayExpanded(dayCtrl.get('id')?.value) ? 'chevron-down' : 'chevron-right'"
+                                        class="w-5 h-5 text-gray-500 dark:text-gray-400"></app-icon>
+                                </button>
                             </div>
-                            <!-- NEW: Week Toggle Button -->
-                            <button type="button" (click)="toggleWeek(weekCtrl.get('id')?.value)"
-                                class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none">
-                                <app-icon
-                                    [name]="isWeekExpanded(weekCtrl.get('id')?.value) ? 'chevron-down' : 'chevron-right'"
-                                    class="w-6 h-6 text-gray-500 dark:text-gray-400"></app-icon>
+                            <button *ngIf="!isViewMode" type="button" appPress (shortPress)="removeScheduledDay(i)"
+                                title="Remove DAY"
+                                class="flex px-1 items-center hover:text-red-700 dark:hover:text-red-300 rounded-md hover:bg-red-100 dark:hover:bg-red-900/30 disabled:opacity-50 bg-red-500 text-white text-sm font-medium">
+                                <app-icon name="cancel" class="h-5 w-5 mr-1"></app-icon><span>REMOVE DAY</span>
                             </button>
                         </div>
 
-                        <div class="flex-grow mx-2">
-                            <label [for]="'weekName-' + weekIndex" class="sr-only">Week Name</label>
-                            <input type="text" [id]="'weekName-' + weekIndex" formControlName="name"
-                                placeholder="e.g., Week 1: Volume"
-                                class="text-lg font-bold bg-transparent border-0 border-b-2 border-gray-300 dark:border-gray-500 focus:ring-0 focus:border-primary dark:text-gray-100 p-1 w-full sm:w-1/2">
+                        <!-- ========================================================== -->
+                        <!-- START: MODIFIED DAY NAME INPUT FOR CYCLED PROGRAMS       -->
+                        <!-- Replaces the static text with an editable input field.   -->
+                        <!-- ========================================================== -->
+                        <div class="flex justify-between items-center mb-2" [ngClass]="{'mt-1': isEditableMode()}">
+                            <h4 class="text-md font-medium text-gray-800 dark:text-gray-100">
+                                <label [for]="'dayName-cycled-' + i" class="sr-only">Day Name</label>
+                                <input type="text" [id]="'dayName-cycled-' + i" formControlName="dayName"
+                                    placeholder="e.g., Push Day"
+                                    class="text-lg font-bold bg-transparent border-0 border-b-2 border-gray-300 dark:border-gray-500 focus:ring-0 focus:border-primary dark:text-gray-100 p-1 w-full sm:w-1/2">
+                            </h4>
                         </div>
-                        <button *ngIf="!isViewMode" type="button" appPress (shortPress)="removeWeek(weekIndex)"
-                            title="Remove WEEK"
-                            class="flex items-center p-1 hover:text-red-700 dark:hover:text-red-300 rounded-md hover:bg-red-100 dark:hover:bg-red-900/30 disabled:opacity-50 bg-red-500 text-white">
-                            <app-icon name="cancel" class="h-5 w-5 mr-1"></app-icon>REMOVE WEEK
-                        </button>
-                    </div>
+                        <!-- ========================================================== -->
+                        <!-- END: MODIFIED DAY NAME INPUT                               -->
+                        <!-- ========================================================== -->
 
-                    <!-- NEW: Collapsible container for week content -->
-                    <div *ngIf="isWeekExpanded(weekCtrl.get('id')?.value)">
-                        <!-- Schedule for THIS week -->
-                        <div cdkDropList [cdkDropListData]="getWeekScheduleGroups(weekIndex)"
-                            (cdkDropListDropped)="onDayDropInWeek($event, weekIndex)" formArrayName="schedule"
-                            class="space-y-4">
-                            <div *ngFor="let dayCtrl of getWeekScheduleGroups(weekIndex); let dayIndex = index"
-                                [formGroupName]="dayIndex" cdkDrag [cdkDragDisabled]="isViewMode"
-                                class="scheduled-day-card p-3 border rounded-md shadow-sm bg-white dark:bg-gray-600/70 dark:border-gray-600 relative">
-                                <!-- Day card header with toggle -->
-                                <div class="flex justify-between items-start">
-                                    <div class="flex items-center flex-shrink-0">
-                                        <div *ngIf="!isViewMode" cdkDragHandle
-                                            class="p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 flex-shrink-0 cursor-grab"
-                                            title="Drag to reorder day">
-                                            <app-icon name="drag"></app-icon>
-                                        </div>
-                                        <!-- NEW: Day Toggle Button -->
-                                        <button type="button" (click)="toggleDay(dayCtrl.get('id')?.value)"
-                                            class="p-1 -ml-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-500 focus:outline-none">
-                                            <app-icon
-                                                [name]="isDayExpanded(dayCtrl.get('id')?.value) ? 'chevron-down' : 'chevron-right'"
-                                                class="w-5 h-5 text-gray-500 dark:text-gray-400"></app-icon>
+                        <!-- Collapsible content -->
+                        <div *ngIf="isDayExpanded(dayCtrl.get('id')?.value)">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 dark:text-gray-300">
+                                <div>
+                                    <label [for]="'dayOfWeek-' + i"
+                                        class="block text-xs font-medium text-gray-700 dark:text-gray-300">
+                                        {{ f['cycleLength'].value > 0 ? 'Cycle Day Number' : 'Day of Week' }}
+                                    </label>
+                                    <select [id]="'dayOfWeek-' + i" formControlName="dayOfWeek"
+                                        class="mt-1 block w-full p-2 text-sm border rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700 dark:border-gray-500 dark:text-gray-300">
+                                        <option *ngFor="let dayOpt of currentDayOptions()" [value]="dayOpt.value">{{
+                                            dayOpt.label }}</option>
+                                    </select>
+                                    <div *ngIf="getScheduleDayControl(i).get('dayOfWeek')?.invalid && getScheduleDayControl(i).get('dayOfWeek')?.touched"
+                                        class="text-red-500 dark:text-red-400 text-xs mt-1">
+                                        Day is required.
+                                    </div>
+                                </div>
+                                <div>
+                                    <label [for]="'routineName-' + i"
+                                        class="block text-xs font-medium text-gray-700 dark:text-gray-300">Routine</label>
+                                    <div class="mt-1 flex rounded-md shadow-sm"
+                                        [ngClass]="{'ring-2 ring-offset-1 ring-red-500 dark:ring-red-400': getScheduleDayControl(i).get('routineId')?.invalid && (getScheduleDayControl(i).get('routineId')?.touched || submitted)}">
+                                        <input type="text" [id]="'routineName-' + i" readonly
+                                            [value]="getScheduleDayControl(i).get('routineName')?.value || (getScheduleDayControl(i).get('routineId')?.value ? 'Loading routine...' : 'No Routine Selected')"
+                                            class="flex-1 min-w-0 block w-full px-3 py-2 text-sm rounded-none rounded-l-md border-gray-300 dark:border-gray-200 dark:bg-gray-400 cursor-default focus:outline-none focus:ring-0 focus:border-gray-300 dark:text-gray-800 font-medium"
+                                            [ngClass]="{'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 placeholder-red-400': getScheduleDayControl(i).get('routineId')?.invalid && (getScheduleDayControl(i).get('routineId')?.touched || submitted), 'rounded-r-md':isViewMode}">
+                                        <button *ngIf="!isViewMode" type="button" appPress
+                                            (shortPress)="openRoutineSelectionModal(i)"
+                                            class="inline-flex items-center px-3 py-2 border border-l-0 rounded-r-md text-sm font-medium transition-colors duration-150"
+                                            [ngClass]="{
+                                    'border-blue-300 dark:border-blue-500 bg-blue-50 dark:bg-blue-500 text-white hover:bg-blue-100 dark:hover:bg-blue-400': !getScheduleDayControl(i).get('routineId')?.value && !(getScheduleDayControl(i).get('routineId')?.invalid && (getScheduleDayControl(i).get('routineId')?.touched || submitted)),
+                                    'border-green-500 dark:border-green-400 bg-green-50 dark:bg-green-700 text-green-700 dark:text-green-100 hover:bg-green-100 dark:hover:bg-green-600': getScheduleDayControl(i).get('routineId')?.value,
+                                    'border-red-500 dark:border-red-400 bg-red-100 dark:bg-red-600 text-red-700 dark:text-red-200 hover:bg-red-200 dark:hover:bg-red-500': getScheduleDayControl(i).get('routineId')?.invalid && (getScheduleDayControl(i).get('routineId')?.touched || submitted) 
+                                }">
+                                            <app-icon name="change" class="h-4 w-4"></app-icon>
+                                            <span class="ml-1">
+                                                {{ getScheduleDayControl(i).get('routineId')?.value ? 'CHANGE' :
+                                                'SELECT' }}
+                                            </span>
                                         </button>
                                     </div>
-                                    <button *ngIf="!isViewMode" type="button" appPress
-                                        (shortPress)="removeScheduledDay(dayIndex, weekIndex)" title="Remove DAY"
-                                        class="flex p-1 items-center hover:text-red-700 dark:hover:text-red-300 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30 disabled:opacity-50 bg-red-500 text-white">
-                                        <app-icon name="cancel" class="h-5 w-5"></app-icon>
-                                    </button>
-                                </div>
-                                <div class="flex justify-between items-center mb-2"
-                                    [ngClass]="{'mt-1': isEditableMode()}">
-                                    <h4 class="text-md font-medium text-gray-800 dark:text-gray-100">
-                                        <label [for]="'dayName-' + dayIndex" class="sr-only">Day Name</label>
-                                        <input type="text" [id]="'dayName-' + dayIndex" formControlName="dayName"
-                                            placeholder="e.g., Day 1: Volume"
-                                            class="text-lg font-bold bg-transparent border-0 border-b-2 border-gray-300 dark:border-gray-500 focus:ring-0 focus:border-primary dark:text-gray-100 p-1 w-full sm:w-1/2">
-                                    </h4>
-                                </div>
-
-                                <!-- NEW: Collapsible content for day card -->
-                                <div *ngIf="isDayExpanded(dayCtrl.get('id')?.value)">
-                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 dark:text-gray-300">
-                                        <!-- Day of Week (for linear, it's always the weekly options) -->
-                                        <div>
-                                            <label [for]="'dayOfWeek-' + weekIndex + '-' + dayIndex"
-                                                class="block text-xs font-medium text-gray-700 dark:text-gray-300">Day
-                                                of Week</label>
-                                            <select [id]="'dayOfWeek-' + weekIndex + '-' + dayIndex"
-                                                formControlName="dayOfWeek"
-                                                class="mt-1 block w-full p-2 text-sm border rounded-md shadow-sm dark:bg-gray-700 dark:border-gray-500">
-                                                <option *ngFor="let dayOpt of dayOfWeekOptions" [value]="dayOpt.value">
-                                                    {{ dayOpt.label }}</option>
-                                            </select>
-                                        </div>
-                                        <!-- Routine Selection -->
-                                        <div>
-                                            <label [for]="'routineName-' + weekIndex + '-' + dayIndex"
-                                                class="block text-xs font-medium text-gray-700 dark:text-gray-300">Routine</label>
-                                            <div class="mt-1 flex rounded-md shadow-sm">
-                                                <input type="text" [id]="'routineName-' + weekIndex + '-' + dayIndex"
-                                                    readonly
-                                                    [value]="getWeekScheduleDayControl(weekIndex, dayIndex).get('routineName')?.value || 'No Routine'"
-                                                    class="flex-1 block w-full px-3 py-2 text-sm rounded-l-md dark:bg-gray-400 cursor-default dark:text-gray-800 font-medium">
-                                                <button *ngIf="!isViewMode" type="button" appPress
-                                                    (shortPress)="openRoutineSelectionModal(weekIndex, dayIndex)"
-                                                    class="inline-flex items-center px-3 py-2 border border-l-0 rounded-r-md text-sm transition-colors duration-150 border-green-500 dark:border-green-400 bg-green-50 dark:bg-green-700 text-green-700 dark:text-green-100 hover:bg-green-100 dark:hover:bg-green-600 font-medium "
-                                                    [ngClass]="{
-                                'border-blue-300 dark:border-blue-500 bg-blue-50 dark:bg-blue-500 text-white hover:bg-blue-100 dark:hover:bg-blue-400': !getWeekScheduleDayControl(weekIndex, dayIndex).get('routineName')?.value && !(getWeekScheduleDayControl(weekIndex, dayIndex).get('routineName')?.invalid && (getWeekScheduleDayControl(weekIndex, dayIndex).get('routineName')?.touched || submitted)),
-                                'border-green-500 dark:border-green-400 bg-green-50 dark:bg-green-700 text-green-700 dark:text-green-100 hover:bg-green-100 dark:hover:bg-green-600': getWeekScheduleDayControl(weekIndex, dayIndex).get('routineName')?.value,
-                                'border-red-500 dark:border-red-400 bg-red-100 dark:bg-red-600 text-red-700 dark:text-red-200 hover:bg-red-200 dark:hover:bg-red-500': getWeekScheduleDayControl(weekIndex, dayIndex).get('routineName')?.invalid && (getWeekScheduleDayControl(weekIndex, dayIndex).get('routineName')?.touched || submitted) 
-                            }">
-                                                    <app-icon name="change" class="h-5 w-5 mr-1"></app-icon>
-                                                    {{
-                                                    getWeekScheduleDayControl(weekIndex,
-                                                    dayIndex).get('routineName')?.value
-                                                    ? 'CHANGE': 'SELECT'}}
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <!-- Notes and Time -->
-                                        <div class="sm:col-span-2">
-                                            <label [for]="'dayNotes-' + weekIndex + '-' + dayIndex"
-                                                class="block text-xs font-medium text-gray-700 dark:text-gray-300">Notes
-                                                (Optional)</label>
-                                            <textarea [id]="'dayNotes-' + weekIndex + '-' + dayIndex"
-                                                formControlName="notes" rows="2"
-                                                class="mt-1 block w-full p-2 text-sm border rounded-md shadow-sm dark:bg-gray-700 dark:border-gray-500"></textarea>
-                                        </div>
+                                    <div *ngIf="getScheduleDayControl(i).get('routineId')?.invalid && (getScheduleDayControl(i).get('routineId')?.touched || submitted)"
+                                        class="text-red-500 dark:text-red-400 text-xs mt-1">
+                                        Routine selection is required.
                                     </div>
                                 </div>
-                                <!-- NEW: Collapsed Day Preview -->
-                                <div *ngIf="!isDayExpanded(dayCtrl.get('id')?.value)" class="mt-2 text-sm">
-                                    <span class="font-medium text-gray-800 dark:text-gray-200">{{
-                                        dayCtrl.get('routineName')?.value || 'No Routine Selected' }}</span>
+                                <div class="sm:col-span-2" *ngIf="programForm.get('timeOfDay')?.value || isEditableMode()">
+                                    <label [for]="'timeOfDay-' + i"
+                                        class="block text-xs font-medium text-gray-700 dark:text-gray-300">Time
+                                        (Optional)</label>
+                                    <input type="text" [id]="'timeOfDay-' + i" formControlName="timeOfDay"
+                                        placeholder="e.g., AM, PM, 08:00"
+                                        class="mt-1 block w-full p-2 text-sm border rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700 dark:border-gray-500">
+                                </div>
+                                <div class="sm:col-span-2" *ngIf="programForm.get('notes')?.value || isEditableMode()">
+                                    <label [for]="'dayNotes-' + i"
+                                        class="block text-xs font-medium text-gray-700 dark:text-gray-300">Notes
+                                        for this Day
+                                        (Optional)</label>
+                                    <textarea [id]="'dayNotes-' + i" formControlName="notes" rows="2"
+                                        class="mt-1 block w-full p-2 text-sm border rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700 dark:border-gray-500"></textarea>
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Add Day Button for THIS week -->
-                        <div class="text-center mt-4" *ngIf="getWeekScheduleGroups(weekIndex).length < 7">
-                            <button *ngIf="!isViewMode" type="button" appPress (shortPress)="addScheduledDay(weekIndex)"
-                                class="flex items-center justify-center bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium py-1.5 px-3 rounded-md shadow-sm">
-                                <app-icon name="create" class="h-4 w-4"></app-icon>
-                                <span class="ml-1">ADD DAY TO WEEK</span>
-                            </button>
+                        <!-- Collapsed Preview -->
+                        <div *ngIf="!isDayExpanded(dayCtrl.get('id')?.value)" class="mt-2 text-sm">
+                            <span class="font-medium text-gray-800 dark:text-gray-200">{{
+                                dayCtrl.get('routineName')?.value || 'No Routine Selected' }}</span>
                         </div>
-                        <div *ngIf="getWeekScheduleGroups(weekIndex).length === 0"
-                            class="text-center text-sm text-gray-500 dark:text-gray-400 py-4">This week is empty.</div>
-                    </div>
-                    <!-- NEW: Collapsed Week Preview -->
-                    <div *ngIf="!isWeekExpanded(weekCtrl.get('id')?.value)"
-                        class="mt-2 pl-4 border-l-2 border-gray-200 dark:border-gray-600">
-                        <ul class="list-none space-y-1">
-                            <li *ngFor="let day of getWeekScheduleGroups(weekIndex)"
-                                class="text-sm text-gray-600 dark:text-gray-300">
-                                <span class="font-semibold">{{ day.get('dayName')?.value || (day.get('dayOfWeek')?.value
-                                    | dayOfWeek : false) }}:</span>
-                                <span class="italic ml-2">{{ day.get('routineName')?.value || 'No routine' }}</span>
-                            </li>
-                            <li *ngIf="getWeekScheduleGroups(weekIndex).length === 0"
-                                class="text-sm text-gray-500 italic">
-                                This week is empty.
-                            </li>
-                        </ul>
                     </div>
                 </div>
-            </div>
 
-            <div *ngIf="weeksFormArray.length === 0; else addWeekButton"
-                class="text-center py-6 text-gray-500 dark:text-gray-400 border border-dashed dark:border-gray-700 rounded-md">
-                <p>No weeks created for this program yet.</p>
-                <button *ngIf="!isViewMode" type="button" (click)="addWeek()"
-                    class="mt-2 text-sm text-primary hover:underline">
-                    Add the first week
-                </button>
-            </div>
-            <ng-template #addWeekButton>
-                <div class="flex justify-center mt-2">
-                    <button *ngIf="!isViewMode" type="button" appPress (shortPress)="addWeek()"
-                        class="flex items-center justify-center bg-green-500 hover:bg-green-600 text-white text-sm font-medium py-1.5 px-3 rounded-md shadow-sm">
-                        <app-icon name="create" class="h-7 w-7 mr-1"></app-icon>ADD WEEK
+                <div *ngIf="scheduleFormArray.length === 0; else addDayToSchedule"
+                    class="text-center py-6 text-gray-500 dark:text-gray-400 border border-dashed dark:border-gray-700 rounded-md">
+                    <p>No days scheduled for this program yet</p>
+                    <button *ngIf="!isViewMode" type="button" (click)="addScheduledDay()"
+                        class="mt-2 text-sm text-primary hover:underline">
+                        Add the first scheduled day
                     </button>
                 </div>
-            </ng-template>
-        </section>
+                <ng-template #addDayToSchedule>
+                    <div class="flex justify-center mt-2">
+                        <button *ngIf="!isViewMode" type="button" appPress (shortPress)="addScheduledDay()"
+                            class="flex items-center justify-center bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium py-1.5 px-3 rounded-md shadow-sm">
+                            <app-icon name="create" class="h-4 w-4"></app-icon>
+                            <span class="ml-1">ADD DAY TO SCHEDULE</span>
+                        </button>
+                    </div>
+                </ng-template>
+            </section>
+
+            <!-- --- UI for 'linear' week-by-week programs --- -->
+            <section *ngIf="programForm.get('programType')?.value === 'linear'">
+                <div class="flex justify-between items-center mb-1">
+                    <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300">Weekly Schedule</h2>
+                    <button *ngIf="!isViewMode" type="button" appPress (shortPress)="addWeek()"
+                        class="flex items-center justify-center bg-green-500 hover:bg-green-600 text-white text-sm font-medium py-1.5 px-3 rounded-md shadow-sm">
+                        <app-icon name="create" class="h-4 w-4"></app-icon>
+                        <span class="ml-1">ADD WEEK</span>
+                    </button>
+                </div>
+
+                <div cdkDropList (cdkDropListDropped)="onWeekDrop($event)" formArrayName="weeks"
+                    class="space-y-6 mt-4">
+                    <div *ngFor="let weekCtrl of weeksFormArray.controls; let weekIndex = index"
+                        [formGroupName]="weekIndex" cdkDrag [cdkDragDisabled]="isViewMode"
+                        class="p-4 border-2 border-dashed dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800/50">
+
+                        <!-- Week Header with Drag Handle and Toggle -->
+                        <div class="flex justify-between items-center mb-3">
+                            <div class="flex items-center">
+                                <div *ngIf="!isViewMode" cdkDragHandle
+                                    class="p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 flex-shrink-0 cursor-move"
+                                    title="Drag to reorder week">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
+                                        class="w-6 h-6">
+                                        <path
+                                            d="M10 4h4v4h-4zM4 10h4v4H4zM10 10h4v4h-4zM16 10h4v4h-4zM10 16h4v4h-4z" />
+                                    </svg>
+                                </div>
+                                <button type="button" (click)="toggleWeek(weekCtrl.get('id')?.value)"
+                                    class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none">
+                                    <app-icon
+                                        [name]="isWeekExpanded(weekCtrl.get('id')?.value) ? 'chevron-down' : 'chevron-right'"
+                                        class="w-6 h-6 text-gray-500 dark:text-gray-400"></app-icon>
+                                </button>
+                            </div>
+
+                            <div class="flex-grow mx-2">
+                                <label [for]="'weekName-' + weekIndex" class="sr-only">Week Name</label>
+                                <input type="text" [id]="'weekName-' + weekIndex" formControlName="name"
+                                    placeholder="e.g., Week 1: Volume"
+                                    class="text-lg font-bold bg-transparent border-0 border-b-2 border-gray-300 dark:border-gray-500 focus:ring-0 focus:border-primary dark:text-gray-100 p-1 w-full sm:w-1/2">
+                            </div>
+                            <button *ngIf="!isViewMode" type="button" appPress (shortPress)="removeWeek(weekIndex)"
+                                title="Remove WEEK"
+                                class="flex items-center p-1 hover:text-red-700 dark:hover:text-red-300 rounded-md hover:bg-red-100 dark:hover:bg-red-900/30 disabled:opacity-50 bg-red-500 text-white">
+                                <app-icon name="cancel" class="h-5 w-5 mr-1"></app-icon>REMOVE WEEK
+                            </button>
+                        </div>
+
+                        <!-- Collapsible container for week content -->
+                        <div *ngIf="isWeekExpanded(weekCtrl.get('id')?.value)">
+                            <!-- Schedule for THIS week -->
+                            <div cdkDropList [cdkDropListData]="getWeekScheduleGroups(weekIndex)"
+                                (cdkDropListDropped)="onDayDropInWeek($event, weekIndex)" formArrayName="schedule"
+                                class="space-y-4">
+                                <div *ngFor="let dayCtrl of getWeekScheduleGroups(weekIndex); let dayIndex = index"
+                                    [formGroupName]="dayIndex" cdkDrag [cdkDragDisabled]="isViewMode"
+                                    class="scheduled-day-card p-3 border rounded-md shadow-sm bg-white dark:bg-gray-600/70 dark:border-gray-600 relative">
+                                    <!-- Day card header with toggle -->
+                                    <div class="flex justify-between items-start">
+                                        <div class="flex items-center flex-shrink-0">
+                                            <div *ngIf="!isViewMode" cdkDragHandle
+                                                class="p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 flex-shrink-0 cursor-grab"
+                                                title="Drag to reorder day">
+                                                <app-icon name="drag"></app-icon>
+                                            </div>
+                                            <button type="button" (click)="toggleDay(dayCtrl.get('id')?.value)"
+                                                class="p-1 -ml-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-500 focus:outline-none">
+                                                <app-icon
+                                                    [name]="isDayExpanded(dayCtrl.get('id')?.value) ? 'chevron-down' : 'chevron-right'"
+                                                    class="w-5 h-5 text-gray-500 dark:text-gray-400"></app-icon>
+                                            </button>
+                                        </div>
+                                        <button *ngIf="!isViewMode" type="button" appPress
+                                            (shortPress)="removeScheduledDay(dayIndex, weekIndex)" title="Remove DAY"
+                                            class="flex p-1 items-center hover:text-red-700 dark:hover:text-red-300 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30 disabled:opacity-50 bg-red-500 text-white">
+                                            <app-icon name="cancel" class="h-5 w-5"></app-icon>
+                                        </button>
+                                    </div>
+                                    <div class="flex justify-between items-center mb-2"
+                                        [ngClass]="{'mt-1': isEditableMode()}">
+                                        <h4 class="text-md font-medium text-gray-800 dark:text-gray-100">
+                                            <label [for]="'dayName-' + dayIndex" class="sr-only">Day Name</label>
+                                            <input type="text" [id]="'dayName-' + dayIndex" formControlName="dayName"
+                                                placeholder="e.g., Day 1: Volume"
+                                                class="text-lg font-bold bg-transparent border-0 border-b-2 border-gray-300 dark:border-gray-500 focus:ring-0 focus:border-primary dark:text-gray-100 p-1 w-full sm:w-1/2">
+                                        </h4>
+                                    </div>
+
+                                    <!-- Collapsible content for day card -->
+                                    <div *ngIf="isDayExpanded(dayCtrl.get('id')?.value)">
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 dark:text-gray-300">
+                                            <!-- Day of Week -->
+                                            <div>
+                                                <label [for]="'dayOfWeek-' + weekIndex + '-' + dayIndex"
+                                                    class="block text-xs font-medium text-gray-700 dark:text-gray-300">Day
+                                                    of Week</label>
+                                                <select [id]="'dayOfWeek-' + weekIndex + '-' + dayIndex"
+                                                    formControlName="dayOfWeek"
+                                                    class="mt-1 block w-full p-2 text-sm border rounded-md shadow-sm dark:bg-gray-700 dark:border-gray-500">
+                                                    <option *ngFor="let dayOpt of dayOfWeekOptions"
+                                                        [value]="dayOpt.value">
+                                                        {{ dayOpt.label }}</option>
+                                                </select>
+                                            </div>
+                                            <!-- Routine Selection -->
+                                            <div>
+                                                <label [for]="'routineName-' + weekIndex + '-' + dayIndex"
+                                                    class="block text-xs font-medium text-gray-700 dark:text-gray-300">Routine</label>
+                                                <div class="mt-1 flex rounded-md shadow-sm">
+                                                    <input type="text"
+                                                        [id]="'routineName-' + weekIndex + '-' + dayIndex" readonly
+                                                        [value]="getWeekScheduleDayControl(weekIndex, dayIndex).get('routineName')?.value || 'No Routine'"
+                                                        class="flex-1 block w-full px-3 py-2 text-sm rounded-l-md dark:bg-gray-400 cursor-default dark:text-gray-800 font-medium">
+                                                    <button *ngIf="!isViewMode" type="button" appPress
+                                                        (shortPress)="openRoutineSelectionModal(weekIndex, dayIndex)"
+                                                        class="inline-flex items-center px-3 py-2 border border-l-0 rounded-r-md text-sm transition-colors duration-150 border-green-500 dark:border-green-400 bg-green-50 dark:bg-green-700 text-green-700 dark:text-green-100 hover:bg-green-100 dark:hover:bg-green-600 font-medium "
+                                                        [ngClass]="{
+                                    'border-blue-300 dark:border-blue-500 bg-blue-50 dark:bg-blue-500 text-white hover:bg-blue-100 dark:hover:bg-blue-400': !getWeekScheduleDayControl(weekIndex, dayIndex).get('routineName')?.value && !(getWeekScheduleDayControl(weekIndex, dayIndex).get('routineName')?.invalid && (getWeekScheduleDayControl(weekIndex, dayIndex).get('routineName')?.touched || submitted)),
+                                    'border-green-500 dark:border-green-400 bg-green-50 dark:bg-green-700 text-green-700 dark:text-green-100 hover:bg-green-100 dark:hover:bg-green-600': getWeekScheduleDayControl(weekIndex, dayIndex).get('routineName')?.value,
+                                    'border-red-500 dark:border-red-400 bg-red-100 dark:bg-red-600 text-red-700 dark:text-red-200 hover:bg-red-200 dark:hover:bg-red-500': getWeekScheduleDayControl(weekIndex, dayIndex).get('routineName')?.invalid && (getWeekScheduleDayControl(weekIndex, dayIndex).get('routineName')?.touched || submitted) 
+                                }">
+                                                        <app-icon name="change" class="h-5 w-5 mr-1"></app-icon>
+                                                        {{
+                                                        getWeekScheduleDayControl(weekIndex,
+                                                        dayIndex).get('routineName')?.value
+                                                        ? 'CHANGE': 'SELECT'}}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <!-- Notes and Time -->
+                                            <div class="sm:col-span-2">
+                                                <label [for]="'dayNotes-' + weekIndex + '-' + dayIndex"
+                                                    class="block text-xs font-medium text-gray-700 dark:text-gray-300">Notes
+                                                    (Optional)</label>
+                                                <textarea [id]="'dayNotes-' + weekIndex + '-' + dayIndex"
+                                                    formControlName="notes" rows="2"
+                                                    class="mt-1 block w-full p-2 text-sm border rounded-md shadow-sm dark:bg-gray-700 dark:border-gray-500"></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Collapsed Day Preview -->
+                                    <div *ngIf="!isDayExpanded(dayCtrl.get('id')?.value)" class="mt-2 text-sm">
+                                        <span class="font-medium text-gray-800 dark:text-gray-200">{{
+                                            dayCtrl.get('routineName')?.value || 'No Routine Selected' }}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Add Day Button for THIS week -->
+                            <div class="text-center mt-4" *ngIf="getWeekScheduleGroups(weekIndex).length < 7">
+                                <button *ngIf="!isViewMode" type="button"
+                                    appPress (shortPress)="addScheduledDay(weekIndex)"
+                                    class="flex items-center justify-center bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium py-1.5 px-3 rounded-md shadow-sm">
+                                    <app-icon name="create" class="h-4 w-4"></app-icon>
+                                    <span class="ml-1">ADD DAY TO WEEK</span>
+                                </button>
+                            </div>
+                            <div *ngIf="getWeekScheduleGroups(weekIndex).length === 0"
+                                class="text-center text-sm text-gray-500 dark:text-gray-400 py-4">This week is empty.
+                            </div>
+                        </div>
+                        <!-- Collapsed Week Preview -->
+                        <div *ngIf="!isWeekExpanded(weekCtrl.get('id')?.value)"
+                            class="mt-2 pl-4 border-l-2 border-gray-200 dark:border-gray-600">
+                            <ul class="list-none space-y-1">
+                                <li *ngFor="let day of getWeekScheduleGroups(weekIndex)"
+                                    class="text-sm text-gray-600 dark:text-gray-300">
+                                    <span class="font-semibold">{{ day.get('dayName')?.value ||
+                                        (day.get('dayOfWeek')?.value
+                                        | dayOfWeek : false) }}:</span>
+                                    <span class="italic ml-2">{{ day.get('routineName')?.value || 'No routine' }}</span>
+                                </li>
+                                <li *ngIf="getWeekScheduleGroups(weekIndex).length === 0"
+                                    class="text-sm text-gray-500 italic">
+                                    This week is empty.
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div *ngIf="weeksFormArray.length === 0; else addWeekButton"
+                    class="text-center py-6 text-gray-500 dark:text-gray-400 border border-dashed dark:border-gray-700 rounded-md">
+                    <p>No weeks created for this program yet.</p>
+                    <button *ngIf="!isViewMode" type="button" (click)="addWeek()"
+                        class="mt-2 text-sm text-primary hover:underline">
+                        Add the first week
+                    </button>
+                </div>
+                <ng-template #addWeekButton>
+                    <div class="flex justify-center mt-2">
+                        <button *ngIf="!isViewMode" type="button" appPress (shortPress)="addWeek()"
+                            class="flex items-center justify-center bg-green-500 hover:bg-green-600 text-white text-sm font-medium py-1.5 px-3 rounded-md shadow-sm">
+                            <app-icon name="create" class="h-7 w-7 mr-1"></app-icon>ADD WEEK
+                        </button>
+                    </div>
+                </ng-template>
+            </section>
+        </ng-container>
+        <!-- ========================================================== -->
+        <!-- END: MODIFIED SCHEDULE SECTION WRAPPER                     -->
+        <!-- ========================================================== -->
 
         <!-- Final Action Buttons -->
         <div *ngIf="!isViewMode" class="pt-6 flex justify-end space-x-3">

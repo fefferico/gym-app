@@ -17,6 +17,7 @@ export const PROGRAMS_DATA = [
             {
                 "id": "444d2b71-464d-4bbc-8870-761746a90b8d",
                 "dayOfWeek": 2,
+                "dayName": "Tuesday",
                 "routineId": "toning-3-giorno-1",
                 "routineName": "Toning 3 - Day 1",
                 "notes": "",
@@ -25,6 +26,7 @@ export const PROGRAMS_DATA = [
             {
                 "id": "15374416-5f25-4f1f-ada7-ebf9aa263df7",
                 "dayOfWeek": 4,
+                "dayName": "Thursday",
                 "routineId": "toning-3-giorno-2",
                 "routineName": "Toning 3 - Day 2",
                 "notes": "",
@@ -51,6 +53,7 @@ export const PROGRAMS_DATA = [
             {
                 "id": "sch-beg-1",
                 "dayOfWeek": 1,
+                "dayName": "Day 1 (Workout A)",
                 "routineId": "beginner-workout-v1-a",
                 "routineName": "Beginner Weight Training - Workout A (V1)",
                 "notes": "Workout A",
@@ -59,6 +62,7 @@ export const PROGRAMS_DATA = [
             {
                 "id": "sch-beg-2",
                 "dayOfWeek": 3,
+                "dayName": "Day 3 (Workout B)",
                 "routineId": "beginner-workout-v1-b",
                 "routineName": "Beginner Weight Training - Workout B (V1)",
                 "notes": "Workout B",
@@ -67,13 +71,14 @@ export const PROGRAMS_DATA = [
             {
                 "id": "sch-beg-3",
                 "dayOfWeek": 5,
+                "dayName": "Day 5 (Workout A)",
                 "routineId": "beginner-workout-v1-a",
                 "routineName": "Beginner Weight Training - Workout A (V1)",
                 "notes": "Workout A",
                 "timeOfDay": "", "programId": "prog-beginner-3day-v1"
             }
         ],
-"programType": 'cycled',
+        "programType": 'cycled',
         "isActive": false
     },
     {
@@ -92,6 +97,7 @@ export const PROGRAMS_DATA = [
             {
                 "id": "sch-hyper-1",
                 "dayOfWeek": 1,
+                "dayName": "Upper Body A",
                 "routineId": "muscle-building-v1-upper-a",
                 "routineName": "Muscle Building - Upper Body A (V1)",
                 "notes": "Upper Body - Chest & Back focus",
@@ -100,6 +106,7 @@ export const PROGRAMS_DATA = [
             {
                 "id": "sch-hyper-2",
                 "dayOfWeek": 2,
+                "dayName": "Lower Body A",
                 "routineId": "muscle-building-v1-lower-a",
                 "routineName": "Muscle Building - Lower Body A (V1)",
                 "notes": "Lower Body - Hamstring & Glute focus",
@@ -108,6 +115,7 @@ export const PROGRAMS_DATA = [
             {
                 "id": "sch-hyper-3",
                 "dayOfWeek": 4,
+                "dayName": "Upper Body B",
                 "routineId": "muscle-building-v1-upper-b",
                 "routineName": "Muscle Building - Upper Body B (V1)",
                 "notes": "Upper Body - Shoulders & Arms focus",
@@ -116,13 +124,14 @@ export const PROGRAMS_DATA = [
             {
                 "id": "sch-hyper-4",
                 "dayOfWeek": 5,
+                "dayName": "Lower Body B",
                 "routineId": "muscle-building-v1-lower-b",
                 "routineName": "Muscle Building - Lower Body B (V1)",
                 "notes": "Lower Body - Squat pattern focus",
                 "timeOfDay": "", "programId": "prog-hypertrophy-4day-v1"
             }
         ],
-"programType": 'cycled',
+        "programType": 'cycled',
         "isActive": false
     },
     {
@@ -142,6 +151,7 @@ export const PROGRAMS_DATA = [
             {
                 "id": "sch-gpp-1",
                 "dayOfWeek": 1,
+                "dayName": "Shoulders",
                 "routineId": "f4f6e3c1-4b7e-4b1e-8c3b-2f1a6e9a0b1d",
                 "routineName": "Build 3-Dimensional Shoulders",
                 "notes": "Focus on shoulder stability and endurance.",
@@ -150,6 +160,7 @@ export const PROGRAMS_DATA = [
             {
                 "id": "sch-gpp-2",
                 "dayOfWeek": 3,
+                "dayName": "Legs",
                 "routineId": "muscle-building-v1-lower-b",
                 "routineName": "Muscle Building - Lower Body B (V1)",
                 "notes": "Strength and power for the lower body.",
@@ -158,13 +169,14 @@ export const PROGRAMS_DATA = [
             {
                 "id": "sch-gpp-3",
                 "dayOfWeek": 5,
+                "dayName": "Arms",
                 "routineId": "b3c4d5e6-1",
                 "routineName": "50 Rep Kettlebell Arm Blaster",
                 "notes": "High-volume arm workout for muscular endurance.",
                 "timeOfDay": "", "programId": "prog-gpp-kettlebell-3day"
             }
         ],
-"programType": 'cycled',
+        "programType": 'cycled',
         "isActive": false
     },
     {
@@ -184,6 +196,7 @@ export const PROGRAMS_DATA = [
             {
                 "id": "sch-fatloss-1",
                 "dayOfWeek": 1,
+                "dayName": "Toning A",
                 "routineId": "toning-3-giorno-1",
                 "routineName": "Toning 3 - Day 1",
                 "timeOfDay": "", "programId": "prog-fatloss-5day-hiit"
@@ -191,6 +204,7 @@ export const PROGRAMS_DATA = [
             {
                 "id": "sch-fatloss-2",
                 "dayOfWeek": 2,
+                "dayName": "Tabata",
                 "routineId": "a2b3c4d5-1",
                 "routineName": "BRUTALLY Intense 4 Minute Kettlebell Fat Loss Routine",
                 "timeOfDay": "", "programId": "prog-fatloss-5day-hiit"
@@ -198,6 +212,7 @@ export const PROGRAMS_DATA = [
             {
                 "id": "sch-fatloss-3",
                 "dayOfWeek": 3,
+                "dayName": "Toning B",
                 "routineId": "toning-3-giorno-2",
                 "routineName": "Toning 3 - Day 2",
                 "timeOfDay": "", "programId": "prog-fatloss-5day-hiit"
@@ -205,6 +220,7 @@ export const PROGRAMS_DATA = [
             {
                 "id": "sch-fatloss-4",
                 "dayOfWeek": 4,
+                "dayName": "Tabata",
                 "routineId": "a2b3c4d5-1",
                 "routineName": "BRUTALLY Intense 4 Minute Kettlebell Fat Loss Routine",
                 "timeOfDay": "", "programId": "prog-fatloss-5day-hiit"
@@ -212,12 +228,13 @@ export const PROGRAMS_DATA = [
             {
                 "id": "sch-fatloss-5",
                 "dayOfWeek": 5,
+                "dayName": "Toning C",
                 "routineId": "toning-3-giorno-1",
                 "routineName": "Toning 3 - Day 1",
                 "timeOfDay": "", "programId": "prog-fatloss-5day-hiit"
             }
         ],
-"programType": 'cycled',
+        "programType": 'cycled',
         "isActive": false
     },
     {
@@ -236,6 +253,7 @@ export const PROGRAMS_DATA = [
             {
                 "id": "sch-advhyper-1",
                 "dayOfWeek": 2,
+                "dayName": "Upper (Volume)",
                 "routineId": "muscle-building-v4-upper-a",
                 "routineName": "Muscle Building - Upper Body A (V4)",
                 "timeOfDay": "", "programId": "prog-advanced-hypertrophy-4day"
@@ -243,6 +261,7 @@ export const PROGRAMS_DATA = [
             {
                 "id": "sch-advhyper-2",
                 "dayOfWeek": 3,
+                "dayName": "Lower (Volume)",
                 "routineId": "muscle-building-v4-lower-a",
                 "routineName": "Muscle Building - Lower Body A (V4)",
                 "timeOfDay": "", "programId": "prog-advanced-hypertrophy-4day"
@@ -250,6 +269,7 @@ export const PROGRAMS_DATA = [
             {
                 "id": "sch-advhyper-3",
                 "dayOfWeek": 5,
+                "dayName": "Upper (Strength)",
                 "routineId": "muscle-building-v4-upper-b",
                 "routineName": "Muscle Building - Upper Body B (V4)",
                 "timeOfDay": "", "programId": "prog-advanced-hypertrophy-4day"
@@ -257,12 +277,13 @@ export const PROGRAMS_DATA = [
             {
                 "id": "sch-advhyper-4",
                 "dayOfWeek": 6,
+                "dayName": "Lower (Strength)",
                 "routineId": "muscle-building-v4-lower-b",
                 "routineName": "Muscle Building - Lower Body B (V4)",
                 "timeOfDay": "", "programId": "prog-advanced-hypertrophy-4day"
             }
         ],
-"programType": 'cycled',
+        "programType": 'cycled',
         "isActive": false
     },
     {
@@ -281,6 +302,7 @@ export const PROGRAMS_DATA = [
             {
                 "id": "sch-5x5-1",
                 "dayOfWeek": 1,
+                "dayName": "Day 1 (Workout A)",
                 "routineId": "beginner-workout-v1-a",
                 "routineName": "Beginner Weight Training - Workout A (V1)",
                 "timeOfDay": "", "programId": "prog-strength-5x5-inspired-3day"
@@ -288,6 +310,7 @@ export const PROGRAMS_DATA = [
             {
                 "id": "sch-5x5-2",
                 "dayOfWeek": 3,
+                "dayName": "Day 3 (Workout B)",
                 "routineId": "beginner-workout-v1-b",
                 "routineName": "Beginner Weight Training - Workout B (V1)",
                 "timeOfDay": "", "programId": "prog-strength-5x5-inspired-3day"
@@ -295,12 +318,13 @@ export const PROGRAMS_DATA = [
             {
                 "id": "sch-5x5-3",
                 "dayOfWeek": 5,
+                "dayName": "Day 5 (Workout A)",
                 "routineId": "beginner-workout-v1-a",
                 "routineName": "Beginner Weight Training - Workout A (V1)",
                 "timeOfDay": "", "programId": "prog-strength-5x5-inspired-3day"
             }
         ],
-"programType": 'cycled',
+        "programType": 'cycled',
         "isActive": false
     },
     {
@@ -319,6 +343,7 @@ export const PROGRAMS_DATA = [
             {
                 "id": "sch-531-1",
                 "dayOfWeek": 1,
+                "dayName": "OHP Day",
                 "routineId": "wendler-531-day1-ohp",
                 "routineName": "5/3/1 - Overhead Press Day",
                 "notes": "Main Lift: Overhead Press",
@@ -327,6 +352,7 @@ export const PROGRAMS_DATA = [
             {
                 "id": "sch-531-2",
                 "dayOfWeek": 2,
+                "dayName": "Deadlift Day",
                 "routineId": "wendler-531-day2-deadlift",
                 "routineName": "5/3/1 - Deadlift Day",
                 "notes": "Main Lift: Deadlift",
@@ -335,6 +361,7 @@ export const PROGRAMS_DATA = [
             {
                 "id": "sch-531-3",
                 "dayOfWeek": 4,
+                "dayName": "Bench Day",
                 "routineId": "wendler-531-day3-bench",
                 "routineName": "5/3/1 - Bench Press Day",
                 "notes": "Main Lift: Bench Press",
@@ -343,6 +370,7 @@ export const PROGRAMS_DATA = [
             {
                 "id": "sch-531-4",
                 "dayOfWeek": 5,
+                "dayName": "Squat Day",
                 "routineId": "wendler-531-day4-squat",
                 "routineName": "5/3/1 - Squat Day",
                 "notes": "Main Lift: Squat",
@@ -369,6 +397,7 @@ export const PROGRAMS_DATA = [
             {
                 "id": "sch-ath-1",
                 "dayOfWeek": 1,
+                "dayName": "Lower Strength",
                 "routineId": "muscle-building-v2-lower-b",
                 "routineName": "Muscle Building - Lower Body B (V2)",
                 "notes": "Maximal Strength & Power",
@@ -377,6 +406,7 @@ export const PROGRAMS_DATA = [
             {
                 "id": "sch-ath-2",
                 "dayOfWeek": 2,
+                "dayName": "Upper Strength",
                 "routineId": "muscle-building-v2-upper-a",
                 "routineName": "Muscle Building - Upper Body A (V2)",
                 "notes": "Upper Body Strength",
@@ -385,6 +415,7 @@ export const PROGRAMS_DATA = [
             {
                 "id": "sch-ath-3",
                 "dayOfWeek": 4,
+                "dayName": "Power/Conditioning",
                 "routineId": "f4f6e3c1-4b7e-4b1e-8c3b-2f1a6e9a0b1d",
                 "routineName": "Build 3-Dimensional Shoulders",
                 "notes": "Kettlebell Power & Conditioning",
@@ -393,13 +424,14 @@ export const PROGRAMS_DATA = [
             {
                 "id": "sch-ath-4",
                 "dayOfWeek": 5,
+                "dayName": "GPP",
                 "routineId": "toning-3-giorno-2",
                 "routineName": "Toning 3 - Day 2",
                 "notes": "General Physical Preparedness (GPP)",
                 "timeOfDay": "", "programId": "prog-athletic-performance-4day"
             }
         ],
-"programType": 'cycled',
+        "programType": 'cycled',
         "isActive": false
     },
     {
@@ -418,6 +450,7 @@ export const PROGRAMS_DATA = [
             {
                 "id": "sch-tc-1",
                 "dayOfWeek": 1,
+                "dayName": "Full Body A",
                 "routineId": "beginner-workout-v2-a",
                 "routineName": "Beginner Weight Training - Workout A (V2)",
                 "timeOfDay": "", "programId": "prog-time-crunched-3day"
@@ -425,6 +458,7 @@ export const PROGRAMS_DATA = [
             {
                 "id": "sch-tc-2",
                 "dayOfWeek": 3,
+                "dayName": "Full Body B",
                 "routineId": "beginner-workout-v2-b",
                 "routineName": "Beginner Weight Training - Workout B (V2)",
                 "timeOfDay": "", "programId": "prog-time-crunched-3day"
@@ -432,12 +466,13 @@ export const PROGRAMS_DATA = [
             {
                 "id": "sch-tc-3",
                 "dayOfWeek": 5,
+                "dayName": "Full Body C (Toning)",
                 "routineId": "toning-3-giorno-1",
                 "routineName": "Toning 3 - Day 1",
                 "timeOfDay": "", "programId": "prog-time-crunched-3day"
             }
         ],
-"programType": 'cycled',
+        "programType": 'cycled',
         "isActive": false
     },
     {
@@ -456,6 +491,7 @@ export const PROGRAMS_DATA = [
             {
                 "id": "sch-bb-1",
                 "dayOfWeek": 1,
+                "dayName": "Upper (Volume)",
                 "routineId": "muscle-building-v3-upper-a",
                 "routineName": "Muscle Building - Upper Body A (V3)",
                 "notes": "Upper Body Volume",
@@ -464,6 +500,7 @@ export const PROGRAMS_DATA = [
             {
                 "id": "sch-bb-2",
                 "dayOfWeek": 2,
+                "dayName": "Lower (Volume)",
                 "routineId": "muscle-building-v3-lower-a",
                 "routineName": "Muscle Building - Lower Body A (V3)",
                 "notes": "Lower Body Volume",
@@ -472,6 +509,7 @@ export const PROGRAMS_DATA = [
             {
                 "id": "sch-bb-3",
                 "dayOfWeek": 4,
+                "dayName": "Upper (Strength)",
                 "routineId": "muscle-building-v3-upper-b",
                 "routineName": "Muscle Building - Upper Body B (V3)",
                 "notes": "Upper Body Strength",
@@ -480,6 +518,7 @@ export const PROGRAMS_DATA = [
             {
                 "id": "sch-bb-4",
                 "dayOfWeek": 5,
+                "dayName": "Lower (Strength)",
                 "routineId": "muscle-building-v3-lower-b",
                 "routineName": "Muscle Building - Lower Body B (V3)",
                 "notes": "Lower Body Strength",
@@ -488,13 +527,14 @@ export const PROGRAMS_DATA = [
             {
                 "id": "sch-bb-5",
                 "dayOfWeek": 6,
+                "dayName": "Arm Day",
                 "routineId": "b3c4d5e6-1",
                 "routineName": "50 Rep Kettlebell Arm Blaster",
                 "notes": "Arm Specialization Day",
                 "timeOfDay": "", "programId": "prog-bodybuilding-5day-split"
             }
         ],
-"programType": 'cycled',
+        "programType": 'cycled',
         "isActive": false
     },
     {
@@ -514,6 +554,7 @@ export const PROGRAMS_DATA = [
             {
                 "id": "sch-5x5-classic-1",
                 "dayOfWeek": 1,
+                "dayName": "Day 1 (Workout A)",
                 "routineId": "5x5-workout-a",
                 "routineName": "5x5 Strength - Workout A",
                 "timeOfDay": "", "programId": "prog-strength-5x5-classic-3day"
@@ -521,6 +562,7 @@ export const PROGRAMS_DATA = [
             {
                 "id": "sch-5x5-classic-2",
                 "dayOfWeek": 3,
+                "dayName": "Day 3 (Workout B)",
                 "routineId": "5x5-workout-b",
                 "routineName": "5x5 Strength - Workout B",
                 "timeOfDay": "", "programId": "prog-strength-5x5-classic-3day"
@@ -528,12 +570,13 @@ export const PROGRAMS_DATA = [
             {
                 "id": "sch-5x5-classic-3",
                 "dayOfWeek": 5,
+                "dayName": "Day 5 (Workout A)",
                 "routineId": "5x5-workout-a",
                 "routineName": "5x5 Strength - Workout A",
                 "timeOfDay": "", "programId": "prog-strength-5x5-classic-3day"
             }
         ],
-"programType": 'cycled',
+        "programType": 'cycled',
         "isActive": false
     }
 ]

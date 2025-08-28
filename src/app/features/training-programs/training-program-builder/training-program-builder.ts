@@ -1,10 +1,9 @@
-// src/app/features/training-programs/training-program-builder/training-program-builder.component.ts
 import { Component, inject, OnInit, OnDestroy, signal, computed, ChangeDetectorRef, PLATFORM_ID } from '@angular/core';
 import { CommonModule, DatePipe, isPlatformBrowser, TitleCasePipe } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { Subscription, of, firstValueFrom } from 'rxjs';
-import { switchMap, tap, take } from 'rxjs/operators';
+import { switchMap, tap, take, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
 import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 
@@ -146,7 +145,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
     constructor() {
         this.programForm = this.fb.group({
             name: ['', Validators.required],
-            programType: ['cycled', Validators.required], // Default to 'cycled'
+            programType: [null, Validators.required], // Start with no selection
             goals: [''],
             description: [''],
             programNotes: [''],
@@ -337,7 +336,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
                 this.isEditMode = mode === 'edit' && !!this.currentProgramId;
 
                 if (this.isNewMode) {
-                    this.programForm.reset({ cycleLength: null, schedule: [] });
+                    this.programForm.reset({ programType: null, cycleLength: null, schedule: [] });
                     this.updateFormEnabledState();
                     return of(null);
                 } else if (this.currentProgramId) {
@@ -517,18 +516,61 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
     createScheduledDayGroup(day?: Partial<ScheduledRoutineDay>): FormGroup {
         const defaultDayValue = this.currentDayOptions()[0]?.value ?? 1;
         const dayOfWeek = day?.dayOfWeek ?? defaultDayValue;
-        const obj = {
+    
+        const programType = this.programForm.get('programType')?.value;
+        const cycleLength = this.programForm.get('cycleLength')?.value;
+        const isCustomCycle = programType === 'cycled' && cycleLength > 0;
+    
+        let defaultDayName = '';
+        if (isCustomCycle) {
+            defaultDayName = `Day ${dayOfWeek}`;
+        } else {
+            // This handles linear programs and weekly 'cycled' programs
+            defaultDayName = this.dayOfWeekOptions.find(opt => opt.value === dayOfWeek)?.label || '';
+        }
+    
+        const dayGroup = this.fb.group({
             id: [day?.id || uuidv4()],
             dayOfWeek: [dayOfWeek, Validators.required],
-            dayName: [day?.dayName || this.dayOfWeekOptions.find(opt => opt.value === dayOfWeek)?.label || ''],
+            dayName: [day?.dayName || defaultDayName, Validators.required],
             routineId: [day?.routineId ?? '', Validators.required],
             routineName: [day?.routineName ?? ''],
             notes: [day?.notes ?? ''],
             timeOfDay: [day?.timeOfDay ?? ''],
             programId: [day?.programId ?? this.currentProgramId],
             isUnscheduled: [day?.isUnscheduled || false]
-        };
-        return this.fb.group(obj);
+        });
+    
+        // ==========================================================
+        // START: NEW LOGIC FOR DAY NAME HINT
+        // ==========================================================
+        // Only add this listener in edit/new modes for 'cycled' programs.
+        if (this.isEditableMode() && programType === 'cycled') {
+            dayGroup.get('dayOfWeek')?.valueChanges.pipe(
+                debounceTime(400),      // Wait for the user to stop selecting
+                distinctUntilChanged()  // Only proceed if the value is truly different
+            ).subscribe(newDayNumber => {
+                const currentDayName = dayGroup.get('dayName')?.value;
+                
+                // Find the default label for the newly selected day number.
+                const dayOption = this.currentDayOptions().find(opt => opt.value === newDayNumber);
+                const expectedDayLabel = dayOption ? dayOption.label : `Day ${newDayNumber}`;
+    
+                // If the custom name is different from the new default label, show a hint.
+                if (currentDayName !== expectedDayLabel) {
+                    this.toastService.info(
+                        `Reminder: Day name is "${currentDayName}". You might want to update it to match the new selection of "${expectedDayLabel} or to give it a proper name".`,
+                        6000,
+                        'Check Day Name'
+                    );
+                }
+            });
+        }
+        // ==========================================================
+        // END: NEW LOGIC
+        // ==========================================================
+    
+        return dayGroup;
     }
 
     // --- MODIFIED: Add a day to the correct schedule (cycled or linear) ---

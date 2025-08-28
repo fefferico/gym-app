@@ -83,8 +83,9 @@
                   <div *ngIf="getCurrentWeekInfo(workoutInfo.scheduledDayInfo.programId) as weekInfo"
                     class="flex items-center gap-1 text-green-700 dark:text-green-300 font-semibold animate-pulse">
                     <app-icon name="calendar-page" class="w-5 h-5" [strokeWidth]="2"></app-icon>
-                    <span class="font-medium">Current Week:</span> {{ weekInfo.name }}{{workoutInfo.scheduledDayInfo.dayName ? ( ' - ' + workoutInfo.scheduledDayInfo.dayName) : ''}}
+                    <span class="font-medium">Current Week:</span> {{ weekInfo.name }}
                   </div>
+                  <span>{{workoutInfo.scheduledDayInfo.dayName ? ( ' - ' + workoutInfo.scheduledDayInfo.dayName) : ''}}</span>
                 </div>
               </h3>
 
