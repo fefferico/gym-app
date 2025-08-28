@@ -245,7 +245,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
                 const daysToAdd = ((week.weekNumber - 1) * 7) + (day.dayOfWeek - getDay(startDate) + 7) % 7;
                 const targetDate = addDays(startDate, daysToAdd);
                 const targetDateKey = format(targetDate, 'yyyy-MM-dd');
-                
+
                 // Check if a log exists for this routine on this specific date
                 return loggedWorkouts.has(`${targetDateKey}-${day.routineId}`);
             });
@@ -262,7 +262,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
     currentWeekProgress = computed(() => {
         const program = this.currentProgram;
         const logs = this.allWorkoutLogs();
-        
+
         if (program?.programType !== 'linear' || !program.isActive || !program.startDate || !program.weeks?.length) {
             return null; // Not applicable
         }
@@ -293,11 +293,11 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         });
 
         const completedRoutinesThisWeek = new Set(logsThisWeek.map(log => log.routineId));
-        
+
         let completedCount = 0;
         const segments = currentWeekData.schedule.map(day => {
             const isCompleted = completedRoutinesThisWeek.has(day.routineId);
-            if(isCompleted) completedCount++;
+            if (isCompleted) completedCount++;
             return { isCompleted };
         });
 
@@ -495,16 +495,19 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
 
     createScheduledDayGroup(day?: Partial<ScheduledRoutineDay>): FormGroup {
         const defaultDayValue = this.currentDayOptions()[0]?.value ?? 1;
-        return this.fb.group({
+        const dayOfWeek = day?.dayOfWeek ?? defaultDayValue;
+        const obj = {
             id: [day?.id || uuidv4()],
-            dayOfWeek: [day?.dayOfWeek ?? defaultDayValue, Validators.required],
+            dayOfWeek: [dayOfWeek, Validators.required],
+            dayName: dayOfWeek !== undefined ?  (this.dayOfWeekOptions[dayOfWeek-1].label) : '',
             routineId: [day?.routineId ?? '', Validators.required],
             routineName: [day?.routineName ?? ''],
             notes: [day?.notes ?? ''],
             timeOfDay: [day?.timeOfDay ?? ''],
             programId: [day?.programId ?? this.currentProgramId],
             isUnscheduled: [day?.isUnscheduled || false]
-        });
+        };
+        return this.fb.group(obj);
     }
 
     // --- MODIFIED: Add a day to the correct schedule (cycled or linear) ---
@@ -680,6 +683,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
             schedule: formValue.schedule.map((s: ScheduledRoutineDay) => ({
                 id: s.id || uuidv4(),
                 dayOfWeek: Number(s.dayOfWeek),
+                dayName: s.dayName || '',
                 routineId: s.routineId,
                 routineName: s.routineName,
                 programId: programId,
@@ -689,12 +693,14 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
                 iterationId: formValue.iterationId || null
             } as ScheduledRoutineDay)),
             weeks: formValue.programType === 'linear'
-                ? formValue.weeks.map((w: any) => ({
+                ? formValue.weeks.map((w: any, index: number) => ({
                     ...w,
                     schedule: w.schedule.map((d: ScheduledRoutineDay) => ({
                         id: d.id || uuidv4(),
                         dayOfWeek: Number(d.dayOfWeek),
+                        dayName: d.dayName || '',
                         routineId: d.routineId,
+                        weekNumber: index + 1,
                         routineName: d.routineName,
                         programId: programId,
                         notes: d.notes,
@@ -941,7 +947,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         }
 
         // if (currentProgram?.history && currentProgram.history.length > 0) {
-            actionsArray.push(historyProgramBtn);
+        actionsArray.push(historyProgramBtn);
         // }
 
         if (this.isViewMode) {

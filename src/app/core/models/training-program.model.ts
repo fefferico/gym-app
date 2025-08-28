@@ -12,6 +12,8 @@ export interface ScheduledRoutineDay {
    * - For N-day cycles: 1 is Day 1, 2 is Day 2, etc., up to the cycleLength.
    */
   dayOfWeek: number;
+  dayName?: string;
+  weekNumber?: number;
   /** ID of the Routine to be performed on this day. */
   routineId: string;
   /** ID of the Program this schedule entry belongs to. */

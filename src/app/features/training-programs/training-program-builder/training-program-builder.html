@@ -392,12 +392,17 @@
                                     <app-icon name="cancel" class="h-5 w-5"></app-icon>
                                 </button>
                             </div>
-                            <div class="flex justify-between items-center mb-1" [ngClass]="{'mt-5': isEditableMode()}">
+                            <div class="flex justify-between items-center mb-2" [ngClass]="{'mt-5': isEditableMode()}">
                                 <h4 class="text-md font-medium text-gray-800 dark:text-gray-100">
-                                    <!-- For linear weeks, cycleLength is always > 0 (it's weekly), so we can use the dayOfWeek pipe directly -->
-                                    {{ (getWeekScheduleDayControl(weekIndex, dayIndex).get('dayOfWeek')?.value |
-                                    dayOfWeek : false ) || 'Scheduled Day ' + (dayIndex + 1) }}
+                                    <!--
+                                                                                                -- For linear weeks, cycleLength is always > 0 (it's weekly), so we can use the dayOfWeek pipe directly --
+                                                                                                {{ (getWeekScheduleDayControl(weekIndex, dayIndex).get('dayOfWeek')?.value |
+                                                                                             dayOfWeek : false ) || 'Scheduled Day ' + (dayIndex + 1) }}-->
+                                    <label [for]="'dayName-' + dayIndex" class="sr-only">Day Name</label>
+                                    <input type="text" [id]="'dayName-' + dayIndex" formControlName="dayName" placeholder="e.g., Day 1: Volume"
+                                        class="text-lg font-bold bg-transparent border-0 border-b-2 border-gray-300 dark:border-gray-500 focus:ring-0 focus:border-primary dark:text-gray-100 p-1 w-full sm:w-1/2">
                                 </h4>
+                            
                             </div>
 
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 dark:text-gray-300">

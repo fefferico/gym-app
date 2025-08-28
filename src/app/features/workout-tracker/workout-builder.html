@@ -223,8 +223,8 @@
                         [disabled]="!builderForm.get('programIdForLog')?.value || availableScheduledDayIds.length === 0"
                         class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200 disabled:opacity-50 disabled:cursor-not-allowed">
                         <option value="">-- Select Scheduled Day (Optional) --</option>
-                        <option *ngFor="let scheduledId of availableScheduledDayIds" [value]="scheduledId">{{
-                            scheduledId }}</option>
+                        <option *ngFor="let scheduledId of availableScheduledDayInfos" [value]="scheduledId.id">{{
+                            scheduledId.weekNumber ? 'Week #' + scheduledId.weekNumber : '' }} - {{ scheduledId.dayName ? 'Day ' + scheduledId.dayName : ''}}</option>
                     </select>
                 </div>
                 <!-- END: Updated fields -->

@@ -153,6 +153,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   availableRoutineForProgram: ScheduledRoutineDay[] = [];
   availableIterationIds: string[] = [];
   availableScheduledDayIds: string[] = [];
+  availableScheduledDayInfos: ScheduledRoutineDay[] = [];
   // END: Added properties
   modalSearchTerm = signal('');
   filteredAvailableExercises = computed(() => {
@@ -318,6 +319,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
           this.availableRoutineForProgram = [];
           this.availableIterationIds = [];
           this.availableScheduledDayIds = [];
+          this.availableScheduledDayInfos = [];
           this.builderForm.get('iterationIdForLog')?.setValue('', { emitEvent: false });
           this.builderForm.get('scheduledDayIdForLog')?.setValue('', { emitEvent: false });
         }
@@ -399,6 +401,32 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     return [];
   }
 
+  retrieveProgramScheduledDayInfo(programId: string): ScheduledRoutineDay[] {
+    const program = this.availablePrograms.find(p => p.id === programId);
+    if (!program) {
+      return [];
+    }
+
+    let schedules: ScheduledRoutineDay[] = [];
+
+    // Check for a top-level schedule array
+    if (program.schedule && program.schedule.length > 0) {
+      const scheduleInside = program.schedule;
+      schedules.push(...scheduleInside);
+    }
+
+    // Check for schedules nested within weeks and flatten the result
+    if (program.weeks && program.weeks.length > 0) {
+      const weeklyIds = program.weeks.flatMap(week =>
+        week.schedule ? week.schedule : []
+      );
+      schedules.push(...weeklyIds);
+    }
+
+    // Return only unique schedules
+    return [...new Set(schedules)];
+  }
+
   retrieveProgramScheduledDayIds(programId: string): string[] {
     const program = this.availablePrograms.find(p => p.id === programId);
     if (!program) {
@@ -424,7 +452,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     // Return only unique IDs
     return [...new Set(ids)];
   }
-  // END: Added methods
 
   /**
    * This method is triggered when the user presses "Enter"
@@ -666,6 +693,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     if (log.programId) {
       this.availableIterationIds = this.retrieveProgramIterationIds(log.programId);
       this.availableScheduledDayIds = this.retrieveProgramScheduledDayIds(log.programId);
+      this.availableScheduledDayInfos = this.retrieveProgramScheduledDayInfo(log.programId);
     }
     // END: Manual trigger
 
@@ -2106,5 +2134,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     this.availableRoutineForProgram = this.retrieveProgramRoutinesIds(programId);
     this.availableIterationIds = this.retrieveProgramIterationIds(programId);
     this.availableScheduledDayIds = this.retrieveProgramScheduledDayIds(programId);
+    this.availableScheduledDayInfos = this.retrieveProgramScheduledDayInfo(programId);
   }
 }
