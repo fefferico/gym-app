@@ -499,7 +499,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         const obj = {
             id: [day?.id || uuidv4()],
             dayOfWeek: [dayOfWeek, Validators.required],
-            dayName: dayOfWeek !== undefined ?  (this.dayOfWeekOptions[dayOfWeek-1].label) : '',
+            dayName: [day?.dayName || this.dayOfWeekOptions.find(opt => opt.value === dayOfWeek)?.label || ''],
             routineId: [day?.routineId ?? '', Validators.required],
             routineName: [day?.routineName ?? ''],
             notes: [day?.notes ?? ''],
@@ -662,13 +662,32 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         this.submitted = true;
         if (this.isViewMode) return;
 
+        const formValue = this.programForm.getRawValue();
+
+        // --- NEW: Custom structural validation ---
+        if (formValue.programType === 'linear') {
+            if (!formValue.weeks || formValue.weeks.length === 0) {
+                this.toastService.error("Linear programs must have at least one week.", 0, "Validation Error");
+                return;
+            }
+            const hasEmptyWeeks = formValue.weeks.some((week: any) => !week.schedule || week.schedule.length === 0);
+            if (hasEmptyWeeks) {
+                this.toastService.error("Please add routines to every week or remove any empty weeks.", 0, "Validation Error");
+                return; // Stop submission
+            }
+        } else if (formValue.programType === 'cycled') {
+            if (!formValue.schedule || formValue.schedule.length === 0) {
+                this.toastService.error("Please add at least one scheduled day to the program.", 0, "Validation Error");
+                return;
+            }
+        }
+
         if (this.programForm.invalid) {
             this.programForm.markAllAsTouched();
-            this.toastService.error("Please fill all required fields.", 0, "Validation Error");
+            this.toastService.error("Please fill all required fields, including selecting a routine for each scheduled day.", 0, "Validation Error");
             return;
         }
 
-        const formValue = this.programForm.getRawValue();
         const programId = this.currentProgramId || uuidv4();
         const programPayload: TrainingProgram = {
             id: programId,
@@ -1081,4 +1100,6 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         weekScheduleArray.updateValueAndValidity();
     }
 
+
+    
 }

@@ -1,5 +1,3 @@
-// workout-builder.ts
-
 import { Component, inject, OnInit, OnDestroy, signal, computed, ElementRef, QueryList, ViewChildren, AfterViewInit, ChangeDetectorRef, PLATFORM_ID, Input, HostListener, ViewChild, effect, AfterViewChecked } from '@angular/core';
 import { CommonModule, DecimalPipe, isPlatformBrowser, TitleCasePipe } from '@angular/common'; // Added TitleCasePipe
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -13,7 +11,7 @@ import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-
 
 import { Routine, ExerciseSetParams, WorkoutExercise } from '../../core/models/workout.model';
 import { Exercise } from '../../core/models/exercise.model';
-import { WorkoutLog, LoggedWorkoutExercise, LoggedSet } from '../../core/models/workout-log.model'; // For manual log
+import { WorkoutLog, LoggedWorkoutExercise, LoggedSet, EnrichedWorkoutLog } from '../../core/models/workout-log.model'; // For manual log
 import { WorkoutService } from '../../core/services/workout.service';
 import { ExerciseService } from '../../core/services/exercise.service';
 import { UnitsService } from '../../core/services/units.service';
@@ -150,7 +148,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   availableRoutines: Routine[] = []; // For selecting a base routine when logging manually
   availablePrograms: TrainingProgram[] = [];
   // START: Added properties for program-based logging
-  availableRoutineForProgram: ScheduledRoutineDay[] = [];
+  // availableRoutineForProgram: ScheduledRoutineDay[] = [];
   availableIterationIds: string[] = [];
   availableScheduledDayIds: string[] = [];
   availableScheduledDayInfos: ScheduledRoutineDay[] = [];
@@ -304,19 +302,19 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       // START: Added subscription for program selection
       this.builderForm.get('programIdForLog')?.valueChanges.subscribe(programId => {
         if (programId) {
+          this.builderForm.get('routineIdForLog')?.disable();
           this.initialProgramIdForLogEdit = programId;
           this.retrieveProgramInfo(programId);
-
           // Reset the dependent fields if the program changes
           this.builderForm.get('iterationIdForLog')?.setValue('', { emitEvent: false });
           this.builderForm.get('scheduledDayIdForLog')?.setValue('', { emitEvent: false });
           this.builderForm.get('routineIdForLog')?.setValue('', { emitEvent: false });
           this.exercisesFormArray.clear();
-
         } else {
+          this.builderForm.get('routineIdForLog')?.enable();
           this.initialProgramIdForLogEdit = undefined;
           // Clear the options and values if no program is selected
-          this.availableRoutineForProgram = [];
+          // this.availableRoutineForProgram = [];
           this.availableIterationIds = [];
           this.availableScheduledDayIds = [];
           this.availableScheduledDayInfos = [];
@@ -324,6 +322,50 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
           this.builderForm.get('scheduledDayIdForLog')?.setValue('', { emitEvent: false });
         }
       });
+
+      // =================== START: FIXED SNIPPET ===================
+      this.builderForm.get('scheduledDayIdForLog')?.valueChanges.subscribe(scheduledDayId => {
+        const scheduledDayInfo = this.availableScheduledDayInfos.find(
+          (info) => info.id === scheduledDayId
+        );
+
+        if (!scheduledDayInfo) {
+          this.exercisesFormArray.clear();
+          this.builderForm.get('routineIdForLog')?.setValue('', { emitEvent: false });
+          this.builderForm.get('name')?.setValue('Ad-hoc Workout', { emitEvent: false });
+          return;
+        }
+
+        firstValueFrom(this.workoutService.getRoutineById(scheduledDayInfo.routineId))
+          .then(routineToLog => {
+            if (routineToLog) {
+              // Surgically update only the necessary parts of the form
+              this.builderForm.get('name')?.setValue(`Log: ${routineToLog.name}`, { emitEvent: false });
+              this.builderForm.get('routineIdForLog')?.setValue(routineToLog.id, { emitEvent: false });
+
+              // Prefill only the exercises without touching other form controls
+              this.exercisesFormArray.clear({ emitEvent: false });
+              routineToLog.exercises.forEach(routineEx => {
+                this.exercisesFormArray.push(this.createExerciseFormGroup(routineEx, false, true), { emitEvent: false });
+              });
+
+              // If the scheduled day has an iterationId, set it in the form
+              if (scheduledDayInfo.iterationId) {
+                this.builderForm.get('iterationIdForLog')?.setValue(scheduledDayInfo.iterationId, { emitEvent: false });
+              }
+            } else {
+              this.toastService.error(`Routine with ID ${scheduledDayInfo.routineId} not found.`, 0, "Error");
+              this.exercisesFormArray.clear();
+            }
+          })
+          .catch(error => {
+            console.error("Failed to fetch routine for scheduled day:", error);
+            this.toastService.error("Could not load routine details.", 0, "Error");
+            this.exercisesFormArray.clear();
+          });
+      });
+      // =================== END: FIXED SNIPPET ===================
+
       // END: Added subscription
     }
 
@@ -368,13 +410,12 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
   // START: Added methods to retrieve program data
 
-  retrieveProgramRoutinesIds(programId: string): ScheduledRoutineDay[] {
+  retrieveProgramRoutines(programId: string): ScheduledRoutineDay[] {
     const program = this.availablePrograms.find(p => p.id === programId);
     if (!program) {
       return [];
     }
 
-    // If the program has a history of iterations, return their IDs
     if (program.schedule && program.schedule.length > 0) {
       return program.schedule;
     }
@@ -1484,7 +1525,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
           exercises: logExercises,
           iterationId: formValue.iterationIdForLog || undefined,
           scheduledDayId: formValue.scheduledDayIdForLog || undefined,
-        } as WorkoutLog;
+          dayName: 'AAAA'
+        } as EnrichedWorkoutLog;
 
         if (this.isEditMode && this.currentLogId) {
           const updatedLog: WorkoutLog = { ...logPayloadBase, id: this.currentLogId };
@@ -2131,9 +2173,13 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   retrieveProgramInfo(programId: string): void {
-    this.availableRoutineForProgram = this.retrieveProgramRoutinesIds(programId);
+    // this.availableRoutineForProgram = this.retrieveProgramRoutines(programId);
     this.availableIterationIds = this.retrieveProgramIterationIds(programId);
     this.availableScheduledDayIds = this.retrieveProgramScheduledDayIds(programId);
     this.availableScheduledDayInfos = this.retrieveProgramScheduledDayInfo(programId);
+  }
+
+  isFormInvalid(): boolean {
+    return this.builderForm.invalid || (this.exercisesFormArray.length === 0 && !(this.mode === 'routineBuilder' && this.builderForm.get('goal')?.value === 'rest'))
   }
 }

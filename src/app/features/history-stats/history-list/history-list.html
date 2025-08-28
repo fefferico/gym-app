@@ -320,6 +320,11 @@
               <h4 class="text-md sm:text-lg font-semibold text-primary dark:text-primary-light mb-1">{{ item.routineName
                 }}
               </h4>
+              <div *ngIf="item.programId" class="my-2 text-xs font-semibold text-white bg-primary rounded-md p-1 flex-shrink w-fit">
+                Program: {{ item.programName }} {{ item.iterationId}}
+                <ng-container *ngIf="item.weekName"> - {{ item.weekName }}</ng-container>
+                <ng-container *ngIf="item.dayName"> - {{ item.dayName }}</ng-container>
+              </div>
               <span *ngIf="item.startTime" class="text-sm text-gray-600 dark:text-gray-300 mb-2">
                 Date: {{ item.startTime | date:'dd/MM/yy HH:mm' }}
               </span>

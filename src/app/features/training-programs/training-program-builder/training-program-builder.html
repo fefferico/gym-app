@@ -491,7 +491,7 @@
                 <app-icon name="cancel" class="h-5 w-5 mr-1"></app-icon>
                 CANCEL
             </button>
-            <button type="submit" appPress (shortPress)="onSubmit()" [disabled]="programForm.invalid"
+            <button type="submit" appPress [disabled]="programForm.invalid"
                 class="flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark disabled:opacity-50">
                 <app-icon *ngIf="isNewMode" name="create" class="h-5 w-5"></app-icon>
                 <app-icon *ngIf="!isNewMode" name="save" class="h-5 w-5"></app-icon>

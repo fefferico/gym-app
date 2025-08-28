@@ -289,8 +289,8 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
     ]).pipe(
       map(([workouts, activities, allPrograms]) => {
         const programMap = new Map(allPrograms.map(p => [p.id, p.name]));
-        const workoutItems: HistoryListItem[] = workouts.map(w => ({ ...w, itemType: 'workout' }));
-        const activityItems: HistoryListItem[] = activities.map(a => ({ ...a, itemType: 'activity' }));
+        const workoutItems: EnrichedHistoryListItem[] = workouts.map(w => ({ ...w, itemType: 'workout' }));
+        const activityItems: EnrichedHistoryListItem[] = activities.map(a => ({ ...a, itemType: 'activity' }));
 
         const combinedList = [...workoutItems, ...activityItems];
         combinedList.sort((a, b) => b.startTime - a.startTime);
@@ -315,7 +315,7 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
                 ...item,
                 programName: programMap.get(item.programId!) || null,
                 weekName: weekName,
-                dayName: dayInfo?.dayName || null
+                dayName: item.dayName || dayInfo?.dayName || null
               } as EnrichedHistoryListItem))
             );
           } else {

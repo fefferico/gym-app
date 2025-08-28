@@ -168,24 +168,15 @@
                         placeholder="e.g., Morning Chest Session"
                         class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200">
                 </div>
-                <div *ngIf="!initialProgramIdForLogEdit">
+                <div>
                     <label for="routineIdForLog"
                         class="block text-sm font-medium text-gray-700 dark:text-gray-300">Based on Routine
                         (Optional)</label>
                     <select id="routineIdForLog" formControlName="routineIdForLog"
-                        class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200">
+                        [disabled]="builderForm.get('programIdForLog')?.value"
+                        class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200 disabled:opacity-50 disabled:cursor-not-allowed">
                         <option value="">-- Log Ad-hoc Routine --</option>
                         <option *ngFor="let r of availableRoutines" [value]="r.id">{{ r.name }}</option>
-                    </select>
-                </div>
-                <div *ngIf="initialProgramIdForLogEdit">
-                    <label for="routineIdForLog"
-                        class="block text-sm font-medium text-gray-700 dark:text-gray-300">Based on Routine
-                        (Optional)</label>
-                    <select id="routineIdForLog" formControlName="routineIdForLog"
-                        class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200">
-                        <option value="">-- Log Ad-hoc Routine --</option>
-                        <option *ngFor="let r of availableRoutineForProgram" [value]="r.routineId">{{ r.routineName }}</option>
                     </select>
                 </div>
                 <div>
@@ -749,7 +740,7 @@
                 CANCEL
             </button>
             <button type="submit"
-                [disabled]="builderForm.invalid || (exercisesFormArray.length === 0 && !(mode === 'routineBuilder' && builderForm.get('goal')?.value === 'rest'))"
+                [disabled]="isFormInvalid()"
                 class="flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark disabled:opacity-50">
                 <app-icon *ngIf="isNewMode" name="create" class="h-6 w-6 mr-1"></app-icon>
                 <app-icon *ngIf="!isNewMode" name="save" class="h-6 w-6 mr-1"></app-icon>
