@@ -139,6 +139,10 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
     editingHistoryEntryId = signal<string | null>(null); // ID of the entry being edited
     statusOptions = ['active', 'completed', 'archived', 'cancelled']; // For the status dropdown
 
+    // --- NEW: Signals for expand/collapse state ---
+    expandedWeekIds = signal(new Set<string>());
+    expandedDayIds = signal(new Set<string>());
+
     constructor() {
         this.programForm = this.fb.group({
             name: ['', Validators.required],
@@ -423,7 +427,14 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
 
     // --- NEW: Add a new week to the form ---
     addWeek(): void {
-        this.weeksFormArray.push(this.createWeekGroup());
+        const newWeekGroup = this.createWeekGroup();
+        this.weeksFormArray.push(newWeekGroup);
+        // Expand the new week by default
+        this.expandedWeekIds.update(currentSet => {
+            const newSet = new Set(currentSet);
+            newSet.add(newWeekGroup.get('id')?.value);
+            return newSet;
+        });
         this.cdr.detectChanges();
         setTimeout(() => { /* scroll to new week logic */ }, 50);
     }
@@ -446,43 +457,47 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
             description: program.description ? this.updateSanitizedDescription(program.description) : '',
             programNotes: program.programNotes,
             startDate: program.startDate ? new Date(program.startDate).toISOString().split('T')[0] : null,
-            // endDate: program.endDate ? new Date(program.endDate).toISOString().split('T')[0] : null,
             cycleLength: program.cycleLength ?? null,
             iterationId: program.iterationId ?? null,
             programType: program.programType || 'cycled', // Default to 'cycled' for old data
-
         });
-
+    
         this.cycleLengthSignal.set(program.cycleLength ?? null);
-
-        // --- MODIFIED: Patch based on program type ---
+    
+        // --- MODIFIED: Patch based on program type and set initial expansion state ---
+        const initialWeekIds = new Set<string>();
+        const initialDayIds = new Set<string>();
+    
         if (programType === 'linear' && program.weeks) {
             this.weeksFormArray.clear();
             program.weeks.forEach(week => {
-                this.weeksFormArray.push(this.createWeekGroup(week));
+                const weekGroup = this.createWeekGroup(week);
+                this.weeksFormArray.push(weekGroup);
+                initialWeekIds.add(weekGroup.value.id); // Add week ID for expansion
+                (weekGroup.get('schedule') as FormArray).controls.forEach(dayCtrl => {
+                    initialDayIds.add(dayCtrl.value.id); // Add day ID for expansion
+                });
             });
-        } else {
+        } else { // 'cycled'
             this.scheduleFormArray.clear();
             program.schedule.forEach(scheduledDay => {
-                this.scheduleFormArray.push(this.createScheduledDayGroup(scheduledDay));
+                const dayGroup = this.createScheduledDayGroup(scheduledDay);
+                this.scheduleFormArray.push(dayGroup);
+                initialDayIds.add(dayGroup.value.id); // Add day ID for expansion
             });
         }
-
+    
+        this.expandedWeekIds.set(initialWeekIds);
+        this.expandedDayIds.set(initialDayIds);
+    
         this.handleProgramTypeChange(programType);
         this.updateFormEnabledState();
-
-
-        this.scheduleFormArray.clear();
-        program.schedule.forEach(scheduledDay => {
-            this.scheduleFormArray.push(this.createScheduledDayGroup(scheduledDay));
-        });
-        this.updateFormEnabledState();
-
+    
         if (program.goals?.length) {
             const goalValuesToFind = new Set(
                 program.goals.filter((g): g is string => g != null)
             );
-
+    
             this.programGoals
                 .filter(progGoal =>
                     progGoal.value != null && goalValuesToFind.has(progGoal.value)
@@ -513,15 +528,14 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
     // --- MODIFIED: Add a day to the correct schedule (cycled or linear) ---
     addScheduledDay(weekIndex?: number): void {
         if (this.isViewMode) return;
-
+    
         const cycleLength = parseInt(this.programForm.get('cycleLength')?.value, 10);
         const isWeeklySchedule = !cycleLength || cycleLength === 7;
-
         const programType = this.programForm.get('programType')?.value;
-
+        let newDayGroup: FormGroup | null = null;
+    
         if (programType === 'linear' && weekIndex !== undefined) {
             const weekSchedule = this.weeksFormArray.at(weekIndex).get('schedule') as FormArray;
-            // Linear weeks are always 7 days
             if (weekSchedule.length >= 7) {
                 this.toastService.info("All 7 days of this week have been scheduled.", 3000);
                 return;
@@ -535,10 +549,10 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
                     break;
                 }
             }
-            weekSchedule.push(this.createScheduledDayGroup({ dayOfWeek: nextAvailableDay }));
-        } else {
+            newDayGroup = this.createScheduledDayGroup({ dayOfWeek: nextAvailableDay });
+            weekSchedule.push(newDayGroup);
+        } else { // Cycled program logic
             if (isWeeklySchedule) {
-                // --- Weekly Logic (remains the same) ---
                 if (this.scheduleFormArray.length >= 7) {
                     this.toastService.info("All 7 days of the week have been scheduled.", 3000);
                     return;
@@ -547,36 +561,36 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
                 const weekSequence = [1, 2, 3, 4, 5, 6, 0];
                 let nextAvailableDay = 1;
                 for (const day of weekSequence) {
-                    if (!usedDays.has(day)) {
-                        nextAvailableDay = day;
-                        break;
-                    }
+                    if (!usedDays.has(day)) { nextAvailableDay = day; break; }
                 }
-                this.scheduleFormArray.push(this.createScheduledDayGroup({ dayOfWeek: nextAvailableDay }));
-            } else {
-                // --- NEW N-Day Cycle Logic ---
+                newDayGroup = this.createScheduledDayGroup({ dayOfWeek: nextAvailableDay });
+                this.scheduleFormArray.push(newDayGroup);
+            } else { // N-Day Cycle
                 if (this.scheduleFormArray.length >= cycleLength) {
                     this.toastService.info(`All ${cycleLength} days of the cycle have been scheduled.`, 3000);
                     return;
                 }
-
                 const usedDays = new Set(this.scheduleFormArray.controls.map(control => control.get('dayOfWeek')?.value));
-                let nextAvailableDay = 1; // Default to Day 1
-                // Find the first empty day number in the cycle
+                let nextAvailableDay = 1;
                 for (let i = 1; i <= cycleLength; i++) {
-                    if (!usedDays.has(i)) {
-                        nextAvailableDay = i;
-                        break;
-                    }
+                    if (!usedDays.has(i)) { nextAvailableDay = i; break; }
                 }
-                this.scheduleFormArray.push(this.createScheduledDayGroup({ dayOfWeek: nextAvailableDay }));
+                newDayGroup = this.createScheduledDayGroup({ dayOfWeek: nextAvailableDay });
+                this.scheduleFormArray.push(newDayGroup);
             }
         }
-
-
-
+    
+        // Expand the newly created day card by default
+        if (newDayGroup) {
+            this.expandedDayIds.update(currentSet => {
+                const newSet = new Set(currentSet);
+                newSet.add(newDayGroup.get('id')?.value);
+                return newSet;
+            });
+        }
+    
         this.cdr.detectChanges();
-
+    
         setTimeout(() => {
             const elements = document.querySelectorAll('.scheduled-day-card');
             if (elements.length > 0) {
@@ -1100,6 +1114,36 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         weekScheduleArray.updateValueAndValidity();
     }
 
+    // --- NEW: Methods to manage expand/collapse state ---
+    toggleWeek(weekId: string): void {
+        this.expandedWeekIds.update(currentSet => {
+            const newSet = new Set(currentSet);
+            if (newSet.has(weekId)) {
+                newSet.delete(weekId);
+            } else {
+                newSet.add(weekId);
+            }
+            return newSet;
+        });
+    }
 
-    
+    isWeekExpanded(weekId: string): boolean {
+        return this.expandedWeekIds().has(weekId);
+    }
+
+    toggleDay(dayId: string): void {
+        this.expandedDayIds.update(currentSet => {
+            const newSet = new Set(currentSet);
+            if (newSet.has(dayId)) {
+                newSet.delete(dayId);
+            } else {
+                newSet.add(dayId);
+            }
+            return newSet;
+        });
+    }
+
+    isDayExpanded(dayId: string): boolean {
+        return this.expandedDayIds().has(dayId);
+    }
 }
