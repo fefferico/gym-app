@@ -6,6 +6,8 @@ import { WorkoutPlayerComponent } from './workout-player';
 import { WorkoutSummaryComponent } from './workout-summary/workout-summary';
 import { KettleBellWorkoutTrackerComponent } from '../../kb-workout-tracker/kb-workout-tracker';
 import { CompactWorkoutPlayerComponent } from './compact-workout-player/compact-workout-player.component';
+import { TabataPlayerComponent } from './tabata-workout-player/tabata-workout-player.component';
+import { FocusPlayerComponent } from './focus-workout-player/focus-workout-player.component';
 
 export const WORKOUT_TRACKER_ROUTES: Routes = [
   {
@@ -81,5 +83,13 @@ export const WORKOUT_TRACKER_ROUTES: Routes = [
   {
     path: 'play/compact/:routineId',
     component: CompactWorkoutPlayerComponent
+  },
+  {
+    path: 'play/tabata/:routineId',
+    component: TabataPlayerComponent
+  },
+  {
+    path: 'play/focus/:routineId',
+    component: FocusPlayerComponent
   },
 ];

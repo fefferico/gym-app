@@ -1,34 +1,33 @@
-import { Component, inject, OnInit, OnDestroy, signal, computed, ChangeDetectorRef, HostListener, PLATFORM_ID, ViewChildren, QueryList, ElementRef, effect, ViewChild } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal, computed, ChangeDetectorRef, HostListener, PLATFORM_ID, ViewChildren, QueryList, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule, DatePipe, DecimalPipe, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { Subscription, of, timer, firstValueFrom, interval, Subject, combineLatest } from 'rxjs';
 import { switchMap, tap, map, take, filter, takeUntil } from 'rxjs/operators';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { FullScreenRestTimerComponent } from '../../shared/components/full-screen-rest-timer/full-screen-rest-timer';
-
-import { Routine, WorkoutExercise, ExerciseSetParams } from '../../core/models/workout.model';
-import { Exercise } from '../../core/models/exercise.model';
-import { WorkoutService } from '../../core/services/workout.service';
-import { ExerciseService } from '../../core/services/exercise.service';
-import { TrackingService } from '../../core/services/tracking.service';
-import { LoggedSet, LoggedWorkoutExercise, WorkoutLog, LastPerformanceSummary, PersonalBestSet } from '../../core/models/workout-log.model';
-import { WeightUnitPipe } from '../../shared/pipes/weight-unit-pipe';
-import { AlertService } from '../../core/services/alert.service';
-import { StorageService } from '../../core/services/storage.service';
-import { AlertButton, AlertInput } from '../../core/models/alert.model';
-import { UnitsService } from '../../core/services/units.service';
-import { ToastService } from '../../core/services/toast.service';
+import { ExerciseSetParams, Routine, WorkoutExercise } from '../../../core/models/workout.model';
+import { Exercise } from '../../../core/models/exercise.model';
+import { LastPerformanceSummary, LoggedSet, LoggedWorkoutExercise, PersonalBestSet, WorkoutLog } from '../../../core/models/workout-log.model';
+import { FormatSecondsPipe } from '../../../shared/pipes/format-seconds-pipe';
+import { WeightUnitPipe } from '../../../shared/pipes/weight-unit-pipe';
+import { IconComponent } from '../../../shared/components/icon/icon.component';
+import { FullScreenRestTimerComponent } from '../../../shared/components/full-screen-rest-timer/full-screen-rest-timer';
+import { PressDirective } from '../../../shared/directives/press.directive';
+import { ModalComponent } from '../../../shared/components/modal/modal.component';
+import { ExerciseDetailComponent } from '../../exercise-library/exercise-detail';
+import { ExerciseSelectionModalComponent } from '../../../shared/components/exercise-selection-modal/exercise-selection-modal.component';
+import { WorkoutService } from '../../../core/services/workout.service';
+import { ExerciseService } from '../../../core/services/exercise.service';
+import { AlertService } from '../../../core/services/alert.service';
+import { TrackingService } from '../../../core/services/tracking.service';
+import { StorageService } from '../../../core/services/storage.service';
+import { UnitsService } from '../../../core/services/units.service';
+import { AppSettingsService } from '../../../core/services/app-settings.service';
+import { ToastService } from '../../../core/services/toast.service';
+import { TrainingProgramService } from '../../../core/services/training-program.service';
+import { ProgressiveOverloadService } from '../../../core/services/progressive-overload.service.ts';
 import { v4 as uuidv4 } from 'uuid';
+import { AlertButton, AlertInput } from '../../../core/models/alert.model';
 import { format } from 'date-fns';
-import { AppSettingsService } from '../../core/services/app-settings.service'; // Import AppSettingsService
-import { ExerciseDetailComponent } from '../exercise-library/exercise-detail';
-import { ModalComponent } from '../../shared/components/modal/modal.component';
-import { PressDirective } from '../../shared/directives/press.directive';
-import { FormatSecondsPipe } from '../../shared/pipes/format-seconds-pipe';
-import { ProgressiveOverloadService } from '../../core/services/progressive-overload.service.ts';
-import { IconComponent } from '../../shared/components/icon/icon.component';
-import { TrainingProgramService } from '../../core/services/training-program.service';
-import { ExerciseSelectionModalComponent } from '../../shared/components/exercise-selection-modal/exercise-selection-modal.component';
 
 
 // Interface to manage the state of the currently active set/exercise
@@ -44,15 +43,6 @@ interface ActiveSetInfo {
   actualDuration?: number;
   notes?: string; // This is for the *individual set's notes*
   type: 'standard' | 'warmup' | 'amrap' | 'custom';
-}
-
-// NEW Interface for our flattened Tabata/HIIT intervals
-export interface HIITInterval {
-  type: 'prepare' | 'work' | 'rest';
-  duration: number;
-  exerciseName?: string;
-  totalIntervals: number;
-  currentIntervalNumber: number;
 }
 
 export interface PausedWorkoutState {
@@ -80,13 +70,9 @@ export interface PausedWorkoutState {
   restTimerNextUpTextOnPause: string | null;
   lastPerformanceForCurrentExercise?: LastPerformanceSummary | null;
   workoutDate: string; // Date of the workout when paused
-  // --- NEW: TABATA RESUME FIELDS ---
-  isTabataMode?: boolean;
-  tabataCurrentIntervalIndex?: number;
-  tabataTimeRemainingOnPause?: number;
 }
 
-export enum SessionState {
+enum SessionState {
   Loading = 'loading',
   Playing = 'playing',
   Paused = 'paused',
@@ -94,7 +80,7 @@ export enum SessionState {
   End = 'end',
 }
 
-export enum TimedSetState {
+enum TimedSetState {
   Idle = 'idle',
   Running = 'running',
   Paused = 'paused',
@@ -107,17 +93,17 @@ export enum PlayerSubState {
 }
 
 @Component({
-  selector: 'app-workout-player',
+  selector: 'app-focus-player',
   standalone: true,
   imports: [CommonModule, DatePipe, ReactiveFormsModule,
     FormatSecondsPipe,
     FormsModule, WeightUnitPipe, FullScreenRestTimerComponent, PressDirective, ModalComponent, ExerciseDetailComponent,
     IconComponent, ExerciseSelectionModalComponent],
-  templateUrl: './workout-player.html',
-  styleUrl: './workout-player.scss',
+  templateUrl: './focus-workout-player.component.html',
+  styleUrl: './focus-workout-player.component.scss',
   providers: [DecimalPipe]
 })
-export class WorkoutPlayerComponent implements OnInit, OnDestroy {
+export class FocusPlayerComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private workoutService = inject(WorkoutService);
@@ -153,10 +139,8 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   showNotes = signal<boolean | null>(false);
 
   // --- Timer Signals & Properties ---
-  // Show "MM:SS" if under 1 hour, otherwise "HH:MM:SS"
   sessionTimerDisplay = signal('00:00');
 
-  // ... update startSessionTimer to set the display accordingly ...
   private workoutStartTime: number = 0;
   private sessionTimerElapsedSecondsBeforePause = 0;
   private timerSub: Subscription | undefined;
@@ -176,7 +160,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   restTimerMainText = signal('RESTING');
   restTimerNextUpText = signal<string | null>(null);
 
-  readonly nextActionButtonLabel = computed(() => { // This might be redundant with mainActionButtonLabel
+  readonly nextActionButtonLabel = computed(() => {
     switch (this.playerSubState()) {
       case PlayerSubState.PresetCountdown:
         return 'GETTING READY...';
@@ -213,7 +197,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   // --- End Exercise Selection Modal ---
 
   private readonly PAUSED_WORKOUT_KEY = 'fitTrackPro_pausedWorkoutState';
-  private readonly PAUSED_STATE_VERSION = '1.2'; // Updated for sessionStatus
+  private readonly PAUSED_STATE_VERSION = '1.2';
   private originalRoutineSnapshot: WorkoutExercise[] = [];
   protected currentWorkoutLogExercises = signal<LoggedWorkoutExercise[]>([]);
   private wasRestTimerVisibleOnPause = false;
@@ -229,29 +213,6 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   private isInitialLoadComplete = false;
   private exercisesProposedThisCycle = { doLater: false, skipped: false };
 
-
-
-  // ... (inside the WorkoutPlayerComponent class)
-
-  // ... (existing signals and properties)
-
-  // --- NEW: TABATA MODE STATE SIGNALS ---
-  @ViewChildren('intervalListItem') intervalListItems!: QueryList<ElementRef<HTMLLIElement>>;
-  isTabataMode = signal<boolean>(false);
-  tabataIntervals = signal<HIITInterval[]>([]);
-  currentTabataIntervalIndex = signal(0);
-  tabataTimeRemaining = signal(0);
-
-  // Computed signal for easy access to the current interval's data
-  currentTabataInterval = computed<HIITInterval | null>(() => {
-    const intervals = this.tabataIntervals();
-    const index = this.currentTabataIntervalIndex();
-    return intervals[index] || null;
-  });
-  private tabataIntervalMap: [number, number, number][] = [];
-
-  private tabataTimerSub: Subscription | undefined;
-  // --- END: TABATA MODE STATE SIGNALS ---
 
   protected HEADER_OVERVIEW_STRING: string = 'JUMP TO EXERCISE';
   protected headerOverviewString: string = 'JUMP TO EXERCISE';
@@ -320,35 +281,26 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         const isLastRound = this.checkIfLatestRoundOfRounds();
         const isLastSetOfWorkout = this.checkIfLatestSetOfWorkoutConsideringPending();
 
-        // Highest priority: Is it the absolute end of the entire workout?
         if (isLastSetOfWorkout && isLastRound && isLastSetOfExercise && isLastSetOfRound) {
           return 'FINISH WORKOUT';
         }
 
-        // Next, handle the logic for multi-round blocks (supersets or standard exercises with rounds > 1)
         if (isPartOfRounds) {
-          // If it's the last exercise of the current round...
           if (isLastSetOfRound) {
-            // ...but it's NOT the final round, the user is just completing the current round.
             if (!isLastRound) {
               return 'COMPLETE ROUND';
             } else {
-              // It IS the final round of its block, but not the whole workout.
-              // Treat it as completing a standard exercise.
               return 'COMPLETE EXERCISE';
             }
           } else {
-            // It's an intermediate exercise within a superset round.
             return 'SET DONE';
           }
         }
 
-        // Finally, handle standard, single-round exercises.
         if (isLastSetOfExercise) {
           return 'COMPLETE EXERCISE';
         }
 
-        // Default for any other intermediate set.
         return 'SET DONE';
 
       default:
@@ -421,7 +373,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         workingSetCounter++;
       }
     }
-    return workingSetCounter; // Return count up to and including current set
+    return workingSetCounter;
   });
 
   getCurrentWarmupSetNumber = computed<number>(() => {
@@ -437,7 +389,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         warmupSetCounter++;
       }
     }
-    return warmupSetCounter; // Return count up to and including current set
+    return warmupSetCounter;
   });
 
   getWorkingSets(exercise: WorkoutExercise | LoggedWorkoutExercise): number {
@@ -471,7 +423,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         actualReps: completedSetLog?.repsAchieved,
         actualWeight: completedSetLog?.weightUsed,
         actualDuration: completedSetLog?.durationPerformed,
-        notes: completedSetLog?.notes || setData?.notes, // This is the logged note for this specific set completion
+        notes: completedSetLog?.notes || setData?.notes,
       };
     }
     return null;
@@ -512,8 +464,6 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     const allLoggedSets: LoggedSet[] = [];
     for (const exLog of this.currentWorkoutLogExercises()) {
       for (const set of exLog.sets) {
-        // Only include sets that were performed before the current set in the session
-        // Compare by exercise index and set index in the routine
         const routine = this.routine();
         if (!routine) continue;
         const exerciseIdx = routine.exercises.findIndex(e => e.exerciseId === exLog.exerciseId);
@@ -525,13 +475,10 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
           set.plannedSetId = (currentSetIndex + 1) + ' of ' + exercise?.sets.length;
         }
 
-        // const exerciseIdx = routine.exercises.findIndex(e => e.exerciseId === exLog.exerciseId && e.id === (exLog as any).id);
         if (exerciseIdx < 0) continue;
-        // If before current exercise, include all sets
         if (exerciseIdx < activeInfo.exerciseIndex) {
           allLoggedSets.push(set);
         } else if (exerciseIdx === activeInfo.exerciseIndex) {
-          // For current exercise, only include sets before the current set index
           const setIdx = routine.exercises[exerciseIdx].sets.findIndex(s => s.id === set.plannedSetId);
           if (setIdx > -1 && setIdx < activeInfo.setIndex) {
             allLoggedSets.push(set);
@@ -548,30 +495,8 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   private isPerformingDeferredExercise = false;
   private lastActivatedDeferredExerciseId: string | null = null;
 
-  // private readonly stopWeightDecrementHandler: () => void;
-
   constructor() {
     this.initializeCurrentSetForm();
-
-    // this.stopWeightDecrementHandler = this.onWeightDecrementPointerUp.bind(this);
-
-    // --- ADD THIS EFFECT ---
-    // This effect will automatically run whenever currentTabataIntervalIndex changes.
-    effect(() => {
-      const index = this.currentTabataIntervalIndex();
-
-      // Ensure the list items have been rendered by the time this runs.
-      if (this.intervalListItems && this.intervalListItems.length > index) {
-        // Get the specific <li> element for the current index.
-        const activeItemElement = this.intervalListItems.toArray()[index].nativeElement;
-
-        // Command the browser to scroll the element into view.
-        activeItemElement.scrollIntoView({
-          behavior: 'smooth', // For a nice, smooth scroll instead of an instant jump
-          block: 'start',     // Aligns the top of the element to the top of the scroll container
-        });
-      }
-    });
   }
 
   private startSessionTimer(): void {
@@ -579,7 +504,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     if (this.timerSub) this.timerSub.unsubscribe();
 
     this.timerSub = timer(0, 1000).pipe(
-      takeUntil(this.destroy$) // Add this line
+      takeUntil(this.destroy$)
     ).subscribe(() => {
       if (this.sessionState() === SessionState.Playing) {
         const currentDeltaSeconds = Math.floor((Date.now() - this.workoutStartTime) / 1000);
@@ -587,7 +512,6 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         const hours = Math.floor(totalElapsedSeconds / 3600);
         const minutes = Math.floor((totalElapsedSeconds % 3600) / 60);
         const seconds = totalElapsedSeconds % 60;
-        // Show "MM:SS" if under 1 hour, otherwise "H:MM:SS" (no leading zero for hours)
         if (hours > 0) {
           this.sessionTimerDisplay.set(
             `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
@@ -609,16 +533,12 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
   private addLoggedSetToCurrentLog(exerciseData: WorkoutExercise, loggedSet: LoggedSet): void {
     const logs = this.currentWorkoutLogExercises();
-    // Find the log entry for this specific exercise instance (by id, not just exerciseId)
-    // This ensures that if the same exercise appears multiple times (different id/order), they are not merged
     const exerciseIndex = this.routine()?.exercises.findIndex(ex => ex.id === exerciseData.id);
 
-    // Find log by both exerciseId and exerciseData.id (unique instance in routine)
     let exerciseLog: LoggedWorkoutExercise | undefined;
     let logIndex = -1;
     for (let i = 0; i < logs.length; i++) {
       const exLog = logs[i];
-      // Find the corresponding exercise in the routine for this log
       const routineEx = this.routine()?.exercises.find(ex => ex.id === exerciseData.id);
 
       if (
@@ -634,7 +554,6 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     }
 
     if (exerciseLog) {
-      // Find set by plannedSetId (unique per set in the session)
       const existingSetIndex = exerciseLog.sets.findIndex(s => s.plannedSetId === loggedSet.plannedSetId);
       if (existingSetIndex > -1) {
         exerciseLog.sets[existingSetIndex] = loggedSet;
@@ -642,7 +561,6 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         exerciseLog.sets.push(loggedSet);
       }
     } else {
-      // Use the exerciseName from the currentBaseExercise if available, otherwise from the routine
       const exerciseName = this.currentBaseExercise()?.name || exerciseData.exerciseName || 'Unknown Exercise';
       const newLog: LoggedWorkoutExercise = {
         id: exerciseData.id,
@@ -657,7 +575,6 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         supersetRounds: exerciseData.supersetRounds || 0,
       };
 
-      // Insert at the same index as in the routine for consistency
       if (typeof exerciseIndex === 'number' && exerciseIndex >= 0 && exerciseIndex <= logs.length) {
         logs.splice(exerciseIndex, 0, newLog);
       } else {
@@ -678,35 +595,17 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     const details: string[] = [];
     let majorDifference = false;
 
-    // Filter original to only include exercises that were *not* 'skipped' or 'do_later' (unless logged)
-    // For comparison, we should compare what was *attempted* (logged) against the *original plan*.
-    // The sessionRoutine includes sessionStatus, originalRoutineSnapshot does not.
-    // The `performed` array is based on what was logged.
-    // The `original` is the snapshot before any session statuses.
-
-    // This comparison is about structural changes to the routine definition if user wants to save.
-    // So, 'skipped' exercises in the original plan that weren't logged means a deviation.
-    // Custom exercises added in `performed` that aren't in `original` are a major diff.
-
     const originalPlayableExercises = original.filter(origEx => {
-      // Check if this original exercise was logged. If so, it was "performed".
-      // If not logged, it might have been implicitly skipped (if player advanced past it)
-      // or explicitly marked 'skipped' or 'do_later' in the session.
-      // For this comparison, an exercise in original not present in performed is a difference.
       return performed.some(pEx => pEx.exerciseId === origEx.exerciseId);
     });
 
-    // Step 1: Create lookup sets for fast O(1) checking. This is very efficient.
     const originalIdSet = new Set(original.map(ex => ex.exerciseId));
     const originalNameSet = new Set(original.map(ex => ex.exerciseName));
 
-    // Step 2: Initialize your result arrays.
     const performedExercisesThatWereInOriginal: LoggedWorkoutExercise[] = [];
     const addedCustomExercises: LoggedWorkoutExercise[] = [];
 
-    // Step 3: Loop through the performed exercises only ONCE.
     for (const pEx of performed) {
-      // Check if the performed exercise exists in the original sets.
       if (originalIdSet.has(pEx.exerciseId) || originalNameSet.has(pEx.exerciseName)) {
         performedExercisesThatWereInOriginal.push(pEx);
       } else {
@@ -729,21 +628,16 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       }
     }
 
-
-    // More detailed checks (can be expanded)
     for (const originalEx of original) {
       const performedEx = performed.find(p => p.exerciseId === originalEx.exerciseId);
       if (!performedEx) {
         details.push(`Exercise "${originalEx.exerciseName || originalEx.exerciseId}" was in the plan but not performed`);
-        majorDifference = true; // Could be true or just a note depending on strictness
+        majorDifference = true;
         continue;
       }
 
-      // Compare sets for warmup status or count differences
       if (performedEx.sets.length !== originalEx.sets.length && performedEx.rounds !== originalEx.rounds) {
-        // specific check for rounds
         if (performedEx.supersetId && originalEx.supersetId && performedEx.supersetId === originalEx.supersetId) {
-          // retrieve ex[0] cause it's the only one with set property valued
           const originalFirstEx = original.find(ex => ex.supersetId && ex.supersetId === performedEx.supersetId);
           if (originalFirstEx) {
             const originalRounds = originalFirstEx.rounds;
@@ -778,7 +672,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     const exercise = loggedExercises.find(ex => ex.supersetId && ex.supersetId === supersetId);
     const exerciseSet = exercise?.sets[0];
     return {
-      id: uuidv4(), // New ID for the routine template set
+      id: uuidv4(),
       reps: exerciseSet && exerciseSet.targetReps ? exerciseSet.repsAchieved : 1,
       weight: exerciseSet && exerciseSet.weightUsed ? exerciseSet.weightUsed : 1,
       duration: exerciseSet && exerciseSet.targetDuration ? exerciseSet.targetDuration : 0,
@@ -793,7 +687,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     const exercise = loggedExercises.find(ex => ex.supersetId && ex.supersetId === supersetId);
     const exerciseSet = exercise?.sets[exercise.sets.length - 1];
     return {
-      id: uuidv4(), // New ID for the routine template set
+      id: uuidv4(),
       reps: exerciseSet && exerciseSet.targetReps ? exerciseSet.targetReps : 1,
       weight: exerciseSet && exerciseSet.targetWeight ? exerciseSet.targetWeight : 1,
       duration: exerciseSet && exerciseSet.targetDuration ? exerciseSet.targetDuration : 1,
@@ -810,29 +704,27 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       const sessionExercise = currentSessionRoutine?.exercises.find(re => re.exerciseId === loggedEx.exerciseId);
       const newWorkoutEx: WorkoutExercise = {
         id: uuidv4(),
-        exerciseId: loggedEx.exerciseId, // Keep original if it's a known one, or the custom one
+        exerciseId: loggedEx.exerciseId,
         exerciseName: loggedEx.exerciseName,
         supersetId: sessionExercise?.supersetId || null,
         supersetOrder: sessionExercise?.supersetOrder ?? null,
         supersetSize: sessionExercise?.supersetSize ?? null,
         rounds: sessionExercise?.rounds ?? 1,
-        notes: sessionExercise?.notes, // Overall exercise notes from session if any
+        notes: sessionExercise?.notes,
         sets: !loggedEx.supersetId ? loggedEx.sets.map(loggedSet => {
           const originalPlannedSet = sessionExercise?.sets.find(s => s.id === loggedSet.plannedSetId);
           return {
-            id: uuidv4(), // New ID for the routine template set
-            reps: loggedSet.targetReps ?? loggedSet.repsAchieved, // Prefer saving targets
+            id: uuidv4(),
+            reps: loggedSet.targetReps ?? loggedSet.repsAchieved,
             weight: loggedSet.targetWeight ?? loggedSet.weightUsed,
             duration: loggedSet.targetDuration ?? loggedSet.durationPerformed,
             tempo: loggedSet.targetTempo || originalPlannedSet?.tempo,
-            restAfterSet: originalPlannedSet?.restAfterSet || 60, // Prefer planned rest
-            notes: loggedSet.notes, // Persist individual logged set notes if saving structure
+            restAfterSet: originalPlannedSet?.restAfterSet || 60,
+            notes: loggedSet.notes,
             type: loggedSet.type as 'standard' | 'warmup' | 'amrap' | 'custom' | string,
           };
         }) : [this.getFirstExerciseOfSuperset((loggedEx.supersetOrder || 0), loggedEx.supersetId, loggedExercises)],
-        // TODO correct number of sets when converting a SUPERSET routine to a new one
         type: (sessionExercise?.supersetSize ?? 0) >= 1 ? 'superset' : 'standard'
-        // sessionStatus is NOT included here as it's session-specific
       };
       return newWorkoutEx;
     });
@@ -921,7 +813,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
   stopAndLogTimedSet(): void {
     if (this.timedSetTimerState() === TimedSetState.Running || this.timedSetTimerState() === TimedSetState.Paused) {
-      this.pauseTimedSet(); // Pause it, the value is already in timedSetElapsedSeconds
+      this.pauseTimedSet();
     }
   }
 
@@ -930,29 +822,21 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     const routine = this.routine();
     if (!activeInfo || !routine) return false;
 
-    // Check if current exercise's sessionStatus is not 'pending'
     if (activeInfo.exerciseData.sessionStatus && activeInfo.exerciseData.sessionStatus !== 'pending') {
-      return true; // If exercise is skipped/do-later, effectively its "last set" for current flow
+      return true;
     }
 
     const currentExercise = routine.exercises[activeInfo.exerciseIndex];
-    // Check if this is the last set in the current exercise's list of sets
     if (activeInfo.setIndex === currentExercise.sets.length - 1) return true;
 
-    // If there are more sets, check if all subsequent sets are warmups (less likely for this function's typical use)
     for (let i = activeInfo.setIndex + 1; i < currentExercise.sets.length; i++) {
       if (currentExercise.sets[i].type !== 'warmup') {
-        return false; // Found a subsequent working set
+        return false;
       }
     }
-    return true; // All subsequent sets are warmups
+    return true;
   }
 
-  /**
-   * Returns true if the current set is the last set of the current round for the current exercise block.
-   * For non-superset, non-multi-round exercises, this is equivalent to checkIfLatestSetOfExercise().
-   * For supersets or multi-round blocks, returns true if this is the last set of the last exercise in the block for the current round.
-   */
   checkIfLatestSetOfRound(): boolean {
     const activeInfo = this.activeSetInfo();
     const routine = this.routine();
@@ -960,12 +844,10 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
     const currentExercise = routine.exercises[activeInfo.exerciseIndex];
 
-    // If not in a superset or multi-round block, fallback to checkIfLatestSetOfExercise
     if ((!currentExercise.supersetId && (!currentExercise.rounds || currentExercise.rounds <= 1))) {
       return this.checkIfLatestSetOfExercise();
     }
 
-    // Find the block start and end indices
     let blockStartIdx = activeInfo.exerciseIndex;
     let blockEndIdx = activeInfo.exerciseIndex;
     if (currentExercise.supersetId && currentExercise.supersetOrder !== null) {
@@ -973,7 +855,6 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       blockEndIdx = blockStartIdx + (currentExercise.supersetSize ? currentExercise.supersetSize - 1 : 0);
     }
 
-    // The last set of the last exercise in the block for the current round
     if (
       activeInfo.exerciseIndex === blockEndIdx &&
       activeInfo.setIndex === routine.exercises[blockEndIdx].sets.length - 1
@@ -984,10 +865,6 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     return false;
   }
 
-  /**
-   * Returns true if the current block (exercise or superset) is on its last round.
-   * Handles both single exercises with rounds > 1 and supersets with rounds > 1.
-   */
   checkIfLatestRoundOfRounds(): boolean {
     const routine = this.routine();
     const activeInfo = this.activeSetInfo();
@@ -997,7 +874,6 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     if (!exercise) return false;
 
     let totalRounds = exercise.rounds ?? 1;
-    // If part of a superset, get rounds from block start
     if (exercise.supersetId && exercise.supersetOrder !== null) {
       const blockStart = routine.exercises.find(
         ex => ex.supersetId === exercise.supersetId && ex.supersetOrder === 0
@@ -1008,9 +884,6 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     return this.currentBlockRound() === totalRounds;
   }
 
-  /**
-   * Determines if the current set is part of a multi-round block (i.e., the exercise or its superset block has rounds > 1).
-   */
   checkIfSetIsPartOfRounds(): boolean {
     const activeInfo = this.activeSetInfo();
     const routine = this.routine();
@@ -1021,70 +894,54 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
     let totalRoundsForBlock = 1;
 
-    // If exercise is part of a superset, get rounds from the block start
     if (exercise.supersetId) {
       const blockStart = routine.exercises.find(
         ex => ex.supersetId === exercise.supersetId && ex.supersetOrder === 0
       );
       totalRoundsForBlock = blockStart?.rounds ?? 1;
     } else {
-      // Otherwise, use the exercise's own rounds property
       totalRoundsForBlock = exercise.rounds ?? 1;
     }
 
-    // A block is "part of rounds" if it's intended to be repeated.
     return totalRoundsForBlock > 1;
   }
 
 
-  checkIfLatestSetOfWorkout(): boolean { // Legacy name, use checkIfLatestSetOfWorkoutConsideringPending
+  checkIfLatestSetOfWorkout(): boolean {
     return this.checkIfLatestSetOfWorkoutConsideringPending();
   }
 
-  // Ensure checkIfLatestSetOfWorkoutConsideringPending uses the refined check
   checkIfLatestSetOfWorkoutConsideringPending(): boolean {
     const activeInfo = this.activeSetInfo();
     const currentRoutine = this.routine();
     if (!activeInfo || !currentRoutine) return false;
 
-    // First, check if the current set is the last set of the current exercise definition.
-    // For supersets with 1 set, this will be true every time.
     if (!this.checkIfLatestSetOfExercise()) {
       return false;
     }
 
-    // If it is the last set, we must also check if it's the last ROUND of a multi-round block.
-    // If it's part of a multi-round block but not the final round, it's not the end of the workout.
     if (this.checkIfSetIsPartOfRounds() && !this.checkIfLatestRoundOfRounds()) {
       return false;
     }
 
-    // At this point, we have confirmed the current exercise *block* is fully complete (all sets and all rounds).
-    // Now we can look ahead for any other pending or deferred exercises.
-
-    // Determine the end index of the current block to start searching from the next item.
     const currentExercise = activeInfo.exerciseData;
     let blockEndIndex = activeInfo.exerciseIndex;
     if (currentExercise.supersetId && currentExercise.supersetOrder !== null && currentExercise.supersetSize) {
       blockEndIndex = (activeInfo.exerciseIndex - currentExercise.supersetOrder) + (currentExercise.supersetSize - 1);
     }
 
-    // Check for any 'pending' exercises *after* the current block.
     for (let i = blockEndIndex + 1; i < currentRoutine.exercises.length; i++) {
       const nextEx = currentRoutine.exercises[i];
       if (nextEx.sessionStatus === 'pending' && (nextEx.sets?.length ?? 0) > 0) {
-        return false; // Found a future pending exercise.
+        return false;
       }
     }
 
-    // No more pending exercises in the main sequence.
-    // Finally, check if there are *any* unlogged 'do_later' or 'skipped' exercises left anywhere.
     const hasUnfinishedDeferred = currentRoutine.exercises.some(ex =>
       (ex.sessionStatus === 'do_later' || ex.sessionStatus === 'skipped') &&
       !this.isExerciseFullyLogged(ex)
     );
 
-    // If there are no other pending or unfinished deferred exercises, it's the end.
     return !hasUnfinishedDeferred;
   }
 
@@ -1093,7 +950,6 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     const unfinishedOtherExercises = this.getUnfinishedExercises().filter(
       ex => ex.id !== currentExercise.id
     );
-    // console.log("Unfinished exercises (excluding current):", unfinishedOtherExercises.map(e => e.exerciseName));
 
     const unfinishedDeferredOrSkippedExercises = sessionRoutine.exercises
       .map((ex, idx) => ({ ...ex, originalIndex: idx }))
@@ -1111,7 +967,6 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       ...ex,
       originalIndex: sessionRoutine.exercises.findIndex(e => e.id === ex.id)
     }));
-    // Merge and deduplicate unfinished exercises by their unique id
     const mergedUnfinishedExercises = [
       ...unfinishedDeferredOrSkippedExercises,
       ...unfinishedOtherExercisesWithIndex
@@ -1146,7 +1001,6 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
           [
             { text: 'Complete It', role: 'confirm', data: singleEx.originalIndex, cssClass: 'bg-blue-500 hover:bg-blue-600 text-white' } as AlertButton,
             { text: 'Finish Workout', role: 'destructive', data: 'finish_now', cssClass: 'bg-green-500 hover:bg-green-600 text-white' } as AlertButton,
-            // { text: 'Cancel (Decide Later)', role: 'cancel', data: 'cancel_deferred_choice' } as AlertButton // Added Cancel here too
           ]
         );
         if (confirmSingle && typeof confirmSingle.data === 'number') {
@@ -1154,16 +1008,13 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
           selectedExerciseOriginalIndex = confirmSingle.data;
         } else if (confirmSingle && confirmSingle.data === 'finish_now') {
           userChoseToFinishNow = true;
-        } else { // Includes cancel_deferred_choice or dialog dismissal
+        } else {
           userCancelledChoice = true;
         }
-      } else { // Multiple unfinished exercises
+      } else {
         const exerciseButtons: AlertButton[] = mergedUnfinishedExercises.map(ex => {
-          // Convert sessionStatus to a user-friendly label
           let statusLabel = this.getExerciseStatusIndicator(ex);
           const cssClass = this.getExerciseButtonCssClass(ex, ex.sessionStatus);
-
-
 
           return {
             text: `${ex.exerciseName} ${statusLabel}`,
@@ -1175,7 +1026,6 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         const alertButtons: AlertButton[] = [
           ...exerciseButtons,
           { text: 'Finish Workout Now', role: 'destructive', data: 'finish_now', cssClass: 'bg-green-500 hover:bg-green-600 text-white mt-4' },
-          // { text: 'Cancel (Decide Later)', role: 'cancel', data: 'cancel_deferred_choice' }
         ];
 
         const choice = await this.alertService.showConfirmationDialog(
@@ -1189,26 +1039,22 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
           selectedExerciseOriginalIndex = choice.data;
         } else if (choice && choice.data === 'finish_now') {
           userChoseToFinishNow = true;
-        } else { // Includes cancel_deferred_choice or dialog dismissal
+        } else {
           userCancelledChoice = true;
         }
       }
 
-      // Handle choices
       if (userChoseToFinishNow) {
         await this.finishWorkoutAndReportStatus();
         return;
       }
 
       if (userCancelledChoice) {
-        // Mark that proposals happened for *all* categories that were presented in this list.
         mergedUnfinishedExercises.forEach(ex => {
           if (ex.sessionStatus === 'do_later') this.exercisesProposedThisCycle.doLater = true;
           if (ex.sessionStatus === 'skipped') this.exercisesProposedThisCycle.skipped = true;
         });
-        this.cdr.detectChanges(); // For mainActionButtonLabel update
-        // IMPORTANT: Return here to prevent falling through to finishWorkoutAndReportStatus()
-        // The user chose to "decide later", so the player should wait for their next action.
+        this.cdr.detectChanges();
         return;
       }
 
@@ -1223,7 +1069,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
         this.currentExerciseIndex.set(selectedExerciseOriginalIndex);
         this.currentSetIndex.set(this.findFirstUnloggedSetIndex(exerciseToStart.id, exerciseToStart.sets.map(s => s.id)) || 0);
-        this.currentBlockRound.set(1); // Reset round for this specific exercise block
+        this.currentBlockRound.set(1);
         const newBlockStarter = updatedRoutine.exercises[selectedExerciseOriginalIndex];
         if (!newBlockStarter.supersetId || newBlockStarter.supersetOrder === 0) {
           this.totalBlockRounds.set(newBlockStarter.rounds ?? 1);
@@ -1234,7 +1080,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         this.lastPerformanceForCurrentExercise = null;
         this.playerSubState.set(PlayerSubState.PerformingSet);
         await this.prepareCurrentSet();
-        return; // Exit as we're now performing the chosen exercise
+        return;
       }
     }
 
@@ -1262,31 +1108,14 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     }
   }
 
-  /**
- * Retrieves the number of sets that have been logged for a specific exercise
- * during the current workout session.
- *
- * This is useful for displaying progress like "2 of 5 sets completed".
- *
- * @param id The unique ID of this exercise instance within the current routine (maps to WorkoutExercise.id).
- * @returns The number of sets logged for this exercise instance, or 0 if none have been logged yet.
- */
   public getNumberOfLoggedSets(id: string, filterOutType?: string): number {
-    // Find the corresponding exercise in the array of currently logged exercises for this session.
-    // We use the same robust matching logic as your inspiration method to find the exact instance.
     const loggedExercise = this.currentWorkoutLogExercises().find(loggedEx =>
       loggedEx.id === id
     );
 
-    // If no log entry is found for this specific exercise instance yet,
-    // it means 0 sets have been logged for it.
     if (!loggedExercise) {
       return 0;
     }
-
-    // If an entry is found, the number of logged sets is simply the length of its 'sets' array.
-    // We use optional chaining `?.` for extra safety, returning 0 if `sets` is somehow missing.
-
 
     if (filterOutType) {
       return loggedExercise.sets ? loggedExercise.sets.filter(set => set.type !== filterOutType).length : 1;
@@ -1308,12 +1137,10 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       le.id === currentExercise.id
     );
 
-    // If there's no log entry OR the entry has 0 sets, it's not even partially logged.
     if (!loggedEx || loggedEx.sets.length === 0) {
       return false;
     }
 
-    // Use the same logic as isExerciseFullyLogged to get the total goal
     let rounds = exercise.rounds ?? 1;
     if (exercise.supersetId && exercise.supersetOrder !== null) {
       const blockStart = routine.exercises.find(
@@ -1339,7 +1166,6 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
     if (!loggedEx) return false;
 
-    // Determine rounds for this exercise (handle supersets)
     let rounds = exercise.rounds ?? 1;
     if (exercise.supersetId && exercise.supersetOrder !== null) {
       const blockStart = routine.exercises.find(
@@ -1348,9 +1174,6 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       rounds = blockStart?.rounds ?? 1;
     }
 
-    // A superset exercise has only 1 set defined, but is repeated for each round.
-    // So, the total number of sets to be logged is equal to the number of rounds.
-    // A standard exercise's total sets is its sets.length * its rounds.
     const totalPlannedCompletions = (exercise.sets?.length ?? 0) * rounds;
 
     return loggedEx.sets.length >= totalPlannedCompletions;
@@ -1358,18 +1181,16 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
   private findFirstUnloggedSetIndex(exerciseId: string, plannedSetIds: string[]): number | null {
     const loggedEx = this.currentWorkoutLogExercises().find(le => le.id === exerciseId);
-    if (!loggedEx) return 0; // No sets logged, start from first
+    if (!loggedEx) return 0;
 
     const loggedPlannedSetIds = new Set(loggedEx.sets.map(s => s.plannedSetId));
     for (let i = 0; i < plannedSetIds.length; i++) {
       if (!loggedPlannedSetIds.has(plannedSetIds[i])) {
-        return i; // This is the index of the first planned set not found in logs
+        return i;
       }
     }
-    return null; // All sets seem to be logged, or no planned sets (should not happen here)
+    return null;
   }
-
-
 
   private async fetchLastPerformanceAndPatchForm(): Promise<void> {
     await this.prepareCurrentSet();
@@ -1415,36 +1236,25 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       actualReps: [null as number | null, [Validators.min(0)]],
       actualWeight: [null as number | null, [Validators.min(0)]],
       actualDuration: [null as number | null, [Validators.min(0)]],
-      setNotes: [''], // Added for individual set notes
+      setNotes: [''],
       rpe: [null as number | null, [Validators.min(1), Validators.max(10)]]
     });
   }
 
-  /**
- * Checks if every exercise in a routine has all its required sets/rounds logged.
- * @param routine The planned session routine.
- * @param loggedExercises The array of currently logged exercises for the session.
- * @returns `true` if the entire workout is fully logged, otherwise `false`.
- */
   private isEntireWorkoutFullyLogged(routine: Routine, loggedExercises: LoggedWorkoutExercise[]): boolean {
-    // Quick check: If the number of exercise entries doesn't match, it can't be complete.
     if (routine.exercises.length !== loggedExercises.length) {
       return false;
     }
 
-    // Use .every() for a clean, fail-fast check. It will stop as soon as it finds an incomplete exercise.
     return routine.exercises.every(plannedExercise => {
       const loggedExercise = loggedExercises.find(log => log.id === plannedExercise.id);
 
-      // If a planned exercise has no corresponding log entry, the workout is not complete.
       if (!loggedExercise) {
         return false;
       }
 
-      // Calculate the total number of sets that *should* have been completed for this exercise, including all rounds.
       const totalPlannedCompletions = (plannedExercise.sets?.length ?? 0) * (plannedExercise.rounds ?? 1);
 
-      // The workout is only complete if the number of logged sets is equal to or greater than the plan.
       return loggedExercise.sets.length >= totalPlannedCompletions;
     });
   }
@@ -1480,7 +1290,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         sIndex = firstPendingInfo.setIndex;
         this.currentExerciseIndex.set(exIndex);
         this.currentSetIndex.set(sIndex);
-        this.isPerformingDeferredExercise = false; // Reset if we had to find a new starting point
+        this.isPerformingDeferredExercise = false;
         console.log(`prepareCurrentSet: Found first pending - exIndex: ${exIndex} (name: ${sessionRoutine.exercises[exIndex]?.exerciseName}), sIndex: ${sIndex}`);
       } else {
         console.log("prepareCurrentSet: No 'pending' exercises found in the entire routine. Proceeding to deferred/finish evaluation");
@@ -1491,12 +1301,8 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     }
 
     if (exIndex >= sessionRoutine.exercises.length || !sessionRoutine.exercises[exIndex] || sIndex >= sessionRoutine.exercises[exIndex].sets.length || !sessionRoutine.exercises[exIndex].sets[sIndex]) {
-      // This condition is often met when a workout is completed and then resumed.
-      // Instead of throwing a critical error, we treat it as the end of the planned workout
-      // and transition to the finish/deferred exercises flow.
       console.warn(`prepareCurrentSet: Indices [ex: ${exIndex}, set: ${sIndex}] are out of bounds. This is expected for a completed session. Transitioning to finish flow`);
 
-      // Perform cleanup to ensure a clean state before the next step.
       this.currentSetForm.reset({ rpe: null, setNotes: '' });
       this.resetTimedSet();
       this.currentBaseExercise.set(null);
@@ -1505,10 +1311,8 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       this.rpeValue.set(null);
       this.showRpeSlider.set(false);
 
-      // Gracefully guide the user to the next logical step.
       await this.tryProceedToDeferredExercisesOrFinish(sessionRoutine);
 
-      // Stop further execution of prepareCurrentSet.
       return;
     }
 
@@ -1525,39 +1329,31 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
 
 
     const currentExerciseData = sessionRoutine.exercises[exIndex];
-    const currentPlannedSetData = currentExerciseData.sets[sIndex]; // Use direct sIndex after validation
+    const currentPlannedSetData = currentExerciseData.sets[sIndex];
 
     console.log(`prepareCurrentSet: Preparing for Ex: "${currentExerciseData.exerciseName}", Set: ${sIndex + 1}, Type: ${currentPlannedSetData.type}`);
 
-    // Step 1: Get the planned set data from the original routine template.
     const originalExerciseForSuggestions = this.originalRoutineSnapshot.find(oe => oe.exerciseId === currentExerciseData.exerciseId) || currentExerciseData;
     const plannedSetForSuggestions = originalExerciseForSuggestions?.sets[sIndex] || currentPlannedSetData;
 
     this.loadBaseExerciseAndPBs(currentExerciseData.exerciseId);
 
-    // Step 2: Fetch the complete workout log from the last time this exercise was performed.
     if (!this.lastPerformanceForCurrentExercise || this.lastPerformanceForCurrentExercise.sets[0]?.exerciseId !== currentExerciseData.exerciseId) {
       this.lastPerformanceForCurrentExercise = await firstValueFrom(this.trackingService.getLastPerformanceForExercise(currentExerciseData.exerciseId).pipe(take(1)));
     }
 
-    // Step 3: Find the specific set from the last session that corresponds to the set we are about to do now (e.g., the 2nd set of the exercise).
     const historicalSetPerformance = this.trackingService.findPreviousSetPerformance(this.lastPerformanceForCurrentExercise, plannedSetForSuggestions, sIndex);
     let finalSetParamsForSession: ExerciseSetParams;
     if (plannedSetForSuggestions.type === 'warmup') {
-      // For warm-up sets, we don't apply progressive overload. We just use the planned values.
       finalSetParamsForSession = { ...plannedSetForSuggestions };
     } else {
-      // Step 4: Call the service to calculate the suggested parameters for the new set.
-      // It takes the historical performance, the original plan for today, and the routine's goal to make a suggestion.
       const progressiveOverloadSettings = this.progressiveOverloadService.getSettings();
       if (progressiveOverloadSettings && progressiveOverloadSettings.enabled) {
         finalSetParamsForSession = this.workoutService.suggestNextSetParameters(historicalSetPerformance, plannedSetForSuggestions);
       } else {
         console.warn("prepareCurrentSet: Progressive overload settings are not available. Using default suggestion logic.");
-        // Fallback to historicalSetPerformance or default suggestion logic if settings are not available
 
         if (historicalSetPerformance && currentExerciseData.exerciseName && currentExerciseData.exerciseName.toLowerCase().indexOf('kb') < 0) {
-          // use historicalSetPerformance
           finalSetParamsForSession = {
             ...plannedSetForSuggestions,
             reps: historicalSetPerformance.repsAchieved || plannedSetForSuggestions.reps || 0,
@@ -1574,32 +1370,24 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
             restAfterSet: plannedSetForSuggestions.restAfterSet || 0
           };
         }
-
-        // }
       }
     }
 
-    // Step 5: Ensure the unique ID and type from the current session's plan are preserved.
-    finalSetParamsForSession.id = currentPlannedSetData.id; // Ensure ID from current routine set is used
+    finalSetParamsForSession.id = currentPlannedSetData.id;
     finalSetParamsForSession.type = currentPlannedSetData.type;
     finalSetParamsForSession.notes = currentPlannedSetData.notes || finalSetParamsForSession.notes;
 
-    // Step 6: Update the live routine signal with the newly suggested set parameters.
     const updatedRoutineForSession = JSON.parse(JSON.stringify(sessionRoutine)) as Routine;
 
-    // suggest updated values only if it's not a timed exercise
     if (!updatedRoutineForSession.exercises[exIndex].sets?.some(set => set.duration)) {
       updatedRoutineForSession.exercises[exIndex].sets[sIndex] = finalSetParamsForSession;
     }
-    this.routine.set(updatedRoutineForSession); // Update the routine signal
+    this.routine.set(updatedRoutineForSession);
 
-    // Step 7: Update the form controls (the input boxes for reps/weight) to display the new suggested values.
-    this.patchActualsFormBasedOnSessionTargets(); // This uses activeSetInfo() which depends on routine()
+    this.patchActualsFormBasedOnSessionTargets();
 
-    // Pre-set timer logic...
     const enablePresetRest = this.appSettingsService.enablePresetTimer();
     const presetDurationValue = this.appSettingsService.presetTimerDurationSeconds();
-    // Determine if it's the absolute first set of the *entire workout session* for preset timer
     const isEffectivelyFirstSetInWorkout =
       this.currentWorkoutLogExercises().length === 0 &&
       this.currentBlockRound() === 1 &&
@@ -1610,8 +1398,6 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     if (sIndex > 0) {
       previousSetRestDuration = currentExerciseData.sets[sIndex - 1].restAfterSet;
     } else if (exIndex > 0) {
-      // Find the actual previous *played* exercise's last set rest
-      // This logic might need to be more robust if exercises can be reordered dynamically beyond skip/do-later
       let prevPlayedExIndex = exIndex - 1;
       let foundPrevPlayed = false;
       while (prevPlayedExIndex >= 0) {
@@ -1626,7 +1412,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         }
         prevPlayedExIndex--;
       }
-      if (!foundPrevPlayed) previousSetRestDuration = Infinity; // No previously played exercise found
+      if (!foundPrevPlayed) previousSetRestDuration = Infinity;
     }
 
 
@@ -1636,7 +1422,6 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     if (shouldRunPresetTimer) {
       console.log('prepareCurrentSet: Starting pre-set timer for:', currentExerciseData.exerciseName, 'Set:', sIndex + 1);
       this.playerSubState.set(PlayerSubState.PresetCountdown);
-      // Ensure activeSetInfo() is valid before passing to startPresetTimer
       const activeInfoForPreset = this.activeSetInfo();
       if (activeInfoForPreset) {
         this.startPresetTimer(presetDurationValue, activeInfoForPreset);
@@ -1894,8 +1679,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     const loggedSetData: LoggedSet = {
       id: uuidv4(),
       exerciseName: activeInfo.exerciseData.exerciseName,
-      // For Tabata, combine plannedSetId and round to make it unique per pass
-      plannedSetId: this.isTabataMode() || (activeInfo.exerciseData && activeInfo.exerciseData.supersetId)
+      plannedSetId: (activeInfo.exerciseData && activeInfo.exerciseData.supersetId)
         ? `${activeInfo.setData.id}-round-${this.getIndexedCurrentBlock()}`
         : activeInfo.setData.id,
       exerciseId: activeInfo.exerciseData.exerciseId,
@@ -1911,8 +1695,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       targetRestAfterSet: activeInfo.setData.restAfterSet,
       notes: formValues.setNotes?.trim() || undefined,
       timestamp: new Date().toISOString(),
-      supersetCurrentRound: this.checkIfSetIsPartOfRounds() || this.isTabataMode() ? this.getIndexedCurrentBlock() : 0
-      // Add a specific field for Tabata round
+      supersetCurrentRound: this.checkIfSetIsPartOfRounds() ? this.getIndexedCurrentBlock() : 0
     };
     this.addLoggedSetToCurrentLog(activeInfo.exerciseData, loggedSetData);
 
@@ -1926,57 +1709,11 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     // Do not reset setNotes here, it will be reset when new set is prepared by patchActualsFormBasedOnSessionTargets or patchCurrentSetFormWithData
     this.currentSetForm.patchValue({ setNotes: '' }, { emitEvent: false }); // Clear notes after logging for current set form visually.
 
-    if (!this.isTabataMode()) { // Don't navigate if in Tabata mode, nextTabataInterval handles it
-      this.navigateToNextStepInWorkout(activeInfo, currentRoutineValue);
-    }
+    this.navigateToNextStepInWorkout(activeInfo, currentRoutineValue);
   }
 
   getIndexedCurrentBlock(): number {
     return (this.currentBlockRound() ?? 1) - 1;
-  }
-
-  // NEW HELPER METHOD (Updated) - This needs to also set the totalBlockRounds
-  private setPlayerStateFromTabataIndex(tabataIndex: number): void {
-    this.currentTabataIntervalIndex.set(tabataIndex);
-
-    // Use the map to find the corresponding standard player indices
-    const mappedIndices = this.tabataIntervalMap[tabataIndex];
-    if (mappedIndices) {
-      const [exerciseIndex, setIndex, round] = mappedIndices;
-      this.currentExerciseIndex.set(exerciseIndex);
-      this.currentSetIndex.set(setIndex);
-      this.currentBlockRound.set(round);
-
-      // Also update the total rounds for the current block for the UI
-      if (this.routine()) {
-        this.totalBlockRounds.set(this.getRoundsForExerciseBlock(exerciseIndex, this.routine()!));
-      }
-
-      console.log(`Tabata Sync: Interval ${tabataIndex} maps to Ex ${exerciseIndex}, Set ${setIndex}, Round ${round}`);
-    } else {
-      // Fallback for the end of the workout
-      const lastValidMap = this.tabataIntervalMap[this.tabataIntervalMap.length - 1];
-      if (lastValidMap) {
-        const [lastEx, lastSet, lastRound] = lastValidMap;
-        this.currentExerciseIndex.set(lastEx);
-        this.currentSetIndex.set(lastSet);
-        this.currentBlockRound.set(lastRound);
-        if (this.routine()) {
-          this.totalBlockRounds.set(this.getRoundsForExerciseBlock(lastEx, this.routine()!));
-        }
-      }
-    }
-  }
-
-  private findNextExerciseBlockStartIndex(currentExerciseGlobalIndex: number, routine: Routine): number {
-    // This needs to respect sessionStatus
-    for (let i = currentExerciseGlobalIndex + 1; i < routine.exercises.length; i++) {
-      const nextEx = routine.exercises[i];
-      if (nextEx.sessionStatus === 'pending' && (!nextEx.supersetId || nextEx.supersetOrder === 0)) {
-        return i;
-      }
-    }
-    return -1; // No more pending blocks
   }
 
   // Helper to get round info for an exercise (handles supersets)
@@ -2191,29 +1928,6 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     }
     // --- END NEW CHECK ---
 
-    // --- NEW: TABATA RESUME LOGIC ---
-    if (state.isTabataMode) {
-      console.log("Resuming a paused Tabata session");
-
-      this.sessionState.set(SessionState.Playing);
-      this.workoutStartTime = Date.now();
-      this.sessionTimerElapsedSecondsBeforePause = state.sessionTimerElapsedSecondsBeforePause;
-
-      // Setup the tabata player from the saved state.
-      this.setupTabataMode(
-        state.sessionRoutine,
-        state.tabataCurrentIntervalIndex,
-        state.tabataTimeRemainingOnPause
-      );
-
-      this.startSessionTimer();
-      this.toastService.success('Tabata session resumed', 3000, "Resumed");
-      // We are done for Tabata mode, so we return early.
-      return;
-    }
-    // --- END: TABATA RESUME LOGIC ---
-
-
     this.originalRoutineSnapshot = state.originalRoutineSnapshot ? JSON.parse(JSON.stringify(state.originalRoutineSnapshot)) : [];
 
     this.currentExerciseIndex.set(state.currentExerciseIndex);
@@ -2311,13 +2025,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
       restTimerNextUpTextOnPause: this.restTimerNextUpText(),
       lastPerformanceForCurrentExercise: this.lastPerformanceForCurrentExercise ? JSON.parse(JSON.stringify(this.lastPerformanceForCurrentExercise)) : null,
       workoutDate: dateToSaveInState,
-      isTabataMode: this.isTabataMode(),
     };
-
-    if (this.isTabataMode()) {
-      stateToSave.tabataCurrentIntervalIndex = this.currentTabataIntervalIndex();
-      stateToSave.tabataTimeRemainingOnPause = this.tabataTimeRemaining();
-    }
 
     this.workoutService.savePausedWorkout(stateToSave);
     // this.storageService.setItem(this.PAUSED_WORKOUT_KEY, stateToSave);
@@ -3057,11 +2765,8 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     }
     // +++ END: NEW PROGRAM COMPLETION CHECK +++
 
-    if (!this.isTabataMode()) {
-      this.toastService.success(`Congrats! Workout completed!`, 5000, "Workout Finished", false);
-    } else {
-      this.toastService.success("Tabata Workout Complete!", 5000, "Workout Finished", false);
-    }
+    this.toastService.success(`Congrats! Workout completed!`, 5000, "Workout Finished", false);
+
 
     if (finalRoutineIdToLog) {
       const routineToUpdate = await firstValueFrom(this.workoutService.getRoutineById(finalRoutineIdToLog).pipe(take(1)));
@@ -3237,7 +2942,6 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   async ngOnInit(): Promise<void> {
     if (isPlatformBrowser(this.platformId)) { window.scrollTo(0, 0); }
 
-    // Add a check for tabata mode here for paused sessions
     const pausedState = this.storageService.getItem<PausedWorkoutState>(this.PAUSED_WORKOUT_KEY);
     const hasPausedSessionOnInit = await this.checkForPausedSession(false);
     if (hasPausedSessionOnInit) {
@@ -3397,19 +3101,6 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
         console.log('loadNewWorkoutFromRoute - tap operator. Session routine copy:', sessionRoutineCopy.name);
         console.log('loadNewWorkoutFromRoute - tap operator. Program ID:', programId);
 
-        // +++ You can now use the programId to set state
-        // For example, if you have a signal for it:
-        // this.programId.set(programId);
-
-        // --- NEW: TABATA MODE CHECK ---
-        if (sessionRoutineCopy.goal === 'tabata') {
-          this.setupTabataMode(sessionRoutineCopy);
-          this.startSessionTimer();
-          this.isInitialLoadComplete = true;
-          return;
-        }
-        // --- END: TABATA MODE CHECK ---
-
         if (this.sessionState() === SessionState.Paused) {
           console.log('loadNewWorkoutFromRoute - tap: Session is paused, skipping setup');
           this.isInitialLoadComplete = true;
@@ -3540,7 +3231,6 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     this.stopAutoSave();
     if (this.timerSub) this.timerSub.unsubscribe();
     if (this.timedSetIntervalSub) this.timedSetIntervalSub.unsubscribe();
-    if (this.tabataTimerSub) this.tabataTimerSub.unsubscribe();
     this.isRestTimerVisible.set(false);
     // this.sessionState.set(SessionState.End);
   }
@@ -3946,9 +3636,6 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
   private startRestPeriod(duration: number, isResumingPausedRest: boolean = false): void {
-    if (this.isTabataMode()) {
-      return;
-    }
     this.playerSubState.set(PlayerSubState.Resting);
     this.restDuration.set(duration);
 
@@ -4532,189 +4219,6 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     // If it's a standard exercise, use its own rounds property
     return exercise.rounds ?? 1;
   }
-
-  /**
-   * Transforms a routine into a flat list of HIIT intervals FOR ALL ROUNDS and starts the player.
-   * This version correctly handles rounds defined on a per-exercise or per-superset-block basis.
-   */
-  private setupTabataMode(
-    routine: Routine,
-    startAtIndex: number = 0,
-    startTimeRemaining?: number
-  ): void {
-    const intervals: Omit<HIITInterval, 'totalIntervals' | 'currentIntervalNumber'>[] = [];
-    this.tabataIntervalMap = []; // The map now stores [exerciseIndex, setIndex, roundNumber]
-
-    // 1. Add "Prepare" interval
-    intervals.push({ type: 'prepare', duration: 10, exerciseName: 'Get Ready' });
-    this.tabataIntervalMap.push([0, 0, 1]);
-
-    // 2. Main loop now iterates through exercise BLOCKS
-    let exerciseIndex = 0;
-    while (exerciseIndex < routine.exercises.length) {
-      const currentExercise = routine.exercises[exerciseIndex];
-      const totalRoundsForBlock = this.getRoundsForExerciseBlock(exerciseIndex, routine);
-      const isSuperset = !!currentExercise.supersetId;
-      const supersetSize = isSuperset ? (currentExercise.supersetSize ?? 1) : 1;
-
-      // Loop for the number of rounds for this specific block
-      for (let round = 1; round <= totalRoundsForBlock; round++) {
-        // Loop through all exercises within this block (will be 1 for standard exercises)
-        for (let i = 0; i < supersetSize; i++) {
-          const blockExerciseIndex = exerciseIndex + i;
-          const blockExercise = routine.exercises[blockExerciseIndex];
-          if (!blockExercise) continue; // Safety check
-
-          const isLastRound = round === totalRoundsForBlock;
-
-          blockExercise.sets.forEach((set, setIndex) => {
-            // A. Add the "Work" interval for the current round
-            intervals.push({
-              type: 'work',
-              duration: set.duration || 40,
-              exerciseName: blockExercise.exerciseName
-            });
-            this.tabataIntervalMap.push([blockExerciseIndex, setIndex, round]);
-
-            // B. Conditionally add the "Rest" interval
-            const isLastExerciseOfEntireWorkout = blockExerciseIndex === routine.exercises.length - 1;
-            const isLastSetOfBlockExercise = setIndex === blockExercise.sets.length - 1;
-
-            // Don't add rest after the absolute final work interval of the entire workout
-            if (!(isLastRound && isLastExerciseOfEntireWorkout && isLastSetOfBlockExercise)) {
-              if (set.restAfterSet > 0) {
-                intervals.push({
-                  type: 'rest',
-                  duration: set.restAfterSet || 20,
-                  exerciseName: 'Rest'
-                });
-                this.tabataIntervalMap.push([blockExerciseIndex, setIndex, round]);
-              }
-            }
-          });
-        }
-      }
-      // Move the main index to the start of the next block
-      exerciseIndex += supersetSize;
-    }
-
-
-    // 3. Finalize the intervals list with total counts
-    const totalIntervals = intervals.length;
-    const finalIntervals = intervals.map((interval, index) => ({
-      ...interval,
-      totalIntervals: totalIntervals,
-      currentIntervalNumber: index + 1
-    }));
-    this.tabataIntervals.set(finalIntervals);
-
-    // 4. Set the initial state of the player
-    this.sessionState.set(SessionState.Playing);
-    this.routine.set(routine);
-    this.isTabataMode.set(true);
-
-    // 5. Use the helper to set the correct state for BOTH players.
-    this.setPlayerStateFromTabataIndex(startAtIndex);
-
-    // 6. Start the timer
-    if (startTimeRemaining !== undefined && startTimeRemaining > 0) {
-      this.startCurrentTabataInterval(startTimeRemaining);
-    } else {
-      this.startCurrentTabataInterval();
-    }
-  }
-
-
-  /**
- * Starts the timer for the currently active Tabata interval.
- * Can start from a specific remaining time if resuming.
- */
-  private startCurrentTabataInterval(startFromTime?: number): void {
-    if (this.tabataTimerSub) this.tabataTimerSub.unsubscribe();
-    if (this.sessionState() === SessionState.Paused) return;
-
-    const interval = this.currentTabataInterval();
-    if (!interval) {
-      this.sessionState.set(SessionState.End);
-      this.finishWorkoutAndReportStatus();
-      return;
-    }
-
-    // If resuming, use the provided time. Otherwise, use the interval's full duration.
-    const initialTime = startFromTime !== undefined ? startFromTime : interval.duration;
-    this.tabataTimeRemaining.set(initialTime);
-
-    this.tabataTimerSub = timer(0, 1000)
-      .pipe(
-        take(interval.duration + 1), // Keep your existing take()
-        takeUntil(this.destroy$)      // Add this line
-      ).subscribe({
-        next: () => {
-          this.tabataTimeRemaining.update(t => t - 1);
-        },
-        complete: () => {
-          if (this.sessionState() === SessionState.Playing) {
-            this.nextTabataInterval();
-          }
-        }
-      });
-  }
-
-  /**
-    * Navigates to the next interval in the Tabata sequence.
-    */
-  nextTabataInterval(): void {
-    // First, if the interval that just finished was a "work" interval, log it.
-    if (this.currentTabataInterval()?.type === 'work') {
-      this.completeAndLogCurrentSet();
-    }
-
-    const nextIndex = this.currentTabataIntervalIndex() + 1;
-
-    if (nextIndex < this.tabataIntervals().length) {
-      // There are more intervals, so proceed to the next one.
-      // The helper function will set the currentExerciseIndex, setIndex, AND the currentBlockRound.
-      this.setPlayerStateFromTabataIndex(nextIndex);
-      this.startCurrentTabataInterval();
-    } else {
-      // Reached the end of the very last interval.
-      this.tabataTimeRemaining.set(0);
-      if (this.tabataTimerSub) this.tabataTimerSub.unsubscribe();
-      this.sessionState.set(SessionState.End);
-      // Now that the session is truly over, finalize and save.
-      this.finishWorkoutAndReportStatus();
-    }
-  }
-  /**
-   * Navigates to the previous interval in the Tabata sequence.
-   */
-  previousTabataInterval(): void {
-    const prevIndex = this.currentTabataIntervalIndex() - 1;
-    if (prevIndex >= 0) {
-      this.currentTabataIntervalIndex.set(prevIndex);
-      this.startCurrentTabataInterval();
-    }
-  }
-
-  /**
-   * Toggles the pause state for the Tabata player.
-   */
-  toggleTabataPause(): void {
-    if (this.sessionState() === SessionState.Playing) {
-      // Pausing
-      this.sessionState.set(SessionState.Paused);
-      if (this.tabataTimerSub) this.tabataTimerSub.unsubscribe();
-      if (this.timerSub) this.timerSub.unsubscribe(); // Pause overall timer too
-      this.sessionTimerElapsedSecondsBeforePause += Math.floor((Date.now() - this.workoutStartTime) / 1000);
-    } else if (this.sessionState() === SessionState.Paused) {
-      // Resuming
-      this.sessionState.set(SessionState.Playing);
-      this.workoutStartTime = Date.now(); // Reset start time for delta calculation
-      this.startSessionTimer(); // Resume overall timer
-      this.startCurrentTabataInterval(); // Resume interval timer
-    }
-  }
-
 
   private getCurrentSetInfo(): ActiveSetInfo | null {
     const r = this.routine();

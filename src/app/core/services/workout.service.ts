@@ -496,7 +496,16 @@ export class WorkoutService {
     const routine = this.getCurrentRoutines().find(routine => routine.id === newRoutineId);
     const playerMode = this.appSettingsService.getSettings() ? this.appSettingsService.getSettings().playerMode : false;
     const isTabata = routine?.goal === 'tabata';
-    return !isTabata && playerMode ? '/workout/play/compact' : '/workout/play';
+    let url = '';
+
+    if (isTabata){
+      return '/workout/play/tabata';
+    }
+        if (!isTabata && playerMode){
+      return '/workout/play/compact';
+    } else {
+      return '/workout/play/focus';
+    }
   }
 
   // { queryParams: { newSession: 'true' } }
