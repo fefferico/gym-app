@@ -135,7 +135,7 @@ export class TrainingProgramService {
     };
     const updatedPrograms = [...currentPrograms, newProgram];
     this._saveProgramsToStorage(updatedPrograms);
-    this.toastService.success(`Program "${newProgram.name}" created.`, 3000, "Program Created");
+    // this.toastService.success(`Program "${newProgram.name}" created.`, 3000, "Program Created");
     return newProgram;
   }
 
@@ -154,7 +154,7 @@ export class TrainingProgramService {
       programsArray[index] = programToSave;
 
       this._saveProgramsToStorage(programsArray);
-      this.toastService.success(`Program "${programToSave.name}" updated.`, 3000, "Program Updated");
+      // this.toastService.success(`Program "${programToSave.name}" updated.`, 3000, "Program Updated");
       return programToSave;
     }
     this.toastService.error(`Program with ID ${updatedProgramData.id} not found.`, 0, "Update Error");

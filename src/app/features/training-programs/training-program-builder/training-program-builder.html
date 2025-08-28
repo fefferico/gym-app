@@ -218,7 +218,7 @@
                         Program Iteration</label>
                     <input type="text" id="iterationId" formControlName="iterationId" placeholder=""
                         class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200">
-                    <p class="mt-1 text-xs text-red dark:text-primary-light">
+                    <p *ngIf="isEditableMode()" class="mt-1 text-xs text-red dark:text-primary-light">
                         (EDIT IF YOU ONLY KNOW WHAT YOU ARE DOING)
                     </p>
                 </div>

@@ -466,13 +466,13 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
             programType: program.programType || 'cycled', // Default to 'cycled' for old data
             isRepeating: program.isRepeating ?? false, // Patch the new value
         });
-    
+
         this.cycleLengthSignal.set(program.cycleLength ?? null);
-    
+
         // --- MODIFIED: Patch based on program type and set initial expansion state ---
         const initialWeekIds = new Set<string>();
         const initialDayIds = new Set<string>();
-    
+
         if (programType === 'linear' && program.weeks) {
             this.weeksFormArray.clear();
             program.weeks.forEach(week => {
@@ -491,18 +491,18 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
                 initialDayIds.add(dayGroup.value.id); // Add day ID for expansion
             });
         }
-    
+
         this.expandedWeekIds.set(initialWeekIds);
         this.expandedDayIds.set(initialDayIds);
-    
+
         this.handleProgramTypeChange(programType);
         this.updateFormEnabledState();
-    
+
         if (program.goals?.length) {
             const goalValuesToFind = new Set(
                 program.goals.filter((g): g is string => g != null)
             );
-    
+
             this.programGoals
                 .filter(progGoal =>
                     progGoal.value != null && goalValuesToFind.has(progGoal.value)
@@ -516,11 +516,11 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
     createScheduledDayGroup(day?: Partial<ScheduledRoutineDay>): FormGroup {
         const defaultDayValue = this.currentDayOptions()[0]?.value ?? 1;
         const dayOfWeek = day?.dayOfWeek ?? defaultDayValue;
-    
+
         const programType = this.programForm.get('programType')?.value;
         const cycleLength = this.programForm.get('cycleLength')?.value;
         const isCustomCycle = programType === 'cycled' && cycleLength > 0;
-    
+
         let defaultDayName = '';
         if (isCustomCycle) {
             defaultDayName = `Day ${dayOfWeek}`;
@@ -528,7 +528,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
             // This handles linear programs and weekly 'cycled' programs
             defaultDayName = this.dayOfWeekOptions.find(opt => opt.value === dayOfWeek)?.label || '';
         }
-    
+
         const dayGroup = this.fb.group({
             id: [day?.id || uuidv4()],
             dayOfWeek: [dayOfWeek, Validators.required],
@@ -540,7 +540,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
             programId: [day?.programId ?? this.currentProgramId],
             isUnscheduled: [day?.isUnscheduled || false]
         });
-    
+
         // ==========================================================
         // START: NEW LOGIC FOR DAY NAME HINT
         // ==========================================================
@@ -551,17 +551,17 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
                 distinctUntilChanged()  // Only proceed if the value is truly different
             ).subscribe(newDayNumber => {
                 const currentDayName = dayGroup.get('dayName')?.value;
-                
+
                 // Find the default label for the newly selected day number.
                 const dayOption = this.currentDayOptions().find(opt => opt.value === newDayNumber);
                 const expectedDayLabel = dayOption ? dayOption.label : `Day ${newDayNumber}`;
-    
+
                 // If the custom name is different from the new default label, show a hint.
                 if (currentDayName !== expectedDayLabel) {
                     this.toastService.info(
                         `Reminder: Day name is "${currentDayName}". You might want to update it to match the new selection of "${expectedDayLabel} or to give it a proper name".`,
                         6000,
-                        'Check Day Name'
+                        'Check Day Name', false
                     );
                 }
             });
@@ -569,19 +569,19 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         // ==========================================================
         // END: NEW LOGIC
         // ==========================================================
-    
+
         return dayGroup;
     }
 
     // --- MODIFIED: Add a day to the correct schedule (cycled or linear) ---
     addScheduledDay(weekIndex?: number): void {
         if (this.isViewMode) return;
-    
+
         const cycleLength = parseInt(this.programForm.get('cycleLength')?.value, 10);
         const isWeeklySchedule = !cycleLength || cycleLength === 7;
         const programType = this.programForm.get('programType')?.value;
         let newDayGroup: FormGroup | null = null;
-    
+
         if (programType === 'linear' && weekIndex !== undefined) {
             const weekSchedule = this.weeksFormArray.at(weekIndex).get('schedule') as FormArray;
             if (weekSchedule.length >= 7) {
@@ -627,7 +627,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
                 this.scheduleFormArray.push(newDayGroup);
             }
         }
-    
+
         // Expand the newly created day card by default
         if (newDayGroup) {
             this.expandedDayIds.update(currentSet => {
@@ -636,9 +636,9 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
                 return newSet;
             });
         }
-    
+
         this.cdr.detectChanges();
-    
+
         setTimeout(() => {
             const elements = document.querySelectorAll('.scheduled-day-card');
             if (elements.length > 0) {
@@ -803,12 +803,13 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
                 this.isNewMode = false;
                 this.isEditMode = true;
                 this.currentProgramId = newProgram.id;
+                this.toastService.success(`Program "${newProgram.name}" created.`, 3000, "Program Created");
             } else if (this.isEditMode && this.currentProgramId) {
                 const existingProgram = await firstValueFrom(this.trainingProgramService.getProgramById(this.currentProgramId).pipe(take(1)));
                 programPayload.isActive = existingProgram?.isActive ?? false;
                 await this.trainingProgramService.updateProgram(programPayload);
             }
-            this.toastService.success("Program saved successfully", 0, "Success");
+            this.toastService.success("Program saved successfully", 0, "Success", false);
         } catch (error) {
             console.error("Error saving program:", error);
             this.toastService.error("Failed to save program", 0, "Save Error");

@@ -195,7 +195,7 @@
                     <label for="iterationIdForLog"
                         class="block text-sm font-medium text-gray-700 dark:text-gray-300">Based on Program Iteration
                         ID</label>
-                    <span class="text-xs text-red-500 dark:text-primary-light">(Select an iteration if logging for a
+                    <span *ngIf="isEditableMode" class="text-xs text-red-500 dark:text-primary-light">(Select an iteration if logging for a
                         specific program cycle - EDIT IF YOU ONLY KNOW WHAT YOU ARE DOING)</span>
                     <select id="iterationIdForLog" formControlName="iterationIdForLog"
                         [disabled]="!builderForm.get('programIdForLog')?.value || availableIterationIds.length === 0"
@@ -208,7 +208,7 @@
                 <div *ngIf="initialProgramIdForLogEdit">
                     <label for="scheduledDayIdForLog"
                         class="block text-sm font-medium text-gray-700 dark:text-gray-300">Based on Program Scheduled ID
-                    </label><span class="text-xs text-red-500 dark:text-primary-light">(Select the scheduled day you are
+                    </label><span *ngIf="isEditableMode" class="text-xs text-red-500 dark:text-primary-light">(Select the scheduled day you are
                         logging - EDIT IF YOU ONLY KNOW WHAT YOU ARE DOING)</span>
                     <select id="scheduledDayIdForLog" formControlName="scheduledDayIdForLog"
                         [disabled]="!builderForm.get('programIdForLog')?.value || availableScheduledDayIds.length === 0"
