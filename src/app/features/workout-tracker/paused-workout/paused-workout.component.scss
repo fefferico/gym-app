@@ -1,34 +1,58 @@
 /* src/app/layout/paused-workout/paused-workout.component.scss */
 
-/* Define the height of the main navigation bar as a CSS variable */
 :host {
-  --main-nav-height: 64px; /* Corresponds to h-16 in Tailwind */
+  --main-nav-height: 64px;
+  --banner-bottom-margin: 0.5rem;
 }
 
-/* 
-  Position the component's host element.
-  It is fixed to the viewport, anchored to the bottom, but offset
-  by the height of the navigation bar.
-*/
 :host {
-  display: block;
+  display: flex;
+  justify-content: center;
   position: fixed;
-  bottom: var(--main-nav-height); /* THIS IS THE KEY: Position it above the nav bar */
+  bottom: calc(var(--main-nav-height));
+//   bottom: calc(var(--main-nav-height) + var(--banner-bottom-margin));
   left: 0;
   right: 0;
-  z-index: 40; /* Same z-index as the nav bar to keep them on the same layer */
-  pointer-events: none; /* Allows clicks to pass through the host element */
+  z-index: 40;
+  pointer-events: none;
 }
 
-/* 
-  The banner inside the host should receive pointer events,
-  so the buttons are clickable.
-*/
+/* The outer container for structure and entry animation */
 .paused-workout-banner {
   pointer-events: auto;
+  width: 100%;
+  max-width: 450px;
+  margin: 0 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  /* The color is now in the HTML, but we keep the overflow hidden for clean corners */
+  overflow: hidden; 
 }
 
-/* A simple animation to make the banner slide in from the bottom */
+/* The inner wrapper that contains the content and pulses */
+.banner-content-wrapper {
+  width: 100%;
+  height: 100%;
+}
+
+
+/* ========================================================== */
+/* --- NEW ANIMATION DEFINITIONS --- */
+/* ========================================================== */
+
+/* 1. Define the NEW keyframes for the opacity pulse */
+@keyframes pulse-opacity {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8; /* Dim the content slightly */
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* 2. Define the keyframes for the initial slide-in */
 @keyframes slideInUp {
   from {
     transform: translateY(100%);
@@ -40,7 +64,16 @@
   }
 }
 
-/* Apply the animation to the banner */
+/* 3. Apply the animations to their respective classes */
+
+/* The outer banner ONLY gets the slide-in animation */
 .animate-slide-in-up {
   animation: slideInUp 0.3s ease-out forwards;
+}
+
+/* The inner content wrapper ONLY gets the pulse animation */
+.animate-pulse-opacity {
+  /* Run the pulse animation forever, BUT DELAY its start by 0.4s */
+  /* This gives the slide-in time to finish before the pulsing begins. */
+  animation: pulse-opacity 1.5s ease-in-out 0.4s infinite;
 }

@@ -20,7 +20,7 @@ export class PausedWorkoutComponent implements OnInit {
   private alertService = inject(AlertService);
 
   // Signal to hold the name of the paused routine for display
-  pausedRoutineName = signal<string>('your workout');
+  pausedRoutineName = signal<string>('New session');
 
   ngOnInit(): void {
     // When the component loads, check for a paused session and get its name

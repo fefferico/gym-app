@@ -115,11 +115,9 @@
                 <div class="flex flex-col justify-between items-start mb-1.5 space-y-1">
                   <h2 class="text-lg sm:text-xl font-semibold truncate pr-10 text-wrap" [title]="program.name">{{
                     program.name }}</h2>
-                  <div *ngIf="program.isActive"
-                    class="flex items-center bg-green-700 text-green-100 rounded-full">
+                  <div *ngIf="program.isActive" class="flex items-center bg-green-700 text-green-100 rounded-full">
                     <app-icon name="activate" class="h-6 w-6"></app-icon>
-                    <span *ngIf="program.isActive"
-                      class=" text-2xs sm:text-xs font-semibold p-1 ">Active</span>
+                    <span *ngIf="program.isActive" class=" text-2xs sm:text-xs font-semibold p-1 ">Active</span>
                   </div>
                 </div>
                 <p *ngIf="program.description"
@@ -163,7 +161,8 @@
                     </span>
                   </div>
                   <div *ngIf="program.iterationId" class="flex items-center gap-1">
-                    <app-icon name="change" class="w-5 h-5 text-gray-500 dark:text-gray-300" [strokeWidth]="2"></app-icon>
+                    <app-icon name="change" class="w-5 h-5 text-gray-500 dark:text-gray-300"
+                      [strokeWidth]="2"></app-icon>
                     <span class="font-medium">Iteration:</span> {{ program.iterationId }}
                   </div>
                   <!-- ========================================================== -->
@@ -279,12 +278,13 @@
                       <strong
                         class="text-primary dark:text-primary-light truncate max-w-[150px] sm:max-w-xs inline-block align-bottom hover:cursor-pointer hover:underline"
                         [title]="'Go to program ' + activeProgram.name" appPress
-                        (shortPress)="viewProgramDetails(activeProgram.id)">{{ activeProgram.name }}<span> {{ activeProgram.iterationId}}</span></strong>
+                        (shortPress)="viewProgramDetails(activeProgram.id)">{{ activeProgram.name }}<span> {{
+                          activeProgram.iterationId}}</span></strong>
 
                       <!-- This span will appear only for linear programs and when a valid week is found for the viewDate -->
                       <ng-container *ngIf="getCurrentWeekInfo(activeProgram) as weekInfo">
                         <span *ngIf="calendarDisplayMode() !== 'month'" class="ml-1">
-                            - <span class="font-semibold">{{ weekInfo.name }}</span>
+                          - <span class="font-semibold">{{ weekInfo.name }}</span>
                         </span>
                       </ng-container>
                     </p>
@@ -522,8 +522,7 @@
                 <!-- "Log Past Session" button -->
                 <!-- Removed flex-1 -->
                 <!-- Added sm:col-start-2 to place it in the second column on small screens and up if the START button is not present -->
-                <button *ngIf="selectedDay.isPastDay" appPress
-                  (shortPress)="logPreviousSession(item, selectedDay.date)"
+                <button *ngIf="selectedDay.isPastDay" appPress (shortPress)="logPreviousSession(item, selectedDay.date)"
                   [class.sm:col-start-2]="!selectedDay.isToday"
                   class="flex justify-center items-center w-full sm:max-w-[200px] px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md shadow-sm text-lg disabled:opacity-50 disabled:cursor-not-allowed">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -565,7 +564,8 @@
 <!-- NEW: Main Floating Button Container (Bottom Right) -->
 <!-- This container holds both the Back to Top and the FAB group -->
 <!-- ========================================================== -->
-<div class="fixed bottom-20 right-6 z-40 flex flex-col items-center gap-4">
+<div class="fixed right-6 z-40 flex flex-col items-center gap-4 transition-all duration-300"
+  [ngClass]="workoutService.isPausedSession() ? 'bottom-36' : 'bottom-20'">
 
   <!-- 1. "Back to Top" Button -->
   <!-- It's now inside the container, so we remove its individual `fixed` positioning. -->

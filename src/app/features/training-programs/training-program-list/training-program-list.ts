@@ -117,10 +117,8 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
   private platformId = inject(PLATFORM_ID);
   private cdr = inject(ChangeDetectorRef);
   private trackingService = inject(TrackingService);
-  private themeService = inject(ThemeService);
-  private workoutService = inject(WorkoutService);
+  workoutService = inject(WorkoutService);
   private exerciseService = inject(ExerciseService);
-  private elementRef = inject(ElementRef);
   private ngZone = inject(NgZone);
   private sanitizer = inject(DomSanitizer);
   private appSettingsService = inject(AppSettingsService);

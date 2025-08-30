@@ -1,34 +1,46 @@
 <!-- src/app/layout/paused-workout/paused-workout.component.html -->
 
-<!-- The entire banner is conditional on a paused session existing -->
+<!-- 
+  OUTER CONTAINER:
+  - This div handles the initial slide-in animation (`animate-slide-in-up`).
+  - It holds the background, border, and shape.
+  - It does NOT have the pulse animation.
+-->
 <div *ngIf="workoutService.isPausedSession()"
-  class="paused-workout-banner bg-primary-dark text-white p-2 animate-slide-in-up rounded-t-md">
-  <div class="container mx-auto flex items-center justify-between gap-4">
+  class="paused-workout-banner bg-primary-dark rounded-lg border-2 rounded-b-none border-b-0 border-primary-light/80 animate-slide-in-up">
 
-    <!-- Information section -->
-    <div class="flex items-center gap-3 min-w-0">
-      <app-icon name="pause-circle" class="h-6 w-6 flex-shrink-0"></app-icon>
+  <!-- 
+    INNER WRAPPER:
+    - This div wraps all the visible content.
+    - It handles the FLEX layout.
+    - It gets the new, delayed pulse animation (`animate-pulse-opacity`).
+  -->
+  <div class="banner-content-wrapper flex items-center justify-between gap-4 p-2 px-4 animate-pulse-opacity">
+    
+    <!-- Information section (no changes here) -->
+    <div class="flex items-center gap-3 min-w-0 text-white">
+      <app-icon name="pause" class="h-6 w-6 flex-shrink-0"></app-icon>
       <div class="min-w-0">
-        <p class="text-sm font-semibold truncate">
+        <p class="text-sm font-semibold truncate text-white">
           {{ pausedRoutineName() }}
         </p>
-        <p class="text-xs opacity-80">
+        <p class="text-xs opacity-80 text-white">
           Your workout is paused
         </p>
       </div>
     </div>
 
-    <!-- Actions section -->
+    <!-- Actions section (no changes here) -->
     <div class="flex items-center gap-2 flex-shrink-0">
       <button appPress (shortPress)="resumeWorkout()"
         class="flex items-center gap-1.5 px-3 py-1 bg-white/20 hover:bg-white/30 rounded-md transition">
-        <app-icon name="play" class="h-5 w-5"></app-icon>
-        <span class="text-sm font-bold">RESUME</span>
+        <app-icon name="play" class="h-5 w-5 text-white"></app-icon>
+        <span class="text-sm font-bold text-white">RESUME</span>
       </button>
 
-      <button appPress (shortPress)="discardWorkout()"
-        class="p-2 hover:bg-white/20 rounded-full transition" title="Discard Paused Workout">
-        <app-icon name="trash" class="h-5 w-5"></app-icon>
+      <button appPress (shortPress)="discardWorkout()" class="p-2 hover:bg-white/20 rounded-full transition"
+        title="Discard Paused Workout">
+        <app-icon name="trash" class="h-5 w-5 text-white"></app-icon>
       </button>
     </div>
 

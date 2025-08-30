@@ -130,8 +130,9 @@
                     </button>
                     <app-action-menu *ngIf="areActionsVisible(item.id) && (menuModeDropdown || menuModeModal)"
                       class="action-menu-container" [displayMode]="menuModeDropdown ? 'dropdown' : 'modal'"
-                      [items]="getLogDropdownActionItems(item.id, menuModeDropdown ? 'dropdown' : 'modal')" [isVisible]="areActionsVisible(item.id)"
-                      (itemClick)="handleActionMenuItemClick($event)" (closeMenu)="onCloseActionMenu()">
+                      [items]="getLogDropdownActionItems(item.id, menuModeDropdown ? 'dropdown' : 'modal')"
+                      [isVisible]="areActionsVisible(item.id)" (itemClick)="handleActionMenuItemClick($event)"
+                      (closeMenu)="onCloseActionMenu()">
                     </app-action-menu>
                   </div>
                 </div>
@@ -183,14 +184,16 @@
                     </button>
                     <app-action-menu *ngIf="areActionsVisible(item.id) && (menuModeDropdown || menuModeModal)"
                       class="action-menu-container" [displayMode]="menuModeDropdown ? 'dropdown' : 'modal'"
-                      [items]="getActivityLogDropdownActionItems(item.id, menuModeDropdown ? 'dropdown' : 'modal')" [isVisible]="areActionsVisible(item.id)"
-                      (itemClick)="handleActionMenuItemClick($event)" (closeMenu)="onCloseActionMenu()">
+                      [items]="getActivityLogDropdownActionItems(item.id, menuModeDropdown ? 'dropdown' : 'modal')"
+                      [isVisible]="areActionsVisible(item.id)" (itemClick)="handleActionMenuItemClick($event)"
+                      (closeMenu)="onCloseActionMenu()">
                     </app-action-menu>
                   </div>
                 </div>
                 <app-action-menu *ngIf="areActionsVisible(item.id) && menuModeCompact" displayMode="compact"
-                  [items]="getActivityLogDropdownActionItems(item.id, 'compact')" [isVisible]="areActionsVisible(item.id)"
-                  (itemClick)="handleActionMenuItemClick($event)" (closeMenu)="onCloseActionMenu()">
+                  [items]="getActivityLogDropdownActionItems(item.id, 'compact')"
+                  [isVisible]="areActionsVisible(item.id)" (itemClick)="handleActionMenuItemClick($event)"
+                  (closeMenu)="onCloseActionMenu()">
                 </app-action-menu>
               </div>
             </div>
@@ -313,7 +316,8 @@
               <h4 class="text-md sm:text-lg font-semibold text-primary dark:text-primary-light mb-1">{{ item.routineName
                 }}
               </h4>
-              <div *ngIf="item.programId" class="my-2 text-xs font-semibold text-white bg-primary rounded-md p-1 flex-shrink w-fit">
+              <div *ngIf="item.programId"
+                class="my-2 text-xs font-semibold text-white bg-primary rounded-md p-1 flex-shrink w-fit">
                 Program: {{ item.programName }} {{ item.iterationId}}
                 <ng-container *ngIf="item.weekName"> - {{ item.weekName }}</ng-container>
                 <ng-container *ngIf="item.dayName"> - {{ item.dayName }}</ng-container>
@@ -360,7 +364,8 @@
     </div>
   </div>
 
-  <div class="fixed bottom-20 right-6 z-40 flex flex-col items-center gap-4">
+  <div class="fixed right-6 z-40 flex flex-col items-center gap-4 transition-all duration-300"
+    [ngClass]="workoutService.isPausedSession() ? 'bottom-36' : 'bottom-20'">
     <button *ngIf="showBackToTopButton()" appPress (shortPress)="scrollToTop()" type="button"
       class="bg-primary dark:bg-primary text-white rounded-full p-3 shadow-lg hover:bg-primary-dark dark:hover:bg-primary-light focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-focus dark:focus:ring-offset-gray-900 transition-opacity animate-fade-in">
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"

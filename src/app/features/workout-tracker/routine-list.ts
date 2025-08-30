@@ -68,7 +68,7 @@ import { MenuMode } from '../../core/models/app-settings.model';
   ]
 })
 export class RoutineListComponent implements OnInit, OnDestroy {
-  private workoutService = inject(WorkoutService);
+  workoutService = inject(WorkoutService);
   private exerciseService = inject(ExerciseService); // Inject ExerciseService
   private trackingService = inject(TrackingService);
   private trainingService = inject(TrainingProgramService);

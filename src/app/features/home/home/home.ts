@@ -34,7 +34,7 @@ export class HomeComponent implements OnInit {
 
   // Signal to hold information about a paused/active workout
   pausedWorkoutInfo = signal<PausedWorkoutState | null>(null);
-  pausedRoutineName = signal<string>('your workout'); // Default name
+  pausedRoutineName = signal<string>('New session'); // Default name
   pausedProgramName = signal<string>(''); // Default name
 
   constructor() {
