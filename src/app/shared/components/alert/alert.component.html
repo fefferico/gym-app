@@ -75,36 +75,15 @@
     <footer *ngIf="options.buttons && options.buttons.length > 0" class="overflow-y-auto p-6 pt-4 custom-scrollbar gap-1"
       [ngClass]="options && options.customButtonDivCssClass ? options.customButtonDivCssClass : options.buttons.length === 2 ? 'flex justify-center gap-2 sm:gap-3' : 'grid grid-cols-1 gap-2 sm:gap-3'">
 
-      <!--
-  This block will only render if there is EXACTLY ONE button in the array.
-  It includes the (keydown.enter) event binding.
--->
-      <ng-container *ngIf="options.buttons?.length === 1; else multipleButtons">
-        <button #singleButton [ngClass]="getButtonClass(options.buttons[0])" appPress (shortPress)="onButtonClick(options.buttons[0])"
-          (keydown.enter)="onButtonClick(options.buttons[0])"
-          class="min-w-[80px] flex items-center justify-center rounded-md transition-colors text-center"
-          style="line-height: 1.25;">
-          <app-icon *ngIf="options.buttons[0].icon" [name]="options.buttons[0].icon"
-            [class]="options.buttons[0].iconClass ? options.buttons[0].iconClass : 'h-5 w-5 mr-1'"></app-icon>
-          {{ options.buttons[0].text | uppercase }}
-        </button>
-      </ng-container>
-
-      <!--
-  This block will render if there are 0, 2, or more buttons.
-  It uses the original *ngFor and does NOT have the keydown binding.
--->
-      <ng-template #multipleButtons>
-        <button *ngFor="let button of options.buttons" [ngClass]="getButtonClass(button)" appPress
-          (shortPress)="onButtonClick(button)"
-          class="min-w-[80px] flex items-center justify-center rounded-md transition-colors text-center"
-          style="line-height: 1.25;">
-          <app-icon *ngIf="button.icon" [name]="button.icon"
-            [class]="button.iconClass ? button.iconClass : 'h-5 w-5 mr-1'"></app-icon>
-          {{ button.text | uppercase }}
-        </button>
-      </ng-template>
-
+      <!-- This block will now ALWAYS render, iterating over all buttons -->
+      <button #alertButton *ngFor="let button of options.buttons" [ngClass]="getButtonClass(button)" appPress
+        (shortPress)="onButtonClick(button)"
+        class="min-w-[80px] flex items-center justify-center rounded-md transition-colors text-center"
+        style="line-height: 1.25;">
+        <app-icon *ngIf="button.icon" [name]="button.icon"
+          [class]="button.iconClass ? button.iconClass : 'h-5 w-5 mr-1'"></app-icon>
+        {{ button.text | uppercase }}
+      </button>
 
     </footer>
 

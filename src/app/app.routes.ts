@@ -7,17 +7,20 @@ export const APP_ROUTES: Routes = [
   { path: '', redirectTo: '/home', pathMatch: 'full' }, 
   
   // The 'home' route is now the single source of truth for the HomeComponent.
-  { path: 'home', component: HomeComponent }, 
+  { path: 'home', component: HomeComponent,
+    data: { showPausedWorkoutBanner: true } }, 
 
   {
     path: 'workout',
     loadChildren: () => import('./features/workout-tracker/workout-tracker.routes') // Ensure this file exists
-      .then(c => c.WORKOUT_TRACKER_ROUTES)
+      .then(c => c.WORKOUT_TRACKER_ROUTES),
+    data: { showPausedWorkoutBanner: true }
   },
   {
     path: 'history',
     loadChildren: () => import('./features/history-stats/history-stats.routes') // Ensure this file exists
-      .then(c => c.HISTORY_STATS_ROUTES)
+      .then(c => c.HISTORY_STATS_ROUTES),
+    data: { showPausedWorkoutBanner: true }
   },
   {
     path: 'library', // Main path for the library feature
@@ -36,7 +39,8 @@ export const APP_ROUTES: Routes = [
   },
   {
     path: 'training-programs',
-    loadChildren: () => import('./features/training-programs/training-program.routes').then(m => m.TRAINING_PROGRAM_ROUTES)
+    loadChildren: () => import('./features/training-programs/training-program.routes').then(m => m.TRAINING_PROGRAM_ROUTES),
+    data: { showPausedWorkoutBanner: true }
   },
   {
     path: 'activities',

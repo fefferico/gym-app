@@ -1,0 +1,36 @@
+<!-- src/app/layout/paused-workout/paused-workout.component.html -->
+
+<!-- The entire banner is conditional on a paused session existing -->
+<div *ngIf="workoutService.isPausedSession()"
+  class="paused-workout-banner bg-primary-dark text-white p-2 animate-slide-in-up rounded-t-md">
+  <div class="container mx-auto flex items-center justify-between gap-4">
+
+    <!-- Information section -->
+    <div class="flex items-center gap-3 min-w-0">
+      <app-icon name="pause-circle" class="h-6 w-6 flex-shrink-0"></app-icon>
+      <div class="min-w-0">
+        <p class="text-sm font-semibold truncate">
+          {{ pausedRoutineName() }}
+        </p>
+        <p class="text-xs opacity-80">
+          Your workout is paused
+        </p>
+      </div>
+    </div>
+
+    <!-- Actions section -->
+    <div class="flex items-center gap-2 flex-shrink-0">
+      <button appPress (shortPress)="resumeWorkout()"
+        class="flex items-center gap-1.5 px-3 py-1 bg-white/20 hover:bg-white/30 rounded-md transition">
+        <app-icon name="play" class="h-5 w-5"></app-icon>
+        <span class="text-sm font-bold">RESUME</span>
+      </button>
+
+      <button appPress (shortPress)="discardWorkout()"
+        class="p-2 hover:bg-white/20 rounded-full transition" title="Discard Paused Workout">
+        <app-icon name="trash" class="h-5 w-5"></app-icon>
+      </button>
+    </div>
+
+  </div>
+</div>

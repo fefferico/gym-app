@@ -1,5 +1,5 @@
-import { Component, inject, OnInit } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, inject, OnInit, signal } from '@angular/core';
+import { ActivatedRoute, NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { ThemeService } from './core/services/theme.service';
 import { NavigationComponent } from './shared/components/navigation/navigation';
 import { CommonModule } from '@angular/common';
@@ -8,11 +8,13 @@ import { TrackingService } from './core/services/tracking.service';
 import { LoggedWorkoutExercise, WorkoutLog } from './core/models/workout-log.model';
 import { SpinnerComponent } from './shared/components/spinner/spinner.component';
 import { ToastContainerComponent } from './shared/components/toast/toast.component';
+import { PausedWorkoutComponent } from './features/workout-tracker/paused-workout/paused-workout.component';
+import { filter, map } from 'rxjs';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, NavigationComponent, CommonModule, SpinnerComponent, ToastContainerComponent],
+  imports: [RouterOutlet, NavigationComponent, CommonModule, SpinnerComponent, ToastContainerComponent, PausedWorkoutComponent],
   template: `
     <div class="flex flex-col min-h-screen bg-gray-100 dark:bg-gray-900">
       <!-- Header/Toolbar Area -->
@@ -31,6 +33,7 @@ import { ToastContainerComponent } from './shared/components/toast/toast.compone
       </main>
 
       <!-- Bottom Navigation -->
+<app-paused-workout *ngIf="shouldShowPausedBanner()"></app-paused-workout>
       <app-navigation></app-navigation>
     </div>
   `,
@@ -40,13 +43,33 @@ import { ToastContainerComponent } from './shared/components/toast/toast.compone
 export class AppComponent implements OnInit {
   private themeService = inject(ThemeService); // Keep for early initialization via constructor
   private trackingService = inject(TrackingService); // Inject for testing
+  // Signal to control the visibility of the paused workout banner
+  shouldShowPausedBanner = signal(false);
+  private router = inject(Router);
+  private activatedRoute = inject(ActivatedRoute);
 
   constructor() {
     // The ThemeService constructor and its effect will handle initial theme application.
   }
 
-  ngOnInit() {
-    //this.testAddLog(); // Uncomment to test
-    //this.trackingService.workoutLogs$.subscribe(logs => console.log('Current Logs:', logs));
+
+  ngOnInit(): void {
+    // Listen for router events to know when navigation has completed
+    this.router.events.pipe(
+      filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+      map(() => {
+        // Traverse the route tree to find the most deeply nested activated route
+        let route = this.activatedRoute;
+        while (route.firstChild) {
+          route = route.firstChild;
+        }
+        return route;
+      }),
+      // Get the data property from the final activated route's snapshot
+      map(route => route.snapshot.data)
+    ).subscribe(data => {
+      // Update the signal based on the 'showPausedWorkoutBanner' flag in the route data
+      this.shouldShowPausedBanner.set(data['showPausedWorkoutBanner'] === true);
+    });
   }
 }

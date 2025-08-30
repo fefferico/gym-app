@@ -898,6 +898,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     if (event && event.target && goal) {
       const target = event.target as HTMLSelectElement;
       target.value = goal;
+      this.clearFilters();
       this.onRoutineGoalChange(event);
       this.toastService.info(`Filtered routines by goal '${goal}'`);
     }
@@ -908,6 +909,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     if (event && event.target && muscle) {
       const target = event.target as HTMLSelectElement;
       target.value = muscle;
+      this.clearFilters();
       this.onRoutineMuscleGroupChange(event);
       this.toastService.info(`Filtered routines by muscle '${muscle}'`);
     }

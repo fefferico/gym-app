@@ -2669,8 +2669,9 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
         'CANCEL',
         [
           // do not save as new routine button
-          { text: "Just log", role: "no_save", data: "cancel", cssClass: "bg-red-600" } as AlertButton
+          { text: "Just log", role: "no_save", data: "cancel", overrideCssClass: "flex items-center bg-primary px-4 py-2 font-medium", icon: 'schedule' } as AlertButton
         ]
+        
       );
       if (nameInput && nameInput['newRoutineName'] && String(nameInput['newRoutineName']).trim()) {
         newRoutineName = String(nameInput['newRoutineName']).trim();

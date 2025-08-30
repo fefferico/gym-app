@@ -9,6 +9,7 @@ export interface AlertButton {
   icon?: string; // Optional icon name for the button For registry lookup
   iconSvg?: string;   // For raw SVG
   iconClass?: string; // For styling the icon
+  autofocus?: boolean;
 }
 
 export interface AlertInput {

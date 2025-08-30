@@ -157,7 +157,7 @@ export class AlertService {
             message: message,
             buttons: customButtons ? customButtons : [
                 { text: 'Cancel', role: 'cancel', data: false} as AlertButton,
-                { text: 'OK', role: 'confirm', data: true } as AlertButton,
+                { text: 'OK', role: 'confirm', data: true, autofocus: true } as AlertButton,
             ],
             listItems: extraOptions?.listItems, // Pass the list items here
             backdropDismiss: false

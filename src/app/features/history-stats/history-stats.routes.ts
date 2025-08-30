@@ -14,11 +14,13 @@ export const HISTORY_STATS_ROUTES: Routes = [
   {
     path: 'log/:logId', // For viewing a specific log
     component: WorkoutLogDetailComponent,
-    title: 'Workout Details'
+    title: 'Workout Details',
+    data: { showPausedWorkoutBanner: false}
   },
   {
     path: 'dashboard', // Changed from 'stats' to 'dashboard'
     component: StatsDashboardComponent,
-    title: 'My Stats'
+    title: 'My Stats',
+    data: { showPausedWorkoutBanner: false}
   }
 ];

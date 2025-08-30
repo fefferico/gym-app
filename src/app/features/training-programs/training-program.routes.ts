@@ -11,25 +11,25 @@ export const TRAINING_PROGRAM_ROUTES: Routes = [
   {
     path: 'new',
     loadComponent: () => import('./training-program-builder/training-program-builder').then(m => m.TrainingProgramBuilderComponent),
-    data: { mode: 'new' },
+    data: { mode: 'new', showPausedWorkoutBanner: false },
     title: 'New Training Program'
   },
   {
     path: 'edit/:programId',
     loadComponent: () => import('./training-program-builder/training-program-builder').then(m => m.TrainingProgramBuilderComponent),
-    data: { mode: 'edit' },
+    data: { mode: 'edit', showPausedWorkoutBanner: false },
     title: 'Edit Training Program'
   },
   {
     path: 'view/:programId',
     loadComponent: () => import('./training-program-builder/training-program-builder').then(m => m.TrainingProgramBuilderComponent),
-    data: { mode: 'view' },
+    data: { mode: 'view', showPausedWorkoutBanner: false },
     title: 'View Training Program'
   },
   {
     path: 'completed/:programId',
     loadComponent: () => import('./program-completion.component').then(m => m.ProgramCompletionComponent),
-    data: { mode: 'view' },
+    data: { mode: 'view', showPausedWorkoutBanner: false },
     title: 'Program Completed'
   }
 ];

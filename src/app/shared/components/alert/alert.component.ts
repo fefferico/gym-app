@@ -19,6 +19,7 @@ export class AlertComponent implements OnInit {
   @Output() dismissed = new EventEmitter<{ role: string, data?: any, values?: { [key: string]: string | number | boolean } } | undefined>();
   @ViewChildren('alertInput') inputElements!: QueryList<ElementRef<HTMLInputElement | HTMLTextAreaElement>>;
   @ViewChild('singleButton') singleButton?: ElementRef<HTMLButtonElement>;
+  @ViewChildren('alertButton') allButtons!: QueryList<ElementRef<HTMLButtonElement>>;
 
   inputValues: { [key: string]: string | number | boolean } = {};
 
@@ -42,32 +43,51 @@ export class AlertComponent implements OnInit {
     }
   }
 
-  private focusButton(): void {
-    // When the component loads, if the single button exists, focus it.
-    this.singleButton?.nativeElement.focus();
-  }
-
-  // This lifecycle hook runs after the view is initialized and the *ngFor is rendered
-  ngAfterViewInit(): void {
-    this.focusButton();
-    if (!this.options?.inputs || !this.inputElements) {
+private focusButton(): void {
+    if (!this.options?.buttons || this.allButtons.length === 0) {
       return;
     }
 
-    // Find the index of the input that has autofocus: true
-    const focusIndex = this.options.inputs.findIndex(input => input.autofocus);
+    // Attempt to find a "confirm" button and focus it
+    const confirmButtonIndex = this.options.buttons.findIndex(b => b.role === 'confirm');
+    if (confirmButtonIndex > -1) {
+      const confirmButtonElement = this.allButtons.get(confirmButtonIndex);
+      if (confirmButtonElement) {
+        confirmButtonElement.nativeElement.focus();
+        return;
+      }
+    }
 
-    if (focusIndex > -1) {
-      // Use setTimeout to make sure the focus happens after the current change detection cycle.
-      // This is a robust way to avoid timing issues with rendering or animations.
-      setTimeout(() => {
-        const inputToFocus = this.inputElements.get(focusIndex);
-        if (inputToFocus) {
-          inputToFocus.nativeElement.focus();
-          // Bonus: Also select the text in the input for easy replacement.
-          inputToFocus.nativeElement.select();
+    // If no "confirm" button or it wasn't found in the DOM, focus the first available button
+    if (this.allButtons.first) {
+      this.allButtons.first.nativeElement.focus();
+    }
+  }
+
+ngAfterViewInit(): void {
+    // Focus the button initially if there are no inputs to autofocus
+    if (!this.options?.inputs || this.inputElements.length === 0) {
+      this.focusButton();
+    } else {
+      // If there are inputs, focus the specific autofocus input
+      const focusIndex = this.options.inputs.findIndex(input => input.autofocus);
+      if (focusIndex > -1) {
+        setTimeout(() => {
+          const inputToFocus = this.inputElements.get(focusIndex);
+          if (inputToFocus) {
+            inputToFocus.nativeElement.focus();
+            inputToFocus.nativeElement.select();
+          }
+        }, 0);
+      } else {
+        // If no specific input is marked autofocus, but inputs exist,
+        // we might still want to focus the first input or defer to button if no inputs are primary.
+        // For now, if inputs exist but none are autofocus, no button will be focused.
+        // If you want the first input to be focused by default, you can add that here:
+        if (this.inputElements.first) {
+          setTimeout(() => this.inputElements.first.nativeElement.focus(), 0);
         }
-      }, 0);
+      }
     }
   }
 

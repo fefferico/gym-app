@@ -1,0 +1,46 @@
+/* src/app/layout/paused-workout/paused-workout.component.scss */
+
+/* Define the height of the main navigation bar as a CSS variable */
+:host {
+  --main-nav-height: 64px; /* Corresponds to h-16 in Tailwind */
+}
+
+/* 
+  Position the component's host element.
+  It is fixed to the viewport, anchored to the bottom, but offset
+  by the height of the navigation bar.
+*/
+:host {
+  display: block;
+  position: fixed;
+  bottom: var(--main-nav-height); /* THIS IS THE KEY: Position it above the nav bar */
+  left: 0;
+  right: 0;
+  z-index: 40; /* Same z-index as the nav bar to keep them on the same layer */
+  pointer-events: none; /* Allows clicks to pass through the host element */
+}
+
+/* 
+  The banner inside the host should receive pointer events,
+  so the buttons are clickable.
+*/
+.paused-workout-banner {
+  pointer-events: auto;
+}
+
+/* A simple animation to make the banner slide in from the bottom */
+@keyframes slideInUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Apply the animation to the banner */
+.animate-slide-in-up {
+  animation: slideInUp 0.3s ease-out forwards;
+}

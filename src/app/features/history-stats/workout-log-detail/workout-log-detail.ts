@@ -481,17 +481,47 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
     });
   }
 
-  // NEW: Method for the template to check if a set was a PB
+/**
+   * Checks if a specific set was a Personal Best at any point in time.
+   * It does this by checking if the set's ID matches the current PB's ID,
+   * OR if a record matching this set's performance exists in the PB's history.
+   * @param set The LoggedSet to check.
+   * @param exerciseId The ID of the exercise this set belongs to.
+   * @returns An array of strings representing the PB types achieved with this set.
+   */
   getPersonalBestTypesForSet(set: LoggedSet, exerciseId: string): string[] {
     const pbsForExercise = this.personalBestsForLog()[exerciseId];
     if (!pbsForExercise || !set.id) {
       return [];
     }
 
-    // Find all PBs that originated from this exact set instance by matching the set's unique ID.
-    return pbsForExercise
-      .filter(pb => pb.id === set.id)
-      .map(pb => pb.pbType);
+    const achievedPbTypes: string[] = [];
+
+    // Iterate through each type of current PB for the exercise (e.g., '5RM', 'Heaviest Lifted')
+    for (const currentPb of pbsForExercise) {
+      // 1. Check if this set IS the current Personal Best record.
+      if (currentPb.id === set.id) {
+        achievedPbTypes.push(currentPb.pbType);
+        continue; // Move to the next PB type, no need to check history
+      }
+
+      // 2. If not the current PB, check if this set exists in the history of that PB type.
+      // This means this set WAS a record holder before it was beaten.
+      if (currentPb.history && currentPb.history.length > 0) {
+        const wasHistoricPb = currentPb.history.some(historicPb =>
+          // We match based on the workout log and performance, as the set ID isn't in history.
+          historicPb.workoutLogId === set.workoutLogId &&
+          historicPb.weightUsed === set.weightUsed &&
+          historicPb.repsAchieved === set.repsAchieved
+        );
+
+        if (wasHistoricPb) {
+          achievedPbTypes.push(currentPb.pbType);
+        }
+      }
+    }
+
+    return achievedPbTypes;
   }
 
 
@@ -722,11 +752,11 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
       data: { routineId }
     } as ActionMenuItem;
 
-    const actionsArray = [
+    const actionsArray: ActionMenuItem[] = [
       {
         label: 'SUMMARY',
         actionKey: 'view',
-        iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5Z" /><path fill-rule="evenodd" d="M.664 10.59a1.651 1.651 0 010-1.186A10.004 10.004 0 0110 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0110 17c-4.257 0-7.893-2.66-9.336-6.41ZM14 10a4 4 0 11-8 0 4 4 0 018 0Z" clip-rule="evenodd" /></svg>`,
+        iconName: 'eye',
         iconClass: 'w-8 h-8 mr-2', // Adjusted for consistency if needed,
         buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
         data: { routineId }
@@ -734,7 +764,7 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
       {
         label: 'EDIT LOG',
         actionKey: 'edit',
-        iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>`,
+        iconName: 'edit',
         iconClass: 'w-8 h-8 mr-2',
         buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
         data: { routineId }
@@ -744,7 +774,7 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
       {
         label: 'DELETE',
         actionKey: 'delete',
-        iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.58.177-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5Zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5Z" clip-rule="evenodd" /></svg>`,
+        iconName: 'trash',
         iconClass: 'w-8 h-8 mr-2',
         buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + deleteBtnClass,
         data: { routineId }

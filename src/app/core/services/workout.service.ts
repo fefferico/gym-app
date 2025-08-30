@@ -151,23 +151,25 @@ export class WorkoutService {
     return newRoutine;
   }
 
-  async updateRoutine(updatedRoutine: Routine): Promise<Routine | undefined> {
+  async updateRoutine(updatedRoutine: Routine, force: boolean = false): Promise<Routine | undefined> {
     let currentRoutines = this.routinesSubject.getValue();
     let index = currentRoutines.findIndex(r => r.id === updatedRoutine.id);
 
-    // check paused routine
-    const pausedRoutine = this.isPausedSession() ? this.getPausedSession(): null;
-    let alertResult = false;
-    if (pausedRoutine && pausedRoutine.routineId && pausedRoutine.routineId === updatedRoutine.id){
-      await this.alertService.showAlert("Info","It's not possible to edit a running routine. Complete it or discard it before doing it.").then(()=> {
-        alertResult = true;
-        index = -1;
-        return;
-      })
-    }
+    if (!force) {
+      // check paused routine
+      const pausedRoutine = this.isPausedSession() ? this.getPausedSession() : null;
+      let alertResult = false;
+      if (pausedRoutine && pausedRoutine.routineId && pausedRoutine.routineId === updatedRoutine.id) {
+        await this.alertService.showAlert("Info", "It's not possible to edit a running routine. Complete it or discard it before doing it.").then(() => {
+          alertResult = true;
+          index = -1;
+          return;
+        })
+      }
 
-    if (alertResult){
-      return;
+      if (alertResult) {
+        return;
+      }
     }
 
     if (index > -1) {
@@ -441,59 +443,63 @@ export class WorkoutService {
 
 
   /**
-   * --- FUNCTION 3 ---
-   * Estimates the total time to complete an entire routine in minutes.
-   * 
-   * This function iterates through all exercises and their sets, summing up the
-   * working time and resting time, and accounting for multiple rounds.
-   *
-   * @param routine The full Routine object.
-   * @returns The total estimated duration in minutes.
-   */
+ * Estimates the total time to complete an entire routine in minutes,
+ * including estimated work time for each set and rest times between sets.
+ * The rest time after the very last set of the entire routine is NOT included.
+ *
+ * @param routine The full Routine object.
+ * @returns The total estimated duration in minutes.
+ */
   public getEstimatedRoutineDuration(routine: Routine): number {
     if (!routine || !routine.exercises || routine.exercises.length === 0) {
       return 0;
     }
 
     let totalSeconds = 0;
+    const exercises = routine.exercises;
 
-    // Process exercises considering rounds and supersets
-    for (let i = 0; i < routine.exercises.length; i++) {
-      const exercise = routine.exercises[i];
+    // We need to keep track of the index to correctly handle supersets and know
+    // if we are at the very last exercise/set of the routine.
+    for (let i = 0; i < exercises.length; i++) {
+      const exercise = exercises[i];
 
-      // --- Logic to handle rounds ---
-      // A block of work is either a single exercise or a superset.
-      // The number of rounds is defined on the FIRST exercise of a block.
-      // We only process the round calculation when we encounter the start of a new block.
+      // Determine the exercises included in this block (single exercise or superset)
+      let blockExercises: WorkoutExercise[];
+      if (exercise.supersetId) {
+        // If it's a superset, find all exercises with the same supersetId
+        // This assumes superset exercises are always contiguous in the array and in order.
+        blockExercises = exercises.filter(ex => ex.supersetId === exercise.supersetId);
+        // Advance the main loop counter to skip these exercises on the next iteration
+        // We do this by finding the last index of the superset and setting 'i' to it.
+        const lastSupersetExerciseIndex = exercises.findIndex(ex => ex.id === blockExercises[blockExercises.length - 1].id);
+        i = lastSupersetExerciseIndex; // Adjust i to the last exercise of the current superset
+      } else {
+        // If it's a single exercise block
+        blockExercises = [exercise];
+      }
 
-      const isStartOfBlock = !exercise.supersetId || exercise.supersetOrder === 0;
+      const rounds = exercise.rounds || 1; // Rounds apply to the entire block (single exercise or superset)
 
-      if (isStartOfBlock) {
-        const rounds = exercise.rounds || 1;
-        let blockDurationSeconds = 0;
+      for (let r = 0; r < rounds; r++) {
+        // For each round, iterate through exercises in the block
+        blockExercises.forEach((blockEx, blockExIndex) => {
+          blockEx.sets.forEach((set: ExerciseSetParams, setIndex: number) => {
+            // Add work time for the current set
+            totalSeconds += this.getEstimatedWorkTimeForSet(set);
 
-        // Determine the exercises included in this block
-        let blockExercises: WorkoutExercise[];
-        if (exercise.supersetId) {
-          // If it's a superset, find all exercises with the same supersetId
-          blockExercises = routine.exercises.filter(ex => ex.supersetId === exercise.supersetId);
-          // Advance the main loop counter to skip these exercises on the next iteration
-          i += blockExercises.length - 1;
-        } else {
-          // If it's a single exercise block
-          blockExercises = [exercise];
-        }
+            // Add rest time, but only if it's NOT the very last set of the very last round
+            // and NOT the very last set of the very last exercise in the block/routine.
+            const isLastSetInExercise = setIndex === blockEx.sets.length - 1;
+            const isLastExerciseInBlock = blockExIndex === blockExercises.length - 1;
+            const isLastRound = r === rounds - 1;
+            const isLastExerciseInRoutine = i === exercises.length - 1; // 'i' is the adjusted index for the current block
 
-        // Calculate the duration of one round of the block
-        blockExercises.forEach(blockEx => {
-          blockEx.sets.forEach((set: ExerciseSetParams) => {
-            blockDurationSeconds += this.getEstimatedWorkTimeForSet(set);
-            blockDurationSeconds += this.getRestTimeForSet(set);
+            // Only add rest if it's not the absolute last set of the entire routine
+            if (!(isLastSetInExercise && isLastExerciseInBlock && isLastRound && isLastExerciseInRoutine)) {
+              totalSeconds += this.getRestTimeForSet(set);
+            }
           });
         });
-
-        // Multiply the block's duration by the number of rounds
-        totalSeconds += blockDurationSeconds * rounds;
       }
     }
 
@@ -514,10 +520,10 @@ export class WorkoutService {
     const isTabata = routine?.goal === 'tabata';
     let url = '';
 
-    if (isTabata){
+    if (isTabata) {
       return '/workout/play/tabata';
     }
-        if (!isTabata && playerMode){
+    if (!isTabata && playerMode) {
       return '/workout/play/compact';
     } else {
       return '/workout/play/focus';
@@ -533,7 +539,7 @@ export class WorkoutService {
       const pausedRoutineId = pausedResult.routineId || '-1';
       playerRoute = this.checkPlayerMode(pausedRoutineId);
       // this.removePausedWorkout();
-      this.router.navigate([playerRoute, pausedRoutineId], { queryParams: { resume: 'true'} });
+      this.router.navigate([playerRoute, pausedRoutineId], { queryParams: { resume: 'true' } });
     } else {
       this.router.navigate([playerRoute, newRoutineId], params ? params : {});
     }
@@ -547,7 +553,7 @@ export class WorkoutService {
   }
 
   savePausedWorkout(stateToSave: PausedWorkoutState): void {
-    if (stateToSave){
+    if (stateToSave) {
       this.storageService.setItem(this.PAUSED_WORKOUT_KEY, stateToSave);
     }
   }
@@ -564,7 +570,7 @@ export class WorkoutService {
     const pausedState = this.storageService.getItem<PausedWorkoutState>(this.PAUSED_WORKOUT_KEY);
 
     if (pausedState) {
-      if (forceNavigation){
+      if (forceNavigation) {
         return pausedState;
       }
       const confirmation = await this.alertService.showConfirmationDialog(
