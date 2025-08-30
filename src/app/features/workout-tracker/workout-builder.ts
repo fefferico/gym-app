@@ -1449,7 +1449,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
           if (tmpResult) {
             savedRoutine = tmpResult;
           } else {
-            this.toastService.error(`Routine not found!`, 4000, "Error");
             return;
           }
         }

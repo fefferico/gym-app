@@ -6,9 +6,8 @@ export interface AlertButton {
   overrideCssClass?: string;
   handler?: () => boolean | void | Promise<boolean | void>; // Handler can return boolean to prevent dismiss
   data?: any; // Optional data to pass back when button is clicked
-  icon?: string; // Optional icon name for the button
+  icon?: string; // Optional icon name for the button For registry lookup
   iconSvg?: string;   // For raw SVG
-  iconName?: string;  // For registry lookup
   iconClass?: string; // For styling the icon
 }
 

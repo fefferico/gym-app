@@ -28,6 +28,9 @@ import { ProgressiveOverloadService } from '../../../core/services/progressive-o
 import { v4 as uuidv4 } from 'uuid';
 import { AlertButton, AlertInput } from '../../../core/models/alert.model';
 import { format } from 'date-fns';
+import { ActionMenuComponent } from '../../../shared/components/action-menu/action-menu';
+import { MenuMode } from '../../../core/models/app-settings.model';
+import { ActionMenuItem } from '../../../core/models/action-menu.model';
 
 
 // Interface to manage the state of the currently active set/exercise
@@ -99,7 +102,7 @@ export enum PlayerSubState {
   imports: [CommonModule, DatePipe, ReactiveFormsModule,
     FormatSecondsPipe,
     FormsModule, WeightUnitPipe, FullScreenRestTimerComponent, PressDirective, ModalComponent, ExerciseDetailComponent,
-    IconComponent, ExerciseSelectionModalComponent],
+    IconComponent, ExerciseSelectionModalComponent, ActionMenuComponent],
   templateUrl: './focus-workout-player.component.html',
   styleUrl: './focus-workout-player.component.scss',
   providers: [DecimalPipe]
@@ -3198,8 +3201,8 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
           "Resume Paused Workout?",
           "You have a paused workout session. Would you like to resume it?",
           [
-            { text: "Resume", role: "confirm", data: true, cssClass: "bg-green-600", icon: 'play', iconClass: 'h-8 w-8 mr-1' } as AlertButton,
-            { text: "Discard", role: "cancel", data: false, cssClass: "bg-red-600", icon: 'trash', iconClass: 'h-8 w-8 mr-1' } as AlertButton
+            { text: "Resume", role: "confirm", data: true, cssClass: "bg-green-600 hover:bg-green-700", icon: 'play', iconClass: 'h-8 w-8 mr-1' } as AlertButton,
+            { text: "Discard", role: "cancel", data: false, cssClass: "bg-red-600 hover:bg-red-800", icon: 'trash', iconClass: 'h-8 w-8 mr-1' } as AlertButton
           ]
         );
         shouldAttemptToLoadPausedState = !!(confirmation && confirmation.data === true);
@@ -4370,5 +4373,155 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
 
   backToRoutines(): void {
     this.router.navigate(['/workout']);
+  }
+
+  toggleActions(event: MouseEvent): void {
+    event.stopPropagation();
+    this.isWorkoutMenuVisible.set(true);
+  }
+
+    getActionItems(mode: MenuMode): ActionMenuItem[] {
+      const defaultBtnClass = 'rounded text-left p-4 font-medium text-gray-600 dark:text-gray-300 hover:bg-primary flex items-center hover:text-white dark:hover:text-gray-100 dark:hover:text-white';
+      const deleteBtnClass = 'rounded text-left p-4 font-medium text-gray-600 dark:text-gray-300 hover:bg-red-600 flex items-center hover:text-gray-100 hover:animate-pulse';;
+  
+      const pauseSessionBtn = {
+        label: 'PAUSE',
+        actionKey: 'pause',
+        iconName: `pause`,
+        iconClass: 'w-8 h-8 mr-2',
+        buttonClass: (this.sessionState() !== 'playing' ? 'disabled ' : '') + 'flex justify-center items-center w-full max-w-xs bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2.5 px-6 rounded-md text-lg shadow-lg disabled:opacity-60 disabled:cursor-not-allowed',
+      } as ActionMenuItem;
+
+      const jumpToExerciseBtn = {
+        label: 'JUMP TO EXERCISE',
+        actionKey: 'jumpToExercise',
+        iconName: `dumbbell`,
+        iconClass: 'w-8 h-8 mr-2',
+        buttonClass: (this.sessionState() === 'paused' || !this.routine()?.exercises?.length ? 'disabled ' : '') + 'flex justify-center items-center w-full max-w-xs bg-fuchsia-500 hover:bg-fuchsia-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed',
+      } as ActionMenuItem;
+
+      const addExerciseBtn = {
+        label: 'ADD EXERCISE',
+        actionKey: 'addExercise',
+        iconName: `plus-circle`,
+        iconClass: 'w-8 h-8 mr-2',
+        buttonClass: (this.sessionState() === 'paused' || !this.routine()?.exercises?.length ? 'disabled ' : '') + 'flex items-center justify-center align-center w-full max-w-xs bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed',
+      } as ActionMenuItem;
+
+      const switchExerciseBtn = {
+        label: 'SWITCH EXERCISE',
+        actionKey: 'switchExercise',
+        iconName: `change`,
+        iconClass: 'w-8 h-8 mr-2',
+        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + 'w-full max-w-xs bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center',
+      } as ActionMenuItem;
+
+      const openPerformanceInsightsBtn = {
+        label: 'SESSION INSIGHT',
+        actionKey: 'insight',
+        iconName: `schedule`,
+        iconClass: 'w-8 h-8 mr-2',
+        buttonClass: (this.sessionState() === 'paused' || !this.activeSetInfo() ? 'disabled ' : '') + 'flex items-center justify-center align-center w-full max-w-xs bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed',
+      } as ActionMenuItem;
+
+      const quitWorkoutBtn = {
+        label: 'EXIT',
+        actionKey: 'exit',
+        iconName: `exit-door`,
+        iconClass: 'w-8 h-8 mr-2',
+        buttonClass: '' + 'w-full flex items-center justify-center max-w-xs text-white bg-red-600 hover:bg-red-800 font-medium py-2 px-6 rounded-md text-md',
+      } as ActionMenuItem;
+
+      const addWarmupSetBtn = {
+        label: 'ADD WARMUP SET',
+        actionKey: 'warmup',
+        iconName: `flame`,
+        iconClass: 'w-8 h-8 mr-2',
+        buttonClass: '' + 'w-full flex items-center justify-center max-w-xs bg-sky-500 hover:bg-sky-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed',
+      } as ActionMenuItem;
+
+      const skipCurrentSetBtn = {
+        label: 'SKIP SET',
+        actionKey: 'skipSet',
+        iconName: `skip`,
+        iconClass: 'w-8 h-8 mr-2',
+        buttonClass: (!this.activeSetInfo() || this.sessionState() === 'paused' ? 'disabled ':'') + 'w-full flex items-center justify-center max-w-xs bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed',
+      } as ActionMenuItem;
+
+      const skipCurrentExerciseBtn = {
+        label: 'SKIP EXERCISE',
+        actionKey: 'skipExercise',
+        iconName: `skip`,
+        iconClass: 'w-8 h-8 mr-2',
+        buttonClass: (!this.activeSetInfo() || this.sessionState() === 'paused' ? 'disabled ':'') + 'w-full flex items-center justify-center max-w-xs bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed',
+      } as ActionMenuItem;
+
+      const markAsDoLaterBtn = {
+        label: 'DO LATER',
+        actionKey: 'later',
+        iconName: `clock`,
+        iconClass: 'w-8 h-8 mr-2',
+        buttonClass: (!this.activeSetInfo() || this.sessionState() === 'paused' ? 'disabled ':'') + 'w-full flex items-center justify-center max-w-xs bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed',
+      } as ActionMenuItem;
+
+      const finishEarly = {
+        label: 'FINISH EARLY',
+        actionKey: 'finish',
+        iconName: `done`,
+        iconClass: 'w-8 h-8 mr-2',
+        buttonClass: (this.sessionState() === 'paused' || this.currentWorkoutLogExercises().length === 0 ? 'disabled ':'') + 'w-full flex items-center justify-center max-w-xs bg-teal-500 hover:bg-teal-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed',
+      } as ActionMenuItem;
+
+      const actionsArray: ActionMenuItem[] = [];
+
+      actionsArray.push(pauseSessionBtn);
+      actionsArray.push(openPerformanceInsightsBtn);
+      actionsArray.push(addExerciseBtn);
+
+
+      if (this.canSwitchExercise()){
+        actionsArray.push(switchExerciseBtn);
+      }
+      if (!this.checkIfSetIsPartOfRounds()){
+        actionsArray.push(jumpToExerciseBtn);
+      }
+      if (!this.checkIfSuperSetIsStarted()){
+        actionsArray.push(addWarmupSetBtn);
+      }
+      if (!this.checkIfSetIsPartOfRounds()){
+        actionsArray.push(skipCurrentSetBtn);
+      }
+      if (!this.checkIfSetIsPartOfRounds()){
+        actionsArray.push(skipCurrentExerciseBtn);
+      }
+      if (!this.checkIfSetIsPartOfRounds()){
+        actionsArray.push(markAsDoLaterBtn);
+      }
+      if (this.currentWorkoutLogExercises().length > 0){
+        actionsArray.push(finishEarly);
+      }
+
+      actionsArray.push(quitWorkoutBtn);
+  
+      return actionsArray;
+    }
+
+  handleActionMenuItemClick(event: { actionKey: string, data?: any }): void {
+    // --- Switch based on the unique action key ---
+    switch (event.actionKey) {
+      case 'pause': this.pauseSession(); break;
+      case 'jumpToExercise': this.jumpToExercise(); break;
+      case 'addExercise': this.addExerciseDuringSession(); break;
+      case 'switchExercise': this.openSwitchExerciseModal(); break;
+      case 'insight': this.openPerformanceInsightsFromMenu(); break;
+      case 'warmup': this.addWarmupSet(); break;
+      case 'skipSet': this.skipCurrentSet(); break;
+      case 'skipExercise': this.skipCurrentExercise(); break;
+      case 'later': this.markCurrentExerciseDoLater(); break;
+      case 'finish': this.finishWorkoutEarly(); break;
+      case 'exit': this.quitWorkout(); break;
+    }
+
+    this.isWorkoutMenuVisible.set(false); // Close the menu
   }
 }

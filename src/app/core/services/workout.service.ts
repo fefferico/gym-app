@@ -151,9 +151,25 @@ export class WorkoutService {
     return newRoutine;
   }
 
-  updateRoutine(updatedRoutine: Routine): Routine | undefined {
+  async updateRoutine(updatedRoutine: Routine): Promise<Routine | undefined> {
     let currentRoutines = this.routinesSubject.getValue();
-    const index = currentRoutines.findIndex(r => r.id === updatedRoutine.id);
+    let index = currentRoutines.findIndex(r => r.id === updatedRoutine.id);
+
+    // check paused routine
+    const pausedRoutine = this.isPausedSession() ? this.getPausedSession(): null;
+    let alertResult = false;
+    if (pausedRoutine && pausedRoutine.routineId && pausedRoutine.routineId === updatedRoutine.id){
+      await this.alertService.showAlert("Info","It's not possible to edit a running routine. Complete it or discard it before doing it.").then(()=> {
+        alertResult = true;
+        index = -1;
+        return;
+      })
+    }
+
+    if (alertResult){
+      return;
+    }
+
     if (index > -1) {
       const updatedRoutinesArray = [...currentRoutines];
       updatedRoutinesArray[index] = { ...updatedRoutine };
@@ -161,7 +177,7 @@ export class WorkoutService {
       console.log('Updated routine:', updatedRoutine);
       return updatedRoutine;
     }
-    console.warn(`WorkoutService: Routine with id ${updatedRoutine.id} not found for update`);
+    this.toastService.error(`WorkoutService: Routine with id ${updatedRoutine.id} not found for update!`, 4000, "Error");
     return undefined;
   }
 
@@ -534,6 +550,14 @@ export class WorkoutService {
     if (stateToSave){
       this.storageService.setItem(this.PAUSED_WORKOUT_KEY, stateToSave);
     }
+  }
+
+  getPausedSession(): PausedWorkoutState | null {
+    return this.storageService.getItem<PausedWorkoutState>(this.PAUSED_WORKOUT_KEY);
+  }
+
+  isPausedSession(): boolean {
+    return !!this.getPausedSession();
   }
 
   private async checkForPausedSession(forceNavigation: boolean = false): Promise<PausedWorkoutState | undefined> {

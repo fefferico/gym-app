@@ -35,7 +35,7 @@
 
     <!-- Workout Progress Bar -->
     <div class="w-full mt-2">
-      <span class="flex justify-center text-white dark:text-primary-light font-mono">Overall progress</span>
+      <span class="flex justify-center text-primary-light font-mono">Overall progress</span>
       <div class="progress-bar-container w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 relative">
         <div class="progress-bar bg-primary h-2.5 rounded-full" [style.width.%]="workoutProgress()"></div>
         <span *ngIf="workoutProgress() > 5"
@@ -49,64 +49,74 @@
 
 
   <!-- Main Content: Exercises List -->
-<main class="pt-4 px-2 pb-36">
-  <div *ngIf="routine() as currentRoutine; else loading" class="space-y-1">
-    <!-- MODIFIED: Changed space-y-1 to space-y-3 for better superset group separation -->
-    <div *ngFor="let exercise of currentRoutine.exercises; let exIndex = index"
-      class="bg-white dark:bg-gray-800 rounded-lg shadow-sm transition-all duration-300 relative"
-      [class.superset-group]="exercise.supersetId"
-      [class.superset-start]="isSupersetStart(exIndex)"
-      [class.superset-middle]="isSupersetMiddle(exIndex)"
-      [class.superset-end]="isSupersetEnd(exIndex)"
-      [style.zIndex]="areActionsVisible(exIndex) ? 50 : 'auto'">
+  <main class="pt-4 px-2 pb-36">
+    <div *ngIf="routine() as currentRoutine; else loading" class="space-y-1">
+      <!-- MODIFIED: Changed space-y-1 to space-y-3 for better superset group separation -->
+      <div *ngFor="let exercise of currentRoutine.exercises; let exIndex = index"
+        class="bg-white dark:bg-gray-800 rounded-lg shadow-sm transition-all duration-300 relative"
+        [class.superset-group]="exercise.supersetId" 
+        [class.superset-start]="isSupersetStart(exIndex)"
+        [class.superset-middle]="isSupersetMiddle(exIndex)" 
+        [class.superset-end]="isSupersetEnd(exIndex)"
+        [style.zIndex]="areActionsVisible(exIndex) ? 50 : 'auto'">
 
-      <!-- +++ NEW: Superset Indicator Ribbon +++ -->
-      <div *ngIf="exercise.supersetId && isSupersetStart(exIndex)"
-           class="absolute -left-2 top-2 bg-primary dark:bg-primary-dark text-white text-xs font-bold px-2 py-1 rounded-md shadow-lg z-10 transform translate-x-0 -translate-y-5">
-        SUPERSET
-      </div>
-
-      <!-- Exercise Header -->
-      <div (click)="toggleExerciseExpansion(exIndex)"
-        class="p-3 flex items-center justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50"
-        [class.rounded-t-lg]="!isSupersetMiddle(exIndex) && !isSupersetEnd(exIndex)"
-        [class.rounded-b-lg]="expandedExerciseIndex() !== exIndex && !isSupersetStart(exIndex) && !isSupersetMiddle(exIndex)">
-        <div class="flex items-center space-x-3 min-w-0">
-          <!-- MODIFIED: Display superset letter -->
-          <span class="font-semibold text-gray-800 dark:text-gray-100">
-            {{ getExerciseDisplayIndex(exIndex) }}
-          </span>
-          <h2 class="max-w-[250px] text-md font-semibold text-gray-800 dark:text-gray-100 text-wrap">
-            {{ exercise.exerciseName }}
-          </h2>
+        <!-- +++ NEW: Superset Indicator Ribbon +++ -->
+        <div *ngIf="exercise.supersetId && isSupersetStart(exIndex)"
+          class="absolute -left-2 top-2 bg-primary dark:bg-primary-dark text-white text-xs font-bold px-2 py-1 rounded-md shadow-lg z-10 transform translate-x-0 -translate-y-5">
+          SUPERSET
         </div>
 
-        <!-- Action Menu Container -->
-        <div class="absolute top-2 right-2 z-60">
-          <div class="flex">
-            <app-icon name="chevron-down"
-              class="h-7 w-7 text-gray-500 transition-transform duration-200 flex-shrink-0"
-              [class.rotate-180]="expandedExerciseIndex() === exIndex"></app-icon>
-            <button (click)="toggleExerciseNotes(exIndex, $event)"
-              class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center p-1">
-              <app-icon name="clipboard-list" class="h-6 w-6"></app-icon>
-            </button>
-            <button (click)="toggleActionMenu(exIndex, $event)"
-              class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center">
-              <app-icon name="menu-action" class="h-7 w-7"></app-icon>
-            </button>
-            <app-action-menu [isVisible]="activeActionMenuIndex() === exIndex && menuModeDropdown"
-              class="action-menu-container" displayMode="dropdown" [items]="getLogDropdownActionItems(exIndex, 'dropdown')"
-              (itemClick)="handleActionMenuItemClick($event)" (closeMenu)="closeActionMenu()">
-            </app-action-menu>
-            <app-action-menu [isVisible]="activeActionMenuIndex() === exIndex && menuModeModal"
-              class="action-menu-container" displayMode="modal" [items]="getLogDropdownActionItems(exIndex, 'modal')"
-              (itemClick)="handleActionMenuItemClick($event)" (closeMenu)="closeActionMenu()"
-              [customButtonDivCssClass]="' '">
-            </app-action-menu>
+        <!-- Exercise Header -->
+        <div (click)="toggleExerciseExpansion(exIndex)"
+          class="p-3 flex items-center justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50"
+          [class.rounded-t-lg]="!isSupersetMiddle(exIndex) && !isSupersetEnd(exIndex)"
+          [class.rounded-b-lg]="expandedExerciseIndex() !== exIndex && !isSupersetStart(exIndex) && !isSupersetMiddle(exIndex)">
+          <div class="flex flex-col justify-start items-center space-x-3 min-w-0">
+            <!-- MODIFIED: Display superset letter -->
+            <div class="flex">
+              <span class="font-semibold text-gray-800 dark:text-gray-100">
+                {{ getExerciseDisplayIndex(exIndex)}}
+              </span>
+              <h2 class="max-w-[250px] text-md font-semibold text-gray-800 dark:text-gray-100 text-wrap">
+                {{ exercise.exerciseName }}
+              </h2>
+            </div>
+            <!-- +++ NEW: Exercise Notes Textarea +++ -->
+            <div *ngIf="expandedExerciseNotes() === (exIndex)" class="flex py-2 w-full">
+              <textarea [ngModel]="getInitialExerciseNoteInputValue(exIndex)"
+                (change)="updateExerciseNotes(exIndex, $event)" placeholder="Notes for this exercise..."
+                class="w-full text-xs bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded-md p-1.5 focus:ring-primary-dark focus:border-primary-dark dark:text-gray-200"></textarea>
+            </div>
+          </div>
+
+
+          <!-- Action Menu Container -->
+          <div class="absolute top-2 right-2 z-60">
+            <div class="flex">
+              <app-icon name="chevron-down"
+                class="h-7 w-7 text-gray-500 transition-transform duration-200 flex-shrink-0"
+                [class.rotate-180]="expandedExerciseIndex() === exIndex"></app-icon>
+              <button (click)="toggleExerciseNotes(exIndex, $event)"
+                class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center p-1">
+                <app-icon name="clipboard-list" class="h-6 w-6"></app-icon>
+              </button>
+              <button (click)="toggleActionMenu(exIndex, $event)"
+                class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center">
+                <app-icon name="menu-action" class="h-7 w-7"></app-icon>
+              </button>
+              <app-action-menu [isVisible]="activeActionMenuIndex() === exIndex && menuModeDropdown"
+                class="action-menu-container" displayMode="dropdown"
+                [items]="getLogDropdownActionItems(exIndex, 'dropdown')" (itemClick)="handleActionMenuItemClick($event)"
+                (closeMenu)="closeActionMenu()">
+              </app-action-menu>
+              <app-action-menu [isVisible]="activeActionMenuIndex() === exIndex && menuModeModal"
+                class="action-menu-container" displayMode="modal" [items]="getLogDropdownActionItems(exIndex, 'modal')"
+                (itemClick)="handleActionMenuItemClick($event)" (closeMenu)="closeActionMenu()"
+                [customButtonDivCssClass]="' '">
+              </app-action-menu>
+            </div>
           </div>
         </div>
-      </div>
 
         <!-- Sets Container -->
         <div *ngIf="expandedExerciseIndex() === exIndex"
@@ -243,8 +253,7 @@
   <!-- MODIFIED: Pass next set details to the rest timer component -->
   <app-full-screen-rest-timer [isVisible]="isRestTimerVisible()" [mainTimer]="sessionTimerDisplay"
     [durationSeconds]="restDuration()" [mainText]="restTimerMainText()" [nextUpText]="restTimerNextUpText()"
-    (timerFinished)="handleRestTimerFinished()"
-    (timerSkipped)="handleRestTimerSkipped($event)">
+    (timerFinished)="handleRestTimerFinished()" (timerSkipped)="handleRestTimerSkipped($event)">
   </app-full-screen-rest-timer>
 
   <!-- Performance Insights Modal -->

@@ -25,27 +25,35 @@
       class="sticky top-0 left-0 right-0 z-30 bg-white dark:bg-gray-800 shadow-md px-3 pt-3 pb-2 flex items-center flex-col h-15 rounded-b-md">
       <div class="flex w-full justify-between">
         <button appPress (shortPress)="goBack()"
-        class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-light">
-        <app-icon name="back" class="h-7 w-7"></app-icon>
-      </button>
-      <div class="flex flex-col items-center cursor-pointer" appPress (shortPress)="jumpToExercise('Session overview')"
-        [title]="'Click for session overview'">
-        <h1 class="text-lg font-bold text-gray-800 dark:text-gray-100 truncate max-w-xs">
-          {{ currentRoutine.name || 'Workout' }}
-        </h1>
-        <div class="text-xl font-mono font-semibold text-primary dark:text-primary-light tracking-wider">{{
-          sessionTimerDisplay()
-          }}</div>
-      </div>
-      <button appPress (shortPress)="toggleWorkoutMenu()"
-        [disabled]="sessionState() === 'loading' || sessionState() === 'error' || (sessionState() === 'paused' && !isWorkoutMenuVisible())"
-        class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-light disabled:opacity-50">
+          class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-light">
+          <app-icon name="back" class="h-7 w-7"></app-icon>
+        </button>
+        <div class="flex flex-col items-center cursor-pointer" appPress (shortPress)="jumpToExercise('Session overview')"
+          [title]="'Click for session overview'">
+          <h1 class="text-lg font-bold text-gray-800 dark:text-gray-100 truncate max-w-xs">
+            {{ currentRoutine.name || 'Workout' }}
+          </h1>
+          <div class="text-xl font-mono font-semibold text-primary dark:text-primary-light tracking-wider">{{
+            sessionTimerDisplay()
+            }}</div>
+        </div>
+      
+        <div class="relative">
+          <button (click)="toggleActions($event)"
+            class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center">
             <app-icon name="menu-action" class="h-7 w-7"></app-icon>
-      </button>
+          </button>
+          <app-action-menu *ngIf="isWorkoutMenuVisible()" class="action-menu-container" displayMode="modal"
+            [modalTitle]="''"
+            [items]="getActionItems('modal')" [isVisible]="isWorkoutMenuVisible()"
+            (itemClick)="handleActionMenuItemClick($event)" (closeMenu)="closeWorkoutMenu()">
+          </app-action-menu>
+        </div>
+      
       </div>
       <!-- Workout Progress Bar -->
       <div class="w-full mt-2">
-        <span class="flex justify-center text-white dark:text-primary-light font-mono">Overall progress</span>
+        <span class="flex justify-center text-primary-light font-mono">Overall progress</span>
         <div class="progress-bar-container w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 relative">
           <div class="progress-bar bg-primary h-2.5 rounded-full" [style.width.%]="workoutProgress()"></div>
           <span 
@@ -225,12 +233,8 @@
             </div>
             <div class="flex justify-center cursor-pointer pt-5" *ngIf="!showNotes()" appPress
               (shortPress)="showNotes.set(!showNotes())">
-              <div class="inline-flex items-center space-x-2 bg-blue-400 text-white rounded-full px-4 py-1">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                  stroke="currentColor" class="w-6 h-6 transition-all mr-2">
-                  <path stroke-linecap="round" stroke-linejoin="round"
-                    [attr.d]="'M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25'" />
-                </svg>
+              <div class="inline-flex items-center space-x-2 bg-blue-400 hover:bg-blue-600 text-white rounded-full px-4 py-1">
+                <app-icon name="exercise-list" class="h-7 w-7 mr-1"></app-icon>
                 Notes
               </div>
             </div>
@@ -323,6 +327,29 @@
         </div>
       </div>
     </footer>
+
+    <div class="flex justify-center fixed left-0 right-0 z-20" [style.bottom]="'var(--main-nav-height)'">
+      <div
+        class="w-full max-w-sm grid grid-cols-2 gap-4 bg-white dark:bg-gray-800/80 dark:backdrop-blur-sm border-t border-x border-gray-200 dark:border-gray-700 p-3 rounded-t-md">
+    
+        <!-- Button 1 -->
+        <button (click)="addExerciseDuringSession()"
+          class="flex items-center justify-center space-x-2 bg-blue-500 text-white font-semibold py-2 px-4 rounded-full shadow-lg hover:bg-blue-600 transition-colors">
+          <app-icon name="plus-circle" class="h-6 w-6"></app-icon>
+          <span>ADD EXERCISE</span>
+        </button>
+    
+        <!-- Button 2 -->
+        <button appPress (shortPress)="finishWorkoutEarly()"
+          [disabled]="!currentWorkoutLogExercises() || currentWorkoutLogExercises().length === 0"
+          class="flex items-center justify-center space-x-2 bg-green-500 text-white font-semibold py-2 px-4 rounded-full shadow-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+          <app-icon name="done" class="h-6 w-6"></app-icon>
+          <span>FINISH</span>
+        </button>
+    
+      </div>
+    </div>
+
   </div>
 </ng-container>
 
@@ -332,96 +359,6 @@
   (timerSkipped)="handleRestTimerSkipped($event)">
 </app-full-screen-rest-timer>
 
-<div *ngIf="isWorkoutMenuVisible()"
-  class="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex flex-col justify-center items-center"
-  style="padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom);">
-
-  <div class="flex grid-cols-3 justify-center">
-    <div></div>
-    <h2 class="text-2xl sm:text-3xl font-bold text-white mb-2 justify-end">Workout Menu</h2>
-    <button appPress (shortPress)="closeWorkoutMenu()"
-      class="p-1.5 rounded-full text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700/70 focus:outline-none transition-colors ml-2">
-      <app-icon name="cancel" class="h-6 w-6 text-white mr-1"></app-icon>
-    </button>
-  </div>
-
-  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 items-stretch p-4 max-w-[800px]">
-    <button appPress (shortPress)="pauseSession()" [disabled]="sessionState() !== 'playing'"
-      class="flex justify-center items-center w-full max-w-xs bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2.5 px-6 rounded-md text-lg shadow-lg disabled:opacity-60 disabled:cursor-not-allowed">
-      <app-icon name="pause" class="h-6 w-6 text-white mr-1"></app-icon>
-      PAUSE WORKOUT
-    </button>
-
-    <button *ngIf="!checkIfSuperSetIsStarted()" appPress (shortPress)="jumpToExercise()"
-      [disabled]="sessionState() === 'paused' || !routine()?.exercises?.length"
-      class="flex justify-center items-center w-full max-w-xs bg-fuchsia-500 hover:bg-fuchsia-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed">
-      <app-icon name="dumbbell" class="h-6 w-6 text-white mr-1"></app-icon>
-      JUMP TO EXERCISE
-    </button>
-
-    <button *ngIf="canSwitchExercise()" appPress (shortPress)="openSwitchExerciseModal()"
-      class="w-full max-w-xs bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center">
-      <app-icon name="change" class="h-6 w-6 text-white mr-1"></app-icon>
-      SWITCH EXERCISE
-    </button>
-
-    <button appPress (shortPress)="openPerformanceInsightsFromMenu()"
-      [disabled]="sessionState() === 'paused' || !activeSetInfo()"
-      class="flex items-center justify-center align-center w-full max-w-xs bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed">
-      <app-icon name="schedule" class="h-8 w-8 text-white mr-1"></app-icon>
-      PERFORMANCE INSIGHTS
-    </button>
-
-    <button *ngIf="!checkIfSuperSetIsStarted()" appPress (shortPress)="addWarmupSet()"
-      [disabled]="!canAddWarmupSet() || sessionState() === 'paused' || !activeSetInfo()"
-      class="w-full flex items-center justify-center max-w-xs bg-sky-500 hover:bg-sky-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed">
-      <app-icon name="plus-circle" class="h-6 w-6 text-white mr-1"></app-icon>
-      <p>ADD WARM-UP SET</p>
-      <span *ngIf="!canAddWarmupSet()" class="text-xs text-white ml-2">(already started main sets)</span>
-    </button>
-
-    <button appPress (shortPress)="addExerciseDuringSession()" [disabled]="sessionState() === 'paused'"
-      class="flex items-center justify-center align-center w-full max-w-xs bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed">
-      <app-icon name="muscle" class="h-8 w-8 text-white mr-1"></app-icon>
-      ADD EXERCISE TO SESSION
-    </button>
-
-    <button *ngIf="!checkIfSetIsPartOfRounds()" appPress (shortPress)="skipCurrentSet()"
-      [disabled]="!activeSetInfo() || sessionState() === 'paused'"
-      class="w-full flex items-center justify-center max-w-xs bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed">
-      <app-icon name="skip" class="h-6 w-6 text-white mr-1"></app-icon>
-      SKIP CURRENT SET
-    </button>
-
-    <button *ngIf="!checkIfSetIsPartOfRounds()" appPress (shortPress)="skipCurrentExercise()"
-      [disabled]="!activeSetInfo() || sessionState() === 'paused'"
-      class="w-full flex items-center justify-center max-w-xs bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed">
-      <app-icon name="skip" class="h-6 w-6 text-white mr-1"></app-icon>
-      MARK EXERCISE AS SKIPPED
-    </button>
-
-    <button *ngIf="!checkIfSetIsPartOfRounds()" appPress (shortPress)="markCurrentExerciseDoLater()"
-      [disabled]="!activeSetInfo() || sessionState() === 'paused'"
-      class="w-full flex items-center justify-center max-w-xs bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed">
-      <app-icon name="clock" class="h-6 w-6 text-white mr-1"></app-icon>
-      MARK EXERCISE FOR LATER
-    </button>
-
-    <button *ngIf="currentWorkoutLogExercises().length > 0" appPress (shortPress)="finishWorkoutEarly()"
-      [disabled]="sessionState() === 'paused' || currentWorkoutLogExercises().length === 0"
-      class="w-full flex items-center justify-center max-w-xs bg-teal-500 hover:bg-teal-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed">
-      <app-icon name="done" class="h-6 w-6 text-white mr-1"></app-icon>
-      FINISH WORKOUT EARLY
-    </button>
-
-    <button appPress (shortPress)="quitWorkout()"
-      class="w-full flex items-center justify-center max-w-xs text-red-300 hover:text-red-100 font-medium py-2 px-6 rounded-md border border-red-400 hover:bg-red-700/50 text-md">
-      <app-icon name="exit-door" class="h-6 w-6 text-white mr-1"></app-icon>
-
-      QUIT WORKOUT (NO SAVE)
-    </button>
-  </div>
-</div>
 
 <!-- Performance Insights Modal -->
 <div *ngIf="isPerformanceInsightsVisible()" style="z-index: 100"

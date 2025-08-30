@@ -72,7 +72,7 @@
 
     </div>
 
-    <footer *ngIf="options.buttons && options.buttons.length > 0" class="overflow-y-auto p-6 pt-4 custom-scrollbar"
+    <footer *ngIf="options.buttons && options.buttons.length > 0" class="overflow-y-auto p-6 pt-4 custom-scrollbar gap-1"
       [ngClass]="options && options.customButtonDivCssClass ? options.customButtonDivCssClass : options.buttons.length === 2 ? 'flex justify-center gap-2 sm:gap-3' : 'grid grid-cols-1 gap-2 sm:gap-3'">
 
       <!--

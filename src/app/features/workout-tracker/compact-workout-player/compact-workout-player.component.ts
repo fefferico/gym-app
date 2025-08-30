@@ -425,10 +425,16 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         type: 'text',
         placeholder: `Insert notes here`,
         value: this.currentWorkoutLog().notes ?? undefined,
-        autofocus: true,
-        attributes: { step: 0.5, min: '0', inputmode: 'decimal' }
+        autofocus: this.currentWorkoutLog().notes ? false : true
       }] as AlertInput[],
-      'Save Notes'
+      'Save Notes',
+      'Cancel',
+      [{
+        role: 'confirm',
+        text:'Save notes',
+        icon: 'save',
+        data: true
+      } as AlertButton]
     );
 
     if (result && result['notes'] !== undefined && result['notes'] !== null) {
@@ -438,6 +444,14 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       });
       this.toastService.success("Session notes updated.");
     }
+  }
+
+  getInitialExerciseNoteInputValue(exIndex: number): string {
+    const exercise = this.routine()!.exercises[exIndex];
+    if (exercise) {
+      return exercise.notes || '';
+    }
+    return '';
   }
 
   getInitialInputValue(exIndex: number, setIndex: number, field: 'reps' | 'weight' | 'distance' | 'time' | 'notes'): string {
@@ -1088,8 +1102,10 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         const confirmation = await this.alertService.showConfirmationDialog(
           "Resume Paused Workout?",
           "You have a paused workout session. Would you like to resume it?",
-          [{ text: "Resume", role: "confirm", data: true, icon: 'play' }, { text: "Discard", role: "cancel", data: false, icon: 'trash' }]
+          [{ text: "Resume", role: "confirm", data: true, icon: 'play', cssClass: 'bg-green-600 hover:bg-green-700' }, 
+            { text: "Discard", role: "cancel", data: false, icon: 'trash', cssClass: "bg-red-600 hover:bg-red-800" }]
         );
+
         if (confirmation?.data) {
           await this.loadStateFromPausedSession(pausedState);
           return true;
