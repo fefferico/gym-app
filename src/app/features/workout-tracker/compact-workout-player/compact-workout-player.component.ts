@@ -84,6 +84,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   private cdr = inject(ChangeDetectorRef);
   private appSettingsService = inject(AppSettingsService);
 
+  private unitService = inject(UnitsService);
+
   isAddToSupersetModalOpen = signal(false);
   exerciseToSupersetIndex = signal<number | null>(null);
 
@@ -1008,10 +1010,10 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
           suggestedSetDetails.duration = historicalSet.durationPerformed ?? plannedNextSet.duration;
           suggestedSetDetails.distance = historicalSet.distanceAchieved ?? plannedNextSet.distance;
         }
-
+        
+        const setType = plannedNextSet.type === 'warmup' ? "Warm-up" : "Set";
         const nextSetDisplayNumber = nextSetIndex + 1;
-        const text = `${nextExercise.exerciseName} - Set ${nextSetDisplayNumber}`;
-
+        const text = `${nextExercise.exerciseName} - Set #${nextSetDisplayNumber}: ${plannedNextSet.weight}${this.unitService.getUnitLabel()} x ${plannedNextSet.reps} reps`;
         return { text, details: suggestedSetDetails };
 
       } catch (error) {

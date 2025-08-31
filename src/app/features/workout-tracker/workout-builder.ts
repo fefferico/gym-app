@@ -369,25 +369,73 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       // END: Added subscription
     }
 
-    const goalSub = this.builderForm.get('goal')?.valueChanges.subscribe(goalValue => {
+     const goalSub = this.builderForm.get('goal')?.valueChanges.subscribe(goalValue => {
       if (this.mode === 'routineBuilder' && goalValue === 'rest') {
-        while (this.exercisesFormArray.length) this.exercisesFormArray.removeAt(0);
-        this.exercisesFormArray.clearValidators();
+          while (this.exercisesFormArray.length) this.exercisesFormArray.removeAt(0);
+          this.exercisesFormArray.clearValidators();
       }
-      // if goal is changed to tabata it updates all exercises to have a duration of 40 and rest of 20 seconds
-      if (this.mode === 'routineBuilder' && goalValue === 'tabata') {
-        this.exercisesFormArray.controls.forEach(exerciseControl => {
-          const setsArray = (exerciseControl as FormGroup).get('sets') as FormArray;
-          setsArray.controls.forEach(setControl => {
-            (setControl as FormGroup).patchValue({
-              duration: 40,
-              restAfterSet: 20,
-              reps: null,
-              weight: null
-            });
-          });
-        });
-        this.toastService.info("Exercises updated to standard TABATA schema 40 work / 20 rest")
+      // --- NEW/MODIFIED: Tabata and Post-Tabata Logic ---
+      const exercises = this.exercisesFormArray.controls as FormGroup[];
+      if (this.mode === 'routineBuilder' && goalValue === 'tabata' && exercises.length > 1) {
+          if (exercises.length > 0) {
+              const newSupersetId = uuidv4();
+              const supersetSize = exercises.length;
+              const tabataRounds = 1;
+
+              exercises.forEach((exerciseControl, index) => {
+                  const setsArray = exerciseControl.get('sets') as FormArray;
+                  while (setsArray.length > 1) {
+                      setsArray.removeAt(1);
+                  }
+                  if (setsArray.length === 0) {
+                      // =================== START: FIXED SNIPPET ===================
+                      // Create a full default set that matches the ExerciseSetParams interface
+                      const defaultSet: ExerciseSetParams = {
+                          id: uuidv4(),
+                          type: 'standard',
+                          reps: 10, // Default reps for Tabata
+                          weight: null,
+                          duration: 40, // Default duration for Tabata
+                          restAfterSet: 20, // Default rest for Tabata
+                          notes: '',
+                          tempo: ''
+                      };
+                      setsArray.push(this.createSetFormGroup(defaultSet, false));
+                      // =================== END: FIXED SNIPPET ===================
+                  }
+                  setsArray.at(0).patchValue({
+                      duration: 40,
+                      restAfterSet: 20,
+                      reps: null,
+                      weight: null
+                  }, { emitEvent: false });
+
+                  exerciseControl.patchValue({
+                      supersetId: newSupersetId,
+                      supersetOrder: index,
+                      supersetSize: supersetSize,
+                      rounds: tabataRounds,
+                      type: 'superset'
+                  }, { emitEvent: false });
+                  this.updateRoundsControlability(exerciseControl);
+              });
+              this.toastService.info("Routine configured for Tabata: all exercises grouped as a single superset.", 4000);
+          }
+      } else if (this.mode === 'routineBuilder' && this.builderForm.get('goal')?.value !== 'tabata') {
+          const firstExercise = this.exercisesFormArray.at(0) as FormGroup;
+          if (firstExercise && firstExercise.get('supersetId')?.value && firstExercise.get('supersetSize')?.value === this.exercisesFormArray.length) {
+              this.exercisesFormArray.controls.forEach(exerciseControl => {
+                  (exerciseControl as FormGroup).patchValue({
+                      supersetId: null,
+                      supersetOrder: null,
+                      supersetSize: null,
+                      rounds: 0,
+                      type: 'standard'
+                  }, { emitEvent: false });
+                  this.updateRoundsControlability(exerciseControl as FormGroup);
+              });
+              this.toastService.info("Tabata grouping removed.", 3000);
+          }
       }
       this.exercisesFormArray.updateValueAndValidity();
     });
@@ -1404,6 +1452,48 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     if (this.isViewMode) { this.toastService.info("View mode. No changes", 3000, "View Mode"); return; }
 
     if (this.mode === 'routineBuilder') this.recalculateSupersetOrders();
+
+    // --- NEW: TABATA VALIDATION BLOCK ---
+    const formValueForValidation = this.builderForm.getRawValue();
+    if (this.mode === 'routineBuilder' && formValueForValidation.goal === 'tabata') {
+        const exercises = this.exercisesFormArray.controls as FormGroup[];
+        if (exercises.length > 0) {
+            const firstSupersetId = exercises[0].get('supersetId')?.value;
+            if (!firstSupersetId) {
+                this.toastService.error('Tabata routines must have at least 2 exercises and all exercises must be in a single superset. Please re-select the Tabata goal to fix.', 0, "Validation Error");
+                this.spinnerService.hide();
+                return;
+            }
+
+            for (let i = 0; i < exercises.length; i++) {
+                const exControl = exercises[i];
+                const setsArray = exControl.get('sets') as FormArray;
+
+                // Enforce Tabata rules
+                exControl.patchValue({
+                    supersetId: firstSupersetId,
+                    supersetOrder: i,
+                    supersetSize: exercises.length,
+                    rounds: 1,
+                    type: 'superset'
+                }, { emitEvent: false });
+
+                if (setsArray.length !== 1) {
+                    this.toastService.error(`Tabata exercises must have exactly one set. '${exControl.get('exerciseName')?.value}' has ${setsArray.length}.`, 0, "Validation Error");
+                    this.spinnerService.hide();
+                    return;
+                }
+
+                setsArray.at(0).patchValue({
+                    duration: 40,
+                    restAfterSet: 20,
+                    reps: null,
+                    weight: null
+                }, { emitEvent: false });
+            }
+        }
+    }
+    // --- END: TABATA VALIDATION BLOCK ---
 
     const isRestGoalRoutine = this.mode === 'routineBuilder' && this.builderForm.get('goal')?.value === 'rest';
 
