@@ -1,5 +1,5 @@
 // src/app/features/home/home.component.ts
-import { Component, OnInit, PLATFORM_ID, inject, signal, effect, computed } from '@angular/core'; // Added effect
+import { Component, OnInit, PLATFORM_ID, inject, signal, effect, computed, OnDestroy } from '@angular/core'; // Added effect
 import { CommonModule, DatePipe, isPlatformBrowser } from '@angular/common'; // Added DatePipe
 import { Router } from '@angular/router';
 import { TodaysWorkoutComponent } from '../../dashboard/todays-workout/todays-workout';
@@ -11,6 +11,7 @@ import { PausedWorkoutState } from '../../workout-tracker/workout-player';
 import { UserProfileService } from '../../../core/services/user-profile.service';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { AlertButton } from '../../../core/models/alert.model';
+import { Subscription } from 'rxjs';
 
 
 @Component({
@@ -20,7 +21,7 @@ import { AlertButton } from '../../../core/models/alert.model';
   templateUrl: './home.html',
   styleUrls: ['./home.scss']
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent implements OnInit, OnDestroy {
   private platformId = inject(PLATFORM_ID);
   private storageService = inject(StorageService);
   private router = inject(Router);
@@ -37,7 +38,9 @@ export class HomeComponent implements OnInit {
   pausedRoutineName = signal<string>('New session'); // Default name
   pausedProgramName = signal<string>(''); // Default name
 
-  constructor() {
+  private subscriptions = new Subscription(); // To manage subscriptions
+
+constructor() {
     // Effect to update pausedRoutineName when pausedWorkoutInfo changes
     effect(() => {
       const pausedInfo = this.pausedWorkoutInfo();
@@ -46,11 +49,6 @@ export class HomeComponent implements OnInit {
         this.pausedRoutineName.set(pausedInfo.sessionRoutine.name);
       } else if (pausedInfo && pausedInfo.routineId) {
         // Fallback if sessionRoutine.name is not directly available in PausedWorkoutState
-        // This might happen if PausedWorkoutState doesn't store the full Routine object
-        // or if it's an ad-hoc workout without a saved routine.
-        // For now, we assume sessionRoutine.name is usually present.
-        // If not, you might need to fetch from WorkoutService using pausedInfo.routineId
-        // This is a simplified example for now.
         this.workoutService.getRoutineById(pausedInfo.routineId).subscribe(routine => {
           if (routine) this.pausedRoutineName.set(routine.name);
           else this.pausedRoutineName.set('your workout');
@@ -66,12 +64,21 @@ export class HomeComponent implements OnInit {
     if (isPlatformBrowser(this.platformId)) {
       window.scrollTo(0, 0);
       this.checkPausedWorkout();
+
+      // --- NEW: Subscribe to pausedWorkoutDiscarded$ event ---
+      this.subscriptions.add(
+        this.workoutService.pausedWorkoutDiscarded$.subscribe(() => {
+          this.pausedWorkoutInfo.set(null); // Clear the paused workout info
+        })
+      );
+      // --- END NEW ---
     }
   }
 
+
   checkPausedWorkout(): void {
     if (isPlatformBrowser(this.platformId)) {
-      const pausedState = this.storageService.getItem<PausedWorkoutState>('fitTrackPro_pausedWorkoutState'); // Use the correct key
+      const pausedState = this.workoutService.getPausedSession();
       this.pausedWorkoutInfo.set(pausedState);
     }
   }
@@ -102,7 +109,7 @@ export class HomeComponent implements OnInit {
     }
   }
 
-  async discardPausedWorkout(): Promise<void> {
+ async discardPausedWorkout(): Promise<void> {
     this.vibrate();
 
     const buttons: AlertButton[] = [
@@ -118,7 +125,7 @@ export class HomeComponent implements OnInit {
     if (confirm && confirm.data) {
       if (isPlatformBrowser(this.platformId)) {
         this.workoutService.removePausedWorkout();
-        this.pausedWorkoutInfo.set(null);
+        // The subscription above will now handle setting pausedWorkoutInfo.set(null);
         this.toastService.info('Paused workout session discarded.', 3000);
       }
     }
@@ -193,5 +200,9 @@ export class HomeComponent implements OnInit {
 
   getVersion(): string {
     return this.storageService.getVersion();
+  }
+
+    ngOnDestroy(): void {
+    this.subscriptions.unsubscribe(); // Unsubscribe to prevent memory leaks
   }
 }

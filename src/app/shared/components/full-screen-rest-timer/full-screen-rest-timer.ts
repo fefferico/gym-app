@@ -19,6 +19,7 @@ export class FullScreenRestTimerComponent implements OnChanges, OnDestroy, After
 
   @Output() timerFinished = new EventEmitter<void>();
   @Output() timerSkipped = new EventEmitter<number>();
+  @Output() hideTimer = new EventEmitter<void>(); // New Output event
 
   @ViewChild('progressCircleSvg') progressCircleSvg!: ElementRef<SVGSVGElement>;
 
@@ -84,7 +85,7 @@ export class FullScreenRestTimerComponent implements OnChanges, OnDestroy, After
     this.remainingTime.set(this.durationSeconds);
 
     if (this.durationSeconds <= 0) {
-      this.timerFinished.emit();
+      this.finishAndHideTimer(); // Call unified function
       return;
     }
 
@@ -94,8 +95,7 @@ export class FullScreenRestTimerComponent implements OnChanges, OnDestroy, After
       this.remainingTime.update(rt => {
         const newTime = rt - decrementAmount;
         if (newTime <= 0) {
-          this.stopTimer();
-          this.timerFinished.emit();
+          this.finishAndHideTimer(); // Call unified function
           return 0; // Ensure remainingTime is exactly 0 on finish
         }
         return newTime;
@@ -110,9 +110,36 @@ export class FullScreenRestTimerComponent implements OnChanges, OnDestroy, After
     }
   }
 
+  // Unified function to handle timer completion/hiding
+  private finishAndHideTimer(): void {
+    this.stopTimer();
+    this.timerFinished.emit();
+    this.hideTimer.emit(); // Emit hide event
+  }
+
+  adjustTimer(seconds: number): void {
+    this.remainingTime.update(currentRemaining => {
+      let newTime = currentRemaining + seconds;
+      // Ensure new time doesn't go below 0
+      newTime = Math.max(0, newTime);
+
+      // If timer is adjusted to 0 or less, stop it and emit finished/hide events
+      if (newTime <= 0) {
+        this.finishAndHideTimer(); // Call unified function
+      }
+      return newTime;
+    });
+    // Also update initial duration if adding time, to ensure progress circle calculation is correct for the new max
+    // Note: If you want the progress circle to always reflect the *initial* duration set for the rest,
+    // you might not want to update initialDuration here.
+    // For now, I'm assuming you want the circle to reflect the *new* total time.
+    this.initialDuration.update(currentInitial => Math.max(currentInitial, this.remainingTime()));
+  }
+
   skipTimer(): void {
     this.stopTimer();
     this.timerSkipped.emit(this.remainingTime());
+    this.hideTimer.emit(); // Emit hide event when skipped
   }
 
   ngOnDestroy(): void {

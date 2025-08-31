@@ -33,11 +33,28 @@
     </div>
   </div>
 
-  <!-- Skip Button -->
-  <button appPress (shortPress)="skipTimer()"
-    class="mt-12 py-3 px-10 bg-yellow-500 hover:bg-yellow-800 text-white font-semibold rounded-full shadow-md transition-colors duration-150 text-lg">
-    SKIP
-  </button>
+  <!-- Timer Control Buttons -->
+  <div class="mt-12 flex space-x-4">
+    <!-- Remove 15 seconds Button -->
+    <button (click)="adjustTimer(-15)"
+      class="py-3 px-6 bg-red-500 hover:bg-red-700 text-white font-semibold rounded-full shadow-md transition-colors duration-150 text-lg"
+      [disabled]="remainingTime() <= 0"> <!-- Changed condition to 0 for consistency -->
+      -15s
+    </button>
+
+    <!-- Skip Button -->
+    <button appPress (shortPress)="skipTimer()"
+      class="py-3 px-10 bg-yellow-500 hover:bg-yellow-800 text-white font-semibold rounded-full shadow-md transition-colors duration-150 text-lg">
+      SKIP
+    </button>
+
+    <!-- Add 15 seconds Button -->
+    <button (click)="adjustTimer(15)"
+      class="py-3 px-6 bg-green-500 hover:bg-green-700 text-white font-semibold rounded-full shadow-md transition-colors duration-150 text-lg">
+      +15s
+    </button>
+  </div>
+
 
   <div *ngIf="nextUpText" class="mt-5 px-1 text-center text-xl text-gray-300">
     Prepare for: {{ nextUpText }}

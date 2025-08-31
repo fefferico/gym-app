@@ -26,7 +26,7 @@
       <div class="flex w-full justify-between">
         <button appPress (shortPress)="goBack()"
           class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-light">
-          <app-icon name="back" class="h-7 w-7"></app-icon>
+          <app-icon name="cancel" class="h-6 w-6"></app-icon>
         </button>
         <div class="flex flex-col items-center cursor-pointer" appPress (shortPress)="jumpToExercise('Session overview')"
           [title]="'Click for session overview'">
@@ -38,9 +38,9 @@
             }}</div>
         </div>
       
-        <div class="relative">
+        <div class="relative flex items-center">
           <button (click)="toggleActions($event)"
-            class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center">
+            class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none">
             <app-icon name="menu-action" class="h-7 w-7"></app-icon>
           </button>
           <app-action-menu *ngIf="isWorkoutMenuVisible()" class="action-menu-container" displayMode="modal"
@@ -65,7 +65,10 @@
     </header>
 
     <main class="pt-4 px-2 pb-36 bg-gray-100 dark:bg-gray-900">
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm transition-all duration-300 relative py-2" *ngIf="activeSetInfo() as activeSet; else workoutCompleteOrError">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm transition-all duration-300 relative py-2" *ngIf="activeSetInfo() as activeSet; else workoutCompleteOrError"
+      [ngClass]="activeSet?.type === 'warmup' ? 'border border-blue-400 border-4 bg-blue-200' : 
+           (activeSet?.exerciseData?.supersetId ? 'border border-primary-light border-4' : '')"
+      >
         <div class="flex text-center justify-center items-center mb-1 hover:cursor-pointer" appPress
           (shortPress)="openModal(activeSet.exerciseData)" [title]="'Click/tap for more info about the exercise'">
           <div *ngIf="currentBaseExercise() as baseEx; else loadingBaseExIcon" class="mr-2 h-8 w-8 flex-shrink-0">
@@ -329,7 +332,8 @@
       </div>
     </footer>
 
-    <div class="flex justify-center fixed left-0 right-0 z-20" [style.bottom]="'var(--main-nav-height)'">
+    <!-- <div class="flex justify-center fixed left-0 right-0 z-20" [style.bottom]="'var(--main-nav-height)'"> -->
+    <div class="flex justify-center fixed left-0 right-0 z-20 bottom-0">
       <div
         class="w-full max-w-sm grid grid-cols-2 gap-4 bg-white dark:bg-gray-800/80 dark:backdrop-blur-sm border-t border-x border-gray-200 dark:border-gray-700 p-3 rounded-t-md">
     

@@ -43,7 +43,7 @@ export class AlertComponent implements OnInit {
     }
   }
 
-private focusButton(): void {
+  private focusButton(): void {
     if (!this.options?.buttons || this.allButtons.length === 0) {
       return;
     }
@@ -64,7 +64,7 @@ private focusButton(): void {
     }
   }
 
-ngAfterViewInit(): void {
+  ngAfterViewInit(): void {
     // Focus the button initially if there are no inputs to autofocus
     if (!this.options?.inputs || this.inputElements.length === 0) {
       this.focusButton();
@@ -160,12 +160,14 @@ ngAfterViewInit(): void {
       }
         break;
       default:
-        if (button.cssClass) {
-          classes += button.cssClass + ' ';
-        } if (button.overrideCssClass){
+        if (button.overrideCssClass) {
+          // `overrideCssClass` completely replaces any existing or default classes.
           classes = button.overrideCssClass;
-        }
-        else {
+        } else if (button.cssClass) {
+          // `cssClass` is appended to any existing base classes.
+          classes += button.cssClass + ' ';
+        } else {
+          // If neither is provided, append the default button styling.
           classes += 'bg-blue-500 hover:bg-blue-600 text-white focus:ring-blue-400 dark:bg-blue-600 dark:hover:bg-blue-500 dark:focus:ring-blue-500';
         }
         break;

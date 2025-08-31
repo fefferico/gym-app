@@ -431,7 +431,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       'Cancel',
       [{
         role: 'confirm',
-        text:'Save notes',
+        text: 'Save notes',
         icon: 'save',
         data: true
       } as AlertButton]
@@ -725,21 +725,51 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     this.insightsData.set(null);
   }
 
-  addExerciseToRoutine(exercise: Exercise): void {
-    const isCardioExercise = exercise.category === 'cardio';
-    const newWorkoutExercise: WorkoutExercise = {
-      id: uuidv4(), exerciseId: exercise.id, exerciseName: exercise.name, sets: [{
-        id: uuidv4(), reps: isCardioExercise ? undefined : 8, weight: isCardioExercise ? undefined : 10,
-        distance: isCardioExercise ? 1 : undefined, duration: isCardioExercise ? 300 : undefined,
-        restAfterSet: 60, type: 'standard'
-      }], type: 'standard', rounds: 1, supersetId: null, supersetOrder: null
+  async handleTrulyCustomExerciseEntry(): Promise<void> {
+    this.closeAddExerciseModal();
+    const currentRoutineVal = this.routine();
+    if (!currentRoutineVal) { return; }
+    const newCustomExercise: Exercise = {
+      id: `custom-adhoc-ex-${uuidv4()}`,
+      name: 'Custom exercise',
+      description: '', category: 'bodyweight/calisthenics', muscleGroups: [], primaryMuscleGroup: '', imageUrls: []
     };
+    await this.selectExerciseToAddFromModal(newCustomExercise);
+  }
+
+  // +++ NEW: Replaces old addExerciseToRoutine +++
+  async selectExerciseToAddFromModal(selectedExercise: Exercise): Promise<void> {
+    this.closeAddExerciseModal();
+    const routine = this.routine();
+    if (!routine) {
+      this.toastService.error("Cannot add exercise: routine data unavailable.", 0, "Error");
+      return;
+    }
+
+    const log = this.currentWorkoutLog();
+    const allLoggedExercises = log.exercises || [];
+    const lastLoggedExercise = allLoggedExercises.length > 0 ? allLoggedExercises[allLoggedExercises.length - 1] : null;
+    const lastLoggedSet = lastLoggedExercise && lastLoggedExercise.sets.length > 0 ? lastLoggedExercise.sets[lastLoggedExercise.sets.length - 1] : null;
+
+    const newWorkoutExercise = await this.workoutService.promptAndCreateWorkoutExercise(selectedExercise, lastLoggedSet);
+
+    if (newWorkoutExercise) {
+      if (selectedExercise.id.startsWith('custom-adhoc-ex-')) {
+        const newExerciseToBeSaved = this.exerciseService.mapWorkoutExerciseToExercise(newWorkoutExercise, selectedExercise);
+        this.exerciseService.addExercise(newExerciseToBeSaved);
+      }
+      this.addExerciseToRoutine(newWorkoutExercise);
+    }
+  }
+
+  // +++ MODIFIED: Now accepts a fully formed WorkoutExercise +++
+  addExerciseToRoutine(newWorkoutExercise: WorkoutExercise): void {
     this.routine.update(r => {
       r?.exercises.push(newWorkoutExercise);
-      // Automatically expand the new exercise
       if (r) this.expandedExerciseIndex.set(r.exercises.length - 1);
       return r;
     });
+    this.toastService.success(`${newWorkoutExercise.exerciseName} added to workout.`);
     this.closeAddExerciseModal();
   }
 
@@ -878,7 +908,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
   // +++ MODIFIED: This method now also sets the next set's details for the rest timer UI
-    // +++ MODIFIED: This method now also sets the next set's details for the rest timer UI
+  // +++ MODIFIED: This method now also sets the next set's details for the rest timer UI
   private async startRestPeriod(duration: number, completedExIndex: number, completedSetIndex: number): Promise<void> {
     this.playerSubState.set(PlayerSubState.Resting);
     this.restDuration.set(duration);
@@ -1102,8 +1132,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         const confirmation = await this.alertService.showConfirmationDialog(
           "Resume Paused Workout?",
           "You have a paused workout session. Would you like to resume it?",
-          [{ text: "Resume", role: "confirm", data: true, icon: 'play', cssClass: 'bg-green-600 hover:bg-green-700' }, 
-            { text: "Discard", role: "cancel", data: false, icon: 'trash', cssClass: "bg-red-600 hover:bg-red-800" }]
+          [{ text: "Resume", role: "confirm", data: true, icon: 'play', cssClass: 'bg-green-600 hover:bg-green-700' },
+          { text: "Discard", role: "cancel", data: false, icon: 'trash', cssClass: "bg-red-600 hover:bg-red-800" }]
         );
 
         if (confirmation?.data) {
@@ -1134,78 +1164,36 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     }
   }
 
-  // private getUnfinishedOrDeferredExercises(sessionRoutine: Routine): any[] {
-
-  //   sessionRoutine.exercises.find
-  //   const currentExercise = sessionRoutine.exercises[this.currentExerciseIndex()];
-  //   const unfinishedOtherExercises = this.getUnfinishedExercises().filter(
-  //     ex => ex.id !== currentExercise.id
-  //   );
-  //   // console.log("Unfinished exercises (excluding current):", unfinishedOtherExercises.map(e => e.exerciseName));
-
-  //   const unfinishedDeferredOrSkippedExercises = sessionRoutine.exercises
-  //     .map((ex, idx) => ({ ...ex, originalIndex: idx }))
-  //     .filter((ex, innerIdx) =>
-  //       (ex.sessionStatus === 'do_later' || ex.sessionStatus === 'skipped') &&
-  //       !this.isExerciseFullyLogged(ex)
-  //     )
-  //     .sort((a, b) => {
-  //       if (a.sessionStatus === 'do_later' && b.sessionStatus === 'skipped') return -1;
-  //       if (a.sessionStatus === 'skipped' && b.sessionStatus === 'do_later') return 1;
-  //       return a.originalIndex - b.originalIndex;
-  //     });
-
-  //   const unfinishedOtherExercisesWithIndex = unfinishedOtherExercises.map((ex, idx) => ({
-  //     ...ex,
-  //     originalIndex: sessionRoutine.exercises.findIndex(e => e.id === ex.id)
-  //   }));
-  //   // Merge and deduplicate unfinished exercises by their unique id
-  //   const mergedUnfinishedExercises = [
-  //     ...unfinishedDeferredOrSkippedExercises,
-  //     ...unfinishedOtherExercisesWithIndex
-  //   ].filter((ex, idx, arr) =>
-  //     arr.findIndex(e => e.id === ex.id) === idx
-  //   );
-
-  //   mergedUnfinishedExercises.sort((a, b) => {
-  //     const idxA = sessionRoutine.exercises.findIndex(ex => ex.id === a.id);
-  //     const idxB = sessionRoutine.exercises.findIndex(ex => ex.id === b.id);
-  //     return idxA - idxB;
-  //   });
-
-  //   return mergedUnfinishedExercises;
-  // }
-
   // +++ NEW: Method to open the "Add to Superset" modal +++
   async openAddToSupersetModal(exIndex: number): Promise<void> {
     this.exerciseToSupersetIndex.set(exIndex);
 
-    const availableExercises = this.routine()?.exercises?.map((ex,index) => ({...ex, originalIndex: index})) || [];
+    const availableExercises = this.routine()?.exercises?.map((ex, index) => ({ ...ex, originalIndex: index })) || [];
     const exerciseButtons: AlertButton[] = availableExercises.map(ex => {
-              // Convert sessionStatus to a user-friendly label
-              return {
-                text: `${ex.exerciseName}`,
-                role: 'confirm',
-                data: ex.originalIndex,
-                // cssClass: cssClass
-              };
-            });
-            const alertButtons: AlertButton[] = [
-              ...exerciseButtons,
-              { text: 'Cancel', role: 'cancel', data: 'cancel_deferred_choice' }
-            ];
-    
-            const choice = await this.alertService.showConfirmationDialog(
-              'Create superset',
-              'Which exercises you want to link together?',
-              alertButtons,
-            );
+      // Convert sessionStatus to a user-friendly label
+      return {
+        text: `${ex.exerciseName}`,
+        role: 'confirm',
+        data: ex.originalIndex,
+        // cssClass: cssClass
+      };
+    });
+    const alertButtons: AlertButton[] = [
+      ...exerciseButtons,
+      { text: 'Cancel', role: 'cancel', data: 'cancel_deferred_choice' }
+    ];
 
-            if (choice && typeof choice.data === 'number') {
-          this.toastService.info("Exercise index clicked " + choice.data);
-        } else { // Includes cancel_deferred_choice or dialog dismissal
-          this.toastService.info("Cancel clicked");
-        }
+    const choice = await this.alertService.showConfirmationDialog(
+      'Create superset',
+      'Which exercises you want to link together?',
+      alertButtons,
+    );
+
+    if (choice && typeof choice.data === 'number') {
+      this.toastService.info("Exercise index clicked " + choice.data);
+    } else { // Includes cancel_deferred_choice or dialog dismissal
+      this.toastService.info("Cancel clicked");
+    }
 
 
     this.isAddToSupersetModalOpen.set(true);

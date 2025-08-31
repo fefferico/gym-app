@@ -54,10 +54,8 @@
       <!-- MODIFIED: Changed space-y-1 to space-y-3 for better superset group separation -->
       <div *ngFor="let exercise of currentRoutine.exercises; let exIndex = index"
         class="bg-white dark:bg-gray-800 rounded-lg shadow-sm transition-all duration-300 relative"
-        [class.superset-group]="exercise.supersetId" 
-        [class.superset-start]="isSupersetStart(exIndex)"
-        [class.superset-middle]="isSupersetMiddle(exIndex)" 
-        [class.superset-end]="isSupersetEnd(exIndex)"
+        [class.superset-group]="exercise.supersetId" [class.superset-start]="isSupersetStart(exIndex)"
+        [class.superset-middle]="isSupersetMiddle(exIndex)" [class.superset-end]="isSupersetEnd(exIndex)"
         [style.zIndex]="areActionsVisible(exIndex) ? 50 : 'auto'">
 
         <!-- +++ NEW: Superset Indicator Ribbon +++ -->
@@ -68,25 +66,22 @@
 
         <!-- Exercise Header -->
         <div (click)="toggleExerciseExpansion(exIndex)"
-          class="p-3 flex items-center justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50"
+          class="p-3 flex-col items-center justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50"
           [class.rounded-t-lg]="!isSupersetMiddle(exIndex) && !isSupersetEnd(exIndex)"
           [class.rounded-b-lg]="expandedExerciseIndex() !== exIndex && !isSupersetStart(exIndex) && !isSupersetMiddle(exIndex)">
-          <div class="flex flex-col justify-start items-center space-x-3 min-w-0">
+          <div class="flex justify-start items-center space-x-3 min-w-0">
             <!-- MODIFIED: Display superset letter -->
             <div class="flex">
-              <span class="font-semibold text-gray-800 dark:text-gray-100">
-                {{ getExerciseDisplayIndex(exIndex)}}
-              </span>
               <h2 class="max-w-[250px] text-md font-semibold text-gray-800 dark:text-gray-100 text-wrap">
-                {{ exercise.exerciseName }}
+                {{ getExerciseDisplayIndex(exIndex)}} {{ exercise.exerciseName }}
               </h2>
             </div>
-            <!-- +++ NEW: Exercise Notes Textarea +++ -->
-            <div *ngIf="expandedExerciseNotes() === (exIndex)" class="flex py-2 w-full">
-              <textarea [ngModel]="getInitialExerciseNoteInputValue(exIndex)"
-                (change)="updateExerciseNotes(exIndex, $event)" placeholder="Notes for this exercise..."
-                class="w-full text-xs bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded-md p-1.5 focus:ring-primary-dark focus:border-primary-dark dark:text-gray-200"></textarea>
-            </div>
+          </div>
+          <!-- +++ NEW: Exercise Notes Textarea +++ -->
+          <div *ngIf="expandedExerciseNotes() === (exIndex)" class="flex py-2 w-full">
+            <textarea [ngModel]="getInitialExerciseNoteInputValue(exIndex)"
+              (change)="updateExerciseNotes(exIndex, $event)" placeholder="Notes for this exercise..."
+              class="w-full text-xs bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded-md p-1.5 focus:ring-primary-dark focus:border-primary-dark dark:text-gray-200"></textarea>
           </div>
 
 
@@ -214,7 +209,8 @@
   </main>
 
   <!-- Footer with Action Buttons -->
-  <footer class="flex justify-center fixed left-0 right-0 z-20" [style.bottom]="'var(--main-nav-height)'">
+  <!-- <footer class="flex justify-center fixed left-0 right-0 z-20" [style.bottom]="'var(--main-nav-height)'">-->
+  <div class="flex justify-center fixed left-0 right-0 z-20 bottom-0">
     <div
       class="w-full max-w-sm grid grid-cols-2 gap-4 bg-white dark:bg-gray-800/80 dark:backdrop-blur-sm border-t border-x border-gray-200 dark:border-gray-700 p-3 rounded-t-md">
 
@@ -234,10 +230,12 @@
       </button>
 
     </div>
-  </footer>
+  </div>
 
   <app-exercise-selection-modal [isOpen]="isAddExerciseModalOpen()" [(searchTerm)]="modalSearchTerm"
-    title="ADD EXERCISE" [exercises]="availableExercises" (exerciseSelected)="addExerciseToRoutine($event)"
+    title="ADD EXERCISE TO SESSION" [exercises]="availableExercises" [showCreateCustomLink]="true"
+    itemIconName="plus-circle" itemIconClass="text-primary dark:text-primary-light"
+    (exerciseSelected)="selectExerciseToAddFromModal($event)" (createCustomClicked)="handleTrulyCustomExerciseEntry()"
     (close)="closeAddExerciseModal()">
   </app-exercise-selection-modal>
 

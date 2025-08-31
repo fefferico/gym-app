@@ -1,6 +1,6 @@
 // src/app/core/services/workout.service.ts
 import { Injectable, inject } from '@angular/core';
-import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, of, Subject, throwError } from 'rxjs';
 import { map, shareReplay } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid'; // For generating unique IDs
 
@@ -14,6 +14,9 @@ import { ProgressiveOverloadService } from './progressive-overload.service.ts';
 import { AppSettingsService } from './app-settings.service';
 import { Router } from '@angular/router';
 import { PausedWorkoutState } from '../../features/workout-tracker/workout-player';
+import { UnitsService } from './units.service';
+import { AlertInput } from '../models/alert.model';
+import { Exercise } from '../models/exercise.model';
 
 @Injectable({
   providedIn: 'root',
@@ -23,6 +26,7 @@ export class WorkoutService {
   private appSettingsService = inject(AppSettingsService);
   private router = inject(Router);
   private alertService = inject(AlertService);
+  private unitsService = inject(UnitsService); // +++ ADDED
   private readonly ROUTINES_STORAGE_KEY = 'fitTrackPro_routines';
   private readonly PAUSED_WORKOUT_KEY = 'fitTrackPro_pausedWorkoutState';
 
@@ -38,6 +42,9 @@ export class WorkoutService {
 
   private isLoadingRoutinesSubject = new BehaviorSubject<boolean>(true); // Start as true
   public isLoadingRoutines$: Observable<boolean> = this.isLoadingRoutinesSubject.asObservable();
+
+  private _pausedWorkoutDiscarded = new Subject<void>();
+  pausedWorkoutDiscarded$ = this._pausedWorkoutDiscarded.asObservable();
 
   constructor() {
     this.isLoadingRoutinesSubject.next(true);
@@ -546,10 +553,11 @@ export class WorkoutService {
   }
 
   removePausedWorkout(): void {
-    const pausedState = this.storageService.getItem<PausedWorkoutState>(this.PAUSED_WORKOUT_KEY);
-    if (pausedState) {
-      this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
-    }
+    this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
+    // --- NEW: Emit when a paused workout is discarded ---
+    this._pausedWorkoutDiscarded.next();
+    // --- END NEW ---
+    this.toastService.info('Paused workout session discarded.');
   }
 
   savePausedWorkout(stateToSave: PausedWorkoutState): void {
@@ -558,12 +566,12 @@ export class WorkoutService {
     }
   }
 
-  getPausedSession(): PausedWorkoutState | null {
-    return this.storageService.getItem<PausedWorkoutState>(this.PAUSED_WORKOUT_KEY);
+  isPausedSession(): boolean {
+    return !!this.storageService.getItem<PausedWorkoutState>(this.PAUSED_WORKOUT_KEY);
   }
 
-  isPausedSession(): boolean {
-    return !!this.getPausedSession();
+  getPausedSession(): PausedWorkoutState | null {
+    return this.storageService.getItem<PausedWorkoutState>(this.PAUSED_WORKOUT_KEY);
   }
 
   private async checkForPausedSession(forceNavigation: boolean = false): Promise<PausedWorkoutState | undefined> {
@@ -586,5 +594,85 @@ export class WorkoutService {
       }
     }
     return undefined;
+  }
+
+  // +++ NEW: Shared method to add an exercise during a workout +++
+  public async promptAndCreateWorkoutExercise(
+    selectedExercise: Exercise,
+    lastLoggedSet: LoggedSet | null
+  ): Promise<WorkoutExercise | null> {
+    const isCardioOnly = selectedExercise.category === 'cardio';
+    const kbRelated = selectedExercise.category === 'kettlebells';
+
+    // Determine default values based on the last logged set or general defaults
+    const defaultWeight = kbRelated && lastLoggedSet ? (lastLoggedSet.targetWeight ?? lastLoggedSet.weightUsed) : (this.unitsService.currentUnit() === 'kg' ? 10 : 22.2);
+    const defaultDuration = isCardioOnly ? 60 : undefined;
+    const defaultRest = kbRelated ? 45 : 60;
+    const defaultReps = kbRelated && lastLoggedSet ? (lastLoggedSet.targetReps ?? lastLoggedSet.repsAchieved) : 10;
+    const defaultSets = 3;
+
+    const baseParams: AlertInput[] = [
+      { label: 'Exercise name', name: 'name', type: 'text', placeholder: 'Exercise name', value: selectedExercise.name, attributes: { required: true } },
+      { label: 'Number of Sets', name: 'numSets', type: 'number', placeholder: 'e.g., 3', value: defaultSets, attributes: { min: 1, required: true } },
+      { label: 'Rest Between Sets (seconds)', name: 'rest', type: 'number', placeholder: 'e.g., 60', value: defaultRest, attributes: { min: 1, required: true } }
+    ];
+
+    // Define the input fields for the alert prompt
+    const exerciseParams: AlertInput[] = isCardioOnly
+      ? [
+        ...baseParams,
+        { label: 'Target Duration (seconds)', name: 'duration', type: 'number', placeholder: 'e.g., 60', value: defaultDuration, attributes: { min: 0, required: true } },
+      ]
+      : [
+        ...baseParams,
+        { label: 'Number of Reps', name: 'numReps', type: 'number', placeholder: 'e.g., 10', value: defaultReps, attributes: { min: 0, required: true } },
+        { label: `Target Weight (${this.unitsService.getUnitLabel()})`, name: 'weight', type: 'number', placeholder: 'e.g., 10', value: defaultWeight, attributes: { min: 0, required: true } },
+      ];
+
+    const exerciseData = await this.alertService.showPromptDialog(
+      `Add ${selectedExercise.name}`,
+      '',
+      exerciseParams
+    );
+
+    if (!exerciseData) {
+      this.toastService.info("Exercise addition cancelled.", 2000);
+      return null;
+    }
+
+    const exerciseName = String(exerciseData['name']).trim() || selectedExercise.name;
+    const numSets = parseInt(String(exerciseData['numSets'])) || defaultSets;
+    const numReps = parseInt(String(exerciseData['numReps'])) || defaultReps;
+    const weight = parseFloat(String(exerciseData['weight'])) ?? defaultWeight;
+    const duration = parseInt(String(exerciseData['duration'])) || defaultDuration;
+    const rest = parseInt(String(exerciseData['rest'])) || defaultRest;
+
+    const newExerciseSets: ExerciseSetParams[] = [];
+    for (let i = 0; i < numSets; i++) {
+      newExerciseSets.push({
+        id: `custom-set-${uuidv4()}`,
+        reps: isCardioOnly ? undefined : numReps,
+        weight: isCardioOnly ? undefined : weight,
+        duration: isCardioOnly ? duration : undefined,
+        restAfterSet: rest,
+        type: 'standard',
+        notes: ''
+      });
+    }
+
+    const newWorkoutExercise: WorkoutExercise = {
+      id: `custom-exercise-${uuidv4()}`,
+      exerciseId: selectedExercise.id,
+      exerciseName: exerciseName,
+      sets: newExerciseSets,
+      rounds: 1,
+      supersetId: null,
+      supersetOrder: null,
+      supersetSize: null,
+      sessionStatus: 'pending',
+      type: 'standard'
+    };
+
+    return newWorkoutExercise;
   }
 }

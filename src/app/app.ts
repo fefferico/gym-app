@@ -34,7 +34,7 @@ import { filter, map } from 'rxjs';
 
       <!-- Bottom Navigation -->
 <app-paused-workout *ngIf="shouldShowPausedBanner()"></app-paused-workout>
-      <app-navigation></app-navigation>
+      <app-navigation *ngIf="shouldShowNavigationBanner()"></app-navigation>
     </div>
   `,
   // No styleUrls needed if all styling is via Tailwind utility classes in the template
@@ -45,6 +45,7 @@ export class AppComponent implements OnInit {
   private trackingService = inject(TrackingService); // Inject for testing
   // Signal to control the visibility of the paused workout banner
   shouldShowPausedBanner = signal(false);
+  shouldShowNavigationBanner = signal(true);
   private router = inject(Router);
   private activatedRoute = inject(ActivatedRoute);
 
@@ -68,8 +69,8 @@ export class AppComponent implements OnInit {
       // Get the data property from the final activated route's snapshot
       map(route => route.snapshot.data)
     ).subscribe(data => {
-      // Update the signal based on the 'showPausedWorkoutBanner' flag in the route data
       this.shouldShowPausedBanner.set(data['showPausedWorkoutBanner'] === true);
+      this.shouldShowNavigationBanner.set(data['shouldShowNavigationBanner'] === true);
     });
   }
 }

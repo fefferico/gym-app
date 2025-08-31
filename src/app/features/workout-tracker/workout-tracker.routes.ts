@@ -63,7 +63,7 @@ export const WORKOUT_TRACKER_ROUTES: Routes = [
   {
     path: 'play',
     component: WorkoutPlayerComponent,
-    data: { mode: 'newRoutine', isNew: false,showPausedWorkoutBanner: false },
+    data: { mode: 'newRoutine', isNew: false,showPausedWorkoutBanner: false, shouldShowNavigationBanner: false },
     title: 'Workout Session'
   },
   {
@@ -86,16 +86,16 @@ export const WORKOUT_TRACKER_ROUTES: Routes = [
   {
     path: 'play/compact/:routineId',
     component: CompactWorkoutPlayerComponent,
-    data: { showPausedWorkoutBanner: false}
+    data: { showPausedWorkoutBanner: false, shouldShowNavigationBanner: false}
   },
   {
     path: 'play/tabata/:routineId',
     component: TabataPlayerComponent,
-    data: { showPausedWorkoutBanner: false}
+    data: { showPausedWorkoutBanner: false, shouldShowNavigationBanner: false}
   },
   {
     path: 'play/focus/:routineId',
     component: FocusPlayerComponent,
-    data: { showPausedWorkoutBanner: false}
+    data: { showPausedWorkoutBanner: false, shouldShowNavigationBanner: false}
   },
 ];

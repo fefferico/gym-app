@@ -1003,8 +1003,8 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
           `Unfinished: ${singleEx.exerciseName}`,
           `You have "${singleEx.exerciseName}" (${singleEx.sessionStatus === 'do_later' ? 'Do Later' : 'Skipped'}) remaining. Complete it now?`,
           [
-            { text: 'Complete It', role: 'confirm', data: singleEx.originalIndex, cssClass: 'bg-blue-500 hover:bg-blue-600 text-white' } as AlertButton,
-            { text: 'Finish Workout', role: 'destructive', data: 'finish_now', cssClass: 'bg-green-500 hover:bg-green-600 text-white' } as AlertButton,
+            { text: 'Complete It', role: 'confirm', data: singleEx.originalIndex, cssClass: 'bg-primary hover:bg-primary-dark text-white', icon: 'flame'  } as AlertButton,
+            { text: 'Finish Workout', role: 'destructive', data: 'finish_now', cssClass: 'bg-green-600 hover:bg-green-700 text-white', icon: 'done' } as AlertButton,
           ]
         );
         if (confirmSingle && typeof confirmSingle.data === 'number') {
@@ -1100,7 +1100,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       'The current session is finished! Would you like to add a new exercise or complete it?',
       [
         { text: 'Add exercise', role: 'add_exercise', data: 'add_exercise', cssClass: 'bg-primary hover:bg-primary-dark text-white', icon: 'plus-circle', iconClass: 'h-8 w-8 mr-1' } as AlertButton,
-        { text: 'End session', role: 'end_session', data: "end_session", cssClass: 'bg-blue-500 hover:bg-blue-600 text-white', icon: 'done', iconClass: 'h-8 w-8 mr-1' } as AlertButton,
+        { text: 'End session', role: 'end_session', data: "end_session", cssClass: 'bg-green-500 hover:bg-green-600 text-white', icon: 'done', iconClass: 'h-8 w-8 mr-1' } as AlertButton,
       ],
     );
 
@@ -2287,83 +2287,14 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     const lastEx = this.currentWorkoutLogExercises().length > 0 ? this.currentWorkoutLogExercises()[this.currentWorkoutLogExercises().length - 1] : null;
     const lastExSet = lastEx ? lastEx.sets[lastEx.sets.length - 1] : null;
 
-    const isCardioOnly = selectedExercise.category === 'cardio';
-    const defaultWeight = kbRelated && lastExSet ? (lastExSet.targetWeight || lastExSet.weightUsed) : (this.unitService.currentUnit() === 'kg' ? 10 : 22.2);
-    const defaultDuration = isCardioOnly ? 60 : 0;
-    const defaultRest = kbRelated ? 45 : 60;
-    const defaultReps = kbRelated && lastExSet ? (lastExSet.targetReps || lastExSet.repsAchieved) : 10;
-    const defaultSets = 3;
 
-    const exerciseParams: AlertInput[] = isCardioOnly
-      ? [
-        { label: 'Exercise name', name: 'name', type: 'text', placeholder: 'Exercise name', value: selectedExercise.name, attributes: { required: true } },
-        { label: 'Number of Sets', name: 'numSets', type: 'number', placeholder: 'Number of Sets (e.g., 3)', value: defaultSets, attributes: { min: 1, required: true } },
-        { label: 'Target weight', name: 'weight', type: 'number', placeholder: 'e.g., 10', value: defaultWeight, attributes: { min: 0, required: true } },
-        { label: 'Target duration', name: 'duration', type: 'number', placeholder: 'e.g., 30 secs', value: defaultDuration, attributes: { min: 0, required: false } },
-        { label: 'Rest between sets', name: 'rest', type: 'number', placeholder: 'e.g., 60', value: defaultRest, attributes: { min: 1, required: true } }
-      ]
-      : [
-        { label: 'Exercise name', name: 'name', type: 'text', placeholder: 'Exercise name', value: selectedExercise.name, attributes: { required: true } },
-        { label: 'Number of Reps', name: 'numReps', type: 'number', placeholder: 'Number of Reps (e.g., 10)', value: defaultReps, attributes: { min: 0, required: true } },
-        { label: 'Number of Sets', name: 'numSets', type: 'number', placeholder: 'Number of Sets (e.g., 3)', value: defaultSets, attributes: { min: 1, required: true } },
-        { label: 'Target weight', name: 'weight', type: 'number', placeholder: 'e.g., 10', value: defaultWeight, attributes: { min: 0, required: true } },
-        { label: 'Target duration', name: 'duration', type: 'number', placeholder: 'e.g., 30 secs', value: defaultDuration, attributes: { min: 0, required: false } },
-        { label: 'Rest between sets', name: 'rest', type: 'number', placeholder: 'e.g., 60', value: defaultRest, attributes: { min: 1, required: true } }
-      ];
+    const newWorkoutExercise = await this.workoutService.promptAndCreateWorkoutExercise(selectedExercise, lastExSet);
 
-    const exerciseData = await this.alertService.showPromptDialog(
-      `Add ${selectedExercise.name}`,
-      '',
-      exerciseParams
-    );
-
-    if (exerciseData) {
-      const exerciseName = exerciseData['name'];
-      const numSets = isNaN(parseInt(String(exerciseData['numSets']))) ? defaultSets : parseInt(String(exerciseData['numSets']));
-      const numReps = isNaN(parseInt(String(exerciseData['numReps']))) ? defaultReps : parseInt(String(exerciseData['numReps']));
-      const weight = isNaN(parseInt(String(exerciseData['weight']))) ? defaultWeight : parseInt(String(exerciseData['weight']));
-      const duration = isNaN(parseInt(String(exerciseData['duration']))) ? defaultDuration : parseInt(String(exerciseData['duration']));
-      const rest = isNaN(parseInt(String(exerciseData['rest']))) ? defaultRest : parseInt(String(exerciseData['rest']));
-
-      if (!exerciseName || (numSets === null || numSets === undefined || isNaN(numSets)) ||
-        (numReps === null || numReps === undefined || isNaN(numReps)) ||
-        (duration === null || duration === undefined || isNaN(duration)) ||
-        (weight === null || weight === undefined || isNaN(weight)) ||
-        (rest === null || rest === undefined || isNaN(rest))) {
-        this.toastService.info("Exercise addition cancelled or invalid parameter", 2000);
-        this.selectExerciseToAddFromModal(selectedExercise);
-        return;
+    if (newWorkoutExercise) {
+      if (selectedExercise.id.startsWith('custom-adhoc-ex-')) {
+        const newExerciseToBeSaved = this.exerciseService.mapWorkoutExerciseToExercise(newWorkoutExercise, selectedExercise);
+        this.exerciseService.addExercise(newExerciseToBeSaved);
       }
-
-      const newExerciseSets: ExerciseSetParams[] = [];
-      for (let i = 0; i < numSets; i++) {
-        newExerciseSets.push({
-          id: `custom-set-${uuidv4()}`, // Or generate based on planned set ID if this was a template
-          reps: numReps,
-          weight: weight,
-          duration: duration,
-          restAfterSet: rest,
-          type: 'standard',
-          notes: ''
-        });
-      }
-
-      const newWorkoutExercise: WorkoutExercise = {
-        id: `custom-exercise-${uuidv4()}`, // Unique ID for this session's instance of the exercise
-        exerciseId: selectedExercise.id,
-        exerciseName: selectedExercise.name,
-        sets: newExerciseSets,
-        rounds: 1, // Default to 1 round for an ad-hoc added exercise
-        supersetId: null,
-        supersetOrder: null,
-        supersetSize: null,
-        sessionStatus: 'pending',
-        type: 'standard'
-      };
-
-      const nexExerciseToBeSaved = this.exerciseService.mapWorkoutExerciseToExercise(newWorkoutExercise, selectedExercise);
-      this.exerciseService.addExercise(nexExerciseToBeSaved)
-
       this.addExerciseToCurrentRoutine(newWorkoutExercise);
     }
   }
@@ -2671,7 +2602,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
           // do not save as new routine button
           { text: "Just log", role: "no_save", data: "cancel", overrideCssClass: "flex items-center bg-primary px-4 py-2 font-medium", icon: 'schedule' } as AlertButton
         ]
-        
+
       );
       if (nameInput && nameInput['newRoutineName'] && String(nameInput['newRoutineName']).trim()) {
         newRoutineName = String(nameInput['newRoutineName']).trim();
@@ -3684,7 +3615,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
   }
 
   // New helper to peek at the next set's details without advancing state
- async peekNextSetInfo(): Promise<ActiveSetInfo | null> {
+  async peekNextSetInfo(): Promise<ActiveSetInfo | null> {
     const r = this.routine();
     const exIndex = this.currentExerciseIndex(); // These indices point to the *upcoming* set
     const sIndex = this.currentSetIndex();
@@ -4381,131 +4312,133 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     this.isWorkoutMenuVisible.set(true);
   }
 
-    getActionItems(mode: MenuMode): ActionMenuItem[] {
-      const defaultBtnClass = 'rounded text-left p-4 font-medium text-gray-600 dark:text-gray-300 hover:bg-primary flex items-center hover:text-white dark:hover:text-gray-100 dark:hover:text-white';
-      const deleteBtnClass = 'rounded text-left p-4 font-medium text-gray-600 dark:text-gray-300 hover:bg-red-600 flex items-center hover:text-gray-100 hover:animate-pulse';;
-  
-      const pauseSessionBtn = {
-        label: 'PAUSE',
-        actionKey: 'pause',
-        iconName: `pause`,
-        iconClass: 'w-8 h-8 mr-2',
-        buttonClass: (this.sessionState() !== 'playing' ? 'disabled ' : '') + 'flex justify-center items-center w-full max-w-xs bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2.5 px-6 rounded-md text-lg shadow-lg disabled:opacity-60 disabled:cursor-not-allowed',
-      } as ActionMenuItem;
+  getActionItems(mode: MenuMode): ActionMenuItem[] {
+    const defaultBtnClass = 'rounded text-left p-4 font-medium text-gray-600 dark:text-gray-300 hover:bg-primary flex items-center hover:text-white dark:hover:text-gray-100 dark:hover:text-white';
+    const deleteBtnClass = 'rounded text-left p-4 font-medium text-gray-600 dark:text-gray-300 hover:bg-red-600 flex items-center hover:text-gray-100 hover:animate-pulse';;
 
-      const jumpToExerciseBtn = {
-        label: 'JUMP TO EXERCISE',
-        actionKey: 'jumpToExercise',
-        iconName: `dumbbell`,
-        iconClass: 'w-8 h-8 mr-2',
-        buttonClass: (this.sessionState() === 'paused' || !this.routine()?.exercises?.length ? 'disabled ' : '') + 'flex justify-center items-center w-full max-w-xs bg-fuchsia-500 hover:bg-fuchsia-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed',
-      } as ActionMenuItem;
+    const pauseSessionBtn = {
+      label: 'PAUSE',
+      actionKey: 'pause',
+      iconName: `pause`,
+      iconClass: 'w-8 h-8 mr-2',
+      buttonClass: (this.sessionState() !== 'playing' ? 'disabled ' : '') + 'flex justify-center items-center w-full max-w-xs bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2.5 px-6 rounded-md text-lg shadow-lg disabled:opacity-60 disabled:cursor-not-allowed',
+    } as ActionMenuItem;
 
-      const addExerciseBtn = {
-        label: 'ADD EXERCISE',
-        actionKey: 'addExercise',
-        iconName: `plus-circle`,
-        iconClass: 'w-8 h-8 mr-2',
-        buttonClass: (this.sessionState() === 'paused' || !this.routine()?.exercises?.length ? 'disabled ' : '') + 'flex items-center justify-center align-center w-full max-w-xs bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed',
-      } as ActionMenuItem;
+    const jumpToExerciseBtn = {
+      label: 'JUMP TO EXERCISE',
+      actionKey: 'jumpToExercise',
+      iconName: `dumbbell`,
+      iconClass: 'w-8 h-8 mr-2',
+      buttonClass: (this.sessionState() === 'paused' || !this.routine()?.exercises?.length ? 'disabled ' : '') + 'flex justify-center items-center w-full max-w-xs bg-fuchsia-500 hover:bg-fuchsia-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed',
+    } as ActionMenuItem;
 
-      const switchExerciseBtn = {
-        label: 'SWITCH EXERCISE',
-        actionKey: 'switchExercise',
-        iconName: `change`,
-        iconClass: 'w-8 h-8 mr-2',
-        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + 'w-full max-w-xs bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center',
-      } as ActionMenuItem;
+    const addExerciseBtn = {
+      label: 'ADD EXERCISE',
+      actionKey: 'addExercise',
+      iconName: `plus-circle`,
+      iconClass: 'w-8 h-8 mr-2',
+      buttonClass: (this.sessionState() === 'paused' || !this.routine()?.exercises?.length ? 'disabled ' : '') + 'flex items-center justify-center align-center w-full max-w-xs bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed',
+    } as ActionMenuItem;
 
-      const openPerformanceInsightsBtn = {
-        label: 'SESSION INSIGHT',
-        actionKey: 'insight',
-        iconName: `schedule`,
-        iconClass: 'w-8 h-8 mr-2',
-        buttonClass: (this.sessionState() === 'paused' || !this.activeSetInfo() ? 'disabled ' : '') + 'flex items-center justify-center align-center w-full max-w-xs bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed',
-      } as ActionMenuItem;
+    const switchExerciseBtn = {
+      label: 'SWITCH EXERCISE',
+      actionKey: 'switchExercise',
+      iconName: `change`,
+      iconClass: 'w-8 h-8 mr-2',
+      buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + 'w-full max-w-xs bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center',
+    } as ActionMenuItem;
 
-      const quitWorkoutBtn = {
-        label: 'EXIT',
-        actionKey: 'exit',
-        iconName: `exit-door`,
-        iconClass: 'w-8 h-8 mr-2',
-        buttonClass: '' + 'w-full flex items-center justify-center max-w-xs text-white bg-red-600 hover:bg-red-800 font-medium py-2 px-6 rounded-md text-md',
-      } as ActionMenuItem;
+    const openPerformanceInsightsBtn = {
+      label: 'SESSION INSIGHT',
+      actionKey: 'insight',
+      iconName: `schedule`,
+      iconClass: 'w-8 h-8 mr-2',
+      buttonClass: (this.sessionState() === 'paused' || !this.activeSetInfo() ? 'disabled ' : '') + 'flex items-center justify-center align-center w-full max-w-xs bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed',
+    } as ActionMenuItem;
 
-      const addWarmupSetBtn = {
-        label: 'ADD WARMUP SET',
-        actionKey: 'warmup',
-        iconName: `flame`,
-        iconClass: 'w-8 h-8 mr-2',
-        buttonClass: '' + 'w-full flex items-center justify-center max-w-xs bg-sky-500 hover:bg-sky-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed',
-      } as ActionMenuItem;
+    const quitWorkoutBtn = {
+      label: 'EXIT',
+      actionKey: 'exit',
+      iconName: `exit-door`,
+      iconClass: 'w-8 h-8 mr-2',
+      buttonClass: '' + 'w-full flex items-center justify-center max-w-xs text-white bg-red-600 hover:bg-red-800 font-medium py-2 px-6 rounded-md text-md',
+    } as ActionMenuItem;
 
-      const skipCurrentSetBtn = {
-        label: 'SKIP SET',
-        actionKey: 'skipSet',
-        iconName: `skip`,
-        iconClass: 'w-8 h-8 mr-2',
-        buttonClass: (!this.activeSetInfo() || this.sessionState() === 'paused' ? 'disabled ':'') + 'w-full flex items-center justify-center max-w-xs bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed',
-      } as ActionMenuItem;
+    const addWarmupSetBtn = {
+      label: 'ADD WARMUP SET',
+      actionKey: 'warmup',
+      iconName: `flame`,
+      iconClass: 'w-8 h-8 mr-2',
+      buttonClass: '' + 'w-full flex items-center justify-center max-w-xs bg-sky-500 hover:bg-sky-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed',
+    } as ActionMenuItem;
 
-      const skipCurrentExerciseBtn = {
-        label: 'SKIP EXERCISE',
-        actionKey: 'skipExercise',
-        iconName: `skip`,
-        iconClass: 'w-8 h-8 mr-2',
-        buttonClass: (!this.activeSetInfo() || this.sessionState() === 'paused' ? 'disabled ':'') + 'w-full flex items-center justify-center max-w-xs bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed',
-      } as ActionMenuItem;
+    const skipCurrentSetBtn = {
+      label: 'SKIP SET',
+      actionKey: 'skipSet',
+      iconName: `skip`,
+      iconClass: 'w-8 h-8 mr-2',
+      buttonClass: (!this.activeSetInfo() || this.sessionState() === 'paused' ? 'disabled ' : '') + 'w-full flex items-center justify-center max-w-xs bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed',
+    } as ActionMenuItem;
 
-      const markAsDoLaterBtn = {
-        label: 'DO LATER',
-        actionKey: 'later',
-        iconName: `clock`,
-        iconClass: 'w-8 h-8 mr-2',
-        buttonClass: (!this.activeSetInfo() || this.sessionState() === 'paused' ? 'disabled ':'') + 'w-full flex items-center justify-center max-w-xs bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed',
-      } as ActionMenuItem;
+    const skipCurrentExerciseBtn = {
+      label: 'SKIP EXERCISE',
+      actionKey: 'skipExercise',
+      iconName: `skip`,
+      iconClass: 'w-8 h-8 mr-2',
+      buttonClass: (!this.activeSetInfo() || this.sessionState() === 'paused' ? 'disabled ' : '') + 'w-full flex items-center justify-center max-w-xs bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed',
+    } as ActionMenuItem;
 
-      const finishEarly = {
-        label: 'FINISH EARLY',
-        actionKey: 'finish',
-        iconName: `done`,
-        iconClass: 'w-8 h-8 mr-2',
-        buttonClass: (this.sessionState() === 'paused' || this.currentWorkoutLogExercises().length === 0 ? 'disabled ':'') + 'w-full flex items-center justify-center max-w-xs bg-teal-500 hover:bg-teal-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed',
-      } as ActionMenuItem;
+    const markAsDoLaterBtn = {
+      label: 'DO LATER',
+      actionKey: 'later',
+      iconName: `clock`,
+      iconClass: 'w-8 h-8 mr-2',
+      buttonClass: (!this.activeSetInfo() || this.sessionState() === 'paused' ? 'disabled ' : '') + 'w-full flex items-center justify-center max-w-xs bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed',
+    } as ActionMenuItem;
 
-      const actionsArray: ActionMenuItem[] = [];
+    const finishEarly = {
+      label: 'FINISH EARLY',
+      actionKey: 'finish',
+      iconName: `done`,
+      iconClass: 'w-8 h-8 mr-2',
+      buttonClass: (this.sessionState() === 'paused' || this.currentWorkoutLogExercises().length === 0 ? 'disabled ' : '') + 'w-full flex items-center justify-center max-w-xs bg-teal-500 hover:bg-teal-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed',
+    } as ActionMenuItem;
 
-      actionsArray.push(pauseSessionBtn);
+    const actionsArray: ActionMenuItem[] = [];
+
+    actionsArray.push(pauseSessionBtn);
+    if ((this.currentWorkoutLogExercises() && this.currentWorkoutLogExercises().length)){
       actionsArray.push(openPerformanceInsightsBtn);
-      actionsArray.push(addExerciseBtn);
-
-
-      if (this.canSwitchExercise()){
-        actionsArray.push(switchExerciseBtn);
-      }
-      if (!this.checkIfSetIsPartOfRounds()){
-        actionsArray.push(jumpToExerciseBtn);
-      }
-      if (!this.checkIfSuperSetIsStarted()){
-        actionsArray.push(addWarmupSetBtn);
-      }
-      if (!this.checkIfSetIsPartOfRounds()){
-        actionsArray.push(skipCurrentSetBtn);
-      }
-      if (!this.checkIfSetIsPartOfRounds()){
-        actionsArray.push(skipCurrentExerciseBtn);
-      }
-      if (!this.checkIfSetIsPartOfRounds()){
-        actionsArray.push(markAsDoLaterBtn);
-      }
-      if (this.currentWorkoutLogExercises().length > 0){
-        actionsArray.push(finishEarly);
-      }
-
-      actionsArray.push(quitWorkoutBtn);
-  
-      return actionsArray;
     }
+    actionsArray.push(addExerciseBtn);
+
+
+    if (this.canSwitchExercise()) {
+      actionsArray.push(switchExerciseBtn);
+    }
+    if (!this.checkIfSetIsPartOfRounds() && (this.currentWorkoutLogExercises() && this.currentWorkoutLogExercises().length)) {
+      actionsArray.push(jumpToExerciseBtn);
+    }
+    if (!this.checkIfSuperSetIsStarted() && this.canAddWarmupSet()) {
+      actionsArray.push(addWarmupSetBtn);
+    }
+    if (!this.checkIfSetIsPartOfRounds() && (this.currentWorkoutLogExercises() && this.currentWorkoutLogExercises().length)) {
+      actionsArray.push(skipCurrentSetBtn);
+    }
+    if (!this.checkIfSetIsPartOfRounds() && (this.currentWorkoutLogExercises() && this.currentWorkoutLogExercises().length)) {
+      actionsArray.push(skipCurrentExerciseBtn);
+    }
+    if (!this.checkIfSetIsPartOfRounds() && (this.currentWorkoutLogExercises() && this.currentWorkoutLogExercises().length)) {
+      actionsArray.push(markAsDoLaterBtn);
+    }
+    if (this.currentWorkoutLogExercises().length > 0) {
+      actionsArray.push(finishEarly);
+    }
+
+    actionsArray.push(quitWorkoutBtn);
+
+    return actionsArray;
+  }
 
   handleActionMenuItemClick(event: { actionKey: string, data?: any }): void {
     // --- Switch based on the unique action key ---
