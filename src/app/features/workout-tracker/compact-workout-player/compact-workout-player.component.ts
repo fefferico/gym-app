@@ -368,6 +368,10 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return !!this.getLoggedSet(exIndex, setIndex);
   }
 
+  isExerciseLogged(exIndex: number): boolean {
+    return !!this.currentWorkoutLog()?.exercises?.find((e, index) => index === exIndex);
+  }
+
   toggleSetCompletion(exercise: WorkoutExercise, set: ExerciseSetParams, exIndex: number, setIndex: number, fieldUpdated?: string): void {
     const log = this.currentWorkoutLog();
     if (!log.exercises) log.exercises = [];
@@ -699,8 +703,18 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const routine = this.routine();
     if (!routine) return;
     const exercise = routine.exercises[exIndex];
-    const confirm = await this.alertService.showConfirm("Remove Exercise", `Are you sure you want to remove ${exercise.exerciseName}?`);
-    if (confirm?.data) {
+
+    // if no logs for this exercise avoid asking the user for permission
+    const isExerciseLogged = this.isExerciseLogged(exIndex);
+
+    let confirm: any = false
+    if (!isExerciseLogged){
+      confirm = true;
+    } else {
+      confirm = await this.alertService.showConfirm("Remove Exercise", `Are you sure you want to remove ${exercise.exerciseName}?`);
+    }
+
+    if (confirm === true || confirm?.data) {
       routine.exercises.splice(exIndex, 1);
       this.routine.set({ ...routine });
 

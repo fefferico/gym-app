@@ -87,7 +87,7 @@
 
       <button #alertButton *ngFor="let button of options.buttons" [ngClass]="getButtonClass(button)" appPress
         (shortPress)="onButtonClick(button)"
-        class="min-w-[80px] flex items-center justify-center rounded-md transition-colors text-center"
+        class="flex items-center justify-center rounded-md transition-colors text-center"
         style="line-height: 1.25;">
         <app-icon *ngIf="button.icon" [name]="button.icon"
           [class]="button.iconClass ? button.iconClass : 'h-5 w-5 mr-1'"></app-icon>

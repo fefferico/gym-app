@@ -2379,12 +2379,11 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       const durationSeconds = Math.round((workoutLog.endTime - workoutLog.startTime) / (1000));
       workoutLog.durationMinutes = durationMinutes;
       workoutLog.durationSeconds = durationSeconds;
-      workoutLog.date = format(new Date(workoutLog.startTime), 'yyyy-MM-dd'),
-        await this.alertService.showAlert("Workout Timing Adjusted",
-          `Workout start time was not set. Estimated start time is ${format(new Date(workoutLog.startTime), 'MMM d, HH:mm')}. ` +
-          `Estimated end time is ${format(new Date(workoutLog.endTime), 'MMM d, HH:mm')}. Duration: ${durationMinutes} minutes (${durationSeconds} seconds).`
-        )
-
+      workoutLog.date = format(new Date(workoutLog.startTime), 'yyyy-MM-dd');
+      // await this.alertService.showAlert("Workout Timing Adjusted",
+      //   `Workout start time was not set. Estimated start time is ${format(new Date(workoutLog.startTime), 'MMM d, HH:mm')}. ` +
+      //   `Estimated end time is ${format(new Date(workoutLog.endTime), 'MMM d, HH:mm')}. Duration: ${durationMinutes} minutes (${durationSeconds} seconds).`
+      // )
     }
     return workoutLog;
   }
@@ -2519,8 +2518,9 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
         'CANCEL',
         [
           // do not save as new routine button
-          { text: "Just log", role: "no_save", data: "cancel", overrideCssClass: "flex items-center bg-primary px-4 py-2 font-medium", icon: 'schedule' } as AlertButton
-        ]
+          { text: "Just log", role: "no_save", data: "cancel", cssClass: "bg-primary text-white", icon: 'schedule' } as AlertButton
+        ],
+        false
 
       );
       if (nameInput && nameInput['newRoutineName'] && String(nameInput['newRoutineName']).trim()) {

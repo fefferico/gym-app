@@ -172,22 +172,28 @@ export class AlertService {
         inputs: AlertInput[],
         okText: string = 'OK',
         cancelText: string = 'Cancel',
-        customButtons: AlertButton[] = []
+        customButtons: AlertButton[] = [],
+        isCancelVisible: boolean = true
     ): Promise<{ [key: string]: string | number | boolean } | null> {
 
         const confirmFound = customButtons.some(btn => btn.role === 'confirm');
         const finalBtns = confirmFound ? customButtons : [{ text: okText, role: 'confirm', data: true, icon: 'done' } as AlertButton, ...customButtons];
 
-        const result = await this.present({
-            header,
+        const cancelBtn = isCancelVisible ? { text: cancelText, role: 'cancel', data: false, icon: 'cancel', iconClass: 'h-4 w-4 mr-1'} : null;
+
+        let options = {header,
             message,
             inputs,
             buttons: [
-                { text: cancelText, role: 'cancel', data: false, icon: 'cancel', iconClass: 'h-4 w-4 mr-1'},
                 ...finalBtns
             ],
             backdropDismiss: false
-        });
+        };
+        if (cancelBtn){
+            options.buttons.push(cancelBtn);
+        }
+
+        const result = await this.present(options);
 
         if (result && result.role === 'confirm' && result.data === true) {
             return result.values || {};
