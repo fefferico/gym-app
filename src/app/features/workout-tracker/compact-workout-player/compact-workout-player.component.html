@@ -63,14 +63,11 @@
   <main class="pt-4 px-2 pb-36">
     <div *ngIf="routine() as currentRoutine; else loading" class="">
       <!-- +++ OPTIMIZED: Classes for superset vs standalone are now cleaner +++ -->
+      <!-- +++ MODIFIED: Added striping background classes for supersets +++ -->
       <div *ngFor="let exercise of currentRoutine.exercises; let exIndex = index;"
-        class="bg-white dark:bg-gray-800 transition-all duration-300 relative" [ngClass]="{
-          'border-l-2 border-r-2 border-primary': isSuperSet(exIndex),
-          'border-t-2 border-b-0 rounded-none rounded-t-md': isSupersetStart(exIndex),
-          'border-b-0 rounded-none': isSupersetMiddle(exIndex),
-          'border-t-0 border-b-2 rounded-b-md mb-4': isSupersetEnd(exIndex),
-          'mb-3 rounded-md': !exercise.supersetId,
-          }" [style.zIndex]="areActionsVisible(exIndex) ? 50 : 'auto'">
+        class="transition-all duration-300 relative" 
+        [ngClass]="getExerciseClasses(exercise, exIndex)" 
+        [style.zIndex]="areActionsVisible(exIndex) ? 50 : 'auto'">
 
         <!-- Superset Indicator Ribbon -->
         <div *ngIf="isSupersetStart(exIndex)"
@@ -80,7 +77,7 @@
 
         <!-- Exercise Header -->
         <div (click)="toggleExerciseExpansion(exIndex)"
-          class="p-3 flex-col items-center justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:rounded-md">
+          class="p-3 flex-col items-center justify-between cursor-pointer hover:bg-gray-100/50 dark:hover:bg-gray-700/50 hover:rounded-md">
           <div class="flex-col justify-start items-start space-x-3 min-w-0">
             <div class="flex">
               <h2 class="max-w-[250px] text-md font-semibold text-gray-800 dark:text-gray-100 text-wrap">
@@ -102,7 +99,7 @@
           <div *ngIf="expandedExerciseNotes() === (exIndex)" class="flex py-2 w-full">
             <textarea [ngModel]="getInitialExerciseNoteInputValue(exIndex)"
               (change)="updateExerciseNotes(exIndex, $event)" placeholder="Notes for this exercise..."
-              class="w-full text-xs bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded-md p-1.5 focus:ring-primary-dark focus:border-primary-dark dark:text-gray-200"></textarea>
+              class="w-full text-xs bg-inherit border-gray-300 dark:border-gray-600 rounded-md p-1.5 focus:ring-primary-dark focus:border-primary-dark dark:text-gray-200"></textarea>
           </div>
 
           <!-- Action Menu Container -->
@@ -135,7 +132,7 @@
 
         <!-- Sets Container -->
         <div *ngIf="expandedExerciseIndex() === exIndex"
-          class="bg-gray-50 dark:bg-gray-700/50 py-2 px-1 border-b rounded-md border-gray-200 dark:border-gray-700">
+          class="bg-gray-50/50 dark:bg-gray-700/50 py-2 px-1 border-b rounded-md border-gray-200 dark:border-gray-700">
           <!-- Set Headers -->
           <div class="grid grid-cols-12 gap-2 text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 px-2">
             <div class="col-span-1 text-center">Set / Rounds</div>
@@ -230,7 +227,7 @@
             </ng-container>
           </div>
         </div>
-        
+
       </div>
 
     </div>
@@ -241,17 +238,17 @@
       </div>
     </ng-template>
   </main>
-<div class="flex flex-col items-center"
-  *ngIf="!routine() || (routine() !== null && routine() !== undefined && (!routine()?.exercises || routine()?.exercises?.length === 0))">
-  <h2 class="text-2xl font-semibold text-gray-700 dark:text-gray-200">
-    {{ sessionState() === 'error' ? 'Error Loading Workout' : (currentWorkoutLog().exercises?.length === 0 ?
-    (routineId === '-1' ? 'Workout to be started' : 'Workout Ended') : 'Workout Complete!') }}
-  </h2>
-  <p class="text-gray-600 dark:text-gray-400 mt-2" *ngIf="sessionState() !== 'error'">
-    {{ currentWorkoutLog().exercises?.length === 0 ? 'No sets logged yet' : 'All planned sets are done. Well
-    done!' }}
-  </p>
-</div>
+  <div class="flex flex-col items-center"
+    *ngIf="!routine() || (routine() !== null && routine() !== undefined && (!routine()?.exercises || routine()?.exercises?.length === 0))">
+    <h2 class="text-2xl font-semibold text-gray-700 dark:text-gray-200">
+      {{ sessionState() === 'error' ? 'Error Loading Workout' : (currentWorkoutLog().exercises?.length === 0 ?
+      (routineId === '-1' ? 'Workout to be started' : 'Workout Ended') : 'Workout Complete!') }}
+    </h2>
+    <p class="text-gray-600 dark:text-gray-400 mt-2" *ngIf="sessionState() !== 'error'">
+      {{ currentWorkoutLog().exercises?.length === 0 ? 'No sets logged yet' : 'All planned sets are done. Well
+      done!' }}
+    </p>
+  </div>
   <!-- Footer with Action Buttons -->
   <div class="flex justify-center fixed left-0 right-0 z-20 bottom-0">
     <div

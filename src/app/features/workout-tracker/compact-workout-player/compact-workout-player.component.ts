@@ -1413,7 +1413,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return reorderedExercises;
   }
 
-  async addToSupersetModal(exIndex: number): Promise<void> {
+ async addToSupersetModal(exIndex: number): Promise<void> {
     const routine = this.routine();
     if (!routine) return;
 
@@ -1464,19 +1464,57 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       const chosenSupersetId = result['supersetChoice'];
       this.routine.update(r => {
         if (!r) return r;
+
         const targetExercise = r.exercises.find(ex => ex.id === exerciseToAdd.id);
         if (!targetExercise) return r;
 
-        const supersetExercises = r.exercises.filter(ex => ex.supersetId === chosenSupersetId);
-        const nextOrder = supersetExercises.length;
+        // +++ MODIFICATION START +++
+        
+        // Find all existing exercises in the chosen superset
+        const existingExercisesInSuperset = r.exercises.filter(ex => ex.supersetId === chosenSupersetId);
+        if (existingExercisesInSuperset.length === 0) {
+            // This shouldn't happen, but as a safeguard:
+            this.toastService.error("Could not find the selected superset to add to.");
+            return r;
+        }
 
+        const newSupersetSize = existingExercisesInSuperset.length + 1;
+        const nextOrder = existingExercisesInSuperset.length;
+
+        // Adopt the round structure from the existing superset
+        const rounds = existingExercisesInSuperset[0].supersetRounds || 1;
+        
+        // Use the new exercise's first set as a template, or create a default one
+        const templateSet = targetExercise.sets.length > 0
+          ? { ...targetExercise.sets[0] }
+          : { id: uuidv4(), reps: 8, weight: 10, restAfterSet: 60, type: 'standard' };
+
+        // Rebuild the sets for the new exercise to match the superset's rounds
+        targetExercise.sets = [];
+        for (let i = 1; i <= rounds; i++) {
+          targetExercise.sets.push({ ...templateSet, id: uuidv4() });
+          // targetExercise.sets.push({ ...templateSet, id: uuidv4(), supersetRound: i });
+        }
+        
+        // Assign superset properties to the new exercise
         targetExercise.supersetId = String(chosenSupersetId);
         targetExercise.supersetOrder = nextOrder;
         targetExercise.type = 'superset';
+        targetExercise.supersetRounds = rounds;
+        targetExercise.supersetSize = newSupersetSize;
 
+        // CRITICAL FIX: Update the supersetSize for all existing members of the group
+        existingExercisesInSuperset.forEach(ex => {
+          ex.supersetSize = newSupersetSize;
+        });
+
+        // Reorder the full exercise list to keep the group together visually
         r.exercises = this.reorderExercisesForSupersets(r.exercises);
-        // this.toastService.success(`${targetExercise.exerciseName} added to the superset.`);
-        return r;
+        this.toastService.success(`${targetExercise.exerciseName} added to the superset.`);
+        
+        // +++ MODIFICATION END +++
+
+        return { ...r };
       });
     }
   }
@@ -1566,6 +1604,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         return r;
       });
     }
+    this.savePausedSessionState();
   }
 
   // +++ NEW: Method to add a new round to an existing superset +++
@@ -1753,5 +1792,46 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     }
     const letter = String.fromCharCode(65 + (currentEx.supersetOrder || 0)); // A, B, C...
     return `${groupIndex}${letter}`;
+  }
+
+  getExerciseClasses(exercise: WorkoutExercise, index: number): any {
+    const isSSet = this.isSuperSet(index);
+    const order = exercise.supersetOrder ?? 0;
+    const isExpanded = this.expandedExerciseIndex() === index;
+
+    // --- Base classes that apply to almost all states ---
+    const classes: any = {
+      // Side borders always apply to superset items
+      'border-l-2 border-r-2 border-primary': isSSet,
+      // Standalone exercises always get these classes
+      'mb-3 rounded-md': !isSSet,
+    };
+
+    // --- State-Specific Logic ---
+    if (isSSet && isExpanded) {
+      // STATE 1: THE EXERCISE IS EXPANDED
+      // It becomes a self-contained, highlighted block.
+      classes['border-yellow-400 ring-2 ring-yellow-400 dark:ring-yellow-500 z-10'] = true;
+      classes['rounded-md'] = true;       // Round all corners
+      classes['border-t-2'] = true;       // Ensure it has a top border
+      classes['border-b-2'] = true;       // Ensure it has a bottom border
+      classes['mb-2'] = this.isSupersetEnd(index);             // Add margin to visually detach it from the item below
+    
+    } else {
+      // STATE 2: THE EXERCISE IS COLLAPSED (OR STANDALONE)
+      // Apply the normal start, middle, and end classes for visual grouping.
+      classes['border-t-2 rounded-t-md'] = this.isSupersetStart(index);
+      classes['border-b-0 rounded-none'] = this.isSupersetMiddle(index); // This correctly removes bottom border for middle items
+      classes['border-b-2 rounded-b-md mb-4'] = this.isSupersetEnd(index);
+    }
+
+    // --- Background Color Logic (applied last, doesn't affect layout) ---
+    if (isSSet && order % 2 !== 0) {
+      classes['bg-gray-200/80 dark:bg-gray-800'] = true; // Striped background
+    } else {
+      classes['bg-white dark:bg-gray-700'] = true; // Default background
+    }
+
+    return classes;
   }
 }
