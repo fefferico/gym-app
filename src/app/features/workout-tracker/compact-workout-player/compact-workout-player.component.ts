@@ -1600,7 +1600,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
           }
         }
         r.exercises = this.reorderExercisesForSupersets(r.exercises);
-        this.toastService.success(`Superset created with ${selectedOriginalIndices.length} exercises and ${rounds} rounds.`);
+        this.alertService.showAlert("INFO", `Superset created with ${selectedOriginalIndices.length} exercises and ${rounds} rounds: sets have been standardized to one per round for consistency.`);
         return r;
       });
     }
@@ -1802,7 +1802,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     // --- Base classes that apply to almost all states ---
     const classes: any = {
       // Side borders always apply to superset items
-      'border-l-2 border-r-2 border-primary': isSSet,
+      'border-l-2 border-r-2 border-primary rounded-md': isSSet,
       // Standalone exercises always get these classes
       'mb-3 rounded-md': !isSSet,
     };
