@@ -50,40 +50,41 @@
 
   <!-- Main Content: Exercises List -->
   <main class="pt-4 px-2 pb-36">
-    <div *ngIf="routine() as currentRoutine; else loading" class="space-y-1">
-      <!-- MODIFIED: Changed space-y-1 to space-y-3 for better superset group separation -->
+    <div *ngIf="routine() as currentRoutine; else loading" class="">
+      <!-- +++ OPTIMIZED: Classes for superset vs standalone are now cleaner +++ -->
       <div *ngFor="let exercise of currentRoutine.exercises; let exIndex = index"
-        class="bg-white dark:bg-gray-800 rounded-lg shadow-sm transition-all duration-300 relative"
-        [class.superset-group]="exercise.supersetId" [class.superset-start]="isSupersetStart(exIndex)"
-        [class.superset-middle]="isSupersetMiddle(exIndex)" [class.superset-end]="isSupersetEnd(exIndex)"
+        class="bg-white dark:bg-gray-800 transition-all duration-300 relative"
+        [ngClass]="{
+          ' border-l-2 border-r-2 border-primary': isSuperSet(exIndex),
+          'border-t-2 border-b-0 rounded-none rounded-t-md': isSupersetStart(exIndex),
+          'border-b-0 rounded-none': isSupersetMiddle(exIndex),
+          'border-t-0 border-b-2 rounded-b-md mb-4': isSupersetEnd(exIndex),
+          'mb-3 rounded-md': !exercise.supersetId,
+          }"
         [style.zIndex]="areActionsVisible(exIndex) ? 50 : 'auto'">
 
-        <!-- +++ NEW: Superset Indicator Ribbon +++ -->
-        <div *ngIf="exercise.supersetId && isSupersetStart(exIndex)"
+        <!-- Superset Indicator Ribbon -->
+        <div *ngIf="isSupersetStart(exIndex)"
           class="absolute -left-2 top-2 bg-primary dark:bg-primary-dark text-white text-xs font-bold px-2 py-1 rounded-md shadow-lg z-10 transform translate-x-0 -translate-y-5">
           SUPERSET
         </div>
 
         <!-- Exercise Header -->
         <div (click)="toggleExerciseExpansion(exIndex)"
-          class="p-3 flex-col items-center justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50"
-          [class.rounded-t-lg]="!isSupersetMiddle(exIndex) && !isSupersetEnd(exIndex)"
-          [class.rounded-b-lg]="expandedExerciseIndex() !== exIndex && !isSupersetStart(exIndex) && !isSupersetMiddle(exIndex)">
+          class="p-3 flex-col items-center justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:rounded-md">
           <div class="flex justify-start items-center space-x-3 min-w-0">
-            <!-- MODIFIED: Display superset letter -->
             <div class="flex">
               <h2 class="max-w-[250px] text-md font-semibold text-gray-800 dark:text-gray-100 text-wrap">
                 {{ getExerciseDisplayIndex(exIndex)}} {{ exercise.exerciseName }}
               </h2>
             </div>
           </div>
-          <!-- +++ NEW: Exercise Notes Textarea +++ -->
+          <!-- Exercise Notes Textarea -->
           <div *ngIf="expandedExerciseNotes() === (exIndex)" class="flex py-2 w-full">
             <textarea [ngModel]="getInitialExerciseNoteInputValue(exIndex)"
               (change)="updateExerciseNotes(exIndex, $event)" placeholder="Notes for this exercise..."
               class="w-full text-xs bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded-md p-1.5 focus:ring-primary-dark focus:border-primary-dark dark:text-gray-200"></textarea>
           </div>
-
 
           <!-- Action Menu Container -->
           <div class="absolute top-2 right-2 z-60">
@@ -115,7 +116,7 @@
 
         <!-- Sets Container -->
         <div *ngIf="expandedExerciseIndex() === exIndex"
-          class="bg-gray-50 dark:bg-gray-700/50 py-2 px-1 border-t border-gray-200 dark:border-gray-700 rounded-t-md rounded-b-md">
+          class="bg-gray-50 dark:bg-gray-700/50 py-2 px-1 border-t border-gray-200 dark:border-gray-700">
           <!-- Set Headers -->
           <div class="grid grid-cols-12 gap-2 text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 px-2">
             <div class="col-span-1 text-center">Set</div>
@@ -133,14 +134,13 @@
 
           <!-- Sets List -->
           <div class="space-y-2">
-            <!-- MODIFIED: *ngFor container to include notes section -->
             <ng-container *ngFor="let set of exercise.sets; let setIndex = index">
               <div class="grid grid-cols-12 gap-2 items-center rounded-md p-2 shadow-sm"
                 [ngClass]="{'bg-blue-100 dark:bg-blue-700/70': set.type === 'warmup', 'bg-white dark:bg-gray-800': set.type !== 'warmup'}">
                 <div class="col-span-1 text-center font-semibold text-gray-700 dark:text-gray-200">{{ setIndex + 1 }}
                 </div>
 
-                <!-- Input fields remain the same -->
+                <!-- Input fields -->
                 <ng-container *ngIf="!isCardio(exercise)">
                   <div class="col-span-3">
                     <input type="number" [ngModel]="getInitialInputValue(exIndex, setIndex, 'weight')"
@@ -176,9 +176,8 @@
                   </button>
                 </div>
 
-                <!-- MODIFIED: Set actions now include a notes button -->
+                <!-- Set actions -->
                 <div class="col-span-3 flex justify-center items-center">
-                  <!-- +++ NEW: Set Notes Button +++ -->
                   <button (click)="toggleSetNotes(exIndex, setIndex, $event)"
                     class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600">
                     <app-icon name="clipboard-list" class="h-5 w-5 text-gray-500 dark:text-gray-400"></app-icon>
@@ -189,7 +188,7 @@
                   </button>
                 </div>
               </div>
-              <!-- +++ NEW: Set Notes Textarea +++ -->
+              <!-- Set Notes Textarea -->
               <div *ngIf="expandedSetNotes() === (exIndex + '-' + setIndex)" class="px-2 pb-2">
                 <textarea [ngModel]="getInitialInputValue(exIndex, setIndex, 'notes')"
                   (change)="updateSetData(exIndex, setIndex, 'notes', $event)" placeholder="Notes for this set..."
@@ -209,19 +208,16 @@
   </main>
 
   <!-- Footer with Action Buttons -->
-  <!-- <footer class="flex justify-center fixed left-0 right-0 z-20" [style.bottom]="'var(--main-nav-height)'">-->
   <div class="flex justify-center fixed left-0 right-0 z-20 bottom-0">
     <div
       class="w-full max-w-sm grid grid-cols-2 gap-4 bg-white dark:bg-gray-800/80 dark:backdrop-blur-sm border-t border-x border-gray-200 dark:border-gray-700 p-3 rounded-t-md">
 
-      <!-- Button 1 -->
       <button (click)="openAddExerciseModal()"
         class="flex items-center justify-center space-x-2 bg-blue-500 text-white font-semibold py-2 px-4 rounded-full shadow-lg hover:bg-blue-600 transition-colors">
         <app-icon name="plus-circle" class="h-6 w-6"></app-icon>
         <span>ADD EXERCISE</span>
       </button>
 
-      <!-- Button 2 -->
       <button (click)="finishWorkout()"
         [disabled]="!this.currentWorkoutLog() || !this.currentWorkoutLog().exercises || this.currentWorkoutLog().exercises?.length === 0"
         class="flex items-center justify-center space-x-2 bg-green-500 text-white font-semibold py-2 px-4 rounded-full shadow-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
@@ -248,7 +244,6 @@
     (backToSearchClicked)="isShowingSimilarInSwitchModal.set(false)" (close)="closeSwitchExerciseModal()">
   </app-exercise-selection-modal>
 
-  <!-- MODIFIED: Pass next set details to the rest timer component -->
   <app-full-screen-rest-timer [isVisible]="isRestTimerVisible()" [mainTimer]="sessionTimerDisplay"
     [durationSeconds]="restDuration()" [mainText]="restTimerMainText()" [nextUpText]="restTimerNextUpText()"
     (timerFinished)="handleRestTimerFinished()" (timerSkipped)="handleRestTimerSkipped($event)">
@@ -368,12 +363,3 @@
     </div>
   </div>
 </div>
-
-<!-- <app-exercise-selection-modal
-  [isOpen]="isAddToSupersetModalOpen()"
-  [(searchTerm)]="modalSearchTerm"
-  title="ADD TO SUPERSET"
-  [exercises]="availableExercises"
-  (exerciseSelected)="addExerciseToSuperset($event)"
-  (close)="closeAddToSupersetModal()">
-</app-exercise-selection-modal> -->

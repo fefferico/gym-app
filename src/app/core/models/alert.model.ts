@@ -13,7 +13,7 @@ export interface AlertButton {
 }
 
 export interface AlertInput {
-  type?: 'text' | 'number' | 'email' | 'password' | 'search' | 'tel' | 'url' | 'date' | 'textarea' | 'checkbox'; // Add more as needed
+  type?: 'text' | 'number' | 'email' | 'password' | 'search' | 'tel' | 'url' | 'date' | 'textarea' | 'checkbox' | 'radio'; // Add more as needed
   name: string; // Will be the key in the returned data object
   placeholder?: string;
   value?: string | number | boolean;

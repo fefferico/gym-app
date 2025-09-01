@@ -3,13 +3,12 @@
   class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 backdrop-blur-sm"
   (click)="onBackdropClick()">
 
-  <!-- +++ 1. Main alert container: Use flex column and add keydown listener +++ -->
-  <!-- class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md dark:text-gray-200 flex flex-col max-h-[90vh]" -->
+  <!-- Main alert container -->
   <div
     class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md dark:text-gray-200 flex flex-col"
     [ngClass]="options.customCssClass" (click)="$event.stopPropagation()" (keydown.enter)="handleEnterPress()">
 
-    <!-- +++ 2. Scrollable content wrapper +++ -->
+    <!-- Scrollable content wrapper -->
     <div *ngIf="options.header || options.message" class="p-6 pb-4 flex-shrink-0">
       <header *ngIf="options.header" class="mb-4">
         <h3 class="text-xl font-semibold text-gray-800 dark:text-gray-100">{{ options.header | uppercase}}</h3>
@@ -24,7 +23,7 @@
           <li *ngFor="let item of options.listItems">{{ item }}</li>
         </ul>
 
-        <!-- Inputs Section (logic is unchanged) -->
+        <!-- Inputs Section -->
         <div *ngIf="options.inputs && options.inputs.length > 0" class="space-y-1">
           <div *ngFor="let input of options.inputs; let i = index">
             <ng-container [ngSwitch]="input.type">
@@ -34,6 +33,17 @@
                 <input type="checkbox" [id]="input.id || ('alert-input-' + i)" [name]="input.name"
                   [(ngModel)]="inputValues[input.name]"
                   class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-800 dark:focus:ring-offset-gray-800">
+                <label *ngIf="input.label" [for]="input.id || ('alert-input-' + i)"
+                  class="ml-2 block text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+                  {{ input.label }}
+                </label>
+              </div>
+
+              <!-- +++ NEW: Radio Input Type +++ -->
+              <div *ngSwitchCase="'radio'" class="flex items-center">
+                <input type="radio" [id]="input.id || ('alert-input-' + i)" [name]="input.name" [value]="input.value"
+                  [(ngModel)]="inputValues[input.name]"
+                  class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-800 dark:focus:ring-offset-gray-800">
                 <label *ngIf="input.label" [for]="input.id || ('alert-input-' + i)"
                   class="ml-2 block text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
                   {{ input.label }}
@@ -75,7 +85,6 @@
     <footer *ngIf="options.buttons && options.buttons.length > 0" class="overflow-y-auto p-6 pt-4 custom-scrollbar gap-1"
       [ngClass]="options && options.customButtonDivCssClass ? options.customButtonDivCssClass : options.buttons.length === 2 ? 'flex justify-center gap-2 sm:gap-3' : 'grid grid-cols-1 gap-2 sm:gap-3'">
 
-      <!-- This block will now ALWAYS render, iterating over all buttons -->
       <button #alertButton *ngFor="let button of options.buttons" [ngClass]="getButtonClass(button)" appPress
         (shortPress)="onButtonClick(button)"
         class="min-w-[80px] flex items-center justify-center rounded-md transition-colors text-center"

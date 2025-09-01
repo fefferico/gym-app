@@ -94,7 +94,7 @@
                     </div>
                     <p class="text-4xl font-bold text-primary dark:text-primary-light">
                         {{ currentWorkoutStreakInfo().length }} <span class="text-lg font-medium">{{
-                            currentWorkoutStreakInfo().length === 1 ? 'day' : 'days' }}</span>
+                            currentWorkoutStreakInfo().length === 1 ? 'week' : 'weeks' }}</span>
                     </p>
                     <div *ngIf="currentWorkoutStreakInfo().length > 0 && currentWorkoutStreakInfo().startDate && currentWorkoutStreakInfo().endDate"
                         class="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -134,7 +134,7 @@
                     </div>
                     <p class="text-4xl font-bold text-primary dark:text-primary-light">
                         {{ longestWorkoutStreakInfo().length }} <span class="text-lg font-medium">{{
-                            longestWorkoutStreakInfo().length === 1 ? 'day' : 'days' }}</span>
+                            longestWorkoutStreakInfo().length === 1 ? 'week' : 'weeks' }}</span>
                     </p>
                     <div *ngIf="longestWorkoutStreakInfo().length > 0 && longestWorkoutStreakInfo().startDate && longestWorkoutStreakInfo().endDate"
                         class="text-xs text-gray-500 dark:text-gray-400 mt-1">

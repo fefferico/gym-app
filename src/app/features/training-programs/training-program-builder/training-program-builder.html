@@ -11,7 +11,7 @@
         <!-- Action Buttons Group -->
         <div class="flex items-center space-x-2 flex-shrink-0">
             <!-- Wrapper for "More Actions" button and its dropdown -->
-            <div *ngIf="currentProgram as program" class="">
+            <div *ngIf="currentProgram() as program" class="">
                 <div class="relative">
                     <button (click)="toggleActions(program.id, $event)"
                         class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center">
@@ -28,7 +28,7 @@
 
     </header>
 
-    <form [formGroup]="programForm" (ngSubmit)="onSubmit()" class="space-y-6 mb-6">
+    <form [formGroup]="programForm" class="space-y-6 mb-6">
         <!-- Program Details Section -->
         <section class="space-y-4 p-2 rounded-md">
             <!-- Program NAME -->
@@ -36,7 +36,7 @@
                 <label
                     class="block text-xl font-black text-gray-700 dark:text-gray-300">{{programForm.get('name')?.value}}</label>
             </div>
-            <div *ngIf="currentProgram?.isActive">
+            <div *ngIf="currentProgram()?.isActive">
                 <div
                     class="flex max-w-[100px] px-3 py-1.5 text-xs font-semibold rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-green-800 bg-green-600 text-white hover:bg-green-300 dark:bg-green-600 dark:hover:bg-green-500 focus:ring-green-400">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
@@ -50,11 +50,11 @@
             </div>
 
             <!-- Original Progress Bar (now primarily for Cycled programs) -->
-            <div *ngIf="isViewMode && currentProgram?.isActive" class="pt-2">
+            <div *ngIf="isViewMode && currentProgram()?.isActive" class="pt-2">
                 <div *ngIf="programProgress() as progress" class="space-y-1">
                     <div class="flex justify-between items-baseline">
                         <h3 class="text-sm font-medium text-gray-600 dark:text-gray-300">
-                            {{ currentProgram?.programType === 'linear' ? 'Overall Workout Progress' : 'Current Cycle
+                            {{ currentProgram()?.programType === 'linear' ? 'Overall Workout Progress' : 'Current Cycle
                             Progress' }}
                         </h3>
                         <span class="text-sm font-semibold text-primary dark:text-primary-light">
@@ -72,7 +72,7 @@
             <!-- =================================================================== -->
             <!-- START: New Segmented Progress Bars for Linear Programs              -->
             <!-- =================================================================== -->
-            <div *ngIf="isViewMode && currentProgram?.programType === 'linear' && currentProgram?.isActive"
+            <div *ngIf="isViewMode && currentProgram()?.programType === 'linear' && currentProgram()?.isActive"
                 class="pt-4 space-y-4">
 
                 <!-- 1. Overall Week Completion Bar -->
@@ -134,7 +134,7 @@
                     class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200"></textarea>
             </div>
             <!-- GOAL -->
-            <div *ngIf="(isViewMode && currentProgram?.goals) || (isEditableMode())" class="mt-4">
+            <div *ngIf="(isViewMode && currentProgram()?.goals) || (isEditableMode())" class="mt-4">
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Goals</label>
                 <div class="flex flex-wrap gap-2">
                     <button *ngFor="let goal of programGoals" [disabled]="isViewMode" (click)="toggleGoal(goal)"
@@ -595,7 +595,7 @@
                 <app-icon name="cancel" class="h-5 w-5 mr-1"></app-icon>
                 CANCEL
             </button>
-            <button type="submit" appPress [disabled]="programForm.invalid"
+            <button type="submit" appPress [disabled]="programForm.invalid" (shortPress)="onSubmit()"
                 class="flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark disabled:opacity-50">
                 <app-icon *ngIf="isNewMode" name="create" class="h-5 w-5"></app-icon>
                 <app-icon *ngIf="!isNewMode" name="save" class="h-5 w-5"></app-icon>
@@ -680,7 +680,7 @@
 
             <!-- Modal Body -->
             <div class="p-4 overflow-y-auto flex-grow">
-                <div *ngIf="currentProgram?.history?.length; else noHistory">
+                <div *ngIf="currentProgram()?.history?.length; else noHistory">
                     <form [formGroup]="historyEditForm" (ngSubmit)="saveHistoryEntry()">
 
                         <!-- DESKTOP VIEW: TABLE (Visible on sm screens and up) -->
@@ -705,7 +705,7 @@
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                                <tr *ngFor="let entry of currentProgram?.history">
+                                <tr *ngFor="let entry of currentProgram()?.history">
                                     <!-- View Mode -->
                                     <ng-container *ngIf="editingHistoryEntryId() !== entry.id">
                                         <td class="px-4 py-3 text-sm text-gray-700 dark:text-gray-200">{{
@@ -767,7 +767,7 @@
 
                         <!-- MOBILE VIEW: CARD LIST (Visible below sm screens) -->
                         <div class="space-y-4 sm:hidden">
-                            <div *ngFor="let entry of currentProgram?.history"
+                            <div *ngFor="let entry of currentProgram()?.history"
                                 class="p-3 border rounded-md dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
                                 <!-- View Mode Card -->
                                 <div *ngIf="editingHistoryEntryId() !== entry.id">

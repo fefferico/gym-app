@@ -72,7 +72,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
     isViewMode = false;
     isEditableMode = computed(() => this.isEditMode || this.isNewMode);
     currentProgramId: string | null = null;
-    currentProgram: TrainingProgram | null | undefined = null;
+    currentProgram = signal<TrainingProgram | null | undefined>(null);
     isCurrentProgramActive = signal<boolean>(false);
     private routeSub!: Subscription;
 
@@ -170,7 +170,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
 
     // --- NEW: Computed signal to calculate program progress ---
     programProgress = computed(() => {
-        const program = this.currentProgram;
+        const program = this.currentProgram();
         const logs = this.allWorkoutLogs();
 
         // Guard clauses: We can't calculate progress without this essential info.
@@ -229,7 +229,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
 
     // --- NEW: Signal for Overall Week-by-Week Progress Bar ---
     overallWeekProgress = computed(() => {
-        const program = this.currentProgram;
+        const program = this.currentProgram();
         const logs = this.allWorkoutLogs();
 
         if (program?.programType !== 'linear' || !program.isActive || !program.startDate || !program.weeks?.length) {
@@ -264,7 +264,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
 
     // --- NEW: Signal for Current Week's Workout-by-Workout Progress ---
     currentWeekProgress = computed(() => {
-        const program = this.currentProgram;
+        const program = this.currentProgram();
         const logs = this.allWorkoutLogs();
 
         if (program?.programType !== 'linear' || !program.isActive || !program.startDate || !program.weeks?.length) {
@@ -346,12 +346,13 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
             }),
             tap(program => {
                 if (program) {
+                    this.currentProgram.set(program);
                     this.patchFormWithProgramData(program);
                 } else if (!this.isNewMode && this.currentProgramId) {
                     this.toastService.error(`Program with ID ${this.currentProgramId} not found.`, 0, "Error");
                     this.router.navigate(['/training-programs']);
                 }
-                this.currentProgram = program;
+                this.currentProgram.set(program);
                 this.updateFormEnabledState();
                 const isActive = program?.isActive ?? false;
                 this.isCurrentProgramActive.set(isActive);
@@ -793,7 +794,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
                     } as ScheduledRoutineDay))
                 }))
                 : [],
-            isActive: this.currentProgram?.isActive ?? false
+            isActive: this.currentProgram()?.isActive ?? false
         };
 
         try {
@@ -804,12 +805,15 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
                 this.isEditMode = true;
                 this.currentProgramId = newProgram.id;
                 this.toastService.success(`Program "${newProgram.name}" created.`, 3000, "Program Created");
+                this.currentProgram.set(newProgram);
+                this.router.navigate([`/training-programs/edit/${this.currentProgram()?.id}`]);
             } else if (this.isEditMode && this.currentProgramId) {
                 const existingProgram = await firstValueFrom(this.trainingProgramService.getProgramById(this.currentProgramId).pipe(take(1)));
                 programPayload.isActive = existingProgram?.isActive ?? false;
                 await this.trainingProgramService.updateProgram(programPayload);
+                this.toastService.success("Program saved successfully", 0, "Success", false);
+                this.currentProgram.set(existingProgram);
             }
-            this.toastService.success("Program saved successfully", 0, "Success", false);
         } catch (error) {
             console.error("Error saving program:", error);
             this.toastService.error("Failed to save program", 0, "Save Error");
@@ -827,7 +831,9 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
             this.spinnerService.show("Deleting program...");
             await this.trainingProgramService.deleteProgram(this.currentProgramId);
 
-            if (this.router.url.includes(`/training-programs/edit/${this.currentProgramId}`) ||
+            if (
+                this.router.url.includes(`/training-programs/new`) ||
+                this.router.url.includes(`/training-programs/edit/${this.currentProgramId}`) ||
                 this.router.url.includes(`/training-programs/view/${this.currentProgramId}`)) {
                 this.router.navigate(['/training-programs']);
             }
@@ -934,7 +940,8 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
     }
 
     toggleProgramHistory(): void {
-        if (!this.currentProgram?.history || this.currentProgram.history.length === 0) {
+        const program = this.currentProgram() !== null && this.currentProgram() !== undefined ? this.currentProgram() : null;
+        if (!program || !program.history || (program && program.history && program.history.length === 0)) {
             this.toastService.info("No history available for this program.", 3000);
             return;
         }
@@ -1015,7 +1022,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         {
             label: 'DEACTIVATE',
             actionKey: 'deactivate',
-            iconSvg: `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="45" stroke="currentColor" stroke-width="10"/><line x1="25" y1="50" x2="75" y2="50" stroke="currentColor" stroke-width="10"/></svg>`,
+            iconName: `deactivate`,
             iconClass: 'w-7 h-7 mr-2',
             buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + deactivateBtnClass,
             data: { programId: programId }
@@ -1023,20 +1030,30 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
 
         let actionsArray = [] as ActionMenuItem[];
 
-        if (currentProgram?.isActive) {
+        if (this.currentProgram()?.isActive) {
             actionsArray.push(finishProgramBtn);
             actionsArray.push(deactivateProgramBtn);
         } else {
             actionsArray.push(activateProgramBtn);
         }
 
-        // if (currentProgram?.history && currentProgram.history.length > 0) {
         actionsArray.push(historyProgramBtn);
         // }
 
         if (this.isViewMode) {
             actionsArray.push(editProgramButton);
         }
+
+        actionsArray.push({ isDivider: true });
+        actionsArray.push({
+            label: 'DELETE',
+            actionKey: 'delete',
+            iconName: `trash`,
+            iconClass: 'w-8 h-8 mr-2',
+            buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + deleteBtnClass,
+            data: { programId: programId }
+        });
+
         return actionsArray;
     }
 
@@ -1051,22 +1068,23 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
             case 'finish': this.completeProgram(); break;
             case 'history': this.toggleProgramHistory(); break;
             case 'edit': this.enableEditModeFromView(); break;
+            case 'delete': this.deleteProgram(); break;
         }
     }
 
-    activeRoutineIdActions = signal<string | null>(null);
+    activeProgramIdActions = signal<string | null>(null);
 
-    toggleActions(routineId: string, event: MouseEvent): void {
+    toggleActions(programId: string, event: MouseEvent): void {
         event.stopPropagation();
-        this.activeRoutineIdActions.update(current => (current === routineId ? null : routineId));
+        this.activeProgramIdActions.update(current => (current === programId ? null : programId));
     }
 
-    areActionsVisible(routineId: string): boolean {
-        return this.activeRoutineIdActions() === routineId;
+    areActionsVisible(programId: string): boolean {
+        return this.activeProgramIdActions() === programId;
     }
 
     onCloseActionMenu() {
-        this.activeRoutineIdActions.set(null);
+        this.activeProgramIdActions.set(null);
     }
 
     navigateToPrograms(): void {
@@ -1083,7 +1101,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
             await this.trainingProgramService.removeProgramHistoryEntry(this.currentProgramId, historyId);
             this.toastService.success("History entry removed.", 0, "Success");
             const updatedProgram = await firstValueFrom(this.trainingProgramService.getProgramById(this.currentProgramId).pipe(take(1)));
-            this.currentProgram = updatedProgram;
+            this.currentProgram.set(updatedProgram);
             if (updatedProgram) {
                 this.patchFormWithProgramData(updatedProgram);
             }
@@ -1128,7 +1146,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
             await this.trainingProgramService.updateProgramHistory(this.currentProgramId, updatedEntry);
 
             const updatedProgram = await firstValueFrom(this.trainingProgramService.getProgramById(this.currentProgramId).pipe(take(1)));
-            this.currentProgram = updatedProgram;
+            this.currentProgram.set(updatedProgram);
 
             this.editingHistoryEntryId.set(null);
         } catch (error) {

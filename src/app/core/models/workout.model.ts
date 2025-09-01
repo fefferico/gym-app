@@ -1,5 +1,7 @@
 // src/app/core/models/workout.model.ts
 
+import { ExerciseCategory } from "./exercise.model";
+
 export interface ExerciseSetParams {
   id: string;
   reps?: number;
@@ -47,7 +49,7 @@ export interface WorkoutExercise {
    * Can be derived or explicitly set.
    */
   supersetSize?: number | null; // Can be useful for display "Exercise 1 of 2 in Superset"
-  supersetRounds?: number | null; 
+  supersetRounds?: number | null;
 
   // `lastPerformed` was on WorkoutExercise, but it's usually a Routine-level or global exercise stat.
   // Keeping it here for now if your current logic uses it, but consider if it's truly per WorkoutExercise instance.
@@ -62,6 +64,7 @@ export interface WorkoutExercise {
   workoutLogId?: string;
   sessionStatus?: 'pending' | 'skipped' | 'do_later' | 'completed' | 'started'; // For in-session tracking
   type: 'standard' | 'warmup' | 'amrap' | 'dropset' | 'failure' | 'myorep' | 'restpause' | 'custom' | 'superset' | string; // More flexible
+  category?: ExerciseCategory;
 }
 
 export interface Routine {

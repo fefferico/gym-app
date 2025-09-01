@@ -367,7 +367,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       const order = exercise.sets.map(s => s.id);
       exerciseLog.sets.sort((a, b) => order.indexOf(a.plannedSetId!) - order.indexOf(b.plannedSetId!));
 
-      if (set.restAfterSet && set.restAfterSet > 0) {
+      if (set.restAfterSet && set.restAfterSet > 0 && (!this.isSuperSet(exIndex) || (this.isSuperSet(exIndex) && this.isEndOfLastSupersetExercise(exIndex,setIndex)))) {
         if (!fieldUpdated || fieldUpdated !== 'notes') {
           this.startRestPeriod(set.restAfterSet, exIndex, setIndex);
         }
@@ -579,8 +579,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       case 'add_warmup': this.addWarmupSet(exIndex); break;
       case 'remove': this.removeExercise(exIndex); break;
       // +++ NEW CASES FOR SUPERSET +++
-      case 'create_superset': this.createSuperset(exIndex); break;
-      case 'add_to_superset': this.openAddToSupersetModal(exIndex); break;
+      case 'create_superset': this.openCreateSupersetModal(exIndex); break;
+      case 'add_to_superset': this.addToSupersetModal(exIndex); break;
       case 'remove_from_superset': this.removeFromSuperset(exIndex); break;
     }
   }
@@ -889,21 +889,50 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       }
     ];
 
-    // +++ MODIFIED: Dynamically add superset actions +++
+    const routine = this.routine(); // Get the routine once at the top
+
+    // RULE 1: "Remove from Superset" is visible only if the current exercise is part of a superset.
     if (exercise?.supersetId) {
       actionsArray.push({
-        label: 'Add to Superset', actionKey: 'chains', iconName: 'link', data: { exIndex: exerciseId },
-        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass, iconClass: 'w-8 h-8 mr-2'
+        label: 'Remove from Superset',
+        actionKey: 'remove_from_superset',
+        iconName: 'unlink',
+        data: { exIndex: exerciseId },
+        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + deleteBtnClass,
+        iconClass: 'w-8 h-8 mr-2'
       });
-      actionsArray.push({
-        label: 'Remove from Superset', actionKey: 'remove_from_superset', iconName: 'unlink', data: { exIndex: exerciseId },
-        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + deleteBtnClass, iconClass: 'w-8 h-8 mr-2'
-      });
-    } else {
-      actionsArray.push({
-        label: 'Create Superset', actionKey: 'create_superset', iconName: 'link', data: { exIndex: exerciseId },
-        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass, iconClass: 'w-8 h-8 mr-2'
-      });
+    }
+    // RULES 2 & 3: Logic for exercises that are NOT currently in a superset.
+    else {
+      // Prerequisite for both creating and adding: must have at least 2 exercises in the entire routine.
+      if (routine && routine.exercises.length >= 2) {
+
+        // RULE 3: "Add to Superset" is visible if there's already a superset and the current exercise is free.
+        const aSupersetExists = routine.exercises.some(ex => ex.supersetId);
+        if (aSupersetExists) {
+          actionsArray.push({
+            label: 'Add to Superset',
+            actionKey: 'add_to_superset', // Assumes this might trigger a different UI flow
+            iconName: 'link',
+            data: { exIndex: exerciseId },
+            buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+            iconClass: 'w-8 h-8 mr-2'
+          });
+        }
+
+        // RULE 2: "Create Superset" is visible if there are at least two "free" exercises to form a new pair.
+        const canCreateNewSuperset = routine.exercises.filter(ex => !ex.supersetId).length >= 2;
+        if (canCreateNewSuperset) {
+          actionsArray.push({
+            label: 'Create Superset',
+            actionKey: 'create_superset',
+            iconName: 'link',
+            data: { exIndex: exerciseId },
+            buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+            iconClass: 'w-8 h-8 mr-2'
+          });
+        }
+      }
     }
 
     return actionsArray;
@@ -1010,7 +1039,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
           suggestedSetDetails.duration = historicalSet.durationPerformed ?? plannedNextSet.duration;
           suggestedSetDetails.distance = historicalSet.distanceAchieved ?? plannedNextSet.distance;
         }
-        
+
         const setType = plannedNextSet.type === 'warmup' ? "Warm-up" : "Set";
         const nextSetDisplayNumber = nextSetIndex + 1;
         const text = `${nextExercise.exerciseName} - Set #${nextSetDisplayNumber}: ${plannedNextSet.weight}${this.unitService.getUnitLabel()} x ${plannedNextSet.reps} reps`;
@@ -1166,39 +1195,159 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     }
   }
 
-  // +++ NEW: Method to open the "Add to Superset" modal +++
-  async openAddToSupersetModal(exIndex: number): Promise<void> {
-    this.exerciseToSupersetIndex.set(exIndex);
+  // compact-workout-player.component.ts
 
-    const availableExercises = this.routine()?.exercises?.map((ex, index) => ({ ...ex, originalIndex: index })) || [];
-    const exerciseButtons: AlertButton[] = availableExercises.map(ex => {
-      // Convert sessionStatus to a user-friendly label
-      return {
-        text: `${ex.exerciseName}`,
-        role: 'confirm',
-        data: ex.originalIndex,
-        // cssClass: cssClass
-      };
-    });
-    const alertButtons: AlertButton[] = [
-      ...exerciseButtons,
-      { text: 'Cancel', role: 'cancel', data: 'cancel_deferred_choice' }
-    ];
+  // ... other methods ...
 
-    const choice = await this.alertService.showConfirmationDialog(
-      'Create superset',
-      'Which exercises you want to link together?',
-      alertButtons,
-    );
+  /**
+   * Opens a modal to add an existing exercise to a pre-existing superset.
+   * It finds all current superset groups and presents them as choices.
+   * @param exIndex The index of the exercise to be added to a superset.
+   */
+  async addToSupersetModal(exIndex: number): Promise<void> {
+    const routine = this.routine();
+    if (!routine) return;
 
-    if (choice && typeof choice.data === 'number') {
-      this.toastService.info("Exercise index clicked " + choice.data);
-    } else { // Includes cancel_deferred_choice or dialog dismissal
-      this.toastService.info("Cancel clicked");
+    const exerciseToAdd = routine.exercises[exIndex];
+    if (exerciseToAdd.supersetId) {
+      this.toastService.info("This exercise is already in a superset.");
+      return;
     }
 
+    // 1. Find and group all existing supersets by their ID.
+    const supersetMap = new Map<string, WorkoutExercise[]>();
+    routine.exercises.forEach(ex => {
+      if (ex.supersetId) {
+        if (!supersetMap.has(ex.supersetId)) {
+          supersetMap.set(ex.supersetId, []);
+        }
+        supersetMap.get(ex.supersetId)!.push(ex);
+      }
+    });
 
-    this.isAddToSupersetModalOpen.set(true);
+    if (supersetMap.size === 0) {
+      this.toastService.error("No supersets exist to add this exercise to.");
+      return;
+    }
+
+    // 2. Create the radio button inputs for the alert dialog.
+    const supersetChoices: AlertInput[] = Array.from(supersetMap.values()).map((supersetGroup, index) => {
+      // Sort exercises by their order in the superset for a consistent label
+      supersetGroup.sort((a, b) => (a.supersetOrder || 0) - (b.supersetOrder || 0));
+      const label = supersetGroup.map(ex => ex.exerciseName).join(' & ');
+      const supersetId = supersetGroup[0].supersetId!;
+
+      return {
+        name: 'supersetChoice', // All radio buttons must have the same name
+        type: 'radio',
+        label: `Superset: ${label}`,
+        value: supersetId, // The value of the choice is the ID
+        checked: index === 0, // Pre-select the first option
+      };
+    });
+
+    // 3. Show the prompt to the user.
+    const result = await this.alertService.showPromptDialog(
+      'Add to Superset',
+      `Which superset would you like to add "${exerciseToAdd.exerciseName}" to?`,
+      supersetChoices,
+      'Add Exercise',
+      'Cancel'
+    );
+
+    // 4. Process the user's choice.
+    if (result && result['supersetChoice']) {
+      const chosenSupersetId = result['supersetChoice'];
+
+      this.routine.update(r => {
+        if (!r) return r;
+
+        // Find the exercise again inside the update function to ensure we're modifying the correct draft state
+        const targetExercise = r.exercises[exIndex];
+        if (!targetExercise) return r;
+
+        // Find all exercises in the chosen superset to determine the next order number
+        const supersetExercises = r.exercises.filter(ex => ex.supersetId === chosenSupersetId);
+        const nextOrder = supersetExercises.length + 1;
+
+        // Modify the target exercise to join the superset
+        targetExercise.supersetId = String(chosenSupersetId);
+        targetExercise.supersetOrder = nextOrder;
+        targetExercise.type = 'superset';
+
+        this.toastService.success(`${targetExercise.exerciseName} added to the superset.`);
+        return r;
+      });
+    }
+  }
+
+  // +++ NEW: Method to open the "Add to Superset" modal +++
+  async openCreateSupersetModal(exIndex: number): Promise<void> {
+    const availableExercises = this.routine()?.exercises?.map((ex, index) => ({ ...ex, originalIndex: index })).filter(ex => !ex.supersetId) || [];
+    const exercises: AlertInput[] =
+      availableExercises.map((exer, index) => ({
+        label: exer.exerciseName,
+        name: String(index),
+        type: 'checkbox',
+        value: exer.originalIndex === exIndex ? true : false
+      }));
+
+    const choice = await this.alertService.showPromptDialog(
+      'Create superset',
+      'Which exercises you want to link together?',
+      exercises,
+    );
+
+    if (!choice || this.areAllPropertiesFalsy(choice)) {
+      this.toastService.info("No Exercise index clicked ");
+      // or
+      // this.toastService.info("Cancel clicked");
+    } else {
+      const selectedIndices = Object.keys(choice)
+        .filter(key => choice[key]) // Filter for keys where the value is true (checked)
+        .map(Number)               // Convert string keys ("0", "1", etc.) to numbers
+        .sort((a, b) => a - b);     // Sort indices numerically to easily find the first one
+
+      // A superset requires at least two exercises.
+      if (selectedIndices.length < 2) {
+        this.toastService.info("Please select at least two exercises to create a superset.");
+        return; // Exit the function
+      }
+
+      const lowestExerciseIndex = selectedIndices[0];
+      const lowestSelectedExercise = availableExercises.find((exer,index)=>index === lowestExerciseIndex);
+      if (!lowestSelectedExercise){
+        return;
+      }
+      this.exerciseToSupersetIndex.set(lowestSelectedExercise?.originalIndex);
+
+      // Create the superset group starting with this anchor exercise.
+      this.createSuperset(lowestSelectedExercise?.originalIndex);
+
+      // Now, iterate through the REST of the selected exercises and add them to the new superset.
+      for (let i = 1; i < selectedIndices.length; i++) {
+        const exerciseIndexToAdd = selectedIndices[i];
+        const exerciseObjectToAdd = availableExercises[exerciseIndexToAdd];
+
+        // This function adds the exercise to the superset group identified
+        // by the 'exerciseToSupersetIndex' we set earlier.
+        this.addExerciseToSuperset(exerciseObjectToAdd);
+      }
+    }
+  }
+
+  areAllPropertiesFalsy(obj: any) {
+    // Get an array of all the object's values.
+    const values = Object.values(obj);
+
+    // If the object is empty, it's vacuously true that all properties are null.
+    if (values.length === 0) {
+      return true;
+    }
+
+    // The .every() method checks if ALL elements in the array pass the test.
+    // The test here is "is the value strictly equal to null?"
+    return values.every(value => !value);
   }
 
   // +++ NEW: Method to close the "Add to Superset" modal +++
@@ -1222,55 +1371,52 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       exercise.type = 'superset';
       return r;
     });
-    this.openAddToSupersetModal(exIndex);
   }
 
-  // +++ NEW: Method to add a selected exercise to the current superset +++
-  addExerciseToSuperset(newExercise: Exercise): void {
-    const originalExIndex = this.exerciseToSupersetIndex();
-    if (originalExIndex === null) return;
+  // The parameter 'exerciseToAdd' is an existing exercise from the routine that we want to join to a superset.
+  addExerciseToSuperset(exerciseToAdd: WorkoutExercise): void {
+    // 'exerciseToSupersetIndex' holds the index of the exercise that started the superset (the "anchor").
+    const anchorExIndex = this.exerciseToSupersetIndex();
+    if (anchorExIndex === null) return;
 
     this.routine.update(r => {
       if (!r) return r;
-      const originalExercise = r.exercises[originalExIndex];
-      if (!originalExercise?.supersetId) return r;
 
-      const supersetExercises = r.exercises.filter(ex => ex.supersetId === originalExercise.supersetId);
+      // Find the anchor exercise that started the superset.
+      const anchorExercise = r.exercises[anchorExIndex];
+      if (!anchorExercise?.supersetId) {
+        console.error("Cannot add to superset: The anchor exercise is not part of a superset.");
+        return r;
+      }
+
+      // Find the actual exercise object in the current routine array that needs to be modified.
+      // It's safer to find it by its unique ID.
+      const targetExercise = r.exercises.find(ex => ex.id === exerciseToAdd.id);
+
+      if (!targetExercise) {
+        console.error("Could not find the exercise to add in the current routine.");
+        return r; // Exit if the exercise to modify isn't found
+      }
+
+      // Determine the order for this exercise within the superset.
+      const supersetExercises = r.exercises.filter(ex => ex.supersetId === anchorExercise.supersetId);
       const nextOrder = supersetExercises.length + 1;
 
-      const isCardioExercise = newExercise.category === 'cardio';
-      const newWorkoutExercise: WorkoutExercise = {
-        id: uuidv4(),
-        exerciseId: newExercise.id,
-        exerciseName: newExercise.name,
-        sets: originalExercise.sets.map(set => ({ // Match the set structure of the original exercise
-          id: uuidv4(),
-          reps: isCardioExercise ? undefined : set.reps,
-          weight: isCardioExercise ? undefined : set.weight,
-          distance: isCardioExercise ? 1 : undefined,
-          duration: isCardioExercise ? 300 : undefined,
-          restAfterSet: set.restAfterSet,
-          type: 'standard'
-        })),
-        type: 'superset',
-        supersetId: originalExercise.supersetId,
-        supersetOrder: nextOrder,
-        rounds: 1, // These are typically part of the parent routine, but good to set defaults
-      };
+      // --- THE FIX ---
+      // Modify the properties of the EXISTING exercise. Do not create a new one.
+      targetExercise.type = 'superset';
+      targetExercise.supersetId = anchorExercise.supersetId;
+      targetExercise.supersetOrder = nextOrder;
 
-      // Insert the new exercise right after the last exercise of the same superset
-      let lastSupersetIndex = originalExIndex;
-      for (let i = originalExIndex + 1; i < r.exercises.length; i++) {
-        if (r.exercises[i].supersetId === originalExercise.supersetId) {
-          lastSupersetIndex = i;
-        } else {
-          break;
-        }
-      }
-      r.exercises.splice(lastSupersetIndex + 1, 0, newWorkoutExercise);
-      this.toastService.success(`${newExercise.name} added to the superset.`);
+      this.toastService.success(`${targetExercise.exerciseName} added to the superset.`);
+
+      // We no longer create a 'newWorkoutExercise' or use 'r.exercises.splice'.
+
       return r;
     });
+
+    // Note: If you call this function in a loop, this line should be moved
+    // outside the loop to only close the modal once all exercises are added.
     this.closeAddToSupersetModal();
   }
 
@@ -1322,6 +1468,14 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     }
   }
 
+  isSuperSet(index: number): boolean {
+    const exercises = this.routine()?.exercises;
+    if (!exercises) return false;
+    const ex = exercises[index];
+    if (!ex?.supersetId) return false;
+    return true;
+  }
+
   // +++ NEW: Helper methods for styling superset groups +++
   isSupersetStart(index: number): boolean {
     const ex = this.routine()?.exercises[index];
@@ -1333,10 +1487,10 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const exercises = this.routine()?.exercises;
     if (!exercises) return false;
     const ex = exercises[index];
-    if (!ex?.supersetId || ex.supersetOrder === 1) return false;
+    if (!ex?.supersetId || ex.supersetOrder === 1 || !ex.supersetOrder) return false;
     // Check if there's another exercise after this one with the same supersetId
-    const nextEx = exercises[index + 1];
-    return nextEx?.supersetId === ex.supersetId;
+    const superSetLength = exercises.filter(exer => exer.supersetId === ex.supersetId);
+    return ex.supersetOrder > 1 && ex.supersetOrder < superSetLength.length;
   }
 
   isSupersetEnd(index: number): boolean {
@@ -1344,9 +1498,20 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     if (!exercises) return false;
     const ex = exercises[index];
     if (!ex?.supersetId) return false;
-    const nextEx = exercises[index + 1];
-    return nextEx?.supersetId !== ex.supersetId;
+    const superSetLength = exercises.filter(exer => exer.supersetId === ex.supersetId);
+    return superSetLength.length === ex.supersetOrder;
   }
+
+  isEndOfLastSupersetExercise(exIndex: number, setIndex: number): boolean {
+    const exercises = this.routine()?.exercises;
+    if (!exercises) return false;
+    const ex = exercises[exIndex];
+    if (!ex?.supersetId) return false;
+    const superSetExercises: WorkoutExercise[] = exercises.filter(exer => exer.supersetId === ex.supersetId);
+    return superSetExercises.length === ex.supersetOrder && ex.sets?.length === setIndex + 1;
+  }
+
+
 
   // +++ NEW: Helper to get the display index (e.g., 1A, 1B, 2) +++
   getExerciseDisplayIndex(exIndex: number): string {

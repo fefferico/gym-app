@@ -36,3 +36,51 @@ input::-webkit-inner-spin-button {
 .progress-bar {
   transition: width 0.4s ease-in-out; // Smooth animation when progress changes
 }
+
+:root {
+    /* Define your primary color here to be used in CSS. Match it with your Tailwind config. */
+    /* This is an example for 'indigo-600' */
+    --border-primary-color: #4f46e5;
+  }
+  .dark:root {
+    /* This is an example for dark mode, e.g., 'indigo-500' */
+    --border-primary-color: #6366f1;
+  }
+
+  /* Apply the container styles to the start of the group */
+  // .superset-start {
+  //   border-top: 2px solid var(--border-primary-color);
+  //   border-left: 2px solid var(--border-primary-color);
+  //   border-right: 2px solid var(--border-primary-color);
+  //   border-radius: 0.375rem 0.375rem 0 0; /* rounded-t-md */
+  // }
+
+  /* Style the middle items */
+  .superset-middle {
+    border-left: 2px solid var(--border-primary-color);
+    border-right: 2px solid var(--border-primary-color);
+    border-radius: 0;
+  }
+
+  /* Style the end of the group */
+  .superset-end {
+    border-bottom: 2px solid var(--border-primary-color);
+    border-left: 2px solid var(--border-primary-color);
+    border-right: 2px solid var(--border-primary-color);
+    border-radius: 0 0 0.375rem 0.375rem; /* rounded-b-md */
+  }
+
+  /* Adds the inner separator line between items in a superset */
+  .superset-middle > div:first-child,
+  .superset-end > div:first-child {
+    border-top-width: 1px;
+    --tw-border-opacity: 1;
+    border-color: rgb(229 231 235 / var(--tw-border-opacity)); /* gray-200 */
+  }
+
+  /* Dark mode style for the inner separator line */
+  .dark .superset-middle > div:first-child,
+  .dark .superset-end > div:first-child {
+    --tw-border-opacity: 1;
+    border-color: rgb(55 65 81 / var(--tw-border-opacity)); /* gray-700 */
+  }
