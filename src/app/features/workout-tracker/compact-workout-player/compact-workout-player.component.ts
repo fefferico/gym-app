@@ -97,6 +97,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   sessionTimerDisplay = signal('00:00');
   expandedExerciseIndex = signal<number | null>(null);
   activeActionMenuIndex = signal<number | null>(null);
+  mainSessionActionMenuOpened = signal<boolean>(false);
   playerSubState = signal<PlayerSubState>(PlayerSubState.PerformingSet);
 
   showCompletedSetsForExerciseInfo = signal(true);
@@ -349,9 +350,10 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     } else {
       if (!exerciseLog) {
         exerciseLog = {
+          ...exercise,
           id: exercise.id, exerciseId: exercise.exerciseId, exerciseName: exercise.exerciseName!,
           sets: [], rounds: exercise.rounds ?? 1, type: exercise.type || 'standard',
-          notes: exercise.notes, // +++ NEW: Carry over exercise notes
+          notes: exercise.notes
         };
         log.exercises.push(exerciseLog);
       }
@@ -367,7 +369,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       const order = exercise.sets.map(s => s.id);
       exerciseLog.sets.sort((a, b) => order.indexOf(a.plannedSetId!) - order.indexOf(b.plannedSetId!));
 
-      if (set.restAfterSet && set.restAfterSet > 0 && (!this.isSuperSet(exIndex) || (this.isSuperSet(exIndex) && this.isEndOfLastSupersetExercise(exIndex,setIndex)))) {
+      if (set.restAfterSet && set.restAfterSet > 0 && (!this.isSuperSet(exIndex) || (this.isSuperSet(exIndex) && this.isEndOfLastSupersetExercise(exIndex, setIndex)))) {
         if (!fieldUpdated || fieldUpdated !== 'notes') {
           this.startRestPeriod(set.restAfterSet, exIndex, setIndex);
         }
@@ -378,6 +380,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
   updateSetData(exIndex: number, setIndex: number, field: 'reps' | 'weight' | 'distance' | 'time' | 'notes', event: Event): void {
+
     const value = (event.target as HTMLInputElement).value;
     const routine = this.routine();
     if (!routine) return;
@@ -524,7 +527,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
         this.sessionState.set(SessionState.End);
         this.isSessionConcluded = true;
-        this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
+        this.workoutService.removePausedWorkout();
         this.timerSub?.unsubscribe();
 
         if (savedLog.programId) {
@@ -857,7 +860,39 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return this.activeActionMenuIndex() === exerciseIndex;
   }
 
-  getLogDropdownActionItems(exerciseId: number, mode: MenuMode): ActionMenuItem[] {
+  toggleMainSessionActionMenu(event: Event | null) {
+    event?.stopPropagation();
+    this.mainSessionActionMenuOpened.update(current => current === true ? false : true);
+  }
+
+  getMainSessionActionItems(): ActionMenuItem[] {
+    const defaultBtnClass = 'rounded text-left p-3 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-primary flex items-center hover:text-white dark:hover:text-gray-100 dark:hover:text-white';
+    const warmupBtnClass = 'rounded text-left p-3 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-blue-400 flex items-center hover:text-white dark:hover:text-gray-100 dark:hover:text-white';
+    const deleteBtnClass = 'rounded text-left p-3 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-red-600 inline-flex items-center hover:text-gray-100 hover:animate-pulse';;
+
+    const actionsArray: ActionMenuItem[] = [
+      {
+        label: 'Pause', actionKey: 'pause', iconName: 'pause',
+        buttonClass: 'flex justify-center items-center w-full max-w-xs bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2.5 px-6 rounded-md text-lg shadow-lg disabled:opacity-60 disabled:cursor-not-allowed', iconClass: 'w-8 h-8 mr-2'
+      },
+      {
+        label: 'Session notes', actionKey: 'session_notes', iconName: 'clipboard-list',
+        buttonClass: 'flex justify-center items-center w-full max-w-xs bg-blue-500 hover:bg-blue-600 text-white font-bold py-2.5 px-6 rounded-md text-lg shadow-lg disabled:opacity-60 disabled:cursor-not-allowed', iconClass: 'w-8 h-8 mr-2'
+      }
+    ];
+
+    return actionsArray;
+  }
+
+  handleMainSessionActionMenuItemClick(event: { actionKey: string, data?: any }) {
+    const { actionKey } = event;
+    switch (actionKey) {
+      case 'pause': this.pauseSession(); break;
+      case 'session_notes': this.editSessionNotes(); break;
+    }
+  }
+
+  getCompactActionItems(exerciseId: number, mode: MenuMode): ActionMenuItem[] {
     const exercise = this.routine()?.exercises[exerciseId];
 
 
@@ -1171,7 +1206,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
           await this.loadStateFromPausedSession(pausedState);
           return true;
         } else {
-          this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
+          this.workoutService.removePausedWorkout();
           this.toastService.info('Paused session discarded', 3000);
           return false;
         }
@@ -1315,25 +1350,26 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       }
 
       const lowestExerciseIndex = selectedIndices[0];
-      const lowestSelectedExercise = availableExercises.find((exer,index)=>index === lowestExerciseIndex);
-      if (!lowestSelectedExercise){
+      const lowestSelectedExercise = availableExercises.find((exer, index) => index === lowestExerciseIndex);
+      if (!lowestSelectedExercise) {
         return;
       }
       this.exerciseToSupersetIndex.set(lowestSelectedExercise?.originalIndex);
 
       // Create the superset group starting with this anchor exercise.
-      this.createSuperset(lowestSelectedExercise?.originalIndex);
+      this.createSuperset(lowestSelectedExercise?.originalIndex, selectedIndices.length);
 
       // Now, iterate through the REST of the selected exercises and add them to the new superset.
-      for (let i = 1; i < selectedIndices.length; i++) {
+      for (let i = 1; i < selectedIndices.length ; i++) {
         const exerciseIndexToAdd = selectedIndices[i];
         const exerciseObjectToAdd = availableExercises[exerciseIndexToAdd];
 
         // This function adds the exercise to the superset group identified
         // by the 'exerciseToSupersetIndex' we set earlier.
-        this.addExerciseToSuperset(exerciseObjectToAdd);
+        this.addExerciseToSuperset(exerciseObjectToAdd, selectedIndices.length);
       }
     }
+    this.savePausedSessionState();
   }
 
   areAllPropertiesFalsy(obj: any) {
@@ -1358,7 +1394,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
   // +++ NEW: Method to create a new superset +++
-  createSuperset(exIndex: number): void {
+  createSuperset(exIndex: number, superSetSize: number): void {
     this.routine.update(r => {
       if (!r) return r;
       const exercise = r.exercises[exIndex];
@@ -1367,14 +1403,15 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         return r;
       }
       exercise.supersetId = uuidv4();
-      exercise.supersetOrder = 1;
+      exercise.supersetOrder = 0;
       exercise.type = 'superset';
+      exercise.supersetSize = superSetSize;
       return r;
     });
   }
 
   // The parameter 'exerciseToAdd' is an existing exercise from the routine that we want to join to a superset.
-  addExerciseToSuperset(exerciseToAdd: WorkoutExercise): void {
+  addExerciseToSuperset(exerciseToAdd: WorkoutExercise, superSetSize: number): void {
     // 'exerciseToSupersetIndex' holds the index of the exercise that started the superset (the "anchor").
     const anchorExIndex = this.exerciseToSupersetIndex();
     if (anchorExIndex === null) return;
@@ -1400,13 +1437,14 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
       // Determine the order for this exercise within the superset.
       const supersetExercises = r.exercises.filter(ex => ex.supersetId === anchorExercise.supersetId);
-      const nextOrder = supersetExercises.length + 1;
+      const nextOrder = supersetExercises.length;
 
       // --- THE FIX ---
       // Modify the properties of the EXISTING exercise. Do not create a new one.
       targetExercise.type = 'superset';
       targetExercise.supersetId = anchorExercise.supersetId;
       targetExercise.supersetOrder = nextOrder;
+      targetExercise.supersetSize = superSetSize;
 
       this.toastService.success(`${targetExercise.exerciseName} added to the superset.`);
 
@@ -1452,6 +1490,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
               ex.supersetId = null;
               ex.supersetOrder = null;
               ex.type = 'standard';
+              ex.supersetSize = ex.supersetSize !== undefined && ex.supersetSize !== null ? ex.supersetSize - 1 : null;
             }
           });
           this.toastService.info("Superset dissolved.");
@@ -1480,7 +1519,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   isSupersetStart(index: number): boolean {
     const ex = this.routine()?.exercises[index];
     if (!ex?.supersetId) return false;
-    return ex.supersetOrder === 1;
+    return ex.supersetOrder === 0;
   }
 
   isSupersetMiddle(index: number): boolean {
@@ -1490,7 +1529,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     if (!ex?.supersetId || ex.supersetOrder === 1 || !ex.supersetOrder) return false;
     // Check if there's another exercise after this one with the same supersetId
     const superSetLength = exercises.filter(exer => exer.supersetId === ex.supersetId);
-    return ex.supersetOrder > 1 && ex.supersetOrder < superSetLength.length;
+    return ex.supersetOrder > 0 && ex.supersetOrder < superSetLength.length-1;
   }
 
   isSupersetEnd(index: number): boolean {
@@ -1499,7 +1538,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const ex = exercises[index];
     if (!ex?.supersetId) return false;
     const superSetLength = exercises.filter(exer => exer.supersetId === ex.supersetId);
-    return superSetLength.length === ex.supersetOrder;
+    return ex.supersetOrder !== null && superSetLength.length === (ex.supersetOrder + 1);
   }
 
   isEndOfLastSupersetExercise(exIndex: number, setIndex: number): boolean {
@@ -1508,7 +1547,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const ex = exercises[exIndex];
     if (!ex?.supersetId) return false;
     const superSetExercises: WorkoutExercise[] = exercises.filter(exer => exer.supersetId === ex.supersetId);
-    return superSetExercises.length === ex.supersetOrder && ex.sets?.length === setIndex + 1;
+    return ex.supersetOrder !== null && superSetExercises.length === (ex.supersetOrder + 1) && ex.sets?.length === setIndex + 1;
   }
 
 

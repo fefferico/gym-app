@@ -14,19 +14,30 @@
         <h1 class="text-lg font-bold text-gray-800 dark:text-gray-100 truncate max-w-xs">
           {{ routine()?.name || 'Workout' }}
         </h1>
-        <div class="text-xl font-mono font-semibold text-primary dark:text-primary-light tracking-wider">
+        <div class="flex-col text-xl font-mono font-semibold text-primary dark:text-primary-light tracking-wider"
+        [ngClass]="{' animate-pulse':  sessionState() === 'paused'}">
           {{ sessionTimerDisplay() }}
+          <p>{{ sessionState() === 'paused' ? '[PAUSED]':''}}</p>
         </div>
       </div>
       <!-- MODIFIED: Container for Pause/Resume and Notes buttons -->
       <div class="relative flex items-center">
+        <button (click)="toggleMainSessionActionMenu($event)"
+                class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center">
+                <app-icon name="menu-action" class="h-7 w-7"></app-icon>
+              </button>
+        <app-action-menu [isVisible]="mainSessionActionMenuOpened() === true" class="action-menu-container" displayMode="modal"
+          [modalTitle]="''" [items]="getMainSessionActionItems()" (itemClick)="handleMainSessionActionMenuItemClick($event)"
+          (closeMenu)="toggleMainSessionActionMenu(null)">
+        </app-action-menu>
+
         <!-- +++ NEW: Session Notes Button +++ -->
-        <button (click)="editSessionNotes()" class="p-2">
+        <!-- <button (click)="editSessionNotes()" class="p-2">
           <app-icon name="clipboard-list" class="h-6 w-6 text-gray-600 dark:text-gray-300"></app-icon>
         </button>
         <button *ngIf="sessionState() === 'playing'" (click)="pauseSession()" class="p-2">
           <app-icon name="pause" class="h-6 w-6 text-gray-600 dark:text-gray-300"></app-icon>
-        </button>
+        </button> -->
         <button *ngIf="sessionState() === 'paused'" (click)="resumeSession()" class="p-2">
           <app-icon name="play" class="h-6 w-6 text-primary dark:text-primary-light animate-pulse"></app-icon>
         </button>
@@ -55,7 +66,7 @@
       <div *ngFor="let exercise of currentRoutine.exercises; let exIndex = index"
         class="bg-white dark:bg-gray-800 transition-all duration-300 relative"
         [ngClass]="{
-          ' border-l-2 border-r-2 border-primary': isSuperSet(exIndex),
+          'border-l-2 border-r-2 border-primary': isSuperSet(exIndex),
           'border-t-2 border-b-0 rounded-none rounded-t-md': isSupersetStart(exIndex),
           'border-b-0 rounded-none': isSupersetMiddle(exIndex),
           'border-t-0 border-b-2 rounded-b-md mb-4': isSupersetEnd(exIndex),
@@ -102,11 +113,11 @@
               </button>
               <app-action-menu [isVisible]="activeActionMenuIndex() === exIndex && menuModeDropdown"
                 class="action-menu-container" displayMode="dropdown"
-                [items]="getLogDropdownActionItems(exIndex, 'dropdown')" (itemClick)="handleActionMenuItemClick($event)"
+                [items]="getCompactActionItems(exIndex, 'dropdown')" (itemClick)="handleActionMenuItemClick($event)"
                 (closeMenu)="closeActionMenu()">
               </app-action-menu>
               <app-action-menu [isVisible]="activeActionMenuIndex() === exIndex && menuModeModal"
-                class="action-menu-container" displayMode="modal" [items]="getLogDropdownActionItems(exIndex, 'modal')"
+                class="action-menu-container" displayMode="modal" [items]="getCompactActionItems(exIndex, 'modal')"
                 (itemClick)="handleActionMenuItemClick($event)" (closeMenu)="closeActionMenu()"
                 [customButtonDivCssClass]="' '">
               </app-action-menu>

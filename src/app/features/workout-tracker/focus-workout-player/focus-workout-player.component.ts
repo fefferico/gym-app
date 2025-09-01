@@ -200,7 +200,6 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
   });
   // --- End Exercise Selection Modal ---
 
-  private readonly PAUSED_WORKOUT_KEY = 'fitTrackPro_pausedWorkoutState';
   private readonly PAUSED_STATE_VERSION = '1.2';
   private originalRoutineSnapshot: WorkoutExercise[] = [];
   protected currentWorkoutLogExercises = signal<LoggedWorkoutExercise[]>([]);
@@ -1003,7 +1002,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
           `Unfinished: ${singleEx.exerciseName}`,
           `You have "${singleEx.exerciseName}" (${singleEx.sessionStatus === 'do_later' ? 'Do Later' : 'Skipped'}) remaining. Complete it now?`,
           [
-            { text: 'Complete It', role: 'confirm', data: singleEx.originalIndex, cssClass: 'bg-primary hover:bg-primary-dark text-white', icon: 'flame'  } as AlertButton,
+            { text: 'Complete It', role: 'confirm', data: singleEx.originalIndex, cssClass: 'bg-primary hover:bg-primary-dark text-white', icon: 'flame' } as AlertButton,
             { text: 'Finish Workout', role: 'destructive', data: 'finish_now', cssClass: 'bg-green-600 hover:bg-green-700 text-white', icon: 'done' } as AlertButton,
           ]
         );
@@ -2383,7 +2382,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       const didLog = await this.finishWorkoutAndReportStatus();
       if (!didLog) {
         this.toastService.info("Workout finished early. Paused session cleared", 4000);
-        this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
+        this.workoutService.removePausedWorkout();
         if (this.router.url.includes('/play')) {
           this.router.navigate(['/workout']);
         }
@@ -2486,7 +2485,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
 
     if (loggedExercisesForReport.length === 0) {
       this.toastService.info("No sets logged. Workout not saved", 3000, "Empty Workout");
-      this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
+      this.workoutService.removePausedWorkout();
       if (this.router.url.includes('/play')) {
         this.router.navigate(['/workout']);
       }
@@ -2517,9 +2516,6 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       if (!this.originalRoutineSnapshot || this.originalRoutineSnapshot.length === 0) {
         this.originalRoutineSnapshot = [];
       }
-
-
-
     }
 
     const originalSnapshotToCompare = this.originalRoutineSnapshot.filter(origEx =>
@@ -2680,8 +2676,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
 
           // Stop all player activity before navigating
           this.stopAllActivity();
-          this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
-
+          this.workoutService.removePausedWorkout();
           // Navigate to the new completion page with relevant IDs
           this.router.navigate(['/training-programs/completed', savedLog.programId], {
             queryParams: { logId: savedLog.id }
@@ -2707,12 +2702,12 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
           updatedRoutineData.exercises = this.convertLoggedToWorkoutExercises(loggedExercisesForReport); // Use filtered logs
           // ... (persist name/desc/goal changes) ...
         }
-        this.workoutService.updateRoutine(updatedRoutineData);
+        this.workoutService.updateRoutine(updatedRoutineData, true);
       }
     }
 
     this.stopAllActivity();
-    this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
+    this.workoutService.removePausedWorkout();
     this.router.navigate(['/workout/summary', savedLog.id]);
     return true;
   }
@@ -2722,7 +2717,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     if (confirmQuit && confirmQuit.data) {
       this.stopAllActivity();
       this.isSessionConcluded = true;
-      this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
+      this.workoutService.removePausedWorkout();
       this.closeWorkoutMenu();
       this.closePerformanceInsights();
       this.router.navigate(['/workout']);
@@ -2873,7 +2868,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
   async ngOnInit(): Promise<void> {
     if (isPlatformBrowser(this.platformId)) { window.scrollTo(0, 0); }
 
-    const pausedState = this.storageService.getItem<PausedWorkoutState>(this.PAUSED_WORKOUT_KEY);
+    const pausedState = this.workoutService.getPausedSession();
     const hasPausedSessionOnInit = await this.checkForPausedSession(false);
     if (hasPausedSessionOnInit) {
       this.isInitialLoadComplete = true;
@@ -3094,7 +3089,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
   }
 
   private async checkForPausedSession(isReEntry: boolean = false): Promise<boolean> {
-    const pausedState = this.storageService.getItem<PausedWorkoutState>(this.PAUSED_WORKOUT_KEY);
+    const pausedState = this.workoutService.getPausedSession();
     const routeRoutineId = this.route.snapshot.paramMap.get('routineId');
     const resumeQueryParam = this.route.snapshot.queryParamMap.get('resume') === 'true';
 
@@ -3105,20 +3100,18 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       // 1. If current route has a routineId, but paused session is ad-hoc (null routineId) -> discard paused
       if (routeRoutineId && pausedState.routineId === null) {
         console.log('WorkoutPlayer.checkForPausedSession - Current route is for a specific routine, but paused session was ad-hoc. Discarding paused session');
-        this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
+        this.workoutService.removePausedWorkout();
         return false;
       }
       // 2. If current route is ad-hoc (null routineId), but paused session was for a specific routine -> discard paused
       if (!routeRoutineId && pausedState.routineId !== null) {
         console.log('WorkoutPlayer.checkForPausedSession - Current route is ad-hoc, but paused session was for a specific routine. Discarding paused session');
-        this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
-        return false;
+        this.workoutService.removePausedWorkout(); return false;
       }
       // 3. If both have routineIds, but they don't match -> discard paused
       if (routeRoutineId && pausedState.routineId && routeRoutineId !== pausedState.routineId) {
         console.log('WorkoutPlayer.checkForPausedSession - Paused session routine ID does not match current route routine ID. Discarding paused session');
-        this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
-        return false;
+        this.workoutService.removePausedWorkout(); return false;
       }
       // At this point, either both routineIds are null (ad-hoc match), or both are non-null and identical.
 
@@ -3148,8 +3141,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
         this.isInitialLoadComplete = true;
         return true;
       } else {
-        this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
-        this.toastService.info('Paused session discarded', 3000);
+        this.workoutService.removePausedWorkout(); this.toastService.info('Paused session discarded', 3000);
         return false;
       }
     }
@@ -3163,7 +3155,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     if (this.timerSub) this.timerSub.unsubscribe();
     if (this.timedSetIntervalSub) this.timedSetIntervalSub.unsubscribe();
     this.isRestTimerVisible.set(false);
-    // this.sessionState.set(SessionState.End);
+    this.sessionState.set(SessionState.End);
   }
   async resumeSession(): Promise<void> {
     if (this.sessionState() === SessionState.Paused) {
@@ -4407,7 +4399,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     const actionsArray: ActionMenuItem[] = [];
 
     actionsArray.push(pauseSessionBtn);
-    if ((this.currentWorkoutLogExercises() && this.currentWorkoutLogExercises().length)){
+    if ((this.currentWorkoutLogExercises() && this.currentWorkoutLogExercises().length)) {
       actionsArray.push(openPerformanceInsightsBtn);
     }
     actionsArray.push(addExerciseBtn);

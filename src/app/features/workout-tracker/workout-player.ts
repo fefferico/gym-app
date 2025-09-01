@@ -3071,7 +3071,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
           updatedRoutineData.exercises = this.convertLoggedToWorkoutExercises(loggedExercisesForReport); // Use filtered logs
           // ... (persist name/desc/goal changes) ...
         }
-        this.workoutService.updateRoutine(updatedRoutineData);
+        this.workoutService.updateRoutine(updatedRoutineData, true);
       }
     }
 
