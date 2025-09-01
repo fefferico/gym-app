@@ -1,10 +1,10 @@
 import { Component, inject, OnInit, OnDestroy, signal, computed, ChangeDetectorRef, HostListener, PLATFORM_ID, ViewChildren, QueryList, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule, DatePipe, DecimalPipe, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
-import { Subscription, of, timer, firstValueFrom, interval, Subject, combineLatest } from 'rxjs';
+import { Subscription, of, timer, firstValueFrom, interval, Subject, combineLatest, lastValueFrom } from 'rxjs';
 import { switchMap, tap, map, take, filter, takeUntil } from 'rxjs/operators';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { ExerciseSetParams, Routine, WorkoutExercise } from '../../../core/models/workout.model';
+import { ActiveSetInfo, ExerciseSetParams, PausedWorkoutState, PlayerSubState, Routine, SessionState, TimedSetState, WorkoutExercise } from '../../../core/models/workout.model';
 import { Exercise } from '../../../core/models/exercise.model';
 import { LastPerformanceSummary, LoggedSet, LoggedWorkoutExercise, PersonalBestSet, WorkoutLog } from '../../../core/models/workout-log.model';
 import { FormatSecondsPipe } from '../../../shared/pipes/format-seconds-pipe';
@@ -31,70 +31,10 @@ import { format } from 'date-fns';
 import { ActionMenuComponent } from '../../../shared/components/action-menu/action-menu';
 import { MenuMode } from '../../../core/models/app-settings.model';
 import { ActionMenuItem } from '../../../core/models/action-menu.model';
+import { mapLoggedExercisesToRoutineSnapshot, mapRoutineSnapshotToLoggedExercises } from '../../../core/models/workout-mapper';
 
 
 // Interface to manage the state of the currently active set/exercise
-export interface ActiveSetInfo {
-  exerciseIndex: number;
-  setIndex: number;
-  exerciseData: WorkoutExercise; // This WorkoutExercise will have sessionStatus
-  setData: ExerciseSetParams;
-  baseExerciseInfo?: Exercise;
-  isCompleted: boolean;
-  actualReps?: number;
-  actualWeight?: number | null;
-  actualDuration?: number;
-  notes?: string; // This is for the *individual set's notes*
-  type: 'standard' | 'warmup' | 'amrap' | 'custom';
-  historicalSetPerformance?: LoggedSet | null
-}
-
-export interface PausedWorkoutState {
-  version: string;
-  routineId: string | null;
-  programId?: string | null;
-  programName?: string | null;
-  scheduledDayId?: string | null;
-  sessionRoutine: Routine; // Routine object, its exercises will have sessionStatus
-  originalRoutineSnapshot?: WorkoutExercise[]; // Snapshot of the *original* routine's exercises if one was loaded
-  currentExerciseIndex: number;
-  currentSetIndex: number;
-  currentWorkoutLogExercises: LoggedWorkoutExercise[];
-  workoutStartTimeOriginal: number;
-  sessionTimerElapsedSecondsBeforePause: number;
-  currentBlockRound: number;
-  totalBlockRounds: number;
-  timedSetTimerState?: TimedSetState;
-  timedSetElapsedSeconds?: number;
-  isResting: boolean;
-  isRestTimerVisibleOnPause: boolean;
-  restTimerRemainingSecondsOnPause?: number;
-  restTimerInitialDurationOnPause?: number;
-  restTimerMainTextOnPause?: string;
-  restTimerNextUpTextOnPause: string | null;
-  lastPerformanceForCurrentExercise?: LastPerformanceSummary | null;
-  workoutDate: string; // Date of the workout when paused
-}
-
-enum SessionState {
-  Loading = 'loading',
-  Playing = 'playing',
-  Paused = 'paused',
-  Error = 'error',
-  End = 'end',
-}
-
-enum TimedSetState {
-  Idle = 'idle',
-  Running = 'running',
-  Paused = 'paused',
-}
-
-export enum PlayerSubState {
-  PerformingSet = 'performing_set',
-  PresetCountdown = 'preset_countdown',
-  Resting = 'resting'
-}
 
 @Component({
   selector: 'app-focus-player',
@@ -201,7 +141,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
   // --- End Exercise Selection Modal ---
 
   private readonly PAUSED_STATE_VERSION = '1.2';
-  private originalRoutineSnapshot: WorkoutExercise[] = [];
+  private originalRoutineSnapshot: Routine | null = null;
   protected currentWorkoutLogExercises = signal<LoggedWorkoutExercise[]>([]);
   private wasRestTimerVisibleOnPause = false;
   private restTimerRemainingSecondsOnPause = 0;
@@ -210,12 +150,19 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
   private restTimerNextUpTextOnPause: string | null = null;
   private wasTimedSetRunningOnPause = false;
   private autoSaveSub: Subscription | undefined;
-  private readonly AUTO_SAVE_INTERVAL_MS = 4000;
+  private readonly AUTO_SAVE_INTERVAL_MS = 20000;
   private isSessionConcluded = false;
   private routerEventsSub: Subscription | undefined;
   private isInitialLoadComplete = false;
   private exercisesProposedThisCycle = { doLater: false, skipped: false };
 
+  insightsData = signal<{
+    exercise: WorkoutExercise;
+    baseExercise: Exercise | null;
+    lastPerformance: LastPerformanceSummary | null;
+    personalBests: PersonalBestSet[];
+    completedSetsInSession: LoggedSet[];
+  } | null>(null);
 
   protected HEADER_OVERVIEW_STRING: string = 'JUMP TO EXERCISE';
   protected headerOverviewString: string = 'JUMP TO EXERCISE';
@@ -1336,7 +1283,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
 
     console.log(`prepareCurrentSet: Preparing for Ex: "${currentExerciseData.exerciseName}", Set: ${sIndex + 1}, Type: ${currentPlannedSetData.type}`);
 
-    const originalExerciseForSuggestions = this.originalRoutineSnapshot.find(oe => oe.exerciseId === currentExerciseData.exerciseId) || currentExerciseData;
+    const originalExerciseForSuggestions = this.originalRoutineSnapshot && this.originalRoutineSnapshot.exercises && this.originalRoutineSnapshot.exercises.find(oe => oe.exerciseId === currentExerciseData.exerciseId) || currentExerciseData;
     const plannedSetForSuggestions = originalExerciseForSuggestions?.sets[sIndex] || currentPlannedSetData;
 
     this.loadBaseExerciseAndPBs(currentExerciseData.exerciseId);
@@ -1915,7 +1862,12 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
   private async loadStateFromPausedSession(state: PausedWorkoutState): Promise<void> {
     this.routineId = state.routineId;
     this.routine.set(state.sessionRoutine); // This routine has sessionStatus populated
-    this.currentWorkoutLogExercises.set(state.currentWorkoutLogExercises);
+
+    if (state.currentWorkoutLogExercises && state.currentWorkoutLogExercises.length > 0) {
+      this.currentWorkoutLogExercises.set(state.currentWorkoutLogExercises);
+    } else {
+      this.currentWorkoutLogExercises.set([]);
+    }
 
     // --- NEW: Check if the resumed session is already fully logged ---
     if (this.isEntireWorkoutFullyLogged(state.sessionRoutine, state.currentWorkoutLogExercises)) {
@@ -2002,7 +1954,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
 
 
     const stateToSave: PausedWorkoutState = {
-      version: this.PAUSED_STATE_VERSION,
+      version: this.workoutService.getPausedVersion(),
       routineId: this.routineId,
       sessionRoutine: JSON.parse(JSON.stringify(currentRoutine)), // Includes sessionStatus
       originalRoutineSnapshot: JSON.parse(JSON.stringify(this.originalRoutineSnapshot)),
@@ -2296,6 +2248,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       }
       this.addExerciseToCurrentRoutine(newWorkoutExercise);
     }
+    this.savePausedSessionState();
   }
 
   // Called if user wants to define a completely new exercise not in the library
@@ -2382,7 +2335,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       const didLog = await this.finishWorkoutAndReportStatus();
       if (!didLog) {
         this.toastService.info("Workout finished early. Paused session cleared", 4000);
-        this.workoutService.removePausedWorkout();
+        this.removePausedWorkout()
         if (this.router.url.includes('/play')) {
           this.router.navigate(['/workout']);
         }
@@ -2390,38 +2343,10 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     }
   }
 
-
-
-  /**
-   * Maps a WorkoutExercise to a LoggedWorkoutExercise.
-   * All sets are mapped with plannedSetId set to the WorkoutExercise set's id.
-   * No actuals (repsAchieved, weightUsed, etc.) are filled in.
-   */
-  private mapWorkoutExerciseToLoggedWorkoutExercise(ex: WorkoutExercise): LoggedWorkoutExercise {
-    return {
-      id: ex.id,
-      exerciseId: ex.exerciseId,
-      exerciseName: ex.exerciseName || '',
-      sets: ex.sets.map(set => ({
-        id: uuidv4(),
-        exerciseName: ex.exerciseName,
-        plannedSetId: set.id,
-        exerciseId: ex.exerciseId,
-        type: ex.type,
-        repsAchieved: 0,
-        weightUsed: undefined,
-        durationPerformed: undefined,
-        rpe: undefined,
-        targetReps: set.reps,
-        targetWeight: set.weight,
-        targetDuration: set.duration,
-        targetTempo: set.tempo,
-        notes: set.notes,
-        timestamp: new Date().toISOString(),
-      })),
-      rounds: ex.rounds ?? 1,
-      type: ((ex.sets && ex.sets[0] && ex.sets[0].type) || ex.type) ?? 'standard'
-    };
+  isPausedWorkoutDiscarded: boolean = false;
+  removePausedWorkout(): void {
+    this.workoutService.removePausedWorkout();
+    this.isPausedWorkoutDiscarded = true;
   }
 
 
@@ -2477,15 +2402,13 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       return false; // Did not log
     }
     const loggedExercisesForReport = this.currentWorkoutLogExercises().filter(ex => ex.sets.length > 0);
-    // const loggedExercisesForReport = this.routine()?.exercises.map(ex => this.mapWorkoutExerciseToLoggedWorkoutExercise(ex));
-
     if (loggedExercisesForReport === undefined || loggedExercisesForReport.length === 0) {
       return false
     }
 
     if (loggedExercisesForReport.length === 0) {
       this.toastService.info("No sets logged. Workout not saved", 3000, "Empty Workout");
-      this.workoutService.removePausedWorkout();
+      this.removePausedWorkout()
       if (this.router.url.includes('/play')) {
         this.router.navigate(['/workout']);
       }
@@ -2503,7 +2426,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
 
     // I have to be sure that the original routine snapshot is available, in case of reloading the page or something else
     const routineExists = this.routineId && this.routineId !== '-1' && this.routineId !== null;
-    if (!this.originalRoutineSnapshot || this.originalRoutineSnapshot.length === 0 && routineExists) {
+    if (!this.originalRoutineSnapshot || this.originalRoutineSnapshot?.exercises.length === 0 && routineExists) {
       // try to retrieve the original routine snapshot from the storage
       const routineId = this.routineId;
       if (this.routineId) {
@@ -2513,19 +2436,19 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
           this.originalRoutineSnapshot = JSON.parse(JSON.stringify(routineResult.exercises));
         }
       }
-      if (!this.originalRoutineSnapshot || this.originalRoutineSnapshot.length === 0) {
-        this.originalRoutineSnapshot = [];
+      if (!this.originalRoutineSnapshot || this.originalRoutineSnapshot?.exercises.length === 0) {
+        this.originalRoutineSnapshot = null;
       }
     }
 
-    const originalSnapshotToCompare = this.originalRoutineSnapshot.filter(origEx =>
+    const originalSnapshotToCompare = this.originalRoutineSnapshot?.exercises.filter(origEx =>
       // Only compare against original exercises that were not marked 'skipped' or 'do_later' unless they were actually logged
       sessionRoutineValue?.exercises.find(sessEx => sessEx.id === origEx.id && sessEx.sessionStatus === 'pending') ||
       loggedExercisesForReport.some(logEx => logEx.exerciseId === origEx.exerciseId)
     );
 
 
-    if (this.routineId && this.originalRoutineSnapshot && this.originalRoutineSnapshot.length > 0 && sessionRoutineValue) {
+    if (this.routineId && this.originalRoutineSnapshot && this.originalRoutineSnapshot?.exercises.length > 0 && sessionRoutineValue && originalSnapshotToCompare) {
       const differences = this.comparePerformedToOriginal(loggedExercisesForReport, originalSnapshotToCompare);
       if (differences.majorDifference) {
         console.log("Major differences", differences.details)
@@ -2676,7 +2599,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
 
           // Stop all player activity before navigating
           this.stopAllActivity();
-          this.workoutService.removePausedWorkout();
+          this.removePausedWorkout()
           // Navigate to the new completion page with relevant IDs
           this.router.navigate(['/training-programs/completed', savedLog.programId], {
             queryParams: { logId: savedLog.id }
@@ -2707,7 +2630,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     }
 
     this.stopAllActivity();
-    this.workoutService.removePausedWorkout();
+    this.removePausedWorkout()
     this.router.navigate(['/workout/summary', savedLog.id]);
     return true;
   }
@@ -2717,7 +2640,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     if (confirmQuit && confirmQuit.data) {
       this.stopAllActivity();
       this.isSessionConcluded = true;
-      this.workoutService.removePausedWorkout();
+      this.removePausedWorkout()
       this.closeWorkoutMenu();
       this.closePerformanceInsights();
       this.router.navigate(['/workout']);
@@ -2726,14 +2649,39 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
   }
 
   toggleCompletedSetsInfo(): void { this.showCompletedSetsInfo.update(v => !v); }
-  openPerformanceInsights(): void {
+  async openPerformanceInsights(): Promise<void> {
     if (this.sessionState() === 'paused') { this.toastService.warning("Session is paused. Resume to view insights", 3000, "Paused"); return; }
-    this.isPerformanceInsightsVisible.set(true);
     this.isWorkoutMenuVisible.set(false);
+
+    const routine = this.routine();
+    if (!routine) return;
+    const exercise = this.activeSetInfo()?.exerciseData;
+    if (!exercise) return;
+    const baseExercise$ = this.exerciseService.getExerciseById(exercise.exerciseId).pipe(take(1));
+    const lastPerformance$ = this.trackingService.getLastPerformanceForExercise(exercise.exerciseId).pipe(take(1));
+    const personalBests$ = this.trackingService.getAllPersonalBestsForExercise(exercise.exerciseId).pipe(take(1));
+    try {
+      const [baseExercise, lastPerformance, personalBests] = await Promise.all([
+        lastValueFrom(baseExercise$),
+        lastValueFrom(lastPerformance$),
+        lastValueFrom(personalBests$)
+      ]);
+      if (!baseExercise) {
+        return;
+      }
+      const completedSets = this.currentWorkoutLogExercises()?.find(e => e.id === exercise.id)?.sets || [];
+      this.insightsData.set({ exercise, baseExercise, lastPerformance, personalBests, completedSetsInSession: completedSets });
+      this.isPerformanceInsightsVisible.set(true);
+    } catch (error) {
+      console.error("Failed to load performance insights:", error);
+      this.toastService.error("Could not load performance data.");
+    }
+
   }
 
   closePerformanceInsights(): void {
     this.isPerformanceInsightsVisible.set(false);
+    this.insightsData.set(null);
     if (this.editingTarget) {
       this.cancelEditTarget();
     }
@@ -2918,7 +2866,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     this.stopAllActivity();
     this.workoutStartTime = Date.now();
     this.sessionTimerElapsedSecondsBeforePause = 0;
-    this.originalRoutineSnapshot = [];
+    this.originalRoutineSnapshot = null;
     this.currentWorkoutLogExercises.set([]);
     this.currentSetIndex.set(0);
     this.currentBlockRound.set(1);
@@ -3095,30 +3043,32 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
 
     console.log('WorkoutPlayer.checkForPausedSession ...', !!pausedState);
 
-    if (pausedState && pausedState.version === this.PAUSED_STATE_VERSION) {
+    if (pausedState && pausedState.version === this.workoutService.getPausedVersion()) {
       // --- Sanity Checks for Relevancy ---
       // 1. If current route has a routineId, but paused session is ad-hoc (null routineId) -> discard paused
       if (routeRoutineId && pausedState.routineId === null) {
         console.log('WorkoutPlayer.checkForPausedSession - Current route is for a specific routine, but paused session was ad-hoc. Discarding paused session');
-        this.workoutService.removePausedWorkout();
+        this.removePausedWorkout()
         return false;
       }
       // 2. If current route is ad-hoc (null routineId), but paused session was for a specific routine -> discard paused
       if (!routeRoutineId && pausedState.routineId !== null) {
         console.log('WorkoutPlayer.checkForPausedSession - Current route is ad-hoc, but paused session was for a specific routine. Discarding paused session');
-        this.workoutService.removePausedWorkout(); return false;
+        this.removePausedWorkout();
+        return false;
       }
       // 3. If both have routineIds, but they don't match -> discard paused
       if (routeRoutineId && pausedState.routineId && routeRoutineId !== pausedState.routineId) {
         console.log('WorkoutPlayer.checkForPausedSession - Paused session routine ID does not match current route routine ID. Discarding paused session');
-        this.workoutService.removePausedWorkout(); return false;
+        this.removePausedWorkout();
+        return false;
       }
       // At this point, either both routineIds are null (ad-hoc match), or both are non-null and identical.
 
       let shouldAttemptToLoadPausedState = false;
       if (resumeQueryParam) {
         shouldAttemptToLoadPausedState = true;
-        this.router.navigate([], { relativeTo: this.route, queryParams: { resume: null }, queryParamsHandling: 'merge', replaceUrl: true });
+        this.router.navigate([], { relativeTo: this.route, queryParams: { resume: true }, queryParamsHandling: 'merge', replaceUrl: true });
       } else if (isReEntry) {
         shouldAttemptToLoadPausedState = true;
       } else {
@@ -3141,7 +3091,8 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
         this.isInitialLoadComplete = true;
         return true;
       } else {
-        this.workoutService.removePausedWorkout(); this.toastService.info('Paused session discarded', 3000);
+        this.removePausedWorkout();
+        this.toastService.info('Paused session discarded', 3000);
         return false;
       }
     }
@@ -3197,7 +3148,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     this.stopAllActivity(); // This is good to keep for any non-observable timers.
     this.isRestTimerVisible.set(false);
 
-    if (isPlatformBrowser(this.platformId) && !this.isSessionConcluded &&
+    if (isPlatformBrowser(this.platformId) && !this.isSessionConcluded && !this.isPausedWorkoutDiscarded &&
       (this.sessionState() === SessionState.Playing || this.sessionState() === SessionState.Paused) &&
       this.routine()) {
       console.log('WorkoutPlayer ngOnDestroy - Saving state...');
@@ -3621,7 +3572,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
         this.lastPerformanceForCurrentExercise = await firstValueFrom(this.trackingService.getLastPerformanceForExercise(exerciseData.exerciseId).pipe(take(1)));
       }
 
-      const originalExerciseForSuggestions = this.originalRoutineSnapshot.find(oe => oe.exerciseId === exerciseData.exerciseId) || exerciseData;
+      const originalExerciseForSuggestions = this.originalRoutineSnapshot && this.originalRoutineSnapshot.exercises && this.originalRoutineSnapshot?.exercises.find(oe => oe.exerciseId === exerciseData.exerciseId) || exerciseData;
       const plannedSetForSuggestions = originalExerciseForSuggestions?.sets[sIndex] || setData;
       const historicalSetPerformance = this.trackingService.findPreviousSetPerformance(this.lastPerformanceForCurrentExercise, plannedSetForSuggestions, sIndex);
 
@@ -4266,7 +4217,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       exerciseToUpdate.exerciseId = newExercise.id;
       exerciseToUpdate.exerciseName = newExercise.name;
 
-      const snapshotExerciseToUpdate = this.originalRoutineSnapshot.find(ex => ex.id === exerciseToUpdate.id);
+      const snapshotExerciseToUpdate = this.originalRoutineSnapshot?.exercises.find(ex => ex.id === exerciseToUpdate.id);
       if (snapshotExerciseToUpdate) {
         snapshotExerciseToUpdate.exerciseId = newExercise.id;
         snapshotExerciseToUpdate.exerciseName = newExercise.name;
@@ -4449,5 +4400,12 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     }
 
     this.isWorkoutMenuVisible.set(false); // Close the menu
+  }
+
+  formatSecondsToTime(totalSeconds: number | undefined): string {
+    if (totalSeconds == null) return '';
+    const mins = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
+    const secs = String(totalSeconds % 60).padStart(2, '0');
+    return `${mins}:${secs}`;
   }
 }

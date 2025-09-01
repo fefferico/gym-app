@@ -12,6 +12,7 @@ import { UserProfileService } from '../../../core/services/user-profile.service'
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { AlertButton } from '../../../core/models/alert.model';
 import { Subscription } from 'rxjs';
+import { WorkoutExercise } from '../../../core/models/workout.model';
 
 
 @Component({
@@ -143,13 +144,14 @@ constructor() {
       const exercisesAvailable = pausedInfo.sessionRoutine && pausedInfo.sessionRoutine.exercises ? pausedInfo.sessionRoutine.exercises.length : 0;
       const exercisesDone = pausedInfo.currentWorkoutLogExercises?.length || 0;
       const setsDone = pausedInfo.currentWorkoutLogExercises?.reduce((acc, ex) => acc + ex.sets.length, 0);
+      const targetSets = pausedInfo.originalRoutineSnapshot && pausedInfo.originalRoutineSnapshot['exercises'] ? pausedInfo.originalRoutineSnapshot['exercises'].reduce((acc: number, ex: WorkoutExercise) => acc + ex.sets.length, 0) : null;
       const timeElapsed = new Date(pausedInfo.sessionTimerElapsedSecondsBeforePause * 1000).toISOString().slice(11, 19);
 
       this.alertService.showAlert(
         `Paused: ${routineName}`,
-        `You have completed ${exercisesDone} of ${exercisesAvailable} exercises, with ${setsDone} set(s) logged.
+        `You have executed ${exercisesDone} of ${exercisesAvailable} exercises, with ${setsDone} set(s) logged` + ( targetSets ? ` out of ${targetSets}` : '') + `.
          Elapsed time: ${timeElapsed}.
-         Resume the workout to see full details or continue it.`
+         Resume the workout to continue it.`
       );
     }
   }

@@ -29,6 +29,7 @@ export class WorkoutService {
   private unitsService = inject(UnitsService); // +++ ADDED
   private readonly ROUTINES_STORAGE_KEY = 'fitTrackPro_routines';
   private readonly PAUSED_WORKOUT_KEY = 'fitTrackPro_pausedWorkoutState';
+  private readonly PAUSED_STATE_VERSION = '1.2';
 
   private toastService = inject(ToastService);
   private progressiveOverloadService = inject(ProgressiveOverloadService); // +++ INJECT THE SERVICE
@@ -568,6 +569,10 @@ export class WorkoutService {
 
   isPausedSession(): boolean {
     return !!this.storageService.getItem<PausedWorkoutState>(this.PAUSED_WORKOUT_KEY);
+  }
+
+  getPausedVersion(): string {
+    return this.storageService.getItem<string>(this.PAUSED_STATE_VERSION) || '1.0';
   }
 
   getPausedSession(): PausedWorkoutState | null {

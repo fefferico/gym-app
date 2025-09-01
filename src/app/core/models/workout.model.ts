@@ -1,6 +1,7 @@
 // src/app/core/models/workout.model.ts
 
-import { ExerciseCategory } from "./exercise.model";
+import { Exercise, ExerciseCategory } from "./exercise.model";
+import { LastPerformanceSummary, LoggedSet, LoggedWorkoutExercise } from "./workout-log.model";
 
 export interface ExerciseSetParams {
   id: string;
@@ -20,6 +21,7 @@ export interface ExerciseSetParams {
   targetRpe?: number | null; // Could be useful for 'failure' sets
   targetWeight?: number;
   targetDuration?: number;
+  targetDistance?: number;
   targetReps?: number;
   dropToWeight?: number | null; // For 'dropset'
   amrapTimeLimit?: number | null; // For AMRAP if it's time-bound rather than rep-bound
@@ -83,3 +85,65 @@ export interface Routine {
   isFavourite?: boolean;
 }
 
+
+export interface ActiveSetInfo {
+  exerciseIndex: number;
+  setIndex: number;
+  exerciseData: WorkoutExercise; // This WorkoutExercise will have sessionStatus
+  setData: ExerciseSetParams;
+  baseExerciseInfo?: Exercise;
+  isCompleted: boolean;
+  actualReps?: number;
+  actualWeight?: number | null;
+  actualDuration?: number;
+  notes?: string; // This is for the *individual set's notes*
+  type: 'standard' | 'warmup' | 'amrap' | 'custom';
+  historicalSetPerformance?: LoggedSet | null
+}
+
+export interface PausedWorkoutState {
+  version: string;
+  routineId: string | null;
+  programId?: string | null;
+  programName?: string | null;
+  scheduledDayId?: string | null;
+  sessionRoutine: Routine; // Routine object, its exercises will have sessionStatus
+  originalRoutineSnapshot?: WorkoutExercise[]; // Snapshot of the *original* routine's exercises if one was loaded
+  currentExerciseIndex: number;
+  currentSetIndex: number;
+  currentWorkoutLogExercises: LoggedWorkoutExercise[];
+  workoutStartTimeOriginal: number;
+  sessionTimerElapsedSecondsBeforePause: number;
+  currentBlockRound: number;
+  totalBlockRounds: number;
+  timedSetTimerState?: TimedSetState;
+  timedSetElapsedSeconds?: number;
+  isResting: boolean;
+  isRestTimerVisibleOnPause: boolean;
+  restTimerRemainingSecondsOnPause?: number;
+  restTimerInitialDurationOnPause?: number;
+  restTimerMainTextOnPause?: string;
+  restTimerNextUpTextOnPause: string | null;
+  lastPerformanceForCurrentExercise?: LastPerformanceSummary | null;
+  workoutDate: string; // Date of the workout when paused
+}
+
+export enum SessionState {
+  Loading = 'loading',
+  Playing = 'playing',
+  Paused = 'paused',
+  Error = 'error',
+  End = 'end',
+}
+
+export enum TimedSetState {
+  Idle = 'idle',
+  Running = 'running',
+  Paused = 'paused',
+}
+
+export enum PlayerSubState {
+  PerformingSet = 'performing_set',
+  PresetCountdown = 'preset_countdown',
+  Resting = 'resting'
+}

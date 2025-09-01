@@ -367,309 +367,117 @@
 
 <!-- Performance Insights Modal -->
 <div *ngIf="isPerformanceInsightsVisible()" style="z-index: 100"
-  class="fixed inset-0 bg-gray-900/70 dark:bg-black/80 backdrop-blur-md flex items-center justify-center p-4 transition-opacity duration-300 ease-in-out">
-
-  <div
-    class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-xl max-h-[90vh] flex flex-col overflow-hidden transform transition-all duration-300 ease-in-out scale-95 opacity-0 animate-modal-appear">
-
-    <header class="p-5 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-      <div class="flex items-center gap-3">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-primary dark:text-primary-light" fill="none"
-          viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round"
-            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <h3 class="text-xl font-semibold text-gray-800 dark:text-gray-100">Performance Insights & Targets</h3>
-      </div>
-      <button appPress (shortPress)="closePerformanceInsights()"
-        class="p-1.5 rounded-full text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700/70 focus:outline-none transition-colors">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-          stroke-width="2.5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-        </svg>
-      </button>
-    </header>
-
-    <div class="p-5 overflow-y-auto space-y-6 flex-grow custom-scrollbar" *ngIf="activeSetInfo() as activeSet">
-
-      <!-- Completed Sets This Workout (for current exercise) -->
-      <div class="rounded-md border border-gray-200 dark:border-gray-700/80">
-        <button appPress (shortPress)="toggleCompletedSetsForExerciseInfo()" class="w-full flex items-center justify-between p-3 text-left text-sm font-medium text-gray-700
-          dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors rounded-t-lg">
-          <span class="flex items-center gap-2">
-            <app-icon name="clipboard-list" class="h-6 w-6"></app-icon>
-            This Exercise ({{ currentBaseExercise()?.name || 'Current' }}) - Completed Sets
-            ({{allPreviousLoggedSetsForCurrentExercise().length}})
-          </span>
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transform transition-transform duration-200"
-            [ngClass]="{'rotate-180': showCompletedSetsForExerciseInfo()}" fill="none" viewBox="0 0 24 24"
-            stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-          </svg>
+    class="fixed inset-0 bg-gray-900/70 dark:bg-black/80 backdrop-blur-md flex items-center justify-center p-4 transition-opacity duration-300 ease-in-out">
+    <div *ngIf="insightsData() as data"
+      class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-xl max-h-[90vh] flex flex-col overflow-hidden transform transition-all duration-300 ease-in-out">
+      <header class="p-5 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center flex-shrink-0">
+        <div class="flex items-center gap-3">
+          <app-icon name="chart" class="h-7 w-7 text-primary dark:text-primary-light"></app-icon>
+          <h3 class="text-xl font-semibold text-gray-800 dark:text-gray-100">Performance Insights</h3>
+        </div>
+        <button (click)="closePerformanceInsights()"
+          class="p-1.5 rounded-full text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700/70 focus:outline-none transition-colors">
+          <app-icon name="cancel" class="h-6 w-6"></app-icon>
         </button>
-        <div *ngIf="allPreviousLoggedSetsForCurrentExercise().length > 0 && showCompletedSetsForExerciseInfo()"
-          class="bg-gray-50 dark:bg-gray-700/30 p-3 border-t border-gray-200 dark:border-gray-700/80 space-y-3 max-h-40 overflow-y-auto custom-scrollbar rounded-b-lg">
-          <div *ngFor="let prevSetLog of allPreviousLoggedSetsForCurrentExercise(); let prevSetDisplayIndex = index"
-            class="text-xs p-2 bg-white dark:bg-gray-700 rounded-md shadow-sm border border-gray-200 dark:border-gray-600">
-            <p class="font-semibold text-gray-700 dark:text-gray-200 mb-1">
-              <span *ngIf="prevSetLog.type === 'warmup'" class="text-blue-600 dark:text-blue-400 font-normal">(Warm-up)
-              </span>
-              Set #{{ prevSetDisplayIndex + 1 }}:
-            </p>
-            <div class="grid grid-cols-2 gap-x-2 gap-y-1 text-gray-600 dark:text-gray-300">
-              <span *ngIf="prevSetLog.repsAchieved !== undefined">Reps: <strong class="dark:text-gray-100">{{
-                  prevSetLog.repsAchieved }}</strong></span>
-              <span *ngIf="prevSetLog.weightUsed !== undefined && prevSetLog.weightUsed !== null">Weight: <strong
-                  class="dark:text-gray-100">{{ prevSetLog.weightUsed | weightUnit }}</strong></span>
-              <span *ngIf="prevSetLog.durationPerformed !== undefined" class="col-span-2">Time: <strong
-                  class="dark:text-gray-100">{{ prevSetLog.durationPerformed }}s</strong></span>
-            </div>
-            <p *ngIf="prevSetLog.notes"
-              class="mt-1.5 text-gray-500 dark:text-gray-400 italic text-2xs border-t border-gray-100 dark:border-gray-600 pt-1.5">
-              {{ prevSetLog.notes }}
-            </p>
-          </div>
-        </div>
-        <div *ngIf="allPreviousLoggedSetsForCurrentExercise().length === 0 && showCompletedSetsForExerciseInfo()"
-          class="p-3 text-xs text-center text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-700/80 rounded-b-lg">
-          No sets completed yet for this exercise in this workout.
-        </div>
-      </div>
-
-      <!-- Completed Sets Today (All Exercises) -->
-      <div class="rounded-md border border-gray-200 dark:border-gray-700/80">
-        <button appPress (shortPress)="toggleCompletedSetsForDayInfo()" class="w-full flex items-center justify-between p-3 text-left text-sm font-medium text-gray-700
+      </header>
+      <div class="p-5 overflow-y-auto space-y-6 flex-grow">
+        <div class="rounded-md border border-gray-200 dark:border-gray-700/80">
+          <button (click)="toggleCompletedSetsForExerciseInfo()" class="w-full flex items-center justify-between p-3 text-left text-sm font-medium text-gray-700
           dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors rounded-t-lg">
-          <span class="flex items-center gap-2">
-            <app-icon name="calendar-page" class="h-6 w-6"></app-icon>
-            Today's Logged Sets (All Exercises) ({{allPreviousLoggedSetsForCurrentSession().length}})
-            <!-- Assuming this is the correct data source -->
-          </span>
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transform transition-transform duration-200"
-            [ngClass]="{'rotate-180': showCompletedSetsForDayInfo()}" fill="none" viewBox="0 0 24 24"
-            stroke="currentColor" stroke-width="2"> <!-- New signal name -->
-            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-          </svg>
+            <span class="flex items-center gap-2">
+              <app-icon name="clipboard-list" class="h-6 w-6"></app-icon>
+              <span>Completed Sets in this Session ({{ data.completedSetsInSession.length }})</span>
+            </span>
+            <app-icon name="chevron-down" class="h-5 w-5 transform transition-transform duration-200"
+              [ngClass]="{'rotate-180': showCompletedSetsForExerciseInfo()}"></app-icon>
+          </button>
+          <div *ngIf="showCompletedSetsForExerciseInfo()"
+            class="bg-gray-50 dark:bg-gray-700/30 p-3 border-t border-gray-200 dark:border-gray-700/80 space-y-3 max-h-48 overflow-y-auto rounded-b-lg">
+            <div *ngFor="let setLog of data.completedSetsInSession; let i = index"
+              class="text-xs p-2 bg-white dark:bg-gray-700 rounded-md shadow-sm border border-gray-200 dark:border-gray-600">
+              <p class="font-semibold text-gray-700 dark:text-gray-200 mb-1">
+                Set #{{ i + 1 }}:
+              </p>
+              <div class="grid grid-cols-2 gap-x-2 gap-y-1 text-gray-600 dark:text-gray-300">
+                <span *ngIf="setLog.repsAchieved">Reps: <strong class="dark:text-gray-100">{{ setLog.repsAchieved
+                    }}</strong></span>
+                <span *ngIf="setLog.weightUsed != null">Weight: <strong class="dark:text-gray-100">{{ setLog.weightUsed
+                    |
+                    weightUnit }}</strong></span>
+                <span *ngIf="setLog.distanceAchieved">Distance: <strong class="dark:text-gray-100">{{
+                    setLog.distanceAchieved }} km</strong></span>
+                <span *ngIf="setLog.durationPerformed">Time: <strong class="dark:text-gray-100">{{
+                    formatSecondsToTime(setLog.durationPerformed) }}</strong></span>
+              </div>
+            </div>
+            <div *ngIf="data.completedSetsInSession.length === 0"
+              class="p-3 text-xs text-center text-gray-500 dark:text-gray-400">
+              No sets completed yet for this exercise in this workout.
+            </div>
+          </div>
+        </div>
+        <div class="rounded-md border border-gray-200 dark:border-gray-700/80">
+          <div class="p-3 text-sm font-medium text-gray-700 dark:text-gray-300">
+            <span class="flex items-center gap-2">
+              <app-icon name="calendar-page" class="h-6 w-6"></app-icon>
+              <span>Last Performance ({{ data.lastPerformance?.lastPerformedDate | date:'shortDate' }})</span>
+            </span>
+          </div>
+          <div *ngIf="data.lastPerformance as lastPerf"
+            class="bg-gray-50 dark:bg-gray-700/30 p-3 border-t border-gray-200 dark:border-gray-700/80 space-y-3 max-h-48 overflow-y-auto rounded-b-lg">
+            <div *ngFor="let setLog of lastPerf.sets; let i = index"
+              class="text-xs p-2 bg-white dark:bg-gray-700 rounded-md shadow-sm border border-gray-200 dark:border-gray-600">
+              <p class="font-semibold text-gray-700 dark:text-gray-200 mb-1">Set #{{ i + 1 }}:</p>
+              <div class="grid grid-cols-2 gap-x-2 gap-y-1 text-gray-600 dark:text-gray-300">
+                <span *ngIf="setLog.repsAchieved">Reps: <strong class="dark:text-gray-100">{{ setLog.repsAchieved
+                    }}</strong></span>
+                <span *ngIf="setLog.weightUsed != null">Weight: <strong class="dark:text-gray-100">{{ setLog.weightUsed
+                    |
+                    weightUnit }}</strong></span>
+                <span *ngIf="setLog.distanceAchieved">Distance: <strong class="dark:text-gray-100">{{
+                    setLog.distanceAchieved }} km</strong></span>
+                <span *ngIf="setLog.durationPerformed">Time: <strong class="dark:text-gray-100">{{
+                    formatSecondsToTime(setLog.durationPerformed) }}</strong></span>
+              </div>
+            </div>
+          </div>
+          <div *ngIf="!data.lastPerformance"
+            class="p-3 text-xs text-center text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-700/80 rounded-b-lg">
+            No previous performance recorded for this exercise.
+          </div>
+        </div>
+        <div class="rounded-md border border-gray-200 dark:border-gray-700/80">
+          <div class="p-3 text-sm font-medium text-gray-700 dark:text-gray-300">
+            <span class="flex items-center gap-2">
+              <app-icon name="pb" class="h-6 w-6 text-yellow-500"></app-icon>
+              <span>Personal Bests</span>
+            </span>
+          </div>
+          <div *ngIf="data.personalBests.length > 0"
+            class="bg-gray-50 dark:bg-gray-700/30 p-3 border-t border-gray-200 dark:border-gray-700/80 grid grid-cols-1 sm:grid-cols-2 gap-3 rounded-b-lg">
+            <div *ngFor="let pb of data.personalBests"
+              class="text-xs p-2 bg-white dark:bg-gray-700 rounded-md shadow-sm border border-gray-200 dark:border-gray-600">
+              <p class="font-semibold text-gray-700 dark:text-gray-200">{{ pb.pbType }}</p>
+              <p class="text-lg font-bold text-primary dark:text-primary-light">{{ formatPbValue(pb) }}</p>
+              <p class="text-2xs text-gray-500 dark:text-gray-400">on {{ pb.timestamp | date:'shortDate' }}</p>
+            </div>
+          </div>
+          <div *ngIf="data.personalBests.length === 0"
+            class="p-3 text-xs text-center text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-700/80 rounded-b-lg">
+            No personal bests recorded for this exercise yet.
+          </div>
+        </div>
+      </div>
+      <footer
+        class="p-4 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 text-right flex-shrink-0">
+        <button (click)="closePerformanceInsights()"
+          class="inline-flex items-center bg-primary hover:bg-primary-dark focus:ring-4 focus:ring-primary-focus text-white font-semibold py-2.5 px-6 rounded-md text-sm transition-colors shadow-md hover:shadow-lg">
+          <app-icon name="done" class="h-7 w-7 mr-1"></app-icon>
+          DONE
         </button>
-        <div *ngIf="allPreviousLoggedSetsForCurrentSession().length > 0 && showCompletedSetsForDayInfo()"
-          class="bg-gray-50 dark:bg-gray-700/30 p-3 border-t border-gray-200 dark:border-gray-700/80 space-y-3 max-h-48 overflow-y-auto custom-scrollbar rounded-b-lg">
-          <!-- Slightly increased max-h -->
-          <div *ngFor="let daySetLog of allPreviousLoggedSetsForCurrentSession(); let daySetDisplayIndex = index"
-            class="text-xs p-2 bg-white dark:bg-gray-700 rounded-md shadow-sm border border-gray-200 dark:border-gray-600">
-            <p class="font-semibold text-gray-700 dark:text-gray-200 mb-1">
-              <!-- You'll need the exercise name for these sets -->
-              <span class="text-sm text-primary dark:text-primary-light">{{ daySetLog.exerciseName || 'Exercise'
-                }}:</span>
-              <span *ngIf="daySetLog.type === 'warmup'" class="text-blue-600 dark:text-blue-400 font-normal">
-                (Warm-up)</span>
-              Set #{{ (daySetLog.plannedSetId) }}:
-              <!-- Use actual set number if available -->
-            </p>
-            <div class="grid grid-cols-2 gap-x-2 gap-y-1 text-gray-600 dark:text-gray-300">
-              <span *ngIf="daySetLog.repsAchieved !== undefined">Reps: <strong class="dark:text-gray-100">{{
-                  daySetLog.repsAchieved }}</strong></span>
-              <span *ngIf="daySetLog.weightUsed !== undefined && daySetLog.weightUsed !== null">Weight: <strong
-                  class="dark:text-gray-100">{{ daySetLog.weightUsed | weightUnit }}</strong></span>
-              <span *ngIf="daySetLog.durationPerformed !== undefined" class="col-span-2">Time: <strong
-                  class="dark:text-gray-100">{{ daySetLog.durationPerformed }}s</strong></span>
-            </div>
-            <p *ngIf="daySetLog.notes"
-              class="mt-1.5 text-gray-500 dark:text-gray-400 italic text-2xs border-t border-gray-100 dark:border-gray-600 pt-1.5">
-              {{ daySetLog.notes }}
-            </p>
-          </div>
-        </div>
-        <div *ngIf="allPreviousLoggedSetsForCurrentSession().length === 0 && showCompletedSetsForDayInfo()"
-          class="p-3 text-xs text-center text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-700/80 rounded-b-lg">
-          No sets logged today for any exercise yet.
-        </div>
-      </div>
-
-      <!-- Last Performance (for current exercise) -->
-      <div
-        *ngIf="trackingService.findPreviousSetPerformance(lastPerformanceForCurrentExercise, activeSet.setData, activeSet.setIndex) as prevPerfSet"
-        class="p-3 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-md text-xs">
-        <p class="font-medium text-blue-700 dark:text-blue-300 mb-1">
-          <span class="flex items-center gap-1.5">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-              stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            Last time ({{lastPerformanceForCurrentExercise?.lastPerformedDate | date:'dd/MM/yy' }}):
-          </span>
-        </p>
-        <ul class="list-none space-y-0.5 ml-1 text-blue-600 dark:text-blue-400">
-          <li *ngIf="prevPerfSet.repsAchieved !== undefined" class="flex items-center"><span class="w-16">Reps:</span>
-            <strong class="dark:text-blue-200">{{ prevPerfSet.repsAchieved }}</strong>
-          </li>
-          <li *ngIf="prevPerfSet.weightUsed !== undefined && prevPerfSet.weightUsed !== null" class="flex items-center">
-            <span class="w-16">Weight:</span> <strong class="dark:text-blue-200">{{ prevPerfSet.weightUsed | weightUnit
-              }}</strong>
-          </li>
-          <li *ngIf="prevPerfSet.durationPerformed !== undefined" class="flex items-center"><span
-              class="w-16">Time:</span> <strong class="dark:text-blue-200">{{ prevPerfSet.durationPerformed }}s</strong>
-          </li>
-          <li *ngIf="prevPerfSet.notes" class="mt-1 italic border-t border-blue-200 dark:border-blue-600 pt-1">Notes: {{
-            prevPerfSet.notes }}</li>
-        </ul>
-      </div>
-      <div
-        *ngIf="!lastPerformanceForCurrentExercise && activeSetInfo() && !activeSetInfo()?.exerciseData?.exerciseId?.startsWith('custom-')"
-        class="p-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-md text-xs text-center text-gray-500 dark:text-gray-400 italic">
-        No previous performance recorded for this exercise yet.
-      </div>
-
-      <!-- Personal Bests (for current exercise) -->
-      <div
-        *ngIf="exercisePBs().length > 0 || (currentBaseExercise() && !currentBaseExercise()?.id?.startsWith('custom-'))"
-        class="p-3 bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-700 rounded-md text-xs">
-        <p class="font-medium text-yellow-700 dark:text-yellow-300 mb-2">
-          <span class="flex items-center gap-1.5">
-            <app-icon name="pb" class="h-6 w-6"></app-icon>
-            Personal Bests for {{ currentBaseExercise()?.name || 'this exercise' }}:
-          </span>
-        </p>
-        <div *ngIf="exercisePBs().length > 0"
-          class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-yellow-600 dark:text-yellow-400">
-          <div *ngFor="let pb of exercisePBs()">
-            <span>{{ pb.pbType }}: </span>
-            <strong class="dark:text-yellow-200">{{ formatPbValue(pb) }}</strong>
-            <em class="text-yellow-500 dark:text-yellow-500 text-2xs ml-1"> ({{ pb.timestamp | date:'shortDate' }})</em>
-          </div>
-        </div>
-        <div
-          *ngIf="currentBaseExercise() && exercisePBs().length === 0 && !currentBaseExercise()?.id?.startsWith('custom-')"
-          class="italic text-yellow-600 dark:text-yellow-400">
-          No personal bests recorded yet for {{ currentBaseExercise()?.name }}.
-        </div>
-      </div>
-
-      <!-- Target Editing Sections (Remains the same as previous) -->
-      <div class="space-y-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-        <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-200">Set Targets:</h4>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <!-- Target Reps -->
-          <div *ngIf="activeSet.setData.reps !== undefined"
-            class="p-3 bg-gray-50 dark:bg-gray-700/80 rounded-md shadow">
-            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Target Reps</label>
-            <div *ngIf="editingTarget !== 'reps'" appPress (shortPress)="startEditTarget('reps')"
-              class="text-3xl font-bold text-primary dark:text-primary-light cursor-pointer hover:opacity-80 p-1.5 rounded-md min-h-[48px] flex items-center">
-              {{ activeSet.setData.reps }}
-            </div>
-            <div *ngIf="editingTarget === 'reps'" class="flex items-center space-x-2">
-              <input type="number" [(ngModel)]="editingTargetValue" (keyup.enter)="confirmEditTarget()"
-                (keyup.escape)="cancelEditTarget()"
-                class="w-24 p-2 text-2xl border-gray-300 dark:border-gray-600 rounded-md focus:ring-primary-focus focus:border-primary-focus dark:bg-gray-600 dark:text-gray-100 shadow-sm"
-                autofocus>
-              <button appPress (shortPress)="confirmEditTarget()"
-                class="p-2 text-green-600 hover:text-green-500 dark:text-green-400 dark:hover:text-green-300 rounded-full hover:bg-green-100 dark:hover:bg-green-700/50"><svg
-                  class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd"
-                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                    clip-rule="evenodd"></path>
-                </svg></button>
-              <button appPress (shortPress)="cancelEditTarget()"
-                class="p-2 text-red-600 hover:text-red-500 dark:text-red-400 dark:hover:text-red-300 rounded-full hover:bg-red-100 dark:hover:bg-red-700/50"><svg
-                  class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd"
-                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                    clip-rule="evenodd"></path>
-                </svg></button>
-            </div>
-          </div>
-
-          <!-- Target Weight -->
-          <div *ngIf="activeSet.setData.weight !== undefined && activeSet.setData.weight !== null"
-            class="p-3 bg-gray-50 dark:bg-gray-700/80 rounded-md shadow">
-            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Target Weight</label>
-            <div *ngIf="editingTarget !== 'weight'" appPress (shortPress)="startEditTarget('weight')"
-              class="text-3xl font-bold text-primary dark:text-primary-light cursor-pointer hover:opacity-80 p-1.5 rounded-md min-h-[48px] flex items-center">
-              {{ activeSet.setData.weight | weightUnit }}
-            </div>
-            <div *ngIf="editingTarget === 'weight'" class="flex items-center space-x-2">
-              <input type="number" [(ngModel)]="editingTargetValue" (keyup.enter)="confirmEditTarget()"
-                (keyup.escape)="cancelEditTarget()"
-                class="w-24 p-2 text-2xl border-gray-300 dark:border-gray-600 rounded-md focus:ring-primary-focus focus:border-primary-focus dark:bg-gray-600 dark:text-gray-100 shadow-sm"
-                autofocus>
-              <button appPress (shortPress)="confirmEditTarget()"
-                class="p-2 text-green-600 hover:text-green-500 dark:text-green-400 dark:hover:text-green-300 rounded-full hover:bg-green-100 dark:hover:bg-green-700/50"><svg
-                  class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd"
-                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                    clip-rule="evenodd"></path>
-                </svg></button>
-              <button appPress (shortPress)="cancelEditTarget()"
-                class="p-2 text-red-600 hover:text-red-500 dark:text-red-400 dark:hover:text-red-300 rounded-full hover:bg-red-100 dark:hover:bg-red-700/50"><svg
-                  class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd"
-                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                    clip-rule="evenodd"></path>
-                </svg></button>
-            </div>
-          </div>
-
-          <!-- Target Time -->
-          <div *ngIf="activeSet.setData.duration !== undefined"
-            class="p-3 bg-gray-50 dark:bg-gray-700/80 rounded-md shadow">
-            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Target Time</label>
-            <div *ngIf="editingTarget !== 'duration'" appPress (shortPress)="startEditTarget('duration')"
-              class="text-3xl font-bold text-primary dark:text-primary-light cursor-pointer hover:opacity-80 p-1.5 rounded-md min-h-[48px] flex items-center">
-              {{ activeSet.setData.duration }}<span class="text-xl ml-0.5">s</span>
-            </div>
-            <div *ngIf="editingTarget === 'duration'" class="flex items-center space-x-2">
-              <input type="number" [(ngModel)]="editingTargetValue" (keyup.enter)="confirmEditTarget()"
-                (keyup.escape)="cancelEditTarget()"
-                class="w-24 p-2 text-2xl border-gray-300 dark:border-gray-600 rounded-md focus:ring-primary-focus focus:border-primary-focus dark:bg-gray-600 dark:text-gray-100 shadow-sm"
-                autofocus>
-              <button appPress (shortPress)="confirmEditTarget()"
-                class="p-2 text-green-600 hover:text-green-500 dark:text-green-400 dark:hover:text-green-300 rounded-full hover:bg-green-100 dark:hover:bg-green-700/50"><svg
-                  class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd"
-                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                    clip-rule="evenodd"></path>
-                </svg></button>
-              <button appPress (shortPress)="cancelEditTarget()"
-                class="p-2 text-red-600 hover:text-red-500 dark:text-red-400 dark:hover:text-red-300 rounded-full hover:bg-red-100 dark:hover:bg-red-700/50"><svg
-                  class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd"
-                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                    clip-rule="evenodd"></path>
-                </svg></button>
-            </div>
-          </div>
-
-          <!-- Target Tempo (Read-only example) -->
-          <div *ngIf="activeSet.setData.tempo" class="p-3 bg-gray-50 dark:bg-gray-700/80 rounded-md shadow">
-            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Target Tempo</label>
-            <span
-              class="text-xl font-semibold text-gray-700 dark:text-gray-100 p-1.5 block min-h-[48px] flex items-center">{{
-              activeSet.setData.tempo }}</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Planned Notes -->
-      <div *ngIf="activeSet.setData.notes" class="mt-4 p-3 bg-gray-100 dark:bg-gray-700/60 rounded-md text-xs">
-        <p class="font-medium text-gray-600 dark:text-gray-300 mb-1">
-          <span class="flex items-center gap-1.5">
-            <app-icon name="message" class="h-6 w-6"></app-icon>
-            Planned Notes for this Set:
-          </span>
-        </p>
-        <p class="text-gray-700 dark:text-gray-200 italic">{{ activeSet.setData.notes }}</p>
-      </div>
-
+      </footer>
     </div>
-
-    <footer class="p-4 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 text-right">
-      <button appPress (shortPress)="closePerformanceInsights()"
-        class="flex items-center bg-primary hover:bg-primary-dark focus:ring-4 focus:ring-primary-focus text-white font-semibold py-2.5 px-6 rounded-md text-sm transition-colors shadow-md hover:shadow-lg">
-        <app-icon name="done" class="h-7 w-7 mr-1"></app-icon>
-        DONE
-      </button>
-    </footer>
   </div>
-</div>
 
 
 <app-exercise-selection-modal [isOpen]="isExerciseAddModalOpen()" [(searchTerm)]="modalSearchTerm"

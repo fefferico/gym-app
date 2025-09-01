@@ -175,7 +175,7 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
 
         console.log('WorkoutPlayer.checkForPausedSession ...', !!pausedState);
 
-        if (pausedState && pausedState.version === this.PAUSED_STATE_VERSION) {
+        if (pausedState && pausedState.version === this.workoutService.getPausedVersion()) {
             // --- Sanity Checks for Relevancy ---
             // 1. If current route has a routineId, but paused session is ad-hoc (null routineId) -> discard paused
             if (routeRoutineId && pausedState.routineId === null) {
@@ -1636,7 +1636,7 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
 
 
         const stateToSave: PausedWorkoutState = {
-            version: this.PAUSED_STATE_VERSION,
+            version: this.workoutService.getPausedVersion(),
             routineId: this.routineId,
             sessionRoutine: JSON.parse(JSON.stringify(currentRoutine)), // Includes sessionStatus
             originalRoutineSnapshot: JSON.parse(JSON.stringify(currentRoutine)), // tabata mode can't be edited
