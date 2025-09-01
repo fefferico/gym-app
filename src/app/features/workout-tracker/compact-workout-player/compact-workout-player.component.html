@@ -15,7 +15,7 @@
           {{ routine()?.name || 'Workout' }}
         </h1>
         <div class="flex-col text-xl font-mono font-semibold text-primary dark:text-primary-light tracking-wider"
-        [ngClass]="{' animate-pulse':  sessionState() === 'paused'}">
+          [ngClass]="{' animate-pulse':  sessionState() === 'paused'}">
           {{ sessionTimerDisplay() }}
           <p>{{ sessionState() === 'paused' ? '[PAUSED]':''}}</p>
         </div>
@@ -23,12 +23,12 @@
       <!-- MODIFIED: Container for Pause/Resume and Notes buttons -->
       <div class="relative flex items-center">
         <button (click)="toggleMainSessionActionMenu($event)"
-                class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center">
-                <app-icon name="menu-action" class="h-7 w-7"></app-icon>
-              </button>
-        <app-action-menu [isVisible]="mainSessionActionMenuOpened() === true" class="action-menu-container" displayMode="modal"
-          [modalTitle]="''" [items]="getMainSessionActionItems()" (itemClick)="handleMainSessionActionMenuItemClick($event)"
-          (closeMenu)="toggleMainSessionActionMenu(null)">
+          class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center">
+          <app-icon name="menu-action" class="h-7 w-7"></app-icon>
+        </button>
+        <app-action-menu [isVisible]="mainSessionActionMenuOpened() === true" class="action-menu-container"
+          displayMode="modal" [modalTitle]="''" [items]="getMainSessionActionItems()"
+          (itemClick)="handleMainSessionActionMenuItemClick($event)" (closeMenu)="toggleMainSessionActionMenu(null)">
         </app-action-menu>
 
         <!-- +++ NEW: Session Notes Button +++ -->
@@ -63,16 +63,14 @@
   <main class="pt-4 px-2 pb-36">
     <div *ngIf="routine() as currentRoutine; else loading" class="">
       <!-- +++ OPTIMIZED: Classes for superset vs standalone are now cleaner +++ -->
-      <div *ngFor="let exercise of currentRoutine.exercises; let exIndex = index"
-        class="bg-white dark:bg-gray-800 transition-all duration-300 relative"
-        [ngClass]="{
+      <div *ngFor="let exercise of currentRoutine.exercises; let exIndex = index;"
+        class="bg-white dark:bg-gray-800 transition-all duration-300 relative" [ngClass]="{
           'border-l-2 border-r-2 border-primary': isSuperSet(exIndex),
           'border-t-2 border-b-0 rounded-none rounded-t-md': isSupersetStart(exIndex),
           'border-b-0 rounded-none': isSupersetMiddle(exIndex),
           'border-t-0 border-b-2 rounded-b-md mb-4': isSupersetEnd(exIndex),
           'mb-3 rounded-md': !exercise.supersetId,
-          }"
-        [style.zIndex]="areActionsVisible(exIndex) ? 50 : 'auto'">
+          }" [style.zIndex]="areActionsVisible(exIndex) ? 50 : 'auto'">
 
         <!-- Superset Indicator Ribbon -->
         <div *ngIf="isSupersetStart(exIndex)"
@@ -83,11 +81,21 @@
         <!-- Exercise Header -->
         <div (click)="toggleExerciseExpansion(exIndex)"
           class="p-3 flex-col items-center justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:rounded-md">
-          <div class="flex justify-start items-center space-x-3 min-w-0">
+          <div class="flex-col justify-start items-start space-x-3 min-w-0">
             <div class="flex">
               <h2 class="max-w-[250px] text-md font-semibold text-gray-800 dark:text-gray-100 text-wrap">
                 {{ getExerciseDisplayIndex(exIndex)}} {{ exercise.exerciseName }}
               </h2>
+            </div>
+            <!-- +++ NEW: Superset Round Controls (only for the first exercise in the group) +++ -->
+            <div *ngIf="isSupersetStart(exIndex)" class="flex items-center gap-2 ml-auto">
+              <span class="text-xs font-semibold text-gray-500 dark:text-gray-400">
+                ROUNDS: {{ exercise.supersetRounds || 1 }}
+              </span>
+              <button (click)="addRoundToSuperset(exercise.supersetId!, $event)"
+                class="flex p-1 rounded-full bg-primary/20 hover:bg-primary/40 text-primary items-center">
+                <app-icon name="plus-circle" class="h-5 w-5"></app-icon>
+              </button>
             </div>
           </div>
           <!-- Exercise Notes Textarea -->
@@ -127,10 +135,10 @@
 
         <!-- Sets Container -->
         <div *ngIf="expandedExerciseIndex() === exIndex"
-          class="bg-gray-50 dark:bg-gray-700/50 py-2 px-1 border-t border-gray-200 dark:border-gray-700">
+          class="bg-gray-50 dark:bg-gray-700/50 py-2 px-1 border-b rounded-md border-gray-200 dark:border-gray-700">
           <!-- Set Headers -->
           <div class="grid grid-cols-12 gap-2 text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 px-2">
-            <div class="col-span-1 text-center">Set</div>
+            <div class="col-span-1 text-center">Set / Rounds</div>
             <ng-container *ngIf="!isCardio(exercise)">
               <div class="col-span-3 text-center">Weight ({{ unitsService.getUnitLabel() }})</div>
               <div class="col-span-3 text-center">Reps</div>
@@ -146,9 +154,23 @@
           <!-- Sets List -->
           <div class="space-y-2">
             <ng-container *ngFor="let set of exercise.sets; let setIndex = index">
+              <!-- +++ NEW: Round Header for Supersets +++ -->
+              <div *ngIf="exercise.supersetId"
+                class="flex items-center justify-between px-2 py-1 mt-3 mb-1 bg-gray-200 dark:bg-gray-700 rounded-md">
+                <h4 class="text-sm font-bold text-gray-700 dark:text-gray-200">
+                  Round {{ setIndex + 1 }}
+                </h4>
+                <button (click)="completeSupersetRound(exercise, setIndex, $event)"
+                  class="flex items-center gap-1 text-xs font-semibold text-white bg-green-500 hover:bg-green-600 px-2 py-1 rounded-full shadow-sm">
+                  <app-icon name="done" class="h-4 w-4"></app-icon>
+                  <span>Complete Round</span>
+                </button>
+              </div>
+
               <div class="grid grid-cols-12 gap-2 items-center rounded-md p-2 shadow-sm"
                 [ngClass]="{'bg-blue-100 dark:bg-blue-700/70': set.type === 'warmup', 'bg-white dark:bg-gray-800': set.type !== 'warmup'}">
-                <div class="col-span-1 text-center font-semibold text-gray-700 dark:text-gray-200">{{ setIndex + 1 }}
+                <div class="col-span-1 text-center font-semibold text-gray-700 dark:text-gray-200">#{{ (setIndex %
+                  (exercise.sets.length / (exercise.supersetRounds || 1))) + 1 }}
                 </div>
 
                 <!-- Input fields -->
@@ -208,7 +230,9 @@
             </ng-container>
           </div>
         </div>
+        
       </div>
+
     </div>
 
     <ng-template #loading>
@@ -217,7 +241,17 @@
       </div>
     </ng-template>
   </main>
-
+<div class="flex flex-col items-center"
+  *ngIf="!routine() || (routine() !== null && routine() !== undefined && (!routine()?.exercises || routine()?.exercises?.length === 0))">
+  <h2 class="text-2xl font-semibold text-gray-700 dark:text-gray-200">
+    {{ sessionState() === 'error' ? 'Error Loading Workout' : (currentWorkoutLog().exercises?.length === 0 ?
+    (routineId === '-1' ? 'Workout to be started' : 'Workout Ended') : 'Workout Complete!') }}
+  </h2>
+  <p class="text-gray-600 dark:text-gray-400 mt-2" *ngIf="sessionState() !== 'error'">
+    {{ currentWorkoutLog().exercises?.length === 0 ? 'No sets logged yet' : 'All planned sets are done. Well
+    done!' }}
+  </p>
+</div>
   <!-- Footer with Action Buttons -->
   <div class="flex justify-center fixed left-0 right-0 z-20 bottom-0">
     <div

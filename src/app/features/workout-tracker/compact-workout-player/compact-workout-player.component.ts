@@ -642,7 +642,10 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       restAfterSet: 30, type: 'warmup'
     };
     exercise.sets.unshift(newWarmupSet);
+
+    // +++ FIX: Return a new object reference to trigger computed signal recalculation +++
     this.routine.set({ ...routine });
+
     this.toastService.success(`Warm-up set added to ${exercise.exerciseName}`);
     if (this.expandedExerciseIndex() !== exIndex) {
       this.expandedExerciseIndex.set(exIndex);
@@ -666,7 +669,9 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     if (type === 'warmup') exercise.sets.unshift(newSet);
     else exercise.sets.push(newSet);
 
+    // +++ FIX: Return a new object reference to trigger computed signal recalculation +++
     this.routine.set({ ...routine });
+
     this.toastService.success(`${type === 'warmup' ? 'Warm-up set' : 'Set'} added to ${exercise.exerciseName}`);
     if (this.expandedExerciseIndex() !== exIndex) {
       this.expandedExerciseIndex.set(exIndex);
@@ -679,22 +684,42 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const exercise = routine.exercises[exIndex];
     const setToRemove = exercise.sets[setIndex];
     const isLoggedSet = this.isSetCompleted(exIndex, setIndex);
+    const isLastSet = exercise.sets.length === 1;
 
-    const confirm = isLoggedSet ? await this.alertService.showConfirm("Remove Set", `Are you sure you want to remove logged Set #${setIndex + 1} from ${exercise.exerciseName}?`) : { data: true };
+    let confirmMessage = `Are you sure you want to remove this set from ${exercise.exerciseName}?`;
+    if (isLastSet) {
+      confirmMessage = `This is the last set for ${exercise.exerciseName}. Removing it will also remove the exercise from the workout. Continue?`;
+    }
+
+    const confirm = (isLoggedSet || isLastSet)
+      ? await this.alertService.showConfirm("Remove Set", confirmMessage)
+      : { data: true };
+
     if (confirm?.data) {
-      exercise.sets.splice(setIndex, 1);
-      this.routine.set({ ...routine });
-
+      // First, remove the log entry for the specific set if it exists
       const log = this.currentWorkoutLog();
       const exerciseLog = log.exercises?.find(e => e.id === exercise.id);
       if (exerciseLog) {
         const loggedSetIndex = exerciseLog.sets.findIndex(s => s.plannedSetId === setToRemove.id);
         if (loggedSetIndex > -1) {
           exerciseLog.sets.splice(loggedSetIndex, 1);
-          this.currentWorkoutLog.set({ ...log });
         }
       }
-      this.toastService.info(`Set removed from ${exercise.exerciseName}`);
+      this.currentWorkoutLog.set({ ...log });
+
+      // Now, remove the set from the routine definition
+      exercise.sets.splice(setIndex, 1);
+
+      // If that was the last set, remove the entire exercise
+      if (exercise.sets.length === 0) {
+        // The removeExercise function handles routine updates, log cleanup, and its own toast notification.
+        // We pass the index of the exercise to be removed.
+        this.removeExercise(exIndex);
+      } else {
+        // If sets still remain, just update the routine signal and notify the user.
+        this.routine.set({ ...routine });
+        this.toastService.info(`Set removed from ${exercise.exerciseName}`);
+      }
     }
   }
 
@@ -704,18 +729,49 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     if (!routine) return;
     const exercise = routine.exercises[exIndex];
 
-    // if no logs for this exercise avoid asking the user for permission
     const isExerciseLogged = this.isExerciseLogged(exIndex);
+    const confirm = isExerciseLogged
+      ? await this.alertService.showConfirm("Remove Exercise", `Are you sure you want to remove ${exercise.exerciseName}? All logged data for this exercise in this session will be lost.`)
+      : { data: true };
 
-    let confirm: any = false
-    if (!isExerciseLogged){
-      confirm = true;
-    } else {
-      confirm = await this.alertService.showConfirm("Remove Exercise", `Are you sure you want to remove ${exercise.exerciseName}?`);
-    }
+    if (confirm?.data) {
+      // +++ MODIFICATION START +++
+      const supersetIdToRemoveFrom = exercise.supersetId;
+      // +++ MODIFICATION END +++
 
-    if (confirm === true || confirm?.data) {
       routine.exercises.splice(exIndex, 1);
+
+      // +++ MODIFICATION START +++
+      // If the removed exercise was part of a superset, clean up the remaining members.
+      if (supersetIdToRemoveFrom) {
+        const remainingInSuperset = routine.exercises.filter(ex => ex.supersetId === supersetIdToRemoveFrom);
+
+        // If only one (or zero) exercises are left, it's no longer a superset.
+        if (remainingInSuperset.length <= 1) {
+          remainingInSuperset.forEach(ex => {
+            ex.supersetId = null;
+            ex.supersetOrder = null;
+            ex.supersetSize = null;
+            ex.supersetRounds = null;
+            ex.type = 'standard';
+            // Also clean the round markers from the sets
+            // ex.sets.forEach(set => set.supersetRound = undefined);
+          });
+          if (remainingInSuperset.length > 0) {
+            this.toastService.info("Superset dissolved as only one exercise remains.");
+          }
+        } else {
+          // Otherwise, just update the order and size for the remaining exercises.
+          remainingInSuperset
+            .sort((a, b) => (a.supersetOrder ?? 0) - (b.supersetOrder ?? 0))
+            .forEach((ex, i) => {
+              ex.supersetOrder = i;
+              ex.supersetSize = remainingInSuperset.length;
+            });
+        }
+      }
+      // +++ MODIFICATION END +++
+
       this.routine.set({ ...routine });
 
       const log = this.currentWorkoutLog();
@@ -828,7 +884,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       if (r) this.expandedExerciseIndex.set(r.exercises.length - 1);
       return r;
     });
-    this.toastService.success(`${newWorkoutExercise.exerciseName} added to workout.`);
+    // this.toastService.success(`${newWorkoutExercise.exerciseName} added to workout.`);
     this.closeAddExerciseModal();
   }
 
@@ -930,6 +986,14 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       buttonClass: (this.sessionState() === 'paused' || !this.routine()?.exercises?.length ? 'disabled ' : '') + defaultBtnClass,
     } as ActionMenuItem;
 
+    const quitWorkoutBtn = {
+      label: 'EXIT',
+      actionKey: 'exit',
+      iconName: `exit-door`,
+      iconClass: 'w-8 h-8 mr-2',
+      buttonClass: '' + 'w-full flex items-center justify-center max-w-xs text-white bg-red-600 hover:bg-red-800 font-medium py-2 px-6 rounded-md text-md',
+    } as ActionMenuItem;
+
     const actionsArray: ActionMenuItem[] = [
       {
         label: 'Pause', actionKey: 'pause', iconName: 'pause',
@@ -939,7 +1003,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         label: 'Session notes', actionKey: 'session_notes', iconName: 'clipboard-list',
         buttonClass: defaultBtnClass + 'bg-green-500 dark:bg-green-500 hover:bg-green-600 dark:hover:bg-green-600 disabled:opacity-60 disabled:cursor-not-allowed', iconClass: 'w-8 h-8 mr-2'
       },
-      addExerciseBtn
+      addExerciseBtn,
+      quitWorkoutBtn
     ];
 
     return actionsArray;
@@ -951,6 +1016,17 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       case 'pause': this.pauseSession(); break;
       case 'session_notes': this.editSessionNotes(); break;
       case 'addExercise': this.openAddExerciseModal(); break;
+      case 'exit': this.quitWorkout(); break;
+    }
+  }
+
+  async quitWorkout(): Promise<void> {
+    const confirmQuit = await this.alertService.showConfirm("Quit Workout", 'Quit workout? Unsaved progress (if not paused) will be lost');
+    if (confirmQuit && confirmQuit.data) {
+      this.isSessionConcluded = true;
+      this.toggleMainSessionActionMenu(null);
+      this.router.navigate(['/workout']);
+      this.toastService.info("Workout quit. No progress saved for this session", 4000);
     }
   }
 
@@ -1399,7 +1475,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         targetExercise.type = 'superset';
 
         r.exercises = this.reorderExercisesForSupersets(r.exercises);
-        this.toastService.success(`${targetExercise.exerciseName} added to the superset.`);
+        // this.toastService.success(`${targetExercise.exerciseName} added to the superset.`);
         return r;
       });
     }
@@ -1420,6 +1496,16 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       value: exer.originalIndex === exIndex
     }));
 
+    // +++ NEW: Add input for number of rounds +++
+    exercises.push({
+      name: 'supersetRounds',
+      type: 'number',
+      label: 'Number of Rounds',
+      value: '1',
+      min: 1,
+      placeholder: 'Enter number of rounds'
+    });
+
     const choice = await this.alertService.showPromptDialog(
       'Create Superset',
       'Select exercises to link together.',
@@ -1427,6 +1513,9 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     );
 
     if (choice && !this.areAllPropertiesFalsy(choice)) {
+      const rounds = Number(choice['supersetRounds']) || 1;
+      delete choice['supersetRounds']; // Important: remove so it's not treated as an exercise index
+
       const selectedOriginalIndices = Object.keys(choice)
         .filter(key => choice[key])
         .map(Number)
@@ -1446,18 +1535,100 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         for (const originalIndex of selectedOriginalIndices) {
           const targetExercise = r.exercises[originalIndex];
           if (targetExercise) {
+            // +++ MODIFICATION START +++
+            // Force the superset to start with a single set template to ensure "Add Round" is predictable.
+            // Use the first existing set as a template, or create a default one if none exist.
+            const templateSet = targetExercise.sets.length > 0
+              ? JSON.parse(JSON.stringify(targetExercise.sets[0]))
+              : { id: uuidv4(), reps: 8, weight: 10, restAfterSet: 60, type: 'standard' };
+
+            // Clear the sets array to rebuild it based on rounds.
+            targetExercise.sets = [];
+            // +++ MODIFICATION END +++
+
             targetExercise.supersetId = newSupersetId;
             targetExercise.supersetOrder = currentOrder++;
             targetExercise.type = 'superset';
             targetExercise.supersetSize = selectedOriginalIndices.length;
+            targetExercise.supersetRounds = rounds;
+
+            // +++ MODIFICATION START +++
+            // Create one set per round using the template.
+            for (let i = 1; i <= rounds; i++) {
+              const newSet = { ...templateSet, id: uuidv4(), supersetRound: i };
+              targetExercise.sets.push(newSet);
+            }
+            // +++ MODIFICATION END +++
           }
         }
         r.exercises = this.reorderExercisesForSupersets(r.exercises);
-        this.toastService.success(`Superset created with ${selectedOriginalIndices.length} exercises.`);
+        this.toastService.success(`Superset created with ${selectedOriginalIndices.length} exercises and ${rounds} rounds.`);
         return r;
       });
     }
   }
+
+  // +++ NEW: Method to add a new round to an existing superset +++
+  async addRoundToSuperset(supersetId: string, event: Event) {
+    event.stopPropagation();
+    this.routine.update(r => {
+      if (!r) return r;
+
+      const exercisesInSuperset = r.exercises.filter(ex => ex.supersetId === supersetId);
+      if (exercisesInSuperset.length === 0) return r;
+
+      const firstExercise = exercisesInSuperset[0];
+      const currentRounds = firstExercise.supersetRounds || 1;
+      const newRoundNumber = currentRounds + 1;
+
+      exercisesInSuperset.forEach(exercise => {
+        exercise.supersetRounds = newRoundNumber;
+        // The number of sets per round is now always 1
+        const templateSet = exercise.sets.length > 0 ? exercise.sets[0] : { id: uuidv4(), reps: 8, weight: 10, restAfterSet: 60, type: 'standard' };
+
+        const newSet = { ...templateSet, id: uuidv4(), supersetRound: newRoundNumber };
+        exercise.sets.push(newSet);
+      });
+
+      this.toastService.success(`Added Round ${newRoundNumber} to superset.`);
+
+      // +++ FIX: Return a new object reference to trigger computed signal recalculation +++
+      return { ...r };
+    });
+  }
+
+  // +++ NEW: Method to complete all sets within a specific superset round +++
+  async completeSupersetRound(exercise: WorkoutExercise, round: number, event: Event) {
+    event.stopPropagation();
+    const routine = this.routine();
+    if (!routine || !exercise.supersetId) return;
+
+    const confirm = await this.alertService.showConfirm(
+      'Complete Round',
+      `Mark all sets in Round ${round} for this superset as complete? This cannot be undone.`,
+      'Complete',
+      'Cancel'
+    );
+    if (!confirm?.data) return;
+
+    const exercisesInSuperset = routine.exercises.filter(ex => ex.supersetId === exercise.supersetId);
+
+    exercisesInSuperset.forEach(exInSuperset => {
+      const exIndex = routine.exercises.findIndex(e => e.id === exInSuperset.id);
+      if (exIndex === -1) return;
+
+      exInSuperset.sets.forEach((set, setIndex) => {
+        if (setIndex === round) {
+          const wasCompleted = this.isSetCompleted(exIndex, setIndex);
+          const isValid = this.isSetDataValid(exIndex, setIndex);
+          if (!wasCompleted && isValid) {
+            this.toggleSetCompletion(exInSuperset, set, exIndex, setIndex);
+          }
+        }
+      });
+    });
+  }
+
 
   areAllPropertiesFalsy(obj: any) {
     return Object.values(obj).every(value => !value);
