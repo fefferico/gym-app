@@ -75,7 +75,9 @@ export class TrainingProgramService {
   private _seedAndMergeProgramsFromStaticData(existingPrograms: TrainingProgram[]): void {
     try {
       // +++ 2. USE THE IMPORTED DATA AS THE SOURCE OF TRUTH FOR SEEDING +++
-      const assetPrograms: TrainingProgram[] = PROGRAMS_DATA.map(program => ({
+
+      const CURRENT_PROGRAMS_DATA: TrainingProgram[] = PROGRAMS_DATA && PROGRAMS_DATA.length > 0 ? [...PROGRAMS_DATA] : []; // Or populate with full TrainingProgram objects
+      const assetPrograms: TrainingProgram[] = CURRENT_PROGRAMS_DATA.map(program => ({
         ...program,
         programType: !program.programType || program.programType === 'cycled' ? 'cycled' : 'linear'
       }));

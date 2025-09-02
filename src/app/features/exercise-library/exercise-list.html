@@ -104,23 +104,11 @@
           <div class="flex flex-wrap gap-2 mb-2">
             <span *ngIf="exercise.isHidden"
               class="inline-flex items-center gap-x-1.5 rounded-full bg-yellow-100 px-2 py-1 text-xs font-medium text-yellow-700 dark:bg-yellow-800/50 dark:text-yellow-400">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4">
-                <path fill-rule="evenodd"
-                  d="M3.28 2.22a.75.75 0 00-1.06 1.06l14.5 14.5a.75.75 0 101.06-1.06l-1.745-1.745a10.029 10.029 0 003.3-4.38 1.651 1.651 0 000-1.185A10.004 10.004 0 009.999 3a9.956 9.956 0 00-4.744 1.194L3.28 2.22zM7.752 6.69l1.092 1.092a2.5 2.5 0 013.374 3.373l1.091 1.092a4 4 0 00-5.557-5.557z"
-                  clip-rule="evenodd" />
-                <path
-                  d="M10.748 13.93l2.523 2.523a9.987 9.987 0 01-3.27.547c-4.257 0-7.893-2.66-9.336-6.41a1.651 1.651 0 010-1.186A10.007 10.007 0 012.839 6.02L6.07 9.252a4 4 0 004.678 4.678z" />
-              </svg>
+              <app-icon name="eye-off"></app-icon>
               Hidden </span>
             <span *ngIf="exercise.isCustom"
               class="inline-flex items-center gap-x-1.5 rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700 dark:bg-blue-800/50 dark:text-blue-400">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="h-4 w-4">
-                <path
-                  d="M9.914 4.086a.75.75 0 1 0-1.06-1.06L5.75 6.13L4.086 4.464a.75.75 0 0 0-1.06 1.06L4.69 7.25L3.025 8.914a.75.75 0 1 0 1.06 1.06L5.75 8.31l1.664 1.664a.75.75 0 1 0 1.06-1.06L6.81 7.25l3.104-3.164Z" />
-                <path fill-rule="evenodd"
-                  d="M2.5 1A1.5 1.5 0 0 0 1 2.5v11A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.75.75 0 0 0-1.5 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5h6a.75.75 0 0 0 0-1.5h-6Z"
-                  clip-rule="evenodd" />
-              </svg>
+              <app-icon name="favourite"></app-icon>
               Custom
             </span>
           </div>
@@ -203,22 +191,12 @@
   <ng-template #loadingOrInitial>
     <div *ngIf="!allExercises() || allExercises().length === 0" class="text-center py-10">
       <div *ngIf="exerciseService.isLoadingExercises$ | async" class="text-center py-10">
-        <svg class="animate-spin h-8 w-8 text-primary dark:text-primary-light mx-auto"
-          xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor"
-            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-          </path>
-        </svg>
+        <app-icon name="loading"></app-icon>
         <p class="text-lg text-gray-600 dark:text-gray-400 mt-3">Loading exercises...</p>
       </div>
       <div *ngIf="!(exerciseService.isLoadingExercises$ | async) && (!allExercises() || allExercises().length === 0)"
         class="text-center py-12 px-6 bg-white dark:bg-gray-700 rounded-md shadow-md">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-          class="w-16 h-16 mx-auto text-gray-400 dark:text-gray-200 mb-4">
-          <path stroke-linecap="round" stroke-linejoin="round"
-            d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
-        </svg>
+        <app-icon name="alert-filled"></app-icon>
         <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Your Exercise Library is Empty</h3>
         <p class="text-gray-500 dark:text-gray-400 mb-6">Start building your collection by adding your first exercise
         </p>

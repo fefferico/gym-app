@@ -12,6 +12,7 @@ export enum PremiumFeature {
   UNLIMITED_ROUTINES = 'unlimited_routines',
   PROGRESSIVE_OVERLOAD = 'progressive_overload',
   PERSONAL_GYM = 'personal_gym',
+  CAMERA_TRACKING = 'camera_tracking',
   MENU_MODE = 'menu_mode',
   ACTIVITY = 'activity',
   TRAINING_PROGRAMS = 'training_programs',
@@ -36,7 +37,7 @@ export class SubscriptionService {
   // --- ENTITLEMENTS ---
   // This map defines the limits for free users.
   private featureLimits = new Map<PremiumFeature, number>([
-    [PremiumFeature.UNLIMITED_ROUTINES, 3] // Free users can have a maximum of 3 routines
+    [PremiumFeature.UNLIMITED_ROUTINES, 4] // Free users can have a maximum of 4 routines
   ]);
 
   constructor() {

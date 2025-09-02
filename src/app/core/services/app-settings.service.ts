@@ -1,7 +1,7 @@
 // src/app/core/services/app-settings.service.ts
 import { Injectable, inject, signal, WritableSignal, effect, PLATFORM_ID } from '@angular/core';
 import { StorageService } from './storage.service';
-import { AppSettings, MenuMode } from '../models/app-settings.model';
+import { AppSettings, MenuMode, PlayerMode } from '../models/app-settings.model';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { isPlatformBrowser } from '@angular/common';
 
@@ -12,7 +12,7 @@ const DEFAULT_APP_SETTINGS: AppSettings = {
     enablePresetTimer: false,        // NEW Default
     presetTimerDurationSeconds: 10,  // NEW Default (e.g., 10 seconds)
     weightStep: 1,
-    playerMode: false,
+    playerMode: 'compact',
     menuMode: 'modal' as MenuMode,
 };
 
@@ -34,7 +34,7 @@ export class AppSettingsService {
     public appSettings$: Observable<AppSettings>;
 
     // Individual signals
-    public enableCompactModeSignal = signal<boolean>(DEFAULT_APP_SETTINGS.enableTimerCountdownSound);
+    public playerModeSignal = signal<PlayerMode>(DEFAULT_APP_SETTINGS.playerMode);
     public enableTimerCountdownSound = signal<boolean>(DEFAULT_APP_SETTINGS.enableTimerCountdownSound);
     public countdownSoundSeconds = signal<number>(DEFAULT_APP_SETTINGS.countdownSoundSeconds);
     public enablePresetTimer = signal<boolean>(DEFAULT_APP_SETTINGS.enablePresetTimer);             // NEW
@@ -79,7 +79,7 @@ export class AppSettingsService {
         this.appSettingsSubject.next(updatedSettings);
 
         // Update individual signals
-        if (settings.playerMode !== undefined) this.enableCompactModeSignal.set(settings.playerMode);
+        if (settings.playerMode !== undefined) this.playerModeSignal.set(settings.playerMode);
         if (settings.menuMode !== undefined) this.menuMode.set(settings.menuMode);
         if (settings.enableTimerCountdownSound !== undefined) this.enableTimerCountdownSound.set(settings.enableTimerCountdownSound);
         if (settings.countdownSoundSeconds !== undefined) this.countdownSoundSeconds.set(settings.countdownSoundSeconds);

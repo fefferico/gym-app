@@ -211,7 +211,7 @@ viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" >
 </path>
 </svg>
 `,
-'weight':`
+  'weight': `
 <svg viewBox="0 -0.5 17 17" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="si-glyph si-glyph-weight-up" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title>674</title> <defs> </defs> <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"> <path d="M12.867,3.039 L11.944,3.039 C11.978,2.887 12,2.719 12,2.531 C12,1.135 10.877,0 9.495,0 C8.113,0 6.99,1.135 6.99,2.531 C6.99,2.719 7.016,2.886 7.058,3.039 L6.136,3.039 C5.011,3.039 4.099,3.922 4.099,5.01 L2.083,13.985 C2.083,15.075 2.873,15.957 4,15.957 L15,15.957 C16.126,15.957 16.917,15.075 16.917,13.985 L14.905,5.01 C14.905,3.922 13.993,3.039 12.867,3.039 Z M7.824,2.531 C7.824,1.582 8.573,0.808 9.495,0.808 C10.416,0.808 11.165,1.581 11.165,2.531 C11.165,2.709 11.131,2.877 11.082,3.039 L7.906,3.039 C7.857,2.877 7.824,2.709 7.824,2.531 L7.824,2.531 Z M10.054,10.08 L10.054,13.039 L8.946,13.039 L8.946,10.101 L6.813,10.08 L9.543,7.02 L12.107,10.08 L10.054,10.08 L10.054,10.08 Z" fill="currentColor" class="si-glyph-fill"> </path> </g> </g></svg>`,
   'pb': `
 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -352,7 +352,7 @@ viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" >
   <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path>
 </svg>
 `,
-'flame-2':`
+  'flame-2': `
 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke-width="1.5"
                             stroke="currentColor" class="w-10 h-10 transition-transform duration-300">
                             <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
@@ -369,6 +369,14 @@ viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" >
   <circle cx="12" cy="10" r="3"></circle>
 </svg>
 `,
+  'loading': `
+<svg class="animate-spin h-8 w-8 text-primary dark:text-primary-light mx-auto"
+          xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+          </path>
+        </svg>`,
   'ruler': `
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
   <rect x="2" y="8" width="20" height="8" rx="1" ry="1"></rect>

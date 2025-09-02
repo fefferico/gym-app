@@ -642,6 +642,11 @@ export class RoutineListComponent implements OnInit, OnDestroy {
   }
 
   startKB(): void {
+    this.vibrate();
+    if (!this.subscriptionService.canAccess(PremiumFeature.CAMERA_TRACKING)) {
+      this.subscriptionService.showUpgradeModal();
+      return;
+    }
     this.router.navigate(['/workout/routine/kb-workout-tracker']);
   }
 

@@ -305,7 +305,7 @@
                   No workouts logged</h3>
               </div>
               <div *ngIf="isToday(currentDate())">
-                <p *ngIf="allActivePrograms().length === 0" class="text-m text-gray-500 dark:text-gray-400">
+                <p *ngIf="allActivePrograms().length === 0 && subscriptionsService.canAccess(PremiumFeature.TRAINING_PROGRAMS)" class="text-m text-gray-500 dark:text-gray-400" >
                   You can <button (click)="managePrograms()"
                     class="text-primary dark:text-primary-light hover:underline">set an active program</button> or
                   <button (click)="browseRoutines()"

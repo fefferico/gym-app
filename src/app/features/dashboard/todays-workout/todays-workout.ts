@@ -19,6 +19,7 @@ import { PressDirective } from '../../../shared/directives/press.directive';
 import { PressScrollDirective } from '../../../shared/directives/press-scroll.directive';
 import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
+import { PremiumFeature, SubscriptionService } from '../../../core/services/subscription.service';
 
 export type SlideAnimationState = 'center' | 'exitToLeft' | 'exitToRight' | 'enterFromLeft' | 'enterFromRight';
 
@@ -53,6 +54,9 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
   private router = inject(Router);
   private elementRef = inject(ElementRef);
   private ngZone = inject(NgZone);
+  protected subscriptionsService = inject(SubscriptionService);
+
+  public PremiumFeature = PremiumFeature;
 
   private sanitizer = inject(DomSanitizer);
 

@@ -5,9 +5,10 @@ export interface AppSettings {
   enableProgressiveOverload: boolean;
   presetTimerDurationSeconds: number;
   weightStep: number;
-  playerMode: boolean;
+  playerMode: PlayerMode;
   menuMode: MenuMode;
   // Add other settings as needed
 }
 
 export type MenuMode = 'dropdown' | 'compact' | 'modal';
+export type PlayerMode = 'focus' | 'compact';
