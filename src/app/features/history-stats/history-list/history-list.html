@@ -115,10 +115,20 @@
                       <span><span class="font-medium">Duration: </span>
                         {{ item.durationMinutes || 0 }} min</span>
                     </p>
-                    <p class="flex gap-1 items-center">
+                    <div class="flex justify-between">
+                      <p class="flex gap-1 items-center">
                       <app-icon name="muscle" class="w-6 h-6"></app-icon>
-                      <span class="font-medium">Exercises:</span> {{ item.exercises.length }}
+                      <span class="font-medium">Ex:</span> {{ item.exercises.length }}
                     </p>
+                    <p *ngIf="item.totalVolume" class="flex gap-1 items-center">
+                      <app-icon name="weight" class="w-6 h-6"></app-icon>
+                      <span class="font-medium"></span> {{ item.totalVolume }} {{unitsService.getUnitLabel()}}
+                    </p>
+                    <p *ngIf="item.personalBests" class="flex gap-1 items-center">
+                      <app-icon name="pb" class="w-6 h-6"></app-icon>
+                      <span class="font-medium">PBs:</span> {{ item.personalBests }}
+                    </p>
+                    </div>
                   </div>
                 </div>
                 <!-- Action Menu for Workouts -->
@@ -328,6 +338,18 @@
               <span *ngIf="item.durationMinutes" class="text-sm text-gray-600 dark:text-gray-300 mb-2">
                 Duration: {{ item.durationMinutes }} min
               </span>
+              <p class="flex gap-1 items-center text-sm text-gray-600 dark:text-gray-300 mb-2">
+                <app-icon name="muscle" class="w-6 h-6"></app-icon>
+                <span class="font-medium">Ex:</span> {{ item.exercises.length }}
+              </p>
+              <p *ngIf="item.totalVolume" class="flex gap-1 items-center text-sm text-gray-600 dark:text-gray-300 mb-2">
+                <app-icon name="weight" class="w-6 h-6"></app-icon>
+                <span class="font-medium"></span> {{ item.totalVolume }} {{unitsService.getUnitLabel()}}
+              </p>
+              <p *ngIf="item.personalBests" class="flex gap-1 items-center text-sm text-gray-600 dark:text-gray-300 mb-2">
+                <app-icon name="pb" class="w-6 h-6"></app-icon>
+                <span class="font-medium">PBs:</span> {{ item.personalBests }}
+              </p>
             </div>
             <div class="flex items-center">
               <button (click)="viewLogDetails(item.id)"

@@ -1,5 +1,3 @@
-// compact-workout-player.component.ts
-
 import { Component, inject, OnInit, OnDestroy, signal, computed, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -41,6 +39,7 @@ import { FullScreenRestTimerComponent } from '../../../shared/components/full-sc
 import { PausedWorkoutState, PlayerSubState } from '../workout-player';
 import { TrainingProgram } from '../../../core/models/training-program.model';
 import { AlertButton, AlertInput } from '../../../core/models/alert.model';
+import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
 
 // Interface for saving the paused state
 
@@ -65,6 +64,7 @@ export interface NextStepInfo {
   imports: [
     CommonModule, DatePipe, WeightUnitPipe, IconComponent,
     ExerciseSelectionModalComponent, FormsModule, ActionMenuComponent, FullScreenRestTimerComponent,
+    DragDropModule
   ],
   templateUrl: './compact-workout-player.component.html',
   styleUrls: ['./compact-workout-player.component.scss'],
@@ -231,6 +231,59 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     }
     this.timerSub?.unsubscribe();
     this.routeSub?.unsubscribe();
+  }
+
+  onExerciseDrop(event: CdkDragDrop<WorkoutExercise[]>) {
+    const routine = this.routine();
+    if (!routine) return;
+  
+    const exercises = [...routine.exercises];
+    const draggedItem = exercises[event.previousIndex];
+  
+    // If the dragged item is part of a superset
+    if (draggedItem.supersetId) {
+      // 1. Identify the full superset group and its original starting index
+      const supersetGroup = exercises
+        .filter(ex => ex.supersetId === draggedItem.supersetId)
+        .sort((a, b) => (a.supersetOrder ?? 0) - (b.supersetOrder ?? 0));
+      
+      if (supersetGroup.length === 0) return; // Should not happen
+      
+      const originalGroupStartIndex = exercises.findIndex(ex => ex.id === supersetGroup[0].id);
+  
+      // 2. Temporarily remove the entire group
+      const exercisesWithoutGroup = exercises.filter(ex => ex.supersetId !== draggedItem.supersetId);
+  
+      // 3. Determine the correct insertion point in the temporary array
+      // This is the most complex part. We need to map the drop index from the original
+      // array to the new array that doesn't have the dragged group.
+      let insertionIndex = 0;
+      let originalIndexCounter = 0;
+      for (const item of exercisesWithoutGroup) {
+        if (originalIndexCounter === event.currentIndex) break;
+        // Skip over the items that were part of the dragged group in the original list
+        while(exercises[originalIndexCounter]?.supersetId === draggedItem.supersetId) {
+          originalIndexCounter++;
+        }
+        if (originalIndexCounter === event.currentIndex) break;
+        
+        insertionIndex++;
+        originalIndexCounter++;
+      }
+  
+      // 4. Insert the group at the new position
+      exercisesWithoutGroup.splice(insertionIndex, 0, ...supersetGroup);
+  
+      // 5. Update the main routine
+      routine.exercises = exercisesWithoutGroup;
+    } else {
+      // If it's a standard, non-superset item, just move it
+      moveItemInArray(exercises, event.previousIndex, event.currentIndex);
+      routine.exercises = this.reorderExercisesForSupersets(exercises);
+    }
+  
+    // Update the signal to trigger UI refresh
+    this.routine.set({ ...routine });
   }
 
   private async loadNewWorkoutFromRoute(): Promise<void> {
@@ -995,6 +1048,11 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     } as ActionMenuItem;
 
     const actionsArray: ActionMenuItem[] = [
+      this.sessionState() === 'paused' ? 
+      {
+        label: 'Resume', actionKey: 'play', iconName: 'play',
+        buttonClass: defaultBtnClass + 'bg-yellow-500 dark:bg-yellow-500 hover:bg-yellow-600 dark:hover:bg-yellow-600 disabled:opacity-60 disabled:cursor-not-allowed', iconClass: 'w-8 h-8 mr-2'
+      } :
       {
         label: 'Pause', actionKey: 'pause', iconName: 'pause',
         buttonClass: defaultBtnClass + 'bg-yellow-500 dark:bg-yellow-500 hover:bg-yellow-600 dark:hover:bg-yellow-600 disabled:opacity-60 disabled:cursor-not-allowed', iconClass: 'w-8 h-8 mr-2'
@@ -1014,6 +1072,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const { actionKey } = event;
     switch (actionKey) {
       case 'pause': this.pauseSession(); break;
+      case 'play': this.resumeSession(); break;
       case 'session_notes': this.editSessionNotes(); break;
       case 'addExercise': this.openAddExerciseModal(); break;
       case 'exit': this.quitWorkout(); break;

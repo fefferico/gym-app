@@ -61,10 +61,11 @@
 
   <!-- Main Content: Exercises List -->
   <main class="pt-4 px-2 pb-36">
-    <div *ngIf="routine() as currentRoutine; else loading" class="">
+    <div *ngIf="routine() as currentRoutine; else loading" cdkDropList [cdkDropListData]="currentRoutine.exercises" (cdkDropListDropped)="onExerciseDrop($event)" class="">
       <!-- +++ OPTIMIZED: Classes for superset vs standalone are now cleaner +++ -->
       <!-- +++ MODIFIED: Added striping background classes for supersets +++ -->
-      <div *ngFor="let exercise of currentRoutine.exercises; let exIndex = index;"
+      <div *ngFor="let exercise of currentRoutine.exercises; let exIndex = index;" cdkDrag
+        [cdkDragDisabled]="isSuperSet(exIndex) && !isSupersetStart(exIndex)"
         class="transition-all duration-300 relative" 
         [ngClass]="getExerciseClasses(exercise, exIndex)" 
         [style.zIndex]="areActionsVisible(exIndex) ? 50 : 'auto'">
@@ -80,6 +81,9 @@
           class="p-3 flex-col items-center justify-between cursor-pointer hover:bg-gray-100/50 dark:hover:bg-gray-700/50 hover:rounded-md">
           <div class="flex-col justify-start items-start space-x-3 min-w-0">
             <div class="flex">
+              <div *ngIf="!isSuperSet(exIndex) || isSupersetStart(exIndex)" cdkDragHandle class="cursor-move pr-2">
+                <app-icon name="reorder" class="h-6 w-6 text-gray-400"></app-icon>
+              </div>
               <h2 class="max-w-[250px] text-md font-semibold text-gray-800 dark:text-gray-100 text-wrap">
                 {{ getExerciseDisplayIndex(exIndex)}} {{ exercise.exerciseName }}
               </h2>

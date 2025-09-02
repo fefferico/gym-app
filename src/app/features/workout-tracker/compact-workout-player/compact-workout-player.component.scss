@@ -84,3 +84,26 @@ input::-webkit-inner-spin-button {
     --tw-border-opacity: 1;
     border-color: rgb(55 65 81 / var(--tw-border-opacity)); /* gray-700 */
   }
+
+  // Styling for the element being dragged (the "preview")
+.cdk-drag-preview {
+  box-sizing: border-box;
+  border-radius: 0.375rem; /* rounded-md */
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  z-index: 1000; /* Ensure it's on top */
+}
+
+// Styling for the placeholder where the item will be dropped (the "ghost")
+.cdk-drag-placeholder {
+  opacity: 0.4;
+  background: #c8b6ff; /* A light purple, adjust as needed */
+  border: 2px dashed #6D28D9; /* A primary color dash */
+  min-height: 60px; /* Ensure it has some height */
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+  border-radius: 0.375rem; /* rounded-md */
+}
+
+// Hide the original item while it's being dragged
+.cdk-drop-list-dragging .cdk-drag {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}

@@ -62,7 +62,7 @@
       <div *ngIf="sessionPBs().length > 0" class="mb-8">
         <h2
           class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-3 text-center border-b pb-2 dark:border-gray-700">
-          🎉 New Personal Bests! 🎉
+          🎉 New Personal Best{{sessionPBs().length > 1 ? 's':''}}! 🎉
         </h2>
         <ul class="space-y-2 mt-3">
           <li *ngFor="let pb of sessionPBs()" class="p-2 bg-green-50 dark:bg-green-900/30 rounded-md text-center">

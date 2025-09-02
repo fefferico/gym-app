@@ -129,3 +129,11 @@ export interface EnrichedWorkoutLog extends WorkoutLog {
   weekName?: string | null;
   dayName?: string | null;
 }
+
+export interface AchievedPB {
+  exerciseId: string;
+  exerciseName: string;
+  pbType: string;
+  achievedSet: LoggedSet; // The set that achieved this PB
+  isEstimated?: boolean; // True if it's an estimated 1RM
+}

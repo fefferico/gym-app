@@ -11,7 +11,7 @@ import { map, startWith, distinctUntilChanged, take, filter, switchMap } from 'r
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { ExerciseService } from '../../../core/services/exercise.service';
 import { TrackingService } from '../../../core/services/tracking.service';
-import { WorkoutLog } from '../../../core/models/workout-log.model';
+import { AchievedPB, LoggedSet, WorkoutLog } from '../../../core/models/workout-log.model';
 import { Exercise } from '../../../core/models/exercise.model';
 import { WorkoutService } from '../../../core/services/workout.service';
 import { UnitsService } from '../../../core/services/units.service';
@@ -58,6 +58,8 @@ type EnrichedHistoryListItem = HistoryListItem & {
   programName?: string | null;
   weekName?: string | null;
   dayName?: string | null;
+  totalVolume?: number | null;
+  personalBests?: number | null;
 };
 
 
@@ -271,6 +273,142 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
   isFabActionsOpen = signal(false);
   isTouchDevice = false;
 
+  /**
+   * Extracts the total volume from a history log item.
+   * It first checks for a pre-calculated 'totalVolume' property.
+   * If not found, it calculates it from the exercises array for workout logs.
+   *
+   * @param logItem The enriched history list item.
+   * @returns The total volume as a number, or null if not applicable/available.
+   */
+  getTotalVolume(logItem: EnrichedHistoryListItem): number | null {
+    // 1. Prefer the direct, pre-calculated property if it exists.
+    if (logItem.totalVolume != null) { // Checks for both null and undefined
+      return logItem.totalVolume;
+    }
+
+    // 2. If it's not pre-calculated, and it's a workout, calculate it.
+    if (logItem.itemType === 'workout') {
+      // The 'exercises' property is available because itemType is 'workout'
+      return logItem.exercises.reduce((totalVolume, exercise) => {
+        const exerciseVolume = exercise.sets.reduce((volume, set) => {
+          // Ensure both reps and weight are valid numbers
+          if (typeof set.repsAchieved === 'number' && typeof set.weightUsed === 'number') {
+            return volume + (set.repsAchieved * set.weightUsed);
+          }
+          return volume;
+        }, 0);
+        return totalVolume + exerciseVolume;
+      }, 0);
+    }
+
+    // 3. Return null for non-workout items or if volume cannot be determined.
+    return null;
+  }
+
+  /**
+   * Extracts all personal bests achieved within a single workout log.
+   * This function mirrors the PB identification logic from TrackingService
+   * but limits its scope to only the sets within the provided log.
+   *
+   * @param log The WorkoutLog to analyze.
+   * @returns An array of AchievedPB objects, each representing a PB set in that log.
+   */
+  getPersonalBestsFromLog(log: WorkoutLog): AchievedPB[] {
+    const allPBsFromLog: AchievedPB[] = [];
+
+    log.exercises.forEach(loggedEx => {
+      // A temporary map to hold the best set for each PB type for THIS exercise in THIS log.
+      const bestSetsForExercise = new Map<string, LoggedSet>();
+
+      loggedEx.sets.forEach(candidateSet => {
+        // Bodyweight or duration-based PBs
+        if (!candidateSet.weightUsed) {
+          if (candidateSet.repsAchieved > 0) {
+            this.updateBestSet(bestSetsForExercise, 'Max Reps (Bodyweight)', candidateSet);
+          }
+          if (candidateSet.durationPerformed && candidateSet.durationPerformed > 0) {
+            this.updateBestSet(bestSetsForExercise, 'Max Duration', candidateSet);
+          }
+          return; // Move to the next set
+        }
+
+        // Weight-based PBs
+        this.updateBestSet(bestSetsForExercise, 'Heaviest Lifted', candidateSet);
+        if (candidateSet.repsAchieved === 1) {
+          this.updateBestSet(bestSetsForExercise, '1RM (Actual)', candidateSet);
+        }
+        if (candidateSet.repsAchieved === 3) {
+          this.updateBestSet(bestSetsForExercise, '3RM (Actual)', candidateSet);
+        }
+        if (candidateSet.repsAchieved === 5) {
+          this.updateBestSet(bestSetsForExercise, '5RM (Actual)', candidateSet);
+        }
+
+        // Estimated 1RM
+        if (candidateSet.repsAchieved > 1) {
+          const e1RM = candidateSet.weightUsed * (1 + candidateSet.repsAchieved / 30);
+          // Create a synthetic set representing the e1RM
+          const e1RMSet: LoggedSet = {
+            ...candidateSet,
+            repsAchieved: 1, // The result is for 1 rep
+            weightUsed: parseFloat(e1RM.toFixed(2)), // The calculated weight
+          };
+          this.updateBestSet(bestSetsForExercise, '1RM (Estimated)', e1RMSet);
+        }
+      });
+
+      // Convert the map of best sets for this exercise into the final PB array format
+      bestSetsForExercise.forEach((set, pbType) => {
+        allPBsFromLog.push({
+          exerciseId: loggedEx.exerciseId,
+          exerciseName: loggedEx.exerciseName,
+          pbType: pbType,
+          achievedSet: set,
+          isEstimated: pbType === '1RM (Estimated)',
+        });
+      });
+    });
+
+    return allPBsFromLog;
+  }
+
+  /**
+   * Helper function to update the map with a new best set if it's better than the existing one.
+   */
+  updateBestSet(
+    bestSetsMap: Map<string, LoggedSet>,
+    pbType: string,
+    candidateSet: LoggedSet
+  ): void {
+    const existingBest = bestSetsMap.get(pbType);
+
+    if (!existingBest) {
+      bestSetsMap.set(pbType, candidateSet);
+      return;
+    }
+
+    let isBetter = false;
+    if (pbType.includes('Max Reps')) {
+      if (candidateSet.repsAchieved > existingBest.repsAchieved) isBetter = true;
+    } else if (pbType.includes('Max Duration')) {
+      if ((candidateSet.durationPerformed ?? 0) > (existingBest.durationPerformed ?? 0)) isBetter = true;
+    } else { // All other PBs are weight-based
+      if ((candidateSet.weightUsed ?? 0) > (existingBest.weightUsed ?? 0)) {
+        isBetter = true;
+      } else if (
+        (candidateSet.weightUsed ?? 0) === (existingBest.weightUsed ?? 0) &&
+        candidateSet.repsAchieved > existingBest.repsAchieved
+      ) {
+        // This logic is for 'Heaviest Lifted' where higher reps at same weight is better
+        isBetter = true;
+      }
+    }
+
+    if (isBetter) {
+      bestSetsMap.set(pbType, candidateSet);
+    }
+  }
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
@@ -315,12 +453,18 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
                 ...item,
                 programName: programMap.get(item.programId!) || null,
                 weekName: weekName,
-                dayName: item.dayName || dayInfo?.dayName || null
+                dayName: item.dayName || dayInfo?.dayName || null,
+                totalVolume: this.getTotalVolume(item),
+                personalBests: this.getPersonalBestsFromLog(item) ? this.getPersonalBestsFromLog(item).length : 0
               } as EnrichedHistoryListItem))
             );
           } else {
             // This is an activity or a workout without a program, return as-is
-            return of(item as EnrichedHistoryListItem);
+            return of({
+              ...item,
+              totalVolume: this.getTotalVolume(item),
+              personalBests: this.getPersonalBestsFromLog(item as WorkoutLog) ? this.getPersonalBestsFromLog(item as WorkoutLog).length : 0
+            } as EnrichedHistoryListItem);
           }
         });
 
@@ -569,7 +713,7 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
       "Delete Workout Log",
       `Are you sure you want to delete this workout log? This action cannot be undone`,
       [
-        { text: "Cancel", role: "cancel", data: false, icon: 'cancel', iconClass:'w-4 h-4 mr-1' } as AlertButton,
+        { text: "Cancel", role: "cancel", data: false, icon: 'cancel', iconClass: 'w-4 h-4 mr-1' } as AlertButton,
         { text: "Delete", role: "confirm", data: true, cssClass: "bg-red-600", icon: 'trash' } as AlertButton,
       ],
     );
