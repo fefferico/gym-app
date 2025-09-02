@@ -454,16 +454,16 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
                 programName: programMap.get(item.programId!) || null,
                 weekName: weekName,
                 dayName: item.dayName || dayInfo?.dayName || null,
-                totalVolume: this.getTotalVolume(item),
-                personalBests: this.getPersonalBestsFromLog(item) ? this.getPersonalBestsFromLog(item).length : 0
+                // totalVolume: this.getTotalVolume(item),
+                // personalBests: this.getPersonalBestsFromLog(item) ? this.getPersonalBestsFromLog(item).length : 0
               } as EnrichedHistoryListItem))
             );
           } else {
             // This is an activity or a workout without a program, return as-is
             return of({
               ...item,
-              totalVolume: this.getTotalVolume(item),
-              personalBests: this.getPersonalBestsFromLog(item as WorkoutLog) ? this.getPersonalBestsFromLog(item as WorkoutLog).length : 0
+              // totalVolume: this.getTotalVolume(item),
+              // personalBests: this.getPersonalBestsFromLog(item as WorkoutLog) ? this.getPersonalBestsFromLog(item as WorkoutLog).length : 0
             } as EnrichedHistoryListItem);
           }
         });
