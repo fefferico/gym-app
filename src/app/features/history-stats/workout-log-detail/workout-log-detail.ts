@@ -649,7 +649,7 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
     let performedValue: number = 0;
     let targetValue: number = 0;
     let modalData: TargetComparisonData | null = null;
-    const unitLabel = this.unitService.getWeightUnitLabel();
+    const unitLabel = this.unitService.getWeightUnitSuffix();
 
     // Determine values based on type
     if (type === 'reps') {

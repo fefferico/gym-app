@@ -122,7 +122,7 @@
                     </p>
                     <p *ngIf="item.totalVolume" class="flex gap-1 items-center">
                       <app-icon name="weight" class="w-6 h-6"></app-icon>
-                      <span class="font-medium"></span> {{ item.totalVolume }} {{unitsService.getWeightUnitLabel()}}
+                      <span class="font-medium"></span> {{ item.totalVolume }} {{unitsService.getWeightUnitSuffix()}}
                     </p>
                     <p *ngIf="item.personalBests" class="flex gap-1 items-center">
                       <app-icon name="pb" class="w-6 h-6"></app-icon>
@@ -344,7 +344,7 @@
               </p>
               <p *ngIf="item.totalVolume" class="flex gap-1 items-center text-sm text-gray-600 dark:text-gray-300 mb-2">
                 <app-icon name="weight" class="w-6 h-6"></app-icon>
-                <span class="font-medium"></span> {{ item.totalVolume }} {{unitsService.getWeightUnitLabel()}}
+                <span class="font-medium"></span> {{ item.totalVolume }} {{unitsService.getWeightUnitSuffix()}}
               </p>
               <p *ngIf="item.personalBests" class="flex gap-1 items-center text-sm text-gray-600 dark:text-gray-300 mb-2">
                 <app-icon name="pb" class="w-6 h-6"></app-icon>

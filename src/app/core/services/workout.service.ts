@@ -631,7 +631,7 @@ export class WorkoutService {
       : [
         ...baseParams,
         { label: 'Number of Reps', name: 'numReps', type: 'number', placeholder: 'e.g., 10', value: defaultReps, attributes: { min: 0, required: true } },
-        { label: `Target Weight (${this.unitsService.getWeightUnitLabel()})`, name: 'weight', type: 'number', placeholder: 'e.g., 10', value: defaultWeight, attributes: { min: 0, required: true } },
+        { label: `Target Weight (${this.unitsService.getWeightUnitSuffix()})`, name: 'weight', type: 'number', placeholder: 'e.g., 10', value: defaultWeight, attributes: { min: 0, required: true } },
       ];
 
     const exerciseData = await this.alertService.showPromptDialog(

@@ -24,13 +24,13 @@ export class WeightUnitPipe implements PipeTransform {
     }
 
     // Use the service to convert from the stored unit (kg) to the current preferred unit
-    const convertedValue = this.unitsService.convertFromKg(kgValue, this.unitsService.currentWeightUnit()); // Convert to current unit
+    const convertedValue = this.unitsService.convertWeight(kgValue, 'kg', this.unitsService.currentWeightUnit());
 
     // Use DecimalPipe for formatting the number itself
     const formattedValue = this.decimalPipe.transform(convertedValue, digitsInfo);
 
     // Get the preferred unit label
-    const unitLabel = this.unitsService.getWeightUnitLabel();
+    const unitLabel = this.unitsService.getWeightUnitSuffix();
 
     // Combine formatted value and unit label
     return `${formattedValue} ${unitLabel}`;

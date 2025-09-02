@@ -9,7 +9,8 @@ import { debounceTime, filter, tap } from 'rxjs';
 import { WorkoutService } from '../../../core/services/workout.service';
 import { TrackingService } from '../../../core/services/tracking.service';
 import { StorageService } from '../../../core/services/storage.service';
-import { UnitsService, WeightUnit } from '../../../core/services/units.service';
+// MODIFIED: Import all unit types
+import { UnitsService, WeightUnit, BodyWeightUnit, BodyMeasureUnit } from '../../../core/services/units.service';
 import { AlertService } from '../../../core/services/alert.service';
 import { SpinnerService } from '../../../core/services/spinner.service';
 import { ThemeService } from '../../../core/services/theme.service';
@@ -27,6 +28,8 @@ import { ImageStorageService } from '../../../core/services/image-storage.servic
 import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
 import { PersonalGymService } from '../../../core/services/personal-gym.service';
 import { AppSettingsService } from '../../../core/services/app-settings.service';
+// +++ NEW: Import the conversion service
+import { DataConversionService } from '../../../core/services/data-conversion.service';
 
 
 @Component({
@@ -55,6 +58,8 @@ export class ProfileSettingsComponent implements OnInit {
   private platformId = inject(PLATFORM_ID);
   private toastService = inject(ToastService);
   private imageStorageService = inject(ImageStorageService);
+  // +++ NEW: Inject the conversion service
+  private dataConversionService = inject(DataConversionService);
 
   protected currentVibrator = navigator;
 
@@ -65,7 +70,8 @@ export class ProfileSettingsComponent implements OnInit {
   appSettingsForm!: FormGroup;
   progressiveOverloadForm!: FormGroup;
 
-  currentUnit = this.unitsService.currentWeightUnit;
+  // REMOVED: No longer need this, using signals from service directly
+  // currentUnit = this.unitsService.currentWeightUnit;
   readonly genders: { label: string, value: Gender }[] = [
     { label: 'Male', value: 'male' },
     { label: 'Female', value: 'female' },
@@ -87,7 +93,7 @@ export class ProfileSettingsComponent implements OnInit {
         age: [null as number | null, [Validators.min(0), Validators.max(150), Validators.required]]
       }),
       measurements: this.fb.group({
-        heightCm: [null as number | null, [Validators.min(0), Validators.required]],
+        height: [null as number | null, [Validators.min(0), Validators.required]],
         weight: [null as number | null, [Validators.min(0), Validators.required]],
         chest: [null as number | null, [Validators.min(0)]],
         neck: [null as number | null, [Validators.min(0)]],
@@ -121,7 +127,55 @@ export class ProfileSettingsComponent implements OnInit {
       sessionsToIncrement: [1, [Validators.required, Validators.min(1)]]
     });
   }
+  
+  // ... (ngOnInit and other methods remain the same)
+  // ... (make sure you have the other methods like loadProfileData, saveMeasurements, etc.)
 
+  // +++ NEW: Methods to handle unit changes and trigger conversion workflow +++
+
+  async selectWeightUnit(unit: WeightUnit): Promise<void> {
+    const oldUnit = this.unitsService.currentWeightUnit();
+    if (unit === oldUnit) return; // No change
+
+    const confirm = await this.alertService.showConfirm(
+      'Convert All Weight Data?',
+      `You've changed the weight unit from ${oldUnit.toUpperCase()} to ${unit.toUpperCase()}. Would you like to convert all existing workout data (logs, routines, gym equipment) to the new unit?`
+    );
+    if (confirm && confirm.data) {
+      await this.dataConversionService.convertAllWeightData(oldUnit, unit);
+    }
+    this.unitsService.setWeightUnitPreference(unit);
+  }
+
+  async selectBodyWeightUnit(unit: BodyWeightUnit): Promise<void> {
+    const oldUnit = this.unitsService.currentBodyWeightUnit();
+    if (unit === oldUnit) return;
+
+    const confirm = await this.alertService.showConfirm(
+      'Convert All Body Weight Data?',
+      `You've changed the body weight unit from ${oldUnit.toUpperCase()} to ${unit.toUpperCase()}. Would you like to convert all your historical body weight entries to the new unit?`
+    );
+    if (confirm && confirm.data) {
+      await this.dataConversionService.convertAllBodyWeightData(oldUnit, unit);
+    }
+    this.unitsService.setBodyWeightUnitPreference(unit);
+  }
+
+  async selectBodyMeasureUnit(unit: BodyMeasureUnit): Promise<void> {
+    const oldUnit = this.unitsService.currentBodyMeasureUnit();
+    if (unit === oldUnit) return;
+
+    const confirm = await this.alertService.showConfirm(
+      'Convert All Body Measurement Data?',
+      `You've changed the measurement unit from ${oldUnit.toUpperCase()} to ${unit.toUpperCase()}. Would you like to convert all your historical measurements (height, waist, etc.) to the new unit?`
+    );
+    if (confirm && confirm.data) {
+      await this.dataConversionService.convertAllBodyMeasureData(oldUnit, unit);
+    }
+    this.unitsService.setBodyMeasureUnitPreference(unit);
+  }
+
+  // --- Keep other existing methods like exportData, importData, etc. ---
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       window.scrollTo(0, 0);
@@ -264,7 +318,7 @@ export class ProfileSettingsComponent implements OnInit {
           gender: null,
           age: null,
         },
-        measurements: { heightCm: null, weight: null, age: null, chest: null, waist: null, hips: null, rightArm: null }
+        measurements: { height: null, weight: null, age: null, chest: null, waist: null, hips: null, rightArm: null }
       }, { emitEvent: false });
     }
   }

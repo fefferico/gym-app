@@ -396,7 +396,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
   protected get weightUnitDisplaySymbol(): string {
-    return this.unitService.getWeightUnitLabel();
+    return this.unitService.getWeightUnitSuffix();
   }
 
   getWorkingSetCountForCurrentExercise = computed<number>(() => {
@@ -1398,7 +1398,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   formatPbValue(pb: PersonalBestSet): string {
     let value = '';
     if (pb.weightUsed !== undefined && pb.weightUsed !== null) {
-      value += `${pb.weightUsed}${this.unitService.getUnitSuffix()}`;
+      value += `${pb.weightUsed}${this.unitService.getWeightUnitSuffix()}`;
       if (pb.repsAchieved > 1 && !pb.pbType.includes('RM (Actual)')) {
         value += ` x ${pb.repsAchieved}`;
       }
@@ -3997,7 +3997,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
             resultText += ' [';
             const setData = nextSetInfo.setData;
             if (setData.weight && setData.reps) {
-              resultText += `${setData.weight}${this.unitService.getWeightUnitLabel()} x ${setData.reps} reps`;
+              resultText += `${setData.weight}${this.unitService.getWeightUnitSuffix()} x ${setData.reps} reps`;
             }
             if (!setData.weight && setData.reps) {
               resultText += `${setData.reps} reps`;

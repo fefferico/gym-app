@@ -289,7 +289,7 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
       const exerciseVolume = exercise.sets.reduce((volume, set) => {
         // Ensure both reps and weight are valid numbers for calculation
         if (typeof set.repsAchieved === 'number' && typeof set.weightUsed === 'number') {
-          return volume + (set.repsAchieved * set.weightUsed);
+          return Math.ceil(volume + (set.repsAchieved * set.weightUsed));
         }
         return volume;
       }, 0);

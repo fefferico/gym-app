@@ -1324,7 +1324,7 @@ handleRestTimerSkipped(timeSkipped: number): void {
 
         const setType = plannedNextSet.type === 'warmup' ? "Warm-up" : "Set";
         const nextSetDisplayNumber = nextSetIndex + 1;
-        const text = `${nextExercise.exerciseName} - Set #${nextSetDisplayNumber}: ${plannedNextSet.weight}${this.unitService.getWeightUnitLabel()} x ${plannedNextSet.reps} reps`;
+        const text = `${nextExercise.exerciseName} - Set #${nextSetDisplayNumber}: ${plannedNextSet.weight}${this.unitService.getWeightUnitSuffix()} x ${plannedNextSet.reps} reps`;
         return { text, details: suggestedSetDetails };
 
       } catch (error) {

@@ -189,7 +189,7 @@ export class PbTrendChartComponent implements OnInit {
 
     private setYAxisLabel(pbType: string): void {
         if (pbType.includes('RM') || pbType.includes('Heaviest Lifted')) {
-            this.yAxisLabel.set(`Weight (${this.unitsService.getUnitSuffix()})`);
+            this.yAxisLabel.set(`Weight (${this.unitsService.getWeightUnitSuffix()})`);
         } else if (pbType.includes('Max Reps')) {
             this.yAxisLabel.set('Repetitions');
         } else if (pbType.includes('Max Duration')) {

@@ -11,6 +11,7 @@ import { Subject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { IconComponent } from '../../shared/components/icon/icon.component';
 import { AlertService } from '../../core/services/alert.service';
+import { UnitsService } from '../../core/services/units.service';
 
 // Data format for ngx-charts
 export interface ChartData {
@@ -47,6 +48,7 @@ export class MeasurementHistoryComponent implements OnInit {
   private toastService = inject(ToastService);
   private fb = inject(FormBuilder);
   private alertService = inject(AlertService);
+  unitsService = inject(UnitsService);
 
   compareFromDate: string = '';
   compareToDate: string = '';
@@ -85,14 +87,14 @@ export class MeasurementHistoryComponent implements OnInit {
 
   setupAvailableMetrics(): void {
     this.availableMetrics = [
-      { key: 'weight', label: 'Weight (kg)' },
+      { key: 'weight', label: `Weight (${this.unitsService.getBodyWeightUnitSuffix()})` },
       { key: 'bmi', label: 'Body Mass Index (BMI)' },
       { key: 'bodyFat', label: 'Body Fat % (Navy)' },
-      { key: 'chest', label: 'Chest (cm)' },
-      { key: 'waist', label: 'Waist (cm)' },
-      { key: 'hips', label: 'Hips (cm)' },
-      { key: 'neck', label: 'Neck (cm)' },
-      { key: 'rightArm', label: 'Right Arm (cm)' },
+      { key: 'chest', label: `Chest (${this.unitsService.getBodyMeasureUnitSuffix()})` },
+      { key: 'waist', label: `Waist (${this.unitsService.getBodyMeasureUnitSuffix()})` },
+      { key: 'hips', label: `Hips (${this.unitsService.getBodyMeasureUnitSuffix()})` },
+      { key: 'neck', label: `Neck (${this.unitsService.getBodyMeasureUnitSuffix()})` },
+      { key: 'rightArm', label: `Right Arm (${this.unitsService.getBodyMeasureUnitSuffix()})` },
     ];
   }
 
@@ -307,12 +309,12 @@ export class MeasurementHistoryComponent implements OnInit {
 
   private calculateComparisonRows(from: MeasurementEntry, to: MeasurementEntry): ComparisonRow[] {
     const metricsToCompare: { key: keyof UserMeasurements, label: string, unit: string }[] = [
-      { key: 'weight', label: 'Weight', unit: 'kg' },
-      { key: 'chest', label: 'Chest', unit: 'cm' },
-      { key: 'waist', label: 'Waist', unit: 'cm' },
-      { key: 'hips', label: 'Hips', unit: 'cm' },
-      { key: 'neck', label: 'Neck', unit: 'cm' },
-      { key: 'rightArm', label: 'Right Arm', unit: 'cm' },
+      { key: 'weight', label: 'Weight', unit: this.unitsService.getBodyWeightUnitSuffix() },
+      { key: 'chest', label: 'Chest', unit: this.unitsService.getBodyMeasureUnitSuffix() },
+      { key: 'waist', label: 'Waist', unit: this.unitsService.getBodyMeasureUnitSuffix() },
+      { key: 'hips', label: 'Hips', unit: this.unitsService.getBodyMeasureUnitSuffix() },
+      { key: 'neck', label: 'Neck', unit: this.unitsService.getBodyMeasureUnitSuffix() },
+      { key: 'rightArm', label: 'Right Arm', unit: this.unitsService.getBodyMeasureUnitSuffix() },
     ];
 
     return metricsToCompare.map(metric => {

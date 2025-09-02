@@ -131,7 +131,7 @@
                     <p *ngIf="loggedEx.sets && loggedEx.sets.length >= 1"> Sets: {{loggedEx.sets.length}} {{
                       getSetReps(loggedEx) != '0' ? '( Reps: ' + getSetReps(loggedEx) + ' )' : '' }}</p>
                     <p *ngIf="loggedEx.sets && loggedEx.sets.length > 1 && checkIfWeightedExercise(loggedEx)"> Weight
-                      ({{unitService.getWeightUnitLabel()}}): {{getSetWeightsUsed(loggedEx)}}</p>
+                      ({{unitService.getWeightUnitSuffix()}}): {{getSetWeightsUsed(loggedEx)}}</p>
                   </div>
 
                 </div>
@@ -200,7 +200,7 @@
                     [class.cursor-default]="!isTargetMissed(set, 'weight')"
                     [class.hover:underline]="isTargetMissed(set, 'weight')"
                     (click)="showComparisonModal(set, 'weight')">
-                    {{ set.weightUsed != null ? (set.weightUsed + ' ' + unitService.getWeightUnitLabel()) : '-' }}
+                    {{ set.weightUsed != null ? (set.weightUsed + ' ' + unitService.getWeightUnitSuffix()) : '-' }}
                   </strong>
                 </div>
 

@@ -222,7 +222,7 @@ export class PersonalBestsComponent implements OnInit {
     const effectivePbType = item.pbType || pbTypeForContext;
 
     if (item.weightUsed !== undefined && item.weightUsed !== null) {
-      value += `${this.decimalPipe.transform(item.weightUsed, '1.0-2')}${this.unitsService.getUnitSuffix()}`;
+      value += `${this.decimalPipe.transform(item.weightUsed, '1.0-2')}${this.unitsService.getWeightUnitSuffix()}`;
 
       if (item.repsAchieved > 0) {
         let showRepsSuffix = true;

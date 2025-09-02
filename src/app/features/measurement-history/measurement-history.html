@@ -90,12 +90,12 @@
                     </div>
                     <!-- Middle Column: Measurements -->
                     <div class="text-sm grid grid-cols-2 gap-x-4 gap-y-1">
-                        <p><strong>Weight:</strong> {{ entry.weight || 'N/A' }} kg</p>
-                        <p><strong>Chest:</strong> {{ entry.chest || 'N/A' }} cm</p>
-                        <p><strong>Waist:</strong> {{ entry.waist || 'N/A' }} cm</p>
-                        <p><strong>Hips:</strong> {{ entry.hips || 'N/A' }} cm</p>
-                        <p><strong>Neck:</strong> {{ entry.neck || 'N/A' }} cm</p>
-                        <p><strong>R. Arm:</strong> {{ entry.rightArm || 'N/A' }} cm</p>
+                        <p><strong>Weight:</strong> {{ entry.weight || 'N/A' }} {{unitsService.getBodyWeightUnitSuffix()}}</p>
+                        <p><strong>Chest:</strong> {{ entry.chest || 'N/A' }} {{unitsService.getBodyMeasureUnitSuffix()}}</p>
+                        <p><strong>Waist:</strong> {{ entry.waist || 'N/A' }} {{unitsService.getBodyMeasureUnitSuffix()}}</p>
+                        <p><strong>Hips:</strong> {{ entry.hips || 'N/A' }} {{unitsService.getBodyMeasureUnitSuffix()}}</p>
+                        <p><strong>Neck:</strong> {{ entry.neck || 'N/A' }} {{unitsService.getBodyMeasureUnitSuffix()}}</p>
+                        <p><strong>R. Arm:</strong> {{ entry.rightArm || 'N/A' }} {{unitsService.getBodyMeasureUnitSuffix()}}</p>
                     </div>
                     <!-- Right Column: Notes -->
                     <div>
@@ -136,56 +136,41 @@
             <div class="grid grid-cols-2 gap-4 mb-4">
                 <div>
                     <label for="weight" class="block text-xs font-medium text-gray-600 dark:text-gray-400">Target
-                        Weight (kg)</label>
-                    <input type="number" formControlName="weight" id="weight" placeholder="Weight (kg)"
+                        Weight ({{unitsService.getBodyWeightUnitSuffix()}})</label>
+                    <input type="number" formControlName="weight" id="weight" placeholder="{{'Weight ' +(unitsService.getBodyWeightUnitSuffix())}}"
                         class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200 text-lg">
                 </div>
                 <!-- Add all other measurement inputs here -->
                 <div>
                     <label for="chest" class="block text-xs font-medium text-gray-600 dark:text-gray-400">Chest
-                        (cm)</label>
-                    <input type="number" formControlName="chest" id="chest" placeholder="Chest (cm)"
+                        ({{unitsService.getBodyMeasureUnitSuffix()}})</label>
+                    <input type="number" formControlName="chest" id="chest" placeholder="{{'Chest ' +(unitsService.getBodyMeasureUnitSuffix())}}"
                         class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200 text-lg">
                 </div>
                 <div>
                     <label for="waist" class="block text-xs font-medium text-gray-600 dark:text-gray-400">Waist
-                        (cm)</label>
-                    <input type="number" formControlName="waist" id="waist" placeholder="Waist (cm)"
+                        ({{unitsService.getBodyMeasureUnitSuffix()}})</label>
+                    <input type="number" formControlName="waist" id="waist" placeholder="{{'Waist ' +(unitsService.getBodyMeasureUnitSuffix())}}"
                         class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200 text-lg">
                 </div>
                 <div>
                     <label for="hips" class="block text-xs font-medium text-gray-600 dark:text-gray-400">Hips
-                        (cm)</label>
-                    <input type="number" formControlName="hips" id="hips" placeholder="Hips (cm)"
+                        ({{unitsService.getBodyMeasureUnitSuffix()}})</label>
+                    <input type="number" formControlName="hips" id="hips" placeholder="{{'Hips ' +(unitsService.getBodyMeasureUnitSuffix())}}"
                         class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200 text-lg">
                 </div>
                 <div>
                     <label for="neck" class="block text-xs font-medium text-gray-600 dark:text-gray-400">Neck
-                        (cm)</label>
-                    <input type="number" formControlName="neck" id="neck" placeholder="Neck (cm)"
+                        ({{unitsService.getBodyMeasureUnitSuffix()}})</label>
+                    <input type="number" formControlName="neck" id="neck" placeholder="{{'Neck ' +(unitsService.getBodyMeasureUnitSuffix())}}"
                         class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200 text-lg">
                 </div>
                 <div>
                     <label for="rightArm" class="block text-xs font-medium text-gray-600 dark:text-gray-400">Right Arm
-                        (cm)</label>
-                    <input type="number" formControlName="rightArm" id="rightArm" placeholder="Right Arm (cm)"
+                        ({{unitsService.getBodyMeasureUnitSuffix()}})</label>
+                    <input type="number" formControlName="rightArm" id="rightArm" placeholder="{{'Right Arm ' +(unitsService.getBodyMeasureUnitSuffix())}}"
                         class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200 text-lg">
                 </div>
-                <!-- <div>
-                    <label for="leftArm" class="block text-xs font-medium text-gray-600 dark:text-gray-400">Left Arm (cm)</label>
-                    <input type="number" formControlName="leftArm" id="leftArm" placeholder="Left Arm (cm)"
-                        class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200 text-lg">
-                </div> -->
-                <!-- <div>
-                    <label for="rightLegCm" class="block text-xs font-medium text-gray-600 dark:text-gray-400">Right Leg (cm)</label>
-                    <input type="number" formControlName="rightLegCm" id="rightLegCm" placeholder="Right Leg (cm)"
-                        class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200 text-lg">
-                </div>
-                <div>
-                    <label for="leftLegCm" class="block text-xs font-medium text-gray-600 dark:text-gray-400">Left Leg (cm)</label>
-                    <input type="number" formControlName="leftLegCm" id="leftLegCm" placeholder="Left Leg (cm)"
-                        class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200 text-lg">
-                </div> -->
             </div>
             <textarea formControlName="notes" placeholder="Notes..."
                 class="w-full p-2 border rounded mb-4 h-24 dark:bg-gray-700 dark:border-gray-600"></textarea>

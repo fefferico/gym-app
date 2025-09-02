@@ -134,7 +134,7 @@
           <div class="grid grid-cols-12 gap-2 text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 px-2">
             <div class="col-span-1 text-center">Set / Rounds</div>
             <ng-container *ngIf="!isCardio(exercise)">
-              <div class="col-span-3 text-center">Weight ({{ unitsService.getWeightUnitLabel() }})</div>
+              <div class="col-span-3 text-center">Weight ({{ unitsService.getWeightUnitSuffix() }})</div>
               <div class="col-span-3 text-center">Reps</div>
             </ng-container>
             <ng-container *ngIf="isCardio(exercise)">
