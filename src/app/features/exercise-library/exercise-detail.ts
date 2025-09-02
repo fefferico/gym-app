@@ -15,6 +15,7 @@ import { ActionMenuComponent } from '../../shared/components/action-menu/action-
 import { ActionMenuItem } from '../../core/models/action-menu.model';
 import { MenuMode } from '../../core/models/app-settings.model';
 import { IconComponent } from '../../shared/components/icon/icon.component';
+import { UnitsService } from '../../core/services/units.service';
 
 @Component({
   selector: 'app-exercise-detail',
@@ -29,6 +30,7 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
   private exerciseService = inject(ExerciseService);
   protected trackingService = inject(TrackingService); // Inject TrackingService
   private alertService = inject(AlertService); // Inject AlertService
+  unitService = inject(UnitsService); // Inject AlertService
 
   // Using a signal for the exercise data
   exercise = signal<Exercise | undefined | null>(undefined);
@@ -43,7 +45,7 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
   progressChartColorScheme = 'cool';
   // progressChartColorScheme = { domain: ['#06b6d4'] }; // Example: Using your primary color
   progressChartXAxisLabel = 'Date';
-  progressChartYAxisLabel = 'Max Weight Lifted (kg)';
+  progressChartYAxisLabel = `Max Weight Lifted (${this.unitService.getWeightUnitSuffix()})`;
   progressChartShowXAxis = true;
   progressChartShowYAxis = true;
   progressChartGradient = false;
@@ -163,7 +165,7 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
   formatPbValue(pb: PersonalBestSet): string {
     let value = '';
     if (pb.weightUsed !== undefined && pb.weightUsed !== null) {
-      value += `${pb.weightUsed}kg`;
+      value += `${pb.weightUsed}${this.unitService.getWeightUnitSuffix()}`;
       if (pb.repsAchieved > 1 && !pb.pbType.includes('RM (Actual)') && !pb.pbType.includes('RM (Estimated)')) {
         // Show reps for "Heaviest Lifted" if reps > 1, but not for explicit 1RMs where reps is 1 by definition
         value += ` x ${pb.repsAchieved}`;

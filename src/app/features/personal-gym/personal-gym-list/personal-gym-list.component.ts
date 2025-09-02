@@ -14,6 +14,7 @@ import {
   CustomEquipment
 } from '../../../core/models/personal-gym.model';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
+import { UnitsService } from '../../../core/services/units.service';
 
 @Component({
   selector: 'app-personal-gym-list',
@@ -24,6 +25,7 @@ import { IconComponent } from '../../../shared/components/icon/icon.component';
 export class PersonalGymListComponent implements OnInit {
   private router = inject(Router);
   private personalGymService = inject(PersonalGymService);
+  unitService = inject(UnitsService);
 
   allEquipment = signal<PersonalGymEquipment[]>([]);
   

@@ -16,6 +16,7 @@ import {
   PersonalGymEquipment 
 } from '../../../core/models/personal-gym.model';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
+import { UnitsService } from '../../../core/services/units.service';
 
 @Component({
   selector: 'app-personal-gym-form',
@@ -29,6 +30,7 @@ export class PersonalGymFormComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private personalGymService = inject(PersonalGymService);
   private toastService = inject(ToastService);
+  unitService = inject(UnitsService);
 
   equipmentForm!: FormGroup;
   isEditMode = signal(false);
@@ -94,9 +96,9 @@ export class PersonalGymFormComponent implements OnInit, OnDestroy {
 
   private updateFormForCategory(category: EquipmentCategory | null): void {
     const dynamicControls = [
-      'weightType', 'weight', 'minweight', 'maxweight', 'incrementKg',
-      'barType', 'bandType', 'resistanceLevel', 'resistanceKg', 'color', 'lengthCm',
-      'loadType', 'maxLoadKg', 'customCategoryName', 'properties'
+      'weightType', 'weight', 'minweight', 'maxweight', 'increment',
+      'barType', 'bandType', 'resistanceLevel', 'resistance', 'color', 'length',
+      'loadType', 'maxLoad', 'customCategoryName', 'properties'
     ];
     dynamicControls.forEach(ctrl => this.removeControl(ctrl));
     
@@ -126,13 +128,13 @@ export class PersonalGymFormComponent implements OnInit, OnDestroy {
       case 'Band':
         this.addControl('bandType', 'loop', Validators.required);
         this.addControl('resistanceLevel', 'medium');
-        this.addControl('resistanceKg', null, [Validators.min(0)]);
+        this.addControl('resistance', null, [Validators.min(0)]);
         this.addControl('color', '');
-        this.addControl('lengthCm', null, [Validators.min(0)]);
+        this.addControl('length', null, [Validators.min(0)]);
         break;
       case 'Machine':
         this.addControl('loadType', 'stack', Validators.required);
-        this.addControl('maxLoadKg', null, Validators.min(0));
+        this.addControl('maxLoad', null, Validators.min(0));
         break;
       case 'Custom':
         this.addControl('customCategoryName', '', Validators.required);
@@ -145,14 +147,14 @@ export class PersonalGymFormComponent implements OnInit, OnDestroy {
     this.removeControl('weight');
     this.removeControl('minweight');
     this.removeControl('maxweight');
-    this.removeControl('incrementKg');
+    this.removeControl('increment');
 
     if (weightType === 'fixed') {
       this.addControl('weight', null, [Validators.required, Validators.min(0)]);
     } else if (weightType === 'adjustable') {
       this.addControl('minweight', null, [Validators.required, Validators.min(0)]);
       this.addControl('maxweight', null, [Validators.required, Validators.min(0)]);
-      this.addControl('incrementKg', null, [Validators.required, Validators.min(0.1)]);
+      this.addControl('increment', null, [Validators.required, Validators.min(0.1)]);
     }
   }
   

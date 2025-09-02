@@ -10,7 +10,7 @@ import { WorkoutService } from '../../../core/services/workout.service';
 import { TrackingService } from '../../../core/services/tracking.service';
 import { StorageService } from '../../../core/services/storage.service';
 // MODIFIED: Import all unit types
-import { UnitsService, WeightUnit, BodyWeightUnit, BodyMeasureUnit } from '../../../core/services/units.service';
+import { UnitsService, WeightUnit, BodyWeightUnit, BodyMeasureUnit, MeasureUnit } from '../../../core/services/units.service';
 import { AlertService } from '../../../core/services/alert.service';
 import { SpinnerService } from '../../../core/services/spinner.service';
 import { ThemeService } from '../../../core/services/theme.service';
@@ -127,7 +127,7 @@ export class ProfileSettingsComponent implements OnInit {
       sessionsToIncrement: [1, [Validators.required, Validators.min(1)]]
     });
   }
-  
+
   // ... (ngOnInit and other methods remain the same)
   // ... (make sure you have the other methods like loadProfileData, saveMeasurements, etc.)
 
@@ -145,6 +145,20 @@ export class ProfileSettingsComponent implements OnInit {
       await this.dataConversionService.convertAllWeightData(oldUnit, unit);
     }
     this.unitsService.setWeightUnitPreference(unit);
+  }
+
+  async selectMeasureUnit(unit: MeasureUnit): Promise<void> {
+    const oldUnit = this.unitsService.currentMeasureUnit();
+    if (unit === oldUnit) return; // No change
+
+    const confirm = await this.alertService.showConfirm(
+      'Convert All Measure Data?',
+      `You've changed the measure unit from ${oldUnit.toUpperCase()} to ${unit.toUpperCase()}. Would you like to convert all existing workout data (logs, routines, gym equipment) to the new unit?`
+    );
+    if (confirm && confirm.data) {
+      await this.dataConversionService.convertAllMeasureData(oldUnit, unit);
+    }
+    this.unitsService.setMeasureUnitPreference(unit);
   }
 
   async selectBodyWeightUnit(unit: BodyWeightUnit): Promise<void> {

@@ -3,6 +3,7 @@ import { Injectable, signal } from '@angular/core';
 import { StorageService } from './storage.service';
 
 export type WeightUnit = 'kg' | 'lbs';
+export type MeasureUnit = 'cm' | 'in';
 export type BodyWeightUnit = 'kg' | 'lbs';
 export type BodyMeasureUnit = 'cm' | 'in';
 
@@ -11,11 +12,13 @@ export type BodyMeasureUnit = 'cm' | 'in';
 })
 export class UnitsService {
   private readonly WEIGHT_UNIT_KEY = 'fitTrackPro_weightUnit';
+  private readonly MEASURE_UNIT_KEY = 'fitTrackPro_measureUnit';
   private readonly BODY_WEIGHT_UNIT_KEY = 'fitTrackPro_bodyWeightUnit';
   private readonly BODY_MEASURE_UNIT_KEY = 'fitTrackPro_bodyMeasureUnit';
 
   // --- SIGNALS for reactive unit preferences ---
   currentWeightUnit = signal<WeightUnit>('kg');
+  currentMeasureUnit = signal<MeasureUnit>('cm');
   currentBodyWeightUnit = signal<BodyWeightUnit>('kg');
   currentBodyMeasureUnit = signal<BodyMeasureUnit>('cm');
 
@@ -30,11 +33,16 @@ export class UnitsService {
     const storedWeightUnit = this.storageService.getItem<WeightUnit>(this.WEIGHT_UNIT_KEY);
     this.currentWeightUnit.set(storedWeightUnit || 'kg');
 
+    const storedMeasureUnit = this.storageService.getItem<MeasureUnit>(this.MEASURE_UNIT_KEY);
+    this.currentMeasureUnit.set(storedMeasureUnit || 'cm');
+
     const storedBodyWeightUnit = this.storageService.getItem<BodyWeightUnit>(this.BODY_WEIGHT_UNIT_KEY);
     this.currentBodyWeightUnit.set(storedBodyWeightUnit || 'kg');
 
     const storedBodyMeasureUnit = this.storageService.getItem<BodyMeasureUnit>(this.BODY_MEASURE_UNIT_KEY);
     this.currentBodyMeasureUnit.set(storedBodyMeasureUnit || 'cm');
+
+
   }
 
   // --- Public Methods to Set Preferences ---
@@ -42,6 +50,11 @@ export class UnitsService {
   public setWeightUnitPreference(unit: WeightUnit): void {
     this.storageService.setItem(this.WEIGHT_UNIT_KEY, unit);
     this.currentWeightUnit.set(unit);
+  }
+
+  public setMeasureUnitPreference(unit: MeasureUnit): void {
+    this.storageService.setItem(this.MEASURE_UNIT_KEY, unit);
+    this.currentMeasureUnit.set(unit);
   }
 
   public setBodyWeightUnitPreference(unit: BodyWeightUnit): void {
@@ -60,6 +73,10 @@ export class UnitsService {
     return this.currentWeightUnit() === 'kg' ? 'kg' : 'lbs';
   }
 
+  public getMeasureUnitSuffix(): string {
+    return this.currentMeasureUnit() === 'cm' ? 'cm' : 'in';
+  }
+
   public getBodyWeightUnitSuffix(): string {
     return this.currentBodyWeightUnit() === 'kg' ? 'kg' : 'lbs';
   }
@@ -67,6 +84,8 @@ export class UnitsService {
   public getBodyMeasureUnitSuffix(): string {
     return this.currentBodyMeasureUnit() === 'cm' ? 'cm' : 'in';
   }
+
+
 
   // --- CONVERSION LOGIC ---
 
@@ -80,7 +99,7 @@ export class UnitsService {
   }
 
   // Body Measurement Conversions
-  public convertBodyMeasure(value: number, from: BodyMeasureUnit, to: BodyMeasureUnit): number {
+  public convertMeasure(value: number, from: BodyMeasureUnit | MeasureUnit, to: BodyMeasureUnit | MeasureUnit): number {
     if (from === to || !value) return value;
     const cmToIn = 0.393701;
     const result = from === 'cm' ? value * cmToIn : value / cmToIn;

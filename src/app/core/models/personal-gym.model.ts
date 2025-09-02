@@ -37,7 +37,7 @@ export interface AdjustableWeightEquipment extends BaseEquipment {
   weightType: 'adjustable';
   minweight: number;
   maxweight: number;
-  incrementKg: number;
+  increment: number;
 }
 
 export interface WeightPlate extends BaseEquipment {
@@ -62,15 +62,15 @@ export interface ResistanceBand extends BaseEquipment {
   category: 'Band';
   bandType: BandType;
   resistanceLevel?: 'extra-light' | 'light' | 'medium' | 'heavy' | 'extra-heavy';
-  resistanceKg?: number;
+  resistance?: number;
   color?: string;
-  lengthCm?: number;
+  length?: number;
 }
 
 export interface Machine extends BaseEquipment {
   category: 'Machine';
   loadType: MachineLoadType;
-  maxLoadKg?: number;
+  maxLoad?: number;
 }
 
 export interface Accessory extends BaseEquipment {

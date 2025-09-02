@@ -52,25 +52,25 @@
           </div>
 
           <div *ngIf="equipmentForm.get('weightType')?.value === 'fixed'">
-            <label for="weight" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Weight (kg)</label>
+            <label for="weight" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Weight ({{unitService.getWeightUnitSuffix()}})</label>
             <input type="number" id="weight" formControlName="weight" class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
           </div>
 
           <div *ngIf="equipmentForm.get('weightType')?.value === 'adjustable'" class="grid grid-cols-3 gap-4">
             <div>
               <label for="minweight" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Min
-                (kg)</label>
+                ({{unitService.getWeightUnitSuffix()}})</label>
               <input type="number" id="minweight" formControlName="minweight" class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
             </div>
             <div>
               <label for="maxweight" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Max
-                (kg)</label>
+                ({{unitService.getWeightUnitSuffix()}})</label>
               <input type="number" id="maxweight" formControlName="maxweight" class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
             </div>
             <div>
-              <label for="incrementKg" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Step
-                (kg)</label>
-              <input type="number" id="incrementKg" formControlName="incrementKg" class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
+              <label for="increment" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Step
+                ({{unitService.getWeightUnitSuffix()}})</label>
+              <input type="number" id="increment" formControlName="increment" class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
             </div>
           </div>
         </div>
@@ -78,7 +78,7 @@
 
       <ng-container *ngSwitchCase="'Plate'">
         <div class="pt-4 border-t dark:border-gray-600">
-          <label for="weight" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Weight (kg)</label>
+          <label for="weight" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Weight ({{unitService.getWeightUnitSuffix()}})</label>
           <input type="number" id="weight" formControlName="weight" class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
         </div>
       </ng-container>
@@ -87,7 +87,7 @@
         <div class="grid grid-cols-2 gap-4 pt-4 border-t dark:border-gray-600">
           <div>
             <label for="weight" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Bar Weight
-              (kg)</label>
+              ({{unitService.getWeightUnitSuffix()}})</label>
             <input type="number" id="weight" formControlName="weight" class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
           </div>
           <div>
@@ -115,9 +115,9 @@
             </select>
           </div>
           <div>
-            <label for="resistanceKg" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Resistance (kg,
+            <label for="resistance" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Resistance ({{unitService.getWeightUnitSuffix()}},
               Optional)</label>
-            <input type="number" id="resistanceKg" formControlName="resistanceKg" class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
+            <input type="number" id="resistance" formControlName="resistance" class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
           </div>
           <div>
             <label for="color" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Color
@@ -125,9 +125,9 @@
             <input type="text" id="color" formControlName="color" class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
           </div>
           <div>
-            <label for="lengthCm" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Length (cm,
+            <label for="length" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Length ({{unitService.getMeasureUnitSuffix()}},
               Optional)</label>
-            <input type="number" id="lengthCm" formControlName="lengthCm" class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
+            <input type="number" id="length" formControlName="length" class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
           </div>
         </div>
       </ng-container>
@@ -141,9 +141,9 @@
             </select>
           </div>
           <div>
-            <label for="maxLoadKg" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Max Load (kg,
+            <label for="maxLoad" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Max Load ({{unitService.getWeightUnitSuffix()}},
               Optional)</label>
-            <input type="number" id="maxLoadKg" formControlName="maxLoadKg" class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
+            <input type="number" id="maxLoad" formControlName="maxLoad" class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
           </div>
         </div>
       </ng-container>
@@ -161,7 +161,7 @@
             <div *ngFor="let prop of customProperties.controls; let i = index" [formGroupName]="i"
               class="flex items-center space-x-2">
               <input type="text" formControlName="key" class="input-field flex-1" placeholder="Property (e.g., Weight)">
-              <input type="text" formControlName="value" class="input-field flex-1" placeholder="Value (e.g., 10kg)">
+              <input type="text" formControlName="value" class="input-field flex-1" placeholder="Value (e.g., 10{{unitService.getWeightUnitSuffix()}})">
               <button type="button" (click)="removeCustomProperty(i)"
                 class="p-2 text-red-500 hover:bg-red-100 rounded-full">
                 <app-icon name="trash" class="w-5 h-5"></app-icon>

@@ -144,7 +144,7 @@ export class WorkoutSummaryComponent implements OnInit {
   formatPbValueForSummary(pb: PersonalBestSet): string {
     let value = '';
     if (pb.weightUsed !== undefined && pb.weightUsed !== null && pb.weightUsed !== 0) {
-      value += `${pb.weightUsed}kg`;
+      value += `${pb.weightUsed}${this.unitsService.getWeightUnitSuffix()}`;
       if (pb.repsAchieved > 0 && (pb.pbType.includes('Heaviest') || pb.repsAchieved > 1 && !pb.pbType.includes('RM'))) {
         value += ` x ${pb.repsAchieved}`;
       }
