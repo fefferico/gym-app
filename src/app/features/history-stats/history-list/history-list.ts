@@ -454,8 +454,8 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
                 programName: programMap.get(item.programId!) || null,
                 weekName: weekName,
                 dayName: item.dayName || dayInfo?.dayName || null,
-                // totalVolume: this.getTotalVolume(item),
-                // personalBests: this.getPersonalBestsFromLog(item) ? this.getPersonalBestsFromLog(item).length : 0
+                totalVolume: this.getTotalVolume(item),
+                personalBests: this.getPersonalBestsFromLog(item) ? this.getPersonalBestsFromLog(item).length : 0
               } as EnrichedHistoryListItem))
             );
           } else {
