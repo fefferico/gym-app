@@ -117,17 +117,17 @@
                     </p>
                     <div class="flex justify-between">
                       <p class="flex gap-1 items-center">
-                      <app-icon name="muscle" class="w-6 h-6"></app-icon>
-                      <span class="font-medium">Ex:</span> {{ item.exercises.length }}
-                    </p>
-                    <p *ngIf="item.totalVolume" class="flex gap-1 items-center">
-                      <app-icon name="weight" class="w-6 h-6"></app-icon>
-                      <span class="font-medium"></span> {{ item.totalVolume }} {{unitsService.getWeightUnitSuffix()}}
-                    </p>
-                    <p *ngIf="item.personalBests" class="flex gap-1 items-center">
-                      <app-icon name="pb" class="w-6 h-6"></app-icon>
-                      <span class="font-medium">PBs:</span> {{ item.personalBests }}
-                    </p>
+                        <app-icon name="muscle" class="w-6 h-6"></app-icon>
+                        <span class="font-medium">Ex:</span> {{ item.exercises.length }}
+                      </p>
+                      <p *ngIf="item.totalVolume" class="flex gap-1 items-center">
+                        <app-icon name="weight" class="w-6 h-6"></app-icon>
+                        <span class="font-medium"></span> {{ item.totalVolume }} {{unitsService.getWeightUnitSuffix()}}
+                      </p>
+                      <p *ngIf="item.personalBests" class="flex gap-1 items-center">
+                        <app-icon name="pb" class="w-6 h-6"></app-icon>
+                        <span class="font-medium">PBs:</span> {{ item.personalBests }}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -139,7 +139,8 @@
                       <app-icon name="menu-action" class="h-7 w-7"></app-icon>
                     </button>
                     <app-action-menu *ngIf="areActionsVisible(item.id) && (menuModeDropdown || menuModeModal)"
-                      class="action-menu-container" [displayMode]="menuModeDropdown ? 'dropdown' : 'modal'"
+                      [modalTitle]="''" class="action-menu-container"
+                      [displayMode]="menuModeDropdown ? 'dropdown' : 'modal'"
                       [items]="getLogDropdownActionItems(item.id, menuModeDropdown ? 'dropdown' : 'modal')"
                       [isVisible]="areActionsVisible(item.id)" (itemClick)="handleActionMenuItemClick($event)"
                       (closeMenu)="onCloseActionMenu()">
@@ -346,7 +347,8 @@
                 <app-icon name="weight" class="w-6 h-6"></app-icon>
                 <span class="font-medium"></span> {{ item.totalVolume }} {{unitsService.getWeightUnitSuffix()}}
               </p>
-              <p *ngIf="item.personalBests" class="flex gap-1 items-center text-sm text-gray-600 dark:text-gray-300 mb-2">
+              <p *ngIf="item.personalBests"
+                class="flex gap-1 items-center text-sm text-gray-600 dark:text-gray-300 mb-2">
                 <app-icon name="pb" class="w-6 h-6"></app-icon>
                 <span class="font-medium">PBs:</span> {{ item.personalBests }}
               </p>

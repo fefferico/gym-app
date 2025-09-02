@@ -157,6 +157,7 @@
                                 </button>
                                 <app-action-menu *ngIf="areActionsVisible(routine.id) && menuModeDropdown"
                                     displayMode="dropdown"
+                                    [gridClass]="'grid grid-cols-1'"
                                     [items]="getRoutineDropdownActionItems(routine.id, 'dropdown')"
                                     [isVisible]="areActionsVisible(routine.id)"
                                     (itemClick)="handleActionMenuItemClick($event)" (closeMenu)="onCloseActionMenu()">
@@ -267,6 +268,7 @@
                         </div>
                         <div class="relative">
                             <app-action-menu *ngIf="areActionsVisible(routine.id) && menuModeCompact"
+                                [gridClass]="'grid grid-cols-2'"
                                 displayMode="compact" [items]="getRoutineDropdownActionItems(routine.id, 'compact')"
                                 [isVisible]="areActionsVisible(routine.id)"
                                 (itemClick)="handleActionMenuItemClick($event)" (closeMenu)="onCloseActionMenu()">

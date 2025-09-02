@@ -656,8 +656,8 @@ export class RoutineListComponent implements OnInit, OnDestroy {
 
 
   getRoutineDropdownActionItems(routineId: string, mode: MenuMode): ActionMenuItem[] {
-    const defaultBtnClass = 'rounded text-left p-4 font-medium text-gray-600 dark:text-gray-300 hover:bg-primary flex items-center hover:text-white dark:hover:text-gray-100 dark:hover:text-white';
-    const deleteBtnClass = 'rounded text-left p-4 font-medium text-gray-600 dark:text-gray-300 hover:bg-red-600 flex items-center hover:text-gray-100 hover:animate-pulse';;
+    const defaultBtnClass = 'rounded p-4 font-medium text-gray-600 dark:text-gray-300 hover:bg-primary flex items-center hover:text-white dark:hover:text-gray-100 dark:hover:text-white';
+    const deleteBtnClass = 'rounded p-4 font-medium text-gray-600 dark:text-gray-300 hover:bg-red-600 flex items-center hover:text-gray-100 hover:animate-pulse';;
 
     const currentRoutine = this.allRoutinesForList().find(routine => routine.id === routineId);
     const hideRoutineButton = {

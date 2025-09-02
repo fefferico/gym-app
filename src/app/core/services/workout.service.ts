@@ -528,17 +528,19 @@ export class WorkoutService {
     const routine = this.getCurrentRoutines().find(routine => routine.id === newRoutineId);
     const freeTierPlayerMode = 'compact';
     const playerMode = !this.subscriptionService.isPremium() ? freeTierPlayerMode : this.appSettingsService.getSettings() ? this.appSettingsService.getSettings().playerMode : freeTierPlayerMode;
-    const isTabata = routine?.goal === 'tabata';
+    const isTabata = this.subscriptionService.isPremium() && routine?.goal === 'tabata';
     let url = '';
 
     if (isTabata) {
       return '/workout/play/tabata';
-    }
-    if (!isTabata && playerMode) {
-      return '/workout/play/compact';
     } else {
-      return '/workout/play/focus';
+      if (playerMode === 'focus') {
+        return '/workout/play/focus';
+      } else {
+        return '/workout/play/compact';
+      }
     }
+
   }
 
   // { queryParams: { newSession: 'true' } }

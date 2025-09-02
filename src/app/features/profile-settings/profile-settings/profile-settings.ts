@@ -184,6 +184,7 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
     const isChecked = (event.target as HTMLInputElement).checked;
     const newMode = isChecked ? 'focus' : 'compact';
     this.appSettingsForm.get('playerMode')?.setValue(newMode);
+    this.appSettingsService.saveSettings({playerMode: newMode});
   }
 
   async selectWeightUnit(unit: WeightUnit): Promise<void> {

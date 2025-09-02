@@ -4252,19 +4252,25 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
 
   toggleActions(event: MouseEvent): void {
     event.stopPropagation();
-    this.isWorkoutMenuVisible.set(true);
+    this.isWorkoutMenuVisible.set(!this.isWorkoutMenuVisible());
   }
 
   getActionItems(mode: MenuMode): ActionMenuItem[] {
-    const defaultBtnClass = 'rounded text-left p-4 font-medium text-gray-600 dark:text-gray-300 hover:bg-primary flex items-center hover:text-white dark:hover:text-gray-100 dark:hover:text-white';
+    const defaultBtnClass = ' rounded-md text-lg text-left p-4 text-white font-bold py-2.5 px-6 flex items-center ';
     const deleteBtnClass = 'rounded text-left p-4 font-medium text-gray-600 dark:text-gray-300 hover:bg-red-600 flex items-center hover:text-gray-100 hover:animate-pulse';;
+
+    const isCompact = this.getMenuMode() === 'compact';
+    const isModal = this.getMenuMode() === 'modal';
+    const isDropDown = this.getMenuMode() === 'dropdown';
+    const isDropDownOrCompact = isDropDown || isCompact;
+    const wFullClass = isCompact ? '' : ' w-full';
 
     const pauseSessionBtn = {
       label: 'PAUSE',
       actionKey: 'pause',
       iconName: `pause`,
       iconClass: 'w-8 h-8 mr-2',
-      buttonClass: (this.sessionState() !== 'playing' ? 'disabled ' : '') + 'flex justify-center items-center w-full max-w-xs bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2.5 px-6 rounded-md text-lg shadow-lg disabled:opacity-60 disabled:cursor-not-allowed',
+      buttonClass: defaultBtnClass + (this.sessionState() !== 'playing' ? 'disabled ' : '') + 'flex justify-center items-center max-w-xs ' + ( isDropDownOrCompact ? ' ' : ' bg-yellow-500 ') + 'hover:bg-yellow-600 text-white font-bold py-2.5 px-6 rounded-md text-lg shadow-lg disabled:opacity-60 disabled:cursor-not-allowed' + wFullClass,
     } as ActionMenuItem;
 
     const jumpToExerciseBtn = {
@@ -4272,7 +4278,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       actionKey: 'jumpToExercise',
       iconName: `dumbbell`,
       iconClass: 'w-8 h-8 mr-2',
-      buttonClass: (this.sessionState() === 'paused' || !this.routine()?.exercises?.length ? 'disabled ' : '') + 'flex justify-center items-center w-full max-w-xs bg-fuchsia-500 hover:bg-fuchsia-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed',
+      buttonClass: defaultBtnClass + (this.sessionState() === 'paused' || !this.routine()?.exercises?.length ? 'disabled ' : '') + 'flex justify-center items-center max-w-xs ' + ( isDropDownOrCompact ? ' ' : ' bg-fuchsia-500 ') + ' hover:bg-fuchsia-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed' + wFullClass,
     } as ActionMenuItem;
 
     const addExerciseBtn = {
@@ -4280,7 +4286,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       actionKey: 'addExercise',
       iconName: `plus-circle`,
       iconClass: 'w-8 h-8 mr-2',
-      buttonClass: (this.sessionState() === 'paused' || !this.routine()?.exercises?.length ? 'disabled ' : '') + 'flex items-center justify-center align-center w-full max-w-xs bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed',
+      buttonClass: defaultBtnClass + (this.sessionState() === 'paused' || !this.routine()?.exercises?.length ? 'disabled ' : '') + 'flex items-center justify-center align-center max-w-xs ' + ( isDropDownOrCompact ? ' ' : ' bg-purple-500 ') + ' hover:bg-purple-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed' + wFullClass,
     } as ActionMenuItem;
 
     const switchExerciseBtn = {
@@ -4288,7 +4294,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       actionKey: 'switchExercise',
       iconName: `change`,
       iconClass: 'w-8 h-8 mr-2',
-      buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + 'w-full max-w-xs bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center',
+      buttonClass: defaultBtnClass + 'max-w-xs ' + ( isDropDownOrCompact ? ' ' : ' bg-cyan-500 ') + ' hover:bg-cyan-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center' + wFullClass,
     } as ActionMenuItem;
 
     const openPerformanceInsightsBtn = {
@@ -4296,7 +4302,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       actionKey: 'insight',
       iconName: `schedule`,
       iconClass: 'w-8 h-8 mr-2',
-      buttonClass: (this.sessionState() === 'paused' || !this.activeSetInfo() ? 'disabled ' : '') + 'flex items-center justify-center align-center w-full max-w-xs bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed',
+      buttonClass: defaultBtnClass + (this.sessionState() === 'paused' || !this.activeSetInfo() ? 'disabled ' : '') + 'flex items-center justify-center align-center max-w-xs ' + ( isDropDownOrCompact ? ' ' : ' bg-green-500 ') + ' hover:bg-green-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed' + wFullClass,
     } as ActionMenuItem;
 
     const quitWorkoutBtn = {
@@ -4304,7 +4310,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       actionKey: 'exit',
       iconName: `exit-door`,
       iconClass: 'w-8 h-8 mr-2',
-      buttonClass: '' + 'w-full flex items-center justify-center max-w-xs text-white bg-red-600 hover:bg-red-800 font-medium py-2 px-6 rounded-md text-md',
+      buttonClass: defaultBtnClass + '' + 'flex items-center justify-center max-w-xs text-white ' + ( isDropDownOrCompact ? ' ' : ' bg-red-500 ') + ' hover:bg-red-800 font-medium py-2 px-6 rounded-md text-md' + wFullClass,
     } as ActionMenuItem;
 
     const addWarmupSetBtn = {
@@ -4312,7 +4318,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       actionKey: 'warmup',
       iconName: `flame`,
       iconClass: 'w-8 h-8 mr-2',
-      buttonClass: '' + 'w-full flex items-center justify-center max-w-xs bg-sky-500 hover:bg-sky-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed',
+      buttonClass: defaultBtnClass + '' + 'flex items-center justify-center max-w-xs ' + ( isDropDownOrCompact ? ' ' : ' bg-sky-500 ') + ' hover:bg-sky-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed' + wFullClass,
     } as ActionMenuItem;
 
     const skipCurrentSetBtn = {
@@ -4320,7 +4326,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       actionKey: 'skipSet',
       iconName: `skip`,
       iconClass: 'w-8 h-8 mr-2',
-      buttonClass: (!this.activeSetInfo() || this.sessionState() === 'paused' ? 'disabled ' : '') + 'w-full flex items-center justify-center max-w-xs bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed',
+      buttonClass: defaultBtnClass + (!this.activeSetInfo() || this.sessionState() === 'paused' ? 'disabled ' : '') + 'flex items-center justify-center max-w-xs ' + ( isDropDownOrCompact ? ' ' : ' bg-blue-500 ') + ' hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed' + wFullClass,
     } as ActionMenuItem;
 
     const skipCurrentExerciseBtn = {
@@ -4328,7 +4334,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       actionKey: 'skipExercise',
       iconName: `skip`,
       iconClass: 'w-8 h-8 mr-2',
-      buttonClass: (!this.activeSetInfo() || this.sessionState() === 'paused' ? 'disabled ' : '') + 'w-full flex items-center justify-center max-w-xs bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed',
+      buttonClass: defaultBtnClass + (!this.activeSetInfo() || this.sessionState() === 'paused' ? 'disabled ' : '') + 'flex items-center justify-center max-w-xs ' + ( isDropDownOrCompact ? ' ' : ' bg-indigo-500 ') + ' hover:bg-indigo-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed' + wFullClass,
     } as ActionMenuItem;
 
     const markAsDoLaterBtn = {
@@ -4336,7 +4342,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       actionKey: 'later',
       iconName: `clock`,
       iconClass: 'w-8 h-8 mr-2',
-      buttonClass: (!this.activeSetInfo() || this.sessionState() === 'paused' ? 'disabled ' : '') + 'w-full flex items-center justify-center max-w-xs bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed',
+      buttonClass: defaultBtnClass + (!this.activeSetInfo() || this.sessionState() === 'paused' ? 'disabled ' : '') + 'flex items-center justify-center max-w-xs ' + ( isDropDownOrCompact ? ' ' : ' bg-orange-500 ') + ' hover:bg-orange-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed' + wFullClass,
     } as ActionMenuItem;
 
     const finishEarly = {
@@ -4344,7 +4350,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       actionKey: 'finish',
       iconName: `done`,
       iconClass: 'w-8 h-8 mr-2',
-      buttonClass: (this.sessionState() === 'paused' || this.currentWorkoutLogExercises().length === 0 ? 'disabled ' : '') + 'w-full flex items-center justify-center max-w-xs bg-teal-500 hover:bg-teal-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed',
+      buttonClass: defaultBtnClass + (this.sessionState() === 'paused' || this.currentWorkoutLogExercises().length === 0 ? 'disabled ' : '') + 'flex items-center justify-center max-w-xs ' + ( isDropDownOrCompact ? ' ' : ' bg-teal-500 ') + ' hover:bg-teal-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed' + wFullClass,
     } as ActionMenuItem;
 
     const actionsArray: ActionMenuItem[] = [];
@@ -4407,5 +4413,9 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     const mins = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
     const secs = String(totalSeconds % 60).padStart(2, '0');
     return `${mins}:${secs}`;
+  }
+
+  protected getMenuMode(): MenuMode {
+    return this.appSettingsService.getMenuMode();
   }
 }

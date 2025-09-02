@@ -28,11 +28,17 @@
         <button *ngIf="sessionState() === 'paused'" (click)="resumeSession()" class="p-2">
           <app-icon name="play" class="h-6 w-6 text-primary dark:text-primary-light animate-pulse"></app-icon>
         </button>
+        <app-action-menu [isVisible]="mainSessionActionMenuOpened() === true && getMenuMode() !== 'compact'"
+          class="action-menu-container" [modalTitle]="''" [displayMode]="getMenuMode()" [modalTitle]="''"
+          [items]="getMainSessionActionItems()" (itemClick)="handleMainSessionActionMenuItemClick($event)"
+          (closeMenu)="toggleMainSessionActionMenu(null)">
+        </app-action-menu>
       </div>
     </div>
-    <app-action-menu [isVisible]="mainSessionActionMenuOpened() === true" class="action-menu-container"
-      [displayMode]="getMenuMode()" [modalTitle]="'Session Actions'" [items]="getMainSessionActionItems()"
-      (itemClick)="handleMainSessionActionMenuItemClick($event)" (closeMenu)="toggleMainSessionActionMenu(null)">
+    <app-action-menu [isVisible]="mainSessionActionMenuOpened() === true && getMenuMode() === 'compact'"
+      class="action-menu-container" [modalTitle]="''" [displayMode]="getMenuMode()" [modalTitle]="''"
+      [items]="getMainSessionActionItems()" (itemClick)="handleMainSessionActionMenuItemClick($event)"
+      (closeMenu)="toggleMainSessionActionMenu(null)">
     </app-action-menu>
 
     <!-- Workout Progress Bar -->
@@ -100,25 +106,33 @@
 
           <!-- Action Menu Container -->
           <div class="absolute top-2 right-2 z-60">
-            <div class="flex">
-              <app-icon name="chevron-down"
-                class="h-7 w-7 text-gray-500 transition-transform duration-200 flex-shrink-0"
-                [class.rotate-180]="expandedExerciseIndex() === exIndex"></app-icon>
-              <button (click)="toggleExerciseNotes(exIndex, $event)"
-                class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center p-1">
-                <app-icon name="clipboard-list" class="h-6 w-6"></app-icon>
-              </button>
-              <button (click)="toggleActionMenu(exIndex, $event)"
-                class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center">
-                <app-icon name="menu-action" class="h-7 w-7"></app-icon>
-              </button>
+            <div class="relative">
+              <div class="flex">
+                <app-icon name="chevron-down"
+                  class="h-7 w-7 text-gray-500 transition-transform duration-200 flex-shrink-0"
+                  [class.rotate-180]="expandedExerciseIndex() === exIndex"></app-icon>
+                <button (click)="toggleExerciseNotes(exIndex, $event)"
+                  class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center p-1">
+                  <app-icon name="clipboard-list" class="h-6 w-6"></app-icon>
+                </button>
+                <button (click)="toggleActionMenu(exIndex, $event)"
+                  class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center">
+                  <app-icon name="menu-action" class="h-7 w-7"></app-icon>
+                </button>
+              </div>
+              <app-action-menu [isVisible]="activeActionMenuIndex() === exIndex && getMenuMode()  !== 'compact'"
+                [modalTitle]="''" class="action-menu-container" [displayMode]="getMenuMode()"
+                [items]="getCompactActionItems(exIndex, getMenuMode())" (itemClick)="handleActionMenuItemClick($event)"
+                (closeMenu)="closeActionMenu()">
+              </app-action-menu>
             </div>
           </div>
+          <app-action-menu [isVisible]="activeActionMenuIndex() === exIndex && getMenuMode() === 'compact'"
+            [modalTitle]="''" class="action-menu-container" [displayMode]="getMenuMode()"
+            [items]="getCompactActionItems(exIndex, getMenuMode())" (itemClick)="handleActionMenuItemClick($event)"
+            (closeMenu)="closeActionMenu()">
+          </app-action-menu>
         </div>
-        <app-action-menu [isVisible]="activeActionMenuIndex() === exIndex" class="action-menu-container"
-          [displayMode]="getMenuMode()" [items]="getCompactActionItems(exIndex, getMenuMode())"
-          (itemClick)="handleActionMenuItemClick($event)" (closeMenu)="closeActionMenu()">
-        </app-action-menu>
 
         <!-- Sets Container -->
         <div *ngIf="expandedExerciseIndex() === exIndex"

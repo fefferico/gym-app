@@ -72,7 +72,8 @@ export class ActionMenuComponent implements OnChanges, OnDestroy {
 
   // --- No longer needed for modal, but kept for dropdown ---
   @Input() dropdownMenuClass: string = 'origin-top-right absolute right-0 top-full mt-1 sm:mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black dark:ring-gray-600 ring-opacity-5 focus:outline-none py-1 z-[60]';
-  @Input() compactBarClass: string = 'flex flex-wrap gap-2 justify-around items-center z-20 rounded-b-lg p-2';
+  @Input() compactBarClass: string = 'flex gap-2 grid grid-cols-2 justify-center items-center z-20 rounded-b-lg p-2';
+  @Input() gridClass: string = '';
   @Input() customButtonDivCssClass: string = 'grid grid-cols-2';
 
   @Output() itemClick = new EventEmitter<{ actionKey: string, data?: any }>();

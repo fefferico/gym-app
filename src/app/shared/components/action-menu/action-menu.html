@@ -25,9 +25,9 @@
 
     <!-- Compact Bar Mode -->
     <div *ngSwitchCase="'compact'">
-        <div *ngIf="isVisible" [@compactBar] [ngClass]="compactBarClass">
+        <div *ngIf="isVisible" [@compactBar] [ngClass]="compactBarClass + gridClass">
             <ng-container *ngFor="let item of items">
-                 <div *ngIf="item.isDivider" class="my-1 border-t border-gray-200 dark:border-gray-600"></div>
+                 <!-- <div *ngIf="item.isDivider" class="my-1 border-t border-gray-200 dark:border-gray-600"></div> -->
                 <button *ngIf="!item.isDivider" type="button" (click)="onItemClicked($event, item)" [title]="item.label"
                     [ngClass]="item.buttonClass || 'w-full text-left p-2 text-gray-700 dark:text-gray-200 hover:bg-gray-500/10 dark:hover:bg-gray-500/20 flex items-center text-base rounded-md'"
                     class="transition-colors duration-150 ease-in-out">
