@@ -23,13 +23,13 @@ export const modalOverlayAnimation = trigger('modalOverlay', [
   ]),
 ]);
 export const modalContentAnimation = trigger('modalContent', [
-    transition(':enter', [
-        style({ transform: 'translateY(100%)' }),
-        animate('200ms ease-out', style({ transform: 'translateY(0)' })),
-      ]),
-      transition(':leave', [
-        animate('150ms ease-in', style({ transform: 'translateY(100%)' })),
-      ]),
+  transition(':enter', [
+    style({ transform: 'translateY(100%)' }),
+    animate('200ms ease-out', style({ transform: 'translateY(0)' })),
+  ]),
+  transition(':leave', [
+    animate('150ms ease-in', style({ transform: 'translateY(100%)' })),
+  ]),
 ]);
 export const dropdownMenuAnimation = trigger('dropdownMenu', [
   transition(':enter', [
@@ -72,7 +72,7 @@ export class ActionMenuComponent implements OnChanges, OnDestroy {
 
   // --- No longer needed for modal, but kept for dropdown ---
   @Input() dropdownMenuClass: string = 'origin-top-right absolute right-0 top-full mt-1 sm:mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black dark:ring-gray-600 ring-opacity-5 focus:outline-none py-1 z-[60]';
-  @Input() compactBarClass: string = 'flex flex-wrap gap-1.5 justify-center z-20 rounded-b-lg';
+  @Input() compactBarClass: string = 'flex flex-wrap gap-2 justify-around items-center z-20 rounded-b-lg p-2';
   @Input() customButtonDivCssClass: string = 'grid grid-cols-2';
 
   @Output() itemClick = new EventEmitter<{ actionKey: string, data?: any }>();
@@ -102,7 +102,7 @@ export class ActionMenuComponent implements OnChanges, OnDestroy {
   ngOnDestroy(): void {
     document.removeEventListener('keydown', this._boundOnEnterKey);
   }
-  
+
   // +++ 4. Add the new method to present the alert +++
   private async presentAsAlert(): Promise<void> {
     // Transform ActionMenuItem[] to AlertButton[]
@@ -116,7 +116,7 @@ export class ActionMenuComponent implements OnChanges, OnDestroy {
         overrideCssClass: `justify-start text-xl ${item.buttonClass || ''}`, // Ensure buttons are styled nicely
         data: item.data
       }));
-      
+
     // Use the AlertService to present the options
     const result = await this.alertService.present({
       header: this.modalTitle,
@@ -151,7 +151,7 @@ export class ActionMenuComponent implements OnChanges, OnDestroy {
       event.preventDefault();
       const primaryAction = this.items.find(item => !item.isDivider);
       if (primaryAction) {
-        this.onItemClicked({ stopPropagation: () => {} } as MouseEvent, primaryAction);
+        this.onItemClicked({ stopPropagation: () => { } } as MouseEvent, primaryAction);
       }
     }
   }

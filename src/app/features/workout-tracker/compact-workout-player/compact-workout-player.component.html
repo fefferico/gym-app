@@ -24,17 +24,16 @@
           class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center">
           <app-icon name="menu-action" class="h-7 w-7"></app-icon>
         </button>
-        <app-action-menu [isVisible]="mainSessionActionMenuOpened() === true" class="action-menu-container"
-          [displayMode]="getMenuMode() === 'compact' ? 'modal' : 'dropdown'" [modalTitle]="''" [items]="getMainSessionActionItems()"
-          (itemClick)="handleMainSessionActionMenuItemClick($event)" (closeMenu)="toggleMainSessionActionMenu(null)">
-        </app-action-menu>
-
         <!-- The separate pause/resume button is now inside the action menu -->
         <button *ngIf="sessionState() === 'paused'" (click)="resumeSession()" class="p-2">
           <app-icon name="play" class="h-6 w-6 text-primary dark:text-primary-light animate-pulse"></app-icon>
         </button>
       </div>
     </div>
+    <app-action-menu [isVisible]="mainSessionActionMenuOpened() === true" class="action-menu-container"
+      [displayMode]="getMenuMode()" [modalTitle]="'Session Actions'" [items]="getMainSessionActionItems()"
+      (itemClick)="handleMainSessionActionMenuItemClick($event)" (closeMenu)="toggleMainSessionActionMenu(null)">
+    </app-action-menu>
 
     <!-- Workout Progress Bar -->
     <div class="w-full mt-2">
@@ -53,13 +52,13 @@
 
   <!-- Main Content: Exercises List -->
   <main class="pt-4 px-2 pb-36">
-    <div *ngIf="routine() as currentRoutine; else loading" cdkDropList [cdkDropListData]="currentRoutine.exercises" (cdkDropListDropped)="onExerciseDrop($event)" class="">
+    <div *ngIf="routine() as currentRoutine; else loading" cdkDropList [cdkDropListData]="currentRoutine.exercises"
+      (cdkDropListDropped)="onExerciseDrop($event)" class="">
       <!-- Exercise Card -->
       <div *ngFor="let exercise of currentRoutine.exercises; let exIndex = index;" cdkDrag
-        class="transition-all duration-300 relative" 
-        [ngClass]="getExerciseClasses(exercise, exIndex)" 
+        class="transition-all duration-300 relative" [ngClass]="getExerciseClasses(exercise, exIndex)"
         [style.zIndex]="areActionsVisible(exIndex) ? 50 : 'auto'">
-        
+
         <!-- Ghost element for drop placeholder -->
         <div *cdkDragPlaceholder></div>
 
@@ -113,14 +112,13 @@
                 class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center">
                 <app-icon name="menu-action" class="h-7 w-7"></app-icon>
               </button>
-              <app-action-menu [isVisible]="activeActionMenuIndex() === exIndex"
-                class="action-menu-container" [displayMode]="getMenuMode() === 'compact' ? 'modal' : 'dropdown'"
-                [items]="getCompactActionItems(exIndex, getMenuMode())" (itemClick)="handleActionMenuItemClick($event)"
-                (closeMenu)="closeActionMenu()">
-              </app-action-menu>
             </div>
           </div>
         </div>
+        <app-action-menu [isVisible]="activeActionMenuIndex() === exIndex" class="action-menu-container"
+          [displayMode]="getMenuMode()" [items]="getCompactActionItems(exIndex, getMenuMode())"
+          (itemClick)="handleActionMenuItemClick($event)" (closeMenu)="closeActionMenu()">
+        </app-action-menu>
 
         <!-- Sets Container -->
         <div *ngIf="expandedExerciseIndex() === exIndex"

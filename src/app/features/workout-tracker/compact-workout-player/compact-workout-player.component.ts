@@ -1053,7 +1053,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
   getMainSessionActionItems(): ActionMenuItem[] {
-    const defaultBtnClass = 'rounded text-left p-3 sm:px-4 sm:py-2 font-medium text-white hover:bg-blue-600 flex items-center hover:text-white dark:hover:text-gray-100 dark:hover:text-white w-full';
+    const wFullClass = this.getMenuMode() === 'compact' ? '' : ' w-full';
+    const defaultBtnClass = 'rounded text-left p-3 sm:px-4 sm:py-2 font-medium text-white hover:bg-blue-600 flex items-center hover:text-white dark:hover:text-gray-100 dark:hover:text-white' + wFullClass;
 
     const addExerciseBtn = {
       label: 'Add exercise',
@@ -1068,22 +1069,22 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       actionKey: 'exit',
       iconName: `exit-door`,
       iconClass: 'w-8 h-8 mr-2',
-      buttonClass: '' + 'transition-colors duration-150 ease-in-out rounded text-left p-3 sm:px-4 sm:py-2 font-medium text-white hover:bg-red-600 flex items-center hover:text-white dark:hover:text-gray-100 dark:hover:text-white w-full',
+      buttonClass: '' + 'transition-colors duration-150 ease-in-out rounded text-left p-3 sm:px-4 sm:py-2 font-medium text-white hover:bg-red-600 flex items-center hover:text-white dark:hover:text-gray-100 dark:hover:text-white' + wFullClass,
     } as ActionMenuItem;
 
     const actionsArray: ActionMenuItem[] = [
       this.sessionState() === 'paused' ?
         {
           label: 'Resume', actionKey: 'play', iconName: 'play',
-          buttonClass: 'w-full flex items-center justify-center max-w-xs text-white hover:bg-yellow-800 font-medium py-2 px-6 rounded-md text-md' + defaultBtnClass, iconClass: 'w-8 h-8 mr-2'
+          buttonClass: 'flex items-center justify-center max-w-xs text-white hover:bg-yellow-800 font-medium py-2 px-6 rounded-md text-md' + defaultBtnClass, iconClass: 'w-8 h-8 mr-2'
         } :
         {
           label: 'Pause', actionKey: 'pause', iconName: 'pause',
-          buttonClass: 'transition-colors duration-150 ease-in-out rounded text-left p-3 sm:px-4 sm:py-2 font-medium text-white hover:bg-yellow-600 flex items-center hover:text-white dark:hover:text-gray-100 dark:hover:text-white w-full', iconClass: 'w-8 h-8 mr-2'
+          buttonClass: 'transition-colors duration-150 ease-in-out rounded text-left p-3 sm:px-4 sm:py-2 font-medium text-white hover:bg-yellow-600 flex items-center hover:text-white dark:hover:text-gray-100 dark:hover:text-white' + wFullClass, iconClass: 'w-8 h-8 mr-2'
         },
       {
         label: 'Session notes', actionKey: 'session_notes', iconName: 'clipboard-list',
-        buttonClass: defaultBtnClass + 'transition-colors duration-150 ease-in-out rounded text-left p-3 sm:px-4 sm:py-2 font-medium text-white hover:bg-green-600 flex items-center hover:text-white dark:hover:text-gray-100 dark:hover:text-white w-full', iconClass: 'w-8 h-8 mr-2'
+        buttonClass: defaultBtnClass + 'transition-colors duration-150 ease-in-out rounded text-left p-3 sm:px-4 sm:py-2 font-medium text-white hover:bg-green-600 flex items-center hover:text-white dark:hover:text-gray-100 dark:hover:text-white' + wFullClass, iconClass: 'w-8 h-8 mr-2'
       },
       addExerciseBtn,
       { isDivider: true },
@@ -1129,13 +1130,15 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const warmupBtnClass = 'rounded text-left p-3 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-blue-400 flex items-center hover:text-white dark:hover:text-gray-100 dark:hover:text-white';
     const deleteBtnClass = 'rounded text-left p-3 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-red-600 inline-flex items-center hover:text-gray-100 hover:animate-pulse';;
 
+    const wFullClass = (mode === 'dropdown' ? ' w-full ' : '');
+
     const switchExerciseBtn = {
       label: 'Switch exercise',
       actionKey: 'switch',
       data: { exIndex: exerciseId },
       iconName: `change`,
       iconClass: 'w-8 h-8 mr-2',
-      buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+      buttonClass: wFullClass + defaultBtnClass,
     } as ActionMenuItem;
 
     const openPerformanceInsightsBtn = {
@@ -1152,16 +1155,16 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       openPerformanceInsightsBtn,
       {
         label: 'Add Warm-up Set', actionKey: 'add_warmup', iconName: 'flame', data: { exIndex: exerciseId },
-        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + warmupBtnClass, iconClass: 'w-8 h-8 mr-2'
+        buttonClass: wFullClass + warmupBtnClass, iconClass: 'w-8 h-8 mr-2'
       },
       {
         label: 'Add Set', actionKey: 'add_set', iconName: 'plus-circle', data: { exIndex: exerciseId },
-        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass, iconClass: 'w-8 h-8 mr-2'
+        buttonClass: wFullClass + defaultBtnClass, iconClass: 'w-8 h-8 mr-2'
       },
       { isDivider: true },
       {
         label: 'Remove Exercise', actionKey: 'remove', iconName: 'trash', data: { exIndex: exerciseId },
-        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + deleteBtnClass, iconClass: 'w-8 h-8 mr-2'
+        buttonClass: wFullClass + deleteBtnClass, iconClass: 'w-8 h-8 mr-2'
       }
     ];
 
@@ -1174,7 +1177,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         actionKey: 'remove_from_superset',
         iconName: 'unlink',
         data: { exIndex: exerciseId },
-        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + deleteBtnClass,
+        buttonClass: wFullClass + deleteBtnClass,
         iconClass: 'w-8 h-8 mr-2'
       });
     }
@@ -1191,7 +1194,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
             actionKey: 'add_to_superset', // Assumes this might trigger a different UI flow
             iconName: 'link',
             data: { exIndex: exerciseId },
-            buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+            buttonClass: wFullClass + defaultBtnClass,
             iconClass: 'w-8 h-8 mr-2'
           });
         }
@@ -1204,7 +1207,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
             actionKey: 'create_superset',
             iconName: 'link',
             data: { exIndex: exerciseId },
-            buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+            buttonClass: wFullClass + defaultBtnClass,
             iconClass: 'w-8 h-8 mr-2'
           });
         }
