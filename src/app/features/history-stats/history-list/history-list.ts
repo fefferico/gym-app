@@ -6,7 +6,7 @@ import {
 } from '@angular/core';
 import { CommonModule, DatePipe, DecimalPipe, isPlatformBrowser, TitleCasePipe } from '@angular/common';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
-import { Observable, combineLatest, Subscription, forkJoin, of } from 'rxjs';
+import { Observable, combineLatest, Subscription, forkJoin, of, firstValueFrom } from 'rxjs';
 import { map, startWith, distinctUntilChanged, take, filter, switchMap } from 'rxjs/operators';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { ExerciseService } from '../../../core/services/exercise.service';
@@ -31,7 +31,7 @@ import { SpinnerService } from '../../../core/services/spinner.service';
 import { ActionMenuComponent } from '../../../shared/components/action-menu/action-menu';
 import { ActionMenuItem } from '../../../core/models/action-menu.model';
 import { TrainingProgramService } from '../../../core/services/training-program.service';
-import { TrainingProgram } from '../../../core/models/training-program.model';
+import { ProgramDayInfo, TrainingProgram } from '../../../core/models/training-program.model';
 import { PressDirective } from '../../../shared/directives/press.directive';
 import { PressScrollDirective } from '../../../shared/directives/press-scroll.directive';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
@@ -55,11 +55,11 @@ type HistoryListView = 'list' | 'calendar';
 type HistoryListItem = (WorkoutLog & { itemType: 'workout' }) | (ActivityLog & { itemType: 'activity' });
 
 type EnrichedHistoryListItem = HistoryListItem & {
-  programName?: string | null;
-  weekName?: string | null;
-  dayName?: string | null;
-  totalVolume?: number | null;
-  personalBests?: number | null;
+  programName?: string; // This is string | undefined
+  weekName?: string;    // This is string | undefined
+  dayName?: string;     // This is string | undefined
+  totalVolume?: number;
+  personalBests?: number;
 };
 
 
@@ -274,36 +274,27 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
   isTouchDevice = false;
 
   /**
-   * Extracts the total volume from a history log item.
-   * It first checks for a pre-calculated 'totalVolume' property.
-   * If not found, it calculates it from the exercises array for workout logs.
-   *
-   * @param logItem The enriched history list item.
-   * @returns The total volume as a number, or null if not applicable/available.
-   */
-  getTotalVolume(logItem: EnrichedHistoryListItem): number | null {
-    // 1. Prefer the direct, pre-calculated property if it exists.
-    if (logItem.totalVolume != null) { // Checks for both null and undefined
-      return logItem.totalVolume;
+  * Calculates the total volume from a workout log.
+  * This is now a pure calculation function.
+  *
+  * @param log The WorkoutLog to analyze.
+  * @returns The total volume as a number, or null if it cannot be calculated.
+  */
+  getTotalVolume(log: WorkoutLog): number | null {
+    if (!log.exercises) {
+      return 0; // Return 0 if there are no exercises
     }
 
-    // 2. If it's not pre-calculated, and it's a workout, calculate it.
-    if (logItem.itemType === 'workout') {
-      // The 'exercises' property is available because itemType is 'workout'
-      return logItem.exercises.reduce((totalVolume, exercise) => {
-        const exerciseVolume = exercise.sets.reduce((volume, set) => {
-          // Ensure both reps and weight are valid numbers
-          if (typeof set.repsAchieved === 'number' && typeof set.weightUsed === 'number') {
-            return volume + (set.repsAchieved * set.weightUsed);
-          }
-          return volume;
-        }, 0);
-        return totalVolume + exerciseVolume;
+    return log.exercises.reduce((totalVolume, exercise) => {
+      const exerciseVolume = exercise.sets.reduce((volume, set) => {
+        // Ensure both reps and weight are valid numbers for calculation
+        if (typeof set.repsAchieved === 'number' && typeof set.weightUsed === 'number') {
+          return volume + (set.repsAchieved * set.weightUsed);
+        }
+        return volume;
       }, 0);
-    }
-
-    // 3. Return null for non-workout items or if volume cannot be determined.
-    return null;
+      return totalVolume + exerciseVolume;
+    }, 0);
   }
 
   /**
@@ -419,98 +410,107 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.menuModeCompact = this.appSettingsService.isMenuModeCompact();
     this.menuModeModal = this.appSettingsService.isMenuModeModal();
 
-    // +++ 2. REBUILD THE DATA FETCHING LOGIC +++
     this.workoutLogsSubscription = combineLatest([
       this.trackingService.workoutLogs$,
       this.activityService.activityLogs$,
-      this.trainingProgramService.programs$.pipe(take(1)) // Get all programs once for name lookups
+      this.trainingProgramService.programs$.pipe(take(1))
     ]).pipe(
+      // Step 1: Combine sources and prepare initial data structures
       map(([workouts, activities, allPrograms]) => {
         const programMap = new Map(allPrograms.map(p => [p.id, p.name]));
-        const workoutItems: EnrichedHistoryListItem[] = workouts.map(w => ({ ...w, itemType: 'workout' }));
-        const activityItems: EnrichedHistoryListItem[] = activities.map(a => ({ ...a, itemType: 'activity' }));
-
-        const combinedList = [...workoutItems, ...activityItems];
+        const workoutItems: HistoryListItem[] = workouts.map(w => ({ ...w, itemType: 'workout' }));
+        const activityItems: HistoryListItem[] = activities.map(a => ({ ...a, itemType: 'activity' }));
+        const combinedList: HistoryListItem[] = [...workoutItems, ...activityItems];
         combinedList.sort((a, b) => b.startTime - a.startTime);
-
         return { combinedList, programMap };
       }),
-      // Use switchMap to handle the async enrichment process
-      switchMap(({ combinedList, programMap }) => {
-        if (combinedList.length === 0) {
-          return of([]); // Return empty array if there's nothing to process
-        }
-
-        // Create an array of observables, one for each item
-        const enrichmentObservables = combinedList.map(item => {
-          if (item.itemType === 'workout' && item.programId) {
-            // This is a workout log with a program, so we fetch details
-            return combineLatest([
-              this.trainingProgramService.getWeekNameForLog(item),
-              this.trainingProgramService.getDayOfWeekForLog(item)
-            ]).pipe(
-              map(([weekName, dayInfo]) => ({
-                ...item,
-                programName: programMap.get(item.programId!) || null,
-                weekName: weekName,
-                dayName: item.dayName || dayInfo?.dayName || null,
-                totalVolume: this.getTotalVolume(item),
-                personalBests: this.getPersonalBestsFromLog(item) ? this.getPersonalBestsFromLog(item).length : 0
-              } as EnrichedHistoryListItem))
-            );
-          } else {
-            // This is an activity or a workout without a program, return as-is
-            return of({
-              ...item,
-              // totalVolume: this.getTotalVolume(item),
-              // personalBests: this.getPersonalBestsFromLog(item as WorkoutLog) ? this.getPersonalBestsFromLog(item as WorkoutLog).length : 0
-            } as EnrichedHistoryListItem);
-          }
-        });
-
-        // forkJoin waits for all enrichment observables to complete
-        return forkJoin(enrichmentObservables);
+      // Step 2: Use switchMap to handle the async enrichment process
+      switchMap(async ({ combinedList, programMap }) => {
+        // Use Promise.all to wait for all async enrichment operations to complete
+        const enrichedList = await Promise.all(
+          combinedList.map(item => this.enrichHistoryItem(item, programMap))
+        );
+        return enrichedList;
       })
     ).subscribe(enrichedList => {
+      // Step 3: The result is now a clean, correctly typed array
       this.allHistoryItems.set(enrichedList);
       if (this.currentHistoryView() === 'calendar') {
         this.generateHistoryCalendarDays(true);
       }
     });
 
+    // ... (rest of your ngOnInit method remains the same)
     this.workoutService.routines$.pipe(take(1)).subscribe(routines => this.availableRoutines = routines);
     this.availableExercisesForFilter$ = this.exerciseService.getExercises().pipe(
       map(exercises => exercises.sort((a, b) => a.name.localeCompare(b.name)))
     );
-
     this.trainingProgramService.getAllPrograms().pipe(take(1)).subscribe(programs => {
       this.availableProgramsForFilter.set(programs);
     });
-
     this.route.queryParamMap.pipe(take(1)).subscribe(params => {
       const programId = params.get('programId');
       const routineId = params.get('routineId');
       if (programId) {
-        console.log("HistoryListComponent: Should filter by programId", programId);
-        // Patch the form with the programId from the URL.
-        // This will automatically trigger the computed signal to filter the logs.
         this.filterForm.patchValue({ programId: programId });
-        this.isFilterAccordionOpen.set(true); // Open the filters to show the user why the list is filtered
+        this.isFilterAccordionOpen.set(true);
         this.toastService.info("Showing logs filtered out by training program");
       }
       if (routineId) {
-        console.log("HistoryListComponent: Should filter by routineId", routineId);
-        const routine = this.availableRoutines.find(routine => routine.id === routineId);
+        const routine = this.availableRoutines.find(r => r.id === routineId);
         if (routine && routine.name) {
-          // Patch the form with the routineId from the URL.
-          // This will automatically trigger the computed signal to filter the logs.
           this.filterForm.patchValue({ routineName: routine.name });
-          this.isFilterAccordionOpen.set(true); // Open the filters to show the user why the list is filtered
+          this.isFilterAccordionOpen.set(true);
           this.toastService.info("Showing logs filtered out by routine name");
         }
       }
     });
   }
+
+  /**
+   * Asynchronously enriches a single history item with additional details.
+   * This function is called for each item in the history list.
+   * @param item The base HistoryListItem (workout or activity).
+   * @param programMap A map of program IDs to names for efficient lookups.
+   * @returns A Promise that resolves to the fully EnrichedHistoryListItem.
+   */
+  private async enrichHistoryItem(
+    item: HistoryListItem,
+    programMap: Map<string, string>
+  ): Promise<EnrichedHistoryListItem> {
+    // If it's an activity, no further processing is needed.
+    if (item.itemType === 'activity') {
+      return item;
+    }
+
+    // From here, we know it's a workout log.
+    const workoutLogItem = item;
+    let weekName: string | null = null;
+    let dayInfo: ProgramDayInfo | null = null;
+
+    // If the workout is part of a program, fetch its details.
+    if (workoutLogItem.programId) {
+      // Use Promise.all with firstValueFrom to get the data efficiently.
+      [weekName, dayInfo] = await firstValueFrom(combineLatest([
+        this.trainingProgramService.getWeekNameForLog(workoutLogItem),
+        this.trainingProgramService.getDayOfWeekForLog(workoutLogItem)
+      ]));
+    }
+
+    // Construct the final, fully typed object.
+    const enrichedItem: EnrichedHistoryListItem = {
+      ...workoutLogItem,
+      programName: programMap.get(workoutLogItem.programId!), // Returns string or undefined
+      weekName: weekName ?? undefined,                       // Converts null to undefined
+      dayName: dayInfo?.dayName,                             // Already string or undefined
+      totalVolume: this.getTotalVolume(workoutLogItem) ?? undefined,
+      personalBests: this.getPersonalBestsFromLog(workoutLogItem)?.length || 0
+    };
+
+    return enrichedItem;
+  }
+
+
 
   ngAfterViewInit(): void {
     // HammerJS setup is handled by @ViewChild setter
