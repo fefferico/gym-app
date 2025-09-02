@@ -91,8 +91,10 @@ export class ProfileSettingsComponent implements OnInit {
     */
   handlePremiumFeatureOrNavigate(feature: PremiumFeature, route?: any[]): void {
     this.vibrate();
-    if (this.subscriptionService.canAccess(feature) && route) {
-      this.router.navigate(route);
+    if (this.subscriptionService.canAccess(feature)) {
+      if (route){
+        this.router.navigate(route);
+      }
     } else {
       this.subscriptionService.showUpgradeModal();
     }
@@ -140,7 +142,7 @@ export class ProfileSettingsComponent implements OnInit {
 
     this.appSettingsForm = this.fb.group({
       enableTimerCountdownSound: [true],
-      playerMode: ['focus'],
+      playerMode: ['compact'],
       countdownSoundSeconds: [5, [Validators.required, Validators.min(1), Validators.max(60)]],
       enablePresetTimer: [false],
       presetTimerDurationSeconds: [10, [Validators.required, Validators.min(3), Validators.max(60)]],
