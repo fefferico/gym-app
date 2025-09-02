@@ -1,10 +1,10 @@
 // src/app/features/profile-settings/profile-settings.component.ts
-import { Component, inject, OnInit, PLATFORM_ID } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, OnDestroy, OnInit, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { format } from 'date-fns';
-import { debounceTime, filter, tap } from 'rxjs';
+import { debounceTime, filter, Subscription, tap } from 'rxjs';
 
 import { WorkoutService } from '../../../core/services/workout.service';
 import { TrackingService } from '../../../core/services/tracking.service';
@@ -40,7 +40,7 @@ import { SubscriptionService, PremiumFeature } from '../../../core/services/subs
   templateUrl: './profile-settings.html',
   styleUrl: './profile-settings.scss',
 })
-export class ProfileSettingsComponent implements OnInit {
+export class ProfileSettingsComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private router = inject(Router);
   private workoutService = inject(WorkoutService);
@@ -62,6 +62,9 @@ export class ProfileSettingsComponent implements OnInit {
   // +++ NEW: Inject the conversion service
   private dataConversionService = inject(DataConversionService);
   protected subscriptionService = inject(SubscriptionService);
+  private cdr = inject(ChangeDetectorRef); // <-- Inject ChangeDetectorRef
+
+  private subscriptions = new Subscription();
 
   public PremiumFeature = PremiumFeature;
 
@@ -84,18 +87,26 @@ export class ProfileSettingsComponent implements OnInit {
   }
 
   /**
-    * A reusable handler for features that navigate.
-    * Checks for premium access before routing. If access is denied, it shows the upgrade modal.
-    * @param feature The premium feature to check.
-    * @param route The Angular route to navigate to if access is granted.
-    */
-  handlePremiumFeatureOrNavigate(feature: PremiumFeature, route?: any[]): void {
+      * A reusable handler for features that navigate or perform an action.
+      * Checks for premium access. If access is denied, it shows the upgrade modal.
+      * If access is granted and a route is provided, it navigates.
+      * @param feature The premium feature to check.
+      * @param event The mouse event, used to prevent default behavior if access is denied.
+      * @param route Optional. The Angular route to navigate to if access is granted.
+      */
+  handlePremiumFeatureOrNavigate(feature: PremiumFeature, event: Event, route?: any[]): void {
     this.vibrate();
+
     if (this.subscriptionService.canAccess(feature)) {
-      if (route){
+      // Access granted. If a route is provided, navigate to it.
+      if (route) {
         this.router.navigate(route);
       }
+      // If no route is provided, do nothing and let the default event (like a toggle) proceed.
     } else {
+      // Access denied.
+      event.preventDefault();  // *** THIS IS THE CRITICAL FIX ***
+      event.stopPropagation(); // Stop the event from propagating further.
       this.subscriptionService.showUpgradeModal();
     }
   }
@@ -163,6 +174,18 @@ export class ProfileSettingsComponent implements OnInit {
 
   // +++ NEW: Methods to handle unit changes and trigger conversion workflow +++
 
+  /**
+   * Toggles the playerMode form control between 'compact' and 'focus'.
+   * This is triggered by the (change) event of the checkbox input.
+   * @param event The change event from the input element.
+   */
+  togglePlayerMode(event: Event): void {
+    this.vibrate();
+    const isChecked = (event.target as HTMLInputElement).checked;
+    const newMode = isChecked ? 'focus' : 'compact';
+    this.appSettingsForm.get('playerMode')?.setValue(newMode);
+  }
+
   async selectWeightUnit(unit: WeightUnit): Promise<void> {
     const oldUnit = this.unitsService.currentWeightUnit();
     if (unit === oldUnit) return; // No change
@@ -219,44 +242,68 @@ export class ProfileSettingsComponent implements OnInit {
     this.unitsService.setBodyMeasureUnitPreference(unit);
   }
 
-  // --- Keep other existing methods like exportData, importData, etc. ---
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       window.scrollTo(0, 0);
     }
     this.loadProfileData();
-    this.loadAppSettingsData();
+    // REMOVED: this.loadAppSettingsData();
     this.loadProgressiveOverloadSettings();
+    this.loadGoalsData();
 
-    this.appSettingsForm.valueChanges.pipe(
-      debounceTime(700),
-      filter(() => this.appSettingsForm.valid && this.appSettingsForm.dirty),
-      tap(value => {
-        this.appSettingsService.saveSettings(value as AppSettings);
-        this.appSettingsForm.markAsPristine({ onlySelf: false });
-        this.toastService.info("App settings auto-saved", 1500);
+    // +++ START: THE FIX - Subscribe to AppSettings changes +++
+    // This subscription will run for the lifetime of the component.
+    // It handles both the initial data load and any subsequent updates (like a downgrade).
+    this.subscriptions.add(
+      this.appSettingsService.appSettings$.subscribe(settings => {
+        if (settings) {
+          // Reset the form with the latest settings.
+          // `emitEvent: false` prevents an infinite loop with the valueChanges autosave.
+          this.appSettingsForm.reset(settings, { emitEvent: false });
+          this.cdr.detectChanges();
+
+        }
       })
-    ).subscribe();
+    );
+    // +++ END: THE FIX +++
+
+    // This auto-save logic remains the same.
+    this.subscriptions.add(
+      this.appSettingsForm.valueChanges.pipe(
+        debounceTime(700),
+        filter(() => this.appSettingsForm.valid && this.appSettingsForm.dirty),
+        tap(value => {
+          this.appSettingsService.saveSettings(value as AppSettings);
+          this.appSettingsForm.markAsPristine({ onlySelf: false });
+          this.toastService.info("App settings auto-saved", 1500);
+        })
+      ).subscribe()
+    );
 
     this.listenForProgressiveOverloadChanges();
 
-    // Auto-save logic for username, gender and age (optimized)
-    this.profileForm.get('general')?.valueChanges.pipe(
-      debounceTime(700),
-    ).subscribe(() => this.saveGeneralData());
+    this.subscriptions.add(
+      this.profileForm.get('general')?.valueChanges.pipe(
+        debounceTime(700),
+      ).subscribe(() => this.saveGeneralData())
+    );
 
-    this.loadGoalsData();
+    this.subscriptions.add(
+      this.goalsForm.valueChanges.pipe(
+        debounceTime(700),
+        filter(() => this.goalsForm.valid && this.goalsForm.dirty),
+        tap(goals => {
+          this.userProfileService.saveGoals(goals);
+          this.goalsForm.markAsPristine();
+          this.toastService.info("Goals auto-saved", 1500);
+        })
+      ).subscribe()
+    );
+  }
 
-    // Add auto-save for goals form
-    this.goalsForm.valueChanges.pipe(
-      debounceTime(700),
-      filter(() => this.goalsForm.valid && this.goalsForm.dirty),
-      tap(goals => {
-        this.userProfileService.saveGoals(goals);
-        this.goalsForm.markAsPristine();
-        this.toastService.info("Goals auto-saved", 1500);
-      })
-    ).subscribe();
+  // +++ NEW: Implement OnDestroy to clean up subscriptions +++
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
   }
 
   loadGoalsData(): void {
@@ -367,11 +414,6 @@ export class ProfileSettingsComponent implements OnInit {
     }
   }
 
-  loadAppSettingsData(): void {
-    const settings = this.appSettingsService.getSettings();
-    this.appSettingsForm.reset(settings, { emitEvent: false });
-  }
-
   loadProgressiveOverloadSettings(): void {
     const settings = this.progressiveOverloadService.getSettings();
     this.progressiveOverloadForm.reset(settings, { emitEvent: false });
@@ -477,7 +519,7 @@ export class ProfileSettingsComponent implements OnInit {
             }
 
             this.loadProfileData();
-            this.loadAppSettingsData();
+            // this.loadAppSettingsData();
             this.loadProgressiveOverloadSettings();
             this.loadGoalsData(); // <-- Reload goals form as well
 
@@ -545,7 +587,7 @@ export class ProfileSettingsComponent implements OnInit {
       if (this.trainingProgramService.deactivateAllPrograms) this.trainingProgramService.deactivateAllPrograms();
 
       this.loadProfileData();
-      this.loadAppSettingsData();
+      // this.loadAppSettingsData();
       this.loadProgressiveOverloadSettings();
 
       await this.alertService.showAlert("Info", "All application data has been cleared");

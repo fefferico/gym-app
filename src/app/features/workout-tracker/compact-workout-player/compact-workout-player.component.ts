@@ -33,7 +33,7 @@ import { ActionMenuComponent } from '../../../shared/components/action-menu/acti
 import { ActionMenuItem } from '../../../core/models/action-menu.model';
 import { TrainingProgramService } from '../../../core/services/training-program.service';
 import { StorageService } from '../../../core/services/storage.service';
-import { MenuMode } from '../../../core/models/app-settings.model';
+import { MenuMode, PlayerMode } from '../../../core/models/app-settings.model';
 import { AppSettingsService } from '../../../core/services/app-settings.service';
 import { FullScreenRestTimerComponent } from '../../../shared/components/full-screen-rest-timer/full-screen-rest-timer';
 import { PausedWorkoutState, PlayerSubState } from '../workout-player';
@@ -83,7 +83,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   protected unitsService = inject(UnitsService);
   private weightUnitPipe = inject(WeightUnitPipe);
   private cdr = inject(ChangeDetectorRef);
-  private appSettingsService = inject(AppSettingsService);
+  protected appSettingsService = inject(AppSettingsService);
 
   private unitService = inject(UnitsService);
 
@@ -95,6 +95,10 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
   // +++ NEW: To hold reference to the last completed set for updating its rest time after the timer finishes
   private lastLoggedSetForRestUpdate: LoggedSet | null = null;
+
+  protected getMenuMode(): MenuMode {
+    return this.appSettingsService.getMenuMode();
+  }
 
   lastSetInfo = computed<ActiveSetInfo | null>(() => {
     const r = this.routine();
@@ -246,45 +250,45 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
     // Case 1: Dragging within the same superset (intra-superset reorder)
     if (draggedItem.supersetId && draggedItem.supersetId === targetItem.supersetId) {
-        moveItemInArray(exercises, event.previousIndex, event.currentIndex);
-        // After moving, re-calculate and update the `supersetOrder` for the affected group
-        const group = exercises.filter(ex => ex.supersetId === draggedItem.supersetId);
-        group.forEach((ex, index) => {
-            const originalIndexInMainArray = exercises.findIndex(e => e.id === ex.id);
-            if (originalIndexInMainArray > -1) {
-                exercises[originalIndexInMainArray].supersetOrder = index;
-            }
-        });
-        // The overall list must be sorted again to keep the group visually contiguous
-        routine.exercises = this.reorderExercisesForSupersets(exercises);
-        this.toastService.info('Exercise reordered within superset.');
+      moveItemInArray(exercises, event.previousIndex, event.currentIndex);
+      // After moving, re-calculate and update the `supersetOrder` for the affected group
+      const group = exercises.filter(ex => ex.supersetId === draggedItem.supersetId);
+      group.forEach((ex, index) => {
+        const originalIndexInMainArray = exercises.findIndex(e => e.id === ex.id);
+        if (originalIndexInMainArray > -1) {
+          exercises[originalIndexInMainArray].supersetOrder = index;
+        }
+      });
+      // The overall list must be sorted again to keep the group visually contiguous
+      routine.exercises = this.reorderExercisesForSupersets(exercises);
+      this.toastService.info('Exercise reordered within superset.');
     }
     // Case 2: Dragging a whole superset group (identified by dragging its first item)
     else if (draggedItem.supersetId) {
-        // Find the entire group to move
-        const supersetGroup = exercises.filter(ex => ex.supersetId === draggedItem.supersetId);
-        // Create a new array without the group
-        const exercisesWithoutGroup = exercises.filter(ex => ex.supersetId !== draggedItem.supersetId);
-        // Calculate the correct insertion index in the new, shorter array
-        let insertionIndex = 0;
-        for (let i = 0; i < event.currentIndex; i++) {
-            if (exercises[i].supersetId !== draggedItem.supersetId) {
-                insertionIndex++;
-            }
+      // Find the entire group to move
+      const supersetGroup = exercises.filter(ex => ex.supersetId === draggedItem.supersetId);
+      // Create a new array without the group
+      const exercisesWithoutGroup = exercises.filter(ex => ex.supersetId !== draggedItem.supersetId);
+      // Calculate the correct insertion index in the new, shorter array
+      let insertionIndex = 0;
+      for (let i = 0; i < event.currentIndex; i++) {
+        if (exercises[i].supersetId !== draggedItem.supersetId) {
+          insertionIndex++;
         }
-        // Insert the entire group at the new position
-        exercisesWithoutGroup.splice(insertionIndex, 0, ...supersetGroup);
-        routine.exercises = exercisesWithoutGroup;
+      }
+      // Insert the entire group at the new position
+      exercisesWithoutGroup.splice(insertionIndex, 0, ...supersetGroup);
+      routine.exercises = exercisesWithoutGroup;
     }
     // Case 3: Dragging a standalone exercise
     else {
-        moveItemInArray(exercises, event.previousIndex, event.currentIndex);
-        // Re-sort the list to ensure superset groups remain together
-        routine.exercises = this.reorderExercisesForSupersets(exercises);
+      moveItemInArray(exercises, event.previousIndex, event.currentIndex);
+      // Re-sort the list to ensure superset groups remain together
+      routine.exercises = this.reorderExercisesForSupersets(exercises);
     }
 
     this.routine.set({ ...routine });
-}
+  }
 
   private async loadNewWorkoutFromRoute(): Promise<void> {
     this.sessionState.set(SessionState.Loading);
@@ -477,9 +481,9 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       exerciseLog.sets.push(newLoggedSet);
       const order = exercise.sets.map(s => s.id);
       exerciseLog.sets.sort((a, b) => order.indexOf(a.plannedSetId!) - order.indexOf(b.plannedSetId!));
-      
+
       const shouldStartRest = set.restAfterSet && set.restAfterSet > 0 &&
-                             (!this.isSuperSet(exIndex) || (this.isSuperSet(exIndex) && this.isEndOfLastSupersetExercise(exIndex, setIndex)));
+        (!this.isSuperSet(exIndex) || (this.isSuperSet(exIndex) && this.isEndOfLastSupersetExercise(exIndex, setIndex)));
 
       if (shouldStartRest) {
         // +++ MODIFIED: Store the reference to this newly logged set before starting the timer
@@ -1049,7 +1053,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
   getMainSessionActionItems(): ActionMenuItem[] {
-    const defaultBtnClass = 'rounded text-left p-3 sm:px-4 sm:py-2 font-medium text-white hover:bg-blue-600 bg-blue-500 flex items-center hover:text-white dark:hover:text-gray-100 dark:hover:text-white';
+    const defaultBtnClass = 'rounded text-left p-3 sm:px-4 sm:py-2 font-medium text-white hover:bg-blue-600 flex items-center hover:text-white dark:hover:text-gray-100 dark:hover:text-white w-full';
 
     const addExerciseBtn = {
       label: 'Add exercise',
@@ -1064,24 +1068,25 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       actionKey: 'exit',
       iconName: `exit-door`,
       iconClass: 'w-8 h-8 mr-2',
-      buttonClass: '' + 'w-full flex items-center justify-center max-w-xs text-white bg-red-600 hover:bg-red-800 font-medium py-2 px-6 rounded-md text-md',
+      buttonClass: '' + 'transition-colors duration-150 ease-in-out rounded text-left p-3 sm:px-4 sm:py-2 font-medium text-white hover:bg-red-600 flex items-center hover:text-white dark:hover:text-gray-100 dark:hover:text-white w-full',
     } as ActionMenuItem;
 
     const actionsArray: ActionMenuItem[] = [
-      this.sessionState() === 'paused' ? 
-      {
-        label: 'Resume', actionKey: 'play', iconName: 'play',
-        buttonClass: defaultBtnClass + 'bg-yellow-500 dark:bg-yellow-500 hover:bg-yellow-600 dark:hover:bg-yellow-600 disabled:opacity-60 disabled:cursor-not-allowed', iconClass: 'w-8 h-8 mr-2'
-      } :
-      {
-        label: 'Pause', actionKey: 'pause', iconName: 'pause',
-        buttonClass: defaultBtnClass + 'bg-yellow-500 dark:bg-yellow-500 hover:bg-yellow-600 dark:hover:bg-yellow-600 disabled:opacity-60 disabled:cursor-not-allowed', iconClass: 'w-8 h-8 mr-2'
-      },
+      this.sessionState() === 'paused' ?
+        {
+          label: 'Resume', actionKey: 'play', iconName: 'play',
+          buttonClass: 'w-full flex items-center justify-center max-w-xs text-white hover:bg-yellow-800 font-medium py-2 px-6 rounded-md text-md' + defaultBtnClass, iconClass: 'w-8 h-8 mr-2'
+        } :
+        {
+          label: 'Pause', actionKey: 'pause', iconName: 'pause',
+          buttonClass: 'transition-colors duration-150 ease-in-out rounded text-left p-3 sm:px-4 sm:py-2 font-medium text-white hover:bg-yellow-600 flex items-center hover:text-white dark:hover:text-gray-100 dark:hover:text-white w-full', iconClass: 'w-8 h-8 mr-2'
+        },
       {
         label: 'Session notes', actionKey: 'session_notes', iconName: 'clipboard-list',
-        buttonClass: defaultBtnClass + 'bg-green-500 dark:bg-green-500 hover:bg-green-600 dark:hover:bg-green-600 disabled:opacity-60 disabled:cursor-not-allowed', iconClass: 'w-8 h-8 mr-2'
+        buttonClass: defaultBtnClass + 'transition-colors duration-150 ease-in-out rounded text-left p-3 sm:px-4 sm:py-2 font-medium text-white hover:bg-green-600 flex items-center hover:text-white dark:hover:text-gray-100 dark:hover:text-white w-full', iconClass: 'w-8 h-8 mr-2'
       },
       addExerciseBtn,
+      { isDivider: true },
       quitWorkoutBtn
     ];
 
@@ -1108,6 +1113,14 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       this.toastService.info("Workout quit. No progress saved for this session", 4000);
     }
   }
+
+  // getExerciseActionItems(exerciseId: number, mode: MenuMode): ActionMenuItem[] {
+  //   if (this.getMenuMode() === 'compact'){
+  //     this.getCompactActionItems(exerciseId,mode);
+  //   } else {
+  //     this.get(exerciseId,mode);
+  //   }
+  // }
 
   getCompactActionItems(exerciseId: number, mode: MenuMode): ActionMenuItem[] {
     const exercise = this.routine()?.exercises[exerciseId];
@@ -1241,7 +1254,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
   private updateLogWithRestTime(actualRestTime: number): void {
     if (!this.lastLoggedSetForRestUpdate) return;
-  
+
     const log = this.currentWorkoutLog();
     const exerciseLog = log.exercises?.find(e => e.sets.some(s => s.id === this.lastLoggedSetForRestUpdate!.id));
     if (exerciseLog) {
@@ -1263,7 +1276,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     this.handleAutoExpandNextExercise();
   }
 
-handleRestTimerSkipped(timeSkipped: number): void {
+  handleRestTimerSkipped(timeSkipped: number): void {
     this.isRestTimerVisible.set(false);
     this.toastService.info("Rest skipped", 1500);
     const actualRest = Math.ceil(this.restDuration() - timeSkipped);
@@ -1271,7 +1284,7 @@ handleRestTimerSkipped(timeSkipped: number): void {
     this.handleAutoExpandNextExercise();
     this.playerSubState.set(PlayerSubState.PerformingSet);
   }
-  
+
   // +++ MODIFIED: This method now returns an object with both the text and the detailed set info
   // +++ MODIFIED: This method now returns an object with both the text and the detailed set info
   private async peekNextStepInfo(completedExIndex: number, completedSetIndex: number): Promise<{ text: string | null; details: ExerciseSetParams | null }> {
@@ -1511,7 +1524,7 @@ handleRestTimerSkipped(timeSkipped: number): void {
     return reorderedExercises;
   }
 
- async addToSupersetModal(exIndex: number): Promise<void> {
+  async addToSupersetModal(exIndex: number): Promise<void> {
     const routine = this.routine();
     if (!routine) return;
 
@@ -1567,13 +1580,13 @@ handleRestTimerSkipped(timeSkipped: number): void {
         if (!targetExercise) return r;
 
         // +++ MODIFICATION START +++
-        
+
         // Find all existing exercises in the chosen superset
         const existingExercisesInSuperset = r.exercises.filter(ex => ex.supersetId === chosenSupersetId);
         if (existingExercisesInSuperset.length === 0) {
-            // This shouldn't happen, but as a safeguard:
-            this.toastService.error("Could not find the selected superset to add to.");
-            return r;
+          // This shouldn't happen, but as a safeguard:
+          this.toastService.error("Could not find the selected superset to add to.");
+          return r;
         }
 
         const newSupersetSize = existingExercisesInSuperset.length + 1;
@@ -1581,7 +1594,7 @@ handleRestTimerSkipped(timeSkipped: number): void {
 
         // Adopt the round structure from the existing superset
         const rounds = existingExercisesInSuperset[0].supersetRounds || 1;
-        
+
         // Use the new exercise's first set as a template, or create a default one
         const templateSet = targetExercise.sets.length > 0
           ? { ...targetExercise.sets[0] }
@@ -1593,7 +1606,7 @@ handleRestTimerSkipped(timeSkipped: number): void {
           targetExercise.sets.push({ ...templateSet, id: uuidv4() });
           // targetExercise.sets.push({ ...templateSet, id: uuidv4(), supersetRound: i });
         }
-        
+
         // Assign superset properties to the new exercise
         targetExercise.supersetId = String(chosenSupersetId);
         targetExercise.supersetOrder = nextOrder;
@@ -1609,7 +1622,7 @@ handleRestTimerSkipped(timeSkipped: number): void {
         // Reorder the full exercise list to keep the group together visually
         r.exercises = this.reorderExercisesForSupersets(r.exercises);
         this.toastService.success(`${targetExercise.exerciseName} added to the superset.`);
-        
+
         // +++ MODIFICATION END +++
 
         return { ...r };
@@ -1860,7 +1873,7 @@ handleRestTimerSkipped(timeSkipped: number): void {
     }
 
     const currentEx = exercises[exIndex];
-    
+
     // Determine the effective index to calculate the prefix number.
     // For a superset, this is the index of the first exercise in its group.
     // For a standard exercise, it's its own index.
@@ -1922,7 +1935,7 @@ handleRestTimerSkipped(timeSkipped: number): void {
       classes['border-t-2'] = true;       // Ensure it has a top border
       classes['border-b-2'] = true;       // Ensure it has a bottom border
       classes['mb-2'] = this.isSupersetEnd(index);             // Add margin to visually detach it from the item below
-    
+
     } else {
       // STATE 2: THE EXERCISE IS COLLAPSED (OR STANDALONE)
       // Apply the normal start, middle, and end classes for visual grouping.

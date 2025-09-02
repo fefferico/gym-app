@@ -12,7 +12,7 @@ const DEFAULT_APP_SETTINGS: AppSettings = {
     enablePresetTimer: false,        // NEW Default
     presetTimerDurationSeconds: 10,  // NEW Default (e.g., 10 seconds)
     weightStep: 1,
-    playerMode: 'compact',
+    playerMode: 'compact' as PlayerMode,
     menuMode: 'modal' as MenuMode,
 };
 
@@ -37,31 +37,30 @@ export class AppSettingsService {
     public playerModeSignal = signal<PlayerMode>(DEFAULT_APP_SETTINGS.playerMode);
     public enableTimerCountdownSound = signal<boolean>(DEFAULT_APP_SETTINGS.enableTimerCountdownSound);
     public countdownSoundSeconds = signal<number>(DEFAULT_APP_SETTINGS.countdownSoundSeconds);
-    public enablePresetTimer = signal<boolean>(DEFAULT_APP_SETTINGS.enablePresetTimer);             // NEW
-    public presetTimerDurationSeconds = signal<number>(DEFAULT_APP_SETTINGS.presetTimerDurationSeconds); // NEW
-    menuMode = signal<MenuMode>('modal'); // Default to 'modal' mode
+    public enablePresetTimer = signal<boolean>(DEFAULT_APP_SETTINGS.enablePresetTimer);
+    public presetTimerDurationSeconds = signal<number>(DEFAULT_APP_SETTINGS.presetTimerDurationSeconds);
+    public menuMode = signal<MenuMode>(DEFAULT_APP_SETTINGS.menuMode);
 
 
-    constructor() {
+     constructor() {
         const storedSettings = this.storageService.getItem<AppSettings>(this.APP_SETTINGS_KEY);
         const initialSettings = { ...DEFAULT_APP_SETTINGS, ...storedSettings };
         this.appSettingsSubject = new BehaviorSubject<AppSettings>(initialSettings);
         this.appSettings$ = this.appSettingsSubject.asObservable();
 
+        // Update all signals from initial settings
+        this.playerModeSignal.set(initialSettings.playerMode);
         this.enableTimerCountdownSound.set(initialSettings.enableTimerCountdownSound);
         this.countdownSoundSeconds.set(initialSettings.countdownSoundSeconds);
-        this.enablePresetTimer.set(initialSettings.enablePresetTimer);                 // NEW
-        this.presetTimerDurationSeconds.set(initialSettings.presetTimerDurationSeconds); // NEW
-
+        this.enablePresetTimer.set(initialSettings.enablePresetTimer);
+        this.presetTimerDurationSeconds.set(initialSettings.presetTimerDurationSeconds);
         const storedMenuMode = this.storageService.getItem<MenuMode>(this.MENU_MODE_KEY);
-        this.menuMode.set(storedMenuMode || 'modal'); // Set initial mode, default to 'modal'
+        this.menuMode.set(storedMenuMode || 'dropdown');
 
-        // Effect to apply changes to the DOM when signals change
         effect(() => {
             if (isPlatformBrowser(this.platformId)) {
-                // Menu mode effect
                 const mode = this.menuMode();
-                document.documentElement.classList.remove('modal', 'compact', 'modal');
+                document.documentElement.classList.remove('dropdown', 'compact', 'modal');
                 document.documentElement.classList.add(`menu-${mode}`);
                 this.storageService.setItem(this.MENU_MODE_KEY, mode);
             }
@@ -83,8 +82,8 @@ export class AppSettingsService {
         if (settings.menuMode !== undefined) this.menuMode.set(settings.menuMode);
         if (settings.enableTimerCountdownSound !== undefined) this.enableTimerCountdownSound.set(settings.enableTimerCountdownSound);
         if (settings.countdownSoundSeconds !== undefined) this.countdownSoundSeconds.set(settings.countdownSoundSeconds);
-        if (settings.enablePresetTimer !== undefined) this.enablePresetTimer.set(settings.enablePresetTimer);             // NEW
-        if (settings.presetTimerDurationSeconds !== undefined) this.presetTimerDurationSeconds.set(settings.presetTimerDurationSeconds); // NEW
+        if (settings.enablePresetTimer !== undefined) this.enablePresetTimer.set(settings.enablePresetTimer);
+        if (settings.presetTimerDurationSeconds !== undefined) this.presetTimerDurationSeconds.set(settings.presetTimerDurationSeconds);
     }
 
     // Example of updating a specific setting directly via signal and saving
@@ -136,6 +135,10 @@ export class AppSettingsService {
         this.menuMode.set(mode);
     }
 
+    getMenuMode(): MenuMode {
+        return this.menuMode();
+    }
+
     isMenuModeCompact(): boolean {
         return this.menuMode() && this.menuMode() === 'compact';
     }
@@ -146,5 +149,13 @@ export class AppSettingsService {
 
     isMenuModeDropdown(): boolean {
         return this.menuMode() && this.menuMode() === 'dropdown';
+    }
+
+    isPlayerCompactMode(): boolean {
+        return this.playerModeSignal() && this.playerModeSignal() === 'compact';
+    }
+
+    isPlayerFocusMode(): boolean {
+        return this.playerModeSignal() && this.playerModeSignal() === 'focus';
     }
 }

@@ -17,6 +17,7 @@ import { PausedWorkoutState } from '../../features/workout-tracker/workout-playe
 import { UnitsService } from './units.service';
 import { AlertInput } from '../models/alert.model';
 import { Exercise } from '../models/exercise.model';
+import { SubscriptionService } from './subscription.service';
 
 @Injectable({
   providedIn: 'root',
@@ -27,6 +28,7 @@ export class WorkoutService {
   private router = inject(Router);
   private alertService = inject(AlertService);
   private unitsService = inject(UnitsService); // +++ ADDED
+  protected subscriptionService = inject(SubscriptionService);
   private readonly ROUTINES_STORAGE_KEY = 'fitTrackPro_routines';
   private readonly PAUSED_WORKOUT_KEY = 'fitTrackPro_pausedWorkoutState';
   private readonly PAUSED_STATE_VERSION = '1.2';
@@ -524,7 +526,8 @@ export class WorkoutService {
 
   checkPlayerMode(newRoutineId: string): string {
     const routine = this.getCurrentRoutines().find(routine => routine.id === newRoutineId);
-    const playerMode = this.appSettingsService.getSettings() ? this.appSettingsService.getSettings().playerMode : false;
+    const freeTierPlayerMode = 'compact';
+    const playerMode = !this.subscriptionService.isPremium() ? freeTierPlayerMode : this.appSettingsService.getSettings() ? this.appSettingsService.getSettings().playerMode : freeTierPlayerMode;
     const isTabata = routine?.goal === 'tabata';
     let url = '';
 

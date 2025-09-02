@@ -43,7 +43,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   private subscriptions = new Subscription(); // To manage subscriptions
 
-constructor() {
+  constructor() {
     // Effect to update pausedRoutineName when pausedWorkoutInfo changes
     effect(() => {
       const pausedInfo = this.pausedWorkoutInfo();
@@ -112,7 +112,7 @@ constructor() {
     }
   }
 
- async discardPausedWorkout(): Promise<void> {
+  async discardPausedWorkout(): Promise<void> {
     this.vibrate();
 
     const buttons: AlertButton[] = [
@@ -151,7 +151,7 @@ constructor() {
 
       this.alertService.showAlert(
         `Paused: ${routineName}`,
-        `You have executed ${exercisesDone} of ${exercisesAvailable} exercises, with ${setsDone} set(s) logged` + ( targetSets ? ` out of ${targetSets}` : '') + `.
+        `You have executed ${exercisesDone} of ${exercisesAvailable} exercises, with ${setsDone} set(s) logged` + (targetSets ? ` out of ${targetSets}` : '') + `.
          Elapsed time: ${timeElapsed}.
          Resume the workout to continue it.`
       );
@@ -177,7 +177,12 @@ constructor() {
 
   navigateToPrograms(): void {
     this.vibrate();
-    this.router.navigate(['/training-programs']);
+    if (!this.subscriptionService.isPremium()) {
+      this.subscriptionService.showUpgradeModal();
+      return;
+    } else {
+      this.router.navigate(['/training-programs']);
+    }
   }
 
   navigateToHistory(): void {
@@ -193,20 +198,30 @@ constructor() {
   // +++ ADD THIS NEW NAVIGATION METHOD +++
   navigateToLogActivity(): void {
     this.vibrate();
-    this.router.navigate(['/activities/log']);
+    if (!this.subscriptionService.isPremium()) {
+      this.subscriptionService.showUpgradeModal();
+      return;
+    } else {
+      this.router.navigate(['/activities/log']);
+    }
   }
 
 
   navigateToPersonalGym(): void {
     this.vibrate();
-    this.router.navigate(['/personal-gym']);
+    if (!this.subscriptionService.isPremium()) {
+      this.subscriptionService.showUpgradeModal();
+      return;
+    } else {
+      this.router.navigate(['/personal-gym']);
+    }
   }
 
   getVersion(): string {
     return this.storageService.getVersion();
   }
 
-    ngOnDestroy(): void {
+  ngOnDestroy(): void {
     this.subscriptions.unsubscribe(); // Unsubscribe to prevent memory leaks
   }
 }

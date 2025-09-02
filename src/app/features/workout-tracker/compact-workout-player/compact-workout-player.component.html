@@ -25,7 +25,7 @@
           <app-icon name="menu-action" class="h-7 w-7"></app-icon>
         </button>
         <app-action-menu [isVisible]="mainSessionActionMenuOpened() === true" class="action-menu-container"
-          displayMode="modal" [modalTitle]="''" [items]="getMainSessionActionItems()"
+          [displayMode]="getMenuMode() === 'compact' ? 'modal' : 'dropdown'" [modalTitle]="''" [items]="getMainSessionActionItems()"
           (itemClick)="handleMainSessionActionMenuItemClick($event)" (closeMenu)="toggleMainSessionActionMenu(null)">
         </app-action-menu>
 
@@ -113,15 +113,10 @@
                 class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center">
                 <app-icon name="menu-action" class="h-7 w-7"></app-icon>
               </button>
-              <app-action-menu [isVisible]="activeActionMenuIndex() === exIndex && menuModeDropdown"
-                class="action-menu-container" displayMode="dropdown"
-                [items]="getCompactActionItems(exIndex, 'dropdown')" (itemClick)="handleActionMenuItemClick($event)"
+              <app-action-menu [isVisible]="activeActionMenuIndex() === exIndex"
+                class="action-menu-container" [displayMode]="getMenuMode() === 'compact' ? 'modal' : 'dropdown'"
+                [items]="getCompactActionItems(exIndex, getMenuMode())" (itemClick)="handleActionMenuItemClick($event)"
                 (closeMenu)="closeActionMenu()">
-              </app-action-menu>
-              <app-action-menu [isVisible]="activeActionMenuIndex() === exIndex && menuModeModal"
-                class="action-menu-container" displayMode="modal" [items]="getCompactActionItems(exIndex, 'modal')"
-                (itemClick)="handleActionMenuItemClick($event)" (closeMenu)="closeActionMenu()"
-                [customButtonDivCssClass]="' '">
               </app-action-menu>
             </div>
           </div>

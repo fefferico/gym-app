@@ -183,7 +183,7 @@
                     [class.dark:hover:bg-gray-600/50]="subscriptionService.isPremium()"
                     [class.cursor-pointer]="subscriptionService.isPremium()"
                     [class.cursor-not-allowed]="!subscriptionService.isPremium()"
-                    (click)="handlePremiumFeatureOrNavigate(PremiumFeature.FOCUS_PLAYER)">
+                    (click)="handlePremiumFeatureOrNavigate(PremiumFeature.FOCUS_PLAYER, $event)">
                     <div>
                         <h3 class="text-md font-medium text-gray-700 dark:text-gray-300 flex items-center">
                             Player Mode
@@ -195,16 +195,17 @@
                         <p class="text-sm text-gray-500 dark:text-gray-400 mr-1">Choose between Compact and Focus player
                         </p>
                     </div>
-                    <label class="inline-flex items-center cursor-pointer"
+                    <label class="inline-flex items-center"
                         [class.cursor-not-allowed]="!subscriptionService.isPremium()">
                         <span class="sr-only">Toggle Player Mode</span>
-                        <input type="checkbox" class="sr-only peer" formControlName="playerMode"
-                            [disabled]="!subscriptionService.isPremium()" (change)="currentVibrator.vibrate(50)">
+                        <input type="checkbox" class="sr-only peer"
+                            [checked]="appSettingsForm.get('playerMode')?.value === 'focus'"
+                            (change)="togglePlayerMode($event)" [disabled]="!subscriptionService.isPremium()">
                         <div
                             class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary dark:peer-checked:bg-primary-dark peer-disabled:opacity-50">
                         </div>
                         <span class="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
-                            {{ appSettingsForm.get('playerMode')?.value ? 'Focus' : 'Compact' }}
+                            {{ appSettingsForm.get('playerMode')?.value === 'focus' ? 'Focus' : 'Compact' }}
                         </span>
                     </label>
                 </div>
@@ -307,7 +308,7 @@
                     [class.dark:hover:bg-gray-600/50]="subscriptionService.isPremium()"
                     [class.cursor-pointer]="subscriptionService.isPremium()"
                     [class.cursor-not-allowed]="!subscriptionService.isPremium()"
-                    (click)="handlePremiumFeatureOrNavigate(PremiumFeature.PROGRESSIVE_OVERLOAD)">
+                    (click)="handlePremiumFeatureOrNavigate(PremiumFeature.PROGRESSIVE_OVERLOAD, $event)">
                     <div>
                         <h3 class="text-md font-medium text-gray-700 dark:text-gray-300">Enable Automatic Progression
                         </h3>
@@ -455,7 +456,7 @@
                 <div>
                     <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">View your own equipment</p>
                     <button appPress
-                        (shortPress)="handlePremiumFeatureOrNavigate(PremiumFeature.PERSONAL_GYM, ['/personal-gym'])"
+                        (shortPress)="handlePremiumFeatureOrNavigate(PremiumFeature.PERSONAL_GYM, $event, ['/personal-gym'])"
                         class="px-4 py-2 bg-indigo-500 hover:bg-indigo-700 text-white font-semibold rounded-md shadow-sm transition-colors inline-flex items-center text-sm">
                         <app-icon name="dumbbell" class="w-6 h-6 mr-1"></app-icon>
                         PERSONAL GYM

@@ -4,6 +4,8 @@ import { UserProfileService } from './user-profile.service';
 import { AlertService } from './alert.service';
 import { BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
+// +++ NEW: Import AppSettingsService to reset settings on downgrade
+import { AppSettingsService } from './app-settings.service';
 
 // Defines which features are gated behind a premium subscription.
 export enum PremiumFeature {
@@ -25,6 +27,8 @@ export enum PremiumFeature {
 export class SubscriptionService {
   private userProfileService = inject(UserProfileService);
   private alertService = inject(AlertService);
+  // +++ NEW: Inject AppSettingsService
+  private appSettingsService = inject(AppSettingsService);
 
   // A simple flag for now, but could be expanded with expiration dates, etc.
   public isPremium$ = this.userProfileService.userProfile$.pipe(
@@ -97,6 +101,33 @@ export class SubscriptionService {
    */
   public togglePremium_DEV_ONLY(): void {
     const currentStatus = this.isPremium();
-    this.userProfileService.updatePremiumStatus(!currentStatus);
+    const newStatus = !currentStatus;
+    
+    this.userProfileService.updatePremiumStatus(newStatus);
+
+    // +++ NEW: If the user is being downgraded, reset their premium settings.
+    if (currentStatus === true && newStatus === false) {
+      this.downgradeToFree();
+    }
+  }
+
+  /**
+   * --- NEW METHOD ---
+   * Resets all premium-only settings to their default free-tier values.
+   * This is called when a user's subscription ends or is cancelled.
+   */
+  private downgradeToFree(): void {
+    console.log("Downgrading user to Free tier. Resetting premium settings...");
+    
+    // Reset any premium AppSettings to their default values
+    this.appSettingsService.saveSettings({
+      enableProgressiveOverload: false,
+      playerMode: 'compact',
+      menuMode: 'dropdown', // 'dropdown' is the default free mode
+    });
+
+    // You can add other resets here in the future, for example:
+    // this.progressiveOverloadService.disable();
+    // this.someOtherPremiumService.resetToDefaults();
   }
 }
