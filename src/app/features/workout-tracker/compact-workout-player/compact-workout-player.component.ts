@@ -93,6 +93,9 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   lastExerciseIndex = signal<number>(-1);
   lastExerciseSetIndex = signal<number>(-1);
 
+  // +++ NEW: To hold reference to the last completed set for updating its rest time after the timer finishes
+  private lastLoggedSetForRestUpdate: LoggedSet | null = null;
+
   lastSetInfo = computed<ActiveSetInfo | null>(() => {
     const r = this.routine();
     const exIndex = this.lastExerciseIndex();
@@ -236,55 +239,52 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   onExerciseDrop(event: CdkDragDrop<WorkoutExercise[]>) {
     const routine = this.routine();
     if (!routine) return;
-  
+
     const exercises = [...routine.exercises];
     const draggedItem = exercises[event.previousIndex];
-  
-    // If the dragged item is part of a superset
-    if (draggedItem.supersetId) {
-      // 1. Identify the full superset group and its original starting index
-      const supersetGroup = exercises
-        .filter(ex => ex.supersetId === draggedItem.supersetId)
-        .sort((a, b) => (a.supersetOrder ?? 0) - (b.supersetOrder ?? 0));
-      
-      if (supersetGroup.length === 0) return; // Should not happen
-      
-      const originalGroupStartIndex = exercises.findIndex(ex => ex.id === supersetGroup[0].id);
-  
-      // 2. Temporarily remove the entire group
-      const exercisesWithoutGroup = exercises.filter(ex => ex.supersetId !== draggedItem.supersetId);
-  
-      // 3. Determine the correct insertion point in the temporary array
-      // This is the most complex part. We need to map the drop index from the original
-      // array to the new array that doesn't have the dragged group.
-      let insertionIndex = 0;
-      let originalIndexCounter = 0;
-      for (const item of exercisesWithoutGroup) {
-        if (originalIndexCounter === event.currentIndex) break;
-        // Skip over the items that were part of the dragged group in the original list
-        while(exercises[originalIndexCounter]?.supersetId === draggedItem.supersetId) {
-          originalIndexCounter++;
-        }
-        if (originalIndexCounter === event.currentIndex) break;
-        
-        insertionIndex++;
-        originalIndexCounter++;
-      }
-  
-      // 4. Insert the group at the new position
-      exercisesWithoutGroup.splice(insertionIndex, 0, ...supersetGroup);
-  
-      // 5. Update the main routine
-      routine.exercises = exercisesWithoutGroup;
-    } else {
-      // If it's a standard, non-superset item, just move it
-      moveItemInArray(exercises, event.previousIndex, event.currentIndex);
-      routine.exercises = this.reorderExercisesForSupersets(exercises);
+    const targetItem = exercises[event.currentIndex];
+
+    // Case 1: Dragging within the same superset (intra-superset reorder)
+    if (draggedItem.supersetId && draggedItem.supersetId === targetItem.supersetId) {
+        moveItemInArray(exercises, event.previousIndex, event.currentIndex);
+        // After moving, re-calculate and update the `supersetOrder` for the affected group
+        const group = exercises.filter(ex => ex.supersetId === draggedItem.supersetId);
+        group.forEach((ex, index) => {
+            const originalIndexInMainArray = exercises.findIndex(e => e.id === ex.id);
+            if (originalIndexInMainArray > -1) {
+                exercises[originalIndexInMainArray].supersetOrder = index;
+            }
+        });
+        // The overall list must be sorted again to keep the group visually contiguous
+        routine.exercises = this.reorderExercisesForSupersets(exercises);
+        this.toastService.info('Exercise reordered within superset.');
     }
-  
-    // Update the signal to trigger UI refresh
+    // Case 2: Dragging a whole superset group (identified by dragging its first item)
+    else if (draggedItem.supersetId) {
+        // Find the entire group to move
+        const supersetGroup = exercises.filter(ex => ex.supersetId === draggedItem.supersetId);
+        // Create a new array without the group
+        const exercisesWithoutGroup = exercises.filter(ex => ex.supersetId !== draggedItem.supersetId);
+        // Calculate the correct insertion index in the new, shorter array
+        let insertionIndex = 0;
+        for (let i = 0; i < event.currentIndex; i++) {
+            if (exercises[i].supersetId !== draggedItem.supersetId) {
+                insertionIndex++;
+            }
+        }
+        // Insert the entire group at the new position
+        exercisesWithoutGroup.splice(insertionIndex, 0, ...supersetGroup);
+        routine.exercises = exercisesWithoutGroup;
+    }
+    // Case 3: Dragging a standalone exercise
+    else {
+        moveItemInArray(exercises, event.previousIndex, event.currentIndex);
+        // Re-sort the list to ensure superset groups remain together
+        routine.exercises = this.reorderExercisesForSupersets(exercises);
+    }
+
     this.routine.set({ ...routine });
-  }
+}
 
   private async loadNewWorkoutFromRoute(): Promise<void> {
     this.sessionState.set(SessionState.Loading);
@@ -403,10 +403,23 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   isSetDataValid(exIndex: number, setIndex: number): boolean {
     const set = this.routine()?.exercises[exIndex]?.sets[setIndex];
     if (!set) return false;
+
     const exercise = this.routine()!.exercises[exIndex];
+
+    // Cardio validation remains the same
     if (this.isCardio(exercise)) {
       return (set.distance ?? 0) > 0 || (set.duration ?? 0) > 0;
     }
+
+    // For non-cardio exercises:
+    // If a weight is specified (even 0), it's treated as a weighted set.
+    // Both reps and weight must be positive.
+    if (set.weight != null && set.weight != undefined) {
+      return (set.reps ?? 0) > 0 && set.weight > 0;
+    }
+
+    // If weight is not specified (null/undefined), it's a bodyweight exercise.
+    // Only reps need to be positive.
     return (set.reps ?? 0) > 0;
   }
 
@@ -457,13 +470,20 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         repsAchieved: set.reps ?? 0, weightUsed: set.weight || 0,
         durationPerformed: set.duration, distanceAchieved: set.distance,
         timestamp: new Date().toISOString(),
-        notes: set.notes, // +++ NEW: Carry over set notes
+        notes: set.notes,
+        // +++ NEW: Log the planned rest time immediately
+        targetRestAfterSet: set.restAfterSet
       };
       exerciseLog.sets.push(newLoggedSet);
       const order = exercise.sets.map(s => s.id);
       exerciseLog.sets.sort((a, b) => order.indexOf(a.plannedSetId!) - order.indexOf(b.plannedSetId!));
+      
+      const shouldStartRest = set.restAfterSet && set.restAfterSet > 0 &&
+                             (!this.isSuperSet(exIndex) || (this.isSuperSet(exIndex) && this.isEndOfLastSupersetExercise(exIndex, setIndex)));
 
-      if (set.restAfterSet && set.restAfterSet > 0 && (!this.isSuperSet(exIndex) || (this.isSuperSet(exIndex) && this.isEndOfLastSupersetExercise(exIndex, setIndex)))) {
+      if (shouldStartRest) {
+        // +++ MODIFIED: Store the reference to this newly logged set before starting the timer
+        this.lastLoggedSetForRestUpdate = newLoggedSet;
         if (!fieldUpdated || fieldUpdated !== 'notes') {
           this.startRestPeriod(set.restAfterSet, exIndex, setIndex);
         }
@@ -1219,20 +1239,39 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     }
   }
 
+  private updateLogWithRestTime(actualRestTime: number): void {
+    if (!this.lastLoggedSetForRestUpdate) return;
+  
+    const log = this.currentWorkoutLog();
+    const exerciseLog = log.exercises?.find(e => e.sets.some(s => s.id === this.lastLoggedSetForRestUpdate!.id));
+    if (exerciseLog) {
+      const setLog = exerciseLog.sets.find(s => s.id === this.lastLoggedSetForRestUpdate!.id);
+      if (setLog) {
+        setLog.restAfterSetUsed = actualRestTime;
+        this.currentWorkoutLog.set({ ...log });
+        this.savePausedSessionState();
+      }
+    }
+    // Clear the reference after updating
+    this.lastLoggedSetForRestUpdate = null;
+  }
 
   handleRestTimerFinished(): void {
     this.isRestTimerVisible.set(false);
     this.toastService.success("Rest complete!", 2000);
+    this.updateLogWithRestTime(this.restDuration()); // Update log with full rest duration
     this.handleAutoExpandNextExercise();
   }
 
-  handleRestTimerSkipped(timeSkipped: number): void {
+handleRestTimerSkipped(timeSkipped: number): void {
     this.isRestTimerVisible.set(false);
     this.toastService.info("Rest skipped", 1500);
+    const actualRest = Math.ceil(this.restDuration() - timeSkipped);
+    this.updateLogWithRestTime(actualRest); // Update log with actual rest taken
     this.handleAutoExpandNextExercise();
     this.playerSubState.set(PlayerSubState.PerformingSet);
   }
-
+  
   // +++ MODIFIED: This method now returns an object with both the text and the detailed set info
   // +++ MODIFIED: This method now returns an object with both the text and the detailed set info
   private async peekNextStepInfo(completedExIndex: number, completedSetIndex: number): Promise<{ text: string | null; details: ExerciseSetParams | null }> {
@@ -1816,41 +1855,49 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
   getExerciseDisplayIndex(exIndex: number): string {
     const exercises = this.routine()?.exercises;
-    if (!exercises) return `${exIndex + 1}`;
+    if (!exercises) {
+      return `${exIndex + 1}`; // Fallback if routine is not loaded
+    }
 
     const currentEx = exercises[exIndex];
-    if (!currentEx.supersetId) {
-      let displayIndex = 1;
-      const countedSupersetIds = new Set<string>();
-      for (let i = 0; i < exIndex; i++) {
-        const ex = exercises[i];
-        if (ex.supersetId) {
-          if (!countedSupersetIds.has(ex.supersetId)) {
-            displayIndex++;
-            countedSupersetIds.add(ex.supersetId);
-          }
-        } else {
-          displayIndex++;
-        }
+    
+    // Determine the effective index to calculate the prefix number.
+    // For a superset, this is the index of the first exercise in its group.
+    // For a standard exercise, it's its own index.
+    let effectiveIndex = exIndex;
+    if (currentEx.supersetId) {
+      // Find the index of the first exercise in the current superset group
+      const firstInSuperset = exercises.findIndex(ex => ex.supersetId === currentEx.supersetId);
+      if (firstInSuperset !== -1) {
+        effectiveIndex = firstInSuperset;
       }
-      return `${displayIndex}`;
     }
 
-    let groupIndex = 1;
+    let displayIndex = 1;
     const countedSupersetIds = new Set<string>();
-    for (let i = 0; i < exIndex; i++) {
-      const ex = exercises[i];
-      if (ex.supersetId) {
-        if (!countedSupersetIds.has(ex.supersetId)) {
-          groupIndex++;
-          countedSupersetIds.add(ex.supersetId);
+
+    // Calculate the numeric prefix by iterating up to the effective index
+    for (let i = 0; i < effectiveIndex; i++) {
+      const prevEx = exercises[i];
+      if (prevEx.supersetId) {
+        // If we haven't counted this superset group yet, increment the index and record it
+        if (!countedSupersetIds.has(prevEx.supersetId)) {
+          displayIndex++;
+          countedSupersetIds.add(prevEx.supersetId);
         }
       } else {
-        groupIndex++;
+        // It's a standard exercise, so it always gets its own number
+        displayIndex++;
       }
     }
-    const letter = String.fromCharCode(65 + (currentEx.supersetOrder || 0)); // A, B, C...
-    return `${groupIndex}${letter}`;
+
+    // Append the letter if it's part of a superset
+    if (currentEx.supersetId) {
+      const letter = String.fromCharCode(65 + (currentEx.supersetOrder || 0)); // A, B, C...
+      return `${displayIndex}${letter}`;
+    } else {
+      return `${displayIndex}`;
+    }
   }
 
   getExerciseClasses(exercise: WorkoutExercise, index: number): any {

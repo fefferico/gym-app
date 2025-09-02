@@ -1,5 +1,3 @@
-<!-- compact-workout-player.component.html -->
-
 <div class="compact-player-container bg-gray-100 dark:bg-gray-900 min-h-screen">
   <!-- Header -->
   <header
@@ -31,13 +29,7 @@
           (itemClick)="handleMainSessionActionMenuItemClick($event)" (closeMenu)="toggleMainSessionActionMenu(null)">
         </app-action-menu>
 
-        <!-- +++ NEW: Session Notes Button +++ -->
-        <!-- <button (click)="editSessionNotes()" class="p-2">
-          <app-icon name="clipboard-list" class="h-6 w-6 text-gray-600 dark:text-gray-300"></app-icon>
-        </button>
-        <button *ngIf="sessionState() === 'playing'" (click)="pauseSession()" class="p-2">
-          <app-icon name="pause" class="h-6 w-6 text-gray-600 dark:text-gray-300"></app-icon>
-        </button> -->
+        <!-- The separate pause/resume button is now inside the action menu -->
         <button *ngIf="sessionState() === 'paused'" (click)="resumeSession()" class="p-2">
           <app-icon name="play" class="h-6 w-6 text-primary dark:text-primary-light animate-pulse"></app-icon>
         </button>
@@ -62,13 +54,14 @@
   <!-- Main Content: Exercises List -->
   <main class="pt-4 px-2 pb-36">
     <div *ngIf="routine() as currentRoutine; else loading" cdkDropList [cdkDropListData]="currentRoutine.exercises" (cdkDropListDropped)="onExerciseDrop($event)" class="">
-      <!-- +++ OPTIMIZED: Classes for superset vs standalone are now cleaner +++ -->
-      <!-- +++ MODIFIED: Added striping background classes for supersets +++ -->
+      <!-- Exercise Card -->
       <div *ngFor="let exercise of currentRoutine.exercises; let exIndex = index;" cdkDrag
-        [cdkDragDisabled]="isSuperSet(exIndex) && !isSupersetStart(exIndex)"
         class="transition-all duration-300 relative" 
         [ngClass]="getExerciseClasses(exercise, exIndex)" 
         [style.zIndex]="areActionsVisible(exIndex) ? 50 : 'auto'">
+        
+        <!-- Ghost element for drop placeholder -->
+        <div *cdkDragPlaceholder></div>
 
         <!-- Superset Indicator Ribbon -->
         <div *ngIf="isSupersetStart(exIndex)"
@@ -80,15 +73,15 @@
         <div (click)="toggleExerciseExpansion(exIndex)"
           class="p-3 flex-col items-center justify-between cursor-pointer hover:bg-gray-100/50 dark:hover:bg-gray-700/50 hover:rounded-md">
           <div class="flex-col justify-start items-start space-x-3 min-w-0">
-            <div class="flex">
-              <div *ngIf="!isSuperSet(exIndex) || isSupersetStart(exIndex)" cdkDragHandle class="cursor-move pr-2">
+            <div class="flex items-start">
+              <div cdkDragHandle class="cursor-move pr-2">
                 <app-icon name="reorder" class="h-6 w-6 text-gray-400"></app-icon>
               </div>
               <h2 class="max-w-[250px] text-md font-semibold text-gray-800 dark:text-gray-100 text-wrap">
-                {{ getExerciseDisplayIndex(exIndex)}} {{ exercise.exerciseName }}
+                {{ getExerciseDisplayIndex(exIndex)}} - {{ exercise.exerciseName }}
               </h2>
             </div>
-            <!-- +++ NEW: Superset Round Controls (only for the first exercise in the group) +++ -->
+            <!-- Superset Round Controls -->
             <div *ngIf="isSupersetStart(exIndex)" class="flex items-center gap-2 ml-auto">
               <span class="text-xs font-semibold text-gray-500 dark:text-gray-400">
                 ROUNDS: {{ exercise.supersetRounds || 1 }}
@@ -155,7 +148,7 @@
           <!-- Sets List -->
           <div class="space-y-2">
             <ng-container *ngFor="let set of exercise.sets; let setIndex = index">
-              <!-- +++ NEW: Round Header for Supersets +++ -->
+              <!-- Round Header for Supersets -->
               <div *ngIf="exercise.supersetId"
                 class="flex items-center justify-between px-2 py-1 mt-3 mb-1 bg-gray-200 dark:bg-gray-700 rounded-md">
                 <h4 class="text-sm font-bold text-gray-700 dark:text-gray-200">

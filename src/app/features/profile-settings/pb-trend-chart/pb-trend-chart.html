@@ -48,14 +48,6 @@
       (select)="onChartSelect($event)"
       class="pb-chart-container">
 
-      <!-- 
-        ==========================================================
-        CORRECTED TOOLTIP IMPLEMENTATION
-        The template is INSIDE the chart component and uses the
-        'ngx-charts-tooltip-template' directive. This is the correct
-        pattern that avoids all the errors you've encountered.
-        ==========================================================
-      -->
       <ng-template ngx-charts-tooltip-template let-model="model">
         <div class="chart-tooltip bg-gray-700 text-white p-2 rounded shadow-lg text-xs">
           <div><strong>{{ model.name | date:'mediumDate' }}</strong></div>
@@ -67,5 +59,56 @@
       </ng-template>
 
     </ngx-charts-line-chart>
+
+    <!-- ========================================================== -->
+    <!-- START: NEW HISTORY TABLE SECTION                           -->
+    <!-- ========================================================== -->
+    <div *ngIf="historyTableData().length > 0" class="mt-8">
+      <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4 border-t pt-4 dark:border-gray-700">
+        Personal Best History
+      </h2>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
+          <thead class="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                Date
+              </th>
+              <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                {{ yAxisLabel() }}
+              </th>
+              <th scope="col" *ngIf="currentPbType?.includes('RM') || currentPbType?.includes('Heaviest Lifted')" class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                Reps
+              </th>
+              <th scope="col" class="relative px-4 py-3">
+                <span class="sr-only">View Log</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <tr *ngFor="let record of historyTableData()" class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+              <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-200">
+                {{ record.name | date:'mediumDate' }}
+              </td>
+              <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                {{ record.value }}
+              </td>
+              <td *ngIf="currentPbType?.includes('RM') || currentPbType?.includes('Heaviest Lifted')" class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                {{ record.extra?.reps }}
+              </td>
+              <td class="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <a *ngIf="record.extra?.workoutLogId" [routerLink]="['/history/log', record.extra?.workoutLogId]" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-focus dark:focus:ring-offset-gray-800">
+                  View Log
+                </a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <!-- ========================================================== -->
+    <!-- END: NEW HISTORY TABLE SECTION                             -->
+    <!-- ========================================================== -->
+
   </div>
 </div>

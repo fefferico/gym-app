@@ -865,6 +865,17 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
     return 'Ad-hoc Workout';
   }
 
+  /**
+   * Checks if any set within a logged exercise has a performed duration greater than 0.
+   * This is used to conditionally show the "Time" column in the details grid.
+   * @param loggedEx The exercise to check.
+   * @returns True if at least one set has a performed duration, otherwise false.
+   */
+  protected hasPerformedTimedSets(loggedEx: DisplayLoggedExercise): boolean {
+    return loggedEx?.sets?.some(set => set.durationPerformed != null && set.durationPerformed > 0) ?? false;
+  }
+  
+
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
   }

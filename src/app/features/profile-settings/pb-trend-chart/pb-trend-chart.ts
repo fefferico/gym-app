@@ -42,7 +42,8 @@ interface ChartData {
     imports: [
         CommonModule,
         NgxChartsModule,
-        DatePipe
+        DatePipe,
+        RouterLink
     ],
     templateUrl: './pb-trend-chart.html',
     styleUrls: ['./pb-trend-chart.scss'],
@@ -57,9 +58,6 @@ interface ChartData {
     // ==========================================================
 })
 export class PbTrendChartComponent implements OnInit {
-    // ... the rest of your component's code remains exactly the same ...
-    // No other changes are needed in this file.
-
     private route = inject(ActivatedRoute);
     private router = inject(Router);
     private trackingService = inject(TrackingService);
@@ -77,6 +75,16 @@ export class PbTrendChartComponent implements OnInit {
     chartData = signal<ChartData[] | null>(null);
     isLoading = signal<boolean>(true);
     errorMessage = signal<string | null>(null);
+
+    // +++ NEW: Computed signal for the history table, sorted newest-first +++
+    historyTableData = computed<ChartSeriesPoint[]>(() => {
+        const data = this.chartData();
+        if (!data || !data[0] || !data[0].series) {
+            return [];
+        }
+        // Create a copy and sort it descending by date
+        return [...data[0].series].sort((a, b) => b.name.getTime() - a.name.getTime());
+    });
 
     currentExerciseId: string | null = null;
     currentPbType: string | null = null;

@@ -149,20 +149,21 @@
             </button>
 
             <div *ngIf="loggedEx.isExpanded" [ngClass]="{
-         'grid-cols-6': loggedEx | isWeighted,
-         'grid-cols-5': !(loggedEx | isWeighted)
-       }" class="grid gap-x-4 gap-y-2 p-4 bg-white rounded-b-md shadow-md dark:bg-gray-800">
+              'grid-cols-6': (loggedEx | isWeighted) && hasPerformedTimedSets(loggedEx),
+              'grid-cols-5': ((loggedEx | isWeighted) && !hasPerformedTimedSets(loggedEx)) || (!(loggedEx | isWeighted) && hasPerformedTimedSets(loggedEx)),
+              'grid-cols-4': !(loggedEx | isWeighted) && !hasPerformedTimedSets(loggedEx)
+            }" class="grid gap-x-4 gap-y-2 p-4 bg-white rounded-b-md shadow-md dark:bg-gray-800">
 
               <!-- === GRID HEADER === -->
               <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Set</div>
               <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Reps</div>
 
-              <!-- The pipe is used here for the *ngIf condition -->
               <div *ngIf="loggedEx | isWeighted" class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">
                 Weight
               </div>
 
-              <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Time</div>
+              <div *ngIf="hasPerformedTimedSets(loggedEx)"
+                class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Time</div>
               <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Rest</div>
               <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Notes</div>
 
@@ -170,11 +171,10 @@
               <!-- === GRID ROWS (LOOP) === -->
               <ng-container *ngFor="let set of loggedEx.sets; let i = index; let last = last">
 
-                <!-- MODIFICATION: Add PB indicator next to set number -->
+                <!-- Set Number Column -->
                 <div class="font-medium text-gray-900 dark:text-white flex items-center space-x-2">
                   <span [ngClass]="{'bg-blue-100 dark:bg-blue-400 p-1 rounded': set.type && set.type === 'warmup'}">{{ i
                     + 1 }}{{set.type === 'warmup' ? '*':''}}</span>
-                  <!-- PB Indicator -->
                   <div *ngIf="getPersonalBestTypesForSet(set, loggedEx.exerciseId).length > 0" class="flex-shrink-0"
                     [title]="'Personal Best!\n' + getPersonalBestTypesForSet(set, loggedEx.exerciseId).join('\n')">
                     <span
@@ -183,6 +183,8 @@
                     </span>
                   </div>
                 </div>
+
+                <!-- Reps Column -->
                 <div class="">
                   <strong [ngClass]="checkTextClass(set, 'reps')" [class.cursor-pointer]="isTargetMissed(set, 'reps')"
                     [class.cursor-default]="!isTargetMissed(set, 'reps')"
@@ -191,7 +193,7 @@
                   </strong>
                 </div>
 
-                <!-- The pipe is used a final time for the data cell -->
+                <!-- Weight Column -->
                 <div *ngIf="loggedEx | isWeighted">
                   <strong [ngClass]="checkTextClass(set, 'weight')"
                     [class.cursor-pointer]="isTargetMissed(set, 'weight')"
@@ -200,10 +202,10 @@
                     (click)="showComparisonModal(set, 'weight')">
                     {{ set.weightUsed != null ? (set.weightUsed + ' ' + unitService.getUnitLabel()) : '-' }}
                   </strong>
-
                 </div>
 
-                <div>
+                <!-- Time Column -->
+                <div *ngIf="hasPerformedTimedSets(loggedEx)">
                   <strong [ngClass]="checkTextClass(set, 'duration')"
                     [class.cursor-pointer]="isTargetMissed(set, 'duration')"
                     [class.cursor-default]="!isTargetMissed(set, 'duration')"
@@ -212,6 +214,8 @@
                     {{ set.durationPerformed || '-' }}
                   </strong>
                 </div>
+
+                <!-- Rest Column -->
                 <div>
                   <strong [ngClass]="checkTextClass(set, 'rest')" [class.cursor-pointer]="isTargetMissed(set, 'rest')"
                     [class.hover:underline]="isTargetMissed(set, 'rest')" (click)="showComparisonModal(set, 'rest')"
@@ -219,6 +223,8 @@
                     {{ set.restAfterSetUsed || '-' }}
                   </strong>
                 </div>
+
+                <!-- Notes Column -->
                 <div class="cursor-pointer dark:text-white">
                   <app-icon name="schedule" (click)="showNotesModal(set.notes)" *ngIf="set.notes"
                     class="h-7 w-7"></app-icon>
@@ -227,7 +233,6 @@
                 <div *ngIf="!last" class="col-span-full h-px bg-gray-200 dark:bg-gray-700"></div>
 
               </ng-container>
-
             </div>
 
 
