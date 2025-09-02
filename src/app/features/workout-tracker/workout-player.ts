@@ -396,7 +396,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
   protected get weightUnitDisplaySymbol(): string {
-    return this.unitService.getUnitLabel();
+    return this.unitService.getWeightUnitLabel();
   }
 
   getWorkingSetCountForCurrentExercise = computed<number>(() => {
@@ -2581,7 +2581,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
     const lastExSet = lastEx ? lastEx.sets[lastEx.sets.length - 1] : null;
 
     const isCardioOnly = selectedExercise.category === 'cardio';
-    const defaultWeight = kbRelated && lastExSet ? (lastExSet.targetWeight || lastExSet.weightUsed) : (this.unitService.currentUnit() === 'kg' ? 10 : 22.2);
+    const defaultWeight = kbRelated && lastExSet ? (lastExSet.targetWeight || lastExSet.weightUsed) : (this.unitService.currentWeightUnit() === 'kg' ? 10 : 22.2);
     const defaultDuration = isCardioOnly ? 60 : 0;
     const defaultRest = kbRelated ? 45 : 60;
     const defaultReps = kbRelated && lastExSet ? (lastExSet.targetReps || lastExSet.repsAchieved) : 10;
@@ -3997,7 +3997,7 @@ export class WorkoutPlayerComponent implements OnInit, OnDestroy {
             resultText += ' [';
             const setData = nextSetInfo.setData;
             if (setData.weight && setData.reps) {
-              resultText += `${setData.weight}${this.unitService.getUnitLabel()} x ${setData.reps} reps`;
+              resultText += `${setData.weight}${this.unitService.getWeightUnitLabel()} x ${setData.reps} reps`;
             }
             if (!setData.weight && setData.reps) {
               resultText += `${setData.reps} reps`;

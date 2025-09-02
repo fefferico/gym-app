@@ -298,7 +298,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
   }
 
   protected get weightUnitDisplaySymbol(): string {
-    return this.unitService.getUnitLabel();
+    return this.unitService.getWeightUnitLabel();
   }
 
   getWorkingSetCountForCurrentExercise = computed<number>(() => {
@@ -3516,11 +3516,11 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
           const detailsParts: string[] = [];
           // 1. Prioritize historical weight/reps
           if (historicalSetPerformance?.weightUsed !== undefined && historicalSetPerformance.weightUsed !== null && historicalSetPerformance.repsAchieved !== undefined) {
-            detailsParts.push(`${historicalSetPerformance.weightUsed}${this.unitService.getUnitLabel()} x ${historicalSetPerformance.repsAchieved} reps`);
+            detailsParts.push(`${historicalSetPerformance.weightUsed}${this.unitService.getWeightUnitLabel()} x ${historicalSetPerformance.repsAchieved} reps`);
           }
           // 2. Fallback to planned weight/reps
           else if (setData.weight !== undefined && setData.weight !== null && setData.reps !== undefined) {
-            detailsParts.push(`${setData.weight}${this.unitService.getUnitLabel()} x ${setData.reps} reps`);
+            detailsParts.push(`${setData.weight}${this.unitService.getWeightUnitLabel()} x ${setData.reps} reps`);
           }
           // 3. Handle planned reps only
           else if (setData.reps !== undefined) {

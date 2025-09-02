@@ -610,7 +610,7 @@ export class WorkoutService {
     const kbRelated = selectedExercise.category === 'kettlebells';
 
     // Determine default values based on the last logged set or general defaults
-    const defaultWeight = kbRelated && lastLoggedSet ? (lastLoggedSet.targetWeight ?? lastLoggedSet.weightUsed) : (this.unitsService.currentUnit() === 'kg' ? 10 : 22.2);
+    const defaultWeight = kbRelated && lastLoggedSet ? (lastLoggedSet.targetWeight ?? lastLoggedSet.weightUsed) : (this.unitsService.currentWeightUnit() === 'kg' ? 10 : 22.2);
     const defaultDuration = isCardioOnly ? 60 : undefined;
     const defaultRest = kbRelated ? 45 : 60;
     const defaultReps = kbRelated && lastLoggedSet ? (lastLoggedSet.targetReps ?? lastLoggedSet.repsAchieved) : 10;
@@ -631,7 +631,7 @@ export class WorkoutService {
       : [
         ...baseParams,
         { label: 'Number of Reps', name: 'numReps', type: 'number', placeholder: 'e.g., 10', value: defaultReps, attributes: { min: 0, required: true } },
-        { label: `Target Weight (${this.unitsService.getUnitLabel()})`, name: 'weight', type: 'number', placeholder: 'e.g., 10', value: defaultWeight, attributes: { min: 0, required: true } },
+        { label: `Target Weight (${this.unitsService.getWeightUnitLabel()})`, name: 'weight', type: 'number', placeholder: 'e.g., 10', value: defaultWeight, attributes: { min: 0, required: true } },
       ];
 
     const exerciseData = await this.alertService.showPromptDialog(

@@ -90,12 +90,12 @@
                     </div>
                     <!-- Middle Column: Measurements -->
                     <div class="text-sm grid grid-cols-2 gap-x-4 gap-y-1">
-                        <p><strong>Weight:</strong> {{ entry.weightKg || 'N/A' }} kg</p>
-                        <p><strong>Chest:</strong> {{ entry.chestCm || 'N/A' }} cm</p>
-                        <p><strong>Waist:</strong> {{ entry.waistCm || 'N/A' }} cm</p>
-                        <p><strong>Hips:</strong> {{ entry.hipsCm || 'N/A' }} cm</p>
-                        <p><strong>Neck:</strong> {{ entry.neckCm || 'N/A' }} cm</p>
-                        <p><strong>R. Arm:</strong> {{ entry.rightArmCm || 'N/A' }} cm</p>
+                        <p><strong>Weight:</strong> {{ entry.weight || 'N/A' }} kg</p>
+                        <p><strong>Chest:</strong> {{ entry.chest || 'N/A' }} cm</p>
+                        <p><strong>Waist:</strong> {{ entry.waist || 'N/A' }} cm</p>
+                        <p><strong>Hips:</strong> {{ entry.hips || 'N/A' }} cm</p>
+                        <p><strong>Neck:</strong> {{ entry.neck || 'N/A' }} cm</p>
+                        <p><strong>R. Arm:</strong> {{ entry.rightArm || 'N/A' }} cm</p>
                     </div>
                     <!-- Right Column: Notes -->
                     <div>
@@ -135,45 +135,45 @@
             <!-- Add inputs for weight, waist, neck, etc. from entryForm -->
             <div class="grid grid-cols-2 gap-4 mb-4">
                 <div>
-                    <label for="weightKg" class="block text-xs font-medium text-gray-600 dark:text-gray-400">Target
+                    <label for="weight" class="block text-xs font-medium text-gray-600 dark:text-gray-400">Target
                         Weight (kg)</label>
-                    <input type="number" formControlName="weightKg" id="weightKg" placeholder="Weight (kg)"
+                    <input type="number" formControlName="weight" id="weight" placeholder="Weight (kg)"
                         class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200 text-lg">
                 </div>
                 <!-- Add all other measurement inputs here -->
                 <div>
-                    <label for="chestCm" class="block text-xs font-medium text-gray-600 dark:text-gray-400">Chest
+                    <label for="chest" class="block text-xs font-medium text-gray-600 dark:text-gray-400">Chest
                         (cm)</label>
-                    <input type="number" formControlName="chestCm" id="chestCm" placeholder="Chest (cm)"
+                    <input type="number" formControlName="chest" id="chest" placeholder="Chest (cm)"
                         class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200 text-lg">
                 </div>
                 <div>
-                    <label for="waistCm" class="block text-xs font-medium text-gray-600 dark:text-gray-400">Waist
+                    <label for="waist" class="block text-xs font-medium text-gray-600 dark:text-gray-400">Waist
                         (cm)</label>
-                    <input type="number" formControlName="waistCm" id="waistCm" placeholder="Waist (cm)"
+                    <input type="number" formControlName="waist" id="waist" placeholder="Waist (cm)"
                         class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200 text-lg">
                 </div>
                 <div>
-                    <label for="hipsCm" class="block text-xs font-medium text-gray-600 dark:text-gray-400">Hips
+                    <label for="hips" class="block text-xs font-medium text-gray-600 dark:text-gray-400">Hips
                         (cm)</label>
-                    <input type="number" formControlName="hipsCm" id="hipsCm" placeholder="Hips (cm)"
+                    <input type="number" formControlName="hips" id="hips" placeholder="Hips (cm)"
                         class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200 text-lg">
                 </div>
                 <div>
-                    <label for="neckCm" class="block text-xs font-medium text-gray-600 dark:text-gray-400">Neck
+                    <label for="neck" class="block text-xs font-medium text-gray-600 dark:text-gray-400">Neck
                         (cm)</label>
-                    <input type="number" formControlName="neckCm" id="neckCm" placeholder="Neck (cm)"
+                    <input type="number" formControlName="neck" id="neck" placeholder="Neck (cm)"
                         class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200 text-lg">
                 </div>
                 <div>
-                    <label for="rightArmCm" class="block text-xs font-medium text-gray-600 dark:text-gray-400">Right Arm
+                    <label for="rightArm" class="block text-xs font-medium text-gray-600 dark:text-gray-400">Right Arm
                         (cm)</label>
-                    <input type="number" formControlName="rightArmCm" id="rightArmCm" placeholder="Right Arm (cm)"
+                    <input type="number" formControlName="rightArm" id="rightArm" placeholder="Right Arm (cm)"
                         class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200 text-lg">
                 </div>
                 <!-- <div>
-                    <label for="leftArmCm" class="block text-xs font-medium text-gray-600 dark:text-gray-400">Left Arm (cm)</label>
-                    <input type="number" formControlName="leftArmCm" id="leftArmCm" placeholder="Left Arm (cm)"
+                    <label for="leftArm" class="block text-xs font-medium text-gray-600 dark:text-gray-400">Left Arm (cm)</label>
+                    <input type="number" formControlName="leftArm" id="leftArm" placeholder="Left Arm (cm)"
                         class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200 text-lg">
                 </div> -->
                 <!-- <div>

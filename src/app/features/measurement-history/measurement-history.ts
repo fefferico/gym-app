@@ -85,14 +85,14 @@ export class MeasurementHistoryComponent implements OnInit {
 
   setupAvailableMetrics(): void {
     this.availableMetrics = [
-      { key: 'weightKg', label: 'Weight (kg)' },
+      { key: 'weight', label: 'Weight (kg)' },
       { key: 'bmi', label: 'Body Mass Index (BMI)' },
       { key: 'bodyFat', label: 'Body Fat % (Navy)' },
-      { key: 'chestCm', label: 'Chest (cm)' },
-      { key: 'waistCm', label: 'Waist (cm)' },
-      { key: 'hipsCm', label: 'Hips (cm)' },
-      { key: 'neckCm', label: 'Neck (cm)' },
-      { key: 'rightArmCm', label: 'Right Arm (cm)' },
+      { key: 'chest', label: 'Chest (cm)' },
+      { key: 'waist', label: 'Waist (cm)' },
+      { key: 'hips', label: 'Hips (cm)' },
+      { key: 'neck', label: 'Neck (cm)' },
+      { key: 'rightArm', label: 'Right Arm (cm)' },
     ];
   }
 
@@ -113,7 +113,7 @@ export class MeasurementHistoryComponent implements OnInit {
     if (this.measurementHistory.length > 0) {
       // Find the currently selected metric to maintain the user's view
       const currentMetric = document.getElementById('metric-select') as HTMLSelectElement;
-      this.prepareChartData(currentMetric?.value || 'weightKg');
+      this.prepareChartData(currentMetric?.value || 'weight');
     } else {
       this.chartData = []; // Ensure chart is cleared if history is empty
     }
@@ -131,19 +131,19 @@ export class MeasurementHistoryComponent implements OnInit {
         let value: number | null = null;
 
         if (metricKey === 'bmi') {
-          if (entry.weightKg && this.userProfile?.heightCm && this.userProfile.heightCm > 0) {
-            value = this.userProfileService.calculateBMI(entry.weightKg, this.userProfile.heightCm);
+          if (entry.weight && this.userProfile?.height && this.userProfile.height > 0) {
+            value = this.userProfileService.calculateBMI(entry.weight, this.userProfile.height);
           }
         } else if (metricKey === 'bodyFat') {
-          const { gender, heightCm } = this.userProfile || {};
-          const { waistCm, neckCm, hipsCm } = entry;
+          const { gender, height: height } = this.userProfile || {};
+          const { waist: waist, neck: neck, hips: hips } = entry;
 
-          if (gender && heightCm && waistCm && neckCm) {
+          if (gender && height && waist && neck) {
             const measurementsForCalc = {
-              waistCm,
-              neckCm,
-              heightCm,
-              hipsCm: hipsCm ?? undefined
+              waist,
+              neck,
+              height: height,
+              hips: hips ?? undefined
             };
             value = this.userProfileService.calculateBodyFatNavy(gender, measurementsForCalc);
           }
@@ -182,12 +182,12 @@ export class MeasurementHistoryComponent implements OnInit {
   initEntryForm(): void {
     this.entryForm = this.fb.group({
       date: ['', Validators.required],
-      weightKg: [null, [Validators.min(0)]],
-      waistCm: [null, [Validators.min(0)]],
-      neckCm: [null, [Validators.min(0)]],
-      chestCm: [null, [Validators.min(0)]],
-      hipsCm: [null, [Validators.min(0)]],
-      rightArmCm: [null, [Validators.min(0)]],
+      weight: [null, [Validators.min(0)]],
+      waist: [null, [Validators.min(0)]],
+      neck: [null, [Validators.min(0)]],
+      chest: [null, [Validators.min(0)]],
+      hips: [null, [Validators.min(0)]],
+      rightArm: [null, [Validators.min(0)]],
       notes: ['']
     });
   }
@@ -307,12 +307,12 @@ export class MeasurementHistoryComponent implements OnInit {
 
   private calculateComparisonRows(from: MeasurementEntry, to: MeasurementEntry): ComparisonRow[] {
     const metricsToCompare: { key: keyof UserMeasurements, label: string, unit: string }[] = [
-      { key: 'weightKg', label: 'Weight', unit: 'kg' },
-      { key: 'chestCm', label: 'Chest', unit: 'cm' },
-      { key: 'waistCm', label: 'Waist', unit: 'cm' },
-      { key: 'hipsCm', label: 'Hips', unit: 'cm' },
-      { key: 'neckCm', label: 'Neck', unit: 'cm' },
-      { key: 'rightArmCm', label: 'Right Arm', unit: 'cm' },
+      { key: 'weight', label: 'Weight', unit: 'kg' },
+      { key: 'chest', label: 'Chest', unit: 'cm' },
+      { key: 'waist', label: 'Waist', unit: 'cm' },
+      { key: 'hips', label: 'Hips', unit: 'cm' },
+      { key: 'neck', label: 'Neck', unit: 'cm' },
+      { key: 'rightArm', label: 'Right Arm', unit: 'cm' },
     ];
 
     return metricsToCompare.map(metric => {
@@ -344,12 +344,12 @@ export class MeasurementHistoryComponent implements OnInit {
     // Populate the form with the entry's data
     this.entryForm.setValue({
       date: entry.date,
-      weightKg: entry.weightKg ?? null,
-      waistCm: entry.waistCm ?? null,
-      neckCm: entry.neckCm ?? null,
-      chestCm: entry.chestCm ?? null,
-      hipsCm: entry.hipsCm ?? null,
-      rightArmCm: entry.rightArmCm ?? null,
+      weight: entry.weight ?? null,
+      waist: entry.waist ?? null,
+      neck: entry.neck ?? null,
+      chest: entry.chest ?? null,
+      hips: entry.hips ?? null,
+      rightArm: entry.rightArm ?? null,
       notes: entry.notes ?? ''
     });
     this.isAddEntryModalOpen = true;

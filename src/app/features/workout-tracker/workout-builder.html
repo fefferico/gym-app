@@ -330,7 +330,7 @@
                                                 <p
                                                     *ngIf="exerciseControl?.get('sets')?.value && exerciseControl?.get('sets')?.value.length > 1 && checkIfWeightedExercise(exerciseControl)">
                                                     Weight
-                                                    ({{unitService.getUnitLabel()}}):
+                                                    ({{unitService.getWeightUnitLabel()}}):
                                                     {{getSetWeightsUsed(exerciseControl)}}
                                                 </p>
                                             </div>
@@ -470,7 +470,7 @@
                                         <div *ngIf="exerciseControl.getRawValue() | isWeighted">
                                             <strong>
                                                 {{ set.weight != null ? (set.weight + ' ' +
-                                                unitService.getUnitLabel()) : '-' }}
+                                                unitService.getWeightUnitLabel()) : '-' }}
                                             </strong>
 
                                         </div>
@@ -524,7 +524,7 @@
                                             <div class="col-span-2 text-center">{{ mode === 'manualLogEntry' ? 'Reps
                                                 Ach.' : 'Reps' }}</div>
                                             <div class="col-span-2 text-center truncate">{{ mode === 'manualLogEntry' ?
-                                                'Wt Used' : 'Weight' }} ({{unitService.getUnitLabel()}})</div>
+                                                'Wt Used' : 'Weight' }} ({{unitService.getWeightUnitLabel()}})</div>
                                             <div class="col-span-1 text-center">{{ mode === 'manualLogEntry' ? 'Time
                                                 Perf.' : 'Time' }}</div>
                                             <div class="col-span-2 text-center">{{ mode === 'routineBuilder' ? 'Rest' :
@@ -616,7 +616,7 @@
                                                     <div>
                                                         <label [for]="'weight-exp-' + exIndex + '-' + setIndex"
                                                             class="block text-s font-medium text-gray-600 dark:text-gray-400">Weight
-                                                            ({{ unitService.getUnitLabel() }}) {{ mode ===
+                                                            ({{ unitService.getWeightUnitLabel() }}) {{ mode ===
                                                             'manualLogEntry' ? '(Used)' : ''}}</label>
                                                         <input type="number"
                                                             [id]="'weight-exp-' + exIndex + '-' + setIndex"

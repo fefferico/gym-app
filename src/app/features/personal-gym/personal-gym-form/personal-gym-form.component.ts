@@ -94,7 +94,7 @@ export class PersonalGymFormComponent implements OnInit, OnDestroy {
 
   private updateFormForCategory(category: EquipmentCategory | null): void {
     const dynamicControls = [
-      'weightType', 'weightKg', 'minWeightKg', 'maxWeightKg', 'incrementKg',
+      'weightType', 'weight', 'minweight', 'maxweight', 'incrementKg',
       'barType', 'bandType', 'resistanceLevel', 'resistanceKg', 'color', 'lengthCm',
       'loadType', 'maxLoadKg', 'customCategoryName', 'properties'
     ];
@@ -118,7 +118,7 @@ export class PersonalGymFormComponent implements OnInit, OnDestroy {
         break;
       case 'Plate':
       case 'Barbell':
-        this.addControl('weightKg', null, [Validators.required, Validators.min(0)]);
+        this.addControl('weight', null, [Validators.required, Validators.min(0)]);
         if (category === 'Barbell') {
           this.addControl('barType', 'olympic');
         }
@@ -142,16 +142,16 @@ export class PersonalGymFormComponent implements OnInit, OnDestroy {
   }
   
   private updateFormForWeightType(weightType: WeightType | null): void {
-    this.removeControl('weightKg');
-    this.removeControl('minWeightKg');
-    this.removeControl('maxWeightKg');
+    this.removeControl('weight');
+    this.removeControl('minweight');
+    this.removeControl('maxweight');
     this.removeControl('incrementKg');
 
     if (weightType === 'fixed') {
-      this.addControl('weightKg', null, [Validators.required, Validators.min(0)]);
+      this.addControl('weight', null, [Validators.required, Validators.min(0)]);
     } else if (weightType === 'adjustable') {
-      this.addControl('minWeightKg', null, [Validators.required, Validators.min(0)]);
-      this.addControl('maxWeightKg', null, [Validators.required, Validators.min(0)]);
+      this.addControl('minweight', null, [Validators.required, Validators.min(0)]);
+      this.addControl('maxweight', null, [Validators.required, Validators.min(0)]);
       this.addControl('incrementKg', null, [Validators.required, Validators.min(0.1)]);
     }
   }

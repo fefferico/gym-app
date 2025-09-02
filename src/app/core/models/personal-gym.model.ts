@@ -29,31 +29,31 @@ export interface BaseEquipment {
 export interface FixedWeightEquipment extends BaseEquipment {
   category: 'Dumbbell' | 'Kettlebell' | 'Macebell' | 'Club';
   weightType: 'fixed';
-  weightKg: number;
+  weight: number;
 }
 
 export interface AdjustableWeightEquipment extends BaseEquipment {
   category: 'Dumbbell' | 'Kettlebell' | 'Macebell' | 'Club';
   weightType: 'adjustable';
-  minWeightKg: number;
-  maxWeightKg: number;
+  minweight: number;
+  maxweight: number;
   incrementKg: number;
 }
 
 export interface WeightPlate extends BaseEquipment {
   category: 'Plate';
-  weightKg: number;
+  weight: number;
 }
 
 export interface Barbell extends BaseEquipment {
   category: 'Barbell';
-  weightKg: number;
+  weight: number;
   barType?: 'olympic' | 'standard' | 'ez-curl' | 'hex' | 'swiss' | 'custom';
 }
 
 export interface Sandbag extends BaseEquipment {
   category: 'Bag';
-  maxWeightKg: number;
+  maxweight: number;
   isFilled: boolean;
   currentWeightKg?: number;
 }

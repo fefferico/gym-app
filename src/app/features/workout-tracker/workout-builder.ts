@@ -985,7 +985,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
           Validators.min(0)
         ]
       ];
-      formGroupConfig['weightUsed'] = [this.unitService.convertFromKg(weightValue, this.unitService.currentUnit()) ?? null, [Validators.min(0)]];
+      formGroupConfig['weightUsed'] = [this.unitService.convertFromKg(weightValue, this.unitService.currentWeightUnit()) ?? null, [Validators.min(0)]];
       formGroupConfig['durationPerformed'] = [durationValue ?? null, [Validators.min(0)]];
       formGroupConfig['plannedSetId'] = [plannedSetIdValue];
       formGroupConfig['timestamp'] = [timestampValue];
@@ -994,8 +994,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     } else { // For routine builder (planning mode)
       formGroupConfig['reps'] = [repsValue ?? null, [Validators.min(0)]];
       formGroupConfig['targetReps'] = [targetReps ?? null, [Validators.min(0)]];
-      formGroupConfig['weight'] = [this.unitService.convertFromKg(weightValue, this.unitService.currentUnit()) ?? null, [Validators.min(0)]];
-      formGroupConfig['targetWeight'] = [this.unitService.convertFromKg(targetWeighValue, this.unitService.currentUnit()) ?? null, [Validators.min(0)]];
+      formGroupConfig['weight'] = [this.unitService.convertFromKg(weightValue, this.unitService.currentWeightUnit()) ?? null, [Validators.min(0)]];
+      formGroupConfig['targetWeight'] = [this.unitService.convertFromKg(targetWeighValue, this.unitService.currentWeightUnit()) ?? null, [Validators.min(0)]];
       formGroupConfig['duration'] = [durationValue ?? null, [Validators.min(0)]];
       formGroupConfig['targetDuration'] = [targetDurationValue ?? null, [Validators.min(0)]];
       formGroupConfig['tempo'] = [tempoValue || ''];
@@ -1584,7 +1584,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
             exerciseId: exInput.exerciseId,
             type: setInput.type, // <<<< ENSURE THIS IS SAVED
             repsAchieved: setInput.repsAchieved,
-            weightUsed: this.unitService.convertToKg(setInput.weightUsed, this.unitService.currentUnit()) ?? undefined,
+            weightUsed: this.unitService.convertToKg(setInput.weightUsed, this.unitService.currentWeightUnit()) ?? undefined,
             durationPerformed: setInput.durationPerformed,
             notes: setInput.notes, // Set-level notes
             // Target fields are not directly edited in log mode form, but might be on LoggedSet if prefilled
@@ -1911,7 +1911,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         id: exInput.id || uuidv4(),
         sets: exInput.sets.map((setInput: any) => ({
           ...setInput,
-          weight: this.unitService.convertToKg(setInput.weight, this.unitService.currentUnit()) ?? null,
+          weight: this.unitService.convertToKg(setInput.weight, this.unitService.currentWeightUnit()) ?? null,
         }))
       })),
       // Use the value from the signal to preserve these properties

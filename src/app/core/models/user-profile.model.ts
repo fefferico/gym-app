@@ -2,17 +2,17 @@
 export type Gender = 'male' | 'female' | 'other' | 'prefer_not_to_say';
 
 export interface UserMeasurements {
-  heightCm?: number | null;
-  weightKg?: number | null;
+  height?: number | null;
+  weight?: number | null;
   // Body measurements (optional, in cm or inches based on user preference - store in a consistent unit like cm)
-  chestCm?: number | null;
-  waistCm?: number | null;
-  neckCm?: number | null;
-  hipsCm?: number | null;
-  rightArmCm?: number | null;
-  leftArmCm?: number | null;
-  rightThighCm?: number | null;
-  leftThighCm?: number | null;
+  chest?: number | null;
+  waist?: number | null;
+  neck?: number | null;
+  hips?: number | null;
+  rightArm?: number | null;
+  leftArm?: number | null;
+  rightThigh?: number | null;
+  leftThigh?: number | null;
 }
 
 export interface MeasurementEntry extends UserMeasurements {
@@ -30,6 +30,6 @@ export interface UserProfile {
   hideWipDisclaimer?: boolean;
   measurementHistory?: MeasurementEntry[];
   // You can add more profile-specific fields here like fitness goals, experience level, etc.
-  heightCm?: number | null; // <-- MOVED height here, it's a profile constant
+  height?: number | null; // <-- MOVED height here, it's a profile constant
   measurementGoals?: Partial<UserMeasurements>; // <-- ADDED for goal setting
 }

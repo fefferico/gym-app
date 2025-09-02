@@ -193,26 +193,26 @@ export class UserProfileService {
    * Calculates Body Mass Index (BMI).
    * @returns BMI value or null if data is insufficient.
    */
-  public calculateBMI(weightKg: number, heightCm: number): number | null {
-    if (!weightKg || !heightCm) return null;
+  public calculateBMI(weight: number, heightCm: number): number | null {
+    if (!weight || !heightCm) return null;
     const heightM = heightCm / 100;
-    return parseFloat((weightKg / (heightM * heightM)).toFixed(1));
+    return parseFloat((weight / (heightM * heightM)).toFixed(1));
   }
 
   /**
    * Calculates Body Fat Percentage using the U.S. Navy method.
    * @returns Body fat percentage or null if data is insufficient.
    */
-  public calculateBodyFatNavy(gender: Gender, measurements: { waistCm: number, neckCm: number, heightCm: number, hipsCm?: number }): number | null {
-    const { waistCm, neckCm, heightCm, hipsCm } = measurements;
-    if (!gender || !waistCm || !neckCm || !heightCm) return null;
+  public calculateBodyFatNavy(gender: Gender, measurements: { waist: number, neck: number, height: number, hips?: number }): number | null {
+    const { waist, neck, height, hips } = measurements;
+    if (!gender || !waist || !neck || !height) return null;
 
     let bodyFat = 0;
     if (gender === 'male') {
-      bodyFat = 86.010 * Math.log10(waistCm - neckCm) - 70.041 * Math.log10(heightCm) + 36.76;
+      bodyFat = 86.010 * Math.log10(waist - neck) - 70.041 * Math.log10(height) + 36.76;
     } else if (gender === 'female') {
-      if (!hipsCm) return null; // Hips are required for females
-      bodyFat = 163.205 * Math.log10(waistCm + hipsCm - neckCm) - 97.684 * Math.log10(heightCm) - 78.387;
+      if (!hips) return null; // Hips are required for females
+      bodyFat = 163.205 * Math.log10(waist + hips - neck) - 97.684 * Math.log10(height) - 78.387;
     } else {
       return null; // Formula doesn't apply to 'other' genders
     }
@@ -298,7 +298,7 @@ export class UserProfileService {
       // Prioritize imported simple fields, but keep local if importer's is missing
       username: importedProfile.username ?? localProfile.username,
       gender: importedProfile.gender ?? localProfile.gender,
-      heightCm: importedProfile.heightCm ?? localProfile.heightCm,
+      height: importedProfile.height ?? localProfile.height,
       hideWipDisclaimer: importedProfile.hideWipDisclaimer ?? localProfile.hideWipDisclaimer,
       
       // Overwrite local goals with imported goals if they exist

@@ -46,15 +46,15 @@
             
             <!-- Using the type guard functions in the template -->
             <div *ngIf="isFixedWeight(item)">
-              <p><strong>Weight:</strong> {{ item.weightKg }} kg</p>
+              <p><strong>Weight:</strong> {{ item.weight }} kg</p>
             </div>
             
             <div *ngIf="isAdjustableWeight(item)">
-              <p><strong>Range:</strong> {{ item.minWeightKg }} - {{ item.maxWeightKg }} kg</p>
+              <p><strong>Range:</strong> {{ item.minweight }} - {{ item.maxweight }} kg</p>
             </div>
 
             <div *ngIf="isWeightPlate(item)">
-              <p><strong>Weight:</strong> {{ item.weightKg }} kg</p>
+              <p><strong>Weight:</strong> {{ item.weight }} kg</p>
             </div>
 
             <div *ngIf="isBand(item)">

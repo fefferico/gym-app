@@ -52,20 +52,20 @@
           </div>
 
           <div *ngIf="equipmentForm.get('weightType')?.value === 'fixed'">
-            <label for="weightKg" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Weight (kg)</label>
-            <input type="number" id="weightKg" formControlName="weightKg" class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
+            <label for="weight" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Weight (kg)</label>
+            <input type="number" id="weight" formControlName="weight" class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
           </div>
 
           <div *ngIf="equipmentForm.get('weightType')?.value === 'adjustable'" class="grid grid-cols-3 gap-4">
             <div>
-              <label for="minWeightKg" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Min
+              <label for="minweight" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Min
                 (kg)</label>
-              <input type="number" id="minWeightKg" formControlName="minWeightKg" class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
+              <input type="number" id="minweight" formControlName="minweight" class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
             </div>
             <div>
-              <label for="maxWeightKg" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Max
+              <label for="maxweight" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Max
                 (kg)</label>
-              <input type="number" id="maxWeightKg" formControlName="maxWeightKg" class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
+              <input type="number" id="maxweight" formControlName="maxweight" class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
             </div>
             <div>
               <label for="incrementKg" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Step
@@ -78,17 +78,17 @@
 
       <ng-container *ngSwitchCase="'Plate'">
         <div class="pt-4 border-t dark:border-gray-600">
-          <label for="weightKg" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Weight (kg)</label>
-          <input type="number" id="weightKg" formControlName="weightKg" class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
+          <label for="weight" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Weight (kg)</label>
+          <input type="number" id="weight" formControlName="weight" class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
         </div>
       </ng-container>
 
       <ng-container *ngSwitchCase="'Barbell'">
         <div class="grid grid-cols-2 gap-4 pt-4 border-t dark:border-gray-600">
           <div>
-            <label for="weightKg" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Bar Weight
+            <label for="weight" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Bar Weight
               (kg)</label>
-            <input type="number" id="weightKg" formControlName="weightKg" class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
+            <input type="number" id="weight" formControlName="weight" class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg dark:text-gray-200">
           </div>
           <div>
             <label for="barType" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Bar Type</label>

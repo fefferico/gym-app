@@ -65,7 +65,7 @@ export class ProfileSettingsComponent implements OnInit {
   appSettingsForm!: FormGroup;
   progressiveOverloadForm!: FormGroup;
 
-  currentUnit = this.unitsService.currentUnit;
+  currentUnit = this.unitsService.currentWeightUnit;
   readonly genders: { label: string, value: Gender }[] = [
     { label: 'Male', value: 'male' },
     { label: 'Female', value: 'female' },
@@ -88,19 +88,19 @@ export class ProfileSettingsComponent implements OnInit {
       }),
       measurements: this.fb.group({
         heightCm: [null as number | null, [Validators.min(0), Validators.required]],
-        weightKg: [null as number | null, [Validators.min(0), Validators.required]],
-        chestCm: [null as number | null, [Validators.min(0)]],
-        neckCm: [null as number | null, [Validators.min(0)]],
-        waistCm: [null as number | null, [Validators.min(0)]],
-        hipsCm: [null as number | null, [Validators.min(0)]],
-        rightArmCm: [null as number | null, [Validators.min(0)]],
+        weight: [null as number | null, [Validators.min(0), Validators.required]],
+        chest: [null as number | null, [Validators.min(0)]],
+        neck: [null as number | null, [Validators.min(0)]],
+        waist: [null as number | null, [Validators.min(0)]],
+        hips: [null as number | null, [Validators.min(0)]],
+        rightArm: [null as number | null, [Validators.min(0)]],
       })
     });
 
     // Initialize the new goals form
     this.goalsForm = this.fb.group({
-      weightKg: [null as number | null, [Validators.min(0)]],
-      waistCm: [null as number | null, [Validators.min(0)]],
+      weight: [null as number | null, [Validators.min(0)]],
+      waist: [null as number | null, [Validators.min(0)]],
       // Add other goal controls
     });
 
@@ -264,7 +264,7 @@ export class ProfileSettingsComponent implements OnInit {
           gender: null,
           age: null,
         },
-        measurements: { heightCm: null, weightKg: null, age: null, chestCm: null, waistCm: null, hipsCm: null, rightArmCm: null }
+        measurements: { heightCm: null, weight: null, age: null, chest: null, waist: null, hips: null, rightArm: null }
       }, { emitEvent: false });
     }
   }
@@ -455,7 +455,7 @@ export class ProfileSettingsComponent implements OnInit {
   }
 
   selectUnit(unit: WeightUnit): void {
-    this.unitsService.setUnitPreference(unit);
+    this.unitsService.setWeightUnitPreference(unit);
   }
 
   toggleWipDisclaimer(): void {
