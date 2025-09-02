@@ -14,7 +14,7 @@
             <button appPress (shortPress)="toggleStatsFilterAccordion()" type="button"
                 class="rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary ml-1">
                 <app-icon name="filter" class="w-10 h-10 transition-transform duration-300"
-                [class.rotate-180]="isFilterAccordionOpen()"></app-icon>
+                    [class.rotate-180]="isFilterAccordionOpen()"></app-icon>
                 <span class="sr-only">Toggle Date Filters</span>
             </button>
         </div>
@@ -80,17 +80,7 @@
                 <div class="bg-white dark:bg-gray-700 p-6 rounded-md shadow-md text-center">
                     <div class="flex items-center justify-center mb-2 text-gray-600 dark:text-gray-300">
                         <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300">Current Streak</h2>
-                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke-width="1.5"
-                            stroke="currentColor" class="w-10 h-10 transition-transform duration-300">
-                            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                            <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
-                            <g id="SVGRepo_iconCarrier">
-                                <path
-                                    d="M20 15C20 19.2545 17.3819 21.1215 15.3588 21.751C14.9274 21.8853 14.6438 21.3823 14.9019 21.0115C15.7823 19.7462 16.8 17.8159 16.8 16C16.8 14.0494 15.1559 11.7465 13.8721 10.3261C13.5786 10.0014 13.0667 10.2163 13.0507 10.6537C12.9976 12.1029 12.7689 14.0418 11.7828 15.5614C11.6241 15.806 11.2872 15.8262 11.1063 15.5975C10.7982 15.2079 10.4901 14.7265 10.182 14.3462C10.016 14.1414 9.71604 14.1386 9.52461 14.3198C8.77825 15.0265 7.73333 16.1286 7.73333 17.5C7.73333 18.4893 8.20479 19.7206 8.69077 20.6741C8.91147 21.1071 8.50204 21.615 8.08142 21.3715C6.24558 20.3088 4 18.1069 4 15C4 11.8536 8.31029 7.49484 9.95605 3.37694C10.2157 2.72714 11.0161 2.42181 11.5727 2.84585C14.9439 5.41391 20 10.3781 20 15Z"
-                                    stroke="currentColor" stroke-width="1.5"></path>
-                            </g>
-                        </svg>
-
+                        <app-icon name="flame-2"></app-icon>
                     </div>
                     <p class="text-4xl font-bold text-primary dark:text-primary-light">
                         {{ currentWorkoutStreakInfo().length }} <span class="text-lg font-medium">{{
@@ -112,25 +102,7 @@
                 <div class="bg-white dark:bg-gray-700 p-6 rounded-md shadow-md text-center">
                     <div class="flex items-center justify-center mb-2 text-gray-600 dark:text-gray-300">
                         <h2 class="text-xl font-semibold">Longest Streak</h2>
-                        <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" stroke-width="1.5"
-                            stroke="currentColor" class="w-10 h-10 transition-transform duration-300">
-                            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                            <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
-                            <g id="SVGRepo_iconCarrier">
-                                <g>
-                                    <path fill="currentColor"
-                                        d="M54,22C54,9.869,44.131,0,32,0S10,9.869,10,22c0,6.816,3.117,12.92,8,16.958V62 c0,0.758,0.428,1.45,1.105,1.789C19.388,63.931,19.694,64,19.998,64c0.426,0,0.848-0.136,1.202-0.4L32,55.5l10.8,8.1 c0.354,0.265,0.775,0.4,1.2,0.4c0.305,0,0.611-0.069,0.895-0.211C45.572,63.45,46,62.758,46,62V38.958 C50.883,34.92,54,28.816,54,22z M20,62V40.425c0.645,0.421,1.312,0.809,2,1.161V60.5L20,62z M32,53l-8,6V42.487 C26.481,43.46,29.178,44,32,44s5.519-0.54,8-1.513V59L32,53z M44,62l-2-1.5V41.586c0.688-0.353,1.355-0.74,2-1.161V62z M32,42 c-11.028,0-20-8.972-20-20S20.972,2,32,2s20,8.972,20,20S43.028,42,32,42z">
-                                    </path>
-                                    <path fill="currentColor"
-                                        d="M32,4c-9.925,0-18,8.075-18,18s8.075,18,18,18s18-8.075,18-18S41.925,4,32,4z M32,38 c-8.822,0-16-7.178-16-16S23.178,6,32,6s16,7.178,16,16S40.822,38,32,38z">
-                                    </path>
-                                    <path fill="currentColor"
-                                        d="M39.147,19.361l-4.309-0.658l-1.936-4.123c-0.165-0.352-0.518-0.575-0.905-0.575s-0.74,0.224-0.905,0.575 l-1.936,4.123l-4.309,0.658c-0.37,0.057-0.678,0.315-0.797,0.671s-0.029,0.747,0.232,1.016l3.146,3.227l-0.745,4.564 c-0.062,0.378,0.099,0.758,0.411,0.979s0.725,0.243,1.061,0.058l3.841-2.124l3.841,2.124C35.99,29.959,36.157,30,36.323,30 c0.202,0,0.404-0.062,0.576-0.183c0.312-0.221,0.473-0.601,0.411-0.979l-0.745-4.564l3.146-3.227 c0.262-0.269,0.352-0.66,0.232-1.016S39.518,19.418,39.147,19.361z M34.781,23.239c-0.222,0.228-0.322,0.546-0.271,0.859 l0.495,3.029l-2.522-1.395c-0.151-0.083-0.317-0.125-0.484-0.125s-0.333,0.042-0.484,0.125l-2.522,1.395l0.495-3.029 c0.051-0.313-0.05-0.632-0.271-0.859l-2.141-2.194l2.913-0.445c0.329-0.05,0.612-0.261,0.754-0.563l1.257-2.678l1.257,2.678 c0.142,0.303,0.425,0.514,0.754,0.563l2.913,0.445L34.781,23.239z">
-                                    </path>
-                                </g>
-                            </g>
-                        </svg>
-
+                        <app-icon name="goal" class="h-10 w-10"></app-icon>
                     </div>
                     <p class="text-4xl font-bold text-primary dark:text-primary-light">
                         {{ longestWorkoutStreakInfo().length }} <span class="text-lg font-medium">{{

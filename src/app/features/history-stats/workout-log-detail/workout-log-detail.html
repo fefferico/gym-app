@@ -107,7 +107,7 @@
                     <h3 class="text-md sm:text-lg font-semibold truncate" [ngClass]="{
                       'text-primary dark:text-primary-light': !loggedEx.supersetId,
                       'text-orange-700 dark:text-orange-300': loggedEx.supersetId
-                    }" [title]="loggedEx.exerciseName">
+                    }" [title]="loggedEx.exerciseName" (click)="openModal(loggedEx, $event)">
                       <span *ngIf="loggedEx.supersetId"
                         class="text-xs font-normal text-orange-600 dark:text-orange-400 block leading-tight">
                         <ng-container
@@ -119,7 +119,7 @@
                       {{ loggedEx.exerciseName }}
                     </h3>
                     <app-icon name="info" class="h-4 w-4 text-gray-400 dark:text-gray-300 cursor-help" *ngIf="loggedEx"
-                      (click)="openModal(loggedEx)" [appTooltip]="exerciseInfoTooltipString"></app-icon>
+                      (click)="openModal(loggedEx, $event)" [appTooltip]="exerciseInfoTooltipString"></app-icon>
                   </div>
                   <div *ngIf="!loggedEx.isExpanded" class="text-xs text-gray-500 dark:text-gray-400 truncate">
                     <p *ngIf="loggedEx.baseExercise?.category"

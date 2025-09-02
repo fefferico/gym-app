@@ -567,7 +567,8 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
     this.isExerciseDetailModalOpen.set(false);
   }
 
-  openModal(exerciseData: DisplayLoggedExercise) {
+  openModal(exerciseData: DisplayLoggedExercise, event?: Event) {
+    event?.stopPropagation();
     this.exerciseDetailsId = exerciseData.exerciseId;
     this.exerciseDetailsName = exerciseData.exerciseName || 'Exercise details';
     this.isSimpleModalOpen.set(true);
@@ -874,7 +875,7 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
   protected hasPerformedTimedSets(loggedEx: DisplayLoggedExercise): boolean {
     return loggedEx?.sets?.some(set => set.durationPerformed != null && set.durationPerformed > 0) ?? false;
   }
-  
+
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();

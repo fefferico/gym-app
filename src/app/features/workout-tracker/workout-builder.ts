@@ -2210,7 +2210,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   isSimpleModalOpen = signal(false);
   exerciseDetailsId: string = '';
   exerciseDetailsName: string = '';
-  openModal(exerciseData: any) {
+  openModal(exerciseData: any, event?: Event) {
+    event?.stopPropagation();
     this.exerciseDetailsId = exerciseData.exerciseId;
     this.exerciseDetailsName = exerciseData.exerciseName || 'Exercise details';
     this.isSimpleModalOpen.set(true);
