@@ -30,6 +30,7 @@ import { PersonalGymService } from '../../../core/services/personal-gym.service'
 import { AppSettingsService } from '../../../core/services/app-settings.service';
 // +++ NEW: Import the conversion service
 import { DataConversionService } from '../../../core/services/data-conversion.service';
+import { SubscriptionService, PremiumFeature } from '../../../core/services/subscription.service';
 
 
 @Component({
@@ -60,6 +61,9 @@ export class ProfileSettingsComponent implements OnInit {
   private imageStorageService = inject(ImageStorageService);
   // +++ NEW: Inject the conversion service
   private dataConversionService = inject(DataConversionService);
+  protected subscriptionService = inject(SubscriptionService);
+
+  public PremiumFeature = PremiumFeature;
 
   protected currentVibrator = navigator;
 
@@ -69,6 +73,30 @@ export class ProfileSettingsComponent implements OnInit {
   profileForm!: FormGroup;
   appSettingsForm!: FormGroup;
   progressiveOverloadForm!: FormGroup;
+
+  // +++ NEW: Add a method to handle the upgrade button click
+  handleUpgradeClick(): void {
+    // In a real app, this would navigate to a pricing page.
+    // For now, we'll just toggle the premium status for development.
+    this.subscriptionService.togglePremium_DEV_ONLY();
+    const newStatus = this.subscriptionService.isPremium() ? 'Premium' : 'Free';
+    this.toastService.success(`You are now on the ${newStatus} tier!`, 3000, "Status Updated");
+  }
+
+  /**
+    * A reusable handler for features that navigate.
+    * Checks for premium access before routing. If access is denied, it shows the upgrade modal.
+    * @param feature The premium feature to check.
+    * @param route The Angular route to navigate to if access is granted.
+    */
+  handlePremiumFeatureOrNavigate(feature: PremiumFeature, route?: any[]): void {
+    this.vibrate();
+    if (this.subscriptionService.canAccess(feature) && route) {
+      this.router.navigate(route);
+    } else {
+      this.subscriptionService.showUpgradeModal();
+    }
+  }
 
   // REMOVED: No longer need this, using signals from service directly
   // currentUnit = this.unitsService.currentWeightUnit;
@@ -535,8 +563,14 @@ export class ProfileSettingsComponent implements OnInit {
     this.router.navigate(['/library']);
   }
 
-  navigateToPersonalGym(): void {
+  navigateToPersonalGym(event?: Event): void {
     this.vibrate();
+    if (!this.subscriptionService.canAccess(PremiumFeature.PERSONAL_GYM)) {
+      this.subscriptionService.showUpgradeModal();
+      return;
+    }
+
+    // 4. If the check passes, proceed with navigation
     this.router.navigate(['/personal-gym']);
   }
   navigateToPersonalBests(): void {
@@ -574,9 +608,12 @@ export class ProfileSettingsComponent implements OnInit {
     }
   }
 
-  // ADDED: New method to handle menu mode selection
   selectMenuMode(mode: MenuMode): void {
     this.vibrate();
+    if (!this.subscriptionService.canAccess(PremiumFeature.MENU_MODE)) {
+      this.subscriptionService.showUpgradeModal();
+      return;
+    }
     this.appSettingsService.setMenuMode(mode);
   }
 }

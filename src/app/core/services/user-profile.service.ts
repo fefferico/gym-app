@@ -22,6 +22,7 @@ export class UserProfileService {
 
   // Individual signals for easier component binding if needed, derived from the subject
   public username = signal<string | null | undefined>(undefined);
+  public isPremium = signal<boolean>(false);
   // Add other signals for specific parts of the profile if direct binding is common
 
   constructor() {
@@ -32,11 +33,17 @@ export class UserProfileService {
     // Update signals when profile changes
     this.userProfile$.subscribe(profile => {
       this.username.set(profile?.username);
+      this.isPremium.set(profile?.isPremium ?? false);
       // Update other derived signals here
     });
     // Show the disclaimer when the app starts, if necessary
     this.showWipDisclaimer();
     this.migrateLegacyMeasurements();
+  }
+
+  updatePremiumStatus(isPremium: boolean): void {
+    const currentProfile = this.getProfile() || {};
+    this.saveProfile({ ...currentProfile, isPremium });
   }
 
   // New method to orchestrate showing the disclaimer
@@ -237,6 +244,7 @@ export class UserProfileService {
 
   saveProfile(profile: Partial<UserProfile>): void {
     const currentProfile = this.getProfile() || {};
+    const updatedProfile = { ...currentProfile, ...profile };
 
     // use the most recent profile data, merging with existing data
     if (profile.measurementHistory && profile.measurementHistory.length > 0) {
@@ -245,8 +253,6 @@ export class UserProfileService {
       profile.measurements = {...profile.measurements, ...profile.measurementHistory[profile.measurementHistory.length - 1] };
     }
 
-    // Merge the new profile data with the existing one
-    const updatedProfile = { ...currentProfile, ...profile };
     
     // Ensure measurementHistory is always sorted when saved
     if (updatedProfile.measurementHistory) {

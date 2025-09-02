@@ -168,74 +168,6 @@ export const ROUTINES_DATA: Routine[] = [
         "notes": "Original workout by Chandler Marchman. Video URL: https://www.youtube.com/watch?v=u78u8pIwA_Q. Weight Used During Workout: 71 lb. Kettlebell."
     },
     {
-        "id": "b3c4d5e6-1",
-        "name": "50 Rep Kettlebell Arm Blaster Build Muscular Biceps & Triceps",
-        "description": "Rest no more than 3 minutes between rounds. <i>Original workout by Chandler Marchman.</i>",
-        "goal": "hypertrophy",
-        "exercises": [
-            {
-                "id": "e3a3b3c3-1",
-                "exerciseId": "slow-kettlebell-floor-skullcrusher",
-                "exerciseName": "Slow Eccentric Floor Skullcrusher",
-                "notes": "Split from combo exercise 'Slow Eccentric Floor Skullcrusher to Close Grip Floor Press'.",
-                "sets": [{ "id": "s3a1", "reps": 5, "weight": 71, "restAfterSet": 0, "type": "standard", "tempo": "4010" }],
-                "rounds": 3, "supersetId": null, "supersetOrder": null,
-                "type": "superset",
-            },
-            {
-                "id": "e3a3b3c3-2",
-                "exerciseId": "kettlebell-close-grip-floor-press",
-                "exerciseName": "Close Grip Floor Press (from combo)",
-                "notes": "Split from combo exercise 'Slow Eccentric Floor Skullcrusher to Close Grip Floor Press'.",
-                "sets": [{ "id": "s3a2", "reps": 5, "weight": 71, "restAfterSet": 60, "type": "standard" }],
-                "rounds": 3, "supersetId": null, "supersetOrder": null, "type": "superset"
-            },
-            {
-                "id": "e3a3b3c3-3",
-                "exerciseId": "kettlebell-floor-skullcrusher",
-                "exerciseName": "Floor Skullcrusher",
-                "sets": [{ "id": "s3b", "reps": 10, "weight": 71, "restAfterSet": 60, "type": "standard" }],
-                "rounds": 3, "supersetId": null, "supersetOrder": null, "type": "superset"
-            },
-            {
-                "id": "e3a3b3c3-4",
-                "exerciseId": "kettlebell-close-grip-floor-press",
-                "exerciseName": "Close Grip Floor Press",
-                "sets": [{ "id": "s3c", "reps": 10, "weight": 71, "restAfterSet": 60, "type": "standard" }],
-                "rounds": 3, "supersetId": null, "supersetOrder": null, "type": "superset"
-            },
-            {
-                "id": "e3a3b3c3-5",
-                "exerciseId": "push-up",
-                "exerciseName": "Proprioceptive Close Grip Push Up",
-                "sets": [{ "id": "s3d", "reps": 5, "weight": 10, "restAfterSet": 60, "type": "standard" }],
-                "rounds": 3, "supersetId": null, "supersetOrder": null, "type": "superset"
-            },
-            {
-                "id": "e3a3b3c3-6",
-                "exerciseId": "push-up",
-                "exerciseName": "Push Up",
-                "sets": [{ "id": "s3e", "reps": 5, "weight": 10, "restAfterSet": 60, "type": "standard" }],
-                "rounds": 3, "supersetId": null, "supersetOrder": null, "type": "superset"
-            },
-            {
-                "id": "e3a3b3c3-7",
-                "exerciseId": "kettlebell-slow-eccentric-pause-towel-curl",
-                "exerciseName": "Slow Eccentric Pause Towel Curls",
-                "sets": [{ "id": "s3f", "reps": 5, "weight": 71, "restAfterSet": 60, "type": "standard", "tempo": "4110" }],
-                "rounds": 3, "supersetId": null, "supersetOrder": null, "type": "superset"
-            },
-            {
-                "id": "e3a3b3c3-8",
-                "exerciseId": "kettlebell-towel-curl",
-                "exerciseName": "Towel Curls",
-                "sets": [{ "id": "s3g", "reps": 5, "weight": 71, "restAfterSet": 180, "type": "standard" }],
-                "rounds": 3, "supersetId": null, "supersetOrder": null, "type": "superset"
-            }
-        ],
-        "notes": "Original workout by Chandler Marchman. Video URL: https://www.youtube.com/watch?v=NKrxQWu4iYE. Weight Used During Workout: 71 lb. Kettlebell."
-    },
-    {
         "id": "beginner-workout-v1-a",
         "name": "Beginner Weight Training - Workout A (V1)",
         "description": "A foundational full-body workout focusing on major compound lifts. Perform this workout on your first training day of the week.",
@@ -2252,7 +2184,8 @@ export const ROUTINES_DATA: Routine[] = [
                 supersetId: 'arm-blaster-3',
                 supersetOrder: 0,
                 rounds: 3,
-                type: 'superset'
+                type: 'superset',
+                supersetSize: 8,
             },
             {
                 id: 'we-3-2',
@@ -2261,7 +2194,8 @@ export const ROUTINES_DATA: Routine[] = [
                 sets: [{ id: 'set-3-2-1', reps: 10, restAfterSet: 0, type: 'superset' }],
                 supersetId: 'arm-blaster-3',
                 supersetOrder: 1,
-                type: 'superset'
+                type: 'superset',
+                supersetSize: 8,
             },
             {
                 id: 'we-3-3',
@@ -2270,7 +2204,8 @@ export const ROUTINES_DATA: Routine[] = [
                 sets: [{ id: 'set-3-3-1', reps: 10, restAfterSet: 0, type: 'superset' }],
                 supersetId: 'arm-blaster-3',
                 supersetOrder: 2,
-                type: 'superset'
+                type: 'superset',
+                supersetSize: 8,
             },
             {
                 id: 'we-3-4',
@@ -2279,7 +2214,8 @@ export const ROUTINES_DATA: Routine[] = [
                 sets: [{ id: 'set-3-4-1', reps: 5, restAfterSet: 0, type: 'superset' }],
                 supersetId: 'arm-blaster-3',
                 supersetOrder: 3,
-                type: 'superset'
+                type: 'superset',
+                supersetSize: 8,
             },
             {
                 id: 'we-3-5',
@@ -2288,7 +2224,8 @@ export const ROUTINES_DATA: Routine[] = [
                 sets: [{ id: 'set-3-5-1', reps: 5, restAfterSet: 0, type: 'superset' }],
                 supersetId: 'arm-blaster-3',
                 supersetOrder: 4,
-                type: 'superset'
+                type: 'superset',
+                supersetSize: 8,
             },
             {
                 id: 'we-3-6',
@@ -2297,7 +2234,8 @@ export const ROUTINES_DATA: Routine[] = [
                 sets: [{ id: 'set-3-6-1', reps: 5, restAfterSet: 0, type: 'superset' }],
                 supersetId: 'arm-blaster-3',
                 supersetOrder: 5,
-                type: 'superset'
+                type: 'superset',
+                supersetSize: 8,
             },
             {
                 id: 'we-3-7',
@@ -2306,7 +2244,8 @@ export const ROUTINES_DATA: Routine[] = [
                 sets: [{ id: 'set-3-7-1', reps: 5, restAfterSet: 180, notes: 'Rest no more than 3 minutes after this exercise.', type: 'superset' }],
                 supersetId: 'arm-blaster-3',
                 supersetOrder: 6,
-                type: 'superset'
+                type: 'superset',
+                supersetSize: 8,
             }
         ],
         goal: 'hypertrophy',
@@ -2692,6 +2631,7 @@ export const ROUTINES_DATA: Routine[] = [
                 sets: [{ id: 'set-9-2-1', reps: 5, notes: 'Perform 5 reps per side as part of the complex.', restAfterSet: 0, type: 'superset' }],
                 supersetId: 'total-body-10min-9',
                 supersetOrder: 1,
+                supersetSize: 7,
                 type: 'superset'
             },
             {
@@ -2701,6 +2641,7 @@ export const ROUTINES_DATA: Routine[] = [
                 sets: [{ id: 'set-9-3-1', duration: 50, notes: 'Duration in feet per side. Original has an iso-hold component.', restAfterSet: 0, type: 'superset' }],
                 supersetId: 'total-body-10min-9',
                 supersetOrder: 2,
+                supersetSize: 7,
                 type: 'superset'
             },
             {
@@ -2710,6 +2651,7 @@ export const ROUTINES_DATA: Routine[] = [
                 sets: [{ id: 'set-9-4-1', reps: 5, restAfterSet: 0, type: 'superset' }],
                 supersetId: 'total-body-10min-9',
                 supersetOrder: 3,
+                supersetSize: 7,
                 type: 'superset'
             },
             {
@@ -2719,6 +2661,7 @@ export const ROUTINES_DATA: Routine[] = [
                 sets: [{ id: 'set-9-5-1', duration: 50, notes: 'Duration in feet.', restAfterSet: 0, type: 'superset' }],
                 supersetId: 'total-body-10min-9',
                 supersetOrder: 4,
+                supersetSize: 7,
                 type: 'superset'
             },
             {
@@ -2728,6 +2671,7 @@ export const ROUTINES_DATA: Routine[] = [
                 sets: [{ id: 'set-9-6-1', reps: 5, restAfterSet: 0, type: 'superset' }],
                 supersetId: 'total-body-10min-9',
                 supersetOrder: 5,
+                supersetSize: 7,
                 type: 'superset'
             },
             {
@@ -2737,6 +2681,7 @@ export const ROUTINES_DATA: Routine[] = [
                 sets: [{ id: 'set-9-7-1', duration: 50, notes: 'Duration in feet. Rest no more than 3 minutes after this.', restAfterSet: 180, type: 'superset' }],
                 supersetId: 'total-body-10min-9',
                 supersetOrder: 6,
+                supersetSize: 7,
                 type: 'superset'
             }
         ],

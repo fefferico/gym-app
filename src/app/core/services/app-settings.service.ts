@@ -7,12 +7,13 @@ import { isPlatformBrowser } from '@angular/common';
 
 const DEFAULT_APP_SETTINGS: AppSettings = {
     enableTimerCountdownSound: true,
+    enableProgressiveOverload: false,
     countdownSoundSeconds: 5,
     enablePresetTimer: false,        // NEW Default
     presetTimerDurationSeconds: 10,  // NEW Default (e.g., 10 seconds)
     weightStep: 1,
     playerMode: false,
-    menuMode: 'dropdown' as MenuMode,
+    menuMode: 'modal' as MenuMode,
 };
 
 // 1. Define a type for the three menu modes for type safety.
@@ -38,7 +39,7 @@ export class AppSettingsService {
     public countdownSoundSeconds = signal<number>(DEFAULT_APP_SETTINGS.countdownSoundSeconds);
     public enablePresetTimer = signal<boolean>(DEFAULT_APP_SETTINGS.enablePresetTimer);             // NEW
     public presetTimerDurationSeconds = signal<number>(DEFAULT_APP_SETTINGS.presetTimerDurationSeconds); // NEW
-    menuMode = signal<MenuMode>('dropdown'); // Default to 'window' mode
+    menuMode = signal<MenuMode>('modal'); // Default to 'modal' mode
 
 
     constructor() {
@@ -53,14 +54,14 @@ export class AppSettingsService {
         this.presetTimerDurationSeconds.set(initialSettings.presetTimerDurationSeconds); // NEW
 
         const storedMenuMode = this.storageService.getItem<MenuMode>(this.MENU_MODE_KEY);
-        this.menuMode.set(storedMenuMode || 'dropdown'); // Set initial mode, default to 'window'
+        this.menuMode.set(storedMenuMode || 'modal'); // Set initial mode, default to 'modal'
 
         // Effect to apply changes to the DOM when signals change
         effect(() => {
             if (isPlatformBrowser(this.platformId)) {
                 // Menu mode effect
                 const mode = this.menuMode();
-                document.documentElement.classList.remove('dropdown', 'compact', 'modal');
+                document.documentElement.classList.remove('modal', 'compact', 'modal');
                 document.documentElement.classList.add(`menu-${mode}`);
                 this.storageService.setItem(this.MENU_MODE_KEY, mode);
             }

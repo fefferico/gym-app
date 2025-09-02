@@ -13,6 +13,7 @@ import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { AlertButton } from '../../../core/models/alert.model';
 import { Subscription } from 'rxjs';
 import { WorkoutExercise } from '../../../core/models/workout.model';
+import { SubscriptionService } from '../../../core/services/subscription.service';
 
 
 @Component({
@@ -30,6 +31,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   private toastService = inject(ToastService);
   private workoutService = inject(WorkoutService); // For fetching routine name if only ID is in paused state
   private userProfileService = inject(UserProfileService); // Inject UserProfileService
+  protected subscriptionService = inject(SubscriptionService);
 
   userName = computed(() => this.userProfileService.username() || 'Fitness Enthusiast');
 

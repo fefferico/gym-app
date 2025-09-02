@@ -31,5 +31,6 @@ export interface UserProfile {
   measurementHistory?: MeasurementEntry[];
   // You can add more profile-specific fields here like fitness goals, experience level, etc.
   height?: number | null; // <-- MOVED height here, it's a profile constant
+  isPremium?: boolean; // +++ ADD THIS LINE
   measurementGoals?: Partial<UserMeasurements>; // <-- ADDED for goal setting
 }

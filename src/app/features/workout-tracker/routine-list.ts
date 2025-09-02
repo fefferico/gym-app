@@ -27,6 +27,7 @@ import { LastPerformanceSummary, WorkoutLog } from '../../core/models/workout-lo
 import { UserProfileService } from '../../core/services/user-profile.service';
 import { AppSettingsService } from '../../core/services/app-settings.service';
 import { MenuMode } from '../../core/models/app-settings.model';
+import { PremiumFeature, SubscriptionService } from '../../core/services/subscription.service';
 
 @Component({
   selector: 'app-routine-list',
@@ -80,6 +81,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
   private themeService = inject(ThemeService);
   private platformId = inject(PLATFORM_ID);
   private appSettingsService = inject(AppSettingsService);
+  protected subscriptionService = inject(SubscriptionService);
 
   private sanitizer = inject(DomSanitizer);
   public sanitizedDescription: SafeHtml = '';
@@ -397,6 +399,14 @@ export class RoutineListComponent implements OnInit, OnDestroy {
 
   // --- Action Methods ---
   navigateToCreateRoutine(): void {
+    this.vibrate();
+
+    const totalRoutines = this.allRoutinesForList() ? this.allRoutinesForList().length : 0;
+
+    if (!this.subscriptionService.canAccess(PremiumFeature.UNLIMITED_ROUTINES, totalRoutines)) {
+      this.subscriptionService.showUpgradeModal('You have reached the maximum number of custom routines available to Free Tier users. Upgrade now to unlock the possibility to create endless routines and much more!');
+      return;
+    }
     this.router.navigate(['/workout/routine/new']);
   }
 

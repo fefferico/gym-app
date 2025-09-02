@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, OnDestroy, signal, computed, ChangeDetectorRef, PLATFORM_ID, ViewChildren, QueryList, ElementRef, effect } from '@angular/core';
-import { CommonModule, isPlatformBrowser, DecimalPipe, DatePipe } from '@angular/common';
+import { CommonModule, isPlatformBrowser, DecimalPipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription, of, timer, firstValueFrom, Subject, combineLatest, interval } from 'rxjs';
 import { switchMap, tap, map, take, takeUntil } from 'rxjs/operators';
@@ -42,7 +42,7 @@ export interface HIITInterval {
 @Component({
     selector: 'app-tabata-player',
     standalone: true,
-    imports: [CommonModule, DatePipe, DecimalPipe, PressDirective],
+    imports: [CommonModule, DecimalPipe, PressDirective],
     templateUrl: './tabata-workout-player.component.html',
     styleUrl: './tabata-workout-player.component.scss',
 })

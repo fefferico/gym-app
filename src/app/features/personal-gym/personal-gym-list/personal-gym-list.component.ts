@@ -15,6 +15,7 @@ import {
 } from '../../../core/models/personal-gym.model';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { UnitsService } from '../../../core/services/units.service';
+import { PremiumFeature, SubscriptionService } from '../../../core/services/subscription.service';
 
 @Component({
   selector: 'app-personal-gym-list',
@@ -26,14 +27,14 @@ export class PersonalGymListComponent implements OnInit {
   private router = inject(Router);
   private personalGymService = inject(PersonalGymService);
   unitService = inject(UnitsService);
-
+  protected subscriptionService = inject(SubscriptionService);
   allEquipment = signal<PersonalGymEquipment[]>([]);
-  
+
   searchTerm = signal<string>('');
   selectedCategory = signal<EquipmentCategory | null>(null);
-  
+
   readonly categories: EquipmentCategory[] = [
-    'Dumbbell', 'Kettlebell', 'Plate', 'Barbell', 'Band', 'Machine', 
+    'Dumbbell', 'Kettlebell', 'Plate', 'Barbell', 'Band', 'Machine',
     'Accessory', 'Bag', 'Macebell', 'Club', 'Cardio', 'Custom'
   ];
 
@@ -46,8 +47,8 @@ export class PersonalGymListComponent implements OnInit {
       equipment = equipment.filter(item => item.category === category);
     }
     if (term) {
-      equipment = equipment.filter(item => 
-        item.name.toLowerCase().includes(term) || 
+      equipment = equipment.filter(item =>
+        item.name.toLowerCase().includes(term) ||
         (item.brand && item.brand.toLowerCase().includes(term))
       );
     }
@@ -58,6 +59,11 @@ export class PersonalGymListComponent implements OnInit {
     this.personalGymService.getAllEquipment().subscribe(equipment => {
       this.allEquipment.set(equipment);
     });
+    if (!this.subscriptionService.canAccess(PremiumFeature.PERSONAL_GYM)) {
+      this.subscriptionService.showUpgradeModal().then(() => {
+        this.router.navigate(['profile']);
+      });
+    }
   }
 
   onSearchChange(event: Event): void {
@@ -96,7 +102,7 @@ export class PersonalGymListComponent implements OnInit {
   // START: TYPE GUARD HELPER FUNCTIONS
   // These functions will fix the template errors definitively.
   // ==========================================================
-  
+
   isFixedWeight(item: PersonalGymEquipment): item is FixedWeightEquipment {
     return 'weightType' in item && item.weightType === 'fixed';
   }
@@ -112,7 +118,7 @@ export class PersonalGymListComponent implements OnInit {
   isBand(item: PersonalGymEquipment): item is ResistanceBand {
     return item.category === 'Band';
   }
-  
+
   isCustom(item: PersonalGymEquipment): item is CustomEquipment {
     return item.category === 'Custom';
   }

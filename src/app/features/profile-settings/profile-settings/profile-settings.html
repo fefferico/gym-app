@@ -5,6 +5,26 @@
 
     <div class="space-y-6 sm:space-y-8">
 
+        <section
+            class="bg-gradient-to-r from-primary to-indigo-600 dark:from-primary-dark dark:to-indigo-700 p-4 sm:p-6 rounded-md shadow-lg text-white">
+            <h2 class="text-xl font-semibold mb-2">Subscription Status</h2>
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-lg font-bold">
+                        {{ subscriptionService.isPremium() ? 'Premium Member' : 'Free Tier' }}
+                    </p>
+                    <p class="text-sm opacity-90">
+                        {{ subscriptionService.isPremium() ? 'All features unlocked!' : 'Upgrade to unlock all
+                        features.' }}
+                    </p>
+                </div>
+                <button appPress (shortPress)="handleUpgradeClick()"
+                    class="px-4 py-2 bg-white text-primary-dark font-semibold rounded-md shadow-md hover:bg-gray-200 transition-colors">
+                    {{ subscriptionService.isPremium() ? 'Manage' : 'Upgrade' }}
+                </button>
+            </div>
+        </section>
+
         <!-- User Profile Section -->
         <section class="bg-white dark:bg-gray-700 p-4 sm:p-6 rounded-md shadow-md">
             <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">User Profile</h2>
@@ -44,45 +64,52 @@
                             <label for="height" class="block text-md font-medium text-gray-600 dark:text-gray-400">
                                 Height ({{unitsService.getBodyMeasureUnitSuffix()}})<span class="text-red-500">*</span>
                             </label>
-                            <input type="number" min="0" id="height" formControlName="height" [placeholder]="unitsService.getBodyMeasureUnitSuffix()"
+                            <input type="number" min="0" id="height" formControlName="height"
+                                [placeholder]="unitsService.getBodyMeasureUnitSuffix()"
                                 class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200 text-lg">
                         </div>
                         <div>
                             <label for="weight" class="block text-md font-medium text-gray-600 dark:text-gray-400">
                                 Weight ({{unitsService.getBodyWeightUnitSuffix()}})<span class="text-red-500">*</span>
                             </label>
-                            <input type="number" min="0" id="weight" formControlName="weight" [placeholder]="unitsService.getBodyWeightUnitSuffix()"
+                            <input type="number" min="0" id="weight" formControlName="weight"
+                                [placeholder]="unitsService.getBodyWeightUnitSuffix()"
                                 class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200 text-lg">
                         </div>
                         <div>
                             <label for="chest" class="block text-md font-medium text-gray-600 dark:text-gray-400">Chest
                                 ({{unitsService.getBodyMeasureUnitSuffix()}})</label>
-                            <input type="number" min="0" id="chest" formControlName="chest" [placeholder]="unitsService.getBodyMeasureUnitSuffix()"
+                            <input type="number" min="0" id="chest" formControlName="chest"
+                                [placeholder]="unitsService.getBodyMeasureUnitSuffix()"
                                 class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200 text-lg">
                         </div>
                         <div>
                             <label for="neck" class="block text-md font-medium text-gray-600 dark:text-gray-400">Neck
                                 ({{unitsService.getBodyMeasureUnitSuffix()}})</label>
-                            <input type="number" min="0" id="neck" formControlName="neck" [placeholder]="unitsService.getBodyMeasureUnitSuffix()"
+                            <input type="number" min="0" id="neck" formControlName="neck"
+                                [placeholder]="unitsService.getBodyMeasureUnitSuffix()"
                                 class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200 text-lg">
                         </div>
                         <div>
                             <label for="waist" class="block text-md font-medium text-gray-600 dark:text-gray-400">Waist
                                 ({{unitsService.getBodyMeasureUnitSuffix()}})</label>
-                            <input type="number" min="0" id="waist" formControlName="waist" [placeholder]="unitsService.getBodyMeasureUnitSuffix()"
+                            <input type="number" min="0" id="waist" formControlName="waist"
+                                [placeholder]="unitsService.getBodyMeasureUnitSuffix()"
                                 class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200 text-lg">
                         </div>
                         <div>
                             <label for="hips" class="block text-md font-medium text-gray-600 dark:text-gray-400">Hips
                                 ({{unitsService.getBodyMeasureUnitSuffix()}})</label>
-                            <input type="number" min="0" id="hips" formControlName="hips" [placeholder]="unitsService.getBodyMeasureUnitSuffix()"
+                            <input type="number" min="0" id="hips" formControlName="hips"
+                                [placeholder]="unitsService.getBodyMeasureUnitSuffix()"
                                 class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200 text-lg">
                         </div>
                         <div>
                             <label for="rightArm"
                                 class="block text-md font-medium text-gray-600 dark:text-gray-400">Right Arm
                                 ({{unitsService.getBodyMeasureUnitSuffix()}})</label>
-                            <input type="number" min="0" id="rightArm" formControlName="rightArm" [placeholder]="unitsService.getBodyMeasureUnitSuffix()"
+                            <input type="number" min="0" id="rightArm" formControlName="rightArm"
+                                [placeholder]="unitsService.getBodyMeasureUnitSuffix()"
                                 class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200 text-lg">
                         </div>
                     </div>
@@ -130,13 +157,15 @@
                         <label for="goalweight"
                             class="block text-md font-medium text-gray-600 dark:text-gray-400">Target Weight
                             ({{unitsService.getBodyWeightUnitSuffix()}})</label>
-                        <input type="number" min="0" id="goalweight" formControlName="weight" [placeholder]="unitsService.getBodyWeightUnitSuffix()"
+                        <input type="number" min="0" id="goalweight" formControlName="weight"
+                            [placeholder]="unitsService.getBodyWeightUnitSuffix()"
                             class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200 text-lg">
                     </div>
                     <div>
                         <label for="goalwaist" class="block text-md font-medium text-gray-600 dark:text-gray-400">Target
                             Waist ({{unitsService.getBodyMeasureUnitSuffix()}})</label>
-                        <input type="number" min="0" id="goalwaist" formControlName="waist" [placeholder]="unitsService.getBodyMeasureUnitSuffix()"
+                        <input type="number" min="0" id="goalwaist" formControlName="waist"
+                            [placeholder]="unitsService.getBodyMeasureUnitSuffix()"
                             class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200 text-lg">
                     </div>
                     <!-- Add inputs for other goals (chest, hips, etc.) as needed -->
@@ -148,26 +177,37 @@
         <section class="bg-white dark:bg-gray-700 p-4 sm:p-6 rounded-md shadow-md">
             <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">Workout Player Settings</h2>
             <form [formGroup]="appSettingsForm" class="space-y-4">
-                <!-- Player mode -->
-                <div class="flex items-center justify-between">
+                <!-- Player mode (Focus Player) -->
+                <div class="flex items-center justify-between p-2 rounded-md transition-colors"
+                    [class.hover:bg-gray-100]="subscriptionService.isPremium()"
+                    [class.dark:hover:bg-gray-600/50]="subscriptionService.isPremium()"
+                    [class.cursor-pointer]="subscriptionService.isPremium()"
+                    [class.cursor-not-allowed]="!subscriptionService.isPremium()"
+                    (click)="handlePremiumFeatureOrNavigate(PremiumFeature.FOCUS_PLAYER)">
                     <div>
-                        <h3 class="text-md font-medium text-gray-700 dark:text-gray-300">Player Mode</h3>
-                        <p class="text-sm text-gray-500 dark:text-gray-400 mr-1">Choose the player mode</p>
+                        <h3 class="text-md font-medium text-gray-700 dark:text-gray-300 flex items-center">
+                            Player Mode
+                            <span *ngIf="!subscriptionService.isPremium()"
+                                class="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full bg-yellow-400 text-yellow-900">
+                                PREMIUM
+                            </span>
+                        </h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mr-1">Choose between Compact and Focus player
+                        </p>
                     </div>
-                    <label for="player-mode-toggle" class="inline-flex items-center cursor-pointer">
+                    <label class="inline-flex items-center cursor-pointer"
+                        [class.cursor-not-allowed]="!subscriptionService.isPremium()">
                         <span class="sr-only">Toggle Player Mode</span>
-                        <input type="checkbox" id="player-mode-toggle" class="sr-only peer" formControlName="playerMode"
-                            (change)="currentVibrator.vibrate(50)">
+                        <input type="checkbox" class="sr-only peer" formControlName="playerMode"
+                            [disabled]="!subscriptionService.isPremium()" (change)="currentVibrator.vibrate(50)">
                         <div
-                            class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary dark:peer-checked:bg-primary-dark">
+                            class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary dark:peer-checked:bg-primary-dark peer-disabled:opacity-50">
                         </div>
                         <span class="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
-                            {{ appSettingsForm.get('playerMode')?.value ? 'Compact' : 'Focus' }}
+                            {{ appSettingsForm.get('playerMode')?.value ? 'Focus' : 'Compact' }}
                         </span>
                     </label>
                 </div>
-
-
                 <!-- Weight Step -->
                 <div class="border-b border-gray-200 dark:border-gray-600 pb-4">
                     <label for="weightStep" class="block text-md font-medium text-gray-700 dark:text-gray-300">Weight
@@ -250,10 +290,24 @@
 
         <!-- Progressive Overload Section -->
         <section class="bg-white dark:bg-gray-700 p-4 sm:p-6 rounded-md shadow-md">
-            <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">Progressive Overload</h2>
+            <div>
+                <h2 class="text-xl font-medium text-gray-700 dark:text-gray-300 flex items-center">
+                    Progressive Overload
+                    <span *ngIf="!subscriptionService.isPremium()"
+                        class="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full bg-yellow-400 text-yellow-900">
+                        PREMIUM
+                    </span>
+                </h2>
+            </div>
+            <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4"></h2>
             <form [formGroup]="progressiveOverloadForm" class="space-y-4">
                 <!-- Enable/Disable Toggle -->
-                <div class="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-600">
+                <div class="flex items-center justify-between p-2 rounded-md transition-colors"
+                    [class.hover:bg-gray-100]="subscriptionService.isPremium()"
+                    [class.dark:hover:bg-gray-600/50]="subscriptionService.isPremium()"
+                    [class.cursor-pointer]="subscriptionService.isPremium()"
+                    [class.cursor-not-allowed]="!subscriptionService.isPremium()"
+                    (click)="handlePremiumFeatureOrNavigate(PremiumFeature.PROGRESSIVE_OVERLOAD)">
                     <div>
                         <h3 class="text-md font-medium text-gray-700 dark:text-gray-300">Enable Automatic Progression
                         </h3>
@@ -389,10 +443,19 @@
         <!-- Personal Gym Link Section & Exercise List Link Section -->
         <div class="grid sm:grid-cols-2 gap-2">
             <section class="bg-white dark:bg-gray-700 p-4 sm:p-6 rounded-md shadow-md">
-                <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">Personal Gym</h2>
+                <div>
+                    <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">
+                        Personal Gym
+                        <span *ngIf="!subscriptionService.isPremium()"
+                            class="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full bg-yellow-400 text-yellow-900">
+                            PREMIUM
+                        </span>
+                    </h2>
+                </div>
                 <div>
                     <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">View your own equipment</p>
-                    <button appPress (shortPress)="navigateToPersonalGym()"
+                    <button appPress
+                        (shortPress)="handlePremiumFeatureOrNavigate(PremiumFeature.PERSONAL_GYM, ['/personal-gym'])"
                         class="px-4 py-2 bg-indigo-500 hover:bg-indigo-700 text-white font-semibold rounded-md shadow-sm transition-colors inline-flex items-center text-sm">
                         <app-icon name="dumbbell" class="w-6 h-6 mr-1"></app-icon>
                         PERSONAL GYM
@@ -437,7 +500,8 @@
 
                 <!-- Weight Unit -->
                 <div>
-                    <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Weight Units (for exercises and equipments)
+                    <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Weight Units (for exercises and
+                        equipments)
                     </p>
                     <div class="flex space-x-4">
                         <button appPress (shortPress)="selectWeightUnit('kg')"
@@ -450,7 +514,8 @@
                 </div>
                 <!-- Measure Unit -->
                 <div>
-                    <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Measure Units (for exercises and equipments)
+                    <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Measure Units (for exercises
+                        and equipments)
                     </p>
                     <div class="flex space-x-4">
                         <button appPress (shortPress)="selectMeasureUnit('cm')"
@@ -534,9 +599,18 @@
             <!-- START: Modified Menu Mode Section                          -->
             <!-- ========================================================== -->
             <div class="pt-5 border-t border-gray-200 dark:border-gray-600 mt-5">
-                <h3 class="text-md font-medium text-gray-700 dark:text-gray-300">Menu Mode</h3>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">Toggle between dropdown, compact or modal mode
-                </p>
+                <div class="mb-2">
+                    <h3 class="text-md font-medium text-gray-700 dark:text-gray-300 flex items-center">
+                        Menu Mode
+                        <span *ngIf="!subscriptionService.isPremium()"
+                            class="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full bg-yellow-400 text-yellow-900">
+                            PREMIUM
+                        </span>
+                    </h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mr-1">Toggle between dropdown, compact or modal
+                        mode
+                    </p>
+                </div>
                 <div class="flex flex-wrap gap-2">
                     <button appPress (shortPress)="selectMenuMode('dropdown')"
                         class="px-4 py-2 border rounded-md transition-colors text-sm font-semibold"

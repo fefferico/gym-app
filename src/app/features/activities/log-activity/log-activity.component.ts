@@ -11,6 +11,7 @@ import { ActivityService } from '../../../core/services/activity.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { ActivityLog } from '../../../core/models/activity-log.model';
+import { PremiumFeature, SubscriptionService } from '../../../core/services/subscription.service';
 
 export function timeOrderValidator(startTimeKey: string, endTimeKey: string): (group: AbstractControl) => ValidationErrors | null {
     return (group: AbstractControl): ValidationErrors | null => {
@@ -37,6 +38,7 @@ export class LogActivityComponent implements OnInit {
     private toastService = inject(ToastService);
     private router = inject(Router);
     private route = inject(ActivatedRoute);
+    protected subscriptionService = inject(SubscriptionService);
 
     // --- Component State ---
     logActivityForm!: FormGroup;
@@ -66,6 +68,12 @@ export class LogActivityComponent implements OnInit {
     }
 
     ngOnInit(): void {
+        if (!this.subscriptionService.canAccess(PremiumFeature.ACTIVITY)) {
+            this.subscriptionService.showUpgradeModal().then(() => {
+                this.router.navigate(['profile']);
+            });
+        }
+
         this.route.paramMap.pipe(take(1)).subscribe(params => {
             const logId = params.get('id');
             if (logId) {

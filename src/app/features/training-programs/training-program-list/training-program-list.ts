@@ -34,6 +34,7 @@ import { PressDirective } from '../../../shared/directives/press.directive';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { AppSettingsService } from '../../../core/services/app-settings.service';
 import { MenuMode } from '../../../core/models/app-settings.model';
+import { PremiumFeature, SubscriptionService } from '../../../core/services/subscription.service';
 
 interface ScheduledItemWithLogs {
   routine: Routine;
@@ -122,6 +123,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
   private ngZone = inject(NgZone);
   private sanitizer = inject(DomSanitizer);
   private appSettingsService = inject(AppSettingsService);
+  protected subscriptionService = inject(SubscriptionService);
 
   programs$: Observable<TrainingProgram[]> | undefined;
   allProgramsForList = signal<TrainingProgram[]>([]);
@@ -274,6 +276,12 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
   isTouchDevice = false;
 
   ngOnInit(): void {
+    if (!this.subscriptionService.canAccess(PremiumFeature.TRAINING_PROGRAMS)) {
+      this.subscriptionService.showUpgradeModal().then(() => {
+        this.router.navigate(['profile']);
+      });
+    }
+
     if (isPlatformBrowser(this.platformId)) {
       window.scrollTo(0, 0);
       this.isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
@@ -524,7 +532,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
           data: p, // Pass the whole program object
           cssClass: 'bg-primary hover:bg-primary-dark'
         }));
-        programButtons.push({ text: 'Cancel', role: 'cancel', data: null, cssClass: 'bg-gray-400 hover:bg-gray-600', icon:'cancel', iconClass:'w-4 h-4 mr-1' });
+        programButtons.push({ text: 'Cancel', role: 'cancel', data: null, cssClass: 'bg-gray-400 hover:bg-gray-600', icon: 'cancel', iconClass: 'w-4 h-4 mr-1' });
 
         const choice = await this.alertService.showConfirmationDialog(
           'Select Program',
