@@ -250,7 +250,7 @@ viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" >
             <defs>
               <mask id="tickCutoutMask">
                 <rect x="0" y="0" fill="white" />
-                <path d="M7.5 12.5L10.5 15.5L16.5 9.5" stroke="black" stroke-width="2.5" stroke-linecap="round"
+                <path d="M7.5 12.5L10.5 15.5L16.5 9.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
                   stroke-linejoin="round" fill="none" />
               </mask>
             </defs>
