@@ -67,7 +67,7 @@ export const ICONS: Record<string, string> = {
                 </svg>
           `,
   'update': `
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M20 3H4C3.44772 3 3 3.44772 3 4V20C3 20.5523 3.44772 21 4 21H20C20.5523 21 21 20.5523 21 20V4C21 3.44772 20.5523 3 20 3Z" stroke="#33363F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 <path d="M16 3V9H8V3" stroke="#33363F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 <path d="M12 18C13.6569 18 15 16.6569 15 15C15 13.3431 13.6569 12 12 12C10.3431 12 9 13.3431 9 15C9 16.6569 10.3431 18 12 18Z" stroke="#33363F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -244,7 +244,7 @@ viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" >
 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <mask id="tickCutoutMask">
-                <rect x="0" y="0" width="24" height="24" fill="white" />
+                <rect x="0" y="0" fill="white" />
                 <path d="M7.5 12.5L10.5 15.5L16.5 9.5" stroke="black" stroke-width="2.5" stroke-linecap="round"
                   stroke-linejoin="round" fill="none" />
               </mask>
@@ -337,7 +337,7 @@ viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" >
 </svg>
 `,
   'clipboard-list': `
-<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
   <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
   <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
   <line x1="12" y1="11" x2="12" y2="11"></line>
@@ -348,7 +348,7 @@ viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" >
 </svg>
 `,
   'flame': `
-<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
   <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path>
 </svg>
 `,
@@ -364,7 +364,7 @@ viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" >
                             </g>
                         </svg>`,
   'map': `
-<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
   <path d="M12 22s-8-6-8-12a8 8 0 0 1 16 0c0 6-8 12-8 12z"></path>
   <circle cx="12" cy="10" r="3"></circle>
 </svg>
@@ -433,13 +433,13 @@ viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" >
 </svg>
       `,
   'link': `
-      <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
   <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72"/>
   <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72"/>
 </svg>
       `,
   'unlink': `
-      <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
   <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07"/>
   <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07"/>
 </svg>`
