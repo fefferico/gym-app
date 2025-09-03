@@ -4263,15 +4263,6 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
   }
 
   getActionItems(mode: MenuMode): ActionMenuItem[] {
-    const defaultBtnClass = ' rounded-md text-lg text-left p-4 text-white font-bold py-2.5 px-6 flex items-center justify-around ';
-    const deleteBtnClass = 'rounded text-left p-4 font-medium text-gray-600 dark:text-gray-300 hover:bg-red-600 flex items-center hover:text-gray-100 hover:animate-pulse';;
-
-    const isCompact = this.getMenuMode() === 'compact';
-    const isModal = this.getMenuMode() === 'modal';
-    const isDropDown = this.getMenuMode() === 'dropdown';
-    const isDropDownOrCompact = isDropDown || isCompact;
-    const wFullClass = isCompact ? '' : ' w-full';
-
     const actionsArray: ActionMenuItem[] = [];
 
     actionsArray.push(pauseSessionBtn);
@@ -4309,7 +4300,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       actionsArray.push({
         ...removeFromSuperSetBtn,
         data: { exIndex: exercise?.exerciseData?.exerciseId },
-      });
+      } as ActionMenuItem,);
     }
     // RULES 2 & 3: Logic for exercises that are NOT currently in a superset.
     else {
@@ -4322,7 +4313,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
           actionsArray.push({
             ...addToSuperSetBtn,
             data: { exIndex: exercise?.exerciseData?.exerciseId },
-          });
+          } as ActionMenuItem,);
         }
 
         // RULE 2: "Create Superset" is visible if there are at least two "free" exercises to form a new pair.
@@ -4331,7 +4322,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
           actionsArray.push({
             ...createSuperSetBtn,
             data: { exIndex: exercise?.exerciseData?.exerciseId },
-          });
+          } as ActionMenuItem,);
         }
       }
     }

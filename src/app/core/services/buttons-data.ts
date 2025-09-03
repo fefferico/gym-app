@@ -1,3 +1,4 @@
+import { IconLayer } from "../../shared/components/icon/icon.component";
 import { ActionMenuItem } from "../models/action-menu.model";
 
 export const pauseSessionBtn = {
@@ -27,7 +28,20 @@ export const jumpToExerciseBtn = {
 export const switchExerciseBtn = {
     label: 'Switch',
     actionKey: 'switchExercise',
-    iconName: `change`,
+    iconName: [
+        { name: 'dumbbell' },
+        {
+            name: 'none',
+            display: 'filled-padded',
+            class: 'bg-white'
+        },
+        {
+            name: 'change',
+            class: 'text-primary',
+            strokeWidth: 3,
+            size: 'w-4 h-4'
+        }
+    ],
     iconClass: 'w-8 h-8 mr-2',
     buttonClass: ' hover:bg-cyan-600 ',
 } as ActionMenuItem;
@@ -36,7 +50,7 @@ export const openPerformanceInsightsBtn = {
     label: 'Session insight',
     actionKey: 'insight',
     iconName: `schedule`,
-    iconClass: 'w-8 h-8 mr-2',
+    iconClass: 'w-8 h-8',
     buttonClass: ' hover:bg-green-600 ',
 } as ActionMenuItem;
 
@@ -49,9 +63,21 @@ export const quitWorkoutBtn = {
 } as ActionMenuItem;
 
 export const addWarmupSetBtn = {
-    label: '+ Warmup set',
+    label: 'Warmup set',
     actionKey: 'warmup',
-    iconName: `flame`,
+    iconName: [
+        { name: 'flame' },
+        {
+            name: 'none',
+            display: 'filled-padded',
+            class: 'bg-white'
+        },
+        {
+            name: 'plus-circle',
+            class: 'text-primary',
+            strokeWidth: 3
+        }
+    ],
     iconClass: 'w-8 h-8 mr-2',
     buttonClass: ' hover:bg-sky-600 ',
 } as ActionMenuItem;
@@ -91,7 +117,19 @@ export const finishEarlyBtn = {
 export const createSuperSetBtn = {
     label: 'Create Superset',
     actionKey: 'create_superset',
-    iconName: 'link',
+    iconName: [
+        { name: 'link' },
+        {
+            name: 'none',
+            display: 'filled-padded',
+            class: 'bg-white'
+        },
+        {
+            name: 'plus-circle',
+            class: 'text-primary',
+            strokeWidth: 3,
+        }
+    ],
     iconClass: 'w-8 h-8 mr-2',
     buttonClass: ' hover:bg-primary ',
 } as ActionMenuItem
@@ -107,7 +145,19 @@ export const addToSuperSetBtn = {
 export const removeFromSuperSetBtn = {
     label: 'Remove from Superset',
     actionKey: 'remove_from_superset',
-    iconName: 'unlink',
+    iconName: [
+        { name: 'unlink' },
+        {
+            name: 'none',
+            display: 'filled-padded',
+            class: 'bg-white'
+        },
+        {
+            name: 'minus-circle',
+            class: 'text-primary',
+            strokeWidth: 3,
+        }
+    ],
     buttonClass: ' hover:bg-red-800 ',
     iconClass: 'w-8 h-8 mr-2'
 }
@@ -121,8 +171,20 @@ export const removeExerciseBtn = {
 }
 
 export const addSetToExerciseBtn = {
-    label: 'Add Set', actionKey: 'add_set', 
-    iconName: 'plus-circle', 
-    buttonClass: ' hover:bg-teal-800 ', 
+    label: 'Add Set', actionKey: 'add_set',
+    iconName: [
+        { name: 'dumbbell' },
+        {
+            name: 'none',
+            display: 'filled-padded',
+            class: 'bg-white'
+        },
+        {
+            name: 'plus-circle',
+            class: 'text-primary',
+            strokeWidth: 3,
+        }
+    ],
+    buttonClass: ' hover:bg-teal-800 ',
     iconClass: 'w-8 h-8 mr-2'
 }

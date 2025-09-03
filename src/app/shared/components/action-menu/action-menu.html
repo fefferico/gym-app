@@ -5,14 +5,23 @@
         <div *ngIf="isVisible" [@dropdownMenu] [ngClass]="dropdownMenuClass">
             <div class="flex flex-col gap-y-1">
                 <ng-container *ngFor="let item of items">
-                    <div *ngIf="item.isDivider" class="my-0.5 sm:my-1 border-t border-gray-200 dark:border-gray-600">
-                    </div>
+                    <div *ngIf="item.isDivider" class="my-0.5 sm:my-1 border-t border-gray-200 dark:border-gray-600"></div>
                     <button *ngIf="!item.isDivider" type="button" (click)="onItemClicked($event, item)"
                         [ngClass]="defaultDropdownButtonClass + ' ' + item.buttonClass"
                         class="transition-colors duration-150 ease-in-out">
-                        <span *ngIf="getIconHtml(item) as iconHtml" [innerHTML]="iconHtml"
-                            [ngClass]="item.iconClass || 'w-5 h-5 mr-2'">
-                        </span>
+                        
+                        <!-- +++ START: CONDITIONAL ICON RENDERING +++ -->
+                        <!-- Case 1: Complex icon using <app-icon> component -->
+                        <ng-container *ngIf="isComplexIcon(item)">
+                            <app-icon [name]="getIconNameForComponent(item)" [class]="item.iconClass || 'w-5 h-5 mr-3'"></app-icon>
+                        </ng-container>
+
+                        <!-- Case 2: Simple icon using innerHTML (backward compatibility) -->
+                        <ng-container *ngIf="!isComplexIcon(item)">
+                            <span *ngIf="getIconHtml(item) as iconHtml" [innerHTML]="iconHtml" [ngClass]="item.iconClass || 'w-5 h-5 mr-3'"></span>
+                        </ng-container>
+                        <!-- +++ END: CONDITIONAL ICON RENDERING +++ -->
+
                         {{ item.label }}
                     </button>
                 </ng-container>
@@ -20,24 +29,30 @@
         </div>
     </div>
 
-    <!-- 
-      +++ Modal Mode is now handled by the AlertService, so this case is empty. +++
-      The component itself renders nothing. 
-    -->
+    <!-- Modal Mode -->
     <div *ngSwitchCase="'modal'"></div>
 
     <!-- Compact Bar Mode -->
     <div *ngSwitchCase="'compact'">
         <div *ngIf="isVisible" [@compactBar] [ngClass]="compactBarClass + gridClass">
             <ng-container *ngFor="let item of items">
-                <!-- <div *ngIf="item.isDivider" class="my-1 border-t border-gray-200 dark:border-gray-600"></div> -->
                 <button *ngIf="!item.isDivider" type="button" (click)="onItemClicked($event, item)" [title]="item.label"
                     [ngClass]="defaultCompactButtonClass + ' ' + item.buttonClass"
                     class="transition-colors duration-150 ease-in-out">
-                    <span *ngIf="getIconHtml(item) as iconHtml" [innerHTML]="iconHtml"
-                        [ngClass]="item.iconClass || 'w-6 h-6 mr-3'">
-                    </span>
-                    <span *ngIf="showLabelInCompact(item)" class="truncate">{{ item.label }}</span>
+
+                        <!-- +++ START: CONDITIONAL ICON RENDERING (for compact mode) +++ -->
+                        <!-- Case 1: Complex icon using <app-icon> component -->
+                        <ng-container *ngIf="isComplexIcon(item)">
+                            <app-icon [name]="getIconNameForComponent(item)" [class]="item.iconClass || 'w-6 h-6'"></app-icon>
+                        </ng-container>
+
+                        <!-- Case 2: Simple icon using innerHTML (backward compatibility) -->
+                        <ng-container *ngIf="!isComplexIcon(item)">
+                            <span *ngIf="getIconHtml(item) as iconHtml" [innerHTML]="iconHtml" [ngClass]="item.iconClass || 'w-6 h-6'"></span>
+                        </ng-container>
+                        <!-- +++ END: CONDITIONAL ICON RENDERING (for compact mode) +++ -->
+
+                        <span *ngIf="showLabelInCompact(item)" class="truncate ml-2">{{ item.label }}</span>
                 </button>
             </ng-container>
         </div>
@@ -45,3 +60,5 @@
 </ng-container>
 
 <div class="hidden dark:hover:text-gray-100"></div>
+<div class="hidden scale-125"></div>
+<div class="hidden scale-110"></div>

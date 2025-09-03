@@ -6,7 +6,7 @@ import { animate, state, style, transition, trigger } from '@angular/animations'
 import { ActionMenuItem } from '../../../core/models/action-menu.model';
 import { IconRegistryService } from '../../../core/services/icon-registry.service';
 import { MenuMode } from '../../../core/models/app-settings.model';
-import { IconComponent } from '../icon/icon.component';
+import { IconComponent, IconLayer } from '../icon/icon.component';
 // +++ 1. Import the AlertService and the AlertButton model +++
 import { AlertService } from '../../../core/services/alert.service';
 import { AlertButton } from '../../../core/models/alert.model';
@@ -53,7 +53,7 @@ export const compactBarAnimation = trigger('compactBar', [
 @Component({
   selector: 'app-action-menu',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, IconComponent],
   templateUrl: './action-menu.html',
   animations: [dropdownMenuAnimation, compactBarAnimation, modalOverlayAnimation, modalContentAnimation],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -172,9 +172,14 @@ export class ActionMenuComponent implements OnChanges, OnDestroy {
     }
   }
 
+/**
+   * Renders a simple icon from a string name or a raw SVG.
+   * This method is kept for backward compatibility.
+   */
   getIconHtml(button: ActionMenuItem): SafeHtml | null {
     let svgString: string | null = null;
-    if (button.iconName) {
+    // Only process if iconName is a simple string
+    if (typeof button.iconName === 'string') {
       svgString = this.iconRegistry.getIconString(button.iconName);
     } else if (button.iconSvg) {
       svgString = button.iconSvg;
@@ -184,5 +189,19 @@ export class ActionMenuComponent implements OnChanges, OnDestroy {
 
   showLabelInCompact(item: ActionMenuItem): boolean {
     return !!item.label;
+  }
+  /**
+   * +++ 3. NEW HELPER: Determines if an icon should be rendered using the <app-icon> component.
+   * This is true if iconName is an object or an array (which are both of type 'object').
+   */
+  isComplexIcon(item: ActionMenuItem): boolean {
+    return typeof item.iconName === 'object' && item.iconName !== null;
+  }
+  
+  /**
+   * Helper to cast the iconName for the <app-icon> component's [name] binding.
+   */
+  getIconNameForComponent(item: ActionMenuItem): IconLayer | (string | IconLayer)[] {
+    return item.iconName as IconLayer | (string | IconLayer)[];
   }
 }

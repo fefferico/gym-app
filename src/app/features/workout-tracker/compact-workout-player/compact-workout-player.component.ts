@@ -1207,14 +1207,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     }
   }
 
-  // getExerciseActionItems(exerciseId: number, mode: MenuMode): ActionMenuItem[] {
-  //   if (this.getMenuMode() === 'compact'){
-  //     this.getCompactActionItems(exerciseId,mode);
-  //   } else {
-  //     this.get(exerciseId,mode);
-  //   }
-  // }
-
   getCompactActionItems(exerciseId: number, mode: MenuMode): ActionMenuItem[] {
     const exercise = this.routine()?.exercises[exerciseId];
 
@@ -1234,16 +1226,16 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       {
         ...addWarmupSetBtn,
         data: { exIndex: exerciseId }
-      },
+      } as ActionMenuItem,
       {
         ...addSetToExerciseBtn,
         data: { exIndex: exerciseId },
-      },
+      } as ActionMenuItem,
       { isDivider: true },
       {
         ...removeExerciseBtn,
         data: { exIndex: exerciseId },
-      }
+      } as ActionMenuItem,
     ];
 
     const routine = this.routine(); // Get the routine once at the top
@@ -1253,7 +1245,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       actionsArray.push({
         ...removeFromSuperSetBtn,
         data: { exIndex: exerciseId },
-      });
+      } as ActionMenuItem);
     }
     // RULES 2 & 3: Logic for exercises that are NOT currently in a superset.
     else {
@@ -1266,7 +1258,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
           actionsArray.push({
             ...addToSuperSetBtn,
             data: { exIndex: exerciseId },
-          });
+          } as ActionMenuItem,);
         }
 
         // RULE 2: "Create Superset" is visible if there are at least two "free" exercises to form a new pair.
@@ -1275,7 +1267,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
           actionsArray.push({
             ...createSuperSetBtn,
             data: { exIndex: exerciseId },
-          });
+          } as ActionMenuItem,);
         }
       }
     }
