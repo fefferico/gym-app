@@ -31,7 +31,7 @@ import { format } from 'date-fns';
 import { ActionMenuComponent } from '../../../shared/components/action-menu/action-menu';
 import { MenuMode } from '../../../core/models/app-settings.model';
 import { ActionMenuItem } from '../../../core/models/action-menu.model';
-import { mapLoggedExercisesToRoutineSnapshot, mapRoutineSnapshotToLoggedExercises } from '../../../core/models/workout-mapper';
+import { addExerciseBtn, addToSuperSetBtn, addWarmupSetBtn, createSuperSetBtn, finishEarlyBtn, jumpToExerciseBtn, markAsDoLaterBtn, openPerformanceInsightsBtn, pauseSessionBtn, quitWorkoutBtn, removeFromSuperSetBtn, skipCurrentExerciseBtn, skipCurrentSetBtn, switchExerciseBtn } from '../../../core/services/buttons-data';
 
 
 // Interface to manage the state of the currently active set/exercise
@@ -4263,7 +4263,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
   }
 
   getActionItems(mode: MenuMode): ActionMenuItem[] {
-    const defaultBtnClass = ' rounded-md text-lg text-left p-4 text-white font-bold py-2.5 px-6 flex items-center ';
+    const defaultBtnClass = ' rounded-md text-lg text-left p-4 text-white font-bold py-2.5 px-6 flex items-center justify-around ';
     const deleteBtnClass = 'rounded text-left p-4 font-medium text-gray-600 dark:text-gray-300 hover:bg-red-600 flex items-center hover:text-gray-100 hover:animate-pulse';;
 
     const isCompact = this.getMenuMode() === 'compact';
@@ -4271,94 +4271,6 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     const isDropDown = this.getMenuMode() === 'dropdown';
     const isDropDownOrCompact = isDropDown || isCompact;
     const wFullClass = isCompact ? '' : ' w-full';
-
-    const pauseSessionBtn = {
-      label: 'PAUSE',
-      actionKey: 'pause',
-      iconName: `pause`,
-      iconClass: 'w-8 h-8 mr-2',
-      buttonClass: defaultBtnClass + (this.sessionState() !== 'playing' ? 'disabled ' : '') + 'flex justify-center items-center max-w-xs ' + (isDropDownOrCompact ? ' ' : ' bg-yellow-500 ') + 'hover:bg-yellow-600 text-white font-bold py-2.5 px-6 rounded-md text-lg shadow-lg disabled:opacity-60 disabled:cursor-not-allowed' + wFullClass,
-    } as ActionMenuItem;
-
-    const jumpToExerciseBtn = {
-      label: 'JUMP TO EXERCISE',
-      actionKey: 'jumpToExercise',
-      iconName: `dumbbell`,
-      iconClass: 'w-8 h-8 mr-2',
-      buttonClass: defaultBtnClass + (this.sessionState() === 'paused' || !this.routine()?.exercises?.length ? 'disabled ' : '') + 'flex justify-center items-center max-w-xs ' + (isDropDownOrCompact ? ' ' : ' bg-fuchsia-500 ') + ' hover:bg-fuchsia-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed' + wFullClass,
-    } as ActionMenuItem;
-
-    const addExerciseBtn = {
-      label: 'ADD EXERCISE',
-      actionKey: 'addExercise',
-      iconName: `plus-circle`,
-      iconClass: 'w-8 h-8 mr-2',
-      buttonClass: defaultBtnClass + (this.sessionState() === 'paused' || !this.routine()?.exercises?.length ? 'disabled ' : '') + 'flex items-center justify-center align-center max-w-xs ' + (isDropDownOrCompact ? ' ' : ' bg-purple-500 ') + ' hover:bg-purple-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed' + wFullClass,
-    } as ActionMenuItem;
-
-    const switchExerciseBtn = {
-      label: 'SWITCH EXERCISE',
-      actionKey: 'switchExercise',
-      iconName: `change`,
-      iconClass: 'w-8 h-8 mr-2',
-      buttonClass: defaultBtnClass + 'max-w-xs ' + (isDropDownOrCompact ? ' ' : ' bg-cyan-500 ') + ' hover:bg-cyan-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center' + wFullClass,
-    } as ActionMenuItem;
-
-    const openPerformanceInsightsBtn = {
-      label: 'SESSION INSIGHT',
-      actionKey: 'insight',
-      iconName: `schedule`,
-      iconClass: 'w-8 h-8 mr-2',
-      buttonClass: defaultBtnClass + (this.sessionState() === 'paused' || !this.activeSetInfo() ? 'disabled ' : '') + 'flex items-center justify-center align-center max-w-xs ' + (isDropDownOrCompact ? ' ' : ' bg-green-500 ') + ' hover:bg-green-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed' + wFullClass,
-    } as ActionMenuItem;
-
-    const quitWorkoutBtn = {
-      label: 'EXIT',
-      actionKey: 'exit',
-      iconName: `exit-door`,
-      iconClass: 'w-8 h-8 mr-2',
-      buttonClass: defaultBtnClass + '' + 'flex items-center justify-center max-w-xs text-white ' + (isDropDownOrCompact ? ' ' : ' bg-red-500 ') + ' hover:bg-red-800 font-medium py-2 px-6 rounded-md text-md' + wFullClass,
-    } as ActionMenuItem;
-
-    const addWarmupSetBtn = {
-      label: 'ADD WARMUP SET',
-      actionKey: 'warmup',
-      iconName: `flame`,
-      iconClass: 'w-8 h-8 mr-2',
-      buttonClass: defaultBtnClass + '' + 'flex items-center justify-center max-w-xs ' + (isDropDownOrCompact ? ' ' : ' bg-sky-500 ') + ' hover:bg-sky-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed' + wFullClass,
-    } as ActionMenuItem;
-
-    const skipCurrentSetBtn = {
-      label: 'SKIP SET',
-      actionKey: 'skipSet',
-      iconName: `skip`,
-      iconClass: 'w-8 h-8 mr-2',
-      buttonClass: defaultBtnClass + (!this.activeSetInfo() || this.sessionState() === 'paused' ? 'disabled ' : '') + 'flex items-center justify-center max-w-xs ' + (isDropDownOrCompact ? ' ' : ' bg-blue-500 ') + ' hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed' + wFullClass,
-    } as ActionMenuItem;
-
-    const skipCurrentExerciseBtn = {
-      label: 'SKIP EXERCISE',
-      actionKey: 'skipExercise',
-      iconName: `skip`,
-      iconClass: 'w-8 h-8 mr-2',
-      buttonClass: defaultBtnClass + (!this.activeSetInfo() || this.sessionState() === 'paused' ? 'disabled ' : '') + 'flex items-center justify-center max-w-xs ' + (isDropDownOrCompact ? ' ' : ' bg-indigo-500 ') + ' hover:bg-indigo-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed' + wFullClass,
-    } as ActionMenuItem;
-
-    const markAsDoLaterBtn = {
-      label: 'DO LATER',
-      actionKey: 'later',
-      iconName: `clock`,
-      iconClass: 'w-8 h-8 mr-2',
-      buttonClass: defaultBtnClass + (!this.activeSetInfo() || this.sessionState() === 'paused' ? 'disabled ' : '') + 'flex items-center justify-center max-w-xs ' + (isDropDownOrCompact ? ' ' : ' bg-orange-500 ') + ' hover:bg-orange-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed' + wFullClass,
-    } as ActionMenuItem;
-
-    const finishEarly = {
-      label: 'FINISH EARLY',
-      actionKey: 'finish',
-      iconName: `done`,
-      iconClass: 'w-8 h-8 mr-2',
-      buttonClass: defaultBtnClass + (this.sessionState() === 'paused' || this.currentWorkoutLogExercises().length === 0 ? 'disabled ' : '') + 'flex items-center justify-center max-w-xs ' + (isDropDownOrCompact ? ' ' : ' bg-teal-500 ') + ' hover:bg-teal-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed' + wFullClass,
-    } as ActionMenuItem;
 
     const actionsArray: ActionMenuItem[] = [];
 
@@ -4372,7 +4284,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     if (this.canSwitchExercise()) {
       actionsArray.push(switchExerciseBtn);
     }
-    if (!this.checkIfSetIsPartOfRounds() && (this.currentWorkoutLogExercises() && this.currentWorkoutLogExercises().length)) {
+    if (!this.checkIfSetIsPartOfRounds() && (this.routine() && this.routine()?.exercises.length)) {
       actionsArray.push(jumpToExerciseBtn);
     }
     if (!this.checkIfSuperSetIsStarted() && this.canAddWarmupSet()) {
@@ -4388,19 +4300,15 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       actionsArray.push(markAsDoLaterBtn);
     }
     if (this.currentWorkoutLogExercises().length > 0) {
-      actionsArray.push(finishEarly);
+      actionsArray.push(finishEarlyBtn);
     }
 
     const routine = this.routine(); // Get the routine once at the top
     const exercise = this.activeSetInfo();
     if (exercise?.exerciseData?.supersetId) {
       actionsArray.push({
-        label: 'Remove from Superset',
-        actionKey: 'remove_from_superset',
-        iconName: 'unlink',
+        ...removeFromSuperSetBtn,
         data: { exIndex: exercise?.exerciseData?.exerciseId },
-        buttonClass: wFullClass + deleteBtnClass,
-        iconClass: 'w-8 h-8 mr-2'
       });
     }
     // RULES 2 & 3: Logic for exercises that are NOT currently in a superset.
@@ -4412,12 +4320,8 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
         const aSupersetExists = routine.exercises.some(ex => ex.supersetId);
         if (aSupersetExists) {
           actionsArray.push({
-            label: 'Add to Superset',
-            actionKey: 'add_to_superset', // Assumes this might trigger a different UI flow
-            iconName: 'link',
+            ...addToSuperSetBtn,
             data: { exIndex: exercise?.exerciseData?.exerciseId },
-            buttonClass: wFullClass + defaultBtnClass,
-            iconClass: 'w-8 h-8 mr-2'
           });
         }
 
@@ -4425,12 +4329,8 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
         const canCreateNewSuperset = routine.exercises.filter(ex => !ex.supersetId).length >= 2;
         if (canCreateNewSuperset) {
           actionsArray.push({
-            label: 'Create Superset',
-            actionKey: 'create_superset',
-            iconName: 'link',
+            ...createSuperSetBtn,
             data: { exIndex: exercise?.exerciseData?.exerciseId },
-            buttonClass: wFullClass + defaultBtnClass,
-            iconClass: 'w-8 h-8 mr-2'
           });
         }
       }
@@ -4507,7 +4407,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     // If the utility function returns updated data, apply it back to the source signals
     if (result) {
       // --- START: CORRECTED NAVIGATION LOGIC ---
-      
+
       // 1. Get the new superset ID directly from the result. This is now reliable.
       const { newSupersetId, updatedRoutine, updatedLoggedExercises } = result;
 

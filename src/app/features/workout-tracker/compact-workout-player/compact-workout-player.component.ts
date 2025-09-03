@@ -40,6 +40,7 @@ import { PausedWorkoutState, PlayerSubState } from '../workout-player';
 import { TrainingProgram } from '../../../core/models/training-program.model';
 import { AlertButton, AlertInput } from '../../../core/models/alert.model';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
+import { addSetToExerciseBtn, addToSuperSetBtn, addWarmupSetBtn, createSuperSetBtn, openPerformanceInsightsBtn, removeExerciseBtn, removeFromSuperSetBtn, switchExerciseBtn } from '../../../core/services/buttons-data';
 
 // Interface for saving the paused state
 
@@ -1217,45 +1218,31 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   getCompactActionItems(exerciseId: number, mode: MenuMode): ActionMenuItem[] {
     const exercise = this.routine()?.exercises[exerciseId];
 
-    const defaultBtnClass = 'rounded text-left p-3 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-primary flex items-center hover:text-white dark:hover:text-gray-100 dark:hover:text-white';
-    const warmupBtnClass = 'rounded text-left p-3 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-blue-400 flex items-center hover:text-white dark:hover:text-gray-100 dark:hover:text-white';
-    const deleteBtnClass = 'rounded text-left p-3 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-red-600 inline-flex items-center hover:text-gray-100 hover:animate-pulse';;
-
-    const wFullClass = (mode === 'dropdown' ? ' w-full ' : '');
-
-    const switchExerciseBtn = {
-      label: 'Switch exercise',
-      actionKey: 'switch',
+    const currSwitchExerciseBtn = {
+      ...switchExerciseBtn,
       data: { exIndex: exerciseId },
-      iconName: `change`,
-      iconClass: 'w-8 h-8 mr-2',
-      buttonClass: wFullClass + defaultBtnClass,
     } as ActionMenuItem;
 
-    const openPerformanceInsightsBtn = {
-      label: 'Performance insight',
-      actionKey: 'insights',
-      iconName: `chart`,
-      iconClass: 'w-8 h-8 mr-2',
+    const currOpenPerformanceInsightsBtn = {
+      ...openPerformanceInsightsBtn,
       data: { exIndex: exerciseId },
-      buttonClass: (this.sessionState() === 'paused' || !this.lastSetInfo() ? 'disabled ' : '') + defaultBtnClass,
     } as ActionMenuItem;
 
     const actionsArray: ActionMenuItem[] = [
-      switchExerciseBtn,
-      openPerformanceInsightsBtn,
+      currSwitchExerciseBtn,
+      currOpenPerformanceInsightsBtn,
       {
-        label: 'Add Warm-up Set', actionKey: 'add_warmup', iconName: 'flame', data: { exIndex: exerciseId },
-        buttonClass: wFullClass + warmupBtnClass, iconClass: 'w-8 h-8 mr-2'
+        ...addWarmupSetBtn,
+        data: { exIndex: exerciseId }
       },
       {
-        label: 'Add Set', actionKey: 'add_set', iconName: 'plus-circle', data: { exIndex: exerciseId },
-        buttonClass: wFullClass + defaultBtnClass, iconClass: 'w-8 h-8 mr-2'
+        ...addSetToExerciseBtn,
+        data: { exIndex: exerciseId },
       },
       { isDivider: true },
       {
-        label: 'Remove Exercise', actionKey: 'remove', iconName: 'trash', data: { exIndex: exerciseId },
-        buttonClass: wFullClass + deleteBtnClass, iconClass: 'w-8 h-8 mr-2'
+        ...removeExerciseBtn,
+        data: { exIndex: exerciseId },
       }
     ];
 
@@ -1264,12 +1251,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     // RULE 1: "Remove from Superset" is visible only if the current exercise is part of a superset.
     if (exercise?.supersetId) {
       actionsArray.push({
-        label: 'Remove from Superset',
-        actionKey: 'remove_from_superset',
-        iconName: 'unlink',
+        ...removeFromSuperSetBtn,
         data: { exIndex: exerciseId },
-        buttonClass: wFullClass + deleteBtnClass,
-        iconClass: 'w-8 h-8 mr-2'
       });
     }
     // RULES 2 & 3: Logic for exercises that are NOT currently in a superset.
@@ -1281,12 +1264,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         const aSupersetExists = routine.exercises.some(ex => ex.supersetId);
         if (aSupersetExists) {
           actionsArray.push({
-            label: 'Add to Superset',
-            actionKey: 'add_to_superset', // Assumes this might trigger a different UI flow
-            iconName: 'link',
+            ...addToSuperSetBtn,
             data: { exIndex: exerciseId },
-            buttonClass: wFullClass + defaultBtnClass,
-            iconClass: 'w-8 h-8 mr-2'
           });
         }
 
@@ -1294,12 +1273,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         const canCreateNewSuperset = routine.exercises.filter(ex => !ex.supersetId).length >= 2;
         if (canCreateNewSuperset) {
           actionsArray.push({
-            label: 'Create Superset',
-            actionKey: 'create_superset',
-            iconName: 'link',
+            ...createSuperSetBtn,
             data: { exIndex: exerciseId },
-            buttonClass: wFullClass + defaultBtnClass,
-            iconClass: 'w-8 h-8 mr-2'
           });
         }
       }
