@@ -28,6 +28,7 @@ import { UserProfileService } from '../../core/services/user-profile.service';
 import { AppSettingsService } from '../../core/services/app-settings.service';
 import { MenuMode } from '../../core/models/app-settings.model';
 import { PremiumFeature, SubscriptionService } from '../../core/services/subscription.service';
+import { cloneBtn, deleteBtn, editBtn, favouriteBtn, hideBtn, historyBtn, startBtn, unhideBtn, unmarkFavouriteBtn, viewBtn } from '../../core/services/buttons-data';
 
 @Component({
   selector: 'app-routine-list',
@@ -656,83 +657,44 @@ export class RoutineListComponent implements OnInit, OnDestroy {
 
 
   getRoutineDropdownActionItems(routineId: string, mode: MenuMode): ActionMenuItem[] {
-    const defaultBtnClass = 'rounded p-4 font-medium text-gray-600 dark:text-gray-300 hover:bg-primary flex items-center hover:text-white dark:hover:text-gray-100 dark:hover:text-white';
-    const deleteBtnClass = 'rounded p-4 font-medium text-gray-600 dark:text-gray-300 hover:bg-red-600 flex items-center hover:text-gray-100 hover:animate-pulse';;
-
     const currentRoutine = this.allRoutinesForList().find(routine => routine.id === routineId);
-    const hideRoutineButton = {
-      label: 'HIDE',
-      actionKey: 'hide',
-      iconName: `eye-off`,
-      iconClass: 'w-8 h-8 mr-2', // Adjusted for consistency if needed,
-      buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+    const currHideRoutineButton = {
+      ...hideBtn,
       data: { routineId }
     };
     const unhideRoutineButton = {
-      label: 'UNHIDE',
-      actionKey: 'unhide',
-      iconName: `eye`,
-      iconClass: 'w-8 h-8 mr-2', // Adjusted for consistency if needed,
-      buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+      ...unhideBtn,
       data: { routineId }
     };
     const markAsFavouriteRoutineButton = {
-      label: 'FAVOURITE',
-      actionKey: 'markAsFavourite',
-      iconName: `favourite`,
-      iconClass: 'w-8 h-8 mr-2', // Adjusted for consistency if needed,
-      buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+      ...favouriteBtn,
       data: { routineId }
     };
     const unmarkAsFavouriteRoutineButton = {
-      label: 'UNMARK',
-      actionKey: 'unmarkAsFavourite',
-      iconName: 'unmark',
-      iconClass: 'w-8 h-8 mr-2', // Adjusted for consistency if needed,
-      buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+      ...unmarkFavouriteBtn,
       data: { routineId }
     };
 
     const routineHistoryBtn = {
-      label: 'HISTORY',
-      actionKey: 'history',
-      iconName: `clock`,
-      iconClass: 'w-8 h-8 mr-2',
-      buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+      ...historyBtn,
       data: { routineId }
     } as ActionMenuItem;
 
     const actionsArray = [
       {
-        label: 'VIEW',
-        actionKey: 'view',
-        iconName: `eye`,
-        iconClass: 'w-8 h-8 mr-2', // Adjusted for consistency if needed,
-        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+        ...viewBtn,
         data: { routineId }
       },
       {
-        label: 'START',
-        actionKey: 'start',
-        iconName: `play`,
-        iconClass: 'w-8 h-8 mr-2',
-        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+        ...startBtn,
         data: { routineId }
       },
       {
-        label: 'EDIT',
-        actionKey: 'edit',
-        iconName: `edit`,
-        iconClass: 'w-8 h-8 mr-2',
-        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+        ...editBtn,
         data: { routineId }
       },
       {
-        label: 'CLONE',
-        actionKey: 'clone',
-        iconName: `copy`,
-        iconClass: 'w-8 h-8 mr-2',
-        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+        ...cloneBtn,
         data: { routineId }
       },
       routineHistoryBtn
@@ -743,7 +705,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     } else {
       // Only show the "Hide" button if we are not already in the "Show Hidden" view
       if (!this.showHiddenRoutines()) {
-        actionsArray.push(hideRoutineButton);
+        actionsArray.push(currHideRoutineButton);
       }
     }
 
@@ -753,13 +715,8 @@ export class RoutineListComponent implements OnInit, OnDestroy {
       actionsArray.push(markAsFavouriteRoutineButton);
     }
     actionsArray.push(...[
-      { isDivider: true },
       {
-        label: 'DELETE',
-        actionKey: 'delete',
-        iconName: `trash`,
-        iconClass: 'w-8 h-8 mr-2',
-        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + deleteBtnClass,
+        ...deleteBtn,
         data: { routineId }
       }
     ] as ActionMenuItem[])

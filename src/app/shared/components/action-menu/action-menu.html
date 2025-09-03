@@ -3,7 +3,7 @@
     <!-- Dropdown Mode -->
     <div *ngSwitchCase="'dropdown'">
         <div *ngIf="isVisible" [@dropdownMenu] [ngClass]="dropdownMenuClass">
-            <div class="flex flex-col gap-y-1">
+            <div class="{{'flex flex-col gap-y-1' + ' ' + gridClass}}">
                 <ng-container *ngFor="let item of items">
                     <div *ngIf="item.isDivider" class="my-0.5 sm:my-1 border-t border-gray-200 dark:border-gray-600"></div>
                     <button *ngIf="!item.isDivider" type="button" (click)="onItemClicked($event, item)"

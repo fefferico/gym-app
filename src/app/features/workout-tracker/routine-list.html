@@ -157,7 +157,7 @@
                                 </button>
                                 <app-action-menu *ngIf="areActionsVisible(routine.id) && menuModeDropdown"
                                     displayMode="dropdown"
-                                    [gridClass]="'grid grid-cols-1'"
+                                    [gridClass]="' grid grid-cols-2 '"
                                     [items]="getRoutineDropdownActionItems(routine.id, 'dropdown')"
                                     [isVisible]="areActionsVisible(routine.id)"
                                     (itemClick)="handleActionMenuItemClick($event)" (closeMenu)="onCloseActionMenu()">

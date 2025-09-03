@@ -20,6 +20,7 @@ import { Exercise } from '../../../core/models/exercise.model';
 import { AlertService } from '../../../core/services/alert.service';
 import { AlertButton } from '../../../core/models/alert.model';
 import { AppSettingsService } from '../../../core/services/app-settings.service';
+import { IconComponent } from '../../../shared/components/icon/icon.component';
 
 
 // Interface to manage the state of the currently active set/exercise
@@ -42,7 +43,7 @@ export interface HIITInterval {
 @Component({
     selector: 'app-tabata-player',
     standalone: true,
-    imports: [CommonModule, DecimalPipe, PressDirective],
+    imports: [CommonModule, DecimalPipe, PressDirective, IconComponent],
     templateUrl: './tabata-workout-player.component.html',
     styleUrl: './tabata-workout-player.component.scss',
 })
@@ -166,6 +167,34 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
         } else {
             this.loadNewWorkoutFromRoute();
         }
+    }
+
+    private logCompletedTabataInterval(): void {
+        const routine = this.routine();
+        const activeInfo = this.activeSetInfo(); // Relies on setPlayerStateFromTabataIndex to be correct
+
+        if (!activeInfo || !routine) {
+            console.warn("Could not log Tabata interval: active set info is missing.");
+            return;
+        }
+
+        const { exerciseData, setData } = activeInfo;
+
+        // Create a log entry based on the *planned* work interval, not a form.
+        const loggedSetData: LoggedSet = {
+            id: uuidv4(),
+            exerciseName: exerciseData.exerciseName,
+            plannedSetId: `${setData.id}-round-${this.currentBlockRound()}`,
+            exerciseId: exerciseData.exerciseId,
+            type: 'tabata', // Use a specific type for easy filtering later
+            repsAchieved: 0, // Not tracked in this mode
+            weightUsed: 0,   // Not tracked in this mode
+            durationPerformed: setData.duration || 0, // Log the planned work duration
+            timestamp: new Date().toISOString(),
+            supersetCurrentRound: this.currentBlockRound() - 1,
+        };
+
+        this.addLoggedSetToCurrentLog(exerciseData, loggedSetData);
     }
 
     private async checkForPausedSession(isReEntry: boolean = false): Promise<boolean> {
@@ -746,7 +775,6 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
         }
         // +++ END: NEW PROGRAM COMPLETION CHECK +++
 
-        this.toastService.success("Tabata Workout Complete!", 5000, "Workout Finished", false);
 
         if (finalRoutineIdToLog) {
             const routineToUpdate = await firstValueFrom(this.workoutService.getRoutineById(finalRoutineIdToLog).pipe(take(1)));
@@ -762,6 +790,7 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
 
         this.stopAllActivity();
         this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
+        this.toastService.success("Tabata Workout Complete!", 5000, "Workout Finished", false);
         this.router.navigate(['/workout/summary', savedLog.id]);
         return true;
     }
@@ -1492,27 +1521,26 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
       * Navigates to the next interval in the Tabata sequence.
       */
     nextTabataInterval(): void {
-        // First, if the interval that just finished was a "work" interval, log it.
+        // If the interval that just finished was a "work" interval, log it.
         if (this.currentTabataInterval()?.type === 'work') {
-            this.completeAndLogCurrentSet();
+            this.logCompletedTabataInterval(); // <-- USE THE NEW METHOD
         }
 
         const nextIndex = this.currentTabataIntervalIndex() + 1;
 
         if (nextIndex < this.tabataIntervals().length) {
-            // There are more intervals, so proceed to the next one.
-            // The helper function will set the currentExerciseIndex, setIndex, AND the currentBlockRound.
             this.setPlayerStateFromTabataIndex(nextIndex);
             this.startCurrentTabataInterval();
         } else {
-            // Reached the end of the very last interval.
+            // Reached the end
             this.tabataTimeRemaining.set(0);
             if (this.tabataTimerSub) this.tabataTimerSub.unsubscribe();
             this.sessionState.set(SessionState.End);
-            // Now that the session is truly over, finalize and save.
             this.finishWorkoutAndReportStatus();
-        } 1
+        }
     }
+
+
     /**
      * Navigates to the previous interval in the Tabata sequence.
      */
@@ -1589,14 +1617,14 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
     }
 
     private stopAllActivity(): void {
-        // this.isSessionConcluded = true;
+        this.isSessionConcluded = true; // IMPORTANT: Ensure this is set here
         console.log('stopAllActivity - Stopping timers and auto-save');
         this.stopAutoSave();
         if (this.timerSub) this.timerSub.unsubscribe();
         if (this.timedSetIntervalSub) this.timedSetIntervalSub.unsubscribe();
         if (this.tabataTimerSub) this.tabataTimerSub.unsubscribe();
         this.isRestTimerVisible.set(false);
-        // this.sessionState.set(SessionState.End);
+        this.sessionState.set(SessionState.End);
     }
 
     stopAndLogTimedSet(): void {
@@ -1845,5 +1873,23 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
         this.currentSetForm.get('actualDuration')?.setValue(targetDuration ?? 0, { emitEvent: false });
         this.soundPlayedForThisCountdownSegment = false;
     }
+
+    async quitWorkout(): Promise<void> {
+        const confirm = await this.alertService.showConfirm(
+            "Quit Workout",
+            'Are you sure you want to quit? Your progress will not be saved.',
+            "Quit",
+            "Cancel"
+        );
+
+        if (confirm?.data) {
+            this.isSessionConcluded = true;
+            this.stopAllActivity();
+            this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
+            this.router.navigate(['/workout']);
+            this.toastService.info("Workout quit. No progress saved.", 4000);
+        }
+    }
+
 
 }

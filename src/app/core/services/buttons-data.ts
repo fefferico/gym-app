@@ -215,3 +215,104 @@ export const sessionNotesBtn = {
     buttonClass: ' hover:bg-green-600 ',
     iconClass: 'w-8 h-8 mr-2'
 }
+
+export const hideBtn = {
+    label: 'HIDE',
+    actionKey: 'hide',
+    iconName: `eye-off`,
+    iconClass: 'w-8 h-8 mr-2', // Adjusted for consistency if needed,
+    buttonClass: ' hover:bg-primary ',
+}
+
+export const unhideBtn = {
+    label: 'UNHIDE',
+    actionKey: 'unhide',
+    iconName: `eye`,
+    iconClass: 'w-8 h-8 mr-2', // Adjusted for consistency if needed,
+    buttonClass: ' hover:bg-primary ',
+}
+
+
+export const favouriteBtn = {
+    label: 'MARK',
+    actionKey: 'markAsFavourite',
+    iconName: `favourite`,
+    iconClass: 'w-8 h-8 mr-2', // Adjusted for consistency if needed,
+    buttonClass: ' hover:bg-primary ',
+}
+
+export const unmarkFavouriteBtn = {
+    label: 'UNMARK',
+    actionKey: 'unmarkAsFavourite',
+    iconName: `unmark`,
+    iconClass: 'w-8 h-8 mr-2', // Adjusted for consistency if needed,
+    buttonClass: ' hover:bg-primary ',
+}
+
+export const historyBtn = {
+    label: 'LOGS',
+    actionKey: 'history',
+    iconName: `clock`,
+    iconClass: 'w-8 h-8 mr-2', // Adjusted for consistency if needed,
+    buttonClass: ' hover:bg-primary ',
+}
+
+export const viewBtn = {
+    label: 'VIEW',
+    actionKey: 'view',
+    iconName: `eye`,
+    iconClass: 'w-8 h-8 mr-2', // Adjusted for consistency if needed,
+    buttonClass: ' hover:bg-primary ',
+}
+
+export const startBtn = {
+    label: 'START',
+    actionKey: 'start',
+    iconName: `play`,
+    iconClass: 'w-8 h-8 mr-2',
+    buttonClass: ' hover:bg-primary ',
+}
+
+export const editBtn = {
+    label: 'EDIT',
+    actionKey: 'edit',
+    iconName: `edit`,
+    iconClass: 'w-8 h-8 mr-2',
+    buttonClass: ' hover:bg-primary ',
+}
+
+export const cloneBtn = {
+    label: 'CLONE',
+    actionKey: 'clone',
+    iconName: `copy`,
+    iconClass: 'w-8 h-8 mr-2',
+    buttonClass: ' hover:bg-primary ',
+}
+
+
+export const deleteBtn = {
+    label: 'DELETE',
+    actionKey: 'delete',
+    iconName: `trash`,
+    iconClass: 'w-8 h-8 mr-2',
+    buttonClass: ' hover:bg-red-600 hover:animate-pulse',
+}
+
+
+export const createFromBtn =
+{
+    label: 'CREATE ROUTINE',
+    actionKey: 'create_routine',
+    iconName: `create-folder`,
+    iconClass: 'w-8 h-8 mr-2',
+    buttonClass: ' hover:bg-primary ',
+}
+
+
+export const routineBtn = {
+    label: 'ROUTINE',
+    actionKey: 'routine',
+    iconName: `routines`,
+    iconClass: 'w-8 h-8 mr-2',
+    buttonClass: ' hover:bg-primary ',
+}

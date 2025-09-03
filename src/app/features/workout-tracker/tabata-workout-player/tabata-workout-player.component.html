@@ -1,3 +1,5 @@
+<!-- src/app/shared/components/tabata-workout-player/tabata-workout-player.component.html -->
+
 <ng-container *ngIf="routine() as currentRoutine">
   <div class="tabata-player">
     <ng-container *ngIf="currentTabataInterval() as interval">
@@ -9,70 +11,72 @@
          'tabata-prepare-bg': interval.type === 'prepare'
        }"></div>
 
-      <!-- Main Content -->
+      <!-- Main Layout Container: This flex column fills the entire screen -->
       <div class="relative z-10 flex flex-col h-screen text-white p-4 font-sans">
-        
-        <!-- Header -->
+
+        <!-- Header (Fixed Height) -->
         <header class="flex justify-between items-center w-full px-4 flex-shrink-0 mt-2">
+          <!-- Quit Button -->
+          <button appPress (shortPress)="quitWorkout()"
+            class="p-2 bg-black/20 rounded-full hover:bg-red-500/50 transition-colors flex items-center"
+            aria-label="Quit Workout">
+            <app-icon name="cancel" class="h-8 w-8"></app-icon>
+          </button>
+
           <div class="text-sm font-medium bg-black/20 px-3 py-1 rounded-full">
             Total: {{ sessionTimerDisplay() }}
           </div>
-          <div class="flex items-center space-x-2">
-            <button appPress (shortPress)="toggleTabataPause()"
-              class="bg-black/20 rounded-full hover:bg-black/40 transition">
-              <svg *ngIf="sessionState() === 'playing'" xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none"
-                viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6" />
-              </svg>
-              <svg *ngIf="sessionState() === 'paused'" xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none"
-                viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-              </svg>
-            </button>
-          </div>
+
+          <!-- Pause/Resume Button -->
+          <button appPress (shortPress)="toggleTabataPause()"
+            class="p-2 bg-black/20 rounded-full hover:bg-black/40 transition flex items-center"
+            aria-label="Pause or Resume">
+            <app-icon [name]="sessionState() === 'playing' ? 'pause' : 'play'" class="h-8 w-8"></app-icon>
+          </button>
         </header>
 
-        <!-- Main Timer & Info -->
-        <main class="flex flex-col items-center justify-center text-center">
-          <div *ngIf="totalBlockRounds() > 1"
-            class="text-2xl md:text-3xl font-semibold mb-2 text-shadow-md bg-black/20 px-4 py-1 rounded-full">
-            Round {{ currentBlockRound() }} / {{ totalBlockRounds() }}
-          </div>
-          <h1 class="text-[250px] md:text-[450px] font-bold tabular-nums leading-none tracking-tighter text-shadow-lg"
-            [class.animate-pulse]="tabataTimeRemaining() <= 3 && tabataTimeRemaining() > 0">
-            {{ tabataTimeRemaining() >= 0 ? (tabataTimeRemaining() | number: '2.0-0') : '00' }}
-          </h1>
-          <p class="text-2xl md:text-3xl font-semibold capitalize mt-2 text-shadow">
-            {{ interval.exerciseName || interval.type }}
-          </p>
-        </main>
+        <!-- Main Content (Grows to fill space and clips overflow) -->
+        <div class="flex-grow flex flex-col items-center justify-center text-center overflow-hidden py-2">
 
-        <!-- Interval List -->
-        <div class="flex-shrink-0 max-h-48 overflow-y-auto mb-2 scrollbar-hide px-2">
-          <ul class="space-y-0">
-            <li #intervalListItem *ngFor="let item of tabataIntervals(); let i = index"
-              class="text-lg px-2 py-0 transition-all duration-300 ease-in-out">
-              <div class="rounded-md flex items-center p-2 transition-all duration-200 ease-in-out" [ngClass]="{
-                   'bg-white/90 text-black font-bold shadow-2xl -translate-y-px': i === currentTabataIntervalIndex(),
-                   'text-white/60 opacity-80': i !== currentTabataIntervalIndex()
-                 }">
-                <span class="font-mono w-8 text-right mr-2">{{ item.currentIntervalNumber }}</span>
-                <span class="capitalize font-medium">{{ item.type }}: {{ item.duration }}s</span>
-                <span *ngIf="item.type === 'work'" class="ml-2 font-light truncate">{{ item.exerciseName }}</span>
-              </div>
-            </li>
-          </ul>
+          <!-- Timer & Info (This part is centered but cannot cause page scroll) -->
+          <main class="w-full flex flex-col items-center justify-start">
+            <div *ngIf="totalBlockRounds() > 1"
+              class="text-2xl md:text-3xl font-semibold mb-2 text-shadow-md bg-black/20 px-4 py-1 rounded-full">
+              Round {{ currentBlockRound() }} / {{ totalBlockRounds() }}
+            </div>
+            <h1 class="text-[250px] md:text-[450px] font-bold tabular-nums leading-none tracking-tighter text-shadow-lg"
+              [class.animate-pulse]="tabataTimeRemaining() <= 3 && tabataTimeRemaining() > 0">
+              {{ tabataTimeRemaining() >= 0 ? (tabataTimeRemaining() | number: '2.0-0') : '00' }}
+            </h1>
+            <p class="text-2xl md:text-3xl font-semibold capitalize mt-2 text-shadow">
+              {{ interval.exerciseName || interval.type }}
+            </p>
+          </main>
+
+          <!-- Interval List (This container scrolls internally) -->
+          <div class="w-full max-w-md flex-shrink-0 max-h-48 overflow-y-auto mb-2 px-2
+              scrollbar-thin scrollbar-thumb-primary scrollbar-track-white/20">
+            <ul class="space-y-0">
+              <li #intervalListItem *ngFor="let item of tabataIntervals(); let i = index"
+                class="text-lg px-2 py-0 transition-all duration-300 ease-in-out">
+                <div class="rounded-md flex items-center p-2 transition-all duration-200" [ngClass]="{
+                     'bg-white/90 text-black font-bold shadow-2xl scale-105': i === currentTabataIntervalIndex(),
+                     'text-white/60 opacity-80': i !== currentTabataIntervalIndex()
+                   }">
+                  <span class="font-mono w-8 text-right mr-2">{{ item.currentIntervalNumber }}</span>
+                  <span class="capitalize font-medium">{{ item.type }}: {{ item.duration }}s</span>
+                  <span *ngIf="item.type === 'work'" class="ml-2 font-light truncate">{{ item.exerciseName }}</span>
+                </div>
+              </li>
+            </ul>
+          </div>
         </div>
-        
-        <!-- Footer Controls -->
+
+        <!-- Footer Controls (Fixed Height) -->
         <footer class="flex-shrink-0 flex justify-between items-center w-full">
           <button appPress (shortPress)="previousTabataInterval()" [disabled]="currentTabataIntervalIndex() === 0"
             class="p-2 disabled:opacity-30 hover:scale-110 active:scale-95 transition-transform">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24"
-              stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
-            </svg>
+            <app-icon name="previous" class="h-10 w-10"></app-icon>
           </button>
           <div class="text-2xl font-semibold bg-black/20 px-4 py-2 rounded-full tabular-nums">
             {{ interval.currentIntervalNumber }} / {{ interval.totalIntervals }}
@@ -80,10 +84,7 @@
           <button appPress (shortPress)="nextTabataInterval()"
             [disabled]="currentTabataIntervalIndex() === tabataIntervals().length - 1"
             class="p-2 disabled:opacity-30 hover:scale-110 active:scale-95 transition-transform">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24"
-              stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
-            </svg>
+            <app-icon name="next" class="h-10 w-10"></app-icon>
           </button>
         </footer>
       </div>

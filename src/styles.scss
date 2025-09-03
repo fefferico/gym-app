@@ -3,6 +3,21 @@
 @tailwind components;
 @tailwind utilities;
 
+/* +++ START: CRITICAL LAYOUT FIX +++ */
+/* Ensure the root elements take up the full viewport height. */
+/* This is the foundation that allows h-screen to work correctly inside components. */
+html, body, app-root {
+  height: 100%;
+}
+
+/* Make sure the main app container is a flex column. */
+/* This prevents margin collapse and other layout issues. */
+app-root {
+  display: flex;
+  flex-direction: column;
+}
+/* +++ END: CRITICAL LAYOUT FIX +++ */
+
 // * {
 //   outline: 1px solid red !important; /* The !important helps override other styles */
 // }

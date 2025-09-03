@@ -42,6 +42,7 @@ import { PausedWorkoutState } from '../../workout-tracker/workout-player';
 import { StorageService } from '../../../core/services/storage.service';
 import { AppSettingsService } from '../../../core/services/app-settings.service';
 import { MenuMode } from '../../../core/models/app-settings.model';
+import { createFromBtn, deleteBtn, editBtn, routineBtn, viewBtn } from '../../../core/services/buttons-data';
 
 interface HistoryCalendarDay {
   date: Date;
@@ -804,11 +805,8 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
     const deleteBtnClass = 'rounded text-left p-4 font-medium text-gray-600 dark:text-gray-300 hover:bg-red-600 flex items-center hover:text-gray-100 hover:animate-pulse';;
 
     const routineDetailsBtn = {
-      label: 'ROUTINE',
-      actionKey: 'routine',
-      iconName: `routines`,
-      iconClass: 'w-8 h-8 mr-2',
-      buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+      ...routineBtn,
+      label: 'WOD',
       data: { routineId: logId }
     } as ActionMenuItem;
 
@@ -816,30 +814,18 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
     const routine = fullLog && fullLog.routineId ? this.availableRoutines.find(routine => routine.id === fullLog.routineId) : null;
 
     const createRoutineFromLogBtn = {
-      label: 'CREATE ROUTINE',
-      actionKey: 'create_routine',
-      iconName: `create-folder`,
-      iconClass: 'w-8 h-8 mr-2',
-      buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+      ...createFromBtn,
       data: { routineId: logId }
     } as ActionMenuItem;
 
 
     let actionsArray: ActionMenuItem[] = [
       {
-        label: 'VIEW',
-        actionKey: 'view',
-        iconName: `eye`,
-        iconClass: 'w-8 h-8 mr-2', // Adjusted for consistency if needed,
-        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+        ...viewBtn,
         data: { routineId: logId }
       }];
     actionsArray.push({
-      label: 'EDIT',
-      actionKey: 'edit',
-      iconName: `edit`,
-      iconClass: 'w-8 h-8 mr-2',
-      buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+      ...editBtn,
       data: { routineId: logId }
     });
 
@@ -847,13 +833,9 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
       actionsArray.push(createRoutineFromLogBtn);
     }
 
-    actionsArray = [...actionsArray, routineDetailsBtn, { isDivider: true },
+    actionsArray = [...actionsArray, routineDetailsBtn,
     {
-      label: 'DELETE',
-      actionKey: 'delete',
-      iconName: `trash`,
-      iconClass: 'w-8 h-8 mr-2',
-      buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + deleteBtnClass,
+      ...deleteBtn,
       data: { routineId: logId }
     }];
     return actionsArray;
