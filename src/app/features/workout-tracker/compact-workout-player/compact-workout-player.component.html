@@ -5,8 +5,9 @@
 
     <!-- Top part of header -->
     <div class="flex items-center justify-between w-full">
-      <button (click)="goBack()" class="p-2">
-        <app-icon name="cancel" class="h-6 w-6 text-gray-600 dark:text-gray-300"></app-icon>
+      <button (click)="goBack()"
+        class="p-2 text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-light">
+        <app-icon name="cancel" class="h-6 w-6"></app-icon>
       </button>
       <div class="text-center">
         <h1 class="text-lg font-bold text-gray-800 dark:text-gray-100 truncate max-w-xs">
@@ -22,7 +23,7 @@
       <div class="relative flex items-center">
         <button (click)="toggleMainSessionActionMenu($event)"
           class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center">
-          <app-icon name="menu-action" class="h-7 w-7"></app-icon>
+          <app-icon name="menu-action" class="h-10 w-10"></app-icon>
         </button>
         <!-- The separate pause/resume button is now inside the action menu -->
         <button *ngIf="sessionState() === 'paused'" (click)="resumeSession()" class="p-2">
@@ -30,14 +31,14 @@
         </button>
         <app-action-menu [isVisible]="mainSessionActionMenuOpened() === true && getMenuMode() !== 'compact'"
           class="action-menu-container" [modalTitle]="''" [displayMode]="getMenuMode()" [modalTitle]="''"
-          [items]="getMainSessionActionItems()" (itemClick)="handleMainSessionActionMenuItemClick($event)"
+          [items]="mainSessionActionItems()" (itemClick)="handleMainSessionActionMenuItemClick($event)"
           (closeMenu)="toggleMainSessionActionMenu(null)">
         </app-action-menu>
       </div>
     </div>
     <app-action-menu [isVisible]="mainSessionActionMenuOpened() === true && getMenuMode() === 'compact'"
       class="action-menu-container" [modalTitle]="''" [displayMode]="getMenuMode()" [modalTitle]="''"
-      [items]="getMainSessionActionItems()" (itemClick)="handleMainSessionActionMenuItemClick($event)"
+      [items]="mainSessionActionItems()" (itemClick)="handleMainSessionActionMenuItemClick($event)"
       (closeMenu)="toggleMainSessionActionMenu(null)">
     </app-action-menu>
 
@@ -117,19 +118,19 @@
                 </button>
                 <button (click)="toggleActionMenu(exIndex, $event)"
                   class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center">
-                  <app-icon name="menu-action" class="h-7 w-7"></app-icon>
+                  <app-icon name="menu-action" class="h-10 w-10"></app-icon>
                 </button>
               </div>
               <app-action-menu [isVisible]="activeActionMenuIndex() === exIndex && getMenuMode()  !== 'compact'"
                 [modalTitle]="''" class="action-menu-container" [displayMode]="getMenuMode()"
-                [items]="getCompactActionItems(exIndex, getMenuMode())" (itemClick)="handleActionMenuItemClick($event)"
+                [items]="compactActionItemsMap().get(exIndex)!" (itemClick)="handleActionMenuItemClick($event)"
                 (closeMenu)="closeActionMenu()">
               </app-action-menu>
             </div>
           </div>
           <app-action-menu [isVisible]="activeActionMenuIndex() === exIndex && getMenuMode() === 'compact'"
             [modalTitle]="''" class="action-menu-container" [displayMode]="getMenuMode()"
-            [items]="getCompactActionItems(exIndex, getMenuMode())" (itemClick)="handleActionMenuItemClick($event)"
+            [items]="compactActionItemsMap().get(exIndex)!" (itemClick)="handleActionMenuItemClick($event)"
             (closeMenu)="closeActionMenu()">
           </app-action-menu>
         </div>

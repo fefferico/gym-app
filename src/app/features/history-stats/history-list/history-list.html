@@ -136,7 +136,7 @@
                   <div class="relative">
                     <button (click)="toggleActions(item.id, $event)"
                       class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center">
-                      <app-icon name="menu-action" class="h-7 w-7"></app-icon>
+                      <app-icon name="menu-action" class="h-10 w-10"></app-icon>
                     </button>
                     <app-action-menu *ngIf="areActionsVisible(item.id) && (menuModeDropdown || menuModeModal)"
                       [modalTitle]="''" class="action-menu-container"
@@ -191,7 +191,7 @@
                   <div class="relative">
                     <button (click)="toggleActions(item.id, $event)"
                       class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center">
-                      <app-icon name="menu-action" class="h-7 w-7"></app-icon>
+                      <app-icon name="menu-action" class="h-10 w-10"></app-icon>
                     </button>
                     <app-action-menu *ngIf="areActionsVisible(item.id) && (menuModeDropdown || menuModeModal)"
                       class="action-menu-container" [displayMode]="menuModeDropdown ? 'dropdown' : 'modal'"

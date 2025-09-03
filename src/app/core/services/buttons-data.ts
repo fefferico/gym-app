@@ -10,7 +10,7 @@ export const pauseSessionBtn = {
 } as ActionMenuItem;
 
 export const addExerciseBtn = {
-    label: 'Exercise',
+    label: 'Add Exercise',
     actionKey: 'addExercise',
     iconName: `plus-circle`,
     iconClass: 'w-8 h-8 mr-2',
@@ -197,5 +197,21 @@ export const addSetToExerciseBtn = {
         }
     ],
     buttonClass: ' hover:bg-teal-800 ',
+    iconClass: 'w-8 h-8 mr-2'
+}
+
+export const resumeSessionBtn = {
+    label: 'Resume',
+    actionKey: 'play',
+    iconName: 'play',
+    buttonClass: ' bg-yellow-800 ',
+    iconClass: 'w-8 h-8 mr-2'
+}
+
+export const sessionNotesBtn = {
+    label: 'Session notes',
+    actionKey: 'session_notes',
+    iconName: 'clipboard-list',
+    buttonClass: ' hover:bg-green-600 ',
     iconClass: 'w-8 h-8 mr-2'
 }

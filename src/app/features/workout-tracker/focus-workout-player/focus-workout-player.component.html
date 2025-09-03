@@ -24,8 +24,8 @@
     <header
       class="sticky top-0 left-0 right-0 z-30 bg-white dark:bg-gray-800 shadow-md px-3 pt-3 pb-2 flex items-center flex-col h-15 rounded-b-md">
       <div class="flex w-full justify-between">
-        <button appPress (shortPress)="goBack()"
-          class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-light">
+        <button (click)="goBack()"
+          class="p-2 text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-light">
           <app-icon name="cancel" class="h-6 w-6"></app-icon>
         </button>
         <div class="flex flex-col items-center cursor-pointer" appPress
@@ -41,10 +41,10 @@
         <div class="relative flex items-center">
           <button (click)="toggleWorkoutMenu()"
             class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none">
-            <app-icon name="menu-action" class="h-7 w-7"></app-icon>
+            <app-icon name="menu-action" class="h-10 w-10"></app-icon>
           </button>
           <app-action-menu *ngIf="isWorkoutMenuVisible() && getMenuMode() !== 'compact'" class="action-menu-container"
-            [displayMode]="getMenuMode()" [modalTitle]="''" [items]="getActionItems(getMenuMode())"
+            [displayMode]="getMenuMode()" [modalTitle]="''" [items]="actionItems()"
             [isVisible]="isWorkoutMenuVisible()" (itemClick)="handleActionMenuItemClick($event)"
             (closeMenu)="closeWorkoutMenu()">
           </app-action-menu>
@@ -53,7 +53,7 @@
       </div>
       <app-action-menu *ngIf="isWorkoutMenuVisible() && getMenuMode() === 'compact'" class="action-menu-container"
         [gridClass]="'grid grid-cols-1'" [displayMode]="getMenuMode()" [modalTitle]="''"
-        [items]="getActionItems(getMenuMode())" [isVisible]="isWorkoutMenuVisible()"
+        [items]="actionItems()" [isVisible]="isWorkoutMenuVisible()"
         (itemClick)="handleActionMenuItemClick($event)" (closeMenu)="closeWorkoutMenu()">
       </app-action-menu>
       <!-- Workout Progress Bar -->

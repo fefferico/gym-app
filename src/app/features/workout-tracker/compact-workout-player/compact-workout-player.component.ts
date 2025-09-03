@@ -40,7 +40,7 @@ import { PausedWorkoutState, PlayerSubState } from '../workout-player';
 import { TrainingProgram } from '../../../core/models/training-program.model';
 import { AlertButton, AlertInput } from '../../../core/models/alert.model';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
-import { addSetToExerciseBtn, addToSuperSetBtn, addWarmupSetBtn, createSuperSetBtn, openPerformanceInsightsBtn, removeExerciseBtn, removeFromSuperSetBtn, switchExerciseBtn } from '../../../core/services/buttons-data';
+import { addExerciseBtn, addSetToExerciseBtn, addToSuperSetBtn, addWarmupSetBtn, createSuperSetBtn, openPerformanceInsightsBtn, pauseSessionBtn, quitWorkoutBtn, removeExerciseBtn, removeFromSuperSetBtn, resumeSessionBtn, sessionNotesBtn, switchExerciseBtn } from '../../../core/services/buttons-data';
 
 // Interface for saving the paused state
 
@@ -1144,47 +1144,32 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     this.mainSessionActionMenuOpened.update(current => current === true ? false : true);
   }
 
-  getMainSessionActionItems(): ActionMenuItem[] {
+  mainSessionActionItems = computed<ActionMenuItem[]>(() => {
     const wFullClass = this.getMenuMode() === 'compact' ? '' : ' w-full';
     const defaultBtnClass = 'rounded text-left p-3 sm:px-4 sm:py-2 font-medium text-white hover:bg-blue-600 flex items-center hover:text-white dark:hover:text-gray-100 dark:hover:text-white' + wFullClass;
 
-    const addExerciseBtn = {
-      label: 'Add exercise',
-      actionKey: 'addExercise',
-      iconName: `plus-circle`,
-      iconClass: 'w-8 h-8 mr-2',
-      buttonClass: (this.sessionState() === 'paused' || !this.routine()?.exercises?.length ? 'disabled ' : '') + defaultBtnClass,
+    // Read signals once for the computation
+    const isPaused = this.sessionState() === 'paused';
+    const hasExercises = (this.routine()?.exercises?.length ?? 0) > 0;
+
+    const addExerciseDisabledClass = (isPaused || !hasExercises ? 'disabled ' : '');
+    
+    const currAddExerciseBtn = {
+      ...addExerciseBtn,
+      buttonClass: addExerciseDisabledClass + defaultBtnClass,
     } as ActionMenuItem;
 
-    const quitWorkoutBtn = {
-      label: 'EXIT',
-      actionKey: 'exit',
-      iconName: `exit-door`,
-      iconClass: 'w-8 h-8 mr-2',
-      buttonClass: '' + 'transition-colors duration-150 ease-in-out rounded text-left p-3 sm:px-4 sm:py-2 font-medium text-white hover:bg-red-600 flex items-center hover:text-white dark:hover:text-gray-100 dark:hover:text-white' + wFullClass,
-    } as ActionMenuItem;
-
-    const actionsArray: ActionMenuItem[] = [
-      this.sessionState() === 'paused' ?
-        {
-          label: 'Resume', actionKey: 'play', iconName: 'play',
-          buttonClass: 'flex items-center justify-center max-w-xs text-white hover:bg-yellow-800 font-medium py-2 px-6 rounded-md text-md' + defaultBtnClass, iconClass: 'w-8 h-8 mr-2'
-        } :
-        {
-          label: 'Pause', actionKey: 'pause', iconName: 'pause',
-          buttonClass: 'transition-colors duration-150 ease-in-out rounded text-left p-3 sm:px-4 sm:py-2 font-medium text-white hover:bg-yellow-600 flex items-center hover:text-white dark:hover:text-gray-100 dark:hover:text-white' + wFullClass, iconClass: 'w-8 h-8 mr-2'
-        },
-      {
-        label: 'Session notes', actionKey: 'session_notes', iconName: 'clipboard-list',
-        buttonClass: defaultBtnClass + 'transition-colors duration-150 ease-in-out rounded text-left p-3 sm:px-4 sm:py-2 font-medium text-white hover:bg-green-600 flex items-center hover:text-white dark:hover:text-gray-100 dark:hover:text-white' + wFullClass, iconClass: 'w-8 h-8 mr-2'
-      },
-      addExerciseBtn,
+    const actions: ActionMenuItem[] = [
+      isPaused ? resumeSessionBtn : pauseSessionBtn,
+      sessionNotesBtn,
+      currAddExerciseBtn,
       { isDivider: true },
       quitWorkoutBtn
     ];
 
-    return actionsArray;
-  }
+    return actions;
+  });
+
 
   handleMainSessionActionMenuItemClick(event: { actionKey: string, data?: any }) {
     const { actionKey } = event;
@@ -1207,73 +1192,51 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     }
   }
 
-  getCompactActionItems(exerciseId: number, mode: MenuMode): ActionMenuItem[] {
-    const exercise = this.routine()?.exercises[exerciseId];
+  compactActionItemsMap = computed<Map<number, ActionMenuItem[]>>(() => {
+    const map = new Map<number, ActionMenuItem[]>();
+    const routine = this.routine(); // Read the dependency signal once
+    const mode = this.getMenuMode(); // Read the mode once
 
-    const currSwitchExerciseBtn = {
-      ...switchExerciseBtn,
-      data: { exIndex: exerciseId },
-    } as ActionMenuItem;
-
-    const currOpenPerformanceInsightsBtn = {
-      ...openPerformanceInsightsBtn,
-      data: { exIndex: exerciseId },
-    } as ActionMenuItem;
-
-    const actionsArray: ActionMenuItem[] = [
-      currSwitchExerciseBtn,
-      currOpenPerformanceInsightsBtn,
-      {
-        ...addWarmupSetBtn,
-        data: { exIndex: exerciseId }
-      } as ActionMenuItem,
-      {
-        ...addSetToExerciseBtn,
-        data: { exIndex: exerciseId },
-      } as ActionMenuItem,
-      { isDivider: true },
-      {
-        ...removeExerciseBtn,
-        data: { exIndex: exerciseId },
-      } as ActionMenuItem,
-    ];
-
-    const routine = this.routine(); // Get the routine once at the top
-
-    // RULE 1: "Remove from Superset" is visible only if the current exercise is part of a superset.
-    if (exercise?.supersetId) {
-      actionsArray.push({
-        ...removeFromSuperSetBtn,
-        data: { exIndex: exerciseId },
-      } as ActionMenuItem);
+    if (!routine) {
+      return map; // Return an empty map if there's no routine
     }
-    // RULES 2 & 3: Logic for exercises that are NOT currently in a superset.
-    else {
-      // Prerequisite for both creating and adding: must have at least 2 exercises in the entire routine.
-      if (routine && routine.exercises.length >= 2) {
 
-        // RULE 3: "Add to Superset" is visible if there's already a superset and the current exercise is free.
-        const aSupersetExists = routine.exercises.some(ex => ex.supersetId);
-        if (aSupersetExists) {
-          actionsArray.push({
-            ...addToSuperSetBtn,
-            data: { exIndex: exerciseId },
-          } as ActionMenuItem,);
-        }
+    // Loop through each exercise and build its specific action item array
+    routine.exercises.forEach((exercise, exIndex) => {
+      // --- All logic from the original method is now inside this loop ---
+      const currSwitchExerciseBtn = { ...switchExerciseBtn, data: { exIndex } };
+      const currOpenPerformanceInsightsBtn = { ...openPerformanceInsightsBtn, data: { exIndex } };
+      
+      const actionsArray: ActionMenuItem[] = [
+        currSwitchExerciseBtn,
+        currOpenPerformanceInsightsBtn,
+        { ...addWarmupSetBtn, data: { exIndex } } as ActionMenuItem,
+        { ...addSetToExerciseBtn, data: { exIndex } } as ActionMenuItem,
+        { isDivider: true },
+        { ...removeExerciseBtn, data: { exIndex } },
+      ];
 
-        // RULE 2: "Create Superset" is visible if there are at least two "free" exercises to form a new pair.
-        const canCreateNewSuperset = routine.exercises.filter(ex => !ex.supersetId).length >= 2;
-        if (canCreateNewSuperset) {
-          actionsArray.push({
-            ...createSuperSetBtn,
-            data: { exIndex: exerciseId },
-          } as ActionMenuItem,);
+      // RULE 1: "Remove from Superset"
+      if (exercise?.supersetId) {
+        actionsArray.push({ ...removeFromSuperSetBtn, data: { exIndex } } as ActionMenuItem);
+      } else {
+        // RULES 2 & 3: "Add to" and "Create Superset"
+        if (routine.exercises.length >= 2) {
+          if (routine.exercises.some(ex => ex.supersetId)) {
+            actionsArray.push({ ...addToSuperSetBtn, data: { exIndex } });
+          }
+          if (routine.exercises.filter(ex => !ex.supersetId).length >= 2) {
+            actionsArray.push({ ...createSuperSetBtn, data: { exIndex } });
+          }
         }
       }
-    }
 
-    return actionsArray;
-  }
+      // Set the generated array in the map with the exercise's index as the key
+      map.set(exIndex, actionsArray);
+    });
+
+    return map;
+  });
 
   // +++ MODIFIED: This method now also sets the next set's details for the rest timer UI
   // +++ MODIFIED: This method now also sets the next set's details for the rest timer UI

@@ -4262,75 +4262,74 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     this.isWorkoutMenuVisible.set(!this.isWorkoutMenuVisible());
   }
 
-  getActionItems(mode: MenuMode): ActionMenuItem[] {
+  actionItems = computed<ActionMenuItem[]>(() => {
     const actionsArray: ActionMenuItem[] = [];
+    const activeInfo = this.activeSetInfo(); // Dependency
+    const routine = this.routine(); // Dependency
+    const workoutLog = this.currentWorkoutLogExercises(); // Dependency
 
+    // Always add PAUSE
     actionsArray.push(pauseSessionBtn);
-    if ((this.currentWorkoutLogExercises() && this.currentWorkoutLogExercises().length)) {
+
+    // Add INSIGHTS if any sets have been logged
+    if (workoutLog.length > 0) {
       actionsArray.push(openPerformanceInsightsBtn);
     }
+
+    // Always add ADD EXERCISE
     actionsArray.push(addExerciseBtn);
 
-
-    if (this.canSwitchExercise()) {
+    // Add SWITCH if the current exercise can be switched
+    if (this.canSwitchExercise()) { // canSwitchExercise is already a computed signal
       actionsArray.push(switchExerciseBtn);
     }
-    if (!this.checkIfSetIsPartOfRounds() && (this.routine() && this.routine()?.exercises.length)) {
+
+    // Add JUMP TO if there are exercises in the routine
+    if (routine && routine.exercises.length > 0) {
       actionsArray.push(jumpToExerciseBtn);
     }
+
+    // Add WARMUP if allowed for the current set
     if (!this.checkIfSuperSetIsStarted() && this.canAddWarmupSet()) {
       actionsArray.push(addWarmupSetBtn);
     }
-    if (!this.checkIfSetIsPartOfRounds() && (this.currentWorkoutLogExercises() && this.currentWorkoutLogExercises().length)) {
+
+    // Add SKIP SET/EXERCISE/DO LATER if there is an active set
+    if (activeInfo) {
       actionsArray.push(skipCurrentSetBtn);
-    }
-    if (!this.checkIfSetIsPartOfRounds() && (this.currentWorkoutLogExercises() && this.currentWorkoutLogExercises().length)) {
       actionsArray.push(skipCurrentExerciseBtn);
-    }
-    if (!this.checkIfSetIsPartOfRounds() && (this.currentWorkoutLogExercises() && this.currentWorkoutLogExercises().length)) {
       actionsArray.push(markAsDoLaterBtn);
     }
-    if (this.currentWorkoutLogExercises().length > 0) {
+
+    // Add FINISH EARLY if any sets have been logged
+    if (workoutLog.length > 0) {
       actionsArray.push(finishEarlyBtn);
     }
 
-    const routine = this.routine(); // Get the routine once at the top
-    const exercise = this.activeSetInfo();
-    if (exercise?.exerciseData?.supersetId) {
-      actionsArray.push({
-        ...removeFromSuperSetBtn,
-        data: { exIndex: exercise?.exerciseData?.exerciseId },
-      } as ActionMenuItem,);
-    }
-    // RULES 2 & 3: Logic for exercises that are NOT currently in a superset.
-    else {
-      // Prerequisite for both creating and adding: must have at least 2 exercises in the entire routine.
-      if (routine && routine.exercises.length >= 2) {
-
-        // RULE 3: "Add to Superset" is visible if there's already a superset and the current exercise is free.
-        const aSupersetExists = routine.exercises.some(ex => ex.supersetId);
-        if (aSupersetExists) {
-          actionsArray.push({
-            ...addToSuperSetBtn,
-            data: { exIndex: exercise?.exerciseData?.exerciseId },
-          } as ActionMenuItem,);
-        }
-
-        // RULE 2: "Create Superset" is visible if there are at least two "free" exercises to form a new pair.
-        const canCreateNewSuperset = routine.exercises.filter(ex => !ex.supersetId).length >= 2;
-        if (canCreateNewSuperset) {
-          actionsArray.push({
-            ...createSuperSetBtn,
-            data: { exIndex: exercise?.exerciseData?.exerciseId },
-          } as ActionMenuItem,);
+    // --- Superset Logic ---
+    if (activeInfo?.exerciseData) {
+      const { exerciseData } = activeInfo;
+      // Add REMOVE FROM SUPERSET if the current exercise is in one
+      if (exerciseData.supersetId) {
+        actionsArray.push({ ...removeFromSuperSetBtn, data: { exIndex: activeInfo.exerciseIndex } } as ActionMenuItem);
+      } else {
+        // Add ADD TO and CREATE SUPERSET if conditions are met
+        if (routine && routine.exercises.length >= 2) {
+          if (routine.exercises.some(ex => ex.supersetId)) {
+            actionsArray.push({ ...addToSuperSetBtn, data: { exIndex: activeInfo.exerciseIndex } } as ActionMenuItem);
+          }
+          if (routine.exercises.filter(ex => !ex.supersetId).length >= 2) {
+            actionsArray.push({ ...createSuperSetBtn, data: { exIndex: activeInfo.exerciseIndex } } as ActionMenuItem);
+          }
         }
       }
     }
 
+    // Always add QUIT
     actionsArray.push(quitWorkoutBtn);
 
     return actionsArray;
-  }
+  });
 
   handleActionMenuItemClick(event: { actionKey: string, data?: any }): void {
     // --- Switch based on the unique action key ---
