@@ -56,6 +56,21 @@
           <span class="text-md font-semibold text-gray-800 dark:text-gray-100">{{ sessionTotalVolume() | number:'1.0-0'
             }} {{ unitsService.getWeightUnitSuffix() }}</span>
         </div>
+
+        <!-- ADD THIS NEW BLOCK FOR PERCEIVED EFFORT -->
+        <div *ngIf="workoutLog()?.perceivedEffort"
+          class="flex justify-between items-baseline p-3 bg-gray-50 dark:bg-gray-700 rounded-md">
+          <span class="text-m font-medium text-gray-600 dark:text-gray-300">Perceived Effort:</span>
+          <span class="text-md font-semibold text-gray-800 dark:text-gray-100">{{ workoutLog()?.perceivedEffort }} /
+            10</span>
+        </div>
+
+        <div *ngIf="sessionTotalVolume() > 0"
+          class="flex justify-between items-baseline p-3 bg-gray-50 dark:bg-gray-700 rounded-md">
+          <span class="text-m font-medium text-gray-600 dark:text-gray-300">Total Volume:</span>
+          <span class="text-md font-semibold text-gray-800 dark:text-gray-100">{{ sessionTotalVolume() | number:'1.0-0'
+            }} {{ unitsService.getWeightUnitSuffix() }}</span>
+        </div>
       </div>
 
       <!-- Personal Bests Achieved This Session -->
@@ -98,4 +113,9 @@
       <!-- Spinner -->
     </div>
   </ng-template>
+
+  <ng-container *ngIf="isEffortModalVisible()">
+    <app-perceived-effort-modal (close)="handleEffortModalClose($event)"></app-perceived-effort-modal>
+  </ng-container>
+
 </div>

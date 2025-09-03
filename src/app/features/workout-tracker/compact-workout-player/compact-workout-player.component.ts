@@ -759,7 +759,10 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
           return;
         }
       }
-      this.router.navigate(['/workout/summary', savedLog.id]);
+      this.router.navigate(['/workout/summary', savedLog.id], {
+        queryParams: { newlyCompleted: 'true' }
+      });
+
     } else {
       this.toastService.error("Could not save: missing start time.");
     }

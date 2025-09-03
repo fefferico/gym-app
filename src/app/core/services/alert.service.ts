@@ -117,8 +117,8 @@ export class AlertService {
             header,
             message,
             buttons: [
-                { text: cancelText, role: 'cancel', data: false, icon: 'cancel' },
-                { text: okText, role: 'confirm', data: true, icon: 'done' }
+                { text: cancelText, role: 'cancel', data: false, icon: 'cancel', cssClass:' bg-gray-400 hover:bg-gray-600 ' },
+                { text: okText, role: 'confirm', data: true, icon: 'done', iconClass: 'h-7 w-7' }
             ]
         });
 

@@ -1,7 +1,7 @@
 // src/app/core/services/tracking.service.ts
 import { Injectable, Injector, inject } from '@angular/core';
 import { BehaviorSubject, combineLatest, Observable, of } from 'rxjs';
-import { distinctUntilChanged, map, shareReplay, take } from 'rxjs/operators';
+import { delay, distinctUntilChanged, map, shareReplay, take } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
 
 import { LastPerformanceSummary, LoggedSet, PersonalBestSet, WorkoutLog, PBHistoryInstance } from '../models/workout-log.model'; // Ensure PBHistoryInstance is imported
@@ -964,6 +964,42 @@ export class TrackingService {
         return `#${nextIterationNum}`;
       })
     );
+  }
+
+  /**
+   * Updates the perceived effort rating for a specific workout log.
+   * @param logId The ID of the workout log to update.
+   * @param effort The user's perceived effort rating (e.g., 1-10).
+   * @returns An observable that completes when the update is successful.
+   */
+  updatePerceivedEffort(logId: string, effort: number): Observable<void> {
+    // --- This section handles updating your local state stream ---
+    const currentLogs = this.workoutLogsSubject.getValue();
+    const logIndex = currentLogs.findIndex(log => log.id === logId);
+
+    if (logIndex > -1) {
+      // Create a new object for the updated log to maintain immutability
+      const updatedLog: WorkoutLog = {
+        ...currentLogs[logIndex],
+        perceivedEffort: effort
+      };
+
+      // Create a new array with the updated log
+      const updatedLogs = [
+        ...currentLogs.slice(0, logIndex),
+        updatedLog,
+        ...currentLogs.slice(logIndex + 1)
+      ];
+
+      // Push the new array into the subject
+      this.workoutLogsSubject.next(updatedLogs);
+    }
+
+    // --- This section would handle your backend persistence ---
+    // Example: return this.http.patch(`/api/logs/${logId}`, { perceivedEffort: effort });
+    // For now, we'll return a simulated success observable.
+    console.log(`Updating log ${logId} with perceived effort: ${effort}. (Backend call would go here)`);
+    return of(undefined).pipe(delay(200)); // Simulate async backend call
   }
 
 }

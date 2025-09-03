@@ -481,14 +481,14 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
     });
   }
 
-/**
-   * Checks if a specific set was a Personal Best at any point in time.
-   * It does this by checking if the set's ID matches the current PB's ID,
-   * OR if a record matching this set's performance exists in the PB's history.
-   * @param set The LoggedSet to check.
-   * @param exerciseId The ID of the exercise this set belongs to.
-   * @returns An array of strings representing the PB types achieved with this set.
-   */
+  /**
+     * Checks if a specific set was a Personal Best at any point in time.
+     * It does this by checking if the set's ID matches the current PB's ID,
+     * OR if a record matching this set's performance exists in the PB's history.
+     * @param set The LoggedSet to check.
+     * @param exerciseId The ID of the exercise this set belongs to.
+     * @returns An array of strings representing the PB types achieved with this set.
+     */
   getPersonalBestTypesForSet(set: LoggedSet, exerciseId: string): string[] {
     const pbsForExercise = this.personalBestsForLog()[exerciseId];
     if (!pbsForExercise || !set.id) {
@@ -806,16 +806,28 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
     this.activeRoutineIdActions.set(null); // Close the menu
   }
 
-  goToRoutineDetails(): void {
+  createRoutineFromLog(logId: string, event?: MouseEvent): void {
+    event?.stopPropagation();
+    // This will navigate to a new route that the workout builder will handle
+    this.router.navigate(['/workout/routine/new-from-log', logId]);
+  }
+
+  async goToRoutineDetails(): Promise<void> {
     if (!this.workoutLog() || !this.workoutLog()?.routineId) {
       return;
     } else {
 
     }
+
     const log = this.workoutLog();
-    if (log && log.routineId !== undefined) {
-      const routineId: string = log.routineId;
-      this.router.navigate(['/workout/routine/view/', routineId]);
+    if (log && log.routineId && log.routineId !== '-1') {
+      this.router.navigate(['/workout/routine/view/', log.routineId]);
+    } else {
+      const createNewRoutineFromLog = await this.alertService.showConfirm("No routine for log", "There is no routine associated with this log: would you like to create one? If so remember to link it to this log once created");
+      if (log && createNewRoutineFromLog && createNewRoutineFromLog.data) {
+        this.createRoutineFromLog(log.id);
+      }
+      return;
     }
   }
 

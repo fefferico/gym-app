@@ -791,7 +791,9 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
         this.stopAllActivity();
         this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
         this.toastService.success("Tabata Workout Complete!", 5000, "Workout Finished", false);
-        this.router.navigate(['/workout/summary', savedLog.id]);
+        this.router.navigate(['/workout/summary', savedLog.id], {
+            queryParams: { newlyCompleted: 'true' }
+        });
         return true;
     }
 

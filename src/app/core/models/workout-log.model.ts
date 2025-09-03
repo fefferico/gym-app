@@ -80,10 +80,11 @@ export interface WorkoutLog {
   programId?: string; // ID of the program this workout belongs to, if applicable
   programName?: string;
 
-   // +++ NEW PROPERTY TO LINK LOG TO THE SCHEDULE +++
+  // +++ NEW PROPERTY TO LINK LOG TO THE SCHEDULE +++
   /** If part of a program, the ID of the specific ScheduledRoutineDay this log fulfills. */
   scheduledDayId?: string;
   iterationId?: string;
+  perceivedEffort?: number; // <-- ADD THIS LINE (e.g., a rating from 1 to 10)
 }
 
 // For displaying personal bests

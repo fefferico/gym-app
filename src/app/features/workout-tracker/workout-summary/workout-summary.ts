@@ -12,6 +12,7 @@ import { UnitsService } from '../../../core/services/units.service';
 import { WeightUnitPipe } from '../../../shared/pipes/weight-unit-pipe';
 import { PressDirective } from '../../../shared/directives/press.directive';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
+import { PerceivedEffortModalComponent } from '../perceived-effort-modal.component';
 
 
 interface DisplayLoggedExerciseSummary extends LoggedWorkoutExercise {
@@ -29,7 +30,7 @@ interface SessionPbInfo {
 @Component({
   selector: 'app-workout-summary',
   standalone: true,
-  imports: [CommonModule, DatePipe, RouterLink, PressDirective, IconComponent],
+  imports: [CommonModule, DatePipe, RouterLink, PressDirective, IconComponent, PerceivedEffortModalComponent],
   templateUrl: './workout-summary.html',
   styleUrl: './workout-summary.scss',
 })
@@ -48,29 +49,62 @@ export class WorkoutSummaryComponent implements OnInit {
 
   @Input() logId?: string; // For route param binding (if component input binding is on)
 
+  isEffortModalVisible = signal(false);
+
+
   ngOnInit(): void {
     const idSource$ = this.logId ? of(this.logId) : this.route.paramMap.pipe(map(params => params.get('logId')));
 
     idSource$.pipe(
-      switchMap(id => {
-        if (id) {
-          return this.trackingService.getWorkoutLogById(id);
-        }
-        return of(null);
-      }),
+      switchMap(id => id ? this.trackingService.getWorkoutLogById(id) : of(null)),
       tap(log => {
         if (log) {
           this.workoutLog.set(log);
           this.sessionTotalVolume.set(this.statsService.calculateWorkoutVolume(log));
           this.prepareDisplayExercisesSummary(log.exercises);
-          this.identifySessionPBs(log); // Identify PBs achieved in this session
+          this.identifySessionPBs(log);
+          // --- NEW LOGIC TO TRIGGER MODAL ---
+          this.checkForNewlyCompletedWorkout(log);
         } else {
-          this.workoutLog.set(null); // Not found
+          this.workoutLog.set(null);
           this.displayExercisesSummary.set([]);
           this.sessionPBs.set([]);
         }
       })
     ).subscribe();
+  }
+
+  private checkForNewlyCompletedWorkout(log: WorkoutLog): void {
+    this.route.queryParamMap.pipe(take(1)).subscribe(params => {
+      // Show modal if the param exists AND the workout hasn't been rated yet.
+      if (params.get('newlyCompleted') === 'true' && !log.hasOwnProperty('perceivedEffort')) {
+        this.isEffortModalVisible.set(true);
+      }
+    });
+  }
+
+  handleEffortModalClose(effort: number | null): void {
+    this.isEffortModalVisible.set(false);
+    const currentLog = this.workoutLog();
+
+    // Clean the URL by removing the query parameter
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { newlyCompleted: null },
+      queryParamsHandling: 'merge', // Keeps other params, removes null ones
+      replaceUrl: true // Avoids adding a new entry to browser history
+    });
+
+    if (effort !== null && currentLog) {
+      this.trackingService.updatePerceivedEffort(currentLog.id, effort).subscribe({
+        next: () => {
+          // Update the local state instantly for immediate UI feedback
+          this.workoutLog.update(log => ({ ...log!, perceivedEffort: effort }));
+          console.log("Perceived effort saved successfully!");
+        },
+        error: (err) => console.error("Failed to save perceived effort:", err),
+      });
+    }
   }
 
   private prepareDisplayExercisesSummary(loggedExercises: LoggedWorkoutExercise[]): void {

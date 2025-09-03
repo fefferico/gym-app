@@ -2634,7 +2634,10 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
 
     this.stopAllActivity();
     this.removePausedWorkout()
-    this.router.navigate(['/workout/summary', savedLog.id]);
+
+    this.router.navigate(['/workout/summary', savedLog.id], {
+      queryParams: { newlyCompleted: 'true' }
+    });
     return true;
   }
 
