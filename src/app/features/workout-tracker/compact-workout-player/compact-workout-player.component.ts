@@ -498,7 +498,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     this.savePausedSessionState();
     this.lastExerciseIndex.set(exIndex);
     this.lastExerciseSetIndex.set(setIndex);
-
+    this.workoutService.vibrate();
   }
 
   updateSetData(exIndex: number, setIndex: number, field: 'reps' | 'weight' | 'distance' | 'time' | 'notes', event: Event): void {

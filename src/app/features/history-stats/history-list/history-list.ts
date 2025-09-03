@@ -677,15 +677,8 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.filterForm.reset({ dateFrom: '', dateTo: '', routineName: '', exerciseId: '', programId: '' });
   }
 
-  vibrate(): void {
-    const currentVibrator = navigator;
-    if (currentVibrator && 'vibrate' in currentVibrator) {
-      currentVibrator.vibrate(50);
-    }
-  }
-
   viewLogDetails(logId: string, event?: MouseEvent): void {
-    this.vibrate();
+    this.workoutService.vibrate();
     event?.stopPropagation(); this.router.navigate(['/history/log', logId]);
     this.visibleActionsRutineId.set(null);
   }
@@ -769,7 +762,7 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   async discardPausedWorkout(): Promise<void> {
-    this.vibrate();
+    this.workoutService.vibrate();
 
     const buttons: AlertButton[] = [
       { text: 'Cancel', role: 'cancel', data: false, icon: 'cancel' },
@@ -802,7 +795,7 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   getLogDropdownActionItems(logId: string, mode: MenuMode): ActionMenuItem[] {
     const defaultBtnClass = 'rounded text-left p-4 font-medium text-gray-600 dark:text-gray-300 hover:bg-primary flex items-center hover:text-white dark:hover:text-gray-100 dark:hover:text-white';
-    const deleteBtnClass = 'rounded text-left p-4 font-medium text-gray-600 dark:text-gray-300 hover:bg-red-600 flex items-center hover:text-gray-100 hover:animate-pulse';;
+    const deleteBtnClass = 'rounded text-left p-4 font-medium text-gray-600 dark:text-gray-300 hover:bg-red-600 flex items-center hover:text-gray-100 hover:animate-pulse';
 
     const routineDetailsBtn = {
       ...routineBtn,
@@ -975,7 +968,7 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
 
 
   viewActivityLogDetails(logId: string, event?: MouseEvent): void {
-    this.vibrate();
+    this.workoutService.vibrate();
     event?.stopPropagation();
     this.router.navigate(['/activities/log', logId]);
     this.activeItemIdActions.set(null);

@@ -89,7 +89,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   resumePausedWorkout(): void {
     const pausedInfo = this.pausedWorkoutInfo();
     if (pausedInfo) {
-      this.vibrate();
+      this.workoutService.vibrate();
       // Set the pausedWorkoutInfo to null immediately on the Home page
       // so the "paused workout" card disappears, giving immediate feedback.
       // The WorkoutPlayerComponent will handle the actual resume or re-display
@@ -113,7 +113,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   async discardPausedWorkout(): Promise<void> {
-    this.vibrate();
+    this.workoutService.vibrate();
 
     const buttons: AlertButton[] = [
       { text: 'Cancel', role: 'cancel', data: false, icon: 'cancel' },
@@ -141,7 +141,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     // Or, you could show a modal with some basic info from pausedWorkoutInfo.
     const pausedInfo = this.pausedWorkoutInfo();
     if (pausedInfo) {
-      this.vibrate();
+      this.workoutService.vibrate();
       const routineName = pausedInfo.sessionRoutine?.name || 'Ad-hoc Workout';
       const exercisesAvailable = pausedInfo.sessionRoutine && pausedInfo.sessionRoutine.exercises ? pausedInfo.sessionRoutine.exercises.length : 0;
       const exercisesDone = pausedInfo.currentWorkoutLogExercises?.length || 0;
@@ -158,25 +158,18 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
   }
 
-  vibrate(): void {
-    const currentVibrator = navigator;
-    if (currentVibrator && 'vibrate' in currentVibrator) {
-      currentVibrator.vibrate(50);
-    }
-  }
-
   startNewSession(): void {
-    this.vibrate();
+    this.workoutService.vibrate();
     this.workoutService.navigateToPlayer('-1', { queryParams: { resume: 'true' } });
   }
 
   navigateToRoutines(): void {
-    this.vibrate();
+    this.workoutService.vibrate();
     this.router.navigate(['/workout']);
   }
 
   navigateToPrograms(): void {
-    this.vibrate();
+    this.workoutService.vibrate();
     if (!this.subscriptionService.isPremium()) {
       this.subscriptionService.showUpgradeModal();
       return;
@@ -186,18 +179,18 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   navigateToHistory(): void {
-    this.vibrate();
+    this.workoutService.vibrate();
     this.router.navigate(['/history']);
   }
 
   navigateToProfile(): void {
-    this.vibrate();
+    this.workoutService.vibrate();
     this.router.navigate(['/profile']);
   }
 
   // +++ ADD THIS NEW NAVIGATION METHOD +++
   navigateToLogActivity(): void {
-    this.vibrate();
+    this.workoutService.vibrate();
     if (!this.subscriptionService.isPremium()) {
       this.subscriptionService.showUpgradeModal();
       return;
@@ -208,7 +201,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
 
   navigateToPersonalGym(): void {
-    this.vibrate();
+    this.workoutService.vibrate();
     if (!this.subscriptionService.isPremium()) {
       this.subscriptionService.showUpgradeModal();
       return;

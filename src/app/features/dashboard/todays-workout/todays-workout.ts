@@ -350,17 +350,10 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
     }, this.ANIMATION_OUT_DURATION);
   }
 
-  vibrate(): void {
-    const currentVibrator = navigator;
-    if (currentVibrator && 'vibrate' in currentVibrator) {
-      currentVibrator.vibrate(50);
-    }
-  }
-
   startProgramWorkout(routineId: string, programId: string | undefined, scheduledDayId: string | undefined, event: Event): void {
     event?.stopPropagation();
     if (routineId) {
-      this.vibrate();
+      this.workoutService.vibrate();
       this.workoutService.navigateToPlayer(routineId, { queryParams: { programId, scheduledDayId } });
     }
   }
@@ -374,7 +367,7 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
 
   viewRoutineDetails(routineId: string | undefined): void { if (routineId) { this.router.navigate(['/workout/routine/view', routineId]); } }
   viewLogDetails(logId: string): void {
-    this.vibrate();
+    this.workoutService.vibrate();
     this.router.navigate(['/history/log', logId]);
   }
   managePrograms(): void { this.router.navigate(['/training-programs']); }

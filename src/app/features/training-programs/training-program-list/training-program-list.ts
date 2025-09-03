@@ -400,16 +400,9 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
   }
   navigateToCreateProgram(): void { this.router.navigate(['/training-programs/new']); }
 
-  vibrate(): void {
-    const currentVibrator = navigator;
-    if (currentVibrator && 'vibrate' in currentVibrator) {
-      currentVibrator.vibrate(50);
-    }
-  }
-
   viewProgramDetails(programId: string, event?: MouseEvent): void {
     event?.stopPropagation();
-    this.vibrate();
+    this.workoutService.vibrate();
     this.router.navigate(['/training-programs/view', programId]);
     this.activeProgramActions.set(null);
   }
@@ -979,9 +972,9 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
 
   getProgramDropdownActionItems(programId: string, mode: MenuMode): ActionMenuItem[] {
     const defaultBtnClass = 'rounded text-left p-4 font-medium text-gray-600 dark:text-gray-300 hover:bg-primary flex items-center hover:text-white dark:hover:text-gray-100 dark:hover:text-white';
-    const deleteBtnClass = 'rounded text-left p-4 font-medium text-gray-600 dark:text-gray-300 hover:bg-red-600 flex items-center hover:text-gray-100 hover:animate-pulse';;
-    const activateBtnClass = 'rounded text-left p-4 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-green-600 flex items-center hover:text-gray-100';;
-    const deactivateBtnClass = 'rounded text-left p-4 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-500 flex items-center hover:text-gray-100';;
+    const deleteBtnClass = 'rounded text-left p-4 font-medium text-gray-600 dark:text-gray-300 hover:bg-red-600 flex items-center hover:text-gray-100 hover:animate-pulse';
+    const activateBtnClass = 'rounded text-left p-4 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-green-600 flex items-center hover:text-gray-100';
+    const deactivateBtnClass = 'rounded text-left p-4 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-500 flex items-center hover:text-gray-100';
 
     const currentProgram = this.allProgramsForList().find(program => program.id === programId);
 

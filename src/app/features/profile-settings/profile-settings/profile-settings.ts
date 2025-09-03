@@ -95,7 +95,7 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
       * @param route Optional. The Angular route to navigate to if access is granted.
       */
   handlePremiumFeatureOrNavigate(feature: PremiumFeature, event: Event, route?: any[]): void {
-    this.vibrate();
+    this.workoutService.vibrate();
 
     if (this.subscriptionService.canAccess(feature)) {
       // Access granted. If a route is provided, navigate to it.
@@ -180,7 +180,7 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
    * @param event The change event from the input element.
    */
   togglePlayerMode(event: Event): void {
-    this.vibrate();
+    this.workoutService.vibrate();
     const isChecked = (event.target as HTMLInputElement).checked;
     const newMode = isChecked ? 'focus' : 'compact';
     this.appSettingsForm.get('playerMode')?.setValue(newMode);
@@ -609,7 +609,7 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
   }
 
   navigateToPersonalGym(event?: Event): void {
-    this.vibrate();
+    this.workoutService.vibrate();
     if (!this.subscriptionService.canAccess(PremiumFeature.PERSONAL_GYM)) {
       this.subscriptionService.showUpgradeModal();
       return;
@@ -640,21 +640,14 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
   showSyncHistoryTooltip(): void {
     // show only if on mobile 
     if (this.platformId === 'browser' && window.innerWidth <= 768) {
-      this.vibrate();
+      this.workoutService.vibrate();
       this.alertService.showAlert("Sync Exercise History", this.syncHistoryTooltipString);
       return;
     }
   }
 
-  vibrate(): void {
-    const currentVibrator = navigator;
-    if (currentVibrator && 'vibrate' in currentVibrator) {
-      currentVibrator.vibrate(50);
-    }
-  }
-
   selectMenuMode(mode: MenuMode): void {
-    this.vibrate();
+    this.workoutService.vibrate();
     if (!this.subscriptionService.canAccess(PremiumFeature.MENU_MODE)) {
       this.subscriptionService.showUpgradeModal();
       return;

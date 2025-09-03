@@ -17,6 +17,7 @@ import { ToastService } from '../../../core/services/toast.service';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { PressDirective } from '../../../shared/directives/press.directive';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
+import { WorkoutService } from '../../../core/services/workout.service';
 
 
 // Interface to combine PB data with Exercise details
@@ -63,6 +64,7 @@ export class PersonalBestsComponent implements OnInit {
   private router = inject(Router);
   private toastService = inject(ToastService);
   private platformId = inject(PLATFORM_ID);
+  private workoutService = inject(WorkoutService);
 
   // Signals for raw data
   protected allPersonalBestsRaw = signal<Record<string, PersonalBestSet[]>>({});
@@ -251,17 +253,10 @@ export class PersonalBestsComponent implements OnInit {
     return value || 'N/A';
   }
 
-  vibrate(): void {
-    const currentVibrator = navigator;
-    if (currentVibrator && 'vibrate' in currentVibrator) {
-      currentVibrator.vibrate(50);
-    }
-  }
-
   navigateToLogDetail(workoutLogId: string | undefined, event?: Event): void {
     event?.stopPropagation();
     if (workoutLogId) {
-      this.vibrate();
+      this.workoutService.vibrate();
       this.router.navigate(['/history/log', workoutLogId]);
     } else {
       this.toastService.error('Could not find the associated workout log for this personal best. It\'s possible that the related workout session has been removed.', 0, 'Navigation Error');
@@ -297,7 +292,7 @@ export class PersonalBestsComponent implements OnInit {
     }
     // Encode pbType to make it URL-safe, especially if it contains spaces or special characters
     const encodedPbType = encodeURIComponent(pbType);
-    this.vibrate();
+    this.workoutService.vibrate();
     this.router.navigate(['/profile/pb-trend', exerciseId, encodedPbType]);
     console.log(`Requesting trend for Exercise ID: ${exerciseId}, PB Type: ${pbType}`);
   }

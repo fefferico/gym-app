@@ -135,7 +135,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     } else {
       this.toastService.info('Hiding hidden routines', 2000, 'Hidden Routines');
     }
-    this.vibrate();
+    this.workoutService.vibrate();
     this.closeFilterAndScrollToTop();
   }
 
@@ -144,7 +144,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     if (show) {
       this.toastService.info('Showing only favourite routines', 2000, 'Hidden Routines');
     }
-    this.vibrate();
+    this.workoutService.vibrate();
     this.closeFilterAndScrollToTop();
   }
 
@@ -373,12 +373,12 @@ export class RoutineListComponent implements OnInit, OnDestroy {
   onDurationFilterChange(event: Event): void {
     const target = event.target as HTMLInputElement;
     this.selectedMaxDuration.set(Number(target.value));
-    this.vibrate();
+    this.workoutService.vibrate();
   }
 
   // --- UPDATE the clear filters method ---
   clearFilters(): void {
-    this.vibrate();
+    this.workoutService.vibrate();
     this.routineSearchTerm.set('');
     this.selectedRoutineGoal.set(null);
     this.selectedRoutineMuscleGroup.set(null);
@@ -400,7 +400,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
 
   // --- Action Methods ---
   navigateToCreateRoutine(): void {
-    this.vibrate();
+    this.workoutService.vibrate();
 
     const totalRoutines = this.allRoutinesForList() ? this.allRoutinesForList().length : 0;
 
@@ -509,13 +509,6 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     }
   }
 
-  vibrate(): void {
-    const currentVibrator = navigator;
-    if (currentVibrator && 'vibrate' in currentVibrator) {
-      currentVibrator.vibrate(50);
-    }
-  }
-
   viewRoutineDetails(routineId: string, event?: Event): void {
     // event?.stopPropagation();
     if (event && event.target) {
@@ -524,7 +517,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
         return;
       }
     }
-    this.vibrate();
+    this.workoutService.vibrate();
     this.router.navigate(['/workout/routine/view', routineId, { isView: 'routineBuilder' }]); // Pass isView flag
     this.visibleActionsRutineId.set(null);
   }
@@ -643,7 +636,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
   }
 
   startKB(): void {
-    this.vibrate();
+    this.workoutService.vibrate();
     if (!this.subscriptionService.canAccess(PremiumFeature.CAMERA_TRACKING)) {
       this.subscriptionService.showUpgradeModal();
       return;

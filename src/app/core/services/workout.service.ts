@@ -823,7 +823,12 @@ export class WorkoutService {
 
 
 
-
+  vibrate(): void {
+    const currentVibrator = navigator;
+    if (currentVibrator && 'vibrate' in currentVibrator) {
+      currentVibrator.vibrate(50);
+    }
+  }
 
 
 
