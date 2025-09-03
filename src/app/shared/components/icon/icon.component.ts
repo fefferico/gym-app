@@ -97,6 +97,9 @@ export class IconComponent implements OnChanges {
       if (!svgElement) return;
       elementToRender = svgElement;
 
+      this.renderer.removeAttribute(svgElement, 'width');
+      this.renderer.removeAttribute(svgElement, 'height');
+
       const strokeTarget = layer.strokeWidth ?? this.strokeWidth;
       if (strokeTarget !== undefined && svgElement.children) {
         for (const child of Array.from(svgElement.children)) {
@@ -143,7 +146,7 @@ export class IconComponent implements OnChanges {
       // +++ NEW CASE HERE +++
       case 'filled-padded':
         // It's the same as 'filled', but with a scale transform to make it larger.
-        return 'flex items-center justify-center rounded-full scale-110';
+        return 'flex items-center justify-center rounded-full scale-125';
       
       default:
         return '';

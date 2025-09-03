@@ -29,28 +29,36 @@ export const switchExerciseBtn = {
     label: 'Switch',
     actionKey: 'switchExercise',
     iconName: [
+        // Layer 1: Base icon (fills the container)
         { name: 'dumbbell' },
+
+        // Layer 2: Padded white background circle, centered
         {
             name: 'none',
-            display: 'filled-padded',
-            class: 'bg-white'
+            display: 'filled-padded', // Makes it 125% of the container size
+            position: 'bottom-right',       // Ensures it's centered
+            class: 'bg-white dark:bg-gray-800'
+            ,
         },
+
+        // Layer 3: The 'change' icon, centered on top of the circle
         {
             name: 'change',
+            position: 'bottom-right',       // Ensures it's centered
+            size: 'w-4 h-4',      // Now this will work! Size is relative to the host.
             class: 'text-primary',
-            strokeWidth: 3,
-            size: 'w-4 h-4'
+            strokeWidth: 2.5
         }
     ],
-    iconClass: 'w-8 h-8 mr-2',
-    buttonClass: ' hover:bg-cyan-600 ',
+    iconClass: 'w-8 h-8 mr-2', // This class is applied to the <app-icon> host
+    buttonClass: 'hover:bg-cyan-600',
 } as ActionMenuItem;
 
 export const openPerformanceInsightsBtn = {
     label: 'Session insight',
     actionKey: 'insight',
     iconName: `schedule`,
-    iconClass: 'w-8 h-8',
+    iconClass: 'w-8 h-8 mr-2',
     buttonClass: ' hover:bg-green-600 ',
 } as ActionMenuItem;
 
@@ -70,7 +78,8 @@ export const addWarmupSetBtn = {
         {
             name: 'none',
             display: 'filled-padded',
-            class: 'bg-white'
+            class: 'bg-white dark:bg-gray-800'
+
         },
         {
             name: 'plus-circle',
@@ -122,7 +131,7 @@ export const createSuperSetBtn = {
         {
             name: 'none',
             display: 'filled-padded',
-            class: 'bg-white'
+            class: 'bg-white dark:bg-gray-800'
         },
         {
             name: 'plus-circle',
@@ -150,7 +159,8 @@ export const removeFromSuperSetBtn = {
         {
             name: 'none',
             display: 'filled-padded',
-            class: 'bg-white'
+            class: 'bg-white dark:bg-gray-800'
+
         },
         {
             name: 'minus-circle',
@@ -166,7 +176,7 @@ export const removeExerciseBtn = {
     label: 'Remove Exercise',
     actionKey: 'remove',
     iconName: 'trash',
-    buttonClass: ' hover:bg-red-800 ', 
+    buttonClass: ' hover:bg-red-800 ',
     iconClass: 'w-8 h-8 mr-2'
 }
 
@@ -177,7 +187,8 @@ export const addSetToExerciseBtn = {
         {
             name: 'none',
             display: 'filled-padded',
-            class: 'bg-white'
+            class: 'bg-white dark:bg-gray-800'
+
         },
         {
             name: 'plus-circle',
