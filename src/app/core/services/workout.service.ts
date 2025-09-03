@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid'; // For generating unique IDs
 
 import { ExerciseSetParams, Routine, WorkoutExercise } from '../models/workout.model'; // Ensure this path is correct
 import { StorageService } from './storage.service';
-import { LoggedSet } from '../models/workout-log.model';
+import { LoggedSet, LoggedWorkoutExercise, WorkoutLog } from '../models/workout-log.model';
 import { AlertService } from './alert.service';
 import { ROUTINES_DATA } from './routines-data';
 import { ToastService } from './toast.service';
@@ -685,4 +685,277 @@ export class WorkoutService {
 
     return newWorkoutExercise;
   }
+
+  /**
+ * Helper to check if all properties of an object are falsy.
+ */
+  areAllPropertiesFalsy(obj: any): boolean {
+    return Object.values(obj).every(value => !value);
+  }
+
+  /**
+   * Helper to reorder an array of exercises to keep superset groups contiguous.
+   */
+  reorderExercisesForSupersets(exercises: WorkoutExercise[]): WorkoutExercise[] {
+    const reordered: WorkoutExercise[] = [];
+    const processedIds = new Set<string>();
+
+    for (const exercise of exercises) {
+      if (processedIds.has(exercise.id)) continue;
+
+      if (exercise.supersetId) {
+        const group = exercises
+          .filter(ex => ex.supersetId === exercise.supersetId)
+          .sort((a, b) => (a.supersetOrder ?? 0) - (b.supersetOrder ?? 0));
+        group.forEach(ex => {
+          reordered.push(ex);
+          processedIds.add(ex.id);
+        });
+      } else {
+        reordered.push(exercise);
+        processedIds.add(exercise.id);
+      }
+    }
+    return reordered;
+  }
+
+  /**
+   * Orchestrates the creation of a superset through a UI prompt.
+   * This function is self-contained and does not depend on component state.
+   *
+   * @param routine The current workout routine object.
+   * @param exIndex The index of the exercise initiating the action.
+   * @param loggedExercisesToExclude The current array of logged exercises for the session.
+   * @param alertService An instance of the AlertService for UI prompts.
+   * @param toastService An instance of the ToastService for user feedback.
+   * @returns A promise that resolves with the updated routine and logged exercises, or null if cancelled.
+   */
+  public async createSuperset(
+    routine: Routine,
+    exIndex: number,
+    loggedExercisesToExclude: LoggedWorkoutExercise[]
+  ): Promise<{ updatedRoutine: Routine; updatedLoggedExercises: LoggedWorkoutExercise[], newSupersetId: string } | null> {
+    const availableExercises = routine.exercises
+      .map((ex, index) => ({ ...ex, originalIndex: index }))
+      .filter(ex => !ex.supersetId);
+
+    const exerciseInputs: AlertInput[] = availableExercises.map(exer => ({
+      label: exer.exerciseName,
+      name: String(exer.originalIndex),
+      type: 'checkbox',
+      checked: exer.originalIndex === exIndex, // Pre-check the initiating exercise
+    }));
+
+    exerciseInputs.push({
+      name: 'supersetRounds',
+      type: 'number',
+      label: 'Number of Rounds',
+      value: '1',
+      min: 1,
+      placeholder: 'Enter number of rounds',
+    });
+
+    const choice = await this.alertService.showPromptDialog(
+      'Create Superset',
+      'Select exercises to link together.',
+      exerciseInputs
+    );
+
+    if (!choice || this.areAllPropertiesFalsy(choice)) {
+      return null; // User cancelled
+    }
+
+    const rounds = Number(choice['supersetRounds']) || 1;
+    delete choice['supersetRounds'];
+
+    const selectedOriginalIndices = Object.keys(choice)
+      .filter(key => choice[key])
+      .map(Number)
+      .sort((a, b) => a - b);
+
+    if (selectedOriginalIndices.length < 2) {
+      this.toastService.info("Please select at least two exercises to create a superset.");
+      return null;
+    }
+
+    // Work on copies to avoid side effects until the operation is confirmed
+    const updatedRoutine = JSON.parse(JSON.stringify(routine)) as Routine;
+    let updatedLogs = [...loggedExercisesToExclude];
+    const newSupersetId = uuidv4();
+    let currentOrder = 0;
+
+    for (const originalIndex of selectedOriginalIndices) {
+      const targetExercise = updatedRoutine.exercises[originalIndex];
+      if (targetExercise) {
+        // Remove any existing logs for this exercise as its structure is changing
+        updatedLogs = updatedLogs.filter(log => log.id !== targetExercise.id);
+
+        const templateSet = targetExercise.sets.length > 0
+          ? { ...targetExercise.sets[0] }
+          : { id: uuidv4(), reps: 8, weight: 10, restAfterSet: 60, type: 'standard' };
+
+        targetExercise.sets = [];
+        targetExercise.supersetId = newSupersetId;
+        targetExercise.supersetOrder = currentOrder++;
+        targetExercise.type = 'superset';
+        targetExercise.supersetSize = selectedOriginalIndices.length;
+        targetExercise.supersetRounds = rounds;
+
+        for (let i = 1; i <= rounds; i++) {
+          targetExercise.sets.push({ ...templateSet, id: uuidv4() });
+          // targetExercise.sets.push({ ...templateSet, id: uuidv4(), supersetRound: i });
+        }
+      }
+    }
+
+    updatedRoutine.exercises = this.reorderExercisesForSupersets(updatedRoutine.exercises);
+    this.alertService.showAlert("INFO", `Superset created with ${selectedOriginalIndices.length} exercises and ${rounds} rounds: existing logs were cleared and sets standardized.`);
+
+      return { updatedRoutine, updatedLoggedExercises: updatedLogs, newSupersetId };
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  /**
+   * Opens a modal to add a standalone exercise to an existing superset.
+   * @returns A promise that resolves with the updated routine, or null if cancelled.
+   */
+  public async addToSuperset(
+    routine: Routine,
+    exIndex: number,
+    alertService: AlertService,
+    toastService: ToastService
+  ): Promise<Routine | null> {
+    const exerciseToAdd = routine.exercises[exIndex];
+    if (exerciseToAdd.supersetId) {
+      toastService.info("This exercise is already in a superset.");
+      return null;
+    }
+
+    const supersetMap = new Map<string, WorkoutExercise[]>();
+    routine.exercises.forEach(ex => {
+      if (ex.supersetId) {
+        if (!supersetMap.has(ex.supersetId)) supersetMap.set(ex.supersetId, []);
+        supersetMap.get(ex.supersetId)!.push(ex);
+      }
+    });
+
+    if (supersetMap.size === 0) {
+      toastService.error("No supersets exist to add this exercise to.");
+      return null;
+    }
+
+    const supersetChoices: AlertInput[] = Array.from(supersetMap.values()).map((group, i) => ({
+      name: 'supersetChoice',
+      type: 'radio',
+      label: `Superset: ${group.map(e => e.exerciseName).join(' & ')}`,
+      value: group[0].supersetId!,
+      checked: i === 0,
+    }));
+
+    const result = await alertService.showPromptDialog('Add to Superset', `Which superset for "${exerciseToAdd.exerciseName}"?`, supersetChoices, 'Add', 'Cancel');
+
+    if (!result || !result['supersetChoice']) return null;
+
+    const chosenSupersetId = result['supersetChoice'];
+    const updatedRoutine = JSON.parse(JSON.stringify(routine)) as Routine;
+    const targetExercise = updatedRoutine.exercises.find(ex => ex.id === exerciseToAdd.id);
+    const existingInSuperset = updatedRoutine.exercises.filter(ex => ex.supersetId === chosenSupersetId);
+
+    if (!targetExercise || existingInSuperset.length === 0) {
+      toastService.error("Could not find the target exercise or superset.");
+      return null;
+    }
+
+    const newSize = existingInSuperset.length + 1;
+    const rounds = existingInSuperset[0].supersetRounds || 1;
+    const templateSet = targetExercise.sets[0] || { id: uuidv4(), reps: 8, weight: 10, restAfterSet: 60, type: 'standard' };
+
+    targetExercise.sets = Array.from({ length: rounds }, () => ({ ...templateSet, id: uuidv4() }));
+    targetExercise.supersetId = String(chosenSupersetId);
+    targetExercise.supersetOrder = existingInSuperset.length;
+    targetExercise.type = 'superset';
+    targetExercise.supersetRounds = rounds;
+    targetExercise.supersetSize = newSize;
+
+    existingInSuperset.forEach(ex => { ex.supersetSize = newSize; });
+    updatedRoutine.exercises = this.reorderExercisesForSupersets(updatedRoutine.exercises);
+    toastService.success(`${targetExercise.exerciseName} added to the superset.`);
+
+    return updatedRoutine;
+  }
+
+  /**
+   * Removes an exercise from a superset, clearing its logs and dissolving the superset if necessary.
+   * @returns A promise resolving with updated routine and logs, or null if cancelled.
+   */
+  public async removeFromSuperset(
+    routine: Routine,
+    exIndex: number,
+    loggedExercises: LoggedWorkoutExercise[],
+    alertService: AlertService,
+    toastService: ToastService
+  ): Promise<{ updatedRoutine: Routine; updatedLoggedExercises: LoggedWorkoutExercise[] } | null> {
+    const exercise = routine.exercises[exIndex];
+    if (!exercise.supersetId) return null;
+
+    const confirm = await alertService.showConfirm("Remove from Superset", `Remove ${exercise.exerciseName} from this superset? Its logged sets for this session will be cleared.`);
+    if (!confirm?.data) return null;
+
+    const updatedRoutine = JSON.parse(JSON.stringify(routine)) as Routine;
+    let updatedLogs = [...loggedExercises];
+    const exerciseToRemove = updatedRoutine.exercises[exIndex];
+    const supersetId = exerciseToRemove.supersetId!;
+
+    // Clear existing logs for this exercise
+    const logIndex = updatedLogs.findIndex(le => le.id === exerciseToRemove.id);
+    if (logIndex > -1) {
+      updatedLogs.splice(logIndex, 1);
+      toastService.info(`Logged data for ${exerciseToRemove.exerciseName} was cleared.`);
+    }
+
+    // Reset superset properties on the target exercise
+    exerciseToRemove.supersetId = null;
+    exerciseToRemove.supersetOrder = null;
+    exerciseToRemove.type = 'standard';
+    exerciseToRemove.supersetSize = null;
+
+    const remainingInSuperset = updatedRoutine.exercises.filter(ex => ex.supersetId === supersetId);
+
+    if (remainingInSuperset.length <= 1) {
+      remainingInSuperset.forEach(ex => {
+        ex.supersetId = null;
+        ex.supersetOrder = null;
+        ex.type = 'standard';
+        ex.supersetSize = null;
+      });
+      toastService.info("Superset dissolved as only one exercise remains.");
+    } else {
+      remainingInSuperset
+        .sort((a, b) => (a.supersetOrder ?? 0) - (b.supersetOrder ?? 0))
+        .forEach((ex, i) => {
+          ex.supersetOrder = i;
+          ex.supersetSize = remainingInSuperset.length;
+        });
+      toastService.info(`${exerciseToRemove.exerciseName} removed from superset.`);
+    }
+
+    updatedRoutine.exercises = this.reorderExercisesForSupersets(updatedRoutine.exercises);
+    return { updatedRoutine, updatedLoggedExercises: updatedLogs };
+  }
+
+
+
+
 }

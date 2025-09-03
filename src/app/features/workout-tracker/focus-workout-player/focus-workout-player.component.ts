@@ -1878,7 +1878,17 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     }
     // --- END NEW CHECK ---
 
-    this.originalRoutineSnapshot = state.originalRoutineSnapshot ? JSON.parse(JSON.stringify(state.originalRoutineSnapshot)) : [];
+    if (state.sessionRoutine) {
+      this.originalRoutineSnapshot = JSON.parse(JSON.stringify(state.sessionRoutine));
+    } else if (state.originalWorkoutExercises) {
+      this.originalRoutineSnapshot = {
+        id: '-1',
+        name: 'Custom session',
+        exercises: JSON.parse(JSON.stringify(state.originalWorkoutExercises))
+      };
+    } else {
+      this.originalRoutineSnapshot = null;
+    }
 
     this.currentExerciseIndex.set(state.currentExerciseIndex);
     this.currentSetIndex.set(state.currentSetIndex);
@@ -1932,10 +1942,9 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
   }
 
   private savePausedSessionState(): void {
-    if (this.sessionState() === SessionState.End) {
-      this.stopAllActivity();
-      return;
-    }
+    if (!this.routine() || !this.routine()?.exercises || this.routine()?.exercises.length === 0) return;
+    if (this.sessionState() === SessionState.End || !this.routine()) return;
+
     const currentRoutine = this.routine();
     if (!currentRoutine) {
       console.warn("Cannot save paused state: routine data is not available");
@@ -1948,7 +1957,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     }
 
     let dateToSaveInState: string;
-    const firstLoggedSetTime = this.currentWorkoutLogExercises()[0]?.sets[0]?.timestamp;
+    const firstLoggedSetTime = this.currentWorkoutLogExercises() ? this.currentWorkoutLogExercises()[0]?.sets[0]?.timestamp : format(new Date(), 'yyyy-MM-dd');
     const baseTimeForDate = firstLoggedSetTime ? new Date(firstLoggedSetTime) : (this.workoutStartTime > 0 ? new Date(this.workoutStartTime - (this.sessionTimerElapsedSecondsBeforePause * 1000)) : new Date());
     dateToSaveInState = format(baseTimeForDate, 'yyyy-MM-dd');
 
@@ -1957,7 +1966,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       version: this.workoutService.getPausedVersion(),
       routineId: this.routineId,
       sessionRoutine: JSON.parse(JSON.stringify(currentRoutine)), // Includes sessionStatus
-      originalRoutineSnapshot: JSON.parse(JSON.stringify(this.originalRoutineSnapshot)),
+      originalWorkoutExercises: JSON.parse(JSON.stringify(this.originalRoutineSnapshot)),
       currentExerciseIndex: this.currentExerciseIndex(),
       currentSetIndex: this.currentSetIndex(),
       currentWorkoutLogExercises: JSON.parse(JSON.stringify(this.currentWorkoutLogExercises())),
@@ -2248,7 +2257,6 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       }
       this.addExerciseToCurrentRoutine(newWorkoutExercise);
     }
-    this.savePausedSessionState();
   }
 
   // Called if user wants to define a completely new exercise not in the library
@@ -2317,7 +2325,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
         this.toastService.success(`"${newWorkoutExercise.exerciseName}" added to the queue.`, 3000, "Exercise Added");
       }
     }
-
+    this.savePausedSessionState();
   }
 
   async finishWorkoutEarly(): Promise<void> {
@@ -2392,8 +2400,6 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     this.stopAutoSave();
     if (this.sessionState() === SessionState.Paused) {
       this.toastService.warning("Please resume workout before finishing", 3000, "Session Paused");
-      // If user tries to finish while paused, maybe offer to resume or just return false
-      // For now, let's assume they need to resume via the resume button first.
       return false; // Did not log
     }
     if (this.sessionState() === SessionState.Loading) {
@@ -2401,13 +2407,11 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       return false; // Did not log
     }
     const loggedExercisesForReport = this.currentWorkoutLogExercises().filter(ex => ex.sets.length > 0);
-    if (loggedExercisesForReport === undefined || loggedExercisesForReport.length === 0) {
-      return false
-    }
 
     if (loggedExercisesForReport.length === 0) {
       this.toastService.info("No sets logged. Workout not saved", 3000, "Empty Workout");
-      this.removePausedWorkout()
+      this.stopAllActivity(); // <-- Use centralized cleanup
+      this.removePausedWorkout();
       if (this.router.url.includes('/play')) {
         this.router.navigate(['/workout']);
       }
@@ -2425,18 +2429,18 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
 
     // I have to be sure that the original routine snapshot is available, in case of reloading the page or something else
     const routineExists = this.routineId && this.routineId !== '-1' && this.routineId !== null;
-    if (!this.originalRoutineSnapshot || this.originalRoutineSnapshot?.exercises.length === 0 && routineExists) {
-      // try to retrieve the original routine snapshot from the storage
-      const routineId = this.routineId;
-      if (this.routineId) {
-        const routineId: string = this.routineId;
-        const routineResult = await firstValueFrom(this.workoutService.getRoutineById(routineId).pipe(take(1)));
-        if (routineResult && routineResult.exercises && routineResult.exercises.length > 0) {
-          this.originalRoutineSnapshot = JSON.parse(JSON.stringify(routineResult.exercises));
-        }
-      }
-      if (!this.originalRoutineSnapshot || this.originalRoutineSnapshot?.exercises.length === 0) {
+    if (!this.originalRoutineSnapshot || !this.originalRoutineSnapshot?.exercises || this.originalRoutineSnapshot?.exercises.length === 0) {
+      if (!routineExists) {
         this.originalRoutineSnapshot = null;
+      } else {
+        // try to retrieve the original routine snapshot from the storage
+        if (this.routineId) {
+          const routineId: string = this.routineId;
+          const routineResult = await firstValueFrom(this.workoutService.getRoutineById(routineId).pipe(take(1)));
+          if (routineResult && routineResult.exercises && routineResult.exercises.length > 0) {
+            this.originalRoutineSnapshot = JSON.parse(JSON.stringify(routineResult.exercises));
+          }
+        }
       }
     }
 
@@ -2460,7 +2464,6 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
             { text: "Just log", role: "log", data: "log", cssClass: "bg-purple-600", icon: 'schedule' } as AlertButton,
             { text: "Update Original Routine and log", role: "destructive", data: "update", cssClass: "bg-blue-600", icon: 'save' } as AlertButton,
             { text: "Save as New Routine", role: "confirm", data: "new", cssClass: "bg-green-600", icon: 'create-folder' } as AlertButton,
-            // { text: "Cancel", role: "cancel", data: false, cssClass: "bg-red-600", icon: 'cancel' } as AlertButton
           ],
           // Pass the details array directly to the new property
           { listItems: differences.details }
@@ -2694,12 +2697,13 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
 
   goBack(): void {
     if (this.currentWorkoutLogExercises().length > 0 && this.sessionState() === SessionState.Playing) {
-      this.alertService.showConfirm("Exit Workout?", "You have an active workout. Are you sure you want to exit? Your progress might be lost unless you pause first")
-        .then(confirmation => {
-          if (confirmation && confirmation.data) {
-            this.router.navigate(['/workout']);
-          }
-        });
+      this.savePausedSessionState();
+      this.router.navigate(['/workout']);
+      // this.alertService.showConfirm("Exit Workout?", "You have an active workout. Are you sure you want to exit? Your progress might be lost unless you pause first")
+      //   .then(confirmation => {
+      //     if (confirmation && confirmation.data) {
+      //     }
+      //   });
     } else {
       this.router.navigate(['/workout']);
     }
@@ -3100,7 +3104,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
   }
 
   private stopAllActivity(): void {
-    // this.isSessionConcluded = true;
+    this.isSessionConcluded = true; // <-- Add this line
     console.log('stopAllActivity - Stopping timers and auto-save');
     this.stopAutoSave();
     if (this.timerSub) this.timerSub.unsubscribe();
@@ -3108,6 +3112,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     this.isRestTimerVisible.set(false);
     this.sessionState.set(SessionState.End);
   }
+
   async resumeSession(): Promise<void> {
     if (this.sessionState() === SessionState.Paused) {
       console.log('resumeSession button clicked - transitioning from Paused to Playing');
@@ -3138,21 +3143,23 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    // --- This is the core of the pattern ---
-    // Emit a value to notify all subscriptions to complete.
     this.destroy$.next();
     this.destroy$.complete();
-    // ------------------------------------
 
-    // The rest of your specific cleanup logic remains the same.
-    this.stopAllActivity(); // This is good to keep for any non-observable timers.
-    this.isRestTimerVisible.set(false);
+    // If the session was properly concluded (finished, quit), do not save a paused state.
+    if (this.isSessionConcluded) {
+      this.stopAllActivity(); // Ensure everything is stopped
+      return;
+    }
 
-    if (isPlatformBrowser(this.platformId) && !this.isSessionConcluded && !this.isPausedWorkoutDiscarded &&
+    // Only save a paused state if the component is destroyed mid-session.
+    if (isPlatformBrowser(this.platformId) && !this.isPausedWorkoutDiscarded &&
       (this.sessionState() === SessionState.Playing || this.sessionState() === SessionState.Paused) &&
       this.routine()) {
-      console.log('WorkoutPlayer ngOnDestroy - Saving state...');
+      console.log('WorkoutPlayer ngOnDestroy - Saving state for an unconcluded session...');
       this.savePausedSessionState();
+    } else {
+      this.stopAllActivity(); // Final cleanup for any other edge case.
     }
   }
 
@@ -4270,7 +4277,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       actionKey: 'pause',
       iconName: `pause`,
       iconClass: 'w-8 h-8 mr-2',
-      buttonClass: defaultBtnClass + (this.sessionState() !== 'playing' ? 'disabled ' : '') + 'flex justify-center items-center max-w-xs ' + ( isDropDownOrCompact ? ' ' : ' bg-yellow-500 ') + 'hover:bg-yellow-600 text-white font-bold py-2.5 px-6 rounded-md text-lg shadow-lg disabled:opacity-60 disabled:cursor-not-allowed' + wFullClass,
+      buttonClass: defaultBtnClass + (this.sessionState() !== 'playing' ? 'disabled ' : '') + 'flex justify-center items-center max-w-xs ' + (isDropDownOrCompact ? ' ' : ' bg-yellow-500 ') + 'hover:bg-yellow-600 text-white font-bold py-2.5 px-6 rounded-md text-lg shadow-lg disabled:opacity-60 disabled:cursor-not-allowed' + wFullClass,
     } as ActionMenuItem;
 
     const jumpToExerciseBtn = {
@@ -4278,7 +4285,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       actionKey: 'jumpToExercise',
       iconName: `dumbbell`,
       iconClass: 'w-8 h-8 mr-2',
-      buttonClass: defaultBtnClass + (this.sessionState() === 'paused' || !this.routine()?.exercises?.length ? 'disabled ' : '') + 'flex justify-center items-center max-w-xs ' + ( isDropDownOrCompact ? ' ' : ' bg-fuchsia-500 ') + ' hover:bg-fuchsia-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed' + wFullClass,
+      buttonClass: defaultBtnClass + (this.sessionState() === 'paused' || !this.routine()?.exercises?.length ? 'disabled ' : '') + 'flex justify-center items-center max-w-xs ' + (isDropDownOrCompact ? ' ' : ' bg-fuchsia-500 ') + ' hover:bg-fuchsia-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed' + wFullClass,
     } as ActionMenuItem;
 
     const addExerciseBtn = {
@@ -4286,7 +4293,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       actionKey: 'addExercise',
       iconName: `plus-circle`,
       iconClass: 'w-8 h-8 mr-2',
-      buttonClass: defaultBtnClass + (this.sessionState() === 'paused' || !this.routine()?.exercises?.length ? 'disabled ' : '') + 'flex items-center justify-center align-center max-w-xs ' + ( isDropDownOrCompact ? ' ' : ' bg-purple-500 ') + ' hover:bg-purple-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed' + wFullClass,
+      buttonClass: defaultBtnClass + (this.sessionState() === 'paused' || !this.routine()?.exercises?.length ? 'disabled ' : '') + 'flex items-center justify-center align-center max-w-xs ' + (isDropDownOrCompact ? ' ' : ' bg-purple-500 ') + ' hover:bg-purple-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed' + wFullClass,
     } as ActionMenuItem;
 
     const switchExerciseBtn = {
@@ -4294,7 +4301,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       actionKey: 'switchExercise',
       iconName: `change`,
       iconClass: 'w-8 h-8 mr-2',
-      buttonClass: defaultBtnClass + 'max-w-xs ' + ( isDropDownOrCompact ? ' ' : ' bg-cyan-500 ') + ' hover:bg-cyan-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center' + wFullClass,
+      buttonClass: defaultBtnClass + 'max-w-xs ' + (isDropDownOrCompact ? ' ' : ' bg-cyan-500 ') + ' hover:bg-cyan-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center' + wFullClass,
     } as ActionMenuItem;
 
     const openPerformanceInsightsBtn = {
@@ -4302,7 +4309,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       actionKey: 'insight',
       iconName: `schedule`,
       iconClass: 'w-8 h-8 mr-2',
-      buttonClass: defaultBtnClass + (this.sessionState() === 'paused' || !this.activeSetInfo() ? 'disabled ' : '') + 'flex items-center justify-center align-center max-w-xs ' + ( isDropDownOrCompact ? ' ' : ' bg-green-500 ') + ' hover:bg-green-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed' + wFullClass,
+      buttonClass: defaultBtnClass + (this.sessionState() === 'paused' || !this.activeSetInfo() ? 'disabled ' : '') + 'flex items-center justify-center align-center max-w-xs ' + (isDropDownOrCompact ? ' ' : ' bg-green-500 ') + ' hover:bg-green-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed' + wFullClass,
     } as ActionMenuItem;
 
     const quitWorkoutBtn = {
@@ -4310,7 +4317,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       actionKey: 'exit',
       iconName: `exit-door`,
       iconClass: 'w-8 h-8 mr-2',
-      buttonClass: defaultBtnClass + '' + 'flex items-center justify-center max-w-xs text-white ' + ( isDropDownOrCompact ? ' ' : ' bg-red-500 ') + ' hover:bg-red-800 font-medium py-2 px-6 rounded-md text-md' + wFullClass,
+      buttonClass: defaultBtnClass + '' + 'flex items-center justify-center max-w-xs text-white ' + (isDropDownOrCompact ? ' ' : ' bg-red-500 ') + ' hover:bg-red-800 font-medium py-2 px-6 rounded-md text-md' + wFullClass,
     } as ActionMenuItem;
 
     const addWarmupSetBtn = {
@@ -4318,7 +4325,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       actionKey: 'warmup',
       iconName: `flame`,
       iconClass: 'w-8 h-8 mr-2',
-      buttonClass: defaultBtnClass + '' + 'flex items-center justify-center max-w-xs ' + ( isDropDownOrCompact ? ' ' : ' bg-sky-500 ') + ' hover:bg-sky-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed' + wFullClass,
+      buttonClass: defaultBtnClass + '' + 'flex items-center justify-center max-w-xs ' + (isDropDownOrCompact ? ' ' : ' bg-sky-500 ') + ' hover:bg-sky-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed' + wFullClass,
     } as ActionMenuItem;
 
     const skipCurrentSetBtn = {
@@ -4326,7 +4333,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       actionKey: 'skipSet',
       iconName: `skip`,
       iconClass: 'w-8 h-8 mr-2',
-      buttonClass: defaultBtnClass + (!this.activeSetInfo() || this.sessionState() === 'paused' ? 'disabled ' : '') + 'flex items-center justify-center max-w-xs ' + ( isDropDownOrCompact ? ' ' : ' bg-blue-500 ') + ' hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed' + wFullClass,
+      buttonClass: defaultBtnClass + (!this.activeSetInfo() || this.sessionState() === 'paused' ? 'disabled ' : '') + 'flex items-center justify-center max-w-xs ' + (isDropDownOrCompact ? ' ' : ' bg-blue-500 ') + ' hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed' + wFullClass,
     } as ActionMenuItem;
 
     const skipCurrentExerciseBtn = {
@@ -4334,7 +4341,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       actionKey: 'skipExercise',
       iconName: `skip`,
       iconClass: 'w-8 h-8 mr-2',
-      buttonClass: defaultBtnClass + (!this.activeSetInfo() || this.sessionState() === 'paused' ? 'disabled ' : '') + 'flex items-center justify-center max-w-xs ' + ( isDropDownOrCompact ? ' ' : ' bg-indigo-500 ') + ' hover:bg-indigo-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed' + wFullClass,
+      buttonClass: defaultBtnClass + (!this.activeSetInfo() || this.sessionState() === 'paused' ? 'disabled ' : '') + 'flex items-center justify-center max-w-xs ' + (isDropDownOrCompact ? ' ' : ' bg-indigo-500 ') + ' hover:bg-indigo-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed' + wFullClass,
     } as ActionMenuItem;
 
     const markAsDoLaterBtn = {
@@ -4342,7 +4349,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       actionKey: 'later',
       iconName: `clock`,
       iconClass: 'w-8 h-8 mr-2',
-      buttonClass: defaultBtnClass + (!this.activeSetInfo() || this.sessionState() === 'paused' ? 'disabled ' : '') + 'flex items-center justify-center max-w-xs ' + ( isDropDownOrCompact ? ' ' : ' bg-orange-500 ') + ' hover:bg-orange-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed' + wFullClass,
+      buttonClass: defaultBtnClass + (!this.activeSetInfo() || this.sessionState() === 'paused' ? 'disabled ' : '') + 'flex items-center justify-center max-w-xs ' + (isDropDownOrCompact ? ' ' : ' bg-orange-500 ') + ' hover:bg-orange-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed' + wFullClass,
     } as ActionMenuItem;
 
     const finishEarly = {
@@ -4350,7 +4357,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       actionKey: 'finish',
       iconName: `done`,
       iconClass: 'w-8 h-8 mr-2',
-      buttonClass: defaultBtnClass + (this.sessionState() === 'paused' || this.currentWorkoutLogExercises().length === 0 ? 'disabled ' : '') + 'flex items-center justify-center max-w-xs ' + ( isDropDownOrCompact ? ' ' : ' bg-teal-500 ') + ' hover:bg-teal-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed' + wFullClass,
+      buttonClass: defaultBtnClass + (this.sessionState() === 'paused' || this.currentWorkoutLogExercises().length === 0 ? 'disabled ' : '') + 'flex items-center justify-center max-w-xs ' + (isDropDownOrCompact ? ' ' : ' bg-teal-500 ') + ' hover:bg-teal-600 text-white font-semibold py-2 px-6 rounded-md text-md shadow-md disabled:opacity-60 disabled:cursor-not-allowed' + wFullClass,
     } as ActionMenuItem;
 
     const actionsArray: ActionMenuItem[] = [];
@@ -4384,6 +4391,51 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       actionsArray.push(finishEarly);
     }
 
+    const routine = this.routine(); // Get the routine once at the top
+    const exercise = this.activeSetInfo();
+    if (exercise?.exerciseData?.supersetId) {
+      actionsArray.push({
+        label: 'Remove from Superset',
+        actionKey: 'remove_from_superset',
+        iconName: 'unlink',
+        data: { exIndex: exercise?.exerciseData?.exerciseId },
+        buttonClass: wFullClass + deleteBtnClass,
+        iconClass: 'w-8 h-8 mr-2'
+      });
+    }
+    // RULES 2 & 3: Logic for exercises that are NOT currently in a superset.
+    else {
+      // Prerequisite for both creating and adding: must have at least 2 exercises in the entire routine.
+      if (routine && routine.exercises.length >= 2) {
+
+        // RULE 3: "Add to Superset" is visible if there's already a superset and the current exercise is free.
+        const aSupersetExists = routine.exercises.some(ex => ex.supersetId);
+        if (aSupersetExists) {
+          actionsArray.push({
+            label: 'Add to Superset',
+            actionKey: 'add_to_superset', // Assumes this might trigger a different UI flow
+            iconName: 'link',
+            data: { exIndex: exercise?.exerciseData?.exerciseId },
+            buttonClass: wFullClass + defaultBtnClass,
+            iconClass: 'w-8 h-8 mr-2'
+          });
+        }
+
+        // RULE 2: "Create Superset" is visible if there are at least two "free" exercises to form a new pair.
+        const canCreateNewSuperset = routine.exercises.filter(ex => !ex.supersetId).length >= 2;
+        if (canCreateNewSuperset) {
+          actionsArray.push({
+            label: 'Create Superset',
+            actionKey: 'create_superset',
+            iconName: 'link',
+            data: { exIndex: exercise?.exerciseData?.exerciseId },
+            buttonClass: wFullClass + defaultBtnClass,
+            iconClass: 'w-8 h-8 mr-2'
+          });
+        }
+      }
+    }
+
     actionsArray.push(quitWorkoutBtn);
 
     return actionsArray;
@@ -4403,6 +4455,9 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       case 'later': this.markCurrentExerciseDoLater(); break;
       case 'finish': this.finishWorkoutEarly(); break;
       case 'exit': this.quitWorkout(); break;
+      case 'create_superset': this.openCreateSupersetModal(); break;
+      case 'add_to_superset': this.addToSupersetModal(); break;
+      case 'remove_from_superset': this.removeFromSuperset(); break;
     }
 
     this.isWorkoutMenuVisible.set(false); // Close the menu
@@ -4417,5 +4472,122 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
 
   protected getMenuMode(): MenuMode {
     return this.appSettingsService.getMenuMode();
+  }
+
+  protected sessionNotes = signal<string>('');
+
+  protected currentWorkoutLog = computed<Partial<WorkoutLog>>(() => {
+    return {
+      exercises: this.currentWorkoutLogExercises(),
+      notes: this.sessionNotes(),
+      // You can add other properties from the component state here if needed
+      // routineId: this.routineId,
+      // startTime: this.workoutStartTime,
+    };
+  });
+
+  /**
+   * Opens a modal to create a superset, using the new mapped workout log signal.
+   * @param exIndex The index of the exercise initiating the action.
+   */
+  async openCreateSupersetModal(): Promise<void> {
+    const routine = this.routine();
+    const currentExercise = this.activeSetInfo();
+    const currentLog = this.currentWorkoutLog();
+    if (!routine || !currentLog.exercises) return;
+    if (!currentExercise || currentExercise.exerciseIndex < 0) return;
+
+    // Assuming `createSuperset` is now on your workoutService
+    const result = await this.workoutService.createSuperset(
+      routine,
+      currentExercise.exerciseIndex,
+      currentLog.exercises,
+    );
+
+    // If the utility function returns updated data, apply it back to the source signals
+    if (result) {
+      // --- START: CORRECTED NAVIGATION LOGIC ---
+      
+      // 1. Get the new superset ID directly from the result. This is now reliable.
+      const { newSupersetId, updatedRoutine, updatedLoggedExercises } = result;
+
+      // 2. Find the first exercise in the new superset block and its index
+      const firstExerciseInSuperset = updatedRoutine.exercises.find(
+        e => e.supersetId === newSupersetId && e.supersetOrder === 0
+      );
+      const newActiveIndex = updatedRoutine.exercises.findIndex(
+        e => e.id === firstExerciseInSuperset?.id
+      );
+
+      if (firstExerciseInSuperset && newActiveIndex > -1) {
+        this.stopOngoingTimers();
+
+        // 3. Apply the updated routine and logs to the component's state
+        this.routine.set(updatedRoutine);
+        this.currentWorkoutLogExercises.set(updatedLoggedExercises);
+
+        // 4. Update the component's state to point to the new exercise
+        this.currentExerciseIndex.set(newActiveIndex);
+        this.currentSetIndex.set(0);
+        this.currentBlockRound.set(1);
+        this.totalBlockRounds.set(firstExerciseInSuperset.supersetRounds || 1);
+        this.lastPerformanceForCurrentExercise = null;
+
+        // 5. Refresh the player UI with the new active set
+        await this.prepareCurrentSet();
+
+        this.toastService.info(`Navigated to new superset: ${firstExerciseInSuperset.exerciseName}.`, 2500, "Superset Created");
+      }
+      // --- END: CORRECTED NAVIGATION LOGIC ---
+    }
+    // No need for a final savePausedSessionState() here, as prepareCurrentSet will handle it.
+  }
+
+  async addToSupersetModal(): Promise<void> {
+    const routine = this.routine();
+    if (!routine) return;
+
+    const currentExercise = this.activeSetInfo();
+    const currentLog = this.currentWorkoutLog();
+    if (!routine || !currentLog.exercises) return;
+    if (!currentExercise || currentExercise.exerciseIndex < 0) return;
+
+
+    const updatedRoutine = await this.workoutService.addToSuperset(
+      routine,
+      currentExercise.exerciseIndex,
+      this.alertService,
+      this.toastService
+    );
+
+    if (updatedRoutine) {
+      this.routine.set(updatedRoutine);
+      this.savePausedSessionState();
+    }
+  }
+
+  async removeFromSuperset() {
+    const routine = this.routine();
+    const loggedExercises = this.currentWorkoutLog().exercises || [];
+    if (!routine) return;
+
+    const currentExercise = this.activeSetInfo();
+    const currentLog = this.currentWorkoutLog();
+    if (!routine || !currentLog.exercises) return;
+    if (!currentExercise || currentExercise.exerciseIndex < 0) return;
+
+    const result = await this.workoutService.removeFromSuperset(
+      routine,
+      currentExercise.exerciseIndex,
+      loggedExercises,
+      this.alertService,
+      this.toastService
+    );
+
+    if (result) {
+      this.routine.set(result.updatedRoutine);
+      this.currentWorkoutLogExercises.set(result.updatedLoggedExercises);
+      this.savePausedSessionState();
+    }
   }
 }

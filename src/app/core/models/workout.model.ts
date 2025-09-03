@@ -108,7 +108,7 @@ export interface PausedWorkoutState {
   programName?: string | null;
   scheduledDayId?: string | null;
   sessionRoutine: Routine; // Routine object, its exercises will have sessionStatus
-  originalRoutineSnapshot?: WorkoutExercise[]; // Snapshot of the *original* routine's exercises if one was loaded
+  originalWorkoutExercises?: WorkoutExercise[]; // Snapshot of the *original* routine's exercises if one was loaded
   currentExerciseIndex: number;
   currentSetIndex: number;
   currentWorkoutLogExercises: LoggedWorkoutExercise[];

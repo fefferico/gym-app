@@ -625,51 +625,142 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     this.expandedSetNotes.update(current => current === key ? null : key);
   }
 
+  // compact-workout-player.component.ts
+
   async finishWorkout(): Promise<void> {
-    const analysis = this.analyzeWorkoutCompletion();
-    let msg = 'Are you sure you want to finish and save this workout?';
-    if (analysis.incompleteExercises.length || analysis.skippedExercises.length) {
-      msg = `You have ${analysis.skippedExercises.length} skipped and ${analysis.incompleteExercises.length} incomplete exercises. Finish anyway?`;
+    const log = this.currentWorkoutLog();
+    const loggedExercisesForReport = (log.exercises || []).filter(ex => ex.sets.length > 0);
+
+    if (loggedExercisesForReport.length === 0) {
+      this.toastService.info("No sets logged. Workout not saved.", 3000);
+      return;
     }
-    const confirm = await this.alertService.showConfirm('Finish Workout', msg, 'Finish', 'Cancel');
-    if (confirm?.data) {
-      const log = this.currentWorkoutLog();
-      log.endTime = Date.now();
-      log.durationMinutes = Math.round((log.endTime - (log.startTime!)) / 60000);
-      log.exercises = log.exercises!.filter(ex => ex.sets.length > 0);
-      if (log.startTime) {
-        let iterationId: string | undefined = undefined;
-        if (this.program()) {
-          iterationId = this.program() ? this.program()?.iterationId : undefined;
-          log.iterationId = iterationId;
+
+    // 1. Analyze completion to decide the prompt's tone (Finish vs. Finish Early)
+    const analysis = this.analyzeWorkoutCompletion();
+    const hasIncomplete = analysis.incompleteExercises.length > 0 || analysis.skippedExercises.length > 0;
+    const title = hasIncomplete ? "Finish Workout Early?" : "Finish Workout";
+    let message = hasIncomplete
+      ? `You have ${analysis.skippedExercises.length} skipped and ${analysis.incompleteExercises.length} incomplete exercises. Finish anyway?`
+      : 'Are you sure you want to finish and save this workout?';
+
+    const confirmFinish = await this.alertService.showConfirm(title, message, 'Finish', 'Cancel');
+    if (!confirmFinish?.data) {
+      return; // User cancelled the initial finish prompt
+    }
+
+    // 2. Proceed with routine saving logic after confirmation
+    const sessionRoutineValue = this.routine();
+    let proceedToLog = true;
+    let logAsNewRoutine = false;
+    let updateOriginalRoutineStructure = false;
+    let newRoutineName = sessionRoutineValue?.name
+      ? `${sessionRoutineValue.name} - ${format(new Date(), 'MMM d')}`
+      : `Ad-hoc Workout - ${format(new Date(), 'MMM d, HH:mm')}`;
+
+    const originalSnapshot = this.originalRoutineSnapshot();
+    const isModifiableRoutine = this.routineId && this.routineId !== '-1';
+
+    if (isModifiableRoutine && originalSnapshot && sessionRoutineValue) {
+      const differences = this.comparePerformedToOriginal(loggedExercisesForReport, originalSnapshot.exercises);
+      if (differences.majorDifference) {
+        const choice = await this.alertService.showConfirmationDialog(
+          "Routine Structure Changed", "You made some changes to the routine. What would you like to do?",
+          [
+            { text: "Just Log This Session", role: "log", data: "log", cssClass: "bg-purple-600", icon: 'schedule' } as AlertButton,
+            { text: "Update Original Routine", role: "destructive", data: "update", cssClass: "bg-blue-600", icon: 'save' } as AlertButton,
+            { text: "Save as New Routine", role: "confirm", data: "new", cssClass: "bg-green-600", icon: 'create-folder' } as AlertButton,
+          ],
+          { listItems: differences.details }
+        );
+
+        if (choice?.data === 'new') {
+          const nameInput = await this.alertService.showPromptDialog("New Routine Name", "Enter a name:", [{ name: "newRoutineName", type: "text", value: newRoutineName, attributes: { required: true } }], "Save Routine");
+          if (nameInput && String(nameInput['newRoutineName']).trim()) {
+            newRoutineName = String(nameInput['newRoutineName']).trim();
+            logAsNewRoutine = true;
+          } else proceedToLog = false;
+        } else if (choice?.data === 'update') {
+          updateOriginalRoutineStructure = true;
+        } else if (!choice || choice.data !== 'log') {
+          proceedToLog = false;
         }
-
-        const savedLog = this.trackingService.addWorkoutLog(log as Omit<WorkoutLog, 'id'> & { startTime: number });
-
-        this.sessionState.set(SessionState.End);
-        this.isSessionConcluded = true;
-        this.workoutService.removePausedWorkout();
-        this.timerSub?.unsubscribe();
-
-        if (savedLog.programId) {
-          try {
-            const isProgramCompleted = await this.trainingProgramService.checkAndHandleProgramCompletion(savedLog.programId, savedLog);
-            if (isProgramCompleted) {
-              this.toastService.success(`Congrats! Program completed!`, 5000, "Program Finished", false);
-              this.router.navigate(['/training-programs/completed', savedLog.programId], { queryParams: { logId: savedLog.id } });
-            } else {
-              this.router.navigate(['/workout/summary', savedLog.id]);
-            }
-          } catch (error) {
-            console.error("Error during program completion check:", error);
-            this.router.navigate(['/workout/summary', savedLog.id]);
-          }
-        } else {
-          this.router.navigate(['/workout/summary', savedLog.id]);
-        }
-      } else {
-        this.toastService.error("Could not save: missing start time.");
       }
+    } else if (!isModifiableRoutine && loggedExercisesForReport.length > 0) { // Ad-hoc or routineId: -1
+      const nameInput = await this.alertService.showPromptDialog(
+        "Save as New Routine", "Enter a name for this workout routine:",
+        [{ name: "newRoutineName", type: "text", value: newRoutineName, attributes: { required: true } }],
+        "Create Routine & Log", 'Just Log',
+        [{ text: "Just Log without Saving", role: "no_save", data: "cancel", cssClass: "bg-primary text-white", icon: 'schedule' } as AlertButton], false
+      );
+
+      if (nameInput && nameInput['newRoutineName'] && String(nameInput['newRoutineName']).trim()) {
+        newRoutineName = String(nameInput['newRoutineName']).trim();
+        logAsNewRoutine = true;
+      } else if (nameInput && nameInput['role'] === 'no_save') {
+        logAsNewRoutine = false;
+      } else {
+        proceedToLog = false;
+      }
+    }
+
+    if (!proceedToLog) {
+      this.toastService.info("Finish workout cancelled.", 3000);
+      return;
+    }
+
+    // 3. Finalize and save the log and routine
+    let finalRoutineIdToLog: string | undefined = this.routineId || undefined;
+    let finalRoutineNameForLog = sessionRoutineValue?.name || 'Ad-hoc Workout';
+
+    if (logAsNewRoutine) {
+      const newRoutineDef: Omit<Routine, 'id'> = {
+        name: newRoutineName,
+        description: sessionRoutineValue?.description || `Workout from ${format(new Date(), 'MMM d, yyyy')}`,
+        goal: sessionRoutineValue?.goal || 'custom',
+        exercises: this.convertLoggedToWorkoutExercises(loggedExercisesForReport),
+      };
+      const createdRoutine = this.workoutService.addRoutine(newRoutineDef);
+      finalRoutineIdToLog = createdRoutine.id;
+      finalRoutineNameForLog = createdRoutine.name;
+      this.toastService.success(`New routine "${createdRoutine.name}" created.`);
+    }
+
+    if (updateOriginalRoutineStructure && finalRoutineIdToLog) {
+      const routineToUpdate = await firstValueFrom(this.workoutService.getRoutineById(finalRoutineIdToLog).pipe(take(1)));
+      if (routineToUpdate) {
+        routineToUpdate.exercises = this.convertLoggedToWorkoutExercises(loggedExercisesForReport);
+        this.workoutService.updateRoutine(routineToUpdate, true);
+        this.toastService.success(`Routine "${routineToUpdate.name}" has been updated.`);
+      }
+    }
+
+    log.endTime = Date.now();
+    log.durationMinutes = Math.round((log.endTime - (log.startTime!)) / 60000);
+    log.exercises = loggedExercisesForReport;
+    log.routineId = finalRoutineIdToLog;
+    log.routineName = finalRoutineNameForLog;
+
+    if (log.startTime) {
+      if (this.program()) log.iterationId = this.program()?.iterationId;
+
+      const savedLog = this.trackingService.addWorkoutLog(log as Omit<WorkoutLog, 'id'> & { startTime: number });
+      this.sessionState.set(SessionState.End);
+      this.isSessionConcluded = true;
+      this.workoutService.removePausedWorkout();
+      this.timerSub?.unsubscribe();
+
+      if (savedLog.programId) {
+        const isProgramCompleted = await this.trainingProgramService.checkAndHandleProgramCompletion(savedLog.programId, savedLog);
+        if (isProgramCompleted) {
+          this.toastService.success(`Congrats! Program completed!`, 5000, "Program Finished", false);
+          this.router.navigate(['/training-programs/completed', savedLog.programId], { queryParams: { logId: savedLog.id } });
+          return;
+        }
+      }
+      this.router.navigate(['/workout/summary', savedLog.id]);
+    } else {
+      this.toastService.error("Could not save: missing start time.");
     }
   }
 
@@ -1377,12 +1468,19 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
   private savePausedSessionState(): void {
+    if (!this.routine() || !this.routine()?.exercises || this.routine()?.exercises.length === 0) return;
     if (this.sessionState() === SessionState.End || !this.routine()) return;
 
     let currentTotalSessionElapsed = this.sessionTimerElapsedSecondsBeforePause;
     if (this.sessionState() === SessionState.Playing) {
       currentTotalSessionElapsed += Math.floor((Date.now() - this.workoutStartTime) / 1000);
     }
+
+    let dateToSaveInState: string;
+    const loggedExercise: LoggedWorkoutExercise[] = (this.currentWorkoutLog() && this.currentWorkoutLog() && this.currentWorkoutLog().exercises) || [];
+    const firstLoggedSetTime = loggedExercise && loggedExercise.length > 0 ? loggedExercise[0]?.sets[0]?.timestamp : format(new Date(), 'yyyy-MM-dd');
+    const baseTimeForDate = firstLoggedSetTime ? new Date(firstLoggedSetTime) : (this.workoutStartTime > 0 ? new Date(this.workoutStartTime - (this.sessionTimerElapsedSecondsBeforePause * 1000)) : new Date());
+    dateToSaveInState = format(baseTimeForDate, 'yyyy-MM-dd');
 
     const stringifiedRoutine = JSON.parse(JSON.stringify(this.routine()));
     const stateToSave: PausedWorkoutState = {
@@ -1406,7 +1504,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       restTimerInitialDurationOnPause: 0,
       restTimerMainTextOnPause: this.restTimerMainText(),
       restTimerNextUpTextOnPause: this.restTimerNextUpText(),
-      workoutDate: format(new Date(), 'yyyy-MM-dd'),
+      workoutDate: dateToSaveInState,
     };
 
     this.workoutService.savePausedWorkout(stateToSave);
@@ -1446,7 +1544,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
     this.sessionState.set(SessionState.Playing);
     this.startSessionTimer();
-    this.toastService.success('Paused session loaded', 3000);
+    // this.toastService.success('Paused session loaded', 3000);
   }
 
   private async checkForPausedSession(): Promise<boolean> {
@@ -1486,12 +1584,13 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     // The exercises array might not exist on the partial log initially.
     // Check for its existence and then check its length to satisfy TypeScript's strict checks.
     if (this.currentWorkoutLog().exercises && this.currentWorkoutLog().exercises!.length > 0 && this.sessionState() === SessionState.Playing) {
-      this.alertService.showConfirm("Exit Workout?", "You have an active workout. Are you sure you want to exit? Your progress might be lost unless you pause first")
-        .then(confirmation => {
-          if (confirmation?.data) {
-            this.router.navigate(['/workout']);
-          }
-        });
+      this.savePausedSessionState();
+      this.router.navigate(['/workout']);
+      // this.alertService.showConfirm("Exit Workout?", "You have an active workout. Are you sure you want to exit? Your progress might be lost unless you pause first")
+      //   .then(confirmation => {
+      //     if (confirmation?.data) {
+      //     }
+      //   });
     } else {
       this.router.navigate(['/workout']);
     }
@@ -1531,194 +1630,42 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const routine = this.routine();
     if (!routine) return;
 
-    const exerciseToAdd = routine.exercises[exIndex];
-    if (exerciseToAdd.supersetId) {
-      this.toastService.info("This exercise is already in a superset.");
-      return;
-    }
-
-    const supersetMap = new Map<string, WorkoutExercise[]>();
-    routine.exercises.forEach(ex => {
-      if (ex.supersetId) {
-        if (!supersetMap.has(ex.supersetId)) {
-          supersetMap.set(ex.supersetId, []);
-        }
-        supersetMap.get(ex.supersetId)!.push(ex);
-      }
-    });
-
-    if (supersetMap.size === 0) {
-      this.toastService.error("No supersets exist to add this exercise to.");
-      return;
-    }
-
-    const supersetChoices: AlertInput[] = Array.from(supersetMap.values()).map((supersetGroup, index) => {
-      supersetGroup.sort((a, b) => (a.supersetOrder || 0) - (b.supersetOrder || 0));
-      const label = supersetGroup.map(ex => ex.exerciseName).join(' & ');
-      const supersetId = supersetGroup[0].supersetId!;
-
-      return {
-        name: 'supersetChoice',
-        type: 'radio',
-        label: `Superset: ${label}`,
-        value: supersetId,
-        checked: index === 0,
-      };
-    });
-
-    const result = await this.alertService.showPromptDialog(
-      'Add to Superset',
-      `Which superset would you like to add "${exerciseToAdd.exerciseName}" to?`,
-      supersetChoices,
-      'Add Exercise',
-      'Cancel'
+    const updatedRoutine = await this.workoutService.addToSuperset(
+      routine,
+      exIndex,
+      this.alertService,
+      this.toastService
     );
 
-    if (result && result['supersetChoice']) {
-      const chosenSupersetId = result['supersetChoice'];
-      this.routine.update(r => {
-        if (!r) return r;
-
-        const targetExercise = r.exercises.find(ex => ex.id === exerciseToAdd.id);
-        if (!targetExercise) return r;
-
-        // +++ MODIFICATION START +++
-
-        // Find all existing exercises in the chosen superset
-        const existingExercisesInSuperset = r.exercises.filter(ex => ex.supersetId === chosenSupersetId);
-        if (existingExercisesInSuperset.length === 0) {
-          // This shouldn't happen, but as a safeguard:
-          this.toastService.error("Could not find the selected superset to add to.");
-          return r;
-        }
-
-        const newSupersetSize = existingExercisesInSuperset.length + 1;
-        const nextOrder = existingExercisesInSuperset.length;
-
-        // Adopt the round structure from the existing superset
-        const rounds = existingExercisesInSuperset[0].supersetRounds || 1;
-
-        // Use the new exercise's first set as a template, or create a default one
-        const templateSet = targetExercise.sets.length > 0
-          ? { ...targetExercise.sets[0] }
-          : { id: uuidv4(), reps: 8, weight: 10, restAfterSet: 60, type: 'standard' };
-
-        // Rebuild the sets for the new exercise to match the superset's rounds
-        targetExercise.sets = [];
-        for (let i = 1; i <= rounds; i++) {
-          targetExercise.sets.push({ ...templateSet, id: uuidv4() });
-          // targetExercise.sets.push({ ...templateSet, id: uuidv4(), supersetRound: i });
-        }
-
-        // Assign superset properties to the new exercise
-        targetExercise.supersetId = String(chosenSupersetId);
-        targetExercise.supersetOrder = nextOrder;
-        targetExercise.type = 'superset';
-        targetExercise.supersetRounds = rounds;
-        targetExercise.supersetSize = newSupersetSize;
-
-        // CRITICAL FIX: Update the supersetSize for all existing members of the group
-        existingExercisesInSuperset.forEach(ex => {
-          ex.supersetSize = newSupersetSize;
-        });
-
-        // Reorder the full exercise list to keep the group together visually
-        r.exercises = this.reorderExercisesForSupersets(r.exercises);
-        this.toastService.success(`${targetExercise.exerciseName} added to the superset.`);
-
-        // +++ MODIFICATION END +++
-
-        return { ...r };
-      });
+    if (updatedRoutine) {
+      this.routine.set(updatedRoutine);
+      this.savePausedSessionState();
     }
   }
 
   async openCreateSupersetModal(exIndex: number): Promise<void> {
     const routine = this.routine();
     if (!routine) return;
+    const loggedExercisesToExclude = this.currentWorkoutLog().exercises || [];
 
-    const availableExercises = routine.exercises
-      .map((ex, index) => ({ ...ex, originalIndex: index }))
-      .filter(ex => !ex.supersetId);
-
-    const exercises: AlertInput[] = availableExercises.map((exer) => ({
-      label: exer.exerciseName,
-      name: String(exer.originalIndex),
-      type: 'checkbox',
-      value: exer.originalIndex === exIndex
-    }));
-
-    // +++ NEW: Add input for number of rounds +++
-    exercises.push({
-      name: 'supersetRounds',
-      type: 'number',
-      label: 'Number of Rounds',
-      value: '1',
-      min: 1,
-      placeholder: 'Enter number of rounds'
-    });
-
-    const choice = await this.alertService.showPromptDialog(
-      'Create Superset',
-      'Select exercises to link together.',
-      exercises
+    const result = await this.workoutService.createSuperset(
+      routine,
+      exIndex,
+      loggedExercisesToExclude,
     );
 
-    if (choice && !this.areAllPropertiesFalsy(choice)) {
-      const rounds = Number(choice['supersetRounds']) || 1;
-      delete choice['supersetRounds']; // Important: remove so it's not treated as an exercise index
+    // If the function returned updated data, apply it to the component's state
+    if (result) {
+      this.routine.set(result.updatedRoutine);
 
-      const selectedOriginalIndices = Object.keys(choice)
-        .filter(key => choice[key])
-        .map(Number)
-        .sort((a, b) => a - b);
-
-      if (selectedOriginalIndices.length < 2) {
-        this.toastService.info("Please select at least two exercises to create a superset.");
-        return;
-      }
-
-      this.routine.update(r => {
-        if (!r) return r;
-
-        const newSupersetId = uuidv4();
-        let currentOrder = 0;
-
-        for (const originalIndex of selectedOriginalIndices) {
-          const targetExercise = r.exercises[originalIndex];
-          if (targetExercise) {
-            // +++ MODIFICATION START +++
-            // Force the superset to start with a single set template to ensure "Add Round" is predictable.
-            // Use the first existing set as a template, or create a default one if none exist.
-            const templateSet = targetExercise.sets.length > 0
-              ? JSON.parse(JSON.stringify(targetExercise.sets[0]))
-              : { id: uuidv4(), reps: 8, weight: 10, restAfterSet: 60, type: 'standard' };
-
-            // Clear the sets array to rebuild it based on rounds.
-            targetExercise.sets = [];
-            // +++ MODIFICATION END +++
-
-            targetExercise.supersetId = newSupersetId;
-            targetExercise.supersetOrder = currentOrder++;
-            targetExercise.type = 'superset';
-            targetExercise.supersetSize = selectedOriginalIndices.length;
-            targetExercise.supersetRounds = rounds;
-
-            // +++ MODIFICATION START +++
-            // Create one set per round using the template.
-            for (let i = 1; i <= rounds; i++) {
-              const newSet = { ...templateSet, id: uuidv4(), supersetRound: i };
-              targetExercise.sets.push(newSet);
-            }
-            // +++ MODIFICATION END +++
-          }
-        }
-        r.exercises = this.reorderExercisesForSupersets(r.exercises);
-        this.alertService.showAlert("INFO", `Superset created with ${selectedOriginalIndices.length} exercises and ${rounds} rounds: sets have been standardized to one per round for consistency.`);
-        return r;
+      // Update the log signal
+      this.currentWorkoutLog.update(log => {
+        log.exercises = result.updatedLoggedExercises;
+        return { ...log };
       });
+
+      this.savePausedSessionState(); // Persist the changes
     }
-    this.savePausedSessionState();
   }
 
   // +++ NEW: Method to add a new round to an existing superset +++
@@ -1789,48 +1736,24 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
   async removeFromSuperset(exIndex: number) {
     const routine = this.routine();
+    const loggedExercises = this.currentWorkoutLog().exercises || [];
     if (!routine) return;
-    const exercise = routine.exercises[exIndex];
-    if (!exercise.supersetId) return;
 
-    const confirm = await this.alertService.showConfirm(
-      "Remove from Superset",
-      `Are you sure you want to remove ${exercise.exerciseName} from this superset?`
+    const result = await this.workoutService.removeFromSuperset(
+      routine,
+      exIndex,
+      loggedExercises,
+      this.alertService,
+      this.toastService
     );
 
-    if (confirm?.data) {
-      this.routine.update(r => {
-        if (!r) return r;
-        const supersetId = exercise.supersetId!;
-        const exerciseToRemove = r.exercises[exIndex];
-
-        exerciseToRemove.supersetId = null;
-        exerciseToRemove.supersetOrder = null;
-        exerciseToRemove.type = 'standard';
-        exerciseToRemove.supersetSize = null;
-
-        const remainingInSuperset = r.exercises.filter(ex => ex.supersetId === supersetId);
-
-        if (remainingInSuperset.length <= 1) {
-          remainingInSuperset.forEach(ex => {
-            ex.supersetId = null;
-            ex.supersetOrder = null;
-            ex.type = 'standard';
-            ex.supersetSize = null;
-          });
-          this.toastService.info("Superset dissolved.");
-        } else {
-          remainingInSuperset
-            .sort((a, b) => (a.supersetOrder ?? 0) - (b.supersetOrder ?? 0))
-            .forEach((ex, i) => {
-              ex.supersetOrder = i;
-              ex.supersetSize = remainingInSuperset.length;
-            });
-          this.toastService.info(`${exerciseToRemove.exerciseName} removed from superset.`);
-        }
-        r.exercises = this.reorderExercisesForSupersets(r.exercises);
-        return r;
+    if (result) {
+      this.routine.set(result.updatedRoutine);
+      this.currentWorkoutLog.update(log => {
+        log.exercises = result.updatedLoggedExercises;
+        return { ...log };
       });
+      this.savePausedSessionState();
     }
   }
 
@@ -1955,5 +1878,84 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     }
 
     return classes;
+  }
+
+  private comparePerformedToOriginal(
+    performed: LoggedWorkoutExercise[],
+    original: WorkoutExercise[]
+  ): { majorDifference: boolean; details: string[] } {
+    const details: string[] = [];
+    let majorDifference = false;
+
+    // Filter original exercises to only those that were actually performed
+    const originalPlayableExercises = original.filter(origEx =>
+      performed.some(pEx => pEx.exerciseId === origEx.exerciseId)
+    );
+
+    const originalIdSet = new Set(original.map(ex => ex.exerciseId));
+    const originalNameSet = new Set(original.map(ex => ex.exerciseName));
+
+    const performedInOriginal: LoggedWorkoutExercise[] = [];
+    const addedCustomExercises: LoggedWorkoutExercise[] = [];
+
+    for (const pEx of performed) {
+      if (originalIdSet.has(pEx.exerciseId) || originalNameSet.has(pEx.exerciseName)) {
+        performedInOriginal.push(pEx);
+      } else {
+        addedCustomExercises.push(pEx);
+      }
+    }
+
+    if (performedInOriginal.length !== originalPlayableExercises.length || addedCustomExercises.length > 0) {
+      details.push(`Number of exercises changed (Original: ${originalPlayableExercises.length}, Performed: ${performed.length})`);
+      majorDifference = true;
+    }
+
+    addedCustomExercises.forEach(ex => details.push(`Exercise added: ${ex.exerciseName}`));
+
+    for (const originalEx of originalPlayableExercises) {
+      const performedEx = performed.find(p => p.exerciseId === originalEx.exerciseId);
+      if (!performedEx) {
+        // This case is covered by the length check above, but kept for clarity
+        continue;
+      }
+
+      if (performedEx.sets.length !== originalEx.sets.length) {
+        details.push(`Set count for "${performedEx.exerciseName}" changed (Planned: ${originalEx.sets.length}, Done: ${performedEx.sets.length})`);
+        majorDifference = true;
+      }
+    }
+    return { majorDifference, details };
+  }
+
+  private convertLoggedToWorkoutExercises(loggedExercises: LoggedWorkoutExercise[]): WorkoutExercise[] {
+    const currentSessionRoutine = this.routine();
+    return loggedExercises.map(loggedEx => {
+      const sessionExercise = currentSessionRoutine?.exercises.find(re => re.exerciseId === loggedEx.exerciseId);
+      return {
+        id: uuidv4(),
+        exerciseId: loggedEx.exerciseId,
+        exerciseName: loggedEx.exerciseName,
+        supersetId: sessionExercise?.supersetId || null,
+        supersetOrder: sessionExercise?.supersetOrder ?? null,
+        supersetSize: sessionExercise?.supersetSize ?? null,
+        rounds: sessionExercise?.rounds ?? 1,
+        notes: sessionExercise?.notes,
+        sets: loggedEx.sets.map(loggedSet => {
+          const originalPlannedSet = sessionExercise?.sets.find(s => s.id === loggedSet.plannedSetId);
+          return {
+            id: uuidv4(),
+            reps: loggedSet.repsAchieved,
+            weight: loggedSet.weightUsed,
+            duration: loggedSet.durationPerformed,
+            tempo: originalPlannedSet?.tempo || '1',
+            restAfterSet: originalPlannedSet?.restAfterSet || 60,
+            notes: loggedSet.notes,
+            type: loggedSet.type as any,
+          };
+        }),
+        type: (sessionExercise?.type ?? 'standard') as any,
+      };
+    });
   }
 }

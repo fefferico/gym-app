@@ -140,7 +140,6 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
   private trainingProgramService = inject(TrainingProgramService);
 
 
-  protected allWorkoutLogs = signal<WorkoutLog[]>([]);
   selectedDayItems = signal<EnrichedHistoryListItem[]>([]);
   protected allHistoryItems = signal<EnrichedHistoryListItem[]>([]);
   private workoutLogsSubscription: Subscription | undefined;
@@ -695,13 +694,18 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.visibleActionsRutineId.set(null);
   }
 
-  goToRoutineDetails(logId: string): void {
+  async goToRoutineDetails(logId: string): Promise<void> {
     if (!logId) {
       return;
     } else {
-      const currentLog = this.allWorkoutLogs().find(log => log.id === logId);
-      if (currentLog && currentLog.routineId) {
+      const currentLog: any = this.getWorkoutLogs().find(log => log.id === logId);
+      if (currentLog && currentLog.routineId && currentLog.routineId !== '-1') {
         this.router.navigate(['/workout/routine/view/', currentLog.routineId]);
+      } else {
+        const createNewRoutineFromLog = await this.alertService.showConfirm("No routine for log", "There is no routine associated with this log: would you like to create one? If so remember to link it to this log once created");
+        if (createNewRoutineFromLog && createNewRoutineFromLog.data) {
+          this.createRoutineFromLog(logId);
+        }
       }
     }
   }
@@ -795,7 +799,7 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
 
-  getLogDropdownActionItems(routineId: string, mode: MenuMode): ActionMenuItem[] {
+  getLogDropdownActionItems(logId: string, mode: MenuMode): ActionMenuItem[] {
     const defaultBtnClass = 'rounded text-left p-4 font-medium text-gray-600 dark:text-gray-300 hover:bg-primary flex items-center hover:text-white dark:hover:text-gray-100 dark:hover:text-white';
     const deleteBtnClass = 'rounded text-left p-4 font-medium text-gray-600 dark:text-gray-300 hover:bg-red-600 flex items-center hover:text-gray-100 hover:animate-pulse';;
 
@@ -805,46 +809,53 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
       iconName: `routines`,
       iconClass: 'w-8 h-8 mr-2',
       buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
-      data: { routineId }
+      data: { routineId: logId }
+    } as ActionMenuItem;
+
+    const fullLog = this.getWorkoutLogs().find(log => log.id === logId);
+    const routine = fullLog && fullLog.routineId ? this.availableRoutines.find(routine => routine.id === fullLog.routineId) : null;
+
+    const createRoutineFromLogBtn = {
+      label: 'CREATE ROUTINE',
+      actionKey: 'create_routine',
+      iconName: `create-folder`,
+      iconClass: 'w-8 h-8 mr-2',
+      buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+      data: { routineId: logId }
     } as ActionMenuItem;
 
 
-    const actionsArray = [
+    let actionsArray: ActionMenuItem[] = [
       {
         label: 'VIEW',
         actionKey: 'view',
         iconName: `eye`,
         iconClass: 'w-8 h-8 mr-2', // Adjusted for consistency if needed,
         buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
-        data: { routineId }
-      },
-      {
-        label: 'EDIT',
-        actionKey: 'edit',
-        iconName: `edit`,
-        iconClass: 'w-8 h-8 mr-2',
-        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
-        data: { routineId }
-      },
-      {
-        label: 'CREATE ROUTINE',
-        actionKey: 'create_routine',
-        iconName: `create-folder`,
-        iconClass: 'w-8 h-8 mr-2',
-        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
-        data: { routineId }
-      },
-      routineDetailsBtn,
-      { isDivider: true },
-      {
-        label: 'DELETE',
-        actionKey: 'delete',
-        iconName: `trash`,
-        iconClass: 'w-8 h-8 mr-2',
-        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + deleteBtnClass,
-        data: { routineId }
-      }
-    ];
+        data: { routineId: logId }
+      }];
+    actionsArray.push({
+      label: 'EDIT',
+      actionKey: 'edit',
+      iconName: `edit`,
+      iconClass: 'w-8 h-8 mr-2',
+      buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+      data: { routineId: logId }
+    });
+
+    if (!routine) {
+      actionsArray.push(createRoutineFromLogBtn);
+    }
+
+    actionsArray = [...actionsArray, routineDetailsBtn, { isDivider: true },
+    {
+      label: 'DELETE',
+      actionKey: 'delete',
+      iconName: `trash`,
+      iconClass: 'w-8 h-8 mr-2',
+      buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + deleteBtnClass,
+      data: { routineId: logId }
+    }];
     return actionsArray;
   }
 
@@ -1017,4 +1028,11 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  getWorkoutLogs(): WorkoutLog[] {
+    return this.allHistoryItems().filter(log => log.itemType === 'workout') || [];
+  }
+
+  getActivityLogs(): ActivityLog[] {
+    return this.allHistoryItems().filter(log => log.itemType === 'activity') || [];
+  }
 }
