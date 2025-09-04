@@ -23,17 +23,22 @@
         </h6>
         <div class="text-xs space-y-1">
             <!-- Header Row (shows for every exercise's set list) -->
-            <div class="grid grid-cols-12 gap-2 font-bold text-gray-500 dark:text-gray-400">
+            <div class="grid grid-cols-12 gap-2 font-bold text-gray-600 dark:text-gray-300 p-1.5 rounded bg-gray-200/60 dark:bg-gray-700">
                 <div class="col-span-1 text-center">Set</div>
                 <div class="col-span-5">Planned</div>
                 <div class="col-span-5">Performed</div>
                 <div class="col-span-1 text-center"></div>
             </div>
             <!-- Data Rows -->
-            <div *ngFor="let set of exercise.sets; let i = index" class="grid grid-cols-12 gap-2 items-center bg-gray-50 dark:bg-gray-700/50 p-1.5 rounded text-black dark:text-gray-200">
-                <div class="col-span-1 text-center font-semibold">{{ i + 1 }}</div>
-                <div class="col-span-5">{{ formatSet(set) }}</div>
-                <div class="col-span-5 font-semibold text-gray-800 dark:text-gray-200">{{ formatSet(getLoggedSetFor(set.id, roundIndex), true) }}</div>
+            <div *ngFor="let set of exercise.sets; let i = index" 
+                 class="grid grid-cols-12 gap-2 items-center p-1.5 rounded"
+                 [ngClass]="{
+                    'bg-white dark:bg-gray-700/60': i % 2 === 0,
+                    'bg-gray-100 dark:bg-gray-700/30': i % 2 !== 0
+                 }">
+                <div class="col-span-1 text-center font-semibold text-gray-700 dark:text-gray-300">{{ i + 1 }}</div>
+                <div class="col-span-5 text-gray-800 dark:text-gray-200">{{ formatSet(set) }}</div>
+                <div class="col-span-5 font-semibold text-gray-900 dark:text-white">{{ formatSet(getLoggedSetFor(set.id, roundIndex), true) }}</div>
                 <div class="col-span-1 flex justify-center">
                     <span class="w-3 h-3 rounded-full" [ngClass]="getSetStatusIndicatorClass(set.id, roundIndex, i).class" [title]="getSetStatusIndicatorClass(set.id, roundIndex, i).title"></span>
                 </div>
