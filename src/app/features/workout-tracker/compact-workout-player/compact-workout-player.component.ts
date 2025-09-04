@@ -161,6 +161,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   menuModeCompact: boolean = false;
   menuModeModal: boolean = false;
 
+  private intensityAdjustment: { direction: 'increase' | 'decrease', percentage: number } | null = null;
+
   private workoutStartTime: number = 0;
   private sessionTimerElapsedSecondsBeforePause = 0;
   private timerSub: Subscription | undefined;
@@ -314,8 +316,51 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       })
     ).subscribe(async (routine) => {
       if (routine) {
-        this.routine.set(JSON.parse(JSON.stringify(routine)));
-        this.originalRoutineSnapshot.set(JSON.parse(JSON.stringify(routine)));
+
+        // +++ NEW: PERCEIVED EFFORT CHECK - START +++
+        // We capture the routine before adjustments so we can apply them to a copy
+        let routineForSession = JSON.parse(JSON.stringify(routine)) as Routine;
+
+        const lastLogArray = await firstValueFrom(this.trackingService.getLogsForRoutine(routine.id, 1));
+        const lastLog = lastLogArray.length > 0 ? lastLogArray[0] : null;
+
+        if (lastLog && lastLog.perceivedWorkoutInfo?.perceivedEffort) {
+          const effort = lastLog.perceivedWorkoutInfo.perceivedEffort;
+          let adjustmentType: 'increase' | 'decrease' | null = null;
+          let dialogTitle = '', dialogMessage = '';
+
+          if (effort >= 7) {
+            adjustmentType = 'decrease';
+            dialogTitle = 'Last Workout Was Tough';
+            dialogMessage = 'Your last session felt challenging. Would you like to automatically reduce the intensity for today?';
+          } else if (effort <= 4) {
+            adjustmentType = 'increase';
+            dialogTitle = 'Last Workout Felt Light';
+            dialogMessage = 'Your last session felt light. Would you like to automatically increase the intensity for today?';
+          }
+
+          if (adjustmentType) {
+            const prompt = await this.alertService.showPromptDialog(
+              dialogTitle, dialogMessage,
+              [{
+                name: 'percentage', type: 'number', placeholder: 'e.g., 10', value: 10,
+                attributes: { min: '1', max: '50', step: '1' }
+              }] as AlertInput[],
+              `Adjust by %`, 'NO, THANKS'
+            );
+
+            if (prompt && prompt['percentage']) {
+              const percentage = Number(prompt['percentage']);
+              // Store the adjustment preference instead of applying it immediately
+              this.intensityAdjustment = { direction: adjustmentType, percentage };
+              this.toastService.success(`Routine intensity will be adjusted by ${percentage}%`, 3000, "Intensity Adjusted");
+            }
+          }
+        }
+        // +++ NEW: PERCEIVED EFFORT CHECK - END +++
+
+        this.routine.set(routineForSession); // Use the (potentially unmodified) routine copy
+        this.originalRoutineSnapshot.set(JSON.parse(JSON.stringify(routine))); // Snapshot is always the true original
         await this.prefillRoutineWithLastPerformance();
         if (this.programId) {
           this.program.set(await firstValueFrom(this.trainingProgramService.getProgramById(this.programId)));
@@ -356,6 +401,27 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
               set.duration = historicalSet.durationPerformed ?? set.duration;
               set.distance = historicalSet.distanceAchieved ?? set.distance;
             }
+
+            // +++ NEW: APPLY SESSION-WIDE INTENSITY ADJUSTMENT - START +++
+            // Check if an adjustment is active for this session
+            if (this.intensityAdjustment) {
+              const { direction, percentage } = this.intensityAdjustment;
+              const multiplier = direction === 'increase' ? 1 + (percentage / 100) : 1 - (percentage / 100);
+
+              if (set.weight != null) {
+                const adjustedWeight = Math.round((set.weight * multiplier) * 4) / 4;
+                set.weight = adjustedWeight >= 0 ? adjustedWeight : 0;
+              }
+              if (set.reps != null) {
+                const adjustedReps = Math.round(set.reps * multiplier);
+                set.reps = adjustedReps >= 0 ? adjustedReps : 0;
+              }
+              if (set.duration != null) {
+                const adjustedDuration = Math.round(set.duration * multiplier);
+                set.duration = adjustedDuration >= 0 ? adjustedDuration : 0;
+              }
+            }
+            // +++ NEW: APPLY SESSION-WIDE INTENSITY ADJUSTMENT - END +++
           });
         }
       } catch (error) {
@@ -1156,7 +1222,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const hasExercises = (this.routine()?.exercises?.length ?? 0) > 0;
 
     const addExerciseDisabledClass = (isPaused || !hasExercises ? 'disabled ' : '');
-    
+
     const currAddExerciseBtn = {
       ...addExerciseBtn,
       buttonClass: addExerciseDisabledClass + defaultBtnClass,
@@ -1209,7 +1275,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       // --- All logic from the original method is now inside this loop ---
       const currSwitchExerciseBtn = { ...switchExerciseBtn, data: { exIndex } };
       const currOpenPerformanceInsightsBtn = { ...openPerformanceInsightsBtn, data: { exIndex } };
-      
+
       const actionsArray: ActionMenuItem[] = [
         currSwitchExerciseBtn,
         currOpenPerformanceInsightsBtn,

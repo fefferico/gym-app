@@ -32,6 +32,7 @@ import { ActionMenuComponent } from '../../../shared/components/action-menu/acti
 import { MenuMode } from '../../../core/models/app-settings.model';
 import { ActionMenuItem } from '../../../core/models/action-menu.model';
 import { addExerciseBtn, addToSuperSetBtn, addWarmupSetBtn, createSuperSetBtn, finishEarlyBtn, jumpToExerciseBtn, markAsDoLaterBtn, openPerformanceInsightsBtn, pauseSessionBtn, quitWorkoutBtn, removeFromSuperSetBtn, skipCurrentExerciseBtn, skipCurrentSetBtn, switchExerciseBtn } from '../../../core/services/buttons-data';
+import { SessionOverviewModalComponent } from '../session-overview-modal/session-overview-modal.component';
 
 
 // Interface to manage the state of the currently active set/exercise
@@ -42,7 +43,7 @@ import { addExerciseBtn, addToSuperSetBtn, addWarmupSetBtn, createSuperSetBtn, f
   imports: [CommonModule, DatePipe, ReactiveFormsModule,
     FormatSecondsPipe,
     FormsModule, WeightUnitPipe, FullScreenRestTimerComponent, PressDirective, ModalComponent, ExerciseDetailComponent,
-    IconComponent, ExerciseSelectionModalComponent, ActionMenuComponent],
+    IconComponent, ExerciseSelectionModalComponent, ActionMenuComponent, SessionOverviewModalComponent],
   templateUrl: './focus-workout-player.component.html',
   styleUrl: './focus-workout-player.component.scss',
   providers: [DecimalPipe]
@@ -79,6 +80,9 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
   totalBlockRounds = signal(1);
 
   @ViewChild('exerciseSearchFied') myExerciseInput!: ElementRef;
+
+  private intensityAdjustment: { direction: 'increase' | 'decrease', percentage: number } | null = null;
+  isSessionOverviewVisible = signal(false);
 
   showNotes = signal<boolean | null>(false);
 
@@ -121,6 +125,16 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
   editingTarget: 'reps' | 'weight' | 'duration' | null = null;
   editingTargetValue: number | string = '';
   routineId: string | null = null;
+
+  // +++ NEW: Method to open the modal +++
+  openSessionOverviewModal(): void {
+    this.isSessionOverviewVisible.set(true);
+  }
+
+  // +++ NEW: Method to close the modal +++
+  closeSessionOverviewModal(): void {
+    this.isSessionOverviewVisible.set(false);
+  }
 
   // --- For Exercise Selection Modal ---
   isExerciseAddModalOpen = signal(false);
@@ -937,14 +951,36 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
   private async tryProceedToDeferredExercisesOrFinish(sessionRoutine: Routine): Promise<void> {
     const mergedUnfinishedExercises = this.getUnfinishedOrDeferredExercises(sessionRoutine);
 
-    if (mergedUnfinishedExercises.length > 0) {
+    // +++ NEW: Filter exercises for the modal view +++
+    const activeSupersetId = this.activeSetInfo()?.exerciseData.supersetId;
+    const processedSupersetIds = new Set<string>();
+
+    const displayableUnfinishedExercises = mergedUnfinishedExercises.filter(ex => {
+      // Rule 1: Exclude exercises from the current active superset group
+      if (activeSupersetId && ex.supersetId === activeSupersetId) {
+        return false;
+      }
+      // Rule 2: If it's part of another superset, only include the first one
+      if (ex.supersetId) {
+        if (processedSupersetIds.has(ex.supersetId)) {
+          return false; // Already processed this group
+        }
+        processedSupersetIds.add(ex.supersetId);
+        return ex.supersetOrder === 0;
+      }
+      // Rule 3: Include all standard exercises
+      return true;
+    });
+    // +++ END: NEW FILTER LOGIC +++
+
+    if (displayableUnfinishedExercises.length > 0) { // +++ Use the new filtered array
       let proceedWithSelectedExercise = false;
       let selectedExerciseOriginalIndex: number | undefined;
       let userChoseToFinishNow = false;
       let userCancelledChoice = false;
 
-      if (mergedUnfinishedExercises.length === 1) {
-        const singleEx = mergedUnfinishedExercises[0];
+      if (displayableUnfinishedExercises.length === 1) { // +++ Use the new filtered array
+        const singleEx = displayableUnfinishedExercises[0];
         const confirmSingle = await this.alertService.showConfirmationDialog(
           `Unfinished: ${singleEx.exerciseName}`,
           `You have "${singleEx.exerciseName}" (${singleEx.sessionStatus === 'do_later' ? 'Do Later' : 'Skipped'}) remaining. Complete it now?`,
@@ -962,12 +998,14 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
           userCancelledChoice = true;
         }
       } else {
-        const exerciseButtons: AlertButton[] = mergedUnfinishedExercises.map(ex => {
+        const exerciseButtons: AlertButton[] = displayableUnfinishedExercises.map(ex => { // +++ Use the new filtered array
           let statusLabel = this.getExerciseStatusIndicator(ex);
+          // For superset groups, indicate it's a group.
+          const supersetIndicator = ex.supersetId ? ` [Superset Group]` : '';
           const cssClass = this.getExerciseButtonCssClass(ex, ex.sessionStatus);
 
           return {
-            text: `${ex.exerciseName} ${statusLabel}`,
+            text: `${ex.exerciseName}${statusLabel}${supersetIndicator}`,
             role: 'confirm',
             data: ex.originalIndex,
             cssClass: cssClass
@@ -1322,6 +1360,27 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
         }
       }
     }
+
+    // +++ NEW: APPLY SESSION-WIDE INTENSITY ADJUSTMENT +++
+    // Check if an adjustment is active and if the current exercise was part of the original plan.
+    if (this.intensityAdjustment && this.originalRoutineSnapshot?.exercises.some(ex => ex.id === currentExerciseData.id)) {
+      const { direction, percentage } = this.intensityAdjustment;
+      const multiplier = direction === 'increase' ? 1 + (percentage / 100) : 1 - (percentage / 100);
+
+      if (finalSetParamsForSession.weight !== null && finalSetParamsForSession.weight !== undefined) {
+        const adjustedWeight = Math.round((finalSetParamsForSession.weight * multiplier) * 4) / 4;
+        finalSetParamsForSession.weight = adjustedWeight >= 0 ? adjustedWeight : 0;
+      }
+      if (finalSetParamsForSession.reps) {
+        const adjustedReps = Math.round(finalSetParamsForSession.reps * multiplier);
+        finalSetParamsForSession.reps = adjustedReps >= 0 ? adjustedReps : 0;
+      }
+      if (finalSetParamsForSession.duration) {
+        const adjustedDuration = Math.round(finalSetParamsForSession.duration * multiplier);
+        finalSetParamsForSession.duration = adjustedDuration >= 0 ? adjustedDuration : 0;
+      }
+    }
+    // +++ END OF NEW LOGIC +++
 
     finalSetParamsForSession.id = currentPlannedSetData.id;
     finalSetParamsForSession.type = currentPlannedSetData.type;
@@ -2126,24 +2185,61 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     const activeInfo = this.activeSetInfo(); const currentRoutineVal = this.routine();
     if (!activeInfo || !currentRoutineVal) { this.toastService.error("Cannot skip set: No active set information", 0, "Error"); return; }
 
-    // If it's the last set of the exercise and the exercise is 'pending', prompt to skip exercise instead
+    // --- NEW: SUPERSET LOGIC FOR SKIPPING A ROUND ---
+    if (activeInfo.exerciseData.supersetId) {
+      const confirmSkipRound = await this.alertService.showConfirmationDialog(
+        "Skip Current Round",
+        `This will remove any sets you've already logged for the current round of this superset. This action cannot be undone. Do you want to continue?`,
+        [
+          { text: "Cancel", role: "cancel" },
+          { text: "Skip Round", role: "destructive", data: "skip_round" }
+        ]
+      );
+      if (!confirmSkipRound || confirmSkipRound.data !== 'skip_round') {
+        this.closeWorkoutMenu();
+        return;
+      }
+
+      const supersetId = activeInfo.exerciseData.supersetId;
+      const currentRound = this.currentBlockRound();
+
+      // Remove logged sets from this specific round
+      this.currentWorkoutLogExercises.update(logs => {
+        const newLogs = JSON.parse(JSON.stringify(logs));
+        newLogs.forEach((exLog: LoggedWorkoutExercise) => {
+          if (exLog.supersetId === supersetId) {
+            // Filter out sets matching the current round index
+            exLog.sets = exLog.sets.filter(s => s.supersetCurrentRound !== (currentRound - 1));
+          }
+        });
+        return newLogs;
+      });
+
+      this.toastService.info(`Skipped round ${currentRound} of the superset.`, 2500, "Round Skipped");
+      // Force navigation to the next block of exercises
+      await this.navigateToNextStepInWorkout(activeInfo, currentRoutineVal, true);
+      this.closeWorkoutMenu();
+      this.closePerformanceInsights();
+      return; // End execution here
+    }
+    // --- END: SUPERSET LOGIC ---
+
     if (activeInfo.setIndex === activeInfo.exerciseData.sets.length - 1 && activeInfo.exerciseData.sessionStatus === 'pending') {
       const confirmSkipEx = await this.alertService.showConfirmationDialog(
         "Last Set",
         `This is the last set of "${activeInfo.exerciseData.exerciseName}". Skip the entire exercise instead?`,
         [
-          { text: "Skip Set Only", role: "cancel", data: "skip_set" } as AlertButton,
-          { text: "Skip Exercise", role: "confirm", data: "skip_exercise", cssClass: "bg-orange-500" } as AlertButton
+          { text: "Skip Set Only", role: "cancel", data: "skip_set" },
+          { text: "Skip Exercise", role: "confirm", data: "skip_exercise", cssClass: "bg-orange-500" }
         ]
       );
       if (confirmSkipEx && confirmSkipEx.data === "skip_exercise") {
         await this.markCurrentExerciseStatus('skipped');
         this.closeWorkoutMenu();
         return;
-      } else if (!confirmSkipEx || confirmSkipEx.role === 'cancel' && confirmSkipEx.data !== "skip_set") { // User cancelled dialog
+      } else if (!confirmSkipEx || (confirmSkipEx.role === 'cancel' && confirmSkipEx.data !== "skip_set")) {
         return;
       }
-      // else proceed to skip set only
     } else {
       const confirm = await this.alertService.showConfirm("Skip Current Set", `Skip current ${activeInfo.type === 'warmup' ? 'warm-up' : 'set ' + this.getCurrentWorkingSetNumber()} of "${activeInfo.exerciseData.exerciseName}"? It won't be logged`);
       if (!confirm || !confirm.data) return;
@@ -2156,66 +2252,74 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     this.closeWorkoutMenu(); this.closePerformanceInsights();
   }
 
+
   // Modified skipCurrentExercise to use markCurrentExerciseStatus
   async skipCurrentExercise(): Promise<void> {
-    await this.markCurrentExerciseStatus('skipped');
+    const activeInfo = this.activeSetInfo();
+    const isSuperset = !!activeInfo?.exerciseData.supersetId;
+
+    if (isSuperset) {
+      const confirm = await this.alertService.showConfirm(
+        "Skip Superset",
+        "This will skip all remaining rounds of the entire superset. Are you sure?"
+      );
+      if (!confirm || !confirm.data) {
+        this.closeWorkoutMenu();
+        return;
+      }
+    }
+    // The second argument flags that the action should apply to the whole superset
+    await this.markCurrentExerciseStatus('skipped', isSuperset);
   }
 
   async markCurrentExerciseDoLater(): Promise<void> {
     await this.markCurrentExerciseStatus('do_later');
   }
 
-  async markCurrentExerciseStatus(status: 'skipped' | 'do_later'): Promise<void> {
+  async markCurrentExerciseStatus(status: 'skipped' | 'do_later', isSupersetAction: boolean = false): Promise<void> {
     if (this.sessionState() === 'paused') {
       this.toastService.warning(`Session is paused. Resume to mark exercise.`, 3000, "Paused"); return;
     }
     const currentRoutineVal = this.routine();
-    const activeInfo = this.activeSetInfo(); // This is the exercise being marked
+    const activeInfo = this.activeSetInfo();
 
     if (!currentRoutineVal || !activeInfo) {
       this.toastService.error("Cannot update exercise status: data unavailable", 0, "Error"); return;
     }
 
-    const exName = activeInfo.exerciseData.exerciseName;
-    const actionText = status === 'skipped' ? 'Skip' : 'Mark for Later';
-
-    // Confirmation dialog can be kept simple as the main logic change is after this.
-    // const confirm = await this.alertService.showConfirm(
-    //     `${actionText} Exercise?`,
-    //     `${actionText} all sets of "${exName}"?` // Or remaining sets if partially done
-    // );
-    // if (!confirm || !confirm.data) {
-    //     this.closeWorkoutMenu(); // Close menu even if cancelled
-    //     return;
-    // }
-
     const updatedRoutine = JSON.parse(JSON.stringify(currentRoutineVal)) as Routine;
-    const exerciseToUpdateInSession = updatedRoutine.exercises.find(ex => ex.id === activeInfo.exerciseData.id);
+    let statusString = status === 'skipped' ? 'Skipped' : 'Do Later';
 
-    if (exerciseToUpdateInSession) {
-      const previousStatus = exerciseToUpdateInSession.sessionStatus;
-      exerciseToUpdateInSession.sessionStatus = status;
-      let statusString = status.replace(/(^\w)/g, g => g[0].toUpperCase()).replace(/([-_]\w)/g, g => " " + g[1].toUpperCase()).trim();
-      this.routine.set(updatedRoutine);
-      this.toastService.info(`"${exName}" marked as ${statusString}.`, 2000);
-      this.resetTimedSet(); // Reset timer for the set we are leaving
-
-      // NEW LOGIC: If the exercise being marked was the one we were actively performing as a deferred item
-      if (this.isPerformingDeferredExercise && activeInfo.exerciseData.id === this.lastActivatedDeferredExerciseId) {
-        console.log(`markCurrentExerciseStatus: Re-marking a deferred exercise (${exName}) as ${status}. Re-evaluating all deferred`);
-        this.isPerformingDeferredExercise = false;
-        this.lastActivatedDeferredExerciseId = null;
-        this.exercisesProposedThisCycle = { doLater: false, skipped: false }; // Fresh proposal cycle
-        await this.tryProceedToDeferredExercisesOrFinish(updatedRoutine);
-      } else {
-        // This was a main sequence exercise being marked, or some other edge case.
-        // Use navigateToNextStepInWorkout to find the next *main sequence* pending item.
-        console.log(`markCurrentExerciseStatus: Marking main sequence exercise (${exName}) as ${status}. Advancing`);
-        await this.navigateToNextStepInWorkout(activeInfo, updatedRoutine, true /* forceAdvanceExerciseBlock */);
+    if (isSupersetAction && activeInfo.exerciseData.supersetId) {
+      const supersetId = activeInfo.exerciseData.supersetId;
+      updatedRoutine.exercises.forEach(ex => {
+        if (ex.supersetId === supersetId) {
+          ex.sessionStatus = status;
+        }
+      });
+      this.toastService.info(`Superset marked as ${statusString}.`, 2000);
+    } else {
+      const exerciseToUpdateInSession = updatedRoutine.exercises.find(ex => ex.id === activeInfo.exerciseData.id);
+      if (exerciseToUpdateInSession) {
+        exerciseToUpdateInSession.sessionStatus = status;
+        this.toastService.info(`"${activeInfo.exerciseData.exerciseName}" marked as ${statusString}.`, 2000);
       }
     }
+
+    this.routine.set(updatedRoutine);
+    this.resetTimedSet();
+
+    if (this.isPerformingDeferredExercise && activeInfo.exerciseData.id === this.lastActivatedDeferredExerciseId) {
+      this.isPerformingDeferredExercise = false;
+      this.lastActivatedDeferredExerciseId = null;
+      this.exercisesProposedThisCycle = { doLater: false, skipped: false };
+      await this.tryProceedToDeferredExercisesOrFinish(updatedRoutine);
+    } else {
+      await this.navigateToNextStepInWorkout(activeInfo, updatedRoutine, true /* forceAdvanceExerciseBlock */);
+    }
+
     this.closeWorkoutMenu();
-    this.closePerformanceInsights(); // Close insights if open
+    this.closePerformanceInsights();
   }
 
 
@@ -2436,9 +2540,9 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
         // try to retrieve the original routine snapshot from the storage
         if (this.routineId) {
           const routineId: string = this.routineId;
-          const routineResult = await firstValueFrom(this.workoutService.getRoutineById(routineId).pipe(take(1)));
+          const routineResult: Routine | undefined = await firstValueFrom(this.workoutService.getRoutineById(routineId).pipe(take(1)));
           if (routineResult && routineResult.exercises && routineResult.exercises.length > 0) {
-            this.originalRoutineSnapshot = JSON.parse(JSON.stringify(routineResult.exercises));
+            this.originalRoutineSnapshot = routineResult;
           }
         }
       }
@@ -2927,7 +3031,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
           map(originalRoutine => {
             if (originalRoutine) {
               console.log('loadNewWorkoutFromRoute: Fetched original routine -', originalRoutine.name);
-              this.originalRoutineSnapshot = JSON.parse(JSON.stringify(originalRoutine.exercises));
+              this.originalRoutineSnapshot = originalRoutine;
               const sessionCopy = JSON.parse(JSON.stringify(originalRoutine)) as Routine;
               sessionCopy.exercises.forEach(ex => {
                 ex.sessionStatus = 'pending';
@@ -2939,7 +3043,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
               });
 
               // +++ 4. Return an object containing BOTH the routine and the programId
-              return { sessionRoutineCopy: sessionCopy, programId: programId };
+              return { sessionRoutineCopy: sessionCopy, programId: ids.programId, routineId: originalRoutine.id };
             }
             console.warn('loadNewWorkoutFromRoute: No original routine found for ID:', this.routineId);
             return null; // If routine not found, the whole result will be null
@@ -2977,7 +3081,55 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
           return; // Exit tap early
         }
 
-        const { sessionRoutineCopy, programId } = result;
+        let { sessionRoutineCopy, programId, routineId } = result;
+
+        // +++ MODIFIED: PERCEIVED EFFORT CHECK +++
+        if (routineId && routineId !== '-1') {
+          // Use the new, more robust getLogsForRoutine method
+          const lastLogArray = await firstValueFrom(this.trackingService.getLogsForRoutine(routineId, 1));
+          const lastLog = lastLogArray.length > 0 ? lastLogArray[0] : null;
+
+          if (lastLog && lastLog.perceivedWorkoutInfo?.perceivedEffort) {
+            const effort = lastLog.perceivedWorkoutInfo.perceivedEffort;
+            let adjustmentType: 'increase' | 'decrease' | null = null;
+            let dialogTitle = '';
+            let dialogMessage = '';
+
+            if (effort >= 7) {
+              adjustmentType = 'decrease';
+              dialogTitle = 'Last Workout Was Tough';
+              dialogMessage = 'Your last session with this routine felt very challenging. Would you like to automatically reduce the intensity for today?';
+            } else if (effort <= 4) {
+              adjustmentType = 'increase';
+              dialogTitle = 'Last Workout Felt Light';
+              dialogMessage = 'Your last session with this routine felt light. Would you like to automatically increase the intensity for today?';
+            }
+
+            if (adjustmentType) {
+              const prompt = await this.alertService.showPromptDialog(
+                dialogTitle,
+                dialogMessage,
+                [{
+                  name: 'percentage',
+                  type: 'number',
+                  placeholder: 'e.g., 10',
+                  value: 10,
+                  attributes: { min: '1', max: '50', step: '1' }
+                }] as AlertInput[],
+                `Adjust by %`,
+                'NO, THANKS',
+              );
+
+              if (prompt && prompt['percentage']) {
+                const percentage = Number(prompt['percentage']);
+                // Store the adjustment preference instead of applying it immediately
+                this.intensityAdjustment = { direction: adjustmentType, percentage };
+                this.toastService.success(`Routine intensity will be adjusted by ${percentage}%`, 3000, "Intensity Adjusted");
+              }
+            }
+          }
+        }
+        // +++ END MODIFICATION +++
 
         console.log('loadNewWorkoutFromRoute - tap operator. Session routine copy:', sessionRoutineCopy.name);
         console.log('loadNewWorkoutFromRoute - tap operator. Program ID:', programId);
@@ -3826,6 +3978,82 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     return '';
   }
 
+  async showSessionOverview(): Promise<void> {
+    const currentRoutineVal = this.routine();
+    if (!currentRoutineVal || !currentRoutineVal.exercises || currentRoutineVal.exercises.length === 0) {
+      this.toastService.error("No exercises in this session to show.", 0, "Error");
+      return;
+    }
+
+    const overviewButtons: AlertButton[] = [];
+    const processedSupersetIds = new Set<string>();
+
+    currentRoutineVal.exercises.forEach((ex, index) => {
+      // --- Handle Superset Groups ---
+      if (ex.supersetId) {
+        if (processedSupersetIds.has(ex.supersetId)) {
+          return; // Skip if this group has already been added to the list
+        }
+
+        const group = currentRoutineVal.exercises.filter(e => e.supersetId === ex.supersetId);
+        const groupName = group.map(e => e.exerciseName).join(' / ');
+        const groupStatus = this.getGroupStatusIndicator(group);
+
+        overviewButtons.push({
+          text: `Superset: ${groupName}${groupStatus}`,
+          role: 'cancel', // Makes the button non-actionable, just for display
+          // Use the status of the first exercise in the group for coloring
+          cssClass: 'text-left justify-start ' + this.getExerciseButtonCssClass(group[0], groupStatus)
+        });
+        processedSupersetIds.add(ex.supersetId);
+
+      } else {
+        // --- Handle Standard Exercises ---
+        const statusIndicator = this.getExerciseStatusIndicator(ex);
+        overviewButtons.push({
+          text: `${ex.exerciseName}${statusIndicator}`,
+          role: 'cancel', // Non-actionable
+          cssClass: 'text-left justify-start ' + this.getExerciseButtonCssClass(ex, statusIndicator)
+        });
+      }
+    });
+
+    // Add a final "Done" button to close the modal
+    overviewButtons.push({ text: 'DONE', role: 'confirm', data: 'done' });
+
+    await this.alertService.showConfirmationDialog(
+      'Session Overview',
+      'This is a summary of your workout progress so far.',
+      overviewButtons,
+    );
+  }
+
+  /**
+   * Generates a status indicator string for an entire superset group.
+   * @param group An array of WorkoutExercise objects belonging to the same superset.
+   * @returns A string describing the collective status of the group.
+   */
+  private getGroupStatusIndicator(group: WorkoutExercise[]): string {
+    const totalSets = group.reduce((sum, ex) => sum + ex.sets.length, 0);
+    const loggedSets = group.reduce((sum, ex) => sum + this.getNumberOfLoggedSets(ex.id), 0);
+
+    // Base status on the first exercise (e.g., if it was skipped, the group is considered skipped)
+    const firstExStatus = group[0].sessionStatus;
+
+    if (loggedSets === 0) {
+      if (firstExStatus === 'skipped') return ' - Skipped';
+      if (firstExStatus === 'do_later') return ' - Do Later';
+      return ' - Pending';
+    }
+
+    if (loggedSets >= totalSets) {
+      return ' - Completed';
+    }
+
+    // Partially completed status
+    return ` - In Progress (${loggedSets} of ${totalSets} sets)`;
+  }
+
   async jumpToExercise(headerString: string = ''): Promise<void> {
     if (headerString) {
       this.headerOverviewString = headerString;
@@ -3845,25 +4073,44 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // --- No changes to this part ---
-    // Filter for exercises that are not yet fully completed or can be restarted.
+    // +++ NEW: Filter exercises for the modal view +++
+    const activeSupersetId = this.activeSetInfo()?.exerciseData.supersetId;
+    const processedSupersetIds = new Set<string>();
+
     const availableExercises = currentRoutineVal.exercises
       .map((ex, index) => ({
         ...ex,
         originalIndex: index,
-        isFullyLogged: this.isExerciseFullyLogged(ex), // Assuming isExerciseFullyLogged needs these params
-        isPartiallyLogged: this.isExercisePartiallyLogged(ex), // Assuming this is correct
+        isFullyLogged: this.isExerciseFullyLogged(ex),
+        isPartiallyLogged: this.isExercisePartiallyLogged(ex),
       }))
+      .filter(ex => {
+        // Rule 1: Exclude exercises from the current active superset group
+        if (activeSupersetId && ex.supersetId === activeSupersetId) {
+          return false;
+        }
+        // Rule 2: If it's part of another superset, only include the first one
+        if (ex.supersetId) {
+          if (processedSupersetIds.has(ex.supersetId)) {
+            return false; // Already processed this group
+          }
+          processedSupersetIds.add(ex.supersetId);
+          // Only show the first exercise of other superset groups
+          return ex.supersetOrder === 0;
+        }
+        // Rule 3: Include all standard (non-superset) exercises
+        return true;
+      });
+    // +++ END: NEW FILTER LOGIC +++
 
-    // --- No changes to button creation, but note the role assignment ---
     const exerciseButtons: AlertButton[] = availableExercises.map(ex => {
       const statusIndicator = this.getExerciseStatusIndicator(ex);
-      const supersetIndicator = this.getSupersetIndicatorText(ex, currentRoutineVal);
+      // For superset groups, indicate it's a group.
+      const supersetIndicator = ex.supersetId ? ` [Superset Group]` : '';
       const cssClass = this.getExerciseButtonCssClass(ex, statusIndicator);
 
       return {
         text: `${ex.exerciseName}${statusIndicator}${supersetIndicator}`,
-        // The role is 'restart' only if the exercise is already fully logged.
         role: ex.isFullyLogged ? 'restart' : 'confirm',
         data: ex.originalIndex,
         cssClass: cssClass,
@@ -3873,9 +4120,14 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     exerciseButtons.push({ text: 'CANCEL', role: 'cancel', data: 'cancel_jump' });
     this.closeWorkoutMenu();
 
+    if (exerciseButtons.length === 1) {
+      this.toastService.info("No other available exercises apart from the current one");
+      return;
+    }
+
     const choice = await this.alertService.showConfirmationDialog(
       this.headerOverviewString,
-      'Select an exercise to start, continue, or restart:', // Updated prompt text
+      'Select an exercise to start, continue, or restart:',
       exerciseButtons,
     );
 
@@ -4251,6 +4503,12 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     if (!activeInfo || this.sessionState() === 'paused') {
       return false;
     }
+
+    // NEW: Disallow switching if it's not the first exercise in a superset
+    if (activeInfo.exerciseData.supersetId && (activeInfo.exerciseData.supersetOrder ?? 0) > 0) {
+      return false;
+    }
+
     // Allow switching only if no sets for THIS specific exercise instance have been logged yet.
     const loggedSetCount = this.getNumberOfLoggedSets(activeInfo.exerciseData.id);
     return loggedSetCount === 0;
@@ -4264,6 +4522,24 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     event.stopPropagation();
     this.isWorkoutMenuVisible.set(!this.isWorkoutMenuVisible());
   }
+
+
+  readonly canJumpToOtherExercise = computed<boolean>(() => {
+    const routine = this.routine();
+    const activeInfo = this.activeSetInfo();
+    if (!routine || !activeInfo || routine.exercises.length <= 1) {
+      return false;
+    }
+
+    const currentSupersetId = activeInfo.exerciseData.supersetId;
+    if (!currentSupersetId) {
+      // Not in a superset, can jump if there's more than one exercise.
+      return true;
+    }
+
+    // In a superset, check if there are any exercises that are NOT in this superset.
+    return routine.exercises.some(ex => ex.supersetId !== currentSupersetId);
+  });
 
   actionItems = computed<ActionMenuItem[]>(() => {
     const actionsArray: ActionMenuItem[] = [];
@@ -4283,12 +4559,12 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     actionsArray.push(addExerciseBtn);
 
     // Add SWITCH if the current exercise can be switched
-    if (this.canSwitchExercise()) { // canSwitchExercise is already a computed signal
+    if (this.canSwitchExercise()) { // Uses the updated computed signal
       actionsArray.push(switchExerciseBtn);
     }
 
-    // Add JUMP TO if there are exercises in the routine
-    if (routine && routine.exercises.length > 0) {
+    // Add JUMP TO if there are other exercises/groups to jump to
+    if (this.canJumpToOtherExercise()) { // Uses the new computed signal
       actionsArray.push(jumpToExerciseBtn);
     }
 
@@ -4299,8 +4575,15 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
 
     // Add SKIP SET/EXERCISE/DO LATER if there is an active set
     if (activeInfo) {
-      actionsArray.push(skipCurrentSetBtn);
-      actionsArray.push(skipCurrentExerciseBtn);
+      const isSuperset = !!activeInfo.exerciseData.supersetId;
+      const skipSetBtnLabel = isSuperset ? 'Skip Round' : 'Skip Set';
+      const skipExBtnLabel = isSuperset ? 'Skip Superset' : 'Skip Exercise';
+
+      // Create copies of button configs and override labels
+      if (!isSuperset) {
+        actionsArray.push({ ...skipCurrentSetBtn, label: skipSetBtnLabel });
+        actionsArray.push({ ...skipCurrentExerciseBtn, label: skipExBtnLabel });
+      }
       actionsArray.push(markAsDoLaterBtn);
     }
 
@@ -4482,5 +4765,31 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       this.currentWorkoutLogExercises.set(result.updatedLoggedExercises);
       this.savePausedSessionState();
     }
+  }
+
+  private async applyIntensityAdjustment(routine: Routine, percentage: number, direction: 'increase' | 'decrease'): Promise<Routine> {
+    const adjustedRoutine = JSON.parse(JSON.stringify(routine)) as Routine;
+    const multiplier = direction === 'increase' ? 1 + (percentage / 100) : 1 - (percentage / 100);
+
+    adjustedRoutine.exercises.forEach(ex => {
+      // This adjustment only applies to exercises from the original routine,
+      // which is what this method receives.
+      ex.sets.forEach(set => {
+        if (set.weight !== null && set.weight !== undefined) {
+          // Round to nearest 0.25 for weights
+          set.weight = Math.round((set.weight * multiplier) * 4) / 4;
+          if (set.weight < 0) set.weight = 0;
+        }
+        if (set.reps) {
+          set.reps = Math.round(set.reps * multiplier);
+          if (set.reps < 0) set.reps = 0;
+        }
+        if (set.duration) {
+          set.duration = Math.round(set.duration * multiplier);
+          if (set.duration < 0) set.duration = 0;
+        }
+      });
+    });
+    return adjustedRoutine;
   }
 }

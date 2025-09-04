@@ -129,6 +129,31 @@ export class TrackingService {
     return this.workoutLogs$.pipe(map(logs => logs.find(log => log.routineId === routineId)));
   }
 
+   /**
+   * Retrieves workout logs for a specific routine, sorted with the most recent first.
+   * @param routineId The ID of the routine.
+   * @param limit Optional. The maximum number of logs to return.
+   * @returns An Observable emitting an array of workout logs.
+   */
+  getLogsForRoutine(routineId: string, limit?: number): Observable<WorkoutLog[]> {
+    return this.workoutLogs$.pipe(
+      map(logs => {
+        // Filter logs for the specific routine
+        const routineLogs = logs.filter(log => log.routineId === routineId);
+        
+        // Sort the filtered logs by start time in descending order (most recent first).
+        // Using the `startTime` timestamp is more precise than the date string.
+        routineLogs.sort((a, b) => b.startTime - a.startTime);
+
+        if (limit) {
+          return routineLogs.slice(0, limit);
+        }
+        
+        return routineLogs;
+      })
+    );
+  }
+
   getLogsForDate(date: string): Observable<WorkoutLog[] | undefined> {
     return this.workoutLogs$.pipe(map(logs => logs.filter(log => log.date === date)));
   }

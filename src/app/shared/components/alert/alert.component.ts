@@ -1,10 +1,11 @@
 // src/app/shared/alert/alert.component.ts
-import { Component, Input, Output, EventEmitter, HostListener, ChangeDetectionStrategy, OnInit, QueryList, ElementRef, ViewChildren, ViewChild, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, HostListener, ChangeDetectionStrategy, OnInit, QueryList, ElementRef, ViewChildren, ViewChild, SimpleChanges, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms'; // <-- Import FormsModule
 import { AlertButton, AlertOptions, AlertInput } from '../../../core/models/alert.model';
 import { PressDirective } from '../../directives/press.directive';
 import { IconComponent } from '../icon/icon.component';
+import { ToastService } from '../../../core/services/toast.service';
 
 @Component({
   selector: 'app-alert',
@@ -22,6 +23,8 @@ export class AlertComponent implements OnInit {
   @ViewChildren('alertButton') allButtons!: QueryList<ElementRef<HTMLButtonElement>>;
 
   inputValues: { [key: string]: string | number | boolean } = {};
+
+  private toastService = inject(ToastService);
 
   ngOnInit(): void {
     if (this.options?.inputs) {
@@ -119,14 +122,41 @@ export class AlertComponent implements OnInit {
     }
   }
 
-  onButtonClick(button: AlertButton): void {
+ onButtonClick(button: AlertButton): void {
     if (button.role === 'confirm' || button.role !== 'cancel') {
       if (this.options?.inputs) {
         for (const input of this.options.inputs) {
+          // --- Start of Validation Logic ---
+
+          // 1. Check for required fields (existing logic)
           if (input.type !== 'checkbox' && input.required && (this.inputValues[input.name] === undefined || String(this.inputValues[input.name]).trim() === '')) {
-            alert(`Please fill in the '${input.label || input.name}' field`);
-            return;
+            this.toastService.info(`Please fill in the '${input.label || input.name}' field.`);
+            return; // Stop dismissal
           }
+
+          // 2. NEW: Add validation for number inputs
+          if (input.type === 'number') {
+            const numericValue = parseFloat(String(this.inputValues[input.name]));
+
+            // Check if the input is a valid number (especially if required)
+            if (isNaN(numericValue) && String(this.inputValues[input.name]).trim() !== '') {
+                this.toastService.info(`Please enter a valid number for '${input.label || input.name}'.`);
+                return; // Stop dismissal
+            }
+
+            // Check against the minimum value, if defined
+            if (input.attributes !== undefined && input.attributes.min !== undefined && numericValue < parseFloat(String(input.attributes.min))) {
+                this.toastService.info(`The value for '${input.label || input.name}' must be at least ${input.attributes.min}.`);
+                return; // Stop dismissal
+            }
+
+            // Check against the maximum value, if defined
+            if (input.attributes !== undefined && input.attributes.max !== undefined && numericValue > parseFloat(String(input.attributes.max))) {
+                this.toastService.info(`The value for '${input.label || input.name}' must not exceed ${input.attributes.max}.`);
+                return; // Stop dismissal
+            }
+          }
+          // --- End of Validation Logic ---
         }
       }
     }

@@ -91,7 +91,8 @@ export class UnitsService {
 
   // Weight Conversions
   public convertWeight(value: number | null | undefined, from: WeightUnit, to: WeightUnit): number {
-    if (from === to || !value) return 0;
+    if (!value) return 0;
+    if (from === to) return value;
     const kgToLbs = 2.20462;
     const result = from === 'kg' ? value * kgToLbs : value / kgToLbs;
     // Round to a reasonable number of decimal places

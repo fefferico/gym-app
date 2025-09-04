@@ -28,8 +28,8 @@
           class="p-2 text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-light">
           <app-icon name="cancel" class="h-6 w-6"></app-icon>
         </button>
-        <div class="flex flex-col items-center cursor-pointer" appPress
-          (shortPress)="jumpToExercise('Session overview')" [title]="'Click for session overview'">
+        <div class="flex flex-col items-center cursor-pointer" appPress (shortPress)="openSessionOverviewModal()"
+          [title]="'Click for session overview'">
           <h1 class="text-lg font-bold text-gray-800 dark:text-gray-100 truncate max-w-xs">
             {{ currentRoutine.name || 'Workout' }}
           </h1>
@@ -44,17 +44,16 @@
             <app-icon name="menu-action" class="h-10 w-10"></app-icon>
           </button>
           <app-action-menu *ngIf="isWorkoutMenuVisible() && getMenuMode() !== 'compact'" class="action-menu-container"
-            [displayMode]="getMenuMode()" [modalTitle]="''" [items]="actionItems()"
-            [isVisible]="isWorkoutMenuVisible()" (itemClick)="handleActionMenuItemClick($event)"
-            (closeMenu)="closeWorkoutMenu()">
+            [displayMode]="getMenuMode()" [modalTitle]="''" [items]="actionItems()" [isVisible]="isWorkoutMenuVisible()"
+            (itemClick)="handleActionMenuItemClick($event)" (closeMenu)="closeWorkoutMenu()">
           </app-action-menu>
         </div>
 
       </div>
       <app-action-menu *ngIf="isWorkoutMenuVisible() && getMenuMode() === 'compact'" class="action-menu-container"
-        [gridClass]="'grid grid-cols-1'" [displayMode]="getMenuMode()" [modalTitle]="''"
-        [items]="actionItems()" [isVisible]="isWorkoutMenuVisible()"
-        (itemClick)="handleActionMenuItemClick($event)" (closeMenu)="closeWorkoutMenu()">
+        [gridClass]="'grid grid-cols-1'" [displayMode]="getMenuMode()" [modalTitle]="''" [items]="actionItems()"
+        [isVisible]="isWorkoutMenuVisible()" (itemClick)="handleActionMenuItemClick($event)"
+        (closeMenu)="closeWorkoutMenu()">
       </app-action-menu>
       <!-- Workout Progress Bar -->
       <div class="w-full mt-2">
@@ -500,6 +499,10 @@
   (findSimilarClicked)="findAndShowSimilarExercises()" (backToSearchClicked)="isShowingSimilarInSwitchModal.set(false)"
   (close)="closeSwitchExerciseModal()">
 </app-exercise-selection-modal>
+
+<app-session-overview-modal [isOpen]="isSessionOverviewVisible()" [routine]="routine()"
+  [loggedExercises]="currentWorkoutLogExercises()" (close)="closeSessionOverviewModal()">
+</app-session-overview-modal>
 
 
 <ng-template #loadingOrError>
