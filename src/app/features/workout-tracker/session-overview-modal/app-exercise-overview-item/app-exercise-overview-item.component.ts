@@ -18,6 +18,8 @@ export class ExerciseOverviewItemComponent {
   @Input() exercise!: WorkoutExercise;
     @Input() loggedExercises!: LoggedWorkoutExercise[];
     @Input() activeExerciseId: string | undefined;
+    @Input() activeSetIndex: number | undefined;
+    @Input() activeBlockRound: number | undefined;
 
     isCurrent = computed<boolean>(() => {
         return this.exercise.id === this.activeExerciseId;
@@ -70,23 +72,30 @@ export class ExerciseOverviewItemComponent {
         return this.loggedExercises.find(le => le.id === exerciseId)?.sets ?? [];
     }
 
-    getSetStatusIndicatorClass(plannedSetId: string, roundIndex: number): { class: string, title: string } {
+    getSetStatusIndicatorClass(plannedSetId: string, roundIndex: number, setIndex: number): { class: string, title: string } {
         const isSetLogged = !!this.getLoggedSetFor(plannedSetId, roundIndex);
-
+    
+        // Rule 1: If the set is logged, it's always green.
         if (isSetLogged) {
             return { class: 'bg-green-500', title: 'Completed' };
         }
-
-        if (this.isCurrent()) {
-            return { class: 'bg-blue-500', title: 'Current' };
+    
+        // Rule 2: Check if this is the *exact* current set.
+        const isTheCurrentSet = this.isCurrent() &&
+                                this.activeSetIndex === setIndex &&
+                                (this.activeBlockRound ? this.activeBlockRound - 1 : 0) === roundIndex;
+    
+        if (isTheCurrentSet) {
+            return { class: 'bg-blue-400 animate-pulse', title: 'Current' };
         }
-
+    
+        // Rule 3: If not completed or current, check the overall exercise status.
         switch (this.exercise.sessionStatus) {
             case 'skipped':
                 return { class: 'bg-yellow-500', title: 'Skipped' };
             case 'do_later':
                 return { class: 'bg-orange-500', title: 'Do Later' };
-            default:
+            default: // Includes 'pending' and 'started'
                 return { class: 'bg-gray-300 dark:bg-gray-600', title: 'Pending' };
         }
     }

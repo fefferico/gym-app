@@ -5,7 +5,6 @@ import { LoggedWorkoutExercise, LoggedSet } from '../../../core/models/workout-l
 import { WeightUnitPipe } from '../../../shared/pipes/weight-unit-pipe';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { ExerciseOverviewItemComponent } from './app-exercise-overview-item/app-exercise-overview-item.component';
-
 // Define interfaces for the structured data this component will use
 interface StandardExerciseGroup {
   type: 'standard';
@@ -36,6 +35,8 @@ export class SessionOverviewModalComponent {
   @Input() routineSignal: Signal<Routine | null | undefined> = computed(() => undefined);
   @Input() loggedExercisesSignal: Signal<LoggedWorkoutExercise[]> = computed(() => []);
   @Input() activeExerciseId: string | undefined;
+  @Input() activeSetIndex: number | undefined;
+  @Input() activeBlockRound: number | undefined;
   @Output() close = new EventEmitter<void>();
 
   groupedExercises = computed<DisplayGroup[]>(() => {

@@ -505,6 +505,8 @@
   [routineSignal]="routine"
   [loggedExercisesSignal]="currentWorkoutLogExercises"
   [activeExerciseId]="activeSetInfo()?.exerciseData?.id"
+  [activeSetIndex]="currentSetIndex()"
+  [activeBlockRound]="currentBlockRound()"
   (close)="closeSessionOverviewModal()">
 </app-session-overview-modal>
 

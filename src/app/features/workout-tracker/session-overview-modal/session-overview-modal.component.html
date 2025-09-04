@@ -29,7 +29,12 @@
                         <ng-container *ngFor="let exercise of group.exercises; let i = index">
                             <div [ngClass]="{'pt-4 border-t border-gray-200 dark:border-gray-700': i > 0}">
                                 <!-- Pass the unwrapped signal value -->
-                                <app-exercise-overview-item [exercise]="exercise" [loggedExercises]="loggedExercisesSignal()" [activeExerciseId]="activeExerciseId">
+                                <app-exercise-overview-item 
+                                    [exercise]="exercise" 
+                                    [loggedExercises]="loggedExercisesSignal()" 
+                                    [activeExerciseId]="activeExerciseId"
+                                    [activeSetIndex]="activeSetIndex"
+                                    [activeBlockRound]="activeBlockRound">
                                 </app-exercise-overview-item>
                             </div>
                         </ng-container>
@@ -40,7 +45,12 @@
                 <div *ngIf="group.type === 'standard'"
                     class="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg p-3">
                     <!-- Pass the unwrapped signal value -->
-                    <app-exercise-overview-item [exercise]="group.exercise" [loggedExercises]="loggedExercisesSignal()" [activeExerciseId]="activeExerciseId">
+                    <app-exercise-overview-item 
+                        [exercise]="group.exercise" 
+                        [loggedExercises]="loggedExercisesSignal()"
+                        [activeExerciseId]="activeExerciseId"
+                        [activeSetIndex]="activeSetIndex"
+                        [activeBlockRound]="activeBlockRound">
                     </app-exercise-overview-item>
                 </div>
             </ng-container>
