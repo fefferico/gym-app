@@ -283,7 +283,7 @@ viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" >
 </svg>
 `,
   'chart': `
-<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
   <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.5v-7.5c0-1.105.895-2 2-2h14c1.105 0 2 .895 2 2v10.5c0 1.105-.895 2-2 2h-14a2 2 0 0 1-2-2v-2.5" />
   <path stroke-linecap="round" stroke-linejoin="round" d="M8 16.5v-5.25m4 5.25v-2.25m4 2.25v-1.5" />
 </svg>
