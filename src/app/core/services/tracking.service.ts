@@ -13,6 +13,7 @@ import { WorkoutService } from './workout.service';
 import { ToastService } from './toast.service';
 import { ExerciseService } from './exercise.service';
 import { TrainingProgramService } from './training-program.service';
+import { PerceivedWorkoutInfo } from '../../features/workout-tracker/perceived-effort-modal.component';
 
 export interface ExercisePerformanceDataPoint {
   date: Date;
@@ -969,10 +970,10 @@ export class TrackingService {
   /**
    * Updates the perceived effort rating for a specific workout log.
    * @param logId The ID of the workout log to update.
-   * @param effort The user's perceived effort rating (e.g., 1-10).
+   * @param perceivedWorkoutInfo The user's perceived effort rating (e.g., 1-10).
    * @returns An observable that completes when the update is successful.
    */
-  updatePerceivedEffort(logId: string, effort: number): Observable<void> {
+  updatePerceivedWorkoutInfo(logId: string, perceivedWorkoutInfo: PerceivedWorkoutInfo): Observable<void> {
     // --- This section handles updating your local state stream ---
     const currentLogs = this.workoutLogsSubject.getValue();
     const logIndex = currentLogs.findIndex(log => log.id === logId);
@@ -981,7 +982,7 @@ export class TrackingService {
       // Create a new object for the updated log to maintain immutability
       const updatedLog: WorkoutLog = {
         ...currentLogs[logIndex],
-        perceivedEffort: effort
+        perceivedWorkoutInfo: perceivedWorkoutInfo,
       };
 
       // Create a new array with the updated log
@@ -998,7 +999,7 @@ export class TrackingService {
     // --- This section would handle your backend persistence ---
     // Example: return this.http.patch(`/api/logs/${logId}`, { perceivedEffort: effort });
     // For now, we'll return a simulated success observable.
-    console.log(`Updating log ${logId} with perceived effort: ${effort}. (Backend call would go here)`);
+    console.log(`Updating log ${logId} with perceived effort: ${perceivedWorkoutInfo}. (Backend call would go here)`);
     return of(undefined).pipe(delay(200)); // Simulate async backend call
   }
 

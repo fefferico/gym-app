@@ -1,5 +1,7 @@
 // src/app/core/models/workout-log.model.ts
 
+import { PerceivedWorkoutInfo } from "../../features/workout-tracker/perceived-effort-modal.component";
+
 // Describes a single set that was actually performed and logged.
 export interface LoggedSet {
   id: string; // Unique ID for this specific logged set instance (can be the plannedSetId if it originated from a routine)
@@ -84,7 +86,7 @@ export interface WorkoutLog {
   /** If part of a program, the ID of the specific ScheduledRoutineDay this log fulfills. */
   scheduledDayId?: string;
   iterationId?: string;
-  perceivedEffort?: number; // <-- ADD THIS LINE (e.g., a rating from 1 to 10)
+  perceivedWorkoutInfo?: PerceivedWorkoutInfo; // <-- ADD THIS LINE (e.g., a rating from 1 to 10)
 }
 
 // For displaying personal bests

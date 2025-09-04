@@ -12,7 +12,7 @@ import { UnitsService } from '../../../core/services/units.service';
 import { WeightUnitPipe } from '../../../shared/pipes/weight-unit-pipe';
 import { PressDirective } from '../../../shared/directives/press.directive';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
-import { PerceivedEffortModalComponent } from '../perceived-effort-modal.component';
+import { PerceivedEffortModalComponent, PerceivedWorkoutInfo } from '../perceived-effort-modal.component';
 
 
 interface DisplayLoggedExerciseSummary extends LoggedWorkoutExercise {
@@ -77,13 +77,13 @@ export class WorkoutSummaryComponent implements OnInit {
   private checkForNewlyCompletedWorkout(log: WorkoutLog): void {
     this.route.queryParamMap.pipe(take(1)).subscribe(params => {
       // Show modal if the param exists AND the workout hasn't been rated yet.
-      if (params.get('newlyCompleted') === 'true' && !log.hasOwnProperty('perceivedEffort')) {
+      if (params.get('newlyCompleted') === 'true' && !log.hasOwnProperty('perceivedWorkoutInfo')) {
         this.isEffortModalVisible.set(true);
       }
     });
   }
 
-  handleEffortModalClose(effort: number | null): void {
+  handleEffortModalClose(perceivedInfo: PerceivedWorkoutInfo | null): void {
     this.isEffortModalVisible.set(false);
     const currentLog = this.workoutLog();
 
@@ -95,11 +95,11 @@ export class WorkoutSummaryComponent implements OnInit {
       replaceUrl: true // Avoids adding a new entry to browser history
     });
 
-    if (effort !== null && currentLog) {
-      this.trackingService.updatePerceivedEffort(currentLog.id, effort).subscribe({
+    if (perceivedInfo !== null && currentLog) {
+      this.trackingService.updatePerceivedWorkoutInfo(currentLog.id, perceivedInfo).subscribe({
         next: () => {
           // Update the local state instantly for immediate UI feedback
-          this.workoutLog.update(log => ({ ...log!, perceivedEffort: effort }));
+          this.workoutLog.update(log => ({ ...log!, perceivedWorkoutInfo: perceivedInfo }));
           console.log("Perceived effort saved successfully!");
         },
         error: (err) => console.error("Failed to save perceived effort:", err),
