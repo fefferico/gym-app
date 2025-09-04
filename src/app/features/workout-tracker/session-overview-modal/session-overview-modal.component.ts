@@ -1,8 +1,7 @@
 import { Component, Input, Output, EventEmitter, computed, Signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Routine, WorkoutExercise, ExerciseSetParams } from '../../../core/models/workout.model';
-import { LoggedWorkoutExercise, LoggedSet } from '../../../core/models/workout-log.model';
-import { WeightUnitPipe } from '../../../shared/pipes/weight-unit-pipe';
+import { Routine, WorkoutExercise } from '../../../core/models/workout.model';
+import { LoggedWorkoutExercise } from '../../../core/models/workout-log.model';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { ExerciseOverviewItemComponent } from './app-exercise-overview-item/app-exercise-overview-item.component';
 // Define interfaces for the structured data this component will use

@@ -104,7 +104,8 @@
               Set {{ getCurrentWorkingSetNumber() }}/{{ getWorkingSetCountForCurrentExercise() }}
             </span>
             <span *ngIf="activeSet.exerciseData.supersetId" class="ml-2 text-purple-500 dark:text-purple-400 italic">
-              (Superset ex. {{ (activeSet.exerciseData.supersetOrder ?? 0) + 1 }}/{{activeSet.exerciseData.supersetSize ??
+              (Superset ex. {{ (activeSet.exerciseData.supersetOrder ?? 0) + 1 }}/{{activeSet.exerciseData.supersetSize
+              ??
               '?'}})
             </span>
             <span *ngIf="totalBlockRounds() > 1 && currentBlockRound() > 0" class="ml-2">
@@ -383,7 +384,8 @@
         <app-icon name="cancel" class="h-6 w-6"></app-icon>
       </button>
     </header>
-    <div class="p-5 overflow-y-auto space-y-6 flex-grow">
+    <div
+      class="p-5 overflow-y-auto space-y-6 flex-grow bg-gray-100 dark:bg-gray-900 scrollbar-thin scrollbar-thumb-primary/70 dark:scrollbar-thumb-primary-dark/70 scrollbar-track-gray-200 dark:scrollbar-track-gray-700 hover:scrollbar-thumb-primary dark:hover:scrollbar-thumb-primary-dark">
       <div class="rounded-md border border-gray-200 dark:border-gray-700/80">
         <button (click)="toggleCompletedSetsForExerciseInfo()" class="w-full flex items-center justify-between p-3 text-left text-sm font-medium text-gray-700
           dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors rounded-t-lg">
@@ -500,14 +502,9 @@
   (close)="closeSwitchExerciseModal()">
 </app-exercise-selection-modal>
 
-<app-session-overview-modal
-  [isOpen]="isSessionOverviewVisible()"
-  [routineSignal]="routine"
-  [loggedExercisesSignal]="currentWorkoutLogExercises"
-  [activeExerciseId]="activeSetInfo()?.exerciseData?.id"
-  [activeSetIndex]="currentSetIndex()"
-  [activeBlockRound]="currentBlockRound()"
-  (close)="closeSessionOverviewModal()">
+<app-session-overview-modal [isOpen]="isSessionOverviewVisible()" [routineSignal]="routine"
+  [loggedExercisesSignal]="currentWorkoutLogExercises" [activeExerciseId]="activeSetInfo()?.exerciseData?.id"
+  [activeSetIndex]="currentSetIndex()" [activeBlockRound]="currentBlockRound()" (close)="closeSessionOverviewModal()">
 </app-session-overview-modal>
 
 
