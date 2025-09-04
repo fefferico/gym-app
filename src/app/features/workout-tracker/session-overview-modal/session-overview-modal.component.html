@@ -17,8 +17,11 @@
             </button>
         </header>
 
-        <!-- Main Content (Scrollable) -->
-        <div class="p-4 sm:p-6 overflow-y-auto space-y-4 flex-grow bg-gray-100 dark:bg-gray-900">
+        <!-- Main Content (Scrollable with Themed Scrollbar) -->
+        <div class="p-4 sm:p-6 overflow-y-auto space-y-4 flex-grow bg-gray-100 dark:bg-gray-900 
+                    scrollbar-thin scrollbar-thumb-primary dark:scrollbar-thumb-primary-dark 
+                    scrollbar-track-gray-200 dark:scrollbar-track-gray-700 
+                    hover:scrollbar-thumb-primary-dark dark:hover:scrollbar-thumb-primary">
             <ng-container *ngFor="let group of groupedExercises(); trackBy: trackByGroup">
                 <!-- Superset Group Card -->
                 <div *ngIf="group.type === 'superset'"
