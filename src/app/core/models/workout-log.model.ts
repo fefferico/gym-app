@@ -52,7 +52,7 @@ export interface LoggedWorkoutExercise {
   exerciseId: string;     // exerciseId of the base Exercise definition
   exerciseName: string;   // Denormalized name for easier display in logs
   sets: LoggedSet[];      // Array of actual sets performed for this exercise
-  rounds: number;
+  rounds?: number;
   notes?: string;         // User notes for this exercise during this specific workout log
   workoutLogId?: string; // ID of the WorkoutLog this exercise belongs to
   supersetId?: string | null;

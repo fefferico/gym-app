@@ -32,7 +32,6 @@ import { AppSettingsService } from '../../../core/services/app-settings.service'
 import { DataConversionService } from '../../../core/services/data-conversion.service';
 import { SubscriptionService, PremiumFeature } from '../../../core/services/subscription.service';
 
-
 @Component({
   selector: 'app-profile-settings',
   standalone: true,
@@ -181,10 +180,30 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
    */
   togglePlayerMode(event: Event): void {
     this.workoutService.vibrate();
-    const isChecked = (event.target as HTMLInputElement).checked;
+    const inputElement = event.target as HTMLInputElement;
+    const isChecked = inputElement.checked;
     const newMode = isChecked ? 'focus' : 'compact';
-    this.appSettingsForm.get('playerMode')?.setValue(newMode);
-    this.appSettingsService.saveSettings({playerMode: newMode});
+
+    if (this.workoutService.isPausedSession()) {
+      // Show the alert to the user.
+      this.alertService.showAlert(
+        "Action Disabled", 
+        "It's not possible to change the player mode during a workout session. Please complete or discard your current workout first."
+      );
+
+      // *** THE CORE FIX ***
+      // Prevent the visual change by directly reverting the checkbox's checked state.
+      // This is more reliable than trying to patch the form value after the fact.
+      inputElement.checked = !isChecked;
+
+      // Ensure Angular's change detection knows about this manual DOM change.
+      this.cdr.detectChanges();
+      
+    } else {
+      // If the workout is not paused, proceed with saving the new setting as normal.
+      this.appSettingsForm.get('playerMode')?.setValue(newMode);
+      this.appSettingsService.saveSettings({ playerMode: newMode });
+    }
   }
 
   async selectWeightUnit(unit: WeightUnit): Promise<void> {

@@ -3,7 +3,7 @@ import { Component, inject, OnInit, PLATFORM_ID, signal, computed, OnDestroy, Ho
 import { CommonModule, DatePipe, isPlatformBrowser, TitleCasePipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { firstValueFrom, Observable, Subscription, take } from 'rxjs'; // Added Subscription
-import { Routine } from '../../core/models/workout.model'; // Added ExerciseDetail
+import { PausedWorkoutState, Routine } from '../../core/models/workout.model'; // Added ExerciseDetail
 import { Exercise } from '../../core/models/exercise.model'; // Added Exercise
 import { WorkoutService } from '../../core/services/workout.service';
 import { ExerciseService } from '../../core/services/exercise.service'; // Import ExerciseService
@@ -15,7 +15,6 @@ import { animate, state, style, transition, trigger } from '@angular/animations'
 import { StorageService } from '../../core/services/storage.service';
 import { AlertButton } from '../../core/models/alert.model';
 import { format } from 'date-fns';
-import { PausedWorkoutState } from './workout-player'; // Adjust path as needed
 import { ThemeService } from '../../core/services/theme.service';
 import { ActionMenuItem } from '../../core/models/action-menu.model';
 import { ActionMenuComponent } from '../../shared/components/action-menu/action-menu';

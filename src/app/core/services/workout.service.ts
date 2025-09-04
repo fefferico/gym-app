@@ -4,7 +4,7 @@ import { BehaviorSubject, Observable, of, Subject, throwError } from 'rxjs';
 import { map, shareReplay } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid'; // For generating unique IDs
 
-import { ExerciseSetParams, Routine, WorkoutExercise } from '../models/workout.model'; // Ensure this path is correct
+import { ExerciseSetParams, PausedWorkoutState, Routine, WorkoutExercise } from '../models/workout.model'; // Ensure this path is correct
 import { StorageService } from './storage.service';
 import { LoggedSet, LoggedWorkoutExercise, WorkoutLog } from '../models/workout-log.model';
 import { AlertService } from './alert.service';
@@ -13,7 +13,6 @@ import { ToastService } from './toast.service';
 import { ProgressiveOverloadService } from './progressive-overload.service.ts';
 import { AppSettingsService } from './app-settings.service';
 import { Router } from '@angular/router';
-import { PausedWorkoutState } from '../../features/workout-tracker/workout-player';
 import { UnitsService } from './units.service';
 import { AlertInput } from '../models/alert.model';
 import { Exercise } from '../models/exercise.model';
@@ -453,13 +452,13 @@ export class WorkoutService {
 
 
   /**
- * Estimates the total time to complete an entire routine in minutes,
- * including estimated work time for each set and rest times between sets.
- * The rest time after the very last set of the entire routine is NOT included.
- *
- * @param routine The full Routine object.
- * @returns The total estimated duration in minutes.
- */
+   * Estimates the total time to complete an entire routine in minutes,
+   * including estimated work time for each set and rest times between sets.
+   * The rest time after the very last set of the entire routine is NOT included.
+   *
+   * @param routine The full Routine object.
+   * @returns The total estimated duration in minutes.
+   */
   public getEstimatedRoutineDuration(routine: Routine): number {
     if (!routine || !routine.exercises || routine.exercises.length === 0) {
       return 0;
@@ -467,56 +466,61 @@ export class WorkoutService {
 
     let totalSeconds = 0;
     const exercises = routine.exercises;
+    const processedSupersetIds = new Set<string>();
 
-    // We need to keep track of the index to correctly handle supersets and know
-    // if we are at the very last exercise/set of the routine.
     for (let i = 0; i < exercises.length; i++) {
       const exercise = exercises[i];
 
-      // Determine the exercises included in this block (single exercise or superset)
-      let blockExercises: WorkoutExercise[];
-      if (exercise.supersetId) {
-        // If it's a superset, find all exercises with the same supersetId
-        // This assumes superset exercises are always contiguous in the array and in order.
-        blockExercises = exercises.filter(ex => ex.supersetId === exercise.supersetId);
-        // Advance the main loop counter to skip these exercises on the next iteration
-        // We do this by finding the last index of the superset and setting 'i' to it.
-        const lastSupersetExerciseIndex = exercises.findIndex(ex => ex.id === blockExercises[blockExercises.length - 1].id);
-        i = lastSupersetExerciseIndex; // Adjust i to the last exercise of the current superset
-      } else {
-        // If it's a single exercise block
-        blockExercises = [exercise];
+      if (processedSupersetIds.has(exercise.supersetId!)) {
+        // Skip this exercise if its superset group has already been processed
+        continue;
       }
 
-      const rounds = exercise.rounds || 1; // Rounds apply to the entire block (single exercise or superset)
+      if (exercise.supersetId) {
+        // --- SUPERSET BLOCK ---
+        const groupExercises = exercises.filter(ex => ex.supersetId === exercise.supersetId);
+        // The number of rounds is authoritative from the superset definition
+        const totalRounds = exercise.supersetRounds || 1;
 
-      for (let r = 0; r < rounds; r++) {
-        // For each round, iterate through exercises in the block
-        blockExercises.forEach((blockEx, blockExIndex) => {
-          blockEx.sets.forEach((set: ExerciseSetParams, setIndex: number) => {
-            // Add work time for the current set
-            totalSeconds += this.getEstimatedWorkTimeForSet(set);
+        for (let r = 0; r < totalRounds; r++) {
+          groupExercises.forEach((groupEx, groupExIndex) => {
+            groupEx.sets.forEach((set, setIndex) => {
+              totalSeconds += this.getEstimatedWorkTimeForSet(set);
 
-            // Add rest time, but only if it's NOT the very last set of the very last round
-            // and NOT the very last set of the very last exercise in the block/routine.
-            const isLastSetInExercise = setIndex === blockEx.sets.length - 1;
-            const isLastExerciseInBlock = blockExIndex === blockExercises.length - 1;
-            const isLastRound = r === rounds - 1;
-            const isLastExerciseInRoutine = i === exercises.length - 1; // 'i' is the adjusted index for the current block
+              // Check if it's the absolute last set of the entire routine
+              const isLastExerciseInRoutine = i + (groupExercises.length - 1) === exercises.length - 1;
+              const isLastSetInGroup = setIndex === groupEx.sets.length - 1 && groupExIndex === groupExercises.length - 1;
+              const isLastRound = r === totalRounds - 1;
 
-            // Only add rest if it's not the absolute last set of the entire routine
-            if (!(isLastSetInExercise && isLastExerciseInBlock && isLastRound && isLastExerciseInRoutine)) {
-              totalSeconds += this.getRestTimeForSet(set);
-            }
+              if (!(isLastExerciseInRoutine && isLastSetInGroup && isLastRound)) {
+                totalSeconds += this.getRestTimeForSet(set);
+              }
+            });
           });
+        }
+        // Mark this superset as processed and advance the main loop counter
+        processedSupersetIds.add(exercise.supersetId);
+        i += groupExercises.length - 1; // Move index to the end of the current superset group
+      } else {
+        // --- STANDARD EXERCISE BLOCK ---
+        // For standard exercises, we simply iterate through their defined sets once.
+        // The `rounds` property is a player-only multiplier and not used for duration estimation here.
+        exercise.sets.forEach((set, setIndex) => {
+          totalSeconds += this.getEstimatedWorkTimeForSet(set);
+
+          // Add rest time unless it's the last set of the last exercise in the whole routine
+          const isLastExerciseInRoutine = i === exercises.length - 1;
+          const isLastSet = setIndex === exercise.sets.length - 1;
+
+          if (!(isLastExerciseInRoutine && isLastSet)) {
+            totalSeconds += this.getRestTimeForSet(set);
+          }
         });
       }
     }
 
-    // Convert total seconds to minutes and round to the nearest whole number.
-    const totalMinutes = Math.round(totalSeconds / 60);
-
-    return totalMinutes;
+    // Convert total seconds to minutes
+    return Math.round(totalSeconds / 60);
   }
 
 
@@ -558,11 +562,12 @@ export class WorkoutService {
     }
   }
 
-  removePausedWorkout(): void {
+  removePausedWorkout(showAlert: boolean = true): void {
     this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
     // --- NEW: Emit when a paused workout is discarded ---
     this._pausedWorkoutDiscarded.next();
     // --- END NEW ---
+    if (!showAlert) return;
     this.toastService.info('Paused workout session discarded.');
   }
 
@@ -811,7 +816,7 @@ export class WorkoutService {
     updatedRoutine.exercises = this.reorderExercisesForSupersets(updatedRoutine.exercises);
     this.alertService.showAlert("INFO", `Superset created with ${selectedOriginalIndices.length} exercises and ${rounds} rounds: existing logs were cleared and sets standardized.`);
 
-      return { updatedRoutine, updatedLoggedExercises: updatedLogs, newSupersetId };
+    return { updatedRoutine, updatedLoggedExercises: updatedLogs, newSupersetId };
   }
 
 

@@ -35,7 +35,7 @@
       <button (click)="nextDay()" title="Next Day"
         class="py-2 mx-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 disabled:opacity-50"
         [disabled]="isAnimating()">
-        <app-icon name="back" class="w-6 h-6 rotate-90"></app-icon>
+        <app-icon name="chevron-right" class="w-6 h-6"></app-icon>
       </button>
     </div>
     <button *ngIf="!isToday(currentDate())" (click)="goToToday()"

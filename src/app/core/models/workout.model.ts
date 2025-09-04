@@ -108,7 +108,7 @@ export interface PausedWorkoutState {
   programName?: string | null;
   scheduledDayId?: string | null;
   sessionRoutine: Routine; // Routine object, its exercises will have sessionStatus
-  originalWorkoutExercises?: WorkoutExercise[]; // Snapshot of the *original* routine's exercises if one was loaded
+  originalWorkoutExercises?: Routine; // Snapshot of the *original* routine's exercises if one was loaded
   currentExerciseIndex: number;
   currentSetIndex: number;
   currentWorkoutLogExercises: LoggedWorkoutExercise[];
@@ -126,6 +126,9 @@ export interface PausedWorkoutState {
   restTimerNextUpTextOnPause: string | null;
   lastPerformanceForCurrentExercise?: LastPerformanceSummary | null;
   workoutDate: string; // Date of the workout when paused
+  isTabataMode?: boolean;
+  tabataCurrentIntervalIndex?: number;
+  tabataTimeRemainingOnPause?: number;
 }
 
 export enum SessionState {

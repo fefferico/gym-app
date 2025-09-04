@@ -31,7 +31,7 @@ import { format } from 'date-fns';
 import { ActionMenuComponent } from '../../../shared/components/action-menu/action-menu';
 import { MenuMode } from '../../../core/models/app-settings.model';
 import { ActionMenuItem } from '../../../core/models/action-menu.model';
-import { addExerciseBtn, addToSuperSetBtn, addWarmupSetBtn, createSuperSetBtn, finishEarlyBtn, jumpToExerciseBtn, markAsDoLaterBtn, openPerformanceInsightsBtn, pauseSessionBtn, quitWorkoutBtn, removeFromSuperSetBtn, skipCurrentExerciseBtn, skipCurrentSetBtn, switchExerciseBtn } from '../../../core/services/buttons-data';
+import { addExerciseBtn, addToSuperSetBtn, addWarmupSetBtn, createSuperSetBtn, finishEarlyBtn, jumpToExerciseBtn, markAsDoLaterBtn, openExercisePerformanceInsightsBtn, openSessionPerformanceInsightsBtn, pauseSessionBtn, quitWorkoutBtn, removeFromSuperSetBtn, skipCurrentExerciseBtn, skipCurrentSetBtn, switchExerciseBtn } from '../../../core/services/buttons-data';
 import { SessionOverviewModalComponent } from '../session-overview-modal/session-overview-modal.component';
 
 
@@ -497,27 +497,10 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
 
   private addLoggedSetToCurrentLog(exerciseData: WorkoutExercise, loggedSet: LoggedSet): void {
     const logs = this.currentWorkoutLogExercises();
-    const exerciseIndex = this.routine()?.exercises.findIndex(ex => ex.id === exerciseData.id);
-
-    let exerciseLog: LoggedWorkoutExercise | undefined;
-    let logIndex = -1;
-    for (let i = 0; i < logs.length; i++) {
-      const exLog = logs[i];
-      const routineEx = this.routine()?.exercises.find(ex => ex.id === exerciseData.id);
-
-      if (
-        exLog.exerciseId === exerciseData.exerciseId &&
-        routineEx &&
-        routineEx.id === exerciseData.id &&
-        routineEx.id === exLog.id
-      ) {
-        exerciseLog = exLog;
-        logIndex = i;
-        break;
-      }
-    }
+    let exerciseLog = logs.find(log => log.id === exerciseData.id);
 
     if (exerciseLog) {
+      // ... (logic to add set to existing log)
       const existingSetIndex = exerciseLog.sets.findIndex(s => s.plannedSetId === loggedSet.plannedSetId);
       if (existingSetIndex > -1) {
         exerciseLog.sets[existingSetIndex] = loggedSet;
@@ -531,14 +514,15 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
         exerciseId: exerciseData.exerciseId,
         exerciseName,
         sets: [loggedSet],
-        rounds: exerciseData.rounds || 0,
         type: loggedSet.type || 'standard',
         supersetId: exerciseData.supersetId || null,
         supersetOrder: exerciseData.supersetOrder !== null ? exerciseData.supersetOrder : null,
         supersetSize: exerciseData.supersetSize || 0,
-        supersetRounds: exerciseData.supersetRounds || 0,
+        supersetRounds: exerciseData.supersetRounds,
+        // *** This `rounds` property should be removed ***
       };
-
+      // ... (logic to add new log to array)
+      const exerciseIndex = this.routine()?.exercises.findIndex(ex => ex.id === exerciseData.id);
       if (typeof exerciseIndex === 'number' && exerciseIndex >= 0 && exerciseIndex <= logs.length) {
         logs.splice(exerciseIndex, 0, newLog);
       } else {
@@ -600,11 +584,11 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
         continue;
       }
 
-      if (performedEx.sets.length !== originalEx.sets.length && performedEx.rounds !== originalEx.rounds) {
+      if (performedEx.sets.length !== originalEx.sets.length && performedEx.supersetRounds !== originalEx.supersetRounds) {
         if (performedEx.supersetId && originalEx.supersetId && performedEx.supersetId === originalEx.supersetId) {
           const originalFirstEx = original.find(ex => ex.supersetId && ex.supersetId === performedEx.supersetId);
           if (originalFirstEx) {
-            const originalRounds = originalFirstEx.rounds;
+            const originalRounds = originalFirstEx.supersetRounds;
             if (originalRounds === performedEx.sets.length) {
               continue;
             }
@@ -673,7 +657,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
         supersetId: sessionExercise?.supersetId || null,
         supersetOrder: sessionExercise?.supersetOrder ?? null,
         supersetSize: sessionExercise?.supersetSize ?? null,
-        rounds: sessionExercise?.rounds ?? 1,
+        rounds: sessionExercise?.supersetRounds ?? 1,
         notes: sessionExercise?.notes,
         sets: !loggedEx.supersetId ? loggedEx.sets.map(loggedSet => {
           const originalPlannedSet = sessionExercise?.sets.find(s => s.id === loggedSet.plannedSetId);
@@ -808,7 +792,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
 
     const currentExercise = routine.exercises[activeInfo.exerciseIndex];
 
-    if ((!currentExercise.supersetId && (!currentExercise.rounds || currentExercise.rounds <= 1))) {
+    if ((!currentExercise.supersetId && (!currentExercise.supersetRounds || currentExercise.supersetRounds <= 1))) {
       return this.checkIfLatestSetOfExercise();
     }
 
@@ -837,12 +821,12 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     const exercise = routine.exercises[activeInfo.exerciseIndex];
     if (!exercise) return false;
 
-    let totalRounds = exercise.rounds ?? 1;
+    let totalRounds = exercise.supersetRounds ?? 1;
     if (exercise.supersetId && exercise.supersetOrder !== null) {
       const blockStart = routine.exercises.find(
         ex => ex.supersetId === exercise.supersetId && ex.supersetOrder === 0
       );
-      totalRounds = blockStart?.rounds ?? 1;
+      totalRounds = blockStart?.supersetRounds ?? 1;
     }
 
     return this.currentBlockRound() === totalRounds;
@@ -850,24 +834,10 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
 
   checkIfSetIsPartOfRounds(): boolean {
     const activeInfo = this.activeSetInfo();
-    const routine = this.routine();
-    if (!activeInfo || !routine) return false;
+    if (!activeInfo) return false;
 
-    const exercise = routine.exercises[activeInfo.exerciseIndex];
-    if (!exercise) return false;
-
-    let totalRoundsForBlock = 1;
-
-    if (exercise.supersetId) {
-      const blockStart = routine.exercises.find(
-        ex => ex.supersetId === exercise.supersetId && ex.supersetOrder === 0
-      );
-      totalRoundsForBlock = blockStart?.rounds ?? 1;
-    } else {
-      totalRoundsForBlock = exercise.rounds ?? 1;
-    }
-
-    return totalRoundsForBlock > 1;
+    // Only supersets are treated as having multiple UI rounds in the player.
+    return !!activeInfo.exerciseData.supersetId;
   }
 
 
@@ -1060,10 +1030,10 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
         this.currentBlockRound.set(1);
         const newBlockStarter = updatedRoutine.exercises[selectedExerciseOriginalIndex];
         if (!newBlockStarter.supersetId || newBlockStarter.supersetOrder === 0) {
-          this.totalBlockRounds.set(newBlockStarter.rounds ?? 1);
+          this.totalBlockRounds.set(newBlockStarter.supersetRounds ?? 1);
         } else {
           const actualBlockStart = updatedRoutine.exercises.find(ex => ex.supersetId === newBlockStarter.supersetId && ex.supersetOrder === 0);
-          this.totalBlockRounds.set(actualBlockStart?.rounds ?? 1);
+          this.totalBlockRounds.set(actualBlockStart?.supersetRounds ?? 1);
         }
         this.lastPerformanceForCurrentExercise = null;
         this.playerSubState.set(PlayerSubState.PerformingSet);
@@ -1129,12 +1099,12 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       return false;
     }
 
-    let rounds = exercise.rounds ?? 1;
+    let rounds = exercise.supersetRounds ?? 1;
     if (exercise.supersetId && exercise.supersetOrder !== null) {
       const blockStart = routine.exercises.find(
         ex => ex.supersetId === exercise.supersetId && ex.supersetOrder === 0
       );
-      rounds = blockStart?.rounds ?? 1;
+      rounds = blockStart?.supersetRounds ?? 1;
     }
     const totalPlannedCompletions = (exercise.sets?.length ?? 0) * rounds;
 
@@ -1154,12 +1124,12 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
 
     if (!loggedEx) return false;
 
-    let rounds = exercise.rounds ?? 1;
+    let rounds = exercise.supersetRounds ?? 1;
     if (exercise.supersetId && exercise.supersetOrder !== null) {
       const blockStart = routine.exercises.find(
         ex => ex.supersetId === exercise.supersetId && ex.supersetOrder === 0
       );
-      rounds = blockStart?.rounds ?? 1;
+      rounds = blockStart?.supersetRounds ?? 1;
     }
 
     const totalPlannedCompletions = (exercise.sets?.length ?? 0) * rounds;
@@ -1241,7 +1211,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
         return false;
       }
 
-      const totalPlannedCompletions = (plannedExercise.sets?.length ?? 0) * (plannedExercise.rounds ?? 1);
+      const totalPlannedCompletions = (plannedExercise.sets?.length ?? 0) * (plannedExercise.supersetRounds ?? 1);
 
       return loggedExercise.sets.length >= totalPlannedCompletions;
     });
@@ -1724,10 +1694,10 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
 
   // Helper to get round info for an exercise (handles supersets)
   protected getRoundInfo(ex: WorkoutExercise): { round: number, totalRounds: number } {
-    let totalRounds = ex.rounds ?? 1;
+    let totalRounds = ex.supersetRounds ?? 1;
     if (ex.supersetId && ex.supersetOrder !== null) {
       const blockStart = this.routine()?.exercises.find(e => e.supersetId === ex.supersetId && e.supersetOrder === 0);
-      totalRounds = blockStart?.rounds ?? 1;
+      totalRounds = blockStart?.supersetRounds ?? 1;
     }
     // Use currentBlockRound signal for current, otherwise 1
     const round = this.currentBlockRound ? this.currentBlockRound() : 1;
@@ -1781,7 +1751,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     // Helper to check if an exercise is pending and not fully logged, considering rounds
     const isPendingAndNotLogged = (ex: WorkoutExercise, idx: number) => {
       const log = this.currentWorkoutLogExercises().find(le => le.exerciseId === ex.exerciseId && currentSessionRoutine.exercises[idx].id === ex.id);
-      const totalPlannedSets = (ex.sets?.length ?? 0) * (ex.rounds ?? 1);
+      const totalPlannedSets = (ex.sets?.length ?? 0) * (ex.supersetRounds ?? 1);
       const loggedSetsCount = log?.sets?.length ?? 0;
       return ex.sessionStatus === 'pending' && (loggedSetsCount < totalPlannedSets);
     };
@@ -2397,7 +2367,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       this.currentExerciseIndex.set(insertAtIndex);
       this.currentSetIndex.set(0);
       this.currentBlockRound.set(1);
-      this.totalBlockRounds.set(newWorkoutExercise.rounds ?? 1);
+      this.totalBlockRounds.set(newWorkoutExercise.supersetRounds ?? 1);
       this.lastPerformanceForCurrentExercise = null;
       this.isPerformingDeferredExercise = true; // Treat ad-hoc added as a "deferred" type choice contextually
       // this.lastActivatedDeferredExerciseId = newWorkoutExercise.id;
@@ -2421,7 +2391,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
         this.currentExerciseIndex.set(insertAtIndex);
         this.currentSetIndex.set(0);
         this.currentBlockRound.set(1);
-        this.totalBlockRounds.set(newWorkoutExercise.rounds ?? 1);
+        this.totalBlockRounds.set(newWorkoutExercise.supersetRounds ?? 1);
         this.lastPerformanceForCurrentExercise = null;
         this.isPerformingDeferredExercise = true; // Treat ad-hoc added as a "deferred" type choice contextually
         this.lastActivatedDeferredExerciseId = newWorkoutExercise.id;
@@ -2762,33 +2732,54 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
 
   toggleCompletedSetsInfo(): void { this.showCompletedSetsInfo.update(v => !v); }
   async openPerformanceInsights(): Promise<void> {
-    if (this.sessionState() === 'paused') { this.toastService.warning("Session is paused. Resume to view insights", 3000, "Paused"); return; }
+    if (this.sessionState() === 'paused') {
+      this.toastService.warning("Session is paused. Resume to view insights", 3000, "Paused");
+      return;
+    }
     this.isWorkoutMenuVisible.set(false);
 
     const routine = this.routine();
     if (!routine) return;
     const exercise = this.activeSetInfo()?.exerciseData;
     if (!exercise) return;
+
+    // Fetch historical data (this part was already correct, using exerciseId)
     const baseExercise$ = this.exerciseService.getExerciseById(exercise.exerciseId).pipe(take(1));
     const lastPerformance$ = this.trackingService.getLastPerformanceForExercise(exercise.exerciseId).pipe(take(1));
     const personalBests$ = this.trackingService.getAllPersonalBestsForExercise(exercise.exerciseId).pipe(take(1));
+
     try {
       const [baseExercise, lastPerformance, personalBests] = await Promise.all([
         lastValueFrom(baseExercise$),
         lastValueFrom(lastPerformance$),
         lastValueFrom(personalBests$)
       ]);
+
       if (!baseExercise) {
+        // Handle case where base exercise might not be found
         return;
       }
-      const completedSets = this.currentWorkoutLogExercises()?.find(e => e.id === exercise.id)?.sets || [];
-      this.insightsData.set({ exercise, baseExercise, lastPerformance, personalBests, completedSetsInSession: completedSets });
+
+      // *** THE CORE FIX IS HERE ***
+      // Instead of finding by the instance ID, filter all logged exercises by the base exerciseId
+      // and then flatten all their sets into a single array for display.
+      const allLoggedInstances = this.currentWorkoutLogExercises().filter(e => e.exerciseId === exercise.exerciseId);
+      const completedSetsInSession = allLoggedInstances.flatMap(e => e.sets);
+
+      this.insightsData.set({
+        exercise,
+        baseExercise,
+        lastPerformance,
+        personalBests,
+        completedSetsInSession // Use the new, correctly aggregated array
+      });
+
       this.isPerformanceInsightsVisible.set(true);
+
     } catch (error) {
       console.error("Failed to load performance insights:", error);
       this.toastService.error("Could not load performance data.");
     }
-
   }
 
   closePerformanceInsights(): void {
@@ -3156,10 +3147,10 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
 
           const firstEx = sessionRoutineCopy.exercises[firstPending.exerciseIndex];
           if (!firstEx.supersetId || firstEx.supersetOrder === 0) {
-            this.totalBlockRounds.set(firstEx.rounds ?? 1);
+            this.totalBlockRounds.set(firstEx.supersetRounds ?? 1);
           } else {
             const actualStart = sessionRoutineCopy.exercises.find(ex => ex.supersetId === firstEx.supersetId && ex.supersetOrder === 0);
-            this.totalBlockRounds.set(actualStart?.rounds ?? 1);
+            this.totalBlockRounds.set(actualStart?.supersetRounds ?? 1);
           }
         } else {
           console.log("loadNewWorkoutFromRoute: Routine loaded but no initial pending exercises. Will try deferred/finish");
@@ -3624,10 +3615,10 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     if (blockChanged) {
       const newBlockStarterExercise = currentSessionRoutine.exercises[nextExIdx];
       if (!newBlockStarterExercise.supersetId || newBlockStarterExercise.supersetOrder === 0) {
-        this.totalBlockRounds.set(newBlockStarterExercise.rounds ?? 1);
+        this.totalBlockRounds.set(newBlockStarterExercise.supersetRounds ?? 1);
       } else {
         const actualBlockStart = currentSessionRoutine.exercises.find(ex => ex.supersetId === newBlockStarterExercise.supersetId && ex.supersetOrder === 0);
-        this.totalBlockRounds.set(actualBlockStart?.rounds ?? 1);
+        this.totalBlockRounds.set(actualBlockStart?.supersetRounds ?? 1);
       }
     }
 
@@ -4188,10 +4179,10 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       // --- Rest of your logic is unchanged ---
       this.currentBlockRound.set(1);
       if (!exerciseToJumpTo.supersetId || exerciseToJumpTo.supersetOrder === 0) {
-        this.totalBlockRounds.set(exerciseToJumpTo.rounds ?? 1);
+        this.totalBlockRounds.set(exerciseToJumpTo.supersetRounds ?? 1);
       } else {
         const actualBlockStart = updatedRoutine.exercises.find(ex => ex.supersetId === exerciseToJumpTo.supersetId && ex.supersetOrder === 0);
-        this.totalBlockRounds.set(actualBlockStart?.rounds ?? 1);
+        this.totalBlockRounds.set(actualBlockStart?.supersetRounds ?? 1);
       }
       this.lastPerformanceForCurrentExercise = null;
       this.isPerformingDeferredExercise = wasDeferred;
@@ -4319,11 +4310,11 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     // If it's a superset, find the first exercise in that superset block
     if (exercise.supersetId) {
       const firstInSuperset = routine.exercises.find(ex => ex.supersetId === exercise.supersetId && ex.supersetOrder === 0);
-      return firstInSuperset?.rounds ?? 1;
+      return firstInSuperset?.supersetRounds ?? 1;
     }
 
     // If it's a standard exercise, use its own rounds property
-    return exercise.rounds ?? 1;
+    return exercise.supersetRounds ?? 1;
   }
 
   private getCurrentSetInfo(): ActiveSetInfo | null {
@@ -4408,7 +4399,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     this.isExerciseSwitchModalOpen.set(false);
   }
 
-   workoutProgress = computed(() => {
+  workoutProgress = computed(() => {
     const routine = this.routine();
     const log = this.currentWorkoutLogExercises();
 
@@ -4418,29 +4409,20 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
 
     let totalPlannedSets = 0;
 
-    // Iterate through all exercises in the routine
     routine.exercises.forEach(exercise => {
       if (exercise.supersetId) {
-        // This is a superset exercise. We only process the entire group 
-        // when we encounter the FIRST exercise to avoid double-counting.
+        // Only process a superset group ONCE, when we see the first exercise.
         if (exercise.supersetOrder === 0) {
-          // Find all exercises belonging to this superset group.
           const groupExercises = routine.exercises.filter(ex => ex.supersetId === exercise.supersetId);
-          
-          // Calculate the total number of sets in ONE round of this superset.
           const setsInOneRound = groupExercises.reduce((sum, ex) => sum + ex.sets.length, 0);
-          
-          // The number of rounds is defined on the first exercise of the superset.
-          const totalRounds = exercise.rounds || 1;
-          
-          // Add the total sets for all rounds of this superset to our count.
+          // *** FIX: Use `supersetRounds` for supersets, not `rounds`. ***
+          const totalRounds = exercise.supersetRounds || 1;
           totalPlannedSets += setsInOneRound * totalRounds;
         }
-        // If supersetOrder > 0, we do nothing because it was already counted with the first exercise.
       } else {
-        // This is a standard, non-superset exercise.
-        const totalRounds = exercise.rounds || 1;
-        totalPlannedSets += exercise.sets.length * totalRounds;
+        // For standard exercises, the total is simply the number of sets in its array.
+        // We IGNORE the `rounds` property for this calculation to match the UI.
+        totalPlannedSets += exercise.sets.length;
       }
     });
 
@@ -4448,10 +4430,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       return 0;
     }
 
-    // The number of completed sets is simply the length of all logged sets across all exercises.
     const totalCompletedSets = log.reduce((total, ex) => total + ex.sets.length, 0);
-
-    // Ensure we don't divide by zero or get a number greater than 100
     return Math.min(100, (totalCompletedSets / totalPlannedSets) * 100);
   });
 
@@ -4562,6 +4541,21 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     this.isWorkoutMenuVisible.set(!this.isWorkoutMenuVisible());
   }
 
+  isSuperSet(index: number): boolean {
+    const exercises = this.routine()?.exercises;
+    if (!exercises) return false;
+    const ex = exercises[index];
+    if (!ex?.supersetId) return false;
+    return true;
+  }
+
+  private isSupersetPartiallyLogged(supersetId: string): boolean {
+    const routine = this.routine();
+    if (!routine) return false;
+
+    const exercisesInGroup = routine.exercises.filter(ex => ex.supersetId === supersetId);
+    return exercisesInGroup.some(ex => this.getNumberOfLoggedSets(ex.id) > 0);
+  }
 
   readonly canJumpToOtherExercise = computed<boolean>(() => {
     const routine = this.routine();
@@ -4570,60 +4564,107 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       return false;
     }
 
-    const currentSupersetId = activeInfo.exerciseData.supersetId;
-    if (!currentSupersetId) {
-      // Not in a superset, can jump if there's more than one exercise.
-      return true;
+    const currentExercise = activeInfo.exerciseData;
+    const currentSupersetId = currentExercise.supersetId;
+
+    // NEW RULE: If the current exercise is in a superset that has been started, disable jumping.
+    if (currentSupersetId && this.isSupersetPartiallyLogged(currentSupersetId)) {
+      return false;
     }
 
-    // In a superset, check if there are any exercises that are NOT in this superset.
-    return routine.exercises.some(ex => ex.supersetId !== currentSupersetId);
+    // Otherwise (for standard exercises or un-started supersets),
+    // check if there are any *other* viable places to jump to.
+    // A viable place is another exercise or superset group that is not yet fully logged.
+    const processedSupersetIds = new Set<string>();
+
+    return routine.exercises.some(ex => {
+      if (ex.supersetId) {
+        // Skip the current superset group entirely from consideration.
+        if (ex.supersetId === currentSupersetId) {
+          return false;
+        }
+
+        // If we've already evaluated this superset group, skip it.
+        if (processedSupersetIds.has(ex.supersetId)) {
+          return false;
+        }
+
+        processedSupersetIds.add(ex.supersetId);
+
+        // Check if this entire other superset group is fully logged.
+        const group = routine.exercises.filter(e => e.supersetId === ex.supersetId);
+        const isGroupFullyLogged = group.every(eInGroup => this.isExerciseFullyLogged(eInGroup));
+
+        // We can jump to this group if it's NOT fully logged.
+        return !isGroupFullyLogged;
+      } else {
+        // For standard exercises, check if it's not the current one and not fully logged.
+        return ex.id !== currentExercise.id && !this.isExerciseFullyLogged(ex);
+      }
+    });
   });
+
+  retrieveSuperSetID(exIndex: number): string {
+    const exercises = this.routine()?.exercises;
+    if (!exercises) return '';
+    const ex = exercises[exIndex];
+    if (ex.supersetId) return ex.supersetId;
+    return '';
+  }
 
   actionItems = computed<ActionMenuItem[]>(() => {
     const actionsArray: ActionMenuItem[] = [];
-    const activeInfo = this.activeSetInfo(); // Dependency
-    const routine = this.routine(); // Dependency
-    const workoutLog = this.currentWorkoutLogExercises(); // Dependency
+    const activeInfo = this.activeSetInfo();
+    const routine = this.routine();
+    const workoutLog = this.currentWorkoutLogExercises();
 
     // Always add PAUSE
     actionsArray.push(pauseSessionBtn);
 
     // Add INSIGHTS if any sets have been logged
     if (workoutLog.length > 0) {
-      actionsArray.push(openPerformanceInsightsBtn);
+      actionsArray.push(openExercisePerformanceInsightsBtn);
     }
 
     // Always add ADD EXERCISE
     actionsArray.push(addExerciseBtn);
 
-    // Add SWITCH if the current exercise can be switched
-    if (this.canSwitchExercise()) { // Uses the updated computed signal
+    if (this.canSwitchExercise()) {
       actionsArray.push(switchExerciseBtn);
     }
 
-    // Add JUMP TO if there are other exercises/groups to jump to
-    if (this.canJumpToOtherExercise()) { // Uses the new computed signal
+    if (this.canJumpToOtherExercise()) {
       actionsArray.push(jumpToExerciseBtn);
     }
 
-    // Add WARMUP if allowed for the current set
-    if (!this.checkIfSuperSetIsStarted() && this.canAddWarmupSet()) {
-      actionsArray.push(addWarmupSetBtn);
-    }
 
     // Add SKIP SET/EXERCISE/DO LATER if there is an active set
     if (activeInfo) {
+
+      // Add WARMUP if allowed for the current set
+      const superSetId = this.retrieveSuperSetID(activeInfo?.exerciseIndex);
+      if ((this.isSuperSet(activeInfo?.exerciseIndex) && !this.isSupersetPartiallyLogged(superSetId)) && this.canAddWarmupSet()) {
+        actionsArray.push(addWarmupSetBtn);
+      }
+
       const isSuperset = !!activeInfo.exerciseData.supersetId;
+      const isSupersetStarted = isSuperset && this.isSupersetPartiallyLogged(activeInfo.exerciseData.supersetId!);
+
       const skipSetBtnLabel = isSuperset ? 'Skip Round' : 'Skip Set';
       const skipExBtnLabel = isSuperset ? 'Skip Superset' : 'Skip Exercise';
 
-      // Create copies of button configs and override labels
-      if (!isSuperset) {
+      const canSkipExercise = !isSuperset || !isSupersetStarted;
+      if (canSkipExercise) {
+        if (!this.isExercisePartiallyLogged(activeInfo?.exerciseData)){
+          actionsArray.push({ ...skipCurrentExerciseBtn, label: skipExBtnLabel });
+        }
         actionsArray.push({ ...skipCurrentSetBtn, label: skipSetBtnLabel });
-        actionsArray.push({ ...skipCurrentExerciseBtn, label: skipExBtnLabel });
       }
-      actionsArray.push(markAsDoLaterBtn);
+
+      // Only show "Do Later" if the superset hasn't been started yet
+      if (!isSupersetStarted && !this.isExercisePartiallyLogged(activeInfo?.exerciseData)) {
+        actionsArray.push(markAsDoLaterBtn);
+      }
     }
 
     // Add FINISH EARLY if any sets have been logged
@@ -4636,7 +4677,10 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       const { exerciseData } = activeInfo;
       // Add REMOVE FROM SUPERSET if the current exercise is in one
       if (exerciseData.supersetId) {
-        actionsArray.push({ ...removeFromSuperSetBtn, data: { exIndex: activeInfo.exerciseIndex } } as ActionMenuItem);
+        // Only allow removing from superset if no sets in that group have been logged
+        if (!this.isSupersetPartiallyLogged(exerciseData.supersetId)) {
+          actionsArray.push({ ...removeFromSuperSetBtn, data: { exIndex: activeInfo.exerciseIndex } } as ActionMenuItem);
+        }
       } else {
         // Add ADD TO and CREATE SUPERSET if conditions are met
         if (routine && routine.exercises.length >= 2) {
@@ -4663,7 +4707,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       case 'jumpToExercise': this.jumpToExercise(); break;
       case 'addExercise': this.addExerciseDuringSession(); break;
       case 'switchExercise': this.openSwitchExerciseModal(); break;
-      case 'insight': this.openPerformanceInsightsFromMenu(); break;
+      case 'exerciseInsights': this.openPerformanceInsightsFromMenu(); break;
       case 'warmup': this.addWarmupSet(); break;
       case 'skipSet': this.skipCurrentSet(); break;
       case 'skipExercise': this.skipCurrentExercise(); break;
@@ -4804,31 +4848,5 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       this.currentWorkoutLogExercises.set(result.updatedLoggedExercises);
       this.savePausedSessionState();
     }
-  }
-
-  private async applyIntensityAdjustment(routine: Routine, percentage: number, direction: 'increase' | 'decrease'): Promise<Routine> {
-    const adjustedRoutine = JSON.parse(JSON.stringify(routine)) as Routine;
-    const multiplier = direction === 'increase' ? 1 + (percentage / 100) : 1 - (percentage / 100);
-
-    adjustedRoutine.exercises.forEach(ex => {
-      // This adjustment only applies to exercises from the original routine,
-      // which is what this method receives.
-      ex.sets.forEach(set => {
-        if (set.weight !== null && set.weight !== undefined) {
-          // Round to nearest 0.25 for weights
-          set.weight = Math.round((set.weight * multiplier) * 4) / 4;
-          if (set.weight < 0) set.weight = 0;
-        }
-        if (set.reps) {
-          set.reps = Math.round(set.reps * multiplier);
-          if (set.reps < 0) set.reps = 0;
-        }
-        if (set.duration) {
-          set.duration = Math.round(set.duration * multiplier);
-          if (set.duration < 0) set.duration = 0;
-        }
-      });
-    });
-    return adjustedRoutine;
   }
 }

@@ -7,12 +7,11 @@ import { StorageService } from '../../../core/services/storage.service';
 import { AlertService } from '../../../core/services/alert.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { WorkoutService } from '../../../core/services/workout.service';
-import { PausedWorkoutState } from '../../workout-tracker/workout-player';
 import { UserProfileService } from '../../../core/services/user-profile.service';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { AlertButton } from '../../../core/models/alert.model';
 import { Subscription } from 'rxjs';
-import { WorkoutExercise } from '../../../core/models/workout.model';
+import { PausedWorkoutState, WorkoutExercise } from '../../../core/models/workout.model';
 import { SubscriptionService } from '../../../core/services/subscription.service';
 
 
@@ -146,7 +145,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       const exercisesAvailable = pausedInfo.sessionRoutine && pausedInfo.sessionRoutine.exercises ? pausedInfo.sessionRoutine.exercises.length : 0;
       const exercisesDone = pausedInfo.currentWorkoutLogExercises?.length || 0;
       const setsDone = pausedInfo.currentWorkoutLogExercises?.reduce((acc, ex) => acc + ex.sets.length, 0);
-      const targetSets = pausedInfo.originalRoutineSnapshot && pausedInfo.originalRoutineSnapshot['exercises'] ? pausedInfo.originalRoutineSnapshot['exercises'].reduce((acc: number, ex: WorkoutExercise) => acc + ex.sets.length, 0) : null;
+      const targetSets = pausedInfo.originalWorkoutExercises && pausedInfo.originalWorkoutExercises['exercises'] ? pausedInfo.originalWorkoutExercises['exercises'].reduce((acc: number, ex: WorkoutExercise) => acc + ex.sets.length, 0) : null;
       const timeElapsed = new Date(pausedInfo.sessionTimerElapsedSecondsBeforePause * 1000).toISOString().slice(11, 19);
 
       this.alertService.showAlert(

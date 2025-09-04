@@ -103,12 +103,12 @@
             <span *ngIf="activeSet.type !== 'warmup'">
               Set {{ getCurrentWorkingSetNumber() }}/{{ getWorkingSetCountForCurrentExercise() }}
             </span>
-            <span *ngIf="totalBlockRounds() > 1 && currentBlockRound() > 0" class="ml-2">
-              (Round {{currentBlockRound()}}/{{totalBlockRounds()}})
-            </span>
             <span *ngIf="activeSet.exerciseData.supersetId" class="ml-2 text-purple-500 dark:text-purple-400 italic">
-              (Superset {{ (activeSet.exerciseData.supersetOrder ?? 0) + 1 }}/{{activeSet.exerciseData.supersetSize ??
+              (Superset ex. {{ (activeSet.exerciseData.supersetOrder ?? 0) + 1 }}/{{activeSet.exerciseData.supersetSize ??
               '?'}})
+            </span>
+            <span *ngIf="totalBlockRounds() > 1 && currentBlockRound() > 0" class="ml-2">
+              [Round {{currentBlockRound()}}/{{totalBlockRounds()}}]
             </span>
           </p>
         </div>
@@ -500,8 +500,11 @@
   (close)="closeSwitchExerciseModal()">
 </app-exercise-selection-modal>
 
-<app-session-overview-modal [isOpen]="isSessionOverviewVisible()" [routine]="routine()"
-  [loggedExercises]="currentWorkoutLogExercises()" (close)="closeSessionOverviewModal()">
+<app-session-overview-modal
+  [isOpen]="isSessionOverviewVisible()"
+  [routineSignal]="routine"
+  [loggedExercisesSignal]="currentWorkoutLogExercises"
+  (close)="closeSessionOverviewModal()">
 </app-session-overview-modal>
 
 

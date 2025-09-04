@@ -1,7 +1,12 @@
 <!-- src/app/shared/components/tabata-workout-player/tabata-workout-player.component.html -->
 
 <ng-container *ngIf="routine() as currentRoutine">
-  <div class="tabata-player">
+  <!-- 
+    +++ CHANGE 1: ADDED [ngClass] +++
+    The 'animate-flash' class will now be applied to the entire component
+    whenever the sessionState signal is 'paused'.
+  -->
+  <div class="tabata-player" [ngClass]="{'animate-flash': sessionState() === 'paused'}">
     <ng-container *ngIf="currentTabataInterval() as interval">
 
       <!-- Background with transition -->
@@ -91,3 +96,25 @@
     </ng-container>
   </div>
 </ng-container>
+
+<!-- 
+  +++ CHANGE 2: ADDED <style> BLOCK +++
+  This CSS defines the keyframe animation for the flashing effect.
+  It will be scoped to this component.
+-->
+<style>
+  .animate-flash {
+    /* Apply the animation here. 1.5s is a good, noticeable duration. */
+    animation: flash-background 1.5s infinite ease-in-out;
+  }
+
+  @keyframes flash-background {
+    /* The animation will cycle between full opacity and 70% opacity */
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.7;
+    }
+  }
+</style>

@@ -55,8 +55,6 @@ export function mapLoggedExercisesToRoutineSnapshot(
             sets: mappedSets,
             notes: loggedEx.notes,
             type: loggedEx.type,
-            rounds: loggedEx.rounds || 1,
-
             // Map superset properties
             supersetId: loggedEx.supersetId || null,
             supersetOrder: loggedEx.supersetOrder ?? null,
@@ -102,7 +100,6 @@ export function mapRoutineSnapshotToLoggedExercises(
             sets: [],
 
             notes: planExercise.notes,
-            rounds: planExercise.rounds || 1,
             type: planExercise.type,
 
             // Directly map all superset properties from the plan to the log structure.

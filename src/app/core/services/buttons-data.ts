@@ -54,9 +54,17 @@ export const switchExerciseBtn = {
     buttonClass: 'hover:bg-cyan-600',
 } as ActionMenuItem;
 
-export const openPerformanceInsightsBtn = {
+export const openSessionPerformanceInsightsBtn = {
     label: 'Session insight',
-    actionKey: 'insight',
+    actionKey: 'insights',
+    iconName: `schedule`,
+    iconClass: 'w-8 h-8 mr-2',
+    buttonClass: ' hover:bg-green-600 ',
+} as ActionMenuItem;
+
+export const openExercisePerformanceInsightsBtn = {
+    label: 'Exercise insights',
+    actionKey: 'exerciseInsights',
     iconName: `schedule`,
     iconClass: 'w-8 h-8 mr-2',
     buttonClass: ' hover:bg-green-600 ',
@@ -182,6 +190,26 @@ export const removeExerciseBtn = {
 
 export const addSetToExerciseBtn = {
     label: 'Add Set', actionKey: 'add_set',
+    iconName: [
+        { name: 'dumbbell' },
+        {
+            name: 'none',
+            display: 'filled-padded',
+            class: 'bg-white dark:bg-gray-800'
+
+        },
+        {
+            name: 'plus-circle',
+            class: 'text-primary',
+            strokeWidth: 3,
+        }
+    ],
+    buttonClass: ' hover:bg-teal-800 ',
+    iconClass: 'w-8 h-8 mr-2'
+}
+
+export const addRoundToExerciseBtn = {
+    label: 'Add Round', actionKey: 'add_round',
     iconName: [
         { name: 'dumbbell' },
         {

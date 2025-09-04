@@ -230,7 +230,7 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
           supersetRoundData[ex.supersetId] = {
             firstOccurrenceIndex: index,
             instanceCount: 0,
-            totalRoundsFromData: ex.rounds // Assuming 'rounds' on LoggedWorkoutExercise might mean total rounds for that superset instance
+            totalRoundsFromData: ex.supersetRounds ? ex.supersetRounds : ex.sets.length // Assuming 'rounds' on LoggedWorkoutExercise might mean total rounds for that superset instance
           };
         }
         if (ex.supersetOrder === 0) { // Count each time a superset starts

@@ -38,7 +38,6 @@ import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { AlertButton } from '../../../core/models/alert.model';
 import { ActivityLog } from '../../../core/models/activity-log.model';
 import { ActivityService } from '../../../core/services/activity.service';
-import { PausedWorkoutState } from '../../workout-tracker/workout-player';
 import { StorageService } from '../../../core/services/storage.service';
 import { AppSettingsService } from '../../../core/services/app-settings.service';
 import { MenuMode } from '../../../core/models/app-settings.model';

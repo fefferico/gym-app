@@ -2,7 +2,6 @@
 import { Routes } from '@angular/router';
 import { RoutineListComponent } from './routine-list';
 import { WorkoutBuilderComponent } from './workout-builder'; // This now serves multiple purposes
-import { WorkoutPlayerComponent } from './workout-player';
 import { WorkoutSummaryComponent } from './workout-summary/workout-summary';
 import { KettleBellWorkoutTrackerComponent } from '../../kb-workout-tracker/kb-workout-tracker';
 import { CompactWorkoutPlayerComponent } from './compact-workout-player/compact-workout-player.component';
@@ -62,13 +61,13 @@ export const WORKOUT_TRACKER_ROUTES: Routes = [
   // --- Player and Summary Routes ---
   {
     path: 'play',
-    component: WorkoutPlayerComponent,
+    component: CompactWorkoutPlayerComponent,
     data: { mode: 'newRoutine', isNew: false,showPausedWorkoutBanner: false, shouldShowNavigationBanner: false },
     title: 'Workout Session'
   },
   {
     path: 'play/:routineId',
-    component: WorkoutPlayerComponent,
+    component: CompactWorkoutPlayerComponent,
     title: 'Workout Session',
     data: { showPausedWorkoutBanner: false}
   },

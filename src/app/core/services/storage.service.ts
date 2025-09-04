@@ -1,7 +1,7 @@
 import { Injectable, Inject, PLATFORM_ID, inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { AlertService } from './alert.service';
-import { PausedWorkoutState } from '../../features/workout-tracker/workout-player';
+import { PausedWorkoutState } from '../models/workout.model';
 
 @Injectable({
   providedIn: 'root',
