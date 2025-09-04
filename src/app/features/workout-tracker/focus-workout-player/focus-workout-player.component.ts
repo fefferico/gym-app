@@ -1680,10 +1680,12 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       durationToLog = activeInfo.setData.duration;
     }
 
+    const isMultiRound = this.checkIfSetIsPartOfRounds();
+
     const loggedSetData: LoggedSet = {
       id: uuidv4(),
       exerciseName: activeInfo.exerciseData.exerciseName,
-      plannedSetId: (activeInfo.exerciseData && activeInfo.exerciseData.supersetId)
+      plannedSetId: isMultiRound
         ? `${activeInfo.setData.id}-round-${this.getIndexedCurrentBlock()}`
         : activeInfo.setData.id,
       exerciseId: activeInfo.exerciseData.exerciseId,
@@ -1699,7 +1701,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       targetRestAfterSet: activeInfo.setData.restAfterSet,
       notes: formValues.setNotes?.trim() || undefined,
       timestamp: new Date().toISOString(),
-      supersetCurrentRound: this.checkIfSetIsPartOfRounds() ? this.getIndexedCurrentBlock() : 0
+      supersetCurrentRound: isMultiRound ? this.getIndexedCurrentBlock() : undefined
     };
     this.addLoggedSetToCurrentLog(activeInfo.exerciseData, loggedSetData);
 
@@ -4406,14 +4408,51 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     this.isExerciseSwitchModalOpen.set(false);
   }
 
-  workoutProgress = computed(() => {
+   workoutProgress = computed(() => {
     const routine = this.routine();
     const log = this.currentWorkoutLogExercises();
-    if (!routine || routine.exercises.length === 0) return 0;
-    const totalPlannedSets = routine.exercises.reduce((total, ex) => total + ex.sets.length, 0);
-    if (totalPlannedSets === 0) return 0;
-    const totalCompletedSets = log?.reduce((total, ex) => total + (ex.sets ? ex.sets.length : 0), 0) ?? 0;
-    return (totalCompletedSets / totalPlannedSets) * 100;
+
+    if (!routine || routine.exercises.length === 0) {
+      return 0;
+    }
+
+    let totalPlannedSets = 0;
+
+    // Iterate through all exercises in the routine
+    routine.exercises.forEach(exercise => {
+      if (exercise.supersetId) {
+        // This is a superset exercise. We only process the entire group 
+        // when we encounter the FIRST exercise to avoid double-counting.
+        if (exercise.supersetOrder === 0) {
+          // Find all exercises belonging to this superset group.
+          const groupExercises = routine.exercises.filter(ex => ex.supersetId === exercise.supersetId);
+          
+          // Calculate the total number of sets in ONE round of this superset.
+          const setsInOneRound = groupExercises.reduce((sum, ex) => sum + ex.sets.length, 0);
+          
+          // The number of rounds is defined on the first exercise of the superset.
+          const totalRounds = exercise.rounds || 1;
+          
+          // Add the total sets for all rounds of this superset to our count.
+          totalPlannedSets += setsInOneRound * totalRounds;
+        }
+        // If supersetOrder > 0, we do nothing because it was already counted with the first exercise.
+      } else {
+        // This is a standard, non-superset exercise.
+        const totalRounds = exercise.rounds || 1;
+        totalPlannedSets += exercise.sets.length * totalRounds;
+      }
+    });
+
+    if (totalPlannedSets === 0) {
+      return 0;
+    }
+
+    // The number of completed sets is simply the length of all logged sets across all exercises.
+    const totalCompletedSets = log.reduce((total, ex) => total + ex.sets.length, 0);
+
+    // Ensure we don't divide by zero or get a number greater than 100
+    return Math.min(100, (totalCompletedSets / totalPlannedSets) * 100);
   });
 
   /**
