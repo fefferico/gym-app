@@ -17,6 +17,11 @@ import { WeightUnitPipe } from "../../../../shared/pipes/weight-unit-pipe";
 export class ExerciseOverviewItemComponent {
   @Input() exercise!: WorkoutExercise;
     @Input() loggedExercises!: LoggedWorkoutExercise[];
+    @Input() activeExerciseId: string | undefined;
+
+    isCurrent = computed<boolean>(() => {
+        return this.exercise.id === this.activeExerciseId;
+    });
 
     // CORRECTED: This logic now strictly separates superset rounds from standard set lists.
     roundInfo = computed(() => {
@@ -63,6 +68,27 @@ export class ExerciseOverviewItemComponent {
     
     getLoggedSetsForDisplay(exerciseId: string): LoggedSet[] {
         return this.loggedExercises.find(le => le.id === exerciseId)?.sets ?? [];
+    }
+
+    getSetStatusIndicatorClass(plannedSetId: string, roundIndex: number): { class: string, title: string } {
+        const isSetLogged = !!this.getLoggedSetFor(plannedSetId, roundIndex);
+
+        if (isSetLogged) {
+            return { class: 'bg-green-500', title: 'Completed' };
+        }
+
+        if (this.isCurrent()) {
+            return { class: 'bg-blue-500', title: 'Current' };
+        }
+
+        switch (this.exercise.sessionStatus) {
+            case 'skipped':
+                return { class: 'bg-yellow-500', title: 'Skipped' };
+            case 'do_later':
+                return { class: 'bg-orange-500', title: 'Do Later' };
+            default:
+                return { class: 'bg-gray-300 dark:bg-gray-600', title: 'Pending' };
+        }
     }
 
     formatSet(set: ExerciseSetParams | LoggedSet | undefined, isPerformed = false): string {

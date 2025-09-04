@@ -27,7 +27,7 @@ type DisplayGroup = StandardExerciseGroup | SupersetGroup;
   templateUrl: 'session-overview-modal.component.html'
 })
 export class SessionOverviewModalComponent {
-   @Input() isOpen: boolean = false;
+  @Input() isOpen: boolean = false;
   // CORRECTED: Remove the old, non-signal inputs
   // @Input() routine: Routine | undefined | null = undefined;
   // @Input() loggedExercises: LoggedWorkoutExercise[] = [];
@@ -35,12 +35,13 @@ export class SessionOverviewModalComponent {
   // Use signals for reactive data flow from the parent component
   @Input() routineSignal: Signal<Routine | null | undefined> = computed(() => undefined);
   @Input() loggedExercisesSignal: Signal<LoggedWorkoutExercise[]> = computed(() => []);
+  @Input() activeExerciseId: string | undefined;
   @Output() close = new EventEmitter<void>();
 
   groupedExercises = computed<DisplayGroup[]>(() => {
-    const routine = this.routineSignal(); 
+    const routine = this.routineSignal();
     if (!routine) return [];
-    
+
     // ... rest of the method is correct
     const displayGroups: DisplayGroup[] = [];
     const processedSupersetIds = new Set<string>();
@@ -51,7 +52,7 @@ export class SessionOverviewModalComponent {
           const groupExercises = routine.exercises
             .filter(ex => ex.supersetId === exercise.supersetId)
             .sort((a, b) => (a.supersetOrder ?? 0) - (b.supersetOrder ?? 0));
-          
+
           displayGroups.push({ type: 'superset', exercises: groupExercises, supersetId: exercise.supersetId });
           processedSupersetIds.add(exercise.supersetId);
         }

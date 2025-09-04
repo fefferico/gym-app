@@ -1240,7 +1240,6 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     console.log(`prepareCurrentSet: Initial target - exIndex: ${exIndex}, sIndex: ${sIndex}, sessionStatus: ${sessionRoutine.exercises[exIndex]?.sessionStatus}`);
 
     if (sessionRoutine.exercises[exIndex]?.sessionStatus !== 'pending') {
-      console.log(`prepareCurrentSet: Initial target Ex ${exIndex} (name: ${sessionRoutine.exercises[exIndex]?.exerciseName}) is ${sessionRoutine.exercises[exIndex]?.sessionStatus}. Finding first 'pending'`);
       const firstPendingInfo = this.findFirstPendingExerciseAndSet(sessionRoutine);
 
       if (firstPendingInfo) {
@@ -1248,11 +1247,10 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
         sIndex = firstPendingInfo.setIndex;
         this.currentExerciseIndex.set(exIndex);
         this.currentSetIndex.set(sIndex);
+        // +++ ADD THIS LINE TO UPDATE THE ROUND +++
+        this.currentBlockRound.set(firstPendingInfo.round); 
         this.isPerformingDeferredExercise = false;
-        console.log(`prepareCurrentSet: Found first pending - exIndex: ${exIndex} (name: ${sessionRoutine.exercises[exIndex]?.exerciseName}), sIndex: ${sIndex}`);
       } else {
-        console.log("prepareCurrentSet: No 'pending' exercises found in the entire routine. Proceeding to deferred/finish evaluation");
-        this.exercisesProposedThisCycle = { doLater: false, skipped: false };
         await this.tryProceedToDeferredExercisesOrFinish(sessionRoutine);
         return;
       }
@@ -1416,25 +1414,46 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
   }
 
 
-  private findFirstPendingExerciseAndSet(routine: Routine): { exerciseIndex: number; setIndex: number } | null {
+  private findFirstPendingExerciseAndSet(routine: Routine): { exerciseIndex: number; setIndex: number; round: number } | null {
     if (!routine || !routine.exercises) return null;
-    for (let i = 0; i < routine.exercises.length; i++) {
-      const exercise = routine.exercises[i];
-      if (exercise.sessionStatus === 'pending' && exercise.sets && exercise.sets.length > 0) {
-        const firstUnloggedSetIdx = this.findFirstUnloggedSetIndex(exercise.id, exercise.sets.map(s => s.id)) ?? 0;
-        // Ensure firstUnloggedSetIdx is valid
-        if (firstUnloggedSetIdx < exercise.sets.length) {
-          return { exerciseIndex: i, setIndex: firstUnloggedSetIdx };
-        } else {
-          // This case means all sets are logged, but exercise is still 'pending' - shouldn't happen if logic is correct elsewhere.
-          // Or exercise has sets but findFirstUnloggedSetIndex returned null unexpectedly.
-          console.warn(`Exercise ${exercise.exerciseName} is pending, but all sets appear logged or index is invalid`);
-          // To be safe, we could mark it as non-pending here or let outer logic handle it.
-          // For now, just continue searching.
+
+    for (let exIndex = 0; exIndex < routine.exercises.length; exIndex++) {
+      const exercise = routine.exercises[exIndex];
+
+      if (exercise.sessionStatus !== 'pending' || !exercise.sets || exercise.sets.length === 0) {
+        continue;
+      }
+
+      const loggedEx = this.currentWorkoutLogExercises().find(le => le.id === exercise.id);
+      const loggedSetIds = new Set(loggedEx?.sets.map(s => s.plannedSetId));
+      
+      const totalRounds = exercise.supersetId ? (exercise.supersetRounds || 1) : (exercise.rounds || 1);
+
+      for (let round = 0; round < totalRounds; round++) {
+        for (let setIdx = 0; setIdx < exercise.sets.length; setIdx++) {
+          const plannedSet = exercise.sets[setIdx];
+          
+          // Construct the unique ID for this set instance in this specific round
+          const targetLoggedId = totalRounds > 1 ? `${plannedSet.id}-round-${round}` : plannedSet.id;
+          
+          if (!loggedSetIds.has(targetLoggedId)) {
+            // We found the first unlogged set. Now, determine the correct starting exercise index.
+            if (exercise.supersetId) {
+              // For a superset, we must always start at the first exercise of the incomplete round.
+              const firstInGroupIndex = routine.exercises.findIndex(e => e.supersetId === exercise.supersetId && e.supersetOrder === 0);
+              if (firstInGroupIndex !== -1) {
+                return { exerciseIndex: firstInGroupIndex, setIndex: 0, round: round + 1 };
+              }
+            }
+            
+            // For a standard exercise, we start at the exercise itself.
+            return { exerciseIndex: exIndex, setIndex: setIdx, round: round + 1 };
+          }
         }
       }
     }
-    return null;
+
+    return null; // All pending exercises are fully logged.
   }
 
 
@@ -1892,43 +1911,44 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
 
   private async loadStateFromPausedSession(state: PausedWorkoutState): Promise<void> {
     this.routineId = state.routineId;
-    this.routine.set(state.sessionRoutine); // This routine has sessionStatus populated
+    this.routine.set(state.sessionRoutine);
+    this.originalRoutineSnapshot = state.originalWorkoutExercises ? JSON.parse(JSON.stringify(state.originalWorkoutExercises)) : null;
 
+    // Load the log data first, as it's crucial for finding the next unlogged set
     if (state.currentWorkoutLogExercises && state.currentWorkoutLogExercises.length > 0) {
       this.currentWorkoutLogExercises.set(state.currentWorkoutLogExercises);
     } else {
       this.currentWorkoutLogExercises.set([]);
     }
 
-    // --- NEW: Check if the resumed session is already fully logged ---
-    if (this.isEntireWorkoutFullyLogged(state.sessionRoutine, state.currentWorkoutLogExercises)) {
-      console.log("Paused session is already fully logged. Transitioning directly to finish flow");
-      this.sessionState.set(SessionState.End); // Set state to prevent other actions
-      await this.tryProceedToDeferredExercisesOrFinish(state.sessionRoutine);
-      return; // Stop further execution of this method
-    }
-    // --- END NEW CHECK ---
+    // --- NEW: INTELLIGENT RESUME LOGIC ---
+    // Find the first exercise that is not fully logged yet.
+    const firstUnfinishedInfo = this.findFirstPendingExerciseAndSet(state.sessionRoutine);
 
-    if (state.sessionRoutine) {
-      this.originalRoutineSnapshot = JSON.parse(JSON.stringify(state.sessionRoutine));
-    } else if (state.originalWorkoutExercises) {
-      this.originalRoutineSnapshot = {
-        id: '-1',
-        name: 'Custom session',
-        exercises: JSON.parse(JSON.stringify(state.originalWorkoutExercises))
-      };
+    if (firstUnfinishedInfo) {
+      // The helper now provides the definitive starting point.
+      this.currentExerciseIndex.set(firstUnfinishedInfo.exerciseIndex);
+      this.currentSetIndex.set(firstUnfinishedInfo.setIndex);
+      this.currentBlockRound.set(firstUnfinishedInfo.round);
     } else {
-      this.originalRoutineSnapshot = null;
+      // All sets are logged; proceed to finish flow.
+      this.sessionState.set(SessionState.End);
+      await this.tryProceedToDeferredExercisesOrFinish(state.sessionRoutine);
+      return;
     }
 
-    this.currentExerciseIndex.set(state.currentExerciseIndex);
-    this.currentSetIndex.set(state.currentSetIndex);
-
+    // Restore timers and other state properties
     this.workoutStartTime = Date.now();
     this.sessionTimerElapsedSecondsBeforePause = state.sessionTimerElapsedSecondsBeforePause;
 
-    this.currentBlockRound.set(state.currentBlockRound);
-    this.totalBlockRounds.set(state.totalBlockRounds);
+    // Set totalBlockRounds based on the determined starting exercise
+    const startingExercise = state.sessionRoutine.exercises[this.currentExerciseIndex()];
+    if (startingExercise.supersetId) {
+        const blockStart = state.sessionRoutine.exercises.find(ex => ex.supersetId === startingExercise.supersetId && ex.supersetOrder === 0);
+        this.totalBlockRounds.set(blockStart?.supersetRounds || 1);
+    } else {
+        this.totalBlockRounds.set(startingExercise.rounds || 1);
+    }
 
     if (state.timedSetTimerState) {
       this.timedSetTimerState.set(state.timedSetTimerState);
@@ -1936,27 +1956,27 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     if (state.timedSetElapsedSeconds) {
       this.timedSetElapsedSeconds.set(state.timedSetElapsedSeconds);
     }
+
+    // ... (rest of the state restoration logic remains the same) ...
     this.wasTimedSetRunningOnPause = state.timedSetTimerState === TimedSetState.Running || state.timedSetTimerState === TimedSetState.Paused;
-
-    if (state.lastPerformanceForCurrentExercise) {
-      this.lastPerformanceForCurrentExercise = state.lastPerformanceForCurrentExercise;
-    }
-
     this.wasRestTimerVisibleOnPause = state.isRestTimerVisibleOnPause;
     this.restTimerRemainingSecondsOnPause = state.restTimerRemainingSecondsOnPause || 0;
     this.restTimerInitialDurationOnPause = state.restTimerInitialDurationOnPause || 0;
     this.restTimerMainTextOnPause = state.restTimerMainTextOnPause || '';
     this.restTimerNextUpTextOnPause = state.restTimerNextUpTextOnPause;
+
     this.exercisesProposedThisCycle = { doLater: false, skipped: false };
-    this.isPerformingDeferredExercise = false; // RESET HERE
+    this.isPerformingDeferredExercise = false;
     this.lastActivatedDeferredExerciseId = null;
+
+    // Now prepare the set at the newly determined correct starting point
     await this.prepareCurrentSet();
-    if (this.sessionState() !== SessionState.Error && this.routine()) {
+
+    if (this.sessionState() !== SessionState.Error) {
       this.sessionState.set(SessionState.Playing);
       this.startSessionTimer();
       this.startAutoSave();
     }
-
 
     if (state.timedSetTimerState === TimedSetState.Running || state.timedSetTimerState === TimedSetState.Paused) {
       this.startOrResumeTimedSet();
@@ -1968,6 +1988,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     if (this.wasRestTimerVisibleOnPause && this.restTimerRemainingSecondsOnPause > 0) {
       this.startRestPeriod(this.restTimerRemainingSecondsOnPause, true);
     }
+
     this.cdr.detectChanges();
     this.toastService.success('Workout session resumed', 3000, "Resumed");
   }
@@ -4626,6 +4647,8 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       actionsArray.push(openExercisePerformanceInsightsBtn);
     }
 
+    actionsArray.push(openSessionPerformanceInsightsBtn);
+
     // Always add ADD EXERCISE
     actionsArray.push(addExerciseBtn);
 
@@ -4655,7 +4678,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
 
       const canSkipExercise = !isSuperset || !isSupersetStarted;
       if (canSkipExercise) {
-        if (!this.isExercisePartiallyLogged(activeInfo?.exerciseData)){
+        if (!this.isExercisePartiallyLogged(activeInfo?.exerciseData)) {
           actionsArray.push({ ...skipCurrentExerciseBtn, label: skipExBtnLabel });
         }
         actionsArray.push({ ...skipCurrentSetBtn, label: skipSetBtnLabel });
@@ -4707,6 +4730,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       case 'jumpToExercise': this.jumpToExercise(); break;
       case 'addExercise': this.addExerciseDuringSession(); break;
       case 'switchExercise': this.openSwitchExerciseModal(); break;
+      case 'insights': this.openSessionOverviewModal(); break;
       case 'exerciseInsights': this.openPerformanceInsightsFromMenu(); break;
       case 'warmup': this.addWarmupSet(); break;
       case 'skipSet': this.skipCurrentSet(); break;

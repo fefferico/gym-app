@@ -504,6 +504,7 @@
   [isOpen]="isSessionOverviewVisible()"
   [routineSignal]="routine"
   [loggedExercisesSignal]="currentWorkoutLogExercises"
+  [activeExerciseId]="activeSetInfo()?.exerciseData?.id"
   (close)="closeSessionOverviewModal()">
 </app-session-overview-modal>
 

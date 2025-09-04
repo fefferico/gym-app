@@ -57,7 +57,7 @@ export const switchExerciseBtn = {
 export const openSessionPerformanceInsightsBtn = {
     label: 'Session insight',
     actionKey: 'insights',
-    iconName: `schedule`,
+    iconName: `chart`,
     iconClass: 'w-8 h-8 mr-2',
     buttonClass: ' hover:bg-green-600 ',
 } as ActionMenuItem;
