@@ -22,6 +22,8 @@ export class AlertComponent implements OnInit {
   @ViewChild('singleButton') singleButton?: ElementRef<HTMLButtonElement>;
   @ViewChildren('alertButton') allButtons!: QueryList<ElementRef<HTMLButtonElement>>;
 
+  standardCssButtonClass: string = " w-full flex justify-center items-center text-white text-left px-4 py-2 rounded-md text-xl font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 ";
+
   inputValues: { [key: string]: string | number | boolean } = {};
 
   private toastService = inject(ToastService);
@@ -174,7 +176,7 @@ export class AlertComponent implements OnInit {
   }
 
   getButtonClass(button: AlertButton): string {
-    let classes = 'w-full text-white px-4 py-2 rounded text-m font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 ';
+    let classes = this.standardCssButtonClass;
     switch (button.role) {
       case 'confirm':
         if (button.cssClass) {
@@ -198,6 +200,7 @@ export class AlertComponent implements OnInit {
           classes += button.cssClass + ' ';
         } else {
           // If neither is provided, append the default button styling.
+          classes = this.standardCssButtonClass;
           classes += 'bg-blue-500 hover:bg-blue-600 text-white focus:ring-blue-400 dark:bg-blue-600 dark:hover:bg-blue-500 dark:focus:ring-blue-500';
         }
         break;

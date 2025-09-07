@@ -6,7 +6,7 @@ export const pauseSessionBtn = {
     actionKey: 'pause',
     iconName: `pause`,
     iconClass: 'w-8 h-8 mr-2',
-    buttonClass: ' hover:bg-yellow-500',
+    buttonClass: ' hover:bg-yellow-500 ',
 } as ActionMenuItem;
 
 export const addExerciseBtn = {
@@ -14,7 +14,7 @@ export const addExerciseBtn = {
     actionKey: 'addExercise',
     iconName: `plus-circle`,
     iconClass: 'w-8 h-8 mr-2',
-    buttonClass: 'hover:bg-blue-700',
+    buttonClass: ' hover:bg-blue-700 ',
 } as ActionMenuItem;
 
 export const jumpToExerciseBtn = {
@@ -51,7 +51,7 @@ export const switchExerciseBtn = {
         }
     ],
     iconClass: 'w-8 h-8 mr-2', // This class is applied to the <app-icon> host
-    buttonClass: 'hover:bg-cyan-600',
+    buttonClass: ' hover:bg-cyan-600 ',
 } as ActionMenuItem;
 
 export const openSessionPerformanceInsightsBtn = {
@@ -80,7 +80,7 @@ export const quitWorkoutBtn = {
 
 export const addWarmupSetBtn = {
     label: 'Warmup set',
-    actionKey: 'warmup',
+    actionKey: 'add_warmup_set',
     iconName: [
         { name: 'flame' },
         {

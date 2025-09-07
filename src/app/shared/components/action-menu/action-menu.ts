@@ -116,9 +116,10 @@ export class ActionMenuComponent implements OnChanges, OnDestroy {
         role: item.actionKey || '', // Use the actionKey as the unique identifier
         icon: item.iconName,
         iconClass: item.iconClass,
-        overrideCssClass: `justify-start text-xl ${item.buttonClass || ''}`, // Ensure buttons are styled nicely
+        cssClass: `${item.buttonClass || ''}`,
+        overrideCssClass: item.overrideCssButtonClass ? item.overrideCssButtonClass : ``, // Ensure buttons are styled nicely
         data: item.data
-      }));
+      } as AlertButton));
 
     // Use the AlertService to present the options
     const result = await this.alertService.present({

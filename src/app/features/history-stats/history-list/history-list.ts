@@ -11,7 +11,7 @@ import { map, startWith, distinctUntilChanged, take, filter, switchMap } from 'r
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { ExerciseService } from '../../../core/services/exercise.service';
 import { TrackingService } from '../../../core/services/tracking.service';
-import { AchievedPB, LoggedSet, WorkoutLog } from '../../../core/models/workout-log.model';
+import { AchievedPB, LoggedSet, PersonalBestSet, WorkoutLog } from '../../../core/models/workout-log.model';
 import { Exercise } from '../../../core/models/exercise.model';
 import { WorkoutService } from '../../../core/services/workout.service';
 import { UnitsService } from '../../../core/services/units.service';
@@ -297,70 +297,121 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   /**
-   * Extracts all personal bests achieved within a single workout log.
-   * This function mirrors the PB identification logic from TrackingService
-   * but limits its scope to only the sets within the provided log.
+   * Extracts all *newly achieved global* personal bests within a single workout log.
+   * This function compares sets in the provided log against the current all-time PBs
+   * to identify if any set constitutes a new best.
    *
    * @param log The WorkoutLog to analyze.
-   * @returns An array of AchievedPB objects, each representing a PB set in that log.
+   * @param allCurrentPBs A snapshot of all global personal bests from TrackingService.
+   * @returns An array of AchievedPB objects, each representing a *new global PB* set in that log.
    */
-  getPersonalBestsFromLog(log: WorkoutLog): AchievedPB[] {
-    const allPBsFromLog: AchievedPB[] = [];
+  getPersonalBestsFromLog(log: WorkoutLog, allCurrentPBs: Record<string, PersonalBestSet[]>): AchievedPB[] {
+    const newlyAchievedPBs: AchievedPB[] = [];
+
+    // Early exit if no exercises or log has no ID
+    if (!log.exercises || log.exercises.length === 0 || !log.id) {
+      return [];
+    }
 
     log.exercises.forEach(loggedEx => {
-      // A temporary map to hold the best set for each PB type for THIS exercise in THIS log.
-      const bestSetsForExercise = new Map<string, LoggedSet>();
+      // Get current PBs for this specific exercise
+      const currentExercisePBs = allCurrentPBs[loggedEx.exerciseId] || [];
 
       loggedEx.sets.forEach(candidateSet => {
+        // Ensure set has required context
+        if (!candidateSet.timestamp || !candidateSet.workoutLogId || !candidateSet.exerciseId) {
+          console.warn('Skipping candidate set due to missing context for PB check:', candidateSet);
+          return;
+        }
+
+        // Helper to check and add PB if it's a new global best achieved by this set
+        const checkForAndAddPb = (pbType: string, set: LoggedSet, isEstimated: boolean = false) => {
+          const existingGlobalPb = currentExercisePBs.find(pb => pb.pbType === pbType);
+
+          let isNewGlobalBest = false;
+
+          if (!existingGlobalPb) {
+            // No existing global PB of this type, so this set *could* be the first one.
+            // Check if this set's workoutLogId and timestamp match the log, indicating it's the one that established it.
+            if (set.workoutLogId === log.id && set.timestamp === (set.timestamp || new Date(log.startTime).toISOString())) {
+                 isNewGlobalBest = true;
+            }
+          } else {
+            // There's an existing global PB. Check if this candidate set is *the one* that achieved it.
+            // This means its performance equals the global PB AND it comes from THIS log.
+            const isSameLogAndSet = existingGlobalPb.workoutLogId === log.id &&
+                                    existingGlobalPb.timestamp === set.timestamp &&
+                                    existingGlobalPb.exerciseId === set.exerciseId;
+
+            // More robust check: The PB data in TrackingService's PB set will contain the *exact* set that achieved it.
+            // So, we just need to see if the current log's ID and the set's timestamp match the global PB's record.
+            if (isSameLogAndSet &&
+                existingGlobalPb.weightUsed === set.weightUsed &&
+                existingGlobalPb.repsAchieved === set.repsAchieved &&
+                existingGlobalPb.durationPerformed === set.durationPerformed) {
+              isNewGlobalBest = true;
+            }
+            // For estimated 1RM, the `weightUsed` could be slightly different due to float precision,
+            // so a direct comparison on original values might be needed if `weightUsed` is the calculated e1RM.
+            // The safest is to check against the PB's own workoutLogId and timestamp.
+          }
+
+          if (isNewGlobalBest) {
+            // Check for duplicates before adding (important for recalculation scenarios)
+            const isAlreadyAdded = newlyAchievedPBs.some(
+              pb => pb.exerciseId === loggedEx.exerciseId && pb.pbType === pbType
+            );
+            if (!isAlreadyAdded) {
+              newlyAchievedPBs.push({
+                exerciseId: loggedEx.exerciseId,
+                exerciseName: loggedEx.exerciseName,
+                pbType: pbType,
+                achievedSet: set,
+                isEstimated: isEstimated,
+              });
+            }
+          }
+        };
+
+        // --- PB Type Checks ---
         // Bodyweight or duration-based PBs
         if (!candidateSet.weightUsed) {
           if (candidateSet.repsAchieved > 0) {
-            this.updateBestSet(bestSetsForExercise, 'Max Reps (Bodyweight)', candidateSet);
+            checkForAndAddPb('Max Reps (Bodyweight)', candidateSet);
           }
           if (candidateSet.durationPerformed && candidateSet.durationPerformed > 0) {
-            this.updateBestSet(bestSetsForExercise, 'Max Duration', candidateSet);
+            checkForAndAddPb('Max Duration', candidateSet);
           }
           return; // Move to the next set
         }
 
         // Weight-based PBs
-        this.updateBestSet(bestSetsForExercise, 'Heaviest Lifted', candidateSet);
+        checkForAndAddPb('Heaviest Lifted', candidateSet);
         if (candidateSet.repsAchieved === 1) {
-          this.updateBestSet(bestSetsForExercise, '1RM (Actual)', candidateSet);
+          checkForAndAddPb('1RM (Actual)', candidateSet);
         }
         if (candidateSet.repsAchieved === 3) {
-          this.updateBestSet(bestSetsForExercise, '3RM (Actual)', candidateSet);
+          checkForAndAddPb('3RM (Actual)', candidateSet);
         }
         if (candidateSet.repsAchieved === 5) {
-          this.updateBestSet(bestSetsForExercise, '5RM (Actual)', candidateSet);
+          checkForAndAddPb('5RM (Actual)', candidateSet);
         }
 
         // Estimated 1RM
         if (candidateSet.repsAchieved > 1) {
           const e1RM = candidateSet.weightUsed * (1 + candidateSet.repsAchieved / 30);
-          // Create a synthetic set representing the e1RM
           const e1RMSet: LoggedSet = {
             ...candidateSet,
             repsAchieved: 1, // The result is for 1 rep
             weightUsed: parseFloat(e1RM.toFixed(2)), // The calculated weight
           };
-          this.updateBestSet(bestSetsForExercise, '1RM (Estimated)', e1RMSet);
+          // For estimated 1RM, the check needs to be against the calculated value
+          checkForAndAddPb('1RM (Estimated)', e1RMSet, true);
         }
-      });
-
-      // Convert the map of best sets for this exercise into the final PB array format
-      bestSetsForExercise.forEach((set, pbType) => {
-        allPBsFromLog.push({
-          exerciseId: loggedEx.exerciseId,
-          exerciseName: loggedEx.exerciseName,
-          pbType: pbType,
-          achievedSet: set,
-          isEstimated: pbType === '1RM (Estimated)',
-        });
       });
     });
 
-    return allPBsFromLog;
+    return newlyAchievedPBs;
   }
 
   /**
@@ -412,22 +463,25 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.workoutLogsSubscription = combineLatest([
       this.trackingService.workoutLogs$,
       this.activityService.activityLogs$,
-      this.trainingProgramService.programs$.pipe(take(1))
+      this.trainingProgramService.programs$.pipe(take(1)),
+      // --- NEW: Include personalBests$ in the combined stream ---
+      this.trackingService.personalBests$
     ]).pipe(
       // Step 1: Combine sources and prepare initial data structures
-      map(([workouts, activities, allPrograms]) => {
+      map(([workouts, activities, allPrograms, allGlobalPBs]) => {
         const programMap = new Map(allPrograms.map(p => [p.id, p.name]));
         const workoutItems: HistoryListItem[] = workouts.map(w => ({ ...w, itemType: 'workout' }));
         const activityItems: HistoryListItem[] = activities.map(a => ({ ...a, itemType: 'activity' }));
         const combinedList: HistoryListItem[] = [...workoutItems, ...activityItems];
         combinedList.sort((a, b) => b.startTime - a.startTime);
-        return { combinedList, programMap };
+        return { combinedList, programMap, allGlobalPBs }; // Pass allGlobalPBs down
       }),
       // Step 2: Use switchMap to handle the async enrichment process
-      switchMap(async ({ combinedList, programMap }) => {
+      switchMap(async ({ combinedList, programMap, allGlobalPBs }) => { // Receive allGlobalPBs here
         // Use Promise.all to wait for all async enrichment operations to complete
-        const enrichedList = await Promise.all(
-          combinedList.map(item => this.enrichHistoryItem(item, programMap))
+         const enrichedList = await Promise.all(
+          // Pass allGlobalPBs to enrichHistoryItem
+          combinedList.map(item => this.enrichHistoryItem(item, programMap, allGlobalPBs))
         );
         return enrichedList;
       })
@@ -466,44 +520,34 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  /**
-   * Asynchronously enriches a single history item with additional details.
-   * This function is called for each item in the history list.
-   * @param item The base HistoryListItem (workout or activity).
-   * @param programMap A map of program IDs to names for efficient lookups.
-   * @returns A Promise that resolves to the fully EnrichedHistoryListItem.
-   */
   private async enrichHistoryItem(
     item: HistoryListItem,
-    programMap: Map<string, string>
+    programMap: Map<string, string>,
+    allGlobalPBs: Record<string, PersonalBestSet[]> // Add this parameter
   ): Promise<EnrichedHistoryListItem> {
-    // If it's an activity, no further processing is needed.
     if (item.itemType === 'activity') {
       return item;
     }
 
-    // From here, we know it's a workout log.
     const workoutLogItem = item;
     let weekName: string | null = null;
     let dayInfo: ProgramDayInfo | null = null;
 
-    // If the workout is part of a program, fetch its details.
     if (workoutLogItem.programId) {
-      // Use Promise.all with firstValueFrom to get the data efficiently.
       [weekName, dayInfo] = await firstValueFrom(combineLatest([
         this.trainingProgramService.getWeekNameForLog(workoutLogItem),
         this.trainingProgramService.getDayOfWeekForLog(workoutLogItem)
       ]));
     }
 
-    // Construct the final, fully typed object.
     const enrichedItem: EnrichedHistoryListItem = {
       ...workoutLogItem,
-      programName: programMap.get(workoutLogItem.programId!), // Returns string or undefined
-      weekName: weekName ?? undefined,                       // Converts null to undefined
-      dayName: dayInfo?.dayName,                             // Already string or undefined
+      programName: programMap.get(workoutLogItem.programId!) ?? undefined,
+      weekName: weekName ?? undefined,
+      dayName: dayInfo?.dayName,
       totalVolume: this.getTotalVolume(workoutLogItem) ?? undefined,
-      personalBests: this.getPersonalBestsFromLog(workoutLogItem)?.length || 0
+      // Use the passed allGlobalPBs
+      personalBests: this.getPersonalBestsFromLog(workoutLogItem, allGlobalPBs)?.length || 0
     };
 
     return enrichedItem;

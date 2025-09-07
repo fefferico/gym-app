@@ -20,13 +20,14 @@ import { PressScrollDirective } from '../../../shared/directives/press-scroll.di
 import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { PremiumFeature, SubscriptionService } from '../../../core/services/subscription.service';
+import { MillisecondsDatePipe } from '../../../shared/pipes/milliseconds-date.pipe';
 
 export type SlideAnimationState = 'center' | 'exitToLeft' | 'exitToRight' | 'enterFromLeft' | 'enterFromRight';
 
 @Component({
   selector: 'app-todays-workout',
   standalone: true,
-  imports: [CommonModule, DatePipe, PressScrollDirective, TooltipDirective, IconComponent],
+  imports: [CommonModule, DatePipe, PressScrollDirective, TooltipDirective, IconComponent, MillisecondsDatePipe],
   templateUrl: './todays-workout.html',
   styleUrls: ['./todays-workout.scss'],
   animations: [
@@ -65,6 +66,8 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
 
 
   // --- Signals for State Management ---
+  isPremiumInfoAvailable = signal<boolean>(false);
+  isTrainingProgramsAvailable = signal<boolean>(false);
   allActivePrograms = signal<TrainingProgram[]>([]);
   availablePrograms = signal<TrainingProgram[]>([]);
   isLoading = signal<boolean>(true);
@@ -258,6 +261,8 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
       takeUntil(this.destroy$)
     ).subscribe(state => {
       if (state) {
+        this.isPremiumInfoAvailable.set(this.subscriptionsService.isPremium());
+        this.isTrainingProgramsAvailable.set(this.subscriptionsService.canAccess(PremiumFeature.TRAINING_PROGRAMS));
         this.allActivePrograms.set(state.allActivePrograms);
         this.availablePrograms.set(state.allAvailablePrograms);
         this.todaysScheduledWorkouts.set(state.routineData);
@@ -402,6 +407,14 @@ export class TodaysWorkoutComponent implements OnInit, AfterViewInit, OnDestroy 
     const d = new Date(0, 0, 0, 0, 0, 0, 0);
     d.setSeconds(seconds);
     return d;
+  }
+
+  secondToMs(seconds: number): number {
+    return seconds * 1000;
+  }
+  
+  msToSeconds(ms: number): number {
+    return ms / 1000;
   }
 
   findRoutineLog(routineId: string): Observable<WorkoutLog | undefined> {

@@ -123,19 +123,6 @@
             for Later</span>
         </div>
 
-        <div *ngIf="playerSubState() === PlayerSubState.PresetCountdown" class="text-center mb-6 animate-fadeIn">
-          <h3 class="text-xl font-semibold text-blue-600 dark:text-blue-400">Get Ready!</h3>
-          <p class="text-4xl sm:text-5xl font-bold text-blue-500 dark:text-blue-300 my-3">{{
-            presetTimerCountdownDisplay() }}s</p>
-          <p class="text-m text-gray-600 dark:text-gray-400">
-            Prepare for: {{getCurrentUpText()}}
-          </p>
-          <button appPress (shortPress)="skipPresetTimer()"
-            class="mt-4 text-xs text-primary dark:text-primary-light hover:underline">
-            Skip Countdown & Start Set
-          </button>
-        </div>
-
         <div *ngIf="playerSubState() === PlayerSubState.PerformingSet">
           <form [formGroup]="currentSetForm" class="space-y-2 mb-2">
             <div *ngIf="csf['actualWeight']">
@@ -250,7 +237,7 @@
         <div class="left-0 right-0 z-20 p-3 mt-5" *ngIf="routine() && sessionState() === 'playing' && activeSetInfo()">
           <div class="max-w-md mx-auto">
             <button appPress (shortPress)="handleMainAction()" appPress
-              [disabled]="sessionState() === 'paused' || (playerSubState() === PlayerSubState.PresetCountdown && presetTimerCountdownDisplay() !== '0' && presetTimerCountdownDisplay() !== null) || (playerSubState() === PlayerSubState.Resting && isRestTimerVisible())"
+              [disabled]="sessionState() === 'paused' || (playerSubState() === PlayerSubState.Resting && isRestTimerVisible())"
               class="w-full font-bold py-3.5 px-4 rounded-full shadow-md text-lg transition-colors focus:outline-none focus:ring-2 disabled:opacity-70 text-white  transition-colors duration-150"
               [ngClass]="{
                 'bg-primary hover:bg-primary-dark active:bg-primary-dark focus:outline-none focus:ring-0': playerSubState() === PlayerSubState.PerformingSet && !checkIfLatestOfEverything(),
@@ -327,11 +314,6 @@
             [title]="restTimerMainText()">
             {{ restTimerMainText() }}
           </div>
-          <div class="text-xl font-bold text-blue-600 dark:text-blue-300">
-            {{ presetTimerCountdownDisplay() }}s
-          </div>
-          <button appPress (shortPress)="skipPresetTimer()"
-            class="mt-0.5 text-xs text-primary dark:text-primary-light hover:underline">(Skip Countdown)</button>
         </div>
       </div>
     </footer>

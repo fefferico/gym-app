@@ -98,10 +98,6 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
   private timedSetIntervalSub: Subscription | undefined;
   private soundPlayedForThisCountdownSegment = false;
 
-  presetTimerCountdownDisplay = signal<string | null>(null);
-  presetTimerDuration = signal(0);
-  private presetTimerSub: Subscription | undefined;
-
   isRestTimerVisible = signal(false);
   restDuration = signal(0);
   restTimerDisplay = signal<string | null>(null);
@@ -110,8 +106,6 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
 
   readonly nextActionButtonLabel = computed(() => {
     switch (this.playerSubState()) {
-      case PlayerSubState.PresetCountdown:
-        return 'GETTING READY...';
       case PlayerSubState.Resting:
         return 'RESTING...';
       case PlayerSubState.PerformingSet:
@@ -181,32 +175,6 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
   protected HEADER_OVERVIEW_STRING: string = 'JUMP TO EXERCISE';
   protected headerOverviewString: string = 'JUMP TO EXERCISE';
 
-  readonly shouldStartWithPresetTimer = computed<boolean>(() => {
-    const activeInfo = this.activeSetInfo();
-    if (!activeInfo) return false;
-
-    const enablePreset = this.appSettingsService.enablePresetTimer();
-    const presetDurationValue = this.appSettingsService.presetTimerDurationSeconds();
-    if (!enablePreset || presetDurationValue <= 0) return false;
-
-    const r = this.routine();
-    const exIndex = activeInfo.exerciseIndex;
-    const sIndex = activeInfo.setIndex;
-
-    if (!r || !r.exercises[exIndex] || !r.exercises[exIndex].sets[sIndex]) return false;
-
-    const isFirstSetOfFirstExerciseInWorkout = exIndex === 0 && sIndex === 0 && this.currentBlockRound() === 1;
-
-    let previousSetRestDuration = Infinity;
-    if (sIndex > 0) {
-      previousSetRestDuration = r.exercises[exIndex].sets[sIndex - 1].restAfterSet;
-    } else if (exIndex > 0) {
-      const prevExercise = r.exercises[exIndex - 1];
-      previousSetRestDuration = prevExercise.sets[prevExercise.sets.length - 1].restAfterSet;
-    }
-    return isFirstSetOfFirstExerciseInWorkout || previousSetRestDuration === 0;
-  });
-
   checkIfLatestOfEverything(): boolean {
     const isLastSetOfExercise = this.checkIfLatestSetOfExercise();
     const isLastSetOfRound = this.checkIfLatestSetOfRound();
@@ -230,9 +198,6 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     const routine = this.routine();
 
     switch (this.playerSubState()) {
-      case PlayerSubState.PresetCountdown:
-        return `PREPARING... ${this.presetTimerCountdownDisplay()}s`;
-
       case PlayerSubState.Resting:
         return `RESTING: ${this.restTimerDisplay()}`;
 
@@ -1363,14 +1328,6 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
 
     this.patchActualsFormBasedOnSessionTargets();
 
-    const enablePresetRest = this.appSettingsService.enablePresetTimer();
-    const presetDurationValue = this.appSettingsService.presetTimerDurationSeconds();
-    const isEffectivelyFirstSetInWorkout =
-      this.currentWorkoutLogExercises().length === 0 &&
-      this.currentBlockRound() === 1 &&
-      exIndex === this.findFirstPendingExerciseAndSet(sessionRoutine)?.exerciseIndex &&
-      sIndex === this.findFirstPendingExerciseAndSet(sessionRoutine)?.setIndex;
-
     let previousSetRestDuration = Infinity;
     if (sIndex > 0) {
       previousSetRestDuration = currentExerciseData.sets[sIndex - 1].restAfterSet;
@@ -1392,19 +1349,6 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       if (!foundPrevPlayed) previousSetRestDuration = Infinity;
     }
 
-
-    const shouldRunPresetTimer = enablePresetRest && presetDurationValue > 0 &&
-      ((this.playerSubState() !== PlayerSubState.Resting));
-
-    if (shouldRunPresetTimer) {
-      console.log('prepareCurrentSet: Starting pre-set timer for:', currentExerciseData.exerciseName, 'Set:', sIndex + 1);
-      this.playerSubState.set(PlayerSubState.PresetCountdown);
-      console.error("prepareCurrentSet: ActiveSetInfo is null before starting preset timer. Aborting preset");
-      this.playerSubState.set(PlayerSubState.PerformingSet);
-    } else {
-      console.log('prepareCurrentSet: No pre-set timer, setting to PerformingSet for:', currentExerciseData.exerciseName, 'Set:', sIndex + 1);
-      this.playerSubState.set(PlayerSubState.PerformingSet);
-    }
 
     if (this.sessionState() !== SessionState.Playing && this.sessionState() !== SessionState.Paused) {
       console.log("prepareCurrentSet: Setting sessionState to Playing");
@@ -3395,31 +3339,6 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     }
   }
 
-  handlePresetTimerFinished(): void {
-    if (this.presetTimerSub) {
-      this.presetTimerSub.unsubscribe();
-      this.presetTimerSub = undefined;
-    }
-    this.presetTimerCountdownDisplay.set(null);
-    this.playerSubState.set(PlayerSubState.PerformingSet); // Transition to performing the set
-
-    // The routine signal should already reflect the target parameters for the upcoming set
-    // as it was updated in prepareCurrentSet *before* the pre-set timer decision was made.
-    // patchActualsFormBasedOnSessionTargets was also called in prepareCurrentSet.
-    // We might not need to do much here other than setting the state.
-    this.cdr.detectChanges(); // Ensure UI updates for button text, etc.
-    console.log('Pre-set timer finished. Player state set to PerformingSet');
-  }
-  skipPresetTimer(): void {
-    if (this.playerSubState() === PlayerSubState.PresetCountdown) {
-      // this.toastService.info("Pre-set countdown skipped", 1500);
-      if (this.presetTimerSub) {
-        this.presetTimerSub.unsubscribe();
-        this.presetTimerSub = undefined;
-      }
-      this.handlePresetTimerFinished();
-    }
-  }
   // Helpers to get set numbers for display within pre-set timer footer
   private getWarmupSetNumberForDisplay(exercise: WorkoutExercise, currentSetIndexInExercise: number): number {
     let count = 0;
@@ -3799,7 +3718,6 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
   getDisabled(): boolean {
     return this.timedSetTimerState() === TimedSetState.Running ||
       this.sessionState() === SessionState.Paused ||
-      this.playerSubState() === PlayerSubState.PresetCountdown ||
       this.playerSubState() === PlayerSubState.Resting;
   }
 
@@ -3812,33 +3730,9 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
         this.completeAndLogCurrentSet();
         break;
       }
-      case PlayerSubState.PresetCountdown: this.skipPresetTimer(); break;
       case PlayerSubState.Resting: this.skipRest(); break;
     }
   }
-
-  // Add this to WorkoutPlayerComponent class
-  readonly shouldRunPresetTimerForCurrentSet = computed<boolean>(() => {
-    const enablePreset = this.appSettingsService.enablePresetTimer();
-    const presetDurationValue = this.appSettingsService.presetTimerDurationSeconds();
-    if (!enablePreset || presetDurationValue <= 0) return false;
-
-    const r = this.routine();
-    const exIdx = this.currentExerciseIndex();
-    const sIdx = this.currentSetIndex();
-
-    if (!r || !r.exercises[exIdx] || !r.exercises[exIdx].sets[sIdx]) return false;
-
-    const isFirstSetOfFirstExerciseInWorkout = exIdx === 0 && sIdx === 0 && this.currentBlockRound() === 1;
-    let previousSetRestDuration = Infinity; // Assume significant rest if no previous set
-    if (sIdx > 0) {
-      previousSetRestDuration = r.exercises[exIdx].sets[sIdx - 1].restAfterSet;
-    } else if (exIdx > 0) {
-      const prevExercise = r.exercises[exIdx - 1];
-      previousSetRestDuration = prevExercise.sets[prevExercise.sets.length - 1].restAfterSet;
-    }
-    return isFirstSetOfFirstExerciseInWorkout || previousSetRestDuration === 0;
-  });
 
   /**
    * Returns all exercises in the current session routine that have not been completed yet.
@@ -4224,11 +4118,6 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     if (this.playerSubState() === PlayerSubState.Resting) { // Footer rest timer
       // No direct timer to stop here, changing playerSubState in prepareCurrentSet handles it
     }
-    if (this.playerSubState() === PlayerSubState.PresetCountdown && this.presetTimerSub) {
-      this.presetTimerSub.unsubscribe();
-      this.presetTimerSub = undefined;
-      this.presetTimerCountdownDisplay.set(null);
-    }
     if (this.timedSetTimerState() !== TimedSetState.Idle && this.timedSetIntervalSub) {
       this.resetTimedSet();
     }
@@ -4578,6 +4467,14 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     return exercisesInGroup.some(ex => this.getNumberOfLoggedSets(ex.id) > 0);
   }
 
+    private isSupersetCompletelyLogged(supersetId: string): boolean {
+    const routine = this.routine();
+    if (!routine) return false;
+
+    const exercisesInGroup = routine.exercises.filter(ex => ex.supersetId === supersetId);
+    return exercisesInGroup.every(ex => this.getNumberOfLoggedSets(ex.id) === ex.supersetRounds);
+  }
+
   readonly canJumpToOtherExercise = computed<boolean>(() => {
     const routine = this.routine();
     const activeInfo = this.activeSetInfo();
@@ -4639,25 +4536,27 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     const routine = this.routine();
     const workoutLog = this.currentWorkoutLogExercises();
 
+    const isModalMenu =  this.appSettingsService.isMenuModeModal();
+    const buttonCssClass = isModalMenu ? " w-full flex justify-start items-center text-white text-left px-4 py-2 rounded-md text-xl font-medium " : '';
     // Always add PAUSE
-    actionsArray.push(pauseSessionBtn);
+    actionsArray.push({...pauseSessionBtn, overrideCssButtonClass: pauseSessionBtn.buttonClass + ' ' + buttonCssClass});
 
     // Add INSIGHTS if any sets have been logged
     if (workoutLog.length > 0) {
-      actionsArray.push(openExercisePerformanceInsightsBtn);
+      actionsArray.push({...openExercisePerformanceInsightsBtn, overrideCssButtonClass: openExercisePerformanceInsightsBtn.buttonClass + ' ' + buttonCssClass});
     }
 
-    actionsArray.push(openSessionPerformanceInsightsBtn);
+    actionsArray.push({...openSessionPerformanceInsightsBtn, overrideCssButtonClass: openSessionPerformanceInsightsBtn.buttonClass + ' ' + buttonCssClass});
 
     // Always add ADD EXERCISE
-    actionsArray.push(addExerciseBtn);
+    actionsArray.push({...addExerciseBtn, overrideCssButtonClass: addExerciseBtn.buttonClass + ' ' + buttonCssClass });
 
     if (this.canSwitchExercise()) {
-      actionsArray.push(switchExerciseBtn);
+      actionsArray.push({...switchExerciseBtn, overrideCssButtonClass: switchExerciseBtn.buttonClass + ' ' + buttonCssClass});
     }
 
     if (this.canJumpToOtherExercise()) {
-      actionsArray.push(jumpToExerciseBtn);
+      actionsArray.push({...jumpToExerciseBtn, overrideCssButtonClass: jumpToExerciseBtn.buttonClass + ' ' + buttonCssClass});
     }
 
 
@@ -4667,7 +4566,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       // Add WARMUP if allowed for the current set
       const superSetId = this.retrieveSuperSetID(activeInfo?.exerciseIndex);
       if ((this.isSuperSet(activeInfo?.exerciseIndex) && !this.isSupersetPartiallyLogged(superSetId)) && this.canAddWarmupSet()) {
-        actionsArray.push(addWarmupSetBtn);
+        actionsArray.push({...addWarmupSetBtn, overrideCssButtonClass: addWarmupSetBtn.buttonClass + ' ' + buttonCssClass});
       }
 
       const isSuperset = !!activeInfo.exerciseData.supersetId;
@@ -4679,20 +4578,20 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       const canSkipExercise = !isSuperset || !isSupersetStarted;
       if (canSkipExercise) {
         if (!this.isExercisePartiallyLogged(activeInfo?.exerciseData)) {
-          actionsArray.push({ ...skipCurrentExerciseBtn, label: skipExBtnLabel });
+          actionsArray.push({ ...skipCurrentExerciseBtn, label: skipExBtnLabel , overrideCssButtonClass: skipCurrentExerciseBtn.buttonClass + ' ' + buttonCssClass});
         }
-        actionsArray.push({ ...skipCurrentSetBtn, label: skipSetBtnLabel });
+        actionsArray.push({ ...skipCurrentSetBtn, label: skipSetBtnLabel , overrideCssButtonClass: skipCurrentSetBtn.buttonClass + ' ' + buttonCssClass});
       }
 
       // Only show "Do Later" if the superset hasn't been started yet
       if (!isSupersetStarted && !this.isExercisePartiallyLogged(activeInfo?.exerciseData)) {
-        actionsArray.push(markAsDoLaterBtn);
+        actionsArray.push({...markAsDoLaterBtn, overrideCssButtonClass: markAsDoLaterBtn.buttonClass + ' ' + buttonCssClass});
       }
     }
 
     // Add FINISH EARLY if any sets have been logged
     if (workoutLog.length > 0) {
-      actionsArray.push(finishEarlyBtn);
+      actionsArray.push({...finishEarlyBtn, overrideCssButtonClass: finishEarlyBtn.buttonClass + ' ' + buttonCssClass});
     }
 
     // --- Superset Logic ---
@@ -4702,23 +4601,23 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       if (exerciseData.supersetId) {
         // Only allow removing from superset if no sets in that group have been logged
         if (!this.isSupersetPartiallyLogged(exerciseData.supersetId)) {
-          actionsArray.push({ ...removeFromSuperSetBtn, data: { exIndex: activeInfo.exerciseIndex } } as ActionMenuItem);
+          actionsArray.push({ ...removeFromSuperSetBtn, data: { exIndex: activeInfo.exerciseIndex}, overrideCssButtonClass: removeFromSuperSetBtn.buttonClass + ' ' + buttonCssClass } as ActionMenuItem);
         }
       } else {
         // Add ADD TO and CREATE SUPERSET if conditions are met
         if (routine && routine.exercises.length >= 2) {
           if (routine.exercises.some(ex => ex.supersetId)) {
-            actionsArray.push({ ...addToSuperSetBtn, data: { exIndex: activeInfo.exerciseIndex } } as ActionMenuItem);
+            actionsArray.push({ ...addToSuperSetBtn, data: { exIndex: activeInfo.exerciseIndex }, overrideCssButtonClass: addToSuperSetBtn.buttonClass + ' ' + buttonCssClass} as ActionMenuItem);
           }
           if (routine.exercises.filter(ex => !ex.supersetId).length >= 2) {
-            actionsArray.push({ ...createSuperSetBtn, data: { exIndex: activeInfo.exerciseIndex } } as ActionMenuItem);
+            actionsArray.push({ ...createSuperSetBtn, data: { exIndex: activeInfo.exerciseIndex }, overrideCssButtonClass: createSuperSetBtn.buttonClass + ' ' + buttonCssClass} as ActionMenuItem);
           }
         }
       }
     }
 
     // Always add QUIT
-    actionsArray.push(quitWorkoutBtn);
+    actionsArray.push({...quitWorkoutBtn, overrideCssButtonClass: quitWorkoutBtn.buttonClass + ' ' + buttonCssClass});
 
     return actionsArray;
   });
@@ -4732,7 +4631,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       case 'switchExercise': this.openSwitchExerciseModal(); break;
       case 'insights': this.openSessionOverviewModal(); break;
       case 'exerciseInsights': this.openPerformanceInsightsFromMenu(); break;
-      case 'warmup': this.addWarmupSet(); break;
+      case 'add_warmup_set': this.addWarmupSet(); break;
       case 'skipSet': this.skipCurrentSet(); break;
       case 'skipExercise': this.skipCurrentExercise(); break;
       case 'later': this.markCurrentExerciseDoLater(); break;

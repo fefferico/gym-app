@@ -1,16 +1,32 @@
 import { Component, Input, Output, EventEmitter, OnChanges, OnDestroy, SimpleChanges, ElementRef, ViewChild, AfterViewInit, ChangeDetectionStrategy, signal, computed, Signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PressDirective } from '../../directives/press.directive';
+// +++ IMPORT ANIMATION FUNCTIONS +++
+import { trigger, style, animate, transition } from '@angular/animations';
+import { IconComponent } from '../icon/icon.component';
 
 @Component({
   selector: 'app-full-screen-rest-timer',
   standalone: true,
-  imports: [CommonModule, PressDirective],
+  imports: [CommonModule, PressDirective, IconComponent],
   templateUrl: './full-screen-rest-timer.html',
   styleUrls: ['./full-screen-rest-timer.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  // +++ DEFINE THE ANIMATION TRIGGER +++
+  animations: [
+    trigger('fade', [
+      transition(':enter', [
+        style({ opacity: 0, transform: 'scale(0.95)' }),
+        animate('200ms ease-in-out', style({ opacity: 1, transform: 'scale(1)' })),
+      ]),
+      transition(':leave', [
+        animate('200ms ease-in-out', style({ opacity: 0, transform: 'scale(0.95)' }))
+      ])
+    ])
+  ]
 })
 export class FullScreenRestTimerComponent implements OnChanges, OnDestroy, AfterViewInit {
+  // ... rest of your component code remains the same
   @Input() isVisible: boolean = false;
   @Input() mainTimer = signal('00:00:00');
   @Input() durationSeconds: number = 60;
@@ -19,32 +35,29 @@ export class FullScreenRestTimerComponent implements OnChanges, OnDestroy, After
 
   @Output() timerFinished = new EventEmitter<void>();
   @Output() timerSkipped = new EventEmitter<number>();
-  @Output() hideTimer = new EventEmitter<void>(); // New Output event
+  @Output() hideTimer = new EventEmitter<void>();
 
   @ViewChild('progressCircleSvg') progressCircleSvg!: ElementRef<SVGSVGElement>;
 
   private timerIntervalId: any;
   private readonly circleRadius = 90;
   private readonly circumference = 2 * Math.PI * this.circleRadius;
-  private readonly timerUpdateIntervalMs = 100; // Update every 100ms for tenths of a second
+  private readonly timerUpdateIntervalMs = 100;
 
-  readonly remainingTime = signal(0); // Will store time in seconds, can be float
-  readonly initialDuration = signal(0); // Will store time in seconds, can be float
+  readonly remainingTime = signal(0);
+  readonly initialDuration = signal(0);
 
   readonly strokeDashoffset = computed(() => {
     const initial = this.initialDuration();
     if (initial <= 0) return this.circumference;
-    // Ensure progress doesn't go below 0 for calculation
     const currentProgress = Math.max(0, this.remainingTime()) / initial;
     return this.circumference * (1 - currentProgress);
   });
 
   readonly displayTime = computed(() => {
-    // Use Math.max to prevent displaying negative time if an interval fires slightly after time hits 0
     const totalSecondsValue = Math.max(0, this.remainingTime());
     const minutes = Math.floor(totalSecondsValue / 60);
     const seconds = Math.floor(totalSecondsValue % 60);
-
     if (minutes > 0) {
       return `${minutes}:${seconds.toString().padStart(2, '0')}`;
     } else {
@@ -66,37 +79,30 @@ export class FullScreenRestTimerComponent implements OnChanges, OnDestroy, After
       }
     }
     if (changes['durationSeconds'] && this.isVisible) {
-      // If duration changes while timer is visible and running, restart it
       this.startTimer();
     } else if (changes['durationSeconds'] && !this.isVisible) {
-      // If duration changes while not visible, just update initial values for next show
       this.initialDuration.set(this.durationSeconds);
       this.remainingTime.set(this.durationSeconds);
     }
   }
 
-  ngAfterViewInit(): void {
-    // Not strictly necessary for this change
-  }
+  ngAfterViewInit(): void {}
 
   private startTimer(): void {
     this.stopTimer();
     this.initialDuration.set(this.durationSeconds);
     this.remainingTime.set(this.durationSeconds);
-
     if (this.durationSeconds <= 0) {
-      this.finishAndHideTimer(); // Call unified function
+      this.finishAndHideTimer();
       return;
     }
-
-    const decrementAmount = this.timerUpdateIntervalMs / 1000; // e.g., 0.1 seconds
-
+    const decrementAmount = this.timerUpdateIntervalMs / 1000;
     this.timerIntervalId = setInterval(() => {
       this.remainingTime.update(rt => {
         const newTime = rt - decrementAmount;
         if (newTime <= 0) {
-          this.finishAndHideTimer(); // Call unified function
-          return 0; // Ensure remainingTime is exactly 0 on finish
+          this.finishAndHideTimer();
+          return 0;
         }
         return newTime;
       });
@@ -110,36 +116,28 @@ export class FullScreenRestTimerComponent implements OnChanges, OnDestroy, After
     }
   }
 
-  // Unified function to handle timer completion/hiding
   private finishAndHideTimer(): void {
     this.stopTimer();
     this.timerFinished.emit();
-    this.hideTimer.emit(); // Emit hide event
+    this.hideTimer.emit();
   }
 
   adjustTimer(seconds: number): void {
     this.remainingTime.update(currentRemaining => {
       let newTime = currentRemaining + seconds;
-      // Ensure new time doesn't go below 0
       newTime = Math.max(0, newTime);
-
-      // If timer is adjusted to 0 or less, stop it and emit finished/hide events
       if (newTime <= 0) {
-        this.finishAndHideTimer(); // Call unified function
+        this.finishAndHideTimer();
       }
       return newTime;
     });
-    // Also update initial duration if adding time, to ensure progress circle calculation is correct for the new max
-    // Note: If you want the progress circle to always reflect the *initial* duration set for the rest,
-    // you might not want to update initialDuration here.
-    // For now, I'm assuming you want the circle to reflect the *new* total time.
     this.initialDuration.update(currentInitial => Math.max(currentInitial, this.remainingTime()));
   }
 
   skipTimer(): void {
     this.stopTimer();
     this.timerSkipped.emit(this.remainingTime());
-    this.hideTimer.emit(); // Emit hide event when skipped
+    this.hideTimer.emit();
   }
 
   ngOnDestroy(): void {

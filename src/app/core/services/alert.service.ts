@@ -179,7 +179,7 @@ export class AlertService {
         const confirmFound = customButtons.some(btn => btn.role === 'confirm');
         const finalBtns = confirmFound ? customButtons : [{ text: okText, role: 'confirm', data: true, icon: 'done' } as AlertButton, ...customButtons];
 
-        const cancelBtn = isCancelVisible ? { text: cancelText, role: 'cancel', data: false, icon: 'cancel', iconClass: 'h-4 w-4 mr-1'} : null;
+        const cancelBtn = isCancelVisible ? { text: cancelText, role: 'cancel', data: false, icon: 'cancel', iconClass: 'h-4 w-4 mr-1'} as AlertButton : null;
 
         let options = {header,
             message,

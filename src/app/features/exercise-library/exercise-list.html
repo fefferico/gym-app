@@ -164,9 +164,10 @@
               class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center">
               <app-icon name="menu-action" class="h-10 w-10"></app-icon>
             </button>
-            <!-- Non-Compact (Window) Dropdown Menu -->
-            <app-action-menu *ngIf="areActionsVisible(exercise.id) && !menuModeCompact" displayMode="dropdown"
-              [items]="getExerciseDropdownActionItems(exercise.id, 'dropdown')"
+            <app-action-menu *ngIf="areActionsVisible(exercise.id) && (menuModeDropdown || menuModeModal)"
+              [modalTitle]="''" class="action-menu-container" [displayMode]="menuModeDropdown ? 'dropdown' : 'modal'"
+              [gridClass]="' grid grid-cols-2 '"
+              [items]="getExerciseDropdownActionItems(exercise.id, menuModeDropdown ? 'dropdown' : 'modal')"
               [isVisible]="areActionsVisible(exercise.id)" (itemClick)="handleActionMenuItemClick($event)"
               (closeMenu)="onCloseActionMenu()">
             </app-action-menu>
@@ -174,9 +175,8 @@
         </div>
 
         <app-action-menu *ngIf="areActionsVisible(exercise.id) && menuModeCompact" displayMode="compact"
-          [items]="getExerciseDropdownActionItems(exercise.id, 'compact')"
-          [isVisible]="areActionsVisible(exercise.id)" (itemClick)="handleActionMenuItemClick($event)"
-          (closeMenu)="onCloseActionMenu()">
+          [items]="getExerciseDropdownActionItems(exercise.id, 'compact')" [isVisible]="areActionsVisible(exercise.id)"
+          (itemClick)="handleActionMenuItemClick($event)" (closeMenu)="onCloseActionMenu()">
         </app-action-menu>
       </div>
     </div>

@@ -1,6 +1,6 @@
 // src/app/core/services/personal-gym.service.ts
 import { Injectable, inject } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -8,6 +8,7 @@ import { StorageService } from './storage.service';
 import { ToastService } from './toast.service';
 import { AlertService } from './alert.service';
 import { PersonalGymEquipment } from '../models/personal-gym.model';
+import { Equipment } from '../models/equipment.model';
 
 @Injectable({
   providedIn: 'root'
@@ -188,4 +189,63 @@ export class PersonalGymService {
       "Personal Gym Merged"
     );
   }
+
+  /**
+     * Hides an equipment by setting its `isHidden` flag to true.
+     * The equipment is filtered out from the main `equipment$` observable but remains in storage.
+     * @param equipmentId The ID of the equipment to hide.
+     * @returns An Observable of the updated equipment or undefined if not found.
+     */
+    public hideEquipment(equipmentId: string): Observable<Equipment | undefined> {
+      const currentEquipments = this.equipmentSubject.getValue();
+      const equipmentIndex = currentEquipments.findIndex(ex => ex.id === equipmentId);
+  
+      if (equipmentIndex === -1) {
+        this.toastService.error('Failed to hide equipment: not found.', 0, "Error");
+        return of(undefined);
+      }
+  
+      const updatedEquipments = [...currentEquipments];
+      const equipmentToUpdate = { ...updatedEquipments[equipmentIndex], isHidden: true };
+      updatedEquipments[equipmentIndex] = equipmentToUpdate;
+  
+      this._saveToStorage(updatedEquipments);
+      this.toastService.info(`'${equipmentToUpdate.name}' is now hidden.`, 3000, "Hidden");
+      return of(equipmentToUpdate);
+    }
+  
+    /**
+     * Un-hides an equipment by setting its `isHidden` flag to false.
+     * The equipment will reappear in the main `equipment$` observable.
+     * @param equipmentId The ID of the equipment to make visible.
+     * @returns An Observable of the updated equipment or undefined if not found.
+     */
+    public unhideEquipment(equipmentId: string): Observable<Equipment | undefined> {
+      const currentEquipments = this.equipmentSubject.getValue();
+      const equipmentIndex = currentEquipments.findIndex(ex => ex.id === equipmentId);
+  
+      if (equipmentIndex === -1) {
+        this.toastService.error('Failed to un-hide equipment: not found.', 0, "Error");
+        return of(undefined);
+      }
+  
+      const updatedEquipments = [...currentEquipments];
+      const equipmentToUpdate = { ...updatedEquipments[equipmentIndex], isHidden: false };
+      updatedEquipments[equipmentIndex] = equipmentToUpdate;
+  
+      this._saveToStorage(updatedEquipments);
+      this.toastService.success(`'${equipmentToUpdate.name}' is now visible.`, 3000, "Visible");
+      return of(equipmentToUpdate);
+    }
+  
+    /**
+     * Returns an observable list of ONLY the exercises that are currently hidden.
+     * This is useful for a management page where a user can un-hide them.
+     * @returns An Observable emitting an array of hidden Exercise objects.
+     */
+    public getHiddenEquipments(): Observable<Equipment[]> {
+      return this.equipmentSubject.asObservable().pipe(
+        map(equipments => equipments.filter(eq => eq.isHidden))
+      );
+    }
 }

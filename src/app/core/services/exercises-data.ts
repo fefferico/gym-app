@@ -12,6 +12,40 @@ export const EXERCISES_DATA = [
     "notes": "Lower your body until your chest nearly touches the floor. Push back up to the starting position."
   },
   {
+    id: 'barbell-incline-bench-press',
+    name: 'Barbell Incline Bench Press',
+    description: 'A compound upper body exercise that targets the upper chest, shoulders, and triceps using a barbell on an incline bench.',
+    category: 'barbells',
+    muscleGroups: ['Chest (Upper)', 'Shoulders (Anterior)', 'Triceps'],
+    primaryMuscleGroup: 'Chest',
+    equipmentNeeded: ['Barbell', 'Incline Bench'],
+    imageUrls: [
+      'exercises/barbell-incline-bench-press_1.jpg',
+      'exercises/barbell-incline-bench-press_2.jpg'
+    ],
+    videoUrl: 'https://www.youtube.com/watch?v=s0PzXlP1l90', // Example URL
+    notes: 'Maintain a slight arch in your lower back. Control the eccentric phase. Do not bounce the bar off your chest.',
+    equipment: 'Barbell',
+    iconName: 'fitness_center',
+  },
+  {
+    id: 'dumbbell-incline-bench-press',
+    name: 'Dumbbell Incline Bench Press',
+    description: 'A compound upper body exercise that targets the upper chest, shoulders, and triceps using dumbbells on an incline bench, allowing for a greater range of motion.',
+    category: 'dumbbells',
+    muscleGroups: ['Chest (Upper)', 'Shoulders (Anterior)', 'Triceps'],
+    primaryMuscleGroup: 'Chest',
+    equipmentNeeded: ['Dumbbells', 'Incline Bench'],
+    imageUrls: [
+      'exercises/dumbbell-incline-bench-press_1.jpg',
+      'exercises/dumbbell-incline-bench-press_2.jpg'
+    ],
+    videoUrl: 'https://www.youtube.com/watch?v=0G2V_2eI-2w', // Example URL
+    notes: 'Focus on squeezing the chest at the top. Ensure a full range of motion. Keep elbows slightly tucked to protect shoulders.',
+    equipment: 'Dumbbell',
+    iconName: 'fitness_center',
+  },
+  {
     id: 'barbell-military-press', // Unique slug
     name: 'Military Press (Barbell)',
     description: 'A compound overhead press exercise that builds shoulder strength and size. It is performed standing, engaging the core for stability, and pressing a barbell from the upper chest to an overhead position with arms fully extended.',

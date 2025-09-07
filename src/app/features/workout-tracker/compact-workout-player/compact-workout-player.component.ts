@@ -973,7 +973,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         }
         break
       };
-      case 'add_warmup': this.addWarmupSet(exIndex); break;
+      case 'add_warmup_set': this.addWarmupSet(exIndex); break;
       case 'remove': this.removeExercise(exIndex); break;
       // +++ NEW CASES FOR SUPERSET +++
       case 'create_superset': this.openCreateSupersetModal(exIndex); break;
@@ -1372,27 +1372,45 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     this.mainSessionActionMenuOpened.update(current => current === true ? false : true);
   }
 
+  protected menuButtonBaseClass = computed(() => {
+    const isModalMenu = this.appSettingsService.isMenuModeModal();
+    const isCompactMenu = this.appSettingsService.isMenuModeCompact();
+    // This is the common part for all buttons, if they need special modal styling
+    return isModalMenu ? " w-full flex justify-start items-center text-white text-left px-4 py-2 rounded-md text-xl font-medium " : '';
+  });
+
   mainSessionActionItems = computed<ActionMenuItem[]>(() => {
+    // Read dependencies once at the beginning of the computed function
+    const isPaused = this.sessionState() === 'paused';
+    const hasExercises = (this.routine()?.exercises?.length ?? 0) > 0;
+    const commonModalButtonClass = this.menuButtonBaseClass(); // Use the new computed property
+
+    // Base class for non-modal dropdowns/compact, if needed (adjust as per your `getMenuMode` logic)
+    // Assuming `defaultBtnClass` is still relevant for non-modal modes
     const wFullClass = this.getMenuMode() === 'compact' ? '' : ' w-full';
     const defaultBtnClass = 'rounded text-left p-3 sm:px-4 sm:py-2 font-medium text-white hover:bg-blue-600 flex items-center hover:text-white dark:hover:text-gray-100 dark:hover:text-white' + wFullClass;
 
-    // Read signals once for the computation
-    const isPaused = this.sessionState() === 'paused';
-    const hasExercises = (this.routine()?.exercises?.length ?? 0) > 0;
-
     const addExerciseDisabledClass = (isPaused || !hasExercises ? 'disabled ' : '');
 
-    const currAddExerciseBtn = {
-      ...addExerciseBtn,
-      buttonClass: addExerciseDisabledClass + defaultBtnClass,
-    } as ActionMenuItem;
-
     const actions: ActionMenuItem[] = [
-      isPaused ? resumeSessionBtn : pauseSessionBtn,
-      sessionNotesBtn,
-      currAddExerciseBtn,
+      {
+        ...(isPaused ? resumeSessionBtn : pauseSessionBtn),
+        overrideCssButtonClass: (isPaused ? resumeSessionBtn.buttonClass : pauseSessionBtn.buttonClass) + commonModalButtonClass
+      },
+      {
+        ...sessionNotesBtn,
+        overrideCssButtonClass: sessionNotesBtn.buttonClass + commonModalButtonClass
+      },
+      {
+        ...addExerciseBtn,
+        buttonClass: addExerciseDisabledClass + defaultBtnClass, // Specific buttonClass for addExerciseBtn
+        overrideCssButtonClass: addExerciseBtn.buttonClass + commonModalButtonClass
+      },
       { isDivider: true },
-      quitWorkoutBtn
+      {
+        ...quitWorkoutBtn,
+        overrideCssButtonClass: quitWorkoutBtn.buttonClass + commonModalButtonClass
+      }
     ];
 
     return actions;
@@ -1437,11 +1455,72 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return Array.from({ length: rounds }, (_, i) => i);
   }
 
+  private isExerciseFullyLogged(currentExercise: WorkoutExercise): boolean {
+    const routine = this.routine();
+    if (!routine) return false;
+    const exercise = routine.exercises.find(ex => ex.id === currentExercise.id);
+    if (!exercise) return false;
+        if (!this.currentWorkoutLog() || !this.currentWorkoutLog().exercises) return false;
+    const loggedExercises = this.currentWorkoutLog().exercises;
+    if (!loggedExercises) return false;
+
+    const loggedEx = loggedExercises.find(le =>
+      le.id === currentExercise.id
+      && exercise.exerciseId === le.exerciseId
+    );
+
+    if (!loggedEx) return false;
+
+    let rounds = exercise.supersetRounds ?? 1;
+    if (exercise.supersetId && exercise.supersetOrder !== null) {
+      const blockStart = routine.exercises.find(
+        ex => ex.supersetId === exercise.supersetId && ex.supersetOrder === 0
+      );
+      rounds = blockStart?.supersetRounds ?? 1;
+    }
+
+    const totalPlannedCompletions = (exercise.sets?.length ?? 0) * rounds;
+
+    return loggedEx.sets.length >= totalPlannedCompletions;
+  }
+
+  private isExercisePartiallyLogged(currentExercise: WorkoutExercise): boolean {
+    const routine = this.routine();
+    if (!routine) return false;
+    if (!this.currentWorkoutLog() || !this.currentWorkoutLog().exercises) return false;
+
+    const loggedExercises = this.currentWorkoutLog().exercises;
+    if (!loggedExercises) return false;
+
+    const exercise = routine.exercises.find(ex => ex.exerciseId === currentExercise.exerciseId && ex.id === currentExercise.id);
+    if (!exercise) return false;
+
+    const loggedEx = loggedExercises.find(le =>
+      le.exerciseId === currentExercise.exerciseId &&
+      exercise.exerciseId === le.exerciseId &&
+      le.id === currentExercise.id
+    );
+
+    if (!loggedEx || loggedEx.sets.length === 0) {
+      return false;
+    }
+
+    let rounds = exercise.supersetRounds ?? 1;
+    if (exercise.supersetId && exercise.supersetOrder !== null) {
+      const blockStart = routine.exercises.find(
+        ex => ex.supersetId === exercise.supersetId && ex.supersetOrder === 0
+      );
+      rounds = blockStart?.supersetRounds ?? 1;
+    }
+    const totalPlannedCompletions = (exercise.sets?.length ?? 0) * rounds;
+
+    return loggedEx.sets.length < totalPlannedCompletions;
+  }
 
   compactActionItemsMap = computed<Map<number, ActionMenuItem[]>>(() => {
     const map = new Map<number, ActionMenuItem[]>();
     const routine = this.routine(); // Read the dependency signal once
-    const mode = this.getMenuMode(); // Read the mode once
+    const commonModalButtonClass = this.menuButtonBaseClass(); // Use the new computed property
 
     if (!routine) {
       return map; // Return an empty map if there's no routine
@@ -1449,31 +1528,75 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
     // Loop through each exercise and build its specific action item array
     routine.exercises.forEach((exercise, exIndex) => {
-      // --- All logic from the original method is now inside this loop ---
-      const currSwitchExerciseBtn = { ...switchExerciseBtn, data: { exIndex } };
-      const currOpenPerformanceInsightsBtn = { ...openSessionPerformanceInsightsBtn, data: { exIndex } };
+      // Create new objects using spread and concatenate class strings
+      const currSwitchExerciseBtn = {
+        ...switchExerciseBtn,
+        data: { exIndex },
+        overrideCssButtonClass: switchExerciseBtn.buttonClass + commonModalButtonClass
+      };
+      const currOpenPerformanceInsightsBtn = {
+        ...openSessionPerformanceInsightsBtn,
+        data: { exIndex },
+        overrideCssButtonClass: openSessionPerformanceInsightsBtn.buttonClass + commonModalButtonClass
+      };
 
-      const addSetRoundBtn = !this.isSuperSet(exIndex) ? { ...addSetToExerciseBtn } : { ...addRoundToExerciseBtn };
-      const actionsArray: ActionMenuItem[] = [
-        currSwitchExerciseBtn,
-        currOpenPerformanceInsightsBtn,
-        { ...addWarmupSetBtn, data: { exIndex } } as ActionMenuItem,
-        { ...addSetRoundBtn, data: { exIndex } } as ActionMenuItem,
+      const baseAddSetRoundBtn = !this.isSuperSet(exIndex) ? addSetToExerciseBtn : addRoundToExerciseBtn;
+      const addSetRoundBtn = {
+        ...baseAddSetRoundBtn,
+        data: { exIndex },
+        overrideCssButtonClass: baseAddSetRoundBtn.buttonClass + commonModalButtonClass
+      };
+
+      const addWarmupSetBtnItem = {
+        ...addWarmupSetBtn,
+        data: { exIndex },
+        overrideCssButtonClass: addWarmupSetBtn.buttonClass + commonModalButtonClass
+      };
+
+      const removeExerciseBtnItem = {
+        ...removeExerciseBtn,
+        data: { exIndex },
+        overrideCssButtonClass: removeExerciseBtn.buttonClass + commonModalButtonClass
+      };
+
+      let actionsArray: ActionMenuItem[] = [
+        currOpenPerformanceInsightsBtn
+      ];
+
+      if (!this.isExercisePartiallyLogged(exercise) && !this.isExerciseFullyLogged(exercise)){
+        actionsArray.push(addWarmupSetBtnItem as ActionMenuItem);
+        actionsArray.push(currSwitchExerciseBtn as ActionMenuItem);
+      }
+      
+      actionsArray = [...actionsArray,
+        addSetRoundBtn as ActionMenuItem,
         { isDivider: true },
-        { ...removeExerciseBtn, data: { exIndex } },
+        removeExerciseBtnItem,
       ];
 
       // RULE 1: "Remove from Superset"
       if (exercise?.supersetId) {
-        actionsArray.push({ ...removeFromSuperSetBtn, data: { exIndex } } as ActionMenuItem);
+        actionsArray.push({
+          ...removeFromSuperSetBtn,
+          data: { exIndex },
+          overrideCssButtonClass: removeFromSuperSetBtn.buttonClass + commonModalButtonClass
+        } as ActionMenuItem);
       } else {
         // RULES 2 & 3: "Add to" and "Create Superset"
         if (routine.exercises.length >= 2) {
           if (routine.exercises.some(ex => ex.supersetId)) {
-            actionsArray.push({ ...addToSuperSetBtn, data: { exIndex } });
+            actionsArray.push({
+              ...addToSuperSetBtn,
+              data: { exIndex },
+              overrideCssButtonClass: addToSuperSetBtn.buttonClass + commonModalButtonClass
+            });
           }
           if (routine.exercises.filter(ex => !ex.supersetId).length >= 2) {
-            actionsArray.push({ ...createSuperSetBtn, data: { exIndex } });
+            actionsArray.push({
+              ...createSuperSetBtn,
+              data: { exIndex },
+              overrideCssButtonClass: createSuperSetBtn.buttonClass + commonModalButtonClass
+            });
           }
         }
       }
@@ -1562,7 +1685,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
   handleRestTimerFinished(): void {
     this.isRestTimerVisible.set(false);
-    this.toastService.success("Rest complete!", 2000);
+    // this.toastService.success("Rest complete!", 2000);
     this.updateLogWithRestTime(this.restDuration()); // Update log with full rest duration
     this.handleAutoExpandNextExercise();
   }

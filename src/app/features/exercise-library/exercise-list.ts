@@ -16,6 +16,7 @@ import { ActionMenuItem } from '../../core/models/action-menu.model';
 import { AppSettingsService } from '../../core/services/app-settings.service';
 import { MenuMode } from '../../core/models/app-settings.model';
 import { IconComponent } from '../../shared/components/icon/icon.component';
+import { deleteBtn, editBtn, hideBtn, unhideBtn, viewBtn } from '../../core/services/buttons-data';
 
 @Component({
   selector: 'app-exercise-list',
@@ -79,7 +80,7 @@ export class ExerciseListComponent implements OnInit {
   private spinnerService = inject(SpinnerService);
   private themeService = inject(ThemeService);
   private platformId = inject(PLATFORM_ID);
-    private appSettingsService = inject(AppSettingsService);
+  private appSettingsService = inject(AppSettingsService);
 
   categories$: Observable<string[]> | undefined;
   primaryMuscleGroups$: Observable<string[]> | undefined;
@@ -93,7 +94,9 @@ export class ExerciseListComponent implements OnInit {
   // -----------
 
   actionsVisibleId = signal<string | null>(null);
+  menuModeDropdown: boolean = false;
   menuModeCompact: boolean = false;
+  menuModeModal: boolean = false;
   isFilterAccordionOpen = signal(false);
 
   filteredExercises = computed(() => {
@@ -153,7 +156,10 @@ export class ExerciseListComponent implements OnInit {
     }
     this.categories$ = this.exerciseService.getUniqueCategories();
     this.primaryMuscleGroups$ = this.exerciseService.getUniquePrimaryMuscleGroups();
+
+    this.menuModeDropdown = this.appSettingsService.isMenuModeDropdown();
     this.menuModeCompact = this.appSettingsService.isMenuModeCompact();
+    this.menuModeModal = this.appSettingsService.isMenuModeModal();
 
     // This subscription now gets ALL exercises from the service
     this.exerciseService.exercises$.subscribe(exercises => {
@@ -281,41 +287,24 @@ export class ExerciseListComponent implements OnInit {
 
     const actionsArray: ActionMenuItem[] = [
       {
-        label: 'VIEW',
-        actionKey: 'view',
-        iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5Z" /><path fill-rule="evenodd" d="M.664 10.59a1.651 1.651 0 010-1.186A10.004 10.004 0 0110 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0110 17c-4.257 0-7.893-2.66-9.336-6.41ZM14 10a4 4 0 11-8 0 4 4 0 018 0Z" clip-rule="evenodd" /></svg>`,
-        iconClass: 'w-8 h-8 mr-2',
-        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+        ...viewBtn,
         data: { exerciseId: exerciseId }
       },
       {
-        label: 'EDIT',
-        actionKey: 'edit',
-        iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>`,
-        iconClass: 'w-8 h-8 mr-2',
-        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+        ...editBtn,
         data: { exerciseId: exerciseId }
-      },
-      { isDivider: true },
+      }
     ];
 
     // --- NEW: Conditionally add Hide/Unhide button ---
     if (currentExercise?.isHidden) {
       actionsArray.push({
-        label: 'UNHIDE',
-        actionKey: 'unhide',
-        iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5Z" /><path fill-rule="evenodd" d="M.664 10.59a1.651 1.651 0 010-1.186A10.004 10.004 0 0110 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0110 17c-4.257 0-7.893-2.66-9.336-6.41ZM14 10a4 4 0 11-8 0 4 4 0 018 0Z" clip-rule="evenodd" /></svg>`,
-        iconClass: 'w-8 h-8 mr-2',
-        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+        ...unhideBtn,
         data: { exerciseId }
       });
     } else {
       actionsArray.push({
-        label: 'HIDE',
-        actionKey: 'hide',
-        iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3.28 2.22a.75.75 0 00-1.06 1.06l14.5 14.5a.75.75 0 101.06-1.06l-1.745-1.745a10.029 10.029 0 003.3-4.38 1.651 1.651 0 000-1.185A10.004 10.004 0 009.999 3a9.956 9.956 0 00-4.744 1.194L3.28 2.22zM7.752 6.69l1.092 1.092a2.5 2.5 0 013.374 3.373l1.091 1.092a4 4 0 00-5.557-5.557z" clip-rule="evenodd" /><path d="M10.748 13.93l2.523 2.523a9.987 9.987 0 01-3.27.547c-4.257 0-7.893-2.66-9.336-6.41a1.651 1.651 0 010-1.186A10.007 10.007 0 012.839 6.02L6.07 9.252a4 4 0 004.678 4.678z" /></svg>`,
-        iconClass: 'w-8 h-8 mr-2',
-        buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+        ...hideBtn,
         data: { exerciseId }
       });
     }
@@ -323,11 +312,7 @@ export class ExerciseListComponent implements OnInit {
 
     // Add Delete button at the end
     actionsArray.push({
-      label: 'DELETE',
-      actionKey: 'delete',
-      iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.58.177-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5Zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5Z" clip-rule="evenodd" /></svg>`,
-      iconClass: 'w-8 h-8 mr-2',
-      buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + deleteBtnClass,
+      ...deleteBtn,
       data: { exerciseId: exerciseId }
     });
 
@@ -361,7 +346,6 @@ export class ExerciseListComponent implements OnInit {
   }
 
   activeExerciseIdActions = signal<string | null>(null);
-
   toggleActions(exerciseId: string, event: MouseEvent): void {
     event.stopPropagation();
     this.activeExerciseIdActions.update(current => (current === exerciseId ? null : exerciseId));
