@@ -1,4 +1,3 @@
-// src/app/features/history-stats/stats-dashboard.ts
 import { Component, inject, OnInit, OnDestroy, signal, computed, ChangeDetectionStrategy, effect, ViewChild, ElementRef, afterNextRender, HostListener, PLATFORM_ID } from '@angular/core';
 import { CommonModule, TitleCasePipe, DecimalPipe, DatePipe, isPlatformBrowser } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
@@ -48,46 +47,90 @@ export class StatsDashboardComponent implements OnInit, OnDestroy {
   protected unitsService = inject(UnitsService);
   protected router = inject(Router);
 
-  @ViewChild('muscleGroupChartWrapper') muscleGroupChartWrapperRef!: ElementRef<HTMLDivElement>;
+  // --- UPDATED: Renamed for clarity ---
+  @ViewChild('weeklyChartWrapper') weeklyChartWrapperRef!: ElementRef<HTMLDivElement>;
+  weeklyContainerView = signal<[number, number]>([320, 300]);
 
-  view = signal<[number, number] | undefined>(undefined); // Initialize as undefined or a default mobile size
-  chartHeight = 300; // Keep height constant
+  chartHeight = 300;
+  // --- UPDATED: More descriptive constants for responsive control ---
+  private readonly BAR_WIDTH_PER_ENTRY = 70;
+  private readonly VISIBLE_MOBILE_WEEK_ENTRIES = 5;
+  private readonly MIN_PC_WEEK_ENTRY_WIDTH = 80;
+
+  muscleGroupChartView = computed<[number,number]>(() => {
+    const dataCount = this.muscleGroupChartDataForPeriod().length;
+    if (dataCount > 0) {
+      const totalWidth = dataCount * this.BAR_WIDTH_PER_ENTRY;
+      return [totalWidth, this.chartHeight];
+    }
+    return [300, this.chartHeight];
+  });
+
+  // --- NEW: Computed signal for the scrollable weekly volume chart view ---
+  weeklyVolumeChartView = computed<[number, number]>(() => {
+    const data = this.weeklyVolumeChartDataForPeriod();
+    const series = data[0]?.series;
+    if (!series || series.length === 0) {
+      return this.weeklyContainerView(); // Fallback to the container's current size
+    }
+
+    const dataCount = series.length;
+    const containerWidth = this.weeklyContainerView()[0];
+
+    // Use a breakpoint to differentiate between mobile and PC layouts
+    const isPcView = containerWidth > 768;
+
+    if (isPcView) {
+      // --- PC LOGIC ---
+      // On larger screens, try to show all data. Only scroll if necessary.
+      const totalRequiredWidth = dataCount * this.MIN_PC_WEEK_ENTRY_WIDTH;
+      // The chart's width will be the larger of the container's width or the width required to show all data points comfortably.
+      const chartWidth = Math.max(containerWidth, totalRequiredWidth);
+      return [chartWidth, this.chartHeight];
+    } else {
+      // --- MOBILE LOGIC ---
+      // On smaller screens, enforce scrolling for better readability if data exceeds a certain count.
+      if (dataCount <= this.VISIBLE_MOBILE_WEEK_ENTRIES) {
+        // If there are few data points, let the chart fill the container without scrolling.
+        return [containerWidth, this.chartHeight];
+      } else {
+        // If there are many data points, calculate a total width that makes the chart scrollable, showing ~5 items at once.
+        const widthPerItem = containerWidth / this.VISIBLE_MOBILE_WEEK_ENTRIES;
+        const totalChartWidth = widthPerItem * dataCount;
+        return [totalChartWidth, this.chartHeight];
+      }
+    }
+  });
+
 
   allLogs = signal<WorkoutLog[]>([]);
-  statsFilterForm!: FormGroup; // For the date filters
+  statsFilterForm!: FormGroup;
 
-  // Signal to hold the parsed date filters
   private dateFilters = signal<{ dateFrom: Date | null; dateTo: Date | null }>({
     dateFrom: null,
     dateTo: null,
   });
 
-  isFilterAccordionOpen = signal(false); // For the filter accordion
+  isFilterAccordionOpen = signal(false);
 
-  // Computed signal for logs filtered by date
   filteredLogsForStats = computed(() => {
     const logs = this.allLogs();
     const { dateFrom, dateTo } = this.dateFilters();
 
-    // console.log('Stats Dashboard: Filtering logs. Date From:', dateFrom, 'Date To:', dateTo);
-
     if (!dateFrom && !dateTo) {
-      // console.log('Stats Dashboard: No date filters, returning all logs:', logs.length);
-      return logs; // No date filters applied, return all logs
+      return logs;
     }
 
     return logs.filter(log => {
-      const logDate = parseISO(log.date); // log.date is 'YYYY-MM-DD' string
+      const logDate = parseISO(log.date);
       let match = true;
 
       if (dateFrom && isValid(dateFrom)) {
-        // Compare start of logDate with start of dateFrom
         const normalizedLogDate = new Date(logDate.getFullYear(), logDate.getMonth(), logDate.getDate());
         const normalizedDateFrom = new Date(dateFrom.getFullYear(), dateFrom.getMonth(), dateFrom.getDate());
         match &&= normalizedLogDate >= normalizedDateFrom;
       }
       if (dateTo && isValid(dateTo)) {
-        // Compare start of logDate with start of dateTo (inclusive of dateTo)
         const normalizedLogDate = new Date(logDate.getFullYear(), logDate.getMonth(), logDate.getDate());
         const normalizedDateTo = new Date(dateTo.getFullYear(), dateTo.getMonth(), dateTo.getDate());
         match &&= normalizedLogDate <= normalizedDateTo;
@@ -96,7 +139,6 @@ export class StatsDashboardComponent implements OnInit, OnDestroy {
     });
   });
 
-  // Signals for stats - these will now be driven by an effect watching filteredLogsForStats
   workoutsInPeriodCount = signal<number>(0);
   volumeInPeriod = signal<number>(0);
   muscleGroupChartDataForPeriod = signal<ChartDataPoint[]>([]);
@@ -105,15 +147,12 @@ export class StatsDashboardComponent implements OnInit, OnDestroy {
   muscleGroupPerformanceTableDataForPeriod = signal<MuscleGroupPerformance[]>([]);
   lineChartReferenceLines = signal<{ name: string, value: number }[]>([]);
 
-
-  // Streaks are always calculated on all logs
   currentWorkoutStreakInfo = signal<StreakInfo>({ length: 0 });
   longestWorkoutStreakInfo = signal<StreakInfo>({ length: 0 });
 
   private logsSub?: Subscription;
-  private filterFormSub?: Subscription; // Subscription for filter form changes
+  private filterFormSub?: Subscription;
 
-  // --- NEW: Enhanced Chart Options ---
   showXAxis = true;
   showYAxis = true;
   gradient = false;
@@ -122,16 +161,11 @@ export class StatsDashboardComponent implements OnInit, OnDestroy {
   yAxisLabelVolume = computed(() => `Total Volume (${this.unitsService.getWeightUnitSuffix()})`);
   xAxisLabelMuscle = 'Muscle Group';
   xAxisLabelWeek = 'Week';
-
-  // Bar Chart Specific
   barChartShowDataLabel = true;
   barChartRoundEdges = true;
-
-  // Line Chart Specific
   lineChartTimeline = true;
-  lineChartCurve = shape.curveMonotoneX; // Smoother curve
+  lineChartCurve = shape.curveMonotoneX;
 
-  // Custom color scheme for a modern look
   customColorScheme = {
     name: 'fitTrackProScheme',
     selectable: true,
@@ -142,52 +176,42 @@ export class StatsDashboardComponent implements OnInit, OnDestroy {
 
   constructor() {
     this.statsFilterForm = this.fb.group({
-      dateFrom: [null as string | null], // Initialize with null, store as YYYY-MM-DD string
+      dateFrom: [null as string | null],
       dateTo: [null as string | null]
     });
 
-    // Effect to re-calculate stats whenever filteredLogsForStats changes
-    effect(async () => { // Make effect async to use await inside
+    effect(async () => {
       const logsToProcess = this.filteredLogsForStats();
-      console.log('StatsDashboard Effect: Processing stats for', logsToProcess.length, 'filtered logs.');
       this.calculatePeriodStats(logsToProcess);
-      // Chart and table data preparations might involve async calls (like getPerformanceByMuscleGroup)
-      await this.preparePeriodChartData(logsToProcess); // Make this async
-      this.preparePeriodTableData(logsToProcess);     // Make this async if it contains async calls too
+      await this.preparePeriodChartData(logsToProcess);
+      this.preparePeriodTableData(logsToProcess);
     });
 
-    afterNextRender(() => { // Ensure the view is rendered before accessing ElementRef
-      this.updateChartView();
+    afterNextRender(() => {
+      this.updateWeeklyContainerView();
     });
   }
 
-  private platformId = inject(PLATFORM_ID); // Inject PLATFORM_ID
+  private platformId = inject(PLATFORM_ID);
 
   ngOnInit(): void {
-    if (isPlatformBrowser(this.platformId)) { // Check if running in a browser
+    if (isPlatformBrowser(this.platformId)) {
       window.scrollTo(0, 0);
     }
     this.logsSub = this.trackingService.workoutLogs$.subscribe(allLogsData => {
-      console.log('StatsDashboard: Received allLogsData update - count:', allLogsData.length);
-      this.allLogs.set(allLogsData); // This will trigger the effect for initial calculation
-
-      // Streaks are based on all logs, not the filtered period
+      this.allLogs.set(allLogsData);
       this.currentWorkoutStreakInfo.set(this.statsService.calculateCurrentWorkoutStreak(allLogsData));
       this.longestWorkoutStreakInfo.set(this.statsService.calculateLongestWorkoutStreak(allLogsData));
     });
 
-    // Subscribe to form changes to update the dateFilters signal
     this.filterFormSub = this.statsFilterForm.valueChanges.pipe(
-      // startWith(this.statsFilterForm.value), // Trigger initial filter application
       distinctUntilChanged((prev, curr) => JSON.stringify(prev) === JSON.stringify(curr))
     ).subscribe(formValues => {
       this.applyStatsFiltersFromForm(formValues);
     });
-    // Apply initial filter values (which are null) to trigger the effect once logs are loaded
     this.applyStatsFiltersFromForm(this.statsFilterForm.value);
   }
 
-  // Called by the "Apply Filters" button and form valueChanges
   private applyStatsFiltersFromForm(formValues: { dateFrom: string | null, dateTo: string | null }): void {
     let dateFromObj: Date | null = null;
     let dateToObj: Date | null = null;
@@ -203,25 +227,18 @@ export class StatsDashboardComponent implements OnInit, OnDestroy {
 
     if (dateFromObj && dateToObj && dateFromObj > dateToObj) {
       alert("'From Date' cannot be after 'To Date'. Filters not applied");
-      // Optionally reset form or just don't update the signal
-      // this.statsFilterForm.reset({ dateFrom: null, dateTo: null }, { emitEvent: false }); // Avoid loop
-      // this.dateFilters.set({ dateFrom: null, dateTo: null });
-      return; // Don't update dateFilters signal if range is invalid
+      return;
     }
 
-    console.log('StatsDashboard: Applying filters - From:', dateFromObj, 'To:', dateToObj);
     this.dateFilters.set({ dateFrom: dateFromObj, dateTo: dateToObj });
   }
 
-  // This is for the explicit button click, mainly for user interaction clarity
   applyStatsFilters(): void {
     this.applyStatsFiltersFromForm(this.statsFilterForm.value);
   }
 
   resetStatsFilters(): void {
     this.statsFilterForm.reset({ dateFrom: null, dateTo: null });
-    // The valueChanges subscription will call applyStatsFiltersFromForm with nulls,
-    // which will update this.dateFilters.set({ dateFrom: null, dateTo: null });
     this.isFilterAccordionOpen.set(false);
   }
 
@@ -239,12 +256,11 @@ export class StatsDashboardComponent implements OnInit, OnDestroy {
     this.volumeInPeriod.set(this.statsService.calculateTotalVolumeForAllLogs(logs));
   }
 
-  private async preparePeriodChartData(logs: WorkoutLog[]): Promise<void> { // Made async
+  private async preparePeriodChartData(logs: WorkoutLog[]): Promise<void> {
     if (logs.length === 0 && this.hasActiveDateFilters()) {
       this.muscleGroupChartDataForPeriod.set([]);
       this.weeklyVolumeChartDataForPeriod.set([]);
       this.lineChartReferenceLines.set([]);
-
       return;
     }
     const musclePerf = await this.statsService.getPerformanceByMuscleGroup(logs);
@@ -256,8 +272,6 @@ export class StatsDashboardComponent implements OnInit, OnDestroy {
     if (weeklyVol.length > 0) {
       const seriesData = weeklyVol.map(wv => ({ name: wv.weekLabel, value: wv.totalVolume }));
       this.weeklyVolumeChartDataForPeriod.set([{ name: 'Total Volume', series: seriesData }]);
-
-      // Calculate average for reference line
       const totalVolume = seriesData.reduce((sum, item) => sum + item.value, 0);
       const averageVolume = totalVolume / seriesData.length;
       this.lineChartReferenceLines.set([{ name: `Avg: ${averageVolume.toFixed(0)}`, value: averageVolume }]);
@@ -267,22 +281,13 @@ export class StatsDashboardComponent implements OnInit, OnDestroy {
     }
   }
 
-  private preparePeriodTableData(logs: WorkoutLog[]): void { // Could be async if getPerformanceByMuscleGroup is called here
+  private preparePeriodTableData(logs: WorkoutLog[]): void {
     if (logs.length === 0 && this.hasActiveDateFilters()) {
       this.weeklySummariesTableDataForPeriod.set([]);
       this.muscleGroupPerformanceTableDataForPeriod.set([]);
       return;
     }
     this.weeklySummariesTableDataForPeriod.set(this.statsService.getWeeklySummaries(logs));
-    // this.statsService.getPerformanceByMuscleGroup(logs).then(perf => { // Already done in preparePeriodChartData
-    //   this.muscleGroupPerformanceTableDataForPeriod.set(
-    //     perf.map(p => ({...p, muscleGroup: this.toTitleCase(p.muscleGroup)}))
-    //   );
-    // });
-    // If muscleGroupChartDataForPeriod is already populated, we can derive table data from it
-    // or ensure getPerformanceByMuscleGroup is called once and results shared.
-    // For simplicity, let's assume preparePeriodChartData has already set the data
-    // Or, more robustly, make a dedicated call for the table if needed
     this.statsService.getPerformanceByMuscleGroup(logs).then(perf => {
       this.muscleGroupPerformanceTableDataForPeriod.set(
         perf.map(p => ({ ...p, muscleGroup: this.toTitleCase(p.muscleGroup) }))
@@ -295,7 +300,6 @@ export class StatsDashboardComponent implements OnInit, OnDestroy {
     return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
   }
 
-  // --- NEW: Formatting function for Y-axis to handle large numbers ---
   yAxisTickFormat(value: any): string {
     if (value >= 1000) {
       return (value / 1000).toFixed(1) + 'k';
@@ -303,36 +307,31 @@ export class StatsDashboardComponent implements OnInit, OnDestroy {
     return value.toLocaleString();
   }
 
-
   onChartSelect(event: any): void {
     console.log('Chart item selected:', event);
   }
 
-  isSameDate(date1?: Date, date2?: Date): boolean { // Already present
+  isSameDate(date1?: Date, date2?: Date): boolean {
     if (!date1 || !date2) return true;
     return isSameDay(date1, date2);
   }
 
   get hasWeeklyVolumeChartData(): boolean {
-    const chartData = this.weeklyVolumeChartDataForPeriod(); // Get the signal's value
-    // The timeline feature requires at least 2 data points to render correctly
-    return chartData.length > 0 &&
-      chartData[0]?.series?.length > 1;
+    const chartData = this.weeklyVolumeChartDataForPeriod();
+    return chartData.length > 0 && chartData[0]?.series?.length > 1;
   }
 
   @HostListener('window:resize')
   onResize() {
-    this.updateChartView();
+    this.updateWeeklyContainerView();
   }
 
-  private updateChartView(): void {
-    if (this.muscleGroupChartWrapperRef?.nativeElement) {
-      const width = this.muscleGroupChartWrapperRef.nativeElement.offsetWidth;
-      // Subtract some padding/margin if the chart itself shouldn't use the full offsetWidth
-      const chartContentWidth = Math.max(width - 20, 100); // Example: subtract 20px, min width 100
-      this.view.set([chartContentWidth, this.chartHeight]);
-    } else if (!this.view()) { // Set a default if elementRef not ready on init
-      this.view.set([300, this.chartHeight]); // A small default
+  // --- UPDATED: Renamed for clarity ---
+  private updateWeeklyContainerView(): void {
+    if (this.weeklyChartWrapperRef?.nativeElement) {
+      const width = this.weeklyChartWrapperRef.nativeElement.offsetWidth;
+      const chartContentWidth = Math.max(width - 20, 100);
+      this.weeklyContainerView.set([chartContentWidth, this.chartHeight]);
     }
   }
 

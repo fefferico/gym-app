@@ -19,34 +19,26 @@
 
   <div *ngIf="errorMessage()" class="text-center py-10 bg-red-50 dark:bg-red-900/30 p-4 rounded-md shadow">
     <p class="text-lg font-semibold text-red-700 dark:text-red-300">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 inline-block mr-2 align-middle">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+        class="w-6 h-6 inline-block mr-2 align-middle">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
       </svg>
       {{ errorMessage() }}
     </p>
-    <button (click)="goBack()" class="mt-4 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark transition-colors">
+    <button (click)="goBack()"
+      class="mt-4 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark transition-colors">
       Back to Personal Bests
     </button>
   </div>
 
-  <div *ngIf="!isLoading() && !errorMessage() && chartData()" class="bg-white dark:bg-gray-800 p-2 sm:p-4 rounded-md shadow-xl">
-    <ngx-charts-line-chart
-      [view]="view"
-      [scheme]="chartColorScheme()"
-      [results]="chartData()!"
-      [legend]="legend"
-      [xAxis]="xAxis"
-      [yAxis]="yAxis"
-      [showXAxisLabel]="showXAxisLabel"
-      [showYAxisLabel]="showYAxisLabel"
-      [xAxisLabel]="'Date'"
-      [yAxisLabel]="yAxisLabel()"
-      [timeline]="timeline"
-      [autoScale]="autoScale"
-      [roundDomains]="roundDomains"
-      [xAxisTickFormatting]="xAxisTickFormatting"
-      (select)="onChartSelect($event)"
-      class="pb-chart-container">
+  <div *ngIf="!isLoading() && !errorMessage() && chartData()"
+    class="bg-white dark:bg-gray-800 p-2 sm:p-4 rounded-md shadow-xl">
+    <ngx-charts-line-chart [view]="view" [scheme]="chartColorScheme" [results]="chartData()!" [legend]="legend"
+      [xAxis]="xAxis" [yAxis]="yAxis" [showXAxisLabel]="showXAxisLabel" [showYAxisLabel]="showYAxisLabel"
+      [xAxisLabel]="'Date'" [yAxisLabel]="yAxisLabel()" [timeline]="timeline" [autoScale]="autoScale"
+      [roundDomains]="roundDomains" [xAxisTickFormatting]="xAxisTickFormatting" [curve]="lineChartCurve"
+      [referenceLines]="lineChartReferenceLines()" (select)="onChartSelect($event)" class="pb-chart-container">
 
       <ng-template ngx-charts-tooltip-template let-model="model">
         <div class="chart-tooltip bg-gray-700 text-white p-2 rounded shadow-lg text-xs">
@@ -54,15 +46,12 @@
           <div>Value: {{ model.value }} {{ yAxisLabel().split(' ')[0] }}</div>
           <div *ngIf="model.extra?.reps">Reps: {{ model.extra.reps }}</div>
           <div *ngIf="model.extra?.notes" class="max-w-xs truncate">Notes: {{ model.extra.notes }}</div>
-           <div *ngIf="model.extra?.workoutLogId" class="mt-1 text-indigo-300">Click to view log</div>
+          <div *ngIf="model.extra?.workoutLogId" class="mt-1 text-indigo-300">Click to view log</div>
         </div>
       </ng-template>
 
     </ngx-charts-line-chart>
 
-    <!-- ========================================================== -->
-    <!-- START: NEW HISTORY TABLE SECTION                           -->
-    <!-- ========================================================== -->
     <div *ngIf="historyTableData().length > 0" class="mt-8">
       <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4 border-t pt-4 dark:border-gray-700">
         Personal Best History
@@ -71,17 +60,20 @@
         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
           <thead class="bg-gray-50 dark:bg-gray-700">
             <tr>
-              <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th scope="col"
+                class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider rounded-tl-md">
                 Date
               </th>
-              <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th scope="col"
+                class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 {{ yAxisLabel() }}
               </th>
-              <th scope="col" *ngIf="currentPbType?.includes('RM') || currentPbType?.includes('Heaviest Lifted')" class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th scope="col" *ngIf="currentPbType?.includes('RM') || currentPbType?.includes('Heaviest Lifted')"
+                class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Reps
               </th>
-              <th scope="col" class="relative px-4 py-3">
-                <span class="sr-only">View Log</span>
+              <th scope="col" class="relative px-4 py-3 border-l-0 rounded-tr-md">
+                <span class="sr-only">Log</span>
               </th>
             </tr>
           </thead>
@@ -93,12 +85,15 @@
               <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
                 {{ record.value }}
               </td>
-              <td *ngIf="currentPbType?.includes('RM') || currentPbType?.includes('Heaviest Lifted')" class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+              <td *ngIf="currentPbType?.includes('RM') || currentPbType?.includes('Heaviest Lifted')"
+                class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
                 {{ record.extra?.reps }}
               </td>
               <td class="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
-                <a *ngIf="record.extra?.workoutLogId" [routerLink]="['/history/log', record.extra?.workoutLogId]" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-focus dark:focus:ring-offset-gray-800">
-                  View Log
+                <a *ngIf="record.extra?.workoutLogId" [routerLink]="['/history/log', record.extra?.workoutLogId]"
+                  class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-focus dark:focus:ring-offset-gray-800">
+                  <app-icon name="eye" class="h-5 w-5 mr-1"></app-icon>
+                  LOG
                 </a>
               </td>
             </tr>
@@ -106,9 +101,35 @@
         </table>
       </div>
     </div>
-    <!-- ========================================================== -->
-    <!-- END: NEW HISTORY TABLE SECTION                             -->
-    <!-- ========================================================== -->
-
   </div>
 </div>
+
+<!-- ========================================================== -->
+<!-- START: NEW STYLES SECTION                                  -->
+<!-- ========================================================== -->
+<style>
+  :host ::ng-deep .pb-chart-container .line-series .circle {
+    fill: #ffffff;
+    /* White fill for the dot */
+    stroke: #10B981;
+    /* Primary color from the scheme */
+    stroke-width: 2px;
+    r: 4px !important;
+    /* Make the radius larger */
+  }
+
+  :host ::ng-deep .pb-chart-container .x.axis .tick text {
+    transform: rotate(-45deg) translate(-10px, -5px);
+    text-anchor: end !important;
+  }
+
+  /* Ensure chart text color respects the component variable */
+  :host ::ng-deep .pb-chart-container .ngx-charts-outer,
+  :host ::ng-deep .pb-chart-container .axis-label,
+  :host ::ng-deep .pb-chart-container .tick text {
+    fill: var(--ngx-charts-text-color, #374151);
+  }
+</style>
+<!-- ========================================================== -->
+<!-- END: NEW STYLES SECTION                                    -->
+<!-- ========================================================== -->
