@@ -1,15 +1,17 @@
 // src/app/features/history-stats/stats-dashboard.ts
 import { Component, inject, OnInit, OnDestroy, signal, computed, ChangeDetectionStrategy, effect, ViewChild, ElementRef, afterNextRender, HostListener, PLATFORM_ID } from '@angular/core';
 import { CommonModule, TitleCasePipe, DecimalPipe, DatePipe, isPlatformBrowser } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms'; // Import ReactiveFormsModule
 import { distinctUntilChanged, Subscription } from 'rxjs';
 // No need for startWith, distinctUntilChanged from rxjs/operators if using signals directly for form values
-import { parseISO, isValid, isSameDay } from 'date-fns'; // isSameDay was already here
+import { parseISO, isValid, format, isSameDay } from 'date-fns'; // isSameDay was already here
 
-import { NgxChartsModule } from '@swimlane/ngx-charts';
+import { NgxChartsModule, ScaleType } from '@swimlane/ngx-charts';
+import * as shape from 'd3-shape';
 
-import { MuscleGroupPerformance, StatsService, WeeklySummary,  StreakInfo } from '../../../core/services/stats.service';
+
+import { MuscleGroupPerformance, StatsService, WeeklySummary, DatedVolume, StreakInfo } from '../../../core/services/stats.service';
 import { TrackingService } from '../../../core/services/tracking.service';
 import { WorkoutLog } from '../../../core/models/workout-log.model';
 import { UnitsService } from '../../../core/services/units.service';
@@ -101,6 +103,8 @@ export class StatsDashboardComponent implements OnInit, OnDestroy {
   weeklyVolumeChartDataForPeriod = signal<ChartSeries[]>([]);
   weeklySummariesTableDataForPeriod = signal<WeeklySummary[]>([]);
   muscleGroupPerformanceTableDataForPeriod = signal<MuscleGroupPerformance[]>([]);
+  lineChartReferenceLines = signal<{ name: string, value: number }[]>([]);
+
 
   // Streaks are always calculated on all logs
   currentWorkoutStreakInfo = signal<StreakInfo>({ length: 0 });
@@ -109,16 +113,31 @@ export class StatsDashboardComponent implements OnInit, OnDestroy {
   private logsSub?: Subscription;
   private filterFormSub?: Subscription; // Subscription for filter form changes
 
-  // Chart options (same as before)
-  showXAxis = true; 
-  showYAxis = true; 
-  gradient = false; 
+  // --- NEW: Enhanced Chart Options ---
+  showXAxis = true;
+  showYAxis = true;
+  gradient = false;
   showXAxisLabel = true;
-  xAxisLabelMuscle = 'Muscle Group'; 
+  showYAxisLabel = true;
+  yAxisLabelVolume = computed(() => `Total Volume (${this.unitsService.getWeightUnitSuffix()})`);
+  xAxisLabelMuscle = 'Muscle Group';
   xAxisLabelWeek = 'Week';
-  showYAxisLabel = true; 
-  yAxisLabelVolume = 'Total Volume (kg)'; 
-  colorScheme = 'vivid';
+
+  // Bar Chart Specific
+  barChartShowDataLabel = true;
+  barChartRoundEdges = true;
+
+  // Line Chart Specific
+  lineChartTimeline = true;
+  lineChartCurve = shape.curveMonotoneX; // Smoother curve
+
+  // Custom color scheme for a modern look
+  customColorScheme = {
+    name: 'fitTrackProScheme',
+    selectable: true,
+    group: ScaleType.Ordinal,
+    domain: ['#10B981', '#3B82F6', '#F97316', '#8B5CF6', '#F59E0B', '#EC4899', '#14B8A6', '#6366F1'],
+  };
 
 
   constructor() {
@@ -224,6 +243,8 @@ export class StatsDashboardComponent implements OnInit, OnDestroy {
     if (logs.length === 0 && this.hasActiveDateFilters()) {
       this.muscleGroupChartDataForPeriod.set([]);
       this.weeklyVolumeChartDataForPeriod.set([]);
+      this.lineChartReferenceLines.set([]);
+
       return;
     }
     const musclePerf = await this.statsService.getPerformanceByMuscleGroup(logs);
@@ -232,12 +253,18 @@ export class StatsDashboardComponent implements OnInit, OnDestroy {
     );
 
     const weeklyVol = this.statsService.getWeeklyVolumeForChart(logs);
-    this.weeklyVolumeChartDataForPeriod.set(
-      weeklyVol.length > 0 ? [{
-        name: 'Total Volume',
-        series: weeklyVol.map(wv => ({ name: wv.weekLabel, value: wv.totalVolume }))
-      }] : []
-    );
+    if (weeklyVol.length > 0) {
+      const seriesData = weeklyVol.map(wv => ({ name: wv.weekLabel, value: wv.totalVolume }));
+      this.weeklyVolumeChartDataForPeriod.set([{ name: 'Total Volume', series: seriesData }]);
+
+      // Calculate average for reference line
+      const totalVolume = seriesData.reduce((sum, item) => sum + item.value, 0);
+      const averageVolume = totalVolume / seriesData.length;
+      this.lineChartReferenceLines.set([{ name: `Avg: ${averageVolume.toFixed(0)}`, value: averageVolume }]);
+    } else {
+      this.weeklyVolumeChartDataForPeriod.set([]);
+      this.lineChartReferenceLines.set([]);
+    }
   }
 
   private preparePeriodTableData(logs: WorkoutLog[]): void { // Could be async if getPerformanceByMuscleGroup is called here
@@ -268,6 +295,15 @@ export class StatsDashboardComponent implements OnInit, OnDestroy {
     return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
   }
 
+  // --- NEW: Formatting function for Y-axis to handle large numbers ---
+  yAxisTickFormat(value: any): string {
+    if (value >= 1000) {
+      return (value / 1000).toFixed(1) + 'k';
+    }
+    return value.toLocaleString();
+  }
+
+
   onChartSelect(event: any): void {
     console.log('Chart item selected:', event);
   }
@@ -279,10 +315,9 @@ export class StatsDashboardComponent implements OnInit, OnDestroy {
 
   get hasWeeklyVolumeChartData(): boolean {
     const chartData = this.weeklyVolumeChartDataForPeriod(); // Get the signal's value
+    // The timeline feature requires at least 2 data points to render correctly
     return chartData.length > 0 &&
-      chartData[0] &&
-      chartData[0].series &&
-      chartData[0].series.length > 0;
+      chartData[0]?.series?.length > 1;
   }
 
   @HostListener('window:resize')

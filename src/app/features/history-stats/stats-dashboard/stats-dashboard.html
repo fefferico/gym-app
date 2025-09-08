@@ -127,11 +127,13 @@
                             *ngIf="hasActiveDateFilters()">(Period)</span></h3>
                     <div *ngIf="muscleGroupChartDataForPeriod().length > 0; else noMuscleChartData"
                         class="chart-wrapper flex-grow">
-                        <ngx-charts-bar-vertical [results]="muscleGroupChartDataForPeriod()" [scheme]="colorScheme"
-                            [gradient]="gradient" [xAxis]="showXAxis" [yAxis]="showYAxis" [legend]="false"
-                            [showXAxisLabel]="showXAxisLabel" [showYAxisLabel]="showYAxisLabel"
-                            [xAxisLabel]="xAxisLabelMuscle" [yAxisLabel]="yAxisLabelVolume"
-                            (select)="onChartSelect($event)" class="chart-container">
+                        <ngx-charts-bar-vertical [results]="muscleGroupChartDataForPeriod()"
+                            [scheme]="customColorScheme" [gradient]="gradient" [xAxis]="showXAxis" [yAxis]="showYAxis"
+                            [legend]="false" [showXAxisLabel]="showXAxisLabel" [showYAxisLabel]="showYAxisLabel"
+                            [xAxisLabel]="xAxisLabelMuscle" [yAxisLabel]="yAxisLabelVolume()"
+                            [yAxisTickFormatting]="yAxisTickFormat" [showDataLabel]="barChartShowDataLabel"
+                            [roundEdges]="barChartRoundEdges" (select)="onChartSelect($event)"
+                            class="chart-container">
                         </ngx-charts-bar-vertical>
                     </div>
                     <ng-template #noMuscleChartData>
@@ -146,14 +148,22 @@
                 <div class="bg-white dark:bg-gray-700 p-4 rounded-md shadow-md min-h-[350px] flex flex-col">
                     <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">Weekly Volume Trend <span
                             *ngIf="hasActiveDateFilters()">(Period)</span></h3>
-                    <div *ngIf="hasWeeklyVolumeChartData; else noWeeklyChartData" class="chart-wrapper flex-grow">
+                    <div *ngIf="weeklyVolumeChartDataForPeriod().length > 0 && weeklyVolumeChartDataForPeriod()[0].series.length > 0; else noWeeklyChartData"
+                        class="chart-wrapper flex-grow">
                         <ngx-charts-line-chart [results]="weeklyVolumeChartDataForPeriod()" [gradient]="gradient"
                             [xAxis]="showXAxis" [yAxis]="showYAxis" [legend]="false" [showXAxisLabel]="showXAxisLabel"
                             [showYAxisLabel]="showYAxisLabel" [xAxisLabel]="xAxisLabelWeek"
-                            [yAxisLabel]="yAxisLabelVolume" [autoScale]="true" [scheme]="colorScheme"
+                            [yAxisLabel]="yAxisLabelVolume()" [yAxisTickFormatting]="yAxisTickFormat"
+                            [autoScale]="true" [scheme]="customColorScheme" [curve]="lineChartCurve"
+                            [timeline]="hasWeeklyVolumeChartData" [referenceLines]="lineChartReferenceLines()"
                             (select)="onChartSelect($event)" class="chart-container">
                         </ngx-charts-line-chart>
+                        <p *ngIf="!hasWeeklyVolumeChartData"
+                            class="text-center text-xs text-gray-500 dark:text-gray-400 italic mt-1">
+                            Timeline view requires at least two weeks of data.
+                        </p>
                     </div>
+
                     <ng-template #noWeeklyChartData>
                         <div class="flex-grow flex items-center justify-center">
                             <p class="text-sm text-gray-500 dark:text-gray-400 italic">Not enough data for this chart.
@@ -187,7 +197,8 @@
                             <tr *ngFor="let summary of weeklySummariesTableDataForPeriod()">
                                 <td
                                     class="px-2 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
-                                    {{ summary.weekLabel }} - {{ summary.weekLabelStart }}-{{ summary.weekLabelEnd }}
+                                    {{ summary.weekLabel }} ({{ summary.weekStartDate | date:'MMM d' }} - {{
+                                    summary.weekEndDate | date:'MMM d' }})
                                 </td>
                                 <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{
                                     summary.workoutCount }}</td>
