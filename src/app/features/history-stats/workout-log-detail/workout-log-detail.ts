@@ -177,15 +177,22 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
         // For each target, use the value on the logged set if it exists,
         // otherwise, fall back to the value from the original routine.
         
-        set.targetReps = set.targetReps ?? routineExerciseSet?.reps;
-        set.targetRepsMin = set.targetRepsMin ?? routineExerciseSet?.repsMin;
-        set.targetRepsMax = set.targetRepsMax ?? routineExerciseSet?.repsMax;
+        set.targetReps = set.targetReps ?? routineExerciseSet?.targetReps;
+        set.targetRepsMin = set.targetRepsMin ?? routineExerciseSet?.targetRepsMin;
+        set.targetRepsMax = set.targetRepsMax ?? routineExerciseSet?.targetRepsMax;
 
-        set.targetDuration = set.targetDuration ?? routineExerciseSet?.duration;
-        set.targetDurationMin = set.targetDurationMin ?? routineExerciseSet?.durationMin;
-        set.targetDurationMax = set.targetDurationMax ?? routineExerciseSet?.durationMax;
+        set.targetDuration = set.targetDuration ?? routineExerciseSet?.targetDuration;
+        set.targetDurationMin = set.targetDurationMin ?? routineExerciseSet?.targetDurationMin;
+        set.targetDurationMax = set.targetDurationMax ?? routineExerciseSet?.targetDurationMax;
 
-        set.targetWeight = set.targetWeight ?? routineExerciseSet?.weight;
+        set.targetWeight = set.targetWeight ?? routineExerciseSet?.targetWeight;
+        set.targetWeightMin = set.targetWeightMin ?? routineExerciseSet?.targetWeightMin;
+        set.targetWeightMax = set.targetWeightMax ?? routineExerciseSet?.targetWeightMax;
+
+        set.targetDistance = set.targetDistance ?? routineExerciseSet?.targetDistance;
+        set.targetDistanceMin = set.targetDistanceMin ?? routineExerciseSet?.targetDistanceMin;
+        set.targetDistanceMax = set.targetDistanceMax ?? routineExerciseSet?.targetDistanceMax;
+
         set.targetRestAfterSet = set.targetRestAfterSet ?? routineExerciseSet?.restAfterSet;
       }
     }
@@ -667,7 +674,7 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
     let modalData: TargetComparisonData | null = null;
     const unitLabel = this.unitService.getWeightUnitSuffix();
 
-    const createTargetDisplay = (min?: number, max?: number, single?: number, suffix: string = ''): string => {
+    const createTargetDisplay = (min?: number | null, max?: number | null, single?: number | null, suffix: string = ''): string => {
       if (min != null || max != null) {
         if (min != null && max != null) return min === max ? `${single ?? min}${suffix}` : `${min}-${max}${suffix}`;
         if (min != null) return `${min}+${suffix}`;

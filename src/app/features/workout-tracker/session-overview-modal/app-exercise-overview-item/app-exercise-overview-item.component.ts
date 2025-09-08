@@ -3,7 +3,7 @@
 import { Component, computed, Input, Signal } from "@angular/core";
 import { IconComponent } from "../../../../shared/components/icon/icon.component";
 import { CommonModule } from "@angular/common";
-import { ExerciseSetParams, WorkoutExercise } from "../../../../core/models/workout.model";
+import { ExerciseTargetSetParams, WorkoutExercise } from "../../../../core/models/workout.model";
 import { LoggedSet, LoggedWorkoutExercise } from "../../../../core/models/workout-log.model";
 import { WeightUnitPipe } from "../../../../shared/pipes/weight-unit-pipe";
 
@@ -100,7 +100,7 @@ export class ExerciseOverviewItemComponent {
         }
     }
 
-    formatSet(set: ExerciseSetParams | LoggedSet | undefined, isPerformed = false): string {
+    formatSet(set: ExerciseTargetSetParams | LoggedSet | undefined, isPerformed = false): string {
         if (!set) return isPerformed ? '—' : 'N/A';
     
         let weight: number | null | undefined;
@@ -110,8 +110,8 @@ export class ExerciseOverviewItemComponent {
           weight = set.weightUsed;
           reps = set.repsAchieved;
         } else {
-          weight = set.weight;
-          reps = set.reps;
+          weight = set.targetWeight;
+          reps = set.targetReps || 0;
         }
         
         let parts = [];

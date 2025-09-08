@@ -19,14 +19,18 @@ export interface LoggedSet {
 
   // Target values (copied from the planned set in the routine at the time of performance)
   // These are useful for seeing if targets were met/exceeded.
-  targetReps?: number;
-  targetRepsMin?: number;
-  targetRepsMax?: number;
+  targetReps?: number | null;
+  targetRepsMin?: number | null;
+  targetRepsMax?: number | null;
   targetWeight?: number | null;
-  targetDuration?: number;
-  targetDurationMin?: number;
-  targetDurationMax?: number;
-  targetDistance?: number; // in kilometers
+  targetWeightMin?: number | null;
+  targetWeightMax?: number | null;
+  targetDuration?: number | null;
+  targetDurationMin?: number | null;
+  targetDurationMax?: number | null;
+  targetDistance?: number | null; // in kilometers
+  targetDistanceMin?: number | null; // in kilometers
+  targetDistanceMax?: number | null; // in kilometers
   targetTempo?: string; // Target tempo from the plan
   targetRestAfterSet?: number; // Target rest after this set, if applicable
   restAfterSetUsed?: number;

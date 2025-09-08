@@ -153,7 +153,7 @@
             </div>
 
             <div
-              *ngIf="csf['actualReps'] && activeSet.setData.reps !== undefined && activeSetInfo()?.baseExerciseInfo?.category !== 'cardio'">
+              *ngIf="csf['actualReps'] && activeSet.setData.targetReps !== undefined && activeSetInfo()?.baseExerciseInfo?.category !== 'cardio'">
               <label
                 class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider text-center mb-1">Reps
                 <span *ngIf="getSetTargetDisplay(activeSet.setData, 'reps') as target" class="normal-case">
@@ -181,7 +181,7 @@
               </div>
             </div>
 
-            <div *ngIf="activeSet.setData.duration">
+            <div *ngIf="activeSet.setData.targetDuration">
               <label for="timedSetDisplay"
                 class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider text-center">
                 Time <span *ngIf="getSetTargetDisplay(activeSet.setData, 'duration') as target" class="normal-case">
@@ -193,7 +193,7 @@
                 [ngClass]="{
                         'text-red-500': isTimedSetOvertime(),
                         'animate-pulse': isTimedSetOvertime() && timedSetTimerState() === 'running',
-                        'text-green-500 dark:text-green-400': !isTimedSetOvertime() && timedSetTimerState() === 'running' && (activeSetInfo()?.setData?.duration ?? 0) > 0 && timedSetElapsedSeconds() > 0,
+                        'text-green-500 dark:text-green-400': !isTimedSetOvertime() && timedSetTimerState() === 'running' && (activeSetInfo()?.setData?.targetDuration ?? 0) > 0 && timedSetElapsedSeconds() > 0,
                         'text-gray-800 dark:text-gray-100': timedSetTimerState() === 'idle' || timedSetTimerState() === 'paused'
                      }">
                 {{ timedSetDisplay() | formatSeconds }}

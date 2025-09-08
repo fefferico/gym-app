@@ -187,7 +187,7 @@
               <ng-container *ngFor="let set of exercise.sets; let setIndex = index">
                 <!-- THE CRITICAL FIX: Changed items-center to items-start -->
                 <div class="grid grid-cols-12 gap-2 flex items-start rounded-md p-2 shadow-sm"
-                  [ngClass]="{'bg-blue-100 dark:bg-blue-700/70': set.type === 'warmup', 'bg-white dark:bg-gray-800': set.type !== 'warmup'}">
+                  [ngClass]="{'bg-blue-300 dark:bg-blue-700/70': set.type === 'warmup', 'bg-white dark:bg-gray-800': set.type !== 'warmup'}">
 
                   <!-- Added pt-1 for visual alignment with the top of the input boxes -->
                   <div class="col-span-1 text-center font-semibold text-gray-700 dark:text-gray-200 pt-1">
@@ -202,7 +202,7 @@
                         class="w-full text-center bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md p-1 focus:ring-primary-dark focus:border-primary-dark dark:text-gray-200">
                       <!-- Wrapper with fixed min-height to ensure consistent row height -->
                       <div class="text-center text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-                        <span *ngIf="getSetTargetDisplay(set, 'weight') as target">
+                        <span *ngIf="getSetTargetDisplay(set, 'weight') as target" [ngClass]="{'text-white': set.type === 'warmup'}">
                           Target: {{ target }}{{unitsService.getWeightUnitSuffix()}}
                         </span>
                       </div>
@@ -213,7 +213,7 @@
                         class="w-full text-center bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md p-1 focus:ring-primary-dark focus:border-primary-dark dark:text-gray-200">
                       <!-- Wrapper with fixed min-height to ensure consistent row height -->
                       <div class="text-center text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-                        <span *ngIf="getSetTargetDisplay(set, 'reps') as target">
+                        <span *ngIf="getSetTargetDisplay(set, 'reps') as target" [ngClass]="{'text-white': set.type === 'warmup'}">
                           Target: {{ target }}
                         </span>
                       </div>

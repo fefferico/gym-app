@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { LoggedWorkoutExercise, LoggedSet } from './workout-log.model';
-import { WorkoutExercise, ExerciseSetParams } from './workout.model';
+import { WorkoutExercise, ExerciseTargetSetParams, ExerciseExecutionSetParams } from './workout.model';
 
 /**
  * Maps an array of logged exercises back into a routine snapshot format.
@@ -20,17 +20,18 @@ export function mapLoggedExercisesToRoutineSnapshot(
 
     return loggedExercises.map((loggedEx): WorkoutExercise => {
         // Map each logged set back to the format of a planned set (ExerciseSetParams).
-        const mappedSets: ExerciseSetParams[] = loggedEx.sets.map((loggedSet): ExerciseSetParams => {
+        const mappedSets: ExerciseTargetSetParams[] = loggedEx.sets.map((loggedSet): ExerciseTargetSetParams => {
             return {
                 // If the logged set was based on a planned set, reuse its ID to maintain consistency.
                 // Otherwise, generate a new ID for this ad-hoc set.
                 id: loggedSet.plannedSetId || uuidv4(),
 
                 // The values of the new "plan" should be what the user actually achieved.
-                reps: loggedSet.repsAchieved,
-                weight: loggedSet.weightUsed,
-                duration: loggedSet.durationPerformed,
-                distance: loggedSet.distanceAchieved,
+                targetRpe: loggedSet.rpe,
+                targetWeight: loggedSet.weightUsed,
+                targetDuration: loggedSet.durationPerformed,
+                targetDistance: loggedSet.distanceAchieved,
+                targetReps: loggedSet.repsAchieved, // <<< UPDATED to include reps
                 notes: loggedSet.notes,
                 type: loggedSet.type,
 
@@ -38,10 +39,6 @@ export function mapLoggedExercisesToRoutineSnapshot(
                 restAfterSet: loggedSet.restAfterSetUsed ?? loggedSet.targetRestAfterSet ?? 60,
 
                 // Carry over target values if they exist, in case they are needed.
-                targetReps: loggedSet.targetReps,
-                targetWeight: loggedSet.targetWeight || 0,
-                targetDuration: loggedSet.targetDuration,
-                targetDistance: loggedSet.targetDistance || 0,
             };
         });
 
@@ -115,4 +112,81 @@ export function mapRoutineSnapshotToLoggedExercises(
 
         return loggedExercise;
     });
+}
+
+
+/**
+ * --- NEW ---
+ * Maps a legacy LoggedSet object to the current model.
+ * This function is self-contained and used by the mapper below.
+ * @param set The potentially legacy LoggedSet object.
+ * @returns A LoggedSet object conforming to the current model.
+ */
+function mapLegacyLoggedSet(set: any): LoggedSet {
+    const newSet: any = { ...set };
+    // const newSet: LoggedSet = { ...set };
+
+    // Map legacy target properties to their new names.
+    if (newSet.hasOwnProperty('reps') && !newSet.hasOwnProperty('targetReps')) {
+        newSet.targetReps = newSet.reps;
+        delete newSet.reps;
+    }
+    if (newSet.hasOwnProperty('weight') && !newSet.hasOwnProperty('targetWeight')) {
+        newSet.targetWeight = newSet.weight;
+        delete newSet.weight;
+    }
+    if (newSet.hasOwnProperty('duration') && !newSet.hasOwnProperty('targetDuration')) {
+        newSet.targetDuration = newSet.duration;
+        delete newSet.duration;
+    }
+    if (newSet.hasOwnProperty('distance') && !newSet.hasOwnProperty('targetDistance')) {
+        newSet.targetDistance = newSet.distance;
+        delete newSet.distance;
+    }
+
+    return newSet;
+}
+
+
+/**
+ * --- NEW ---
+ * Maps an array of potentially legacy logged exercises to the current data model.
+ * This is crucial for importing old workout logs where target properties might have
+ * different names (e.g., 'reps' instead of 'targetReps').
+ *
+ * @param legacyLoggedExercises The array of logged exercises from an import.
+ * @returns An array of LoggedWorkoutExercise conforming to the current data model.
+ */
+export function mapLegacyLoggedExercisesToCurrent(
+    legacyLoggedExercises: LoggedWorkoutExercise[]
+): LoggedWorkoutExercise[] {
+    if (!legacyLoggedExercises || !Array.isArray(legacyLoggedExercises)) {
+        return [];
+    }
+
+    return legacyLoggedExercises.map((loggedEx): LoggedWorkoutExercise => {
+        const updatedLoggedEx = { ...loggedEx };
+
+        if (updatedLoggedEx.sets && Array.isArray(updatedLoggedEx.sets)) {
+            // Map each set within the logged exercise using the helper
+            updatedLoggedEx.sets = updatedLoggedEx.sets.map(mapLegacyLoggedSet);
+        }
+
+        return updatedLoggedEx;
+    });
+}
+
+export function mapExerciseTargetSetParamsToExerciseExecutedSetParams(exerciseTargetSetParams: ExerciseTargetSetParams
+): ExerciseExecutionSetParams {
+    return {
+        id: exerciseTargetSetParams.id,
+        restAfterSet: exerciseTargetSetParams.restAfterSet,
+        type: exerciseTargetSetParams.type,
+        actualDistance: exerciseTargetSetParams.targetDistance || exerciseTargetSetParams.targetDistanceMin || 0,
+        actualDuration: exerciseTargetSetParams.targetDuration || exerciseTargetSetParams.targetDurationMin || 0,
+        weightUsed: exerciseTargetSetParams.targetWeight || exerciseTargetSetParams.targetWeightMin || 0,
+        repsAchieved: exerciseTargetSetParams.targetReps || exerciseTargetSetParams.targetRepsMin || 0,
+        notes: exerciseTargetSetParams.notes || '',
+        tempo: exerciseTargetSetParams.tempo
+    } as ExerciseExecutionSetParams;
 }

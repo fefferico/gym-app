@@ -4,9 +4,9 @@ import { BehaviorSubject, combineLatest, Observable, of } from 'rxjs';
 import { delay, distinctUntilChanged, map, shareReplay, take } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
 
-import { LastPerformanceSummary, LoggedSet, PersonalBestSet, WorkoutLog, PBHistoryInstance } from '../models/workout-log.model'; // Ensure PBHistoryInstance is imported
+import { LastPerformanceSummary, LoggedSet, PersonalBestSet, WorkoutLog, PBHistoryInstance, LoggedWorkoutExercise } from '../models/workout-log.model'; // Ensure PBHistoryInstance is imported
 import { StorageService } from './storage.service';
-import { ExerciseSetParams, Routine } from '../models/workout.model';
+import { ExerciseTargetSetParams, Routine } from '../models/workout.model';
 import { parseISO } from 'date-fns';
 import { AlertService } from './alert.service';
 import { WorkoutService } from './workout.service';
@@ -14,6 +14,7 @@ import { ToastService } from './toast.service';
 import { ExerciseService } from './exercise.service';
 import { TrainingProgramService } from './training-program.service';
 import { PerceivedWorkoutInfo } from '../../features/workout-tracker/perceived-effort-modal.component';
+import { mapLegacyLoggedExercisesToCurrent } from '../models/workout-mapper';
 
 export interface ExercisePerformanceDataPoint {
   date: Date;
@@ -129,18 +130,18 @@ export class TrackingService {
     return this.workoutLogs$.pipe(map(logs => logs.find(log => log.routineId === routineId)));
   }
 
-   /**
-   * Retrieves workout logs for a specific routine, sorted with the most recent first.
-   * @param routineId The ID of the routine.
-   * @param limit Optional. The maximum number of logs to return.
-   * @returns An Observable emitting an array of workout logs.
-   */
+  /**
+  * Retrieves workout logs for a specific routine, sorted with the most recent first.
+  * @param routineId The ID of the routine.
+  * @param limit Optional. The maximum number of logs to return.
+  * @returns An Observable emitting an array of workout logs.
+  */
   getLogsForRoutine(routineId: string, limit?: number): Observable<WorkoutLog[]> {
     return this.workoutLogs$.pipe(
       map(logs => {
         // Filter logs for the specific routine
         const routineLogs = logs.filter(log => log.routineId === routineId);
-        
+
         // Sort the filtered logs by start time in descending order (most recent first).
         // Using the `startTime` timestamp is more precise than the date string.
         routineLogs.sort((a, b) => b.startTime - a.startTime);
@@ -148,7 +149,7 @@ export class TrackingService {
         if (limit) {
           return routineLogs.slice(0, limit);
         }
-        
+
         return routineLogs;
       })
     );
@@ -206,7 +207,7 @@ export class TrackingService {
   }
 
 
-  findPreviousSetPerformance(lastPerformance: LastPerformanceSummary | null, currentSetTarget: ExerciseSetParams, currentSetIndexInRoutine: number): LoggedSet | null {
+  findPreviousSetPerformance(lastPerformance: LastPerformanceSummary | null, currentSetTarget: ExerciseTargetSetParams, currentSetIndexInRoutine: number): LoggedSet | null {
     if (!lastPerformance || !lastPerformance.sets || lastPerformance.sets.length === 0) {
       return null;
     }
@@ -490,15 +491,13 @@ export class TrackingService {
     *
     * @param newLogs The array of WorkoutLog objects to merge.
     */
-  public async replaceLogs(newLogs: WorkoutLog[]): Promise<void> { // +++ Made async for await
+  public async replaceLogs(newLogs: any[]): Promise<void> { // Accept 'any' to handle legacy formats
     // 1. Basic validation
     if (!Array.isArray(newLogs)) {
       console.error('TrackingService: Imported data for logs is not an array.');
       this.toastService.error('Import failed: Invalid workout log file.', 0, "Import Error");
       return;
     }
-
-    // +++ START of new merge logic +++
 
     // 2. Get current state
     const currentLogs = this.workoutLogsSubject.getValue();
@@ -512,11 +511,29 @@ export class TrackingService {
     let addedCount = 0;
 
     // 4. Iterate over the imported logs and merge them into the map
-    newLogs.forEach(importedLog => {
+    newLogs.forEach((importedLog: WorkoutLog) => {
       if (!importedLog.id || !importedLog.date) {
         console.warn('Skipping invalid log during import:', importedLog);
         return;
       }
+
+      // --- NEW: Map legacy log formats and ensure workoutLogId is set ---
+      if (importedLog.exercises && Array.isArray(importedLog.exercises)) {
+        // 1. Map legacy properties like 'reps' to 'targetReps' on sets
+        importedLog.exercises = mapLegacyLoggedExercisesToCurrent(importedLog.exercises as LoggedWorkoutExercise[]);
+
+        // 2. Ensure each set has the workoutLogId from its parent log
+        importedLog.exercises.forEach(ex => {
+          if (ex.sets && Array.isArray(ex.sets)) {
+            ex.sets.forEach(set => {
+              if (!set.workoutLogId) {
+                set.workoutLogId = importedLog.id;
+              }
+            });
+          }
+        });
+      }
+      // --- END NEW ---
 
       if (logMap.has(importedLog.id)) {
         updatedCount++;
@@ -592,8 +609,6 @@ export class TrackingService {
     this.savePBsToStorage(newPBsMaster);
     console.log('Personal Bests recalculated from all merged logs.');
     this.toastService.success('Personal bests successfully recalculated!', 3000, "PBs Updated");
-
-    // +++ END of new merge logic +++
   }
 
   /**

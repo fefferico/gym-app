@@ -3,20 +3,8 @@
 import { Exercise, ExerciseCategory } from "./exercise.model";
 import { LastPerformanceSummary, LoggedSet, LoggedWorkoutExercise } from "./workout-log.model";
 
-export interface ExerciseSetParams {
+export interface ExerciseTargetSetParams {
   id: string;
-  reps?: number;
-  repsMin?: number;
-  repsMax?: number;
-  weight?: number | null; // Allow null for bodyweight or if weight is not applicable
-  weightMin?: number | null; // Allow null for bodyweight or if weight is not applicable
-  weightMax?: number | null; // Allow null for bodyweight or if weight is not applicable
-  duration?: number; // in seconds
-  durationMin?: number; // in seconds
-  durationMax?: number; // in seconds
-  distance?: number; // in kilometers
-  distanceMin?: number; // in kilometers
-  distanceMax?: number; // in kilometers
   tempo?: string;
   restAfterSet: number; // For the set *within* an exercise. For supersets, this might be 0 for intermediate exercises.
   notes?: string;
@@ -27,23 +15,39 @@ export interface ExerciseSetParams {
   _uiActualDuration?: number;
   // Add other specific fields if a type implies them, e.g.:
   targetRpe?: number | null; // Could be useful for 'failure' sets
-  targetWeight?: number;
-  targetDuration?: number;
-  targetDurationMin?: number;
-  targetDurationMax?: number;
-  targetDistance?: number;
-  targetReps?: number;
-  targetRepsMin?: number;
-  targetRepsMax?: number;
+  targetWeight?: number | null;
+  targetWeightMin?: number | null;
+  targetWeightMax?: number | null;
+  targetDuration?: number | null;
+  targetDurationMin?: number | null;
+  targetDurationMax?: number | null;
+  targetDistance?: number | null;
+  targetDistanceMin?: number | null;
+  targetDistanceMax?: number | null;
+  targetReps?: number | null;
+  targetRepsMin?: number | null;
+  targetRepsMax?: number | null;
   dropToWeight?: number | null; // For 'dropset'
   amrapTimeLimit?: number | null; // For AMRAP if it's time-bound rather than rep-bound
+}
+
+export interface ExerciseExecutionSetParams {
+  id: string;
+  tempo?: string;
+  notes?: string;
+  type: 'standard' | 'warmup' | 'amrap' | 'dropset' | 'failure' | 'myorep' | 'restpause' | 'custom' | 'superset' | 'tabata' | string; // More flexible
+  restAfterSet: number; // For the set *within* an exercise. For supersets, this might be 0 for intermediate exercises.
+  repsAchieved: number;
+  weightUsed: number;
+  actualDuration: number;
+  actualDistance: number;
 }
 
 export interface WorkoutExercise {
   id: string;
   exerciseId: string; // Foreign key to Exercise.id
   exerciseName?: string;
-  sets: ExerciseSetParams[];
+  sets: ExerciseTargetSetParams[];
   notes?: string; // Notes specific to this exercise within the routine
 
   // --- Superset Properties ---
@@ -102,7 +106,7 @@ export interface ActiveSetInfo {
   exerciseIndex: number;
   setIndex: number;
   exerciseData: WorkoutExercise; // This WorkoutExercise will have sessionStatus
-  setData: ExerciseSetParams;
+  setData: ExerciseTargetSetParams;
   baseExerciseInfo?: Exercise;
   isCompleted: boolean;
   actualReps?: number;

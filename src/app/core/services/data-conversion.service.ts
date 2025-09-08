@@ -54,8 +54,8 @@ export class DataConversionService {
     routines.forEach(routine => {
       routine.exercises.forEach(ex => {
         ex.sets.forEach(set => {
-          if (set.weight != null) {
-            set.weight = this.unitsService.convertWeight(set.weight, fromUnit, toUnit);
+          if (set.targetWeight != null) {
+            set.targetWeight = this.unitsService.convertWeight(set.targetWeight, fromUnit, toUnit);
           }
         });
       });

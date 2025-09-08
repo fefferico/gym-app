@@ -14,8 +14,8 @@ export const ROUTINES_DATA: Routine[] = [
                 "sets": [
                     {
                         "id": "s1a",
-                        "reps": 3,
-                        "weight": 71,
+                        "targetReps": 3,
+                        "targetWeight": 71,
                         "restAfterSet": 60,
                         "type": "standard"
                     }
@@ -32,9 +32,9 @@ export const ROUTINES_DATA: Routine[] = [
                 "sets": [
                     {
                         "id": "s1b",
-                        "duration": 50,
+                        "targetDuration": 50,
                         "notes": "Distance: 50 ft.",
-                        "weight": 71,
+                        "targetWeight": 71,
                         "restAfterSet": 60,
                         "type": "standard"
                     }
@@ -51,8 +51,8 @@ export const ROUTINES_DATA: Routine[] = [
                 "sets": [
                     {
                         "id": "s1c",
-                        "reps": 6,
-                        "weight": 10,
+                        "targetReps": 6,
+                        "targetWeight": 10,
                         "restAfterSet": 60,
                         "type": "standard"
                     }
@@ -69,9 +69,9 @@ export const ROUTINES_DATA: Routine[] = [
                 "sets": [
                     {
                         "id": "s1d",
-                        "duration": 50,
+                        "targetDuration": 50,
                         "notes": "Distance: 50 ft.",
-                        "weight": 71,
+                        "targetWeight": 71,
                         "restAfterSet": 60,
                         "type": "standard"
                     }
@@ -88,8 +88,8 @@ export const ROUTINES_DATA: Routine[] = [
                 "sets": [
                     {
                         "id": "s1e",
-                        "reps": 6,
-                        "weight": 71,
+                        "targetReps": 6,
+                        "targetWeight": 71,
                         "restAfterSet": 150,
                         "type": "standard"
                     }
@@ -113,11 +113,11 @@ export const ROUTINES_DATA: Routine[] = [
                 "exerciseId": "goblet-squat",
                 "exerciseName": "Goblet Squat",
                 "sets": [
-                    { "id": "s2a1", "reps": 10, "weight": 71, "duration": 20, "restAfterSet": 10, "type": "tabata" },
-                    { "id": "s2a2", "reps": 8, "weight": 71, "duration": 20, "restAfterSet": 10, "type": "tabata" },
-                    { "id": "s2a3", "reps": 6, "weight": 71, "duration": 20, "restAfterSet": 10, "type": "tabata" },
-                    { "id": "s2a4", "reps": 4, "weight": 71, "duration": 20, "restAfterSet": 10, "type": "tabata" },
-                    { "id": "s2a5", "reps": 2, "weight": 71, "duration": 20, "restAfterSet": 10, "type": "tabata" }
+                    { "id": "s2a1", "targetReps": 10, "targetWeight": 71, "targetDuration": 20, "restAfterSet": 10, "type": "tabata" },
+                    { "id": "s2a2", "targetReps": 8, "targetWeight": 71, "targetDuration": 20, "restAfterSet": 10, "type": "tabata" },
+                    { "id": "s2a3", "targetReps": 6, "targetWeight": 71, "targetDuration": 20, "restAfterSet": 10, "type": "tabata" },
+                    { "id": "s2a4", "targetReps": 4, "targetWeight": 71, "targetDuration": 20, "restAfterSet": 10, "type": "tabata" },
+                    { "id": "s2a5", "targetReps": 2, "targetWeight": 71, "targetDuration": 20, "restAfterSet": 10, "type": "tabata" }
                 ],
                 "supersetId": null,
                 "supersetOrder": null,
@@ -128,11 +128,11 @@ export const ROUTINES_DATA: Routine[] = [
                 "exerciseId": "kettlebell-swing",
                 "exerciseName": "Double Hand Swings",
                 "sets": [
-                    { "id": "s2b1", "reps": 10, "weight": 71, "duration": 20, "restAfterSet": 10, "type": "tabata" },
-                    { "id": "s2b2", "reps": 8, "weight": 71, "duration": 20, "restAfterSet": 10, "type": "tabata" },
-                    { "id": "s2b3", "reps": 6, "weight": 71, "duration": 20, "restAfterSet": 10, "type": "tabata" },
-                    { "id": "s2b4", "reps": 4, "weight": 71, "duration": 20, "restAfterSet": 10, "type": "tabata" },
-                    { "id": "s2b5", "reps": 2, "weight": 71, "duration": 20, "restAfterSet": 10, "type": "tabata" }
+                    { "id": "s2b1", "targetReps": 10, "targetWeight": 71, "targetDuration": 20, "restAfterSet": 10, "type": "tabata" },
+                    { "id": "s2b2", "targetReps": 8, "targetWeight": 71, "targetDuration": 20, "restAfterSet": 10, "type": "tabata" },
+                    { "id": "s2b3", "targetReps": 6, "targetWeight": 71, "targetDuration": 20, "restAfterSet": 10, "type": "tabata" },
+                    { "id": "s2b4", "targetReps": 4, "targetWeight": 71, "targetDuration": 20, "restAfterSet": 10, "type": "tabata" },
+                    { "id": "s2b5", "targetReps": 2, "targetWeight": 71, "targetDuration": 20, "restAfterSet": 10, "type": "tabata" }
                 ],
                 "supersetId": null,
                 "supersetOrder": null,
@@ -143,11 +143,11 @@ export const ROUTINES_DATA: Routine[] = [
                 "exerciseId": "kettlebell-deadlift",
                 "exerciseName": "Deadlift",
                 "sets": [
-                    { "id": "s2c1", "reps": 10, "weight": 71, "duration": 20, "restAfterSet": 10, "type": "standard" },
-                    { "id": "s2c2", "reps": 8, "weight": 71, "duration": 20, "restAfterSet": 10, "type": "standard" },
-                    { "id": "s2c3", "reps": 6, "weight": 71, "duration": 20, "restAfterSet": 10, "type": "standard" },
-                    { "id": "s2c4", "reps": 4, "weight": 71, "duration": 20, "restAfterSet": 10, "type": "standard" },
-                    { "id": "s2c5", "reps": 2, "weight": 71, "duration": 20, "restAfterSet": 10, "type": "standard" }
+                    { "id": "s2c1", "targetReps": 10, "targetWeight": 71, "targetDuration": 20, "restAfterSet": 10, "type": "standard" },
+                    { "id": "s2c2", "targetReps": 8, "targetWeight": 71, "targetDuration": 20, "restAfterSet": 10, "type": "standard" },
+                    { "id": "s2c3", "targetReps": 6, "targetWeight": 71, "targetDuration": 20, "restAfterSet": 10, "type": "standard" },
+                    { "id": "s2c4", "targetReps": 4, "targetWeight": 71, "targetDuration": 20, "restAfterSet": 10, "type": "standard" },
+                    { "id": "s2c5", "targetReps": 2, "targetWeight": 71, "targetDuration": 20, "restAfterSet": 10, "type": "standard" }
                 ],
                 "supersetId": null,
                 "supersetOrder": null,
@@ -158,7 +158,7 @@ export const ROUTINES_DATA: Routine[] = [
                 "exerciseId": "kettlebell-goblet-walk",
                 "exerciseName": "Goblet Walk",
                 "sets": [
-                    { "id": "s2d1", "duration": 50, "notes": "Distance: 50 ft. after each interval", "reps": 1, "weight": 71, "restAfterSet": 0, "type": "standard" }
+                    { "id": "s2d1", "targetDuration": 50, "notes": "Distance: 50 ft. after each interval", "targetReps": 1, "targetWeight": 71, "restAfterSet": 0, "type": "standard" }
                 ],
                 "supersetId": null,
                 "supersetOrder": null,
@@ -180,24 +180,24 @@ export const ROUTINES_DATA: Routine[] = [
                 "sets": [
                     {
                         "id": "bwa-ex1-s1",
-                        "reps": 10,
-                        "weight": 10,
+                        "targetReps": 10,
+                        "targetWeight": 10,
                         "restAfterSet": 120,
                         "type": "standard",
                         "notes": "Aim for 8-10 reps."
                     },
                     {
                         "id": "bwa-ex1-s2",
-                        "reps": 10,
-                        "weight": 10,
+                        "targetReps": 10,
+                        "targetWeight": 10,
                         "restAfterSet": 120,
                         "type": "standard",
                         "notes": "Aim for 8-10 reps."
                     },
                     {
                         "id": "bwa-ex1-s3",
-                        "reps": 10,
-                        "weight": 10,
+                        "targetReps": 10,
+                        "targetWeight": 10,
                         "restAfterSet": 120,
                         "type": "standard",
                         "notes": "Aim for 8-10 reps."
@@ -214,24 +214,24 @@ export const ROUTINES_DATA: Routine[] = [
                 "sets": [
                     {
                         "id": "bwa-ex2-s1",
-                        "reps": 10,
-                        "weight": 10,
+                        "targetReps": 10,
+                        "targetWeight": 10,
                         "restAfterSet": 120,
                         "type": "standard",
                         "notes": "Aim for 8-10 reps."
                     },
                     {
                         "id": "bwa-ex2-s2",
-                        "reps": 10,
-                        "weight": 10,
+                        "targetReps": 10,
+                        "targetWeight": 10,
                         "restAfterSet": 120,
                         "type": "standard",
                         "notes": "Aim for 8-10 reps."
                     },
                     {
                         "id": "bwa-ex2-s3",
-                        "reps": 10,
-                        "weight": 10,
+                        "targetReps": 10,
+                        "targetWeight": 10,
                         "restAfterSet": 120,
                         "type": "standard",
                         "notes": "Aim for 8-10 reps."
@@ -248,24 +248,24 @@ export const ROUTINES_DATA: Routine[] = [
                 "sets": [
                     {
                         "id": "bwa-ex3-s1",
-                        "reps": 10,
-                        "weight": 10,
+                        "targetReps": 10,
+                        "targetWeight": 10,
                         "restAfterSet": 120,
                         "type": "standard",
                         "notes": "Aim for 8-10 reps."
                     },
                     {
                         "id": "bwa-ex3-s2",
-                        "reps": 10,
-                        "weight": 10,
+                        "targetReps": 10,
+                        "targetWeight": 10,
                         "restAfterSet": 120,
                         "type": "standard",
                         "notes": "Aim for 8-10 reps."
                     },
                     {
                         "id": "bwa-ex3-s3",
-                        "reps": 10,
-                        "weight": 10,
+                        "targetReps": 10,
+                        "targetWeight": 10,
                         "restAfterSet": 120,
                         "type": "standard",
                         "notes": "Aim for 8-10 reps."
@@ -290,24 +290,24 @@ export const ROUTINES_DATA: Routine[] = [
                 "sets": [
                     {
                         "id": "bwb-ex1-s1",
-                        "reps": 8,
-                        "weight": 10,
+                        "targetReps": 8,
+                        "targetWeight": 10,
                         "restAfterSet": 120,
                         "type": "standard",
                         "notes": "Aim for 6-8 reps."
                     },
                     {
                         "id": "bwb-ex1-s2",
-                        "reps": 8,
-                        "weight": 10,
+                        "targetReps": 8,
+                        "targetWeight": 10,
                         "restAfterSet": 120,
                         "type": "standard",
                         "notes": "Aim for 6-8 reps."
                     },
                     {
                         "id": "bwb-ex1-s3",
-                        "reps": 8,
-                        "weight": 10,
+                        "targetReps": 8,
+                        "targetWeight": 10,
                         "restAfterSet": 120,
                         "type": "standard",
                         "notes": "Aim for 6-8 reps."
@@ -324,24 +324,24 @@ export const ROUTINES_DATA: Routine[] = [
                 "sets": [
                     {
                         "id": "bwb-ex2-s1",
-                        "reps": 10,
-                        "weight": null,
+                        "targetReps": 10,
+                        "targetWeight": null,
                         "restAfterSet": 120,
                         "type": "standard",
                         "notes": "If you cannot do pull-ups, substitute with Lat Pulldowns. Aim for 8-10 reps."
                     },
                     {
                         "id": "bwb-ex2-s2",
-                        "reps": 10,
-                        "weight": null,
+                        "targetReps": 10,
+                        "targetWeight": null,
                         "restAfterSet": 120,
                         "type": "standard",
                         "notes": "Aim for 8-10 reps."
                     },
                     {
                         "id": "bwb-ex2-s3",
-                        "reps": 10,
-                        "weight": null,
+                        "targetReps": 10,
+                        "targetWeight": null,
                         "restAfterSet": 120,
                         "type": "standard",
                         "notes": "Aim for 8-10 reps."
@@ -358,24 +358,24 @@ export const ROUTINES_DATA: Routine[] = [
                 "sets": [
                     {
                         "id": "bwb-ex3-s1",
-                        "reps": 10,
-                        "weight": 10,
+                        "targetReps": 10,
+                        "targetWeight": 10,
                         "restAfterSet": 120,
                         "type": "standard",
                         "notes": "Aim for 8-10 reps."
                     },
                     {
                         "id": "bwb-ex3-s2",
-                        "reps": 10,
-                        "weight": 10,
+                        "targetReps": 10,
+                        "targetWeight": 10,
                         "restAfterSet": 120,
                         "type": "standard",
                         "notes": "Aim for 8-10 reps."
                     },
                     {
                         "id": "bwb-ex3-s3",
-                        "reps": 10,
-                        "weight": 10,
+                        "targetReps": 10,
+                        "targetWeight": 10,
                         "restAfterSet": 120,
                         "type": "standard",
                         "notes": "Aim for 8-10 reps."
@@ -398,9 +398,9 @@ export const ROUTINES_DATA: Routine[] = [
                 "exerciseId": "barbell-back-squat",
                 "exerciseName": "Squats",
                 "sets": [
-                    { "id": "bw2a-ex1-s1", "reps": 10, "weight": 10, "restAfterSet": 120, "type": "standard", "notes": "Aim for 8-10 reps." },
-                    { "id": "bw2a-ex1-s2", "reps": 10, "weight": 10, "restAfterSet": 120, "type": "standard", "notes": "Aim for 8-10 reps." },
-                    { "id": "bw2a-ex1-s3", "reps": 10, "weight": 10, "restAfterSet": 120, "type": "standard", "notes": "Aim for 8-10 reps." }
+                    { "id": "bw2a-ex1-s1", "targetReps": 10, "targetWeight": 10, "restAfterSet": 120, "type": "standard", "notes": "Aim for 8-10 reps." },
+                    { "id": "bw2a-ex1-s2", "targetReps": 10, "targetWeight": 10, "restAfterSet": 120, "type": "standard", "notes": "Aim for 8-10 reps." },
+                    { "id": "bw2a-ex1-s3", "targetReps": 10, "targetWeight": 10, "restAfterSet": 120, "type": "standard", "notes": "Aim for 8-10 reps." }
                 ],
                 "supersetId": null,
                 "supersetOrder": null,
@@ -411,9 +411,9 @@ export const ROUTINES_DATA: Routine[] = [
                 "exerciseId": "barbell-bench-press",
                 "exerciseName": "Bench Press",
                 "sets": [
-                    { "id": "bw2a-ex2-s1", "reps": 10, "weight": 10, "restAfterSet": 120, "type": "standard", "notes": "Aim for 8-10 reps." },
-                    { "id": "bw2a-ex2-s2", "reps": 10, "weight": 10, "restAfterSet": 120, "type": "standard", "notes": "Aim for 8-10 reps." },
-                    { "id": "bw2a-ex2-s3", "reps": 10, "weight": 10, "restAfterSet": 120, "type": "standard", "notes": "Aim for 8-10 reps." }
+                    { "id": "bw2a-ex2-s1", "targetReps": 10, "targetWeight": 10, "restAfterSet": 120, "type": "standard", "notes": "Aim for 8-10 reps." },
+                    { "id": "bw2a-ex2-s2", "targetReps": 10, "targetWeight": 10, "restAfterSet": 120, "type": "standard", "notes": "Aim for 8-10 reps." },
+                    { "id": "bw2a-ex2-s3", "targetReps": 10, "targetWeight": 10, "restAfterSet": 120, "type": "standard", "notes": "Aim for 8-10 reps." }
                 ],
                 "supersetId": null,
                 "supersetOrder": null,
@@ -424,9 +424,9 @@ export const ROUTINES_DATA: Routine[] = [
                 "exerciseId": "bent-over-row-barbell",
                 "exerciseName": "Rows",
                 "sets": [
-                    { "id": "bw2a-ex3-s1", "reps": 10, "weight": 10, "restAfterSet": 120, "type": "standard", "notes": "Aim for 8-10 reps." },
-                    { "id": "bw2a-ex3-s2", "reps": 10, "weight": 10, "restAfterSet": 120, "type": "standard", "notes": "Aim for 8-10 reps." },
-                    { "id": "bw2a-ex3-s3", "reps": 10, "weight": 10, "restAfterSet": 120, "type": "standard", "notes": "Aim for 8-10 reps." }
+                    { "id": "bw2a-ex3-s1", "targetReps": 10, "targetWeight": 10, "restAfterSet": 120, "type": "standard", "notes": "Aim for 8-10 reps." },
+                    { "id": "bw2a-ex3-s2", "targetReps": 10, "targetWeight": 10, "restAfterSet": 120, "type": "standard", "notes": "Aim for 8-10 reps." },
+                    { "id": "bw2a-ex3-s3", "targetReps": 10, "targetWeight": 10, "restAfterSet": 120, "type": "standard", "notes": "Aim for 8-10 reps." }
                 ],
                 "supersetId": null,
                 "supersetOrder": null,
@@ -437,7 +437,7 @@ export const ROUTINES_DATA: Routine[] = [
                 "exerciseId": "cable-tricep-pushdown",
                 "exerciseName": "Triceps Pushdowns",
                 "sets": [
-                    { "id": "bw2a-ex4-s1", "reps": 15, "weight": 10, "restAfterSet": 0, "type": "standard", "notes": "Aim for 10-15 reps." }
+                    { "id": "bw2a-ex4-s1", "targetReps": 15, "targetWeight": 10, "restAfterSet": 0, "type": "standard", "notes": "Aim for 10-15 reps." }
                 ],
                 "supersetId": null,
                 "supersetOrder": null,
@@ -448,8 +448,8 @@ export const ROUTINES_DATA: Routine[] = [
                 "exerciseId": "bodyweight-calf-raise",
                 "exerciseName": "Calf Raises",
                 "sets": [
-                    { "id": "bw2a-ex5-s1", "reps": 12, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 8-12 reps." },
-                    { "id": "bw2a-ex5-s2", "reps": 12, "weight": 10, "restAfterSet": 0, "type": "standard", "notes": "Aim for 8-12 reps." }
+                    { "id": "bw2a-ex5-s1", "targetReps": 12, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 8-12 reps." },
+                    { "id": "bw2a-ex5-s2", "targetReps": 12, "targetWeight": 10, "restAfterSet": 0, "type": "standard", "notes": "Aim for 8-12 reps." }
                 ],
                 "supersetId": null,
                 "supersetOrder": null,
@@ -468,9 +468,9 @@ export const ROUTINES_DATA: Routine[] = [
                 "exerciseId": "barbell-deadlift",
                 "exerciseName": "Deadlifts",
                 "sets": [
-                    { "id": "bw2b-ex1-s1", "reps": 8, "weight": 10, "restAfterSet": 120, "type": "standard", "notes": "Aim for 6-8 reps." },
-                    { "id": "bw2b-ex1-s2", "reps": 8, "weight": 10, "restAfterSet": 120, "type": "standard", "notes": "Aim for 6-8 reps." },
-                    { "id": "bw2b-ex1-s3", "reps": 8, "weight": 10, "restAfterSet": 120, "type": "standard", "notes": "Aim for 6-8 reps." }
+                    { "id": "bw2b-ex1-s1", "targetReps": 8, "targetWeight": 10, "restAfterSet": 120, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "bw2b-ex1-s2", "targetReps": 8, "targetWeight": 10, "restAfterSet": 120, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "bw2b-ex1-s3", "targetReps": 8, "targetWeight": 10, "restAfterSet": 120, "type": "standard", "notes": "Aim for 6-8 reps." }
                 ],
                 "supersetId": null,
                 "supersetOrder": null,
@@ -481,9 +481,9 @@ export const ROUTINES_DATA: Routine[] = [
                 "exerciseId": "pull-up",
                 "exerciseName": "Pull-ups (or lat pull-downs)",
                 "sets": [
-                    { "id": "bw2b-ex2-s1", "reps": 10, "weight": 10, "restAfterSet": 120, "type": "standard", "notes": "If unable to perform, substitute with Lat Pulldowns. Aim for 8-10 reps." },
-                    { "id": "bw2b-ex2-s2", "reps": 10, "weight": 10, "restAfterSet": 120, "type": "standard", "notes": "Aim for 8-10 reps." },
-                    { "id": "bw2b-ex2-s3", "reps": 10, "weight": 10, "restAfterSet": 120, "type": "standard", "notes": "Aim for 8-10 reps." }
+                    { "id": "bw2b-ex2-s1", "targetReps": 10, "targetWeight": 10, "restAfterSet": 120, "type": "standard", "notes": "If unable to perform, substitute with Lat Pulldowns. Aim for 8-10 reps." },
+                    { "id": "bw2b-ex2-s2", "targetReps": 10, "targetWeight": 10, "restAfterSet": 120, "type": "standard", "notes": "Aim for 8-10 reps." },
+                    { "id": "bw2b-ex2-s3", "targetReps": 10, "targetWeight": 10, "restAfterSet": 120, "type": "standard", "notes": "Aim for 8-10 reps." }
                 ],
                 "supersetId": null,
                 "supersetOrder": null,
@@ -494,9 +494,9 @@ export const ROUTINES_DATA: Routine[] = [
                 "exerciseId": "overhead-press-barbell",
                 "exerciseName": "Shoulder Press",
                 "sets": [
-                    { "id": "bw2b-ex3-s1", "reps": 10, "weight": 10, "restAfterSet": 120, "type": "standard", "notes": "Aim for 8-10 reps." },
-                    { "id": "bw2b-ex3-s2", "reps": 10, "weight": 10, "restAfterSet": 120, "type": "standard", "notes": "Aim for 8-10 reps." },
-                    { "id": "bw2b-ex3-s3", "reps": 10, "weight": 10, "restAfterSet": 120, "type": "standard", "notes": "Aim for 8-10 reps." }
+                    { "id": "bw2b-ex3-s1", "targetReps": 10, "targetWeight": 10, "restAfterSet": 120, "type": "standard", "notes": "Aim for 8-10 reps." },
+                    { "id": "bw2b-ex3-s2", "targetReps": 10, "targetWeight": 10, "restAfterSet": 120, "type": "standard", "notes": "Aim for 8-10 reps." },
+                    { "id": "bw2b-ex3-s3", "targetReps": 10, "targetWeight": 10, "restAfterSet": 120, "type": "standard", "notes": "Aim for 8-10 reps." }
                 ],
                 "supersetId": null,
                 "supersetOrder": null,
@@ -507,7 +507,7 @@ export const ROUTINES_DATA: Routine[] = [
                 "exerciseId": "dumbbell-bicep-curl",
                 "exerciseName": "Dumbbell Curls",
                 "sets": [
-                    { "id": "bw2b-ex4-s1", "reps": 15, "weight": 10, "restAfterSet": 0, "type": "standard", "notes": "Aim for 10-15 reps." }
+                    { "id": "bw2b-ex4-s1", "targetReps": 15, "targetWeight": 10, "restAfterSet": 0, "type": "standard", "notes": "Aim for 10-15 reps." }
                 ],
                 "supersetId": null,
                 "supersetOrder": null,
@@ -518,8 +518,8 @@ export const ROUTINES_DATA: Routine[] = [
                 "exerciseId": "plank",
                 "exerciseName": "Abs",
                 "sets": [
-                    { "id": "bw2b-ex5-s1", "reps": 15, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Perform any ab exercise like crunches, leg raises, or planks. Aim for 8-15 reps." },
-                    { "id": "bw2b-ex5-s2", "reps": 15, "weight": 10, "restAfterSet": 0, "type": "standard", "notes": "Aim for 8-15 reps." }
+                    { "id": "bw2b-ex5-s1", "targetReps": 15, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Perform any ab exercise like crunches, leg raises, or planks. Aim for 8-15 reps." },
+                    { "id": "bw2b-ex5-s2", "targetReps": 15, "targetWeight": 10, "restAfterSet": 0, "type": "standard", "notes": "Aim for 8-15 reps." }
                 ],
                 "supersetId": null,
                 "supersetOrder": null,
@@ -535,49 +535,49 @@ export const ROUTINES_DATA: Routine[] = [
         "exercises": [
             {
                 "id": "mb-ua-ex1", "exerciseId": "barbell-bench-press", "exerciseName": "Bench Press", "sets": [
-                    { "id": "mb-ua-s1-1", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
-                    { "id": "mb-ua-s1-2", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
-                    { "id": "mb-ua-s1-3", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." }
+                    { "id": "mb-ua-s1-1", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-ua-s1-2", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-ua-s1-3", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-ua-ex2", "exerciseId": "bent-over-row-barbell", "exerciseName": "Rows", "sets": [
-                    { "id": "mb-ua-s2-1", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
-                    { "id": "mb-ua-s2-2", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
-                    { "id": "mb-ua-s2-3", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." }
+                    { "id": "mb-ua-s2-1", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-ua-s2-2", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-ua-s2-3", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-ua-ex3", "exerciseId": "dumbbell-incline-press", "exerciseName": "Incline Dumbbell Press", "sets": [
-                    { "id": "mb-ua-s3-1", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
-                    { "id": "mb-ua-s3-2", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
-                    { "id": "mb-ua-s3-3", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." }
+                    { "id": "mb-ua-s3-1", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-ua-s3-2", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-ua-s3-3", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-ua-ex4", "exerciseId": "lat-pulldown-machine", "exerciseName": "Lat Pull-Downs", "sets": [
-                    { "id": "mb-ua-s4-1", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
-                    { "id": "mb-ua-s4-2", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
-                    { "id": "mb-ua-s4-3", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." }
+                    { "id": "mb-ua-s4-1", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-ua-s4-2", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-ua-s4-3", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-ua-ex5", "exerciseId": "dumbbell-lateral-raise", "exerciseName": "Lateral Raises", "sets": [
-                    { "id": "mb-ua-s5-1", "reps": 15, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-15 reps." },
-                    { "id": "mb-ua-s5-2", "reps": 15, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-15 reps." }
+                    { "id": "mb-ua-s5-1", "targetReps": 15, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-15 reps." },
+                    { "id": "mb-ua-s5-2", "targetReps": 15, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-15 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-ua-ex6", "exerciseId": "cable-tricep-pushdown", "exerciseName": "Triceps Pushdowns", "sets": [
-                    { "id": "mb-ua-s6-1", "reps": 12, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-12 reps." },
-                    { "id": "mb-ua-s6-2", "reps": 12, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-12 reps." },
-                    { "id": "mb-ua-s6-3", "reps": 12, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-12 reps." }
+                    { "id": "mb-ua-s6-1", "targetReps": 12, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-12 reps." },
+                    { "id": "mb-ua-s6-2", "targetReps": 12, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-12 reps." },
+                    { "id": "mb-ua-s6-3", "targetReps": 12, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-12 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-ua-ex7", "exerciseId": "dumbbell-bicep-curl", "exerciseName": "Dumbbell Curls", "sets": [
-                    { "id": "mb-ua-s7-1", "reps": 15, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 12-15 reps." },
-                    { "id": "mb-ua-s7-2", "reps": 15, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 12-15 reps." }
+                    { "id": "mb-ua-s7-1", "targetReps": 15, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 12-15 reps." },
+                    { "id": "mb-ua-s7-2", "targetReps": 15, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 12-15 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             }
         ]
@@ -590,36 +590,36 @@ export const ROUTINES_DATA: Routine[] = [
         "exercises": [
             {
                 "id": "mb-la-ex1", "exerciseId": "barbell-romanian-deadlift", "exerciseName": "Romanian Deadlifts", "sets": [
-                    { "id": "mb-la-s1-1", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
-                    { "id": "mb-la-s1-2", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
-                    { "id": "mb-la-s1-3", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." }
+                    { "id": "mb-la-s1-1", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-la-s1-2", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-la-s1-3", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-la-ex2", "exerciseId": "leg-press-machine", "exerciseName": "Leg Press", "sets": [
-                    { "id": "mb-la-s2-1", "reps": 12, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps." },
-                    { "id": "mb-la-s2-2", "reps": 12, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps." },
-                    { "id": "mb-la-s2-3", "reps": 12, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps." }
+                    { "id": "mb-la-s2-1", "targetReps": 12, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps." },
+                    { "id": "mb-la-s2-2", "targetReps": 12, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps." },
+                    { "id": "mb-la-s2-3", "targetReps": 12, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-la-ex3", "exerciseId": "leg-curl-machine", "exerciseName": "Seated Leg Curls", "sets": [
-                    { "id": "mb-la-s3-1", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
-                    { "id": "mb-la-s3-2", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
-                    { "id": "mb-la-s3-3", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." }
+                    { "id": "mb-la-s3-1", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-la-s3-2", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-la-s3-3", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-la-ex4", "exerciseId": "standing-calf-raise", "exerciseName": "Standing Calf Raises", "sets": [
-                    { "id": "mb-la-s4-1", "reps": 8, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 6-8 reps." },
-                    { "id": "mb-la-s4-2", "reps": 8, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 6-8 reps." },
-                    { "id": "mb-la-s4-3", "reps": 8, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 6-8 reps." },
-                    { "id": "mb-la-s4-4", "reps": 8, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 6-8 reps." }
+                    { "id": "mb-la-s4-1", "targetReps": 8, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-la-s4-2", "targetReps": 8, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-la-s4-3", "targetReps": 8, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-la-s4-4", "targetReps": 8, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 6-8 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-la-ex5", "exerciseId": "plank", "exerciseName": "Abs", "sets": [
-                    { "id": "mb-la-s5-1", "reps": 15, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Perform any ab exercise. Aim for 8-15 reps." }
+                    { "id": "mb-la-s5-1", "targetReps": 15, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Perform any ab exercise. Aim for 8-15 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             }
         ]
@@ -632,49 +632,49 @@ export const ROUTINES_DATA: Routine[] = [
         "exercises": [
             {
                 "id": "mb-ub-ex1", "exerciseId": "pull-up", "exerciseName": "Pull-Ups", "sets": [
-                    { "id": "mb-ub-s1-1", "reps": 8, "weight": null, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
-                    { "id": "mb-ub-s1-2", "reps": 8, "weight": null, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
-                    { "id": "mb-ub-s1-3", "reps": 8, "weight": null, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." }
+                    { "id": "mb-ub-s1-1", "targetReps": 8, "targetWeight": null, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-ub-s1-2", "targetReps": 8, "targetWeight": null, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-ub-s1-3", "targetReps": 8, "targetWeight": null, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-ub-ex2", "exerciseId": "overhead-press-barbell", "exerciseName": "Barbell Shoulder Press", "sets": [
-                    { "id": "mb-ub-s2-1", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
-                    { "id": "mb-ub-s2-2", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
-                    { "id": "mb-ub-s2-3", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." }
+                    { "id": "mb-ub-s2-1", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-ub-s2-2", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-ub-s2-3", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-ub-ex3", "exerciseId": "seated-row-machine", "exerciseName": "Seated Cable Row", "sets": [
-                    { "id": "mb-ub-s3-1", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
-                    { "id": "mb-ub-s3-2", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
-                    { "id": "mb-ub-s3-3", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." }
+                    { "id": "mb-ub-s3-1", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-ub-s3-2", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-ub-s3-3", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-ub-ex4", "exerciseId": "dumbbell-bench-press", "exerciseName": "Dumbbell Bench Press", "sets": [
-                    { "id": "mb-ub-s4-1", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
-                    { "id": "mb-ub-s4-2", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
-                    { "id": "mb-ub-s4-3", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." }
+                    { "id": "mb-ub-s4-1", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-ub-s4-2", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-ub-s4-3", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-ub-ex5", "exerciseId": "dumbbell-fly", "exerciseName": "Dumbbell Flyes", "sets": [
-                    { "id": "mb-ub-s5-1", "reps": 15, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-15 reps." },
-                    { "id": "mb-ub-s5-2", "reps": 15, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-15 reps." }
+                    { "id": "mb-ub-s5-1", "targetReps": 15, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-15 reps." },
+                    { "id": "mb-ub-s5-2", "targetReps": 15, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-15 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-ub-ex6", "exerciseId": "barbell-bicep-curl", "exerciseName": "Barbell Curls", "sets": [
-                    { "id": "mb-ub-s6-1", "reps": 12, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-12 reps." },
-                    { "id": "mb-ub-s6-2", "reps": 12, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-12 reps." },
-                    { "id": "mb-ub-s6-3", "reps": 12, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-12 reps." }
+                    { "id": "mb-ub-s6-1", "targetReps": 12, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-12 reps." },
+                    { "id": "mb-ub-s6-2", "targetReps": 12, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-12 reps." },
+                    { "id": "mb-ub-s6-3", "targetReps": 12, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-12 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-ub-ex7", "exerciseId": "barbell-skull-crusher", "exerciseName": "Skull Crushers", "sets": [
-                    { "id": "mb-ub-s7-1", "reps": 15, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 12-15 reps." },
-                    { "id": "mb-ub-s7-2", "reps": 15, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 12-15 reps." }
+                    { "id": "mb-ub-s7-1", "targetReps": 15, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 12-15 reps." },
+                    { "id": "mb-ub-s7-2", "targetReps": 15, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 12-15 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             }
         ]
@@ -687,36 +687,36 @@ export const ROUTINES_DATA: Routine[] = [
         "exercises": [
             {
                 "id": "mb-lb-ex1", "exerciseId": "barbell-back-squat", "exerciseName": "Squats", "sets": [
-                    { "id": "mb-lb-s1-1", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
-                    { "id": "mb-lb-s1-2", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
-                    { "id": "mb-lb-s1-3", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." }
+                    { "id": "mb-lb-s1-1", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-lb-s1-2", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-lb-s1-3", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-lb-ex2", "exerciseId": "dumbbell-bulgarian-split-squat", "exerciseName": "Split Squats", "sets": [
-                    { "id": "mb-lb-s2-1", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps per leg." },
-                    { "id": "mb-lb-s2-2", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps per leg." },
-                    { "id": "mb-lb-s2-3", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps per leg." }
+                    { "id": "mb-lb-s2-1", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps per leg." },
+                    { "id": "mb-lb-s2-2", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps per leg." },
+                    { "id": "mb-lb-s2-3", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps per leg." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-lb-ex3", "exerciseId": "lying-leg-curl-machine", "exerciseName": "Lying Leg Curls", "sets": [
-                    { "id": "mb-lb-s3-1", "reps": 12, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps." },
-                    { "id": "mb-lb-s3-2", "reps": 12, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps." },
-                    { "id": "mb-lb-s3-3", "reps": 12, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps." }
+                    { "id": "mb-lb-s3-1", "targetReps": 12, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps." },
+                    { "id": "mb-lb-s3-2", "targetReps": 12, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps." },
+                    { "id": "mb-lb-s3-3", "targetReps": 12, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-lb-ex4", "exerciseId": "seated-calf-raise-machine", "exerciseName": "Seated Calf Raises", "sets": [
-                    { "id": "mb-lb-s4-1", "reps": 15, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-15 reps." },
-                    { "id": "mb-lb-s4-2", "reps": 15, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-15 reps." },
-                    { "id": "mb-lb-s4-3", "reps": 15, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-15 reps." },
-                    { "id": "mb-lb-s4-4", "reps": 15, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-15 reps." }
+                    { "id": "mb-lb-s4-1", "targetReps": 15, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-15 reps." },
+                    { "id": "mb-lb-s4-2", "targetReps": 15, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-15 reps." },
+                    { "id": "mb-lb-s4-3", "targetReps": 15, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-15 reps." },
+                    { "id": "mb-lb-s4-4", "targetReps": 15, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-15 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-lb-ex5", "exerciseId": "plank", "exerciseName": "Abs", "sets": [
-                    { "id": "mb-lb-s5-1", "reps": 15, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Perform any ab exercise. Aim for 8-15 reps." }
+                    { "id": "mb-lb-s5-1", "targetReps": 15, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Perform any ab exercise. Aim for 8-15 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             }
         ]
@@ -729,49 +729,49 @@ export const ROUTINES_DATA: Routine[] = [
         "exercises": [
             {
                 "id": "mb-v2-ua-ex1", "exerciseId": "barbell-bench-press", "exerciseName": "Bench Press", "sets": [
-                    { "id": "mb-v2-ua-s1-1", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 5-8 reps." },
-                    { "id": "mb-v2-ua-s1-2", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 5-8 reps." },
-                    { "id": "mb-v2-ua-s1-3", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 5-8 reps." },
-                    { "id": "mb-v2-ua-s1-4", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 5-8 reps." }
+                    { "id": "mb-v2-ua-s1-1", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 5-8 reps." },
+                    { "id": "mb-v2-ua-s1-2", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 5-8 reps." },
+                    { "id": "mb-v2-ua-s1-3", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 5-8 reps." },
+                    { "id": "mb-v2-ua-s1-4", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 5-8 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-v2-ua-ex2", "exerciseId": "bent-over-row-barbell", "exerciseName": "Rows", "sets": [
-                    { "id": "mb-v2-ua-s2-1", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 5-8 reps." },
-                    { "id": "mb-v2-ua-s2-2", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 5-8 reps." },
-                    { "id": "mb-v2-ua-s2-3", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 5-8 reps." },
-                    { "id": "mb-v2-ua-s2-4", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 5-8 reps." }
+                    { "id": "mb-v2-ua-s2-1", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 5-8 reps." },
+                    { "id": "mb-v2-ua-s2-2", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 5-8 reps." },
+                    { "id": "mb-v2-ua-s2-3", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 5-8 reps." },
+                    { "id": "mb-v2-ua-s2-4", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 5-8 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-v2-ua-ex3", "exerciseId": "dumbbell-incline-press", "exerciseName": "Incline Dumbbell Press", "sets": [
-                    { "id": "mb-v2-ua-s3-1", "reps": 12, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps." },
-                    { "id": "mb-v2-ua-s3-2", "reps": 12, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps." }
+                    { "id": "mb-v2-ua-s3-1", "targetReps": 12, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps." },
+                    { "id": "mb-v2-ua-s3-2", "targetReps": 12, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-v2-ua-ex4", "exerciseId": "lat-pulldown-machine", "exerciseName": "Lat Pull-Downs", "sets": [
-                    { "id": "mb-v2-ua-s4-1", "reps": 12, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps." },
-                    { "id": "mb-v2-ua-s4-2", "reps": 12, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps." }
+                    { "id": "mb-v2-ua-s4-1", "targetReps": 12, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps." },
+                    { "id": "mb-v2-ua-s4-2", "targetReps": 12, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-v2-ua-ex5", "exerciseId": "dumbbell-lateral-raise", "exerciseName": "Lateral Raises", "sets": [
-                    { "id": "mb-v2-ua-s5-1", "reps": 15, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-15 reps." },
-                    { "id": "mb-v2-ua-s5-2", "reps": 15, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-15 reps." }
+                    { "id": "mb-v2-ua-s5-1", "targetReps": 15, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-15 reps." },
+                    { "id": "mb-v2-ua-s5-2", "targetReps": 15, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-15 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-v2-ua-ex6", "exerciseId": "cable-tricep-pushdown", "exerciseName": "Triceps Pushdowns", "sets": [
-                    { "id": "mb-v2-ua-s6-1", "reps": 12, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-12 reps." },
-                    { "id": "mb-v2-ua-s6-2", "reps": 12, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-12 reps." },
-                    { "id": "mb-v2-ua-s6-3", "reps": 12, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-12 reps." }
+                    { "id": "mb-v2-ua-s6-1", "targetReps": 12, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-12 reps." },
+                    { "id": "mb-v2-ua-s6-2", "targetReps": 12, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-12 reps." },
+                    { "id": "mb-v2-ua-s6-3", "targetReps": 12, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-12 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-v2-ua-ex7", "exerciseId": "dumbbell-bicep-curl", "exerciseName": "Dumbbell Curls", "sets": [
-                    { "id": "mb-v2-ua-s7-1", "reps": 15, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 12-15 reps." },
-                    { "id": "mb-v2-ua-s7-2", "reps": 15, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 12-15 reps." }
+                    { "id": "mb-v2-ua-s7-1", "targetReps": 15, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 12-15 reps." },
+                    { "id": "mb-v2-ua-s7-2", "targetReps": 15, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 12-15 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             }
         ]
@@ -784,36 +784,36 @@ export const ROUTINES_DATA: Routine[] = [
         "exercises": [
             {
                 "id": "mb-v2-la-ex1", "exerciseId": "barbell-romanian-deadlift", "exerciseName": "Romanian Deadlifts", "sets": [
-                    { "id": "mb-v2-la-s1-1", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 5-8 reps." },
-                    { "id": "mb-v2-la-s1-2", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 5-8 reps." },
-                    { "id": "mb-v2-la-s1-3", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 5-8 reps." },
-                    { "id": "mb-v2-la-s1-4", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 5-8 reps." }
+                    { "id": "mb-v2-la-s1-1", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 5-8 reps." },
+                    { "id": "mb-v2-la-s1-2", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 5-8 reps." },
+                    { "id": "mb-v2-la-s1-3", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 5-8 reps." },
+                    { "id": "mb-v2-la-s1-4", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 5-8 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-v2-la-ex2", "exerciseId": "leg-press-machine", "exerciseName": "Leg Press", "sets": [
-                    { "id": "mb-v2-la-s2-1", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
-                    { "id": "mb-v2-la-s2-2", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
-                    { "id": "mb-v2-la-s2-3", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." }
+                    { "id": "mb-v2-la-s2-1", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-v2-la-s2-2", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-v2-la-s2-3", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-v2-la-ex3", "exerciseId": "leg-curl-machine", "exerciseName": "Seated Leg Curls", "sets": [
-                    { "id": "mb-v2-la-s3-1", "reps": 12, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps." },
-                    { "id": "mb-v2-la-s3-2", "reps": 12, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps." }
+                    { "id": "mb-v2-la-s3-1", "targetReps": 12, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps." },
+                    { "id": "mb-v2-la-s3-2", "targetReps": 12, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-v2-la-ex4", "exerciseId": "standing-calf-raise", "exerciseName": "Standing Calf Raises", "sets": [
-                    { "id": "mb-v2-la-s4-1", "reps": 8, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 6-8 reps." },
-                    { "id": "mb-v2-la-s4-2", "reps": 8, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 6-8 reps." },
-                    { "id": "mb-v2-la-s4-3", "reps": 8, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 6-8 reps." },
-                    { "id": "mb-v2-la-s4-4", "reps": 8, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 6-8 reps." }
+                    { "id": "mb-v2-la-s4-1", "targetReps": 8, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v2-la-s4-2", "targetReps": 8, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v2-la-s4-3", "targetReps": 8, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v2-la-s4-4", "targetReps": 8, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 6-8 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-v2-la-ex5", "exerciseId": "plank", "exerciseName": "Abs", "sets": [
-                    { "id": "mb-v2-la-s5-1", "reps": 15, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Perform any ab exercise. Aim for 8-15 reps." }
+                    { "id": "mb-v2-la-s5-1", "targetReps": 15, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Perform any ab exercise. Aim for 8-15 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             }
         ]
@@ -826,50 +826,50 @@ export const ROUTINES_DATA: Routine[] = [
         "exercises": [
             {
                 "id": "mb-v2-ub-ex1", "exerciseId": "pull-up", "exerciseName": "Pull-Ups", "sets": [
-                    { "id": "mb-v2-ub-s1-1", "reps": 8, "weight": null, "restAfterSet": 150, "type": "standard", "notes": "Aim for 5-8 reps." },
-                    { "id": "mb-v2-ub-s1-2", "reps": 8, "weight": null, "restAfterSet": 150, "type": "standard", "notes": "Aim for 5-8 reps." },
-                    { "id": "mb-v2-ub-s1-3", "reps": 8, "weight": null, "restAfterSet": 150, "type": "standard", "notes": "Aim for 5-8 reps." },
-                    { "id": "mb-v2-ub-s1-4", "reps": 8, "weight": null, "restAfterSet": 150, "type": "standard", "notes": "Aim for 5-8 reps." }
+                    { "id": "mb-v2-ub-s1-1", "targetReps": 8, "targetWeight": null, "restAfterSet": 150, "type": "standard", "notes": "Aim for 5-8 reps." },
+                    { "id": "mb-v2-ub-s1-2", "targetReps": 8, "targetWeight": null, "restAfterSet": 150, "type": "standard", "notes": "Aim for 5-8 reps." },
+                    { "id": "mb-v2-ub-s1-3", "targetReps": 8, "targetWeight": null, "restAfterSet": 150, "type": "standard", "notes": "Aim for 5-8 reps." },
+                    { "id": "mb-v2-ub-s1-4", "targetReps": 8, "targetWeight": null, "restAfterSet": 150, "type": "standard", "notes": "Aim for 5-8 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-v2-ub-ex2", "exerciseId": "overhead-press-barbell", "exerciseName": "Barbell Shoulder Press", "sets": [
-                    { "id": "mb-v2-ub-s2-1", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 5-8 reps." },
-                    { "id": "mb-v2-ub-s2-2", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 5-8 reps." },
-                    { "id": "mb-v2-ub-s2-3", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 5-8 reps." },
-                    { "id": "mb-v2-ub-s2-4", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 5-8 reps." }
+                    { "id": "mb-v2-ub-s2-1", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 5-8 reps." },
+                    { "id": "mb-v2-ub-s2-2", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 5-8 reps." },
+                    { "id": "mb-v2-ub-s2-3", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 5-8 reps." },
+                    { "id": "mb-v2-ub-s2-4", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 5-8 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-v2-ub-ex3", "exerciseId": "seated-row-machine", "exerciseName": "Seated Cable Row", "sets": [
-                    { "id": "mb-v2-ub-s3-1", "reps": 12, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps." },
-                    { "id": "mb-v2-ub-s3-2", "reps": 12, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps." }
+                    { "id": "mb-v2-ub-s3-1", "targetReps": 12, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps." },
+                    { "id": "mb-v2-ub-s3-2", "targetReps": 12, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-v2-ub-ex4", "exerciseId": "dumbbell-bench-press", "exerciseName": "Dumbbell Bench Press", "sets": [
-                    { "id": "mb-v2-ub-s4-1", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
-                    { "id": "mb-v2-ub-s4-2", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
-                    { "id": "mb-v2-ub-s4-3", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." }
+                    { "id": "mb-v2-ub-s4-1", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-v2-ub-s4-2", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-v2-ub-s4-3", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-v2-ub-ex5", "exerciseId": "dumbbell-fly", "exerciseName": "Dumbbell Flyes", "sets": [
-                    { "id": "mb-v2-ub-s5-1", "reps": 15, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-15 reps." },
-                    { "id": "mb-v2-ub-s5-2", "reps": 15, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-15 reps." }
+                    { "id": "mb-v2-ub-s5-1", "targetReps": 15, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-15 reps." },
+                    { "id": "mb-v2-ub-s5-2", "targetReps": 15, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-15 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-v2-ub-ex6", "exerciseId": "barbell-bicep-curl", "exerciseName": "Barbell Curls", "sets": [
-                    { "id": "mb-v2-ub-s6-1", "reps": 12, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-12 reps." },
-                    { "id": "mb-v2-ub-s6-2", "reps": 12, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-12 reps." },
-                    { "id": "mb-v2-ub-s6-3", "reps": 12, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-12 reps." }
+                    { "id": "mb-v2-ub-s6-1", "targetReps": 12, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-12 reps." },
+                    { "id": "mb-v2-ub-s6-2", "targetReps": 12, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-12 reps." },
+                    { "id": "mb-v2-ub-s6-3", "targetReps": 12, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-12 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-v2-ub-ex7", "exerciseId": "barbell-skull-crusher", "exerciseName": "Skull Crushers", "sets": [
-                    { "id": "mb-v2-ub-s7-1", "reps": 15, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 12-15 reps." },
-                    { "id": "mb-v2-ub-s7-2", "reps": 15, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 12-15 reps." }
+                    { "id": "mb-v2-ub-s7-1", "targetReps": 15, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 12-15 reps." },
+                    { "id": "mb-v2-ub-s7-2", "targetReps": 15, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 12-15 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             }
         ]
@@ -882,36 +882,36 @@ export const ROUTINES_DATA: Routine[] = [
         "exercises": [
             {
                 "id": "mb-v2-lb-ex1", "exerciseId": "barbell-back-squat", "exerciseName": "Squats", "sets": [
-                    { "id": "mb-v2-lb-s1-1", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 5-8 reps." },
-                    { "id": "mb-v2-lb-s1-2", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 5-8 reps." },
-                    { "id": "mb-v2-lb-s1-3", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 5-8 reps." },
-                    { "id": "mb-v2-lb-s1-4", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 5-8 reps." }
+                    { "id": "mb-v2-lb-s1-1", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 5-8 reps." },
+                    { "id": "mb-v2-lb-s1-2", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 5-8 reps." },
+                    { "id": "mb-v2-lb-s1-3", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 5-8 reps." },
+                    { "id": "mb-v2-lb-s1-4", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 5-8 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-v2-lb-ex2", "exerciseId": "dumbbell-bulgarian-split-squat", "exerciseName": "Split Squats", "sets": [
-                    { "id": "mb-v2-lb-s2-1", "reps": 12, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps per leg." },
-                    { "id": "mb-v2-lb-s2-2", "reps": 12, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps per leg." }
+                    { "id": "mb-v2-lb-s2-1", "targetReps": 12, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps per leg." },
+                    { "id": "mb-v2-lb-s2-2", "targetReps": 12, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps per leg." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-v2-lb-ex3", "exerciseId": "lying-leg-curl-machine", "exerciseName": "Lying Leg Curls", "sets": [
-                    { "id": "mb-v2-lb-s3-1", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
-                    { "id": "mb-v2-lb-s3-2", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
-                    { "id": "mb-v2-lb-s3-3", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." }
+                    { "id": "mb-v2-lb-s3-1", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-v2-lb-s3-2", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-v2-lb-s3-3", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-v2-lb-ex4", "exerciseId": "seated-calf-raise-machine", "exerciseName": "Seated Calf Raises", "sets": [
-                    { "id": "mb-v2-lb-s4-1", "reps": 15, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-15 reps." },
-                    { "id": "mb-v2-lb-s4-2", "reps": 15, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-15 reps." },
-                    { "id": "mb-v2-lb-s4-3", "reps": 15, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-15 reps." },
-                    { "id": "mb-v2-lb-s4-4", "reps": 15, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-15 reps." }
+                    { "id": "mb-v2-lb-s4-1", "targetReps": 15, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-15 reps." },
+                    { "id": "mb-v2-lb-s4-2", "targetReps": 15, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-15 reps." },
+                    { "id": "mb-v2-lb-s4-3", "targetReps": 15, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-15 reps." },
+                    { "id": "mb-v2-lb-s4-4", "targetReps": 15, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-15 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-v2-lb-ex5", "exerciseId": "plank", "exerciseName": "Abs", "sets": [
-                    { "id": "mb-v2-lb-s5-1", "reps": 15, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Perform any ab exercise. Aim for 8-15 reps." }
+                    { "id": "mb-v2-lb-s5-1", "targetReps": 15, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Perform any ab exercise. Aim for 8-15 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             }
         ]
@@ -924,49 +924,49 @@ export const ROUTINES_DATA: Routine[] = [
         "exercises": [
             {
                 "id": "mb-v3-ua-ex1", "exerciseId": "barbell-bench-press", "exerciseName": "Bench Press", "sets": [
-                    { "id": "mb-v3-ua-s1-1", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
-                    { "id": "mb-v3-ua-s1-2", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
-                    { "id": "mb-v3-ua-s1-3", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." }
+                    { "id": "mb-v3-ua-s1-1", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v3-ua-s1-2", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v3-ua-s1-3", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-v3-ua-ex2", "exerciseId": "dumbbell-incline-press", "exerciseName": "Incline Dumbbell Press", "sets": [
-                    { "id": "mb-v3-ua-s2-1", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
-                    { "id": "mb-v3-ua-s2-2", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
-                    { "id": "mb-v3-ua-s2-3", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." }
+                    { "id": "mb-v3-ua-s2-1", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-v3-ua-s2-2", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-v3-ua-s2-3", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-v3-ua-ex3", "exerciseId": "bent-over-row-barbell", "exerciseName": "Rows", "sets": [
-                    { "id": "mb-v3-ua-s3-1", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
-                    { "id": "mb-v3-ua-s3-2", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
-                    { "id": "mb-v3-ua-s3-3", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." }
+                    { "id": "mb-v3-ua-s3-1", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v3-ua-s3-2", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v3-ua-s3-3", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-v3-ua-ex4", "exerciseId": "lat-pulldown-machine", "exerciseName": "Lat Pull-Downs", "sets": [
-                    { "id": "mb-v3-ua-s4-1", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
-                    { "id": "mb-v3-ua-s4-2", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
-                    { "id": "mb-v3-ua-s4-3", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." }
+                    { "id": "mb-v3-ua-s4-1", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-v3-ua-s4-2", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-v3-ua-s4-3", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-v3-ua-ex5", "exerciseId": "dumbbell-lateral-raise", "exerciseName": "Lateral Raises", "sets": [
-                    { "id": "mb-v3-ua-s5-1", "reps": 15, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-15 reps." },
-                    { "id": "mb-v3-ua-s5-2", "reps": 15, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-15 reps." }
+                    { "id": "mb-v3-ua-s5-1", "targetReps": 15, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-15 reps." },
+                    { "id": "mb-v3-ua-s5-2", "targetReps": 15, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-15 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-v3-ua-ex6", "exerciseId": "cable-tricep-pushdown", "exerciseName": "Triceps Pushdowns", "sets": [
-                    { "id": "mb-v3-ua-s6-1", "reps": 12, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-12 reps." },
-                    { "id": "mb-v3-ua-s6-2", "reps": 12, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-12 reps." },
-                    { "id": "mb-v3-ua-s6-3", "reps": 12, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-12 reps." }
+                    { "id": "mb-v3-ua-s6-1", "targetReps": 12, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-12 reps." },
+                    { "id": "mb-v3-ua-s6-2", "targetReps": 12, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-12 reps." },
+                    { "id": "mb-v3-ua-s6-3", "targetReps": 12, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-12 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-v3-ua-ex7", "exerciseId": "dumbbell-bicep-curl", "exerciseName": "Dumbbell Curls", "sets": [
-                    { "id": "mb-v3-ua-s7-1", "reps": 15, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 12-15 reps." },
-                    { "id": "mb-v3-ua-s7-2", "reps": 15, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 12-15 reps." }
+                    { "id": "mb-v3-ua-s7-1", "targetReps": 15, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 12-15 reps." },
+                    { "id": "mb-v3-ua-s7-2", "targetReps": 15, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 12-15 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             }
         ]
@@ -979,36 +979,36 @@ export const ROUTINES_DATA: Routine[] = [
         "exercises": [
             {
                 "id": "mb-v3-la-ex1", "exerciseId": "barbell-romanian-deadlift", "exerciseName": "Romanian Deadlifts", "sets": [
-                    { "id": "mb-v3-la-s1-1", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
-                    { "id": "mb-v3-la-s1-2", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
-                    { "id": "mb-v3-la-s1-3", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." }
+                    { "id": "mb-v3-la-s1-1", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v3-la-s1-2", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v3-la-s1-3", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-v3-la-ex2", "exerciseId": "leg-curl-machine", "exerciseName": "Seated Leg Curls", "sets": [
-                    { "id": "mb-v3-la-s2-1", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
-                    { "id": "mb-v3-la-s2-2", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
-                    { "id": "mb-v3-la-s2-3", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." }
+                    { "id": "mb-v3-la-s2-1", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-v3-la-s2-2", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-v3-la-s2-3", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-v3-la-ex3", "exerciseId": "leg-press-machine", "exerciseName": "Leg Press", "sets": [
-                    { "id": "mb-v3-la-s3-1", "reps": 12, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps." },
-                    { "id": "mb-v3-la-s3-2", "reps": 12, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps." },
-                    { "id": "mb-v3-la-s3-3", "reps": 12, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps." }
+                    { "id": "mb-v3-la-s3-1", "targetReps": 12, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps." },
+                    { "id": "mb-v3-la-s3-2", "targetReps": 12, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps." },
+                    { "id": "mb-v3-la-s3-3", "targetReps": 12, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-v3-la-ex4", "exerciseId": "standing-calf-raise", "exerciseName": "Standing Calf Raises", "sets": [
-                    { "id": "mb-v3-la-s4-1", "reps": 8, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 6-8 reps." },
-                    { "id": "mb-v3-la-s4-2", "reps": 8, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 6-8 reps." },
-                    { "id": "mb-v3-la-s4-3", "reps": 8, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 6-8 reps." },
-                    { "id": "mb-v3-la-s4-4", "reps": 8, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 6-8 reps." }
+                    { "id": "mb-v3-la-s4-1", "targetReps": 8, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v3-la-s4-2", "targetReps": 8, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v3-la-s4-3", "targetReps": 8, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v3-la-s4-4", "targetReps": 8, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 6-8 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-v3-la-ex5", "exerciseId": "plank", "exerciseName": "Abs", "sets": [
-                    { "id": "mb-v3-la-s5-1", "reps": 15, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Perform any ab exercise. Aim for 8-15 reps." }
+                    { "id": "mb-v3-la-s5-1", "targetReps": 15, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Perform any ab exercise. Aim for 8-15 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             }
         ]
@@ -1021,49 +1021,49 @@ export const ROUTINES_DATA: Routine[] = [
         "exercises": [
             {
                 "id": "mb-v3-ub-ex1", "exerciseId": "pull-up", "exerciseName": "Pull-Ups", "sets": [
-                    { "id": "mb-v3-ub-s1-1", "reps": 8, "weight": null, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
-                    { "id": "mb-v3-ub-s1-2", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
-                    { "id": "mb-v3-ub-s1-3", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." }
+                    { "id": "mb-v3-ub-s1-1", "targetReps": 8, "targetWeight": null, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v3-ub-s1-2", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v3-ub-s1-3", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-v3-ub-ex2", "exerciseId": "seated-row-machine", "exerciseName": "Seated Cable Row", "sets": [
-                    { "id": "mb-v3-ub-s2-1", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
-                    { "id": "mb-v3-ub-s2-2", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
-                    { "id": "mb-v3-ub-s2-3", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." }
+                    { "id": "mb-v3-ub-s2-1", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-v3-ub-s2-2", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-v3-ub-s2-3", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-v3-ub-ex3", "exerciseId": "overhead-press-barbell", "exerciseName": "Barbell Shoulder Press", "sets": [
-                    { "id": "mb-v3-ub-s3-1", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
-                    { "id": "mb-v3-ub-s3-2", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
-                    { "id": "mb-v3-ub-s3-3", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." }
+                    { "id": "mb-v3-ub-s3-1", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v3-ub-s3-2", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v3-ub-s3-3", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-v3-ub-ex4", "exerciseId": "dumbbell-bench-press", "exerciseName": "Dumbbell Bench Press", "sets": [
-                    { "id": "mb-v3-ub-s4-1", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
-                    { "id": "mb-v3-ub-s4-2", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
-                    { "id": "mb-v3-ub-s4-3", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." }
+                    { "id": "mb-v3-ub-s4-1", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-v3-ub-s4-2", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-v3-ub-s4-3", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-v3-ub-ex5", "exerciseId": "dumbbell-fly", "exerciseName": "Dumbbell Flyes", "sets": [
-                    { "id": "mb-v3-ub-s5-1", "reps": 15, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-15 reps." },
-                    { "id": "mb-v3-ub-s5-2", "reps": 15, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-15 reps." }
+                    { "id": "mb-v3-ub-s5-1", "targetReps": 15, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-15 reps." },
+                    { "id": "mb-v3-ub-s5-2", "targetReps": 15, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-15 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-v3-ub-ex6", "exerciseId": "barbell-bicep-curl", "exerciseName": "Barbell Curls", "sets": [
-                    { "id": "mb-v3-ub-s6-1", "reps": 12, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-12 reps." },
-                    { "id": "mb-v3-ub-s6-2", "reps": 12, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-12 reps." },
-                    { "id": "mb-v3-ub-s6-3", "reps": 12, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-12 reps." }
+                    { "id": "mb-v3-ub-s6-1", "targetReps": 12, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-12 reps." },
+                    { "id": "mb-v3-ub-s6-2", "targetReps": 12, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-12 reps." },
+                    { "id": "mb-v3-ub-s6-3", "targetReps": 12, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-12 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-v3-ub-ex7", "exerciseId": "barbell-skull-crusher", "exerciseName": "Skull Crushers", "sets": [
-                    { "id": "mb-v3-ub-s7-1", "reps": 15, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 12-15 reps." },
-                    { "id": "mb-v3-ub-s7-2", "reps": 15, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 12-15 reps." }
+                    { "id": "mb-v3-ub-s7-1", "targetReps": 15, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 12-15 reps." },
+                    { "id": "mb-v3-ub-s7-2", "targetReps": 15, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 12-15 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             }
         ]
@@ -1076,36 +1076,36 @@ export const ROUTINES_DATA: Routine[] = [
         "exercises": [
             {
                 "id": "mb-v3-lb-ex1", "exerciseId": "barbell-back-squat", "exerciseName": "Squats", "sets": [
-                    { "id": "mb-v3-lb-s1-1", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
-                    { "id": "mb-v3-lb-s1-2", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
-                    { "id": "mb-v3-lb-s1-3", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." }
+                    { "id": "mb-v3-lb-s1-1", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v3-lb-s1-2", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v3-lb-s1-3", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-v3-lb-ex2", "exerciseId": "dumbbell-bulgarian-split-squat", "exerciseName": "Split Squats", "sets": [
-                    { "id": "mb-v3-lb-s2-1", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps per leg." },
-                    { "id": "mb-v3-lb-s2-2", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps per leg." },
-                    { "id": "mb-v3-lb-s2-3", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps per leg." }
+                    { "id": "mb-v3-lb-s2-1", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps per leg." },
+                    { "id": "mb-v3-lb-s2-2", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps per leg." },
+                    { "id": "mb-v3-lb-s2-3", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps per leg." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-v3-lb-ex3", "exerciseId": "lying-leg-curl-machine", "exerciseName": "Lying Leg Curls", "sets": [
-                    { "id": "mb-v3-lb-s3-1", "reps": 12, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps." },
-                    { "id": "mb-v3-lb-s3-2", "reps": 12, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps." },
-                    { "id": "mb-v3-lb-s3-3", "reps": 12, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps." }
+                    { "id": "mb-v3-lb-s3-1", "targetReps": 12, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps." },
+                    { "id": "mb-v3-lb-s3-2", "targetReps": 12, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps." },
+                    { "id": "mb-v3-lb-s3-3", "targetReps": 12, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-v3-lb-ex4", "exerciseId": "seated-calf-raise-machine", "exerciseName": "Seated Calf Raises", "sets": [
-                    { "id": "mb-v3-lb-s4-1", "reps": 15, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-15 reps." },
-                    { "id": "mb-v3-lb-s4-2", "reps": 15, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-15 reps." },
-                    { "id": "mb-v3-lb-s4-3", "reps": 15, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-15 reps." },
-                    { "id": "mb-v3-lb-s4-4", "reps": 15, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-15 reps." }
+                    { "id": "mb-v3-lb-s4-1", "targetReps": 15, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-15 reps." },
+                    { "id": "mb-v3-lb-s4-2", "targetReps": 15, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-15 reps." },
+                    { "id": "mb-v3-lb-s4-3", "targetReps": 15, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-15 reps." },
+                    { "id": "mb-v3-lb-s4-4", "targetReps": 15, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-15 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-v3-lb-ex5", "exerciseId": "plank", "exerciseName": "Abs", "sets": [
-                    { "id": "mb-v3-lb-s5-1", "reps": 15, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Perform any ab exercise. Aim for 8-15 reps." }
+                    { "id": "mb-v3-lb-s5-1", "targetReps": 15, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Perform any ab exercise. Aim for 8-15 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             }
         ]
@@ -1118,49 +1118,49 @@ export const ROUTINES_DATA: Routine[] = [
         "exercises": [
             {
                 "id": "mb-v4-ua-ex1", "exerciseId": "barbell-bench-press", "exerciseName": "Bench Press", "supersetId": "ss-ua-1", "supersetSize": 2, "supersetOrder": 0, "sets": [
-                    { "id": "mb-v4-ua-s1-1", "reps": 8, "weight": 10, "restAfterSet": 0, "type": "superset", "notes": "Aim for 6-8 reps." },
-                    { "id": "mb-v4-ua-s1-2", "reps": 8, "weight": 10, "restAfterSet": 0, "type": "superset", "notes": "Aim for 6-8 reps." },
-                    { "id": "mb-v4-ua-s1-3", "reps": 8, "weight": 10, "restAfterSet": 0, "type": "superset", "notes": "Aim for 6-8 reps." }
+                    { "id": "mb-v4-ua-s1-1", "targetReps": 8, "targetWeight": 10, "restAfterSet": 0, "type": "superset", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v4-ua-s1-2", "targetReps": 8, "targetWeight": 10, "restAfterSet": 0, "type": "superset", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v4-ua-s1-3", "targetReps": 8, "targetWeight": 10, "restAfterSet": 0, "type": "superset", "notes": "Aim for 6-8 reps." }
                 ], "type": "superset"
             },
             {
                 "id": "mb-v4-ua-ex2", "exerciseId": "bent-over-row-barbell", "exerciseName": "Rows", "supersetId": "ss-ua-1", "supersetSize": 2, "supersetOrder": 1, "sets": [
-                    { "id": "mb-v4-ua-s2-1", "reps": 8, "weight": 10, "restAfterSet": 90, "type": "superset", "notes": "Aim for 6-8 reps." },
-                    { "id": "mb-v4-ua-s2-2", "reps": 8, "weight": 10, "restAfterSet": 90, "type": "superset", "notes": "Aim for 6-8 reps." },
-                    { "id": "mb-v4-ua-s2-3", "reps": 8, "weight": 10, "restAfterSet": 90, "type": "superset", "notes": "Aim for 6-8 reps." }
+                    { "id": "mb-v4-ua-s2-1", "targetReps": 8, "targetWeight": 10, "restAfterSet": 90, "type": "superset", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v4-ua-s2-2", "targetReps": 8, "targetWeight": 10, "restAfterSet": 90, "type": "superset", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v4-ua-s2-3", "targetReps": 8, "targetWeight": 10, "restAfterSet": 90, "type": "superset", "notes": "Aim for 6-8 reps." }
                 ], "type": "superset"
             },
             {
                 "id": "mb-v4-ua-ex3", "exerciseId": "dumbbell-incline-press", "exerciseName": "Incline Dumbbell Press", "supersetId": "ss-ua-2", "supersetSize": 2, "supersetOrder": 0, "sets": [
-                    { "id": "mb-v4-ua-s3-1", "reps": 10, "weight": 10, "restAfterSet": 0, "type": "superset", "notes": "Aim for 8-10 reps." },
-                    { "id": "mb-v4-ua-s3-2", "reps": 10, "weight": 10, "restAfterSet": 0, "type": "superset", "notes": "Aim for 8-10 reps." },
-                    { "id": "mb-v4-ua-s3-3", "reps": 10, "weight": 10, "restAfterSet": 0, "type": "superset", "notes": "Aim for 8-10 reps." }
+                    { "id": "mb-v4-ua-s3-1", "targetReps": 10, "targetWeight": 10, "restAfterSet": 0, "type": "superset", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-v4-ua-s3-2", "targetReps": 10, "targetWeight": 10, "restAfterSet": 0, "type": "superset", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-v4-ua-s3-3", "targetReps": 10, "targetWeight": 10, "restAfterSet": 0, "type": "superset", "notes": "Aim for 8-10 reps." }
                 ], "type": "superset"
             },
             {
                 "id": "mb-v4-ua-ex4", "exerciseId": "lat-pulldown-machine", "exerciseName": "Lat Pull-Downs", "supersetId": "ss-ua-2", "supersetSize": 2, "supersetOrder": 1, "sets": [
-                    { "id": "mb-v4-ua-s4-1", "reps": 10, "weight": 10, "restAfterSet": 60, "type": "superset", "notes": "Aim for 8-10 reps." },
-                    { "id": "mb-v4-ua-s4-2", "reps": 10, "weight": 10, "restAfterSet": 60, "type": "superset", "notes": "Aim for 8-10 reps." },
-                    { "id": "mb-v4-ua-s4-3", "reps": 10, "weight": 10, "restAfterSet": 60, "type": "superset", "notes": "Aim for 8-10 reps." }
+                    { "id": "mb-v4-ua-s4-1", "targetReps": 10, "targetWeight": 10, "restAfterSet": 60, "type": "superset", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-v4-ua-s4-2", "targetReps": 10, "targetWeight": 10, "restAfterSet": 60, "type": "superset", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-v4-ua-s4-3", "targetReps": 10, "targetWeight": 10, "restAfterSet": 60, "type": "superset", "notes": "Aim for 8-10 reps." }
                 ], "type": "superset"
             },
             {
                 "id": "mb-v4-ua-ex5", "exerciseId": "dumbbell-lateral-raise", "exerciseName": "Lateral Raises", "sets": [
-                    { "id": "mb-v4-ua-s5-1", "reps": 15, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-15 reps." },
-                    { "id": "mb-v4-ua-s5-2", "reps": 15, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-15 reps." }
+                    { "id": "mb-v4-ua-s5-1", "targetReps": 15, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-15 reps." },
+                    { "id": "mb-v4-ua-s5-2", "targetReps": 15, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-15 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-v4-ua-ex6", "exerciseId": "cable-tricep-pushdown", "exerciseName": "Triceps Pushdowns", "supersetId": "ss-ua-3", "supersetSize": 2, "supersetOrder": 0, "sets": [
-                    { "id": "mb-v4-ua-s6-1", "reps": 12, "weight": 10, "restAfterSet": 0, "type": "superset", "notes": "Aim for 10-12 reps." },
-                    { "id": "mb-v4-ua-s6-2", "reps": 12, "weight": 10, "restAfterSet": 0, "type": "superset", "notes": "Aim for 10-12 reps." },
-                    { "id": "mb-v4-ua-s6-3", "reps": 12, "weight": 10, "restAfterSet": 0, "type": "superset", "notes": "Aim for 10-12 reps." }
+                    { "id": "mb-v4-ua-s6-1", "targetReps": 12, "targetWeight": 10, "restAfterSet": 0, "type": "superset", "notes": "Aim for 10-12 reps." },
+                    { "id": "mb-v4-ua-s6-2", "targetReps": 12, "targetWeight": 10, "restAfterSet": 0, "type": "superset", "notes": "Aim for 10-12 reps." },
+                    { "id": "mb-v4-ua-s6-3", "targetReps": 12, "targetWeight": 10, "restAfterSet": 0, "type": "superset", "notes": "Aim for 10-12 reps." }
                 ], "type": "superset"
             },
             {
                 "id": "mb-v4-ua-ex7", "exerciseId": "dumbbell-bicep-curl", "exerciseName": "Dumbbell Curls", "supersetId": "ss-ua-3", "supersetSize": 2, "supersetOrder": 1, "sets": [
-                    { "id": "mb-v4-ua-s7-1", "reps": 15, "weight": 10, "restAfterSet": 45, "type": "superset", "notes": "Aim for 12-15 reps." },
-                    { "id": "mb-v4-ua-s7-2", "reps": 15, "weight": 10, "restAfterSet": 45, "type": "superset", "notes": "Aim for 12-15 reps." }
+                    { "id": "mb-v4-ua-s7-1", "targetReps": 15, "targetWeight": 10, "restAfterSet": 45, "type": "superset", "notes": "Aim for 12-15 reps." },
+                    { "id": "mb-v4-ua-s7-2", "targetReps": 15, "targetWeight": 10, "restAfterSet": 45, "type": "superset", "notes": "Aim for 12-15 reps." }
                 ], "type": "superset"
             }
         ]
@@ -1173,36 +1173,36 @@ export const ROUTINES_DATA: Routine[] = [
         "exercises": [
             {
                 "id": "mb-v4-la-ex1", "exerciseId": "barbell-romanian-deadlift", "exerciseName": "Romanian Deadlifts", "sets": [
-                    { "id": "mb-v4-la-s1-1", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
-                    { "id": "mb-v4-la-s1-2", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
-                    { "id": "mb-v4-la-s1-3", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." }
+                    { "id": "mb-v4-la-s1-1", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v4-la-s1-2", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v4-la-s1-3", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-v4-la-ex2", "exerciseId": "leg-press-machine", "exerciseName": "Leg Press", "supersetId": "ss-la-1", "supersetSize": 2, "supersetOrder": 0, "sets": [
-                    { "id": "mb-v4-la-s2-1", "reps": 12, "weight": 10, "restAfterSet": 0, "type": "superset", "notes": "Aim for 10-12 reps." },
-                    { "id": "mb-v4-la-s2-2", "reps": 12, "weight": 10, "restAfterSet": 0, "type": "superset", "notes": "Aim for 10-12 reps." },
-                    { "id": "mb-v4-la-s2-3", "reps": 12, "weight": 10, "restAfterSet": 0, "type": "superset", "notes": "Aim for 10-12 reps." }
+                    { "id": "mb-v4-la-s2-1", "targetReps": 12, "targetWeight": 10, "restAfterSet": 0, "type": "superset", "notes": "Aim for 10-12 reps." },
+                    { "id": "mb-v4-la-s2-2", "targetReps": 12, "targetWeight": 10, "restAfterSet": 0, "type": "superset", "notes": "Aim for 10-12 reps." },
+                    { "id": "mb-v4-la-s2-3", "targetReps": 12, "targetWeight": 10, "restAfterSet": 0, "type": "superset", "notes": "Aim for 10-12 reps." }
                 ], "type": "superset"
             },
             {
                 "id": "mb-v4-la-ex3", "exerciseId": "leg-curl-machine", "exerciseName": "Seated Leg Curls", "supersetId": "ss-la-1", "supersetSize": 2, "supersetOrder": 1, "sets": [
-                    { "id": "mb-v4-la-s3-1", "reps": 10, "weight": 10, "restAfterSet": 60, "type": "superset", "notes": "Aim for 8-10 reps." },
-                    { "id": "mb-v4-la-s3-2", "reps": 10, "weight": 10, "restAfterSet": 60, "type": "superset", "notes": "Aim for 8-10 reps." },
-                    { "id": "mb-v4-la-s3-3", "reps": 10, "weight": 10, "restAfterSet": 60, "type": "superset", "notes": "Aim for 8-10 reps." }
+                    { "id": "mb-v4-la-s3-1", "targetReps": 10, "targetWeight": 10, "restAfterSet": 60, "type": "superset", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-v4-la-s3-2", "targetReps": 10, "targetWeight": 10, "restAfterSet": 60, "type": "superset", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-v4-la-s3-3", "targetReps": 10, "targetWeight": 10, "restAfterSet": 60, "type": "superset", "notes": "Aim for 8-10 reps." }
                 ], "type": "superset"
             },
             {
                 "id": "mb-v4-la-ex4", "exerciseId": "standing-calf-raise", "exerciseName": "Standing Calf Raises", "supersetId": "ss-la-2", "supersetSize": 2, "supersetOrder": 0, "sets": [
-                    { "id": "mb-v4-la-s4-1", "reps": 8, "weight": 10, "restAfterSet": 0, "type": "superset", "notes": "Aim for 6-8 reps." },
-                    { "id": "mb-v4-la-s4-2", "reps": 8, "weight": 10, "restAfterSet": 0, "type": "superset", "notes": "Aim for 6-8 reps." },
-                    { "id": "mb-v4-la-s4-3", "reps": 8, "weight": 10, "restAfterSet": 0, "type": "superset", "notes": "Aim for 6-8 reps." },
-                    { "id": "mb-v4-la-s4-4", "reps": 8, "weight": 10, "restAfterSet": 0, "type": "superset", "notes": "Aim for 6-8 reps." }
+                    { "id": "mb-v4-la-s4-1", "targetReps": 8, "targetWeight": 10, "restAfterSet": 0, "type": "superset", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v4-la-s4-2", "targetReps": 8, "targetWeight": 10, "restAfterSet": 0, "type": "superset", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v4-la-s4-3", "targetReps": 8, "targetWeight": 10, "restAfterSet": 0, "type": "superset", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v4-la-s4-4", "targetReps": 8, "targetWeight": 10, "restAfterSet": 0, "type": "superset", "notes": "Aim for 6-8 reps." }
                 ], "type": "superset"
             },
             {
                 "id": "mb-v4-la-ex5", "exerciseId": "plank", "exerciseName": "Abs", "supersetId": "ss-la-2", "supersetSize": 2, "supersetOrder": 1, "sets": [
-                    { "id": "mb-v4-la-s5-1", "reps": 15, "weight": 10, "restAfterSet": 45, "type": "superset", "notes": "Perform any ab exercise. Aim for 8-15 reps." }
+                    { "id": "mb-v4-la-s5-1", "targetReps": 15, "targetWeight": 10, "restAfterSet": 45, "type": "superset", "notes": "Perform any ab exercise. Aim for 8-15 reps." }
                 ], "type": "superset"
             }
         ]
@@ -1215,49 +1215,49 @@ export const ROUTINES_DATA: Routine[] = [
         "exercises": [
             {
                 "id": "mb-v4-ub-ex1", "exerciseId": "pull-up", "exerciseName": "Pull-Ups", "supersetId": "ss-ub-1", "supersetSize": 2, "supersetOrder": 0, "sets": [
-                    { "id": "mb-v4-ub-s1-1", "reps": 8, "weight": null, "restAfterSet": 0, "type": "superset", "notes": "Aim for 6-8 reps." },
-                    { "id": "mb-v4-ub-s1-2", "reps": 8, "weight": null, "restAfterSet": 0, "type": "superset", "notes": "Aim for 6-8 reps." },
-                    { "id": "mb-v4-ub-s1-3", "reps": 8, "weight": null, "restAfterSet": 0, "type": "superset", "notes": "Aim for 6-8 reps." }
+                    { "id": "mb-v4-ub-s1-1", "targetReps": 8, "targetWeight": null, "restAfterSet": 0, "type": "superset", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v4-ub-s1-2", "targetReps": 8, "targetWeight": null, "restAfterSet": 0, "type": "superset", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v4-ub-s1-3", "targetReps": 8, "targetWeight": null, "restAfterSet": 0, "type": "superset", "notes": "Aim for 6-8 reps." }
                 ], "type": "superset"
             },
             {
                 "id": "mb-v4-ub-ex2", "exerciseId": "overhead-press-barbell", "exerciseName": "Barbell Shoulder Press", "supersetId": "ss-ub-1", "supersetSize": 2, "supersetOrder": 1, "sets": [
-                    { "id": "mb-v4-ub-s2-1", "reps": 8, "weight": 10, "restAfterSet": 90, "type": "superset", "notes": "Aim for 6-8 reps." },
-                    { "id": "mb-v4-ub-s2-2", "reps": 8, "weight": 10, "restAfterSet": 90, "type": "superset", "notes": "Aim for 6-8 reps." },
-                    { "id": "mb-v4-ub-s2-3", "reps": 8, "weight": 10, "restAfterSet": 90, "type": "superset", "notes": "Aim for 6-8 reps." }
+                    { "id": "mb-v4-ub-s2-1", "targetReps": 8, "targetWeight": 10, "restAfterSet": 90, "type": "superset", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v4-ub-s2-2", "targetReps": 8, "targetWeight": 10, "restAfterSet": 90, "type": "superset", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v4-ub-s2-3", "targetReps": 8, "targetWeight": 10, "restAfterSet": 90, "type": "superset", "notes": "Aim for 6-8 reps." }
                 ], "type": "superset"
             },
             {
                 "id": "mb-v4-ub-ex3", "exerciseId": "seated-row-machine", "exerciseName": "Seated Cable Row", "supersetId": "ss-ub-2", "supersetSize": 2, "supersetOrder": 0, "sets": [
-                    { "id": "mb-v4-ub-s3-1", "reps": 10, "weight": 10, "restAfterSet": 0, "type": "superset", "notes": "Aim for 8-10 reps." },
-                    { "id": "mb-v4-ub-s3-2", "reps": 10, "weight": 10, "restAfterSet": 0, "type": "superset", "notes": "Aim for 8-10 reps." },
-                    { "id": "mb-v4-ub-s3-3", "reps": 10, "weight": 10, "restAfterSet": 0, "type": "superset", "notes": "Aim for 8-10 reps." }
+                    { "id": "mb-v4-ub-s3-1", "targetReps": 10, "targetWeight": 10, "restAfterSet": 0, "type": "superset", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-v4-ub-s3-2", "targetReps": 10, "targetWeight": 10, "restAfterSet": 0, "type": "superset", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-v4-ub-s3-3", "targetReps": 10, "targetWeight": 10, "restAfterSet": 0, "type": "superset", "notes": "Aim for 8-10 reps." }
                 ], "type": "superset"
             },
             {
                 "id": "mb-v4-ub-ex4", "exerciseId": "dumbbell-bench-press", "exerciseName": "Dumbbell Bench Press", "supersetId": "ss-ub-2", "supersetSize": 2, "supersetOrder": 1, "sets": [
-                    { "id": "mb-v4-ub-s4-1", "reps": 10, "weight": 10, "restAfterSet": 60, "type": "superset", "notes": "Aim for 8-10 reps." },
-                    { "id": "mb-v4-ub-s4-2", "reps": 10, "weight": 10, "restAfterSet": 60, "type": "superset", "notes": "Aim for 8-10 reps." },
-                    { "id": "mb-v4-ub-s4-3", "reps": 10, "weight": 10, "restAfterSet": 60, "type": "superset", "notes": "Aim for 8-10 reps." }
+                    { "id": "mb-v4-ub-s4-1", "targetReps": 10, "targetWeight": 10, "restAfterSet": 60, "type": "superset", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-v4-ub-s4-2", "targetReps": 10, "targetWeight": 10, "restAfterSet": 60, "type": "superset", "notes": "Aim for 8-10 reps." },
+                    { "id": "mb-v4-ub-s4-3", "targetReps": 10, "targetWeight": 10, "restAfterSet": 60, "type": "superset", "notes": "Aim for 8-10 reps." }
                 ], "type": "superset"
             },
             {
                 "id": "mb-v4-ub-ex5", "exerciseId": "dumbbell-fly", "exerciseName": "Dumbbell Flyes", "sets": [
-                    { "id": "mb-v4-ub-s5-1", "reps": 15, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-15 reps." },
-                    { "id": "mb-v4-ub-s5-2", "reps": 15, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-15 reps." }
+                    { "id": "mb-v4-ub-s5-1", "targetReps": 15, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-15 reps." },
+                    { "id": "mb-v4-ub-s5-2", "targetReps": 15, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Aim for 10-15 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-v4-ub-ex6", "exerciseId": "barbell-bicep-curl", "exerciseName": "Barbell Curls", "supersetId": "ss-ub-3", "supersetSize": 2, "supersetOrder": 0, "sets": [
-                    { "id": "mb-v4-ub-s6-1", "reps": 12, "weight": 10, "restAfterSet": 0, "type": "superset", "notes": "Aim for 10-12 reps." },
-                    { "id": "mb-v4-ub-s6-2", "reps": 12, "weight": 10, "restAfterSet": 0, "type": "superset", "notes": "Aim for 10-12 reps." },
-                    { "id": "mb-v4-ub-s6-3", "reps": 12, "weight": 10, "restAfterSet": 0, "type": "superset", "notes": "Aim for 10-12 reps." }
+                    { "id": "mb-v4-ub-s6-1", "targetReps": 12, "targetWeight": 10, "restAfterSet": 0, "type": "superset", "notes": "Aim for 10-12 reps." },
+                    { "id": "mb-v4-ub-s6-2", "targetReps": 12, "targetWeight": 10, "restAfterSet": 0, "type": "superset", "notes": "Aim for 10-12 reps." },
+                    { "id": "mb-v4-ub-s6-3", "targetReps": 12, "targetWeight": 10, "restAfterSet": 0, "type": "superset", "notes": "Aim for 10-12 reps." }
                 ], "type": "superset"
             },
             {
                 "id": "mb-v4-ub-ex7", "exerciseId": "barbell-skull-crusher", "exerciseName": "Skull Crushers", "supersetId": "ss-ub-3", "supersetSize": 2, "supersetOrder": 1, "sets": [
-                    { "id": "mb-v4-ub-s7-1", "reps": 15, "weight": 10, "restAfterSet": 45, "type": "superset", "notes": "Aim for 12-15 reps." },
-                    { "id": "mb-v4-ub-s7-2", "reps": 15, "weight": 10, "restAfterSet": 45, "type": "superset", "notes": "Aim for 12-15 reps." }
+                    { "id": "mb-v4-ub-s7-1", "targetReps": 15, "targetWeight": 10, "restAfterSet": 45, "type": "superset", "notes": "Aim for 12-15 reps." },
+                    { "id": "mb-v4-ub-s7-2", "targetReps": 15, "targetWeight": 10, "restAfterSet": 45, "type": "superset", "notes": "Aim for 12-15 reps." }
                 ], "type": "superset"
             }
         ]
@@ -1270,36 +1270,36 @@ export const ROUTINES_DATA: Routine[] = [
         "exercises": [
             {
                 "id": "mb-v4-lb-ex1", "exerciseId": "barbell-back-squat", "exerciseName": "Squats", "sets": [
-                    { "id": "mb-v4-lb-s1-1", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
-                    { "id": "mb-v4-lb-s1-2", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
-                    { "id": "mb-v4-lb-s1-3", "reps": 8, "weight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." }
+                    { "id": "mb-v4-lb-s1-1", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v4-lb-s1-2", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." },
+                    { "id": "mb-v4-lb-s1-3", "targetReps": 8, "targetWeight": 10, "restAfterSet": 150, "type": "standard", "notes": "Aim for 6-8 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-v4-lb-ex2", "exerciseId": "dumbbell-bulgarian-split-squat", "exerciseName": "Split Squats", "sets": [
-                    { "id": "mb-v4-lb-s2-1", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps per leg." },
-                    { "id": "mb-v4-lb-s2-2", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps per leg." },
-                    { "id": "mb-v4-lb-s2-3", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps per leg." }
+                    { "id": "mb-v4-lb-s2-1", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps per leg." },
+                    { "id": "mb-v4-lb-s2-2", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps per leg." },
+                    { "id": "mb-v4-lb-s2-3", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 8-10 reps per leg." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-v4-lb-ex3", "exerciseId": "lying-leg-curl-machine", "exerciseName": "Lying Leg Curls", "sets": [
-                    { "id": "mb-v4-lb-s3-1", "reps": 12, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps." },
-                    { "id": "mb-v4-lb-s3-2", "reps": 12, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps." },
-                    { "id": "mb-v4-lb-s3-3", "reps": 12, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps." }
+                    { "id": "mb-v4-lb-s3-1", "targetReps": 12, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps." },
+                    { "id": "mb-v4-lb-s3-2", "targetReps": 12, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps." },
+                    { "id": "mb-v4-lb-s3-3", "targetReps": 12, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Aim for 10-12 reps." }
                 ], "supersetId": null, "supersetOrder": null, "type": "standard"
             },
             {
                 "id": "mb-v4-lb-ex4", "exerciseId": "seated-calf-raise-machine", "exerciseName": "Seated Calf Raises", "supersetId": "ss-lb-1", "supersetSize": 2, "supersetOrder": 0, "sets": [
-                    { "id": "mb-v4-lb-s4-1", "reps": 15, "weight": 10, "restAfterSet": 0, "type": "superset", "notes": "Aim for 10-15 reps." },
-                    { "id": "mb-v4-lb-s4-2", "reps": 15, "weight": 10, "restAfterSet": 0, "type": "superset", "notes": "Aim for 10-15 reps." },
-                    { "id": "mb-v4-lb-s4-3", "reps": 15, "weight": 10, "restAfterSet": 0, "type": "superset", "notes": "Aim for 10-15 reps." },
-                    { "id": "mb-v4-lb-s4-4", "reps": 15, "weight": 10, "restAfterSet": 0, "type": "superset", "notes": "Aim for 10-15 reps." }
+                    { "id": "mb-v4-lb-s4-1", "targetReps": 15, "targetWeight": 10, "restAfterSet": 0, "type": "superset", "notes": "Aim for 10-15 reps." },
+                    { "id": "mb-v4-lb-s4-2", "targetReps": 15, "targetWeight": 10, "restAfterSet": 0, "type": "superset", "notes": "Aim for 10-15 reps." },
+                    { "id": "mb-v4-lb-s4-3", "targetReps": 15, "targetWeight": 10, "restAfterSet": 0, "type": "superset", "notes": "Aim for 10-15 reps." },
+                    { "id": "mb-v4-lb-s4-4", "targetReps": 15, "targetWeight": 10, "restAfterSet": 0, "type": "superset", "notes": "Aim for 10-15 reps." }
                 ], "type": "superset"
             },
             {
                 "id": "mb-v4-lb-ex5", "exerciseId": "plank", "exerciseName": "Abs", "supersetId": "ss-lb-1", "supersetSize": 2, "supersetOrder": 1, "sets": [
-                    { "id": "mb-v4-lb-s5-1", "reps": 15, "weight": 10, "restAfterSet": 45, "type": "superset", "notes": "Perform any ab exercise. Aim for 8-15 reps." }
+                    { "id": "mb-v4-lb-s5-1", "targetReps": 15, "targetWeight": 10, "restAfterSet": 45, "type": "superset", "notes": "Perform any ab exercise. Aim for 8-15 reps." }
                 ], "type": "superset"
             }
         ]
@@ -1317,7 +1317,7 @@ export const ROUTINES_DATA: Routine[] = [
                 "sets": [
                     {
                         "id": "set-1-1-1",
-                        "duration": 600,
+                        "targetDuration": 600,
                         "restAfterSet": 60,
                         "type": "cardio"
                     }
@@ -1334,25 +1334,25 @@ export const ROUTINES_DATA: Routine[] = [
                 "sets": [
                     {
                         "id": "set-1-2-1",
-                        "reps": 10,
+                        "targetReps": 10,
                         "restAfterSet": 60,
                         "type": "standard"
                     },
                     {
                         "id": "set-1-2-2",
-                        "reps": 10,
+                        "targetReps": 10,
                         "restAfterSet": 60,
                         "type": "standard"
                     },
                     {
                         "id": "set-1-2-3",
-                        "reps": 10,
+                        "targetReps": 10,
                         "restAfterSet": 60,
                         "type": "standard"
                     },
                     {
                         "id": "set-1-2-4",
-                        "reps": 10,
+                        "targetReps": 10,
                         "restAfterSet": 60,
                         "type": "standard"
                     }
@@ -1369,19 +1369,19 @@ export const ROUTINES_DATA: Routine[] = [
                 "sets": [
                     {
                         "id": "set-1-3-1",
-                        "reps": 12,
+                        "targetReps": 12,
                         "restAfterSet": 60,
                         "type": "standard"
                     },
                     {
                         "id": "set-1-3-2",
-                        "reps": 12,
+                        "targetReps": 12,
                         "restAfterSet": 60,
                         "type": "standard"
                     },
                     {
                         "id": "set-1-3-3",
-                        "reps": 12,
+                        "targetReps": 12,
                         "restAfterSet": 60,
                         "type": "standard"
                     }
@@ -1398,25 +1398,25 @@ export const ROUTINES_DATA: Routine[] = [
                 "sets": [
                     {
                         "id": "set-1-4-1",
-                        "reps": 10,
+                        "targetReps": 10,
                         "restAfterSet": 60,
                         "type": "standard"
                     },
                     {
                         "id": "set-1-4-2",
-                        "reps": 10,
+                        "targetReps": 10,
                         "restAfterSet": 60,
                         "type": "standard"
                     },
                     {
                         "id": "set-1-4-3",
-                        "reps": 10,
+                        "targetReps": 10,
                         "restAfterSet": 60,
                         "type": "standard"
                     },
                     {
                         "id": "set-1-4-4",
-                        "reps": 10,
+                        "targetReps": 10,
                         "restAfterSet": 60,
                         "type": "standard"
                     }
@@ -1433,31 +1433,31 @@ export const ROUTINES_DATA: Routine[] = [
                 "sets": [
                     {
                         "id": "set-1-5-1",
-                        "duration": 45,
+                        "targetDuration": 45,
                         "restAfterSet": 30,
                         "type": "standard"
                     },
                     {
                         "id": "set-1-5-2",
-                        "duration": 45,
+                        "targetDuration": 45,
                         "restAfterSet": 30,
                         "type": "standard"
                     },
                     {
                         "id": "set-1-5-3",
-                        "duration": 45,
+                        "targetDuration": 45,
                         "restAfterSet": 30,
                         "type": "standard"
                     },
                     {
                         "id": "set-1-5-4",
-                        "duration": 45,
+                        "targetDuration": 45,
                         "restAfterSet": 30,
                         "type": "standard"
                     },
                     {
                         "id": "set-1-5-5",
-                        "duration": 45,
+                        "targetDuration": 45,
                         "restAfterSet": 30,
                         "type": "standard"
                     }
@@ -1474,7 +1474,7 @@ export const ROUTINES_DATA: Routine[] = [
                 "sets": [
                     {
                         "id": "set-1-6-1",
-                        "duration": 300,
+                        "targetDuration": 300,
                         "restAfterSet": 60,
                         "type": "cardio"
                     }
@@ -1499,7 +1499,7 @@ export const ROUTINES_DATA: Routine[] = [
                 "sets": [
                     {
                         "id": "set-2-1-1",
-                        "duration": 600,
+                        "targetDuration": 600,
                         "restAfterSet": 60,
                         "type": "cardio"
                     }
@@ -1516,25 +1516,25 @@ export const ROUTINES_DATA: Routine[] = [
                 "sets": [
                     {
                         "id": "set-2-2-1",
-                        "reps": 10,
+                        "targetReps": 10,
                         "restAfterSet": 60,
                         "type": "standard"
                     },
                     {
                         "id": "set-2-2-2",
-                        "reps": 10,
+                        "targetReps": 10,
                         "restAfterSet": 60,
                         "type": "standard"
                     },
                     {
                         "id": "set-2-2-3",
-                        "reps": 10,
+                        "targetReps": 10,
                         "restAfterSet": 60,
                         "type": "standard"
                     },
                     {
                         "id": "set-2-2-4",
-                        "reps": 10,
+                        "targetReps": 10,
                         "restAfterSet": 60,
                         "type": "standard"
                     }
@@ -1551,19 +1551,19 @@ export const ROUTINES_DATA: Routine[] = [
                 "sets": [
                     {
                         "id": "set-2-3-1",
-                        "reps": 10,
+                        "targetReps": 10,
                         "restAfterSet": 60,
                         "type": "standard"
                     },
                     {
                         "id": "set-2-3-2",
-                        "reps": 10,
+                        "targetReps": 10,
                         "restAfterSet": 60,
                         "type": "standard"
                     },
                     {
                         "id": "set-2-3-3",
-                        "reps": 10,
+                        "targetReps": 10,
                         "restAfterSet": 60,
                         "type": "standard"
                     }
@@ -1580,25 +1580,25 @@ export const ROUTINES_DATA: Routine[] = [
                 "sets": [
                     {
                         "id": "set-2-4-1",
-                        "reps": 10,
+                        "targetReps": 10,
                         "restAfterSet": 60,
                         "type": "standard"
                     },
                     {
                         "id": "set-2-4-2",
-                        "reps": 10,
+                        "targetReps": 10,
                         "restAfterSet": 60,
                         "type": "standard"
                     },
                     {
                         "id": "set-2-4-3",
-                        "reps": 10,
+                        "targetReps": 10,
                         "restAfterSet": 60,
                         "type": "standard"
                     },
                     {
                         "id": "set-2-4-4",
-                        "reps": 10,
+                        "targetReps": 10,
                         "restAfterSet": 60,
                         "type": "standard"
                     }
@@ -1615,19 +1615,19 @@ export const ROUTINES_DATA: Routine[] = [
                 "sets": [
                     {
                         "id": "set-2-5-1",
-                        "reps": 12,
+                        "targetReps": 12,
                         "restAfterSet": 60,
                         "type": "standard"
                     },
                     {
                         "id": "set-2-5-2",
-                        "reps": 12,
+                        "targetReps": 12,
                         "restAfterSet": 60,
                         "type": "standard"
                     },
                     {
                         "id": "set-2-5-3",
-                        "reps": 12,
+                        "targetReps": 12,
                         "restAfterSet": 60,
                         "type": "standard"
                     }
@@ -1644,19 +1644,19 @@ export const ROUTINES_DATA: Routine[] = [
                 "sets": [
                     {
                         "id": "set-2-6-1",
-                        "reps": 12,
+                        "targetReps": 12,
                         "restAfterSet": 60,
                         "type": "standard"
                     },
                     {
                         "id": "set-2-6-2",
-                        "reps": 12,
+                        "targetReps": 12,
                         "restAfterSet": 60,
                         "type": "standard"
                     },
                     {
                         "id": "set-2-6-3",
-                        "reps": 12,
+                        "targetReps": 12,
                         "restAfterSet": 60,
                         "type": "standard"
                     }
@@ -1673,19 +1673,19 @@ export const ROUTINES_DATA: Routine[] = [
                 "sets": [
                     {
                         "id": "set-2-7-1",
-                        "reps": 10,
+                        "targetReps": 10,
                         "restAfterSet": 60,
                         "type": "standard"
                     },
                     {
                         "id": "set-2-7-2",
-                        "reps": 10,
+                        "targetReps": 10,
                         "restAfterSet": 60,
                         "type": "standard"
                     },
                     {
                         "id": "set-2-7-3",
-                        "reps": 10,
+                        "targetReps": 10,
                         "restAfterSet": 60,
                         "type": "standard"
                     }
@@ -1702,19 +1702,19 @@ export const ROUTINES_DATA: Routine[] = [
                 "sets": [
                     {
                         "id": "set-2-8-1",
-                        "reps": 15,
+                        "targetReps": 15,
                         "restAfterSet": 30,
                         "type": "standard"
                     },
                     {
                         "id": "set-2-8-2",
-                        "reps": 15,
+                        "targetReps": 15,
                         "restAfterSet": 30,
                         "type": "standard"
                     },
                     {
                         "id": "set-2-8-3",
-                        "reps": 15,
+                        "targetReps": 15,
                         "restAfterSet": 30,
                         "type": "standard"
                     }
@@ -1731,7 +1731,7 @@ export const ROUTINES_DATA: Routine[] = [
                 "sets": [
                     {
                         "id": "set-2-9-1",
-                        "duration": 300,
+                        "targetDuration": 300,
                         "restAfterSet": 60,
                         "type": "cardio"
                     }
@@ -1754,9 +1754,9 @@ export const ROUTINES_DATA: Routine[] = [
                 "exerciseId": "overhead-press-barbell",
                 "exerciseName": "Overhead Press (Barbell)",
                 "sets": [
-                    { "id": "w1-s1", "reps": 5, "weight": 10, "restAfterSet": 180, "type": "standard", "notes": "Main lift: Focus on progressive overload week to week." },
-                    { "id": "w1-s2", "reps": 5, "weight": 10, "restAfterSet": 180, "type": "standard" },
-                    { "id": "w1-s3", "reps": 5, "weight": 10, "restAfterSet": 180, "type": "standard", "notes": "On the final set, aim for as many reps as possible (AMRAP) with good form." }
+                    { "id": "w1-s1", "targetReps": 5, "targetWeight": 10, "restAfterSet": 180, "type": "standard", "notes": "Main lift: Focus on progressive overload week to week." },
+                    { "id": "w1-s2", "targetReps": 5, "targetWeight": 10, "restAfterSet": 180, "type": "standard" },
+                    { "id": "w1-s3", "targetReps": 5, "targetWeight": 10, "restAfterSet": 180, "type": "standard", "notes": "On the final set, aim for as many reps as possible (AMRAP) with good form." }
                 ],
                 "supersetId": null, "supersetOrder": null, "type": "standard"
             },
@@ -1765,9 +1765,9 @@ export const ROUTINES_DATA: Routine[] = [
                 "exerciseId": "lat-pulldown-machine",
                 "exerciseName": "Lat Pulldown",
                 "sets": [
-                    { "id": "w1-s4", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard" },
-                    { "id": "w1-s5", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard" },
-                    { "id": "w1-s6", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard" }
+                    { "id": "w1-s4", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard" },
+                    { "id": "w1-s5", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard" },
+                    { "id": "w1-s6", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard" }
                 ],
                 "supersetId": null, "supersetOrder": null, "type": "standard"
             },
@@ -1776,9 +1776,9 @@ export const ROUTINES_DATA: Routine[] = [
                 "exerciseId": "dumbbell-lateral-raise",
                 "exerciseName": "Dumbbell Lateral Raise",
                 "sets": [
-                    { "id": "w1-s7", "reps": 15, "weight": 10, "restAfterSet": 60, "type": "standard" },
-                    { "id": "w1-s8", "reps": 15, "weight": 10, "restAfterSet": 60, "type": "standard" },
-                    { "id": "w1-s9", "reps": 15, "weight": 10, "restAfterSet": 60, "type": "standard" }
+                    { "id": "w1-s7", "targetReps": 15, "targetWeight": 10, "restAfterSet": 60, "type": "standard" },
+                    { "id": "w1-s8", "targetReps": 15, "targetWeight": 10, "restAfterSet": 60, "type": "standard" },
+                    { "id": "w1-s9", "targetReps": 15, "targetWeight": 10, "restAfterSet": 60, "type": "standard" }
                 ],
                 "supersetId": null, "supersetOrder": null, "type": "standard"
             },
@@ -1787,8 +1787,8 @@ export const ROUTINES_DATA: Routine[] = [
                 "exerciseId": "cable-face-pull",
                 "exerciseName": "Face Pulls",
                 "sets": [
-                    { "id": "w1-s10", "reps": 20, "weight": 10, "restAfterSet": 60, "type": "standard" },
-                    { "id": "w1-s11", "reps": 20, "weight": 10, "restAfterSet": 60, "type": "standard" }
+                    { "id": "w1-s10", "targetReps": 20, "targetWeight": 10, "restAfterSet": 60, "type": "standard" },
+                    { "id": "w1-s11", "targetReps": 20, "targetWeight": 10, "restAfterSet": 60, "type": "standard" }
                 ],
                 "supersetId": null, "supersetOrder": null, "type": "standard"
             }
@@ -1806,9 +1806,9 @@ export const ROUTINES_DATA: Routine[] = [
                 "exerciseId": "barbell-deadlift",
                 "exerciseName": "Barbell Deadlift (Conventional)",
                 "sets": [
-                    { "id": "w2-s1", "reps": 5, "weight": 10, "restAfterSet": 180, "type": "standard", "notes": "Main lift: Focus on a flat back and powerful hip drive." },
-                    { "id": "w2-s2", "reps": 5, "weight": 10, "restAfterSet": 180, "type": "standard" },
-                    { "id": "w2-s3", "reps": 5, "weight": 10, "restAfterSet": 180, "type": "standard", "notes": "On the final set, aim for as many reps as possible (AMRAP) without form breakdown." }
+                    { "id": "w2-s1", "targetReps": 5, "targetWeight": 10, "restAfterSet": 180, "type": "standard", "notes": "Main lift: Focus on a flat back and powerful hip drive." },
+                    { "id": "w2-s2", "targetReps": 5, "targetWeight": 10, "restAfterSet": 180, "type": "standard" },
+                    { "id": "w2-s3", "targetReps": 5, "targetWeight": 10, "restAfterSet": 180, "type": "standard", "notes": "On the final set, aim for as many reps as possible (AMRAP) without form breakdown." }
                 ],
                 "supersetId": null, "supersetOrder": null, "type": "standard"
             },
@@ -1817,9 +1817,9 @@ export const ROUTINES_DATA: Routine[] = [
                 "exerciseId": "leg-press-machine",
                 "exerciseName": "Leg Press",
                 "sets": [
-                    { "id": "w2-s4", "reps": 12, "weight": 10, "restAfterSet": 90, "type": "standard" },
-                    { "id": "w2-s5", "reps": 12, "weight": 10, "restAfterSet": 90, "type": "standard" },
-                    { "id": "w2-s6", "reps": 12, "weight": 10, "restAfterSet": 90, "type": "standard" }
+                    { "id": "w2-s4", "targetReps": 12, "targetWeight": 10, "restAfterSet": 90, "type": "standard" },
+                    { "id": "w2-s5", "targetReps": 12, "targetWeight": 10, "restAfterSet": 90, "type": "standard" },
+                    { "id": "w2-s6", "targetReps": 12, "targetWeight": 10, "restAfterSet": 90, "type": "standard" }
                 ],
                 "supersetId": null, "supersetOrder": null, "type": "standard"
             },
@@ -1828,9 +1828,9 @@ export const ROUTINES_DATA: Routine[] = [
                 "exerciseId": "lying-leg-curl-machine",
                 "exerciseName": "Lying Leg Curls",
                 "sets": [
-                    { "id": "w2-s7", "reps": 15, "weight": 10, "restAfterSet": 60, "type": "standard" },
-                    { "id": "w2-s8", "reps": 15, "weight": 10, "restAfterSet": 60, "type": "standard" },
-                    { "id": "w2-s9", "reps": 15, "weight": 10, "restAfterSet": 60, "type": "standard" }
+                    { "id": "w2-s7", "targetReps": 15, "targetWeight": 10, "restAfterSet": 60, "type": "standard" },
+                    { "id": "w2-s8", "targetReps": 15, "targetWeight": 10, "restAfterSet": 60, "type": "standard" },
+                    { "id": "w2-s9", "targetReps": 15, "targetWeight": 10, "restAfterSet": 60, "type": "standard" }
                 ],
                 "supersetId": null, "supersetOrder": null, "type": "standard"
             },
@@ -1839,9 +1839,9 @@ export const ROUTINES_DATA: Routine[] = [
                 "exerciseId": "plank",
                 "exerciseName": "Plank",
                 "sets": [
-                    { "id": "w2-s10", "duration": 60, "weight": null, "restAfterSet": 60, "type": "standard", "notes": "Hold for max time." },
-                    { "id": "w2-s11", "duration": 60, "weight": null, "restAfterSet": 60, "type": "standard", "notes": "Hold for max time." },
-                    { "id": "w2-s12", "duration": 60, "weight": null, "restAfterSet": 60, "type": "standard", "notes": "Hold for max time." }
+                    { "id": "w2-s10", "targetDuration": 60, "targetWeight": null, "restAfterSet": 60, "type": "standard", "notes": "Hold for max time." },
+                    { "id": "w2-s11", "targetDuration": 60, "targetWeight": null, "restAfterSet": 60, "type": "standard", "notes": "Hold for max time." },
+                    { "id": "w2-s12", "targetDuration": 60, "targetWeight": null, "restAfterSet": 60, "type": "standard", "notes": "Hold for max time." }
                 ],
                 "supersetId": null, "supersetOrder": null, "type": "standard"
             }
@@ -1859,9 +1859,9 @@ export const ROUTINES_DATA: Routine[] = [
                 "exerciseId": "barbell-bench-press",
                 "exerciseName": "Barbell Bench Press",
                 "sets": [
-                    { "id": "w3-s1", "reps": 5, "weight": 10, "restAfterSet": 180, "type": "standard", "notes": "Main lift: Keep your shoulders pinned back and down." },
-                    { "id": "w3-s2", "reps": 5, "weight": 10, "restAfterSet": 180, "type": "standard" },
-                    { "id": "w3-s3", "reps": 5, "weight": 10, "restAfterSet": 180, "type": "standard", "notes": "On the final set, aim for as many reps as possible (AMRAP) with good form." }
+                    { "id": "w3-s1", "targetReps": 5, "targetWeight": 10, "restAfterSet": 180, "type": "standard", "notes": "Main lift: Keep your shoulders pinned back and down." },
+                    { "id": "w3-s2", "targetReps": 5, "targetWeight": 10, "restAfterSet": 180, "type": "standard" },
+                    { "id": "w3-s3", "targetReps": 5, "targetWeight": 10, "restAfterSet": 180, "type": "standard", "notes": "On the final set, aim for as many reps as possible (AMRAP) with good form." }
                 ],
                 "supersetId": null, "supersetOrder": null, "type": "standard"
             },
@@ -1870,9 +1870,9 @@ export const ROUTINES_DATA: Routine[] = [
                 "exerciseId": "dumbbell-incline-press",
                 "exerciseName": "Dumbbell Incline Press",
                 "sets": [
-                    { "id": "w3-s4", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard" },
-                    { "id": "w3-s5", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard" },
-                    { "id": "w3-s6", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard" }
+                    { "id": "w3-s4", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard" },
+                    { "id": "w3-s5", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard" },
+                    { "id": "w3-s6", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard" }
                 ],
                 "supersetId": null, "supersetOrder": null, "type": "standard"
             },
@@ -1881,9 +1881,9 @@ export const ROUTINES_DATA: Routine[] = [
                 "exerciseId": "dumbbell-row",
                 "exerciseName": "Dumbbell Row (Single Arm)",
                 "sets": [
-                    { "id": "w3-s7", "reps": 12, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Perform 12 reps per arm." },
-                    { "id": "w3-s8", "reps": 12, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Perform 12 reps per arm." },
-                    { "id": "w3-s9", "reps": 12, "weight": 10, "restAfterSet": 60, "type": "standard", "notes": "Perform 12 reps per arm." }
+                    { "id": "w3-s7", "targetReps": 12, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Perform 12 reps per arm." },
+                    { "id": "w3-s8", "targetReps": 12, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Perform 12 reps per arm." },
+                    { "id": "w3-s9", "targetReps": 12, "targetWeight": 10, "restAfterSet": 60, "type": "standard", "notes": "Perform 12 reps per arm." }
                 ],
                 "supersetId": null, "supersetOrder": null, "type": "standard"
             },
@@ -1892,8 +1892,8 @@ export const ROUTINES_DATA: Routine[] = [
                 "exerciseId": "barbell-skull-crusher",
                 "exerciseName": "Skull Crushers",
                 "sets": [
-                    { "id": "w3-s10", "reps": 15, "weight": 10, "restAfterSet": 60, "type": "standard" },
-                    { "id": "w3-s11", "reps": 15, "weight": 10, "restAfterSet": 60, "type": "standard" }
+                    { "id": "w3-s10", "targetReps": 15, "targetWeight": 10, "restAfterSet": 60, "type": "standard" },
+                    { "id": "w3-s11", "targetReps": 15, "targetWeight": 10, "restAfterSet": 60, "type": "standard" }
                 ],
                 "supersetId": null, "supersetOrder": null, "type": "standard"
             }
@@ -1911,9 +1911,9 @@ export const ROUTINES_DATA: Routine[] = [
                 "exerciseId": "barbell-back-squat",
                 "exerciseName": "Barbell Back Squat",
                 "sets": [
-                    { "id": "w4-s1", "reps": 5, "weight": 10, "restAfterSet": 180, "type": "standard", "notes": "Main lift: Focus on hitting depth (hip crease below knee)." },
-                    { "id": "w4-s2", "reps": 5, "weight": 10, "restAfterSet": 180, "type": "standard" },
-                    { "id": "w4-s3", "reps": 5, "weight": 10, "restAfterSet": 180, "type": "standard", "notes": "On the final set, aim for as many reps as possible (AMRAP) with good form." }
+                    { "id": "w4-s1", "targetReps": 5, "targetWeight": 10, "restAfterSet": 180, "type": "standard", "notes": "Main lift: Focus on hitting depth (hip crease below knee)." },
+                    { "id": "w4-s2", "targetReps": 5, "targetWeight": 10, "restAfterSet": 180, "type": "standard" },
+                    { "id": "w4-s3", "targetReps": 5, "targetWeight": 10, "restAfterSet": 180, "type": "standard", "notes": "On the final set, aim for as many reps as possible (AMRAP) with good form." }
                 ],
                 "supersetId": null, "supersetOrder": null, "type": "standard"
             },
@@ -1922,9 +1922,9 @@ export const ROUTINES_DATA: Routine[] = [
                 "exerciseId": "dumbbell-bulgarian-split-squat",
                 "exerciseName": "Bulgarian Split Squat",
                 "sets": [
-                    { "id": "w4-s4", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Perform 10 reps per leg." },
-                    { "id": "w4-s5", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Perform 10 reps per leg." },
-                    { "id": "w4-s6", "reps": 10, "weight": 10, "restAfterSet": 90, "type": "standard", "notes": "Perform 10 reps per leg." }
+                    { "id": "w4-s4", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Perform 10 reps per leg." },
+                    { "id": "w4-s5", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Perform 10 reps per leg." },
+                    { "id": "w4-s6", "targetReps": 10, "targetWeight": 10, "restAfterSet": 90, "type": "standard", "notes": "Perform 10 reps per leg." }
                 ],
                 "supersetId": null, "supersetOrder": null, "type": "standard"
             },
@@ -1933,9 +1933,9 @@ export const ROUTINES_DATA: Routine[] = [
                 "exerciseId": "barbell-good-morning",
                 "exerciseName": "Good Mornings",
                 "sets": [
-                    { "id": "w4-s7", "reps": 12, "weight": 10, "restAfterSet": 60, "type": "standard" },
-                    { "id": "w4-s8", "reps": 12, "weight": 10, "restAfterSet": 60, "type": "standard" },
-                    { "id": "w4-s9", "reps": 12, "weight": 10, "restAfterSet": 60, "type": "standard" }
+                    { "id": "w4-s7", "targetReps": 12, "targetWeight": 10, "restAfterSet": 60, "type": "standard" },
+                    { "id": "w4-s8", "targetReps": 12, "targetWeight": 10, "restAfterSet": 60, "type": "standard" },
+                    { "id": "w4-s9", "targetReps": 12, "targetWeight": 10, "restAfterSet": 60, "type": "standard" }
                 ],
                 "supersetId": null, "supersetOrder": null, "type": "standard"
             },
@@ -1944,8 +1944,8 @@ export const ROUTINES_DATA: Routine[] = [
                 "exerciseId": "leg-raises",
                 "exerciseName": "Hanging Leg Raises",
                 "sets": [
-                    { "id": "w4-s10", "reps": 15, "weight": 10, "restAfterSet": 60, "type": "standard" },
-                    { "id": "w4-s11", "reps": 15, "weight": 10, "restAfterSet": 60, "type": "standard" }
+                    { "id": "w4-s10", "targetReps": 15, "targetWeight": 10, "restAfterSet": 60, "type": "standard" },
+                    { "id": "w4-s11", "targetReps": 15, "targetWeight": 10, "restAfterSet": 60, "type": "standard" }
                 ],
                 "supersetId": null, "supersetOrder": null, "type": "standard"
             }
@@ -1963,11 +1963,11 @@ export const ROUTINES_DATA: Routine[] = [
                 "exerciseId": "barbell-back-squat",
                 "exerciseName": "Barbell Back Squat",
                 "sets": [
-                    { "id": "5x5-a-s1", "reps": 5, "weight": 10, "restAfterSet": 180, "type": "standard", "notes": "Work set 1 of 5." },
-                    { "id": "5x5-a-s2", "reps": 5, "weight": 10, "restAfterSet": 180, "type": "standard", "notes": "Work set 2 of 5." },
-                    { "id": "5x5-a-s3", "reps": 5, "weight": 10, "restAfterSet": 180, "type": "standard", "notes": "Work set 3 of 5." },
-                    { "id": "5x5-a-s4", "reps": 5, "weight": 10, "restAfterSet": 180, "type": "standard", "notes": "Work set 4 of 5." },
-                    { "id": "5x5-a-s5", "reps": 5, "weight": 10, "restAfterSet": 180, "type": "standard", "notes": "Work set 5 of 5." }
+                    { "id": "5x5-a-s1", "targetReps": 5, "targetWeight": 10, "restAfterSet": 180, "type": "standard", "notes": "Work set 1 of 5." },
+                    { "id": "5x5-a-s2", "targetReps": 5, "targetWeight": 10, "restAfterSet": 180, "type": "standard", "notes": "Work set 2 of 5." },
+                    { "id": "5x5-a-s3", "targetReps": 5, "targetWeight": 10, "restAfterSet": 180, "type": "standard", "notes": "Work set 3 of 5." },
+                    { "id": "5x5-a-s4", "targetReps": 5, "targetWeight": 10, "restAfterSet": 180, "type": "standard", "notes": "Work set 4 of 5." },
+                    { "id": "5x5-a-s5", "targetReps": 5, "targetWeight": 10, "restAfterSet": 180, "type": "standard", "notes": "Work set 5 of 5." }
                 ],
                 "supersetId": null, "supersetOrder": null, "type": "standard"
             },
@@ -1976,11 +1976,11 @@ export const ROUTINES_DATA: Routine[] = [
                 "exerciseId": "barbell-bench-press",
                 "exerciseName": "Barbell Bench Press",
                 "sets": [
-                    { "id": "5x5-a-s6", "reps": 5, "weight": 10, "restAfterSet": 180, "type": "standard", "notes": "Work set 1 of 5." },
-                    { "id": "5x5-a-s7", "reps": 5, "weight": 10, "restAfterSet": 180, "type": "standard", "notes": "Work set 2 of 5." },
-                    { "id": "5x5-a-s8", "reps": 5, "weight": 10, "restAfterSet": 180, "type": "standard", "notes": "Work set 3 of 5." },
-                    { "id": "5x5-a-s9", "reps": 5, "weight": 10, "restAfterSet": 180, "type": "standard", "notes": "Work set 4 of 5." },
-                    { "id": "5x5-a-s10", "reps": 5, "weight": 10, "restAfterSet": 180, "type": "standard", "notes": "Work set 5 of 5." }
+                    { "id": "5x5-a-s6", "targetReps": 5, "targetWeight": 10, "restAfterSet": 180, "type": "standard", "notes": "Work set 1 of 5." },
+                    { "id": "5x5-a-s7", "targetReps": 5, "targetWeight": 10, "restAfterSet": 180, "type": "standard", "notes": "Work set 2 of 5." },
+                    { "id": "5x5-a-s8", "targetReps": 5, "targetWeight": 10, "restAfterSet": 180, "type": "standard", "notes": "Work set 3 of 5." },
+                    { "id": "5x5-a-s9", "targetReps": 5, "targetWeight": 10, "restAfterSet": 180, "type": "standard", "notes": "Work set 4 of 5." },
+                    { "id": "5x5-a-s10", "targetReps": 5, "targetWeight": 10, "restAfterSet": 180, "type": "standard", "notes": "Work set 5 of 5." }
                 ],
                 "supersetId": null, "supersetOrder": null, "type": "standard"
             },
@@ -1989,11 +1989,11 @@ export const ROUTINES_DATA: Routine[] = [
                 "exerciseId": "bent-over-row-barbell",
                 "exerciseName": "Barbell Bent-Over Row",
                 "sets": [
-                    { "id": "5x5-a-s11", "reps": 5, "weight": 10, "restAfterSet": 180, "type": "standard", "notes": "Work set 1 of 5." },
-                    { "id": "5x5-a-s12", "reps": 5, "weight": 10, "restAfterSet": 180, "type": "standard", "notes": "Work set 2 of 5." },
-                    { "id": "5x5-a-s13", "reps": 5, "weight": 10, "restAfterSet": 180, "type": "standard", "notes": "Work set 3 of 5." },
-                    { "id": "5x5-a-s14", "reps": 5, "weight": 10, "restAfterSet": 180, "type": "standard", "notes": "Work set 4 of 5." },
-                    { "id": "5x5-a-s15", "reps": 5, "weight": 10, "restAfterSet": 180, "type": "standard", "notes": "Work set 5 of 5." }
+                    { "id": "5x5-a-s11", "targetReps": 5, "targetWeight": 10, "restAfterSet": 180, "type": "standard", "notes": "Work set 1 of 5." },
+                    { "id": "5x5-a-s12", "targetReps": 5, "targetWeight": 10, "restAfterSet": 180, "type": "standard", "notes": "Work set 2 of 5." },
+                    { "id": "5x5-a-s13", "targetReps": 5, "targetWeight": 10, "restAfterSet": 180, "type": "standard", "notes": "Work set 3 of 5." },
+                    { "id": "5x5-a-s14", "targetReps": 5, "targetWeight": 10, "restAfterSet": 180, "type": "standard", "notes": "Work set 4 of 5." },
+                    { "id": "5x5-a-s15", "targetReps": 5, "targetWeight": 10, "restAfterSet": 180, "type": "standard", "notes": "Work set 5 of 5." }
                 ],
                 "supersetId": null, "supersetOrder": null, "type": "standard"
             }
@@ -2011,11 +2011,11 @@ export const ROUTINES_DATA: Routine[] = [
                 "exerciseId": "barbell-back-squat",
                 "exerciseName": "Barbell Back Squat",
                 "sets": [
-                    { "id": "5x5-b-s1", "reps": 5, "weight": 10, "restAfterSet": 180, "type": "standard", "notes": "Work set 1 of 5." },
-                    { "id": "5x5-b-s2", "reps": 5, "weight": 10, "restAfterSet": 180, "type": "standard", "notes": "Work set 2 of 5." },
-                    { "id": "5x5-b-s3", "reps": 5, "weight": 10, "restAfterSet": 180, "type": "standard", "notes": "Work set 3 of 5." },
-                    { "id": "5x5-b-s4", "reps": 5, "weight": 10, "restAfterSet": 180, "type": "standard", "notes": "Work set 4 of 5." },
-                    { "id": "5x5-b-s5", "reps": 5, "weight": 10, "restAfterSet": 180, "type": "standard", "notes": "Work set 5 of 5." }
+                    { "id": "5x5-b-s1", "targetReps": 5, "targetWeight": 10, "restAfterSet": 180, "type": "standard", "notes": "Work set 1 of 5." },
+                    { "id": "5x5-b-s2", "targetReps": 5, "targetWeight": 10, "restAfterSet": 180, "type": "standard", "notes": "Work set 2 of 5." },
+                    { "id": "5x5-b-s3", "targetReps": 5, "targetWeight": 10, "restAfterSet": 180, "type": "standard", "notes": "Work set 3 of 5." },
+                    { "id": "5x5-b-s4", "targetReps": 5, "targetWeight": 10, "restAfterSet": 180, "type": "standard", "notes": "Work set 4 of 5." },
+                    { "id": "5x5-b-s5", "targetReps": 5, "targetWeight": 10, "restAfterSet": 180, "type": "standard", "notes": "Work set 5 of 5." }
                 ],
                 "supersetId": null, "supersetOrder": null, "type": "standard"
             },
@@ -2024,11 +2024,11 @@ export const ROUTINES_DATA: Routine[] = [
                 "exerciseId": "overhead-press-barbell",
                 "exerciseName": "Overhead Press (Barbell)",
                 "sets": [
-                    { "id": "5x5-b-s6", "reps": 5, "weight": 10, "restAfterSet": 180, "type": "standard", "notes": "Work set 1 of 5." },
-                    { "id": "5x5-b-s7", "reps": 5, "weight": 10, "restAfterSet": 180, "type": "standard", "notes": "Work set 2 of 5." },
-                    { "id": "5x5-b-s8", "reps": 5, "weight": 10, "restAfterSet": 180, "type": "standard", "notes": "Work set 3 of 5." },
-                    { "id": "5x5-b-s9", "reps": 5, "weight": 10, "restAfterSet": 180, "type": "standard", "notes": "Work set 4 of 5." },
-                    { "id": "5x5-b-s10", "reps": 5, "weight": 10, "restAfterSet": 180, "type": "standard", "notes": "Work set 5 of 5." }
+                    { "id": "5x5-b-s6", "targetReps": 5, "targetWeight": 10, "restAfterSet": 180, "type": "standard", "notes": "Work set 1 of 5." },
+                    { "id": "5x5-b-s7", "targetReps": 5, "targetWeight": 10, "restAfterSet": 180, "type": "standard", "notes": "Work set 2 of 5." },
+                    { "id": "5x5-b-s8", "targetReps": 5, "targetWeight": 10, "restAfterSet": 180, "type": "standard", "notes": "Work set 3 of 5." },
+                    { "id": "5x5-b-s9", "targetReps": 5, "targetWeight": 10, "restAfterSet": 180, "type": "standard", "notes": "Work set 4 of 5." },
+                    { "id": "5x5-b-s10", "targetReps": 5, "targetWeight": 10, "restAfterSet": 180, "type": "standard", "notes": "Work set 5 of 5." }
                 ],
                 "supersetId": null, "supersetOrder": null, "type": "standard"
             },
@@ -2037,7 +2037,7 @@ export const ROUTINES_DATA: Routine[] = [
                 "exerciseId": "barbell-deadlift",
                 "exerciseName": "Barbell Deadlift (Conventional)",
                 "sets": [
-                    { "id": "5x5-b-s11", "reps": 5, "weight": 10, "restAfterSet": 240, "type": "standard", "notes": "One heavy work set of 5 reps after warming up." }
+                    { "id": "5x5-b-s11", "targetReps": 5, "targetWeight": 10, "restAfterSet": 240, "type": "standard", "notes": "One heavy work set of 5 reps after warming up." }
                 ],
                 "supersetId": null, "supersetOrder": null, "type": "standard"
             }
@@ -2055,7 +2055,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-1-1',
                 exerciseId: 'single-kettlebell-clean-and-press',
                 exerciseName: 'Clean & Overhead Press to Alternating From Top OHP to Alternating From Bottom OHP',
-                sets: [{ id: 'set-1-1-1', reps: 3, restAfterSet: 0, type: 'superset' }],
+                sets: [{ id: 'set-1-1-1', targetReps: 3, restAfterSet: 0, type: 'superset' }],
                 supersetId: 'shoulder-circuit-1',
                 supersetOrder: 0,
                 rounds: 3,
@@ -2065,7 +2065,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-1-2',
                 exerciseId: 'kettlebell-rack-carry',
                 exerciseName: 'Rack Carry',
-                sets: [{ id: 'set-1-2-1', duration: 50, notes: 'Duration in feet.', restAfterSet: 0, type: 'superset' }],
+                sets: [{ id: 'set-1-2-1', targetDuration: 50, notes: 'Duration in feet.', restAfterSet: 0, type: 'superset' }],
                 supersetId: 'shoulder-circuit-1',
                 supersetOrder: 1,
                 type: 'superset'
@@ -2074,7 +2074,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-1-3',
                 exerciseId: 'push-up',
                 exerciseName: 'Push Up',
-                sets: [{ id: 'set-1-3-1', reps: 6, restAfterSet: 0, type: 'superset' }],
+                sets: [{ id: 'set-1-3-1', targetReps: 6, restAfterSet: 0, type: 'superset' }],
                 supersetId: 'shoulder-circuit-1',
                 supersetOrder: 2,
                 type: 'superset'
@@ -2083,7 +2083,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-1-4',
                 exerciseId: 'farmers-walk',
                 exerciseName: 'Farmers Walk',
-                sets: [{ id: 'set-1-4-1', duration: 50, notes: 'Duration in feet.', restAfterSet: 0, type: 'superset' }],
+                sets: [{ id: 'set-1-4-1', targetDuration: 50, notes: 'Duration in feet.', restAfterSet: 0, type: 'superset' }],
                 supersetId: 'shoulder-circuit-1',
                 supersetOrder: 3,
                 type: 'superset'
@@ -2092,7 +2092,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-1-5',
                 exerciseId: 'kettlebell-double-hand-swing',
                 exerciseName: 'Double Hand Swing',
-                sets: [{ id: 'set-1-5-1', reps: 6, restAfterSet: 150, notes: 'Rest 2-3 minutes after this exercise.', type: 'superset' }],
+                sets: [{ id: 'set-1-5-1', targetReps: 6, restAfterSet: 150, notes: 'Rest 2-3 minutes after this exercise.', type: 'superset' }],
                 supersetId: 'shoulder-circuit-1',
                 supersetOrder: 4,
                 type: 'superset'
@@ -2113,7 +2113,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-2-1',
                 exerciseId: 'single-kettlebell-clean-press-to-pause-windmill',
                 exerciseName: 'Single Kettlebell Clean & Press To Pause Windmill',
-                sets: [{ id: 'set-2-1-1', reps: 3, notes: 'Perform 3 reps per side.', restAfterSet: 0, type: 'superset' }],
+                sets: [{ id: 'set-2-1-1', targetReps: 3, notes: 'Perform 3 reps per side.', restAfterSet: 0, type: 'superset' }],
                 supersetId: 'core-circuit-2',
                 supersetOrder: 0,
                 rounds: 3,
@@ -2123,7 +2123,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-2-2',
                 exerciseId: 'kettlebell-waiters-walk',
                 exerciseName: 'Single Arm Waiters Walk',
-                sets: [{ id: 'set-2-2-1', duration: 50, notes: 'Duration in feet per arm.', restAfterSet: 0, type: 'superset' }],
+                sets: [{ id: 'set-2-2-1', targetDuration: 50, notes: 'Duration in feet per arm.', restAfterSet: 0, type: 'superset' }],
                 supersetId: 'core-circuit-2',
                 supersetOrder: 1,
                 type: 'superset'
@@ -2132,7 +2132,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'kettlebell-single-arm-clean-and-thruster',
                 exerciseId: 'kettlebell-single-arm-clean-and-thruster',
                 exerciseName: 'Single Arm Clean & Thruster',
-                sets: [{ id: 'set-2-3-1', reps: 3, notes: 'Perform 3 reps per side.', restAfterSet: 0, type: 'superset' }],
+                sets: [{ id: 'set-2-3-1', targetReps: 3, notes: 'Perform 3 reps per side.', restAfterSet: 0, type: 'superset' }],
                 supersetId: 'core-circuit-2',
                 supersetOrder: 2,
                 type: 'superset'
@@ -2141,7 +2141,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-2-4',
                 exerciseId: 'kettlebell-rack-carry',
                 exerciseName: 'Offset Rack Walk',
-                sets: [{ id: 'set-2-4-1', duration: 50, notes: 'Duration in feet per side. This is a single-arm rack carry.', restAfterSet: 0, type: 'superset' }],
+                sets: [{ id: 'set-2-4-1', targetDuration: 50, notes: 'Duration in feet per side. This is a single-arm rack carry.', restAfterSet: 0, type: 'superset' }],
                 supersetId: 'core-circuit-2',
                 supersetOrder: 3,
                 type: 'superset'
@@ -2150,7 +2150,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-2-5',
                 exerciseId: 'kettlebell-suitcase-deadlift-to-anti-rotation-row',
                 exerciseName: 'Suitcase Deadlift to Anti-Rotation Row',
-                sets: [{ id: 'set-2-5-1', reps: 3, notes: 'Perform 3 reps per side.', restAfterSet: 0, type: 'superset' }],
+                sets: [{ id: 'set-2-5-1', targetReps: 3, notes: 'Perform 3 reps per side.', restAfterSet: 0, type: 'superset' }],
                 supersetId: 'core-circuit-2',
                 supersetOrder: 4,
                 type: 'superset'
@@ -2159,7 +2159,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-2-6',
                 exerciseId: 'kettlebell-farmer-carry',
                 exerciseName: 'Single Arm Farmers Walk',
-                sets: [{ id: 'set-2-6-1', duration: 50, notes: 'Duration in feet per arm. Rest 2-3 minutes after this exercise.', restAfterSet: 150, type: 'superset' }],
+                sets: [{ id: 'set-2-6-1', targetDuration: 50, notes: 'Duration in feet per arm. Rest 2-3 minutes after this exercise.', restAfterSet: 150, type: 'superset' }],
                 supersetId: 'core-circuit-2',
                 supersetOrder: 5,
                 type: 'superset'
@@ -2180,7 +2180,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-3-1',
                 exerciseId: 'kettlebell-slow-eccentric-floor-skullcrusher-to-press',
                 exerciseName: 'Slow Eccentric Floor Skullcrusher to Close Grip Floor Press',
-                sets: [{ id: 'set-3-1-1', reps: 5, restAfterSet: 0, type: 'superset' }],
+                sets: [{ id: 'set-3-1-1', targetReps: 5, restAfterSet: 0, type: 'superset' }],
                 supersetId: 'arm-blaster-3',
                 supersetOrder: 0,
                 rounds: 3,
@@ -2191,7 +2191,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-3-2',
                 exerciseId: 'kettlebell-floor-skullcrusher',
                 exerciseName: 'Floor Skullcrusher',
-                sets: [{ id: 'set-3-2-1', reps: 10, restAfterSet: 0, type: 'superset' }],
+                sets: [{ id: 'set-3-2-1', targetReps: 10, restAfterSet: 0, type: 'superset' }],
                 supersetId: 'arm-blaster-3',
                 supersetOrder: 1,
                 type: 'superset',
@@ -2201,7 +2201,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-3-3',
                 exerciseId: 'kettlebell-close-grip-floor-press',
                 exerciseName: 'Close Grip Floor Press',
-                sets: [{ id: 'set-3-3-1', reps: 10, restAfterSet: 0, type: 'superset' }],
+                sets: [{ id: 'set-3-3-1', targetReps: 10, restAfterSet: 0, type: 'superset' }],
                 supersetId: 'arm-blaster-3',
                 supersetOrder: 2,
                 type: 'superset',
@@ -2211,7 +2211,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-3-4',
                 exerciseId: 'proprioceptive-close-grip-push-up',
                 exerciseName: 'Proprioceptive Close Grip Push Up',
-                sets: [{ id: 'set-3-4-1', reps: 5, restAfterSet: 0, type: 'superset' }],
+                sets: [{ id: 'set-3-4-1', targetReps: 5, restAfterSet: 0, type: 'superset' }],
                 supersetId: 'arm-blaster-3',
                 supersetOrder: 3,
                 type: 'superset',
@@ -2221,7 +2221,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-3-5',
                 exerciseId: 'push-up',
                 exerciseName: 'Push Up',
-                sets: [{ id: 'set-3-5-1', reps: 5, restAfterSet: 0, type: 'superset' }],
+                sets: [{ id: 'set-3-5-1', targetReps: 5, restAfterSet: 0, type: 'superset' }],
                 supersetId: 'arm-blaster-3',
                 supersetOrder: 4,
                 type: 'superset',
@@ -2231,7 +2231,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-3-6',
                 exerciseId: 'kettlebell-slow-eccentric-pause-towel-curl',
                 exerciseName: 'Slow Eccentric Pause Towel Curls',
-                sets: [{ id: 'set-3-6-1', reps: 5, restAfterSet: 0, type: 'superset' }],
+                sets: [{ id: 'set-3-6-1', targetReps: 5, restAfterSet: 0, type: 'superset' }],
                 supersetId: 'arm-blaster-3',
                 supersetOrder: 5,
                 type: 'superset',
@@ -2241,7 +2241,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-3-7',
                 exerciseId: 'kettlebell-towel-curl',
                 exerciseName: 'Towel Curls',
-                sets: [{ id: 'set-3-7-1', reps: 5, restAfterSet: 180, notes: 'Rest no more than 3 minutes after this exercise.', type: 'superset' }],
+                sets: [{ id: 'set-3-7-1', targetReps: 5, restAfterSet: 180, notes: 'Rest no more than 3 minutes after this exercise.', type: 'superset' }],
                 supersetId: 'arm-blaster-3',
                 supersetOrder: 6,
                 type: 'superset',
@@ -2263,7 +2263,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-4-1',
                 exerciseId: 'kettlebell-clean-and-press',
                 exerciseName: 'Clean & Press',
-                sets: [{ id: 'set-4-1-1', reps: 5, restAfterSet: 0, type: 'superset' }],
+                sets: [{ id: 'set-4-1-1', targetReps: 5, restAfterSet: 0, type: 'superset' }],
                 supersetId: 'back-attack-4',
                 supersetOrder: 0,
                 rounds: 3,
@@ -2273,7 +2273,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-4-2',
                 exerciseId: 'kettlebell-waiters-walk',
                 exerciseName: 'Waiters Walk',
-                sets: [{ id: 'set-4-2-1', duration: 50, notes: 'Duration in feet.', restAfterSet: 0, type: 'superset' }],
+                sets: [{ id: 'set-4-2-1', targetDuration: 50, notes: 'Duration in feet.', restAfterSet: 0, type: 'superset' }],
                 supersetId: 'back-attack-4',
                 supersetOrder: 1,
                 type: 'superset'
@@ -2282,7 +2282,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-4-3',
                 exerciseId: 'kettlebell-cheat-row',
                 exerciseName: 'Cheat Rows',
-                sets: [{ id: 'set-4-3-1', reps: 5, restAfterSet: 0, type: 'superset' }],
+                sets: [{ id: 'set-4-3-1', targetReps: 5, restAfterSet: 0, type: 'superset' }],
                 supersetId: 'back-attack-4',
                 supersetOrder: 2,
                 type: 'superset'
@@ -2291,7 +2291,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-4-4',
                 exerciseId: 'kettlebell-rack-carry',
                 exerciseName: 'Rack Carry',
-                sets: [{ id: 'set-4-4-1', duration: 50, notes: 'Duration in feet.', restAfterSet: 0, type: 'superset' }],
+                sets: [{ id: 'set-4-4-1', targetDuration: 50, notes: 'Duration in feet.', restAfterSet: 0, type: 'superset' }],
                 supersetId: 'back-attack-4',
                 supersetOrder: 3,
                 type: 'superset'
@@ -2300,7 +2300,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-4-5',
                 exerciseId: 'barbell-deadlift',
                 exerciseName: 'Deadlift',
-                sets: [{ id: 'set-4-5-1', reps: 5, restAfterSet: 0, type: 'superset' }],
+                sets: [{ id: 'set-4-5-1', targetReps: 5, restAfterSet: 0, type: 'superset' }],
                 supersetId: 'back-attack-4',
                 supersetOrder: 4,
                 type: 'superset'
@@ -2309,7 +2309,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-4-6',
                 exerciseId: 'farmers-walk',
                 exerciseName: 'Farmers Walk',
-                sets: [{ id: 'set-4-6-1', duration: 50, notes: 'Duration in feet. Rest no more than 3 minutes after this.', restAfterSet: 180, type: 'superset' }],
+                sets: [{ id: 'set-4-6-1', targetDuration: 50, notes: 'Duration in feet. Rest no more than 3 minutes after this.', restAfterSet: 180, type: 'superset' }],
                 supersetId: 'back-attack-4',
                 supersetOrder: 5,
                 type: 'superset'
@@ -2330,7 +2330,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-5-1',
                 exerciseId: 'proprioceptive-pause-goblet-squat',
                 exerciseName: 'Proprioceptive Pause Goblet Squat',
-                sets: [{ id: 'set-5-1-1', reps: 5, restAfterSet: 0, type: 'superset' }],
+                sets: [{ id: 'set-5-1-1', targetReps: 5, restAfterSet: 0, type: 'superset' }],
                 supersetId: 'leg-shock-5',
                 supersetOrder: 0,
                 rounds: 3,
@@ -2340,7 +2340,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-5-2',
                 exerciseId: 'alternating-proprioceptive-reverse-lunge',
                 exerciseName: 'Alternating Proprioceptive Reverse Lunge',
-                sets: [{ id: 'set-5-2-1', reps: 5, notes: 'Perform 5 reps per leg.', restAfterSet: 0, type: 'superset' }],
+                sets: [{ id: 'set-5-2-1', targetReps: 5, notes: 'Perform 5 reps per leg.', restAfterSet: 0, type: 'superset' }],
                 supersetId: 'leg-shock-5',
                 supersetOrder: 1,
                 type: 'superset'
@@ -2349,7 +2349,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-5-3',
                 exerciseId: 'kettlebell-double-hand-swing',
                 exerciseName: 'Double Hand Swing',
-                sets: [{ id: 'set-5-3-1', reps: 5, restAfterSet: 0, type: 'superset' }],
+                sets: [{ id: 'set-5-3-1', targetReps: 5, restAfterSet: 0, type: 'superset' }],
                 supersetId: 'leg-shock-5',
                 supersetOrder: 2,
                 type: 'superset'
@@ -2358,7 +2358,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-5-4',
                 exerciseId: 'barbell-deadlift',
                 exerciseName: 'Deadlift',
-                sets: [{ id: 'set-5-4-1', reps: 5, restAfterSet: 0, type: 'superset' }],
+                sets: [{ id: 'set-5-4-1', targetReps: 5, restAfterSet: 0, type: 'superset' }],
                 supersetId: 'leg-shock-5',
                 supersetOrder: 3,
                 type: 'superset'
@@ -2367,7 +2367,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-5-5',
                 exerciseId: 'bodyweight-squat',
                 exerciseName: 'Pause Bodyweight Squat',
-                sets: [{ id: 'set-5-5-1', reps: 5, notes: 'With a pause at the bottom.', restAfterSet: 0, type: 'superset' }],
+                sets: [{ id: 'set-5-5-1', targetReps: 5, notes: 'With a pause at the bottom.', restAfterSet: 0, type: 'superset' }],
                 supersetId: 'leg-shock-5',
                 supersetOrder: 4,
                 type: 'superset'
@@ -2376,7 +2376,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-5-6',
                 exerciseId: 'bodyweight-squat',
                 exerciseName: 'Bodyweight Squat',
-                sets: [{ id: 'set-5-6-1', reps: 5, restAfterSet: 150, notes: 'Rest 2-3 minutes after this exercise.', type: 'superset' }],
+                sets: [{ id: 'set-5-6-1', targetReps: 5, restAfterSet: 150, notes: 'Rest 2-3 minutes after this exercise.', type: 'superset' }],
                 supersetId: 'leg-shock-5',
                 supersetOrder: 5,
                 type: 'superset'
@@ -2396,7 +2396,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-6-1',
                 exerciseId: 'double-kettlebell-floor-press',
                 exerciseName: 'Banded Slow Eccentric Floor Press',
-                sets: [{ id: 'set-6-1-1', reps: 5, notes: 'Perform with a slow eccentric. Original exercise uses bands.', restAfterSet: 0, type: 'superset' }],
+                sets: [{ id: 'set-6-1-1', targetReps: 5, notes: 'Perform with a slow eccentric. Original exercise uses bands.', restAfterSet: 0, type: 'superset' }],
                 supersetId: 'chest-triceps-circuit-6',
                 supersetOrder: 0,
                 rounds: 3,
@@ -2406,7 +2406,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-6-2',
                 exerciseId: 'double-kettlebell-alternating-floor-press',
                 exerciseName: 'Banded Alternating From Bottom Floor Press',
-                sets: [{ id: 'set-6-2-1', reps: 5, notes: 'Perform 5 reps per arm. Original exercise uses bands and starts from the bottom.', restAfterSet: 0, type: 'superset' }],
+                sets: [{ id: 'set-6-2-1', targetReps: 5, notes: 'Perform 5 reps per arm. Original exercise uses bands and starts from the bottom.', restAfterSet: 0, type: 'superset' }],
                 supersetId: 'chest-triceps-circuit-6',
                 supersetOrder: 1,
                 type: 'superset'
@@ -2415,7 +2415,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-6-3',
                 exerciseId: 'kettlebell-close-grip-floor-press',
                 exerciseName: 'Banded Close Grip Floor Press',
-                sets: [{ id: 'set-6-3-1', reps: 10, notes: 'Original exercise uses bands.', restAfterSet: 0, type: 'superset' }],
+                sets: [{ id: 'set-6-3-1', targetReps: 10, notes: 'Original exercise uses bands.', restAfterSet: 0, type: 'superset' }],
                 supersetId: 'chest-triceps-circuit-6',
                 supersetOrder: 2,
                 type: 'superset'
@@ -2424,7 +2424,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-6-4',
                 exerciseId: 'push-up',
                 exerciseName: 'Banded Push Up',
-                sets: [{ id: 'set-6-4-1', reps: 5, notes: 'Original exercise uses bands.', restAfterSet: 0, type: 'superset' }],
+                sets: [{ id: 'set-6-4-1', targetReps: 5, notes: 'Original exercise uses bands.', restAfterSet: 0, type: 'superset' }],
                 supersetId: 'chest-triceps-circuit-6',
                 supersetOrder: 3,
                 type: 'superset'
@@ -2433,7 +2433,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-6-5',
                 exerciseId: 'push-up',
                 exerciseName: 'Push Up',
-                sets: [{ id: 'set-6-5-1', reps: 5, restAfterSet: 0, type: 'superset' }],
+                sets: [{ id: 'set-6-5-1', targetReps: 5, restAfterSet: 0, type: 'superset' }],
                 supersetId: 'chest-triceps-circuit-6',
                 supersetOrder: 4,
                 type: 'superset'
@@ -2442,7 +2442,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-6-6',
                 exerciseId: 'farmers-walk',
                 exerciseName: 'Farmers Walk',
-                sets: [{ id: 'set-6-6-1', duration: 50, notes: 'Duration in feet. Rest no more than 3 minutes after this.', restAfterSet: 180, type: 'superset' }],
+                sets: [{ id: 'set-6-6-1', targetDuration: 50, notes: 'Duration in feet. Rest no more than 3 minutes after this.', restAfterSet: 180, type: 'superset' }],
                 supersetId: 'chest-triceps-circuit-6',
                 supersetOrder: 5,
                 type: 'superset'
@@ -2463,7 +2463,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-7-1',
                 exerciseId: 'kettlebell-snatch-to-overhead-reverse-lunge',
                 exerciseName: 'Single Arm Snatch to Overhead Reverse Lunge',
-                sets: [{ id: 'set-7-1-1', reps: 5, notes: 'Perform 5 reps per side. This is a complex with Overhead Reverse Lunge.', restAfterSet: 0, type: 'superset', weight: 21 }],
+                sets: [{ id: 'set-7-1-1', targetReps: 5, notes: 'Perform 5 reps per side. This is a complex with Overhead Reverse Lunge.', restAfterSet: 0, type: 'superset', targetWeight: 21 }],
                 supersetId: 'death-set-7',
                 supersetOrder: 0,
                 rounds: 3, // Assuming this is one long set
@@ -2474,7 +2474,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-7-2',
                 exerciseId: 'kettlebell-overhead-lunge',
                 exerciseName: 'Single Overhead Reverse Lunge',
-                sets: [{ id: 'set-7-2-1', reps: 5, notes: 'Perform 5 reps per side as part of the complex.', restAfterSet: 0, type: 'superset', weight: 21 }],
+                sets: [{ id: 'set-7-2-1', targetReps: 5, notes: 'Perform 5 reps per side as part of the complex.', restAfterSet: 0, type: 'superset', targetWeight: 21 }],
                 supersetId: 'death-set-7',
                 supersetOrder: 1,
                 type: 'superset',
@@ -2484,7 +2484,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-7-3',
                 exerciseId: 'kettlebell-deadlift-to-row',
                 exerciseName: 'Deadlift to Row',
-                sets: [{ id: 'set-7-3-1', reps: 5, notes: 'This is a complex with a Row.', restAfterSet: 0, type: 'superset', weight: 21 }],
+                sets: [{ id: 'set-7-3-1', targetReps: 5, notes: 'This is a complex with a Row.', restAfterSet: 0, type: 'superset', targetWeight: 21 }],
                 supersetId: 'death-set-7',
                 supersetOrder: 2,
                 type: 'superset',
@@ -2494,7 +2494,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-7-4',
                 exerciseId: 'kettlebell-single-arm-row',
                 exerciseName: 'Deadlift to Row',
-                sets: [{ id: 'set-7-4-1', reps: 5, notes: 'Performed as part of the complex.', restAfterSet: 0, type: 'superset', weight: 21 }],
+                sets: [{ id: 'set-7-4-1', targetReps: 5, notes: 'Performed as part of the complex.', restAfterSet: 0, type: 'superset', targetWeight: 21 }],
                 supersetId: 'death-set-7',
                 supersetOrder: 3,
                 type: 'superset',
@@ -2504,7 +2504,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-7-5',
                 exerciseId: 'kettlebell-deadlift',
                 exerciseName: 'Deadlift',
-                sets: [{ id: 'set-7-5-1', reps: 5, restAfterSet: 0, type: 'superset', weight: 21 }],
+                sets: [{ id: 'set-7-5-1', targetReps: 5, restAfterSet: 0, type: 'superset', targetWeight: 21 }],
                 supersetId: 'death-set-7',
                 supersetOrder: 4,
                 type: 'superset',
@@ -2514,7 +2514,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-7-6',
                 exerciseId: 'kettlebell-single-arm-row',
                 exerciseName: 'Row',
-                sets: [{ id: 'set-7-6-1', reps: 5, restAfterSet: 0, type: 'superset', weight: 21 }],
+                sets: [{ id: 'set-7-6-1', targetReps: 5, restAfterSet: 0, type: 'superset', targetWeight: 21 }],
                 supersetId: 'death-set-7',
                 supersetOrder: 5,
                 type: 'superset',
@@ -2524,7 +2524,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-7-7',
                 exerciseId: 'kettlebell-double-hand-swing',
                 exerciseName: 'Double Hand Swing',
-                sets: [{ id: 'set-7-7-1', reps: 5, restAfterSet: 0, type: 'superset', weight: 21 }],
+                sets: [{ id: 'set-7-7-1', targetReps: 5, restAfterSet: 0, type: 'superset', targetWeight: 21 }],
                 supersetId: 'death-set-7',
                 supersetOrder: 6,
                 type: 'superset',
@@ -2534,7 +2534,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-7-8',
                 exerciseId: 'kettlebell-double-hand-deadlift',
                 exerciseName: 'Deadlift',
-                sets: [{ id: 'set-7-8-1', reps: 5, restAfterSet: 150, notes: 'Rest 2-3 Minutes after this exercise.', type: 'superset', weight: 21 }],
+                sets: [{ id: 'set-7-8-1', targetReps: 5, restAfterSet: 150, notes: 'Rest 2-3 Minutes after this exercise.', type: 'superset', targetWeight: 21 }],
                 supersetId: 'death-set-7',
                 supersetOrder: 7,
                 type: 'superset',
@@ -2557,9 +2557,9 @@ export const ROUTINES_DATA: Routine[] = [
                 exerciseId: 'kettlebell-single-arm-thruster',
                 exerciseName: 'Single Kettlebell Thruster',
                 sets: [
-                    { id: 'set-8-1-1', reps: 5, restAfterSet: 0, type: 'superset' },
-                    { id: 'set-8-1-2', reps: 3, restAfterSet: 0, type: 'superset' },
-                    { id: 'set-8-1-3', reps: 1, restAfterSet: 0, type: 'superset' }
+                    { id: 'set-8-1-1', targetReps: 5, restAfterSet: 0, type: 'superset' },
+                    { id: 'set-8-1-2', targetReps: 3, restAfterSet: 0, type: 'superset' },
+                    { id: 'set-8-1-3', targetReps: 1, restAfterSet: 0, type: 'superset' }
                 ],
                 supersetId: 'mma-conditioning-8',
                 supersetOrder: 0,
@@ -2570,7 +2570,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-8-2',
                 exerciseId: 'kettlebell-goblet-squat',
                 exerciseName: 'Sandbag Zercher Squat',
-                sets: [{ id: 'set-8-2-1', reps: 5, notes: 'Original exercise is Sandbag Zercher Squat. Substituted with Goblet Squat.', restAfterSet: 0, type: 'superset' }],
+                sets: [{ id: 'set-8-2-1', targetReps: 5, notes: 'Original exercise is Sandbag Zercher Squat. Substituted with Goblet Squat.', restAfterSet: 0, type: 'superset' }],
                 supersetId: 'mma-conditioning-8',
                 supersetOrder: 1,
                 type: 'superset'
@@ -2579,7 +2579,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-8-3',
                 exerciseId: 'kettlebell-goblet-walk',
                 exerciseName: 'Sandbag Zercher Carry',
-                sets: [{ id: 'set-8-3-1', duration: 50, notes: 'Duration in feet. Original is Sandbag Zercher Carry. Substituted with Goblet Walk.', restAfterSet: 0, type: 'superset' }],
+                sets: [{ id: 'set-8-3-1', targetDuration: 50, notes: 'Duration in feet. Original is Sandbag Zercher Carry. Substituted with Goblet Walk.', restAfterSet: 0, type: 'superset' }],
                 supersetId: 'mma-conditioning-8',
                 supersetOrder: 2,
                 type: 'superset'
@@ -2588,7 +2588,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-8-4',
                 exerciseId: 'farmers-walk',
                 exerciseName: 'Tire Drag',
-                sets: [{ id: 'set-8-4-1', duration: 50, notes: 'Duration in feet. Original exercise is Tire Drag. Substituted with Farmer\'s Walk.', restAfterSet: 0, type: 'superset' }],
+                sets: [{ id: 'set-8-4-1', targetDuration: 50, notes: 'Duration in feet. Original exercise is Tire Drag. Substituted with Farmer\'s Walk.', restAfterSet: 0, type: 'superset' }],
                 supersetId: 'mma-conditioning-8',
                 supersetOrder: 3,
                 type: 'superset'
@@ -2597,7 +2597,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-8-5',
                 exerciseId: 'medicine-ball-slam',
                 exerciseName: 'Sledgehammer Slams',
-                sets: [{ id: 'set-8-5-1', reps: 10, notes: 'Perform 10 reps per side. Original is Sledgehammer Slams. Substituted with Medicine Ball Slam. Rest 2-3 minutes after this.', restAfterSet: 150, type: 'superset' }],
+                sets: [{ id: 'set-8-5-1', targetReps: 10, notes: 'Perform 10 reps per side. Original is Sledgehammer Slams. Substituted with Medicine Ball Slam. Rest 2-3 minutes after this.', restAfterSet: 150, type: 'superset' }],
                 supersetId: 'mma-conditioning-8',
                 supersetOrder: 4,
                 type: 'superset'
@@ -2618,7 +2618,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-9-1',
                 exerciseId: 'kettlebell-strict-press',
                 exerciseName: 'Iso-Rack Overhead Press to Get-Up',
-                sets: [{ id: 'set-9-1-1', reps: 5, notes: 'Perform 5 reps per side. Original is a complex with a Get-Up and an iso-hold.', restAfterSet: 0, type: 'superset' }],
+                sets: [{ id: 'set-9-1-1', targetReps: 5, notes: 'Perform 5 reps per side. Original is a complex with a Get-Up and an iso-hold.', restAfterSet: 0, type: 'superset' }],
                 supersetId: 'total-body-10min-9',
                 supersetOrder: 0,
                 rounds: 1, // Assuming 3 rounds total for the whole circuit
@@ -2628,7 +2628,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-9-2',
                 exerciseId: 'turkish-get-up',
                 exerciseName: 'Iso-Rack Overhead Press to Get-Up',
-                sets: [{ id: 'set-9-2-1', reps: 5, notes: 'Perform 5 reps per side as part of the complex.', restAfterSet: 0, type: 'superset' }],
+                sets: [{ id: 'set-9-2-1', targetReps: 5, notes: 'Perform 5 reps per side as part of the complex.', restAfterSet: 0, type: 'superset' }],
                 supersetId: 'total-body-10min-9',
                 supersetOrder: 1,
                 supersetSize: 7,
@@ -2638,7 +2638,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-9-3',
                 exerciseId: 'kettlebell-waiters-walk',
                 exerciseName: 'Iso-Rack Waiters Walk',
-                sets: [{ id: 'set-9-3-1', duration: 50, notes: 'Duration in feet per side. Original has an iso-hold component.', restAfterSet: 0, type: 'superset' }],
+                sets: [{ id: 'set-9-3-1', targetDuration: 50, notes: 'Duration in feet per side. Original has an iso-hold component.', restAfterSet: 0, type: 'superset' }],
                 supersetId: 'total-body-10min-9',
                 supersetOrder: 2,
                 supersetSize: 7,
@@ -2648,7 +2648,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-9-4',
                 exerciseId: 'double-kettlebell-front-squat',
                 exerciseName: 'Front Squat',
-                sets: [{ id: 'set-9-4-1', reps: 5, restAfterSet: 0, type: 'superset' }],
+                sets: [{ id: 'set-9-4-1', targetReps: 5, restAfterSet: 0, type: 'superset' }],
                 supersetId: 'total-body-10min-9',
                 supersetOrder: 3,
                 supersetSize: 7,
@@ -2658,7 +2658,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-9-5',
                 exerciseId: 'kettlebell-rack-carry',
                 exerciseName: 'Double Kettlebell Rack Carry',
-                sets: [{ id: 'set-9-5-1', duration: 50, notes: 'Duration in feet.', restAfterSet: 0, type: 'superset' }],
+                sets: [{ id: 'set-9-5-1', targetDuration: 50, notes: 'Duration in feet.', restAfterSet: 0, type: 'superset' }],
                 supersetId: 'total-body-10min-9',
                 supersetOrder: 4,
                 supersetSize: 7,
@@ -2668,7 +2668,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-9-6',
                 exerciseId: 'kettlebell-deadlift',
                 exerciseName: 'Deadlift',
-                sets: [{ id: 'set-9-6-1', reps: 5, restAfterSet: 0, type: 'superset' }],
+                sets: [{ id: 'set-9-6-1', targetReps: 5, restAfterSet: 0, type: 'superset' }],
                 supersetId: 'total-body-10min-9',
                 supersetOrder: 5,
                 supersetSize: 7,
@@ -2678,7 +2678,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-9-7',
                 exerciseId: 'kettlebell-double-farmers-walk',
                 exerciseName: 'Double Kettlebell Farmers Walk',
-                sets: [{ id: 'set-9-7-1', duration: 50, notes: 'Duration in feet. Rest no more than 3 minutes after this.', restAfterSet: 180, type: 'superset' }],
+                sets: [{ id: 'set-9-7-1', targetDuration: 50, notes: 'Duration in feet. Rest no more than 3 minutes after this.', restAfterSet: 180, type: 'superset' }],
                 supersetId: 'total-body-10min-9',
                 supersetOrder: 6,
                 supersetSize: 7,
@@ -2700,7 +2700,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-10-1',
                 exerciseId: 'kettlebell-sumo-deadlift',
                 exerciseName: 'Banded Sumo Deadlift',
-                sets: [{ id: 'set-10-1-1', reps: 5, notes: 'Original exercise uses bands.', restAfterSet: 0, type: 'superset' }],
+                sets: [{ id: 'set-10-1-1', targetReps: 5, notes: 'Original exercise uses bands.', restAfterSet: 0, type: 'superset' }],
                 supersetId: 'monster-maker-10',
                 supersetSize: 7,
                 supersetOrder: 0,
@@ -2711,7 +2711,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-10-2',
                 exerciseId: 'single-kettlebell-clean-and-press',
                 exerciseName: 'Single Arm Clean & Push Press',
-                sets: [{ id: 'set-10-2-1', reps: 5, notes: 'Perform 5 reps per arm. This is a complex with a Push Press.', restAfterSet: 0, type: 'superset' }],
+                sets: [{ id: 'set-10-2-1', targetReps: 5, notes: 'Perform 5 reps per arm. This is a complex with a Push Press.', restAfterSet: 0, type: 'superset' }],
                 supersetId: 'monster-maker-10',
                 supersetOrder: 1,
                 supersetSize: 7,
@@ -2721,7 +2721,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-10-3',
                 exerciseId: 'kettlebell-strict-press',
                 exerciseName: 'Kettlebell Strict Press (Single Arm)',
-                sets: [{ id: 'set-10-3-1', reps: 5, notes: 'Perform 5 reps per arm. Original is a Push Press, substitute with Strict Press.', restAfterSet: 0, type: 'superset' }],
+                sets: [{ id: 'set-10-3-1', targetReps: 5, notes: 'Perform 5 reps per arm. Original is a Push Press, substitute with Strict Press.', restAfterSet: 0, type: 'superset' }],
                 supersetId: 'monster-maker-10',
                 supersetOrder: 2,
                 supersetSize: 7,
@@ -2731,7 +2731,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-10-4',
                 exerciseId: 'kettlebell-goblet-squat',
                 exerciseName: 'Pause Goblet Squat',
-                sets: [{ id: 'set-10-4-1', reps: 5, notes: 'Perform with a pause at the bottom.', restAfterSet: 0, type: 'superset' }],
+                sets: [{ id: 'set-10-4-1', targetReps: 5, notes: 'Perform with a pause at the bottom.', restAfterSet: 0, type: 'superset' }],
                 supersetId: 'monster-maker-10',
                 supersetOrder: 3,
                 supersetSize: 7,
@@ -2741,7 +2741,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-10-5',
                 exerciseId: 'kettlebell-goblet-squat',
                 exerciseName: 'Goblet Squat',
-                sets: [{ id: 'set-10-5-1', reps: 5, restAfterSet: 0, type: 'superset' }],
+                sets: [{ id: 'set-10-5-1', targetReps: 5, restAfterSet: 0, type: 'superset' }],
                 supersetId: 'monster-maker-10',
                 supersetOrder: 4,
                 supersetSize: 7,
@@ -2751,7 +2751,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-10-6',
                 exerciseId: 'two-handed-kettlebell-swing',
                 exerciseName: 'Swing',
-                sets: [{ id: 'set-10-6-1', reps: 5, restAfterSet: 0, type: 'superset' }],
+                sets: [{ id: 'set-10-6-1', targetReps: 5, restAfterSet: 0, type: 'superset' }],
                 supersetId: 'monster-maker-10',
                 supersetOrder: 5,
                 supersetSize: 7,
@@ -2761,7 +2761,7 @@ export const ROUTINES_DATA: Routine[] = [
                 id: 'we-10-7',
                 exerciseId: 'kettlebell-deadlift',
                 exerciseName: 'Deadlift',
-                sets: [{ id: 'set-10-7-1', reps: 5, restAfterSet: 180, notes: 'Rest No More Than 3 Minutes after this.', type: 'superset' }],
+                sets: [{ id: 'set-10-7-1', targetReps: 5, restAfterSet: 180, notes: 'Rest No More Than 3 Minutes after this.', type: 'superset' }],
                 supersetId: 'monster-maker-10',
                 supersetOrder: 6,
                 supersetSize: 7,

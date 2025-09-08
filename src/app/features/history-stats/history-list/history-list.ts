@@ -320,7 +320,7 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
       loggedEx.sets.forEach(candidateSet => {
         // Ensure set has required context
         if (!candidateSet.timestamp || !candidateSet.workoutLogId || !candidateSet.exerciseId) {
-          // console.warn('Skipping candidate set due to missing context for PB check:', candidateSet);
+          console.warn('Skipping candidate set due to missing context for PB check:', candidateSet);
           return;
         }
 

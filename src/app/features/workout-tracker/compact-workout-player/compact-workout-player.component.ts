@@ -6,10 +6,11 @@ import { switchMap, take, map } from 'rxjs/operators';
 import {
   Routine,
   WorkoutExercise,
-  ExerciseSetParams,
+  ExerciseTargetSetParams,
   ActiveSetInfo,
   PlayerSubState,
   PausedWorkoutState,
+  ExerciseExecutionSetParams,
 } from '../../../core/models/workout.model';
 import { Exercise } from '../../../core/models/exercise.model';
 import { WorkoutService } from '../../../core/services/workout.service';
@@ -42,6 +43,7 @@ import { TrainingProgram } from '../../../core/models/training-program.model';
 import { AlertButton, AlertInput } from '../../../core/models/alert.model';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
 import { addExerciseBtn, addRoundToExerciseBtn, addSetToExerciseBtn, addToSuperSetBtn, addWarmupSetBtn, createSuperSetBtn, openSessionPerformanceInsightsBtn, pauseSessionBtn, quitWorkoutBtn, removeExerciseBtn, removeFromSuperSetBtn, resumeSessionBtn, sessionNotesBtn, switchExerciseBtn } from '../../../core/services/buttons-data';
+import { mapExerciseTargetSetParamsToExerciseExecutedSetParams } from '../../../core/models/workout-mapper';
 
 // Interface for saving the paused state
 
@@ -165,7 +167,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   restTimerMainText = signal('RESTING');
   restTimerNextUpText = signal<string | null>(null);
   // +++ NEW: Signal to hold detailed info for the next set for the rest timer screen
-  restTimerNextSetDetails = signal<ExerciseSetParams | null>(null);
+  restTimerNextSetDetails = signal<ExerciseTargetSetParams | null>(null);
 
   menuModeDropdown: boolean = false;
   menuModeCompact: boolean = false;
@@ -432,10 +434,10 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
           exercise.sets.forEach((set, setIndex) => {
             const historicalSet = lastPerformance.sets[setIndex];
             if (historicalSet) {
-              set.reps = historicalSet.repsAchieved ?? set.reps;
-              set.weight = historicalSet.weightUsed ?? set.weight;
-              set.duration = historicalSet.durationPerformed ?? set.duration;
-              set.distance = historicalSet.distanceAchieved ?? set.distance;
+              set.targetReps = historicalSet.repsAchieved ?? set.targetReps;
+              set.targetWeight = historicalSet.weightUsed ?? set.targetWeight;
+              set.targetDuration = historicalSet.durationPerformed ?? set.targetDuration;
+              set.targetDistance = historicalSet.distanceAchieved ?? set.targetDistance;
             }
 
             // +++ NEW: APPLY SESSION-WIDE INTENSITY ADJUSTMENT - START +++
@@ -444,17 +446,21 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
               const { direction, percentage } = this.intensityAdjustment;
               const multiplier = direction === 'increase' ? 1 + (percentage / 100) : 1 - (percentage / 100);
 
-              if (set.weight != null) {
-                const adjustedWeight = Math.round((set.weight * multiplier) * 4) / 4;
-                set.weight = adjustedWeight >= 0 ? adjustedWeight : 0;
+              if (set.targetWeight != null) {
+                const adjustedWeight = Math.round((set.targetWeight * multiplier) * 4) / 4;
+                set.targetWeight = adjustedWeight >= 0 ? adjustedWeight : 0;
               }
-              if (set.reps != null) {
-                const adjustedReps = Math.round(set.reps * multiplier);
-                set.reps = adjustedReps >= 0 ? adjustedReps : 0;
+              if (set.targetReps != null) {
+                const adjustedReps = Math.round(set.targetReps * multiplier);
+                set.targetReps = adjustedReps >= 0 ? adjustedReps : 0;
               }
-              if (set.duration != null) {
-                const adjustedDuration = Math.round(set.duration * multiplier);
-                set.duration = adjustedDuration >= 0 ? adjustedDuration : 0;
+              if (set.targetDuration != null) {
+                const adjustedDuration = Math.round(set.targetDuration * multiplier);
+                set.targetDuration = adjustedDuration >= 0 ? adjustedDuration : 0;
+              }
+              if (set.targetDistance != null) {
+                const adjustedDistance = Math.round(set.targetDistance * multiplier);
+                set.targetDistance = adjustedDistance >= 0 ? adjustedDistance : 0;
               }
             }
             // +++ NEW: APPLY SESSION-WIDE INTENSITY ADJUSTMENT - END +++
@@ -515,19 +521,19 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
     // Cardio validation remains the same
     if (this.isCardio(exercise)) {
-      return (set.distance ?? 0) > 0 || (set.duration ?? 0) > 0;
+      return (set.targetDistance ?? 0) > 0 || (set.targetDuration ?? 0) > 0;
     }
 
     // For non-cardio exercises:
     // If a weight is specified (even 0), it's treated as a weighted set.
     // Both reps and weight must be positive.
-    if (set.weight != null && set.weight != undefined) {
-      return (set.reps ?? 0) > 0 && set.weight > 0;
+    if (set.targetWeight != null && set.targetWeight != undefined) {
+      return (set.targetWeight ?? 0) > 0 && set.targetWeight > 0;
     }
 
     // If weight is not specified (null/undefined), it's a bodyweight exercise.
     // Only reps need to be positive.
-    return (set.reps ?? 0) > 0;
+    return (set.targetReps ?? 0) > 0;
   }
   getLoggedSet(exIndex: number, setIndex: number, roundIndex: number = 0): LoggedSet | undefined {
     const exercise = this.routine()?.exercises[exIndex];
@@ -587,7 +593,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return !!this.currentWorkoutLog()?.exercises?.find((e, index) => index === exIndex);
   }
 
-  toggleSetCompletion(exercise: WorkoutExercise, set: ExerciseSetParams, exIndex: number, setIndex: number, roundIndex: number): void {
+  toggleSetCompletion(exercise: WorkoutExercise, set: ExerciseTargetSetParams, exIndex: number, setIndex: number, roundIndex: number): void {
     const log = this.currentWorkoutLog();
     if (!log.exercises) log.exercises = [];
 
@@ -622,30 +628,33 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         };
         log.exercises.push(exerciseLog);
       }
+
+      const executedSet: ExerciseExecutionSetParams  = mapExerciseTargetSetParamsToExerciseExecutedSetParams(set);
+
       const newLoggedSet: LoggedSet = {
         id: uuidv4(),
         exerciseName: exercise.exerciseName,
         plannedSetId: targetLoggedSetId,
         exerciseId: exercise.exerciseId,
-        type: set.type,
+        type: executedSet.type,
         // Achieved values come from the (potentially user-modified) set object in the player's state
-        repsAchieved: set.reps ?? 0,
-        weightUsed: set.weight || 0,
-        durationPerformed: set.duration,
-        distanceAchieved: set.distance,
+        repsAchieved: executedSet.repsAchieved,
+        weightUsed: executedSet.weightUsed,
+        durationPerformed: executedSet.actualDuration,
+        distanceAchieved: executedSet.actualDistance,
         timestamp: new Date().toISOString(),
         notes: set.notes,
         targetRestAfterSet: set.restAfterSet,
         supersetCurrentRound: isMultiRound ? roundIndex : undefined,
         // NEW: Capture the full target from the original plan
-        targetReps: set.reps,
-        targetRepsMin: set.repsMin,
-        targetRepsMax: set.repsMax,
-        targetWeight: set.weight,
-        targetDuration: set.duration,
-        targetDurationMin: set.durationMin,
-        targetDurationMax: set.durationMax,
-        targetDistance: set.distance,
+        targetReps: set.targetReps,
+        targetRepsMin: set.targetRepsMin || set.targetReps,
+        targetRepsMax: set.targetRepsMax || set.targetReps,
+        targetWeight: set.targetWeight,
+        targetDuration: set.targetDuration,
+        targetDurationMin: set.targetDurationMin || set.targetDuration,
+        targetDurationMax: set.targetDurationMax || set.targetDuration,
+        targetDistance: set.targetDistance,
       };
       exerciseLog.sets.push(newLoggedSet);
     }
@@ -708,10 +717,10 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const set = exercise.sets[setIndex];
 
     switch (field) {
-      case 'reps': set.reps = parseFloat(value) || 0; break;
-      case 'weight': set.weight = parseFloat(value) || undefined; break;
-      case 'distance': set.distance = parseFloat(value) || 0; break;
-      case 'time': set.duration = this.parseTimeToSeconds(value); break;
+      case 'reps': set.targetReps = parseFloat(value) || 0; break;
+      case 'weight': set.targetWeight = parseFloat(value) || undefined; break;
+      case 'distance': set.targetDistance = parseFloat(value) || 0; break;
+      case 'time': set.targetDuration = this.parseTimeToSeconds(value); break;
       case 'notes': set.notes = value; break;
     }
     this.routine.set({ ...routine });
@@ -783,11 +792,11 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const set = this.routine()!.exercises[exIndex].sets[setIndex];
     switch (field) {
       // If a range exists, default the input to the minimum value, otherwise use the single value.
-      case 'reps': return (set.repsMin ?? set.reps ?? '').toString();
-      case 'weight': return (set.weight ?? '').toString();
-      case 'distance': return (set.distance ?? '').toString();
+      case 'reps': return (set.targetRepsMin ?? set.targetReps ?? '').toString();
+      case 'weight': return (set.targetWeightMin ?? set.targetWeight ?? '').toString();
+      case 'distance': return (set.targetDistanceMin ?? set.targetDistance ?? '').toString();
       // For time/duration, follow the same logic as reps.
-      case 'time': return this.formatSecondsToTime(set.durationMin ?? set.duration);
+      case 'time': return this.formatSecondsToTime(set.targetDurationMin ?? set.targetDuration ?? 0);
       case 'notes': return set.notes || '';
     }
     return '';
@@ -1015,8 +1024,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     if (!routine) return;
     const exercise = routine.exercises[exIndex];
     const firstSet = exercise.sets[0];
-    const newWarmupSet: ExerciseSetParams = {
-      id: uuidv4(), reps: 12, weight: firstSet?.weight ? parseFloat((firstSet.weight / 2).toFixed(1)) : 0,
+    const newWarmupSet: ExerciseTargetSetParams = {
+      id: uuidv4(), targetReps: 12, targetWeight: firstSet?.targetWeight ? parseFloat((firstSet.targetWeight / 2).toFixed(1)) : 0,
       restAfterSet: 30, type: 'warmup'
     };
     exercise.sets.unshift(newWarmupSet);
@@ -1036,10 +1045,10 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const exercise = routine.exercises[exIndex];
     const lastSet = exercise.sets[exercise.sets.length - 1] ?? exercise.sets[0];
 
-    const newSet: ExerciseSetParams = {
+    const newSet: ExerciseTargetSetParams = {
       id: uuidv4(),
-      reps: type === 'warmup' ? 12 : lastSet?.reps ?? 8,
-      weight: type === 'warmup' ? (lastSet?.weight ? parseFloat((lastSet.weight / 2).toFixed(1)) : 0) : (lastSet?.weight ?? 10),
+      targetReps: type === 'warmup' ? 12 : lastSet?.targetReps ?? 8,
+      targetWeight: type === 'warmup' ? (lastSet?.targetWeight ? parseFloat((lastSet.targetWeight / 2).toFixed(1)) : 0) : (lastSet?.targetWeight ?? 10),
       restAfterSet: lastSet?.restAfterSet ?? 60,
       type: type,
     };
@@ -1330,15 +1339,15 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
           this.toastService.info(`Switching exercise type. Set data will be reset.`, 3000);
           oldWorkoutExercise.sets.forEach(set => {
             if (newBaseExercise.category === 'cardio') {
-              set.weight = undefined;
-              set.reps = undefined;
-              set.distance = set.distance ?? 1; // Default cardio values
-              set.duration = set.duration ?? 300;
+              set.targetWeight = undefined;
+              set.targetReps = undefined;
+              set.targetDistance = set.targetDistance ?? 1; // Default cardio values
+              set.targetDuration = set.targetDuration ?? 300;
             } else { // Assuming switch to strength or other non-cardio
-              set.distance = undefined;
-              set.duration = undefined;
-              set.weight = set.weight ?? 10; // Default strength values
-              set.reps = set.reps ?? 8;
+              set.targetDistance = undefined;
+              set.targetDuration = undefined;
+              set.targetWeight = set.targetWeight ?? 10; // Default strength values
+              set.targetReps = set.targetReps ?? 8;
             }
           });
         }
@@ -1727,7 +1736,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     this.playerSubState.set(PlayerSubState.PerformingSet);
   }
 
-  private async peekNextStepInfo(completedExIndex: number, completedSetIndex: number): Promise<{ text: string | null; details: ExerciseSetParams | null }> {
+  private async peekNextStepInfo(completedExIndex: number, completedSetIndex: number): Promise<{ text: string | null; details: ExerciseTargetSetParams | null }> {
     const routine = this.routine();
     if (!routine) return { text: null, details: null };
 
@@ -1756,24 +1765,24 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         );
 
         const historicalSet = this.trackingService.findPreviousSetPerformance(lastPerformance, plannedNextSet, nextSetIndex);
-        const suggestedSetDetails: ExerciseSetParams = { ...plannedNextSet };
+        const suggestedSetDetails: ExerciseTargetSetParams = { ...plannedNextSet };
 
         if (historicalSet) {
           // Prioritize historical data for reps and weight/duration
-          suggestedSetDetails.reps = historicalSet.repsAchieved;
-          suggestedSetDetails.weight = historicalSet.weightUsed;
-          suggestedSetDetails.duration = historicalSet.durationPerformed;
-          suggestedSetDetails.distance = historicalSet.distanceAchieved;
+          suggestedSetDetails.targetReps = historicalSet.repsAchieved;
+          suggestedSetDetails.targetWeight = historicalSet.weightUsed;
+          suggestedSetDetails.targetDuration = historicalSet.durationPerformed;
+          suggestedSetDetails.targetDistance = historicalSet.distanceAchieved;
         }
 
         // --- NEW: Use helper to format the display text ---
-        const repsDisplay = this.getSetDisplayValue(plannedNextSet, 'reps');
-        const durationDisplay = this.getSetDisplayValue(plannedNextSet, 'duration');
+        const repsDisplay = this.getSetTargetDisplay(plannedNextSet, 'reps');
+        const durationDisplay = this.getSetTargetDisplay(plannedNextSet, 'duration');
         let performanceTarget = '';
         if (this.isCardio(nextExercise)) {
-          performanceTarget = durationDisplay !== '-' ? `${durationDisplay}s` : `${plannedNextSet.distance || 0}km`;
+          performanceTarget = durationDisplay !== '-' ? `${durationDisplay}s` : `${plannedNextSet.targetDistance || 0}km`;
         } else {
-          performanceTarget = `${plannedNextSet.weight || 'BW'}${this.unitService.getWeightUnitSuffix()} x ${repsDisplay} reps`;
+          performanceTarget = `${plannedNextSet.targetWeight || 'BW'}${this.unitService.getWeightUnitSuffix()} x ${repsDisplay} reps`;
         }
 
         const nextSetDisplayNumber = nextSetIndex + 1;
@@ -2335,37 +2344,13 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     });
   }
 
-  // +++ NEW HELPER FUNCTION +++
-  /**
-  * Generates a display string for a set's planned value, handling ranges.
-  * @param set The ExerciseSetParams object from the routine plan.
-  * @param field The field to display ('reps' or 'duration').
-  * @returns A formatted string like "8-12", "60+", or "45".
-  */
-  private getSetDisplayValue(set: ExerciseSetParams, field: 'reps' | 'duration'): string {
-    const min = field === 'reps' ? set.repsMin : set.durationMin;
-    const max = field === 'reps' ? set.repsMax : set.durationMax;
-    const single = field === 'reps' ? set.reps : set.duration;
-
-    if (min != null && max != null) {
-      return min === max ? `${min}` : `${min}-${max}`;
-    }
-    if (min != null) {
-      return `${min}+`;
-    }
-    if (max != null) {
-      return `Up to ${max}`;
-    }
-    return single != null ? `${single}` : '-';
-  }
-
   /**
   * Generates a display string for a set's planned target, handling ranges and single values.
   * @param set The ExerciseSetParams object from the routine plan.
   * @param field The field to display ('reps', 'duration', or 'weight').
   * @returns A formatted string like "8-12", "60+", "10", or an empty string if no target is set.
   */
-  public getSetTargetDisplay(set: ExerciseSetParams, field: 'reps' | 'duration' | 'weight'): string {
-    return this.workoutService.getSetTargetDisplay(set,field);
+  public getSetTargetDisplay(set: ExerciseTargetSetParams, field: 'reps' | 'duration' | 'weight'): string {
+    return this.workoutService.getSetTargetDisplay(set, field);
   }
 }

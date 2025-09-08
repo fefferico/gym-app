@@ -4,7 +4,7 @@ import { BehaviorSubject, Observable, of, Subject, throwError } from 'rxjs';
 import { map, shareReplay } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid'; // For generating unique IDs
 
-import { ExerciseSetParams, PausedWorkoutState, Routine, WorkoutExercise } from '../models/workout.model'; // Ensure this path is correct
+import { ExerciseTargetSetParams, PausedWorkoutState, Routine, WorkoutExercise } from '../models/workout.model'; // Ensure this path is correct
 import { StorageService } from './storage.service';
 import { LoggedSet, LoggedWorkoutExercise, WorkoutLog } from '../models/workout-log.model';
 import { AlertService } from './alert.service';
@@ -95,15 +95,18 @@ export class WorkoutService {
   }
 
   /**
- * Merges routines from the static ROUTINES_DATA constant with existing routines from storage.
- * This is a synchronous operation and does not involve HTTP requests.
- * @param existingRoutines Routines already loaded from storage.
- */
+* Merges routines from the static ROUTINES_DATA constant with existing routines from storage.
+* This is a synchronous operation and does not involve HTTP requests.
+* @param existingRoutines Routines already loaded from storage.
+*/
   private _seedAndMergeRoutinesFromStaticData(existingRoutines: Routine[]): void {
     try {
       const assetRoutines = ROUTINES_DATA as Routine[];
+      // Migrate asset routines before comparing/merging
+      const migratedAssetRoutines = this._migrateRoutines(assetRoutines);
+
       const existingRoutineIds = new Set(existingRoutines.map(r => r.id));
-      const newRoutinesToSeed = assetRoutines.filter(
+      const newRoutinesToSeed = migratedAssetRoutines.filter(
         assetRoutine => !existingRoutineIds.has(assetRoutine.id)
       );
 
@@ -183,7 +186,8 @@ export class WorkoutService {
 
     if (index > -1) {
       const updatedRoutinesArray = [...currentRoutines];
-      updatedRoutinesArray[index] = { ...updatedRoutine };
+      // Ensure the updated routine also goes through migration, in case it's from an old format somewhere
+      updatedRoutinesArray[index] = this._migrateRoutines([updatedRoutine])[0]; // Wrap in array for migration helper
       this.saveRoutinesToStorage(updatedRoutinesArray);
       console.log('Updated routine:', updatedRoutine);
       return updatedRoutine;
@@ -219,10 +223,10 @@ export class WorkoutService {
    */
   suggestNextSetParameters(
     lastPerformedSet: LoggedSet | null,
-    plannedSet: ExerciseSetParams,
-  ): ExerciseSetParams {
+    plannedSet: ExerciseTargetSetParams,
+  ): ExerciseTargetSetParams {
     // Start with a copy of the planned set. This is our fallback.
-    const suggestedParams: ExerciseSetParams = JSON.parse(JSON.stringify(plannedSet));
+    const suggestedParams: ExerciseTargetSetParams = JSON.parse(JSON.stringify(plannedSet));
 
     // Get the user's progressive overload settings
     const poSettings = this.progressiveOverloadService.getSettings();
@@ -246,7 +250,7 @@ export class WorkoutService {
 
     const lastWeight = lastPerformedSet.weightUsed;
     const lastReps = lastPerformedSet.repsAchieved;
-    const targetRepsInPlan = plannedSet.reps;
+    const targetRepsInPlan = plannedSet.targetReps || plannedSet.targetRepsMin || 0;
 
     // --- MAIN PROGRESSION LOGIC ---
     // Check if the user successfully completed the set last time.
@@ -258,14 +262,14 @@ export class WorkoutService {
       case 'weight':
         if (wasSuccessful && lastWeight !== undefined && lastWeight !== null && poSettings.weightIncrement) {
           // SUCCESS: Increment the weight, reset reps to the planned target.
-          suggestedParams.weight = parseFloat((lastWeight + poSettings.weightIncrement).toFixed(2));
-          suggestedParams.reps = targetRepsInPlan; // Reset reps to target
-          console.log(`PO Suggestion (Weight): Success last time. Increasing weight to ${suggestedParams.weight}`);
+          suggestedParams.targetWeight = parseFloat((lastWeight + poSettings.weightIncrement).toFixed(2));
+          suggestedParams.targetReps = targetRepsInPlan; // Reset reps to target
+          console.log(`PO Suggestion (Weight): Success last time. Increasing weight to ${suggestedParams.targetWeight}`);
         } else if (lastWeight !== undefined && lastWeight !== null) {
           // FAILURE: Stick to the same weight, try to hit the target reps again.
-          suggestedParams.weight = lastWeight;
-          suggestedParams.reps = targetRepsInPlan;
-          console.log(`PO Suggestion (Weight): Failure last time. Sticking to weight ${suggestedParams.weight}`);
+          suggestedParams.targetWeight = lastWeight;
+          suggestedParams.targetReps = targetRepsInPlan;
+          console.log(`PO Suggestion (Weight): Failure last time. Sticking to weight ${suggestedParams.targetWeight}`);
         }
         break;
 
@@ -273,14 +277,14 @@ export class WorkoutService {
       case 'reps':
         if (wasSuccessful && poSettings.repsIncrement) {
           // SUCCESS: Increment the reps, keep the same weight as last time.
-          suggestedParams.reps = lastReps + poSettings.repsIncrement;
-          suggestedParams.weight = lastWeight ?? plannedSet.weight; // Use last weight, fall back to planned
-          console.log(`PO Suggestion (Reps): Success last time. Increasing reps to ${suggestedParams.reps}`);
+          suggestedParams.targetReps = lastReps + poSettings.repsIncrement;
+          suggestedParams.targetWeight = lastWeight ?? plannedSet.targetWeight; // Use last weight, fall back to planned
+          console.log(`PO Suggestion (Reps): Success last time. Increasing reps to ${suggestedParams.targetReps}`);
         } else {
           // FAILURE: Keep the same weight, try to hit the target reps again.
-          suggestedParams.reps = targetRepsInPlan;
-          suggestedParams.weight = lastWeight ?? plannedSet.weight;
-          console.log(`PO Suggestion (Reps): Failure last time. Sticking to ${suggestedParams.reps} reps`);
+          suggestedParams.targetReps = targetRepsInPlan;
+          suggestedParams.targetWeight = lastWeight ?? plannedSet.targetWeight;
+          console.log(`PO Suggestion (Reps): Failure last time. Sticking to ${suggestedParams.targetWeight} reps`);
         }
         break;
 
@@ -408,18 +412,18 @@ export class WorkoutService {
   * @param set The ExerciseSetParams object for a single set.
   * @returns The estimated working time in seconds.
   */
-  public getEstimatedWorkTimeForSet(set: ExerciseSetParams): number {
+  public getEstimatedWorkTimeForSet(set: ExerciseTargetSetParams): number {
     let timeFromReps = 0;
 
     // 1. Calculate the estimated time from reps, if reps are specified.
-    if (set.reps && set.reps > 0) {
+    if (set.targetReps && set.targetReps > 0) {
       // Estimate ~3 seconds per rep (1s up, 2s down). Adjust as needed.
       const timePerRep = 3;
-      timeFromReps = set.reps * timePerRep;
+      timeFromReps = set.targetReps * timePerRep;
     }
 
     // 2. Get the duration specified in the set, defaulting to 0 if not present.
-    const timeFromDuration = set.duration || 0;
+    const timeFromDuration = set.targetDuration || 0;
 
     // 3. Compare the two calculated times and return the greater value.
     const estimatedTime = Math.max(timeFromReps, timeFromDuration);
@@ -446,7 +450,7 @@ export class WorkoutService {
    * @param set The ExerciseSetParams object for a single set.
    * @returns The planned resting time in seconds after the set is completed.
    */
-  public getRestTimeForSet(set: ExerciseSetParams): number {
+  public getRestTimeForSet(set: ExerciseTargetSetParams): number {
     return set.restAfterSet || 0;
   }
 
@@ -564,9 +568,7 @@ export class WorkoutService {
 
   removePausedWorkout(showAlert: boolean = true): void {
     this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
-    // --- NEW: Emit when a paused workout is discarded ---
     this._pausedWorkoutDiscarded.next();
-    // --- END NEW ---
     if (!showAlert) return;
     this.toastService.info('Paused workout session discarded.');
   }
@@ -662,13 +664,13 @@ export class WorkoutService {
     const duration = parseInt(String(exerciseData['duration'])) || defaultDuration;
     const rest = parseInt(String(exerciseData['rest'])) || defaultRest;
 
-    const newExerciseSets: ExerciseSetParams[] = [];
+    const newExerciseSets: ExerciseTargetSetParams[] = [];
     for (let i = 0; i < numSets; i++) {
       newExerciseSets.push({
         id: `custom-set-${uuidv4()}`,
-        reps: isCardioOnly ? undefined : numReps,
-        weight: isCardioOnly ? undefined : weight,
-        duration: isCardioOnly ? duration : undefined,
+        targetReps: isCardioOnly ? undefined : numReps,
+        targetWeight: isCardioOnly ? undefined : weight,
+        targetDuration: isCardioOnly ? duration : undefined,
         restAfterSet: rest,
         type: 'standard',
         notes: ''
@@ -797,7 +799,7 @@ export class WorkoutService {
 
         const templateSet = targetExercise.sets.length > 0
           ? { ...targetExercise.sets[0] }
-          : { id: uuidv4(), reps: 8, weight: 10, restAfterSet: 60, type: 'standard' };
+          : { id: uuidv4(), targetReps: 8, targetWeight: 10, restAfterSet: 60, type: 'standard' };
 
         targetExercise.sets = [];
         targetExercise.supersetId = newSupersetId;
@@ -890,7 +892,7 @@ export class WorkoutService {
 
     const newSize = existingInSuperset.length + 1;
     const rounds = existingInSuperset[0].supersetRounds || 1;
-    const templateSet = targetExercise.sets[0] || { id: uuidv4(), reps: 8, weight: 10, restAfterSet: 60, type: 'standard' };
+    const templateSet = targetExercise.sets[0] || { id: uuidv4(), targetReps: 8, targetWeight: 10, restAfterSet: 60, type: 'standard' };
 
     targetExercise.sets = Array.from({ length: rounds }, () => ({ ...templateSet, id: uuidv4() }));
     targetExercise.supersetId = String(chosenSupersetId);
@@ -972,31 +974,31 @@ export class WorkoutService {
   * @param field The field to display ('reps', 'duration', or 'weight').
   * @returns A formatted string like "8-12", "60+", "10", or an empty string if no target is set.
   */
-  public getSetTargetDisplay(set: ExerciseSetParams, field: 'reps' | 'duration' | 'weight' | 'distance'): string {
+  public getSetTargetDisplay(set: ExerciseTargetSetParams, field: 'reps' | 'duration' | 'weight' | 'distance'): string {
     let min = -1;
     let max = -1;
     let single = -1;
 
     switch (field) {
       case 'reps':
-        min = set.repsMin || 0;
-        max = set.repsMax || 0;
-        single = set.reps || 0;
+        min = set.targetRepsMin || 0;
+        max = set.targetRepsMax || 0;
+        single = set.targetReps || 0;
         break;
       case 'duration':
-        min = set.durationMin || 0;
-        max = set.durationMax || 0;
-        single = set.duration || 0;
+        min = set.targetDurationMin || 0;
+        max = set.targetDurationMax || 0;
+        single = set.targetDuration || 0;
         break;
       case 'weight':
-        min = set.weightMin || 0;
-        max = set.weightMax || 0;
-        single = set.weight || 0;
+        min = set.targetWeightMin || 0;
+        max = set.targetWeightMax || 0;
+        single = set.targetWeight || 0;
         break;
       case 'distance':
-        min = set.distanceMin || 0;
-        max = set.distanceMax || 0;
-        single = set.distance || 0;
+        min = set.targetDistanceMin || 0;
+        max = set.targetDistanceMax || 0;
+        single = set.targetDistance || 0;
         break;
 
       default:
@@ -1019,6 +1021,62 @@ export class WorkoutService {
 
     // Fallback to the single value
     return single != null ? `${single}` : '';
+  }
+
+
+  /**
+   * Helper to migrate old ExerciseSetParams fields to new 'target' fields.
+   */
+  private _migrateSetParams(set: any): ExerciseTargetSetParams {
+    // const newSet: ExerciseSetParams = { ...set };
+    const newSet: any = { ...set };
+
+    // Migrate 'reps' to 'targetReps' if 'reps' exists and 'targetReps' does not
+    if (typeof set.reps === 'number' && typeof newSet.targetReps === 'undefined') {
+      newSet.targetReps = set.reps;
+      delete newSet['reps']; // Remove the old field
+    }
+
+    // Migrate 'weight' to 'targetWeight'
+    if (typeof set.weight === 'number' && typeof newSet.targetWeight === 'undefined') {
+      newSet.targetWeight = set.weight;
+      delete newSet['weight'];
+    }
+
+    // Migrate 'duration' to 'targetDuration'
+    if (typeof set.duration === 'number' && typeof newSet.targetDuration === 'undefined') {
+      newSet.targetDuration = set.duration;
+      delete newSet['duration'];
+    }
+
+    // Migrate 'distance' to 'targetDistance'
+    if (typeof set.distance === 'number' && typeof newSet.targetDistance === 'undefined') {
+      newSet.targetDistance = set.distance;
+      delete newSet['distance'];
+    }
+
+    // Ensure 'id' exists for all sets
+    if (!newSet.id) {
+      newSet.id = uuidv4();
+    }
+
+    return newSet;
+  }
+
+  /**
+   * Helper to migrate old Routine structures, specifically ExerciseSetParams.
+   */
+  private _migrateRoutines(routines: Routine[]): Routine[] {
+    if (!routines || routines.length === 0) {
+      return [];
+    }
+    return routines.map(routine => {
+      const updatedExercises = routine.exercises.map(exercise => {
+        const updatedSets = exercise.sets.map(set => this._migrateSetParams(set));
+        return { ...exercise, sets: updatedSets };
+      });
+      return { ...routine, exercises: updatedExercises };
+    });
   }
 
 

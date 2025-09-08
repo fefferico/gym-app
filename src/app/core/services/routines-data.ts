@@ -14,24 +14,24 @@ export const ROUTINES_DATA: Routine[] = [
                 "sets": [
                     {
                         "id": "bwa-ex1-s1",
-                        "reps": 10,
-                        "weight": 10,
+                        "targetReps": 10,
+                        "targetWeight": 10,
                         "restAfterSet": 120,
                         "type": "standard",
                         "notes": "Aim for 8-10 reps."
                     },
                     {
                         "id": "bwa-ex1-s2",
-                        "reps": 10,
-                        "weight": 10,
+                        "targetReps": 10,
+                        "targetWeight": 10,
                         "restAfterSet": 120,
                         "type": "standard",
                         "notes": "Aim for 8-10 reps."
                     },
                     {
                         "id": "bwa-ex1-s3",
-                        "reps": 10,
-                        "weight": 10,
+                        "targetReps": 10,
+                        "targetWeight": 10,
                         "restAfterSet": 120,
                         "type": "standard",
                         "notes": "Aim for 8-10 reps."
@@ -48,24 +48,24 @@ export const ROUTINES_DATA: Routine[] = [
                 "sets": [
                     {
                         "id": "bwa-ex2-s1",
-                        "reps": 10,
-                        "weight": 10,
+                        "targetReps": 10,
+                        "targetWeight": 10,
                         "restAfterSet": 120,
                         "type": "standard",
                         "notes": "Aim for 8-10 reps."
                     },
                     {
                         "id": "bwa-ex2-s2",
-                        "reps": 10,
-                        "weight": 10,
+                        "targetReps": 10,
+                        "targetWeight": 10,
                         "restAfterSet": 120,
                         "type": "standard",
                         "notes": "Aim for 8-10 reps."
                     },
                     {
                         "id": "bwa-ex2-s3",
-                        "reps": 10,
-                        "weight": 10,
+                        "targetReps": 10,
+                        "targetWeight": 10,
                         "restAfterSet": 120,
                         "type": "standard",
                         "notes": "Aim for 8-10 reps."
@@ -82,24 +82,24 @@ export const ROUTINES_DATA: Routine[] = [
                 "sets": [
                     {
                         "id": "bwa-ex3-s1",
-                        "reps": 10,
-                        "weight": 10,
+                        "targetReps": 10,
+                        "targetWeight": 10,
                         "restAfterSet": 120,
                         "type": "standard",
                         "notes": "Aim for 8-10 reps."
                     },
                     {
                         "id": "bwa-ex3-s2",
-                        "reps": 10,
-                        "weight": 10,
+                        "targetReps": 10,
+                        "targetWeight": 10,
                         "restAfterSet": 120,
                         "type": "standard",
                         "notes": "Aim for 8-10 reps."
                     },
                     {
                         "id": "bwa-ex3-s3",
-                        "reps": 10,
-                        "weight": 10,
+                        "targetReps": 10,
+                        "targetWeight": 10,
                         "restAfterSet": 120,
                         "type": "standard",
                         "notes": "Aim for 8-10 reps."
@@ -124,24 +124,24 @@ export const ROUTINES_DATA: Routine[] = [
                 "sets": [
                     {
                         "id": "bwb-ex1-s1",
-                        "reps": 8,
-                        "weight": 10,
+                        "targetReps": 8,
+                        "targetWeight": 10,
                         "restAfterSet": 120,
                         "type": "standard",
                         "notes": "Aim for 6-8 reps."
                     },
                     {
                         "id": "bwb-ex1-s2",
-                        "reps": 8,
-                        "weight": 10,
+                        "targetReps": 8,
+                        "targetWeight": 10,
                         "restAfterSet": 120,
                         "type": "standard",
                         "notes": "Aim for 6-8 reps."
                     },
                     {
                         "id": "bwb-ex1-s3",
-                        "reps": 8,
-                        "weight": 10,
+                        "targetReps": 8,
+                        "targetWeight": 10,
                         "restAfterSet": 120,
                         "type": "standard",
                         "notes": "Aim for 6-8 reps."
@@ -158,24 +158,24 @@ export const ROUTINES_DATA: Routine[] = [
                 "sets": [
                     {
                         "id": "bwb-ex2-s1",
-                        "reps": 10,
-                        "weight": null,
+                        "targetReps": 10,
+                        "targetWeight": null,
                         "restAfterSet": 120,
                         "type": "standard",
                         "notes": "If you cannot do pull-ups, substitute with Lat Pulldowns. Aim for 8-10 reps."
                     },
                     {
                         "id": "bwb-ex2-s2",
-                        "reps": 10,
-                        "weight": null,
+                        "targetReps": 10,
+                        "targetWeight": null,
                         "restAfterSet": 120,
                         "type": "standard",
                         "notes": "Aim for 8-10 reps."
                     },
                     {
                         "id": "bwb-ex2-s3",
-                        "reps": 10,
-                        "weight": null,
+                        "targetReps": 10,
+                        "targetWeight": null,
                         "restAfterSet": 120,
                         "type": "standard",
                         "notes": "Aim for 8-10 reps."
@@ -192,24 +192,24 @@ export const ROUTINES_DATA: Routine[] = [
                 "sets": [
                     {
                         "id": "bwb-ex3-s1",
-                        "reps": 10,
-                        "weight": 10,
+                        "targetReps": 10,
+                        "targetWeight": 10,
                         "restAfterSet": 120,
                         "type": "standard",
                         "notes": "Aim for 8-10 reps."
                     },
                     {
                         "id": "bwb-ex3-s2",
-                        "reps": 10,
-                        "weight": 10,
+                        "targetReps": 10,
+                        "targetWeight": 10,
                         "restAfterSet": 120,
                         "type": "standard",
                         "notes": "Aim for 8-10 reps."
                     },
                     {
                         "id": "bwb-ex3-s3",
-                        "reps": 10,
-                        "weight": 10,
+                        "targetReps": 10,
+                        "targetWeight": 10,
                         "restAfterSet": 120,
                         "type": "standard",
                         "notes": "Aim for 8-10 reps."

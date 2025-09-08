@@ -1,15 +1,15 @@
 // src/app/features/history-stats/stats-dashboard.ts
 import { Component, inject, OnInit, OnDestroy, signal, computed, ChangeDetectionStrategy, effect, ViewChild, ElementRef, afterNextRender, HostListener, PLATFORM_ID } from '@angular/core';
 import { CommonModule, TitleCasePipe, DecimalPipe, DatePipe, isPlatformBrowser } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms'; // Import ReactiveFormsModule
 import { distinctUntilChanged, Subscription } from 'rxjs';
 // No need for startWith, distinctUntilChanged from rxjs/operators if using signals directly for form values
-import { parseISO, isValid, format, isSameDay } from 'date-fns'; // isSameDay was already here
+import { parseISO, isValid, isSameDay } from 'date-fns'; // isSameDay was already here
 
 import { NgxChartsModule } from '@swimlane/ngx-charts';
 
-import { MuscleGroupPerformance, StatsService, WeeklySummary, DatedVolume, StreakInfo } from '../../../core/services/stats.service';
+import { MuscleGroupPerformance, StatsService, WeeklySummary,  StreakInfo } from '../../../core/services/stats.service';
 import { TrackingService } from '../../../core/services/tracking.service';
 import { WorkoutLog } from '../../../core/models/workout-log.model';
 import { UnitsService } from '../../../core/services/units.service';

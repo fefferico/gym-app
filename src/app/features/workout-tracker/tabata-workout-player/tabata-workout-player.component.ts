@@ -5,7 +5,7 @@ import { Subscription, of, timer, firstValueFrom, Subject, combineLatest, interv
 import { switchMap, tap, map, take, takeUntil } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
 import { format } from 'date-fns';
-import { ExerciseSetParams, PausedWorkoutState, PlayerSubState, Routine, SessionState, TimedSetState, WorkoutExercise } from '../../../core/models/workout.model';
+import { ExerciseTargetSetParams, PausedWorkoutState, PlayerSubState, Routine, SessionState, TimedSetState, WorkoutExercise } from '../../../core/models/workout.model';
 import { LastPerformanceSummary, LoggedSet, LoggedWorkoutExercise, PersonalBestSet, WorkoutLog } from '../../../core/models/workout-log.model';
 import { PressDirective } from '../../../shared/directives/press.directive';
 import { WorkoutService } from '../../../core/services/workout.service';
@@ -27,7 +27,7 @@ interface ActiveSetInfo {
     exerciseIndex: number;
     setIndex: number;
     exerciseData: WorkoutExercise;
-    setData: ExerciseSetParams;
+    setData: ExerciseTargetSetParams;
     type: 'standard' | 'warmup' | 'amrap' | 'custom';
 }
 
@@ -188,7 +188,7 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
             type: 'tabata', // Use a specific type for easy filtering later
             repsAchieved: 0, // Not tracked in this mode
             weightUsed: 0,   // Not tracked in this mode
-            durationPerformed: setData.duration || 0, // Log the planned work duration
+            durationPerformed: setData.targetDuration || 0, // Log the planned work duration
             timestamp: new Date().toISOString(),
             supersetCurrentRound: this.currentBlockRound() - 1,
         };
@@ -353,8 +353,8 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
     private startOrResumeTimedSet(): void {
         if (this.timedSetTimerState() === TimedSetState.Idle) {
             this.timedSetElapsedSeconds.set(0);
-            const targetDuration = this.activeSetInfo()?.setData?.duration;
-            if (targetDuration !== undefined && targetDuration > 0) {
+            const targetDuration = this.activeSetInfo()?.setData?.targetDuration || this.activeSetInfo()?.setData?.targetDurationMin ;
+            if (targetDuration && targetDuration > 0) {
                 this.currentSetForm.get('actualDuration')?.setValue(targetDuration, { emitEvent: false });
             }
             this.soundPlayedForThisCountdownSegment = false;
@@ -372,7 +372,7 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
                 this.currentSetForm.get('actualDuration')?.setValue(currentElapsed, { emitEvent: false });
 
                 const activeInfo = this.activeSetInfo();
-                const targetDuration = activeInfo?.setData?.duration;
+                const targetDuration = activeInfo?.setData?.targetDuration;
                 const enableSound = this.appSettingsService.enableTimerCountdownSound();
                 const countdownFrom = this.appSettingsService.countdownSoundSeconds();
 
@@ -559,7 +559,7 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
         const currentRoutineValue = this.routine();
         if (!activeInfo || !currentRoutineValue) { this.toastService.error("Cannot log set: data unavailable", 0); return; }
 
-        if (activeInfo.setData.duration && activeInfo.setData.duration > 0 &&
+        if (activeInfo.setData.targetDuration && activeInfo.setData.targetDuration > 0 &&
             (this.timedSetTimerState() === TimedSetState.Running || this.timedSetTimerState() === TimedSetState.Paused)) {
             this.stopAndLogTimedSet();
         }
@@ -580,10 +580,10 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
         const formValues = this.currentSetForm.value; // Includes setNotes
 
         let durationToLog = formValues.actualDuration;
-        if (activeInfo.setData.duration && activeInfo.setData.duration > 0 && this.timedSetElapsedSeconds() > 0) {
+        if (activeInfo.setData.targetDuration && activeInfo.setData.targetDuration > 0 && this.timedSetElapsedSeconds() > 0) {
             durationToLog = this.timedSetElapsedSeconds();
-        } else if (formValues.actualDuration === null && activeInfo.setData.duration) {
-            durationToLog = activeInfo.setData.duration;
+        } else if (formValues.actualDuration === null && activeInfo.setData.targetDuration) {
+            durationToLog = activeInfo.setData.targetDuration;
         }
 
         const loggedSetData: LoggedSet = {
@@ -593,13 +593,13 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
             plannedSetId: `${activeInfo.setData.id}-round-${this.getIndexedCurrentBlock()}`,
             exerciseId: activeInfo.exerciseData.exerciseId,
             type: activeInfo.setData.type,
-            repsAchieved: formValues.actualReps ?? (activeInfo.setData.type === 'warmup' ? 0 : activeInfo.setData.reps ?? 0),
-            weightUsed: formValues.actualWeight ?? (activeInfo.setData.type === 'warmup' ? null : activeInfo.setData.weight),
+            repsAchieved: formValues.actualReps ?? (activeInfo.setData.type === 'warmup' ? 0 : activeInfo.setData.targetReps ?? 0),
+            weightUsed: formValues.actualWeight ?? (activeInfo.setData.type === 'warmup' ? null : activeInfo.setData.targetWeight),
             durationPerformed: durationToLog,
             rpe: formValues.rpe ?? undefined,
-            targetReps: activeInfo.setData.reps,
-            targetWeight: activeInfo.setData.weight,
-            targetDuration: activeInfo.setData.duration,
+            targetReps: activeInfo.setData.targetReps,
+            targetWeight: activeInfo.setData.targetWeight,
+            targetDuration: activeInfo.setData.targetDuration,
             targetTempo: activeInfo.setData.tempo,
             targetRestAfterSet: activeInfo.setData.restAfterSet,
             notes: formValues.setNotes?.trim() || undefined,
@@ -1182,7 +1182,7 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
 
         // Step 3: Find the specific set from the last session that corresponds to the set we are about to do now (e.g., the 2nd set of the exercise).
         const historicalSetPerformance = this.trackingService.findPreviousSetPerformance(this.lastPerformanceForCurrentExercise, plannedSetForSuggestions, sIndex);
-        let finalSetParamsForSession: ExerciseSetParams;
+        let finalSetParamsForSession: ExerciseTargetSetParams;
         if (plannedSetForSuggestions.type === 'warmup') {
             // For warm-up sets, we don't apply progressive overload. We just use the planned values.
             finalSetParamsForSession = { ...plannedSetForSuggestions };
@@ -1196,17 +1196,17 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
                 // use historicalSetPerformance
                 finalSetParamsForSession = {
                     ...plannedSetForSuggestions,
-                    reps: historicalSetPerformance.repsAchieved || plannedSetForSuggestions.reps || 0,
-                    weight: historicalSetPerformance.weightUsed || plannedSetForSuggestions.weight || 0,
-                    duration: historicalSetPerformance.durationPerformed || plannedSetForSuggestions.duration || 0,
+                    targetReps: historicalSetPerformance.repsAchieved || plannedSetForSuggestions.targetReps || 0,
+                    targetWeight: historicalSetPerformance.weightUsed || plannedSetForSuggestions.targetWeight || 0,
+                    targetDuration: historicalSetPerformance.durationPerformed || plannedSetForSuggestions.targetDuration || 0,
                     restAfterSet: plannedSetForSuggestions.restAfterSet || 0
                 };
             } else {
                 finalSetParamsForSession = {
                     ...plannedSetForSuggestions,
-                    reps: plannedSetForSuggestions.reps || 0,
-                    weight: plannedSetForSuggestions.weight || 0,
-                    duration: plannedSetForSuggestions.duration || 0,
+                    targetReps: plannedSetForSuggestions.targetReps || 0,
+                    targetWeight: plannedSetForSuggestions.targetWeight || 0,
+                    targetDuration: plannedSetForSuggestions.targetDuration || 0,
                     restAfterSet: plannedSetForSuggestions.restAfterSet || 0
                 };
             }
@@ -1221,7 +1221,7 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
         const updatedRoutineForSession = JSON.parse(JSON.stringify(sessionRoutine)) as Routine;
 
         // suggest updated values only if it's not a timed exercise
-        if (!updatedRoutineForSession.exercises[exIndex].sets?.some(set => set.duration)) {
+        if (!updatedRoutineForSession.exercises[exIndex].sets?.some(set => set.targetDuration)) {
             updatedRoutineForSession.exercises[exIndex].sets[sIndex] = finalSetParamsForSession;
         }
         this.routine.set(updatedRoutineForSession); // Update the routine signal
@@ -1384,7 +1384,7 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
                         // A. Add the "Work" interval for the current round
                         intervals.push({
                             type: 'work',
-                            duration: set.duration || 40,
+                            duration: set.targetDuration || 40,
                             exerciseName: blockExercise.exerciseName
                         });
                         this.tabataIntervalMap.push([blockExerciseIndex, setIndex, round]);
@@ -1741,14 +1741,14 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
         });
     }
 
-    getFirstExerciseOfSuperset(superSetOrder: number, supersetId: string, loggedExercises: LoggedWorkoutExercise[]): ExerciseSetParams {
+    getFirstExerciseOfSuperset(superSetOrder: number, supersetId: string, loggedExercises: LoggedWorkoutExercise[]): ExerciseTargetSetParams {
         const exercise = loggedExercises.find(ex => ex.supersetId && ex.supersetId === supersetId);
         const exerciseSet = exercise?.sets[0];
         return {
             id: uuidv4(), // New ID for the routine template set
-            reps: exerciseSet && exerciseSet.targetReps ? exerciseSet.repsAchieved : 1,
-            weight: exerciseSet && exerciseSet.weightUsed ? exerciseSet.weightUsed : 1,
-            duration: exerciseSet && exerciseSet.targetDuration ? exerciseSet.targetDuration : 0,
+            targetReps: exerciseSet && exerciseSet.targetReps ? exerciseSet.repsAchieved : 1,
+            targetWeight: exerciseSet && exerciseSet.weightUsed ? exerciseSet.weightUsed : 1,
+            targetDuration: exerciseSet && exerciseSet.targetDuration ? exerciseSet.targetDuration : 0,
             tempo: '1',
             restAfterSet: superSetOrder !== null && superSetOrder !== undefined && exercise && exercise.supersetSize && superSetOrder < exercise.supersetSize - 1 ? 0 : this.getLastExerciseOfSuperset(supersetId, loggedExercises).restAfterSet,
             notes: exerciseSet && exerciseSet.notes ? exerciseSet.notes : '',
@@ -1756,14 +1756,14 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
         };
     }
 
-    getLastExerciseOfSuperset(supersetId: string, loggedExercises: LoggedWorkoutExercise[]): ExerciseSetParams {
+    getLastExerciseOfSuperset(supersetId: string, loggedExercises: LoggedWorkoutExercise[]): ExerciseTargetSetParams {
         const exercise = loggedExercises.find(ex => ex.supersetId && ex.supersetId === supersetId);
         const exerciseSet = exercise?.sets[exercise.sets.length - 1];
         return {
             id: uuidv4(), // New ID for the routine template set
-            reps: exerciseSet && exerciseSet.targetReps ? exerciseSet.targetReps : 1,
-            weight: exerciseSet && exerciseSet.targetWeight ? exerciseSet.targetWeight : 1,
-            duration: exerciseSet && exerciseSet.targetDuration ? exerciseSet.targetDuration : 1,
+            targetReps: exerciseSet && exerciseSet.targetReps ? exerciseSet.targetReps : 1,
+            targetWeight: exerciseSet && exerciseSet.targetWeight ? exerciseSet.targetWeight : 1,
+            targetDuration: exerciseSet && exerciseSet.targetDuration ? exerciseSet.targetDuration : 1,
             tempo: '1',
             restAfterSet: exerciseSet && exerciseSet.targetRestAfterSet ? exerciseSet.targetRestAfterSet : 60,
             notes: exerciseSet && exerciseSet.notes ? exerciseSet.notes : '',
@@ -1868,7 +1868,7 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
         }
         this.timedSetTimerState.set(TimedSetState.Idle);
         this.timedSetElapsedSeconds.set(0);
-        const targetDuration = this.activeSetInfo()?.setData?.duration;
+        const targetDuration = this.activeSetInfo()?.setData?.targetDuration;
         this.currentSetForm.get('actualDuration')?.setValue(targetDuration ?? 0, { emitEvent: false });
         this.soundPlayedForThisCountdownSegment = false;
     }
