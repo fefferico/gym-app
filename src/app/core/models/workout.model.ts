@@ -6,8 +6,12 @@ import { LastPerformanceSummary, LoggedSet, LoggedWorkoutExercise } from "./work
 export interface ExerciseSetParams {
   id: string;
   reps?: number;
+  repsMin?: number;
+  repsMax?: number;
   weight?: number | null; // Allow null for bodyweight or if weight is not applicable
   duration?: number; // in seconds
+  durationMin?: number; // in seconds
+  durationMax?: number; // in seconds
   distance?: number; // in kilometers
   tempo?: string;
   restAfterSet: number; // For the set *within* an exercise. For supersets, this might be 0 for intermediate exercises.
@@ -21,8 +25,12 @@ export interface ExerciseSetParams {
   targetRpe?: number | null; // Could be useful for 'failure' sets
   targetWeight?: number;
   targetDuration?: number;
+  targetDurationMin?: number;
+  targetDurationMax?: number;
   targetDistance?: number;
   targetReps?: number;
+  targetRepsMin?: number;
+  targetRepsMax?: number;
   dropToWeight?: number | null; // For 'dropset'
   amrapTimeLimit?: number | null; // For AMRAP if it's time-bound rather than rep-bound
 }

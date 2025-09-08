@@ -195,7 +195,8 @@
                     <label for="iterationIdForLog"
                         class="block text-sm font-medium text-gray-700 dark:text-gray-300">Based on Program Iteration
                         ID</label>
-                    <span *ngIf="isEditableMode" class="text-xs text-red-500 dark:text-primary-light">(Select an iteration if logging for a
+                    <span *ngIf="isEditableMode" class="text-xs text-red-500 dark:text-primary-light">(Select an
+                        iteration if logging for a
                         specific program cycle - EDIT IF YOU ONLY KNOW WHAT YOU ARE DOING)</span>
                     <select id="iterationIdForLog" formControlName="iterationIdForLog"
                         [disabled]="!builderForm.get('programIdForLog')?.value || availableIterationIds.length === 0"
@@ -208,14 +209,16 @@
                 <div *ngIf="initialProgramIdForLogEdit">
                     <label for="scheduledDayIdForLog"
                         class="block text-sm font-medium text-gray-700 dark:text-gray-300">Based on Program Scheduled ID
-                    </label><span *ngIf="isEditableMode" class="text-xs text-red-500 dark:text-primary-light">(Select the scheduled day you are
+                    </label><span *ngIf="isEditableMode" class="text-xs text-red-500 dark:text-primary-light">(Select
+                        the scheduled day you are
                         logging - EDIT IF YOU ONLY KNOW WHAT YOU ARE DOING)</span>
                     <select id="scheduledDayIdForLog" formControlName="scheduledDayIdForLog"
                         [disabled]="!builderForm.get('programIdForLog')?.value || availableScheduledDayIds.length === 0"
                         class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200 disabled:opacity-50 disabled:cursor-not-allowed">
                         <option value="">-- Select Scheduled Day (Optional) --</option>
                         <option *ngFor="let scheduledId of availableScheduledDayInfos" [value]="scheduledId.id">{{
-                            scheduledId.weekNumber ? 'Week #' + scheduledId.weekNumber : '' }} - {{ scheduledId.dayName ? 'Day ' + scheduledId.dayName : ''}}</option>
+                            scheduledId.weekNumber ? 'Week #' + scheduledId.weekNumber : '' }} - {{ scheduledId.dayName
+                            ? 'Day ' + scheduledId.dayName : ''}}</option>
                     </select>
                 </div>
                 <!-- END: Updated fields -->
@@ -276,7 +279,7 @@
                                     class="p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 flex-shrink-0"
                                     title="Drag to reorder">
                                     <app-icon name="reorder"></app-icon>
-                                </div>                                        
+                                </div>
 
                                 <!-- CHECKBOX (if applicable) -->
                                 <input
@@ -294,7 +297,8 @@
                                         && exerciseControl.get('supersetOrder')?.value === 0"
                                         class="px-2 text-md font-medium text-orange-600 dark:text-orange-400 mt-0.5">
                                         {{ exerciseControl.get('supersetRounds')?.value || 1 }}
-                                        {{ (exerciseControl.get('supersetRounds')?.value || 1) === 1 ? 'Round' : 'Rounds' }}
+                                        {{ (exerciseControl.get('supersetRounds')?.value || 1) === 1 ? 'Round' :
+                                        'Rounds' }}
                                     </div>
                                     <div *ngIf="!shouldShowExpandedExercise(exIndex) && getSetsFormArray(exerciseControl).controls.length > 0"
                                         class="flex items-center text-s text-gray-500 dark:text-gray-400 mt-0.5 gap-4 pl-2">
@@ -315,10 +319,10 @@
                                             </div>
                                             <div class="text-xs text-gray-500 dark:text-gray-400 truncate">
                                                 <p
-                                                    *ngIf="exerciseControl?.get('sets')?.value && exerciseControl?.get('sets')?.value.length >= 1 && checkIfTimedExercise(exerciseControl)">
+                                                    *ngIf="exerciseControl?.get('sets')?.value?.length >= 1 && checkIfTimedExercise(exerciseControl)">
                                                     Duration
                                                     (s):
-                                                    {{getSetDurationPerformed(exerciseControl)}}
+                                                    {{ getSetDurationDisplay(exerciseControl) }}
                                                 </p>
                                                 <p
                                                     *ngIf="exerciseControl?.get('sets')?.value && exerciseControl?.get('sets')?.value.length >= 1">
@@ -348,10 +352,12 @@
                                         <app-icon name="cancel" class="h-4 w-4"></app-icon>
                                     </button>
                                 </div>
-                                <div *ngIf="!isViewMode && shouldShowExpandedExercise(exIndex)" class="w-full flex justify-end pr-2"><button type="button" (click)="removeExercise(exIndex)" title="Remove Exercise"
-                                            class="flex items-center p-1 hover:text-red-700 dark:hover:text-red-300 rounded-md hover:bg-red-100 dark:hover:bg-red-900/30 disabled:opacity-50 bg-red-500 text-white">
-                                            <app-icon name="cancel" class="h-5 w-5 mr-1"></app-icon>REMOVE
-                                        </button></div>
+                                <div *ngIf="!isViewMode && shouldShowExpandedExercise(exIndex)"
+                                    class="w-full flex justify-end pr-2"><button type="button"
+                                        (click)="removeExercise(exIndex)" title="Remove Exercise"
+                                        class="flex items-center p-1 hover:text-red-700 dark:hover:text-red-300 rounded-md hover:bg-red-100 dark:hover:bg-red-900/30 disabled:opacity-50 bg-red-500 text-white">
+                                        <app-icon name="cancel" class="h-5 w-5 mr-1"></app-icon>REMOVE
+                                    </button></div>
                             </div>
                             <!-- EXPANDED CONTENT AREA -->
                             <div *ngIf="shouldShowExpandedExercise(exIndex)" class="p-2">
@@ -393,8 +399,8 @@
                                             class="flex items-center space-x-1">
                                             <label [for]="'supersetRounds-' + exIndex"
                                                 class="text-xs font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap">Rounds:</label>
-                                            <input type="number" [id]="'supersetRounds-' + exIndex" formControlName="supersetRounds"
-                                                min="1"
+                                            <input type="number" [id]="'supersetRounds-' + exIndex"
+                                                formControlName="supersetRounds" min="1"
                                                 class="w-16 p-1 text-m border-gray-300 dark:border-gray-500 border-2 rounded-md focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200 disabled:opacity-50 disabled:bg-gray-300 dark:disabled:bg-gray-500"
                                                 [readonly]="(exerciseControl.get('supersetId')?.value && (exerciseControl.get('supersetOrder')?.value ?? 0) > 0) || isViewMode"
                                                 (change)="syncSupersetRounds(exerciseControl.get('supersetId')?.value, exerciseControl.get('supersetRounds')?.value, exIndex)">
@@ -542,24 +548,33 @@
                                                 (click)="toggleSetExpansion(exIndex, setIndex, $event)"
                                                 class="grid grid-cols-12 gap-x-1 items-center py-1.5 px-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800/60 cursor-pointer border dark:border-gray-700 dark:text-white"
                                                 [ngClass]="{
-                                                        'bg-gray-50 dark:bg-gray-700/50 text-gray-800 dark:text-gray-200': !['warmup', 'dropset', 'failure', 'amrap', 'myorep', 'restpause'].includes(setControl.get('type')?.value ?? '') && !isViewMode,
-                                                        'cursor-default': isViewMode
-                                                    } ">
-                                                <!-- ... content of collapsed set row (as before) ... -->
+                'bg-gray-50 dark:bg-gray-700/50 text-gray-800 dark:text-gray-200': !['warmup', 'dropset', 'failure', 'amrap', 'myorep', 'restpause'].includes(setControl.get('type')?.value ?? '') && !isViewMode,
+                'cursor-default': isViewMode
+            } ">
                                                 <div class="col-span-1 text-s text-center font-medium">{{ setIndex + 1
                                                     }}</div>
                                                 <div class="col-span-2 text-xs text-center truncate"
                                                     [title]="setControl.get('type')?.value | titlecase">{{
                                                     (setControl.get('type')?.value | titlecase) || 'Standard' }}</div>
-                                                <div class="col-span-2 text-s text-center">{{ (setControl.get(mode ===
-                                                    'manualLogEntry' ? 'repsAchieved' : 'reps')?.value) ?? '-' }}</div>
+                                                <div class="col-span-2 text-s text-center">
+                                                    <ng-container *ngIf="mode === 'routineBuilder'">{{
+                                                        getSetDisplayValue(setControl, 'reps') }}</ng-container>
+                                                    <ng-container *ngIf="mode === 'manualLogEntry'">{{
+                                                        setControl.get('repsAchieved')?.value ?? '-' }}</ng-container>
+                                                </div>
                                                 <div class="col-span-2 text-s text-center">{{ (setControl.get(mode ===
                                                     'manualLogEntry' ? 'weightUsed' : 'weight')?.value) |
                                                     weightUnit:'1.0-2' }}</div>
-                                                <div class="col-span-1 text-s text-center">{{ (setControl.get(mode ===
-                                                    'manualLogEntry' ? 'durationPerformed' : 'duration')?.value) ?
-                                                    ((setControl.get(mode === 'manualLogEntry' ? 'durationPerformed' :
-                                                    'duration')?.value) + 's') : '-' }}</div>
+                                                <div class="col-span-1 text-s text-center">
+                                                    <ng-container *ngIf="mode === 'routineBuilder'">{{
+                                                        getSetDisplayValue(setControl, 'duration') ?
+                                                        (getSetDisplayValue(setControl, 'duration') + 's') : '-'
+                                                        }}</ng-container>
+                                                    <ng-container *ngIf="mode === 'manualLogEntry'">{{
+                                                        (setControl.get('durationPerformed')?.value) ?
+                                                        (setControl.get('durationPerformed')?.value + 's') : '-'
+                                                        }}</ng-container>
+                                                </div>
                                                 <div class="col-span-2 text-s text-center truncate"
                                                     [title]="mode === 'routineBuilder' ? (setControl.get('restAfterSet')?.value + 's') : setControl.get('notes')?.value">
                                                     <ng-container *ngIf="mode === 'routineBuilder'">{{
@@ -587,9 +602,8 @@
                                             <!-- Expanded Set Form -->
                                             <div #expandedSetElement *ngIf="isSetExpanded(exIndex, setIndex)"
                                                 class="p-1 rounded-md shadow-inner space-y-2" [ngClass]="{
-                                                        'bg-gray-100 dark:bg-gray-800/50': !['warmup', 'dropset', 'failure', 'amrap', 'myorep', 'restpause'].includes(setControl.get('type')?.value ?? '')
-                                                    }">
-                                                <!-- ... content of expanded set form (as before) ... -->
+                'bg-gray-100 dark:bg-gray-800/50': !['warmup', 'dropset', 'failure', 'amrap', 'myorep', 'restpause'].includes(setControl.get('type')?.value ?? '')
+            }">
                                                 <div class="grid grid-cols-2 sm:grid-cols-3 gap-x-3 gap-y-2 items-end">
                                                     <div class="col-span-full sm:col-span-1">
                                                         <label [for]="'setType-exp-' + exIndex + '-' + setIndex"
@@ -602,17 +616,36 @@
                                                                 [value]="typeOpt.value">{{ typeOpt.label }}</option>
                                                         </select>
                                                     </div>
-                                                    <!-- Other inputs for reps, weight, duration, tempo, rest, notes -->
+                                                    <!-- Reps Input: Conditional for ranges vs single value -->
                                                     <div *ngIf="!isExerciseCardioOnlyCtrl(exerciseControl)">
                                                         <label [for]="'reps-exp-' + exIndex + '-' + setIndex"
-                                                            class="block text-s font-medium text-gray-600 dark:text-gray-400">Reps
-                                                            {{ mode === 'manualLogEntry' ? '(Achieved)' : ''}}</label>
-                                                        <input type="number"
+                                                            class="block text-s font-medium text-gray-600 dark:text-gray-400">
+                                                            Reps {{ mode === 'manualLogEntry' ? '(Achieved)' : ''}}
+                                                        </label>
+                                                        <!-- ROUTINE BUILDER - REPS RANGE -->
+                                                        <ng-container *ngIf="mode === 'routineBuilder'">
+                                                            <div class="mt-0.5 flex items-center space-x-1.5">
+                                                                <input type="number" formControlName="repsMin"
+                                                                    min="0"
+                                                                    placeholder="Min" [readonly]="isViewMode"
+                                                                    class="w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
+                                                                <span
+                                                                    class="text-gray-500 dark:text-gray-400 font-bold">-</span>
+                                                                <input type="number" formControlName="repsMax"
+                                                                    min="0"
+                                                                    placeholder="Max" [readonly]="isViewMode"
+                                                                    class="w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
+                                                            </div>
+                                                        </ng-container>
+                                                        <!-- LOG ENTRY - SINGLE REPS ACHIEVED -->
+                                                        <input *ngIf="mode === 'manualLogEntry'" type="number"
                                                             [id]="'reps-exp-' + exIndex + '-' + setIndex"
-                                                            [formControlName]="mode === 'manualLogEntry' ? 'repsAchieved' : 'reps'"
-                                                            placeholder="Reps" [readonly]="isViewMode"
+                                                            formControlName="repsAchieved" placeholder="Reps"
+                                                            [readonly]="isViewMode"
                                                             class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
                                                     </div>
+
+                                                    <!-- Weight Input -->
                                                     <div>
                                                         <label [for]="'weight-exp-' + exIndex + '-' + setIndex"
                                                             class="block text-s font-medium text-gray-600 dark:text-gray-400">Weight
@@ -624,17 +657,37 @@
                                                             placeholder="Weight" [readonly]="isViewMode"
                                                             class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
                                                     </div>
+
+                                                    <!-- Duration Input: Conditional for ranges vs single value -->
                                                     <div>
                                                         <label [for]="'duration-exp-' + exIndex + '-' + setIndex"
-                                                            class="block text-s font-medium text-gray-600 dark:text-gray-400">Time
-                                                            (s) {{ mode === 'manualLogEntry' ? '(Performed)' :
-                                                            ''}}</label>
-                                                        <input type="number"
+                                                            class="block text-s font-medium text-gray-600 dark:text-gray-400">
+                                                            Time (s) {{ mode === 'manualLogEntry' ? '(Performed)' : ''}}
+                                                        </label>
+                                                        <!-- ROUTINE BUILDER - DURATION RANGE -->
+                                                        <ng-container *ngIf="mode === 'routineBuilder'">
+                                                            <div class="mt-0.5 flex items-center space-x-1.5">
+                                                                <input type="number" formControlName="durationMin"
+                                                                    min="0"
+                                                                    placeholder="Min" [readonly]="isViewMode"
+                                                                    class="w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
+                                                                <span
+                                                                    class="text-gray-500 dark:text-gray-400 font-bold">-</span>
+                                                                <input type="number" formControlName="durationMax"
+                                                                    min="0"
+                                                                    placeholder="Max" [readonly]="isViewMode"
+                                                                    class="w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
+                                                            </div>
+                                                        </ng-container>
+                                                        <!-- LOG ENTRY - SINGLE DURATION PERFORMED -->
+                                                        <input *ngIf="mode === 'manualLogEntry'" type="number"
                                                             [id]="'duration-exp-' + exIndex + '-' + setIndex"
-                                                            [formControlName]="mode === 'manualLogEntry' ? 'durationPerformed' : 'duration'"
-                                                            placeholder="Secs" [readonly]="isViewMode"
+                                                            formControlName="durationPerformed" placeholder="Secs"
+                                                            [readonly]="isViewMode"
                                                             class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
                                                     </div>
+
+                                                    <!-- Other inputs for tempo, rest, notes -->
                                                     <div *ngIf="setControl.get('tempo')?.value || isEditableMode()">
                                                         <label [for]="'tempo-exp-' + exIndex + '-' + setIndex"
                                                             class="block text-s font-medium text-gray-600 dark:text-gray-400">Tempo</label>
@@ -644,7 +697,6 @@
                                                             [readonly]="isViewMode"
                                                             class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
                                                     </div>
-                                                    <!-- Rest After Set -->
                                                     <div>
                                                         <label [for]="'rest-exp-' + exIndex + '-' + setIndex"
                                                             class="block text-s font-medium text-gray-600 dark:text-gray-400">Rest
@@ -739,8 +791,7 @@
                 <app-icon name="cancel" class="h-5 w-5 mr-1"></app-icon>
                 CANCEL
             </button>
-            <button type="submit"
-                [disabled]="isFormInvalid()"
+            <button type="submit" [disabled]="isFormInvalid()"
                 class="flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark disabled:opacity-50">
                 <app-icon *ngIf="isNewMode" name="create" class="h-6 w-6 mr-1"></app-icon>
                 <app-icon *ngIf="!isNewMode" name="save" class="h-6 w-6 mr-1"></app-icon>

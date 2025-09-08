@@ -3,7 +3,7 @@ import { CommonModule, DecimalPipe, isPlatformBrowser, TitleCasePipe } from '@an
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray, AbstractControl, FormsModule, FormControl } from '@angular/forms';
 import { Subscription, of, firstValueFrom, Observable, from } from 'rxjs';
-import { switchMap, tap, take, distinctUntilChanged, map, mergeMap, startWith, debounceTime, filter } from 'rxjs/operators';
+import { switchMap, tap, take, distinctUntilChanged, map, mergeMap, startWith, debounceTime, filter, mergeAll } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
 import { format, parseISO, isValid as isValidDate } from 'date-fns';
 
@@ -697,42 +697,92 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
     const repsSub = setsFormArray.valueChanges.pipe(
       debounceTime(300),
-      // startWith will now emit an initial value, just to kick off the stream.
-      // The value itself doesn't matter.
       startWith(null),
-
-      // --- THIS IS THE CRITICAL FIX ---
-      // We ignore the value from the stream (`_`) and ALWAYS use setsFormArray.controls.
-      // This guarantees we are always working with the actual Form Controls.
       mergeMap((_) => {
-        const controls = setsFormArray.controls; // Get the up-to-date controls array
-
-        // The rest of the logic is now safe because 'controls' is always AbstractControl[]
+        const controls = setsFormArray.controls;
         return from(controls).pipe(
           mergeMap((setControl, index) => {
-            const repsControl = setControl.get('reps');
-            if (!repsControl) {
+            const repsMinControl = setControl.get('repsMin');
+            const repsMaxControl = setControl.get('repsMax');
+
+            const observables = [
+              repsMinControl?.valueChanges,
+              repsMaxControl?.valueChanges
+            ].filter((obs): obs is Observable<any> => !!obs);
+
+            if (observables.length === 0) {
               return of(null);
             }
-            return repsControl.valueChanges.pipe(
-              map(repsValue => ({
-                reps: repsValue,
+
+            // --- THE CORRECTED PATTERN ---
+            // Use `from` to create a stream of observables, then `mergeAll` to flatten them.
+            // This avoids the spread operator `...` entirely.
+            return from(observables).pipe(
+              mergeAll(),
+              map(() => ({ // This map now correctly receives emissions from any of the merged streams
                 setIndex: index,
                 exerciseId: exerciseControl.get('id')?.value
               })),
-              distinctUntilChanged((prev, curr) => prev.reps === curr.reps)
+              distinctUntilChanged((prev, curr) => JSON.stringify(prev) === JSON.stringify(curr))
             );
           })
         );
       }),
-      filter(change => change !== null)
-
+      filter((change): change is { setIndex: number; exerciseId: string } => change !== null)
     ).subscribe(change => {
-      console.log(`Reps changed on Ex: ${change.exerciseId}, Set: ${change.setIndex} to ${change.reps}`);
+      console.log(`Reps Range changed on Ex: ${change.exerciseId}, Set: ${change.setIndex}`);
       this.getRoutineDuration();
     });
 
     this.subscriptions.add(repsSub);
+  }
+
+  private setupDurationListener(exerciseControl: FormGroup): void {
+    const setsFormArray = this.getSetsFormArray(exerciseControl);
+
+    const durationSub = setsFormArray.valueChanges.pipe(
+      debounceTime(300),
+      startWith(null),
+      mergeMap((_) => {
+        const controls = setsFormArray.controls;
+        return from(controls).pipe(
+          mergeMap((setControl, index) => {
+            const durationMinControl = setControl.get('durationMin');
+            const durationMaxControl = setControl.get('durationMax');
+
+            const observables = [
+              durationMinControl?.valueChanges,
+              durationMaxControl?.valueChanges
+            ].filter((obs): obs is Observable<any> => !!obs);
+
+            if (observables.length === 0) {
+              return of(null);
+            }
+
+            // --- THE CORRECTED PATTERN ---
+            // Apply the same robust pattern here for the duration listeners.
+            return from(observables).pipe(
+              mergeAll(),
+              map(() => ({
+                setIndex: index,
+                exerciseId: exerciseControl.get('id')?.value
+              })),
+              distinctUntilChanged((prev, curr) => JSON.stringify(prev) === JSON.stringify(curr))
+            );
+          })
+        );
+      }),
+      filter((change): change is { setIndex: number; exerciseId: string } => change !== null)
+    ).subscribe(change => {
+      console.log(`Duration Range changed on Ex: ${change.exerciseId}, Set: ${change.setIndex}`);
+      this.getRoutineDuration();
+    });
+
+    this.subscriptions.add(durationSub);
+  }
+
+  private addDurationListener(exerciseControl: FormGroup): void {
+    this.setupDurationListener(exerciseControl);
   }
 
   private loadAvailableExercises(): void {
@@ -751,6 +801,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       const newExerciseFormGroup = this.createExerciseFormGroup(exerciseData, true, false);
       this.exercisesFormArray.push(newExerciseFormGroup, { emitEvent: false });
       this.addRepsListener(newExerciseFormGroup);
+      this.addDurationListener(newExerciseFormGroup);
     });
     this.builderForm.markAsPristine();
   }
@@ -879,6 +930,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     exerciseFg.get('supersetId')?.valueChanges.subscribe(() => this.updateRoundsControlability(exerciseFg));
     this.updateRoundsControlability(exerciseFg);
     this.addRepsListener(exerciseFg);
+    this.addDurationListener(exerciseFg);
 
     return exerciseFg;
   }
@@ -924,6 +976,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
   private createSetFormGroup(setData?: ExerciseSetParams | LoggedSet, forLogging: boolean = false): FormGroup {
     let repsValue, targetReps, weightValue, targetWeighValue, durationValue, targetDurationValue, notesValue, typeValue, tempoValue, restValue;
+    let repsMinValue, repsMaxValue, durationMinValue, durationMaxValue; // For ranges
     let id = uuidv4();
     let plannedSetIdValue;
     let timestampValue = new Date().toISOString(); // Default for new sets being logged
@@ -939,17 +992,17 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         typeValue = loggedS.type || 'standard'; // Use logged type, default to standard
         plannedSetIdValue = loggedS.plannedSetId;
         timestampValue = loggedS.timestamp; // Preserve original timestamp for logged sets
-        // For logging, tempo and restAfterSet usually come from the plan, not directly part of LoggedSet for achievement
         tempoValue = loggedS.targetTempo || '';
         restValue = loggedS.restAfterSetUsed;
       } else { // It's ExerciseSetParams from routine template
         const plannedS = setData as ExerciseSetParams;
         repsValue = plannedS.reps;
-        targetReps = plannedS.reps;
+        repsMinValue = plannedS.repsMin;
+        repsMaxValue = plannedS.repsMax;
         weightValue = plannedS.weight;
-        targetWeighValue = plannedS.weight;
         durationValue = plannedS.duration;
-        targetDurationValue = plannedS.duration;
+        durationMinValue = plannedS.durationMin;
+        durationMaxValue = plannedS.durationMax;
         notesValue = plannedS.notes;
         typeValue = plannedS.type || 'standard';
         tempoValue = plannedS.tempo;
@@ -962,7 +1015,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
     const formGroupConfig: { [key: string]: any } = {
       id: [id],
-      type: [typeValue, Validators.required], // Type is always present
+      type: [typeValue, Validators.required],
       notes: [notesValue || ''],
     };
 
@@ -976,7 +1029,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
             if (!parent) return null;
             const weightUsed = parent.get('weightUsed')?.value;
             const durationPerformed = parent.get('durationPerformed')?.value;
-            // Only require repsAchieved if both weightUsed and durationPerformed are null or empty
             if ((weightUsed == null || weightUsed === '') && (durationPerformed == null || durationPerformed === '')) {
               return Validators.required(control);
             }
@@ -993,11 +1045,12 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       formGroupConfig['restAfterSet'] = [restValue];
     } else { // For routine builder (planning mode)
       formGroupConfig['reps'] = [repsValue ?? null, [Validators.min(0)]];
-      formGroupConfig['targetReps'] = [targetReps ?? null, [Validators.min(0)]];
+      formGroupConfig['repsMin'] = [repsMinValue ?? null, [Validators.min(0)]];
+      formGroupConfig['repsMax'] = [repsMaxValue ?? null, [Validators.min(0)]];
       formGroupConfig['weight'] = [this.unitService.convertWeight(weightValue || 0, 'kg', this.unitService.currentWeightUnit()) ?? null, [Validators.min(0)]];
-      formGroupConfig['targetWeight'] = [this.unitService.convertWeight(targetWeighValue || 0, 'kg', this.unitService.currentWeightUnit()) ?? null, [Validators.min(0)]];
       formGroupConfig['duration'] = [durationValue ?? null, [Validators.min(0)]];
-      formGroupConfig['targetDuration'] = [targetDurationValue ?? null, [Validators.min(0)]];
+      formGroupConfig['durationMin'] = [durationMinValue ?? null, [Validators.min(0)]];
+      formGroupConfig['durationMax'] = [durationMaxValue ?? null, [Validators.min(0)]];
       formGroupConfig['tempo'] = [tempoValue || ''];
       formGroupConfig['restAfterSet'] = [restValue ?? 60, [Validators.required, Validators.min(0)]];
     }
@@ -1065,6 +1118,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     if (this.mode === 'routineBuilder') {
       newExerciseFormGroup = this.createExerciseFormGroup(workoutExercise, true, false);
       this.addRepsListener(newExerciseFormGroup);
+      this.addDurationListener(newExerciseFormGroup);
       this.exercisesFormArray.push(newExerciseFormGroup);
       this.toggleSetExpansion(this.exercisesFormArray.length - 1, 0);
     } else {
@@ -1906,6 +1960,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       this.exercisesFormArray.push(newExerciseFormGroup);
       this.toggleSetExpansion(this.exercisesFormArray.length - 1, 0);
       this.addRepsListener(newExerciseFormGroup);
+      this.addDurationListener(newExerciseFormGroup);
     } else {
       if (!result) {
         return
@@ -1961,15 +2016,12 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
           exerciseName: exInput.exerciseName,
           notes: exInput.notes,
           sets: exInput.sets.map((setInput: any) => ({
-            ...setInput,
+            ...setInput, // Spread to include all set properties like reps, repsMin, repsMax, etc.
             weight: this.unitService.convertWeight(setInput.weight, 'kg', this.unitService.currentWeightUnit()) ?? null,
           })),
           supersetId: exInput.supersetId || null,
           supersetOrder: isSuperset ? exInput.supersetOrder : null,
           supersetSize: isSuperset ? exInput.supersetSize : null,
-          // *** THE CORE FIX ***
-          // If it's a superset, save supersetRounds and nullify rounds.
-          // If it's a standard exercise, save rounds and nullify supersetRounds.
           supersetRounds: isSuperset ? (exInput.supersetRounds || 1) : null,
           type: exInput.type,
         };
@@ -2132,8 +2184,16 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   checkIfTimedExercise(loggedEx: any): boolean {
-    const loggedExActual = loggedEx?.getRawValue() as WorkoutExercise;
-    return loggedExActual?.sets.some(set => set.targetDuration) || loggedExActual?.sets.some(set => set.duration);
+    const loggedExActual = loggedEx?.getRawValue();
+    if (!loggedExActual || !loggedExActual.sets) return false;
+
+    // This now works for both WorkoutExercise (builder) and LoggedWorkoutExercise (log)
+    return loggedExActual.sets.some((set: any) =>
+      set.duration != null ||
+      set.durationMin != null ||
+      set.durationMax != null ||
+      set.durationPerformed != null
+    );
   }
 
   checkIfWeightedExercise(loggedEx: any): boolean {
@@ -2141,25 +2201,160 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     return loggedExActual?.sets.some(set => set.targetWeight) || loggedExActual?.sets.some(set => set.weight);
   }
 
-  getSetReps(loggedEx: any): string {
-    const rawValue = loggedEx?.getRawValue();
-    if (!rawValue || !rawValue.sets) {
+  // getSetReps(loggedEx: any): string {
+  //   const rawValue = loggedEx?.getRawValue();
+  //   if (!rawValue || !rawValue.sets || rawValue.sets.length === 0) {
+  //     return '';
+  //   }
+
+  //   if (this.mode === 'manualLogEntry') {
+  //     const loggedExActual = rawValue as LoggedWorkoutExercise;
+  //     const reps = loggedExActual.sets.map(set => set.repsAchieved);
+  //     const validReps = reps.filter(rep => rep != null);
+  //     return validReps.length > 0 ? validReps.join(' - ') : '';
+  //   } else { // Routine builder mode
+  //     const firstSet = rawValue.sets[0];
+  //     const min = firstSet.repsMin;
+  //     const max = firstSet.repsMax;
+  //     const single = firstSet.reps;
+
+  //     let displayValue = '';
+  //     if (min != null && max != null) {
+  //       displayValue = `${min} - ${max}`;
+  //     } else if (min != null) {
+  //       displayValue = `${min}+`;
+  //     } else if (max != null) {
+  //       displayValue = `Up to ${max}`;
+  //     } else if (single != null) {
+  //       displayValue = `${single}`;
+  //     }
+
+  //     const numSets = rawValue.sets.length;
+  //     if (numSets > 1) {
+  //       return `${numSets} x ${displayValue || 'N/A'}`;
+  //     }
+  //     return displayValue || '';
+  //   }
+  // }
+
+  getSetReps(loggedEx: any): string { // 'loggedEx' is an AbstractControl (FormGroup)
+    // Check for invalid input or empty sets array
+    if (!loggedEx || !loggedEx.value || !loggedEx.value.sets || loggedEx.value.sets.length === 0) {
       return '';
     }
 
-    let reps: (number | null | undefined)[];
+    // --- MANUAL LOG ENTRY MODE (No Change) ---
+    // This mode correctly shows the actual reps achieved for each set.
+    if (this.mode === 'manualLogEntry') {
+      const rawValue = loggedEx.getRawValue() as LoggedWorkoutExercise;
+      const reps = rawValue.sets.map(set => set.repsAchieved);
+      const validReps = reps.filter(rep => rep != null);
+      return validReps.length > 0 ? validReps.join('-') : '';
+    }
+    
+    // --- ROUTINE BUILDER MODE (Updated Logic) ---
+    else {
+      // Get the FormArray of sets to work with the controls, which is more reliable
+      const setsFormArray = this.getSetsFormArray(loggedEx as AbstractControl);
 
-    if (this.currentLogId && !this.isNewMode) { // If we're viewing a logged workout
-      const loggedExActual = rawValue as LoggedWorkoutExercise;
-      reps = loggedExActual.sets.map(set => set.repsAchieved);
-    } else { // If we're in the routine builder
-      const loggedExActual = rawValue as WorkoutExercise;
-      reps = loggedExActual.sets.map(set => set.reps);
+      // Map over each set's form control and generate its individual display value (e.g., "8-12")
+      const displayValues = setsFormArray.controls.map(setControl =>
+        this.getSetDisplayValue(setControl, 'reps')
+      );
+
+      // Join the array of display values with a comma and space
+      return displayValues.join(', ');
+    }
+  }
+
+  /**
+  * Generates a summary string for an exercise's set durations,
+  * adapting for routine builder (ranges) or manual log (performed values).
+  * @param exerciseControl The AbstractControl for the exercise.
+  * @returns A formatted string like "3 x 30-60" or "30 - 35".
+  */
+  // getSetDurationDisplay(exerciseControl: AbstractControl): string {
+  //   const rawValue = exerciseControl?.getRawValue();
+  //   if (!rawValue || !rawValue.sets || rawValue.sets.length === 0) {
+  //     return '';
+  //   }
+
+  //   if (this.mode === 'manualLogEntry') {
+  //     const loggedExActual = rawValue as LoggedWorkoutExercise;
+  //     const durations = loggedExActual.sets.map(set => set.durationPerformed).filter(d => d != null && d > 0);
+  //     return durations.length > 0 ? durations.join(' - ') : '';
+  //   } else { // Routine builder mode
+  //     const sets = rawValue.sets as ExerciseSetParams[];
+  //     // We will base the summary on the first set's value
+  //     const firstSetControl = this.getSetsFormArray(exerciseControl).at(0);
+  //     if (!firstSetControl) return '';
+
+  //     const displayValue = this.getSetDisplayValue(firstSetControl, 'duration');
+  //     if (!displayValue || displayValue === '-') return ''; // Don't show if no duration is set
+
+  //     const numSets = sets.length;
+  //     if (numSets > 1) {
+  //       return `${numSets} x ${displayValue}`;
+  //     }
+  //     return displayValue;
+  //   }
+  // }
+
+   getSetDurationDisplay(exerciseControl: AbstractControl): string {
+    // Check for invalid input or empty sets array
+    if (!exerciseControl || !exerciseControl.value || !exerciseControl.value.sets || exerciseControl.value.sets.length === 0) {
+      return '';
     }
 
-    const validReps = reps.filter(rep => rep != null && rep !== undefined);
+    // --- MANUAL LOG ENTRY MODE (No Change) ---
+    // This correctly shows the actual duration performed for each set.
+    if (this.mode === 'manualLogEntry') {
+      const rawValue = exerciseControl.getRawValue() as LoggedWorkoutExercise;
+      const durations = rawValue.sets.map(set => set.durationPerformed).filter(d => d != null && d > 0);
+      return durations.length > 0 ? durations.join('-') : '';
+    } 
+    
+    // --- ROUTINE BUILDER MODE (Updated Logic) ---
+    else {
+      // Get the FormArray of sets to work directly with the controls.
+      const setsFormArray = this.getSetsFormArray(exerciseControl);
 
-    return validReps.length > 0 ? validReps.join(' - ') : '';
+      // Map over each set's form control to get its individual display string (e.g., "30-60").
+      const displayValues = setsFormArray.controls.map(setControl =>
+        this.getSetDisplayValue(setControl, 'duration')
+      );
+      
+      // Filter out any sets that might not have a duration value to keep the output clean.
+      const validDisplayValues = displayValues.filter(value => value && value !== '-');
+
+      // Join the array of display values with a comma and space.
+      return validDisplayValues.join(', ');
+    }
+  }
+
+  /**
+  * Generates a display string for a set's value, preferring ranges if available.
+  * @param setControl The AbstractControl for the set.
+  * @param field The field to display ('reps' or 'duration').
+  * @returns A formatted string for display.
+  */
+  getSetDisplayValue(setControl: AbstractControl, field: 'reps' | 'duration'): string {
+    if (!setControl) return '-';
+
+    const min = setControl.get(`${field}Min`)?.value;
+    const max = setControl.get(`${field}Max`)?.value;
+    const single = setControl.get(field)?.value;
+
+    if (min != null && max != null) {
+      return `${min}-${max}`;
+    }
+    if (min != null) {
+      return `${min}+`;
+    }
+    if (max != null) {
+      return `Up to ${max}`;
+    }
+    return single ?? '-';
   }
 
   getSetWeightsUsed(loggedEx: any): string {
