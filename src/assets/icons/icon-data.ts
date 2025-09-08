@@ -15,6 +15,21 @@ export const ICONS: Record<string, string> = {
       <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-11.25a.75.75 0 00-1.5 0v2.5h-2.5a.75.75 0 000 1.5h2.5v2.5a.75.75 0 001.5 0v-2.5h2.5a.75.75 0 000-1.5h-2.5v-2.5z" clip-rule="evenodd" />
     </svg>
   `,
+  'home': `
+      <svg 
+  xmlns="http://www.w3.org/2000/svg" 
+  width="24" 
+  height="24" 
+  viewBox="0 0 24 24" 
+  fill="none" 
+  stroke="currentColor" 
+  stroke-width="2" 
+  stroke-linecap="round" 
+  stroke-linejoin="round">
+    <path d="M3 9l9-6 9 6v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+</svg>`
+  ,
   'minus-circle': `
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
   <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM6.75 9.25a.75.75 0 000 1.5h6.5a.75.75 0 000-1.5h-6.5z" clip-rule="evenodd" />
@@ -55,7 +70,7 @@ export const ICONS: Record<string, string> = {
   </svg>
     `,
   'routines': `
-<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
                     stroke="currentColor" 
                     aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -71,6 +86,12 @@ export const ICONS: Record<string, string> = {
                     <path d="M8 3v5h8V3" />
                 </svg>
           `,
+  'stats': `
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+      <path fill-rule="evenodd" d="M2 3a1 1 0 0 1 1-1h1.5a1 1 0 0 1 1 1v11.5a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3Z M7.5 6a1 1 0 0 1 1-1h1.5a1 1 0 0 1 1 1v8.5a1 1 0 0 1-1 1H8.5a1 1 0 0 1-1-1V6Z M13 9a1 1 0 0 1 1-1h1.5a1 1 0 0 1 1 1v5.5a1 1 0 0 1-1 1H14a1 1 0 0 1-1-1V9Z" />
+    </svg>
+`
+  ,
   'update': `
           <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M20 3H4C3.44772 3 3 3.44772 3 4V20C3 20.5523 3.44772 21 4 21H20C20.5523 21 21 20.5523 21 20V4C21 3.44772 20.5523 3 20 3Z" stroke="#33363F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -163,7 +184,7 @@ export const ICONS: Record<string, string> = {
     </svg>
   `,
   'muscle': `
-                                <svg stroke="currentColor" stroke-width="1.5" viewBox="-3 0 60 60"
+                                <svg stroke="currentColor" stroke-width="3" viewBox="-3 0 60 60"
                                 aria-hidden="true">
                                 <g>
                                     <path
@@ -174,7 +195,7 @@ export const ICONS: Record<string, string> = {
                             </svg>
                             `,
   'calendar': `
-                            <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            <svg fill="none" viewBox="0 0 24 24" stroke-width="2"
                                 stroke="currentColor" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round"
                                     d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5m-9-3.75h.008v.008H12v-.008zM12 15h.008v.008H12V15zm0 2.25h.008v.008H12v-.008zM9.75 15h.008v.008H9.75V15zm0 2.25h.008v.008H9.75v-.008zM7.5 15h.008v.008H7.5V15zm0 2.25h.008v.008H7.5v-.008zm6.75-4.5h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V15zm0 2.25h.008v.008h-.008v-.008zm2.25-4.5h.008v.008H16.5v-.008zm0 2.25h.008v.008H16.5V15z" />
@@ -197,7 +218,7 @@ viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" >
             d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 010 1.972l-11.54 6.347a1.125 1.125 0 01-1.667-.986V5.653z"></path></svg>
   `,
   'profile': `
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" ><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A1.875 1.875 0 0 1 18.126 22.5H5.874a1.875 1.875 0 0 1-1.373-2.382Z"></path></svg>
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"  stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A1.875 1.875 0 0 1 18.126 22.5H5.874a1.875 1.875 0 0 1-1.373-2.382Z"></path></svg>
   `,
   'schedule': `
   <svg xmlns="http://www.w3.org/2000/svg" fill="none"
@@ -454,6 +475,9 @@ viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" >
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
             </svg>
 
-             `
-
+             `,
+  'crown': `
+<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g stroke-width="0"></g><g  stroke-linecap="round" stroke-linejoin="round"></g><g > <path d="M21.609 13.5616L21.8382 11.1263C22.0182 9.2137 22.1082 8.25739 21.781 7.86207C21.604 7.64823 21.3633 7.5172 21.106 7.4946C20.6303 7.45282 20.0329 8.1329 18.8381 9.49307C18.2202 10.1965 17.9113 10.5482 17.5666 10.6027C17.3757 10.6328 17.1811 10.6018 17.0047 10.5131C16.6865 10.3529 16.4743 9.91812 16.0499 9.04851L13.8131 4.46485C13.0112 2.82162 12.6102 2 12 2C11.3898 2 10.9888 2.82162 10.1869 4.46486L7.95007 9.04852C7.5257 9.91812 7.31351 10.3529 6.99526 10.5131C6.81892 10.6018 6.62434 10.6328 6.43337 10.6027C6.08872 10.5482 5.77977 10.1965 5.16187 9.49307C3.96708 8.1329 3.36968 7.45282 2.89399 7.4946C2.63666 7.5172 2.39598 7.64823 2.21899 7.86207C1.8918 8.25739 1.9818 9.2137 2.16181 11.1263L2.391 13.5616C2.76865 17.5742 2.95748 19.5805 4.14009 20.7902C5.32271 22 7.09517 22 10.6401 22H13.3599C16.9048 22 18.6773 22 19.8599 20.7902C21.0425 19.5805 21.2313 17.5742 21.609 13.5616Z" stroke="currentColor" stroke-width="1.5"></path> <path d="M11.1459 12.5225C11.5259 11.8408 11.7159 11.5 12 11.5C12.2841 11.5 12.4741 11.8408 12.8541 12.5225L12.9524 12.6989C13.0603 12.8926 13.1143 12.9894 13.1985 13.0533C13.2827 13.1172 13.3875 13.141 13.5972 13.1884L13.7881 13.2316C14.526 13.3986 14.895 13.482 14.9828 13.7643C15.0706 14.0466 14.819 14.3407 14.316 14.929L14.1858 15.0812C14.0429 15.2483 13.9714 15.3319 13.9392 15.4353C13.9071 15.5387 13.9179 15.6502 13.9395 15.8733L13.9592 16.0763C14.0352 16.8612 14.0733 17.2536 13.8435 17.4281C13.6136 17.6025 13.2682 17.4435 12.5773 17.1254L12.3986 17.0431C12.2022 16.9527 12.1041 16.9075 12 16.9075C11.8959 16.9075 11.7978 16.9527 11.6014 17.0431L11.4227 17.1254C10.7318 17.4435 10.3864 17.6025 10.1565 17.4281C9.92674 17.2536 9.96476 16.8612 10.0408 16.0763L10.0605 15.8733C10.0821 15.6502 10.0929 15.5387 10.0608 15.4353C10.0286 15.3319 9.95713 15.2483 9.81418 15.0812L9.68403 14.929C9.18097 14.3407 8.92945 14.0466 9.01723 13.7643C9.10501 13.482 9.47396 13.3986 10.2119 13.2316L10.4028 13.1884C10.6125 13.141 10.7173 13.1172 10.8015 13.0533C10.8857 12.9894 10.9397 12.8926 11.0476 12.6989L11.1459 12.5225Z" stroke="currentColor" stroke-width="1.5"></path> </g></svg>
+`
 };

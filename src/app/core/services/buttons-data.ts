@@ -344,3 +344,32 @@ export const routineBtn = {
     iconClass: 'w-8 h-8 mr-2',
     buttonClass: ' hover:bg-primary ',
 }
+
+export const trainingProgramPremiumBtn = {
+    label: '',
+    actionKey: '',
+    iconName: [
+        // Layer 1: Base icon (fills the container)
+        { name: 'calendar' },
+
+        // Layer 2: Padded white background circle, centered
+        {
+            name: 'none',
+            display: 'filled-padded', // Makes it 125% of the container size
+            position: 'bottom-right',       // Ensures it's centered
+            class: 'bg-white dark:bg-gray-800'
+            ,
+        },
+
+        // Layer 3: The 'change' icon, centered on top of the circle
+        {
+            name: 'crown',
+            position: 'bottom-right',       // Ensures it's centered
+            size: 'w-4 h-4',      // Now this will work! Size is relative to the host.
+            class: 'text-primary',
+            strokeWidth: 2.5
+        }
+    ],
+    iconClass: 'w-8 h-8 mr-2', // This class is applied to the <app-icon> host
+    buttonClass: ' hover:bg-cyan-600 ',
+} as ActionMenuItem;

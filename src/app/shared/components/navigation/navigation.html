@@ -12,13 +12,36 @@
         'text-primary dark:text-primary-light': isLinkActive(item)
       }">
 
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-        class="w-6 h-6 transition-all duration-200"
-        [class.mb-1]="isLinkActive(item)"
-        [class.scale-125]="isLinkActive(item)">
-        <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="item.iconSvgPath" />
-      </svg>
-      
+      <!-- MODIFIED: Replaced <svg> with conditional <app-icon> logic -->
+      <ng-container *ngIf="item.label === 'PROGRAMS' && !subscriptionService.isPremium(); else defaultIcon">
+        <!-- Layered Icon for Free Tier Programs Tab -->
+        <app-icon [name]="[
+            { name: 'calendar' },
+            {
+            name: 'none',
+            display: 'filled-padded',
+            position: 'bottom-right', 
+            class: 'bg-white dark:bg-gray-800'
+        },
+        {
+            name: 'crown',
+            position: 'bottom-right',  
+            size: 'w-4 h-4',   
+            class: 'text-yellow-600',
+            strokeWidth: 2.5
+        }
+          ]" class="w-6 h-6 transition-all duration-200" [class.mb-1]="isLinkActive(item)"
+          [class.scale-125]="isLinkActive(item)">
+        </app-icon>
+      </ng-container>
+
+      <ng-template #defaultIcon>
+        <!-- Standard Icon for Premium Programs and all other tabs -->
+        <app-icon [name]="item.iconName" class="w-6 h-6 transition-all duration-200" [class.mb-1]="isLinkActive(item)"
+          [class.scale-125]="isLinkActive(item)">
+        </app-icon>
+      </ng-template>
+
       <span *ngIf="isLinkActive(item)" class="text-xs transition-opacity duration-300 font-medium">
         {{ item.label }}
       </span>

@@ -16,7 +16,7 @@ import { filter, map } from 'rxjs';
   standalone: true,
   imports: [RouterOutlet, NavigationComponent, CommonModule, SpinnerComponent, ToastContainerComponent, PausedWorkoutComponent],
   template: `
-    <div class="flex flex-col min-h-screen bg-gray-100 dark:bg-gray-900">
+    <div class="flex flex-col min-h-screen">
   
   <!-- Let's assume you have a header/navbar component here -->
   <!-- It should be fixed or sticky for this problem to occur -->

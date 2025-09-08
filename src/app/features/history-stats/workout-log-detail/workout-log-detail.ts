@@ -154,51 +154,39 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
     );
   }
 
-  async enrichLoggedExercisesWithTargets() {
+   async enrichLoggedExercisesWithTargets() {
     const log = this.workoutLog();
     if (!log?.routineId) return;
 
-    // 1. FETCH ROUTINE DATA ONCE
-    const routine$ = this.workoutService.getRoutineById(log.routineId);
-    const routine = await firstValueFrom(routine$);
+    const routine = await firstValueFrom(this.workoutService.getRoutineById(log.routineId));
     if (!routine?.exercises) return;
 
-    // 2. CREATE A MAP FOR FAST LOOKUPS
-    // The key is the exercise ID, the value is the full routine exercise object.
     const routineExerciseMap = new Map(routine.exercises.map(ex => [ex.id, ex]));
 
-    // 3. LOOP AND ENRICH
     for (const loggedEx of log.exercises) {
-      // --- FIX: Use 'exerciseId' to find the corresponding routine exercise ---
+      // Find the corresponding exercise from the original routine plan.
+      // Note: This relies on the instance `id` being consistent.
       const routineEx = routineExerciseMap.get(loggedEx.id);
-
-      // No need for an 'if (routineEx)' check here, the loop will just handle it.
 
       for (let i = 0; i < loggedEx.sets.length; i++) {
         const set = loggedEx.sets[i];
-        const routineExerciseSet = routineEx?.sets?.[i];
+        // Find the corresponding set from the routine plan.
+        const routineExerciseSet = routineEx?.sets?.find(s => s.id === set.plannedSetId) ?? routineEx?.sets?.[i];
 
         // --- THIS IS THE KEY LOGIC CHANGE ---
-        // For each target, establish a priority order:
-        // 1. Use the value already on the logged set (if it exists).
-        // 2. If not, use the value from the corresponding routine set.
-        // 3. If that also doesn't exist, default to 0.
+        // For each target, use the value on the logged set if it exists,
+        // otherwise, fall back to the value from the original routine.
+        
+        set.targetReps = set.targetReps ?? routineExerciseSet?.reps;
+        set.targetRepsMin = set.targetRepsMin ?? routineExerciseSet?.repsMin;
+        set.targetRepsMax = set.targetRepsMax ?? routineExerciseSet?.repsMax;
 
-        set.targetReps = (set.targetReps && set.targetReps > 0)
-          ? set.targetReps
-          : (routineExerciseSet?.targetReps ?? 0);
+        set.targetDuration = set.targetDuration ?? routineExerciseSet?.duration;
+        set.targetDurationMin = set.targetDurationMin ?? routineExerciseSet?.durationMin;
+        set.targetDurationMax = set.targetDurationMax ?? routineExerciseSet?.durationMax;
 
-        set.targetDuration = (set.targetDuration && set.targetDuration > 0)
-          ? set.targetDuration
-          : (routineExerciseSet?.targetDuration ?? 0);
-
-        set.targetWeight = (set.targetWeight && set.targetWeight > 0)
-          ? set.targetWeight
-          : (routineExerciseSet?.targetWeight ?? 0);
-
-        set.targetRestAfterSet = (set.targetRestAfterSet && set.targetRestAfterSet > 0)
-          ? set.targetRestAfterSet
-          : (routineExerciseSet?.restAfterSet ?? 0);
+        set.targetWeight = set.targetWeight ?? routineExerciseSet?.weight;
+        set.targetRestAfterSet = set.targetRestAfterSet ?? routineExerciseSet?.restAfterSet;
       }
     }
 
