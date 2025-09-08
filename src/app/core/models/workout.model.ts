@@ -9,10 +9,14 @@ export interface ExerciseSetParams {
   repsMin?: number;
   repsMax?: number;
   weight?: number | null; // Allow null for bodyweight or if weight is not applicable
+  weightMin?: number | null; // Allow null for bodyweight or if weight is not applicable
+  weightMax?: number | null; // Allow null for bodyweight or if weight is not applicable
   duration?: number; // in seconds
   durationMin?: number; // in seconds
   durationMax?: number; // in seconds
   distance?: number; // in kilometers
+  distanceMin?: number; // in kilometers
+  distanceMax?: number; // in kilometers
   tempo?: string;
   restAfterSet: number; // For the set *within* an exercise. For supersets, this might be 0 for intermediate exercises.
   notes?: string;

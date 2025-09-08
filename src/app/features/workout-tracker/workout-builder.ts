@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, OnDestroy, signal, computed, ElementRef, QueryList, ViewChildren, AfterViewInit, ChangeDetectorRef, PLATFORM_ID, Input, HostListener, ViewChild, effect, AfterViewChecked } from '@angular/core';
 import { CommonModule, DecimalPipe, isPlatformBrowser, TitleCasePipe } from '@angular/common'; // Added TitleCasePipe
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray, AbstractControl, FormsModule, FormControl } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray, AbstractControl, FormsModule, FormControl, ValidatorFn, ValidationErrors } from '@angular/forms';
 import { Subscription, of, firstValueFrom, Observable, from } from 'rxjs';
 import { switchMap, tap, take, distinctUntilChanged, map, mergeMap, startWith, debounceTime, filter, mergeAll } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
@@ -974,6 +974,41 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       supersetId: [null], supersetOrder: [null], supersetSize: [null], supersetRounds: [0],
     });
   }
+
+  private createRangeValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const group = control as FormGroup;
+      if (!group) return null;
+
+      const repsMinControl = group.get('repsMin');
+      const repsMaxControl = group.get('repsMax');
+      const durationMinControl = group.get('durationMin');
+      const durationMaxControl = group.get('durationMax');
+
+      // Reps validation
+      if (repsMinControl && repsMaxControl && repsMinControl.value != null && repsMaxControl.value != null && +repsMaxControl.value < +repsMinControl.value) {
+        repsMaxControl.setErrors({ min: true });
+      } else if (repsMaxControl?.hasError('min')) {
+        // Clear the specific 'min' error if valid now
+        const { min, ...errors } = repsMaxControl.errors || {};
+        repsMaxControl.setErrors(Object.keys(errors).length > 0 ? errors : null);
+      }
+
+      // Duration validation
+      if (durationMinControl && durationMaxControl && durationMinControl.value != null && durationMaxControl.value != null && +durationMaxControl.value < +durationMinControl.value) {
+        durationMaxControl.setErrors({ min: true });
+      } else if (durationMaxControl?.hasError('min')) {
+        // Clear the specific 'min' error if valid now
+        const { min, ...errors } = durationMaxControl.errors || {};
+        durationMaxControl.setErrors(Object.keys(errors).length > 0 ? errors : null);
+      }
+
+      // This validator sets errors on controls, so it doesn't need to return an error for the group itself.
+      return null;
+    };
+  }
+
+
   private createSetFormGroup(setData?: ExerciseSetParams | LoggedSet, forLogging: boolean = false): FormGroup {
     let repsValue, targetReps, weightValue, targetWeighValue, durationValue, targetDurationValue, notesValue, typeValue, tempoValue, restValue;
     let repsMinValue, repsMaxValue, durationMinValue, durationMaxValue; // For ranges
@@ -1054,7 +1089,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       formGroupConfig['tempo'] = [tempoValue || ''];
       formGroupConfig['restAfterSet'] = [restValue ?? 60, [Validators.required, Validators.min(0)]];
     }
-    return this.fb.group(formGroupConfig);
+    const groupOptions = forLogging ? {} : { validators: this.createRangeValidator() };
+    return this.fb.group(formGroupConfig, groupOptions);
   }
 
   private scrollIntoVie(): void {
@@ -2268,6 +2304,78 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   /**
+   * Toggles the input mode for a set's repetitions between a single value and a range.
+   * @param setControl The form group for the specific set.
+   */
+  toggleRepsMode(setControl: AbstractControl): void {
+    if (this.isViewMode || !(setControl instanceof FormGroup)) return;
+
+    const repsCtrl = setControl.get('reps');
+    const repsMinCtrl = setControl.get('repsMin');
+    const repsMaxCtrl = setControl.get('repsMax');
+
+    const isCurrentlyRange = repsMinCtrl?.value != null || repsMaxCtrl?.value != null;
+
+    if (isCurrentlyRange) {
+        // Switch FROM Range TO Single
+        // Use repsMin as the default, or 0 if null.
+        const singleValue = repsMinCtrl?.value ?? 0;
+        repsCtrl?.setValue(singleValue);
+        repsMinCtrl?.setValue(null);
+        repsMaxCtrl?.setValue(null);
+    } else {
+        // Switch FROM Single TO Range
+        const rangeValue = repsCtrl?.value ?? 8; // Default to 8 if null
+        repsMinCtrl?.setValue(rangeValue);
+        repsMaxCtrl?.setValue(rangeValue);
+        repsCtrl?.setValue(null);
+    }
+  }
+
+  /**
+   * Toggles the input mode for a set's duration between a single value and a range.
+   * @param setControl The form group for the specific set.
+   */
+  toggleDurationMode(setControl: AbstractControl): void {
+    if (this.isViewMode || !(setControl instanceof FormGroup)) return;
+
+    const durationCtrl = setControl.get('duration');
+    const durationMinCtrl = setControl.get('durationMin');
+    const durationMaxCtrl = setControl.get('durationMax');
+
+    const isCurrentlyRange = durationMinCtrl?.value != null || durationMaxCtrl?.value != null;
+
+    if (isCurrentlyRange) {
+        // Switch FROM Range TO Single
+        const singleValue = durationMinCtrl?.value ?? 30; // Default to 30s
+        durationCtrl?.setValue(singleValue);
+        durationMinCtrl?.setValue(null);
+        durationMaxCtrl?.setValue(null);
+    } else {
+        // Switch FROM Single TO Range
+        const rangeValue = durationCtrl?.value ?? 30; // Default to 30s
+        durationMinCtrl?.setValue(rangeValue);
+        durationMaxCtrl?.setValue(rangeValue);
+        durationCtrl?.setValue(null);
+    }
+  }
+
+  /**
+   * Helper function for the template to determine if a set is in range mode.
+   * @param setControl The AbstractControl for the set.
+   * @param field The field to check ('reps' or 'duration').
+   * @returns True if the set is configured for a range, otherwise false.
+   */
+  isRangeMode(setControl: AbstractControl, field: 'reps' | 'duration'): boolean {
+      if (!(setControl instanceof FormGroup)) return false;
+      const minCtrl = setControl.get(`${field}Min`);
+      const maxCtrl = setControl.get(`${field}Max`);
+      // A set is in range mode if either min or max has a value.
+      return minCtrl?.value != null || maxCtrl?.value != null;
+  }
+
+
+  /**
   * Generates a summary string for an exercise's set durations,
   * adapting for routine builder (ranges) or manual log (performed values).
   * @param exerciseControl The AbstractControl for the exercise.
@@ -2333,10 +2441,10 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   /**
-  * Generates a display string for a set's value, preferring ranges if available.
+  * Generates a display string for a set's value, handling both single values and ranges.
   * @param setControl The AbstractControl for the set.
   * @param field The field to display ('reps' or 'duration').
-  * @returns A formatted string for display.
+  * @returns A formatted string for display in the collapsed view.
   */
   getSetDisplayValue(setControl: AbstractControl, field: 'reps' | 'duration'): string {
     if (!setControl) return '-';
@@ -2345,15 +2453,20 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     const max = setControl.get(`${field}Max`)?.value;
     const single = setControl.get(field)?.value;
 
-    if (min != null && max != null) {
-      return `${min}-${max}`;
+    const isRange = min != null || max != null;
+
+    if (isRange) {
+        if (min != null && max != null) {
+            return min === max ? `${min}` : `${min}-${max}`;
+        }
+        if (min != null) {
+            return `${min}+`;
+        }
+        if (max != null) {
+            return `Up to ${max}`;
+        }
     }
-    if (min != null) {
-      return `${min}+`;
-    }
-    if (max != null) {
-      return `Up to ${max}`;
-    }
+    
     return single ?? '-';
   }
 
@@ -2522,5 +2635,15 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
   isFormInvalid(): boolean {
     return this.builderForm.invalid || (this.exercisesFormArray.length === 0 && !(this.mode === 'routineBuilder' && this.builderForm.get('goal')?.value === 'rest'))
+  }
+
+ /**
+  * Generates a display string for a set's planned target range.
+  * @param set The ExerciseSetParams object from the routine plan.
+  * @param field The field to display ('reps' or 'duration' or 'weight).
+  * @returns A formatted string like "8-12" or "60+", or an empty string if no range is set.
+  */
+  public getSetTargetDisplay(set: ExerciseSetParams, field: 'reps' | 'duration' | 'weight'): string {
+    return this.workoutService.getSetTargetDisplay(set,field);
   }
 }

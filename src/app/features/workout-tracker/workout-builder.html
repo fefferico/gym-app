@@ -465,15 +465,15 @@
                                         *ngFor="let set of exerciseControl.get('sets')?.value; let i = index; let last = last">
 
                                         <!-- Row data aligns perfectly -->
-                                        <div class="font-medium">{{ i + 1 }}</div>
-                                        <div>
+                                        <div class="font-medium flex items-center">{{ i + 1 }}</div>
+                                        <div class="flex items-center">
                                             <strong>
-                                                {{ set.reps || '-' }}
+                                                {{ getSetTargetDisplay(set, 'reps') || '-' }}
                                             </strong>
                                         </div>
 
                                         <!-- The pipe is used a final time for the data cell -->
-                                        <div *ngIf="exerciseControl.getRawValue() | isWeighted">
+                                        <div class="flex items-center" *ngIf="exerciseControl.getRawValue() | isWeighted">
                                             <strong>
                                                 {{ set.weight != null ? (set.weight + ' ' +
                                                 unitService.getWeightUnitSuffix()) : '-' }}
@@ -481,12 +481,12 @@
 
                                         </div>
 
-                                        <div>
+                                        <div class="flex items-center">
                                             <strong>
                                                 {{ set.duration || '-' }}
                                             </strong>
                                         </div>
-                                        <div>
+                                        <div class="flex items-center">
                                             <strong>
                                                 {{ set.restAfterSet || '-' }}
                                             </strong>
@@ -619,23 +619,39 @@
                                                     <!-- Reps Input: Conditional for ranges vs single value -->
                                                     <div *ngIf="!isExerciseCardioOnlyCtrl(exerciseControl)">
                                                         <label [for]="'reps-exp-' + exIndex + '-' + setIndex"
-                                                            class="block text-s font-medium text-gray-600 dark:text-gray-400">
-                                                            Reps {{ mode === 'manualLogEntry' ? '(Achieved)' : ''}}
+                                                            class="flex items-center justify-between text-s font-medium text-gray-600 dark:text-gray-400">
+                                                            <span>Reps {{ mode === 'manualLogEntry' ? '(Achieved)' : ''}}</span>
+                                                            <!-- SWITCH BUTTON -->
+                                                            <button *ngIf="mode === 'routineBuilder'" type="button" (click)="toggleRepsMode(setControl)"
+                                                                    title="Toggle between single value and range"
+                                                                    class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold p-0.5 rounded">
+                                                                    {{ isRangeMode(setControl, 'reps') ? 'Use Single' : 'Use Range' }}
+                                                            </button>
                                                         </label>
-                                                        <!-- ROUTINE BUILDER - REPS RANGE -->
+                                                        <!-- ROUTINE BUILDER - REPS -->
                                                         <ng-container *ngIf="mode === 'routineBuilder'">
-                                                            <div class="mt-0.5 flex items-center space-x-1.5">
-                                                                <input type="number" formControlName="repsMin"
-                                                                    min="0"
-                                                                    placeholder="Min" [readonly]="isViewMode"
-                                                                    class="w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
-                                                                <span
-                                                                    class="text-gray-500 dark:text-gray-400 font-bold">-</span>
-                                                                <input type="number" formControlName="repsMax"
-                                                                    min="0"
-                                                                    placeholder="Max" [readonly]="isViewMode"
-                                                                    class="w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
+                                                            <!-- Range Inputs -->
+                                                            <div *ngIf="isRangeMode(setControl, 'reps')" class="mt-0.5">
+                                                                <div class="flex items-center space-x-1.5">
+                                                                    <input type="number" formControlName="repsMin"
+                                                                        min="0"
+                                                                        placeholder="Min" [readonly]="isViewMode"
+                                                                        class="w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
+                                                                    <span
+                                                                        class="text-gray-500 dark:text-gray-400 font-bold">-</span>
+                                                                    <input type="number" formControlName="repsMax"
+                                                                        min="0"
+                                                                        placeholder="Max" [readonly]="isViewMode"
+                                                                        class="w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed"
+                                                                        [ngClass]="{'border-red-500 dark:border-red-400': setControl.get('repsMax')?.hasError('min')}">
+                                                                </div>
+                                                                <div *ngIf="setControl.get('repsMax')?.hasError('min') && setControl.get('repsMax')?.touched" class="text-red-500 dark:text-red-400 text-xs mt-1">
+                                                                    Max must be greater than or equal to min.
+                                                                </div>
                                                             </div>
+                                                            <!-- Single Value Input -->
+                                                            <input *ngIf="!isRangeMode(setControl, 'reps')" type="number" formControlName="reps" min="0" placeholder="Reps" [readonly]="isViewMode"
+                                                                class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
                                                         </ng-container>
                                                         <!-- LOG ENTRY - SINGLE REPS ACHIEVED -->
                                                         <input *ngIf="mode === 'manualLogEntry'" type="number"
@@ -661,23 +677,39 @@
                                                     <!-- Duration Input: Conditional for ranges vs single value -->
                                                     <div>
                                                         <label [for]="'duration-exp-' + exIndex + '-' + setIndex"
-                                                            class="block text-s font-medium text-gray-600 dark:text-gray-400">
-                                                            Time (s) {{ mode === 'manualLogEntry' ? '(Performed)' : ''}}
+                                                            class="flex items-center justify-between text-s font-medium text-gray-600 dark:text-gray-400">
+                                                            <span>Time (s) {{ mode === 'manualLogEntry' ? '(Performed)' : ''}}</span>
+                                                            <!-- SWITCH BUTTON -->
+                                                            <button *ngIf="mode === 'routineBuilder'" type="button" (click)="toggleDurationMode(setControl)"
+                                                                    title="Toggle between single value and range"
+                                                                    class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold p-0.5 rounded">
+                                                                {{ isRangeMode(setControl, 'duration') ? 'Use Single' : 'Use Range' }}
+                                                            </button>
                                                         </label>
-                                                        <!-- ROUTINE BUILDER - DURATION RANGE -->
+                                                        <!-- ROUTINE BUILDER - DURATION -->
                                                         <ng-container *ngIf="mode === 'routineBuilder'">
-                                                            <div class="mt-0.5 flex items-center space-x-1.5">
-                                                                <input type="number" formControlName="durationMin"
-                                                                    min="0"
-                                                                    placeholder="Min" [readonly]="isViewMode"
-                                                                    class="w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
-                                                                <span
-                                                                    class="text-gray-500 dark:text-gray-400 font-bold">-</span>
-                                                                <input type="number" formControlName="durationMax"
-                                                                    min="0"
-                                                                    placeholder="Max" [readonly]="isViewMode"
-                                                                    class="w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
+                                                            <!-- Range Inputs -->
+                                                            <div *ngIf="isRangeMode(setControl, 'duration')" class="mt-0.5">
+                                                                <div class="flex items-center space-x-1.5">
+                                                                    <input type="number" formControlName="durationMin"
+                                                                        min="0"
+                                                                        placeholder="Min" [readonly]="isViewMode"
+                                                                        class="w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
+                                                                    <span
+                                                                        class="text-gray-500 dark:text-gray-400 font-bold">-</span>
+                                                                    <input type="number" formControlName="durationMax"
+                                                                        min="0"
+                                                                        placeholder="Max" [readonly]="isViewMode"
+                                                                        class="w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed"
+                                                                        [ngClass]="{'border-red-500 dark:border-red-400': setControl.get('durationMax')?.hasError('min')}">
+                                                                </div>
+                                                                <div *ngIf="setControl.get('durationMax')?.hasError('min') && setControl.get('durationMax')?.touched" class="text-red-500 dark:text-red-400 text-xs mt-1">
+                                                                    Max must be greater than or equal to min.
+                                                                </div>
                                                             </div>
+                                                            <!-- Single Value Input -->
+                                                            <input *ngIf="!isRangeMode(setControl, 'duration')" type="number" formControlName="duration" min="0" placeholder="Secs" [readonly]="isViewMode"
+                                                                class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
                                                         </ng-container>
                                                         <!-- LOG ENTRY - SINGLE DURATION PERFORMED -->
                                                         <input *ngIf="mode === 'manualLogEntry'" type="number"

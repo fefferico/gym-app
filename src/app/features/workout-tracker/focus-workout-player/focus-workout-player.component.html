@@ -155,7 +155,11 @@
             <div
               *ngIf="csf['actualReps'] && activeSet.setData.reps !== undefined && activeSetInfo()?.baseExerciseInfo?.category !== 'cardio'">
               <label
-                class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider text-center mb-1">Reps</label>
+                class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider text-center mb-1">Reps
+                <span *ngIf="getSetTargetDisplay(activeSet.setData, 'reps') as target" class="normal-case">
+                  (Target: {{ target }})
+                </span>
+              </label>
               <div class="flex items-center justify-center space-x-2">
                 <button type="button" [disabled]="getDisabled()" appPress (shortPress)="onShortPressRepsDecrement()"
                   (longPress)="onLongPressRepsDecrement()" (pressRelease)="onPressRelease()"
@@ -180,8 +184,9 @@
             <div *ngIf="activeSet.setData.duration">
               <label for="timedSetDisplay"
                 class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider text-center">
-                Time <span *ngIf="activeSet.setData.duration > 0">(Target:
-                  {{ (activeSet.setData.duration * 1000) | date:'mm:ss':'UTC' }})</span>
+                Time <span *ngIf="getSetTargetDisplay(activeSet.setData, 'duration') as target" class="normal-case">
+                  (Target: {{ target }}s)
+                </span>
               </label>
               <div id="timedSetDisplay"
                 class="block w-full px-3 py-1 border-none text-6xl font-bold text-center bg-transparent focus:ring-0 hover:cursor-default unselectable"

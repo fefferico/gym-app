@@ -966,6 +966,60 @@ export class WorkoutService {
   }
 
 
+  /**
+  * Generates a display string for a set's planned target, handling ranges and single values.
+  * @param set The ExerciseSetParams object from the routine plan.
+  * @param field The field to display ('reps', 'duration', or 'weight').
+  * @returns A formatted string like "8-12", "60+", "10", or an empty string if no target is set.
+  */
+  public getSetTargetDisplay(set: ExerciseSetParams, field: 'reps' | 'duration' | 'weight' | 'distance'): string {
+    let min = -1;
+    let max = -1;
+    let single = -1;
+
+    switch (field) {
+      case 'reps':
+        min = set.repsMin || 0;
+        max = set.repsMax || 0;
+        single = set.reps || 0;
+        break;
+      case 'duration':
+        min = set.durationMin || 0;
+        max = set.durationMax || 0;
+        single = set.duration || 0;
+        break;
+      case 'weight':
+        min = set.weightMin || 0;
+        max = set.weightMax || 0;
+        single = set.weight || 0;
+        break;
+      case 'distance':
+        min = set.distanceMin || 0;
+        max = set.distanceMax || 0;
+        single = set.distance || 0;
+        break;
+
+      default:
+        break;
+    }
+
+    // If a range is defined, format it
+    if (min != null || max != null) {
+      if (min != null && max != null) {
+        // Don't show a range if min and max are the same, just show the single value
+        return min === max ? (single ?? min).toString() : `${min}-${max}`;
+      }
+      if (min != null) {
+        return `${min}+`;
+      }
+      if (max != null) {
+        return `Up to ${max}`;
+      }
+    }
+
+    // Fallback to the single value
+    return single != null ? `${single}` : '';
+  }
 
 
 }

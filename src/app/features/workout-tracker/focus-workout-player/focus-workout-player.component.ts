@@ -1213,7 +1213,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
         this.currentExerciseIndex.set(exIndex);
         this.currentSetIndex.set(sIndex);
         // +++ ADD THIS LINE TO UPDATE THE ROUND +++
-        this.currentBlockRound.set(firstPendingInfo.round); 
+        this.currentBlockRound.set(firstPendingInfo.round);
         this.isPerformingDeferredExercise = false;
       } else {
         await this.tryProceedToDeferredExercisesOrFinish(sessionRoutine);
@@ -1370,16 +1370,16 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
 
       const loggedEx = this.currentWorkoutLogExercises().find(le => le.id === exercise.id);
       const loggedSetIds = new Set(loggedEx?.sets.map(s => s.plannedSetId));
-      
+
       const totalRounds = exercise.supersetId ? (exercise.supersetRounds || 1) : (exercise.rounds || 1);
 
       for (let round = 0; round < totalRounds; round++) {
         for (let setIdx = 0; setIdx < exercise.sets.length; setIdx++) {
           const plannedSet = exercise.sets[setIdx];
-          
+
           // Construct the unique ID for this set instance in this specific round
           const targetLoggedId = totalRounds > 1 ? `${plannedSet.id}-round-${round}` : plannedSet.id;
-          
+
           if (!loggedSetIds.has(targetLoggedId)) {
             // We found the first unlogged set. Now, determine the correct starting exercise index.
             if (exercise.supersetId) {
@@ -1389,7 +1389,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
                 return { exerciseIndex: firstInGroupIndex, setIndex: 0, round: round + 1 };
               }
             }
-            
+
             // For a standard exercise, we start at the exercise itself.
             return { exerciseIndex: exIndex, setIndex: setIdx, round: round + 1 };
           }
@@ -1406,7 +1406,6 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       console.log("patchActualsFormBasedOnSessionTargets: Session is paused, deferring preparation");
       return;
     }
-    // Do not reset the entire form here, only specific fields. Keep setNotes if user typed something.
     this.currentSetForm.patchValue({ rpe: null }, { emitEvent: false });
     this.rpeValue.set(null);
     this.showRpeSlider.set(false);
@@ -1418,13 +1417,20 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     const completedExerciseLog = this.currentWorkoutLogExercises().find(logEx => logEx.exerciseId === activeInfo.exerciseData.exerciseId);
     const completedSetLogThisSession = completedExerciseLog?.sets.find(logSet => logSet.plannedSetId === activeInfo.setData.id);
 
-    let initialActualDuration = activeInfo.setData.duration ?? null;
-    if (completedSetLogThisSession && completedSetLogThisSession.durationPerformed !== undefined) {
-      initialActualDuration = completedSetLogThisSession.durationPerformed;
+    // Default to the minimum of the range if available, otherwise the single value.
+    let initialActualReps = activeInfo.setData.repsMin ?? activeInfo.setData.reps ?? null;
+    let initialActualDuration = activeInfo.setData.durationMin ?? activeInfo.setData.duration ?? null;
+
+    if (completedSetLogThisSession) {
+      if (completedSetLogThisSession.durationPerformed !== undefined) {
+        initialActualDuration = completedSetLogThisSession.durationPerformed;
+      }
+      if (completedSetLogThisSession.repsAchieved !== undefined) {
+        initialActualReps = completedSetLogThisSession.repsAchieved;
+      }
     }
 
     let weightForForm: number | null | undefined = activeInfo.setData.weight;
-    // Fallback logic for weight
     if (weightForForm === null || weightForForm === undefined) {
       const allLoggedSetsForThisEx = this.currentWorkoutLogExercises()
         .find(exLog => exLog.exerciseId === activeInfo.exerciseData.exerciseId)?.sets || [];
@@ -1439,36 +1445,27 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
         const lastActualPrevSet = previousLoggedSetsInSessionForThisExercise[previousLoggedSetsInSessionForThisExercise.length - 1];
         if (lastActualPrevSet.weightUsed !== null && lastActualPrevSet.weightUsed !== undefined) {
           weightForForm = lastActualPrevSet.weightUsed;
-          if (activeInfo.type !== 'warmup' && !completedSetLogThisSession) { // Only toast if not already logged and not warmup
-            // this.toastService.info(`Using weight from previous set: ${weightForForm}${this.weightUnitDisplaySymbol}`, 2000, "Auto-fill");
-          }
         }
       } else if (activeInfo.type === 'warmup' && (activeInfo.setData.weight === null || activeInfo.setData.weight === undefined)) {
-        // Default warm-up weight (e.g., bar only, or specific exercise default if available)
-        // For now, if activeInfo.setData.weight is null/undefined, it means no specific warm-up weight was planned.
-        // We could fetch baseExerciseInfo and check for a default warm-up weight property if that existed.
-        // Current behavior: use null if nothing else specified.
         weightForForm = activeInfo.setData.weight ?? null;
       }
     }
-
 
     if (completedSetLogThisSession) {
       this.currentSetForm.patchValue({
         actualReps: completedSetLogThisSession.repsAchieved,
         actualWeight: completedSetLogThisSession.weightUsed,
         actualDuration: initialActualDuration,
-        setNotes: completedSetLogThisSession.notes ?? '', // Use logged notes
+        setNotes: completedSetLogThisSession.notes ?? '',
         rpe: completedSetLogThisSession.rpe
       }, { emitEvent: false });
       if (completedSetLogThisSession.rpe) this.rpeValue.set(completedSetLogThisSession.rpe);
     } else {
-      // For a new, unlogged set, patch targets and keep existing form values for notes if any
       this.currentSetForm.patchValue({
-        actualReps: activeInfo.setData.reps ?? (activeInfo.type === 'warmup' ? 8 : null),
+        actualReps: initialActualReps ?? (activeInfo.type === 'warmup' ? 8 : null),
         actualWeight: weightForForm ?? null,
         actualDuration: initialActualDuration,
-        setNotes: activeInfo.setData.notes || (activeInfo.type === 'warmup' ? 'Warm-up' : ''), // Prefer planned notes for a fresh set
+        setNotes: activeInfo.setData.notes || (activeInfo.type === 'warmup' ? 'Warm-up' : ''),
         rpe: null
       }, { emitEvent: false });
     }
@@ -1627,9 +1624,14 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       weightUsed: formValues.actualWeight ?? (activeInfo.setData.type === 'warmup' ? null : activeInfo.setData.weight),
       durationPerformed: durationToLog,
       rpe: formValues.rpe ?? undefined,
+      // NEW: Log the full target range for future analysis
       targetReps: activeInfo.setData.reps,
+      targetRepsMin: activeInfo.setData.repsMin,
+      targetRepsMax: activeInfo.setData.repsMax,
       targetWeight: activeInfo.setData.weight,
       targetDuration: activeInfo.setData.duration,
+      targetDurationMin: activeInfo.setData.durationMin,
+      targetDurationMax: activeInfo.setData.durationMax,
       targetTempo: activeInfo.setData.tempo,
       targetRestAfterSet: activeInfo.setData.restAfterSet,
       notes: formValues.setNotes?.trim() || undefined,
@@ -1888,10 +1890,10 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     // Set totalBlockRounds based on the determined starting exercise
     const startingExercise = state.sessionRoutine.exercises[this.currentExerciseIndex()];
     if (startingExercise.supersetId) {
-        const blockStart = state.sessionRoutine.exercises.find(ex => ex.supersetId === startingExercise.supersetId && ex.supersetOrder === 0);
-        this.totalBlockRounds.set(blockStart?.supersetRounds || 1);
+      const blockStart = state.sessionRoutine.exercises.find(ex => ex.supersetId === startingExercise.supersetId && ex.supersetOrder === 0);
+      this.totalBlockRounds.set(blockStart?.supersetRounds || 1);
     } else {
-        this.totalBlockRounds.set(startingExercise.rounds || 1);
+      this.totalBlockRounds.set(startingExercise.rounds || 1);
     }
 
     if (state.timedSetTimerState) {
@@ -4467,7 +4469,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     return exercisesInGroup.some(ex => this.getNumberOfLoggedSets(ex.id) > 0);
   }
 
-    private isSupersetCompletelyLogged(supersetId: string): boolean {
+  private isSupersetCompletelyLogged(supersetId: string): boolean {
     const routine = this.routine();
     if (!routine) return false;
 
@@ -4536,27 +4538,27 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     const routine = this.routine();
     const workoutLog = this.currentWorkoutLogExercises();
 
-    const isModalMenu =  this.appSettingsService.isMenuModeModal();
+    const isModalMenu = this.appSettingsService.isMenuModeModal();
     const buttonCssClass = isModalMenu ? " w-full flex justify-start items-center text-white text-left px-4 py-2 rounded-md text-xl font-medium " : '';
     // Always add PAUSE
-    actionsArray.push({...pauseSessionBtn, overrideCssButtonClass: pauseSessionBtn.buttonClass + ' ' + buttonCssClass});
+    actionsArray.push({ ...pauseSessionBtn, overrideCssButtonClass: pauseSessionBtn.buttonClass + ' ' + buttonCssClass });
 
     // Add INSIGHTS if any sets have been logged
     if (workoutLog.length > 0) {
-      actionsArray.push({...openExercisePerformanceInsightsBtn, overrideCssButtonClass: openExercisePerformanceInsightsBtn.buttonClass + ' ' + buttonCssClass});
+      actionsArray.push({ ...openExercisePerformanceInsightsBtn, overrideCssButtonClass: openExercisePerformanceInsightsBtn.buttonClass + ' ' + buttonCssClass });
     }
 
-    actionsArray.push({...openSessionPerformanceInsightsBtn, overrideCssButtonClass: openSessionPerformanceInsightsBtn.buttonClass + ' ' + buttonCssClass});
+    actionsArray.push({ ...openSessionPerformanceInsightsBtn, overrideCssButtonClass: openSessionPerformanceInsightsBtn.buttonClass + ' ' + buttonCssClass });
 
     // Always add ADD EXERCISE
-    actionsArray.push({...addExerciseBtn, overrideCssButtonClass: addExerciseBtn.buttonClass + ' ' + buttonCssClass });
+    actionsArray.push({ ...addExerciseBtn, overrideCssButtonClass: addExerciseBtn.buttonClass + ' ' + buttonCssClass });
 
     if (this.canSwitchExercise()) {
-      actionsArray.push({...switchExerciseBtn, overrideCssButtonClass: switchExerciseBtn.buttonClass + ' ' + buttonCssClass});
+      actionsArray.push({ ...switchExerciseBtn, overrideCssButtonClass: switchExerciseBtn.buttonClass + ' ' + buttonCssClass });
     }
 
     if (this.canJumpToOtherExercise()) {
-      actionsArray.push({...jumpToExerciseBtn, overrideCssButtonClass: jumpToExerciseBtn.buttonClass + ' ' + buttonCssClass});
+      actionsArray.push({ ...jumpToExerciseBtn, overrideCssButtonClass: jumpToExerciseBtn.buttonClass + ' ' + buttonCssClass });
     }
 
 
@@ -4566,7 +4568,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       // Add WARMUP if allowed for the current set
       const superSetId = this.retrieveSuperSetID(activeInfo?.exerciseIndex);
       if ((this.isSuperSet(activeInfo?.exerciseIndex) && !this.isSupersetPartiallyLogged(superSetId)) && this.canAddWarmupSet()) {
-        actionsArray.push({...addWarmupSetBtn, overrideCssButtonClass: addWarmupSetBtn.buttonClass + ' ' + buttonCssClass});
+        actionsArray.push({ ...addWarmupSetBtn, overrideCssButtonClass: addWarmupSetBtn.buttonClass + ' ' + buttonCssClass });
       }
 
       const isSuperset = !!activeInfo.exerciseData.supersetId;
@@ -4578,20 +4580,20 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       const canSkipExercise = !isSuperset || !isSupersetStarted;
       if (canSkipExercise) {
         if (!this.isExercisePartiallyLogged(activeInfo?.exerciseData)) {
-          actionsArray.push({ ...skipCurrentExerciseBtn, label: skipExBtnLabel , overrideCssButtonClass: skipCurrentExerciseBtn.buttonClass + ' ' + buttonCssClass});
+          actionsArray.push({ ...skipCurrentExerciseBtn, label: skipExBtnLabel, overrideCssButtonClass: skipCurrentExerciseBtn.buttonClass + ' ' + buttonCssClass });
         }
-        actionsArray.push({ ...skipCurrentSetBtn, label: skipSetBtnLabel , overrideCssButtonClass: skipCurrentSetBtn.buttonClass + ' ' + buttonCssClass});
+        actionsArray.push({ ...skipCurrentSetBtn, label: skipSetBtnLabel, overrideCssButtonClass: skipCurrentSetBtn.buttonClass + ' ' + buttonCssClass });
       }
 
       // Only show "Do Later" if the superset hasn't been started yet
       if (!isSupersetStarted && !this.isExercisePartiallyLogged(activeInfo?.exerciseData)) {
-        actionsArray.push({...markAsDoLaterBtn, overrideCssButtonClass: markAsDoLaterBtn.buttonClass + ' ' + buttonCssClass});
+        actionsArray.push({ ...markAsDoLaterBtn, overrideCssButtonClass: markAsDoLaterBtn.buttonClass + ' ' + buttonCssClass });
       }
     }
 
     // Add FINISH EARLY if any sets have been logged
     if (workoutLog.length > 0) {
-      actionsArray.push({...finishEarlyBtn, overrideCssButtonClass: finishEarlyBtn.buttonClass + ' ' + buttonCssClass});
+      actionsArray.push({ ...finishEarlyBtn, overrideCssButtonClass: finishEarlyBtn.buttonClass + ' ' + buttonCssClass });
     }
 
     // --- Superset Logic ---
@@ -4601,23 +4603,23 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       if (exerciseData.supersetId) {
         // Only allow removing from superset if no sets in that group have been logged
         if (!this.isSupersetPartiallyLogged(exerciseData.supersetId)) {
-          actionsArray.push({ ...removeFromSuperSetBtn, data: { exIndex: activeInfo.exerciseIndex}, overrideCssButtonClass: removeFromSuperSetBtn.buttonClass + ' ' + buttonCssClass } as ActionMenuItem);
+          actionsArray.push({ ...removeFromSuperSetBtn, data: { exIndex: activeInfo.exerciseIndex }, overrideCssButtonClass: removeFromSuperSetBtn.buttonClass + ' ' + buttonCssClass } as ActionMenuItem);
         }
       } else {
         // Add ADD TO and CREATE SUPERSET if conditions are met
         if (routine && routine.exercises.length >= 2) {
           if (routine.exercises.some(ex => ex.supersetId)) {
-            actionsArray.push({ ...addToSuperSetBtn, data: { exIndex: activeInfo.exerciseIndex }, overrideCssButtonClass: addToSuperSetBtn.buttonClass + ' ' + buttonCssClass} as ActionMenuItem);
+            actionsArray.push({ ...addToSuperSetBtn, data: { exIndex: activeInfo.exerciseIndex }, overrideCssButtonClass: addToSuperSetBtn.buttonClass + ' ' + buttonCssClass } as ActionMenuItem);
           }
           if (routine.exercises.filter(ex => !ex.supersetId).length >= 2) {
-            actionsArray.push({ ...createSuperSetBtn, data: { exIndex: activeInfo.exerciseIndex }, overrideCssButtonClass: createSuperSetBtn.buttonClass + ' ' + buttonCssClass} as ActionMenuItem);
+            actionsArray.push({ ...createSuperSetBtn, data: { exIndex: activeInfo.exerciseIndex }, overrideCssButtonClass: createSuperSetBtn.buttonClass + ' ' + buttonCssClass } as ActionMenuItem);
           }
         }
       }
     }
 
     // Always add QUIT
-    actionsArray.push({...quitWorkoutBtn, overrideCssButtonClass: quitWorkoutBtn.buttonClass + ' ' + buttonCssClass});
+    actionsArray.push({ ...quitWorkoutBtn, overrideCssButtonClass: quitWorkoutBtn.buttonClass + ' ' + buttonCssClass });
 
     return actionsArray;
   });
@@ -4772,4 +4774,15 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       this.savePausedSessionState();
     }
   }
+
+  /**
+  * Generates a display string for a set's planned target range.
+  * @param set The ExerciseSetParams object from the routine plan.
+  * @param field The field to display ('reps' or 'duration' or 'weight).
+  * @returns A formatted string like "8-12" or "60+", or an empty string if no range is set.
+  */
+  public getSetTargetDisplay(set: ExerciseSetParams, field: 'reps' | 'duration' | 'weight'): string {
+    return this.workoutService.getSetTargetDisplay(set,field);
+  }
+
 }

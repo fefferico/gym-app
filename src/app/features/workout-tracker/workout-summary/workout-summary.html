@@ -86,7 +86,7 @@
           🎉 New Personal Best{{sessionPBs().length > 1 ? 's':''}}! 🎉
         </h2>
         <ul class="space-y-2 mt-3">
-          <li *ngFor="let pb of sessionPBs()" class="p-2 bg-green-50 dark:bg-green-900/30 rounded-md text-center">
+          <li *ngFor="let pb of sessionPBs()" class="p-2 bg-green-200 dark:bg-green-600/60 rounded-md text-center">
             <p class="text-m font-medium text-green-700 dark:text-green-300">{{ pb.exerciseName }} - {{ pb.pbType }}
             </p>
             <p class="text-lg font-bold text-green-600 dark:text-green-200">{{ pb.value }}</p>

@@ -607,60 +607,32 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
       return 'text-gray-700 dark:text-gray-300';
     }
 
-    // For reps and duration, check for range targets first.
-    if (type === 'reps') {
-      const performed = set.repsAchieved ?? 0;
-      const min = set.targetRepsMin;
-      const max = set.targetRepsMax;
-
-      if (min != null || max != null) {
-        if (min != null && performed < min) return 'text-red-500 dark:text-red-400';     // Below range
-        if (max != null && performed > max) return 'text-green-500 dark:text-green-400'; // Above range
-        return 'text-gray-800 dark:text-white';                                          // Within range
-      }
-    }
-
-    if (type === 'duration') {
-      const performed = set.durationPerformed ?? 0;
-      const min = set.targetDurationMin;
-      const max = set.targetDurationMax;
-
-      if (min != null || max != null) {
-        if (min != null && performed < min) return 'text-red-500 dark:text-red-400';     // Below range
-        if (max != null && performed > max) return 'text-green-500 dark:text-green-400'; // Above range
-        return 'text-gray-800 dark:text-white';                                          // Within range
-      }
-    }
-
-    // Fallback to single target comparison for weight, rest, or if no range is set.
     let performedValue = 0;
     let targetValue = 0;
 
-    switch (type) {
-      case 'reps':
-        performedValue = set.repsAchieved ?? 0;
-        targetValue = set.targetReps ?? 0;
-        break;
-      case 'duration':
-        performedValue = set.durationPerformed ?? 0;
-        targetValue = set.targetDuration ?? 0;
-        break;
-      case 'weight':
-        performedValue = set.weightUsed ?? 0;
-        targetValue = set.targetWeight ?? 0;
-        break;
-      case 'rest':
-        performedValue = set.restAfterSetUsed ?? 0;
-        targetValue = set.targetRestAfterSet ?? 0;
-        break;
+    // Determine which properties to compare based on the 'type'
+    if (type === 'reps') {
+      performedValue = set.repsAchieved ?? 0;
+      targetValue = set.targetReps ?? 0;
+    } else if (type === 'duration') {
+      performedValue = set.durationPerformed ?? 0;
+      targetValue = set.targetDuration ?? 0;
+    } else if (type === 'weight') {
+      performedValue = set.weightUsed ?? 0;
+      targetValue = set.targetWeight ?? 0;
+    } else if (type === 'rest') {
+      performedValue = set.restAfterSetUsed ?? 0;
+      targetValue = set.targetRestAfterSet ?? 0;
     }
 
-    if (targetValue > 0) {
-      if (performedValue > targetValue) return 'text-green-500 dark:text-green-400';
-      if (performedValue < targetValue) return 'text-red-500 dark:text-red-400';
+    // The simple comparison logic
+    if (performedValue > targetValue) {
+      return 'text-green-500 dark:text-green-400';
+    } else if (performedValue < targetValue) {
+      return 'text-red-500 dark:text-red-400';
+    } else {
+      return 'text-gray-800 dark:text-white';
     }
-
-    return 'text-gray-800 dark:text-white';
   }
 
 
@@ -674,46 +646,55 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
   showComparisonModal(set: LoggedSet, type: 'reps' | 'duration' | 'weight' | 'rest'): void {
     if (!set) return;
 
-    let performedValue: number | undefined;
-    let targetValueDisplay: string | undefined;
+    let performedValue: number = 0;
+    let targetValue: number = 0;
     let modalData: TargetComparisonData | null = null;
     const unitLabel = this.unitService.getWeightUnitSuffix();
 
-    const createTargetDisplay = (min?: number, max?: number, single?: number, suffix: string = ''): string => {
-      if (min != null || max != null) {
-        if (min != null && max != null) return min === max ? `${single ?? min}${suffix}` : `${min}-${max}${suffix}`;
-        if (min != null) return `${min}+${suffix}`;
-        if (max != null) return `Up to ${max}${suffix}`;
-      }
-      return single != null ? `${single}${suffix}` : '-';
-    };
-
+    // Determine values based on type
     if (type === 'reps') {
-      performedValue = set.repsAchieved;
-      targetValueDisplay = createTargetDisplay(set.targetRepsMin, set.targetRepsMax, set.targetReps);
-      if ((set.targetRepsMin != null && (performedValue ?? 0) < set.targetRepsMin) || (set.targetRepsMin == null && (performedValue ?? 0) < (set.targetReps ?? 0))) {
-        modalData = { metric: 'Reps', targetValue: targetValueDisplay, performedValue: `${performedValue ?? '-'}` };
+      performedValue = set.repsAchieved ?? 0;
+      targetValue = set.targetReps ?? 0;
+      if (performedValue < targetValue) {
+        modalData = {
+          metric: 'Reps',
+          targetValue: `${targetValue}`,
+          performedValue: `${performedValue}`
+        };
       }
     } else if (type === 'duration') {
-      performedValue = set.durationPerformed;
-      targetValueDisplay = createTargetDisplay(set.targetDurationMin, set.targetDurationMax, set.targetDuration, ' s');
-      if ((set.targetDurationMin != null && (performedValue ?? 0) < set.targetDurationMin) || (set.targetDurationMin == null && (performedValue ?? 0) < (set.targetDuration ?? 0))) {
-        modalData = { metric: 'Duration', targetValue: targetValueDisplay, performedValue: `${performedValue ?? '-'} s` };
+      performedValue = set.durationPerformed ?? 0;
+      targetValue = set.targetDuration ?? 0;
+      if (performedValue < targetValue) {
+        modalData = {
+          metric: 'Duration',
+          targetValue: `${targetValue} s`,
+          performedValue: `${performedValue} s`
+        };
       }
     } else if (type === 'weight') {
-      performedValue = set.weightUsed;
-      targetValueDisplay = set.targetWeight != null ? `${set.targetWeight} ${unitLabel}` : '-';
-      if ((performedValue ?? 0) < (set.targetWeight ?? 0)) {
-        modalData = { metric: 'Weight', targetValue: targetValueDisplay, performedValue: `${performedValue ?? '-'} ${unitLabel}` };
+      performedValue = set.weightUsed ?? 0;
+      targetValue = set.targetWeight ?? 0;
+      if (performedValue < targetValue) {
+        modalData = {
+          metric: 'Weight',
+          targetValue: `${targetValue} ${unitLabel}`,
+          performedValue: `${performedValue} ${unitLabel}`
+        };
       }
     } else if (type === 'rest') {
-      performedValue = set.restAfterSetUsed;
-      targetValueDisplay = set.targetRestAfterSet != null ? `${set.targetRestAfterSet} s` : '-';
-      if ((performedValue ?? 0) < (set.targetRestAfterSet ?? 0)) {
-        modalData = { metric: 'Rest', targetValue: targetValueDisplay, performedValue: `${performedValue ?? '-'} s` };
+      performedValue = set.restAfterSetUsed ?? 0;
+      targetValue = set.targetRestAfterSet ?? 0;
+      if (performedValue < targetValue) {
+        modalData = {
+          metric: 'Rest',
+          targetValue: `${targetValue} s`,
+          performedValue: `${performedValue} s`
+        };
       }
     }
 
+    // If a target was missed, set the signal to open the modal
     if (modalData) {
       this.comparisonModalData.set(modalData);
     }
@@ -726,25 +707,8 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
   isTargetMissed(set: LoggedSet, type: 'reps' | 'duration' | 'weight' | 'rest'): boolean {
     if (!set) return false;
 
-    if (type === 'reps') {
-      const performed = set.repsAchieved ?? 0;
-      const min = set.targetRepsMin;
-      // It's a miss if there's a minimum target and performance is below it.
-      if (min != null) return performed < min;
-      // Fallback for single target
-      return performed < (set.targetReps ?? 0);
-    }
-
-    if (type === 'duration') {
-      const performed = set.durationPerformed ?? 0;
-      const min = set.targetDurationMin;
-      if (min != null) return performed < min;
-      return performed < (set.targetDuration ?? 0);
-    }
-
-    // Logic for weight and rest remains the same as they don't use ranges
-    const performed = (type === 'weight' ? set.weightUsed : set.restAfterSetUsed) ?? 0;
-    const target = (type === 'weight' ? set.targetWeight : set.targetRestAfterSet) ?? 0;
+    const performed = (type === 'reps' ? set.repsAchieved : type === 'duration' ? set.durationPerformed : type === 'rest' ? set.restAfterSetUsed : set.weightUsed) ?? 0;
+    const target = (type === 'reps' ? set.targetReps : type === 'duration' ? set.targetDuration : type === 'rest' ? set.targetRestAfterSet : set.targetWeight) ?? 0;
 
     return performed < target && target > 0;
   }
