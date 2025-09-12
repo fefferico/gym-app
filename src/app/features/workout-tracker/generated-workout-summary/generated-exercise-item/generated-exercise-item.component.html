@@ -2,7 +2,6 @@
     <div class="flex justify-between items-start mb-2">
         <div>
             <h5 class="font-bold text-gray-800 dark:text-gray-100">{{ exerciseData.exerciseName }}</h5>
-            <!-- +++ NEW: Estimated duration display +++ -->
             <div class="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 mt-1">
                 <app-icon name="clock" class="h-4 w-4"></app-icon>
                 <span>~{{ estimatedDuration() }} min</span>
@@ -13,7 +12,6 @@
                 {{ totalPlannedSets() }} sets
                 <span *ngIf="roundInfo().totalRounds > 1"> in {{ roundInfo().totalRounds }} rounds</span>
             </p>
-            <!-- +++ NEW: Exercise remove button +++ -->
             <button (click)="removeExercise()" title="Remove Exercise"
                 class="p-1.5 rounded-full hover:bg-red-100 dark:hover:bg-red-700/50">
                 <app-icon name="trash" class="h-5 w-5 text-red-500 dark:text-red-400"></app-icon>
@@ -22,7 +20,7 @@
     </div>
 
     <!-- WEIGHT INPUT FORM (for all sets) -->
-    <div *ngIf="!isBodyweight()" class="flex items-center gap-2 mb-3">
+    <div *ngIf="!isBodyweight() && !isCardio()" class="flex items-center gap-2 mb-3">
         <input type="number" [ngModel]="weightToSet()" (ngModelChange)="weightToSet.set($event)"
             [placeholder]="'Set weight for all sets (' + unitsService.getWeightUnitSuffix() + ')...'"
             class="flex-grow p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200">
@@ -41,36 +39,62 @@
             </h6>
             <div class="text-xs space-y-1">
                 <!-- Header Row -->
-                <div
-                    class="grid grid-cols-12 gap-2 font-bold text-gray-600 dark:text-gray-300 p-1.5 rounded bg-gray-200/60 dark:bg-gray-700">
+                <div class="grid grid-cols-12 gap-2 font-bold text-gray-600 dark:text-gray-300 p-1.5 rounded bg-gray-200/60 dark:bg-gray-700">
                     <div class="col-span-1 text-center">Set</div>
-                    <!-- +++ CHANGE: Adjust column span based on whether it's bodyweight +++ -->
-                    <div [ngClass]="isBodyweight() ? 'col-span-8' : 'col-span-4'">Planned</div>
-                    <div *ngIf="!isBodyweight()" class="col-span-4 text-center">Weight</div>
-                    <div class="col-span-3 text-center">Rest</div>
-                    <div class="col-span-1 text-center"></div> <!-- Column for delete button -->
+                    <div class="col-span-6 flex items-center">
+                        Planned
+                        <!-- +++ NEW: Rep Range Toggle Button +++ -->
+                        <button *ngIf="!isCardio()" (click)="toggleRepRange($event)" [title]="useRepRange() ? 'Use single rep target' : 'Use rep range'" class="ml-auto p-1 rounded-full hover:bg-gray-300 dark:hover:bg-gray-600">
+                            <app-icon name="change" class="h-4 w-4"></app-icon>
+                        </button>
+                    </div>
+                    <div *ngIf="!isBodyweight() && !isCardio()" class="col-span-2 text-center">Weight</div>
+                    <div class="col-span-2 text-center">Rest</div>
+                    <div class="col-span-1 text-center"></div>
                 </div>
                 <!-- Data Rows -->
                 <div *ngFor="let set of exerciseData.sets; let i = index"
-                    class="grid grid-cols-12 gap-2 items-center p-1.5 rounded"
+                    class="grid grid-cols-12 gap-2 items-center p-1.5 rounded text-black dark:text-gray-300"
                     [ngClass]="{ 'bg-white dark:bg-gray-700/60': i % 2 === 0, 'bg-gray-100 dark:bg-gray-700/30': i % 2 !== 0 }">
-                    <div class="col-span-1 text-center font-semibold text-gray-700 dark:text-gray-300">#{{ i + 1 }}
-                    </div> <!-- Set Number -->
-                    <div [ngClass]="isBodyweight() ? 'col-span-8' : 'col-span-4'"
-                        class="text-gray-800 dark:text-gray-200">{{ workoutService.getSetTargetDisplay(set, 'reps') }}
-                        reps</div>
-
-                    <!-- +++ NEW: Individual Weight Input +++ -->
-                    <div *ngIf="!isBodyweight()" class="col-span-4">
-                        <input type="number" [ngModel]="set.targetWeight" (ngModelChange)="onSetWeightChange($event, i)"
-                            class="w-full text-center p-1 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-600 dark:text-gray-200">
+                    <div class="col-span-1 text-center font-semibold dark:text-white">#{{ i + 1 }}</div>
+                    
+                    <!-- +++ REWRITTEN: Planned Column with Conditional Inputs +++ -->
+                    <div class="col-span-6">
+                        <!-- Cardio View -->
+                        <div *ngIf="isCardio()" class="flex items-center gap-1">
+                            <input type="number" [(ngModel)]="set.targetDuration" (ngModelChange)="handleModelChange()" class="w-1/2 text-center p-1 border rounded-md dark:bg-gray-600">
+                            <span>seconds</span>
+                        </div>
+                        <!-- Reps View -->
+                        <div *ngIf="!isCardio()">
+                            <!-- Single Rep Input -->
+                            <div *ngIf="!useRepRange()" class="flex items-center gap-1">
+                                <input type="number" [(ngModel)]="set.targetReps" (ngModelChange)="handleModelChange()" class="w-1/2 text-center p-1 border rounded-md dark:bg-gray-600">
+                                <span>reps</span>
+                            </div>
+                             <!-- Rep Range Inputs -->
+                            <div *ngIf="useRepRange()" class="flex items-center gap-1">
+                                <input type="number" [(ngModel)]="set.targetRepsMin" (ngModelChange)="handleModelChange()" class="w-1/2 text-center p-1 border rounded-md dark:bg-gray-600">
+                                <span>-</span>
+                                <input type="number" [(ngModel)]="set.targetRepsMax" (ngModelChange)="handleModelChange()" class="w-1/2 text-center p-1 border rounded-md dark:bg-gray-600">
+                                <span>reps</span>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="col-span-3 font-semibold text-center text-gray-900 dark:text-white">{{ set.restAfterSet
-                        }}s</div>
+                    <!-- Weight Column (Conditional) -->
+                    <div *ngIf="!isBodyweight() && !isCardio()" class="col-span-2">
+                        <input type="number" [(ngModel)]="set.targetWeight" (ngModelChange)="handleModelChange()" class="w-full text-center p-1 border rounded-md dark:bg-gray-600">
+                    </div>
+                    
+                    <!-- Rest Column (Editable) -->
+                    <div class="col-span-2">
+                         <input type="number" [(ngModel)]="set.restAfterSet" (ngModelChange)="handleModelChange()" class="w-full text-center p-1 border rounded-md dark:bg-gray-600">
+                    </div>
+                    
+                    <!-- Delete Button Column -->
                     <div class="col-span-1 flex justify-center">
-                        <button (click)="removeSet(i)" title="Remove Set"
-                            class="p-1 rounded-full hover:bg-red-100 dark:hover:bg-red-700/50">
+                        <button (click)="removeSet(i)" title="Remove Set" class="p-1 rounded-full hover:bg-red-100 dark:hover:bg-red-700/50">
                             <app-icon name="trash" class="h-4 w-4 text-red-500 dark:text-red-400"></app-icon>
                         </button>
                     </div>
@@ -78,12 +102,12 @@
             </div>
         </div>
     </div>
-    <!-- +++ NEW: Add Set Button +++ -->
+    
+    <!-- Add Set Button -->
     <div class="mt-3 flex justify-center">
-        <button (click)="addSet()"
-            class="flex items-center gap-2 px-4 py-1.5 text-xs font-semibold text-primary dark:text-primary-light bg-primary/10 hover:bg-primary/20 rounded-full transition-colors">
-            <app-icon name="plus-circle" class="h-4 w-4"></app-icon>
-            Add Set
+        <button (click)="addSet()" class="flex items-center gap-2 px-4 py-1.5 text-xs font-semibold text-primary dark:text-primary-light bg-primary/10 hover:bg-primary/20 rounded-full transition-colors">
+            <app-icon name="plus-circle" class="h-4 w-4"></app-icon> Add Set
         </button>
     </div>
 </ng-container>
+

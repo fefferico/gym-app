@@ -34,25 +34,25 @@ export class GeneratedExerciseItemComponent implements OnInit {
     // Local state for this component
     baseExercise = signal<Exercise | null>(null);
     weightToSet = signal<number | null>(null);
+    useRepRange = signal<boolean>(false);
 
-        constructor() {
-        // This effect will run when the component is created AND
-        // every time the input `exercise` signal changes.
+    constructor() {
         effect(async () => {
-            const currentExercise = this.exercise(); // Read the signal
+            const currentExercise = this.exercise();
             if (currentExercise) {
                 const exerciseDef = await firstValueFrom(this.exerciseService.getExerciseById(currentExercise.exerciseId));
                 this.baseExercise.set(exerciseDef ?? null);
+                // Initialize rep range toggle based on the first set
+                this.useRepRange.set(!!currentExercise.sets[0]?.targetRepsMin || !!currentExercise.sets[0]?.targetRepsMax);
             }
         });
     }
 
-        ngOnInit(): void {}
+    ngOnInit(): void { }
 
 
-    isBodyweight = computed<boolean>(() => {
-        return this.baseExercise()?.category === 'bodyweight/calisthenics';
-    });
+    isBodyweight = computed<boolean>(() => this.baseExercise()?.category === 'bodyweight/calisthenics');
+    isCardio = computed<boolean>(() => this.baseExercise()?.category === 'cardio');
 
     roundInfo = computed(() => {
         const ex = this.exercise();
@@ -72,16 +72,15 @@ export class GeneratedExerciseItemComponent implements OnInit {
         const weight = this.weightToSet();
         if (weight === null || weight < 0) return;
 
-        // Create a copy to emit, don't mutate the signal's value directly
         const updatedExercise = JSON.parse(JSON.stringify(this.exercise())) as WorkoutExercise;
         updatedExercise.sets.forEach(set => {
             set.targetWeight = weight;
         });
-        
+
         this.exerciseUpdated.emit(updatedExercise);
         this.weightToSet.set(null);
     }
-    
+
     onSetWeightChange(newWeight: number, setIndex: number): void {
         const updatedExercise = JSON.parse(JSON.stringify(this.exercise())) as WorkoutExercise;
         if (updatedExercise.sets[setIndex]) {
@@ -136,7 +135,7 @@ export class GeneratedExerciseItemComponent implements OnInit {
             await this.removeExercise();
             return;
         }
-        
+
         const updatedExercise = JSON.parse(JSON.stringify(currentExercise)) as WorkoutExercise;
         updatedExercise.sets.splice(setIndexToRemove, 1);
         this.exerciseUpdated.emit(updatedExercise);
@@ -174,6 +173,36 @@ export class GeneratedExerciseItemComponent implements OnInit {
             id: uuidv4(), // Give it a new unique ID
         };
         updatedExercise.sets.push(newSet);
+        this.exerciseUpdated.emit(updatedExercise);
+    }
+
+    /**
+     * --- NEW: Unified method to handle any change and emit ---
+     * This is the key to fixing the keyboard focus issue.
+     */
+    handleModelChange(): void {
+        // We emit a deep copy of the signal's current value.
+        // The ngModel has already updated the object in memory.
+        this.exerciseUpdated.emit(JSON.parse(JSON.stringify(this.exercise())));
+    }
+
+    /**
+     * --- NEW: Toggles between single rep and rep range inputs ---
+     */
+    toggleRepRange(event: Event): void {
+        event.stopPropagation();
+        this.useRepRange.update(value => !value);
+
+        // When toggling, clear the unused fields to avoid confusion
+        const updatedExercise = JSON.parse(JSON.stringify(this.exercise())) as WorkoutExercise;
+        updatedExercise.sets.forEach(set => {
+            if (this.useRepRange()) {
+                set.targetReps = null;
+            } else {
+                set.targetRepsMin = null;
+                set.targetRepsMax = null;
+            }
+        });
         this.exerciseUpdated.emit(updatedExercise);
     }
 }

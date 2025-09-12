@@ -1,5 +1,5 @@
 // src/app/features/workout-routines/routine-list/routine-list.component.ts
-import { Component, inject, OnInit, PLATFORM_ID, signal, computed, OnDestroy, HostListener } from '@angular/core'; // Added computed, OnDestroy
+import { Component, inject, OnInit, PLATFORM_ID, signal, computed, OnDestroy, HostListener, ViewChildren } from '@angular/core'; // Added computed, OnDestroy
 import { CommonModule, DatePipe, isPlatformBrowser, TitleCasePipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { firstValueFrom, Observable, Subscription, take } from 'rxjs'; // Added Subscription
@@ -29,6 +29,7 @@ import { PremiumFeature, SubscriptionService } from '../../core/services/subscri
 import { cloneBtn, deleteBtn, editBtn, favouriteBtn, hideBtn, historyBtn, startBtn, unhideBtn, unmarkFavouriteBtn, viewBtn } from '../../core/services/buttons-data';
 import { GenerateWorkoutModalComponent } from './generate-workout-modal/generate-workout-modal.component';
 import { GeneratedWorkoutSummaryComponent } from './generated-workout-summary/generated-workout-summary.component';
+import { WorkoutGenerationOptions, WorkoutGeneratorService } from '../../core/services/workout-generator.service';
 
 @Component({
   selector: 'app-routine-list',
@@ -85,6 +86,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
   private themeService = inject(ThemeService);
   private platformId = inject(PLATFORM_ID);
   private appSettingsService = inject(AppSettingsService);
+  private workoutGeneratorService = inject(WorkoutGeneratorService);
   protected subscriptionService = inject(SubscriptionService);
 
   private sanitizer = inject(DomSanitizer);
@@ -103,6 +105,8 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     const verticalOffset = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
     this.showBackToTopButton.set(verticalOffset > 400);
   }
+
+  @ViewChildren('workoutGeneratorModal') workoutGeneratorModal!: GenerateWorkoutModalComponent;
 
   // Signals for menu and accordion
   visibleActionsRutineId = signal<string | null>(null);
@@ -922,6 +926,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
   isGenerateModalOpen = signal(false);
   isSummaryModalOpen = signal(false);
   generatedRoutine = signal<Routine | null>(null);
+  private lastGenerationOptions = signal<WorkoutGenerationOptions | null>(null);
 
 
   // A computed signal to pass to the overview modal
@@ -932,13 +937,25 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     this.isGenerateModalOpen.set(true);
   }
 
-  handleWorkoutGenerated(routine: Routine | undefined) {
+async handleWorkoutGenerated(options: WorkoutGenerationOptions | 'quick') {
     this.isGenerateModalOpen.set(false);
+    
+    let routine: Routine | null = null;
+    if (options === 'quick') {
+      // For a quick workout, we don't have detailed options to save for a retry,
+      // so we'll just re-run the quick generator if they retry.
+      this.lastGenerationOptions.set(null); // Mark as quick
+      routine = await this.workoutGeneratorService.generateQuickWorkout();
+    } else {
+      this.lastGenerationOptions.set(options); // Save options for retry
+      routine = await this.workoutGeneratorService.generateWorkout(options);
+    }
+    
     if (routine && routine.exercises.length > 0) {
       this.generatedRoutine.set(routine);
       this.isSummaryModalOpen.set(true);
     } else {
-      this.toastService.warning("Could not generate a workout with the selected criteria. Please try a different combination.", 5000, "Generation Failed");
+      this.toastService.warning("Could not generate a workout with the selected criteria. Please try again.", 5000, "Generation Failed");
     }
   }
 
@@ -969,5 +986,35 @@ export class RoutineListComponent implements OnInit, OnDestroy {
   closeSummaryModal() {
     this.isSummaryModalOpen.set(false);
     this.generatedRoutine.set(null); // Clear the routine when closing
+  }
+
+/**
+   * --- REWRITTEN ---
+   * Seamlessly generates a new workout and updates the signal.
+   */
+  async handleRetryGeneration(): Promise<void> {
+    this.toastService.info("Generating a new workout...", 2000, "Please Wait");
+    
+    // Set the signal to null briefly to show a loading state if desired
+    this.generatedRoutine.set(null); 
+    
+    const lastOptions = this.lastGenerationOptions();
+    let newRoutine: Routine | null = null;
+    
+    if (lastOptions) {
+      // If we have detailed options, use them again
+      newRoutine = await this.workoutGeneratorService.generateWorkout(lastOptions);
+    } else {
+      // If the last one was a "quick" generation, run that again
+      newRoutine = await this.workoutGeneratorService.generateQuickWorkout();
+    }
+    
+    if (newRoutine && newRoutine.exercises.length > 0) {
+      this.generatedRoutine.set(newRoutine);
+    } else {
+      // This should rarely happen with the fallback logic, but it's a good safeguard
+      this.isSummaryModalOpen.set(false); // Close the modal on failure
+      this.toastService.error("Failed to generate a new workout. Please try adjusting your options.", 0, "Error");
+    }
   }
 }

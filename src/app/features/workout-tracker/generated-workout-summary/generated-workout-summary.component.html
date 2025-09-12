@@ -75,15 +75,35 @@
         <!-- Footer -->
         <footer
             class="p-4 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center flex-shrink-0">
+            <div>
+                <button (click)="close.emit()"
+                    class="px-6 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500 rounded-md transition-colors inline-flex items-center">
+                    <app-icon name="cancel" class="h-6 w-6 mr-2"></app-icon>
+                    BACK
+                </button>
+                <!-- +++ NEW: REGEN Button +++ -->
+                <button (click)="retry.emit()"
+                    class="ml-2 inline-flex items-center bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2.5 px-6 rounded-md text-sm transition-colors">
+                    <app-icon name="change" class="h-6 w-6 mr-2"></app-icon>
+                    REGEN
+                </button>
+            </div>
+            <button (click)="start.emit(generatedRoutineSignal()!)"
+                class="inline-flex items-center bg-green-500 hover:bg-green-600 focus:ring-4 focus:ring-green-300 text-white font-bold py-2.5 px-8 rounded-md text-sm transition-colors shadow-md hover:shadow-lg">
+                <app-icon name="play" class="h-6 w-6 mr-2"></app-icon>
+                START
+            </button>
+        </footer>
+
+        <!-- <footer
+            class="p-4 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center flex-shrink-0">
             <button (click)="close.emit()"
                 class="px-6 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500 rounded-md transition-colors">
                 BACK
             </button>
             <button (click)="start.emit(generatedRoutineSignal()!)"
-                class="inline-flex items-center bg-green-500 hover:bg-green-600 focus:ring-4 focus:ring-green-300 text-white font-bold py-2.5 px-8 rounded-md text-sm transition-colors shadow-md hover:shadow-lg">
-                <app-icon name="play" class="h-6 w-6 mr-2"></app-icon>
-                START WORKOUT
-            </button>
-        </footer>
+                class="inline-flex items-center bg-green-500 hover:bg-green-600 focus:ring-4 focus:ring-green-300 text-white font-bold py-2.5 px-8 rounded-md text-sm transition-colors shadow-md hover:shadow-lg"> -->
+
+
     </div>
 </div>

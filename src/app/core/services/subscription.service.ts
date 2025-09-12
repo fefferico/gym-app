@@ -18,6 +18,7 @@ export enum PremiumFeature {
   MENU_MODE = 'menu_mode',
   ACTIVITY = 'activity',
   TRAINING_PROGRAMS = 'training_programs',
+  WORKOUT_GENERATOR = 'workout_generator',
   // Add other premium features here in the future
 }
 

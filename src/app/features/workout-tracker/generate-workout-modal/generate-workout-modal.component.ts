@@ -9,21 +9,21 @@ import { WorkoutGenerationOptions, WorkoutGeneratorService } from '../../../core
 import { ExerciseService } from '../../../core/services/exercise.service';
 
 @Component({
-  selector: 'app-generate-workout-modal',
-  standalone: true,
-  imports: [CommonModule, IconComponent, FormsModule, TitleCasePipe],
-  templateUrl: './generate-workout-modal.component.html',
+    selector: 'app-generate-workout-modal',
+    standalone: true,
+    imports: [CommonModule, IconComponent, FormsModule, TitleCasePipe],
+    templateUrl: './generate-workout-modal.component.html',
 })
 export class GenerateWorkoutModalComponent implements OnInit {
     @Input() isOpen: boolean = false;
     @Output() close = new EventEmitter<void>();
-    @Output() generated = new EventEmitter<Routine>();
+    @Output() generate = new EventEmitter<WorkoutGenerationOptions | 'quick'>();
 
     private generatorService = inject(WorkoutGeneratorService);
     private exerciseService = inject(ExerciseService);
 
     allMuscleGroups = signal<string[]>([]);
-    
+
     options: WorkoutGenerationOptions = {
         duration: 45,
         goal: 'hypertrophy',
@@ -48,30 +48,14 @@ export class GenerateWorkoutModalComponent implements OnInit {
             list.push(muscle);
         }
     }
-    
-    async generateQuick() {
-        const routine = await this.generatorService.generateQuickWorkout();
-        // --- START MODIFICATION ---
-        if (routine && routine.exercises.length > 0) {
-            this.generated.emit(routine);
-            this.close.emit();
-        } else {
-             // Let the parent component handle the toast message
-            this.generated.emit(undefined);
-        }
-        // --- END MODIFICATION ---
+
+    generateQuick() {
+        this.generate.emit('quick');
+        // The modal no longer closes itself; the parent will handle it.
     }
 
-    async generateDetailed() {
-        const routine = await this.generatorService.generateWorkout(this.options);
-        // --- START MODIFICATION ---
-        if (routine && routine.exercises.length > 0) {
-            this.generated.emit(routine);
-            this.close.emit();
-        } else {
-            // Let the parent component handle the toast message
-            this.generated.emit(undefined);
-        }
-        // --- END MODIFICATION ---
+    generateDetailed() {
+        // We emit a copy of the options object
+        this.generate.emit({ ...this.options });
     }
 }

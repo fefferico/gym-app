@@ -393,10 +393,10 @@
 </div>
 
 
-<app-generate-workout-modal 
+<app-generate-workout-modal #workoutGeneratorModal
     [isOpen]="isGenerateModalOpen()"
     (close)="isGenerateModalOpen.set(false)"
-    (generated)="handleWorkoutGenerated($event)">
+    (generate)="handleWorkoutGenerated($event)">
 </app-generate-workout-modal>
 
 <!-- NEW: Replace the old overview modal with the new summary component -->
@@ -405,5 +405,6 @@
     [generatedRoutineSignal]="generatedRoutine"
     (close)="closeSummaryModal()"
     (start)="startGeneratedWorkout($event)"
-    (routineUpdated)="handleRoutineUpdate($event)">
+    (routineUpdated)="handleRoutineUpdate($event)"
+    (retry)="handleRetryGeneration()">
 </app-generated-workout-summary>

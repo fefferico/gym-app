@@ -31,6 +31,7 @@ export class GeneratedWorkoutSummaryComponent {
     @Output() close = new EventEmitter<void>();
     @Output() start = new EventEmitter<Routine>();
     @Output() routineUpdated = new EventEmitter<Routine>();
+    @Output() retry = new EventEmitter<void>();
 
     private alertService = inject(AlertService);
     private workoutService = inject(WorkoutService);
