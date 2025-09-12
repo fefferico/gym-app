@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
-import { catchError, map, shareReplay, take, tap, finalize } from 'rxjs/operators'; // Added finalize
+import { catchError, map, shareReplay, take, tap, finalize, filter } from 'rxjs/operators'; // Added finalize
 import { Exercise } from '../models/exercise.model';
 import { StorageService } from './storage.service';
 import { TrackingService } from './tracking.service';
@@ -302,7 +302,13 @@ export class ExerciseService {
 
   getUniquePrimaryMuscleGroups(): Observable<string[]> {
     return this.exercises$.pipe(
-      map(exercises => [...new Set(exercises.map(ex => ex.primaryMuscleGroup))].sort())
+      map(exercises =>
+        [...new Set(
+          exercises
+            .map(ex => ex.primaryMuscleGroup)
+            .filter(group => group && group.trim() !== '')
+        )].sort()
+      ),
     );
   }
 

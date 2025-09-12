@@ -1,57 +1,62 @@
-<div class="flex justify-between items-start mb-2">
-    <div>
-        <h5 class="font-bold text-gray-800 dark:text-gray-100">{{ exercise.exerciseName }}</h5>
+<ng-container *ngIf="editableExercise() as exercise">
+    <div class="flex justify-between items-start mb-2">
+        <div>
+            <h5 class="font-bold text-gray-800 dark:text-gray-100">{{ exercise.exerciseName }}</h5>
+        </div>
+        <p class="text-sm font-mono text-gray-500 dark:text-gray-400">
+            {{ totalPlannedSets() }} sets
+            <span *ngIf="roundInfo().totalRounds > 1">
+                in {{ roundInfo().totalRounds }} rounds
+            </span>
+        </p>
     </div>
-    <p class="text-sm font-mono text-gray-500 dark:text-gray-400">
-        {{ totalPlannedSets() }} sets
-        <span *ngIf="roundInfo().totalRounds > 1">
-            in {{ roundInfo().totalRounds }} rounds
-        </span>
-    </p>
-</div>
 
-<!-- +++ NEW: WEIGHT INPUT FORM +++ -->
-<div *ngIf="!isBodyweight()" class="flex items-center gap-2 mb-3">
-    <input type="number" 
-           [ngModel]="weightToSet()" 
-           (ngModelChange)="weightToSet.set($event)"
-           placeholder="Set weight for all sets..."
-           class="flex-grow p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200">
-    <button (click)="applyWeightToAllSets()" 
-            [disabled]="weightToSet() === null || weightToSet()! < 0"
-            class="px-4 py-2 bg-primary text-white font-semibold rounded-md shadow-sm hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed">
-        Set
-    </button>
-</div>
+    <!-- WEIGHT INPUT FORM (for all sets) -->
+    <div *ngIf="!isBodyweight()" class="flex items-center gap-2 mb-3">
+        <input type="number" 
+               [ngModel]="weightToSet()" 
+               (ngModelChange)="weightToSet.set($event)"
+               [placeholder]="'Set weight for all sets (' + unitsService.getWeightUnitSuffix() + ')...'"
+               class="flex-grow p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200">
+        <button (click)="applyWeightToAllSets()" 
+                [disabled]="weightToSet() === null || weightToSet()! < 0"
+                class="px-4 py-2 bg-primary text-white font-semibold rounded-md shadow-sm hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed">
+            Set
+        </button>
+    </div>
 
-<!-- Sets Table Wrapper -->
-<div class="space-y-3">
-    <!-- ... (the rest of the component template remains the same) ... -->
-    <!-- Loop through rounds -->
-    <div *ngFor="let roundIndex of roundInfo().roundIndices">
-        <!-- Conditionally show "Round X" header only if there are multiple rounds -->
-        <h6 *ngIf="roundInfo().totalRounds > 1"
-            class="text-xs font-bold mt-2 mb-1 pl-1 text-gray-600 dark:text-gray-400">
-            Round {{ roundIndex + 1 }}
-        </h6>
-        <div class="text-xs space-y-1">
-            <!-- Header Row -->
-            <div
-                class="grid grid-cols-12 gap-2 font-bold text-gray-600 dark:text-gray-300 p-1.5 rounded bg-gray-200/60 dark:bg-gray-700">
-                <div class="col-span-2 text-center">Set</div>
-                <div class="col-span-6">Planned</div>
-                <div class="col-span-4 text-center">Rest</div>
-            </div>
-            <!-- Data Rows -->
-            <div *ngFor="let set of exercise.sets; let i = index" class="grid grid-cols-12 gap-2 items-center p-1.5 rounded"
-                [ngClass]="{
-                    'bg-white dark:bg-gray-700/60': i % 2 === 0,
-                    'bg-gray-100 dark:bg-gray-700/30': i % 2 !== 0
-                 }">
-                <div class="col-span-2 text-center font-semibold text-gray-700 dark:text-gray-300">{{ i + 1 }}</div>
-                <div class="col-span-6 text-gray-800 dark:text-gray-200">{{ formatSet(set) }}</div>
-                <div class="col-span-4 font-semibold text-center text-gray-900 dark:text-white">{{ set.restAfterSet }}s</div>
+    <!-- Sets Table Wrapper -->
+    <div class="space-y-3">
+        <div *ngFor="let roundIndex of roundInfo().roundIndices">
+            <h6 *ngIf="roundInfo().totalRounds > 1" class="text-xs font-bold mt-2 mb-1 pl-1 text-gray-600 dark:text-gray-400">
+                Round {{ roundIndex + 1 }}
+            </h6>
+            <div class="text-xs space-y-1">
+                <!-- Header Row -->
+                <div class="grid grid-cols-12 gap-2 font-bold text-gray-600 dark:text-gray-300 p-1.5 rounded bg-gray-200/60 dark:bg-gray-700">
+                    <div class="col-span-1 text-center">Set</div>
+                    <!-- +++ CHANGE: Adjust column span based on whether it's bodyweight +++ -->
+                    <div [ngClass]="isBodyweight() ? 'col-span-8' : 'col-span-4'">Planned</div>
+                    <div *ngIf="!isBodyweight()" class="col-span-4 text-center">Weight</div>
+                    <div class="col-span-3 text-center">Rest</div>
+                </div>
+                <!-- Data Rows -->
+                <div *ngFor="let set of exercise.sets; let i = index" class="grid grid-cols-12 gap-2 items-center p-1.5 rounded"
+                    [ngClass]="{ 'bg-white dark:bg-gray-700/60': i % 2 === 0, 'bg-gray-100 dark:bg-gray-700/30': i % 2 !== 0 }">
+                    <div class="col-span-1 text-center font-semibold text-gray-700 dark:text-gray-300">{{ i + 1 }}</div>
+                    <div [ngClass]="isBodyweight() ? 'col-span-8' : 'col-span-4'" class="text-gray-800 dark:text-gray-200">{{ workoutService.getSetTargetDisplay(set, 'reps') }} reps</div>
+                    
+                    <!-- +++ NEW: Individual Weight Input +++ -->
+                    <div *ngIf="!isBodyweight()" class="col-span-4">
+                        <input type="number"
+                               [ngModel]="set.targetWeight"
+                               (ngModelChange)="onSetWeightChange($event, i)"
+                               class="w-full text-center p-1 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-600 dark:text-gray-200">
+                    </div>
+
+                    <div class="col-span-3 font-semibold text-center text-gray-900 dark:text-white">{{ set.restAfterSet }}s</div>
+                </div>
             </div>
         </div>
     </div>
-</div>
+</ng-container>

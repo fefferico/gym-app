@@ -8,6 +8,7 @@ import { Routine, WorkoutExercise, ExerciseTargetSetParams } from '../models/wor
 import { ExerciseService } from './exercise.service';
 import { PersonalGymService } from './personal-gym.service';
 import { WorkoutService } from './workout.service'; // Import WorkoutService
+import { ToastService } from './toast.service';
 
 // Interface for the detailed generation options
 export interface WorkoutGenerationOptions {
@@ -27,44 +28,99 @@ export class WorkoutGeneratorService {
     private exerciseService = inject(ExerciseService);
     private personalGymService = inject(PersonalGymService);
     private workoutService = inject(WorkoutService); // Inject WorkoutService
+    private toastService = inject(ToastService); // Inject WorkoutService
 
+    /**
+    * --- REWRITTEN METHOD ---
+    * Generates a "surprise" full-body workout. It is completely independent
+    * of the detailed generator and its options.
+    */
     public async generateQuickWorkout(): Promise<Routine | null> {
-        const options: WorkoutGenerationOptions = {
+        console.log("Starting QUICK workout generation...");
+
+        // --- START OF FIX ---
+        // Create a FULL options object that represents a quick workout.
+        // This ensures that any function we pass it to receives all expected properties.
+        const optionsForFiltering: WorkoutGenerationOptions = {
+            usePersonalGym: true,
+            avoidMuscles: [],
+            split: 'full-body', // A quick workout is always full-body
+            targetMuscles: [],    // No specific targets, so the service will use the default for the split
+            // These properties aren't used by the filtering step, but we provide them to satisfy the type.
             duration: 45,
             goal: 'hypertrophy',
-            split: 'full-body',
-            targetMuscles: [],
-            avoidMuscles: [],
-            usePersonalGym: true,
-            equipment: []
+            equipment: [],
         };
-        return this.generateWorkout(options);
-    }
+        
+        // 'Chest', 'Quadriceps', 'Core','Arms','Back'
+        // The cast to WorkoutGenerationOptions is no longer needed as the object is complete.
+        const availableExercises = await this.getSelectableExercises(optionsForFiltering);
+        // --- END OF FIX ---
 
-    public async generateWorkout(options: WorkoutGenerationOptions): Promise<Routine | null> {
-        // 1. Get and Filter Exercises
-        const selectableExercises = await this.getSelectableExercises(options);
-
-        if (selectableExercises.length < 3) {
-            console.warn("Generation failed: Fewer than 3 selectable exercises after filtering.");
+        if (availableExercises.length < 5) {
+            this.toastService.error("Not enough exercises available to generate a workout.", 0, "Error");
             return null;
         }
 
-        // 2. Build the Workout Structure
-        const generatedExercises = this.buildExerciseList(selectableExercises, options);
+        // 2. Group available exercises by their primary muscle group
+        const exercisesPerMuscle = new Map<string, Exercise[]>();
+        availableExercises.forEach(ex => {
+            if (ex.primaryMuscleGroup) {
+                if (!exercisesPerMuscle.has(ex.primaryMuscleGroup)) {
+                    exercisesPerMuscle.set(ex.primaryMuscleGroup, []);
+                }
+                exercisesPerMuscle.get(ex.primaryMuscleGroup)!.push(ex);
+            }
+        });
 
-        if (generatedExercises.length === 0) {
-            console.warn("Generation failed: No exercises were selected for the routine.");
+        // 3. Define major muscle categories for a balanced workout
+        const muscleCategories = {
+            legs: ['Quadriceps', 'Hamstrings', 'Glutes', 'Calves'],
+            push: ['Chest', 'Shoulders', 'Triceps'],
+            pull: ['Lats', 'Traps', 'Biceps', 'Lower back', 'Back'],
+            core: ['Abs', 'Obliques', 'Core']
+        };
+
+        const workoutExercises: WorkoutExercise[] = [];
+        const usedExerciseIds = new Set<string>();
+
+        // 4. Intelligently pick one exercise from each major category
+        const pickFromCategory = (category: string[]) => {
+            const availableMuscles = this.shuffleArray(category.filter(m => exercisesPerMuscle.has(m)));
+            for (const muscle of availableMuscles) {
+                const candidates = exercisesPerMuscle.get(muscle)!;
+                const exercise = this.pickUniqueExercise(candidates, Array.from(usedExerciseIds));
+                if (exercise) {
+                    workoutExercises.push(this.createSimpleWorkoutExercise(exercise));
+                    usedExerciseIds.add(exercise.id);
+                    return; // Found one, move to next category
+                }
+            }
+        };
+
+        pickFromCategory(muscleCategories.legs);
+        pickFromCategory(muscleCategories.push);
+        pickFromCategory(muscleCategories.pull);
+        pickFromCategory(muscleCategories.core);
+
+        // Add one more random exercise for good measure if possible
+        if (workoutExercises.length < 5) {
+            const allMuscles = Array.from(exercisesPerMuscle.keys());
+            pickFromCategory(allMuscles);
+        }
+
+        if (workoutExercises.length < 3) {
+            console.error("Quick generation failed: could not build a balanced workout.");
             return null;
         }
 
-        const routineName = `Generated ${options.split.replace('-', ' ')} Workout`;
+        // 5. Assemble and return the routine
         const newRoutine: Routine = {
             id: `generated-${uuidv4()}`,
-            name: routineName,
-            description: `Generated on ${new Date().toLocaleDateString()} for a ${options.duration} minute, ${options.goal}-focused session.`,
-            exercises: generatedExercises,
-            goal: options.goal,
+            name: 'Quick Surprise Workout',
+            description: `A randomly generated full-body session created on ${new Date().toLocaleDateString()}.`,
+            exercises: this.shuffleArray(workoutExercises), // Shuffle the final order
+            goal: 'hypertrophy',
             isFavourite: false,
             isHidden: true,
         };
@@ -72,18 +128,37 @@ export class WorkoutGeneratorService {
         return newRoutine;
     }
 
+    /**
+     * A helper that encapsulates a single generation attempt.
+     */
+    private async tryGenerateWithCriteria(options: WorkoutGenerationOptions): Promise<WorkoutExercise[] | null> {
+        const selectableExercises = await this.getSelectableExercises(options);
+
+        if (selectableExercises.length < 2) {
+            return null; // Not enough exercises to proceed
+        }
+
+        return this.buildExerciseList(selectableExercises, options);
+    }
+
     private async getSelectableExercises(options: WorkoutGenerationOptions): Promise<Exercise[]> {
         const allExercises = await firstValueFrom(this.exerciseService.getExercises());
         let availableExercises = allExercises.filter(ex => !ex.isHidden && ex.category !== 'stretching');
 
         // Filter by Equipment
+        let equipmentFilter = new Set<string>();
         if (options.usePersonalGym) {
             const personalGym = await firstValueFrom(this.personalGymService.getAllEquipment());
-            const personalEquipment = new Set(personalGym.map(e => e.name));
+            personalGym.forEach(e => equipmentFilter.add(e.name));
+        } else if (options.equipment.length > 0) {
+            options.equipment.forEach(e => equipmentFilter.add(e));
+        }
+
+        if (equipmentFilter.size > 0) {
             availableExercises = availableExercises.filter(ex =>
-                ex.category === 'bodyweight/calisthenics' || !ex.equipment || personalEquipment.has(ex.equipment)
+                ex.category === 'bodyweight/calisthenics' || !ex.equipment || equipmentFilter.has(ex.equipment)
             );
-        } // Add else block for manual equipment selection if needed
+        }
 
         // Filter by Muscles to Avoid
         if (options.avoidMuscles.length > 0) {
@@ -91,10 +166,10 @@ export class WorkoutGeneratorService {
             availableExercises = availableExercises.filter(ex => !avoidSet.has(ex.primaryMuscleGroup));
         }
 
-        // Filter by Target Muscles (determined by split and user choice)
+        // Filter by Target Muscles
         const targetMuscles = this.determineTargetMuscles(options.split, options.targetMuscles);
         if (targetMuscles.size > 0) {
-            availableExercises = availableExercises.filter(ex => targetMuscles.has(ex.primaryMuscleGroup));
+            availableExercises = availableExercises.filter(ex => ex.primaryMuscleGroup && targetMuscles.has(ex.primaryMuscleGroup.toLowerCase()));
         }
 
         return availableExercises;
@@ -115,67 +190,67 @@ export class WorkoutGeneratorService {
     }
 
     /**
-         * --- REWRITTEN METHOD ---
-         * Builds a list of exercises by accumulating their estimated duration until it
-         * reaches the user's target time.
-         */
+      * Builds a list of exercises by accumulating their estimated duration.
+      */
     private buildExerciseList(exercises: Exercise[], options: WorkoutGenerationOptions): WorkoutExercise[] {
         const workout: WorkoutExercise[] = [];
         const exercisesPerMuscle = new Map<string, Exercise[]>();
-
         exercises.forEach(ex => {
-            if (!exercisesPerMuscle.has(ex.primaryMuscleGroup)) {
-                exercisesPerMuscle.set(ex.primaryMuscleGroup, []);
+            if (ex.primaryMuscleGroup) {
+                if (!exercisesPerMuscle.has(ex.primaryMuscleGroup)) {
+                    exercisesPerMuscle.set(ex.primaryMuscleGroup, []);
+                }
+                exercisesPerMuscle.get(ex.primaryMuscleGroup)!.push(ex);
             }
-            exercisesPerMuscle.get(ex.primaryMuscleGroup)!.push(ex);
         });
 
-        // Shuffle the muscle groups to ensure variety in every generated workout
+        if (exercisesPerMuscle.size === 0) return [];
+
         const muscleGroupsToPickFrom = this.shuffleArray(Array.from(exercisesPerMuscle.keys()));
 
         let totalEstimatedSeconds = 0;
         const targetSeconds = options.duration * 60;
         let muscleIndex = 0;
-        const maxExercises = 10; // Safety break to prevent huge workouts
+        const maxExercises = 12;
 
-        // Loop until we hit the target duration or the max exercise limit
         while (totalEstimatedSeconds < targetSeconds && workout.length < maxExercises) {
             if (muscleGroupsToPickFrom.length === 0) break;
 
-            // Cycle through the available muscle groups
             const muscle = muscleGroupsToPickFrom[muscleIndex % muscleGroupsToPickFrom.length];
             const availableForMuscle = exercisesPerMuscle.get(muscle);
 
             if (availableForMuscle && availableForMuscle.length > 0) {
-                // Pick a random exercise from the list that hasn't been used yet
-                const exerciseToAdd = this.pickUniqueExercise(availableForMuscle, workout);
+
+                // --- START OF CORRECTION ---
+                // We now map the 'workout' array to an array of just the exercise IDs
+                // to match the new signature of 'pickUniqueExercise'.
+                const existingExerciseIds = workout.map(wEx => wEx.exerciseId);
+                const exerciseToAdd = this.pickUniqueExercise(availableForMuscle, existingExerciseIds);
+                // --- END OF CORRECTION ---
 
                 if (exerciseToAdd) {
                     const workoutExercise = this.createWorkoutExercise(exerciseToAdd, options.goal);
-
-                    // Use the accurate duration estimator from WorkoutService
                     const exerciseDurationInSeconds = this.workoutService.getEstimatedRoutineDuration({ exercises: [workoutExercise] } as Routine) * 60;
 
-                    // Add the new exercise ONLY if it doesn't grossly overshoot the target duration
-                    if (totalEstimatedSeconds + exerciseDurationInSeconds < targetSeconds + 180) { // Allow going over by 3 mins
+                    if (totalEstimatedSeconds + exerciseDurationInSeconds < targetSeconds + 180) {
                         workout.push(workoutExercise);
                         totalEstimatedSeconds += exerciseDurationInSeconds;
                     }
                 }
             }
             muscleIndex++;
-            // Safety break to prevent an infinite loop if we run out of unique exercises
-            if (muscleIndex > muscleGroupsToPickFrom.length * 3) break;
+            if (muscleIndex > muscleGroupsToPickFrom.length * 5) break;
         }
 
         return workout;
     }
 
     /** +++ NEW HELPER +++ */
-    private pickUniqueExercise(from: Exercise[], existing: WorkoutExercise[]): Exercise | null {
+    private pickUniqueExercise(from: Exercise[], existingIds: string[]): Exercise | null {
         const available = this.shuffleArray([...from]);
         for (const ex of available) {
-            if (!existing.some(wEx => wEx.exerciseId === ex.id)) {
+            // The logic now correctly checks against an array of strings
+            if (!existingIds.includes(ex.id)) {
                 return ex;
             }
         }
@@ -233,6 +308,75 @@ export class WorkoutGeneratorService {
             rounds: 1,
             type: 'standard'
         };
+    }
+
+    /**
+     * --- NEW HELPER METHOD ---
+     * Creates a WorkoutExercise with a simple, standard set/rep scheme.
+     */
+    private createSimpleWorkoutExercise(exercise: Exercise): WorkoutExercise {
+        const sets: ExerciseTargetSetParams[] = Array.from({ length: 3 }, () => ({
+            id: uuidv4(),
+            type: 'standard',
+            targetReps: 10,
+            restAfterSet: 60,
+        }));
+
+        return {
+            id: uuidv4(),
+            exerciseId: exercise.id,
+            exerciseName: exercise.name,
+            sets: sets,
+            supersetId: null,
+            supersetOrder: null,
+            supersetRounds: 1,
+            rounds: 1,
+            type: 'standard'
+        };
+    }
+
+    /**
+     * --- FULL IMPLEMENTATION ---
+     * The main engine for generating a detailed, customized workout with fallbacks.
+     */
+    public async generateWorkout(options: WorkoutGenerationOptions): Promise<Routine | null> {
+        console.log("Starting workout generation with options:", options);
+
+        let generatedExercises = await this.tryGenerateWithCriteria(options);
+        
+        if (!generatedExercises || generatedExercises.length < 2) {
+            console.warn("Generation failed with strict criteria. Fallback 1: Ignoring equipment constraints.");
+            this.toastService.info("Not enough specific exercises found. Broadening search...", 3000, "Expanding Search");
+            
+            const relaxedOptions = { ...options, usePersonalGym: false, equipment: [] };
+            generatedExercises = await this.tryGenerateWithCriteria(relaxedOptions);
+        }
+
+        if (!generatedExercises || generatedExercises.length < 2) {
+            console.warn("Generation failed after relaxing equipment. Fallback 2: Ignoring target muscle constraints.");
+            this.toastService.info("Still not enough. Ignoring specific muscle targets...", 3000, "Expanding Further");
+            
+            const finalOptions = { ...options, targetMuscles: [] };
+            generatedExercises = await this.tryGenerateWithCriteria(finalOptions);
+        }
+
+        if (!generatedExercises || generatedExercises.length === 0) {
+            console.error("CRITICAL: Workout generation failed even with all fallbacks.");
+            return null;
+        }
+
+        const routineName = `Generated ${options.split.replace('-', ' ')} Workout`;
+        const newRoutine: Routine = {
+            id: `generated-${uuidv4()}`,
+            name: routineName,
+            description: `Generated on ${new Date().toLocaleDateString()} for a ~${options.duration} minute, ${options.goal}-focused session.`,
+            exercises: generatedExercises,
+            goal: options.goal,
+            isFavourite: false,
+            isHidden: true,
+        };
+
+        return newRoutine;
     }
 
 }
