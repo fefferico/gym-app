@@ -1,1 +1,0 @@
-import{f as s,g as r}from"./chunk-T73ZQ36A.js";function l(f,e){let o=r(),n=e?.weekStartsOn??e?.locale?.options?.weekStartsOn??o.weekStartsOn??o.locale?.options?.weekStartsOn??0,t=s(f,e?.in),a=t.getDay(),c=(a<n?-7:0)+6-(a-n);return t.setDate(t.getDate()+c),t.setHours(23,59,59,999),t}export{l as a};
