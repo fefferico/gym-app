@@ -1,0 +1,100 @@
+<div *ngIf="isOpen"
+    class="fixed inset-0 bg-gray-900/70 dark:bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-[100]"
+    (click)="close.emit()">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col"
+        (click)="$event.stopPropagation()">
+
+        <!-- Header -->
+        <header class="p-5 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center flex-shrink-0">
+            <div class="flex items-center gap-3">
+                <app-icon name="magic-wand" class="h-7 w-7 text-primary dark:text-primary-light"></app-icon>
+                <h3 class="text-xl font-semibold text-gray-800 dark:text-gray-100">Generate Workout</h3>
+            </div>
+            <button (click)="close.emit()" class="p-1.5 rounded-full text-gray-500 hover:text-gray-700">
+                <app-icon name="cancel" class="h-6 w-6"></app-icon>
+            </button>
+        </header>
+
+        <!-- Main Content (Scrollable) -->
+        <div class="p-6 overflow-y-auto flex-grow bg-gray-50 dark:bg-gray-900">
+            <!-- Quick and Simple Button -->
+            <button (click)="generateQuick()" class="w-full mb-6 p-4 bg-green-500 text-white font-bold rounded-lg shadow-lg hover:bg-green-600 transition-all transform hover:scale-105 flex items-center justify-center gap-2">
+                <app-icon name="shuffle" class="h-6 w-6"></app-icon>
+                Surprise Me! (Quick & Simple)
+            </button>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                <!-- Duration -->
+                <div>
+                    <label class="block text-sm font-medium dark:text-gray-100">Duration: <strong>{{ options.duration }} min</strong></label>
+                    <input type="range" [(ngModel)]="options.duration" min="15" max="120" step="5" class="w-full h-2 rounded-md appearance-none cursor-pointer">
+                </div>
+
+                <!-- Goal -->
+                <div>
+                    <label class="block text-sm font-medium dark:text-gray-100">Goal</label>
+                    <select [(ngModel)]="options.goal" class="block w-full p-2 border rounded-md">
+                        <option value="hypertrophy">Hypertrophy (Size)</option>
+                        <option value="strength">Strength</option>
+                        <option value="muscular endurance">Endurance</option>
+                    </select>
+                </div>
+
+                <!-- Split -->
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium dark:text-gray-100">Training Split</label>
+                    <select [(ngModel)]="options.split" class="block w-full p-2 border rounded-md">
+                        <option value="full-body">Full Body</option>
+                        <option value="upper-lower">Upper / Lower</option>
+                        <option value="push-pull-legs">Push / Pull / Legs</option>
+                    </select>
+                </div>
+                
+                <!-- Target Muscles -->
+                <div class="text-black dark:text-gray-200">
+                    <label class="block text-sm font-medium">Target Muscles (Optional)</label>
+                    <div class="max-h-32 overflow-y-auto p-2 border rounded-md">
+                        <div *ngFor="let muscle of allMuscleGroups()">
+                            <label class="flex items-center gap-2">
+                                <input type="checkbox" [value]="muscle" (change)="toggleMuscle('target', muscle)" [checked]="options.targetMuscles.includes(muscle)" [disabled]="options.avoidMuscles.includes(muscle)">
+                                {{ muscle | titlecase }}
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Avoid Muscles -->
+                <div class="text-black dark:text-gray-200">
+                    <label class="block text-sm font-medium dark:text-gray-100">Avoid Muscles (Optional)</label>
+                     <div class="max-h-32 overflow-y-auto p-2 border rounded-md">
+                        <div *ngFor="let muscle of allMuscleGroups()">
+                            <label class="flex items-center gap-2">
+                                <input type="checkbox" [value]="muscle" (change)="toggleMuscle('avoid', muscle)" [checked]="options.avoidMuscles.includes(muscle)" [disabled]="options.targetMuscles.includes(muscle)">
+                                {{ muscle | titlecase }}
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Equipment -->
+                <div class="md:col-span-2 text-black dark:text-gray-200">
+                     <label class="block text-sm font-medium dark:text-gray-100">Equipment</label>
+                     <label class="flex items-center gap-2 mb-2">
+                         <input type="checkbox" [(ngModel)]="options.usePersonalGym">
+                         Use My Personal Gym Equipment
+                     </label>
+                     <div *ngIf="!options.usePersonalGym" class="max-h-32 overflow-y-auto p-2 border rounded-md">
+                         <!-- Multi-select for equipment if not using personal gym -->
+                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="p-4 bg-gray-100 dark:bg-gray-800 flex-shrink-0 text-right rounded-b-md">
+            <button (click)="generateDetailed()" class="bg-primary text-white font-bold py-3 px-8 rounded-lg shadow-md hover:bg-primary-dark">
+                GENERATE WORKOUT
+            </button>
+        </footer>
+    </div>
+</div>

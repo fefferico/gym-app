@@ -1,6 +1,6 @@
 <div class="compact-player-container bg-gray-100 dark:bg-gray-900 min-h-screen">
   <!-- Header -->
-  <header
+  <header #header
     class="sticky top-0 z-20 bg-white dark:bg-gray-800 shadow-md px-3 pt-3 pb-2 flex flex-col justify-between rounded-b-md">
 
     <!-- Top part of header -->
@@ -62,7 +62,7 @@
     <div *ngIf="routine() as currentRoutine; else loading" cdkDropList [cdkDropListData]="currentRoutine.exercises"
       (cdkDropListDropped)="onExerciseDrop($event)" class="">
       <!-- Exercise Card -->
-      <div *ngFor="let exercise of currentRoutine.exercises; let exIndex = index;" cdkDrag
+      <div #exerciseCard *ngFor="let exercise of currentRoutine.exercises; let exIndex = index;" cdkDrag
         class="transition-all duration-300 relative" [ngClass]="getExerciseClasses(exercise, exIndex)"
         [style.zIndex]="areActionsVisible(exIndex) ? 50 : 'auto'">
 

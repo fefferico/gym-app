@@ -90,6 +90,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
   sessionTimerDisplay = signal('00:00');
 
   private workoutStartTime: number = 0;
+  private originalSessionStartTime: number = 0;
   private sessionTimerElapsedSecondsBeforePause = 0;
   private timerSub: Subscription | undefined;
 
@@ -1883,9 +1884,14 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Restore timers and other state properties
-    this.workoutStartTime = Date.now();
+    // --- START MODIFICATION ---
+    // Restore the original start time. This is critical for the final log.
+    this.originalSessionStartTime = state.workoutStartTimeOriginal || Date.now();
+
+    // The workoutStartTime for the timer calculation is reset to now.
+    this.workoutStartTime = Date.now(); 
     this.sessionTimerElapsedSecondsBeforePause = state.sessionTimerElapsedSecondsBeforePause;
+    // --- END MODIFICATION ---
 
     // Set totalBlockRounds based on the determined starting exercise
     const startingExercise = state.sessionRoutine.exercises[this.currentExerciseIndex()];
@@ -1968,7 +1974,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       currentExerciseIndex: this.currentExerciseIndex(),
       currentSetIndex: this.currentSetIndex(),
       currentWorkoutLogExercises: JSON.parse(JSON.stringify(this.currentWorkoutLogExercises())),
-      workoutStartTimeOriginal: this.workoutStartTime,
+      workoutStartTimeOriginal: this.originalSessionStartTime,
       sessionTimerElapsedSecondsBeforePause: currentTotalSessionElapsed,
       currentBlockRound: this.currentBlockRound(),
       totalBlockRounds: this.totalBlockRounds(),
@@ -2592,7 +2598,10 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     }
 
     const endTime = Date.now();
-    const sessionStartTime = this.workoutStartTime - (this.sessionTimerElapsedSecondsBeforePause * 1000);
+    // --- START MODIFICATION ---
+    // Use the persistent original start time, not the transient one for the timer.
+    const sessionStartTime = this.originalSessionStartTime;
+    // --- END MODIFICATION ---
     const durationMinutes = Math.round((endTime - sessionStartTime) / (1000 * 60));
     const durationSeconds = Math.round((endTime - sessionStartTime) / (1000));
     let finalRoutineIdToLog: string | undefined = this.routineId || undefined;
@@ -2917,6 +2926,8 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       ).subscribe();
     }
     this.loadAvailableExercises(); // Load exercises for the modal
+
+    await this.lockScreenToPortrait();
   }
 
   forceStartOnEmptyWorkout(): void {
@@ -2936,6 +2947,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
 
     this.stopAllActivity();
     this.workoutStartTime = Date.now();
+    this.originalSessionStartTime = this.workoutStartTime;
     this.sessionTimerElapsedSecondsBeforePause = 0;
     this.originalRoutineSnapshot = null;
     this.currentWorkoutLogExercises.set([]);
@@ -3276,6 +3288,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     } else {
       this.stopAllActivity(); // Final cleanup for any other edge case.
     }
+    this.unlockScreenOrientation();
   }
 
   // Method to play a beep using Web Audio API
@@ -4782,7 +4795,41 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
   * @returns A formatted string like "8-12" or "60+", or an empty string if no range is set.
   */
   public getSetTargetDisplay(set: ExerciseTargetSetParams, field: 'reps' | 'duration' | 'weight'): string {
-    return this.workoutService.getSetTargetDisplay(set,field);
+    return this.workoutService.getSetTargetDisplay(set, field);
+  }
+
+  
+  /**
+   * Attempts to lock the screen orientation to portrait mode.
+   * This method should be called when the workout player is initialized.
+   */
+  private async lockScreenToPortrait(): Promise<void> {
+    // Check if the Screen Orientation API is available and we're in a browser context
+    if (isPlatformBrowser(this.platformId) && screen.orientation) {
+      try {
+        await (screen.orientation as any).lock('portrait-primary');
+        console.log('Screen orientation locked to portrait.');
+      } catch (error) {
+        console.error('Failed to lock screen orientation:', error);
+        // Handle cases where the browser might not allow locking,
+        // e.g., on desktop or if the user has disabled it.
+      }
+    }
+  }
+
+  /**
+   * Unlocks the screen orientation, allowing it to change freely again.
+   * This should be called when the user navigates away from the workout player.
+   */
+  private unlockScreenOrientation(): void {
+    if (isPlatformBrowser(this.platformId) && screen.orientation) {
+      try {
+        screen.orientation.unlock();
+        console.log('Screen orientation unlocked.');
+      } catch (error) {
+        console.error('Failed to unlock screen orientation:', error);
+      }
+    }
   }
 
 }

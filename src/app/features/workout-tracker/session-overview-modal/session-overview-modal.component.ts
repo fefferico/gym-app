@@ -1,5 +1,5 @@
 import { Component, Input, Output, EventEmitter, computed, Signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DecimalPipe } from '@angular/common';
 import { Routine, WorkoutExercise } from '../../../core/models/workout.model';
 import { LoggedWorkoutExercise } from '../../../core/models/workout-log.model';
 import { IconComponent } from '../../../shared/components/icon/icon.component';

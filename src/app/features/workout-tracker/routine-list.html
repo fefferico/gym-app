@@ -156,8 +156,7 @@
                                     <app-icon name="menu-action" class="h-10 w-10"></app-icon>
                                 </button>
                                 <app-action-menu *ngIf="areActionsVisible(routine.id) && menuModeDropdown"
-                                    displayMode="dropdown"
-                                    [gridClass]="' grid grid-cols-2 '"
+                                    displayMode="dropdown" [gridClass]="' grid grid-cols-2 '"
                                     [items]="getRoutineDropdownActionItems(routine.id, 'dropdown')"
                                     [isVisible]="areActionsVisible(routine.id)"
                                     (itemClick)="handleActionMenuItemClick($event)" (closeMenu)="onCloseActionMenu()">
@@ -268,8 +267,8 @@
                         </div>
                         <div class="relative">
                             <app-action-menu *ngIf="areActionsVisible(routine.id) && menuModeCompact"
-                                [gridClass]="'grid grid-cols-2'"
-                                displayMode="compact" [items]="getRoutineDropdownActionItems(routine.id, 'compact')"
+                                [gridClass]="'grid grid-cols-2'" displayMode="compact"
+                                [items]="getRoutineDropdownActionItems(routine.id, 'compact')"
                                 [isVisible]="areActionsVisible(routine.id)"
                                 (itemClick)="handleActionMenuItemClick($event)" (closeMenu)="onCloseActionMenu()">
                             </app-action-menu>
@@ -376,7 +375,34 @@
                         <span class="sr-only">Start New Ad-Hoc Session</span>
                     </button>
                 </div>
+                <div class="group relative flex items-center">
+                    <span
+                        class="absolute right-full mr-4 sm:hidden whitespace-nowrap rounded-md bg-purple-500 px-3 py-2 text-sm font-semibold text-white group-hover:block"
+                        style="margin-right: -10px;">
+                        Generate Workout
+                    </span>
+                    <button appPress (shortPress)="openGenerateWorkoutModal()" type="button"
+                        class="flex h-12 w-12 items-center justify-center rounded-full bg-purple-500 text-white shadow-lg transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 dark:ring-offset-gray-900">
+                        <app-icon name="magic-wand" class="h-7 w-7 text-white"></app-icon>
+                        <span class="sr-only">Generate Random Workout</span>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+
+<app-generate-workout-modal 
+    [isOpen]="isGenerateModalOpen()"
+    (close)="isGenerateModalOpen.set(false)"
+    (generated)="handleWorkoutGenerated($event)">
+</app-generate-workout-modal>
+
+<!-- NEW: Replace the old overview modal with the new summary component -->
+<app-generated-workout-summary
+    [isOpen]="isSummaryModalOpen()"
+    [generatedRoutine]="generatedRoutine()"
+    (close)="closeSummaryModal()"
+    (start)="startGeneratedWorkout($event)"> 
+</app-generated-workout-summary>

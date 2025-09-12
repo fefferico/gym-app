@@ -28,11 +28,17 @@ import { AppSettingsService } from '../../core/services/app-settings.service';
 import { MenuMode } from '../../core/models/app-settings.model';
 import { PremiumFeature, SubscriptionService } from '../../core/services/subscription.service';
 import { cloneBtn, deleteBtn, editBtn, favouriteBtn, hideBtn, historyBtn, startBtn, unhideBtn, unmarkFavouriteBtn, viewBtn } from '../../core/services/buttons-data';
+import { GenerateWorkoutModalComponent } from './generate-workout-modal/generate-workout-modal.component';
+import { SessionOverviewModalComponent } from './session-overview-modal/session-overview-modal.component';
+import { GeneratedWorkoutSummaryComponent } from './generated-workout-summary/generated-workout-summary.component';
 
 @Component({
   selector: 'app-routine-list',
   standalone: true,
-  imports: [CommonModule, DatePipe, TitleCasePipe, RouterLink, ActionMenuComponent, PressDirective, IconComponent],
+  imports: [CommonModule, DatePipe, TitleCasePipe, RouterLink, ActionMenuComponent, PressDirective, IconComponent, GenerateWorkoutModalComponent, SessionOverviewModalComponent,
+    GenerateWorkoutModalComponent,
+    GeneratedWorkoutSummaryComponent
+  ],
   templateUrl: './routine-list.html',
   styleUrl: './routine-list.scss',
   animations: [
@@ -912,5 +918,48 @@ export class RoutineListComponent implements OnInit, OnDestroy {
 
   startNewSession(): void {
     this.router.navigate(['/workout/play', -1], { queryParams: { newSession: 'true' } });
+  }
+
+  // --- NEW SIGNALS FOR MODAL CONTROL ---
+  isGenerateModalOpen = signal(false);
+  isSummaryModalOpen = signal(false);
+  generatedRoutine = signal<Routine | null>(null);
+
+
+  // A computed signal to pass to the overview modal
+  generatedRoutineSignal = computed(() => this.generatedRoutine());
+
+  openGenerateWorkoutModal() {
+    this.isFabActionsOpen.set(false);
+    this.isGenerateModalOpen.set(true);
+  }
+
+  handleWorkoutGenerated(routine: Routine | undefined) {
+    this.isGenerateModalOpen.set(false); // Always close the generate modal
+    if (routine && routine.exercises.length > 0) {
+      this.generatedRoutine.set(routine);
+      this.isSummaryModalOpen.set(true); // Open the new summary modal
+    } else {
+      this.toastService.warning("Could not generate a workout with the selected criteria. Please try a different combination.", 5000, "Generation Failed");
+    }
+  }
+
+  startGeneratedWorkout(routine: Routine) {
+    if (!routine) return;
+
+    // A generated routine is temporary. We add it to the service so the player can
+    // find it by its ID, but it won't be saved permanently unless the user chooses to.
+    const tempRoutine = this.workoutService.addRoutine(routine);
+
+    this.isSummaryModalOpen.set(false);
+    this.generatedRoutine.set(null); // Clear the temporary routine
+
+    this.workoutService.navigateToPlayer(tempRoutine.id);
+  }
+
+  // Add a method to handle the close event from the summary modal
+  closeSummaryModal() {
+    this.isSummaryModalOpen.set(false);
+    this.generatedRoutine.set(null); // Clear the routine when closing
   }
 }

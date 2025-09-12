@@ -44,7 +44,15 @@
         </div>
         <div class="min-w-0">
           <h3 class="font-semibold text-gray-300 uppercase tracking-wider text-sm">Next Up</h3>
-          <p class="text-white text-lg font-medium text-wrap" [title]="nextUpText">{{ nextUpText }}</p>
+          
+          <!-- START: MODIFIED ELEMENT -->
+          <!-- We use a div with [innerHTML] to render the line breaks and styles -->
+          <!-- leading-tight is added for better spacing between lines -->
+          <div class="text-white text-lg font-medium text-wrap leading-tight" 
+               [innerHTML]="nextUpText">
+          </div>
+          <!-- END: MODIFIED ELEMENT -->
+
         </div>
       </div>
 

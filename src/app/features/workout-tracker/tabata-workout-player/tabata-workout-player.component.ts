@@ -72,6 +72,7 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
     exercisePBs = signal<PersonalBestSet[]>([]);
 
     private workoutStartTime: number = 0;
+    private originalSessionStartTime: number = 0;
     private sessionTimerElapsedSecondsBeforePause = 0;
     private timerSub: Subscription | undefined;
     private timedSetIntervalSub: Subscription | undefined;
@@ -166,6 +167,7 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
         } else {
             this.loadNewWorkoutFromRoute();
         }
+        await this.lockScreenToPortrait();
     }
 
     private logCompletedTabataInterval(): void {
@@ -306,9 +308,12 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
         // --- NEW: TABATA RESUME LOGIC ---
         console.log("Resuming a paused Tabata session");
 
+        // --- START MODIFICATION ---
         this.sessionState.set(SessionState.Playing);
+        this.originalSessionStartTime = state.workoutStartTimeOriginal || Date.now();
         this.workoutStartTime = Date.now();
         this.sessionTimerElapsedSecondsBeforePause = state.sessionTimerElapsedSecondsBeforePause;
+        // --- END MODIFICATION ---
 
         // Setup the tabata player from the saved state.
         this.setupTabataMode(
@@ -353,7 +358,7 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
     private startOrResumeTimedSet(): void {
         if (this.timedSetTimerState() === TimedSetState.Idle) {
             this.timedSetElapsedSeconds.set(0);
-            const targetDuration = this.activeSetInfo()?.setData?.targetDuration || this.activeSetInfo()?.setData?.targetDurationMin ;
+            const targetDuration = this.activeSetInfo()?.setData?.targetDuration || this.activeSetInfo()?.setData?.targetDurationMin;
             if (targetDuration && targetDuration > 0) {
                 this.currentSetForm.get('actualDuration')?.setValue(targetDuration, { emitEvent: false });
             }
@@ -704,7 +709,9 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
         }
 
         const endTime = Date.now();
-        const sessionStartTime = this.workoutStartTime - (this.sessionTimerElapsedSecondsBeforePause * 1000);
+        // --- START MODIFICATION ---
+        const sessionStartTime = this.originalSessionStartTime;
+        // --- END MODIFICATION ---
         const durationMinutes = Math.round((endTime - sessionStartTime) / (1000 * 60));
         const durationSeconds = Math.round((endTime - sessionStartTime) / (1000));
         let finalRoutineIdToLog: string | undefined = this.routineId || undefined;
@@ -812,6 +819,7 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
 
         this.stopAllActivity();
         this.workoutStartTime = Date.now();
+        this.originalSessionStartTime = this.workoutStartTime;
         this.sessionTimerElapsedSecondsBeforePause = 0;
         this.currentWorkoutLogExercises.set([]);
         this.currentSetIndex.set(0);
@@ -1614,6 +1622,7 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
             console.log('WorkoutPlayer ngOnDestroy - Saving state...');
             this.savePausedSessionState();
         }
+        this.unlockScreenOrientation();
     }
 
     private stopAllActivity(): void {
@@ -1671,7 +1680,7 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
             currentExerciseIndex: this.currentExerciseIndex(),
             currentSetIndex: this.currentSetIndex(),
             currentWorkoutLogExercises: JSON.parse(JSON.stringify(this.currentWorkoutLogExercises())),
-            workoutStartTimeOriginal: this.workoutStartTime,
+            workoutStartTimeOriginal: this.originalSessionStartTime,
             sessionTimerElapsedSecondsBeforePause: currentTotalSessionElapsed,
             currentBlockRound: this.currentBlockRound(),
             totalBlockRounds: this.totalBlockRounds(),
@@ -1887,6 +1896,40 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
             this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
             this.router.navigate(['/workout']);
             this.toastService.info("Workout quit. No progress saved.", 4000);
+        }
+    }
+
+
+    /**
+     * Attempts to lock the screen orientation to portrait mode.
+     * This method should be called when the workout player is initialized.
+     */
+    private async lockScreenToPortrait(): Promise<void> {
+        // Check if the Screen Orientation API is available and we're in a browser context
+        if (isPlatformBrowser(this.platformId) && screen.orientation) {
+            try {
+                await (screen.orientation as any).lock('portrait-primary');
+                console.log('Screen orientation locked to portrait.');
+            } catch (error) {
+                console.error('Failed to lock screen orientation:', error);
+                // Handle cases where the browser might not allow locking,
+                // e.g., on desktop or if the user has disabled it.
+            }
+        }
+    }
+
+    /**
+     * Unlocks the screen orientation, allowing it to change freely again.
+     * This should be called when the user navigates away from the workout player.
+     */
+    private unlockScreenOrientation(): void {
+        if (isPlatformBrowser(this.platformId) && screen.orientation) {
+            try {
+                screen.orientation.unlock();
+                console.log('Screen orientation unlocked.');
+            } catch (error) {
+                console.error('Failed to unlock screen orientation:', error);
+            }
         }
     }
 

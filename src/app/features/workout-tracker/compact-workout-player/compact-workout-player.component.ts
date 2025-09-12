@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy, signal, computed, ChangeDetectorRef, PLATFORM_ID } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal, computed, ChangeDetectorRef, PLATFORM_ID, ViewChildren, QueryList, ElementRef, effect, ViewChild } from '@angular/core';
 import { CommonModule, DatePipe, DecimalPipe, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription, timer, of, lastValueFrom, firstValueFrom, combineLatest } from 'rxjs';
@@ -259,6 +259,39 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     );
   });
 
+  @ViewChildren('exerciseCard') exerciseCards!: QueryList<ElementRef>;
+  @ViewChild('header') header!: ElementRef; // Get the header element
+
+
+  constructor() {
+    effect(() => {
+      const index = this.expandedExerciseIndex();
+
+      // We only want to scroll when an exercise is *expanded*
+      if (index !== null && this.exerciseCards && this.header) {
+        // Use a small timeout to ensure the DOM has updated and
+        // all elements have their final dimensions.
+        setTimeout(() => {
+          const cardElement = this.exerciseCards.toArray()[index]?.nativeElement;
+          const headerElement = this.header.nativeElement;
+
+          if (cardElement && headerElement) {
+            const headerHeight = headerElement.offsetHeight;
+            const cardTopPosition = cardElement.getBoundingClientRect().top + window.scrollY;
+            const scrollPadding = 10; // A small pixel padding for better aesthetics
+
+            const scrollTopPosition = cardTopPosition - headerHeight - scrollPadding;
+
+            window.scrollTo({
+              top: scrollTopPosition,
+              behavior: 'smooth'
+            });
+          }
+        }, 100);
+      }
+    });
+  }
+
   async ngOnInit(): Promise<void> {
     if (isPlatformBrowser(this.platformId)) { window.scrollTo(0, 0); }
     this.loadAvailableExercises();
@@ -271,6 +304,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     if (!hasPausedSession) {
       this.loadNewWorkoutFromRoute();
     }
+
+    await this.lockScreenToPortrait();
   }
 
   ngOnDestroy(): void {
@@ -279,6 +314,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     }
     this.timerSub?.unsubscribe();
     this.routeSub?.unsubscribe();
+    this.unlockScreenOrientation();
   }
 
   onExerciseDrop(event: CdkDragDrop<WorkoutExercise[]>) {
@@ -629,7 +665,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         log.exercises.push(exerciseLog);
       }
 
-      const executedSet: ExerciseExecutionSetParams  = mapExerciseTargetSetParamsToExerciseExecutedSetParams(set);
+      const executedSet: ExerciseExecutionSetParams = mapExerciseTargetSetParamsToExerciseExecutedSetParams(set);
 
       const newLoggedSet: LoggedSet = {
         id: uuidv4(),
@@ -665,14 +701,36 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     this.lastExerciseSetIndex.set(setIndex);
     this.workoutService.vibrate();
 
-    const shouldStartRest = set.restAfterSet && set.restAfterSet > 0 &&
-      (!this.isSuperSet(exIndex) || (this.isSuperSet(exIndex) && this.isEndOfLastSupersetExercise(exIndex, setIndex)));
+    // --- START: MODIFIED/FIXED SECTION ---
 
-    // Only start rest timer when a set is marked as *complete*
-    if (shouldStartRest && !wasCompleted) {
-      this.lastLoggedSetForRestUpdate = this.getLoggedSet(exIndex, setIndex, roundIndex) ?? null;
-      this.startRestPeriod(set.restAfterSet, exIndex, setIndex);
+    if (!wasCompleted) { // Only run this logic when completing a set, not un-completing
+      // Populate the step info for the auto-expansion logic
+      const routine = this.routine()!;
+      this.currentStepInfo = {
+        completedExIndex: exIndex,
+        completedSetIndex: setIndex,
+        exerciseSetLength: exercise.sets.length,
+        maxExerciseIndex: routine.exercises.length - 1,
+        supersetInfo: exercise.supersetId ? {
+          supersetId: exercise.supersetId,
+          supersetSize: exercise.supersetSize ?? 1,
+          supersetOrder: exercise.supersetOrder ?? 0,
+          supersetRounds: exercise.supersetRounds ?? 1
+        } : undefined
+      };
+
+      const shouldStartRest = set.restAfterSet && set.restAfterSet > 0 &&
+        (!this.isSuperSet(exIndex) || (this.isSuperSet(exIndex) && this.isEndOfLastSupersetExercise(exIndex, setIndex)));
+
+      if (shouldStartRest) {
+        this.lastLoggedSetForRestUpdate = this.getLoggedSet(exIndex, setIndex, roundIndex) ?? null;
+        this.startRestPeriod(set.restAfterSet, exIndex, setIndex);
+      } else {
+        // If there's no rest period, trigger the auto-expand immediately
+        this.handleAutoExpandNextExercise();
+      }
     }
+    // --- END: MODIFIED/FIXED SECTION ---
   }
 
   // +++ ADD THIS NEW HELPER METHOD +++
@@ -1666,41 +1724,43 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
   private handleAutoExpandNextExercise(): void {
-    if (!this.currentStepInfo || this.currentStepInfo.completedExIndex < 0) return;
+    // Use a guard clause to ensure currentStepInfo is valid
+    if (!this.currentStepInfo || this.currentStepInfo.completedExIndex < 0) {
+      return;
+    }
 
     const { completedExIndex, completedSetIndex, exerciseSetLength, maxExerciseIndex, supersetInfo } = this.currentStepInfo;
 
-    // *** THE CORE FIX IS HERE ***
-    if (supersetInfo) {
-      // It's a superset. Check if all rounds are complete.
-      const lastLoggedEx = this.currentWorkoutLog().exercises?.find(e => e.id === this.routine()?.exercises[completedExIndex].id);
-      const loggedRounds = new Set(lastLoggedEx?.sets.map(s => s.supersetCurrentRound)).size;
+    const isLastSetOfExercise = completedSetIndex >= exerciseSetLength - 1;
 
-      if (loggedRounds < supersetInfo.supersetRounds) {
-        // Not all rounds are complete, so DO NOT expand the next exercise.
-        // Keep the current superset expanded.
-        if (this.expandedExerciseIndex() !== completedExIndex) {
-          this.expandedExerciseIndex.set(completedExIndex);
-        }
-        return; // Exit the function early.
+    // Determine if we should advance to the next exercise card
+    let shouldAdvance = false;
+
+    if (supersetInfo) {
+      // For supersets, advance only if it's the last set of the LAST exercise in the group
+      const isLastExerciseInGroup = supersetInfo.supersetOrder >= supersetInfo.supersetSize - 1;
+      if (isLastSetOfExercise && isLastExerciseInGroup) {
+        shouldAdvance = true;
+      }
+    } else {
+      // For standard exercises, advance if it was the last set
+      if (isLastSetOfExercise) {
+        shouldAdvance = true;
       }
     }
-    // *** END OF FIX ***
 
-    // This logic now only runs for standard exercises or AFTER the final round of a superset.
-    if (completedSetIndex >= exerciseSetLength - 1) {
-      if (completedExIndex + 1 <= maxExerciseIndex) {
-        this.expandedExerciseIndex.set(completedExIndex + 1);
+    if (shouldAdvance) {
+      const nextIndex = completedExIndex + 1;
+      if (nextIndex <= maxExerciseIndex) {
+        // Expand the next exercise
+        this.expandedExerciseIndex.set(nextIndex);
       } else {
         // All exercises are done, collapse everything.
         this.expandedExerciseIndex.set(null);
       }
-    } else {
-      // This handles moving to the next set within the same standard exercise.
-      if (this.expandedExerciseIndex() !== completedExIndex) {
-        this.expandedExerciseIndex.set(completedExIndex);
-      }
     }
+    // If we should not advance (e.g., in the middle of a superset), we do nothing,
+    // leaving the current exercise card expanded.
   }
 
   private updateLogWithRestTime(actualRestTime: number): void {
@@ -1774,8 +1834,18 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
           suggestedSetDetails.targetDuration = historicalSet.durationPerformed;
           suggestedSetDetails.targetDistance = historicalSet.distanceAchieved;
         }
+        
+        // --- START: MODIFIED TEXT CONSTRUCTION ---
 
-        // --- NEW: Use helper to format the display text ---
+        // Line 1: Exercise Name
+        const line1 = nextExercise.exerciseName;
+
+        // Line 2: Set & Round Counter
+        const { round, totalRounds } = this.getRoundInfo(nextExercise);
+        const roundText = totalRounds > 1 ? ` &nbsp; | &nbsp; Round ${round}/${totalRounds}` : '';
+        const line2 = `Set ${nextSetIndex + 1}/${nextExercise.sets.length}${roundText}`;
+
+        // Line 3: Performance Target
         const repsDisplay = this.getSetTargetDisplay(plannedNextSet, 'reps');
         const durationDisplay = this.getSetTargetDisplay(plannedNextSet, 'duration');
         let performanceTarget = '';
@@ -1784,10 +1854,13 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         } else {
           performanceTarget = `${plannedNextSet.targetWeight || 'BW'}${this.unitService.getWeightUnitSuffix()} x ${repsDisplay} reps`;
         }
+        const line3 = `Target: ${performanceTarget}`;
 
-        const nextSetDisplayNumber = nextSetIndex + 1;
-        const text = `${nextExercise.exerciseName} - Set #${nextSetDisplayNumber}: ${performanceTarget}`;
+        // Combine lines with HTML breaks and styling for secondary lines
+        const text = `${line1}<br><span class="text-base opacity-80">${line2}</span><br><span class="text-base font-normal">${line3}</span>`;
+
         return { text, details: suggestedSetDetails };
+        // --- END: MODIFIED TEXT CONSTRUCTION ---
 
       } catch (error) {
         console.error("Could not fetch last performance for next set:", error);
@@ -1863,33 +1936,37 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     this.workoutService.savePausedWorkout(stateToSave);
   }
 
-  private async loadStateFromPausedSession(state: PausedWorkoutState): Promise<void> {
+   private async loadStateFromPausedSession(state: PausedWorkoutState): Promise<void> {
     this.routineId = state.routineId;
     this.programId = state.programId ? state.programId : null;
     this.scheduledDay.set(state.scheduledDayId ?? undefined);
     this.routine.set(state.sessionRoutine);
-    this.workoutStartTime = state.workoutStartTimeOriginal || new Date().getTime();
+    
+    // Restore the essential workoutStartTime property first
+    this.workoutStartTime = state.workoutStartTimeOriginal || Date.now(); // Fallback to now() as a safety measure
+    this.sessionTimerElapsedSecondsBeforePause = state.sessionTimerElapsedSecondsBeforePause;
+    
     const loggedExercises = state.currentWorkoutLogExercises;
 
-    // loggedExercises.forEach(loggedExercise => {
-    //     this.currentWorkoutLog.set({ ...loggedExercise });
-    // })
-
-    const startingTime = new Date().getTime() + state.sessionTimerElapsedSecondsBeforePause;
-    if (state.currentWorkoutLogExercises) {
+    if (loggedExercises) {
+      // --- THE CRITICAL FIX IS HERE ---
+      // When restoring the log, explicitly set the startTime from the paused state.
       this.currentWorkoutLog.set({
-        routineId: this.routineId || '-1',
-        programId: this.programId || '',
-        scheduledDayId: this.scheduledDay() ?? undefined,
-        routineName: this.routine()?.name,
-        startTime: startingTime,
-        date: format(new Date(), 'yyyy-MM-dd'),
         exercises: loggedExercises,
+        notes: state.sessionRoutine.notes || '', // Also good to restore notes
+        startTime: this.workoutStartTime, // Use the restored value
+        routineId: this.routineId ?? undefined,
+        programId: this.programId ?? undefined,
+        scheduledDayId: this.scheduledDay() ?? undefined,
+        routineName: state.sessionRoutine.name,
+        date: state.workoutDate || format(new Date(this.workoutStartTime), 'yyyy-MM-dd')
       });
+      // --- END OF FIX ---
     }
+
     this.expandedExerciseIndex.set(state.currentExerciseIndex);
 
-    // Set timers but don't start them
+    // Set timers but don't start them yet
     const totalElapsedSeconds = this.sessionTimerElapsedSecondsBeforePause;
     const mins = String(Math.floor(totalElapsedSeconds / 60)).padStart(2, '0');
     const secs = String(totalElapsedSeconds % 60).padStart(2, '0');
@@ -1897,7 +1974,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
     this.sessionState.set(SessionState.Playing);
     this.startSessionTimer();
-    // this.toastService.success('Paused session loaded', 3000);
+    this.toastService.success('Paused session resumed', 3000);
   }
 
   private async checkForPausedSession(): Promise<boolean> {
@@ -2259,6 +2336,37 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return classes;
   }
 
+    /**
+   * Calculates the current and total rounds for a given exercise.
+   * This version is adapted for the compact player and determines the
+   * current round by inspecting the workout log.
+   * @param ex The exercise to get round info for.
+   */
+  private getRoundInfo(ex: WorkoutExercise): { round: number, totalRounds: number } {
+    const routine = this.routine();
+    if (!routine) {
+      return { round: 1, totalRounds: 1 }; // Fallback
+    }
+
+    // 1. Calculate Total Rounds for the block (handles supersets)
+    let totalRounds = ex.supersetRounds ?? ex.rounds ?? 1;
+    if (ex.supersetId && ex.supersetOrder !== null) {
+      const blockStart = routine.exercises.find(e => e.supersetId === ex.supersetId && e.supersetOrder === 0);
+      totalRounds = blockStart?.supersetRounds ?? 1;
+    }
+
+    // 2. Calculate the Current Round to be performed for this exercise
+    const loggedSetsForEx = this.currentWorkoutLog().exercises?.find(logEx => logEx.id === ex.id)?.sets ?? [];
+    const setsPerRound = ex.sets.length > 0 ? ex.sets.length : 1; // Avoid division by zero
+
+    // The number of logged sets divided by sets per round gives the number of fully completed rounds.
+    const completedRounds = Math.floor(loggedSetsForEx.length / setsPerRound);
+    // The next round to be performed is one more than the last completed round.
+    const currentRound = completedRounds + 1;
+
+    return { round: currentRound, totalRounds };
+  }
+
   private comparePerformedToOriginal(
     performed: LoggedWorkoutExercise[],
     original: WorkoutExercise[]
@@ -2352,5 +2460,38 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   */
   public getSetTargetDisplay(set: ExerciseTargetSetParams, field: 'reps' | 'duration' | 'weight'): string {
     return this.workoutService.getSetTargetDisplay(set, field);
+  }
+
+  /**
+   * Attempts to lock the screen orientation to portrait mode.
+   * This method should be called when the workout player is initialized.
+   */
+  private async lockScreenToPortrait(): Promise<void> {
+    // Check if the Screen Orientation API is available and we're in a browser context
+    if (isPlatformBrowser(this.platformId) && screen.orientation) {
+      try {
+        await (screen.orientation as any).lock('portrait-primary');
+        console.log('Screen orientation locked to portrait.');
+      } catch (error) {
+        console.error('Failed to lock screen orientation:', error);
+        // Handle cases where the browser might not allow locking,
+        // e.g., on desktop or if the user has disabled it.
+      }
+    }
+  }
+
+  /**
+   * Unlocks the screen orientation, allowing it to change freely again.
+   * This should be called when the user navigates away from the workout player.
+   */
+  private unlockScreenOrientation(): void {
+    if (isPlatformBrowser(this.platformId) && screen.orientation) {
+      try {
+        screen.orientation.unlock();
+        console.log('Screen orientation unlocked.');
+      } catch (error) {
+        console.error('Failed to unlock screen orientation:', error);
+      }
+    }
   }
 }
