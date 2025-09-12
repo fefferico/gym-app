@@ -22,20 +22,18 @@ import { PressDirective } from '../../shared/directives/press.directive';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { TrainingProgramService } from '../../core/services/training-program.service';
 import { IconComponent } from '../../shared/components/icon/icon.component';
-import { LastPerformanceSummary, WorkoutLog } from '../../core/models/workout-log.model';
-import { UserProfileService } from '../../core/services/user-profile.service';
+import { WorkoutLog } from '../../core/models/workout-log.model';
 import { AppSettingsService } from '../../core/services/app-settings.service';
 import { MenuMode } from '../../core/models/app-settings.model';
 import { PremiumFeature, SubscriptionService } from '../../core/services/subscription.service';
 import { cloneBtn, deleteBtn, editBtn, favouriteBtn, hideBtn, historyBtn, startBtn, unhideBtn, unmarkFavouriteBtn, viewBtn } from '../../core/services/buttons-data';
 import { GenerateWorkoutModalComponent } from './generate-workout-modal/generate-workout-modal.component';
-import { SessionOverviewModalComponent } from './session-overview-modal/session-overview-modal.component';
 import { GeneratedWorkoutSummaryComponent } from './generated-workout-summary/generated-workout-summary.component';
 
 @Component({
   selector: 'app-routine-list',
   standalone: true,
-  imports: [CommonModule, DatePipe, TitleCasePipe, RouterLink, ActionMenuComponent, PressDirective, IconComponent, GenerateWorkoutModalComponent, SessionOverviewModalComponent,
+  imports: [CommonModule, DatePipe, TitleCasePipe, RouterLink, ActionMenuComponent, PressDirective, IconComponent, GenerateWorkoutModalComponent,
     GenerateWorkoutModalComponent,
     GeneratedWorkoutSummaryComponent
   ],
