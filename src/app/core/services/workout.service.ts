@@ -416,6 +416,17 @@ export class WorkoutService {
     let timeFromReps = 0;
 
     // 1. Calculate the estimated time from reps, if reps are specified.
+    if ((!set.targetReps || set.targetReps <= 0) && (set.targetRepsMin && set.targetRepsMax)) {
+      // Use the average of min and max if both are defined and > 0
+      set.targetReps = Math.round((set.targetRepsMin + set.targetRepsMax) / 2);
+    } else if ((!set.targetReps || set.targetReps <= 0) && set.targetRepsMin) {
+      // Use min if only min is defined
+      set.targetReps = set.targetRepsMin;
+    } else if ((!set.targetReps || set.targetReps <= 0) && set.targetRepsMax) {
+      // Use max if only max is defined
+      set.targetReps = set.targetRepsMax;
+    }
+
     if (set.targetReps && set.targetReps > 0) {
       // Estimate ~4 seconds per rep. Adjust as needed.
       const timePerRep = 4;
@@ -432,7 +443,7 @@ export class WorkoutService {
     if (estimatedTime > 0) {
       // Return the calculated time, but with a minimum floor (e.g., 5s) 
       // to account for setup for very short sets.
-      return Math.max(estimatedTime, 5);
+      return Math.max(estimatedTime, 30);
     }
 
     // 5. Fallback for sets with no duration AND no reps (e.g., a "carry to failure").
