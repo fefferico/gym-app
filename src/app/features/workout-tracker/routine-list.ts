@@ -935,13 +935,23 @@ export class RoutineListComponent implements OnInit, OnDestroy {
   }
 
   handleWorkoutGenerated(routine: Routine | undefined) {
-    this.isGenerateModalOpen.set(false); // Always close the generate modal
+    this.isGenerateModalOpen.set(false);
     if (routine && routine.exercises.length > 0) {
       this.generatedRoutine.set(routine);
-      this.isSummaryModalOpen.set(true); // Open the new summary modal
+      this.isSummaryModalOpen.set(true);
     } else {
       this.toastService.warning("Could not generate a workout with the selected criteria. Please try a different combination.", 5000, "Generation Failed");
     }
+  }
+
+  /**
+  * --- NEW METHOD ---
+  * This is the handler for the (routineUpdated) event from the summary modal.
+  * It updates the state signal, which triggers the UI to re-render.
+  * @param updatedRoutine The new state of the routine after an edit.
+  */
+  handleRoutineUpdate(updatedRoutine: Routine): void {
+    this.generatedRoutine.set(updatedRoutine);
   }
 
   startGeneratedWorkout(routine: Routine) {

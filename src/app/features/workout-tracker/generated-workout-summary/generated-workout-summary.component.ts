@@ -1,81 +1,131 @@
 // src/app/features/workout-routines/routine-list/generated-workout-summary/generated-workout-summary.component.ts
-import { Component, Input, Output, EventEmitter, computed } from '@angular/core';
+import { Component, Input, Output, EventEmitter, computed, inject, Signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
-import { ExerciseOverviewItemComponent } from '../session-overview-modal/app-exercise-overview-item/app-exercise-overview-item.component';
 import { Routine, WorkoutExercise } from '../../../core/models/workout.model';
 import { GeneratedExerciseItemComponent } from './generated-exercise-item/generated-exercise-item.component';
+import { AlertService } from '../../../core/services/alert.service';
+import { WorkoutService } from '../../../core/services/workout.service';
 
 // Interfaces for structured data
 interface StandardExerciseGroup {
-  type: 'standard';
-  exercise: WorkoutExercise;
+    type: 'standard';
+    exercise: WorkoutExercise;
 }
 interface SupersetGroup {
-  type: 'superset';
-  exercises: WorkoutExercise[];
-  supersetId: string;
+    type: 'superset';
+    exercises: WorkoutExercise[];
+    supersetId: string;
 }
 type DisplayGroup = StandardExerciseGroup | SupersetGroup;
 
 @Component({
-  selector: 'app-generated-workout-summary',
-  standalone: true,
-  imports: [CommonModule, IconComponent, GeneratedExerciseItemComponent],
-  templateUrl: './generated-workout-summary.component.html',
+    selector: 'app-generated-workout-summary',
+    standalone: true,
+    imports: [CommonModule, IconComponent, GeneratedExerciseItemComponent],
+    templateUrl: './generated-workout-summary.component.html',
 })
 export class GeneratedWorkoutSummaryComponent {
-  @Input() isOpen: boolean = false;
-  @Input() generatedRoutine: Routine | null = null;
-  @Output() close = new EventEmitter<void>();
-  @Output() start = new EventEmitter<Routine>();
+    @Input() isOpen: boolean = false;
+    @Input({ required: true }) generatedRoutineSignal!: Signal<Routine | null>;
+    @Output() close = new EventEmitter<void>();
+    @Output() start = new EventEmitter<Routine>();
+    @Output() routineUpdated = new EventEmitter<Routine>();
 
-  groupedExercises = computed<DisplayGroup[]>(() => {
-    const routine = this.generatedRoutine;
-    if (!routine) return [];
+    private alertService = inject(AlertService);
+    private workoutService = inject(WorkoutService);
 
-    const displayGroups: DisplayGroup[] = [];
-    const processedSupersetIds = new Set<string>();
+    groupedExercises = computed<DisplayGroup[]>(() => {
+        const routine = this.generatedRoutineSignal();
+        if (!routine) return [];
 
-    routine.exercises.forEach(exercise => {
-      if (exercise.supersetId) {
-        if (!processedSupersetIds.has(exercise.supersetId)) {
-          const groupExercises = routine.exercises
-            .filter(ex => ex.supersetId === exercise.supersetId)
-            .sort((a, b) => (a.supersetOrder ?? 0) - (b.supersetOrder ?? 0));
-          displayGroups.push({ type: 'superset', exercises: groupExercises, supersetId: exercise.supersetId });
-          processedSupersetIds.add(exercise.supersetId);
-        }
-      } else {
-        displayGroups.push({ type: 'standard', exercise });
-      }
+        const displayGroups: DisplayGroup[] = [];
+        const processedSupersetIds = new Set<string>();
+
+        routine.exercises.forEach(exercise => {
+            if (exercise.supersetId) {
+                if (!processedSupersetIds.has(exercise.supersetId)) {
+                    const groupExercises = routine.exercises
+                        .filter(ex => ex.supersetId === exercise.supersetId)
+                        .sort((a, b) => (a.supersetOrder ?? 0) - (b.supersetOrder ?? 0));
+                    displayGroups.push({ type: 'superset', exercises: groupExercises, supersetId: exercise.supersetId });
+                    processedSupersetIds.add(exercise.supersetId);
+                }
+            } else {
+                displayGroups.push({ type: 'standard', exercise });
+            }
+        });
+        return displayGroups;
     });
-    return displayGroups;
-  });
 
-  trackByGroup(index: number, group: DisplayGroup): string {
-    return group.type === 'standard' ? group.exercise.id : group.supersetId;
-  }
+    trackByGroup(index: number, group: DisplayGroup): string {
+        return group.type === 'standard' ? group.exercise.id : group.supersetId;
+    }
 
-  /**
-   * --- NEW METHOD ---
-   * Handles the event emitted from a child item when its weight is updated.
-   * @param updatedExercise The full WorkoutExercise object with new weights.
+
+
+
+    /**
+  * --- NEW: Computed Signal for Total Duration ---
+  * Reactively calculates the total estimated duration of the current routine state.
+  */
+    totalEstimatedDuration = computed<number>(() => {
+        const routine = this.generatedRoutineSignal();
+        if (!routine) return 0;
+        return this.workoutService.getEstimatedRoutineDuration(routine);
+    });
+
+    onExerciseUpdate(updatedExercise: WorkoutExercise): void {
+        const routine = this.generatedRoutineSignal();
+        if (!routine) return;
+        const newRoutineState: Routine = {
+            ...routine,
+            exercises: routine.exercises.map(ex =>
+                ex.id === updatedExercise.id ? updatedExercise : ex
+            )
+        };
+        this.routineUpdated.emit(newRoutineState);
+    }
+
+    onExerciseRemove(exerciseIdToRemove: string): void {
+        const routine = this.generatedRoutineSignal();
+        if (!routine) return;
+        const newRoutineState: Routine = {
+            ...routine,
+            exercises: routine.exercises.filter(ex => ex.id !== exerciseIdToRemove)
+        };
+        this.routineUpdated.emit(newRoutineState); // Emit the change
+    }
+
+    async onSupersetRemove(supersetIdToRemove: string): Promise<void> {
+        const routine = this.generatedRoutineSignal();
+        if (!routine) return;
+        const confirm = await this.alertService.showConfirm(
+            'Remove Superset',
+            `Are you sure you want to remove this entire superset from the workout?`
+        );
+        if (confirm && confirm.data) {
+            const newRoutineState: Routine = {
+                ...routine,
+                exercises: routine.exercises.filter(ex => ex.supersetId !== supersetIdToRemove)
+            };
+            this.routineUpdated.emit(newRoutineState); // Emit the change
+        }
+    }
+
+    /**
+   * --- NEW HELPER METHOD ---
+   * Creates a new computed signal for a specific exercise ID.
+   * This allows us to pass a reactive slice of the main routine signal
+   * down to each child component.
+   * @param exerciseId The ID of the exercise to create a signal for.
    */
-  onExerciseUpdate(updatedExercise: WorkoutExercise): void {
-    if (!this.generatedRoutine) return;
-
-    // Create a new routine object to trigger change detection
-    const newRoutineState: Routine = {
-      ...this.generatedRoutine,
-      exercises: this.generatedRoutine.exercises.map(ex => 
-        ex.id === updatedExercise.id ? updatedExercise : ex
-      )
-    };
-    
-    // This is not a signal, so we re-assign the input property.
-    // The parent component (routine-list) will get the final, updated routine
-    // when the "Start" button is clicked.
-    this.generatedRoutine = newRoutineState;
-  }
+    getExerciseSignal(exerciseId: string): Signal<WorkoutExercise> {
+        return computed(() => {
+            const routine = this.generatedRoutineSignal();
+            const exercise = routine?.exercises.find(ex => ex.id === exerciseId);
+            // This assertion is safe because we know the exercise exists when this is called.
+            return exercise!;
+        });
+    }
 }

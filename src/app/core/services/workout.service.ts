@@ -417,8 +417,8 @@ export class WorkoutService {
 
     // 1. Calculate the estimated time from reps, if reps are specified.
     if (set.targetReps && set.targetReps > 0) {
-      // Estimate ~3 seconds per rep (1s up, 2s down). Adjust as needed.
-      const timePerRep = 3;
+      // Estimate ~4 seconds per rep. Adjust as needed.
+      const timePerRep = 4;
       timeFromReps = set.targetReps * timePerRep;
     }
 

@@ -402,7 +402,8 @@
 <!-- NEW: Replace the old overview modal with the new summary component -->
 <app-generated-workout-summary
     [isOpen]="isSummaryModalOpen()"
-    [generatedRoutine]="generatedRoutine()"
+    [generatedRoutineSignal]="generatedRoutine"
     (close)="closeSummaryModal()"
-    (start)="startGeneratedWorkout($event)"> 
+    (start)="startGeneratedWorkout($event)"
+    (routineUpdated)="handleRoutineUpdate($event)">
 </app-generated-workout-summary>
