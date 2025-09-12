@@ -395,7 +395,7 @@
 
 <app-generate-workout-modal #workoutGeneratorModal
     [isOpen]="isGenerateModalOpen()"
-    (close)="isGenerateModalOpen.set(false)"
+    (close)="cancelGenerationFlow()"
     (generate)="handleWorkoutGenerated($event)">
 </app-generate-workout-modal>
 
@@ -403,7 +403,7 @@
 <app-generated-workout-summary
     [isOpen]="isSummaryModalOpen()"
     [generatedRoutineSignal]="generatedRoutine"
-    (close)="closeSummaryModal()"
+    (back)="handleBackToGenerator()"
     (start)="startGeneratedWorkout($event)"
     (routineUpdated)="handleRoutineUpdate($event)"
     (retry)="handleRetryGeneration()">

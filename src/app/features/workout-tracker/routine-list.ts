@@ -937,9 +937,9 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     this.isGenerateModalOpen.set(true);
   }
 
-async handleWorkoutGenerated(options: WorkoutGenerationOptions | 'quick') {
+  async handleWorkoutGenerated(options: WorkoutGenerationOptions | 'quick') {
     this.isGenerateModalOpen.set(false);
-    
+
     let routine: Routine | null = null;
     if (options === 'quick') {
       // For a quick workout, we don't have detailed options to save for a retry,
@@ -950,7 +950,7 @@ async handleWorkoutGenerated(options: WorkoutGenerationOptions | 'quick') {
       this.lastGenerationOptions.set(options); // Save options for retry
       routine = await this.workoutGeneratorService.generateWorkout(options);
     }
-    
+
     if (routine && routine.exercises.length > 0) {
       this.generatedRoutine.set(routine);
       this.isSummaryModalOpen.set(true);
@@ -971,13 +971,12 @@ async handleWorkoutGenerated(options: WorkoutGenerationOptions | 'quick') {
 
   startGeneratedWorkout(routine: Routine) {
     if (!routine) return;
-
-    // A generated routine is temporary. We add it to the service so the player can
-    // find it by its ID, but it won't be saved permanently unless the user chooses to.
     const tempRoutine = this.workoutService.addRoutine(routine);
 
+    // --- Now we clear the state because the user has committed ---
     this.isSummaryModalOpen.set(false);
-    this.generatedRoutine.set(null); // Clear the temporary routine
+    this.generatedRoutine.set(null);
+    this.lastGenerationOptions.set(null);
 
     this.workoutService.navigateToPlayer(tempRoutine.id);
   }
@@ -988,19 +987,19 @@ async handleWorkoutGenerated(options: WorkoutGenerationOptions | 'quick') {
     this.generatedRoutine.set(null); // Clear the routine when closing
   }
 
-/**
-   * --- REWRITTEN ---
-   * Seamlessly generates a new workout and updates the signal.
-   */
+  /**
+     * --- REWRITTEN ---
+     * Seamlessly generates a new workout and updates the signal.
+     */
   async handleRetryGeneration(): Promise<void> {
-    this.toastService.info("Generating a new workout...", 2000, "Please Wait");
-    
+    // this.toastService.info("Generating a new workout...", 2000, "Please Wait");
+
     // Set the signal to null briefly to show a loading state if desired
-    this.generatedRoutine.set(null); 
-    
+    this.generatedRoutine.set(null);
+
     const lastOptions = this.lastGenerationOptions();
     let newRoutine: Routine | null = null;
-    
+
     if (lastOptions) {
       // If we have detailed options, use them again
       newRoutine = await this.workoutGeneratorService.generateWorkout(lastOptions);
@@ -1008,7 +1007,7 @@ async handleWorkoutGenerated(options: WorkoutGenerationOptions | 'quick') {
       // If the last one was a "quick" generation, run that again
       newRoutine = await this.workoutGeneratorService.generateQuickWorkout();
     }
-    
+
     if (newRoutine && newRoutine.exercises.length > 0) {
       this.generatedRoutine.set(newRoutine);
     } else {
@@ -1016,5 +1015,27 @@ async handleWorkoutGenerated(options: WorkoutGenerationOptions | 'quick') {
       this.isSummaryModalOpen.set(false); // Close the modal on failure
       this.toastService.error("Failed to generate a new workout. Please try adjusting your options.", 0, "Error");
     }
+  }
+
+  /**
+   * Handles the 'Back' button from the summary modal.
+   * Closes the summary and re-opens the generation modal with the last used options.
+   */
+  handleBackToGenerator(): void {
+    this.isSummaryModalOpen.set(false);
+    // Don't clear the generatedRoutine or lastGenerationOptions here
+    setTimeout(() => {
+      this.isGenerateModalOpen.set(true);
+    }, 50); // Timeout for smooth animation transition
+  }
+
+  /**
+  * --- NEW: A dedicated method to fully cancel the generation flow ---
+  * Called when the user closes the generation modal.
+  */
+  cancelGenerationFlow(): void {
+    this.isGenerateModalOpen.set(false);
+    this.generatedRoutine.set(null);
+    this.lastGenerationOptions.set(null);
   }
 }

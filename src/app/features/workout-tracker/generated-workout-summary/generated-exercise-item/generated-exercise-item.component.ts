@@ -187,22 +187,36 @@ export class GeneratedExerciseItemComponent implements OnInit {
     }
 
     /**
-     * --- NEW: Toggles between single rep and rep range inputs ---
+     * --- CORRECTED METHOD ---
+     * Toggles between single rep and rep range inputs, preserving values.
      */
     toggleRepRange(event: Event): void {
         event.stopPropagation();
-        this.useRepRange.update(value => !value);
-
-        // When toggling, clear the unused fields to avoid confusion
         const updatedExercise = JSON.parse(JSON.stringify(this.exercise())) as WorkoutExercise;
+        const newUseRepRange = !this.useRepRange(); // Determine the new state
+
+        const standardSetReps = 10;
+
         updatedExercise.sets.forEach(set => {
-            if (this.useRepRange()) {
-                set.targetReps = null;
+            if (newUseRepRange) {
+                // --- Switching TO Rep Range ---
+                // Default the range to the current single rep value if it exists, else use 8-12
+                const baseReps = set.targetReps ?? standardSetReps;
+                set.targetRepsMin = set.targetRepsMin ?? baseReps - 2;
+                set.targetRepsMax = set.targetRepsMax ?? baseReps + 2;
+                set.targetReps = null; // Clear the single value
             } else {
-                set.targetRepsMin = null;
+                // --- Switching FROM Rep Range TO Single Rep ---
+                // Default the single rep value to the minimum of the range, else 10
+                set.targetReps = standardSetReps;
+                set.targetRepsMin = null; // Clear the range values
                 set.targetRepsMax = null;
             }
         });
+        
+        // Update the signal that controls the UI toggle
+        this.useRepRange.set(newUseRepRange);
+        // Emit the full, updated exercise object
         this.exerciseUpdated.emit(updatedExercise);
     }
 }
