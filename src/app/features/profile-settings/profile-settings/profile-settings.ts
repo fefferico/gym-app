@@ -83,6 +83,12 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
     this.subscriptionService.togglePremium_DEV_ONLY();
     const newStatus = this.subscriptionService.isPremium() ? 'Premium' : 'Free';
     this.toastService.success(`You are now on the ${newStatus} tier!`, 3000, "Status Updated");
+
+    if (this.subscriptionService.isPremium()) {
+      this.toastService.veryImportant("Thank you for supporting the app! All premium features are now unlocked.", 10000, "Thank You!");
+      // Ensure all routines are enabled upon upgrade
+      this.workoutService.enableAllRoutines_DEV_ONLY();
+    }
   }
 
   /**

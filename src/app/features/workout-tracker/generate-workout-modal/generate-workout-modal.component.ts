@@ -1,5 +1,5 @@
 // src/app/features/workout-routines/routine-list/generate-workout-modal/generate-workout-modal.component.ts
-import { Component, EventEmitter, inject, Input, OnChanges, OnInit, Output, Signal, signal, SimpleChanges } from '@angular/core';
+import { Component, computed, EventEmitter, inject, Input, OnChanges, OnInit, Output, Signal, signal, SimpleChanges } from '@angular/core';
 import { CommonModule, TitleCasePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
@@ -15,7 +15,7 @@ import { PersonalGymService } from '../../../core/services/personal-gym.service'
     imports: [CommonModule, IconComponent, FormsModule, TitleCasePipe],
     templateUrl: './generate-workout-modal.component.html',
 })
-export class GenerateWorkoutModalComponent implements OnInit, OnChanges  {
+export class GenerateWorkoutModalComponent implements OnInit, OnChanges {
     @Input() isOpen: boolean = false;
     @Output() close = new EventEmitter<void>();
     @Output() generate = new EventEmitter<WorkoutGenerationOptions | 'quick'>();
@@ -24,9 +24,19 @@ export class GenerateWorkoutModalComponent implements OnInit, OnChanges  {
     private personalGymService = inject(PersonalGymService);
 
     allMuscleGroups = signal<string[]>([]);
-    allAvailableEquipment = signal<string[]>([]); 
-    allPersonalGymEquipment = signal<string[]>([]); 
+    allAvailableEquipment = signal<string[]>([]);
+    allPersonalGymEquipment = signal<string[]>([]);
+    equipmentSearchTerm = signal<string>('');
 
+    filteredAvailableEquipment = computed(() => {
+        const term = this.equipmentSearchTerm().toLowerCase().trim();
+        if (!term) {
+            return []; // Return an empty array if there's no search term to avoid showing a long list
+        }
+        return this.allAvailableEquipment().filter(eq =>
+            eq.toLowerCase().includes(term) && !this.options.equipment.includes(eq)
+        );
+    });
 
     options: WorkoutGenerationOptions = {
         duration: 45,
@@ -84,27 +94,27 @@ export class GenerateWorkoutModalComponent implements OnInit, OnChanges  {
             usePersonalGym: true,
             equipment: [],
         };
+        this.equipmentSearchTerm.set('');
     }
 
     // NEW: Method to toggle equipment selection when not using personal gym
-    toggleEquipment(equipment: string) {
+    selectEquipment(equipment: string) {
+        if (!this.options.equipment.includes(equipment)) {
+            this.options.equipment.push(equipment);
+        }
+        this.equipmentSearchTerm.set(''); // Clear search input after selection
+    }
+
+    removeEquipment(equipment: string) {
         const index = this.options.equipment.indexOf(equipment);
         if (index > -1) {
-            this.options.equipment.splice(index, 1); // Remove
-        } else {
-            this.options.equipment.push(equipment); // Add
+            this.options.equipment.splice(index, 1);
         }
     }
 
     // NEW: Handle change for 'Use Personal Gym Equipment' checkbox
     onUsePersonalGymChange() {
-        if (this.options.usePersonalGym) {
-            // If using personal gym, clear any previously selected equipment from the 'all available' list
-            this.options.equipment = []; 
-        } else {
-            // If NOT using personal gym, pre-select personal gym equipment in the 'all available' list
-            // This assumes personalGymEquipment is a subset of allAvailableEquipment
-            this.options.equipment = [...this.allAvailableEquipment()];
-        }
+        this.options.equipment = [];
+        this.equipmentSearchTerm.set('');
     }
 }

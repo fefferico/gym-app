@@ -1090,5 +1090,11 @@ export class WorkoutService {
     });
   }
 
+  enableAllRoutines_DEV_ONLY(): void {
+    const routines = this.getCurrentRoutines().map(routine => ({ ...routine, isDisabled: false }));
+    this._saveRoutinesToStorage(routines);
+    this.toastService.success("All routines enabled!");
+  }
+
 
 }
