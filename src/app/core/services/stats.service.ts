@@ -2,9 +2,10 @@
 import { Injectable, inject } from '@angular/core';
 import { WorkoutLog, LoggedWorkoutExercise, LoggedSet } from '../models/workout-log.model';
 import { ExerciseService } from './exercise.service'; // Assuming Exercise model is separate
-import { parseISO, differenceInCalendarDays, isSameDay, subDays, getYear, getWeek, startOfWeek, format, subWeeks, addWeeks, differenceInWeeks, endOfWeek, isSameWeek } from 'date-fns'; // Add subWeeks, addWeeks, differenceInWeeks
+import { parseISO, differenceInCalendarDays, isSameDay, subDays, getYear, getWeek, startOfWeek, format, subWeeks, addWeeks, differenceInWeeks, endOfWeek, isSameWeek, addDays } from 'date-fns'; // Add subWeeks, addWeeks, differenceInWeeks
 import { Exercise } from '../models/exercise.model';
 import { take } from 'rxjs';
+import { ActivityLog } from '../models/activity-log.model';
 
 // Define interfaces for StatsService return types if not already global
 export interface WeeklySummary {
@@ -178,86 +179,118 @@ export class StatsService {
   }
 
   /**
-     * Calculates the current workout streak (consecutive weeks with at least one workout,
-     * ending this week or last week), including its start and end dates.
-     * @param logs All workout logs.
-     * @returns StreakInfo object. If no current streak, length is 0 and dates are undefined.
-     */
-  calculateCurrentWorkoutStreak(logs: WorkoutLog[]): StreakInfo {
-    if (!logs || logs.length === 0) return { length: 0 };
-    const sortedLogs = [...logs].sort((a, b) => parseISO(b.date).getTime() - parseISO(a.date).getTime());
+   * Calculates the current workout/activity streak (consecutive weeks with at least one entry),
+   * ending this week or last week.
+   * @param workoutLogs All workout logs.
+   * @param activityLogs All activity logs.
+   * @returns StreakInfo object.
+   */
+  calculateCurrentWorkoutStreak(workoutLogs: WorkoutLog[], activityLogs: ActivityLog[]): StreakInfo {
+    // Combine dates from both workout and activity logs
+    const allActivityDates = [
+      ...workoutLogs.map(log => parseISO(log.date)),
+      ...activityLogs.map(log => parseISO(log.date))
+    ];
+
+    if (allActivityDates.length === 0) return { length: 0 };
+
+    // Sort all dates in descending order to easily find the most recent one
+    allActivityDates.sort((a, b) => b.getTime() - a.getTime());
 
     const today = new Date();
     let currentWeekStart = startOfWeek(today, { weekStartsOn: 1 });
-
     let streak = 0;
     let streakEndDate: Date | undefined = undefined;
 
-    // Check if there's a workout in the current week or last week to start the streak
-    const lastLogDate = parseISO(sortedLogs[0].date);
-    if (!isSameWeek(lastLogDate, today, { weekStartsOn: 1 }) && !isSameWeek(lastLogDate, new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000), { weekStartsOn: 1 })) {
+    // Check if the most recent activity is in the current or previous week to start the streak
+    const lastLogDate = allActivityDates[0];
+    const lastWeek = subDays(today, 7);
+    if (!isSameWeek(lastLogDate, today, { weekStartsOn: 1 }) && !isSameWeek(lastLogDate, lastWeek, { weekStartsOn: 1 })) {
       return { length: 0 };
     }
 
+    // Iterate backwards week by week
     for (let i = 0; i < 52 * 5; i++) { // Limit search to 5 years
-      const weekHasWorkout = sortedLogs.some(log => isSameWeek(parseISO(log.date), currentWeekStart, { weekStartsOn: 1 }));
-      if (weekHasWorkout) {
+      const weekHasActivity = allActivityDates.some(logDate => 
+        isSameWeek(logDate, currentWeekStart, { weekStartsOn: 1 })
+      );
+
+      if (weekHasActivity) {
         if (!streakEndDate) {
           streakEndDate = endOfWeek(currentWeekStart, { weekStartsOn: 1 });
         }
         streak++;
-        currentWeekStart = new Date(currentWeekStart.getTime() - 7 * 24 * 60 * 60 * 1000);
+        currentWeekStart = subDays(currentWeekStart, 7); // Go to the previous week
       } else {
-        break;
+        break; // The streak is broken
       }
     }
 
     if (streak === 0) return { length: 0 };
-    const streakStartDate = startOfWeek(new Date(currentWeekStart.getTime() + 7 * 24 * 60 * 60 * 1000), { weekStartsOn: 1 });
+
+    const streakStartDate = startOfWeek(addDays(currentWeekStart, 7), { weekStartsOn: 1 });
     return { length: streak, startDate: streakStartDate, endDate: streakEndDate };
   }
 
-  calculateLongestWorkoutStreak(logs: WorkoutLog[]): StreakInfo {
-    if (!logs || logs.length < 2) return this.calculateCurrentWorkoutStreak(logs);
+  /**
+   * Calculates the longest workout/activity streak from the entire log history.
+   * @param workoutLogs All workout logs.
+   * @param activityLogs All activity logs.
+   * @returns StreakInfo object for the longest streak.
+   */
+  calculateLongestWorkoutStreak(workoutLogs: WorkoutLog[], activityLogs: ActivityLog[]): StreakInfo {
+    const allActivityDates = [
+      ...workoutLogs.map(log => parseISO(log.date)),
+      ...activityLogs.map(log => parseISO(log.date))
+    ];
 
-    const sortedLogs = [...logs].sort((a, b) => parseISO(a.date).getTime() - parseISO(b.date).getTime());
+    if (allActivityDates.length < 2) return this.calculateCurrentWorkoutStreak(workoutLogs, activityLogs);
 
-    let longestStreak = 0;
-    let currentStreak = 0;
-    let longestStreakStartDate: Date | undefined, longestStreakEndDate: Date | undefined;
-    let currentStreakStartDate: Date | undefined;
-
-    const weeksWithWorkouts = Array.from(new Set(sortedLogs.map(log => format(startOfWeek(parseISO(log.date), { weekStartsOn: 1 }), 'yyyy-MM-dd'))))
+    // Get a unique, sorted list of all weeks that have any activity
+    const weeksWithActivities = Array.from(new Set(allActivityDates.map(logDate => 
+        format(startOfWeek(logDate, { weekStartsOn: 1 }), 'yyyy-MM-dd')
+      )))
       .map(dateStr => new Date(dateStr))
       .sort((a, b) => a.getTime() - b.getTime());
 
-    for (let i = 0; i < weeksWithWorkouts.length; i++) {
+    if (weeksWithActivities.length === 0) return { length: 0 };
+
+    let longestStreak = 0;
+    let currentStreak = 0;
+    let longestStreakStartDate: Date | undefined;
+    let longestStreakEndDate: Date | undefined;
+    let currentStreakStartDate: Date | undefined;
+
+    for (let i = 0; i < weeksWithActivities.length; i++) {
       if (i === 0) {
         currentStreak = 1;
-        currentStreakStartDate = weeksWithWorkouts[i];
+        currentStreakStartDate = weeksWithActivities[i];
       } else {
-        const prevWeek = weeksWithWorkouts[i - 1];
-        const currentWeek = weeksWithWorkouts[i];
-        const expectedPrevWeek = new Date(currentWeek.getTime() - 7 * 24 * 60 * 60 * 1000);
-
-        if (isSameWeek(prevWeek, expectedPrevWeek, { weekStartsOn: 1 })) {
+        const prevWeek = weeksWithActivities[i - 1];
+        const currentWeek = weeksWithActivities[i];
+        
+        // Check if the current week is exactly one week after the previous one
+        if (differenceInWeeks(currentWeek, prevWeek) === 1) {
           currentStreak++;
         } else {
+          // Streak is broken
           if (currentStreak > longestStreak) {
             longestStreak = currentStreak;
             longestStreakStartDate = currentStreakStartDate;
             longestStreakEndDate = endOfWeek(prevWeek, { weekStartsOn: 1 });
           }
+          // Start a new streak
           currentStreak = 1;
           currentStreakStartDate = currentWeek;
         }
       }
     }
 
+    // Check the last streak after the loop finishes
     if (currentStreak > longestStreak) {
       longestStreak = currentStreak;
       longestStreakStartDate = currentStreakStartDate;
-      longestStreakEndDate = endOfWeek(weeksWithWorkouts[weeksWithWorkouts.length - 1], { weekStartsOn: 1 });
+      longestStreakEndDate = endOfWeek(weeksWithActivities[weeksWithActivities.length - 1], { weekStartsOn: 1 });
     }
 
     return { length: longestStreak, startDate: longestStreakStartDate, endDate: longestStreakEndDate };

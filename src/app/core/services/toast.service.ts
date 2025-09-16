@@ -44,11 +44,19 @@ export class ToastService {
     this.show(message, 'info', duration ? duration : 3000, title);
   }
 
+  veryImportant(message: string, duration?: number, title?: string, hideOtherMessages: boolean = true): void {
+    if (hideOtherMessages) {
+      this.clearAll(); // Clear existing toasts if specified
+    }
+    this.show(message, 'very-important', duration ? duration : 10000, title);
+  }
+
   remove(toastId: string): void {
     this.toasts.update(currentToasts => currentToasts.filter(t => t.id !== toastId));
   }
 
   clearAll(): void {
-    this.toasts.set([]);
+    // avoid removing toast which are very-important
+    this.toasts.update(currentToasts => currentToasts.filter(t => t.type === 'very-important'));
   }
 }

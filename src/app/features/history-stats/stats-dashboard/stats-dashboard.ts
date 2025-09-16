@@ -2,7 +2,7 @@ import { Component, inject, OnInit, OnDestroy, signal, computed, ChangeDetection
 import { CommonModule, TitleCasePipe, DecimalPipe, DatePipe, isPlatformBrowser } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms'; // Import ReactiveFormsModule
-import { distinctUntilChanged, Subscription } from 'rxjs';
+import { combineLatest, distinctUntilChanged, Subscription } from 'rxjs';
 // No need for startWith, distinctUntilChanged from rxjs/operators if using signals directly for form values
 import { parseISO, isValid, format, isSameDay } from 'date-fns'; // isSameDay was already here
 
@@ -16,6 +16,8 @@ import { WorkoutLog } from '../../../core/models/workout-log.model';
 import { UnitsService } from '../../../core/services/units.service';
 import { PressDirective } from '../../../shared/directives/press.directive';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
+import { ActivityLog } from '../../../core/models/activity-log.model';
+import { ActivityService } from '../../../core/services/activity.service';
 
 export interface ChartDataPoint {
   name: string | Date;
@@ -46,6 +48,7 @@ export class StatsDashboardComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder); // Inject FormBuilder
   protected unitsService = inject(UnitsService);
   protected router = inject(Router);
+  private activityService = inject(ActivityService); // Inject the ActivityService
 
   // --- UPDATED: Renamed for clarity ---
   @ViewChild('weeklyChartWrapper') weeklyChartWrapperRef!: ElementRef<HTMLDivElement>;
@@ -57,7 +60,7 @@ export class StatsDashboardComponent implements OnInit, OnDestroy {
   private readonly VISIBLE_MOBILE_WEEK_ENTRIES = 5;
   private readonly MIN_PC_WEEK_ENTRY_WIDTH = 80;
 
-  muscleGroupChartView = computed<[number,number]>(() => {
+  muscleGroupChartView = computed<[number, number]>(() => {
     const dataCount = this.muscleGroupChartDataForPeriod().length;
     if (dataCount > 0) {
       const totalWidth = dataCount * this.BAR_WIDTH_PER_ENTRY;
@@ -104,6 +107,7 @@ export class StatsDashboardComponent implements OnInit, OnDestroy {
 
 
   allLogs = signal<WorkoutLog[]>([]);
+  allActivityLogs = signal<ActivityLog[]>([]); // Add a signal for activity logs
   statsFilterForm!: FormGroup;
 
   private dateFilters = signal<{ dateFrom: Date | null; dateTo: Date | null }>({
@@ -150,7 +154,7 @@ export class StatsDashboardComponent implements OnInit, OnDestroy {
   currentWorkoutStreakInfo = signal<StreakInfo>({ length: 0 });
   longestWorkoutStreakInfo = signal<StreakInfo>({ length: 0 });
 
-  private logsSub?: Subscription;
+  private dataSub?: Subscription; // Renamed for clarity
   private filterFormSub?: Subscription;
 
   showXAxis = true;
@@ -198,10 +202,19 @@ export class StatsDashboardComponent implements OnInit, OnDestroy {
     if (isPlatformBrowser(this.platformId)) {
       window.scrollTo(0, 0);
     }
-    this.logsSub = this.trackingService.workoutLogs$.subscribe(allLogsData => {
-      this.allLogs.set(allLogsData);
-      this.currentWorkoutStreakInfo.set(this.statsService.calculateCurrentWorkoutStreak(allLogsData));
-      this.longestWorkoutStreakInfo.set(this.statsService.calculateLongestWorkoutStreak(allLogsData));
+
+    // Use combineLatest to get both workout and activity logs together
+    this.dataSub = combineLatest([
+      this.trackingService.workoutLogs$,
+      this.activityService.activityLogs$ // Assuming this exists in your ActivityService
+    ]).subscribe(([allWorkoutLogs, allActivityLogs]) => {
+
+      this.allLogs.set(allWorkoutLogs);
+      this.allActivityLogs.set(allActivityLogs); // Store the activity logs
+
+      // Update streak calculations to use both sets of data
+      this.currentWorkoutStreakInfo.set(this.statsService.calculateCurrentWorkoutStreak(allWorkoutLogs, allActivityLogs));
+      this.longestWorkoutStreakInfo.set(this.statsService.calculateLongestWorkoutStreak(allWorkoutLogs, allActivityLogs));
     });
 
     this.filterFormSub = this.statsFilterForm.valueChanges.pipe(
@@ -344,7 +357,7 @@ export class StatsDashboardComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.logsSub?.unsubscribe();
+    this.dataSub?.unsubscribe();
     this.filterFormSub?.unsubscribe();
   }
 }

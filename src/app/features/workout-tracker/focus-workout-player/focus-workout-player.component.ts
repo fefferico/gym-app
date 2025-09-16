@@ -1356,6 +1356,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       this.sessionState.set(SessionState.Playing);
     }
     console.log('prepareCurrentSet: END');
+    this.playerSubState.set(PlayerSubState.PerformingSet);
   }
 
 

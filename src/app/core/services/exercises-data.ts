@@ -3525,5 +3525,248 @@ export const EXERCISES_DATA = [
     "imageUrls": [],
     "videoUrl": "",
     "notes": "Place the kettlebell between your feet. Hinge at your hips, keeping your back straight and chest up. Drive through your feet and extend your hips and knees to lift the weight. Squeeze your glutes at the top of the movement."
+  },
+  // REHAB
+  {
+    "id": "rehab-ankle-pumps",
+    "name": "Ankle Pumps",
+    "description": "A gentle mobility exercise to improve range of motion in the ankle and promote circulation in the lower leg. Ideal for post-injury or post-surgery recovery.",
+    "category": "rehabilitation/mobility",
+    "primaryMuscleGroup": "Ankles",
+    "muscleGroups": ["Ankles", "Calves (Tibialis Anterior, Gastrocnemius)"],
+    "equipmentNeeded": [],
+    "imageUrls": ["assets/images/rehab/ankle-pumps_1.jpg", "assets/images/rehab/ankle-pumps_2.jpg"],
+    "notes": "Perform this movement slowly and deliberately. Point the toes away from you (plantarflexion), then pull them back towards you (dorsiflexion). Do not force the movement into a painful range."
+  },
+  {
+    "id": "rehab-heel-slides",
+    "name": "Heel Slides",
+    "description": "A foundational exercise to restore knee and hip flexion after injury or surgery. It involves gently sliding the heel towards the buttocks to bend the knee.",
+    "category": "rehabilitation/mobility",
+    "primaryMuscleGroup": "Knee",
+    "muscleGroups": ["Hamstrings", "Quadriceps", "Hips"],
+    "equipmentNeeded": [],
+    "imageUrls": ["assets/images/rehab/heel-slides_1.jpg", "assets/images/rehab/heel-slides_2.jpg"],
+    "notes": "Lie on your back on a smooth surface. Use a towel under your heel to help it slide more easily. Focus on a controlled, pain-free range of motion."
+  },
+  {
+    "id": "rehab-quad-sets",
+    "name": "Quad Sets (Isometric)",
+    "description": "An isometric exercise to activate the quadriceps muscle without moving the knee joint. This is a crucial first step in re-establishing muscle control after knee injuries.",
+    "category": "rehabilitation/activation",
+    "primaryMuscleGroup": "Quadriceps",
+    "muscleGroups": ["Quadriceps"],
+    "equipmentNeeded": [],
+    "imageUrls": ["assets/images/rehab/quad-sets_1.jpg"],
+    "notes": "Lie with your leg straight. Place a small rolled towel under your knee. Tighten your thigh muscle to press the back of your knee into the towel. Hold the contraction for 5-10 seconds."
+  },
+  {
+    "id": "rehab-glute-squeezes",
+    "name": "Glute Squeezes (Isometric)",
+    "description": "A simple activation exercise to engage the gluteal muscles without any hip or leg movement. Excellent for re-establishing the mind-muscle connection.",
+    "category": "rehabilitation/activation",
+    "primaryMuscleGroup": "Glutes",
+    "muscleGroups": ["Glutes"],
+    "equipmentNeeded": [],
+    "imageUrls": ["assets/images/rehab/glute-squeezes_1.jpg"],
+    "notes": "Lie on your back or stomach. Squeeze your buttock muscles together firmly, hold for a few seconds, and then relax completely."
+  },
+  {
+    "id": "rehab-shoulder-pendulum",
+    "name": "Shoulder Pendulum Swings",
+    "description": "A gentle exercise that uses gravity to provide traction and promote pain-free range of motion in the shoulder joint, often used in early-stage rotator cuff recovery.",
+    "category": "rehabilitation/mobility",
+    "primaryMuscleGroup": "Shoulders (stabilizers)",
+    "muscleGroups": ["Shoulders (Rotator Cuff)"],
+    "equipmentNeeded": ["Table or sturdy surface for support"],
+    "imageUrls": ["assets/images/rehab/shoulder-pendulum_1.jpg"],
+    "notes": "Bend at the waist, supporting your good arm on a table. Let the affected arm hang straight down. Use your body to initiate a gentle swinging motion—forward/backward, side-to-side, and in small circles. The arm should remain relaxed."
+  },
+  {
+    "id": "rehab-clamshells",
+    "name": "Clamshells",
+    "description": "An isolation exercise that targets the gluteus medius, a key muscle for hip stability and pelvic alignment. Often used to address knee pain and lower back issues.",
+    "category": "rehabilitation/strengthening",
+    "primaryMuscleGroup": "Glutes (Medius)",
+    "muscleGroups": ["Glutes (Medius)", "Hip Abductors"],
+    "equipmentNeeded": ["Resistance Band (Loop - optional)"],
+    "imageUrls": ["assets/images/rehab/clamshells_1.jpg", "assets/images/rehab/clamshells_2.jpg"],
+    "notes": "Lie on your side with hips and knees bent, and feet together. Keeping your feet touching, lift your top knee without rocking your pelvis. For added difficulty, place a light resistance band around your thighs."
+  },
+  {
+    "id": "rehab-bird-dog-stability",
+    "name": "Bird-Dog (Stability Focus)",
+    "description": "A core and spinal stability exercise that improves motor control and strengthens the muscles that support the spine. It challenges balance and coordination.",
+    "category": "rehabilitation/stability",
+    "primaryMuscleGroup": "Core",
+    "muscleGroups": ["Core (Transverse Abdominis, Multifidus)", "Glutes", "Lower Back (Erector Spinae)"],
+    "equipmentNeeded": [],
+    "imageUrls": ["assets/images/rehab/bird-dog_1.jpg", "assets/images/rehab/bird-dog_2.jpg"],
+    "notes": "Start on all fours. Extend your opposite arm and leg simultaneously, keeping your back perfectly flat and hips level. Imagine a glass of water on your lower back. Move slowly and with control."
+  },
+  {
+    "id": "rehab-wall-push-up",
+    "name": "Wall Push-up",
+    "description": "An introductory push-up variation that reduces the load on the shoulders, wrists, and chest. It's an excellent way to begin rebuilding upper body strength safely.",
+    "category": "rehabilitation/strengthening",
+    "primaryMuscleGroup": "Chest",
+    "muscleGroups": ["Chest", "Shoulders (Anterior)", "Triceps"],
+    "equipmentNeeded": [],
+    "imageUrls": ["assets/images/rehab/wall-push-up_1.jpg", "assets/images/rehab/wall-push-up_2.jpg"],
+    "notes": "Stand facing a wall, a little more than arm's length away. Place your hands on the wall and slowly bend your elbows to bring your chest towards the wall. Keep your core engaged and body in a straight line."
+  },
+  {
+    "id": "rehab-chin-tucks",
+    "name": "Chin Tucks (Cervical Retraction)",
+    "description": "A postural exercise designed to strengthen the deep neck flexor muscles and relieve tension in the neck and upper back, often caused by forward head posture.",
+    "category": "rehabilitation/activation",
+    "primaryMuscleGroup": "Neck",
+    "muscleGroups": ["Deep Neck Flexors", "Upper Cervical Extensors (stretch)"],
+    "equipmentNeeded": [],
+    "imageUrls": ["assets/images/rehab/chin-tucks_1.jpg"],
+    "notes": "Sit or stand tall. Without tilting your head up or down, gently glide your head straight back, creating a 'double chin.' Hold for a moment and then relax."
+  },
+  {
+    "id": "rehab-scapular-retraction",
+    "name": "Scapular Retraction (Shoulder Blade Squeezes)",
+    "description": "An exercise to activate and strengthen the muscles of the mid-back (rhomboids and middle trapezius), which are crucial for good posture and shoulder health.",
+    "category": "rehabilitation/activation",
+    "primaryMuscleGroup": "Middle Back",
+    "muscleGroups": ["Rhomboids", "Traps (Middle)"],
+    "equipmentNeeded": ["Resistance Band (optional)"],
+    "imageUrls": ["assets/images/rehab/scapular-retraction_1.jpg"],
+    "notes": "Sit or stand with arms relaxed. Gently squeeze your shoulder blades together and down, as if trying to pinch a pencil between them. Hold for a few seconds, then relax."
+  },
+  {
+    "id": "rehab-single-leg-stance",
+    "name": "Single Leg Stance (Balance)",
+    "description": "A fundamental proprioceptive exercise to improve balance, ankle stability, and hip control. It retrains the body's ability to stabilize on one leg.",
+    "category": "rehabilitation/stability",
+    "primaryMuscleGroup": "Ankles",
+    "muscleGroups": ["Ankles", "Hips (stabilizers)", "Core"],
+    "equipmentNeeded": ["Sturdy surface for support (optional)"],
+    "imageUrls": ["assets/images/rehab/single-leg-stance_1.jpg"],
+    "notes": "Stand on one leg, keeping your pelvis level and your standing knee slightly bent. Try to hold for 30 seconds. To make it harder, close your eyes or stand on an unstable surface like a pillow."
+  },
+  {
+    "id": "rehab-piriformis-stretch-supine",
+    "name": "Piriformis Stretch (Supine)",
+    "description": "A gentle stretch targeting the piriformis muscle deep in the hip, which can help alleviate symptoms of sciatica and improve hip external rotation.",
+    "category": "stretching",
+    "primaryMuscleGroup": "Glutes",
+    "muscleGroups": ["Glutes", "Piriformis", "Hips"],
+    "equipmentNeeded": [],
+    "imageUrls": ["assets/images/stretches/piriformis-stretch_1.jpg"],
+    "notes": "Lie on your back with knees bent. Cross the ankle of the target leg over the opposite knee. Gently pull the uncrossed leg's thigh towards your chest until you feel a stretch in your buttock."
+  },
+  {
+    "id": "rehab-dead-bug",
+    "name": "Dead Bug",
+    "description": "A core stability exercise that strengthens the deep abdominal muscles and improves contralateral limb movement without putting stress on the lower back.",
+    "category": "rehabilitation/stability",
+    "primaryMuscleGroup": "Core (Transverse Abdominis)",
+    "muscleGroups": ["Core (Transverse Abdominis, Obliques)", "Hip Flexors", "Spinal Stabilizers"],
+    "equipmentNeeded": [],
+    "imageUrls": ["assets/images/rehab/dead-bug_1.jpg", "assets/images/rehab/dead-bug_2.jpg"],
+    "notes": "Lie on your back with arms extended towards the ceiling and knees bent to 90 degrees (tabletop). Slowly lower your opposite arm and leg towards the floor, keeping your lower back pressed into the ground. Return to the start and alternate sides."
+  },
+  {
+    "id": "rehab-pelvic-tilts",
+    "name": "Pelvic Tilts",
+    "description": "A gentle exercise to activate the deep core muscles and improve awareness and mobility in the lumbar spine and pelvis. It's often used to alleviate lower back stiffness.",
+    "category": "rehabilitation/activation",
+    "primaryMuscleGroup": "Core",
+    "muscleGroups": ["Core (Transverse Abdominis)", "Lower Back (lumbar erectors)"],
+    "equipmentNeeded": [],
+    "imageUrls": ["assets/images/rehab/pelvic-tilts_1.jpg", "assets/images/rehab/pelvic-tilts_2.jpg"],
+    "notes": "Lie on your back with your knees bent. Gently flatten your lower back into the floor by engaging your abdominal muscles (posterior tilt), then create a small arch in your lower back (anterior tilt). The movement should be small and controlled."
+  },
+  {
+    "id": "rehab-straight-leg-raise",
+    "name": "Straight Leg Raise",
+    "description": "A basic strengthening exercise for the quadriceps and hip flexors that can be performed without bending a potentially injured or painful knee.",
+    "category": "rehabilitation/strengthening",
+    "primaryMuscleGroup": "Quadriceps",
+    "muscleGroups": ["Quadriceps", "Hip Flexors"],
+    "equipmentNeeded": [],
+    "imageUrls": ["assets/images/rehab/straight-leg-raise_1.jpg", "assets/images/rehab/straight-leg-raise_2.jpg"],
+    "notes": "Lie on your back with one leg straight and the other knee bent. Tighten the thigh muscle of the straight leg and slowly lift it 6-12 inches off the floor, keeping the leg straight. Lower slowly."
+  },
+  {
+    "id": "rehab-shoulder-external-rotation-banded",
+    "name": "Shoulder External Rotation (Banded)",
+    "description": "An essential exercise to strengthen the rotator cuff muscles, which are critical for shoulder stability and preventing injuries.",
+    "category": "rehabilitation/strengthening",
+    "primaryMuscleGroup": "Shoulders (stabilizers)",
+    "muscleGroups": ["Shoulders (Rotator Cuff - Infraspinatus, Teres Minor)"],
+    "equipmentNeeded": ["Resistance Band (Light)"],
+    "imageUrls": ["assets/images/rehab/shoulder-external-rotation_1.jpg"],
+    "notes": "Stand with your elbow bent to 90 degrees and tucked into your side. Hold a resistance band with both hands. Keeping your elbow pinned to your side, rotate your forearm outward. Return slowly."
+  },
+  {
+    "id": "rehab-towel-scrunches",
+    "name": "Towel Scrunches",
+    "description": "An exercise to strengthen the intrinsic muscles of the foot, which can help with conditions like plantar fasciitis and improve arch support.",
+    "category": "rehabilitation/strengthening",
+    "primaryMuscleGroup": "Feet",
+    "muscleGroups": ["Intrinsic Foot Muscles"],
+    "equipmentNeeded": ["Towel"],
+    "imageUrls": ["assets/images/rehab/towel-scrunches_1.jpg"],
+    "notes": "Sit in a chair with your bare foot flat on a towel. Use your toes to scrunch the towel towards you. Repeat until you've pulled the entire towel in, then push it back out and start again."
+  },
+  {
+    "id": "rehab-lower-trunk-rotations",
+    "name": "Lower Trunk Rotations (Supine)",
+    "description": "A gentle mobility exercise for the lower back that promotes rotation in the lumbar spine and can help relieve tension.",
+    "category": "rehabilitation/mobility",
+    "primaryMuscleGroup": "Lower Back",
+    "muscleGroups": ["Lower Back (lumbar erectors)", "Core (Obliques)"],
+    "equipmentNeeded": [],
+    "imageUrls": ["assets/images/rehab/lower-trunk-rotations_1.jpg", "assets/images/rehab/lower-trunk-rotations_2.jpg"],
+    "notes": "Lie on your back with your knees bent and feet flat on the floor. Keeping your shoulders on the floor, gently rock your knees from side to side. Only move within a pain-free range."
+  },
+  {
+    "id": "rehab-wall-sit-isometric",
+    "name": "Wall Sit (Isometric)",
+    "description": "An isometric exercise to build endurance in the quadriceps, glutes, and hamstrings without requiring movement through a painful range of motion.",
+    "category": "rehabilitation/strengthening",
+    "primaryMuscleGroup": "Quadriceps",
+    "muscleGroups": ["Quadriceps", "Glutes", "Hamstrings"],
+    "equipmentNeeded": [],
+    "imageUrls": ["assets/images/rehab/wall-sit-isometric_1.jpg"],
+    "notes": "Lean your back against a wall and slide down until your knees are bent at a 45 to 90-degree angle, as if sitting in a chair. Hold the position for a prescribed amount of time. Ensure your knees stay aligned over your ankles."
+  },
+  {
+    "id": "rehab-seated-hamstring-stretch",
+    "name": "Seated Hamstring Stretch",
+    "description": "A controlled stretch for the hamstring muscles that is often more comfortable for individuals with back pain compared to a standing stretch.",
+    "category": "stretching",
+    "primaryMuscleGroup": "Hamstrings",
+    "muscleGroups": ["Hamstrings", "Calves"],
+    "equipmentNeeded": [],
+    "imageUrls": ["assets/images/stretches/seated-hamstring-stretch_1.jpg"],
+    "notes": "Sit on the edge of a chair with one leg extended straight out, heel on the floor. Keeping your back straight, gently lean forward at the hips until you feel a stretch in the back of your thigh. Hold for 20-30 seconds."
+  },
+  {
+    "id": "rehab-terminal-knee-extension",
+    "name": "Terminal Knee Extension (TKE)",
+    "description": "An exercise that isolates and strengthens the vastus medialis oblique (VMO), a key quadriceps muscle for knee stability and proper patellar tracking.",
+    "category": "rehabilitation/activation",
+    "primaryMuscleGroup": "Quadriceps",
+    "muscleGroups": ["Quadriceps (VMO)"],
+    "equipmentNeeded": ["Resistance Band"],
+    "imageUrls": ["assets/images/rehab/tke_1.jpg", "assets/images/rehab/tke_2.jpg"],
+    "notes": "Anchor a resistance band behind you at knee height. Step into the band with one leg and step forward to create tension. Start with the knee slightly bent and then straighten it by squeezing your quadriceps. Control the return."
+  },
+  {
+    "id": "rehab-upper-trapezius-stretch",
+    "name": "Upper Trapezius Stretch",
+    "description": "A stretch to relieve tension and tightness in the upper trapezius muscle, which runs from the neck to the shoulder. Commonly tight in individuals with neck pain or headaches.",
+    "category": "stretching",
+    "primaryMuscleGroup": "Neck",
+    "muscleGroups": ["Traps (Upper)", "Neck (Scalenes)"],
+    "equipmentNeeded": [],
+    "imageUrls": ["assets/images/stretches/upper-trap-stretch_1.jpg"],
+    "notes": "Sit in a chair and gently tilt your head to one side as if trying to touch your ear to your shoulder. For a deeper stretch, you can gently hold the side of your head with your hand or hold onto the chair with the opposite hand."
   }
 ];

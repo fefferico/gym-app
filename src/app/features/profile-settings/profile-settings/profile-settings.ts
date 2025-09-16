@@ -520,7 +520,24 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
             }
 
             // Other data can still use their existing merge/replace logic
-            this.workoutService.mergeData(importedData.routines);
+            if (!this.subscriptionService.isPremium()) {
+              // avaialable standard routines and imported one
+              // must be enabled (isDisabled = false) for a maximum of 4 routines
+              
+              const existingRoutines = this.workoutService.getCurrentRoutines().filter(r => !r.isDisabled);
+              const importedRoutines = Array.isArray(importedData.routines) ? importedData.routines : [];
+              const enabledImportedRoutines = importedRoutines.filter((r: any) => !r.isDisabled);
+              const totalEnabledCount = existingRoutines.length + enabledImportedRoutines.length;
+              if (totalEnabledCount > 4) {
+                // disable all imported routines, apart from top 4
+                importedRoutines.forEach((r: any, index: number) => r.isDisabled = index > 3 ? true : false);
+                this.toastService.veryImportant(`Import detected ${enabledImportedRoutines.length} enabled routines. Free users can only have 4 enabled routines. All imported routines have been disabled. You can enable them after upgrading to Premium.`, 10000, "Routines Disabled");
+                this.workoutService.mergeData(importedRoutines);
+              }
+            } else {
+              this.workoutService.mergeData(importedData.routines);
+            }
+
             this.trackingService.replaceLogs(importedData.workoutLogs);
             this.trackingService.replacePBs(importedData.personalBests);
             if (importedData.personalGym) {

@@ -706,4 +706,53 @@ export class ExerciseService {
     }
   }
 
+  /**
+   * --- NEW METHOD ---
+   * Scans all exercises and returns a sorted list of unique equipment names.
+   * It cleans up the equipment names by removing suffixes like (optional) and standardizing common names.
+   * @returns An Observable emitting a string array of unique equipment.
+   */
+  getUniqueEquipment(): Observable<string[]> {
+    return this.exercises$.pipe(
+      map(exercises => {
+        const equipments = new Set<string>();
+        exercises.forEach(exercise => {
+          const processEquip = (equip: string) => {
+            if (!equip) return;
+            // remove noise from equipment string
+            // and reduce any KB-relates exercise to just 'Kettlebell'
+            const altIndex = equip.indexOf(' (alternative)');
+            const optIndex = equip.indexOf(' (optional)');
+            const dbIndex = equip.indexOf('Dumbbells');
+            const dbsIndex = equip.indexOf('Dumbbell(s)');
+            const kbIndex = equip.indexOf('Kettlebells');
+            const kbsIndex = equip.indexOf('Kettlebell(s)');
+            if (altIndex >= 0) {
+              equip = equip.substring(0, altIndex);
+            }
+            if (optIndex >= 0) {
+              equip = equip.substring(0, optIndex);
+            }
+            if (kbsIndex >= 0 || kbIndex >= 0) {
+              equip = 'Kettlebell';
+            }
+            if (dbIndex >= 0 || dbsIndex >= 0) {
+              equip = 'Dumbbell';
+            }
+            equipments.add(equip.trim());
+          };
+
+          if (exercise.equipment) {
+            processEquip(exercise.equipment);
+          }
+          if (Array.isArray(exercise.equipmentNeeded)) {
+            exercise.equipmentNeeded.forEach(processEquip);
+          }
+        });
+        return Array.from(equipments).sort();
+      }),
+      take(1) // Ensure the observable completes after emitting the list once
+    );
+  }
+
 }

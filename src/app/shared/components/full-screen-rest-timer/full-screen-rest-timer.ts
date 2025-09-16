@@ -39,6 +39,9 @@ export class FullScreenRestTimerComponent implements OnChanges, OnDestroy, After
 
   @ViewChild('progressCircleSvg') progressCircleSvg!: ElementRef<SVGSVGElement>;
 
+  private timerStartTime = 0;
+  private targetEndTime = 0;
+
   private timerIntervalId: any;
   private readonly circleRadius = 90;
   private readonly circumference = 2 * Math.PI * this.circleRadius;
@@ -86,26 +89,33 @@ export class FullScreenRestTimerComponent implements OnChanges, OnDestroy, After
     }
   }
 
-  ngAfterViewInit(): void {}
+  ngAfterViewInit(): void { }
 
   private startTimer(): void {
     this.stopTimer();
     this.initialDuration.set(this.durationSeconds);
     this.remainingTime.set(this.durationSeconds);
+
     if (this.durationSeconds <= 0) {
       this.finishAndHideTimer();
       return;
     }
-    const decrementAmount = this.timerUpdateIntervalMs / 1000;
+
+    // --- MODIFIED: Set start and target end times ---
+    this.timerStartTime = Date.now();
+    this.targetEndTime = this.timerStartTime + this.durationSeconds * 1000;
+
     this.timerIntervalId = setInterval(() => {
-      this.remainingTime.update(rt => {
-        const newTime = rt - decrementAmount;
-        if (newTime <= 0) {
-          this.finishAndHideTimer();
-          return 0;
-        }
-        return newTime;
-      });
+      // --- MODIFIED: Calculate remaining time from target end time ---
+      const now = Date.now();
+      const remainingMilliseconds = Math.max(0, this.targetEndTime - now);
+      const newTimeInSeconds = remainingMilliseconds / 1000;
+
+      this.remainingTime.set(newTimeInSeconds);
+
+      if (newTimeInSeconds <= 0) {
+        this.finishAndHideTimer();
+      }
     }, this.timerUpdateIntervalMs);
   }
 
@@ -123,15 +133,22 @@ export class FullScreenRestTimerComponent implements OnChanges, OnDestroy, After
   }
 
   adjustTimer(seconds: number): void {
-    this.remainingTime.update(currentRemaining => {
-      let newTime = currentRemaining + seconds;
-      newTime = Math.max(0, newTime);
-      if (newTime <= 0) {
-        this.finishAndHideTimer();
-      }
-      return newTime;
-    });
-    this.initialDuration.update(currentInitial => Math.max(currentInitial, this.remainingTime()));
+    // --- MODIFIED: Adjust the target end time directly ---
+    this.targetEndTime += seconds * 1000;
+
+    // --- MODIFIED: Recalculate remaining time based on the new target ---
+    const now = Date.now();
+    const newRemainingMs = Math.max(0, this.targetEndTime - now);
+    const newRemainingSeconds = newRemainingMs / 1000;
+
+    this.remainingTime.set(newRemainingSeconds);
+
+    if (newRemainingSeconds <= 0) {
+      this.finishAndHideTimer();
+    }
+
+    // Adjust initial duration if we added time beyond the original, to keep the circle progress correct
+    this.initialDuration.update(currentInitial => Math.max(currentInitial, newRemainingSeconds));
   }
 
   skipTimer(): void {

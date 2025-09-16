@@ -8,4 +8,4 @@ export interface ToastMessage {
   // icon?: string; // Optional: for custom icons
 }
 
-export type ToastType = 'success' | 'error' | 'warning' | 'info';
+export type ToastType = 'success' | 'error' | 'warning' | 'info' | 'very-important';

@@ -127,6 +127,9 @@ export class RoutineListComponent implements OnInit, OnDestroy {
   uniqueRoutineMuscleGroups = signal<string[]>([]);
   private allExercisesMap = new Map<string, Exercise>(); // To store exercises for quick lookup
 
+  personalGymEquipment = signal<string[]>([]);
+
+
   private readonly PAUSED_WORKOUT_KEY = 'fitTrackPro_pausedWorkoutState';
 
 
@@ -342,6 +345,8 @@ export class RoutineListComponent implements OnInit, OnDestroy {
         }
       });
     });
+    const sortedEquipment = Array.from(equipments).sort();
+
     // Set the max for the slider, with a sensible ceiling (e.g., 180 mins)
     const newMax = Math.min(Math.ceil(maxCalculatedDuration / 10) * 10, 180); // Round up to nearest 10
     this.maxDuration.set(newMax > 0 ? newMax : 120);
@@ -349,7 +354,8 @@ export class RoutineListComponent implements OnInit, OnDestroy {
 
     this.uniqueRoutineGoals.set(Array.from(goals).sort());
     this.uniqueRoutineMuscleGroups.set(Array.from(muscles).sort());
-    this.uniqueRoutineEquipments.set(Array.from(equipments).sort());
+    this.uniqueRoutineEquipments.set(sortedEquipment);
+    this.personalGymEquipment.set(sortedEquipment);
   }
 
   // --- Filter Methods ---
@@ -1034,6 +1040,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
   * Called when the user closes the generation modal.
   */
   cancelGenerationFlow(): void {
+    this.isSummaryModalOpen.set(false);
     this.isGenerateModalOpen.set(false);
     this.generatedRoutine.set(null);
     this.lastGenerationOptions.set(null);

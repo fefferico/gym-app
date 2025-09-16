@@ -99,6 +99,7 @@ export interface Routine {
   updatedAt?: string;
   isHidden?: boolean;
   isFavourite?: boolean;
+  isDisabled?: boolean;
 }
 
 

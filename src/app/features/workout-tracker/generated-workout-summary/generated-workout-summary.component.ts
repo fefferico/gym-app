@@ -29,6 +29,7 @@ export class GeneratedWorkoutSummaryComponent {
     @Input() isOpen: boolean = false;
     @Input({ required: true }) generatedRoutineSignal!: Signal<Routine | null>;
     @Output() back = new EventEmitter<void>();
+    @Output() close = new EventEmitter<void>();
     @Output() start = new EventEmitter<Routine>();
     @Output() routineUpdated = new EventEmitter<Routine>();
     @Output() retry = new EventEmitter<void>();

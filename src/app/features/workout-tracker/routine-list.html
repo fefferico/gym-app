@@ -133,7 +133,9 @@
                 class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
 
                 <button type="button" *ngFor="let routine of filteredRoutines()"
+                    [disabled]="routine.isDisabled"
                     (click)="viewRoutineDetails(routine.id, $event)"
+                    [ngClass]="{ 'cursor-not-allowed opacity-50': routine.isDisabled } "
                     class="bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow duration-200 relative group transform hover:-translate-y-1 text-left dark:hover:bg-gray-600 hover:bg-gray-200"
                     [style.zIndex]="areActionsVisible(routine.id) ? 50 : 'auto'">
 
@@ -149,19 +151,20 @@
                             <h2 class="text-lg font-semibold" [title]="routine.name">{{ routine.name }}</h2>
 
                             <div class="relative">
-                                <button (click)="toggleActions(routine.id, $event)"
+                                <button [disabled]="routine.isDisabled" (click)="toggleActions(routine.id, $event)"
                                     [attr.aria-label]="'Actions for ' + routine.name" aria-haspopup="true"
                                     [attr.aria-expanded]="areActionsVisible(routine.id)"
+                                    [ngClass]="{ 'cursor-not-allowed opacity-50': routine.isDisabled } "
                                     class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center">
                                     <app-icon name="menu-action" class="h-10 w-10"></app-icon>
                                 </button>
-                                <app-action-menu *ngIf="areActionsVisible(routine.id) && menuModeDropdown"
+                                <app-action-menu *ngIf="areActionsVisible(routine.id) && menuModeDropdown && !routine.isDisabled"
                                     displayMode="dropdown" [gridClass]="' grid grid-cols-2 '"
                                     [items]="getRoutineDropdownActionItems(routine.id, 'dropdown')"
                                     [isVisible]="areActionsVisible(routine.id)"
                                     (itemClick)="handleActionMenuItemClick($event)" (closeMenu)="onCloseActionMenu()">
                                 </app-action-menu>
-                                <app-action-menu *ngIf="areActionsVisible(routine.id) && menuModeModal"
+                                <app-action-menu *ngIf="areActionsVisible(routine.id) && menuModeModal && !routine.isDisabled"
                                     displayMode="modal" [modalTitle]="''"
                                     [items]="getRoutineDropdownActionItems(routine.id, 'modal')"
                                     [isVisible]="areActionsVisible(routine.id)"
@@ -180,6 +183,8 @@
                                 <app-icon name="goal" class="w-6 h-6"></app-icon>
                                 <span class="font-medium">Goal:</span>
                                 <button type="button" (click)="filterByGoal(routine.goal, $event)"
+                                    [disabled]="routine.isDisabled"
+                                    [ngClass]="{ 'cursor-not-allowed opacity-50': routine.isDisabled } "
                                     class="bg-blue-100 text-xs text-blue-700 dark:bg-blue-700 dark:text-blue-200 px-1.5 py-0.5 rounded-full hover:bg-blue-200 dark:hover:bg-blue-600">
                                     {{ routine.goal | titlecase }}
                                 </button>
@@ -191,6 +196,8 @@
                             <span class="font-medium">Muscles:</span>
                             <button type="button" *ngFor="let muscle of getRoutineMainMuscleGroups(routine)"
                                 (click)="filterByMuscleGroup(muscle,$event)"
+                                [disabled]="routine.isDisabled"
+                                [ngClass]="{ 'cursor-not-allowed opacity-50': routine.isDisabled } "
                                 class="text-center text-xs bg-purple-100 text-purple-700 dark:bg-purple-700 dark:text-purple-200 px-1.5 py-0.5 rounded-full hover:bg-purple-200 dark:hover:bg-purple-600">
                                 {{ muscle | titlecase }}
                             </button>
@@ -375,16 +382,16 @@
                         <span class="sr-only">Start New Ad-Hoc Session</span>
                     </button>
                 </div>
-                <div class="group relative flex items-center">
+                <div *ngIf="subscriptionService.isPremium()" class="group relative flex items-center">
                     <span
                         class="absolute right-full mr-4 sm:hidden whitespace-nowrap rounded-md bg-purple-500 px-3 py-2 text-sm font-semibold text-white group-hover:block"
                         style="margin-right: -10px;">
-                        Generate Workout
+                        GENERATE WORKOUT
                     </span>
                     <button appPress (shortPress)="openGenerateWorkoutModal()" type="button"
                         class="flex h-12 w-12 items-center justify-center rounded-full bg-purple-500 text-white shadow-lg transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 dark:ring-offset-gray-900">
                         <app-icon name="magic-wand" class="h-7 w-7 text-white"></app-icon>
-                        <span class="sr-only">Generate Random Workout</span>
+                        <span class="sr-only">GENERATE RANDOM WORKOUT</span>
                     </button>
                 </div>
             </div>
@@ -404,6 +411,7 @@
     [isOpen]="isSummaryModalOpen()"
     [generatedRoutineSignal]="generatedRoutine"
     (back)="handleBackToGenerator()"
+    (close)="cancelGenerationFlow()"
     (start)="startGeneratedWorkout($event)"
     (routineUpdated)="handleRoutineUpdate($event)"
     (retry)="handleRetryGeneration()">
