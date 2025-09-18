@@ -46,6 +46,7 @@ export class GenerateWorkoutModalComponent implements OnInit, OnChanges {
         avoidMuscles: [],
         usePersonalGym: true,
         equipment: [],
+        excludeEquipment: []
     };
 
     async ngOnInit() {
@@ -93,8 +94,10 @@ export class GenerateWorkoutModalComponent implements OnInit, OnChanges {
             avoidMuscles: [],
             usePersonalGym: true,
             equipment: [],
+            excludeEquipment: []
         };
         this.equipmentSearchTerm.set('');
+        this.excludeEquipmentSearchTerm.set('');
     }
 
     // NEW: Method to toggle equipment selection when not using personal gym
@@ -116,5 +119,37 @@ export class GenerateWorkoutModalComponent implements OnInit, OnChanges {
     onUsePersonalGymChange() {
         this.options.equipment = [];
         this.equipmentSearchTerm.set('');
+    }
+
+    excludeEquipmentSearchTerm = signal<string>(''); // NEW
+
+    filteredAvailableEquipmentToExclude = computed(() => { // NEW
+        const term = this.excludeEquipmentSearchTerm().toLowerCase().trim();
+        if (!term) {
+            return [];
+        }
+        const allEq = this.allAvailableEquipment();
+        const personalGymEq = this.allPersonalGymEquipment(); // Get personal gym eq
+
+        // Filter from either all available or personal gym equipment based on 'usePersonalGym'
+        const sourceList = this.options.usePersonalGym ? personalGymEq : allEq;
+
+        return sourceList.filter(eq =>
+            eq.toLowerCase().includes(term) && !this.options.excludeEquipment.includes(eq)
+        );
+    });
+
+    addExcludedEquipment(equipment: string) {
+        if (!this.options.excludeEquipment.includes(equipment)) {
+            this.options.excludeEquipment.push(equipment);
+        }
+        this.excludeEquipmentSearchTerm.set('');
+    }
+
+    removeExcludedEquipment(equipment: string) {
+        const index = this.options.excludeEquipment.indexOf(equipment);
+        if (index > -1) {
+            this.options.excludeEquipment.splice(index, 1);
+        }
     }
 }

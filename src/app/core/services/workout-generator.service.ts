@@ -19,6 +19,7 @@ export interface WorkoutGenerationOptions {
     avoidMuscles: string[];
     usePersonalGym: boolean;
     equipment: string[];
+    excludeEquipment: string[];
 }
 
 @Injectable({
@@ -50,6 +51,7 @@ export class WorkoutGeneratorService {
             duration: 45,
             goal: 'hypertrophy',
             equipment: [],
+            excludeEquipment: []
         };
         
         // 'Chest', 'Quadriceps', 'Core','Arms','Back'
@@ -145,18 +147,23 @@ export class WorkoutGeneratorService {
         const allExercises = await firstValueFrom(this.exerciseService.getExercises());
         let availableExercises = allExercises.filter(ex => !ex.isHidden && ex.category !== 'stretching');
 
-        // Filter by Equipment
+        // Determine equipment filter
         let equipmentFilter = new Set<string>();
         if (options.usePersonalGym) {
-            const personalGym = await firstValueFrom(this.personalGymService.getAllEquipment());
-            personalGym.forEach(e => equipmentFilter.add(e.name));
+            const personalGym = (await firstValueFrom(this.personalGymService.getAllEquipment())).map(eq => ({ ...eq, category: eq.category.toLowerCase() }));
+            personalGym.forEach(e => equipmentFilter.add(e.category));
         } else if (options.equipment.length > 0) {
             options.equipment.forEach(e => equipmentFilter.add(e));
         }
 
+        // Apply equipment filter
         if (equipmentFilter.size > 0) {
             availableExercises = availableExercises.filter(ex =>
-                ex.category === 'bodyweight/calisthenics' || !ex.equipment || equipmentFilter.has(ex.equipment)
+                ex.category === 'bodyweight/calisthenics' ||
+                !ex.equipment ||
+                equipmentFilter.has(ex.equipment) ||
+                (ex.equipmentNeeded && ex.equipmentNeeded.some(eq => equipmentFilter.has(eq.toLowerCase()))) ||
+                (ex.equipmentNeeded && ex.equipmentNeeded.length > 0 && ex.equipmentNeeded.some(eq => equipmentFilter.has(eq.toLowerCase())))
             );
         }
 
@@ -171,6 +178,17 @@ export class WorkoutGeneratorService {
         if (targetMuscles.size > 0) {
             availableExercises = availableExercises.filter(ex => ex.primaryMuscleGroup && targetMuscles.has(ex.primaryMuscleGroup.toLowerCase()));
         }
+
+        // --- START: NEW EXCLUDE EQUIPMENT FILTER ---
+        if (options.excludeEquipment && options.excludeEquipment.length > 0) {
+            const excludeSet = new Set(options.excludeEquipment.map(eq => eq.toLowerCase()));
+            availableExercises = availableExercises.filter(ex =>
+                // look inside equipment and equipmentNeeded arrays (consider that excludeSet can contains "kettlebell" and ex.equipmentNeeded can contains "Kettlebells")
+                !(ex.equipment && excludeSet.has(ex.equipment.toLowerCase())) &&
+                !(ex.equipmentNeeded && ex.equipmentNeeded.some(eq => excludeSet.has(eq.toLowerCase())))
+            );
+        }
+        // --- END: NEW EXCLUDE EQUIPMENT FILTER ---
 
         return availableExercises;
     }

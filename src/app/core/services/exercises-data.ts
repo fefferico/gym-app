@@ -3069,7 +3069,7 @@ export const EXERCISES_DATA = [
     "category": "clubs-maces",
     "primaryMuscleGroup": "Shoulders",
     "muscleGroups": ["Shoulders (Rotator Cuff, Deltoids)", "Core (Obliques, Transverse Abdominis)", "Forearms (Grip)", "Lats", "Upper Back"],
-    "equipmentNeeded": ["Steel Mace"],
+    "equipmentNeeded": ["Steel Mace", "Macebell"],
     "imageUrls": [],
     "notes": "Start with a light weight to master the pendulum motion. Keep your core tight and pivot slightly with your hips, not your lower back."
   },
@@ -3080,7 +3080,7 @@ export const EXERCISES_DATA = [
     "category": "clubs-maces",
     "primaryMuscleGroup": "Core (Obliques)",
     "muscleGroups": ["Core (Obliques)", "Shoulders (stabilizers)", "Forearms (Grip)", "Lats"],
-    "equipmentNeeded": ["Steel Mace"],
+    "equipmentNeeded": ["Steel Mace", "Macebell"],
     "imageUrls": []
   },
   {
@@ -3253,7 +3253,7 @@ export const EXERCISES_DATA = [
     "category": "clubs-maces",
     "primaryMuscleGroup": "Core (Obliques)",
     "muscleGroups": ["Core (Obliques)", "Lats", "Glutes", "Hamstrings", "Shoulders"],
-    "equipmentNeeded": ["Steel Mace"],
+    "equipmentNeeded": ["Steel Mace", "Macebell"],
     "imageUrls": [],
     "notes": "Hinge at the hips and pivot your feet to generate power, keeping your spine long. The movement should be explosive and rhythmic."
   },
@@ -3264,7 +3264,7 @@ export const EXERCISES_DATA = [
     "category": "clubs-maces",
     "primaryMuscleGroup": "Core",
     "muscleGroups": ["Core (Transverse Abdominis, Obliques)", "Shoulders (Anterior)", "Chest", "Triceps"],
-    "equipmentNeeded": ["Steel Mace"],
+    "equipmentNeeded": ["Steel Mace", "Macebell"],
     "imageUrls": []
   },
   {

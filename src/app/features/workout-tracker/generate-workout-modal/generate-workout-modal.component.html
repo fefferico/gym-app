@@ -138,6 +138,36 @@
                     </div>
                     <!-- +++ END: MODIFIED SECTION +++ -->
                 </div>
+                <div class="md:col-span-2 text-black dark:text-gray-200">
+                    <label class="block text-sm font-medium dark:text-gray-100">Exclude Equipment (Optional)</label>
+                    <div class="p-2 border rounded-md mb-2 min-h-[40px] bg-white dark:bg-gray-800 flex flex-wrap gap-2">
+                        <p *ngIf="options.excludeEquipment.length === 0"
+                            class="text-sm italic text-gray-500 dark:text-gray-400">
+                            No equipment excluded.
+                        </p>
+                        <span *ngFor="let eq of options.excludeEquipment"
+                            class="flex items-center gap-x-2 px-3 py-1.5 text-xs font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-700 dark:text-white">
+                            <span>{{ eq | titlecase }}</span>
+                            <button type="button" (click)="removeExcludedEquipment(eq)"
+                                class="text-red-800/70 hover:text-red-800 focus:outline-none dark:text-white/70 dark:hover:text-white">
+                                <app-icon name="cancel" class="h-4 w-4"></app-icon>
+                            </button>
+                        </span>
+                    </div>
+
+                    <input type="text" [(ngModel)]="excludeEquipmentSearchTerm"
+                        placeholder="Search equipment to exclude..."
+                        class="block w-full p-2 border rounded-md dark:bg-gray-800 dark:border-gray-600 focus:ring-primary focus:border-primary">
+
+                    <div *ngIf="filteredAvailableEquipmentToExclude().length > 0 && excludeEquipmentSearchTerm().length > 0"
+                        class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-md shadow-lg max-h-40 overflow-y-auto">
+                        <button type="button" *ngFor="let eq of filteredAvailableEquipmentToExclude()"
+                            (click)="addExcludedEquipment(eq)"
+                            class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600">
+                            {{ eq | titlecase }}
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
 
