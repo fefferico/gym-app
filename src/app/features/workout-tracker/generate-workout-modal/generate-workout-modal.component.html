@@ -96,16 +96,23 @@
                             No personal gym equipment found. Please add equipment to your profile.
                         </p>
                         <div class="flex flex-wrap gap-2">
-                            <span *ngFor="let eq of allPersonalGymEquipment()"
-                                class="px-3 py-1.5 text-xs font-semibold rounded-full bg-blue-100 text-white dark:bg-blue-700">
+                            <!-- Each item is now a button to toggle exclusion -->
+                            <button type="button" *ngFor="let eq of allPersonalGymEquipment()"
+                                (click)="toggleExcludePersonalGymEquipment(eq)"
+                                [ngClass]="{
+                                    'bg-blue-100 text-white dark:bg-blue-700': !options.excludeEquipment.includes(eq.toLowerCase()),
+                                    'bg-gray-300 text-gray-600 dark:bg-gray-600 dark:text-gray-300 line-through': options.excludeEquipment.includes(eq.toLowerCase())
+                                }"
+                                class="px-3 py-1.5 text-xs font-semibold rounded-full transition-colors">
                                 {{ eq | titlecase }}
-                            </span>
+                            </button>
                         </div>
                     </div>
                     <!-- +++ START: MODIFIED SECTION FOR SEARCHABLE EQUIPMENT +++ -->
-                    <div *ngIf="!options.usePersonalGym" class="relative">
+                <div *ngIf="!options.usePersonalGym" class="md:col-span-2 text-black dark:text-gray-200">
+                    <label class="block text-sm font-medium dark:text-gray-100">Exclude Equipment (Optional)</label>
                         <!-- Display for Selected Equipment as Chips -->
-                        <div
+                        <div *ngIf="options.equipment.length > 0"
                             class="p-2 border rounded-md mb-2 min-h-[40px] bg-white dark:bg-gray-800 flex flex-wrap gap-2">
                             <p *ngIf="options.equipment.length === 0"
                                 class="text-sm italic text-gray-500 dark:text-gray-400">
@@ -140,7 +147,8 @@
                 </div>
                 <div class="md:col-span-2 text-black dark:text-gray-200">
                     <label class="block text-sm font-medium dark:text-gray-100">Exclude Equipment (Optional)</label>
-                    <div class="p-2 border rounded-md mb-2 min-h-[40px] bg-white dark:bg-gray-800 flex flex-wrap gap-2">
+                    <div    *ngIf="options.excludeEquipment.length > 0"
+                        class="p-2 border rounded-md mb-2 min-h-[40px] bg-white dark:bg-gray-800 flex flex-wrap gap-2">
                         <p *ngIf="options.excludeEquipment.length === 0"
                             class="text-sm italic text-gray-500 dark:text-gray-400">
                             No equipment excluded.

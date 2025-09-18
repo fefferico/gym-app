@@ -56,7 +56,7 @@ export class GenerateWorkoutModalComponent implements OnInit, OnChanges {
         this.allAvailableEquipment.set(equipment);
 
         const personalGymEquipment = await firstValueFrom(this.personalGymService.getAllEquipment());
-        this.allPersonalGymEquipment.set(personalGymEquipment.map((eq: Equipment) => eq.name));
+        this.allPersonalGymEquipment.set(personalGymEquipment.map((eq: Equipment) => eq.category));
     }
 
     ngOnChanges(changes: SimpleChanges): void {
@@ -118,7 +118,21 @@ export class GenerateWorkoutModalComponent implements OnInit, OnChanges {
     // NEW: Handle change for 'Use Personal Gym Equipment' checkbox
     onUsePersonalGymChange() {
         this.options.equipment = [];
+        this.options.excludeEquipment = []; // Clear exclusions when toggling
         this.equipmentSearchTerm.set('');
+    }
+
+    // Handles clicking on a personal gym equipment item
+    toggleExcludePersonalGymEquipment(equipment: string) {
+        const index = this.options.excludeEquipment.indexOf(equipment.toLowerCase());
+        if (index > -1) {
+            // If it's already excluded, remove it from the exclusion list (re-enabling it)
+            this.options.excludeEquipment.splice(index, 1);
+        } else {
+            // If it's not excluded, add it to the exclusion list
+            // add the equipment to the exclusion list, not jsut the equipment name
+            this.options.excludeEquipment.push(equipment.toLowerCase());
+        }
     }
 
     excludeEquipmentSearchTerm = signal<string>(''); // NEW

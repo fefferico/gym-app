@@ -133,50 +133,16 @@ export class WorkoutGeneratorService {
     /**
      * A helper that encapsulates a single generation attempt.
      */
-    /**
-     * A helper that encapsulates a single generation attempt.
-     */
     private async tryGenerateWithCriteria(options: WorkoutGenerationOptions): Promise<WorkoutExercise[] | null> {
+        // First, get the entire pool of exercises that match ALL user criteria (muscles, equipment, EXCLUSIONS).
         const selectableExercises = await this.getSelectableExercises(options);
 
         if (selectableExercises.length < 2) {
-            return null; // Not enough exercises to proceed
+            return null; // Not enough exercises to proceed.
         }
 
-        // --- START OF PRIORITY LOGIC ---
-        // From the selectable exercises, identify which ones are "priority" because they
-        // specifically use the requested equipment.
-
-        // 1. Determine the equipment to prioritize (all lowercase for matching)
-        let priorityEquipment: string[] = [];
-        if (options.usePersonalGym) {
-            const personalGym = await firstValueFrom(this.personalGymService.getAllEquipment());
-            priorityEquipment = personalGym.map(eq => eq.category.toLowerCase());
-        } else if (options.equipment.length > 0) {
-            priorityEquipment = options.equipment.map(e => e.toLowerCase());
-        }
-
-        // 2. Filter for exercises that explicitly use this equipment.
-        const priorityExercises = selectableExercises.filter(ex => {
-            // Bodyweight exercises are never a priority in this context.
-            if (ex.category === 'bodyweight/calisthenics' || priorityEquipment.length === 0) {
-                return false;
-            }
-
-            const equipmentLower = (ex.equipment || '').toLowerCase();
-            const neededLower = (ex.equipmentNeeded || []).map(eq => eq.toLowerCase());
-
-            // Return true if any of the priority equipment matches this exercise's requirements.
-            return priorityEquipment.some(priorityEq =>
-                equipmentLower.includes(priorityEq) || neededLower.some(needed => needed.includes(priorityEq))
-            );
-        });
-        
-        console.log(`${priorityExercises.length} priority exercises identified.`);
-
-        // Pass both lists to the builder.
-        return this.buildExerciseList(selectableExercises, priorityExercises, options);
-        // --- END OF PRIORITY LOGIC ---
+        // The builder will handle all other logic, now trusting the pre-filtered list.
+        return this.buildExerciseList(selectableExercises, options);
     }
 
     private async getSelectableExercises(options: WorkoutGenerationOptions): Promise<Exercise[]> {
@@ -259,82 +225,99 @@ export class WorkoutGeneratorService {
         }
     }
 
-    /**
-      * Builds a list of exercises by accumulating their estimated duration.
-      */
-    private buildExerciseList(exercises: Exercise[], priorityExercises: Exercise[], options: WorkoutGenerationOptions): WorkoutExercise[] {
+     /**
+     * --- CORRECTED METHOD ---
+     * Builds a workout from a PRE-FILTERED list of exercises, ensuring variety and respecting all constraints.
+     */
+    private buildExerciseList(
+        allValidExercises: Exercise[],
+        options: WorkoutGenerationOptions
+    ): WorkoutExercise[] {
         const workout: WorkoutExercise[] = [];
-        const existingExerciseIds = () => workout.map(wEx => wEx.exerciseId);
-
-        // Map ALL available exercises by muscle group for fallback
-        const exercisesPerMuscle = new Map<string, Exercise[]>();
-        exercises.forEach(ex => {
-            if (ex.primaryMuscleGroup) {
-                if (!exercisesPerMuscle.has(ex.primaryMuscleGroup)) {
-                    exercisesPerMuscle.set(ex.primaryMuscleGroup, []);
-                }
-                exercisesPerMuscle.get(ex.primaryMuscleGroup)!.push(ex);
-            }
-        });
-
-        // Map PRIORITY exercises by muscle group for primary selection
-        const priorityExercisesPerMuscle = new Map<string, Exercise[]>();
-        priorityExercises.forEach(ex => {
-            if (ex.primaryMuscleGroup) {
-                if (!priorityExercisesPerMuscle.has(ex.primaryMuscleGroup)) {
-                    priorityExercisesPerMuscle.set(ex.primaryMuscleGroup, []);
-                }
-                priorityExercisesPerMuscle.get(ex.primaryMuscleGroup)!.push(ex);
-            }
-        });
-
-
-        if (exercisesPerMuscle.size === 0) return [];
-
-        const muscleGroupsToPickFrom = this.shuffleArray(Array.from(exercisesPerMuscle.keys()));
         let totalEstimatedSeconds = 0;
         const targetSeconds = options.duration * 60;
-        let muscleIndex = 0;
-        const maxExercises = 12;
+        const maxExercises = 15;
 
-        while (totalEstimatedSeconds < targetSeconds && workout.length < maxExercises) {
-            if (muscleGroupsToPickFrom.length === 0) break;
+        // 1. Define Goals & Prepare Pools
+        // --- START OF FIX ---
+        // The ONLY source of truth for equipment goals is now the `allValidExercises` list.
+        // This inherently respects all exclusions applied by getSelectableExercises.
+        const equipmentGoals = new Set<string>();
+        allValidExercises.forEach(ex => {
+            if (ex.equipment && ex.category !== 'bodyweight/calisthenics') {
+                equipmentGoals.add(ex.equipment.toLowerCase());
+            }
+            // Also consider the equipmentNeeded array if it exists
+            (ex.equipmentNeeded || []).forEach(eq => equipmentGoals.add(eq.toLowerCase()));
+        });
 
-            const muscle = muscleGroupsToPickFrom[muscleIndex % muscleGroupsToPickFrom.length];
+        const equipmentToInclude = this.shuffleArray(Array.from(equipmentGoals));
+        // --- END OF FIX ---
+
+        const remainingExercises = this.shuffleArray(allValidExercises);
+        const muscleCounts = new Map<string, number>();
+
+        // 2. Main Loop: Continue until duration is met, we run out of exercises, or hit the limit.
+        while (totalEstimatedSeconds < targetSeconds && workout.length < maxExercises && remainingExercises.length > 0) {
             let exerciseToAdd: Exercise | null = null;
+            let exerciseIndex = -1;
 
-            // --- START: MODIFIED SELECTION LOGIC ---
-            // 1. Try to pick a PRIORITY exercise for the current muscle group first.
-            const priorityCandidates = priorityExercisesPerMuscle.get(muscle);
-            if (priorityCandidates && priorityCandidates.length > 0) {
-                exerciseToAdd = this.pickUniqueExercise(priorityCandidates, existingExerciseIds());
+            // Goal A: Prioritize satisfying an unmet equipment goal from our derived list.
+            const unmetEquipment = equipmentToInclude.find(
+                eq => !workout.some(wEx => ((wEx as any).exercise.equipment?.toLowerCase() === eq) || ((wEx as any).exercise.equipmentNeeded?.map((e: string) => e.toLowerCase()).includes(eq)))
+            );
+
+            if (unmetEquipment) {
+                // Find a random valid exercise that satisfies this equipment goal.
+                const potentialMatches = this.shuffleArray(
+                    remainingExercises.filter(ex => 
+                        (ex.equipment?.toLowerCase() === unmetEquipment) || (ex.equipmentNeeded?.map(e => e.toLowerCase()).includes(unmetEquipment)))
+                );
+
+                if (potentialMatches.length > 0) {
+                    exerciseToAdd = potentialMatches[0];
+                    exerciseIndex = remainingExercises.findIndex(ex => ex.id === exerciseToAdd!.id);
+                }
             }
 
-            // 2. If no unique priority exercise was found, fall back to the general list for that muscle.
+            // Goal B: If no equipment goal, or if one couldn't be met, pick any valid exercise from the top.
+            if (!exerciseToAdd && remainingExercises.length > 0) {
+                exerciseToAdd = remainingExercises[0];
+                exerciseIndex = 0;
+            }
+
             if (!exerciseToAdd) {
-                const allCandidates = exercisesPerMuscle.get(muscle);
-                if (allCandidates && allCandidates.length > 0) {
-                    exerciseToAdd = this.pickUniqueExercise(allCandidates, existingExerciseIds());
-                }
+                break; // No more exercises to evaluate.
             }
-            // --- END: MODIFIED SELECTION LOGIC ---
 
-            if (exerciseToAdd) {
-                const workoutExercise = this.createWorkoutExercise(exerciseToAdd, options.goal);
-                const exerciseDurationInSeconds = this.workoutService.getEstimatedRoutineDuration({ exercises: [workoutExercise] } as Routine) * 60;
+            // Remove the candidate from the pool so we don't evaluate it again.
+            remainingExercises.splice(exerciseIndex, 1);
 
-                if (totalEstimatedSeconds + exerciseDurationInSeconds < targetSeconds + 180) {
-                    workout.push(workoutExercise);
-                    totalEstimatedSeconds += exerciseDurationInSeconds;
-                }
+
+            // 3. Validate the chosen exercise against all remaining constraints.
+            const muscle = exerciseToAdd.primaryMuscleGroup;
+            const currentMuscleCount = muscleCounts.get(muscle) || 0;
+
+            // Constraint: Muscle group overuse (e.g., no more than 3 chest exercises)
+            if (currentMuscleCount >= 3) {
+                continue; // Skip, this muscle is over-represented.
             }
             
-            muscleIndex++;
-            // Break if we've cycled through all muscles multiple times without finding anything to add.
-            if (muscleIndex > muscleGroupsToPickFrom.length * 5) break; 
+            // Constraint: Duration. Check if adding it would exceed the target time.
+            const tempWorkoutExercise = this.createWorkoutExercise(exerciseToAdd, options.goal);
+            const exerciseDuration = this.workoutService.getEstimatedRoutineDuration({ exercises: [tempWorkoutExercise] } as Routine) * 60;
+            
+            if (totalEstimatedSeconds + exerciseDuration > targetSeconds + 120) { // Allow a 2-minute buffer
+                continue; // Skip, adding this exercise would make the workout too long.
+            }
+
+            // 4. If all checks pass, add the exercise to the workout.
+            workout.push(tempWorkoutExercise);
+            totalEstimatedSeconds += exerciseDuration;
+            muscleCounts.set(muscle, currentMuscleCount + 1);
         }
 
-        return workout;
+        return this.shuffleArray(workout); // Final shuffle for variety in exercise order.
     }
 
     /** +++ NEW HELPER +++ */
@@ -389,7 +372,9 @@ export class WorkoutGeneratorService {
             restAfterSet: rest,
         }));
 
-        return {
+        // Attach the full exercise object so the builder can reference its properties (like `equipment`).
+        // We cast to `any` to allow this temporary property which is only used during generation.
+        const workoutExercise: any = {
             id: uuidv4(),
             exerciseId: exercise.id,
             exerciseName: exercise.name,
@@ -398,8 +383,11 @@ export class WorkoutGeneratorService {
             supersetOrder: null,
             supersetRounds: 1,
             rounds: 1,
-            type: 'standard'
+            type: 'standard',
+            exercise: exercise 
         };
+        
+        return workoutExercise as WorkoutExercise;
     }
 
     /**
