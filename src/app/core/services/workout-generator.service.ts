@@ -133,6 +133,9 @@ export class WorkoutGeneratorService {
     /**
      * A helper that encapsulates a single generation attempt.
      */
+    /**
+     * A helper that encapsulates a single generation attempt.
+     */
     private async tryGenerateWithCriteria(options: WorkoutGenerationOptions): Promise<WorkoutExercise[] | null> {
         const selectableExercises = await this.getSelectableExercises(options);
 
@@ -140,31 +143,75 @@ export class WorkoutGeneratorService {
             return null; // Not enough exercises to proceed
         }
 
-        return this.buildExerciseList(selectableExercises, options);
+        // --- START OF PRIORITY LOGIC ---
+        // From the selectable exercises, identify which ones are "priority" because they
+        // specifically use the requested equipment.
+
+        // 1. Determine the equipment to prioritize (all lowercase for matching)
+        let priorityEquipment: string[] = [];
+        if (options.usePersonalGym) {
+            const personalGym = await firstValueFrom(this.personalGymService.getAllEquipment());
+            priorityEquipment = personalGym.map(eq => eq.category.toLowerCase());
+        } else if (options.equipment.length > 0) {
+            priorityEquipment = options.equipment.map(e => e.toLowerCase());
+        }
+
+        // 2. Filter for exercises that explicitly use this equipment.
+        const priorityExercises = selectableExercises.filter(ex => {
+            // Bodyweight exercises are never a priority in this context.
+            if (ex.category === 'bodyweight/calisthenics' || priorityEquipment.length === 0) {
+                return false;
+            }
+
+            const equipmentLower = (ex.equipment || '').toLowerCase();
+            const neededLower = (ex.equipmentNeeded || []).map(eq => eq.toLowerCase());
+
+            // Return true if any of the priority equipment matches this exercise's requirements.
+            return priorityEquipment.some(priorityEq =>
+                equipmentLower.includes(priorityEq) || neededLower.some(needed => needed.includes(priorityEq))
+            );
+        });
+        
+        console.log(`${priorityExercises.length} priority exercises identified.`);
+
+        // Pass both lists to the builder.
+        return this.buildExerciseList(selectableExercises, priorityExercises, options);
+        // --- END OF PRIORITY LOGIC ---
     }
 
     private async getSelectableExercises(options: WorkoutGenerationOptions): Promise<Exercise[]> {
         const allExercises = await firstValueFrom(this.exerciseService.getExercises());
         let availableExercises = allExercises.filter(ex => !ex.isHidden && ex.category !== 'stretching');
 
-        // Determine equipment filter
-        let equipmentFilter = new Set<string>();
+        // Determine equipment filter values, all lowercased for consistent comparison
+        let equipmentFilterValues: string[] = [];
         if (options.usePersonalGym) {
-            const personalGym = (await firstValueFrom(this.personalGymService.getAllEquipment())).map(eq => ({ ...eq, category: eq.category.toLowerCase() }));
-            personalGym.forEach(e => equipmentFilter.add(e.category));
+            const personalGym = await firstValueFrom(this.personalGymService.getAllEquipment());
+            equipmentFilterValues = personalGym.map(eq => eq.category.toLowerCase());
         } else if (options.equipment.length > 0) {
-            options.equipment.forEach(e => equipmentFilter.add(e));
+            equipmentFilterValues = options.equipment.map(e => e.toLowerCase());
         }
 
-        // Apply equipment filter
-        if (equipmentFilter.size > 0) {
-            availableExercises = availableExercises.filter(ex =>
-                ex.category === 'bodyweight/calisthenics' ||
-                !ex.equipment ||
-                equipmentFilter.has(ex.equipment) ||
-                (ex.equipmentNeeded && ex.equipmentNeeded.some(eq => equipmentFilter.has(eq.toLowerCase()))) ||
-                (ex.equipmentNeeded && ex.equipmentNeeded.length > 0 && ex.equipmentNeeded.some(eq => equipmentFilter.has(eq.toLowerCase())))
-            );
+        // Apply equipment inclusion filter if there are any specified
+        if (equipmentFilterValues.length > 0) {
+            availableExercises = availableExercises.filter(ex => {
+                // Always include exercises that don't require any specific equipment
+                if (ex.category === 'bodyweight/calisthenics' || (!ex.equipment && (!ex.equipmentNeeded || ex.equipmentNeeded.length === 0))) {
+                    return true;
+                }
+
+                const exerciseEquipmentLower = (ex.equipment || '').toLowerCase();
+                const equipmentNeededLower = (ex.equipmentNeeded || []).map(eq => eq.toLowerCase());
+
+                // Check if the exercise's equipment needs are met by the filter.
+                // Using .includes() allows for flexible matching (e.g., "macebell" in the filter will match "Macebells" in the exercise data).
+                return equipmentFilterValues.some(filterEq => {
+                    if (exerciseEquipmentLower && exerciseEquipmentLower.includes(filterEq)) {
+                        return true;
+                    }
+                    return equipmentNeededLower.some(neededEq => neededEq.includes(filterEq));
+                });
+            });
         }
 
         // Filter by Muscles to Avoid
@@ -179,16 +226,21 @@ export class WorkoutGeneratorService {
             availableExercises = availableExercises.filter(ex => ex.primaryMuscleGroup && targetMuscles.has(ex.primaryMuscleGroup.toLowerCase()));
         }
 
-        // --- START: NEW EXCLUDE EQUIPMENT FILTER ---
+        // Apply equipment exclusion filter using the same robust logic
         if (options.excludeEquipment && options.excludeEquipment.length > 0) {
-            const excludeSet = new Set(options.excludeEquipment.map(eq => eq.toLowerCase()));
-            availableExercises = availableExercises.filter(ex =>
-                // look inside equipment and equipmentNeeded arrays (consider that excludeSet can contains "kettlebell" and ex.equipmentNeeded can contains "Kettlebells")
-                !(ex.equipment && excludeSet.has(ex.equipment.toLowerCase())) &&
-                !(ex.equipmentNeeded && ex.equipmentNeeded.some(eq => excludeSet.has(eq.toLowerCase())))
-            );
+            const excludeValues = options.excludeEquipment.map(eq => eq.toLowerCase());
+            availableExercises = availableExercises.filter(ex => {
+                const equipmentLower = (ex.equipment || '').toLowerCase();
+                const equipmentNeededLower = (ex.equipmentNeeded || []).map(eq => eq.toLowerCase());
+
+                // Keep the exercise only if NONE of its required equipment are in the exclusion list.
+                const isExcluded = excludeValues.some(excludedEq =>
+                    (equipmentLower.includes(excludedEq)) ||
+                    (equipmentNeededLower.some(neededEq => neededEq.includes(excludedEq)))
+                );
+                return !isExcluded;
+            });
         }
-        // --- END: NEW EXCLUDE EQUIPMENT FILTER ---
 
         return availableExercises;
     }
@@ -210,8 +262,11 @@ export class WorkoutGeneratorService {
     /**
       * Builds a list of exercises by accumulating their estimated duration.
       */
-    private buildExerciseList(exercises: Exercise[], options: WorkoutGenerationOptions): WorkoutExercise[] {
+    private buildExerciseList(exercises: Exercise[], priorityExercises: Exercise[], options: WorkoutGenerationOptions): WorkoutExercise[] {
         const workout: WorkoutExercise[] = [];
+        const existingExerciseIds = () => workout.map(wEx => wEx.exerciseId);
+
+        // Map ALL available exercises by muscle group for fallback
         const exercisesPerMuscle = new Map<string, Exercise[]>();
         exercises.forEach(ex => {
             if (ex.primaryMuscleGroup) {
@@ -222,10 +277,21 @@ export class WorkoutGeneratorService {
             }
         });
 
+        // Map PRIORITY exercises by muscle group for primary selection
+        const priorityExercisesPerMuscle = new Map<string, Exercise[]>();
+        priorityExercises.forEach(ex => {
+            if (ex.primaryMuscleGroup) {
+                if (!priorityExercisesPerMuscle.has(ex.primaryMuscleGroup)) {
+                    priorityExercisesPerMuscle.set(ex.primaryMuscleGroup, []);
+                }
+                priorityExercisesPerMuscle.get(ex.primaryMuscleGroup)!.push(ex);
+            }
+        });
+
+
         if (exercisesPerMuscle.size === 0) return [];
 
         const muscleGroupsToPickFrom = this.shuffleArray(Array.from(exercisesPerMuscle.keys()));
-
         let totalEstimatedSeconds = 0;
         const targetSeconds = options.duration * 60;
         let muscleIndex = 0;
@@ -235,29 +301,37 @@ export class WorkoutGeneratorService {
             if (muscleGroupsToPickFrom.length === 0) break;
 
             const muscle = muscleGroupsToPickFrom[muscleIndex % muscleGroupsToPickFrom.length];
-            const availableForMuscle = exercisesPerMuscle.get(muscle);
+            let exerciseToAdd: Exercise | null = null;
 
-            if (availableForMuscle && availableForMuscle.length > 0) {
+            // --- START: MODIFIED SELECTION LOGIC ---
+            // 1. Try to pick a PRIORITY exercise for the current muscle group first.
+            const priorityCandidates = priorityExercisesPerMuscle.get(muscle);
+            if (priorityCandidates && priorityCandidates.length > 0) {
+                exerciseToAdd = this.pickUniqueExercise(priorityCandidates, existingExerciseIds());
+            }
 
-                // --- START OF CORRECTION ---
-                // We now map the 'workout' array to an array of just the exercise IDs
-                // to match the new signature of 'pickUniqueExercise'.
-                const existingExerciseIds = workout.map(wEx => wEx.exerciseId);
-                const exerciseToAdd = this.pickUniqueExercise(availableForMuscle, existingExerciseIds);
-                // --- END OF CORRECTION ---
-
-                if (exerciseToAdd) {
-                    const workoutExercise = this.createWorkoutExercise(exerciseToAdd, options.goal);
-                    const exerciseDurationInSeconds = this.workoutService.getEstimatedRoutineDuration({ exercises: [workoutExercise] } as Routine) * 60;
-
-                    if (totalEstimatedSeconds + exerciseDurationInSeconds < targetSeconds + 180) {
-                        workout.push(workoutExercise);
-                        totalEstimatedSeconds += exerciseDurationInSeconds;
-                    }
+            // 2. If no unique priority exercise was found, fall back to the general list for that muscle.
+            if (!exerciseToAdd) {
+                const allCandidates = exercisesPerMuscle.get(muscle);
+                if (allCandidates && allCandidates.length > 0) {
+                    exerciseToAdd = this.pickUniqueExercise(allCandidates, existingExerciseIds());
                 }
             }
+            // --- END: MODIFIED SELECTION LOGIC ---
+
+            if (exerciseToAdd) {
+                const workoutExercise = this.createWorkoutExercise(exerciseToAdd, options.goal);
+                const exerciseDurationInSeconds = this.workoutService.getEstimatedRoutineDuration({ exercises: [workoutExercise] } as Routine) * 60;
+
+                if (totalEstimatedSeconds + exerciseDurationInSeconds < targetSeconds + 180) {
+                    workout.push(workoutExercise);
+                    totalEstimatedSeconds += exerciseDurationInSeconds;
+                }
+            }
+            
             muscleIndex++;
-            if (muscleIndex > muscleGroupsToPickFrom.length * 5) break;
+            // Break if we've cycled through all muscles multiple times without finding anything to add.
+            if (muscleIndex > muscleGroupsToPickFrom.length * 5) break; 
         }
 
         return workout;

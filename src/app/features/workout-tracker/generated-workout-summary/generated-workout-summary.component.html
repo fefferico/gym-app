@@ -13,6 +13,7 @@
                 <!-- +++ NEW: Dynamic Total Duration Display +++ -->
                 <p *ngIf="totalEstimatedDuration() > 0" class="text-sm text-gray-500 dark:text-gray-400">
                     Estimated Duration: ~{{ totalEstimatedDuration() }} min
+                    <span> (including rest)</span>
                 </p>
             </div>
             <button (click)="close.emit()"
