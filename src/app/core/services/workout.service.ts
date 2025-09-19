@@ -986,6 +986,13 @@ export class WorkoutService {
   * @returns A formatted string like "8-12", "60+", "10", or an empty string if no target is set.
   */
   public getSetTargetDisplay(set: ExerciseTargetSetParams, field: 'reps' | 'duration' | 'weight' | 'distance'): string {
+    // --- MODIFICATION START ---
+    // Add a guard clause to prevent errors if an undefined set is passed in.
+    if (!set) {
+      return '';
+    }
+    // --- MODIFICATION END ---
+    
     let min = -1;
     let max = -1;
     let single = -1;

@@ -195,44 +195,45 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
 
 
   readonly mainActionButtonLabel = computed(() => {
+    // --- MODIFICATION START: Explicitly handle EMOM UI ---
+    if (this.activeSupersetBlock()?.[0]?.supersetType === 'emom') {
+      const isLastRoundOfBlock = this.currentBlockRound() === this.totalBlockRounds();
+      const isLastSetOfWorkout = this.checkIfLatestSetOfWorkoutConsideringPending();
+      if (isLastRoundOfBlock && isLastSetOfWorkout) return 'FINISH WORKOUT';
+      return 'COMPLETE ROUND';
+    }
+    // --- MODIFICATION END ---
+
     const activeInfo = this.activeSetInfo();
     const routine = this.routine();
+    const block = this.activeSupersetBlock();
+    if (block) {
+      const isLastExerciseInBlock = activeInfo?.exerciseData.supersetOrder === block.length - 1;
+      const isLastRoundOfBlock = this.currentBlockRound() === this.totalBlockRounds();
+      const isLastSetOfWorkout = this.checkIfLatestSetOfWorkoutConsideringPending();
+
+      if (isLastExerciseInBlock) {
+        if (isLastRoundOfBlock) {
+          return isLastSetOfWorkout ? 'FINISH WORKOUT' : 'COMPLETE EXERCISE';
+        } else {
+          return 'COMPLETE ROUND';
+        }
+      } else {
+        return 'SET DONE';
+      }
+    }
 
     switch (this.playerSubState()) {
       case PlayerSubState.Resting:
         return `RESTING: ${this.restTimerDisplay()}`;
-
       case PlayerSubState.PerformingSet:
-        if (!activeInfo) return 'SET DONE'; // Safety check
-
+        if (!activeInfo) return 'SET DONE';
         const isLastSetOfExercise = this.checkIfLatestSetOfExercise();
-        const isLastSetOfRound = this.checkIfLatestSetOfRound();
-        const isPartOfRounds = this.checkIfSetIsPartOfRounds();
-        const isLastRound = this.checkIfLatestRoundOfRounds();
         const isLastSetOfWorkout = this.checkIfLatestSetOfWorkoutConsideringPending();
-
-        if (isLastSetOfWorkout && isLastRound && isLastSetOfExercise && isLastSetOfRound) {
-          return 'FINISH WORKOUT';
-        }
-
-        if (isPartOfRounds) {
-          if (isLastSetOfRound) {
-            if (!isLastRound) {
-              return 'COMPLETE ROUND';
-            } else {
-              return 'COMPLETE EXERCISE';
-            }
-          } else {
-            return 'SET DONE';
-          }
-        }
-
         if (isLastSetOfExercise) {
-          return 'COMPLETE EXERCISE';
+          return isLastSetOfWorkout ? 'FINISH WORKOUT' : 'COMPLETE EXERCISE';
         }
-
         return 'SET DONE';
-
       default:
         return 'SET DONE';
     }
@@ -466,28 +467,34 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     let exerciseLog = logs.find(log => log.id === exerciseData.id);
 
     if (exerciseLog) {
-      // ... (logic to add set to existing log)
+      // This part is for adding a subsequent set to an already logged exercise. It is correct.
       const existingSetIndex = exerciseLog.sets.findIndex(s => s.plannedSetId === loggedSet.plannedSetId);
       if (existingSetIndex > -1) {
+        // Replace if already exists (e.g., re-doing a set)
         exerciseLog.sets[existingSetIndex] = loggedSet;
       } else {
+        // Add new set
         exerciseLog.sets.push(loggedSet);
       }
     } else {
-      const exerciseName = this.currentBaseExercise()?.name || exerciseData.exerciseName || 'Unknown Exercise';
+      // --- THIS BLOCK IS CORRECTED ---
+      // This part creates a new log entry for an exercise the first time a set is logged for it.
       const newLog: LoggedWorkoutExercise = {
         id: exerciseData.id,
         exerciseId: exerciseData.exerciseId,
-        exerciseName,
+        // FIX: Directly use the exerciseName from the passed-in exerciseData.
+        // This ensures the correct name is used for each exercise in an EMOM block.
+        exerciseName: exerciseData.exerciseName ?? '',
         sets: [loggedSet],
         type: loggedSet.type || 'standard',
         supersetId: exerciseData.supersetId || null,
-        supersetOrder: exerciseData.supersetOrder !== null ? exerciseData.supersetOrder : null,
-        supersetSize: exerciseData.supersetSize || 0,
+        supersetOrder: exerciseData.supersetOrder ?? null,
+        supersetSize: exerciseData.supersetSize ?? 0,
         supersetRounds: exerciseData.supersetRounds,
-        // *** This `rounds` property should be removed ***
+        supersetType: exerciseData.supersetType || null,
       };
-      // ... (logic to add new log to array)
+      // --- END CORRECTION ---
+
       const exerciseIndex = this.routine()?.exercises.findIndex(ex => ex.id === exerciseData.id);
       if (typeof exerciseIndex === 'number' && exerciseIndex >= 0 && exerciseIndex <= logs.length) {
         logs.splice(exerciseIndex, 0, newLog);
@@ -1185,35 +1192,28 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
 
 
   private async prepareCurrentSet(): Promise<void> {
+    if (this.emomRoundTimerSub) this.emomRoundTimerSub.unsubscribe();
+
     this.showNotes.set(false);
-    console.log('prepareCurrentSet: START');
     if (this.sessionState() === SessionState.Paused) {
-      console.log("prepareCurrentSet: Session is paused, deferring preparation");
       return;
     }
-
     const sessionRoutine = this.routine();
     if (!sessionRoutine || sessionRoutine.exercises.length === 0) {
-      console.warn('prepareCurrentSet: No sessionRoutine or no exercises in routine. Current routine:', sessionRoutine);
       this.sessionState.set(SessionState.Error);
-      this.toastService.error("Cannot prepare set: Routine data is missing or empty", 0, "Error");
       return;
     }
-
     let exIndex = this.currentExerciseIndex();
     let sIndex = this.currentSetIndex();
 
-    console.log(`prepareCurrentSet: Initial target - exIndex: ${exIndex}, sIndex: ${sIndex}, sessionStatus: ${sessionRoutine.exercises[exIndex]?.sessionStatus}`);
-
+    // This logic correctly finds the next playable set.
     if (sessionRoutine.exercises[exIndex]?.sessionStatus !== 'pending') {
       const firstPendingInfo = this.findFirstPendingExerciseAndSet(sessionRoutine);
-
       if (firstPendingInfo) {
         exIndex = firstPendingInfo.exerciseIndex;
         sIndex = firstPendingInfo.setIndex;
         this.currentExerciseIndex.set(exIndex);
         this.currentSetIndex.set(sIndex);
-        // +++ ADD THIS LINE TO UPDATE THE ROUND +++
         this.currentBlockRound.set(firstPendingInfo.round);
         this.isPerformingDeferredExercise = false;
       } else {
@@ -1222,9 +1222,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       }
     }
 
-    if (exIndex >= sessionRoutine.exercises.length || !sessionRoutine.exercises[exIndex] || sIndex >= sessionRoutine.exercises[exIndex].sets.length || !sessionRoutine.exercises[exIndex].sets[sIndex]) {
-      console.warn(`prepareCurrentSet: Indices [ex: ${exIndex}, set: ${sIndex}] are out of bounds. This is expected for a completed session. Transitioning to finish flow`);
-
+    if (exIndex >= sessionRoutine.exercises.length || !sessionRoutine.exercises[exIndex] || !sessionRoutine.exercises[exIndex].sets[sIndex]) {
       this.currentSetForm.reset({ rpe: null, setNotes: '' });
       this.resetTimedSet();
       this.currentBaseExercise.set(null);
@@ -1232,38 +1230,17 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       this.lastPerformanceForCurrentExercise = null;
       this.rpeValue.set(null);
       this.showRpeSlider.set(false);
-
       await this.tryProceedToDeferredExercisesOrFinish(sessionRoutine);
-
       return;
     }
-
-    let exercisesComplete = false;
-    if (sessionRoutine.exercises.length === this.currentWorkoutLogExercises().length) {
-      exercisesComplete = true;
-    }
-    sessionRoutine.exercises.forEach(exercise => {
-      const loggedExercise = this.currentWorkoutLogExercises().find(ex => ex.id === exercise.id);
-      if (!exercisesComplete && loggedExercise && exercise.sets.length === loggedExercise.sets.length) {
-        exercisesComplete = true;
-      }
-    })
-
-
     const currentExerciseData = sessionRoutine.exercises[exIndex];
     const currentPlannedSetData = currentExerciseData.sets[sIndex];
-
-    console.log(`prepareCurrentSet: Preparing for Ex: "${currentExerciseData.exerciseName}", Set: ${sIndex + 1}, Type: ${currentPlannedSetData.type}`);
-
-    const originalExerciseForSuggestions = this.originalRoutineSnapshot && this.originalRoutineSnapshot.exercises && this.originalRoutineSnapshot.exercises.find(oe => oe.exerciseId === currentExerciseData.exerciseId) || currentExerciseData;
+    const originalExerciseForSuggestions = this.originalRoutineSnapshot?.exercises.find(oe => oe.exerciseId === currentExerciseData.exerciseId) || currentExerciseData;
     const plannedSetForSuggestions = originalExerciseForSuggestions?.sets[sIndex] || currentPlannedSetData;
-
     this.loadBaseExerciseAndPBs(currentExerciseData.exerciseId);
-
     if (!this.lastPerformanceForCurrentExercise || this.lastPerformanceForCurrentExercise.sets[0]?.exerciseId !== currentExerciseData.exerciseId) {
       this.lastPerformanceForCurrentExercise = await firstValueFrom(this.trackingService.getLastPerformanceForExercise(currentExerciseData.exerciseId).pipe(take(1)));
     }
-
     const historicalSetPerformance = this.trackingService.findPreviousSetPerformance(this.lastPerformanceForCurrentExercise, plannedSetForSuggestions, sIndex);
     let finalSetParamsForSession: ExerciseTargetSetParams;
     if (plannedSetForSuggestions.type === 'warmup') {
@@ -1273,8 +1250,6 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       if (progressiveOverloadSettings && progressiveOverloadSettings.enabled) {
         finalSetParamsForSession = this.workoutService.suggestNextSetParameters(historicalSetPerformance, plannedSetForSuggestions);
       } else {
-        console.warn("prepareCurrentSet: Progressive overload settings are not available. Using default suggestion logic.");
-
         if (historicalSetPerformance && currentExerciseData.exerciseName && currentExerciseData.exerciseName.toLowerCase().indexOf('kb') < 0) {
           finalSetParamsForSession = {
             ...plannedSetForSuggestions,
@@ -1294,13 +1269,9 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
         }
       }
     }
-
-    // +++ NEW: APPLY SESSION-WIDE INTENSITY ADJUSTMENT +++
-    // Check if an adjustment is active and if the current exercise was part of the original plan.
     if (this.intensityAdjustment && this.originalRoutineSnapshot?.exercises.some(ex => ex.id === currentExerciseData.id)) {
       const { direction, percentage } = this.intensityAdjustment;
       const multiplier = direction === 'increase' ? 1 + (percentage / 100) : 1 - (percentage / 100);
-
       if (finalSetParamsForSession.targetWeight !== null && finalSetParamsForSession.targetWeight !== undefined) {
         const adjustedWeight = Math.round((finalSetParamsForSession.targetWeight * multiplier) * 4) / 4;
         finalSetParamsForSession.targetWeight = adjustedWeight >= 0 ? adjustedWeight : 0;
@@ -1314,49 +1285,31 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
         finalSetParamsForSession.targetDuration = adjustedDuration >= 0 ? adjustedDuration : 0;
       }
     }
-    // +++ END OF NEW LOGIC +++
-
     finalSetParamsForSession.id = currentPlannedSetData.id;
     finalSetParamsForSession.type = currentPlannedSetData.type;
     finalSetParamsForSession.notes = currentPlannedSetData.notes || finalSetParamsForSession.notes;
-
     const updatedRoutineForSession = JSON.parse(JSON.stringify(sessionRoutine)) as Routine;
-
     if (!updatedRoutineForSession.exercises[exIndex].sets?.some(set => set.targetDuration)) {
       updatedRoutineForSession.exercises[exIndex].sets[sIndex] = finalSetParamsForSession;
     }
     this.routine.set(updatedRoutineForSession);
-
     this.patchActualsFormBasedOnSessionTargets();
 
-    let previousSetRestDuration = Infinity;
-    if (sIndex > 0) {
-      previousSetRestDuration = currentExerciseData.sets[sIndex - 1].restAfterSet;
-    } else if (exIndex > 0) {
-      let prevPlayedExIndex = exIndex - 1;
-      let foundPrevPlayed = false;
-      while (prevPlayedExIndex >= 0) {
-        if (this.isExerciseFullyLogged(sessionRoutine.exercises[prevPlayedExIndex]) ||
-          (sessionRoutine.exercises[prevPlayedExIndex].sessionStatus === 'pending' && this.currentWorkoutLogExercises().some(le => le.exerciseId === sessionRoutine.exercises[prevPlayedExIndex].exerciseId))) {
-          const prevExercise = sessionRoutine.exercises[prevPlayedExIndex];
-          if (prevExercise.sets.length > 0) {
-            previousSetRestDuration = prevExercise.sets[prevExercise.sets.length - 1].restAfterSet;
-            foundPrevPlayed = true;
-          }
-          break;
-        }
-        prevPlayedExIndex--;
-      }
-      if (!foundPrevPlayed) previousSetRestDuration = Infinity;
-    }
-
-
     if (this.sessionState() !== SessionState.Playing && this.sessionState() !== SessionState.Paused) {
-      console.log("prepareCurrentSet: Setting sessionState to Playing");
       this.sessionState.set(SessionState.Playing);
     }
-    console.log('prepareCurrentSet: END');
     this.playerSubState.set(PlayerSubState.PerformingSet);
+
+    // --- MODIFICATION START: Restore the EMOM timer start logic ---
+    const supersetBlock = this.activeSupersetBlock();
+    if (supersetBlock && supersetBlock[0]?.supersetType === 'emom') {
+      const firstExerciseInBlock = supersetBlock[0];
+      const roundDuration = firstExerciseInBlock?.emomTimeSeconds;
+      if (roundDuration && roundDuration > 0) {
+        this.startEmomRoundTimer(roundDuration);
+      }
+    }
+    // --- MODIFICATION END ---
   }
 
 
@@ -1603,7 +1556,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const formValues = this.currentSetForm.value; // Includes setNotes
+    const formValues = this.currentSetForm.value;
 
     let durationToLog = formValues.actualDuration;
     if (activeInfo.setData.targetDuration && activeInfo.setData.targetDuration > 0 && this.timedSetElapsedSeconds() > 0) {
@@ -1626,7 +1579,6 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       weightUsed: formValues.actualWeight ?? (activeInfo.setData.type === 'warmup' ? null : activeInfo.setData.targetWeight),
       durationPerformed: durationToLog,
       rpe: formValues.rpe ?? undefined,
-      // NEW: Log the full target range for future analysis
       targetReps: activeInfo.setData.targetReps,
       targetRepsMin: activeInfo.setData.targetRepsMin,
       targetRepsMax: activeInfo.setData.targetRepsMax,
@@ -1642,6 +1594,11 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     };
     this.addLoggedSetToCurrentLog(activeInfo.exerciseData, loggedSetData);
 
+    // --- MODIFICATION START ---
+    // Manually trigger change detection here to force progress bar update for standard sets.
+    this.cdr.detectChanges();
+    // --- MODIFICATION END ---
+
     if (this.sessionState() === SessionState.Playing) {
       this.captureAndSaveStateForUnload();
     }
@@ -1649,11 +1606,11 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     this.rpeValue.set(null);
     this.showRpeSlider.set(false);
     this.editingTarget = null;
-    // Do not reset setNotes here, it will be reset when new set is prepared by patchActualsFormBasedOnSessionTargets or patchCurrentSetFormWithData
-    this.currentSetForm.patchValue({ setNotes: '' }, { emitEvent: false }); // Clear notes after logging for current set form visually.
+    this.currentSetForm.patchValue({ setNotes: '' }, { emitEvent: false });
 
     this.navigateToNextStepInWorkout(activeInfo, currentRoutineValue);
   }
+
 
   getIndexedCurrentBlock(): number {
     return (this.currentBlockRound() ?? 1) - 1;
@@ -1840,16 +1797,20 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       this.pauseTimedSet();
     }
 
+    // --- MODIFICATION START: Handle EMOM timer state on session pause ---
+    if (this.activeSupersetBlock()?.[0]?.supersetType === 'emom') {
+      this.wasEmomTimerRunningOnPause = this.emomTimerState() === 'running';
+      this.emomTimerState.set('paused');
+    }
+    // --- MODIFICATION END ---
+
     this.wasRestTimerVisibleOnPause = this.isRestTimerVisible();
     if (this.wasRestTimerVisibleOnPause) {
-      // Capture remaining time from full screen timer if it's the source of truth
-      // For now, restDuration is the initial, elapsed would need to be tracked by full screen timer.
-      // Assuming restDuration() holds the remaining time if full screen timer is active.
-      this.restTimerRemainingSecondsOnPause = this.restDuration(); // This should be remaining from full screen if complex
-      this.restTimerInitialDurationOnPause = this.restDuration(); // Store initial for pause/resume
+      this.restTimerRemainingSecondsOnPause = this.restDuration();
+      this.restTimerInitialDurationOnPause = this.restDuration();
       this.restTimerMainTextOnPause = this.restTimerMainText();
       this.restTimerNextUpTextOnPause = this.restTimerNextUpText();
-      this.isRestTimerVisible.set(false); // Hide full screen timer on pause
+      this.isRestTimerVisible.set(false);
     }
     this.stopAutoSave();
     this.sessionState.set(SessionState.Paused);
@@ -1890,7 +1851,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     this.originalSessionStartTime = state.workoutStartTimeOriginal || Date.now();
 
     // The workoutStartTime for the timer calculation is reset to now.
-    this.workoutStartTime = Date.now(); 
+    this.workoutStartTime = Date.now();
     this.sessionTimerElapsedSecondsBeforePause = state.sessionTimerElapsedSecondsBeforePause;
     // --- END MODIFICATION ---
 
@@ -3243,7 +3204,6 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
 
   async resumeSession(): Promise<void> {
     if (this.sessionState() === SessionState.Paused) {
-      console.log('resumeSession button clicked - transitioning from Paused to Playing');
       this.workoutStartTime = Date.now();
       this.sessionState.set(SessionState.Playing);
       this.startSessionTimer();
@@ -3253,6 +3213,13 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
         this.startOrResumeTimedSet();
       }
       this.wasTimedSetRunningOnPause = false;
+
+      // --- MODIFICATION START: Handle EMOM timer state on session resume ---
+      if (this.wasEmomTimerRunningOnPause) {
+        this.emomTimerState.set('running');
+      }
+      this.wasEmomTimerRunningOnPause = false;
+      // --- MODIFICATION END ---
 
       if (this.wasRestTimerVisibleOnPause && this.restTimerRemainingSecondsOnPause > 0) {
         this.startRestPeriod(this.restTimerRemainingSecondsOnPause, true);
@@ -3376,6 +3343,21 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
   private getWorkingSetCountForExercise(exercise: WorkoutExercise): number {
     return exercise.sets.filter(s => s.type !== 'warmup').length;
   }
+
+
+  /**
+   * Helper function to find the index of the first 'pending' exercise after a given index.
+   */
+  private findFirstPendingExerciseIndexAfter(startIndex: number, routine: Routine): number {
+    for (let i = startIndex + 1; i < routine.exercises.length; i++) {
+      if (routine.exercises[i].sessionStatus === 'pending') {
+        return i;
+      }
+    }
+    return -1; // No more pending exercises found
+  }
+
+  // --- This function contains the critical fix for round-aware navigation ---
   private findNextPlayableItemIndices(
     currentGlobalExerciseIndex: number,
     currentGlobalSetIndexInExercise: number,
@@ -3387,88 +3369,46 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     let blockChanged = false;
     let isEndOfAllPending = false;
     let roundIncremented = false;
-
     const currentPlayedExercise = routine.exercises[currentGlobalExerciseIndex];
 
     if (forceAdvanceExerciseBlock || nextSetIdx >= currentPlayedExercise.sets.length - 1) {
-      nextSetIdx = 0; // Reset for new exercise/round
-
-      if (!forceAdvanceExerciseBlock && currentPlayedExercise.supersetId && currentPlayedExercise.supersetOrder !== null &&
-        currentPlayedExercise.supersetOrder < (currentPlayedExercise.supersetSize || 1) - 1) {
-        let tempNextExIdx = currentGlobalExerciseIndex + 1;
-        while (tempNextExIdx < routine.exercises.length &&
-          (routine.exercises[tempNextExIdx].supersetId !== currentPlayedExercise.supersetId ||
-            routine.exercises[tempNextExIdx].sessionStatus !== 'pending')) {
-          tempNextExIdx++;
-        }
-        if (tempNextExIdx < routine.exercises.length && routine.exercises[tempNextExIdx].supersetId === currentPlayedExercise.supersetId) {
-          nextExIdx = tempNextExIdx; // Found next pending in superset
-          return { nextExIdx, nextSetIdx, blockChanged, isEndOfAllPending, roundIncremented };
-        }
-        // If no next pending in superset, fall through to end of block logic
-      }
-
-      const currentBlockTotalRounds = this.totalBlockRounds();
-      if (!forceAdvanceExerciseBlock && this.currentBlockRound() < currentBlockTotalRounds) {
-        this.currentBlockRound.update(r => r + 1);
-        roundIncremented = true;
-        let blockStartIdx = currentGlobalExerciseIndex;
-        if (currentPlayedExercise.supersetId && currentPlayedExercise.supersetOrder !== null) {
-          blockStartIdx = currentGlobalExerciseIndex - currentPlayedExercise.supersetOrder;
-        }
-        // Find first pending in this block for new round
-        let searchInBlockIdx = blockStartIdx;
-        let foundPendingInBlockForNewRound = false;
-        while (searchInBlockIdx < routine.exercises.length &&
-          (currentPlayedExercise.supersetId ? routine.exercises[searchInBlockIdx].supersetId === currentPlayedExercise.supersetId : searchInBlockIdx === blockStartIdx)) {
-          if (routine.exercises[searchInBlockIdx].sessionStatus === 'pending') {
-            nextExIdx = searchInBlockIdx;
-            foundPendingInBlockForNewRound = true;
-            break;
+      if (currentPlayedExercise.supersetId) {
+        const isLastExerciseInBlock = currentPlayedExercise.supersetOrder === (currentPlayedExercise.supersetSize ?? 1) - 1;
+        if (isLastExerciseInBlock) {
+          // --- MODIFICATION START: Correctly handle end of block ---
+          const totalRounds = this.totalBlockRounds();
+          const currentRound = this.currentBlockRound();
+          if (currentRound < totalRounds) {
+            this.currentBlockRound.update(r => r + 1);
+            roundIncremented = true;
+            const firstInBlockIndex = routine.exercises.findIndex(ex => ex.supersetId === currentPlayedExercise.supersetId && ex.supersetOrder === 0);
+            nextExIdx = firstInBlockIndex !== -1 ? firstInBlockIndex : -1;
+            nextSetIdx = 0;
+          } else {
+            // ALL rounds are finished, find the next block entirely.
+            blockChanged = true;
+            this.currentBlockRound.set(1);
+            const blockEndIndex = currentGlobalExerciseIndex;
+            nextExIdx = this.findFirstPendingExerciseIndexAfter(blockEndIndex, routine);
+            nextSetIdx = 0;
           }
-          searchInBlockIdx++;
-        }
-        if (!foundPendingInBlockForNewRound) { // Entire block became non-pending
-          this.currentBlockRound.set(currentBlockTotalRounds); roundIncremented = false; // Mark rounds done
-          // Fall through to find next block
+          // --- MODIFICATION END ---
         } else {
-          return { nextExIdx, nextSetIdx, blockChanged, isEndOfAllPending, roundIncremented };
+          nextExIdx = this.findFirstPendingExerciseIndexAfter(currentGlobalExerciseIndex, routine);
+          nextSetIdx = 0;
         }
+      } else {
+        blockChanged = true;
+        nextExIdx = this.findFirstPendingExerciseIndexAfter(currentGlobalExerciseIndex, routine);
+        nextSetIdx = 0;
       }
-      // Finished rounds or forced advance: find next pending block
-      blockChanged = true;
-      this.currentBlockRound.set(1);
-      roundIncremented = false;
-
-      let searchFrom = currentGlobalExerciseIndex + 1;
-      if (currentPlayedExercise.supersetId && currentPlayedExercise.supersetOrder !== null) {
-        searchFrom = currentGlobalExerciseIndex - currentPlayedExercise.supersetOrder + (currentPlayedExercise.supersetSize || 1);
-      }
-      nextExIdx = -1;
-      for (let i = searchFrom; i < routine.exercises.length; i++) {
-        const ex = routine.exercises[i];
-        if (ex.sessionStatus === 'pending') {
-          if (!ex.supersetId || ex.supersetOrder === 0) {
-            nextExIdx = i;
-            if (this.getNumberOfLoggedSets(ex.id)) {
-              nextSetIdx = this.getNumberOfLoggedSets(ex.id);
-            }
-            break;
-          }
-          // If mid-superset, find its actual start if that start is pending
-          let actualBlockStartForMidSuperset = i - (ex.supersetOrder || 0);
-          if (actualBlockStartForMidSuperset >= 0 && routine.exercises[actualBlockStartForMidSuperset].sessionStatus === 'pending' && routine.exercises[actualBlockStartForMidSuperset].supersetId === ex.supersetId) {
-            nextExIdx = actualBlockStartForMidSuperset; break;
-          }
-        }
-      }
-    } else { // Advance to next set in same exercise
+    } else {
       nextSetIdx++;
     }
 
-    if (nextExIdx === -1 || nextExIdx >= routine.exercises.length || (nextExIdx !== -1 && routine.exercises[nextExIdx].sessionStatus !== 'pending')) {
+    if (nextExIdx === -1 || nextExIdx >= routine.exercises.length) {
       isEndOfAllPending = true;
-      nextExIdx = -1; // Ensure invalid index if end
+      nextExIdx = -1;
     }
     return { nextExIdx, nextSetIdx, blockChanged, isEndOfAllPending, roundIncremented };
   }
@@ -3503,88 +3443,118 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     });
   }
 
+  protected emomTypeString(): string {
+    const block = this.activeSupersetBlock();
+    
+    if (block && block[0]?.supersetType === 'emom' && block[0]?.emomTimeSeconds) {
+      if (block[0]?.emomTimeSeconds === 60){
+        return 'EMOM'
+      } else if (block[0]?.emomTimeSeconds === 60) {
+        return 'E2MOM'
+      } else {
+        return `EMOM - Every ${block[0].emomTimeSeconds} sec`;
+      }
+    }
+    return 'EMOM';
+    // 
+      
+  }
 
-  private async navigateToNextStepInWorkout(
+
+private async navigateToNextStepInWorkout(
     completedActiveInfo: ActiveSetInfo,
     currentSessionRoutine: Routine,
     forceAdvanceExerciseBlock: boolean = false
   ): Promise<void> {
     const exerciseJustCompleted = completedActiveInfo.exerciseData;
-    const isNowFullyLogged = this.isExerciseFullyLogged(exerciseJustCompleted);
 
+    // --- MODIFICATION START: Dedicated EMOM Navigation Logic ---
+    const wasEmomRoundCompleted = exerciseJustCompleted.supersetType === 'emom';
+
+    if (wasEmomRoundCompleted) {
+      const totalRounds = this.totalBlockRounds();
+      const currentRound = this.currentBlockRound();
+
+      if (currentRound < totalRounds) {
+        // --- Start the NEXT EMOM round ---
+        this.currentBlockRound.update(r => r + 1);
+        
+        // IMPORTANT: Reset the active exercise back to the beginning of the block for the new round.
+        const firstInBlockIndex = currentSessionRoutine.exercises.findIndex(ex => ex.supersetId === exerciseJustCompleted.supersetId && ex.supersetOrder === 0);
+        this.currentExerciseIndex.set(firstInBlockIndex);
+        this.currentSetIndex.set(0); // Always use the first set as the template
+
+        // Find the rest period defined on the LAST exercise of the block.
+        const blockExercises = this.activeSupersetBlock();
+        const lastExerciseInBlock = blockExercises ? blockExercises[blockExercises.length - 1] : null;
+        const restDuration = lastExerciseInBlock?.sets[0]?.restAfterSet ?? 0;
+
+        if (restDuration > 0) {
+          this.startRestPeriod(restDuration);
+        } else {
+          await this.prepareCurrentSet(); // No rest, start the next round's timer immediately.
+        }
+      } else {
+        // --- ALL EMOM rounds are finished. Navigate to the next block. ---
+        const lastInBlockIndex = currentSessionRoutine.exercises.findIndex(ex => ex.supersetId === exerciseJustCompleted.supersetId && ex.supersetOrder === (ex.supersetSize ?? 1) -1 );
+        const nextPendingIndex = this.findFirstPendingExerciseIndexAfter(lastInBlockIndex, currentSessionRoutine);
+
+        if (nextPendingIndex === -1) {
+          // No more exercises left in the workout.
+          await this.tryProceedToDeferredExercisesOrFinish(currentSessionRoutine);
+        } else {
+          // Navigate to the next standard exercise or superset block.
+          this.currentExerciseIndex.set(nextPendingIndex);
+          this.currentSetIndex.set(0);
+          this.currentBlockRound.set(1); // Reset round counter for the new block.
+          await this.prepareCurrentSet();
+        }
+      }
+      this.cdr.detectChanges();
+      return; // Exit the function to prevent standard navigation logic from running.
+    }
+    // --- MODIFICATION END: End of dedicated EMOM Logic ---
+
+
+    // --- Standard Navigation Logic (for non-EMOM sets) ---
+    const isNowFullyLogged = this.isExerciseFullyLogged(exerciseJustCompleted);
     if (this.isPerformingDeferredExercise && exerciseJustCompleted.id === this.lastActivatedDeferredExerciseId && isNowFullyLogged) {
-      console.log("navigateToNextStepInWorkout: Completed a deferred exercise. Re-evaluating all remaining");
       this.isPerformingDeferredExercise = false;
       this.lastActivatedDeferredExerciseId = null;
-      this.exercisesProposedThisCycle = { doLater: false, skipped: false };
       await this.tryProceedToDeferredExercisesOrFinish(currentSessionRoutine);
       return;
     }
 
     const {
-      nextExIdx,
-      nextSetIdx,
-      blockChanged,
-      isEndOfAllPending,
-      roundIncremented
-    } = this.findNextPlayableItemIndices(
-      completedActiveInfo.exerciseIndex,
-      completedActiveInfo.setIndex,
-      currentSessionRoutine,
-      forceAdvanceExerciseBlock
-    );
+      nextExIdx, nextSetIdx, blockChanged, isEndOfAllPending, roundIncremented
+    } = this.findNextPlayableItemIndices(completedActiveInfo.exerciseIndex, completedActiveInfo.setIndex, currentSessionRoutine, forceAdvanceExerciseBlock);
 
     if (isEndOfAllPending) {
-      console.log("navigateToNextStepInWorkout: No more 'pending' exercises. Proceeding to finish");
-      this.isPerformingDeferredExercise = false;
-      this.lastActivatedDeferredExerciseId = null;
-      this.exercisesProposedThisCycle = { doLater: false, skipped: false };
-      completedActiveInfo.exerciseData.sessionStatus = 'completed';
-      this.savePausedSessionState();
       await this.tryProceedToDeferredExercisesOrFinish(currentSessionRoutine);
       return;
     }
-
-    // --- SAFETY CHECK ---
-    // Add a guard clause to prevent using an invalid index if the helper returns one unexpectedly.
-    if (nextExIdx === -1 || !currentSessionRoutine.exercises[nextExIdx] || !currentSessionRoutine.exercises[nextExIdx].sets[nextSetIdx]) {
-      console.error("navigateToNextStepInWorkout: findNextPlayableItemIndices returned an invalid index, but did not signal end of workout. Fallback to finish flow", { nextExIdx, nextSetIdx });
+    if (nextExIdx === -1) {
       await this.tryProceedToDeferredExercisesOrFinish(currentSessionRoutine);
       return;
     }
-    // --- END SAFETY CHECK ---
 
     this.currentExerciseIndex.set(nextExIdx);
     this.currentSetIndex.set(nextSetIdx);
 
-    if (completedActiveInfo.exerciseIndex !== nextExIdx) {
-      if (currentSessionRoutine.exercises[nextExIdx].id !== this.lastActivatedDeferredExerciseId) {
-        this.isPerformingDeferredExercise = false;
-        this.lastActivatedDeferredExerciseId = null;
-      }
-    }
-
-    if (blockChanged || roundIncremented || forceAdvanceExerciseBlock || completedActiveInfo.exerciseIndex !== nextExIdx) {
+    if (blockChanged || roundIncremented) {
       this.lastPerformanceForCurrentExercise = null;
-    }
-
-    if (blockChanged) {
       const newBlockStarterExercise = currentSessionRoutine.exercises[nextExIdx];
-      if (!newBlockStarterExercise.supersetId || newBlockStarterExercise.supersetOrder === 0) {
-        this.totalBlockRounds.set(newBlockStarterExercise.supersetRounds ?? 1);
-      } else {
-        const actualBlockStart = currentSessionRoutine.exercises.find(ex => ex.supersetId === newBlockStarterExercise.supersetId && ex.supersetOrder === 0);
-        this.totalBlockRounds.set(actualBlockStart?.supersetRounds ?? 1);
-      }
+      const newTotalRounds = newBlockStarterExercise.supersetRounds ?? 1;
+      this.totalBlockRounds.set(newTotalRounds);
     }
-
+    
     const restDurationAfterCompletedSet = completedActiveInfo.setData.restAfterSet;
     if (restDurationAfterCompletedSet > 0 && !forceAdvanceExerciseBlock) {
       this.startRestPeriod(restDurationAfterCompletedSet);
     } else {
-      this.playerSubState.set(PlayerSubState.PerformingSet);
       await this.prepareCurrentSet();
     }
+    this.cdr.detectChanges();
   }
 
   private startRestPeriod(targetDuration: number, isResumingPausedRest: boolean = false): void {
@@ -3597,15 +3567,27 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
         this.restTimerNextUpText.set(this.restTimerNextUpTextOnPause);
       } else {
         this.restTimerMainText.set("RESTING");
-        // Set a default/loading text immediately
         this.restTimerNextUpText.set('Next Exercise');
 
-        // Asynchronously fetch and update the detailed "next up" text
+        // --- MODIFICATION START: Correct "Next Up" text for EMOMs ---
+        const nextExercise = this.routine()?.exercises[this.currentExerciseIndex()];
+        const nextSetIsEmom = nextExercise?.supersetType === 'emom';
+        const nextRoundNumber = this.currentBlockRound();
+        const totalRounds = this.totalBlockRounds();
+
+        if (nextSetIsEmom && nextRoundNumber <= totalRounds) {
+          this.restTimerNextUpText.set(`Next: EMOM Round ${nextRoundNumber} / ${totalRounds}`);
+          this.isRestTimerVisible.set(true);
+          this.updateRestTimerDisplay(targetDuration);
+          return; // Exit to prevent standard "next up" logic
+        }
+        // --- MODIFICATION END ---
+
         this.peekNextSetInfo().then(nextSetInfo => {
-          if (!nextSetInfo) return; // Exit if no next set info is found
+          if (!nextSetInfo) return;
 
           const routineVal = this.routine();
-          let resultText = 'Next Exercise'; // Default text
+          let resultText = 'Next Exercise';
           const { exerciseData, setIndex, type, setData, historicalSetPerformance } = nextSetInfo;
 
           const isWarmup = type === 'warmup';
@@ -3623,21 +3605,16 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
 
           resultText = `${isWarmup ? 'Warm-up ' : ''}Set ${setNumber}/${totalSets} of ${exerciseName}${roundText}`;
 
-          // --- OPTIMIZED: Prioritize historical data for display ---
           const detailsParts: string[] = [];
-          // 1. Prioritize historical weight/reps
           if (historicalSetPerformance?.weightUsed !== undefined && historicalSetPerformance.weightUsed !== null && historicalSetPerformance.repsAchieved !== undefined) {
             detailsParts.push(`${historicalSetPerformance.weightUsed}${this.unitService.getWeightUnitSuffix()} x ${historicalSetPerformance.repsAchieved} reps`);
           }
-          // 2. Fallback to planned weight/reps
           else if (setData.targetWeight !== undefined && setData.targetWeight !== null && setData.targetReps !== undefined) {
             detailsParts.push(`${setData.targetWeight}${this.unitService.getWeightUnitSuffix()} x ${setData.targetReps} reps`);
           }
-          // 3. Handle planned reps only
           else if (setData.targetReps !== undefined) {
             detailsParts.push(`${setData.targetReps} reps`);
           }
-          // 4. Handle planned duration (always a target)
           if (setData.targetDuration) {
             detailsParts.push(`for ${setData.targetDuration}s`);
           }
@@ -3645,16 +3622,14 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
           if (detailsParts.length > 0) {
             resultText += ` [${detailsParts.join(', ')}]`;
           }
-          // --- END OPTIMIZATION ---
 
           this.restTimerNextUpText.set(resultText);
         });
       }
 
-      this.isRestTimerVisible.set(true); // Show full-screen timer
-      this.updateRestTimerDisplay(targetDuration); // For footer
+      this.isRestTimerVisible.set(true);
+      this.updateRestTimerDisplay(targetDuration);
     } else {
-      // If no rest, immediately prepare the next set
       this.isRestTimerVisible.set(false);
       this.playerSubState.set(PlayerSubState.PerformingSet);
       this.prepareCurrentSet();
@@ -3741,12 +3716,22 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     if (this.sessionState() === SessionState.Paused) {
       this.toastService.warning("Session is paused. Please resume to continue", 3000, "Paused");
       return;
-    } switch (this.playerSubState()) {
-      case PlayerSubState.PerformingSet: {
+    }
+
+    // --- MODIFICATION START: Prioritize EMOM action ---
+    if (this.activeSupersetBlock()?.[0]?.supersetType === 'emom') {
+      this.completeAndLogEmomRound();
+      return; // Ensure no other action is taken
+    }
+    // --- MODIFICATION END ---
+
+    switch (this.playerSubState()) {
+      case PlayerSubState.PerformingSet:
         this.completeAndLogCurrentSet();
         break;
-      }
-      case PlayerSubState.Resting: this.skipRest(); break;
+      case PlayerSubState.Resting:
+        this.skipRest();
+        break;
     }
   }
 
@@ -4799,7 +4784,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     return this.workoutService.getSetTargetDisplay(set, field);
   }
 
-  
+
   /**
    * Attempts to lock the screen orientation to portrait mode.
    * This method should be called when the workout player is initialized.
@@ -4832,5 +4817,112 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       }
     }
   }
+
+
+  // EMOM LOGIC
+  // +++ NEW: Signals and Properties for EMOM State Management +++
+  private emomRoundTimerSub: Subscription | undefined;
+  emomRoundTimeRemaining = signal(0);
+  emomRoundDisplay = computed(() => this.formatSecondsToTime(this.emomRoundTimeRemaining()));
+
+  // +++ NEW: Function to start the EMOM round timer +++
+  private startEmomRoundTimer(durationSeconds: number): void {
+    this.emomRoundTimeRemaining.set(durationSeconds);
+    this.emomTimerState.set('running'); // Reset to running for each new round
+    if (this.emomRoundTimerSub) this.emomRoundTimerSub.unsubscribe();
+
+    this.emomRoundTimerSub = timer(0, 1000).pipe(takeUntil(this.destroy$)).subscribe(() => {
+      // --- MODIFICATION START: Respect both session state and EMOM pause state ---
+      if (this.sessionState() === SessionState.Playing && this.emomTimerState() === 'running') {
+        this.emomRoundTimeRemaining.update(s => (s > 0 ? s - 1 : 0));
+        if (this.emomRoundTimeRemaining() === 0) {
+          this.playClientGong();
+          this.emomRoundTimerSub?.unsubscribe();
+          this.completeAndLogEmomRound();
+        }
+      }
+      // --- MODIFICATION END ---
+    });
+  }
+
+
+  // +++ NEW: Function to log all exercises in an EMOM round at once +++
+  private completeAndLogEmomRound(): void {
+    const emomBlock = this.activeSupersetBlock();
+    const activeInfo = this.activeSetInfo();
+    const routine = this.routine();
+    const roundToLog = this.currentBlockRound();
+
+    if (!emomBlock || !activeInfo || !routine || roundToLog > this.totalBlockRounds()) {
+      if (this.emomRoundTimerSub) this.emomRoundTimerSub.unsubscribe();
+      if (routine && activeInfo) {
+        this.navigateToNextStepInWorkout(activeInfo, routine, true);
+      }
+      return;
+    }
+
+    if (this.emomRoundTimerSub) this.emomRoundTimerSub.unsubscribe();
+
+    emomBlock.forEach(exerciseInBlock => {
+      // --- MODIFICATION START: Use sets[0] as a template for all rounds ---
+      // This makes the routine definition robust, even if only one set is defined per exercise.
+      const templateSet = exerciseInBlock.sets[0];
+      if (!templateSet) {
+        console.error(`EMOM exercise '${exerciseInBlock.exerciseName}' is missing a set definition.`);
+        return; // Skip this exercise if it has no sets defined
+      }
+      // --- MODIFICATION END ---
+
+      const loggedSetData: LoggedSet = {
+        id: uuidv4(),
+        exerciseName: exerciseInBlock.exerciseName,
+        // Use the ID from the template set, but append the round to make it unique for this log.
+        plannedSetId: `${templateSet.id}-round-${roundToLog - 1}`,
+        exerciseId: exerciseInBlock.exerciseId,
+        type: 'emom',
+        repsAchieved: templateSet.targetReps ?? 0,
+        weightUsed: templateSet.targetWeight ?? 0,
+        timestamp: new Date().toISOString(),
+        supersetCurrentRound: roundToLog - 1
+      };
+      this.addLoggedSetToCurrentLog(exerciseInBlock, loggedSetData);
+    });
+
+    this.cdr.detectChanges();
+    this.toastService.success(`Round ${roundToLog} logged!`, 2000, "EMOM");
+    this.navigateToNextStepInWorkout(activeInfo, routine);
+  }
+
+
+  // --- MODIFICATION START: Replace activeEmomBlock with a unified superset block ---
+  /**
+   * Computed signal that returns the array of exercises in an active superset or EMOM block.
+   * If the current exercise is not part of a superset, it returns null.
+   */
+  activeSupersetBlock = computed<WorkoutExercise[] | null>(() => {
+    const activeInfo = this.activeSetInfo();
+    const routine = this.routine();
+    if (!activeInfo || !routine || !activeInfo.exerciseData.supersetId) {
+      return null;
+    }
+    // Return all exercises that belong to the same superset group, correctly ordered.
+    return routine.exercises
+      .filter(ex => ex.supersetId === activeInfo.exerciseData.supersetId)
+      .sort((a, b) => (a.supersetOrder ?? 0) - (b.supersetOrder ?? 0));
+  });
+  // --- MODIFICATION END ---
+
+  private wasEmomTimerRunningOnPause = false;
+  emomTimerState = signal<'running' | 'paused'>('running');
+
+  // --- MODIFICATION START: New function to toggle the EMOM timer ---
+  toggleEmomTimer(): void {
+    if (this.sessionState() === SessionState.Paused) {
+      this.toastService.warning("Resume the session to control the round timer.", 3000);
+      return;
+    }
+    this.emomTimerState.update(state => (state === 'running' ? 'paused' : 'running'));
+  }
+  // --- MODIFICATION END ---
 
 }

@@ -79,6 +79,21 @@ export interface WorkoutExercise {
    * (i.e., not part of a superset OR supersetOrder === 0).
    */
   rounds?: number; // e.g., 3 for 3 rounds
+
+  // +++ NEW: Superset Type & EMOM Properties +++
+  /**
+   * Defines the behavior of the superset.
+   * 'standard': Traditional superset.
+   * 'emom': Every Minute On the Minute style workout.
+   */
+  supersetType?: 'standard' | 'emom' | null;
+  /**
+   * For 'emom' type, this is the total time for one round in seconds.
+   * e.g., 60 for EMOM, 120 for E2MOM.
+   * Only relevant if supersetOrder is 0.
+   */
+  emomTimeSeconds?: number | null;
+  
   workoutLogId?: string;
   sessionStatus?: 'pending' | 'skipped' | 'do_later' | 'completed' | 'started'; // For in-session tracking
   type: 'standard' | 'warmup' | 'amrap' | 'dropset' | 'failure' | 'myorep' | 'restpause' | 'custom' | 'superset' | string; // More flexible

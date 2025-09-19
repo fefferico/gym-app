@@ -68,6 +68,8 @@ export interface LoggedWorkoutExercise {
   supersetSize?: number | null;
   supersetRounds?: number | null;
   supersetCurrentRound?: number | null;
+  supersetType?: 'standard' | 'emom' | null;
+  emomTimeSeconds?: number | null;
   type: 'standard' | 'warmup' | 'amrap' | 'dropset' | 'failure' | 'myorep' | 'restpause' | 'custom' | 'superset' | string; // More flexible
 }
 

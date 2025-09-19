@@ -405,6 +405,41 @@
                                                 [readonly]="(exerciseControl.get('supersetId')?.value && (exerciseControl.get('supersetOrder')?.value ?? 0) > 0) || isViewMode"
                                                 (change)="syncSupersetRounds(exerciseControl.get('supersetId')?.value, exerciseControl.get('supersetRounds')?.value, exIndex)">
                                         </div>
+
+                                        <!-- +++ START: NEW EMOM UI BLOCK +++ -->
+                                        <div *ngIf="mode === 'routineBuilder' && exerciseControl.get('supersetId')?.value && exerciseControl.get('supersetOrder')?.value === 0"
+                                            class="flex flex-col items-start sm:items-end space-y-1 w-full">
+
+                                            <!-- Superset Type Display and Change Button -->
+                                            <div class="flex items-center space-x-2">
+                                                <span class="text-xs font-medium text-gray-600 dark:text-gray-400">Type:
+                                                    <strong
+                                                        [ngClass]="{'text-teal-600 dark:text-teal-400': exerciseControl.get('supersetType')?.value === 'emom', 'text-orange-600 dark:text-orange-400': exerciseControl.get('supersetType')?.value !== 'emom'}">
+                                                        {{ (exerciseControl.get('supersetType')?.value || 'standard') |
+                                                        titlecase }}
+                                                    </strong>
+                                                </span>
+                                                <button type="button" (click)="changeSupersetType(exerciseControl)"
+                                                    [disabled]="isViewMode" title="Change Superset Type"
+                                                    class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold p-0.5 rounded">
+                                                    (Change)
+                                                </button>
+                                            </div>
+
+                                            <!-- EMOM Time Input (only visible if type is 'emom') -->
+                                            <div *ngIf="exerciseControl.get('supersetType')?.value === 'emom'"
+                                                class="flex items-center space-x-1">
+                                                <label [for]="'emomTime-' + exIndex"
+                                                    class="text-xs font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap">Time
+                                                    (s):</label>
+                                                <input type="number" [id]="'emomTime-' + exIndex"
+                                                    formControlName="emomTimeSeconds" min="10" placeholder="e.g. 60"
+                                                    class="w-16 p-1 text-m border-gray-300 dark:border-gray-500 border-2 rounded-md focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200 disabled:opacity-50"
+                                                    [readonly]="isViewMode">
+                                            </div>
+                                        </div>
+                                        <!-- +++ END: NEW EMOM UI BLOCK +++ -->
+
                                         <!-- <button *ngIf="!isViewMode" type="button" (click)="removeExercise(exIndex)" title="Remove Exercise"
                                             class="flex items-center p-1 hover:text-red-700 dark:hover:text-red-300 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30 disabled:opacity-50 bg-red-500 text-white">
                                             <app-icon name="cancel" class="h-5 w-5 mr-1"></app-icon>REMOVE
@@ -473,7 +508,8 @@
                                         </div>
 
                                         <!-- The pipe is used a final time for the data cell -->
-                                        <div class="flex items-center" *ngIf="exerciseControl.getRawValue() | isWeighted">
+                                        <div class="flex items-center"
+                                            *ngIf="exerciseControl.getRawValue() | isWeighted">
                                             <strong>
                                                 {{ set.targetWeight != null ? (set.targetWeight + ' ' +
                                                 unitService.getWeightUnitSuffix()) : '-' }}
@@ -620,12 +656,15 @@
                                                     <div *ngIf="!isExerciseCardioOnlyCtrl(exerciseControl)">
                                                         <label [for]="'reps-exp-' + exIndex + '-' + setIndex"
                                                             class="flex items-center justify-between text-s font-medium text-gray-600 dark:text-gray-400">
-                                                            <span>Reps {{ mode === 'manualLogEntry' ? '(Achieved)' : ''}}</span>
+                                                            <span>Reps {{ mode === 'manualLogEntry' ? '(Achieved)' :
+                                                                ''}}</span>
                                                             <!-- SWITCH BUTTON -->
-                                                            <button *ngIf="mode === 'routineBuilder'" type="button" (click)="toggleRepsMode(setControl,$event)"
-                                                                    title="Toggle between single value and range"
-                                                                    class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold p-0.5 rounded">
-                                                                    {{ isRangeMode(setControl, 'reps') ? 'Use Single' : 'Use Range' }}
+                                                            <button *ngIf="mode === 'routineBuilder'" type="button"
+                                                                (click)="toggleRepsMode(setControl,$event)"
+                                                                title="Toggle between single value and range"
+                                                                class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold p-0.5 rounded">
+                                                                {{ isRangeMode(setControl, 'reps') ? 'Use Single' : 'Use
+                                                                Range' }}
                                                             </button>
                                                         </label>
                                                         <!-- ROUTINE BUILDER - REPS -->
@@ -634,23 +673,26 @@
                                                             <div *ngIf="isRangeMode(setControl, 'reps')" class="mt-0.5">
                                                                 <div class="flex items-center space-x-1.5">
                                                                     <input type="number" formControlName="targetRepsMin"
-                                                                        min="0"
-                                                                        placeholder="Min" [readonly]="isViewMode"
+                                                                        min="0" placeholder="Min"
+                                                                        [readonly]="isViewMode"
                                                                         class="w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
                                                                     <span
                                                                         class="text-gray-500 dark:text-gray-400 font-bold">-</span>
                                                                     <input type="number" formControlName="targetRepsMax"
-                                                                        min="0"
-                                                                        placeholder="Max" [readonly]="isViewMode"
+                                                                        min="0" placeholder="Max"
+                                                                        [readonly]="isViewMode"
                                                                         class="w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed"
                                                                         [ngClass]="{'border-red-500 dark:border-red-400': setControl.get('targetRepsMax')?.hasError('min')}">
                                                                 </div>
-                                                                <div *ngIf="setControl.get('targetRepsMax')?.hasError('min') && setControl.get('targetRepsMax')?.touched" class="text-red-500 dark:text-red-400 text-xs mt-1">
+                                                                <div *ngIf="setControl.get('targetRepsMax')?.hasError('min') && setControl.get('targetRepsMax')?.touched"
+                                                                    class="text-red-500 dark:text-red-400 text-xs mt-1">
                                                                     Max must be greater than or equal to min.
                                                                 </div>
                                                             </div>
                                                             <!-- Single Value Input -->
-                                                            <input *ngIf="!isRangeMode(setControl, 'reps')" type="number" formControlName="targetReps" min="0" placeholder="Reps" [readonly]="isViewMode"
+                                                            <input *ngIf="!isRangeMode(setControl, 'reps')"
+                                                                type="number" formControlName="targetReps" min="0"
+                                                                placeholder="Reps" [readonly]="isViewMode"
                                                                 class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
                                                         </ng-container>
                                                         <!-- LOG ENTRY - SINGLE REPS ACHIEVED -->
@@ -678,37 +720,44 @@
                                                     <div>
                                                         <label [for]="'duration-exp-' + exIndex + '-' + setIndex"
                                                             class="flex items-center justify-between text-s font-medium text-gray-600 dark:text-gray-400">
-                                                            <span>Time (s) {{ mode === 'manualLogEntry' ? '(Performed)' : ''}}</span>
+                                                            <span>Time (s) {{ mode === 'manualLogEntry' ? '(Performed)'
+                                                                : ''}}</span>
                                                             <!-- SWITCH BUTTON -->
-                                                            <button *ngIf="mode === 'routineBuilder'" type="button" (click)="toggleDurationMode(setControl,$event)"
-                                                                    title="Toggle between single value and range"
-                                                                    class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold p-0.5 rounded">
-                                                                {{ isRangeMode(setControl, 'duration') ? 'Use Single' : 'Use Range' }}
+                                                            <button *ngIf="mode === 'routineBuilder'" type="button"
+                                                                (click)="toggleDurationMode(setControl,$event)"
+                                                                title="Toggle between single value and range"
+                                                                class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold p-0.5 rounded">
+                                                                {{ isRangeMode(setControl, 'duration') ? 'Use Single' :
+                                                                'Use Range' }}
                                                             </button>
                                                         </label>
                                                         <!-- ROUTINE BUILDER - DURATION -->
                                                         <ng-container *ngIf="mode === 'routineBuilder'">
                                                             <!-- Range Inputs -->
-                                                            <div *ngIf="isRangeMode(setControl, 'duration')" class="mt-0.5">
+                                                            <div *ngIf="isRangeMode(setControl, 'duration')"
+                                                                class="mt-0.5">
                                                                 <div class="flex items-center space-x-1.5">
-                                                                    <input type="number" formControlName="targetDurationMin"
-                                                                        min="0"
+                                                                    <input type="number"
+                                                                        formControlName="targetDurationMin" min="0"
                                                                         placeholder="Min" [readonly]="isViewMode"
                                                                         class="w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
                                                                     <span
                                                                         class="text-gray-500 dark:text-gray-400 font-bold">-</span>
-                                                                    <input type="number" formControlName="targetDurationMax"
-                                                                        min="0"
+                                                                    <input type="number"
+                                                                        formControlName="targetDurationMax" min="0"
                                                                         placeholder="Max" [readonly]="isViewMode"
                                                                         class="w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed"
                                                                         [ngClass]="{'border-red-500 dark:border-red-400': setControl.get('targetDurationMax')?.hasError('min')}">
                                                                 </div>
-                                                                <div *ngIf="setControl.get('targetDurationMax')?.hasError('min') && setControl.get('targetDurationMax')?.touched" class="text-red-500 dark:text-red-400 text-xs mt-1">
+                                                                <div *ngIf="setControl.get('targetDurationMax')?.hasError('min') && setControl.get('targetDurationMax')?.touched"
+                                                                    class="text-red-500 dark:text-red-400 text-xs mt-1">
                                                                     Max must be greater than or equal to min.
                                                                 </div>
                                                             </div>
                                                             <!-- Single Value Input -->
-                                                            <input *ngIf="!isRangeMode(setControl, 'duration')" type="number" formControlName="targetDuration" min="0" placeholder="Secs" [readonly]="isViewMode"
+                                                            <input *ngIf="!isRangeMode(setControl, 'duration')"
+                                                                type="number" formControlName="targetDuration" min="0"
+                                                                placeholder="Secs" [readonly]="isViewMode"
                                                                 class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
                                                         </ng-container>
                                                         <!-- LOG ENTRY - SINGLE DURATION PERFORMED -->
