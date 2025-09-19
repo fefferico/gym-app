@@ -491,6 +491,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
         supersetOrder: exerciseData.supersetOrder ?? null,
         supersetSize: exerciseData.supersetSize ?? 0,
         supersetRounds: exerciseData.supersetRounds,
+        supersetCurrentRound: loggedSet.supersetCurrentRound,
         supersetType: exerciseData.supersetType || null,
       };
       // --- END CORRECTION ---

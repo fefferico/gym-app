@@ -68,6 +68,7 @@ export interface WorkoutExercise {
    */
   supersetSize?: number | null; // Can be useful for display "Exercise 1 of 2 in Superset"
   supersetRounds?: number | null;
+  supersetCurrentRound?: number | null; // Tracks the current round when performing the superset
 
   // `lastPerformed` was on WorkoutExercise, but it's usually a Routine-level or global exercise stat.
   // Keeping it here for now if your current logic uses it, but consider if it's truly per WorkoutExercise instance.

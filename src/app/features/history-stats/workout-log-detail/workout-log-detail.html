@@ -10,7 +10,6 @@
 
     <!-- Action Buttons Group -->
     <div class="flex items-center space-x-2 flex-shrink-0">
-      <!-- Wrapper for "More Actions" button and its dropdown -->
       <div *ngIf="workoutLog() as log" class="">
         <div class="relative">
           <button (click)="toggleActions(log.id, $event)"
@@ -33,11 +32,9 @@
           [title]="workoutLog()?.routineName || 'Ad-hoc Workout'">
           {{ workoutLog()?.routineName || 'Ad-hoc Workout' }}
         </h1>
-
         <h2 *ngIf="checkIfLogForProgram()" class="font-bold text-gray-800 dark:text-gray-200 mb-2">
           <span>{{getLogTitleForProgramEntry()}}</span>
         </h2>
-
         <div class="flex items-center align-center text-md text-gray-600 dark:text-gray-400 gap-x-2">
           <app-icon name="calendar" class="w-7 h-7 mr-1"></app-icon>
           <div>
@@ -46,207 +43,189 @@
               From {{ log.startTime | date:'shortTime' }} to {{ log.endTime | date:'shortTime' }}
             </p>
           </div>
-
         </div>
-        <!-- EXERCISES DIV -->
         <div class="flex items-center text-md text-gray-600 dark:text-gray-400 mt-1 gap-x-2">
           <app-icon name="muscle" class="h-7 w-7"></app-icon>
           <span class="ml-1"> Exercises: {{ log.exercises.length }}</span>
         </div>
-
-        <!-- DURATION DIV -->
         <div class="flex items-center text-md text-gray-600 dark:text-gray-400 mt-1 gap-x-2">
           <app-icon name="clock" class="h-7 w-7 mr-1"></app-icon>
-          <span *ngIf="log.durationSeconds">Duration: {{ secondsToDateTime(log.durationSeconds) | date:'HH:mm:ss'
-            }}</span>
+          <span *ngIf="log.durationSeconds">Duration: {{ secondsToDateTime(log.durationSeconds) | date:'HH:mm:ss' }}</span>
           <span *ngIf="!log.durationSeconds">Duration: {{ log.durationMinutes }} minutes</span>
         </div>
-
         <p *ngIf="log.notes" class="mt-2 text-m text-gray-600 dark:text-gray-400 italic">
           <strong>Overall Notes:</strong> {{ log.notes }}
         </p>
       </div>
 
-      <div class="px-2 pb-5 mb-3 space-y-1">
+      <div class="px-2 pb-5 mb-3">
         <div *ngIf="displayItems().length > 0; else noLoggedExercises">
-
-            <div *ngFor="let item of displayItems(); let exIdx = index">
-
-              <!-- START: ROBUST *ngIf...else STRUCTURE -->
-              <ng-container *ngIf="isEmomBlock(item); else standardExerciseBlock">
-                <!-- Case 1: The item is a structured EMOM Block -->
-                <div class="border border-teal-400 dark:border-teal-600 rounded-lg mt-4 overflow-hidden shadow-lg">
-                  <button (click)="toggleExerciseAccordion(item)"
-                    class="w-full flex justify-between items-center p-2 text-left bg-teal-50 dark:bg-teal-900/40 hover:bg-teal-100 dark:hover:bg-teal-800/60 transition-colors">
-                    <div class="flex-grow min-w-0">
-                      <span class="text-xs font-semibold text-teal-600 dark:text-teal-400 uppercase">EMOM Block</span>
-                      <h3 class="text-md sm:text-lg font-bold text-teal-800 dark:text-teal-200 truncate"
-                        [title]="item.blockName">
-                        {{ item.blockName }}
-                      </h3>
-                      <div *ngIf="!item.isExpanded" class="text-xs text-gray-500 dark:text-gray-400">
-                        {{ item.totalRounds }} Rounds | Every {{ item.emomTimeSeconds }}s
-                      </div>
-                    </div>
-                    <app-icon name="collapse-card"
-                      class="w-5 h-5 transition-transform duration-200 flex-shrink-0 ml-2 text-teal-500 dark:text-teal-400"
-                      [ngClass]="{'rotate-180': item.isExpanded}"></app-icon>
-                  </button>
-                  <div *ngIf="item.isExpanded" class="bg-white dark:bg-gray-800 p-2 sm:p-3">
-                    <div class="grid gap-x-2 sm:gap-x-4"
-                      [style.grid-template-columns]="'auto repeat(' + item.exercises.length + ', 1fr)'">
-                      <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400 py-2">Round</div>
-                      <div *ngFor="let ex of item.exercises"
-                        class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400 py-2 truncate text-center"
-                        [title]="ex.exerciseName">
-                        {{ ex.exerciseName }}
-                      </div>
-                      <ng-container *ngFor="let round of item.rounds; let last = last">
-                        <div class="font-medium text-gray-900 dark:text-white flex items-center justify-center">{{
-                          round.roundNumber }}</div>
-                        <ng-container *ngFor="let set of round.sets">
-                          <div class="text-center py-1 text-gray-900 dark:text-white">
-                            <ng-container *ngIf="set; else noSetData">
-                              <strong [ngClass]="checkTextClass(set, 'reps')">{{ set.repsAchieved ?? '-' }}</strong>
-                              reps
-                              <span *ngIf="set.weightUsed != null" class="text-gray-600 dark:text-gray-400 text-sm">
-                                @ {{ set.weightUsed | weightUnit:'1.0-2' }}
-                              </span>
-                            </ng-container>
-                            <ng-template #noSetData><span class="text-gray-400">-</span></ng-template>
-                          </div>
-                        </ng-container>
-                        <div *ngIf="!last" class="h-px bg-gray-200 dark:bg-gray-700" [style.grid-column]="'1 / -1'">
-                        </div>
-                      </ng-container>
+          <div *ngFor="let item of displayItems(); let exIdx = index">
+            
+             <!-- Case 1: Item is an EMOM Block -->
+            <ng-container *ngIf="isEmomBlock(item)">
+              <div class="border border-teal-400 dark:border-teal-600 rounded-lg mt-4 overflow-hidden shadow-lg">
+                <button (click)="toggleExerciseAccordion(item)"
+                  class="w-full flex justify-between items-center p-2 text-left bg-teal-50 dark:bg-teal-900/40 hover:bg-teal-100 dark:hover:bg-teal-800/60 transition-colors">
+                  <div class="flex-grow min-w-0">
+                    <span class="text-xs font-semibold text-teal-600 dark:text-teal-400 uppercase">EMOM Block</span>
+                    <h3 class="text-md sm:text-lg font-bold text-teal-800 dark:text-teal-200 truncate" [title]="item.blockName">
+                      {{ item.blockName }}
+                    </h3>
+                    <div *ngIf="!item.isExpanded" class="text-xs text-gray-500 dark:text-gray-400">
+                      {{ item.totalRounds }} Rounds | Every {{ item.emomTimeSeconds }}s
                     </div>
                   </div>
-                </div>
-              </ng-container>
-
-              <!-- Case 2: The item is a standard exercise or superset -->
-              <ng-template #standardExerciseBlock>
-                <div *ngIf="isStandardExercise(item)" [ngClass]="{
-                'border border-gray-200 dark:border-gray-600 rounded-md my-4': !item.supersetId,
-                'border-l border-r border-orange-400 dark:border-orange-600': item.supersetId && item.supersetType !== 'emom',
-                'bg-orange-50 dark:bg-orange-900/20': item.supersetId && item.supersetType !== 'emom',
-                'rounded-t-lg border-t': item.supersetId && item.supersetOrder === 0,
-                'rounded-b-lg border-b': item.supersetId && item.supersetOrder === ((item.supersetSize ?? 0) - 1),
-                'mb-3': item.supersetId && item.supersetOrder === (item.supersetSize ?? 0) - 1
-              }">
-                  <button (click)="toggleExerciseAccordion(item)"
-                    class="w-full flex justify-between items-center p-1 text-left transition-colors focus:outline-none rounded-md"
-                    [ngClass]="{
-                      'rounded-b-none': item.isExpanded,
-                    'dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700': !item.supersetId,
-                    'hover:bg-orange-100 dark:hover:bg-orange-800/40': item.supersetId && item.supersetType !== 'emom'
-                  }">
-                    <div class="flex items-center min-w-0">
-                      <div
-                        class="flex-shrink-0 mr-2 w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-md">
-                        <img *ngIf="item.iconName" [src]="getIconPath(item.iconName)"
-                          [alt]="item.exerciseName + ' icon'" class="w-6 h-6 sm:w-8 sm:h-8 object-contain"
-                          [ngClass]="{'filter dark:invert': item.iconName !== 'default-exercise' && !item.supersetId, 'filter dark:brightness-200 dark:contrast-150': item.iconName !== 'default-exercise' && item.supersetId}">
-                      </div>
-                      <div class="min-w-0">
-                        <div class="flex items-center">
-                          <h3 class="text-md sm:text-lg font-semibold truncate" [ngClass]="{
-                          'text-primary dark:text-primary-light': !item.supersetId,
-                          'text-orange-700 dark:text-orange-300': item.supersetId && item.supersetType !== 'emom',
-                          'text-teal-700 dark:text-teal-300': item.supersetId && item.supersetType === 'emom'
-                        }" [title]="item.exerciseName" (click)="openModal(item, $event)">
-                            <span *ngIf="item.supersetId" class="text-xs font-normal block leading-tight" [ngClass]="{
-                            'text-orange-600 dark:text-orange-400': item.supersetType !== 'emom',
-                            'text-teal-600 dark:text-teal-400': item.supersetType === 'emom'
-                           }">
-                              {{ item.supersetType === 'emom' ? 'EMOM' : 'Superset' }} {{ (item.supersetOrder ?? 0) + 1
-                              }} of {{ item.supersetSize }}
+                  <app-icon name="collapse-card" class="w-5 h-5 transition-transform duration-200 flex-shrink-0 ml-2 text-teal-500 dark:text-teal-400"
+                    [ngClass]="{'rotate-180': item.isExpanded}"></app-icon>
+                </button>
+                <div *ngIf="item.isExpanded" class="bg-white dark:bg-gray-800 p-2 sm:p-3">
+                  <div class="grid gap-x-2 sm:gap-x-4" [style.grid-template-columns]="'auto repeat(' + item.exercises.length + ', 1fr)'">
+                    <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400 py-2">Round</div>
+                    <div *ngFor="let ex of item.exercises" class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400 py-2 truncate text-center" [title]="ex.exerciseName">
+                      {{ ex.exerciseName }}
+                    </div>
+                    <ng-container *ngFor="let round of item.rounds; let last = last">
+                      <div class="font-medium text-gray-900 dark:text-white flex items-center justify-center">{{ round.roundNumber }}</div>
+                      <ng-container *ngFor="let set of round.sets">
+                        <div class="text-center py-1">
+                          <ng-container *ngIf="set; else noSetData">
+                            <strong [ngClass]="checkTextClass(set, 'reps')">{{ set.repsAchieved ?? '-' }}</strong> 
+                            <span *ngIf="set.weightUsed != null" class="text-gray-600 dark:text-gray-400 text-sm">
+                              @ {{ set.weightUsed | weightUnit:'1.0-2' }}
                             </span>
-                            {{ item.exerciseName }}
-                          </h3>
-                          <app-icon name="info" class="h-4 w-4 text-gray-400 dark:text-gray-300 cursor-help ml-1"
-                            (click)="openModal(item, $event)" [appTooltip]="exerciseInfoTooltipString"></app-icon>
+                          </ng-container>
+                          <ng-template #noSetData><span class="text-gray-400">-</span></ng-template>
                         </div>
-                        <div *ngIf="!item.isExpanded" class="text-xs text-gray-500 dark:text-gray-400 truncate">
-                          <p *ngIf="item.baseExercise?.category" class="truncate">{{ item.baseExercise?.category |
-                            titlecase }}</p>
-                          <p *ngIf="checkIfTimedExercise(item)">Duration (s): {{getSetDurationPerformed(item)}}</p>
-                          <p>Sets: {{item.sets.length}} <span *ngIf="getSetReps(item) !== '0'">(Reps:
-                              {{getSetReps(item)}})</span></p>
-                          <p *ngIf="checkIfWeightedExercise(item)">Weight ({{unitService.getWeightUnitSuffix()}}):
-                            {{getSetWeightsUsed(item)}}</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="flex items-center">
-                      <app-icon name="collapse-card" class="w-5 h-5 transition-transform duration-200" [ngClass]="{
-                      'text-gray-500 dark:text-gray-400': !item.supersetId,
-                      'text-orange-500 dark:text-orange-400': item.supersetId && item.supersetType !== 'emom',
-                      'text-teal-500 dark:text-teal-400': item.supersetId && item.supersetType === 'emom',
-                      'rotate-180': item.isExpanded
-                    }"></app-icon>
-                    </div>
-                  </button>
-                  <div *ngIf="item.isExpanded" class="grid gap-x-4 gap-y-2 p-4 bg-white dark:bg-gray-800 rounded-md rounded-t-none" [ngClass]="{
-                  'grid-cols-6': (item | isWeighted) && hasPerformedTimedSets(item),
-                  'grid-cols-5': ((item | isWeighted) && !hasPerformedTimedSets(item)) || (!(item | isWeighted) && hasPerformedTimedSets(item)),
-                  'grid-cols-4': !(item | isWeighted) && !hasPerformedTimedSets(item)
-                }">
-                    <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Set</div>
-                    <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Reps</div>
-                    <div *ngIf="item | isWeighted" class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">
-                      Weight</div>
-                    <div *ngIf="hasPerformedTimedSets(item)"
-                      class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Time</div>
-                    <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Rest</div>
-                    <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Notes</div>
-                    <ng-container *ngFor="let set of item.sets; let i = index; let last = last">
-                      <div class="font-medium text-gray-900 dark:text-white flex items-center space-x-2">
-                        <span>{{ i + 1 }}</span>
-                        <div *ngIf="getPersonalBestTypesForSet(set, item.exerciseId).length > 0" class="flex-shrink-0"
-                          [title]="'Personal Best!\n' + getPersonalBestTypesForSet(set, item.exerciseId).join('\n')">
-                          <span
-                            class="px-1.5 py-0.5 text-xs font-semibold rounded-full bg-primary-dark text-white dark:text-amber-100">🏆
-                            PB</span>
-                        </div>
-                      </div>
-                      <div><strong [ngClass]="checkTextClass(set, 'reps')"
-                          [class.cursor-pointer]="isTargetMissed(set, 'reps')"
-                          [class.hover:underline]="isTargetMissed(set, 'reps')"
-                          (click)="showComparisonModal(set, 'reps')">{{ set.repsAchieved ?? '-' }}</strong></div>
-                      <div *ngIf="item | isWeighted"><strong [ngClass]="checkTextClass(set, 'weight')"
-                          [class.cursor-pointer]="isTargetMissed(set, 'weight')"
-                          [class.hover:underline]="isTargetMissed(set, 'weight')"
-                          (click)="showComparisonModal(set, 'weight')">{{ set.weightUsed != null ? (set.weightUsed + ' '
-                          + unitService.getWeightUnitSuffix()) : '-' }}</strong></div>
-                      <div *ngIf="hasPerformedTimedSets(item)"><strong [ngClass]="checkTextClass(set, 'duration')"
-                          [class.cursor-pointer]="isTargetMissed(set, 'duration')"
-                          [class.hover:underline]="isTargetMissed(set, 'duration')"
-                          (click)="showComparisonModal(set, 'duration')">{{ set.durationPerformed ?? '-' }}</strong>
-                      </div>
-                      <div><strong [ngClass]="checkTextClass(set, 'rest')"
-                          [class.cursor-pointer]="isTargetMissed(set, 'rest')"
-                          [class.hover:underline]="isTargetMissed(set, 'rest')"
-                          (click)="showComparisonModal(set, 'rest')">{{ set.restAfterSetUsed ?? '-' }}</strong></div>
-                      <div class="cursor-pointer dark:text-white">
-                        <app-icon name="schedule" (click)="showNotesModal(set.notes)" *ngIf="set.notes"
-                          class="h-7 w-7"></app-icon>
-                        <span class="text-gray-500" *ngIf="!set.notes">-</span>
-                      </div>
-                      <div *ngIf="!last" class="col-span-full h-px bg-gray-200 dark:bg-gray-700"></div>
+                      </ng-container>
+                      <div *ngIf="!last" class="h-px bg-gray-200 dark:bg-gray-700" [style.grid-column]="'1 / -1'"></div>
                     </ng-container>
                   </div>
                 </div>
-              </ng-template>
-            </div>
-            <!-- END: CORRECTED MAIN LOOP -->
+              </div>
+            </ng-container>
 
+            <!-- Case 2: Item is a Standard Superset Block -->
+            <ng-container *ngIf="isSupersetBlock(item)">
+                <div class="border border-orange-400 dark:border-orange-600 rounded-lg mt-4 overflow-hidden shadow-lg">
+                    <button (click)="toggleExerciseAccordion(item)"
+                        class="w-full flex justify-between items-center p-2 text-left bg-orange-50 dark:bg-orange-900/40 hover:bg-orange-100 dark:hover:bg-orange-800/60 transition-colors">
+                        <div class="flex-grow min-w-0">
+                            <span class="text-xs font-semibold text-orange-600 dark:text-orange-400 uppercase">Superset Block</span>
+                            <h3 class="text-md sm:text-lg font-bold text-orange-800 dark:text-orange-200 truncate" [title]="item.blockName">
+                                {{ item.blockName }}
+                            </h3>
+                             <div *ngIf="!item.isExpanded" class="text-xs text-gray-500 dark:text-gray-400">
+                                {{ item.totalRounds }} Rounds
+                            </div>
+                        </div>
+                        <app-icon name="collapse-card" class="w-5 h-5 transition-transform duration-200 flex-shrink-0 ml-2 text-orange-500 dark:text-orange-400"
+                            [ngClass]="{'rotate-180': item.isExpanded}"></app-icon>
+                    </button>
+                    <!-- Inner container for all the rounds -->
+                    <div *ngIf="item.isExpanded" class="bg-white dark:bg-gray-800 p-2 sm:p-3 space-y-3">
+                        <!-- Loop through the rounds -->
+                        <div *ngFor="let round of item.rounds" class="border border-gray-200 dark:border-gray-700 rounded-md">
+                            <div class="bg-gray-100 dark:bg-gray-700/50 p-1.5">
+                                <h4 class="font-semibold text-sm text-gray-700 dark:text-gray-300">Round {{ round.roundNumber }}</h4>
+                            </div>
+                            <!-- Loop through exercises within this round -->
+                            <div *ngFor="let loggedEx of round.exercisesForRound" class="p-2 border-t border-gray-200 dark:border-gray-700">
+                                <div class="flex items-center min-w-0">
+                                    <div class="flex-shrink-0 mr-2 w-10 h-10 flex items-center justify-center">
+                                        <img *ngIf="loggedEx.iconName" [src]="getIconPath(loggedEx.iconName)" [alt]="loggedEx.exerciseName + ' icon'" class="w-8 h-8 object-contain filter dark:brightness-200 dark:contrast-150">
+                                    </div>
+                                    <div class="min-w-0 flex-grow">
+                                        <h5 class="font-semibold text-gray-800 dark:text-gray-200 truncate" [title]="loggedEx.exerciseName">
+                                            {{ loggedEx.exerciseName }}
+                                        </h5>
+                                        <div class="text-xs font-normal text-gray-500 dark:text-gray-400 leading-tight">
+                                            Exercise {{ (loggedEx.supersetOrder ?? 0) + 1 }} of {{ loggedEx.supersetSize }}
+                                        </div>
+                                    </div>
+                                    <div *ngIf="loggedEx.sets.length > 0; else noSetData" class="text-sm text-gray-700 dark:text-gray-200 font-semibold ml-auto text-right flex-shrink-0">
+                                        {{ loggedEx.sets[0].repsAchieved ?? '-' }} reps
+                                        <span *ngIf="loggedEx.sets[0].weightUsed != null" class="font-normal text-gray-600 dark:text-gray-400">
+                                        @ {{ loggedEx.sets[0].weightUsed | weightUnit:'1.0-2' }}
+                                        </span>
+                                    </div>
+                                    <ng-template #noSetData><span class="text-gray-400 text-sm ml-auto">-</span></ng-template>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </ng-container>
+
+            <!-- Case 3: Item is a Standard, non-superset exercise -->
+            <ng-container *ngIf="isStandardExercise(item)">
+              <div class="border border-gray-200 dark:border-gray-600 rounded-md mt-4 overflow-hidden shadow-md">
+                  <button (click)="toggleExerciseAccordion(item)"
+                      class="w-full flex justify-between items-center p-1 text-left transition-colors focus:outline-none dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700">
+                      <div class="flex items-center min-w-0">
+                          <div class="flex-shrink-0 mr-2 w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-md">
+                              <img *ngIf="item.iconName" [src]="getIconPath(item.iconName)"
+                                  [alt]="item.exerciseName + ' icon'" class="w-8 h-8 object-contain filter dark:invert">
+                          </div>
+                          <div class="min-w-0">
+                              <div class="flex items-center">
+                                  <h3 class="text-md sm:text-lg font-semibold truncate text-primary dark:text-primary-light" [title]="item.exerciseName" (click)="openModal(item, $event)">
+                                      {{ item.exerciseName }}
+                                  </h3>
+                                  <app-icon name="info" class="h-4 w-4 text-gray-400 dark:text-gray-300 cursor-help ml-1"
+                                      (click)="openModal(item, $event)" [appTooltip]="exerciseInfoTooltipString"></app-icon>
+                              </div>
+                              <div *ngIf="!item.isExpanded" class="text-xs text-gray-500 dark:text-gray-400 truncate">
+                                  <p *ngIf="item.baseExercise?.category" class="truncate">{{ item.baseExercise?.category | titlecase }}</p>
+                                  <p *ngIf="checkIfTimedExercise(item)">Duration (s): {{getSetDurationPerformed(item)}}</p>
+                                  <p>Sets: {{item.sets.length}} <span *ngIf="getSetReps(item) !== '0'">(Reps: {{getSetReps(item)}})</span></p>
+                                  <p *ngIf="checkIfWeightedExercise(item)">Weight ({{unitService.getWeightUnitSuffix()}}): {{getSetWeightsUsed(item)}}</p>
+                              </div>
+                          </div>
+                      </div>
+                      <div class="flex items-center">
+                          <app-icon name="collapse-card" class="w-5 h-5 transition-transform duration-200 text-gray-500 dark:text-gray-400"
+                              [ngClass]="{'rotate-180': item.isExpanded}"></app-icon>
+                      </div>
+                  </button>
+                  <div *ngIf="item.isExpanded" class="grid gap-x-4 gap-y-2 p-4 bg-white dark:bg-gray-800" [ngClass]="{
+                    'grid-cols-6': (item | isWeighted) && hasPerformedTimedSets(item),
+                    'grid-cols-5': ((item | isWeighted) && !hasPerformedTimedSets(item)) || (!(item | isWeighted) && hasPerformedTimedSets(item)),
+                    'grid-cols-4': !(item | isWeighted) && !hasPerformedTimedSets(item)
+                  }">
+                      <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Set</div>
+                      <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Reps</div>
+                      <div *ngIf="item | isWeighted" class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Weight</div>
+                      <div *ngIf="hasPerformedTimedSets(item)" class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Time</div>
+                      <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Rest</div>
+                      <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Notes</div>
+                      <ng-container *ngFor="let set of item.sets; let i = index; let last = last">
+                          <div class="font-medium text-gray-900 dark:text-white flex items-center space-x-2">
+                              <span [ngClass]="{'bg-blue-100 dark:bg-blue-400 p-1 rounded': set.type && set.type === 'warmup'}">{{ i + 1 }}{{set.type === 'warmup' ? '*':''}}</span>
+                              <div *ngIf="getPersonalBestTypesForSet(set, item.exerciseId).length > 0" class="flex-shrink-0" [title]="'Personal Best!\n' + getPersonalBestTypesForSet(set, item.exerciseId).join('\n')">
+                                  <span class="px-1.5 py-0.5 text-xs font-semibold rounded-full bg-primary-dark text-white dark:text-amber-100">🏆 PB</span>
+                              </div>
+                          </div>
+                          <div><strong [ngClass]="checkTextClass(set, 'reps')" [class.cursor-pointer]="isTargetMissed(set, 'reps')" [class.hover:underline]="isTargetMissed(set, 'reps')" (click)="showComparisonModal(set, 'reps')">{{ set.repsAchieved ?? '-' }}</strong></div>
+                          <div *ngIf="item | isWeighted"><strong [ngClass]="checkTextClass(set, 'weight')" [class.cursor-pointer]="isTargetMissed(set, 'weight')" [class.hover:underline]="isTargetMissed(set, 'weight')" (click)="showComparisonModal(set, 'weight')">{{ set.weightUsed != null ? (set.weightUsed + ' ' + unitService.getWeightUnitSuffix()) : '-' }}</strong></div>
+                          <div *ngIf="hasPerformedTimedSets(item)"><strong [ngClass]="checkTextClass(set, 'duration')" [class.cursor-pointer]="isTargetMissed(set, 'duration')" [class.hover:underline]="isTargetMissed(set, 'duration')" (click)="showComparisonModal(set, 'duration')">{{ set.durationPerformed ?? '-' }}</strong></div>
+                          <div><strong [ngClass]="checkTextClass(set, 'rest')" [class.cursor-pointer]="isTargetMissed(set, 'rest')" [class.hover:underline]="isTargetMissed(set, 'rest')" (click)="showComparisonModal(set, 'rest')">{{ set.restAfterSetUsed ?? '-' }}</strong></div>
+                          <div class="cursor-pointer dark:text-white">
+                              <app-icon name="schedule" (click)="showNotesModal(set.notes)" *ngIf="set.notes" class="h-7 w-7"></app-icon>
+                              <span class="text-gray-500" *ngIf="!set.notes">-</span>
+                          </div>
+                          <div *ngIf="!last" class="col-span-full h-px bg-gray-200 dark:bg-gray-700"></div>
+                      </ng-container>
+                  </div>
+              </div>
+            </ng-container>
           </div>
-          <ng-template #noLoggedExercises>
-            <p class="text-gray-500 dark:text-gray-400">No specific exercises were logged for this workout</p>
-          </ng-template>
         </div>
+        <ng-template #noLoggedExercises>
+          <p class="text-gray-500 dark:text-gray-400">No specific exercises were logged for this workout</p>
+        </ng-template>
       </div>
+    </div>
   </ng-container>
 
   <ng-template #loadingOrNotFound>
