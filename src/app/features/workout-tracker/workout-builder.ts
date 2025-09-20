@@ -1465,7 +1465,9 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       });
     });
     this.recalculateSupersetOrders();
-  } private recalculateSupersetOrders(): void {
+  } 
+  
+  private recalculateSupersetOrders(): void {
     const supersetGroups = new Map<string, FormGroup[]>();
     this.exercisesFormArray.controls.forEach(control => {
       const exerciseForm = control as FormGroup;
@@ -1670,7 +1672,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   async onSubmit(): Promise<void> {
     if (this.isViewMode) { this.toastService.info("View mode. No changes", 3000, "View Mode"); return; }
 
-    if (this.mode === 'routineBuilder') this.recalculateSupersetOrders();
+    this.recalculateSupersetOrders();
 
     // --- NEW: TABATA VALIDATION BLOCK ---
     const formValueForValidation = this.builderForm.getRawValue();
@@ -1730,11 +1732,9 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       this.toastService.error(this.mode === 'manualLogEntry' ? 'Log must have exercises.' : 'Routine needs exercises.', 0, "Validation Error");
       return;
     }
-    if (this.mode === 'routineBuilder' && !isRestGoalRoutine && !this.validateSupersetIntegrity()) {
+    if (!isRestGoalRoutine && !this.validateSupersetIntegrity()) {
       this.toastService.error('Invalid superset configuration.', 0, "Validation Error"); return;
     }
-    // Detailed set validation loop (ensure this is robust)
-    // ...
 
     if (this.builderForm.invalid) {
       this.toastService.error('Please correct validation errors.', 0, "Validation Error");
@@ -1792,32 +1792,73 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
           endTimeMs += 24 * 60 * 60 * 1000; // Add one day if end time is on the next day
         }
 
-        const logExercises: LoggedWorkoutExercise[] = formValue.exercises.map((exInput: any): LoggedWorkoutExercise => ({
-          id: exInput.id,
-          exerciseId: exInput.exerciseId,
-          exerciseName: exInput.exerciseName,
-          notes: exInput.notes, // Exercise-level notes from the form
-          sets: exInput.sets.map((setInput: any): LoggedSet => ({
-            id: setInput.id || uuidv4(),
-            exerciseName: exInput.exerciseName,
-            plannedSetId: setInput.plannedSetId, // This was set during prefill or from existing log
+        const logExercises: LoggedWorkoutExercise[] = formValue.exercises.map((exInput: any): LoggedWorkoutExercise => {
+          let loggedSets: LoggedSet[] = [];
+          const isSupersetOrEmom = !!exInput.supersetId && exInput.supersetRounds > 0;
+
+          if (isSupersetOrEmom) {
+            // It's a superset/EMOM. Expand the single template set into multiple logged sets for each round.
+            const templateSetInput = exInput.sets[0]; // The form has one template set for supersets
+            if (templateSetInput) {
+              for (let i = 0; i < exInput.supersetRounds; i++) {
+                const roundSet: LoggedSet = {
+                  id: uuidv4(), // Generate a NEW unique ID for each logged set
+                  exerciseName: exInput.exerciseName,
+                  plannedSetId: templateSetInput.plannedSetId,
+                  exerciseId: exInput.exerciseId,
+                  type: templateSetInput.type,
+                  repsAchieved: templateSetInput.repsAchieved,
+                  weightUsed: this.unitService.convertWeight(templateSetInput.weightUsed, 'kg', this.unitService.currentWeightUnit()) ?? undefined,
+                  durationPerformed: templateSetInput.durationPerformed,
+                  notes: templateSetInput.notes,
+                  targetReps: templateSetInput.targetReps,
+                  targetWeight: templateSetInput.targetWeight,
+                  targetDuration: templateSetInput.targetDuration,
+                  targetTempo: templateSetInput.targetTempo,
+                  rpe: undefined,
+                  timestamp: new Date().toISOString(), // Each set in the log should have its own timestamp
+                  supersetCurrentRound: i, // Add the round number
+                };
+                loggedSets.push(roundSet);
+              }
+            }
+          } else {
+            // It's a standard exercise, map sets directly.
+            loggedSets = exInput.sets.map((setInput: any): LoggedSet => ({
+              id: setInput.id || uuidv4(),
+              exerciseName: exInput.exerciseName,
+              plannedSetId: setInput.plannedSetId,
+              exerciseId: exInput.exerciseId,
+              type: setInput.type,
+              repsAchieved: setInput.repsAchieved,
+              weightUsed: this.unitService.convertWeight(setInput.weightUsed, 'kg', this.unitService.currentWeightUnit()) ?? undefined,
+              durationPerformed: setInput.durationPerformed,
+              notes: setInput.notes,
+              targetReps: setInput.targetReps,
+              targetWeight: setInput.targetWeight,
+              targetDuration: setInput.targetDuration,
+              targetTempo: setInput.targetTempo,
+              rpe: undefined,
+              timestamp: setInput.timestamp || new Date().toISOString(),
+            }));
+          }
+
+          // Return the complete LoggedWorkoutExercise object, ensuring all superset metadata is included.
+          return {
+            id: exInput.id,
             exerciseId: exInput.exerciseId,
-            type: setInput.type, // <<<< ENSURE THIS IS SAVED
-            repsAchieved: setInput.repsAchieved,
-            weightUsed: this.unitService.convertWeight(setInput.weightUsed, 'kg', this.unitService.currentWeightUnit()) ?? undefined,
-            durationPerformed: setInput.durationPerformed,
-            notes: setInput.notes, // Set-level notes
-            // Target fields are not directly edited in log mode form, but might be on LoggedSet if prefilled
-            targetReps: setInput.targetReps,
-            targetWeight: setInput.targetWeight,
-            targetDuration: setInput.targetDuration,
-            targetTempo: setInput.targetTempo,
-            rpe: undefined, // RPE not part of this form
-            timestamp: setInput.timestamp || new Date().toISOString(),
-          })),
-          supersetRounds: exInput.supersetRounds || 0,
-          type: exInput.type || 'standard'
-        }));
+            exerciseName: exInput.exerciseName,
+            notes: exInput.notes,
+            sets: loggedSets, // Use the newly created sets array
+            supersetId: exInput.supersetId,
+            supersetOrder: exInput.supersetOrder,
+            supersetSize: exInput.supersetSize,
+            supersetRounds: exInput.supersetRounds || 0,
+            supersetType: exInput.supersetType || 'standard',
+            emomTimeSeconds: exInput.emomTimeSeconds || null,
+            type: exInput.type || 'standard'
+          };
+        });
 
         const logPayloadBase = {
           date: format(new Date(startTimeMs), 'yyyy-MM-dd'),
