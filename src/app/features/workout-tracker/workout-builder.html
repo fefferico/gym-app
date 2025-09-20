@@ -415,7 +415,7 @@
                                             class="flex flex-col items-start sm:items-end space-y-1 w-full">
 
                                             <!-- Superset Type Display and Change Button -->
-                                            <div *ngIf="exerciseControl.get('supersetSize')?.value > 1" class="flex items-center space-x-2">
+                                            <div *ngIf="isEditableMode() && exerciseControl.get('supersetSize')?.value > 1" class="flex items-center space-x-2">
                                                 <span class="text-xs font-medium text-gray-600 dark:text-gray-400">Type:
                                                     <strong
                                                         [ngClass]="standarSuperSetOrEmomClass(exerciseControl)">
@@ -431,7 +431,7 @@
                                             </div>
 
                                             <!-- EMOM Time Input (only visible if type is 'emom') -->
-                                            <div *ngIf="exerciseControl.get('supersetType')?.value === 'emom'"
+                                            <div *ngIf="isEditableMode() && exerciseControl.get('supersetType')?.value === 'emom'"
                                                 class="flex items-center space-x-1">
                                                 <label [for]="'emomTime-' + exIndex"
                                                     class="text-xs font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap">Time
@@ -863,13 +863,7 @@
             <div *ngIf="!isViewMode && exercisesFormArray.length > 0" class="flex mt-6 justify-center">
                 <button type="button" (click)="openExerciseSelectionModal()"
                     class="flex items-center justify-center bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-6 rounded-md shadow-md hover:shadow-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                        class="mr-2">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <line x1="12" y1="8" x2="12" y2="16"></line>
-                        <line x1="8" y1="12" x2="16" y2="12"></line>
-                    </svg>
+                    <app-icon name="create" class="h-5 w-5 mr-1"></app-icon>
                     ADD ANOTHER EXERCISE
                 </button>
             </div>

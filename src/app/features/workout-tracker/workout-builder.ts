@@ -1193,6 +1193,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     }
 
     this.closeExerciseSelectionModal();
+    this.updateCurrentRoutine(workoutExercise);
   }
 
   ngAfterViewInit(): void {
@@ -1988,9 +1989,9 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     const supersetName = exerciseControl.get('exerciseName')?.value;
     const supersetSize = exerciseControl.get('supersetSize')?.value ?? 0;
     const isSelected = this.mode === 'routineBuilder' && this.selectedExerciseIndicesForSuperset().includes(exIndex);
-    const isFirstInSuperset = isSuperset && supersetOrder === 0;
-    const isLastInSuperset = isSuperset && supersetOrder === supersetSize - 1;
-    const isMiddleInSuperSet = isSuperset && (!isFirstInSuperset && !isLastInSuperset);
+    const isFirstInSuperset = (isSuperset || isEmom) && supersetOrder === 0;
+    const isLastInSuperset = (isSuperset || isEmom) && supersetOrder === supersetSize - 1;
+    const isMiddleInSuperSet = (isSuperset || isEmom) && (!isFirstInSuperset && !isLastInSuperset);
     const isCompact = this.isCompactView;
     const isEdit = this.isEditMode;
     const firstSelected = this.firstSelectedExerciseIndexForSuperset;
@@ -2008,15 +2009,15 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       'ring-2 ring-yellow-400 dark:ring-yellow-300 shadow-md': isSelected,
       'dark:bg-orange-800/40': isSuperset && isSelected,
       'dark:bg-teal-800/40': isEmom && isSelected,
-      'rounded-b-none border-b-transparent dark:border-b-transparent': isSuperset && (isFirstInSuperset || isMiddleInSuperSet) && supersetSize > 1,
-      'rounded-t-none border-t-transparent dark:border-t-transparent border-x ': isSuperset && (isLastInSuperset || isMiddleInSuperSet) && supersetSize > 1,
-      'border-x border-t': isSuperset && isFirstInSuperset,
-      'mb-2': !isSuperset || (isSuperset && isLastInSuperset),
+      'rounded-b-none border-b-transparent dark:border-b-transparent': (isFirstInSuperset || isMiddleInSuperSet) && supersetSize > 1,
+      'rounded-t-none border-t-transparent dark:border-t-transparent border-x ': (isLastInSuperset || isMiddleInSuperSet) && supersetSize > 1,
+      'border-x border-t': isFirstInSuperset,
+      'mb-2': (!isSuperset && !isEmom) || ((isSuperset || isEmom) && isLastInSuperset),
 
-      'border-teal-500 dark:border-teal-400 bg-teal-50 dark:bg-teal-900/40': isEmom, // +++ EMOM Superset
+      'border-teal-500 dark:border-teal-400 bg-teal-50 dark:bg-teal-800/40': isEmom, // +++ EMOM Superset
       'bg-blue-800/40': isWarmup,
-      'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800': !isSuperset && !isSelected && !isWarmup,
-      'border-x border-y border-teal-500 dark:border-teal-400 bg-teal-50 dark:bg-teal-900/40': isEmom && supersetSize === 1, // No extra classes for single-item superset
+      'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800': (!isSuperset && !isEmom) && !isSelected && !isWarmup,
+      'border-x border-y': isEmom && supersetSize === 1, // No extra classes for single-item superset
       'cursor-grab': this.isEditableMode(),
       'cursor-pointer': !this.isEditableMode(),
     };
@@ -2107,12 +2108,23 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       this.toggleSetExpansion(this.exercisesFormArray.length - 1, 0);
       this.addRepsListener(newExerciseFormGroup);
       this.addDurationListener(newExerciseFormGroup);
+      this.updateCurrentRoutine(workoutExercise);
     } else {
       if (!result) {
         return
       }
       this.handleTrulyCustomExerciseEntry(true);
       return;
+    }
+  }
+
+  // update current routine after adding a new exercise
+  private updateCurrentRoutine(exercise: WorkoutExercise): void {
+    if (this.routine()) {  
+      const updatedRoutine: Routine = { ...this.routine()!,
+        exercises: [...this.routine()!.exercises, exercise]
+      };
+      this.routine.set(updatedRoutine);
     }
   }
 
