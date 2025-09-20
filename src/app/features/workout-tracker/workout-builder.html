@@ -253,7 +253,7 @@
                         [title]="isEditableMode() ? 'Drag to reorder' : ''" [ngClass]="{
                                         'superset-spacing': isSupersetSpacing(exIndex)
                                         }">
-                        <div *ngIf="mode === 'routineBuilder' && (isEditableMode()) && selectedExerciseIndicesForSuperset().length >= 2 && exIndex === firstSelectedExerciseIndexForSuperset"
+                        <div *ngIf="(isEditableMode()) && selectedExerciseIndicesForSuperset().length >= 2 && exIndex === firstSelectedExerciseIndexForSuperset"
                             class="absolute left-1/2 -translate-x-1/2 z-20" style="top: -1.25rem;">
                             <button *ngIf="!canUngroupSelectedExercises()" type="button"
                                 (click)="groupSelectedAsSuperset()" [disabled]="isViewMode"
@@ -272,8 +272,15 @@
                             longPressClass="is-long-pressing" [cdkDragData]="exerciseControl" [formGroupName]="exIndex"
                             [cdkDragStartDelay]="110" class="exercise-item relative transition-all"
                             [ngClass]="getExerciseCardClasses(exerciseControl, exIndex)">
+                            <div *ngIf="!isSetExpanded(exIndex, 0) && exerciseControl.get('supersetId')?.value && getSetsFormArray(exerciseControl).controls.length > 0 
+                                        && exerciseControl.get('supersetOrder')?.value === 0"
+                                        class="px-2 text-md font-medium mt-0.5"
+                                        [ngClass]="standarSuperSetOrEmomClass(exerciseControl)"
+                                        >
+                                        {{ standarSuperSetOrEmomLabel(exerciseControl) }}
+                                    </div>
                             <!-- COMPACT VIEW / HEADER AREA -->
-                            <div class="flex items-center space-x-1" [ngClass]="{'pt-1': isSetExpanded(exIndex, 0)}">
+                            <div class="flex items-center space-x-1 mt-1">
                                 <!-- DRAG HANDLE ICON (Now just a visual cue) -->
                                 <div *ngIf="isEditableMode()"
                                     class="p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 flex-shrink-0"
@@ -283,7 +290,7 @@
 
                                 <!-- CHECKBOX (if applicable) -->
                                 <input
-                                    *ngIf="mode === 'routineBuilder' && (isEditableMode() || isNewMode) && !isViewMode"
+                                    *ngIf="(isEditableMode() || isNewMode) && !isViewMode"
                                     type="checkbox" title="Select the exercise for the Superset"
                                     [id]="'superset-select-' + exIndex"
                                     (change)="toggleExerciseSelectionForSuperset(exIndex, $event)"
@@ -293,13 +300,6 @@
                                 <!-- EXERCISE NAME & SUPERSET INFO / SETS SUMMARY FOR COMPACT -->
                                 <div *ngIf="!shouldShowExpandedExercise(exIndex)" class="flex-grow min-w-0 py-2 px-0">
                                     <!-- COMPACT: Show SETS SUMMARY if in compact view -->
-                                    <div *ngIf="exerciseControl.get('supersetId')?.value && getSetsFormArray(exerciseControl).controls.length > 0 
-                                        && exerciseControl.get('supersetOrder')?.value === 0"
-                                        class="px-2 text-md font-medium text-orange-600 dark:text-orange-400 mt-0.5">
-                                        {{ exerciseControl.get('supersetRounds')?.value || 1 }}
-                                        {{ (exerciseControl.get('supersetRounds')?.value || 1) === 1 ? 'Round' :
-                                        'Rounds' }}
-                                    </div>
                                     <div *ngIf="!shouldShowExpandedExercise(exIndex) && getSetsFormArray(exerciseControl).controls.length > 0"
                                         class="flex items-center text-s text-gray-500 dark:text-gray-400 mt-0.5 gap-4 pl-2">
                                         <img [src]="getIconPath(exerciseControl.get('exerciseId')?.value) | async"
@@ -344,7 +344,7 @@
                                 </div>
                                 <!-- COMPACT: Minimal actions for compact view (e.g., small remove icon) -->
                                 <div *ngIf="!shouldShowExpandedExercise(exIndex) && !isViewMode"
-                                    class="flex-shrink-0 ml-auto pr-1">
+                                    class="flex-shrink-0 ml-auto pr-2">
                                     <!-- ml-auto to push to the right -->
                                     <button type="button" (click)="removeExercise(exIndex); $event.stopPropagation()"
                                         title="Remove Exercise"
@@ -366,8 +366,9 @@
                                     <div class="flex-grow">
                                         <!-- Superset info remains on its own line if visible, which is correct -->
                                         <span
-                                            *ngIf="mode === 'routineBuilder' && exerciseControl.get('supersetId')?.value"
-                                            class="text-xs text-orange-600 dark:text-orange-400 font-normal block mb-1">
+                                            *ngIf="exerciseControl.get('supersetId')?.value"
+                                            class="text-xs font-normal block mb-1"
+                                            [ngClass]="standarSuperSetOrEmomClass(exerciseControl)">
                                             Superset exercise ({{ (exerciseControl.get('supersetOrder')?.value ?? 0) + 1
                                             }} of {{
                                             exerciseControl.get('supersetSize')?.value }})
@@ -395,7 +396,7 @@
 
                                     <div
                                         class="flex flex-col items-start sm:items-end space-y-1 flex-shrink-0 w-full sm:w-auto mt-2 sm:mt-0">
-                                        <div *ngIf="mode === 'routineBuilder' && exerciseControl.get('supersetId')?.value && exerciseControl.get('supersetOrder')?.value === 0"
+                                        <div *ngIf="exerciseControl.get('supersetId')?.value && exerciseControl.get('supersetOrder')?.value === 0"
                                             class="flex items-center space-x-1">
                                             <label [for]="'supersetRounds-' + exIndex"
                                                 class="text-xs font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap">Rounds:</label>
@@ -407,14 +408,14 @@
                                         </div>
 
                                         <!-- +++ START: NEW EMOM UI BLOCK +++ -->
-                                        <div *ngIf="mode === 'routineBuilder' && exerciseControl.get('supersetId')?.value && exerciseControl.get('supersetOrder')?.value === 0"
+                                        <div *ngIf="exerciseControl.get('supersetId')?.value && exerciseControl.get('supersetOrder')?.value === 0"
                                             class="flex flex-col items-start sm:items-end space-y-1 w-full">
 
                                             <!-- Superset Type Display and Change Button -->
                                             <div class="flex items-center space-x-2">
                                                 <span class="text-xs font-medium text-gray-600 dark:text-gray-400">Type:
                                                     <strong
-                                                        [ngClass]="{'text-teal-600 dark:text-teal-400': exerciseControl.get('supersetType')?.value === 'emom', 'text-orange-600 dark:text-orange-400': exerciseControl.get('supersetType')?.value !== 'emom'}">
+                                                        [ngClass]="standarSuperSetOrEmomClass(exerciseControl)">
                                                         {{ (exerciseControl.get('supersetType')?.value || 'standard') |
                                                         titlecase }}
                                                     </strong>
@@ -445,7 +446,7 @@
                                             <app-icon name="cancel" class="h-5 w-5 mr-1"></app-icon>REMOVE
                                         </button> -->
                                         <button
-                                            *ngIf="mode === 'routineBuilder' && isEditableMode() && exerciseControl.get('supersetId')?.value"
+                                            *ngIf="isEditableMode() && exerciseControl.get('supersetId')?.value"
                                             type="button" (click)="ungroupSuperset(exIndex)" [disabled]="isViewMode"
                                             class="flex bg-violet-200 items-center text-xs text-violet-600 hover:text-violet-700 dark:text-violet-400 dark:hover:text-violet-300 font-medium py-1 px-2 rounded-md hover:bg-violet-100 dark:hover:bg-violet-900/50 disabled:opacity-50">
                                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -824,7 +825,7 @@
                 </ng-container>
             </div>
 
-            <div *ngIf="!isViewMode && exercisesFormArray.length === 0 && (mode === 'routineBuilder' && builderForm.get('goal')?.value !== 'rest')"
+            <div *ngIf="!isViewMode && exercisesFormArray.length === 0 && (builderForm.get('goal')?.value !== 'rest')"
                 class="text-center py-6 text-gray-500 dark:text-gray-400 border border-dashed dark:border-gray-700 rounded-md mt-4">
                 <p class="mb-2">No exercises added yet</p>
                 <button type="button" (click)="openExerciseSelectionModal()"
@@ -861,7 +862,7 @@
             </div>
         </section>
 
-        <section *ngIf="mode === 'routineBuilder' && builderForm.get('goal')?.value === 'rest'"
+        <section *ngIf="builderForm.get('goal')?.value === 'rest'"
             class="p-4 bg-blue-50 dark:bg-blue-900/30 rounded-md text-center">
             <p class="text-m text-blue-700 dark:text-blue-300">This is a rest day routine. No exercises are needed</p>
         </section>
