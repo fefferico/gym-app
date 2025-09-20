@@ -838,7 +838,7 @@
                 </ng-container>
             </div>
 
-            <div *ngIf="!isViewMode && exercisesFormArray.length === 0 && (builderForm.get('goal')?.value !== 'rest')"
+            <div *ngIf="!isViewMode && mode !== 'manualLogEntry' && exercisesFormArray.length === 0 && (builderForm.get('goal')?.value !== 'rest')"
                 class="text-center py-6 text-gray-500 dark:text-gray-400 border border-dashed dark:border-gray-700 rounded-md mt-4">
                 <p class="mb-2">No exercises added yet</p>
                 <button type="button" (click)="openExerciseSelectionModal()"
