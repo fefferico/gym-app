@@ -280,10 +280,10 @@
                                         {{ standarSuperSetOrEmomLabel(exerciseControl) }}
                                     </div>
                             <!-- COMPACT VIEW / HEADER AREA -->
-                            <div class="flex items-center space-x-1 mt-1">
+                            <div class="flex items-center space-x-1 pt-1">
                                 <!-- DRAG HANDLE ICON (Now just a visual cue) -->
                                 <div *ngIf="isEditableMode()"
-                                    class="p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 flex-shrink-0"
+                                    class="p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 flex-shrink-0 flex item-center cursor-move rounded-md"
                                     title="Drag to reorder">
                                     <app-icon name="reorder"></app-icon>
                                 </div>
@@ -295,7 +295,7 @@
                                     [id]="'superset-select-' + exIndex"
                                     (change)="toggleExerciseSelectionForSuperset(exIndex, $event)"
                                     [checked]="selectedExerciseIndicesForSuperset().includes(exIndex)"
-                                    class="h-6 w-6 text-orange-600 border-gray-300 dark:border-gray-600 rounded focus:ring-orange-500 flex-shrink-0 disabled:opacity-50"
+                                    class="h-6 w-6 text-orange-600 border-gray-300 dark:border-gray-600 rounded-md focus:ring-orange-500 flex-shrink-0 disabled:opacity-50"
                                     [disabled]="isViewMode">
                                 <!-- EXERCISE NAME & SUPERSET INFO / SETS SUMMARY FOR COMPACT -->
                                 <div *ngIf="!shouldShowExpandedExercise(exIndex)" class="flex-grow min-w-0 py-2 px-0">
@@ -324,15 +324,18 @@
                                                     (s):
                                                     {{ getSetDurationDisplay(exerciseControl) }}
                                                 </p>
+                                                <!-- Show info about sets only if !isEmomExercise -->
                                                 <p
                                                     *ngIf="exerciseControl?.get('sets')?.value && exerciseControl?.get('sets')?.value.length >= 1">
-                                                    Sets: {{exerciseControl?.get('sets')?.value.length}} {{
-                                                    !isExerciseCardioOnlyCtrl(exerciseControl) &&
-                                                    getSetReps(exerciseControl) ? '( Reps: ' +
-                                                    getSetReps(exerciseControl) + ' )' : '' }}
+                                                    {{ !isEmomExercise(exerciseControl) ? 'Sets: ' + exerciseControl?.get('sets')?.value.length : '' }}
+                                                    {{
+                                                        !isExerciseCardioOnlyCtrl(exerciseControl) && getSetReps(exerciseControl)
+                                                            ? '( Reps: ' + getSetReps(exerciseControl) + ' )'
+                                                            : ''
+                                                    }}
                                                 </p>
                                                 <p
-                                                    *ngIf="exerciseControl?.get('sets')?.value && exerciseControl?.get('sets')?.value.length > 1 && checkIfWeightedExercise(exerciseControl)">
+                                                    *ngIf="exerciseControl?.get('sets')?.value && exerciseControl?.get('sets')?.value.length >= 1 && checkIfWeightedExercise(exerciseControl)">
                                                     Weight
                                                     ({{unitService.getWeightUnitSuffix()}}):
                                                     {{getSetWeightsUsed(exerciseControl)}}
@@ -353,7 +356,7 @@
                                     </button>
                                 </div>
                                 <div *ngIf="!isViewMode && shouldShowExpandedExercise(exIndex)"
-                                    class="w-full flex justify-end pr-2"><button type="button"
+                                    class="w-full flex justify-end pr-2 mt-2"><button type="button"
                                         (click)="removeExercise(exIndex)" title="Remove Exercise"
                                         class="flex items-center p-1 hover:text-red-700 dark:hover:text-red-300 rounded-md hover:bg-red-100 dark:hover:bg-red-900/30 disabled:opacity-50 bg-red-500 text-white">
                                         <app-icon name="cancel" class="h-5 w-5 mr-1"></app-icon>REMOVE
@@ -412,7 +415,7 @@
                                             class="flex flex-col items-start sm:items-end space-y-1 w-full">
 
                                             <!-- Superset Type Display and Change Button -->
-                                            <div class="flex items-center space-x-2">
+                                            <div *ngIf="exerciseControl.get('supersetSize')?.value > 1" class="flex items-center space-x-2">
                                                 <span class="text-xs font-medium text-gray-600 dark:text-gray-400">Type:
                                                     <strong
                                                         [ngClass]="standarSuperSetOrEmomClass(exerciseControl)">
@@ -456,6 +459,16 @@
                                             </svg>
                                             Ungroup
                                         </button>
+
+                                        <!-- START: Snippet to Add -->
+                                        <!-- Button to convert a single, standard exercise into an EMOM -->
+                                        <button *ngIf="isEditableMode() && !exerciseControl.get('supersetId')?.value" type="button"
+                                            (click)="convertToSingleExerciseEmom(exerciseControl)" title="Convert this exercise into a multi-round EMOM"
+                                            class="flex bg-teal-400 items-center text-xs text-white font-medium py-1 px-2 rounded-md hover:bg-teal-600 disabled:opacity-50">
+                                            <app-icon name="clock" class="h-5 w-5 mr-1"></app-icon>
+                                            Make EMOM
+                                        </button>
+                                        <!-- END: Snippet to Add -->
                                     </div>
                                 </div>
 

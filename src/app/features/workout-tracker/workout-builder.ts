@@ -1868,20 +1868,33 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         supersetGroups.get(exercise.supersetId)!.push(exercise);
       }
     }
+
     for (const [id, group] of supersetGroups.entries()) {
-      if (group.length < 2) return false; // Superset must have at least 2 exercises
-      const sortedGroup = group.sort((a, b) => (a.supersetOrder ?? Infinity) - (b.supersetOrder ?? Infinity));
-      for (let i = 0; i < sortedGroup.length; i++) {
-        if (sortedGroup[i].supersetOrder !== i) return false; // Orders must be sequential 0, 1, 2...
+      // An EMOM can have 1 or more exercises. A standard superset must have at least 2.
+      const isEmom = group.length > 0 && group[0].supersetType === 'emom';
+      if (group.length < 2 && !isEmom) {
+        // This is an invalid group of 1 that is NOT an EMOM.
+        return false;
       }
-      // Check if all exercises in the group are contiguous in the main exercisesFormArray
-      const formIndices = sortedGroup.map(ex => this.exercisesFormArray.controls.findIndex(ctrl => (ctrl as FormGroup).get('id')?.value === ex.id));
-      for (let i = 1; i < formIndices.length; i++) {
-        if (formIndices[i] !== formIndices[i - 1] + 1) return false; // Not contiguous
+
+      // Further validation only applies to groups with more than one exercise.
+      if (group.length > 1) {
+        const sortedGroup = group.sort((a, b) => (a.supersetOrder ?? Infinity) - (b.supersetOrder ?? Infinity));
+
+        for (let i = 0; i < sortedGroup.length; i++) {
+          if (sortedGroup[i].supersetOrder !== i) return false; // Orders must be sequential 0, 1, 2...
+        }
+
+        // Check if all exercises in the group are contiguous in the main exercisesFormArray
+        const formIndices = sortedGroup.map(ex => this.exercisesFormArray.controls.findIndex(ctrl => (ctrl as FormGroup).get('id')?.value === ex.id));
+        for (let i = 1; i < formIndices.length; i++) {
+          if (formIndices[i] !== formIndices[i - 1] + 1) return false; // Not contiguous
+        }
       }
     }
     return true;
   }
+
   get firstSelectedExerciseIndexForSuperset(): number | null {
     const selectedIndices = this.selectedExerciseIndicesForSuperset();
     return selectedIndices.length > 0 ? selectedIndices[0] : null;
@@ -1968,9 +1981,9 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     exerciseControl: AbstractControl,
     exIndex: number
   ): { [klass: string]: boolean } {
+    const isEmom = exerciseControl.get('supersetType')?.value === 'emom'; // +++ NEW
     const isSuperset =
-      this.mode === 'routineBuilder' &&
-      !!exerciseControl.get('supersetId')?.value;
+      !!exerciseControl.get('supersetId')?.value && !isEmom;
     const supersetOrder = exerciseControl.get('supersetOrder')?.value ?? -1;
     const supersetName = exerciseControl.get('exerciseName')?.value;
     const supersetSize = exerciseControl.get('supersetSize')?.value ?? 0;
@@ -1983,29 +1996,27 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     const firstSelected = this.firstSelectedExerciseIndexForSuperset;
     const sets = exerciseControl.get('sets')?.value || [];
     const isWarmup = sets.length > 0 && sets.every((set: any) => set.type === 'warmup');
-    const isEmom = exerciseControl.get('supersetType')?.value === 'emom'; // +++ NEW
 
     const returnObj = {
       // 'p-1.5 sm:p-2': true,
       // 'p-3': !isCompact && this.expandedSetPath()?.exerciseIndex !== exIndex,
       // 'space-y-3': !isCompact,
       // 'border rounded-lg': true,
-      'border rounded': true,
+      'border rounded-md': true,
       'shadow-sm': true,
-      'border-orange-500 dark:border-orange-400 bg-orange-50 dark:bg-orange-800/30': isSuperset && !isEmom, // Standard Superset
-      'border-teal-500 dark:border-teal-400 bg-teal-50 dark:bg-teal-900/40': isEmom, // +++ EMOM Superset
-      'ring-2 ring-orange-400 dark:ring-orange-300 shadow-md': isSelected,
+      'border-orange-500 dark:border-orange-400 bg-orange-50 dark:bg-orange-800/30': isSuperset, // Standard Superset
+      'ring-2 ring-yellow-400 dark:ring-yellow-300 shadow-md': isSelected,
       'dark:bg-orange-800/40': isSuperset && isSelected,
+      'dark:bg-teal-800/40': isEmom && isSelected,
+      'rounded-b-none border-b-transparent dark:border-b-transparent': isSuperset && (isFirstInSuperset || isMiddleInSuperSet) && supersetSize > 1,
+      'rounded-t-none border-t-transparent dark:border-t-transparent border-x ': isSuperset && (isLastInSuperset || isMiddleInSuperSet) && supersetSize > 1,
+      'border-x border-t': isSuperset && isFirstInSuperset,
+      'mb-2': !isSuperset || (isSuperset && isLastInSuperset),
+
+      'border-teal-500 dark:border-teal-400 bg-teal-50 dark:bg-teal-900/40': isEmom, // +++ EMOM Superset
       'bg-blue-800/40': isWarmup,
       'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800': !isSuperset && !isSelected && !isWarmup,
-      'rounded-b-none border-b-transparent dark:border-b-transparent':
-        this.mode === 'routineBuilder' &&
-        isSuperset && (isFirstInSuperset || isMiddleInSuperSet),
-      'rounded-t-none border-t-transparent dark:border-t-transparent': isSuperset && (isLastInSuperset || isMiddleInSuperSet),
-      'border-x border-t':
-        isSuperset &&
-        isFirstInSuperset,
-      'mb-2': !isSuperset || (isSuperset && isLastInSuperset),
+      'border-x border-y border-teal-500 dark:border-teal-400 bg-teal-50 dark:bg-teal-900/40': isEmom && supersetSize === 1, // No extra classes for single-item superset
       'cursor-grab': this.isEditableMode(),
       'cursor-pointer': !this.isEditableMode(),
     };
@@ -2839,4 +2850,74 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       return '';
     }
   }
+
+   /**
+   * Converts a single, standard exercise into a multi-round EMOM.
+   * This creates a "superset" of size 1 and flattens multiple sets into one.
+   * @param exerciseControl The form group for the exercise to convert.
+   */
+  async convertToSingleExerciseEmom(exerciseControl: AbstractControl): Promise<void> {
+    if (this.isViewMode || !(exerciseControl instanceof FormGroup)) return;
+
+    // Prompt the user for EMOM details (time and rounds)
+    const emomInputs: AlertInput[] = [
+      { name: 'emomTime', type: 'number', label: 'Time per Round (s)', placeholder: 'e.g., 60', value: '60', attributes: { min: '10', required: true } },
+      { name: 'supersetRounds', type: 'number', label: 'Number of Rounds', placeholder: 'e.g., 10', value: '10', attributes: { min: '1', required: true } }
+    ];
+    const emomResult = await this.alertService.showPromptDialog(
+      'Create Single-Exercise EMOM',
+      'Configure the EMOM (Every Minute On the Minute) parameters for this exercise.',
+      emomInputs
+    );
+
+    // Abort if the user cancels or provides invalid input
+    if (!emomResult || !emomResult['emomTime'] || !emomResult['supersetRounds']) {
+      this.toastService.info("EMOM creation cancelled.", 2000);
+      return;
+    }
+
+    const emomTimeSeconds = Number(emomResult['emomTime']);
+    const supersetRounds = Number(emomResult['supersetRounds']);
+
+    // --- START: Snippet to Add/Modify ---
+    // Access the sets FormArray for this exercise
+    const setsArray = exerciseControl.get('sets') as FormArray;
+
+    // If there are multiple sets, flatten them. The first set becomes the template for each EMOM round.
+    while (setsArray.length > 1) {
+      setsArray.removeAt(1); // Repeatedly remove the second item until only one is left.
+    }
+
+    // Defensive check: If the exercise somehow had no sets, add a default one.
+    if (setsArray.length === 0) {
+        const defaultSet: ExerciseTargetSetParams = { id: uuidv4(), type: 'standard', targetReps: 8, restAfterSet: 60 };
+        setsArray.push(this.createSetFormGroup(defaultSet, false));
+    }
+    // --- END: Snippet to Add/Modify ---
+
+    // Apply the new EMOM properties to the exercise
+    exerciseControl.patchValue({
+      supersetId: uuidv4(),      // Give it a unique superset ID
+      supersetOrder: 0,          // It's the first (and only) item
+      supersetSize: 1,           // The group size is 1
+      supersetRounds: supersetRounds,
+      supersetType: 'emom',
+      emomTimeSeconds: emomTimeSeconds,
+      type: 'superset'         // Consistent with other supersets
+    });
+
+    // Ensure the rounds input field is enabled after conversion
+    this.updateRoundsControlability(exerciseControl);
+
+    this.toastService.success(`EMOM created for ${supersetRounds} rounds!`, 4000, "Success");
+  }
+
+  protected isEmomExercise(exerciseControl: AbstractControl): boolean {
+    return exerciseControl.get('supersetType')?.value === 'emom';
+  }
+
+  protected isStandardSupersetExercise(exerciseControl: AbstractControl): boolean {
+    return exerciseControl.get('supersetType')?.value === 'standard'; 
+  }
+
 }
