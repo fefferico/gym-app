@@ -588,6 +588,7 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   getCalendarDayClasses(day: HistoryCalendarDay): object {
     return {
+      'text-black dark:text-white': !day.hasLog,
       'cursor-default': !day.hasLog,
       'ring-2 ring-primary dark:ring-primary-light font-bold': day.isToday,
       'text-gray-800 dark:text-gray-200': !day.isToday,

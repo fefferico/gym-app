@@ -1153,14 +1153,14 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
   getCalendarDayClasses(day: CalendarDay): object {
     return {
       // A day is clickable only if it has a workout scheduled or logged
-      'cursor-default': !day.hasWorkout,
+      'text-black dark:text-white': !day.hasWorkout,
       
       // Styling for today's date
       'ring-2 ring-primary dark:ring-primary-light font-bold': day.isToday,
       
       // Default text color
       'text-gray-800 dark:text-gray-200': !day.isToday,
-      'cursor-pointer hover:bg-yellow-700 bg-yellow-500 text-white font-bold': day.hasWorkout && !day.isLogged,
+      'cursor-pointer hover:bg-yellow-700/70 bg-yellow-500/70 text-white font-bold': day.hasWorkout && !day.isLogged,
       'cursor-pointer hover:bg-green-700 bg-green-500 text-white font-bold': day.hasWorkout && day.isLogged,
     };
   }
