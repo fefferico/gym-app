@@ -949,6 +949,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   private createExerciseFormGroup(exerciseData?: WorkoutExercise, isFromRoutineTemplate: boolean = false, forLogging: boolean = false): FormGroup {
     const baseExercise = exerciseData?.exerciseId ? this.availableExercises.find(e => e.id === exerciseData.exerciseId) : null;
     const sets = exerciseData?.sets || [];
+
     const fg = this.fb.group({
       id: [exerciseData?.id || this.workoutService.generateWorkoutExerciseId()],
       exerciseId: [exerciseData?.exerciseId || '', Validators.required],
@@ -962,12 +963,16 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       // +++ NEW FORM CONTROLS +++
       supersetType: [exerciseData?.supersetType ?? 'standard'],
       emomTimeSeconds: [exerciseData?.emomTimeSeconds ?? null] //PRESERVE EMOM
-    });
+    }) as FormGroup;
 
     if (isFromRoutineTemplate) {
     } else {
       fg.get('supersetRounds')?.enable({ emitEvent: false });
     }
+
+    const isRepsRangeMode = this.isRangeMode(fg, 'reps');
+    const isWeightRangeMode = this.isRangeMode(fg, 'weight');
+    const isDurationRangeMode = this.isRangeMode(fg, 'duration');
 
     fg.get('exerciseId')?.valueChanges.subscribe(newExerciseId => {
       const selectedBaseExercise = this.availableExercises.find(e => e.id === newExerciseId);
@@ -1021,7 +1026,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
 
-  private createSetFormGroup(setData?: ExerciseTargetSetParams | LoggedSet, forLogging: boolean = false): FormGroup {
+  // isRepsRangeMode, isWeightRangeMode, isDurationRangeMode
+  private createSetFormGroup(setData?: ExerciseTargetSetParams | LoggedSet, forLogging: boolean = false, isRangeModeArray: boolean[] = []): FormGroup {
     let targetTargetReps, targetWeighValue, targetDurationValue, notesValue, typeValue, tempoValue, restValue;
     let targetRepsMinValue, targetRepsMaxValue, targetDurationMinValue, targetDurationMaxValue, targetWeightMinValue, targetWeightMaxValue; // For ranges
     let id = uuidv4();
@@ -1093,6 +1099,10 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       formGroupConfig['tempo'] = [tempoValue];
       formGroupConfig['restAfterSet'] = [restValue];
     } else { // For routine builder (planning mode)
+
+      
+
+
       formGroupConfig['targetReps'] = [targetTargetReps ?? null, [Validators.min(0)]];
       formGroupConfig['targetRepsMin'] = [targetRepsMinValue ?? null, [Validators.min(0)]];
       formGroupConfig['targetRepsMax'] = [targetRepsMaxValue ?? null, [Validators.min(0)]];
@@ -1106,7 +1116,22 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       formGroupConfig['restAfterSet'] = [restValue ?? 60, [Validators.required, Validators.min(0)]];
     }
     const groupOptions = forLogging ? {} : { validators: this.createRangeValidator() };
-    return this.fb.group(formGroupConfig, groupOptions);
+
+    const setFG = this.fb.group(formGroupConfig, groupOptions);
+
+    if (isRangeModeArray) {
+        if (isRangeModeArray[0]){
+          this.toggleRepsMode(setFG);
+        }
+        if (isRangeModeArray[1]){
+          this.toggleWeightMode(setFG);
+        }
+        if (isRangeModeArray[2]){
+          this.toggleDurationMode(setFG);
+        }
+      }
+
+    return setFG;
   }
 
   private scrollIntoVie(): void {
@@ -1213,7 +1238,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         const fg = ctrl as FormGroup;
         if (fg.get('supersetId')?.value === supersetId) {
           const setsArray = this.getSetsFormArray(fg);
-          const newSet = this.createSyncedSet(setsArray); // Use a helper to create the new set
+          const newSet = this.createSyncedSet(setsArray, ctrl); // Use a helper to create the new set
           setsArray.push(newSet);
         }
       });
@@ -1226,7 +1251,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     } else {
       // Standard behavior for non-superset exercises
       const setsArray = this.getSetsFormArray(exerciseControl);
-      const newSet = this.createSyncedSet(setsArray);
+      const newSet = this.createSyncedSet(setsArray, exerciseControl);
       setsArray.push(newSet);
       this.cdr.detectChanges();
       const newSetIndex = setsArray.length - 1;
@@ -1238,12 +1263,15 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
    * Helper method to create a new set, copying from the last one if it exists.
    * This will be used for both standard and superset set additions.
    */
-  private createSyncedSet(setsArray: FormArray): FormGroup {
+  private createSyncedSet(setsArray: FormArray, ctrl: AbstractControl): FormGroup {
+    const isRepsRangeMode = this.isRangeMode(ctrl, 'reps');
+    const isWeightRangeMode = this.isRangeMode(ctrl, 'weight');
+    const isDurationRangeMode = this.isRangeMode(ctrl, 'duration');
     if (setsArray.length > 0) {
       const prevSet = setsArray.at(setsArray.length - 1).value;
       const setData = { ...prevSet };
       delete setData.id; // Ensure new set gets a new ID
-      return this.createSetFormGroup(setData, this.mode === 'manualLogEntry');
+      return this.createSetFormGroup(setData, this.mode === 'manualLogEntry', [isRepsRangeMode, isWeightRangeMode, isDurationRangeMode]);
     } else {
       // If no sets exist, create a blank default one.
       return this.createSetFormGroup(undefined, this.mode === 'manualLogEntry');
@@ -2419,7 +2447,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
    * Toggles the input mode for a set's duration between a single value and a range.
    * @param setControl The form group for the specific set.
    */
-  toggleDurationMode(setControl: AbstractControl, event: Event): void {
+  toggleDurationMode(setControl: AbstractControl, event?: Event): void {
     event?.stopPropagation();
 
     if (this.isViewMode || !(setControl instanceof FormGroup)) return;
@@ -2950,7 +2978,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       if (fg.get('supersetId')?.value === supersetId) {
         const setsArray = this.getSetsFormArray(fg);
         // Use our existing helper to create a new set, intelligently copying the last one
-        const newSet = this.createSyncedSet(setsArray);
+        const newSet = this.createSyncedSet(setsArray, ctrl);
         setsArray.push(newSet);
       }
     });
