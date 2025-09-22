@@ -1149,5 +1149,25 @@ getWeightDisplay(set: ExerciseTargetSetParams, exercise: Exercise | WorkoutExerc
     return routine?.exercises.filter(e => e.supersetId === ex.supersetId).length || 0;
   }
 
+  public exerciseNameDisplay(exercise: WorkoutExercise): string {
+    if (!exercise || !exercise.exerciseName) return 'Unnamed Exercise';
+
+    let tmpExerciseStringName = exercise.exerciseName.trim();
+    if (/dumbbell/i.test(tmpExerciseStringName)) {
+      tmpExerciseStringName = tmpExerciseStringName.replace(/dumbbell/gi, 'DB');
+    }
+    if (/kettlebell/i.test(tmpExerciseStringName)) {
+      tmpExerciseStringName = tmpExerciseStringName.replace(/kettlebell/gi, 'KB');
+    }
+    if (/kb/i.test(tmpExerciseStringName)) {
+      tmpExerciseStringName = tmpExerciseStringName.replace(/overhead/gi, 'OH');
+    }
+    if (/alternating/i.test(tmpExerciseStringName)) {
+      tmpExerciseStringName = tmpExerciseStringName.replace(/alternating/gi, 'ALT.');
+    }
+
+
+    return tmpExerciseStringName;
+  }
 
 }

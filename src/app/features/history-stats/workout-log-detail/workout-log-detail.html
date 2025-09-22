@@ -68,8 +68,8 @@
                 <button (click)="toggleExerciseAccordion(item)"
                   class="w-full flex justify-between items-center p-2 text-left bg-teal-50 dark:bg-teal-900/40 hover:bg-teal-100 dark:hover:bg-teal-800/60 transition-colors">
                   <div class="flex-grow min-w-0">
-                    <span class="text-xs font-semibold text-teal-600 dark:text-teal-400 uppercase">EMOM Block</span>
-                    <h3 class="text-md sm:text-lg font-bold text-teal-800 dark:text-teal-200 truncate" [title]="item.blockName">
+                    <span class="text-xs font-semibold text-teal-600 dark:text-teal-400 uppercase">EMOM Block - {{ emomLabel(item) }} </span>
+                    <h3 class="text-md sm:text-lg font-bold text-teal-800 dark:text-teal-200" [title]="item.blockName">
                       {{ item.blockName }}
                     </h3>
                     <div *ngIf="!item.isExpanded" class="text-xs text-gray-500 dark:text-gray-400">
@@ -82,8 +82,8 @@
                 <div *ngIf="item.isExpanded" class="bg-white dark:bg-gray-800 p-2 sm:p-3">
                   <div class="grid gap-x-2 sm:gap-x-4" [style.grid-template-columns]="'auto repeat(' + item.exercises.length + ', 1fr)'">
                     <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400 py-2">Round</div>
-                    <div *ngFor="let ex of item.exercises" class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400 py-2 truncate text-center" [title]="ex.exerciseName">
-                      {{ ex.exerciseName }}
+                    <div *ngFor="let ex of item.exercises" class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400 py-2 text-center" [title]="ex.exerciseName">
+                      {{ exerciseNameDisplay(ex) }}
                     </div>
                     <ng-container *ngFor="let round of item.rounds; let last = last">
                       <div class="font-medium text-gray-900 dark:text-white flex items-center justify-center">{{ round.roundNumber }}</div>

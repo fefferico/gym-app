@@ -26,6 +26,7 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
 import { TrainingProgramService } from '../../../core/services/training-program.service';
 import { ProgramDayInfo, TrainingProgram } from '../../../core/models/training-program.model';
 import { MenuMode } from '../../../core/models/app-settings.model';
+import { AbstractControl } from '@angular/forms';
 
 interface DisplayLoggedExercise extends LoggedWorkoutExercise {
   baseExercise?: Exercise | null;
@@ -345,7 +346,11 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
   }
 
   getSetWeightsUsed(loggedEx: LoggedWorkoutExercise): string {
-    return loggedEx.sets.map(set => set.weightUsed).join(' - ');
+    let stringResult = loggedEx.sets.map(set => set.weightUsed).join(' - ');
+    if (stringResult.length > 15) {
+      stringResult = stringResult.substring(0, 15) + '...';
+    }
+    return stringResult;
   }
 
   getSetDurationPerformed(loggedEx: LoggedWorkoutExercise): string {
@@ -550,6 +555,32 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
 
   protected hasPerformedTimedSets(loggedEx: DisplayLoggedExercise): boolean {
     return loggedEx?.sets?.some(set => (set.durationPerformed ?? 0) > 0) ?? false;
+  }
+
+  protected emomLabel(exercise: EMOMDisplayBlock): string {
+    const rounds = exercise.totalRounds || 1;
+    let roundString = rounds > 1 ? ` (${rounds} ROUNDS)` : ` (${rounds} ROUND)`;
+
+    return `EMOM${roundString} - Every ${exercise.emomTimeSeconds || 60}s`;
+  }
+
+  protected exerciseNameDisplay(exercise: DisplayLoggedExercise): string {
+    if (!exercise || !exercise.exerciseName) return 'Unnamed Exercise';
+
+    let tmpExerciseStringName = exercise.exerciseName.trim();
+    // if exercise.exerciseName contains kettlebell return the same name but substitute kettlebell with KB
+    if (/kettlebell/i.test(tmpExerciseStringName)) {
+      tmpExerciseStringName = tmpExerciseStringName.replace(/kettlebell/gi, 'KB');
+    }
+    if (/kb/i.test(tmpExerciseStringName)) {
+      tmpExerciseStringName = tmpExerciseStringName.replace(/overhead/gi, 'OH');
+    }
+    if (/alternating/i.test(tmpExerciseStringName)) {
+      tmpExerciseStringName = tmpExerciseStringName.replace(/alternating/gi, 'ALT.');
+    }
+
+
+    return tmpExerciseStringName || exercise.baseExercise?.name || 'Unnamed Exercise';
   }
 
   ngOnDestroy(): void {

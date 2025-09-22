@@ -1245,32 +1245,32 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     if (!routine || !routine.exercises) return null;
 
     for (let exIndex = 0; exIndex < routine.exercises.length; exIndex++) {
-        const exercise = routine.exercises[exIndex];
-        if (exercise.sessionStatus !== 'pending' || !exercise.sets || exercise.sets.length === 0) {
-            continue;
+      const exercise = routine.exercises[exIndex];
+      if (exercise.sessionStatus !== 'pending' || !exercise.sets || exercise.sets.length === 0) {
+        continue;
+      }
+
+      const loggedEx = this.currentWorkoutLogExercises().find(le => le.id === exercise.id);
+      const loggedPlannedSetIds = new Set(loggedEx?.sets.map(s => s.plannedSetId));
+
+      for (let setIdx = 0; setIdx < exercise.sets.length; setIdx++) {
+        const plannedSetId = exercise.sets[setIdx].id;
+        // For supersets, each logged set is unique per round (set index)
+        const targetLoggedId = exercise.supersetId ? `${plannedSetId}-round-${setIdx}` : plannedSetId;
+
+        if (!loggedPlannedSetIds.has(targetLoggedId)) {
+          if (exercise.supersetId) {
+            const firstInGroupIndex = routine.exercises.findIndex(e => e.supersetId === exercise.supersetId && e.supersetOrder === 0);
+            // For superset, the starting exercise is the first in the block, and the starting set is the one we found.
+            return { exerciseIndex: firstInGroupIndex !== -1 ? firstInGroupIndex : exIndex, setIndex: setIdx, round: setIdx + 1 };
+          }
+          // For a standard exercise, we start at the exercise itself and the found set.
+          return { exerciseIndex: exIndex, setIndex: setIdx, round: setIdx + 1 };
         }
-
-        const loggedEx = this.currentWorkoutLogExercises().find(le => le.id === exercise.id);
-        const loggedPlannedSetIds = new Set(loggedEx?.sets.map(s => s.plannedSetId));
-
-        for (let setIdx = 0; setIdx < exercise.sets.length; setIdx++) {
-            const plannedSetId = exercise.sets[setIdx].id;
-            // For supersets, each logged set is unique per round (set index)
-            const targetLoggedId = exercise.supersetId ? `${plannedSetId}-round-${setIdx}` : plannedSetId;
-
-            if (!loggedPlannedSetIds.has(targetLoggedId)) {
-                if (exercise.supersetId) {
-                    const firstInGroupIndex = routine.exercises.findIndex(e => e.supersetId === exercise.supersetId && e.supersetOrder === 0);
-                    // For superset, the starting exercise is the first in the block, and the starting set is the one we found.
-                    return { exerciseIndex: firstInGroupIndex !== -1 ? firstInGroupIndex : exIndex, setIndex: setIdx, round: setIdx + 1 };
-                }
-                // For a standard exercise, we start at the exercise itself and the found set.
-                return { exerciseIndex: exIndex, setIndex: setIdx, round: setIdx + 1 };
-            }
-        }
+      }
     }
     return null;
-}
+  }
 
 
   private patchActualsFormBasedOnSessionTargets(): void {
@@ -1593,28 +1593,28 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
 
     // Find next set in current STANDARD exercise
     if (!currExercise.supersetId && currSetIdx + 1 < currExercise.sets.length) {
-        const nextSet = currExercise.sets[currSetIdx + 1];
-        const setType = nextSet.type === 'warmup' ? "Warm-up" : "Set";
-        const setNumber = currSetIdx + 2;
-        return `${setType} ${setNumber}/${currExercise.sets.length} of ${currExercise.exerciseName}`;
+      const nextSet = currExercise.sets[currSetIdx + 1];
+      const setType = nextSet.type === 'warmup' ? "Warm-up" : "Set";
+      const setNumber = currSetIdx + 2;
+      return `${setType} ${setNumber}/${currExercise.sets.length} of ${currExercise.exerciseName}`;
     }
 
     // Find next exercise/block
     const nextPendingExIndex = this.findFirstPendingExerciseIndexAfter(currExIdx, currentSessionRoutine);
     if (nextPendingExIndex !== -1) {
-        const nextEx = exercises[nextPendingExIndex];
-        return `Next: ${nextEx.exerciseName}`;
+      const nextEx = exercises[nextPendingExIndex];
+      return `Next: ${nextEx.exerciseName}`;
     }
 
     // If no more pending, check for do_later/skipped
     const hasDoLater = exercises.some(ex => ex.sessionStatus === 'do_later' && !this.isExerciseFullyLogged(ex));
     if (hasDoLater) return 'Do Later Exercises';
-    
+
     const hasSkipped = exercises.some(ex => ex.sessionStatus === 'skipped' && !this.isExerciseFullyLogged(ex));
     if (hasSkipped) return 'Skipped Exercises';
 
     return 'Workout Complete!';
-}
+  }
 
   skipRest(): void {
     if (this.sessionState() === SessionState.Paused) {
@@ -1956,7 +1956,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
         newLogs.forEach((exLog: LoggedWorkoutExercise) => {
           if (exLog.supersetId === supersetId) {
             // Filter out sets matching the current round index
-            exLog.sets = exLog.sets.filter((s,index) => index !== (currentRound - 1));
+            exLog.sets = exLog.sets.filter((s, index) => index !== (currentRound - 1));
           }
         });
         return newLogs;
@@ -3404,6 +3404,19 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
+  getExerciseEmomBlockInfo(exerciseIndex: number, routine: Routine): { totalRounds: number; emomInterval: number, exercisesInBlock: WorkoutExercise[] | null } | null {
+    const exercise = routine.exercises[exerciseIndex];
+    if (exercise.supersetType === 'emom' && exercise.emomTimeSeconds) {
+      const totalRounds = this.getRoundsForExerciseBlock(exerciseIndex, routine);
+      return { totalRounds, emomInterval: exercise.emomTimeSeconds, exercisesInBlock: this.activeSupersetBlock()  };
+    }
+    return null;
+  }
+
+  getExerciseDisplayName(exercise: WorkoutExercise): string {
+    return this.workoutService.exerciseNameDisplay(exercise);
+  }
+
   private startRestPeriod(targetDuration: number, isResumingPausedRest: boolean = false): void {
     this.playerSubState.set(PlayerSubState.Resting);
     this.restDuration.set(targetDuration);
@@ -3423,7 +3436,34 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
         const totalRounds = this.totalBlockRounds();
 
         if (nextSetIsEmom && nextRoundNumber <= totalRounds) {
-          this.restTimerNextUpText.set(`Next: EMOM Round ${nextRoundNumber} / ${totalRounds}`);
+
+          const emomBlockInfo = this.getExerciseEmomBlockInfo(this.currentExerciseIndex(), this.routine()!);
+          if (!emomBlockInfo) {
+            this.restTimerNextUpText.set('Workout Complete!');
+            return;
+          }
+
+           const totalRounds = this.totalBlockRounds();
+            const nextRound = this.currentBlockRound(); // This is already updated to the next round
+            let line1 = `EMOM - Round ${nextRound} / ${totalRounds}`;
+            
+            // add emom details if available (one line for each exercise in the block)
+
+            emomBlockInfo.exercisesInBlock?.forEach(ex => {
+              const setData = ex.sets[nextRoundNumber-1];
+              if (setData.targetReps && setData.targetWeight) {
+                line1 += '<br>' + this.workoutService.exerciseNameDisplay(ex) + ' '.concat(`${setData.targetReps} @ ${setData.targetWeight}${this.unitService.getWeightUnitSuffix()}`);
+              } else if (setData.targetReps) {
+                line1 += '<br>' + this.workoutService.exerciseNameDisplay(ex) + ' x '.concat(`${setData.targetReps} reps`);
+              } else if (setData.targetDuration) {   
+                line1 += '<br>' + this.workoutService.exerciseNameDisplay(ex) + ' '.concat(`for ${setData.targetDuration}s`);
+              }
+            });
+
+
+            // Use <br> for line breaks as the component uses [innerHTML]
+            this.restTimerNextUpText.set(`<span class="text-base opacity-80">${line1}</span>`);
+
           this.isRestTimerVisible.set(true);
           this.updateRestTimerDisplay(targetDuration);
           return; // Exit to prevent standard "next up" logic
@@ -3431,46 +3471,67 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
         // --- MODIFICATION END ---
 
         this.peekNextSetInfo().then(nextSetInfo => {
-          if (!nextSetInfo) return;
+          if (!nextSetInfo) {
+            this.restTimerNextUpText.set('Workout Complete!');
+            return;
+          }
 
-          const routineVal = this.routine();
-          let resultText = 'Next Exercise';
-          const { exerciseData, setIndex, type, setData, historicalSetPerformance } = nextSetInfo;
+          const { exerciseData, setIndex, type, setData } = nextSetInfo;
 
-          const isWarmup = type === 'warmup';
-          const setNumber = isWarmup ? this.getWarmupSetNumberForDisplay(exerciseData, setIndex) : this.getWorkingSetNumberForDisplay(exerciseData, setIndex);
-          const totalSets = isWarmup ? this.getTotalWarmupSetsForExercise(exerciseData) : this.getWorkingSetCountForExercise(exerciseData);
-          const exerciseName = exerciseData.exerciseName || 'Exercise';
-
-          let roundText = '';
-          if (routineVal) {
-            const { round, totalRounds } = this.getRoundInfo(exerciseData);
-            if (totalRounds > 1) {
-              roundText = ` (Round ${this.currentBlockRound()}/${totalRounds})`;
+          if (exerciseData.supersetType === 'emom') {
+            const totalRounds = this.totalBlockRounds();
+            const nextRound = this.currentBlockRound(); // This is already updated to the next round
+            const line1 = `Next: ${exerciseData.exerciseName}`;
+            const line2 = `EMOM - Round ${nextRound} / ${totalRounds}`;
+            
+            // add emom details if available (one line for each exercise in the block)
+            if (setData.targetReps) {
+              line2.concat(` - ${setData.targetReps} reps`);
             }
-          }
 
-          resultText = `${isWarmup ? 'Warm-up ' : ''}Set ${setNumber}/${totalSets} of ${exerciseName}${roundText}`;
+            // Use <br> for line breaks as the component uses [innerHTML]
+            this.restTimerNextUpText.set(`${line1}<br><span class="text-base opacity-80">${line2}</span>`);
+          } else {
+            // This is the existing logic for standard exercises and supersets
+            const routineVal = this.routine();
+            let resultText = 'Next Exercise';
+            const { exerciseData, setIndex, type, setData, historicalSetPerformance } = nextSetInfo;
 
-          const detailsParts: string[] = [];
-          if (historicalSetPerformance?.weightUsed !== undefined && historicalSetPerformance.weightUsed !== null && historicalSetPerformance.repsAchieved !== undefined) {
-            detailsParts.push(`${historicalSetPerformance.weightUsed}${this.unitService.getWeightUnitSuffix()} x ${historicalSetPerformance.repsAchieved} reps`);
-          }
-          else if (setData.targetWeight !== undefined && setData.targetWeight !== null && setData.targetReps !== undefined) {
-            detailsParts.push(`${setData.targetWeight}${this.unitService.getWeightUnitSuffix()} x ${setData.targetReps} reps`);
-          }
-          else if (setData.targetReps !== undefined) {
-            detailsParts.push(`${setData.targetReps} reps`);
-          }
-          if (setData.targetDuration) {
-            detailsParts.push(`for ${setData.targetDuration}s`);
-          }
+            const isWarmup = type === 'warmup';
+            const setNumber = isWarmup ? this.getWarmupSetNumberForDisplay(exerciseData, setIndex) : this.getWorkingSetNumberForDisplay(exerciseData, setIndex);
+            const totalSets = isWarmup ? this.getTotalWarmupSetsForExercise(exerciseData) : this.getWorkingSetCountForExercise(exerciseData);
+            const exerciseName = exerciseData.exerciseName || 'Exercise';
 
-          if (detailsParts.length > 0) {
-            resultText += ` [${detailsParts.join(', ')}]`;
-          }
+            let roundText = '';
+            if (routineVal) {
+              const { round, totalRounds } = this.getRoundInfo(exerciseData);
+              if (totalRounds > 1) {
+                roundText = ` (Round ${this.currentBlockRound()}/${totalRounds})`;
+              }
+            }
 
-          this.restTimerNextUpText.set(resultText);
+            resultText = `${isWarmup ? 'Warm-up ' : ''}Set ${setNumber}/${totalSets} of ${exerciseName}${roundText}`;
+
+            const detailsParts: string[] = [];
+            if (historicalSetPerformance?.weightUsed !== undefined && historicalSetPerformance.weightUsed !== null && historicalSetPerformance.repsAchieved !== undefined) {
+              detailsParts.push(`${historicalSetPerformance.weightUsed}${this.unitService.getWeightUnitSuffix()} x ${historicalSetPerformance.repsAchieved} reps`);
+            }
+            else if (setData.targetWeight !== undefined && setData.targetWeight !== null && setData.targetReps !== undefined) {
+              detailsParts.push(`${setData.targetWeight}${this.unitService.getWeightUnitSuffix()} x ${setData.targetReps} reps`);
+            }
+            else if (setData.targetReps !== undefined) {
+              detailsParts.push(`${setData.targetReps} reps`);
+            }
+            if (setData.targetDuration) {
+              detailsParts.push(`for ${setData.targetDuration}s`);
+            }
+
+            if (detailsParts.length > 0) {
+              resultText += ` [${detailsParts.join(', ')}]`;
+            }
+
+            this.restTimerNextUpText.set(resultText);
+          }
         });
       }
 
@@ -4621,7 +4682,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     if (this.activeSetInfo()?.supersetId && this.activeSetInfo()?.superSetType === 'emom') {
       const weightPart = set.targetWeight ? ` @ ${set.targetWeight}kg` : '';
       const exercise = this.activeSetInfo()?.exerciseData;
-      if (exercise){
+      if (exercise) {
         return `${this.workoutService.getSetTargetDisplay(set, 'reps')} @ ${this.workoutService.getWeightDisplay(set, exercise) || ''}`;
       } else {
         return `${this.workoutService.getSetTargetDisplay(set, 'reps')} ${weightPart}`;
