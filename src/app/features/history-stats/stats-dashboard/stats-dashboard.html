@@ -56,12 +56,12 @@
 
             <!-- Overall Stats Cards -->
             <section class="mb-8 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 mt-2">
-                <div class="bg-white dark:bg-gray-700 p-6 rounded-md shadow-md text-center border">
+                <div class="bg-white dark:bg-gray-700 p-6 rounded-md shadow-md text-center border dark:border-none">
                     <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Workouts <span
                             *ngIf="hasActiveDateFilters()">(Period)</span></h2>
                     <p class="text-4xl font-bold text-primary dark:text-primary-light">{{ workoutsInPeriodCount() }}</p>
                 </div>
-                <div class="bg-white dark:bg-gray-700 p-6 rounded-md shadow-md text-center border">
+                <div class="bg-white dark:bg-gray-700 p-6 rounded-md shadow-md text-center border dark:border-none">
                     <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Total Volume <span
                             *ngIf="hasActiveDateFilters()">(Period)</span></h2>
                     <p class="text-4xl font-bold text-primary dark:text-primary-light">
@@ -69,7 +69,7 @@
                             unitsService.getWeightUnitSuffix() }}</span>
                     </p>
                 </div>
-                <div class="bg-white dark:bg-gray-700 p-6 rounded-md shadow-md text-center border">
+                <div class="bg-white dark:bg-gray-700 p-6 rounded-md shadow-md text-center border dark:border-none">
                     <div class="flex items-center justify-center mb-2 text-gray-600 dark:text-gray-300">
                         <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300">Current Streak</h2>
                         <app-icon name="flame-2" class="h-10 w-10"></app-icon>
@@ -89,7 +89,7 @@
                     <p *ngIf="currentWorkoutStreakInfo().length === 0"
                         class="text-xs text-gray-500 dark:text-gray-400 mt-1">No current streak</p>
                 </div>
-                <div class="bg-white dark:bg-gray-700 p-6 rounded-md shadow-md text-center border">
+                <div class="bg-white dark:bg-gray-700 p-6 rounded-md shadow-md text-center border dark:border-none">
                     <div class="flex items-center justify-center mb-2 text-gray-600 dark:text-gray-300">
                         <h2 class="text-xl font-semibold">Longest Streak</h2>
                         <app-icon name="goal" class="h-10 w-10"></app-icon>

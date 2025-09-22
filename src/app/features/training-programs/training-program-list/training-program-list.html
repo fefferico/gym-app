@@ -14,11 +14,13 @@
   <div class="mb-2 flex">
     <button appPress (shortPress)="setView('list')"
       class="px-3 sm:px-4 py-2 sm:py-3 -mb-px text-md font-semibold focus:outline-none"
+      style="min-width: 150px;"
       [ngClass]="{ 'border-b-2 border-primary text-primary dark:text-primary-light dark:border-primary-light': currentView() === 'list', 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200  border-b border-gray-200 dark:border-gray-700': currentView() !== 'list' }">
       MY PROGRAMS
     </button>
     <button appPress (shortPress)="setView('calendar')"
       class="px-3 sm:px-4 py-2 sm:py-3 -mb-px text-md font-semibold focus:outline-none"
+      style="min-width: 150px;"
       [ngClass]="{ 'border-b-2 border-primary text-primary dark:text-primary-light dark:border-primary-light': currentView() === 'calendar', 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200  border-b border-gray-200 dark:border-gray-700': currentView() !== 'calendar' }">
       CALENDAR
     </button>
@@ -108,7 +110,7 @@
           <div *ngIf="filteredPrograms().length > 0; else noPrograms"
             class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
             <div *ngFor="let program of filteredPrograms()" (click)="viewProgramDetails(program.id)"
-              class="bg-white dark:bg-gray-700 border rounded-md shadow-md hover:shadow-lg transition-shadow duration-200 relative group transform hover:-translate-y-1"
+              class="bg-white dark:bg-gray-700 border dark:border-none rounded-md shadow-md hover:shadow-lg transition-shadow duration-200 relative group transform hover:-translate-y-1"
               [style.zIndex]="areActionsVisible(program.id) ? 50 : 'auto'"
               [ngClass]="{'ring-4 ring-green-500 dark:ring-green-400': program.isActive}">
               <div class="p-4 flex-grow cursor-pointer text-primary dark:text-primary-light dark:hover:text-yellow-200">

@@ -14,11 +14,13 @@
   <div class="mb-2 flex">
     <button appPress (shortPress)="setView('list')"
       class="px-3 sm:px-4 py-2 sm:py-3 -mb-px text-md font-semibold focus:outline-none"
+      style="min-width: 120px;"
       [ngClass]="{ 'border-b-2 border-primary text-primary dark:text-primary-light dark:border-primary-light': currentHistoryView() === 'list',
       'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200  border-b border-gray-200 dark:border-gray-700': currentHistoryView() !== 'list' }">
       LIST
     </button>
     <button appPress (shortPress)="setView('calendar')"
+      style="min-width: 120px;"
       class="px-3 sm:px-4 py-2 sm:py-3 -mb-px text-md font-semibold focus:outline-none"
       [ngClass]="{ 'border-b-2 border-primary text-primary dark:text-primary-light dark:border-primary-light': currentHistoryView() === 'calendar', 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200  border-b border-gray-200 dark:border-gray-700': currentHistoryView() !== 'calendar' }">
       CALENDAR
@@ -89,9 +91,9 @@
 
               <!-- WORKOUT LOG CARD -->
               <div *ngIf="item.itemType === 'workout'"
-                class="bg-white dark:bg-gray-700 border rounded-md shadow-md hover:shadow-lg transition-shadow duration-200 relative group transform hover:-translate-y-1 border-l-4 border-primary text-primary dark:text-primary-light dark:hover:text-yellow-200 dark:hover:bg-gray-600 hover:bg-gray-200"
+                class="bg-white dark:bg-gray-700 border dark:border-none rounded-md shadow-md hover:shadow-lg transition-shadow duration-200 relative group transform hover:-translate-y-1 border-l-4 border-primary text-primary dark:text-primary-light dark:hover:text-yellow-200 dark:hover:bg-gray-600 hover:bg-gray-200"
                 [style.zIndex]="areActionsVisible(item.id) ? 50 : 'auto'">
-                <div class="p-4 sm:p-6 cursor-pointer border rounded-md" (click)="viewLogDetails(item.id)">
+                <div class="p-4 sm:p-6 cursor-pointer border dark:border-none rounded-md" (click)="viewLogDetails(item.id)">
                   <div class="flex justify-between items-start mb-1.5">
                     <h2 class="text-lg sm:text-xl font-semibold truncate pr-8"
                       [title]="item.routineName || 'Ad-hoc Workout'">{{ item.routineName || 'Ad-hoc Workout' }}</h2>
@@ -155,7 +157,7 @@
 
               <!-- ACTIVITY LOG CARD -->
               <div *ngIf="item.itemType === 'activity'"
-                class="bg-white dark:bg-gray-700 border rounded-md shadow-md hover:shadow-lg transition-shadow duration-200 relative group transform hover:-translate-y-1 border-l-4 border-teal-400 text-teal-600 dark:text-teal-400 dark:hover:text-yellow-200"
+                class="bg-white dark:bg-gray-700 border dark:border-none rounded-md shadow-md hover:shadow-lg transition-shadow duration-200 relative group transform hover:-translate-y-1 border-l-4 border-teal-400 text-teal-600 dark:text-teal-400 dark:hover:text-yellow-200"
                 [style.zIndex]="areActionsVisible(item.id) ? 50 : 'auto'">
                 <div class="p-4 sm:p-6 cursor-pointer" (click)="viewActivityLogDetails(item.id)">
                   <div class="flex justify-between items-start mb-1.5">
