@@ -855,7 +855,6 @@
 
             <div *ngIf="!isViewMode && mode !== 'manualLogEntry' && exercisesFormArray.length === 0 && (builderForm.get('goal')?.value !== 'rest')"
                 class="text-center py-6 text-gray-500 dark:text-gray-400 border border-dashed dark:border-gray-700 rounded-md mt-4">
-                <p class="mb-2">No exercises added yet</p>
                 <button type="button" (click)="openExerciseSelectionModal()"
                     class="bg-green-500 hover:bg-green-600 text-white text-m font-medium py-2 px-3 rounded-md">
                     + ADD FIRST EXERCISE
@@ -883,21 +882,20 @@
         <div *ngIf="!isViewMode" class="py-2 px-1 flex-col gap-2 flex items-center">
 
             <!-- Button 1: CANCEL -->
-            <button type="button" [routerLink]="mode === 'routineBuilder' ? '/workout' : '/history/list'"
+            <!-- <button type="button" [routerLink]="mode === 'routineBuilder' ? '/workout' : '/history/list'"
                 style="min-width: 180px"
                 class="flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-m font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-500">
                 <app-icon name="cancel" class="h-5 w-5 mr-1"></app-icon>
                 CANCEL
-            </button>
+            </button> -->
 
             <!-- Button 2: SUBMIT -->
             <button type="submit" [disabled]="isFormInvalid()"
                 style="min-width: 180px"
                 class="flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark disabled:opacity-50">
-                <app-icon *ngIf="isNewMode" name="create" class="h-6 w-6 mr-1"></app-icon>
-                <app-icon *ngIf="!isNewMode" name="save" class="h-6 w-6 mr-1"></app-icon>
+                <app-icon name="save" class="h-6 w-6 mr-1"></app-icon>
                 <!-- Button Text -->
-                {{ mode === 'routineBuilder' ? (isNewMode ? 'CREATE ROUTINE' : 'SAVE CHANGES') : (isNewMode ? 'LOG WORKOUT' : 'SAVE LOG CHANGES') }}
+                {{ mode === 'routineBuilder' ? 'SAVE ROUTINE' : (isNewMode ? 'LOG WORKOUT' : 'SAVE LOG CHANGES') }}
             </button>
 
         </div>

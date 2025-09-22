@@ -9,6 +9,7 @@ import { WorkoutService } from '../../../core/services/workout.service';
 import { SubscriptionService } from '../../../core/services/subscription.service';
 import { IconComponent } from '../icon/icon.component';
 import { PressDirective } from '../../directives/press.directive';
+import { ClickOutsideDirective } from '../../directives/click-outside.directive';
 
 export interface FabAction {
   actionKey: string;  // A unique key for the action, e.g., 'create_routine'
@@ -25,6 +26,7 @@ export interface FabAction {
     CommonModule,
     IconComponent,
     PressDirective,
+    ClickOutsideDirective
   ],
   templateUrl: './fab-menu.component.html',
   styleUrls: ['./fab-menu.component.scss'],
@@ -94,8 +96,9 @@ export class FabMenuComponent implements OnInit, OnDestroy {
     this.isFabActionsOpen.set(false); // Close menu after an action
   }
 
-  // OLD methods are now removed:
-  // - navigateToCreateRoutine()
-  // - startNewSession()
-  // - openGenerateWorkoutModal()
+  handleClose(): void {
+    if (this.isFabActionsOpen()) {
+        this.isFabActionsOpen.set(false);
+    }
+  }
 }

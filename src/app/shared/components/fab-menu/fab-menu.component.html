@@ -1,6 +1,8 @@
 <!-- src/app/shared/components/fab-menu/fab-menu.component.html -->
 
 <div class="fixed right-4 sm:right-10 z-40 flex flex-col items-center gap-4 transition-all duration-300"
+    appClickOutside 
+    (clickOutside)="handleClose()"
     [ngClass]="isPausedSession() ? 'bottom-36' : 'bottom-20'">
 
     <!-- Back to Top Button (remains the same) -->

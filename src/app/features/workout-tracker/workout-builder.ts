@@ -1684,19 +1684,37 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       )
       )) {
       this.builderForm.markAllAsTouched();
-      this.toastService.error('Please fill all required details.', 0, "Validation Error");
+      // get the errors to be shown in the alert
+      const errors: string[] = [];
+      if (this.builderForm.get('name')?.invalid){
+        errors.push("Routine name");
+      }
+      if (this.builderForm.get('goal')?.invalid){
+        errors.push("Routine goal");
+      }
+      if (this.builderForm.get('workoutDate')?.invalid){
+        errors.push("Session date");
+      }
+      if (this.builderForm.get('startTime')?.invalid){
+        errors.push("Start time");
+      }
+      if (this.builderForm.get('endTime')?.invalid){
+        errors.push("End time");
+      }
+
+      this.toastService.error('Please fill all required details: ' + errors.join(', '), 0, "Validation Error");
       return;
     }
     if (!isRestGoalRoutine && this.exercisesFormArray.length === 0) {
-      this.toastService.error(this.mode === 'manualLogEntry' ? 'Log must have exercises.' : 'Routine needs exercises.', 0, "Validation Error");
+      this.toastService.error(this.mode === 'manualLogEntry' ? 'Log must have exercises' : 'Routine needs exercises', 0, "Validation Error");
       return;
     }
     if (!isRestGoalRoutine && !this.validateSupersetIntegrity()) {
-      this.toastService.error('Invalid superset configuration.', 0, "Validation Error"); return;
+      this.toastService.error('Invalid superset configuration', 0, "Validation Error"); return;
     }
 
     if (this.builderForm.invalid) {
-      this.toastService.error('Please correct validation errors.', 0, "Validation Error");
+      this.toastService.error('Please correct validation errors', 0, "Validation Error");
       this.builderForm.markAllAsTouched(); return;
     }
 
@@ -3043,9 +3061,9 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       isPremium: false
     },
     {
-      label: this.mode === 'routineBuilder' ? (!this.currentRoutineId ? 'CREATE ROUTINE' : 'SAVE CHANGES') : (this.isNewMode ? 'LOG WORKOUT' : 'SAVE LOG CHANGES'),
+      label: this.mode === 'routineBuilder' ? 'SAVE ROUTINE' : (this.isNewMode ? 'LOG WORKOUT' : 'SAVE LOG CHANGES'),
       actionKey: 'save_routine',
-      iconName: isSave ? 'save' : 'plus-circle',
+      iconName: 'save',
       cssClass: 'bg-primary focus:ring-primary-light',
       isPremium: false
     },
