@@ -1,4 +1,4 @@
-<div class="container mx-auto">
+<div class="container mx-auto p-2 sm:p-4">
     <div class="mb-6 flex items-center">
         <button routerLink="/profile"
             class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-light p-2 -ml-2 rounded-full focus:outline-none focus:ring-2 focus:ring-primary-focus">
@@ -98,7 +98,7 @@
     <div *ngIf="displayPersonalBests().length > 0; else noPBsOrFilters">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             <div *ngFor="let pb of displayPersonalBests()"
-                class="flex flex-col bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow duration-200 relative group transform hover:-translate-y-1">
+                class="flex flex-col border bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow duration-200 relative group transform hover:-translate-y-1">
                 <div class="p-3 flex-grow">
                     <div class="flex justify-between items-start mb-1">
                         <div>
