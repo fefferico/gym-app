@@ -399,7 +399,7 @@
 
                                         <!-- +++ START: NEW UNIFIED CONTROL PANEL +++ -->
                                         <div *ngIf="isEditableMode() && exerciseControl.get('supersetId')?.value && exerciseControl.get('supersetOrder')?.value === 0"
-                                            class="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-sm w-full grid grid-cols-2 gap-x-3 gap-y-2">
+                                            class="py-2 px-1 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-sm w-full grid grid-cols-2 gap-x-3 gap-y-2">
 
                                             <!-- Col 1: Round Management -->
                                             <div class="flex items-center gap-x-2">
@@ -467,7 +467,7 @@
                                         <!-- Action Button / Menu (For ALL exercise types) -->
                                         <div class="relative w-full flex justify-end" *ngIf="isEditableMode()">
                                             <button type="button" (click)="toggleExerciseActionMenu(exIndex, $event)"
-                                                class="flex items-center gap-x-1 bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-200 font-semibold py-1.5 px-3 rounded-md text-xs">
+                                                class="flex items-center gap-x-1 bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-200 font-semibold py-1.5 px-3 rounded-md text-xs mr-1">
                                                 <app-icon name="menu-action" class="h-4 w-4"></app-icon>
                                                 Actions
                                             </button>
