@@ -46,7 +46,7 @@ import { SessionOverviewModalComponent } from '../session-overview-modal/session
     IconComponent, ExerciseSelectionModalComponent, ActionMenuComponent, SessionOverviewModalComponent],
   templateUrl: './focus-workout-player.component.html',
   styleUrl: './focus-workout-player.component.scss',
-  providers: [DecimalPipe]
+  providers: [DecimalPipe, WeightUnitPipe]
 })
 export class FocusPlayerComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
@@ -61,6 +61,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
   private cdr = inject(ChangeDetectorRef);
   private unitService = inject(UnitsService);
   private trainingProgramService = inject(TrainingProgramService);
+  private weightUnitPipe = inject(WeightUnitPipe);
 
   protected appSettingsService = inject(AppSettingsService);
   protected progressiveOverloadService = inject(ProgressiveOverloadService);
@@ -3408,7 +3409,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     const exercise = routine.exercises[exerciseIndex];
     if (exercise.supersetType === 'emom' && exercise.emomTimeSeconds) {
       const totalRounds = this.getRoundsForExerciseBlock(exerciseIndex, routine);
-      return { totalRounds, emomInterval: exercise.emomTimeSeconds, exercisesInBlock: this.activeSupersetBlock()  };
+      return { totalRounds, emomInterval: exercise.emomTimeSeconds, exercisesInBlock: this.activeSupersetBlock() };
     }
     return null;
   }
@@ -3416,6 +3417,66 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
   getExerciseDisplayName(exercise: WorkoutExercise): string {
     return this.workoutService.exerciseNameDisplay(exercise);
   }
+
+  /**
+  * Formats the "Next Up" text for the rest timer, prioritizing historical performance.
+  * @param nextSetInfo The details of the next set, including historical data.
+  * @returns A formatted HTML string for display.
+  */
+  private formatNextUpText(nextSetInfo: ActiveSetInfo | null): string {
+    if (!nextSetInfo) {
+      return 'Workout Complete!';
+    }
+
+    const { exerciseData, setIndex, type, setData, historicalSetPerformance } = nextSetInfo;
+
+    // Case 1: Next block is an EMOM (EMOM display remains the same)
+    if (exerciseData.supersetType === 'emom') {
+      const totalRounds = this.getRoundsForExerciseBlock(nextSetInfo.exerciseIndex, this.routine()!);
+      const nextRound = this.currentBlockRound();
+      const emomTime = exerciseData.emomTimeSeconds || 60;
+      let header = `Next: EMOM - Round ${nextRound}/${totalRounds} (Every ${emomTime}s)`;
+
+      const exercisesInBlock = this.activeSupersetBlock() || [exerciseData];
+      exercisesInBlock.forEach(ex => {
+        const setForRound = ex.sets[nextRound - 1];
+        if (setForRound) {
+          const reps = this.getSetTargetDisplay(setForRound, 'reps');
+          const weightDisplay = this.workoutService.getWeightDisplay(setForRound, ex);
+
+          header += `<br><span class="text-sm opacity-80">- ${this.workoutService.exerciseNameDisplay(ex)}: ${reps}</span>`;
+        }
+      });
+      return header;
+    }
+
+    // Case 2: Standard Exercise or Superset
+    const exerciseName = exerciseData.exerciseName || 'Exercise';
+    const totalSets = this.getWorkingSetCountForCurrentExercise();
+    const setNumber = this.getWorkingSetNumberForDisplay(exerciseData, setIndex);
+
+    let line1 = `${exerciseName}`;
+    let line2 = `${type === 'warmup' ? 'Warm-up' : 'Set'} ${setNumber}/${totalSets}`;
+
+    if (exerciseData.supersetId) {
+      const { round, totalRounds } = this.getRoundInfo(exerciseData);
+      line2 += ` &nbsp; | &nbsp; Round ${round}/${totalRounds}`;
+    }
+
+    // --- THIS IS THE CORRECTED LOGIC WITH HISTORICAL DATA ---
+    let detailsLine = '';
+    if (historicalSetPerformance) {
+      const weight = this.weightUnitPipe.transform(historicalSetPerformance.weightUsed);
+      detailsLine = `Last time: ${weight} x ${historicalSetPerformance.repsAchieved} reps`;
+    } else {
+      const repsDisplay = this.getSetTargetDisplay(setData, 'reps');
+      const weightDisplay = this.workoutService.getWeightDisplay(setData, exerciseData);
+      detailsLine = `Target: ${weightDisplay} x ${repsDisplay} reps`;
+    }
+
+    return `${line1}<br><span class="text-base opacity-80">${line2}</span><br><span class="text-base font-normal">${detailsLine}</span>`;
+  }
+
 
   private startRestPeriod(targetDuration: number, isResumingPausedRest: boolean = false): void {
     this.playerSubState.set(PlayerSubState.Resting);
@@ -3427,114 +3488,13 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
         this.restTimerNextUpText.set(this.restTimerNextUpTextOnPause);
       } else {
         this.restTimerMainText.set("RESTING");
-        this.restTimerNextUpText.set('Next Exercise');
+        this.restTimerNextUpText.set('Loading next set...'); // Set loading text
 
-        // --- MODIFICATION START: Correct "Next Up" text for EMOMs ---
-        const nextExercise = this.routine()?.exercises[this.currentExerciseIndex()];
-        const nextSetIsEmom = nextExercise?.supersetType === 'emom';
-        const nextRoundNumber = this.currentBlockRound();
-        const totalRounds = this.totalBlockRounds();
-
-        if (nextSetIsEmom && nextRoundNumber <= totalRounds) {
-
-          const emomBlockInfo = this.getExerciseEmomBlockInfo(this.currentExerciseIndex(), this.routine()!);
-          if (!emomBlockInfo) {
-            this.restTimerNextUpText.set('Workout Complete!');
-            return;
-          }
-
-           const totalRounds = this.totalBlockRounds();
-            const nextRound = this.currentBlockRound(); // This is already updated to the next round
-            let line1 = `EMOM - Round ${nextRound} / ${totalRounds}`;
-            
-            // add emom details if available (one line for each exercise in the block)
-
-            emomBlockInfo.exercisesInBlock?.forEach(ex => {
-              const setData = ex.sets[nextRoundNumber-1];
-              if (setData.targetReps && setData.targetWeight) {
-                line1 += '<br>' + this.workoutService.exerciseNameDisplay(ex) + ' '.concat(`${setData.targetReps} @ ${setData.targetWeight}${this.unitService.getWeightUnitSuffix()}`);
-              } else if (setData.targetReps) {
-                line1 += '<br>' + this.workoutService.exerciseNameDisplay(ex) + ' x '.concat(`${setData.targetReps} reps`);
-              } else if (setData.targetDuration) {   
-                line1 += '<br>' + this.workoutService.exerciseNameDisplay(ex) + ' '.concat(`for ${setData.targetDuration}s`);
-              }
-            });
-
-
-            // Use <br> for line breaks as the component uses [innerHTML]
-            this.restTimerNextUpText.set(`<span class="text-base opacity-80">${line1}</span>`);
-
-          this.isRestTimerVisible.set(true);
-          this.updateRestTimerDisplay(targetDuration);
-          return; // Exit to prevent standard "next up" logic
-        }
-        // --- MODIFICATION END ---
-
+        // Asynchronously generate the detailed "Next Up" text
         this.peekNextSetInfo().then(nextSetInfo => {
-          if (!nextSetInfo) {
-            this.restTimerNextUpText.set('Workout Complete!');
-            return;
-          }
-
-          const { exerciseData, setIndex, type, setData } = nextSetInfo;
-
-          if (exerciseData.supersetType === 'emom') {
-            const totalRounds = this.totalBlockRounds();
-            const nextRound = this.currentBlockRound(); // This is already updated to the next round
-            const line1 = `Next: ${exerciseData.exerciseName}`;
-            const line2 = `EMOM - Round ${nextRound} / ${totalRounds}`;
-            
-            // add emom details if available (one line for each exercise in the block)
-            if (setData.targetReps) {
-              line2.concat(` - ${setData.targetReps} reps`);
-            }
-
-            // Use <br> for line breaks as the component uses [innerHTML]
-            this.restTimerNextUpText.set(`${line1}<br><span class="text-base opacity-80">${line2}</span>`);
-          } else {
-            // This is the existing logic for standard exercises and supersets
-            const routineVal = this.routine();
-            let resultText = 'Next Exercise';
-            const { exerciseData, setIndex, type, setData, historicalSetPerformance } = nextSetInfo;
-
-            const isWarmup = type === 'warmup';
-            const setNumber = isWarmup ? this.getWarmupSetNumberForDisplay(exerciseData, setIndex) : this.getWorkingSetNumberForDisplay(exerciseData, setIndex);
-            const totalSets = isWarmup ? this.getTotalWarmupSetsForExercise(exerciseData) : this.getWorkingSetCountForExercise(exerciseData);
-            const exerciseName = exerciseData.exerciseName || 'Exercise';
-
-            let roundText = '';
-            if (routineVal) {
-              const { round, totalRounds } = this.getRoundInfo(exerciseData);
-              if (totalRounds > 1) {
-                roundText = ` (Round ${this.currentBlockRound()}/${totalRounds})`;
-              }
-            }
-
-            resultText = `${isWarmup ? 'Warm-up ' : ''}Set ${setNumber}/${totalSets} of ${exerciseName}${roundText}`;
-
-            const detailsParts: string[] = [];
-            if (historicalSetPerformance?.weightUsed !== undefined && historicalSetPerformance.weightUsed !== null && historicalSetPerformance.repsAchieved !== undefined) {
-              detailsParts.push(`${historicalSetPerformance.weightUsed}${this.unitService.getWeightUnitSuffix()} x ${historicalSetPerformance.repsAchieved} reps`);
-            }
-            else if (setData.targetWeight !== undefined && setData.targetWeight !== null && setData.targetReps !== undefined) {
-              detailsParts.push(`${setData.targetWeight}${this.unitService.getWeightUnitSuffix()} x ${setData.targetReps} reps`);
-            }
-            else if (setData.targetReps !== undefined) {
-              detailsParts.push(`${setData.targetReps} reps`);
-            }
-            if (setData.targetDuration) {
-              detailsParts.push(`for ${setData.targetDuration}s`);
-            }
-
-            if (detailsParts.length > 0) {
-              resultText += ` [${detailsParts.join(', ')}]`;
-            }
-
-            this.restTimerNextUpText.set(resultText);
-          }
+          this.restTimerNextUpText.set(this.formatNextUpText(nextSetInfo));
         });
       }
-
       this.isRestTimerVisible.set(true);
       this.updateRestTimerDisplay(targetDuration);
     } else {

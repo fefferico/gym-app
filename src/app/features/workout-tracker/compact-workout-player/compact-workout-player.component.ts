@@ -1576,14 +1576,37 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
     const nextStep = await this.peekNextStepInfo(completedExIndex, completedSetIndex);
 
-    if (nextStep.exercise && nextStep.exercise.supersetType === 'emom') {
-        const totalRounds = nextStep.exercise.sets.length;
-        const emomTime = nextStep.exercise.emomTimeSeconds;
-        const line1 = `Next: ${nextStep.exercise.exerciseName}`;
+    // --- NEW FORMATTING LOGIC MOVED HERE ---
+    if (!nextStep.exercise || !nextStep.details) {
+        this.restTimerNextUpText.set("Workout Complete!");
+        this.restTimerNextSetDetails.set(null);
+        return;
+    }
+
+    const { exercise, details: plannedSet, historicalSet } = nextStep;
+
+    if (exercise.supersetType === 'emom') {
+        const totalRounds = exercise.sets.length;
+        const emomTime = exercise.emomTimeSeconds;
+        const line1 = `Next: ${exercise.exerciseName}`;
         const line2 = `EMOM - ${totalRounds} Rounds, Every ${emomTime}s`;
         this.restTimerNextUpText.set(`${line1}<br><span class="text-base opacity-80">${line2}</span>`);
     } else {
-        this.restTimerNextUpText.set(nextStep.text);
+        const line1 = exercise.exerciseName;
+        const { round, totalRounds } = this.getRoundInfo(exercise);
+        const setIndex = exercise.sets.indexOf(plannedSet);
+        const line2 = `Set ${setIndex + 1}/${exercise.sets.length}` + (totalRounds > 1 ? ` &nbsp; | &nbsp; Round ${round}/${totalRounds}` : '');
+        
+        let detailsLine = '';
+        if (historicalSet) {
+            const weight = this.weightUnitPipe.transform(historicalSet.weightUsed);
+            detailsLine = `Last time: ${weight} x ${historicalSet.repsAchieved} reps`;
+        } else {
+            const repsDisplay = this.getSetTargetDisplay(plannedSet, 'reps');
+            const weightDisplay = this.workoutService.getWeightDisplay(plannedSet, exercise);
+            detailsLine = `Target: ${weightDisplay} x ${repsDisplay} reps`;
+        }
+        this.restTimerNextUpText.set(`${line1}<br><span class="text-base opacity-80">${line2}</span><br><span class="text-base font-normal">${detailsLine}</span>`);
     }
 
     this.restTimerNextSetDetails.set(nextStep.details);
@@ -1672,9 +1695,9 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     this.playerSubState.set(PlayerSubState.PerformingSet);
   }
 
-  private async peekNextStepInfo(completedExIndex: number, completedSetIndex: number): Promise<{ text: string | null; details: ExerciseTargetSetParams | null; exercise: WorkoutExercise | null }> {
+  private async peekNextStepInfo(completedExIndex: number, completedSetIndex: number): Promise<{ text: string | null; details: ExerciseTargetSetParams | null; exercise: WorkoutExercise | null; historicalSet: LoggedSet | null }> {
     const routine = this.routine();
-    if (!routine) return { text: null, details: null, exercise: null };
+    if (!routine) return { text: null, details: null, exercise: null, historicalSet: null };
 
     const currentExercise = routine.exercises[completedExIndex];
     let nextExercise: WorkoutExercise | undefined;
@@ -1688,30 +1711,24 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         nextSetIndex = 0;
     }
 
+
     if (nextExercise && nextSetIndex !== undefined) {
         const plannedNextSet = nextExercise.sets[nextSetIndex];
         try {
             const lastPerformance = await firstValueFrom(this.trackingService.getLastPerformanceForExercise(nextExercise.exerciseId));
             const historicalSet = this.trackingService.findPreviousSetPerformance(lastPerformance, plannedNextSet, nextSetIndex);
+            
+            // The suggested details are now just the planned details. The formatting logic will handle what to show.
             const suggestedSetDetails: ExerciseTargetSetParams = { ...plannedNextSet };
-            if (historicalSet) {
-                suggestedSetDetails.targetReps = historicalSet.repsAchieved;
-                suggestedSetDetails.targetWeight = historicalSet.weightUsed;
-                suggestedSetDetails.targetDuration = historicalSet.durationPerformed;
-                suggestedSetDetails.targetDistance = historicalSet.distanceAchieved;
-            }
-            const { round, totalRounds } = this.getRoundInfo(nextExercise);
-            const roundText = totalRounds > 1 ? ` &nbsp; | &nbsp; Round ${round}/${totalRounds}` : '';
-            const line1 = nextExercise.exerciseName;
-            const line2 = `Set ${nextSetIndex + 1}/${nextExercise.sets.length}${roundText}`;
-            const text = `${line1}<br><span class="text-base opacity-80">${line2}</span>`;
-            return { text, details: suggestedSetDetails, exercise: nextExercise };
+
+            // We no longer format the text here, just return all the data.
+            return { text: '', details: suggestedSetDetails, exercise: nextExercise, historicalSet: historicalSet };
         } catch (error) {
             console.error("Could not fetch last performance for next set:", error);
-            return { text: `${nextExercise.exerciseName} - Set ${nextSetIndex + 1}`, details: plannedNextSet, exercise: nextExercise };
+            return { text: `${nextExercise.exerciseName} - Set ${nextSetIndex + 1}`, details: plannedNextSet, exercise: nextExercise, historicalSet: null };
         }
     }
-    return { text: "Workout Complete!", details: null, exercise: null };
+    return { text: "Workout Complete!", details: null, exercise: null, historicalSet: null };
 }
 
   // --- Pause, Resume, and State Management ---

@@ -339,11 +339,25 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
     this.isSimpleModalOpen.set(true);
   }
 
-  secondsToDateTime(seconds: number): Date {
+secondsToDateTime(totalSeconds: number | undefined): Date {
+    if (totalSeconds == null || isNaN(totalSeconds)) {
+        // Return a date that will format to 00:00:00
+        const zeroDate = new Date(0);
+        // Using UTC setters ensures we start from a clean 00:00:00 base
+        zeroDate.setUTCHours(0, 0, 0, 0);
+        return zeroDate;
+    }
+
     const d = new Date(0);
-    d.setSeconds(seconds);
+    
+    // The setHours method can accept (hours, minutes, seconds, ms).
+    // By setting hours and minutes to 0, we are purely representing the duration
+    // in the time part of the Date object without timezone interference.
+    d.setHours(0, 0, totalSeconds, 0);
+    
     return d;
-  }
+}
+
 
   getSetWeightsUsed(loggedEx: LoggedWorkoutExercise): string {
     let stringResult = loggedEx.sets.map(set => set.weightUsed).join(' - ');

@@ -94,7 +94,7 @@
             </div>
 
             <!-- EMOM-Specific Timer View -->
-            <div *ngIf="block[0].supersetType === 'emom'">
+            <div *ngIf="block && activeSet.superSetType === 'emom'">
               <div class="text-center mb-6">
                 <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">TIME REMAINING</label>
                 <div class="text-7xl font-mono font-bold text-gray-800 dark:text-gray-100 tracking-wider">
@@ -112,12 +112,14 @@
               <div class="space-y-3">
                 <h3 class="font-semibold text-gray-700 dark:text-gray-200 border-b pb-2 mb-2">Perform in order:</h3>
                 <div *ngFor="let exercise of block; let i = index">
-                  <ng-container *ngIf="exercise.sets[0] as templateSet">
+                  <!-- Correctly select the set that matches the current round (currentBlockRound is 1-based) -->
+                  <ng-container *ngIf="exercise.sets[currentBlockRound() - 1] as setForThisRound">
                     <div class="flex justify-between items-center p-3 bg-gray-100 dark:bg-gray-700/50 rounded-md">
-                      <span class="font-medium text-gray-800 dark:text-gray-100 truncate pr-4">{{ '#'+(i+1) + ' ' + getExerciseDisplayName(exercise)
-                        }}</span>
+                      <span class="font-medium text-gray-800 dark:text-gray-100 truncate pr-4">{{ '#'+(i+1) + ' ' +
+                        getExerciseDisplayName(exercise) }}</span>
                       <span class="text-lg font-bold text-primary dark:text-primary-light flex-shrink-0">
-                        {{ getSetTargetDisplay(templateSet, 'reps') }}
+                        <!-- Display the target from the correct set for the current round -->
+                        {{ getSetTargetDisplay(setForThisRound, 'reps') }}
                       </span>
                     </div>
                   </ng-container>
