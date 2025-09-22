@@ -30,13 +30,15 @@ import { cloneBtn, deleteBtn, editBtn, favouriteBtn, hideBtn, historyBtn, startB
 import { GenerateWorkoutModalComponent } from './generate-workout-modal/generate-workout-modal.component';
 import { GeneratedWorkoutSummaryComponent } from './generated-workout-summary/generated-workout-summary.component';
 import { WorkoutGenerationOptions, WorkoutGeneratorService } from '../../core/services/workout-generator.service';
+import { FabAction, FabMenuComponent } from '../../shared/components/fab-menu/fab-menu.component';
 
 @Component({
   selector: 'app-routine-list',
   standalone: true,
   imports: [CommonModule, DatePipe, TitleCasePipe, RouterLink, ActionMenuComponent, PressDirective, IconComponent, GenerateWorkoutModalComponent,
     GenerateWorkoutModalComponent,
-    GeneratedWorkoutSummaryComponent
+    GeneratedWorkoutSummaryComponent,
+    FabMenuComponent
   ],
   templateUrl: './routine-list.html',
   styleUrl: './routine-list.scss',
@@ -273,6 +275,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
 
     // This observable is for the template's async pipe if needed for loading states, before filtering kicks in.
     this.routines$ = this.workoutService.routines$;
+    this.refreshFabMenuItems();
   }
 
   private async loadRoutinesAndPopulateFilters(): Promise<void> {
@@ -1044,5 +1047,46 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     this.isGenerateModalOpen.set(false);
     this.generatedRoutine.set(null);
     this.lastGenerationOptions.set(null);
+  }
+
+
+  fabMenuItems: FabAction[] = [];
+  private refreshFabMenuItems(): void {
+    this.fabMenuItems = [{
+      label: 'CREATE NEW ROUTINE',
+      actionKey: 'add_routine',
+      iconName: 'plus-circle',
+      cssClass: 'bg-blue-500 focus:ring-blue-400',
+      isPremium: false
+    },
+    {
+      label: 'START NEW SESSION',
+      actionKey: 'start_routine',
+      iconName: 'play',
+      cssClass: 'bg-green-500 focus:ring-green-400',
+      isPremium: false
+    },
+    {
+      label: 'GENERATE RANDOM WORKOUT',
+      actionKey: 'random_workout',
+      iconName: 'magic-wand',
+      cssClass: 'bg-violet-500 focus:ring-violet-400',
+      isPremium: true
+    },
+    ];
+  }
+
+  onFabAction(actionKey: string): void {
+    switch (actionKey) {
+      case 'add_routine':
+        this.navigateToCreateRoutine();
+        break;
+      case 'start_routine':
+        this.startNewSession();
+        break;
+      case 'random_workout':
+        this.openGenerateWorkoutModal();
+        break;
+    }
   }
 }

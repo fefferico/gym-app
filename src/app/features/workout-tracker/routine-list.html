@@ -132,8 +132,7 @@
             <div *ngIf="filteredRoutines().length > 0; else noRoutines"
                 class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
 
-                <button type="button" *ngFor="let routine of filteredRoutines()"
-                    [disabled]="routine.isDisabled"
+                <button type="button" *ngFor="let routine of filteredRoutines()" [disabled]="routine.isDisabled"
                     (click)="viewRoutineDetails(routine.id, $event)"
                     [ngClass]="{ 'cursor-not-allowed opacity-50': routine.isDisabled } "
                     class="bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow duration-200 relative group transform hover:-translate-y-1 text-left dark:hover:bg-gray-600 hover:bg-gray-200"
@@ -158,13 +157,15 @@
                                     class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center">
                                     <app-icon name="menu-action" class="h-10 w-10"></app-icon>
                                 </button>
-                                <app-action-menu *ngIf="areActionsVisible(routine.id) && menuModeDropdown && !routine.isDisabled"
+                                <app-action-menu
+                                    *ngIf="areActionsVisible(routine.id) && menuModeDropdown && !routine.isDisabled"
                                     displayMode="dropdown" [gridClass]="' grid grid-cols-2 '"
                                     [items]="getRoutineDropdownActionItems(routine.id, 'dropdown')"
                                     [isVisible]="areActionsVisible(routine.id)"
                                     (itemClick)="handleActionMenuItemClick($event)" (closeMenu)="onCloseActionMenu()">
                                 </app-action-menu>
-                                <app-action-menu *ngIf="areActionsVisible(routine.id) && menuModeModal && !routine.isDisabled"
+                                <app-action-menu
+                                    *ngIf="areActionsVisible(routine.id) && menuModeModal && !routine.isDisabled"
                                     displayMode="modal" [modalTitle]="''"
                                     [items]="getRoutineDropdownActionItems(routine.id, 'modal')"
                                     [isVisible]="areActionsVisible(routine.id)"
@@ -195,8 +196,7 @@
                             <app-icon name="muscle" class="w-6 h-6"></app-icon>
                             <span class="font-medium">Muscles:</span>
                             <button type="button" *ngFor="let muscle of getRoutineMainMuscleGroups(routine)"
-                                (click)="filterByMuscleGroup(muscle,$event)"
-                                [disabled]="routine.isDisabled"
+                                (click)="filterByMuscleGroup(muscle,$event)" [disabled]="routine.isDisabled"
                                 [ngClass]="{ 'cursor-not-allowed opacity-50': routine.isDisabled } "
                                 class="text-center text-xs bg-purple-100 text-purple-700 dark:bg-purple-700 dark:text-purple-200 px-1.5 py-0.5 rounded-full hover:bg-purple-200 dark:hover:bg-purple-600">
                                 {{ muscle | titlecase }}
@@ -330,89 +330,17 @@
         START TRACKING (VERY WIP)
     </button>
 
-    <div class="fixed right-10 z-40 flex flex-col items-center gap-4 transition-all duration-300"
-        [ngClass]="workoutService.isPausedSession() ? 'bottom-36' : 'bottom-20'">
-
-        <button *ngIf="showBackToTopButton()" appPress (shortPress)="scrollToTop()" type="button"
-            class="bg-primary dark:bg-primary text-white rounded-full p-3 shadow-lg hover:bg-primary-dark dark:hover:bg-primary-light focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-focus dark:focus:ring-offset-gray-900 transition-opacity animate-fade-in flex items-center">
-            <app-icon name="back" [class.rotate-90]="true" class="w-6 h-6" [strokeWidth]="2.5"></app-icon>
-            <span class="sr-only">Back to Top</span>
-        </button>
-
-        <div class="flex flex-col-reverse items-center gap-4" (mouseenter)="handleFabMouseEnter()"
-            (mouseleave)="handleFabMouseLeave()">
-            <button appPress (shortPress)="handleFabClick()" type="button" aria-haspopup="true"
-                [attr.aria-expanded]="isFabActionsOpen()"
-                class="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-xl transition-all duration-300 hover:bg-primary-dark hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary-focus focus:ring-offset-2 dark:ring-offset-gray-900">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 transition-transform duration-300"
-                    [class.rotate-45]="isFabActionsOpen()" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                    stroke-width="2.5" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                <span class="sr-only">Open creation menu</span>
-            </button>
-
-            <div *ngIf="isFabActionsOpen()" @fabSlideUp class="flex flex-col items-center gap-4">
-                <div class="group relative flex items-center">
-                    <span
-                        class="absolute right-full sm:hidden whitespace-nowrap rounded-md bg-blue-500 px-3 py-2 text-sm font-semibold text-white group-hover:block"
-                        style="margin-right: -10px;">
-                        CREATE ROUTINE
-                    </span>
-                    <button appPress (shortPress)="navigateToCreateRoutine()" type="button"
-                        class="flex h-12 w-12 items-center justify-center rounded-full bg-blue-500 text-white shadow-lg transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 dark:ring-offset-gray-900">
-                        <app-icon name="create" class="h-7 w-7"></app-icon>
-                        <span class="sr-only">CREATE NEW ROUTINE</span>
-                    </button>
-                </div>
-
-                <div class="group relative flex items-center">
-                    <span
-                        class="absolute right-full mr-4 sm:hidden whitespace-nowrap rounded-md bg-green-500 px-3 py-2 text-sm font-semibold text-white group-hover:block"
-                        style="margin-right: -10px;">
-                        START NEW SESSION
-                    </span>
-                    <button appPress (shortPress)="startNewSession()" routerLink="/workout/play/-1" type="button"
-                        class="flex h-12 w-12 items-center justify-center rounded-full bg-green-500 text-white shadow-lg transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 dark:ring-offset-gray-900">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
-                            class="h-7 w-7 pl-0.5" aria-hidden="true">
-                            <path
-                                d="M6.3 2.841A1.5 1.5 0 0 0 4 4.11V15.89a1.5 1.5 0 0 0 2.3 1.269l9.344-5.89a1.5 1.5 0 0 0 0-2.538L6.3 2.84z" />
-                        </svg>
-                        <span class="sr-only">Start New Ad-Hoc Session</span>
-                    </button>
-                </div>
-                <div *ngIf="subscriptionService.isPremium()" class="group relative flex items-center">
-                    <span
-                        class="absolute right-full mr-4 sm:hidden whitespace-nowrap rounded-md bg-purple-500 px-3 py-2 text-sm font-semibold text-white group-hover:block"
-                        style="margin-right: -10px;">
-                        GENERATE WORKOUT
-                    </span>
-                    <button appPress (shortPress)="openGenerateWorkoutModal()" type="button"
-                        class="flex h-12 w-12 items-center justify-center rounded-full bg-purple-500 text-white shadow-lg transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 dark:ring-offset-gray-900">
-                        <app-icon name="magic-wand" class="h-7 w-7 text-white"></app-icon>
-                        <span class="sr-only">GENERATE RANDOM WORKOUT</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
 
 
-<app-generate-workout-modal #workoutGeneratorModal
-    [isOpen]="isGenerateModalOpen()"
-    (close)="cancelGenerationFlow()"
+<app-generate-workout-modal #workoutGeneratorModal [isOpen]="isGenerateModalOpen()" (close)="cancelGenerationFlow()"
     (generate)="handleWorkoutGenerated($event)">
 </app-generate-workout-modal>
 
 <!-- NEW: Replace the old overview modal with the new summary component -->
-<app-generated-workout-summary
-    [isOpen]="isSummaryModalOpen()"
-    [generatedRoutineSignal]="generatedRoutine"
-    (back)="handleBackToGenerator()"
-    (close)="cancelGenerationFlow()"
-    (start)="startGeneratedWorkout($event)"
-    (routineUpdated)="handleRoutineUpdate($event)"
-    (retry)="handleRetryGeneration()">
+<app-generated-workout-summary [isOpen]="isSummaryModalOpen()" [generatedRoutineSignal]="generatedRoutine"
+    (back)="handleBackToGenerator()" (close)="cancelGenerationFlow()" (start)="startGeneratedWorkout($event)"
+    (routineUpdated)="handleRoutineUpdate($event)" (retry)="handleRetryGeneration()">
 </app-generated-workout-summary>
+
+<app-fab-menu [actions]="fabMenuItems" (actionClicked)="onFabAction($event)"></app-fab-menu>

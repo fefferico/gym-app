@@ -42,6 +42,7 @@ import { StorageService } from '../../../core/services/storage.service';
 import { AppSettingsService } from '../../../core/services/app-settings.service';
 import { MenuMode } from '../../../core/models/app-settings.model';
 import { createFromBtn, deleteBtn, editBtn, routineBtn, viewBtn } from '../../../core/services/buttons-data';
+import { FabAction, FabMenuComponent } from '../../../shared/components/fab-menu/fab-menu.component';
 
 interface HistoryCalendarDay {
   date: Date;
@@ -66,7 +67,7 @@ type EnrichedHistoryListItem = HistoryListItem & {
 @Component({
   selector: 'app-history-list',
   standalone: true,
-  imports: [CommonModule, DatePipe, TitleCasePipe, FormsModule, ReactiveFormsModule, ActionMenuComponent, PressDirective, PressScrollDirective, IconComponent],
+  imports: [CommonModule, DatePipe, TitleCasePipe, FormsModule, ReactiveFormsModule, ActionMenuComponent, PressDirective, PressScrollDirective, IconComponent, FabMenuComponent],
   templateUrl: './history-list.html',
   styleUrl: './history-list.scss',
   providers: [DecimalPipe],
@@ -518,6 +519,7 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
         }
       }
     });
+    this.refreshFabMenuItems();
   }
 
   private async enrichHistoryItem(
@@ -1053,4 +1055,34 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
   getActivityLogs(): ActivityLog[] {
     return this.allHistoryItems().filter(log => log.itemType === 'activity') || [];
   }
+
+  fabMenuItems: FabAction[] = [];
+    private refreshFabMenuItems(): void {
+      this.fabMenuItems = [{
+        label: 'LOG PAST WORKOUT',
+        actionKey: 'log_past_workout',
+        iconName: 'plus-circle',
+        cssClass: 'bg-blue-500 focus:ring-blue-400',
+        isPremium: false
+      },
+      {
+        label: 'LOG PAST ACTIVITY',
+        actionKey: 'log_past_activity',
+        iconName: 'plus-circle',
+        cssClass: 'bg-teal-500 focus:ring-teal-400',
+        isPremium: true
+      }
+      ];
+    }
+  
+    onFabAction(actionKey: string): void {
+      switch (actionKey) {
+        case 'log_past_workout':
+          this.logPastWorkout();
+          break;
+        case 'log_past_activity':
+          this.logPastActivity();
+          break;
+      }
+    }
 }

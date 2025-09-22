@@ -35,6 +35,7 @@ import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { AppSettingsService } from '../../../core/services/app-settings.service';
 import { MenuMode } from '../../../core/models/app-settings.model';
 import { PremiumFeature, SubscriptionService } from '../../../core/services/subscription.service';
+import { FabAction, FabMenuComponent } from '../../../shared/components/fab-menu/fab-menu.component';
 
 interface ScheduledItemWithLogs {
   routine: Routine;
@@ -59,7 +60,7 @@ type CalendarDisplayMode = 'week' | 'month';
 @Component({
   selector: 'app-training-program-list',
   standalone: true,
-  imports: [CommonModule, DatePipe, TitleCasePipe, ActionMenuComponent, PressDirective, IconComponent],
+  imports: [CommonModule, DatePipe, TitleCasePipe, ActionMenuComponent, PressDirective, IconComponent, FabMenuComponent],
   templateUrl: './training-program-list.html',
   styleUrls: ['./training-program-list.scss'],
   animations: [
@@ -331,6 +332,8 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
         this.generateCalendarDays(true);
       }
     });
+
+    this.refreshFabMenuItems();
   }
 
   ngAfterViewInit(): void { }
@@ -1102,4 +1105,24 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
     return this.trainingProgramService.getCurrentWeekInfo(program);
   }
 
+
+  fabMenuItems: FabAction[] = [];
+  private refreshFabMenuItems(): void {
+    this.fabMenuItems = [{
+      label: 'NEW PROGRAM',
+      actionKey: 'create_program',
+      iconName: 'plus-circle',
+      cssClass: 'bg-blue-500 focus:ring-blue-400',
+      isPremium: true
+    },
+    ];
+  }
+
+  onFabAction(actionKey: string): void {
+    switch (actionKey) {
+      case 'create_program':
+        this.navigateToCreateProgram();
+        break;
+    }
+  }
 }

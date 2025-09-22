@@ -40,6 +40,7 @@ import { ExerciseSelectionModalComponent } from '../../shared/components/exercis
 import { MillisecondsDatePipe } from '../../shared/pipes/milliseconds-date.pipe';
 import { AppSettingsService } from '../../core/services/app-settings.service';
 import { MenuMode } from '../../core/models/app-settings.model';
+import { FabAction, FabMenuComponent } from '../../shared/components/fab-menu/fab-menu.component';
 
 type BuilderMode = 'routineBuilder' | 'manualLogEntry';
 
@@ -50,7 +51,7 @@ type BuilderMode = 'routineBuilder' | 'manualLogEntry';
     FormsModule, DragDropModule, WeightUnitPipe, TitleCasePipe,
     LongPressDragDirective, AutoGrowDirective, ActionMenuComponent,
     IsWeightedPipe, ModalComponent, ClickOutsideDirective,
-    ExerciseDetailComponent, IconComponent, TooltipDirective, ExerciseSelectionModalComponent, MillisecondsDatePipe],
+    ExerciseDetailComponent, IconComponent, TooltipDirective, ExerciseSelectionModalComponent, MillisecondsDatePipe, FabMenuComponent],
   templateUrl: './workout-builder.html',
   styleUrl: './workout-builder.scss',
   providers: [DecimalPipe]
@@ -275,6 +276,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         } else {
           this.toggleFormState(false); // Enable for new/edit modes
         }
+        this.refreshFabMenuItems();
       })
     ).subscribe();
 
@@ -1438,7 +1440,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       this.exercisesFormArray.controls.forEach(exCtrl => {
         const fg = exCtrl as FormGroup;
         if (fg.get('supersetId')?.value === supersetIdToClear) {
-          fg.patchValue({ supersetId: null, supersetOrder: null});
+          fg.patchValue({ supersetId: null, supersetOrder: null });
         }
       });
     });
@@ -1569,7 +1571,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
       for (let i = 0; i < numberOfSets; i++) {
 
-      // if isEmom, override certain fields to fit EMOM style
+        // if isEmom, override certain fields to fit EMOM style
         if (isEmom && i <= 0) {
           templateSetData.restAfterSet = 0;
         }
@@ -2797,7 +2799,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   protected standarSuperSetOrEmomClass(exerciseControl: AbstractControl, isExpanded: boolean = false): string {
-    const standardCardClass = ' absolute -left-2 top-2 text-white text-xs font-bold rounded-md shadow-lg z-10 transform translate-x-0 -translate-y-6 p-1';
+    const standardCardClass = ' absolute -left-2 top-2 text-white text-xs font-bold rounded-md shadow-lg z-10 transform translate-x-3 -translate-y-6 p-1';
     if (exerciseControl.get('supersetType')?.value == 'emom') {
       return !isExpanded ? standardCardClass + ' bg-teal-400 text-white' : 'font-bold text-teal-600 dark:text-teal-400';
     } else if (exerciseControl.get('supersetType')?.value !== 'emom') {
@@ -2953,7 +2955,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     const isWeighted = this.checkIfWeightedExercise(exerciseControl);
 
     // no duration in EMOM
-    if (isEmom){
+    if (isEmom) {
       return 'grid-cols-5';
       // if (isWeighted) {
       //   return 'grid-cols-5';
@@ -2962,7 +2964,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       // }
     }
 
-    return 'grid-cols-6'; 
+    return 'grid-cols-6';
 
     // if (isWeighted) {
     //   return 'grid-cols-6';
@@ -2971,5 +2973,93 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     // }
     // return 'grid-cols-6'; 
 
-}
+  }
+
+  // --- 1. Add a new signal to manage the action menu's visibility ---
+  activeExerciseActionMenu = signal<number | null>(null);
+
+  // --- 2. Add methods to control the new action menu ---
+  isExerciseActionMenuVisible(index: number): boolean {
+    return this.activeExerciseActionMenu() === index;
+  }
+
+  toggleExerciseActionMenu(index: number, event: Event): void {
+    event.stopPropagation();
+    this.activeExerciseActionMenu.update(current => (current === index ? null : index));
+  }
+
+  closeExerciseActionMenu(): void {
+    this.activeExerciseActionMenu.set(null);
+  }
+
+  // --- 3. Add a method to generate the items for the new action menu ---
+  getExerciseActionMenuItems(exerciseControl: AbstractControl): ActionMenuItem[] {
+    const items: ActionMenuItem[] = [];
+    const isSuperset = !!exerciseControl.get('supersetId')?.value;
+
+    if (isSuperset) {
+      items.push({
+        label: 'Ungroup',
+        buttonClass: 'bg-purple-400 text-white hover:bg-purple-600',
+        actionKey: 'ungroup',
+        iconName: 'ungroup', // Use a fitting icon name
+      });
+    } else {
+      items.push({
+        label: 'Make EMOM',
+        buttonClass: 'bg-teal-400 text-white hover:bg-teal-600',
+        actionKey: 'make_emom',
+        iconName: 'clock',
+      });
+    }
+
+    return items;
+  }
+
+  // --- 4. Add a handler to process clicks from the new action menu ---
+  handleExerciseActionMenuItemClick(event: { actionKey: string }, exIndex: number, exerciseControl: AbstractControl): void {
+    switch (event.actionKey) {
+      case 'ungroup':
+        this.ungroupSuperset(exIndex);
+        break;
+      case 'make_emom':
+        this.convertToSingleExerciseEmom(exerciseControl);
+        break;
+      // case 'duplicate':
+      // Add logic for duplicating an exercise here
+      // break;
+    }
+    this.closeExerciseActionMenu();
+  }
+  fabMenuItems: FabAction[] = [];
+
+  private refreshFabMenuItems(): void {
+    const isSave = this.mode === 'routineBuilder' ? (!this.currentRoutineId ? false : true) : (this.isNewMode ? true : false);
+    this.fabMenuItems = [{
+      label: 'ADD EXERCISE',
+      actionKey: 'add_exercise',
+      iconName: 'plus-circle',
+      cssClass: 'bg-green-500 focus:ring-green-400',
+      isPremium: false
+    },
+    {
+      label: this.mode === 'routineBuilder' ? (!this.currentRoutineId ? 'CREATE ROUTINE' : 'SAVE CHANGES') : (this.isNewMode ? 'LOG WORKOUT' : 'SAVE LOG CHANGES'),
+      actionKey: 'save_routine',
+      iconName: isSave ? 'save' : 'plus-circle',
+      cssClass: 'bg-primary focus:ring-primary-light',
+      isPremium: false
+    },
+    ];
+  }
+
+  onFabAction(actionKey: string): void {
+    switch (actionKey) {
+      case 'add_exercise':
+        this.openExerciseSelectionModal();
+        break;
+      case 'save_routine':
+        this.onSubmit();
+        break;
+    }
+  }
 }
