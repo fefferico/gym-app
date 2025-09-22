@@ -1022,8 +1022,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
 
   private createSetFormGroup(setData?: ExerciseTargetSetParams | LoggedSet, forLogging: boolean = false): FormGroup {
-    let repsValue, targetReps, weightValue, targetWeighValue, durationValue, targetDurationValue, notesValue, typeValue, tempoValue, restValue;
-    let repsMinValue, repsMaxValue, durationMinValue, durationMaxValue; // For ranges
+    let targetTargetReps, targetWeighValue, targetDurationValue, notesValue, typeValue, tempoValue, restValue;
+    let targetRepsMinValue, targetRepsMaxValue, targetDurationMinValue, targetDurationMaxValue, targetWeightMinValue, targetWeightMaxValue; // For ranges
     let id = uuidv4();
     let plannedSetIdValue;
     let timestampValue = new Date().toISOString(); // Default for new sets being logged
@@ -1032,9 +1032,9 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       id = setData.id || id; // Keep original set ID if from template or editing logged set
       if ('repsAchieved' in setData) { // It's a LoggedSet
         const loggedS = setData as LoggedSet;
-        repsValue = loggedS.repsAchieved;
-        weightValue = loggedS.weightUsed;
-        durationValue = loggedS.durationPerformed;
+        targetTargetReps = loggedS.repsAchieved;
+        targetWeighValue = loggedS.weightUsed;
+        targetDurationValue = loggedS.durationPerformed;
         notesValue = loggedS.notes;
         typeValue = loggedS.type || 'standard'; // Use logged type, default to standard
         plannedSetIdValue = loggedS.plannedSetId;
@@ -1043,13 +1043,15 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         restValue = loggedS.restAfterSetUsed;
       } else { // It's ExerciseSetParams from routine template
         const plannedS = setData as ExerciseTargetSetParams;
-        repsValue = plannedS.targetReps;
-        repsMinValue = plannedS.targetRepsMin;
-        repsMaxValue = plannedS.targetRepsMax;
-        weightValue = plannedS.targetWeight;
-        durationValue = plannedS.targetDuration;
-        durationMinValue = plannedS.targetDurationMin;
-        durationMaxValue = plannedS.targetDurationMax;
+        targetTargetReps = plannedS.targetReps;
+        targetRepsMinValue = plannedS.targetRepsMin;
+        targetRepsMaxValue = plannedS.targetRepsMax;
+        targetWeighValue = plannedS.targetWeight;
+        targetWeightMinValue = plannedS.targetWeightMin;
+        targetWeightMaxValue = plannedS.targetWeightMax;
+        targetDurationValue = plannedS.targetDuration;
+        targetDurationMinValue = plannedS.targetDurationMin;
+        targetDurationMaxValue = plannedS.targetDurationMax;
         notesValue = plannedS.notes;
         typeValue = plannedS.type || 'standard';
         tempoValue = plannedS.tempo;
@@ -1057,7 +1059,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         plannedSetIdValue = plannedS.id; // This is the template set ID
       }
     } else { // New blank set
-      repsValue = null; weightValue = null; durationValue = null; notesValue = ''; typeValue = 'standard'; tempoValue = ''; restValue = 60;
+      targetTargetReps = null; targetWeighValue = null; targetDurationValue = null; notesValue = ''; typeValue = 'standard'; tempoValue = ''; restValue = 60;
     }
 
     const formGroupConfig: { [key: string]: any } = {
@@ -1069,7 +1071,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     if (forLogging) {
       // repsAchieved is required only if both weightUsed and durationPerformed are null
       formGroupConfig['repsAchieved'] = [
-        repsValue ?? null,
+        targetTargetReps ?? null,
         [
           (control: AbstractControl) => {
             const parent = control.parent;
@@ -1084,22 +1086,22 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
           Validators.min(0)
         ]
       ];
-      formGroupConfig['weightUsed'] = [this.unitService.convertWeight(weightValue || 0, 'kg', this.unitService.currentWeightUnit()) ?? null, [Validators.min(0)]];
-      formGroupConfig['durationPerformed'] = [durationValue ?? null, [Validators.min(0)]];
+      formGroupConfig['weightUsed'] = [this.unitService.convertWeight(targetWeighValue || 0, 'kg', this.unitService.currentWeightUnit()) ?? null, [Validators.min(0)]];
+      formGroupConfig['durationPerformed'] = [targetDurationValue ?? null, [Validators.min(0)]];
       formGroupConfig['plannedSetId'] = [plannedSetIdValue];
       formGroupConfig['timestamp'] = [timestampValue];
       formGroupConfig['tempo'] = [tempoValue];
       formGroupConfig['restAfterSet'] = [restValue];
     } else { // For routine builder (planning mode)
-      formGroupConfig['targetReps'] = [repsValue ?? null, [Validators.min(0)]];
-      formGroupConfig['targetRepsMin'] = [repsMinValue ?? null, [Validators.min(0)]];
-      formGroupConfig['targetRepsMax'] = [repsMaxValue ?? null, [Validators.min(0)]];
-      formGroupConfig['targetWeight'] = [this.unitService.convertWeight(weightValue || 0, 'kg', this.unitService.currentWeightUnit()) ?? null, [Validators.min(0)]];
-      formGroupConfig['targetWeightMin'] = [this.unitService.convertWeight(weightValue || 0, 'kg', this.unitService.currentWeightUnit()) ?? null, [Validators.min(0)]];
-      formGroupConfig['targetWeightMax'] = [this.unitService.convertWeight(weightValue || 0, 'kg', this.unitService.currentWeightUnit()) ?? null, [Validators.min(0)]];
-      formGroupConfig['targetDuration'] = [durationValue ?? null, [Validators.min(0)]];
-      formGroupConfig['targetDurationMin'] = [durationMinValue ?? null, [Validators.min(0)]];
-      formGroupConfig['targetDurationMax'] = [durationMaxValue ?? null, [Validators.min(0)]];
+      formGroupConfig['targetReps'] = [targetTargetReps ?? null, [Validators.min(0)]];
+      formGroupConfig['targetRepsMin'] = [targetRepsMinValue ?? null, [Validators.min(0)]];
+      formGroupConfig['targetRepsMax'] = [targetRepsMaxValue ?? null, [Validators.min(0)]];
+      formGroupConfig['targetWeight'] = [this.unitService.convertWeight(targetWeighValue || 0, 'kg', this.unitService.currentWeightUnit()) ?? null, [Validators.min(0)]];
+      formGroupConfig['targetWeightMin'] = [this.unitService.convertWeight(targetWeightMinValue || 0, 'kg', this.unitService.currentWeightUnit()) ?? null, [Validators.min(0)]];
+      formGroupConfig['targetWeightMax'] = [this.unitService.convertWeight(targetWeightMaxValue || 0, 'kg', this.unitService.currentWeightUnit()) ?? null, [Validators.min(0)]];
+      formGroupConfig['targetDuration'] = [targetDurationValue ?? null, [Validators.min(0)]];
+      formGroupConfig['targetDurationMin'] = [targetDurationMinValue ?? null, [Validators.min(0)]];
+      formGroupConfig['targetDurationMax'] = [targetDurationMaxValue ?? null, [Validators.min(0)]];
       formGroupConfig['tempo'] = [tempoValue || ''];
       formGroupConfig['restAfterSet'] = [restValue ?? 60, [Validators.required, Validators.min(0)]];
     }
@@ -2325,43 +2327,32 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
   checkIfWeightedExercise(loggedEx: any): boolean {
     const loggedExActual = loggedEx?.getRawValue() as LoggedWorkoutExercise;
-    return loggedExActual?.sets.some(set => set.targetWeight || set.weightUsed) || loggedExActual?.sets.some(set => set.targetDistanceMin);
+    return loggedExActual?.sets.some(set => 
+      (set.weightUsed || set.targetWeight || set.targetWeightMin || set.targetWeightMax));
   }
 
   getSetReps(loggedEx: any): string { // 'loggedEx' is an AbstractControl (FormGroup)
-    // Check for invalid input or empty sets array
-    if (!loggedEx || !loggedEx.value || !loggedEx.value.sets || loggedEx.value.sets.length === 0) {
-      return '';
+    const sets = loggedEx?.getRawValue()?.sets as LoggedSet[];
+    if (!sets || sets.length === 0) {
+        return '';
     }
 
-    // --- MANUAL LOG ENTRY MODE (No Change) ---
-    // This mode correctly shows the actual reps achieved for each set.
-    if (this.mode === 'manualLogEntry') {
-      const rawValue = loggedEx.getRawValue() as LoggedWorkoutExercise;
-      const reps = rawValue.sets.map(set => set.repsAchieved);
-      const validReps = reps.filter(rep => rep != null);
-      return validReps.length > 0 ? validReps.join('-') : '';
-    }
+    const displayValues = sets.map(set => {
+        // Use the generic getSetDisplayValue which can handle both LoggedSet and ExerciseTargetSetParams
+        // by checking for the relevant min/max/single value properties.
+        return this.getSetDisplayValue(new FormGroup({
+            targetReps: new FormControl(set.targetReps),
+            targetRepsMin: new FormControl(set.targetRepsMin),
+            targetRepsMax: new FormControl(set.targetRepsMax),
+            repsAchieved: new FormControl(set.weightUsed)
+        }), 'reps');
+    });
 
-    // --- ROUTINE BUILDER MODE (Updated Logic) ---
-    else {
-      // Get the FormArray of sets to work with the controls, which is more reliable
-      const setsFormArray = this.getSetsFormArray(loggedEx as AbstractControl);
-
-      // Map over each set's form control and generate its individual display value (e.g., "8-12")
-      const displayValues = setsFormArray.controls.map(setControl =>
-        this.getSetDisplayValue(setControl, 'reps')
-      );
-
-      // Join the array of display values with a comma and space
-      let stringResult = displayValues.join(', ');
-
-      if (stringResult.length > 15) {
+    let stringResult = displayValues.join(', ');
+    if (stringResult.length > 15) {
         stringResult = stringResult.substring(0, 15) + '...';
-      }
-      return stringResult;
-
     }
+    return stringResult;
   }
 
   /**
@@ -2391,6 +2382,36 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       repsMinCtrl?.setValue(rangeValue);
       repsMaxCtrl?.setValue(rangeValue);
       repsCtrl?.setValue(null);
+    }
+  }
+
+  // generate toggleWeightMode
+  /**
+   * Toggles the input mode for a set's weight between a single value and a range.
+   * @param setControl The form group for the specific set.
+   */
+  toggleWeightMode(setControl: AbstractControl, event?: Event): void {
+    event?.stopPropagation();
+    if (this.isViewMode || !(setControl instanceof FormGroup)) return;
+
+    const weightCtrl = setControl.get('targetWeight');
+    const weightMinCtrl = setControl.get('targetWeightMin');
+    const weightMaxCtrl = setControl.get('targetWeightMax');
+
+    const isCurrentlyRange = weightMinCtrl?.value != null || weightMaxCtrl?.value != null;
+
+    if (isCurrentlyRange) {
+      // Switch FROM Range TO Single
+      const singleValue = weightMinCtrl?.value ?? 0;
+      weightCtrl?.setValue(singleValue);
+      weightMinCtrl?.setValue(null);
+      weightMaxCtrl?.setValue(null);
+    } else {
+      // Switch FROM Single TO Range
+      const rangeValue = weightCtrl?.value ?? 0;
+      weightMinCtrl?.setValue(rangeValue);
+      weightMaxCtrl?.setValue(rangeValue);
+      weightCtrl?.setValue(null);
     }
   }
 
@@ -2507,24 +2528,28 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   getSetWeightsUsed(loggedEx: any): string {
-    if (this.currentLogId) {
-      const loggedExActual = loggedEx?.getRawValue() as LoggedWorkoutExercise;
-
-      let stringResult = loggedExActual.sets.map(set => set.weightUsed).join(' - ');
-      if (stringResult.length > 15) {
-        stringResult = stringResult.substring(0, 15) + '...';
-      }
-      return stringResult;
-    } else {
-      const loggedExActual = loggedEx?.getRawValue() as WorkoutExercise;
-
-      let stringResult = loggedExActual.sets.map(set => set.targetWeight).join(' - ');
-      if (stringResult.length > 15) {
-        stringResult = stringResult.substring(0, 15) + '...';
-      }
-      return stringResult;
+    const sets = loggedEx?.getRawValue()?.sets as LoggedSet[];
+    if (!sets || sets.length === 0) {
+        return '';
     }
-  }
+
+    const displayValues = sets.map(set => {
+        // Use the generic getSetDisplayValue which can handle both LoggedSet and ExerciseTargetSetParams
+        // by checking for the relevant min/max/single value properties.
+        return this.getSetDisplayValue(new FormGroup({
+            targetWeight: new FormControl(set.targetWeight),
+            targetWeightMin: new FormControl(set.targetWeightMin),
+            targetWeightMax: new FormControl(set.targetWeightMax),
+            weightUsed: new FormControl(set.weightUsed)
+        }), 'weight');
+    });
+
+    let stringResult = displayValues.join(', ');
+    if (stringResult.length > 15) {
+        stringResult = stringResult.substring(0, 15) + '...';
+    }
+    return stringResult;
+}
 
   getSetDurationPerformed(loggedEx: any): string {
     if (this.currentLogId) {
