@@ -346,6 +346,8 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       return {
         exerciseIndex: exIndex,
         setIndex: sIndex,
+        supersetId: exerciseData.supersetId || null,
+        superSetType: exerciseData.supersetType || null,
         exerciseData: exerciseData,
         setData: setData,
         type: (setData.type as 'standard' | 'warmup' | 'amrap' | 'custom') ?? 'standard',
@@ -489,9 +491,6 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
         type: loggedSet.type || 'standard',
         supersetId: exerciseData.supersetId || null,
         supersetOrder: exerciseData.supersetOrder ?? null,
-        supersetSize: exerciseData.supersetSize ?? 0,
-        supersetRounds: exerciseData.supersetRounds,
-        supersetCurrentRound: loggedSet.supersetCurrentRound,
         supersetType: exerciseData.supersetType || null,
       };
       // --- END CORRECTION ---
@@ -558,23 +557,9 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
         continue;
       }
 
-      if (performedEx.sets.length !== originalEx.sets.length && performedEx.supersetRounds !== originalEx.supersetRounds) {
-        if (performedEx.supersetId && originalEx.supersetId && performedEx.supersetId === originalEx.supersetId) {
-          const originalFirstEx = original.find(ex => ex.supersetId && ex.supersetId === performedEx.supersetId);
-          if (originalFirstEx) {
-            const originalRounds = originalFirstEx.supersetRounds;
-            if (originalRounds === performedEx.sets.length) {
-              continue;
-            }
-            if (majorDifference) {
-              details.push(`Set count for "${performedEx.exerciseName || performedEx.exerciseId}" changed (was ${originalEx.sets.length}, now ${performedEx.sets.length})`);
-            }
-          }
-
-        } else {
-          details.push(`Set count for "${performedEx.exerciseName || performedEx.exerciseId}" changed (was ${originalEx.sets.length}, now ${performedEx.sets.length})`);
-          majorDifference = true;
-        }
+      if (performedEx.sets.length !== originalEx.sets.length) {
+        details.push(`Set count for "${performedEx.exerciseName || performedEx.exerciseId}" changed (was ${originalEx.sets.length}, now ${performedEx.sets.length})`);
+        majorDifference = true;
       } else {
         for (let j = 0; j < performedEx.sets.length; j++) {
           const originalIsWarmup = originalEx.sets[j]?.type === 'warmup';
@@ -599,7 +584,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       targetWeight: exerciseSet && exerciseSet.weightUsed ? exerciseSet.weightUsed : 1,
       targetDuration: exerciseSet && exerciseSet.targetDuration ? exerciseSet.targetDuration : 0,
       tempo: '1',
-      restAfterSet: superSetOrder !== null && superSetOrder !== undefined && exercise && exercise.supersetSize && superSetOrder < exercise.supersetSize - 1 ? 0 : this.getLastExerciseOfSuperset(supersetId, loggedExercises).restAfterSet,
+      restAfterSet: superSetOrder !== null && superSetOrder !== undefined && exercise && exercise.sets.length && superSetOrder < exercise.sets.length - 1 ? 0 : this.getLastExerciseOfSuperset(supersetId, loggedExercises).restAfterSet,
       notes: exerciseSet && exerciseSet.notes ? exerciseSet.notes : '',
       type: exerciseSet && exerciseSet.type ? 'superset' : 'standard',
     };
@@ -630,8 +615,6 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
         exerciseName: loggedEx.exerciseName,
         supersetId: sessionExercise?.supersetId || null,
         supersetOrder: sessionExercise?.supersetOrder ?? null,
-        supersetSize: sessionExercise?.supersetSize ?? null,
-        rounds: sessionExercise?.supersetRounds ?? 1,
         notes: sessionExercise?.notes,
         sets: !loggedEx.supersetId ? loggedEx.sets.map(loggedSet => {
           const originalPlannedSet = sessionExercise?.sets.find(s => s.id === loggedSet.plannedSetId);
@@ -646,7 +629,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
             type: loggedSet.type as 'standard' | 'warmup' | 'amrap' | 'custom' | string,
           };
         }) : [this.getFirstExerciseOfSuperset((loggedEx.supersetOrder || 0), loggedEx.supersetId, loggedExercises)],
-        type: (sessionExercise?.supersetSize ?? 0) >= 1 ? 'superset' : 'standard'
+        type: (sessionExercise?.supersetId ?? 0) ? 'superset' : 'standard'
       };
       return newWorkoutEx;
     });
@@ -766,7 +749,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
 
     const currentExercise = routine.exercises[activeInfo.exerciseIndex];
 
-    if ((!currentExercise.supersetId && (!currentExercise.supersetRounds || currentExercise.supersetRounds <= 1))) {
+    if (!currentExercise.supersetId) {
       return this.checkIfLatestSetOfExercise();
     }
 
@@ -774,7 +757,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     let blockEndIdx = activeInfo.exerciseIndex;
     if (currentExercise.supersetId && currentExercise.supersetOrder !== null) {
       blockStartIdx = activeInfo.exerciseIndex - currentExercise.supersetOrder;
-      blockEndIdx = blockStartIdx + (currentExercise.supersetSize ? currentExercise.supersetSize - 1 : 0);
+      blockEndIdx = blockStartIdx + (currentExercise.sets.length ? currentExercise.sets.length - 1 : 0);
     }
 
     if (
@@ -788,22 +771,17 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
   }
 
   checkIfLatestRoundOfRounds(): boolean {
-    const routine = this.routine();
     const activeInfo = this.activeSetInfo();
-    if (!routine || !activeInfo) return false;
+    const routine = this.routine();
+    if (!activeInfo || !routine) return false;
 
-    const exercise = routine.exercises[activeInfo.exerciseIndex];
-    if (!exercise) return false;
-
-    let totalRounds = exercise.supersetRounds ?? 1;
-    if (exercise.supersetId && exercise.supersetOrder !== null) {
-      const blockStart = routine.exercises.find(
-        ex => ex.supersetId === exercise.supersetId && ex.supersetOrder === 0
-      );
-      totalRounds = blockStart?.supersetRounds ?? 1;
+    // For a superset, the "round" is the set index. The last round is the last set.
+    if (activeInfo.exerciseData.supersetId) {
+      return this.currentSetIndex() === activeInfo.exerciseData.sets.length - 1;
     }
 
-    return this.currentBlockRound() === totalRounds;
+    // For a standard exercise, there is only one "round".
+    return true;
   }
 
   checkIfSetIsPartOfRounds(): boolean {
@@ -834,8 +812,8 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
 
     const currentExercise = activeInfo.exerciseData;
     let blockEndIndex = activeInfo.exerciseIndex;
-    if (currentExercise.supersetId && currentExercise.supersetOrder !== null && currentExercise.supersetSize) {
-      blockEndIndex = (activeInfo.exerciseIndex - currentExercise.supersetOrder) + (currentExercise.supersetSize - 1);
+    if (currentExercise.supersetId && currentExercise.supersetOrder !== null && currentExercise.sets.length) {
+      blockEndIndex = (activeInfo.exerciseIndex - currentExercise.supersetOrder) + (currentExercise.sets.length - 1);
     }
 
     for (let i = blockEndIndex + 1; i < currentRoutine.exercises.length; i++) {
@@ -1004,10 +982,10 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
         this.currentBlockRound.set(1);
         const newBlockStarter = updatedRoutine.exercises[selectedExerciseOriginalIndex];
         if (!newBlockStarter.supersetId || newBlockStarter.supersetOrder === 0) {
-          this.totalBlockRounds.set(newBlockStarter.supersetRounds ?? 1);
+          this.totalBlockRounds.set(this.getRoundsForExerciseBlock(selectedExerciseOriginalIndex, updatedRoutine));
         } else {
           const actualBlockStart = updatedRoutine.exercises.find(ex => ex.supersetId === newBlockStarter.supersetId && ex.supersetOrder === 0);
-          this.totalBlockRounds.set(actualBlockStart?.supersetRounds ?? 1);
+          this.totalBlockRounds.set(this.getRoundsForExerciseBlock(selectedExerciseOriginalIndex, updatedRoutine));
         }
         this.lastPerformanceForCurrentExercise = null;
         this.playerSubState.set(PlayerSubState.PerformingSet);
@@ -1057,56 +1035,24 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
   }
 
   private isExercisePartiallyLogged(currentExercise: WorkoutExercise): boolean {
-    const routine = this.routine();
-    if (!routine) return false;
-
-    const exercise = routine.exercises.find(ex => ex.exerciseId === currentExercise.exerciseId && ex.id === currentExercise.id);
-    if (!exercise) return false;
-
-    const loggedEx = this.currentWorkoutLogExercises().find(le =>
-      le.exerciseId === currentExercise.exerciseId &&
-      exercise.exerciseId === le.exerciseId &&
-      le.id === currentExercise.id
-    );
-
+    const loggedEx = this.currentWorkoutLogExercises().find(le => le.id === currentExercise.id);
     if (!loggedEx || loggedEx.sets.length === 0) {
       return false;
     }
 
-    let rounds = exercise.supersetRounds ?? 1;
-    if (exercise.supersetId && exercise.supersetOrder !== null) {
-      const blockStart = routine.exercises.find(
-        ex => ex.supersetId === exercise.supersetId && ex.supersetOrder === 0
-      );
-      rounds = blockStart?.supersetRounds ?? 1;
-    }
-    const totalPlannedCompletions = (exercise.sets?.length ?? 0) * rounds;
-
+    const totalPlannedCompletions = currentExercise.sets.length;
     return loggedEx.sets.length < totalPlannedCompletions;
   }
 
   private isExerciseFullyLogged(currentExercise: WorkoutExercise): boolean {
     const routine = this.routine();
     if (!routine) return false;
-    const exercise = routine.exercises.find(ex => ex.id === currentExercise.id);
-    if (!exercise) return false;
 
-    const loggedEx = this.currentWorkoutLogExercises().find(le =>
-      le.id === currentExercise.id
-      && exercise.exerciseId === le.exerciseId
-    );
-
+    const loggedEx = this.currentWorkoutLogExercises().find(le => le.id === currentExercise.id);
     if (!loggedEx) return false;
 
-    let rounds = exercise.supersetRounds ?? 1;
-    if (exercise.supersetId && exercise.supersetOrder !== null) {
-      const blockStart = routine.exercises.find(
-        ex => ex.supersetId === exercise.supersetId && ex.supersetOrder === 0
-      );
-      rounds = blockStart?.supersetRounds ?? 1;
-    }
-
-    const totalPlannedCompletions = (exercise.sets?.length ?? 0) * rounds;
+    // The total planned sets is now simply the length of the sets array.
+    const totalPlannedCompletions = currentExercise.sets.length;
 
     return loggedEx.sets.length >= totalPlannedCompletions;
   }
@@ -1172,25 +1118,6 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       rpe: [null as number | null, [Validators.min(1), Validators.max(10)]]
     });
   }
-
-  private isEntireWorkoutFullyLogged(routine: Routine, loggedExercises: LoggedWorkoutExercise[]): boolean {
-    if (routine.exercises.length !== loggedExercises.length) {
-      return false;
-    }
-
-    return routine.exercises.every(plannedExercise => {
-      const loggedExercise = loggedExercises.find(log => log.id === plannedExercise.id);
-
-      if (!loggedExercise) {
-        return false;
-      }
-
-      const totalPlannedCompletions = (plannedExercise.sets?.length ?? 0) * (plannedExercise.supersetRounds ?? 1);
-
-      return loggedExercise.sets.length >= totalPlannedCompletions;
-    });
-  }
-
 
   private async prepareCurrentSet(): Promise<void> {
     if (this.emomRoundTimerSub) this.emomRoundTimerSub.unsubscribe();
@@ -1318,43 +1245,32 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     if (!routine || !routine.exercises) return null;
 
     for (let exIndex = 0; exIndex < routine.exercises.length; exIndex++) {
-      const exercise = routine.exercises[exIndex];
-
-      if (exercise.sessionStatus !== 'pending' || !exercise.sets || exercise.sets.length === 0) {
-        continue;
-      }
-
-      const loggedEx = this.currentWorkoutLogExercises().find(le => le.id === exercise.id);
-      const loggedSetIds = new Set(loggedEx?.sets.map(s => s.plannedSetId));
-
-      const totalRounds = exercise.supersetId ? (exercise.supersetRounds || 1) : (exercise.rounds || 1);
-
-      for (let round = 0; round < totalRounds; round++) {
-        for (let setIdx = 0; setIdx < exercise.sets.length; setIdx++) {
-          const plannedSet = exercise.sets[setIdx];
-
-          // Construct the unique ID for this set instance in this specific round
-          const targetLoggedId = totalRounds > 1 ? `${plannedSet.id}-round-${round}` : plannedSet.id;
-
-          if (!loggedSetIds.has(targetLoggedId)) {
-            // We found the first unlogged set. Now, determine the correct starting exercise index.
-            if (exercise.supersetId) {
-              // For a superset, we must always start at the first exercise of the incomplete round.
-              const firstInGroupIndex = routine.exercises.findIndex(e => e.supersetId === exercise.supersetId && e.supersetOrder === 0);
-              if (firstInGroupIndex !== -1) {
-                return { exerciseIndex: firstInGroupIndex, setIndex: 0, round: round + 1 };
-              }
-            }
-
-            // For a standard exercise, we start at the exercise itself.
-            return { exerciseIndex: exIndex, setIndex: setIdx, round: round + 1 };
-          }
+        const exercise = routine.exercises[exIndex];
+        if (exercise.sessionStatus !== 'pending' || !exercise.sets || exercise.sets.length === 0) {
+            continue;
         }
-      }
-    }
 
-    return null; // All pending exercises are fully logged.
-  }
+        const loggedEx = this.currentWorkoutLogExercises().find(le => le.id === exercise.id);
+        const loggedPlannedSetIds = new Set(loggedEx?.sets.map(s => s.plannedSetId));
+
+        for (let setIdx = 0; setIdx < exercise.sets.length; setIdx++) {
+            const plannedSetId = exercise.sets[setIdx].id;
+            // For supersets, each logged set is unique per round (set index)
+            const targetLoggedId = exercise.supersetId ? `${plannedSetId}-round-${setIdx}` : plannedSetId;
+
+            if (!loggedPlannedSetIds.has(targetLoggedId)) {
+                if (exercise.supersetId) {
+                    const firstInGroupIndex = routine.exercises.findIndex(e => e.supersetId === exercise.supersetId && e.supersetOrder === 0);
+                    // For superset, the starting exercise is the first in the block, and the starting set is the one we found.
+                    return { exerciseIndex: firstInGroupIndex !== -1 ? firstInGroupIndex : exIndex, setIndex: setIdx, round: setIdx + 1 };
+                }
+                // For a standard exercise, we start at the exercise itself and the found set.
+                return { exerciseIndex: exIndex, setIndex: setIdx, round: setIdx + 1 };
+            }
+        }
+    }
+    return null;
+}
 
 
   private patchActualsFormBasedOnSessionTargets(): void {
@@ -1591,7 +1507,6 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       targetRestAfterSet: activeInfo.setData.restAfterSet,
       notes: formValues.setNotes?.trim() || undefined,
       timestamp: new Date().toISOString(),
-      supersetCurrentRound: isMultiRound ? this.getIndexedCurrentBlock() : undefined
     };
     this.addLoggedSetToCurrentLog(activeInfo.exerciseData, loggedSetData);
 
@@ -1619,13 +1534,12 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
 
   // Helper to get round info for an exercise (handles supersets)
   protected getRoundInfo(ex: WorkoutExercise): { round: number, totalRounds: number } {
-    let totalRounds = ex.supersetRounds ?? 1;
-    if (ex.supersetId && ex.supersetOrder !== null) {
-      const blockStart = this.routine()?.exercises.find(e => e.supersetId === ex.supersetId && e.supersetOrder === 0);
-      totalRounds = blockStart?.supersetRounds ?? 1;
-    }
-    // Use currentBlockRound signal for current, otherwise 1
-    const round = this.currentBlockRound ? this.currentBlockRound() : 1;
+    const totalRounds = this.routine() ? this.getRoundsForExerciseBlock(this.routine()!.exercises.indexOf(ex), this.routine()!) : 1;
+
+    // For supersets, the current round is the current set index + 1.
+    // For standard exercises, it's always "1".
+    const round = ex.supersetId ? this.currentSetIndex() + 1 : 1;
+
     return { round, totalRounds };
   };
 
@@ -1672,108 +1586,35 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     const exercises = currentSessionRoutine.exercises;
     const currExIdx = completedActiveSetInfo.exerciseIndex;
     const currSetIdx = completedActiveSetInfo.setIndex;
-
-    // Helper to check if an exercise is pending and not fully logged, considering rounds
-    const isPendingAndNotLogged = (ex: WorkoutExercise, idx: number) => {
-      const log = this.currentWorkoutLogExercises().find(le => le.exerciseId === ex.exerciseId && currentSessionRoutine.exercises[idx].id === ex.id);
-      const totalPlannedSets = (ex.sets?.length ?? 0) * (ex.supersetRounds ?? 1);
-      const loggedSetsCount = log?.sets?.length ?? 0;
-      return ex.sessionStatus === 'pending' && (loggedSetsCount < totalPlannedSets);
-    };
-
-
-    // Find next set in current exercise
     const currExercise = exercises[currExIdx];
-    if (currExercise) {
-      // Next set in same exercise
-      if (currSetIdx + 1 < currExercise.sets.length) {
+
+    // Helper to check if an exercise is pending
+    const isPending = (ex: WorkoutExercise) => ex.sessionStatus === 'pending';
+
+    // Find next set in current STANDARD exercise
+    if (!currExercise.supersetId && currSetIdx + 1 < currExercise.sets.length) {
         const nextSet = currExercise.sets[currSetIdx + 1];
-        let setNumber = 1;
-        if (nextSet.type === 'warmup') {
-          setNumber = currExercise.sets.slice(0, currSetIdx + 2).filter(s => s.type === 'warmup').length;
-        } else {
-          setNumber = currExercise.sets.slice(0, currSetIdx + 2).filter(s => s.type !== 'warmup').length;
-        }
         const setType = nextSet.type === 'warmup' ? "Warm-up" : "Set";
-        const { round, totalRounds } = this.getRoundInfo(currExercise);
-        let roundText = totalRounds > 1 ? ` (Round ${round}/${totalRounds})` : '';
-        return `${setType} ${setNumber}/${currExercise.sets.length} of ${currExercise.exerciseName}${roundText}`;
-      }
-      // Next exercise
-      for (let i = currExIdx + 1; i < exercises.length; i++) {
-        const ex = exercises[i];
-        if (isPendingAndNotLogged(ex, i)) {
-          const firstSet = ex.sets[0];
-          let setType = firstSet.type === 'warmup' ? "Warm-up" : "Set";
-          let setNumber = 1;
-          const { round, totalRounds } = this.getRoundInfo(ex);
-          let roundText = totalRounds > 1 ? ` (Round ${round}/${totalRounds})` : '';
-          return `${setType} ${setNumber} of ${ex.exerciseName}${roundText}`;
-        }
-      }
+        const setNumber = currSetIdx + 2;
+        return `${setType} ${setNumber}/${currExercise.sets.length} of ${currExercise.exerciseName}`;
+    }
+
+    // Find next exercise/block
+    const nextPendingExIndex = this.findFirstPendingExerciseIndexAfter(currExIdx, currentSessionRoutine);
+    if (nextPendingExIndex !== -1) {
+        const nextEx = exercises[nextPendingExIndex];
+        return `Next: ${nextEx.exerciseName}`;
     }
 
     // If no more pending, check for do_later/skipped
-    const hasDoLater = exercises.some(ex => ex.sessionStatus === 'do_later' && !this.exercisesProposedThisCycle.doLater);
+    const hasDoLater = exercises.some(ex => ex.sessionStatus === 'do_later' && !this.isExerciseFullyLogged(ex));
     if (hasDoLater) return 'Do Later Exercises';
-    const hasSkipped = exercises.some(ex => ex.sessionStatus === 'skipped' && !this.exercisesProposedThisCycle.skipped);
+    
+    const hasSkipped = exercises.some(ex => ex.sessionStatus === 'skipped' && !this.isExerciseFullyLogged(ex));
     if (hasSkipped) return 'Skipped Exercises';
 
-    const { round, totalRounds } = this.getRoundInfo(currExercise);
-
-    // If there are multiple rounds and the user isn't on the last one
-    if (totalRounds > 1 && round < totalRounds) {
-      // Find the next exercise in the block (superset or multi-round)
-      let nextExerciseName = '';
-      // If part of a superset, find the next exercise in the superset block
-      if (currExercise.supersetId && currExercise.supersetOrder !== null) {
-        const blockExercises = exercises.filter(
-          e => e.supersetId === currExercise.supersetId
-        );
-        const currOrder = currExercise.supersetOrder ?? 0;
-        if (currOrder + 1 < blockExercises.length) {
-          nextExerciseName = blockExercises[currOrder + 1].exerciseName || '';
-        } else {
-          // If at end of block, next round starts at first exercise in block
-          nextExerciseName = blockExercises[0].exerciseName || '';
-        }
-      } else {
-        // Not a superset, so just repeat the same exercise for next round
-        nextExerciseName = currExercise.exerciseName || '';
-      }
-      return `Complete Round ${round}/${totalRounds}${nextExerciseName ? ` [Next exercise: ${nextExerciseName}]` : ''}${currExercise.sets?.length ? ` (${currExercise.sets.length} sets)` : ''}`;
-    }
-
-    const mergedUnfinishedExercises = this.getUnfinishedOrDeferredExercises(currentSessionRoutine);
-
-    // If there are unfinished exercises (do_later/skipped/pending), suggest the next one in routine order
-    if (mergedUnfinishedExercises.length > 0) {
-      // Find the first unfinished exercise that comes after the current exercise in the routine
-      const currExIdxInRoutine = completedActiveSetInfo.exerciseIndex;
-      // Sort by originalIndex to ensure routine order
-      const sortedUnfinished = mergedUnfinishedExercises
-        .slice()
-        .sort((a, b) => a.originalIndex - b.originalIndex);
-
-      // Find the next unfinished exercise after the current one
-      const nextUnfinished = sortedUnfinished.find(ex => ex.originalIndex > currExIdxInRoutine)
-        // If none after, wrap to the first unfinished in the routine
-        ?? sortedUnfinished[0];
-
-      if (nextUnfinished) {
-        let statusLabel = '';
-        switch (nextUnfinished.sessionStatus) {
-          case 'do_later': statusLabel = 'Do Later'; break;
-          case 'skipped': statusLabel = 'Skipped'; break;
-          case 'pending': statusLabel = 'Pending'; break;
-          default: statusLabel = nextUnfinished.sessionStatus || '';
-        }
-        return `Next: ${nextUnfinished.exerciseName} (${statusLabel})`;
-      }
-    }
-
-    return totalRounds >= 1 ? '' : 'Complete';
-  }
+    return 'Workout Complete!';
+}
 
   skipRest(): void {
     if (this.sessionState() === SessionState.Paused) {
@@ -1860,9 +1701,9 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     const startingExercise = state.sessionRoutine.exercises[this.currentExerciseIndex()];
     if (startingExercise.supersetId) {
       const blockStart = state.sessionRoutine.exercises.find(ex => ex.supersetId === startingExercise.supersetId && ex.supersetOrder === 0);
-      this.totalBlockRounds.set(blockStart?.supersetRounds || 1);
+      this.totalBlockRounds.set(this.getRoundsForExerciseBlock(this.currentExerciseIndex(), state.sessionRoutine));
     } else {
-      this.totalBlockRounds.set(startingExercise.rounds || 1);
+      this.totalBlockRounds.set(this.getRoundsForExerciseBlock(this.currentExerciseIndex(), state.sessionRoutine));
     }
 
     if (state.timedSetTimerState) {
@@ -2003,10 +1844,8 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
         exerciseId: currentExercise.exerciseId,
         exerciseName: `${currentExercise.exerciseName} (Warm-up)`,
         sets: [newWarmupSet],
-        rounds: 1,
         supersetId: null,
         supersetOrder: null,
-        supersetSize: null,
         sessionStatus: 'pending',
         type: 'standard'
       };
@@ -2117,7 +1956,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
         newLogs.forEach((exLog: LoggedWorkoutExercise) => {
           if (exLog.supersetId === supersetId) {
             // Filter out sets matching the current round index
-            exLog.sets = exLog.sets.filter(s => s.supersetCurrentRound !== (currentRound - 1));
+            exLog.sets = exLog.sets.filter((s,index) => index !== (currentRound - 1));
           }
         });
         return newLogs;
@@ -2293,8 +2132,8 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     const updatedRoutine = JSON.parse(JSON.stringify(currentRoutineVal)) as Routine;
     let insertAtIndex = (index !== null && index !== undefined) ? index : this.currentExerciseIndex() + 1;
     const activeInfo = this.activeSetInfo();
-    if (!indexExists && activeInfo && activeInfo.exerciseData.supersetId && activeInfo.exerciseData.supersetOrder !== null && activeInfo.exerciseData.supersetSize) {
-      insertAtIndex = activeInfo.exerciseIndex - activeInfo.exerciseData.supersetOrder + activeInfo.exerciseData.supersetSize;
+    if (!indexExists && activeInfo && activeInfo.exerciseData.supersetId && activeInfo.exerciseData.supersetOrder !== null && activeInfo.exerciseData.sets.length) {
+      insertAtIndex = activeInfo.exerciseIndex - activeInfo.exerciseData.supersetOrder + activeInfo.exerciseData.sets.length;
     }
     updatedRoutine.exercises.splice(insertAtIndex, 0, newWorkoutExercise);
     this.routine.set(updatedRoutine);
@@ -2303,7 +2142,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       this.currentExerciseIndex.set(insertAtIndex);
       this.currentSetIndex.set(0);
       this.currentBlockRound.set(1);
-      this.totalBlockRounds.set(newWorkoutExercise.supersetRounds ?? 1);
+      this.totalBlockRounds.set(this.getRoundsForExerciseBlock(insertAtIndex, updatedRoutine));
       this.lastPerformanceForCurrentExercise = null;
       this.isPerformingDeferredExercise = true; // Treat ad-hoc added as a "deferred" type choice contextually
       // this.lastActivatedDeferredExerciseId = newWorkoutExercise.id;
@@ -2327,7 +2166,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
         this.currentExerciseIndex.set(insertAtIndex);
         this.currentSetIndex.set(0);
         this.currentBlockRound.set(1);
-        this.totalBlockRounds.set(newWorkoutExercise.supersetRounds ?? 1);
+        this.totalBlockRounds.set(this.getRoundsForExerciseBlock(insertAtIndex, updatedRoutine));
         this.lastPerformanceForCurrentExercise = null;
         this.isPerformingDeferredExercise = true; // Treat ad-hoc added as a "deferred" type choice contextually
         this.lastActivatedDeferredExerciseId = newWorkoutExercise.id;
@@ -3089,10 +2928,10 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
 
           const firstEx = sessionRoutineCopy.exercises[firstPending.exerciseIndex];
           if (!firstEx.supersetId || firstEx.supersetOrder === 0) {
-            this.totalBlockRounds.set(firstEx.supersetRounds ?? 1);
+            this.totalBlockRounds.set(this.getRoundsForExerciseBlock(firstPending.exerciseIndex, sessionRoutineCopy));
           } else {
             const actualStart = sessionRoutineCopy.exercises.find(ex => ex.supersetId === firstEx.supersetId && ex.supersetOrder === 0);
-            this.totalBlockRounds.set(actualStart?.supersetRounds ?? 1);
+            this.totalBlockRounds.set(this.getRoundsForExerciseBlock(firstPending.exerciseIndex, sessionRoutineCopy));
           }
         } else {
           console.log("loadNewWorkoutFromRoute: Routine loaded but no initial pending exercises. Will try deferred/finish");
@@ -3372,45 +3211,52 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     let roundIncremented = false;
     const currentPlayedExercise = routine.exercises[currentGlobalExerciseIndex];
 
-    if (forceAdvanceExerciseBlock || nextSetIdx >= currentPlayedExercise.sets.length - 1) {
-      if (currentPlayedExercise.supersetId) {
-        const isLastExerciseInBlock = currentPlayedExercise.supersetOrder === (currentPlayedExercise.supersetSize ?? 1) - 1;
-        if (isLastExerciseInBlock) {
-          // --- MODIFICATION START: Correctly handle end of block ---
-          const totalRounds = this.totalBlockRounds();
-          const currentRound = this.currentBlockRound();
-          if (currentRound < totalRounds) {
-            this.currentBlockRound.update(r => r + 1);
-            roundIncremented = true;
-            const firstInBlockIndex = routine.exercises.findIndex(ex => ex.supersetId === currentPlayedExercise.supersetId && ex.supersetOrder === 0);
-            nextExIdx = firstInBlockIndex !== -1 ? firstInBlockIndex : -1;
-            nextSetIdx = 0;
-          } else {
-            // ALL rounds are finished, find the next block entirely.
-            blockChanged = true;
-            this.currentBlockRound.set(1);
-            const blockEndIndex = currentGlobalExerciseIndex;
-            nextExIdx = this.findFirstPendingExerciseIndexAfter(blockEndIndex, routine);
-            nextSetIdx = 0;
-          }
-          // --- MODIFICATION END ---
+    if (currentPlayedExercise.supersetId) {
+      // --- Superset Navigation Logic ---
+      const isLastExerciseInBlock = currentPlayedExercise.supersetOrder === (currentPlayedExercise.sets.length ?? 1) - 1;
+
+      if (isLastExerciseInBlock || forceAdvanceExerciseBlock) {
+        // We just finished the last exercise of a round. Time to advance to the next round.
+        const nextRoundIndex = currentGlobalSetIndexInExercise + 1;
+        const firstInBlock = routine.exercises.find(ex => ex.supersetId === currentPlayedExercise.supersetId && ex.supersetOrder === 0);
+
+        if (firstInBlock && nextRoundIndex < firstInBlock.sets.length) {
+          // There is another round (set) to perform.
+          this.currentBlockRound.update(r => r + 1); // For UI display
+          roundIncremented = true;
+          nextExIdx = routine.exercises.findIndex(ex => ex.id === firstInBlock.id);
+          nextSetIdx = nextRoundIndex; // CRITICAL: The next set index IS the next round index.
         } else {
+          // All rounds for this superset are done. Find the next block.
+          blockChanged = true;
+          this.currentBlockRound.set(1);
           nextExIdx = this.findFirstPendingExerciseIndexAfter(currentGlobalExerciseIndex, routine);
-          nextSetIdx = 0;
+          nextSetIdx = 0; // Start at the first set of the new block.
         }
       } else {
+        // Not the last exercise in the superset block. Advance to the next one in sequence.
+        nextExIdx = currentGlobalExerciseIndex + 1;
+        // CRITICAL: We stay on the SAME set index, as we are performing the same "round".
+        nextSetIdx = currentGlobalSetIndexInExercise;
+      }
+    } else {
+      // --- Standard Exercise Navigation Logic ---
+      if (forceAdvanceExerciseBlock || nextSetIdx >= currentPlayedExercise.sets.length - 1) {
+        // Last set of a standard exercise is done. Find the next pending exercise.
         blockChanged = true;
         nextExIdx = this.findFirstPendingExerciseIndexAfter(currentGlobalExerciseIndex, routine);
         nextSetIdx = 0;
+      } else {
+        // Not the last set. Just increment the set index.
+        nextSetIdx++;
       }
-    } else {
-      nextSetIdx++;
     }
 
     if (nextExIdx === -1 || nextExIdx >= routine.exercises.length) {
       isEndOfAllPending = true;
       nextExIdx = -1;
     }
+
     return { nextExIdx, nextSetIdx, blockChanged, isEndOfAllPending, roundIncremented };
   }
 
@@ -3446,9 +3292,9 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
 
   protected emomTypeString(): string {
     const block = this.activeSupersetBlock();
-    
+
     if (block && block[0]?.supersetType === 'emom' && block[0]?.emomTimeSeconds) {
-      if (block[0]?.emomTimeSeconds === 60){
+      if (block[0]?.emomTimeSeconds === 60) {
         return 'EMOM'
       } else if (block[0]?.emomTimeSeconds === 60) {
         return 'E2MOM'
@@ -3458,11 +3304,11 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     }
     return 'EMOM';
     // 
-      
+
   }
 
 
-private async navigateToNextStepInWorkout(
+  private async navigateToNextStepInWorkout(
     completedActiveInfo: ActiveSetInfo,
     currentSessionRoutine: Routine,
     forceAdvanceExerciseBlock: boolean = false
@@ -3479,7 +3325,7 @@ private async navigateToNextStepInWorkout(
       if (currentRound < totalRounds) {
         // --- Start the NEXT EMOM round ---
         this.currentBlockRound.update(r => r + 1);
-        
+
         // IMPORTANT: Reset the active exercise back to the beginning of the block for the new round.
         const firstInBlockIndex = currentSessionRoutine.exercises.findIndex(ex => ex.supersetId === exerciseJustCompleted.supersetId && ex.supersetOrder === 0);
         this.currentExerciseIndex.set(firstInBlockIndex);
@@ -3497,7 +3343,7 @@ private async navigateToNextStepInWorkout(
         }
       } else {
         // --- ALL EMOM rounds are finished. Navigate to the next block. ---
-        const lastInBlockIndex = currentSessionRoutine.exercises.findIndex(ex => ex.supersetId === exerciseJustCompleted.supersetId && ex.supersetOrder === (ex.supersetSize ?? 1) -1 );
+        const lastInBlockIndex = currentSessionRoutine.exercises.findIndex(ex => ex.supersetId === exerciseJustCompleted.supersetId && ex.supersetOrder === (ex.sets.length ?? 1) - 1);
         const nextPendingIndex = this.findFirstPendingExerciseIndexAfter(lastInBlockIndex, currentSessionRoutine);
 
         if (nextPendingIndex === -1) {
@@ -3545,10 +3391,10 @@ private async navigateToNextStepInWorkout(
     if (blockChanged || roundIncremented) {
       this.lastPerformanceForCurrentExercise = null;
       const newBlockStarterExercise = currentSessionRoutine.exercises[nextExIdx];
-      const newTotalRounds = newBlockStarterExercise.supersetRounds ?? 1;
-      this.totalBlockRounds.set(newTotalRounds);
+      this.totalBlockRounds.set(this.getRoundsForExerciseBlock(nextExIdx, currentSessionRoutine));
+
     }
-    
+
     const restDurationAfterCompletedSet = completedActiveInfo.setData.restAfterSet;
     if (restDurationAfterCompletedSet > 0 && !forceAdvanceExerciseBlock) {
       this.startRestPeriod(restDurationAfterCompletedSet);
@@ -3665,6 +3511,8 @@ private async navigateToNextStepInWorkout(
 
       return {
         exerciseIndex: exIndex, setIndex: sIndex, exerciseData, setData, historicalSetPerformance,
+        supersetId: exerciseData.supersetId || null,
+        superSetType: exerciseData.supersetType || null,
         type: (setData.type as 'standard' | 'warmup' | 'amrap' | 'custom') ?? 'standard', isCompleted: false // Dummy values
       };
     }
@@ -4096,10 +3944,10 @@ private async navigateToNextStepInWorkout(
       // --- Rest of your logic is unchanged ---
       this.currentBlockRound.set(1);
       if (!exerciseToJumpTo.supersetId || exerciseToJumpTo.supersetOrder === 0) {
-        this.totalBlockRounds.set(exerciseToJumpTo.supersetRounds ?? 1);
+        this.totalBlockRounds.set(this.getRoundsForExerciseBlock(selectedExerciseOriginalIndex, updatedRoutine));
       } else {
         const actualBlockStart = updatedRoutine.exercises.find(ex => ex.supersetId === exerciseToJumpTo.supersetId && ex.supersetOrder === 0);
-        this.totalBlockRounds.set(actualBlockStart?.supersetRounds ?? 1);
+        this.totalBlockRounds.set(this.getRoundsForExerciseBlock(selectedExerciseOriginalIndex, updatedRoutine));
       }
       this.lastPerformanceForCurrentExercise = null;
       this.isPerformingDeferredExercise = wasDeferred;
@@ -4219,14 +4067,14 @@ private async navigateToNextStepInWorkout(
     const exercise = routine.exercises[exerciseIndex];
     if (!exercise) return 1;
 
-    // If it's a superset, find the first exercise in that superset block
+    // If it's a superset, the number of rounds IS the number of sets in the first exercise of the block.
     if (exercise.supersetId) {
       const firstInSuperset = routine.exercises.find(ex => ex.supersetId === exercise.supersetId && ex.supersetOrder === 0);
-      return firstInSuperset?.supersetRounds ?? 1;
+      return firstInSuperset?.sets.length ?? 1;
     }
 
-    // If it's a standard exercise, use its own rounds property
-    return exercise.supersetRounds ?? 1;
+    // For a standard exercise, the total number of sets defines the "rounds" for the UI (e.g., "Set 3 of 5").
+    return exercise.sets.length;
   }
 
   private getCurrentSetInfo(): ActiveSetInfo | null {
@@ -4243,6 +4091,8 @@ private async navigateToNextStepInWorkout(
       return {
         exerciseIndex: exIndex,
         setIndex: sIndex,
+        supersetId: exerciseData.supersetId || null,
+        superSetType: exerciseData.supersetType || null,
         exerciseData: exerciseData,
         setData: setData,
         type: (setData.type as 'standard' | 'warmup' | 'amrap' | 'custom') ?? 'standard',
@@ -4319,24 +4169,8 @@ private async navigateToNextStepInWorkout(
       return 0;
     }
 
-    let totalPlannedSets = 0;
-
-    routine.exercises.forEach(exercise => {
-      if (exercise.supersetId) {
-        // Only process a superset group ONCE, when we see the first exercise.
-        if (exercise.supersetOrder === 0) {
-          const groupExercises = routine.exercises.filter(ex => ex.supersetId === exercise.supersetId);
-          const setsInOneRound = groupExercises.reduce((sum, ex) => sum + ex.sets.length, 0);
-          // *** FIX: Use `supersetRounds` for supersets, not `rounds`. ***
-          const totalRounds = exercise.supersetRounds || 1;
-          totalPlannedSets += setsInOneRound * totalRounds;
-        }
-      } else {
-        // For standard exercises, the total is simply the number of sets in its array.
-        // We IGNORE the `rounds` property for this calculation to match the UI.
-        totalPlannedSets += exercise.sets.length;
-      }
-    });
+    // CORRECTED: The total planned sets is now a simple sum of the length of every 'sets' array.
+    const totalPlannedSets = routine.exercises.reduce((sum, ex) => sum + (ex.sets?.length ?? 0), 0);
 
     if (totalPlannedSets === 0) {
       return 0;
@@ -4474,7 +4308,8 @@ private async navigateToNextStepInWorkout(
     if (!routine) return false;
 
     const exercisesInGroup = routine.exercises.filter(ex => ex.supersetId === supersetId);
-    return exercisesInGroup.every(ex => this.getNumberOfLoggedSets(ex.id) === ex.supersetRounds);
+    // CORRECTED: Check if every exercise in the group is fully logged based on its own sets.
+    return exercisesInGroup.every(ex => this.isExerciseFullyLogged(ex));
   }
 
   readonly canJumpToOtherExercise = computed<boolean>(() => {
@@ -4714,7 +4549,7 @@ private async navigateToNextStepInWorkout(
         this.currentExerciseIndex.set(newActiveIndex);
         this.currentSetIndex.set(0);
         this.currentBlockRound.set(1);
-        this.totalBlockRounds.set(firstExerciseInSuperset.supersetRounds || 1);
+        this.totalBlockRounds.set(firstExerciseInSuperset.sets.length || 1);
         this.lastPerformanceForCurrentExercise = null;
 
         // 5. Refresh the player UI with the new active set
@@ -4782,7 +4617,18 @@ private async navigateToNextStepInWorkout(
   * @returns A formatted string like "8-12" or "60+", or an empty string if no range is set.
   */
   public getSetTargetDisplay(set: ExerciseTargetSetParams, field: 'reps' | 'duration' | 'weight'): string {
-    return this.workoutService.getSetTargetDisplay(set, field);
+    // if EMOM returns string like "10 @ 5kg"
+    if (this.activeSetInfo()?.supersetId && this.activeSetInfo()?.superSetType === 'emom') {
+      const weightPart = set.targetWeight ? ` @ ${set.targetWeight}kg` : '';
+      const exercise = this.activeSetInfo()?.exerciseData;
+      if (exercise){
+        return `${this.workoutService.getSetTargetDisplay(set, 'reps')} @ ${this.workoutService.getWeightDisplay(set, exercise) || ''}`;
+      } else {
+        return `${this.workoutService.getSetTargetDisplay(set, 'reps')} ${weightPart}`;
+      }
+    } else {
+      return this.workoutService.getSetTargetDisplay(set, field);
+    }
   }
 
 
@@ -4884,7 +4730,6 @@ private async navigateToNextStepInWorkout(
         repsAchieved: templateSet.targetReps ?? 0,
         weightUsed: templateSet.targetWeight ?? 0,
         timestamp: new Date().toISOString(),
-        supersetCurrentRound: roundToLog - 1
       };
       this.addLoggedSetToCurrentLog(exerciseInBlock, loggedSetData);
     });

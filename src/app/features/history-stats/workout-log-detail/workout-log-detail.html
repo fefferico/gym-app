@@ -90,8 +90,8 @@
                       <ng-container *ngFor="let set of round.sets">
                         <div class="text-center py-1">
                           <ng-container *ngIf="set; else noSetData">
-                            <strong [ngClass]="checkTextClass(set, 'reps')">{{ set.repsAchieved ?? '-' }}</strong> 
-                            <span *ngIf="set.weightUsed != null" class="text-gray-600 dark:text-gray-400 text-sm">
+                            <strong [ngClass]="checkTextClass(set, 'reps')" [class.cursor-pointer]="isTargetMissed(set, 'reps')" [class.hover:underline]="isTargetMissed(set, 'reps')" (click)="showComparisonModal(set, 'reps')">{{ set.repsAchieved ?? '-' }}</strong> 
+                            <span *ngIf="set.weightUsed != null" class="text-gray-600 dark:text-gray-400 text-sm"  [class.cursor-pointer]="isTargetMissed(set, 'weight')" [class.hover:underline]="isTargetMissed(set, 'weight')" (click)="showComparisonModal(set, 'weight')">
                               @ {{ set.weightUsed | weightUnit:'1.0-2' }}
                             </span>
                           </ng-container>
@@ -140,7 +140,7 @@
                                             {{ loggedEx.exerciseName }}
                                         </h5>
                                         <div class="text-xs font-normal text-gray-500 dark:text-gray-400 leading-tight">
-                                            Exercise {{ (loggedEx.supersetOrder ?? 0) + 1 }} of {{ loggedEx.supersetSize }}
+                                            Exercise {{ (loggedEx.supersetOrder ?? 0) + 1 }} of {{ loggedEx.sets.length }}
                                         </div>
                                     </div>
                                     <div *ngIf="loggedEx.sets.length > 0; else noSetData" class="text-sm text-gray-700 dark:text-gray-200 font-semibold ml-auto text-right flex-shrink-0">

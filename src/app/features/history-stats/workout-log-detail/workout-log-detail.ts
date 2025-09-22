@@ -207,7 +207,7 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
           if (blockExercises.length === 0) continue;
 
           const firstInBlock = blockExercises[0];
-          const totalRounds = firstInBlock.supersetRounds || 1;
+          const totalRounds = firstInBlock.sets.length || 1;
           const blockName = blockExercises
             .sort((a, b) => (a.supersetOrder ?? 0) - (b.supersetOrder ?? 0))
             .map(e => e.exerciseName)
@@ -216,7 +216,7 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
           if (firstInBlock.supersetType === 'emom') {
             const rounds = Array.from({ length: totalRounds }, (_, i) => ({
               roundNumber: i + 1,
-              sets: blockExercises.map(bex => bex.sets.find(s => s.supersetCurrentRound === i + 1))
+              sets: blockExercises.map(bex => bex.sets.find((s,index) => index === i))
             })).filter(r => r.sets.some(s => s !== undefined));
             
             displayItems.push({
@@ -236,7 +236,7 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
                 const exercisesForRound = blockExercises
                 .map(e => {
                   // Find the set for this round
-                  const setForRound = e.sets.find(s => (s.supersetCurrentRound ?? -1 ) + 1 === roundNumber);
+                  const setForRound = e.sets.find((s,index) => (index ?? -1 ) + 1 === roundNumber);
                   if (setForRound) {
                   // Return a shallow copy with only the set for this round
                   return {

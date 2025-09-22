@@ -381,8 +381,6 @@ export class WorkoutGeneratorService {
             sets: sets,
             supersetId: null,
             supersetOrder: null,
-            supersetRounds: 1,
-            rounds: 1,
             type: 'standard',
             exercise: exercise 
         };
@@ -409,8 +407,6 @@ export class WorkoutGeneratorService {
             sets: sets,
             supersetId: null,
             supersetOrder: null,
-            supersetRounds: 1,
-            rounds: 1,
             type: 'standard'
         };
     }

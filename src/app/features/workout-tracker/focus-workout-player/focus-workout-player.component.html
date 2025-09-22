@@ -69,8 +69,7 @@
 
     <main class="pt-4 px-2 pb-36 bg-gray-100 dark:bg-gray-900">
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm transition-all duration-300 relative py-2"
-        *ngIf="activeSetInfo() as activeSet; else workoutCompleteOrError" 
-        [ngClass]="{
+        *ngIf="activeSetInfo() as activeSet; else workoutCompleteOrError" [ngClass]="{
             'border border-blue-400 border-4 bg-blue-200' : activeSet?.type === 'warmup', 
             'border border-primary-light border-4' : activeSet?.exerciseData?.supersetId && !activeSupersetBlock(),
             'border border-teal-400 border-4' : activeSet?.exerciseData?.supersetId && activeSupersetBlock(),
@@ -118,7 +117,7 @@
                       <span class="font-medium text-gray-800 dark:text-gray-100 truncate pr-4">{{ exercise.exerciseName
                         }}</span>
                       <span class="text-lg font-bold text-primary dark:text-primary-light flex-shrink-0">
-                        {{ getSetTargetDisplay(templateSet, 'reps') }} Reps
+                        {{ getSetTargetDisplay(templateSet, 'reps') }}
                       </span>
                     </div>
                   </ng-container>
@@ -132,14 +131,18 @@
               <div class="space-y-2 mb-4 px-2">
                 <h3 class="font-semibold text-gray-700 dark:text-gray-200 border-b pb-1 mb-2 text-sm">In this round:
                 </h3>
+                <!-- This is the NEW code block -->
                 <div *ngFor="let exercise of block" class="flex justify-between items-center p-2 rounded-md text-sm"
                   [ngClass]="{'bg-primary/10 dark:bg-primary-dark/20 ring-2 ring-primary': exercise.id === activeSet.exerciseData.id,
-                              'bg-gray-100 dark:bg-gray-700/50': exercise.id !== activeSet.exerciseData.id}">
+                'bg-gray-100 dark:bg-gray-700/50': exercise.id !== activeSet.exerciseData.id}">
                   <span class="font-medium text-gray-800 dark:text-gray-100 truncate pr-2">{{ exercise.exerciseName
                     }}</span>
-                  <span class="font-semibold text-gray-600 dark:text-gray-300 flex-shrink-0">
-                    {{ getSetTargetDisplay(exercise.sets[0], 'reps') }} Reps
-                  </span>
+                  <!-- This now correctly displays the set for the CURRENT round -->
+                  <ng-container *ngIf="exercise.sets[currentBlockRound() - 1] as currentRoundSet">
+                    <span class="font-semibold text-gray-600 dark:text-gray-300 flex-shrink-0">
+                      {{ getSetTargetDisplay(currentRoundSet, 'reps') }} Reps
+                    </span>
+                  </ng-container>
                 </div>
               </div>
               <!-- Render the actual interactive form for the CURRENTLY active set -->
@@ -192,7 +195,7 @@
               </span>
               <span *ngIf="activeSet.exerciseData.supersetId" class="ml-2 text-purple-500 dark:text-purple-400 italic">
                 (Superset ex. {{ (activeSet.exerciseData.supersetOrder ?? 0) + 1
-                }}/{{activeSet.exerciseData.supersetSize
+                }}/{{activeSet.exerciseData.sets.length
                 ??
                 '?'}})
               </span>
@@ -350,7 +353,8 @@
         <!-- --- MODIFICATION START: Remove incorrect *ngIf to show button during EMOM --- -->
         <div class="left-0 right-0 z-20 p-3 mt-5" *ngIf="routine() && sessionState() === 'playing' && activeSetInfo()">
           <div class="max-w-md mx-auto">
-            <button *ngIf="!activeSupersetBlock() || (activeSupersetBlock()?.[0]?.supersetType !== 'emom')" appPress (shortPress)="handleMainAction()" [disabled]="sessionState() === 'paused'"
+            <button *ngIf="!activeSupersetBlock() || (activeSupersetBlock()?.[0]?.supersetType !== 'emom')" appPress
+              (shortPress)="handleMainAction()" [disabled]="sessionState() === 'paused'"
               class="w-full font-bold py-3.5 px-4 rounded-full shadow-md text-lg transition-colors focus:outline-none focus:ring-2 disabled:opacity-70 text-white"
               [ngClass]="{
                 'bg-purple-600 hover:bg-purple-700': activeSupersetBlock(),

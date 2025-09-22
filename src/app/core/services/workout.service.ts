@@ -467,16 +467,16 @@ export class WorkoutService {
 
 
   /**
-   * Estimates the total time to complete an entire routine in minutes,
-   * including estimated work time for each set and rest times between sets.
-   * The rest time after the very last set of the entire routine is NOT included.
-   *
-   * @param routine The full Routine object.
-   * @returns The total estimated duration in minutes.
-   */
-  public getEstimatedRoutineDuration(routine: Routine): number {
+ * Estimates the total time to complete an entire routine in minutes.
+ * This version correctly handles standard exercises, standard supersets, and EMOM supersets.
+ * The rest time after the very last set of the entire routine is NOT included.
+ *
+ * @param routine The full Routine object.
+ * @returns The total estimated duration in minutes.
+ */
+public getEstimatedRoutineDuration(routine: Routine): number {
     if (!routine || !routine.exercises || routine.exercises.length === 0) {
-      return 0;
+        return 0;
     }
 
     let totalSeconds = 0;
@@ -484,59 +484,73 @@ export class WorkoutService {
     const processedSupersetIds = new Set<string>();
 
     for (let i = 0; i < exercises.length; i++) {
-      const exercise = exercises[i];
+        const exercise = exercises[i];
 
-      if (processedSupersetIds.has(exercise.supersetId!)) {
-        // Skip this exercise if its superset group has already been processed
-        continue;
-      }
-
-      if (exercise.supersetId) {
-        // --- SUPERSET BLOCK ---
-        const groupExercises = exercises.filter(ex => ex.supersetId === exercise.supersetId);
-        // The number of rounds is authoritative from the superset definition
-        const totalRounds = exercise.supersetRounds || 1;
-
-        for (let r = 0; r < totalRounds; r++) {
-          groupExercises.forEach((groupEx, groupExIndex) => {
-            groupEx.sets.forEach((set, setIndex) => {
-              totalSeconds += this.getEstimatedWorkTimeForSet(set);
-
-              // Check if it's the absolute last set of the entire routine
-              const isLastExerciseInRoutine = i + (groupExercises.length - 1) === exercises.length - 1;
-              const isLastSetInGroup = setIndex === groupEx.sets.length - 1 && groupExIndex === groupExercises.length - 1;
-              const isLastRound = r === totalRounds - 1;
-
-              if (!(isLastExerciseInRoutine && isLastSetInGroup && isLastRound)) {
-                totalSeconds += this.getRestTimeForSet(set);
-              }
-            });
-          });
+        if (exercise.supersetId && processedSupersetIds.has(exercise.supersetId)) {
+            continue; // Skip if this superset group has already been processed
         }
-        // Mark this superset as processed and advance the main loop counter
-        processedSupersetIds.add(exercise.supersetId);
-        i += groupExercises.length - 1; // Move index to the end of the current superset group
-      } else {
-        // --- STANDARD EXERCISE BLOCK ---
-        // For standard exercises, we simply iterate through their defined sets once.
-        // The `rounds` property is a player-only multiplier and not used for duration estimation here.
-        exercise.sets.forEach((set, setIndex) => {
-          totalSeconds += this.getEstimatedWorkTimeForSet(set);
 
-          // Add rest time unless it's the last set of the last exercise in the whole routine
-          const isLastExerciseInRoutine = i === exercises.length - 1;
-          const isLastSet = setIndex === exercise.sets.length - 1;
+        if (exercise.supersetId) {
+            // --- SUPERSET OR EMOM BLOCK ---
+            processedSupersetIds.add(exercise.supersetId);
+            const groupExercises = exercises.filter(ex => ex.supersetId === exercise.supersetId);
+            const firstExerciseInGroup = groupExercises.find(ex => ex.supersetOrder === 0);
 
-          if (!(isLastExerciseInRoutine && isLastSet)) {
-            totalSeconds += this.getRestTimeForSet(set);
-          }
-        });
-      }
+            if (!firstExerciseInGroup) {
+                i += groupExercises.length - 1; // Skip malformed group
+                continue;
+            }
+
+            const totalRounds = firstExerciseInGroup.sets.length;
+            const isLastBlock = (i + groupExercises.length) >= exercises.length;
+
+            if (firstExerciseInGroup.supersetType === 'emom') {
+                // --- EMOM LOGIC ---
+                const emomTimePerRound = firstExerciseInGroup.emomTimeSeconds || 60;
+                const blockDuration = emomTimePerRound * totalRounds;
+                totalSeconds += blockDuration;
+
+                // Add rest after the entire block, unless it's the end of the workout.
+                if (!isLastBlock) {
+                    const lastExerciseInGroup = groupExercises[groupExercises.length - 1];
+                    const lastSetOfBlock = lastExerciseInGroup.sets[totalRounds - 1];
+                    totalSeconds += this.getRestTimeForSet(lastSetOfBlock);
+                }
+            } else {
+                // --- STANDARD SUPERSET LOGIC ---
+                for (let r = 0; r < totalRounds; r++) {
+                    groupExercises.forEach((groupEx, groupExIndex) => {
+                        const setForThisRound = groupEx.sets[r];
+                        if (setForThisRound) {
+                            totalSeconds += this.getEstimatedWorkTimeForSet(setForThisRound);
+
+                            const isLastRound = r === totalRounds - 1;
+                            const isLastExerciseInGroup = groupExIndex === groupExercises.length - 1;
+
+                            if (!(isLastRound && isLastExerciseInGroup && isLastBlock)) {
+                                totalSeconds += this.getRestTimeForSet(setForThisRound);
+                            }
+                        }
+                    });
+                }
+            }
+            // Advance the main loop to the end of the current superset group
+            i += groupExercises.length - 1;
+        } else {
+            // --- STANDARD EXERCISE BLOCK ---
+            exercise.sets.forEach((set, setIndex) => {
+                totalSeconds += this.getEstimatedWorkTimeForSet(set);
+                const isLastExerciseInRoutine = i === exercises.length - 1;
+                const isLastSet = setIndex === exercise.sets.length - 1;
+                if (!(isLastExerciseInRoutine && isLastSet)) {
+                    totalSeconds += this.getRestTimeForSet(set);
+                }
+            });
+        }
     }
 
-    // Convert total seconds to minutes
     return Math.round(totalSeconds / 60);
-  }
+}
 
 
   startWorkout(): void {
@@ -693,10 +707,8 @@ export class WorkoutService {
       exerciseId: selectedExercise.id,
       exerciseName: exerciseName,
       sets: newExerciseSets,
-      rounds: 1,
       supersetId: null,
       supersetOrder: null,
-      supersetSize: null,
       sessionStatus: 'pending',
       type: 'standard'
     };
@@ -816,8 +828,6 @@ export class WorkoutService {
         targetExercise.supersetId = newSupersetId;
         targetExercise.supersetOrder = currentOrder++;
         targetExercise.type = 'superset';
-        targetExercise.supersetSize = selectedOriginalIndices.length;
-        targetExercise.supersetRounds = rounds;
 
         for (let i = 1; i <= rounds; i++) {
           targetExercise.sets.push({ ...templateSet, id: uuidv4() });
@@ -902,17 +912,14 @@ export class WorkoutService {
     }
 
     const newSize = existingInSuperset.length + 1;
-    const rounds = existingInSuperset[0].supersetRounds || 1;
+    const rounds = existingInSuperset[0].sets.length || 1;
     const templateSet = targetExercise.sets[0] || { id: uuidv4(), targetReps: 8, targetWeight: 10, restAfterSet: 60, type: 'standard' };
 
     targetExercise.sets = Array.from({ length: rounds }, () => ({ ...templateSet, id: uuidv4() }));
     targetExercise.supersetId = String(chosenSupersetId);
     targetExercise.supersetOrder = existingInSuperset.length;
     targetExercise.type = 'superset';
-    targetExercise.supersetRounds = rounds;
-    targetExercise.supersetSize = newSize;
 
-    existingInSuperset.forEach(ex => { ex.supersetSize = newSize; });
     updatedRoutine.exercises = this.reorderExercisesForSupersets(updatedRoutine.exercises);
     toastService.success(`${targetExercise.exerciseName} added to the superset.`);
 
@@ -952,7 +959,6 @@ export class WorkoutService {
     exerciseToRemove.supersetId = null;
     exerciseToRemove.supersetOrder = null;
     exerciseToRemove.type = 'standard';
-    exerciseToRemove.supersetSize = null;
 
     const remainingInSuperset = updatedRoutine.exercises.filter(ex => ex.supersetId === supersetId);
 
@@ -961,7 +967,6 @@ export class WorkoutService {
         ex.supersetId = null;
         ex.supersetOrder = null;
         ex.type = 'standard';
-        ex.supersetSize = null;
       });
       toastService.info("Superset dissolved as only one exercise remains.");
     } else {
@@ -969,7 +974,6 @@ export class WorkoutService {
         .sort((a, b) => (a.supersetOrder ?? 0) - (b.supersetOrder ?? 0))
         .forEach((ex, i) => {
           ex.supersetOrder = i;
-          ex.supersetSize = remainingInSuperset.length;
         });
       toastService.info(`${exerciseToRemove.exerciseName} removed from superset.`);
     }
@@ -1041,6 +1045,42 @@ export class WorkoutService {
     return single != null ? `${single}` : '';
   }
 
+  /**
+ * Gets the display string for a set's target weight.
+ * @param set The set parameters.
+ * @param exercise The base exercise definition.
+ * @returns A user-friendly string for the UI.
+ */
+getWeightDisplay(set: ExerciseTargetSetParams, exercise: Exercise | WorkoutExercise): string {
+  
+  // Case 1: Cardio or Stretching
+  if (exercise.category === 'cardio' || exercise.category === 'stretching') {
+    return 'N/A';
+  }
+
+  // Case 2: Bodyweight
+  if (exercise.category === 'bodyweight/calisthenics') {
+    // If weight is explicitly added (e.g., weighted pull-up), show it.
+    if (set.targetWeight != null && set.targetWeight > 0) {
+      return `${set.targetWeight} ${this.unitsService.getWeightUnitSuffix()}`;
+    }
+    return 'Bodyweight';
+  }
+
+  // Case 3: Weighted exercise with a specific target
+  if (set.targetWeight != null && set.targetWeight > 0) {
+    return `${set.targetWeight} ${this.unitsService.getWeightUnitSuffix()}`;
+  }
+
+  // Case 4: Weighted exercise with zero weight target
+  if (set.targetWeight === 0) {
+    return 'No Added Wt.'; // Or "Bar Only"
+  }
+
+  // Case 5: Weighted exercise with no target set (null/undefined)
+  return 'User Defined'; 
+}
+
 
   /**
    * Helper to migrate old ExerciseSetParams fields to new 'target' fields.
@@ -1101,6 +1141,12 @@ export class WorkoutService {
     const routines = this.getCurrentRoutines().map(routine => ({ ...routine, isDisabled: false }));
     this._saveRoutinesToStorage(routines);
     this.toastService.success("All routines enabled!");
+  }
+
+  getSupersetSize(routine: Routine | null | undefined, index: number): number {
+    const ex = routine?.exercises[index];
+    if (!ex?.supersetId) return 0;
+    return routine?.exercises.filter(e => e.supersetId === ex.supersetId).length || 0;
   }
 
 

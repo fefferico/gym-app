@@ -57,7 +57,11 @@ export class GeneratedExerciseItemComponent implements OnInit {
     roundInfo = computed(() => {
         const ex = this.exercise();
         if (!ex) return { totalRounds: 1, roundIndices: [0] };
-        const totalRounds = ex.supersetId ? (ex.supersetRounds || 1) : (ex.rounds || 1);
+        
+        // For a superset, the number of rounds IS the number of sets.
+        // For a standard exercise, it's always one conceptual round.
+        const totalRounds = ex.supersetId ? ex.sets.length : 1;
+        
         const roundIndices = Array.from({ length: totalRounds }, (_, i) => i);
         return { totalRounds, roundIndices };
     });
@@ -65,8 +69,28 @@ export class GeneratedExerciseItemComponent implements OnInit {
     totalPlannedSets = computed<number>(() => {
         const ex = this.exercise();
         if (!ex) return 0;
-        return ex.sets.length * this.roundInfo().totalRounds;
+        // The total number of sets is now always just the length of the sets array.
+        return ex.sets.length;
     });
+
+    /**
+     * Helper to provide the correct sets to the template's inner loop.
+     * @param roundIndex The index of the current round being rendered.
+     * @returns An array of sets to display for that specific round.
+     */
+    public getSetsForRound(roundIndex: number): ExerciseTargetSetParams[] {
+        const ex = this.exercise();
+        if (!ex) return [];
+
+        if (ex.supersetId) {
+            // For supersets, return an array with just the single set for this round.
+            const setForRound = ex.sets[roundIndex];
+            return setForRound ? [setForRound] : [];
+        } else {
+            // For standard exercises, this is only called when roundIndex is 0. Return all sets.
+            return ex.sets;
+        }
+    }
 
     applyWeightToAllSets(): void {
         const weight = this.weightToSet();

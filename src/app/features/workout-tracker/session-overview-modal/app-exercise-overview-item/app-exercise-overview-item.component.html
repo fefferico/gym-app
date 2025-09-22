@@ -30,17 +30,28 @@
                 <div class="col-span-1 text-center"></div>
             </div>
             <!-- Data Rows -->
-            <div *ngFor="let set of exercise.sets; let i = index" 
+            <!-- The inner loop now uses the getSetsForRound helper -->
+            <div *ngFor="let set of getSetsForRound(roundIndex); let i = index" 
                  class="grid grid-cols-12 gap-2 items-center p-1.5 rounded"
                  [ngClass]="{
                     'bg-white dark:bg-gray-700/60': i % 2 === 0,
                     'bg-gray-100 dark:bg-gray-700/30': i % 2 !== 0
                  }">
-                <div class="col-span-1 text-center font-semibold text-gray-700 dark:text-gray-300">{{ i + 1 }}</div>
+
+                <!-- The set/round number is now calculated conditionally -->
+                <div class="col-span-1 text-center font-semibold text-gray-700 dark:text-gray-300">{{ exercise.supersetId ? roundIndex + 1 : i + 1 }}</div>
+                
                 <div class="col-span-5 text-gray-800 dark:text-gray-200">{{ formatSet(set) }}</div>
+                
+                <!-- The roundIndex here is correct for looking up the log -->
                 <div class="col-span-5 font-semibold text-gray-900 dark:text-white">{{ formatSet(getLoggedSetFor(set.id, roundIndex), true) }}</div>
+                
                 <div class="col-span-1 flex justify-center">
-                    <span class="w-3 h-3 rounded-full" [ngClass]="getSetStatusIndicatorClass(set.id, roundIndex, i).class" [title]="getSetStatusIndicatorClass(set.id, roundIndex, i).title"></span>
+                    <!-- The setIndex argument is now passed conditionally -->
+                    <span class="w-3 h-3 rounded-full" 
+                          [ngClass]="getSetStatusIndicatorClass(set.id, roundIndex, exercise.supersetId ? roundIndex : i).class" 
+                          [title]="getSetStatusIndicatorClass(set.id, roundIndex, exercise.supersetId ? roundIndex : i).title">
+                    </span>
                 </div>
             </div>
         </div>

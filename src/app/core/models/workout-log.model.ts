@@ -40,7 +40,6 @@ export interface LoggedSet {
   type: 'standard' | 'warmup' | 'amrap' | 'dropset' | 'failure' | 'myorep' | 'restpause' | 'custom' | 'superset' | string; // More flexible
   rpe?: number; // Optional: User's perceived exertion for this set (RPE 1-10)
   workoutLogId?: string; // ID of the WorkoutLog this set belongs to
-  supersetCurrentRound?: number;
 }
 
 // Describes a group of sets performed together as a "round" (e.g., in a circuit or superset)
@@ -60,14 +59,10 @@ export interface LoggedWorkoutExercise {
   exerciseId: string;     // exerciseId of the base Exercise definition
   exerciseName: string;   // Denormalized name for easier display in logs
   sets: LoggedSet[];      // Array of actual sets performed for this exercise
-  rounds?: number;
   notes?: string;         // User notes for this exercise during this specific workout log
   workoutLogId?: string; // ID of the WorkoutLog this exercise belongs to
   supersetId?: string | null;
   supersetOrder?: number | null;
-  supersetSize?: number | null;
-  supersetRounds?: number | null;
-  supersetCurrentRound?: number | null;
   supersetType?: 'standard' | 'emom' | null;
   emomTimeSeconds?: number | null;
   type: 'standard' | 'warmup' | 'amrap' | 'dropset' | 'failure' | 'myorep' | 'restpause' | 'custom' | 'superset' | string; // More flexible

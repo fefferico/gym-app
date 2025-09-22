@@ -25,23 +25,36 @@ export class ExerciseOverviewItemComponent {
         return this.exercise.id === this.activeExerciseId;
     });
 
-    // CORRECTED: This logic now strictly separates superset rounds from standard set lists.
     roundInfo = computed(() => {
-        // Only supersets have a concept of multiple visual rounds in the overview.
-        const totalRounds = this.exercise.supersetId 
-            ? (this.exercise.supersetRounds || 1) 
-            : 1; // Standard exercises are ALWAYS treated as 1 round in the overview.
-            
+        // For a superset, the number of rounds IS the number of sets.
+        // For a standard exercise, it's always one conceptual round containing all sets.
+        const totalRounds = this.exercise.supersetId
+            ? this.exercise.sets.length
+            : 1;
+
         const roundIndices = Array.from({ length: totalRounds }, (_, i) => i);
         return { totalRounds, roundIndices };
     });
     
-    // CORRECTED: This calculation now respects the new roundInfo logic.
     totalPlannedSets = computed<number>(() => {
-        // For a standard exercise, totalRounds will be 1, so this correctly returns sets.length.
-        // For a superset, it multiplies the sets in one round by the number of supersetRounds.
-        return this.exercise.sets.length * this.roundInfo().totalRounds;
+        return this.exercise.sets.length;
     });
+
+    /**
+     * Helper to provide the correct sets to the template's inner loop.
+     * @param roundIndex The index of the current round being rendered.
+     * @returns An array of sets to display for that specific round.
+     */
+    public getSetsForRound(roundIndex: number): ExerciseTargetSetParams[] {
+        if (this.exercise.supersetId) {
+            // For supersets, return an array with just the single set for this round.
+            const setForRound = this.exercise.sets[roundIndex];
+            return setForRound ? [setForRound] : [];
+        } else {
+            // For standard exercises, this is only called when roundIndex is 0. Return all sets.
+            return this.exercise.sets;
+        }
+    }
 
     status = computed(() => {
         const loggedCount = this.getNumberOfLoggedSets(this.exercise.id);

@@ -132,6 +132,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       return {
         exerciseIndex: exIndex,
         setIndex: sIndex,
+        supersetId: exerciseData.supersetId || null,
+        superSetType: exerciseData.supersetType || null,
         exerciseData: exerciseData,
         setData: setData,
         type: (setData.type as 'standard' | 'warmup' | 'amrap' | 'custom') ?? 'standard',
@@ -159,8 +161,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
   showCompletedSetsForExerciseInfo = signal(true);
   showCompletedSetsForDayInfo = signal(false);
-
-  currentStepInfo: NextStepInfo = { completedExIndex: -1, completedSetIndex: -1, exerciseSetLength: -1, maxExerciseIndex: -1 };
 
   isRestTimerVisible = signal(false);
   restDuration = signal(0);
@@ -211,37 +211,18 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   workoutProgress = computed(() => {
     const routine = this.routine();
     const log = this.currentWorkoutLog();
-
-    if (!routine || routine.exercises.length === 0) {
+    if (!routine || !routine.exercises || routine.exercises.length === 0) {
       return 0;
     }
-
-    let totalPlannedSets = 0;
-
-    routine.exercises.forEach(exercise => {
-      if (exercise.supersetId) {
-        // Only process a superset group ONCE, when we see the first exercise.
-        if (exercise.supersetOrder === 0) {
-          const groupExercises = routine.exercises.filter(ex => ex.supersetId === exercise.supersetId);
-          const setsInOneRound = groupExercises.reduce((sum, ex) => sum + ex.sets.length, 0);
-          // *** FIX: Use `supersetRounds` for supersets, not `rounds`. ***
-          const totalRounds = exercise.supersetRounds || 1;
-          totalPlannedSets += setsInOneRound * totalRounds;
-        }
-      } else {
-        // For standard exercises, the total is simply the number of sets in its array.
-        // We IGNORE the `rounds` property for this calculation to match the UI.
-        totalPlannedSets += exercise.sets.length;
-      }
-    });
-
+    // CORRECTED: The total planned sets is simply the sum of all sets from all exercises.
+    const totalPlannedSets = routine.exercises.reduce((sum, ex) => sum + (ex.sets?.length ?? 0), 0);
     if (totalPlannedSets === 0) {
       return 0;
     }
-
     const totalCompletedSets = log.exercises?.reduce((total, ex) => total + ex.sets.length, 0) || 0;
     return Math.min(100, (totalCompletedSets / totalPlannedSets) * 100);
   });
+
 
   filteredExercisesForSwitchModal = computed(() => {
     const term = this.modalSearchTerm().toLowerCase();
@@ -571,17 +552,18 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     // Only reps need to be positive.
     return (set.targetReps ?? 0) > 0;
   }
+
   getLoggedSet(exIndex: number, setIndex: number, roundIndex: number = 0): LoggedSet | undefined {
     const exercise = this.routine()?.exercises[exIndex];
     if (!exercise) return undefined;
 
-    const exerciseLog = this.currentWorkoutLog()?.exercises?.find(e => e.exerciseId === exercise.exerciseId);
+    const exerciseLog = this.currentWorkoutLog()?.exercises?.find(e => e.id === exercise.id);
     if (!exerciseLog) return undefined;
 
     const plannedSetId = exercise.sets[setIndex]?.id;
 
-    const isMultiRound = (exercise.supersetRounds || exercise.rounds || 1) > 1;
-    const targetLoggedSetId = isMultiRound ? `${plannedSetId}-round-${roundIndex}` : plannedSetId;
+    // CORRECTED: Use a consistent, unique ID format for logged superset sets.
+    const targetLoggedSetId = exercise.supersetId ? `${plannedSetId}-round-${roundIndex}` : plannedSetId;
 
     return exerciseLog.sets.find(s => s.plannedSetId === targetLoggedSetId);
   }
@@ -603,23 +585,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return exercise.sets?.length || 0;
   }
 
-  /**
-   * Checks if all sets for all exercises in a superset group for a specific round are completed.
-   */
-  isRoundCompleted(exercise: WorkoutExercise, roundIndex: number): boolean {
-    const routine = this.routine();
-    if (!routine || !exercise.supersetId) return false;
-
-    const exercisesInGroup = routine.exercises.filter(ex => ex.supersetId === exercise.supersetId);
-
-    return exercisesInGroup.every(groupEx => {
-      const currentExIndex = routine.exercises.indexOf(groupEx);
-      return groupEx.sets.every((set, setIndex) =>
-        this.isSetCompleted(currentExIndex, setIndex, roundIndex)
-      );
-    });
-  }
-
   isSetCompleted(exIndex: number, setIndex: number, roundIndex?: number): boolean {
     // If roundIndex is not provided (from older calls), default to 0.
     return !!this.getLoggedSet(exIndex, setIndex, roundIndex ?? 0);
@@ -636,8 +601,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     let exerciseLog = log.exercises.find(e => e.id === exercise.id);
     const wasCompleted = !!this.getLoggedSet(exIndex, setIndex, roundIndex);
 
-    const isMultiRound = (exercise.supersetRounds || exercise.rounds || 1) > 1;
-    const targetLoggedSetId = isMultiRound ? `${set.id}-round-${roundIndex}` : set.id;
+    // CORRECTED: Use the same unique ID format here for consistency.
+    const targetLoggedSetId = exercise.supersetId ? `${set.id}-round-${roundIndex}` : set.id;
 
     if (wasCompleted) {
       if (exerciseLog) {
@@ -659,8 +624,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
           sets: [],
           type: exercise.type || 'standard',
           supersetId: exercise.supersetId,
-          supersetRounds: exercise.supersetRounds,
-          rounds: exercise.rounds
+          supersetOrder: exercise.supersetOrder,
+          supersetType: exercise.supersetType
         };
         log.exercises.push(exerciseLog);
       }
@@ -673,7 +638,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         plannedSetId: targetLoggedSetId,
         exerciseId: exercise.exerciseId,
         type: executedSet.type,
-        // Achieved values come from the (potentially user-modified) set object in the player's state
         repsAchieved: executedSet.repsAchieved,
         weightUsed: executedSet.weightUsed,
         durationPerformed: executedSet.actualDuration,
@@ -681,15 +645,13 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         timestamp: new Date().toISOString(),
         notes: set.notes,
         targetRestAfterSet: set.restAfterSet,
-        supersetCurrentRound: isMultiRound ? roundIndex : undefined,
-        // NEW: Capture the full target from the original plan
         targetReps: set.targetReps,
-        targetRepsMin: set.targetRepsMin || set.targetReps,
-        targetRepsMax: set.targetRepsMax || set.targetReps,
+        targetRepsMin: set.targetRepsMin,
+        targetRepsMax: set.targetRepsMax,
         targetWeight: set.targetWeight,
         targetDuration: set.targetDuration,
-        targetDurationMin: set.targetDurationMin || set.targetDuration,
-        targetDurationMax: set.targetDurationMax || set.targetDuration,
+        targetDurationMin: set.targetDurationMin,
+        targetDurationMax: set.targetDurationMax,
         targetDistance: set.targetDistance,
       };
       exerciseLog.sets.push(newLoggedSet);
@@ -701,23 +663,9 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     this.lastExerciseSetIndex.set(setIndex);
     this.workoutService.vibrate();
 
-    // --- START: MODIFIED/FIXED SECTION ---
-
     if (!wasCompleted) { // Only run this logic when completing a set, not un-completing
       // Populate the step info for the auto-expansion logic
       const routine = this.routine()!;
-      this.currentStepInfo = {
-        completedExIndex: exIndex,
-        completedSetIndex: setIndex,
-        exerciseSetLength: exercise.sets.length,
-        maxExerciseIndex: routine.exercises.length - 1,
-        supersetInfo: exercise.supersetId ? {
-          supersetId: exercise.supersetId,
-          supersetSize: exercise.supersetSize ?? 1,
-          supersetOrder: exercise.supersetOrder ?? 0,
-          supersetRounds: exercise.supersetRounds ?? 1
-        } : undefined
-      };
 
       const shouldStartRest = set.restAfterSet && set.restAfterSet > 0 &&
         (!this.isSuperSet(exIndex) || (this.isSuperSet(exIndex) && this.isEndOfLastSupersetExercise(exIndex, setIndex)));
@@ -1060,17 +1008,10 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     switch (actionKey) {
       case 'switch': this.openSwitchExerciseModal(exIndex); break;
       case 'insights': this.openPerformanceInsightsModal(exIndex); break;
+      // CORRECTED: 'add_round' is now handled by 'add_set'
       case 'add_set': this.addSet(exIndex); break;
-      case 'add_round': {
-        const superSetId: string = this.retrieveSuperSetIdAndAddRound(exIndex);
-        if (superSetId) {
-          this.addRoundToSuperset(superSetId);
-        }
-        break
-      };
       case 'add_warmup_set': this.addWarmupSet(exIndex); break;
       case 'remove': this.removeExercise(exIndex); break;
-      // +++ NEW CASES FOR SUPERSET +++
       case 'create_superset': this.openCreateSupersetModal(exIndex); break;
       case 'add_to_superset': this.addToSupersetModal(exIndex); break;
       case 'remove_from_superset': this.removeFromSuperset(exIndex); break;
@@ -1129,57 +1070,37 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
     const exercise = routine.exercises[exIndex];
 
-    // --- NEW: SUPERSET-AWARE LOGIC ---
     if (exercise.supersetId) {
-      const roundIndex = setIndex; // In supersets, the setIndex IS the roundIndex.
+      const roundIndexToRemove = setIndex;
       const confirm = await this.alertService.showConfirm(
         "Remove Round",
-        `This will remove Round ${roundIndex + 1} from all exercises in this superset and clear any logged data for it. Are you sure?`
+        `This will remove Round ${roundIndexToRemove + 1} from all exercises in this superset and clear any logged data for it. Are you sure?`
       );
-
       if (!confirm?.data) return;
 
       const supersetId = exercise.supersetId;
-      const exercisesInGroup = routine.exercises.filter(ex => ex.supersetId === supersetId);
 
-      // Remove the set (round) from the routine definition for each exercise in the group
-      exercisesInGroup.forEach(groupEx => {
-        if (groupEx.sets.length > roundIndex) {
-          groupEx.sets.splice(roundIndex, 1);
-        }
+      this.routine.update(r => {
+        if (!r) return r;
+        const exercisesInGroup = r.exercises.filter(ex => ex.supersetId === supersetId);
+        exercisesInGroup.forEach(groupEx => {
+          if (groupEx.sets.length > roundIndexToRemove) {
+            groupEx.sets.splice(roundIndexToRemove, 1);
+          }
+        });
+        return { ...r };
       });
 
-      // Update the total supersetRounds for all exercises in the group
-      const newRoundCount = exercisesInGroup[0]?.sets.length || 0;
-      exercisesInGroup.forEach(groupEx => {
-        groupEx.supersetRounds = newRoundCount;
-      });
-
-      // Remove ALL logged sets for this round across the entire superset group
       this.currentWorkoutLog.update(log => {
         log.exercises?.forEach(loggedEx => {
           if (loggedEx.supersetId === supersetId) {
-            // Find the plannedSetIds for this specific round across all exercises in the superset
-            const setToRemoveIds = exercisesInGroup.map(ex => `${ex.sets[roundIndex]?.id}-round-${roundIndex}`);
-
-            // Filter out any logged sets that correspond to this round
-            loggedEx.sets = loggedEx.sets.filter(s => s.supersetCurrentRound !== roundIndex);
+            loggedEx.sets = loggedEx.sets.filter((s, index) => index !== roundIndexToRemove);
           }
         });
         return { ...log };
       });
 
-      if (newRoundCount === 0) {
-        routine.exercises = routine.exercises.filter(exercise => exercise.supersetId !== supersetId);
-      }
-
-      this.routine.set({ ...routine });
-
-      if (newRoundCount === 0) {
-        this.toastService.info(`Superset removed entirely.`);
-      } else {
-        this.toastService.info(`Round ${roundIndex + 1} removed from the superset.`);
-      }
+      this.toastService.info(`Round ${roundIndexToRemove + 1} removed from the superset.`);
 
     } else {
       // --- STANDARD EXERCISE LOGIC (remains the same) ---
@@ -1243,8 +1164,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
           remainingInSuperset.forEach(ex => {
             ex.supersetId = null;
             ex.supersetOrder = null;
-            ex.supersetSize = null;
-            ex.supersetRounds = null;
             ex.type = 'standard';
             // Also clean the round markers from the sets
             // ex.sets.forEach(set => set.supersetRound = undefined);
@@ -1258,7 +1177,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
             .sort((a, b) => (a.supersetOrder ?? 0) - (b.supersetOrder ?? 0))
             .forEach((ex, i) => {
               ex.supersetOrder = i;
-              ex.supersetSize = remainingInSuperset.length;
             });
         }
       }
@@ -1539,77 +1457,20 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return (isSuperSet ? 0 : setIndex) + 1;
   }
 
-  /**
-   * Creates an array of numbers from 0 to count-1.
-   * This is a utility for creating loops in the template for rounds.
-   * @param count The number of rounds.
-   * @returns An array like [0, 1, 2, ...].
-   */
-  getRoundIndices(count: number | null | undefined): number[] {
-    const rounds = count || 1;
-    return Array.from({ length: rounds }, (_, i) => i);
-  }
-
   private isExerciseFullyLogged(currentExercise: WorkoutExercise): boolean {
-    const routine = this.routine();
-    if (!routine) return false;
-    const exercise = routine.exercises.find(ex => ex.id === currentExercise.id);
-    if (!exercise) return false;
-    if (!this.currentWorkoutLog() || !this.currentWorkoutLog().exercises) return false;
-    const loggedExercises = this.currentWorkoutLog().exercises;
-    if (!loggedExercises) return false;
-
-    const loggedEx = loggedExercises.find(le =>
-      le.id === currentExercise.id
-      && exercise.exerciseId === le.exerciseId
-    );
-
+    const loggedEx = this.currentWorkoutLog().exercises?.find(le => le.id === currentExercise.id);
     if (!loggedEx) return false;
-
-    let rounds = exercise.supersetRounds ?? 1;
-    if (exercise.supersetId && exercise.supersetOrder !== null) {
-      const blockStart = routine.exercises.find(
-        ex => ex.supersetId === exercise.supersetId && ex.supersetOrder === 0
-      );
-      rounds = blockStart?.supersetRounds ?? 1;
-    }
-
-    const totalPlannedCompletions = (exercise.sets?.length ?? 0) * rounds;
-
-    return loggedEx.sets.length >= totalPlannedCompletions;
+    // CORRECTED: Total planned completions is simply the number of sets.
+    return loggedEx.sets.length >= currentExercise.sets.length;
   }
+
 
   private isExercisePartiallyLogged(currentExercise: WorkoutExercise): boolean {
-    const routine = this.routine();
-    if (!routine) return false;
-    if (!this.currentWorkoutLog() || !this.currentWorkoutLog().exercises) return false;
-
-    const loggedExercises = this.currentWorkoutLog().exercises;
-    if (!loggedExercises) return false;
-
-    const exercise = routine.exercises.find(ex => ex.exerciseId === currentExercise.exerciseId && ex.id === currentExercise.id);
-    if (!exercise) return false;
-
-    const loggedEx = loggedExercises.find(le =>
-      le.exerciseId === currentExercise.exerciseId &&
-      exercise.exerciseId === le.exerciseId &&
-      le.id === currentExercise.id
-    );
-
-    if (!loggedEx || loggedEx.sets.length === 0) {
-      return false;
-    }
-
-    let rounds = exercise.supersetRounds ?? 1;
-    if (exercise.supersetId && exercise.supersetOrder !== null) {
-      const blockStart = routine.exercises.find(
-        ex => ex.supersetId === exercise.supersetId && ex.supersetOrder === 0
-      );
-      rounds = blockStart?.supersetRounds ?? 1;
-    }
-    const totalPlannedCompletions = (exercise.sets?.length ?? 0) * rounds;
-
-    return loggedEx.sets.length < totalPlannedCompletions;
+    const loggedEx = this.currentWorkoutLog().exercises?.find(le => le.id === currentExercise.id);
+    if (!loggedEx || loggedEx.sets.length === 0) return false;
+    // CORRECTED: Check against the total number of sets.
+    const totalPlannedCompletions = currentExercise.sets.length;
+    return loggedEx.sets.length > 0 && loggedEx.sets.length < totalPlannedCompletions;
   }
 
   compactActionItemsMap = computed<Map<number, ActionMenuItem[]>>(() => {
@@ -1635,7 +1496,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         overrideCssButtonClass: openSessionPerformanceInsightsBtn.buttonClass + commonModalButtonClass
       };
 
-      const baseAddSetRoundBtn = !this.isSuperSet(exIndex) ? addSetToExerciseBtn : addRoundToExerciseBtn;
+      const baseAddSetRoundBtn = !this.isSuperSet(exIndex) ? addSetToExerciseBtn : { ...addRoundToExerciseBtn, actionKey: 'add_set' };
       const addSetRoundBtn = {
         ...baseAddSetRoundBtn,
         data: { exIndex },
@@ -1725,11 +1586,21 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
   private handleAutoExpandNextExercise(): void {
     // Use a guard clause to ensure currentStepInfo is valid
-    if (!this.currentStepInfo || this.currentStepInfo.completedExIndex < 0) {
-      return;
-    }
-
-    const { completedExIndex, completedSetIndex, exerciseSetLength, maxExerciseIndex, supersetInfo } = this.currentStepInfo;
+    // Compute current step info locally
+    const completedExIndex = this.lastExerciseIndex();
+    const completedSetIndex = this.lastExerciseSetIndex();
+    const routine = this.routine();
+    const exerciseSetLength = routine?.exercises[completedExIndex]?.sets.length ?? 0;
+    const maxExerciseIndex = routine?.exercises.length ? routine.exercises.length - 1 : 0;
+    const ex = routine?.exercises[completedExIndex];
+    const supersetInfo = ex?.supersetId
+      ? {
+        supersetId: ex.supersetId,
+        supersetSize: ex.sets.length ?? 0,
+        supersetOrder: ex.supersetOrder ?? 0,
+        supersetRounds: ex.sets.length
+      }
+      : undefined;
 
     const isLastSetOfExercise = completedSetIndex >= exerciseSetLength - 1;
 
@@ -1834,7 +1705,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
           suggestedSetDetails.targetDuration = historicalSet.durationPerformed;
           suggestedSetDetails.targetDistance = historicalSet.distanceAchieved;
         }
-        
+
         // --- START: MODIFIED TEXT CONSTRUCTION ---
 
         // Line 1: Exercise Name
@@ -1936,16 +1807,16 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     this.workoutService.savePausedWorkout(stateToSave);
   }
 
-   private async loadStateFromPausedSession(state: PausedWorkoutState): Promise<void> {
+  private async loadStateFromPausedSession(state: PausedWorkoutState): Promise<void> {
     this.routineId = state.routineId;
     this.programId = state.programId ? state.programId : null;
     this.scheduledDay.set(state.scheduledDayId ?? undefined);
     this.routine.set(state.sessionRoutine);
-    
+
     // Restore the essential workoutStartTime property first
     this.workoutStartTime = state.workoutStartTimeOriginal || Date.now(); // Fallback to now() as a safety measure
     this.sessionTimerElapsedSecondsBeforePause = state.sessionTimerElapsedSecondsBeforePause;
-    
+
     const loggedExercises = state.currentWorkoutLogExercises;
 
     if (loggedExercises) {
@@ -2106,81 +1977,35 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return '';
   }
 
-  // +++ NEW: Method to add a new round to an existing superset +++
-  async addRoundToSuperset(supersetId: string, event?: Event | undefined) {
-    event?.stopPropagation();
-    this.routine.update(r => {
-      if (!r) return r;
-
-      const exercisesInSuperset = r.exercises.filter(ex => ex.supersetId === supersetId);
-      if (exercisesInSuperset.length === 0) return r;
-
-      const firstExercise = exercisesInSuperset[0];
-      const currentRounds = firstExercise.supersetRounds || 1;
-      const newRoundNumber = currentRounds + 1;
-
-      exercisesInSuperset.forEach(exercise => {
-        exercise.supersetRounds = newRoundNumber;
-        // The number of sets per round is now always 1
-        const templateSet = exercise.sets.length > 0 ? exercise.sets[0] : { id: uuidv4(), reps: 8, weight: 10, restAfterSet: 60, type: 'standard' };
-
-        const newSet = { ...templateSet, id: uuidv4(), supersetRound: newRoundNumber };
-        exercise.sets.push(newSet);
-      });
-
-      this.toastService.success(`Added Round ${newRoundNumber} to superset.`);
-
-      // +++ FIX: Return a new object reference to trigger computed signal recalculation +++
-      return { ...r };
-    });
-  }
-
   // +++ NEW: Method to complete all sets within a specific superset round +++
-  async completeSupersetRound(exercise: WorkoutExercise, roundIndex: number, event: Event) {
+  async completeRoundOrSet(exercise: WorkoutExercise, setIndex: number, event: Event) {
     event.stopPropagation();
     const routine = this.routine();
-    if (!routine || !exercise.supersetId) return;
+    if (!routine) return;
 
-    const confirm = await this.alertService.showConfirm(
-      'Complete Round',
-      `Mark all sets in Round ${roundIndex + 1} for this superset as complete?`,
-      'Complete',
-      'Cancel'
-    );
-    if (!confirm?.data) return;
+    const exIndex = routine.exercises.findIndex(e => e.id === exercise.id);
 
-    const exercisesInSuperset = routine.exercises.filter(ex => ex.supersetId === exercise.supersetId);
+    if (exercise.supersetId) {
+      // --- Complete Round Logic for Supersets ---
+      const roundIndex = setIndex;
+      const confirm = await this.alertService.showConfirm('Complete Round', `Mark all sets in Round ${roundIndex + 1} as complete?`, 'Complete', 'Cancel');
+      if (!confirm?.data) return;
 
-    // Iterate through each exercise belonging to the superset group.
-    exercisesInSuperset.forEach(exInSuperset => {
-      const exIndex = routine.exercises.findIndex(e => e.id === exInSuperset.id);
-      if (exIndex === -1) return;
-
-      // Iterate through the SETS that make up ONE round for that exercise.
-      exInSuperset.sets.forEach((set, setIndex) => {
-        // Check if this specific set in this specific round is already completed.
-        const wasCompleted = this.isSetCompleted(exIndex, setIndex, roundIndex);
-        const isValid = this.isSetDataValid(exIndex, setIndex);
-
-        // If it's not completed and the data is valid, mark it as complete.
-        if (!wasCompleted && isValid) {
-          // *** THE CORE FIX: Pass the `roundIndex` as the 5th argument. ***
-          this.toggleSetCompletion(exInSuperset, set, exIndex, setIndex, roundIndex);
+      const exercisesInSuperset = routine.exercises.filter(ex => ex.supersetId === exercise.supersetId);
+      exercisesInSuperset.forEach(exInGroup => {
+        const groupExIndex = routine.exercises.findIndex(e => e.id === exInGroup.id);
+        // In a superset, there is only one template set per exercise, so we always use setIndex 0
+        const setTemplate = exInGroup.sets[setIndex];
+        if (setTemplate && !this.isSetCompleted(groupExIndex, setIndex, roundIndex)) {
+          this.toggleSetCompletion(exInGroup, setTemplate, groupExIndex, setIndex, roundIndex);
         }
       });
-    });
-
-    this.toastService.success(`Round ${roundIndex + 1} completed!`);
-
-    // Check if the round just completed was the final one to decide if we should auto-expand the next exercise.
-    const totalRounds = exercise.supersetRounds || 1;
-    if (roundIndex >= totalRounds - 1) {
-      const lastExerciseInGroupIndex = routine.exercises.findIndex(e => e.id === exercisesInSuperset[exercisesInSuperset.length - 1].id);
-
-      if (lastExerciseInGroupIndex + 1 < routine.exercises.length) {
-        this.toggleExerciseExpansion(lastExerciseInGroupIndex + 1);
-      } else {
-        this.toggleExerciseExpansion(-1); // Collapse all if it was the last exercise in the routine
+      this.toastService.success(`Round ${roundIndex + 1} completed!`);
+    } else {
+      // --- Complete Set Logic for Standard Exercises ---
+      const set = exercise.sets[setIndex];
+      if (!this.isSetCompleted(exIndex, setIndex, 0)) {
+        this.toggleSetCompletion(exercise, set, exIndex, setIndex, 0);
       }
     }
   }
@@ -2222,6 +2047,12 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return true;
   }
 
+  protected isEmom(index: number): boolean {
+    const ex = this.routine()?.exercises[index];
+    if (!ex || !ex.supersetId) return false;
+    return ex.supersetType === 'emom';
+  }
+
   isSupersetStart(index: number): boolean {
     const ex = this.routine()?.exercises[index];
     if (!ex?.supersetId) return false;
@@ -2230,14 +2061,19 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
   isSupersetMiddle(index: number): boolean {
     const ex = this.routine()?.exercises[index];
-    if (!ex?.supersetId || ex.supersetOrder === 0 || ex.supersetSize === null || ex.supersetSize === undefined) return false;
-    return ex.supersetOrder !== null && ex.supersetOrder < ex.supersetSize - 1;
+    if (!ex?.supersetId || ex.supersetOrder === 0 || ex.sets.length === null || ex.sets.length === undefined) return false;
+    return ex.supersetOrder !== null && ex.supersetOrder < ex.sets.length - 1;
+  }
+
+  // Return the total number of exercises in the superset group
+  getSupersetSize(index: number): number {
+    return this.workoutService.getSupersetSize(this.routine(), index);
   }
 
   isSupersetEnd(index: number): boolean {
     const ex = this.routine()?.exercises[index];
-    if (!ex?.supersetId || ex.supersetSize === null || ex.supersetSize === undefined) return false;
-    return ex.supersetOrder === ex.supersetSize - 1;
+    if (!ex?.supersetId || ex.sets.length === null || ex.sets.length === undefined) return false;
+    return ex.supersetOrder === this.getSupersetSize(index) - 1;
   }
 
   isEndOfLastSupersetExercise(exIndex: number, setIndex: number): boolean {
@@ -2296,23 +2132,29 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
   getExerciseClasses(exercise: WorkoutExercise, index: number): any {
-    const isSSet = this.isSuperSet(index);
+    const isStandardSuperSet = this.isSuperSet(index) && !this.isEmom(index);
+    const isEmomSet = this.isEmom(index);
     const order = exercise.supersetOrder ?? 0;
     const isExpanded = this.expandedExerciseIndex() === index;
 
     // --- Base classes that apply to almost all states ---
     const classes: any = {
       // Side borders always apply to superset items
-      'border-l-2 border-r-2 border-primary rounded-md': isSSet,
+
+      'border-l-2 border-r-2 rounded-md': isStandardSuperSet || isEmomSet,
+      'border-primary': isStandardSuperSet,
+      'border-teal-400': isEmomSet,
       // Standalone exercises always get these classes
-      'mb-3 rounded-md': !isSSet,
+      'mb-3 rounded-md': !isStandardSuperSet && !isEmomSet,
     };
 
     // --- State-Specific Logic ---
-    if (isSSet && isExpanded) {
+    if (isExpanded){
+      classes['border-yellow-400 ring-2 ring-yellow-400 dark:ring-yellow-500 z-10'] = true;
+    }
+    if ((isStandardSuperSet || isEmomSet) && isExpanded) {
       // STATE 1: THE EXERCISE IS EXPANDED
       // It becomes a self-contained, highlighted block.
-      classes['border-yellow-400 ring-2 ring-yellow-400 dark:ring-yellow-500 z-10'] = true;
       classes['rounded-md'] = true;       // Round all corners
       classes['border-t-2'] = true;       // Ensure it has a top border
       classes['border-b-2'] = true;       // Ensure it has a bottom border
@@ -2327,7 +2169,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     }
 
     // --- Background Color Logic (applied last, doesn't affect layout) ---
-    if (isSSet && order % 2 !== 0) {
+    if (isStandardSuperSet && order % 2 !== 0) {
       classes['bg-gray-200/80 dark:bg-gray-800'] = true; // Striped background
     } else {
       classes['bg-white dark:bg-gray-700'] = true; // Default background
@@ -2336,45 +2178,23 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return classes;
   }
 
-    /**
-   * Calculates the current and total rounds for a given exercise.
-   * This version is adapted for the compact player and determines the
-   * current round by inspecting the workout log.
-   * @param ex The exercise to get round info for.
-   */
   private getRoundInfo(ex: WorkoutExercise): { round: number, totalRounds: number } {
-    const routine = this.routine();
-    if (!routine) {
-      return { round: 1, totalRounds: 1 }; // Fallback
-    }
+    // CORRECTED: Total rounds for a superset is its number of sets. For standard, it's 1.
+    const totalRounds = ex.supersetId ? ex.sets.length : 1;
 
-    // 1. Calculate Total Rounds for the block (handles supersets)
-    let totalRounds = ex.supersetRounds ?? ex.rounds ?? 1;
-    if (ex.supersetId && ex.supersetOrder !== null) {
-      const blockStart = routine.exercises.find(e => e.supersetId === ex.supersetId && e.supersetOrder === 0);
-      totalRounds = blockStart?.supersetRounds ?? 1;
-    }
-
-    // 2. Calculate the Current Round to be performed for this exercise
-    const loggedSetsForEx = this.currentWorkoutLog().exercises?.find(logEx => logEx.id === ex.id)?.sets ?? [];
-    const setsPerRound = ex.sets.length > 0 ? ex.sets.length : 1; // Avoid division by zero
-
-    // The number of logged sets divided by sets per round gives the number of fully completed rounds.
-    const completedRounds = Math.floor(loggedSetsForEx.length / setsPerRound);
-    // The next round to be performed is one more than the last completed round.
-    const currentRound = completedRounds + 1;
+    // The current round is based on how many sets have been logged.
+    const loggedSetsCount = this.currentWorkoutLog().exercises?.find(logEx => logEx.id === ex.id)?.sets.length ?? 0;
+    const currentRound = loggedSetsCount + 1;
 
     return { round: currentRound, totalRounds };
   }
 
-  private comparePerformedToOriginal(
-    performed: LoggedWorkoutExercise[],
-    original: WorkoutExercise[]
-  ): { majorDifference: boolean; details: string[] } {
+
+
+  private comparePerformedToOriginal(performed: LoggedWorkoutExercise[], original: WorkoutExercise[]): { majorDifference: boolean; details: string[] } {
     const details: string[] = [];
     let majorDifference = false;
-
-    const originalIdSet = new Set(original.map(ex => ex.id)); // Use the unique instance ID
+    const originalIdSet = new Set(original.map(ex => ex.id));
     const performedInOriginal: LoggedWorkoutExercise[] = [];
     const addedCustomExercises: LoggedWorkoutExercise[] = [];
 
@@ -2393,34 +2213,21 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
     for (const originalEx of original) {
       const performedEx = performed.find(p => p.id === originalEx.id);
-
       if (!performedEx) {
-        // This exercise from the original plan was not performed at all.
         majorDifference = true;
         details.push(`Exercise skipped: "${originalEx.exerciseName || originalEx.exerciseId}"`);
         continue;
       }
 
-      // *** THE CORE FIX IS HERE ***
-      // Calculate the total number of sets that *should* have been performed based on the routine's plan.
-      let totalPlannedExecutions: number;
-      if (originalEx.supersetId) {
-        // For supersets, the total is sets per round * number of supersetRounds.
-        totalPlannedExecutions = originalEx.sets.length * (originalEx.supersetRounds || 1);
-      } else {
-        // For standard exercises, the total is sets * rounds.
-        // Note: In the compact player, this logic is simpler, but for the focus player, this is correct.
-        totalPlannedExecutions = originalEx.sets.length * (originalEx.rounds || 1);
-      }
-
-      if (performedEx.sets.length !== totalPlannedExecutions) {
+      // CORRECTED: Simplified set count comparison.
+      if (performedEx.sets.length !== originalEx.sets.length) {
         majorDifference = true;
-        details.push(`Set count for "${performedEx.exerciseName}" changed (Planned: ${totalPlannedExecutions}, Performed: ${performedEx.sets.length})`);
+        details.push(`Set count for "${performedEx.exerciseName}" changed (Planned: ${originalEx.sets.length}, Performed: ${performedEx.sets.length})`);
       }
     }
-
     return { majorDifference, details };
   }
+
   private convertLoggedToWorkoutExercises(loggedExercises: LoggedWorkoutExercise[]): WorkoutExercise[] {
     const currentSessionRoutine = this.routine();
     return loggedExercises.map(loggedEx => {
@@ -2431,16 +2238,14 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         exerciseName: loggedEx.exerciseName,
         supersetId: sessionExercise?.supersetId || null,
         supersetOrder: sessionExercise?.supersetOrder ?? null,
-        supersetSize: sessionExercise?.supersetSize ?? null,
-        rounds: sessionExercise?.rounds ?? 1,
         notes: sessionExercise?.notes,
         sets: loggedEx.sets.map(loggedSet => {
           const originalPlannedSet = sessionExercise?.sets.find(s => s.id === loggedSet.plannedSetId);
           return {
             id: uuidv4(),
-            reps: loggedSet.repsAchieved,
-            weight: loggedSet.weightUsed,
-            duration: loggedSet.durationPerformed,
+            targetReps: loggedSet.repsAchieved, // Corrected mapping
+            targetWeight: loggedSet.weightUsed, // Corrected mapping
+            targetDuration: loggedSet.durationPerformed, // Corrected mapping
             tempo: originalPlannedSet?.tempo || '1',
             restAfterSet: originalPlannedSet?.restAfterSet || 60,
             notes: loggedSet.notes,

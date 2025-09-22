@@ -61,25 +61,10 @@ export interface WorkoutExercise {
    * Relevant only if supersetId is not null.
    */
   supersetOrder: number | null;
-  /**
-   * The total number of exercises in this superset group.
-   * Relevant only if supersetId is not null.
-   * Can be derived or explicitly set.
-   */
-  supersetSize?: number | null; // Can be useful for display "Exercise 1 of 2 in Superset"
-  supersetRounds?: number | null;
-  supersetCurrentRound?: number | null; // Tracks the current round when performing the superset
 
   // `lastPerformed` was on WorkoutExercise, but it's usually a Routine-level or global exercise stat.
   // Keeping it here for now if your current logic uses it, but consider if it's truly per WorkoutExercise instance.
   lastPerformed?: Date;
-
-  /**
-   * Number of rounds this exercise (or the superset/block it starts) should be repeated.
-   * Default is 1. Only applies if this exercise is the START of a block
-   * (i.e., not part of a superset OR supersetOrder === 0).
-   */
-  rounds?: number; // e.g., 3 for 3 rounds
 
   // +++ NEW: Superset Type & EMOM Properties +++
   /**
@@ -122,6 +107,8 @@ export interface Routine {
 export interface ActiveSetInfo {
   exerciseIndex: number;
   setIndex: number;
+  supersetId: string | null; // If part of a superset, this is the superset ID
+  superSetType: 'standard' | 'emom' | null; // Type of the superset if applicable
   exerciseData: WorkoutExercise; // This WorkoutExercise will have sessionStatus
   setData: ExerciseTargetSetParams;
   baseExerciseInfo?: Exercise;

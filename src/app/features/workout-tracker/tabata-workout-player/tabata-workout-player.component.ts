@@ -192,7 +192,6 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
             weightUsed: 0,   // Not tracked in this mode
             durationPerformed: setData.targetDuration || 0, // Log the planned work duration
             timestamp: new Date().toISOString(),
-            supersetCurrentRound: this.currentBlockRound() - 1,
         };
 
         this.addLoggedSetToCurrentLog(exerciseData, loggedSetData);
@@ -268,25 +267,14 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
 * @returns `true` if the entire workout is fully logged, otherwise `false`.
 */
     private isEntireWorkoutFullyLogged(routine: Routine, loggedExercises: LoggedWorkoutExercise[]): boolean {
-        // Quick check: If the number of exercise entries doesn't match, it can't be complete.
-        if (routine.exercises.length !== loggedExercises.length) {
-            return false;
-        }
-
-        // Use .every() for a clean, fail-fast check. It will stop as soon as it finds an incomplete exercise.
+        // This method can now be simplified to just use our more reliable `isExerciseFullyLogged` helper.
         return routine.exercises.every(plannedExercise => {
-            const loggedExercise = loggedExercises.find(log => log.id === plannedExercise.id);
-
-            // If a planned exercise has no corresponding log entry, the workout is not complete.
-            if (!loggedExercise) {
-                return false;
-            }
-
-            // Calculate the total number of sets that *should* have been completed for this exercise, including all rounds.
-            const totalPlannedCompletions = (plannedExercise.sets?.length ?? 0) * (plannedExercise.supersetRounds ?? 1);
-
-            // The workout is only complete if the number of logged sets is equal to or greater than the plan.
-            return loggedExercise.sets.length >= totalPlannedCompletions;
+            // We need to temporarily set the routine() signal for the helper to work correctly during this check.
+            const originalRoutine = this.routine();
+            this.routine.set(routine);
+            const result = this.isExerciseFullyLogged(plannedExercise);
+            this.routine.set(originalRoutine); // Restore original signal value
+            return result;
         });
     }
 
@@ -545,8 +533,6 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
                 type: loggedSet.type || 'standard',
                 supersetId: exerciseData.supersetId || null,
                 supersetOrder: exerciseData.supersetOrder !== null ? exerciseData.supersetOrder : null,
-                supersetSize: exerciseData.supersetSize || 0,
-                supersetRounds: exerciseData.supersetRounds || 0,
             };
 
             // Insert at the same index as in the routine for consistency
@@ -609,7 +595,6 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
             targetRestAfterSet: activeInfo.setData.restAfterSet,
             notes: formValues.setNotes?.trim() || undefined,
             timestamp: new Date().toISOString(),
-            supersetCurrentRound: this.getIndexedCurrentBlock()
             // Add a specific field for Tabata round
         };
         this.addLoggedSetToCurrentLog(activeInfo.exerciseData, loggedSetData);
@@ -964,7 +949,7 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
                         this.totalBlockRounds.set(firstEx.sets.length ?? 1);
                     } else {
                         const actualStart = sessionRoutineCopy.exercises.find(ex => ex.supersetId === firstEx.supersetId && ex.supersetOrder === 0);
-                        this.totalBlockRounds.set(actualStart?.supersetRounds ?? 1);
+                        this.totalBlockRounds.set(actualStart?.sets.length ?? 1);
                     }
                 } else {
                     console.log("loadNewWorkoutFromRoute: Routine loaded but no initial pending exercises. Will try deferred/finish");
@@ -1065,12 +1050,9 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
                 this.currentSetIndex.set(this.findFirstUnloggedSetIndex(exerciseToStart.id, exerciseToStart.sets.map(s => s.id)) || 0);
                 this.currentBlockRound.set(1); // Reset round for this specific exercise block
                 const newBlockStarter = updatedRoutine.exercises[selectedExerciseOriginalIndex];
-                if (!newBlockStarter.supersetId || newBlockStarter.supersetOrder === 0) {
-                    this.totalBlockRounds.set(newBlockStarter.sets.length ?? 1);
-                } else {
-                    const actualBlockStart = updatedRoutine.exercises.find(ex => ex.supersetId === newBlockStarter.supersetId && ex.supersetOrder === 0);
-                    this.totalBlockRounds.set(actualBlockStart?.supersetRounds ?? 1);
-                }
+
+                this.totalBlockRounds.set(this.getRoundsForExerciseBlock(selectedExerciseOriginalIndex, updatedRoutine));
+
                 this.lastPerformanceForCurrentExercise = null;
                 this.playerSubState.set(PlayerSubState.PerformingSet);
                 await this.prepareCurrentSet();
@@ -1312,30 +1294,16 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
     private isExerciseFullyLogged(currentExercise: WorkoutExercise): boolean {
         const routine = this.routine();
         if (!routine) return false;
-        const exercise = routine.exercises.find(ex => ex.id === currentExercise.id);
-        if (!exercise) return false;
 
-        const loggedEx = this.currentWorkoutLogExercises().find(le =>
-            le.id === currentExercise.id
-            && exercise.exerciseId === le.exerciseId
-        );
+        const loggedEx = this.currentWorkoutLogExercises().find(le => le.id === currentExercise.id);
 
         if (!loggedEx) return false;
 
-        // Determine rounds for this exercise (handle supersets)
-        let rounds = exercise.supersetRounds ? exercise.supersetRounds : exercise.sets.length;
-        if (exercise.supersetId && exercise.supersetOrder !== null) {
-            const blockStart = routine.exercises.find(
-                ex => ex.supersetId === exercise.supersetId && ex.supersetOrder === 0
-            );
-            rounds = blockStart?.supersetRounds ? blockStart?.supersetRounds : blockStart?.sets?.length || 1;
-        }
+        // Use our updated helper to get the correct number of total rounds/sets for the block.
+        const exerciseIndexInRoutine = routine.exercises.findIndex(ex => ex.id === currentExercise.id);
+        const totalPlannedCompletions = this.getRoundsForExerciseBlock(exerciseIndexInRoutine, routine);
 
-        // A superset exercise has only 1 set defined, but is repeated for each round.
-        // So, the total number of sets to be logged is equal to the number of rounds.
-        // A standard exercise's total sets is its sets.length * its rounds.
-        const totalPlannedCompletions = (exercise.sets?.length ?? 0) * rounds;
-
+        // The logic remains the same: check if logged sets match the total planned sets.
         return loggedEx.sets.length >= totalPlannedCompletions;
     }
 
@@ -1376,7 +1344,7 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
             const currentExercise = routine.exercises[exerciseIndex];
             const totalRoundsForBlock = this.getRoundsForExerciseBlock(exerciseIndex, routine);
             const isSuperset = !!currentExercise.supersetId;
-            const supersetSize = isSuperset ? (currentExercise.supersetSize ?? 1) : 1;
+            const supersetSize = isSuperset ? (currentExercise.sets.length ?? 1) : 1;
 
             // Loop for the number of rounds for this specific block
             for (let round = 1; round <= totalRoundsForBlock; round++) {
@@ -1480,13 +1448,15 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
         const exercise = routine.exercises[exerciseIndex];
         if (!exercise) return 1;
 
-        // If it's a superset, find the first exercise in that superset block
+        // If it's a superset, the number of rounds is determined by the number of sets
+        // in the FIRST exercise of that superset group.
         if (exercise.supersetId) {
             const firstInSuperset = routine.exercises.find(ex => ex.supersetId === exercise.supersetId && ex.supersetOrder === 0);
-            return firstInSuperset?.supersetRounds ?? 1;
+            // The number of "rounds" is now simply the number of sets.
+            return firstInSuperset?.sets.length ?? 1;
         }
 
-        // If it's a standard exercise, use its own rounds property
+        // If it's a standard exercise, the number of "rounds" is also its number of sets.
         return exercise.sets.length ?? 1;
     }
 
@@ -1727,7 +1697,6 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
                 exerciseName: loggedEx.exerciseName,
                 supersetId: sessionExercise?.supersetId || null,
                 supersetOrder: sessionExercise?.supersetOrder ?? null,
-                supersetSize: sessionExercise?.supersetSize ?? null,
                 notes: sessionExercise?.notes, // Overall exercise notes from session if any
                 sets: !loggedEx.supersetId ? loggedEx.sets.map(loggedSet => {
                     const originalPlannedSet = sessionExercise?.sets.find(s => s.id === loggedSet.plannedSetId);
@@ -1743,7 +1712,7 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
                     };
                 }) : [this.getFirstExerciseOfSuperset((loggedEx.supersetOrder || 0), loggedEx.supersetId, loggedExercises)],
                 // TODO correct number of sets when converting a SUPERSET routine to a new one
-                type: (sessionExercise?.supersetSize ?? 0) >= 1 ? 'superset' : 'standard'
+                type: (sessionExercise?.sets.length ?? 0) >= 1 ? 'superset' : 'standard'
                 // sessionStatus is NOT included here as it's session-specific
             };
             return newWorkoutEx;
@@ -1759,7 +1728,7 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
             targetWeight: exerciseSet && exerciseSet.weightUsed ? exerciseSet.weightUsed : 1,
             targetDuration: exerciseSet && exerciseSet.targetDuration ? exerciseSet.targetDuration : 0,
             tempo: '1',
-            restAfterSet: superSetOrder !== null && superSetOrder !== undefined && exercise && exercise.supersetSize && superSetOrder < exercise.supersetSize - 1 ? 0 : this.getLastExerciseOfSuperset(supersetId, loggedExercises).restAfterSet,
+            restAfterSet: superSetOrder !== null && superSetOrder !== undefined && exercise && exercise.sets.length && superSetOrder < exercise.sets.length - 1 ? 0 : this.getLastExerciseOfSuperset(supersetId, loggedExercises).restAfterSet,
             notes: exerciseSet && exerciseSet.notes ? exerciseSet.notes : '',
             type: exerciseSet && exerciseSet.type ? 'superset' : 'standard',
         };

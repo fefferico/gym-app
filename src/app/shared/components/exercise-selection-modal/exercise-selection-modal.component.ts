@@ -52,11 +52,19 @@ export class ExerciseSelectionModalComponent implements AfterViewInit {
             return exerciseList;
         }
         const normalizedTerm = this.exerciseService.normalizeExerciseNameForSearch(term);
-        return exerciseList.filter(ex =>
-            ex.name.toLowerCase().includes(normalizedTerm) ||
-            ex.category?.toLowerCase().includes(term) ||
-            ex.primaryMuscleGroup?.toLowerCase().includes(term)
-        );
+
+        // normalizedTerm could be something like "kettlebell pr", so we check if all parts are included, even if not consecutively
+        return exerciseList.filter(ex => {
+            return normalizedTerm.split(' ').every(part => ex.name.toLowerCase().includes(part) ||
+             (ex.category?.toLowerCase().includes(part)) || 
+             (ex.primaryMuscleGroup?.toLowerCase().includes(part)));
+        });
+
+        // return exerciseList.filter(ex =>
+        //     ex.name.toLowerCase().includes(normalizedTerm) ||
+        //     ex.category?.toLowerCase().includes(term) ||
+        //     ex.primaryMuscleGroup?.toLowerCase().includes(term)
+        // );
     });
 
     // --- Event Handlers ---

@@ -55,8 +55,6 @@ export function mapLoggedExercisesToRoutineSnapshot(
             // Map superset properties
             supersetId: loggedEx.supersetId || null,
             supersetOrder: loggedEx.supersetOrder ?? null,
-            supersetSize: loggedEx.supersetSize ?? null,
-            supersetRounds: loggedEx.supersetRounds ?? null
         };
 
         return workoutExercise;
@@ -102,12 +100,9 @@ export function mapRoutineSnapshotToLoggedExercises(
             // Directly map all superset properties from the plan to the log structure.
             supersetId: planExercise.supersetId || null,
             supersetOrder: planExercise.supersetOrder ?? null,
-            supersetSize: planExercise.supersetSize ?? null,
-            supersetRounds: planExercise.supersetRounds ?? null,
 
             // This is a runtime state property that tracks progress through a superset.
             // It should be initialized to null or 0.
-            supersetCurrentRound: null
         };
 
         return loggedExercise;

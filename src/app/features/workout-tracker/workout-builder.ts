@@ -417,7 +417,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
               supersetRounds: tabataRounds,
               type: 'superset'
             }, { emitEvent: false });
-            this.updateRoundsControlability(exerciseControl);
           });
           this.toastService.info("Routine configured for Tabata: all exercises grouped as a single superset.", 4000);
         }
@@ -432,7 +431,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
               supersetRounds: 0,
               type: 'standard'
             }, { emitEvent: false });
-            this.updateRoundsControlability(exerciseControl as FormGroup);
           });
           this.toastService.info("Tabata grouping removed.", 3000);
         }
@@ -659,9 +657,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         }
 
       }
-      this.exercisesFormArray.controls.forEach(exCtrl => {
-        this.updateRoundsControlability(exCtrl as FormGroup);
-      });
     }
   }
 
@@ -847,6 +842,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     this.toggleFormState(false);
     this.expandedSetPath.set(null);
     this.builderForm.markAsPristine();
+    this.routine.set(this.mapFormToRoutine(this.builderForm.getRawValue()));
   }
 
   // +++ NEW: Helper to create exercise group FROM LOG data +++
@@ -859,8 +855,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       sets: this.fb.array(loggedEx.sets.map(set => this.createSetFormGroup(set, true))),
       supersetId: [loggedEx.supersetId || null],
       supersetOrder: [loggedEx.supersetOrder ?? null],
-      supersetSize: [loggedEx.supersetSize ?? null],
-      supersetRounds: [loggedEx.supersetRounds ?? 0, [Validators.min(0)]],
       supersetType: [loggedEx.supersetType ?? 'standard'], // Ensure type is also mapped
       emomTimeSeconds: [loggedEx.emomTimeSeconds ?? null] //EMOM seconds
     });
@@ -945,13 +939,9 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       // Carry over superset info from the log
       supersetId: [loggedEx.supersetId || null],
       supersetOrder: [loggedEx.supersetOrder ?? null],
-      supersetSize: [loggedEx.supersetSize ?? null],
-      supersetRounds: [loggedEx.supersetRounds || 0, [Validators.min(0)]],
     });
 
     // Add listeners and update controls as needed, similar to createExerciseFormGroup
-    exerciseFg.get('supersetId')?.valueChanges.subscribe(() => this.updateRoundsControlability(exerciseFg));
-    this.updateRoundsControlability(exerciseFg);
     this.addRepsListener(exerciseFg);
     this.addDurationListener(exerciseFg);
 
@@ -971,17 +961,13 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       ),
       supersetId: [exerciseData?.supersetId || null], // PRESERVE superset
       supersetOrder: [exerciseData?.supersetOrder ?? null], // PRESERVE superset
-      supersetSize: [exerciseData?.supersetSize ?? null], // PRESERVE superset
-      supersetRounds: [exerciseData?.supersetRounds ?? 0, [Validators.min(0)]],
+      supersetSize: [exerciseData?.sets.length ?? null], // PRESERVE superset
       // +++ NEW FORM CONTROLS +++
       supersetType: [exerciseData?.supersetType ?? 'standard'],
       emomTimeSeconds: [exerciseData?.emomTimeSeconds ?? null] //PRESERVE EMOM
     });
 
     if (isFromRoutineTemplate) {
-      fg.get('supersetId')?.valueChanges.subscribe(() => this.updateRoundsControlability(fg));
-      fg.get('supersetOrder')?.valueChanges.subscribe(() => this.updateRoundsControlability(fg));
-      this.updateRoundsControlability(fg);
     } else {
       fg.get('supersetRounds')?.enable({ emitEvent: false });
     }
@@ -1112,6 +1098,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       formGroupConfig['targetRepsMin'] = [repsMinValue ?? null, [Validators.min(0)]];
       formGroupConfig['targetRepsMax'] = [repsMaxValue ?? null, [Validators.min(0)]];
       formGroupConfig['targetWeight'] = [this.unitService.convertWeight(weightValue || 0, 'kg', this.unitService.currentWeightUnit()) ?? null, [Validators.min(0)]];
+      formGroupConfig['targetWeightMin'] = [this.unitService.convertWeight(weightValue || 0, 'kg', this.unitService.currentWeightUnit()) ?? null, [Validators.min(0)]];
+      formGroupConfig['targetWeightMax'] = [this.unitService.convertWeight(weightValue || 0, 'kg', this.unitService.currentWeightUnit()) ?? null, [Validators.min(0)]];
       formGroupConfig['targetDuration'] = [durationValue ?? null, [Validators.min(0)]];
       formGroupConfig['targetDurationMin'] = [durationMinValue ?? null, [Validators.min(0)]];
       formGroupConfig['targetDurationMax'] = [durationMaxValue ?? null, [Validators.min(0)]];
@@ -1176,8 +1164,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       type: 'standard',
       supersetId: null,
       supersetOrder: null,
-      supersetSize: null,
-      supersetRounds: 0
     };
 
     let newExerciseFormGroup: FormGroup;
@@ -1220,83 +1206,80 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   addSet(exerciseControl: AbstractControl, exerciseIndex: number): void {
     if (this.isViewMode) return;
 
-    // Prevent adding more than one set to an exercise that is part of a superset.
-    if (!!exerciseControl.get('supersetId')?.value) {
-      this.toastService.warning("Exercises in a superset can only have one set", 4000, "Action Blocked");
-      return;
-    }
+    const supersetId = exerciseControl.get('supersetId')?.value;
 
-    const setsArray = this.getSetsFormArray(exerciseControl);
-    let newSet;
-    if (setsArray.length > 0) {
-      // Copy values from the previous set
-      const prevSet = setsArray.at(setsArray.length - 1).value;
-      // Only copy relevant fields, not IDs
-      const setData = { ...prevSet };
-      // Remove unique fields
-      delete setData.id;
-      if (this.mode === 'manualLogEntry') {
-        // For logging, only copy fields that make sense
-        // Get the current exerciseId from the parent exerciseControl
-        const exerciseId = exerciseControl.get('exerciseId')?.value;
-        newSet = this.createSetFormGroup({
-          id: setData.id ?? this.workoutService.generateExerciseSetId(),
-          exerciseId: exerciseId,
-          exerciseName: setData.exerciseName,
-          repsAchieved: setData.repsAchieved,
-          weightUsed: setData.weightUsed,
-          durationPerformed: setData.durationPerformed,
-          notes: setData.notes,
-          type: setData.type,
-          plannedSetId: setData.plannedSetId,
-          timestamp: new Date().toISOString(),
-          targetReps: setData.targetReps,
-          targetWeight: setData.targetWeight,
-          targetDuration: setData.targetDuration,
-          targetTempo: setData.targetTempo
-        }, true);
-      } else {
-        // For routine builder, copy planning fields
-        newSet = this.createSetFormGroup({
-          id: setData.id ?? this.workoutService.generateExerciseSetId(),
-          targetReps: setData.targetReps,
-          targetRepsMin: setData.targetRepsMin,
-          targetRepsMax: setData.targetRepsMax,
-          targetWeight: setData.targetWeight,
-          targetWeightMin: setData.targetWeightMin,
-          targetWeightMax: setData.targetWeightMax,
-          targetDuration: setData.targetDuration,
-          targetDurationMin: setData.targetDurationMin,
-          targetDurationMax: setData.targetDurationMax,
-          targetDistance: setData.targetDistance,
-          targetDistanceMin: setData.targetDistanceMin,
-          targetDistanceMax: setData.targetDistanceMax,
-          notes: setData.notes,
-          type: setData.type,
-          tempo: setData.tempo,
-          restAfterSet: setData.restAfterSet
-        }, false);
-      }
+    // If it's part of a superset, we need to add a set to ALL exercises in that group.
+    if (supersetId) {
+      this.exercisesFormArray.controls.forEach((ctrl, idx) => {
+        const fg = ctrl as FormGroup;
+        if (fg.get('supersetId')?.value === supersetId) {
+          const setsArray = this.getSetsFormArray(fg);
+          const newSet = this.createSyncedSet(setsArray); // Use a helper to create the new set
+          setsArray.push(newSet);
+        }
+      });
+
+      // Expand the new set on the exercise the user actually clicked
+      const setsOnClickedExercise = this.getSetsFormArray(exerciseControl);
+      const newSetIndex = setsOnClickedExercise.length - 1;
+      this.toggleSetExpansion(exerciseIndex, newSetIndex);
+
     } else {
-      // No previous set, use blank/default
-      newSet = this.createSetFormGroup(undefined, this.mode === 'manualLogEntry');
+      // Standard behavior for non-superset exercises
+      const setsArray = this.getSetsFormArray(exerciseControl);
+      const newSet = this.createSyncedSet(setsArray);
+      setsArray.push(newSet);
+      this.cdr.detectChanges();
+      const newSetIndex = setsArray.length - 1;
+      this.toggleSetExpansion(exerciseIndex, newSetIndex);
     }
-    setsArray.push(newSet);
-    this.cdr.detectChanges();
-    const newSetIndex = setsArray.length - 1;
-    this.toggleSetExpansion(exerciseIndex, newSetIndex);
   }
+
+  /**
+   * Helper method to create a new set, copying from the last one if it exists.
+   * This will be used for both standard and superset set additions.
+   */
+  private createSyncedSet(setsArray: FormArray): FormGroup {
+    if (setsArray.length > 0) {
+      const prevSet = setsArray.at(setsArray.length - 1).value;
+      const setData = { ...prevSet };
+      delete setData.id; // Ensure new set gets a new ID
+      return this.createSetFormGroup(setData, this.mode === 'manualLogEntry');
+    } else {
+      // If no sets exist, create a blank default one.
+      return this.createSetFormGroup(undefined, this.mode === 'manualLogEntry');
+    }
+  }
+
   removeSet(exerciseControl: AbstractControl, exerciseIndex: number, setIndex: number, event?: MouseEvent): void {
     event?.stopPropagation();
     if (this.isViewMode) return;
-    const setsArray = this.getSetsFormArray(exerciseControl);
-    setsArray.removeAt(setIndex);
-    // If the removed set was the expanded one, collapse (set to null)
+
+    const supersetId = exerciseControl.get('supersetId')?.value;
+
+    // If part of a superset, remove the set at the same index from all sibling exercises.
+    if (supersetId) {
+      this.exercisesFormArray.controls.forEach((ctrl, idx) => {
+        const fg = ctrl as FormGroup;
+        if (fg.get('supersetId')?.value === supersetId) {
+          const setsArray = this.getSetsFormArray(fg);
+          // Ensure we don't try to remove a set that doesn't exist
+          if (setIndex < setsArray.length) {
+            setsArray.removeAt(setIndex);
+          }
+        }
+      });
+    } else {
+      // Standard behavior for non-superset exercises
+      const setsArray = this.getSetsFormArray(exerciseControl);
+      setsArray.removeAt(setIndex);
+    }
+
+    // Collapse UI if the currently expanded set was the one removed.
     const currentExpanded = this.expandedSetPath();
     if (currentExpanded && currentExpanded.exerciseIndex === exerciseIndex && currentExpanded.setIndex === setIndex) {
       this.expandedSetPath.set(null);
     } else if (currentExpanded && currentExpanded.exerciseIndex === exerciseIndex && currentExpanded.setIndex > setIndex) {
-      // If a set before the expanded one was removed, adjust the expanded index
       this.expandedSetPath.set({ exerciseIndex, setIndex: currentExpanded.setIndex - 1 });
     }
   }
@@ -1465,8 +1448,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       });
     });
     this.recalculateSupersetOrders();
-  } 
-  
+  }
+
   private recalculateSupersetOrders(): void {
     const supersetGroups = new Map<string, FormGroup[]>();
     this.exercisesFormArray.controls.forEach(control => {
@@ -1479,14 +1462,12 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         supersetGroups.get(supersetId)!.push(exerciseForm);
       } else {
         exerciseForm.patchValue({ supersetOrder: null, supersetSize: null }, { emitEvent: false });
-        this.updateRoundsControlability(exerciseForm);
       }
     });
     supersetGroups.forEach((groupExercises, supersetId) => {
       if (groupExercises.length < 2) {
         groupExercises.forEach(fg => {
           fg.patchValue({ supersetId: null, supersetOrder: null, supersetSize: null });
-          this.updateRoundsControlability(fg);
         });
       } else {
         groupExercises.sort((a, b) => {
@@ -1497,14 +1478,13 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
             supersetOrder: index,
             supersetSize: groupExercises.length,
           }, { emitEvent: false });
-          this.updateRoundsControlability(exerciseForm);
         });
       }
     });
     this.exercisesFormArray.updateValueAndValidity({ emitEvent: false });
   }
 
-    async groupSelectedAsSuperset(): Promise<void> {
+  async groupSelectedAsSuperset(): Promise<void> {
     if (this.isViewMode) return;
     const selectedIndices = this.selectedExerciseIndicesForSuperset().sort((a, b) => a - b);
 
@@ -1521,112 +1501,41 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       }
     }
 
-    // *** NEW: Ask user for Superset type (Standard or EMOM) ***
-    const customBtns: AlertButton[] = [{
-          text: 'STANDARD',
-          role: 'cancel',
-          data: false,
-          cssClass: 'bg-primary hover:bg-primary-dark' // Example custom class
-        } as AlertButton,
-        {
-          text: 'EMOM',
-          role: 'confirm',
-          data: true,
-          cssClass: 'bg-teal-400 hover:bg-teal-500' // Example custom class
-        } as AlertButton];
-
-    const typeResult = await this.alertService.showConfirmationDialog(
-        'Select Superset Type',
-        'What type of group would you like to create?',
-        customBtns
-    );
-
-    // User closed the dialog without making a choice
-    if (typeResult === null || typeof typeResult === 'undefined') {
-        this.toastService.info("Superset creation cancelled.", 2000);
-        return;
-    }
-
-    const isEmom = typeResult.data; // true if 'EMOM' was clicked, false for 'Standard'
-    const supersetType: 'standard' | 'emom' = isEmom ? 'emom' : 'standard';
-
-    let supersetRounds: number;
-    let emomTimeSeconds: number | null = null;
-
-    if (isEmom) {
-        // --- EMOM PATH ---
-        const emomInputs: AlertInput[] = [
-            { name: 'emomTime', type: 'number', label: 'Time per Round (s)', value: '60', attributes: { min: '10', required: true } },
-            { name: 'supersetRounds', type: 'number', label: 'Number of Rounds', value: '5', attributes: { min: '1', required: true } }
-        ];
-        const emomResult = await this.alertService.showPromptDialog(
-            'Set EMOM Details',
-            'Configure the EMOM (Every Minute On the Minute) parameters.',
-            emomInputs
-        );
-
-        if (!emomResult || !emomResult['emomTime'] || !emomResult['supersetRounds']) {
-            this.toastService.info("EMOM creation cancelled.", 2000);
-            return;
-        }
-        emomTimeSeconds = Number(emomResult['emomTime']);
-        supersetRounds = Number(emomResult['supersetRounds']);
-
-    } else {
-        // --- STANDARD SUPERSET PATH ---
-        const roundsResult = await this.alertService.showPromptDialog(
-            'Set Superset Rounds',
-            'How many rounds should this new superset have?',
-            [{ name: 'supersetRounds', type: 'number', label: 'Number of Rounds', value: '3', attributes: { min: '1', required: true } }]
-        );
-
-        if (!roundsResult || !roundsResult['supersetRounds']) {
-            this.toastService.info("Superset creation cancelled.", 2000);
-            return;
-        }
-        supersetRounds = Number(roundsResult['supersetRounds']);
-    }
-
     const newSupersetId = uuidv4();
     const supersetSize = selectedIndices.length;
 
     selectedIndices.forEach((exerciseIndexInFormArray, orderInSuperset) => {
-        const exerciseControl = this.exercisesFormArray.at(exerciseIndexInFormArray) as FormGroup;
+      const exerciseControl = this.exercisesFormArray.at(exerciseIndexInFormArray) as FormGroup;
 
-        // Update the exercise with all the new superset/EMOM properties.
-        exerciseControl.patchValue({
-            supersetId: newSupersetId,
-            supersetOrder: orderInSuperset,
-            supersetSize: supersetSize,
-            supersetRounds: supersetRounds,
-            supersetType: supersetType,
-            emomTimeSeconds: emomTimeSeconds,
-            type: 'superset'
-        });
+      exerciseControl.patchValue({
+        supersetId: newSupersetId,
+        supersetOrder: orderInSuperset,
+        supersetSize: supersetSize,
+        // supersetRounds: NO LONGER EXISTS
+        supersetType: 'standard', // Default to standard
+        emomTimeSeconds: null,
+        type: 'superset'
+      });
 
-        this.updateRoundsControlability(exerciseControl);
-        const setsArray = exerciseControl.get('sets') as FormArray;
+      // *** THIS IS THE NEW LOGIC: Standardize to exactly ONE set. ***
+      const setsArray = exerciseControl.get('sets') as FormArray;
+      // If there are multiple sets, remove extras.
+      while (setsArray.length > 1) {
+        setsArray.removeAt(1);
+      }
+      // If there are no sets, add one.
+      if (setsArray.length === 0) {
+        const defaultSet: ExerciseTargetSetParams = { id: uuidv4(), type: 'superset', targetReps: 8, targetWeight: 10, restAfterSet: 60 };
+        setsArray.push(this.createSetFormGroup(defaultSet, false));
+      }
 
-        while (setsArray.length > 1) {
-            setsArray.removeAt(1);
-        }
-
-        if (setsArray.length === 0) {
-            const defaultSet: ExerciseTargetSetParams = { id: uuidv4(), type: 'superset', targetReps: 8, targetWeight: 10, restAfterSet: 60 };
-            setsArray.push(this.createSetFormGroup(defaultSet, false));
-        }
-
-        setsArray.controls.forEach((setControl) => {
-            const restValue = (orderInSuperset < supersetSize - 1) ? 0 : 60;
-            (setControl as FormGroup).get('restAfterSet')?.setValue(restValue);
-        });
+      // Adjust rest time based on position in the superset.
+      const restValue = (orderInSuperset < supersetSize - 1) ? 0 : 60;
+      (setsArray.at(0) as FormGroup).get('restAfterSet')?.setValue(restValue);
     });
 
     this.selectedExerciseIndicesForSuperset.set([]);
-    const successMessage = isEmom
-        ? `EMOM created for ${supersetRounds} rounds!`
-        : `Superset created with ${supersetRounds} rounds!`;
-    this.toastService.success(successMessage, 4000, "Success");
+    this.toastService.success(`Superset created! Add more sets to add more rounds.`, 4000, "Success");
     this.expandedSetPath.set(null);
     this.toggleSetExpansion(selectedIndices[0], 0);
   }
@@ -1648,7 +1557,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
           supersetType: 'standard', // Reset to default
           emomTimeSeconds: null
         });
-        this.updateRoundsControlability(fg);
       }
     });
     this.selectedExerciseIndicesForSuperset.set([]);
@@ -1793,57 +1701,29 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         }
 
         const logExercises: LoggedWorkoutExercise[] = formValue.exercises.map((exInput: any): LoggedWorkoutExercise => {
-          let loggedSets: LoggedSet[] = [];
-          const isSupersetOrEmom = !!exInput.supersetId && exInput.supersetRounds > 0;
+          // *** NEW SIMPLIFIED LOGIC ***
+          // The logic is now the same for ALL exercises. We just map the sets from the form.
+          const loggedSets: LoggedSet[] = exInput.sets.map((setInput: any): LoggedSet => ({
+            id: setInput.id || uuidv4(),
+            exerciseName: exInput.exerciseName,
+            plannedSetId: setInput.plannedSetId,
+            exerciseId: exInput.exerciseId,
+            type: setInput.type,
+            repsAchieved: setInput.repsAchieved,
+            weightUsed: this.unitService.convertWeight(setInput.weightUsed, 'kg', this.unitService.currentWeightUnit()) ?? undefined,
+            durationPerformed: setInput.durationPerformed,
+            notes: setInput.notes,
+            targetReps: setInput.targetReps,
+            targetWeight: setInput.targetWeight,
+            targetDuration: setInput.targetDuration,
+            targetTempo: setInput.targetTempo,
+            rpe: undefined,
+            timestamp: setInput.timestamp || new Date().toISOString(),
+          }));
 
-          if (isSupersetOrEmom) {
-            // It's a superset/EMOM. Expand the single template set into multiple logged sets for each round.
-            const templateSetInput = exInput.sets[0]; // The form has one template set for supersets
-            if (templateSetInput) {
-              for (let i = 0; i < exInput.supersetRounds; i++) {
-                const roundSet: LoggedSet = {
-                  id: uuidv4(), // Generate a NEW unique ID for each logged set
-                  exerciseName: exInput.exerciseName,
-                  plannedSetId: templateSetInput.plannedSetId,
-                  exerciseId: exInput.exerciseId,
-                  type: templateSetInput.type,
-                  repsAchieved: templateSetInput.repsAchieved,
-                  weightUsed: this.unitService.convertWeight(templateSetInput.weightUsed, 'kg', this.unitService.currentWeightUnit()) ?? undefined,
-                  durationPerformed: templateSetInput.durationPerformed,
-                  notes: templateSetInput.notes,
-                  targetReps: templateSetInput.targetReps,
-                  targetWeight: templateSetInput.targetWeight,
-                  targetDuration: templateSetInput.targetDuration,
-                  targetTempo: templateSetInput.targetTempo,
-                  rpe: undefined,
-                  timestamp: new Date().toISOString(), // Each set in the log should have its own timestamp
-                  supersetCurrentRound: i, // Add the round number
-                };
-                loggedSets.push(roundSet);
-              }
-            }
-          } else {
-            // It's a standard exercise, map sets directly.
-            loggedSets = exInput.sets.map((setInput: any): LoggedSet => ({
-              id: setInput.id || uuidv4(),
-              exerciseName: exInput.exerciseName,
-              plannedSetId: setInput.plannedSetId,
-              exerciseId: exInput.exerciseId,
-              type: setInput.type,
-              repsAchieved: setInput.repsAchieved,
-              weightUsed: this.unitService.convertWeight(setInput.weightUsed, 'kg', this.unitService.currentWeightUnit()) ?? undefined,
-              durationPerformed: setInput.durationPerformed,
-              notes: setInput.notes,
-              targetReps: setInput.targetReps,
-              targetWeight: setInput.targetWeight,
-              targetDuration: setInput.targetDuration,
-              targetTempo: setInput.targetTempo,
-              rpe: undefined,
-              timestamp: setInput.timestamp || new Date().toISOString(),
-            }));
-          }
 
-          // Return the complete LoggedWorkoutExercise object, ensuring all superset metadata is included.
+          // Return the complete LoggedWorkoutExercise object.
+          // Note that we no longer save 'supersetRounds' to the log.
           return {
             id: exInput.id,
             exerciseId: exInput.exerciseId,
@@ -1852,8 +1732,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
             sets: loggedSets, // Use the newly created sets array
             supersetId: exInput.supersetId,
             supersetOrder: exInput.supersetOrder,
-            supersetSize: exInput.supersetSize,
-            supersetRounds: exInput.supersetRounds || 0,
+            // supersetRounds: is gone
             supersetType: exInput.supersetType || 'standard',
             emomTimeSeconds: exInput.emomTimeSeconds || null,
             type: exInput.type || 'standard'
@@ -1942,61 +1821,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     return selectedIndices.length > 0 ? selectedIndices[0] : null;
   }
 
-  private updateRoundsControlability(exerciseFormGroup: FormGroup): void {
-    const supersetId = exerciseFormGroup.get('supersetId')?.value;
-    const supersetOrder = exerciseFormGroup.get('supersetOrder')?.value;
-    const roundsControl = exerciseFormGroup.get('supersetRounds');
-
-    if (this.isViewMode) {
-      roundsControl?.disable({ emitEvent: false });
-      return;
-    }
-
-    if (supersetId && supersetOrder !== null && supersetOrder > 0) {
-      // This is a "child" exercise in a superset. Its rounds should be disabled
-      // and its value must be synchronized with the "parent" (order 0) exercise.
-      roundsControl?.disable({ emitEvent: false });
-
-      // Find the parent exercise in the form array.
-      const firstInSuperset = this.exercisesFormArray.controls.find(ctrl =>
-        (ctrl as FormGroup).get('supersetId')?.value === supersetId &&
-        (ctrl as FormGroup).get('supersetOrder')?.value === 0
-      ) as FormGroup | undefined;
-
-      if (firstInSuperset) {
-        // *** THE CRITICAL FIX ***
-        // Get the current rounds value from the parent exercise.
-        const parentRoundsValue = firstInSuperset.get('supersetRounds')?.value ?? 1;
-
-        // If this child's value is different, update it silently.
-        // This prevents the value from being reset to a default of 1.
-        if (roundsControl?.value !== parentRoundsValue) {
-          roundsControl?.setValue(parentRoundsValue, { emitEvent: false });
-        }
-      }
-    } else {
-      // This is a standard exercise or the first exercise in a superset.
-      // Its rounds control should be enabled.
-      roundsControl?.enable({ emitEvent: false });
-    }
-  }
-
-  syncSupersetRounds(supersetIdToSync: string | null, newRoundsValue: number | null | undefined, changedExerciseIndex: number): void {
-    if (this.isViewMode) return;
-    if (!supersetIdToSync || newRoundsValue === null || newRoundsValue === undefined || newRoundsValue < 1) return;
-    const changedExerciseControl = this.exercisesFormArray.at(changedExerciseIndex) as FormGroup;
-    if (changedExerciseControl.get('supersetOrder')?.value !== 0) return;
-
-    this.exercisesFormArray.controls.forEach(control => {
-      const exerciseFg = control as FormGroup;
-      if (exerciseFg.get('supersetId')?.value === supersetIdToSync) {
-        if (exerciseFg.get('supersetRounds')?.value !== newRoundsValue) {
-          exerciseFg.get('supersetRounds')?.setValue(newRoundsValue, { emitEvent: false });
-        }
-      }
-    });
-  }
-
   startCurrentWorkout(): void {
     if (this.currentRoutineId) {
       const playerRoute = this.workoutService.checkPlayerMode(this.currentRoutineId);
@@ -2019,20 +1843,24 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     this.subscriptions.unsubscribe();
   }
 
+  getSupersetSize(index: number): number {
+    return this.workoutService.getSupersetSize(this.routine(), index);
+  }
+
   getExerciseCardClasses(
     exerciseControl: AbstractControl,
     exIndex: number
   ): { [klass: string]: boolean } {
     const isEmom = exerciseControl.get('supersetType')?.value === 'emom'; // +++ NEW
-    const isSuperset =
+    const isStandardSuperset =
       !!exerciseControl.get('supersetId')?.value && !isEmom;
     const supersetOrder = exerciseControl.get('supersetOrder')?.value ?? -1;
     const supersetName = exerciseControl.get('exerciseName')?.value;
-    const supersetSize = exerciseControl.get('supersetSize')?.value ?? 0;
+    const supersetSize = this.getSupersetSize(exIndex);
     const isSelected = this.mode === 'routineBuilder' && this.selectedExerciseIndicesForSuperset().includes(exIndex);
-    const isFirstInSuperset = (isSuperset || isEmom) && supersetOrder === 0;
-    const isLastInSuperset = (isSuperset || isEmom) && supersetOrder === supersetSize - 1;
-    const isMiddleInSuperSet = (isSuperset || isEmom) && (!isFirstInSuperset && !isLastInSuperset);
+    const isFirstInSuperset = (isStandardSuperset || isEmom) && supersetOrder === 0;
+    const isLastInSuperset = (isStandardSuperset || isEmom) && supersetOrder === supersetSize - 1;
+    const isMiddleInSuperSet = (isStandardSuperset || isEmom) && (!isFirstInSuperset && !isLastInSuperset);
     const isCompact = this.isCompactView;
     const isEdit = this.isEditMode;
     const firstSelected = this.firstSelectedExerciseIndexForSuperset;
@@ -2046,18 +1874,18 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       // 'border rounded-lg': true,
       'border rounded-md': true,
       'shadow-sm': true,
-      'border-orange-500 dark:border-orange-400 bg-orange-50 dark:bg-orange-800/30': isSuperset, // Standard Superset
+      'border-orange-500 dark:border-orange-400 bg-orange-50 dark:bg-orange-800/30': isStandardSuperset, // Standard Superset
       'ring-2 ring-yellow-400 dark:ring-yellow-300 shadow-md': isSelected,
-      'dark:bg-orange-800/40': isSuperset && isSelected,
+      'dark:bg-orange-800/40': isStandardSuperset && isSelected,
       'dark:bg-teal-800/40': isEmom && isSelected,
       'rounded-b-none border-b-transparent dark:border-b-transparent': (isFirstInSuperset || isMiddleInSuperSet) && supersetSize > 1,
       'rounded-t-none border-t-transparent dark:border-t-transparent border-x ': (isLastInSuperset || isMiddleInSuperSet) && supersetSize > 1,
       'border-x border-t': isFirstInSuperset,
-      'mb-2': (!isSuperset && !isEmom) || ((isSuperset || isEmom) && isLastInSuperset),
+      'mb-2': (!isStandardSuperset && !isEmom) || ((isStandardSuperset || isEmom) && isLastInSuperset),
 
       'border-teal-500 dark:border-teal-400 bg-teal-50 dark:bg-teal-800/40': isEmom, // +++ EMOM Superset
       'bg-blue-800/40': isWarmup,
-      'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800': (!isSuperset && !isEmom) && !isSelected && !isWarmup,
+      'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800': (!isStandardSuperset && !isEmom) && !isSelected && !isWarmup,
       'border-x border-y': isEmom && supersetSize === 1, // No extra classes for single-item superset
       'cursor-grab': this.isEditableMode(),
       'cursor-pointer': !this.isEditableMode(),
@@ -2141,8 +1969,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         type: 'standard',
         supersetId: null,
         supersetOrder: null,
-        supersetSize: null,
-        supersetRounds: 0
       };
       const newExerciseFormGroup = this.createExerciseFormGroup(workoutExercise, true, false);
       this.exercisesFormArray.push(newExerciseFormGroup);
@@ -2161,8 +1987,9 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
   // update current routine after adding a new exercise
   private updateCurrentRoutine(exercise: WorkoutExercise): void {
-    if (this.routine()) {  
-      const updatedRoutine: Routine = { ...this.routine()!,
+    if (this.routine()) {
+      const updatedRoutine: Routine = {
+        ...this.routine()!,
         exercises: [...this.routine()!.exercises, exercise]
       };
       this.routine.set(updatedRoutine);
@@ -2215,9 +2042,9 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
           notes: exInput.notes,
           sets: exInput.sets.map((setInput: any) => ({
             ...setInput, // Spread to include all set properties like reps, repsMin, repsMax, etc.
-            targetWeight: this.unitService.convertWeight(setInput.weight, 'kg', this.unitService.currentWeightUnit()) ?? null,
-            targetWeightMin: setInput.weightMin ?? null,
-            targetWeightMax: setInput.weightMax ?? null,
+            targetWeight: this.unitService.convertWeight(setInput.targetWeight, 'kg', this.unitService.currentWeightUnit()) ?? null,
+            targetWeightMin: setInput.targetWeightMin ?? null,
+            targetWeightMax: setInput.targetWeightMax ?? null,
             targetReps: setInput.targetReps ?? null,
             targetRepsMin: setInput.targetRepsMin ?? null,
             targetRepsMax: setInput.targetRepsMax ?? null,
@@ -2241,6 +2068,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       isFavourite: currentRoutine?.isFavourite,
       isHidden: currentRoutine?.isHidden,
       lastPerformed: currentRoutine?.lastPerformed,
+      isDisabled: false,
     };
     return valueObj;
   }
@@ -2410,8 +2238,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   checkIfWeightedExercise(loggedEx: any): boolean {
-    const loggedExActual = loggedEx?.getRawValue() as WorkoutExercise;
-    return loggedExActual?.sets.some(set => set.targetWeight) || loggedExActual?.sets.some(set => set.targetDistanceMin);
+    const loggedExActual = loggedEx?.getRawValue() as LoggedWorkoutExercise;
+    return loggedExActual?.sets.some(set => set.targetWeight || set.weightUsed) || loggedExActual?.sets.some(set => set.targetDistanceMin);
   }
 
   getSetReps(loggedEx: any): string { // 'loggedEx' is an AbstractControl (FormGroup)
@@ -2440,7 +2268,13 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       );
 
       // Join the array of display values with a comma and space
-      return displayValues.join(', ');
+      let stringResult = displayValues.join(', ');
+
+      if (stringResult.length > 15) {
+        stringResult = stringResult.substring(0, 15) + '...';
+      }
+      return stringResult;
+
     }
   }
 
@@ -2760,7 +2594,12 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
    * @returns A formatted string like "8-12" or "60+", or an empty string if no range is set.
    */
   public getSetTargetDisplay(set: ExerciseTargetSetParams, field: 'reps' | 'duration' | 'weight' | 'distance'): string {
-    return this.workoutService.getSetTargetDisplay(set, field);
+    let stringResult = this.workoutService.getSetTargetDisplay(set, field);
+
+    if (stringResult.length > 15) {
+      stringResult = stringResult.substring(0, 15) + '...';
+    }
+    return stringResult;
   }
 
 
@@ -2884,7 +2723,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   protected standarSuperSetOrEmomClass(exerciseControl: AbstractControl): string {
     if (exerciseControl.get('supersetType')?.value == 'emom') {
       return 'text-teal-600 dark:text-teal-400';
-    } else if (exerciseControl.get('supersetType')?.value !== 'emom'){
+    } else if (exerciseControl.get('supersetType')?.value !== 'emom') {
       return 'text-orange-600 dark:text-orange-400';
     } else {
       return '';
@@ -2892,77 +2731,61 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   protected standarSuperSetOrEmomLabel(exerciseControl: AbstractControl): string {
-    const rounds = exerciseControl.get('supersetRounds')?.value || 1;
+    const rounds = exerciseControl.get('sets')?.value?.length || 1;
     let roundString = rounds > 1 ? ` (${rounds} ROUNDS)` : ` (${rounds} ROUND)`;
 
     if (exerciseControl.get('supersetType')?.value == 'emom') {
       return `EMOM${roundString} - Every ${exerciseControl.get('emomTimeSeconds')?.value || 60}s`;
-    } else if (exerciseControl.get('supersetType')?.value !== 'emom'){
+    } else if (exerciseControl.get('supersetType')?.value !== 'emom') {
       return `SUPERSET${roundString}`;
     } else {
       return '';
     }
   }
 
-   /**
-   * Converts a single, standard exercise into a multi-round EMOM.
-   * This creates a "superset" of size 1 and flattens multiple sets into one.
-   * @param exerciseControl The form group for the exercise to convert.
-   */
+  /**
+  * Converts a single, standard exercise into a multi-round EMOM.
+  * This creates a "superset" of size 1 and flattens multiple sets into one.
+  * @param exerciseControl The form group for the exercise to convert.
+  */
   async convertToSingleExerciseEmom(exerciseControl: AbstractControl): Promise<void> {
     if (this.isViewMode || !(exerciseControl instanceof FormGroup)) return;
 
-    // Prompt the user for EMOM details (time and rounds)
     const emomInputs: AlertInput[] = [
-      { name: 'emomTime', type: 'number', label: 'Time per Round (s)', placeholder: 'e.g., 60', value: '60', attributes: { min: '10', required: true } },
-      { name: 'supersetRounds', type: 'number', label: 'Number of Rounds', placeholder: 'e.g., 10', value: '10', attributes: { min: '1', required: true } }
+      { name: 'emomTime', type: 'number', label: 'Time per Round (s)', value: '60', attributes: { min: '10', required: true } },
+      // CORRECTED: Ask for number of sets, not rounds
+      { name: 'numSets', type: 'number', label: 'Number of Rounds (Sets)', value: '10', attributes: { min: '1', required: true } }
     ];
-    const emomResult = await this.alertService.showPromptDialog(
-      'Create Single-Exercise EMOM',
-      'Configure the EMOM (Every Minute On the Minute) parameters for this exercise.',
-      emomInputs
-    );
+    const emomResult = await this.alertService.showPromptDialog('Create Single-Exercise EMOM', 'Configure EMOM parameters.', emomInputs);
 
-    // Abort if the user cancels or provides invalid input
-    if (!emomResult || !emomResult['emomTime'] || !emomResult['supersetRounds']) {
+    if (!emomResult || !emomResult['emomTime'] || !emomResult['numSets']) {
       this.toastService.info("EMOM creation cancelled.", 2000);
       return;
     }
 
     const emomTimeSeconds = Number(emomResult['emomTime']);
-    const supersetRounds = Number(emomResult['supersetRounds']);
+    const numberOfSets = Number(emomResult['numSets']); // CORRECTED
 
-    // --- START: Snippet to Add/Modify ---
-    // Access the sets FormArray for this exercise
     const setsArray = exerciseControl.get('sets') as FormArray;
+    const templateSetData = setsArray.length > 0 ? { ...setsArray.at(0).value } : { id: uuidv4(), type: 'standard', targetReps: 8, restAfterSet: 60 };
+    delete templateSetData.id;
 
-    // If there are multiple sets, flatten them. The first set becomes the template for each EMOM round.
-    while (setsArray.length > 1) {
-      setsArray.removeAt(1); // Repeatedly remove the second item until only one is left.
+    setsArray.clear();
+    for (let i = 0; i < numberOfSets; i++) { // CORRECTED
+      setsArray.push(this.createSetFormGroup(templateSetData, false));
     }
 
-    // Defensive check: If the exercise somehow had no sets, add a default one.
-    if (setsArray.length === 0) {
-        const defaultSet: ExerciseTargetSetParams = { id: uuidv4(), type: 'standard', targetReps: 8, restAfterSet: 60 };
-        setsArray.push(this.createSetFormGroup(defaultSet, false));
-    }
-    // --- END: Snippet to Add/Modify ---
-
-    // Apply the new EMOM properties to the exercise
     exerciseControl.patchValue({
-      supersetId: uuidv4(),      // Give it a unique superset ID
-      supersetOrder: 0,          // It's the first (and only) item
-      supersetSize: 1,           // The group size is 1
-      supersetRounds: supersetRounds,
+      supersetId: uuidv4(),
+      supersetOrder: 0,
+      supersetSize: 1,
+      // supersetRounds IS GONE
       supersetType: 'emom',
       emomTimeSeconds: emomTimeSeconds,
-      type: 'superset'         // Consistent with other supersets
+      type: 'superset'
     });
 
-    // Ensure the rounds input field is enabled after conversion
-    this.updateRoundsControlability(exerciseControl);
-
-    this.toastService.success(`EMOM created for ${supersetRounds} rounds!`, 4000, "Success");
+    this.toastService.success(`EMOM created for ${numberOfSets} rounds!`, 4000, "Success");
   }
 
   protected isEmomExercise(exerciseControl: AbstractControl): boolean {
@@ -2970,7 +2793,63 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   protected isStandardSupersetExercise(exerciseControl: AbstractControl): boolean {
-    return exerciseControl.get('supersetType')?.value === 'standard'; 
+    return exerciseControl.get('supersetType')?.value === 'standard';
   }
+
+  /**
+ * Adds a new round to all exercises within a superset group.
+ * A "round" is equivalent to adding a new set to each exercise.
+ * @param exerciseControl The form control of the exercise that triggered the action.
+ * @param event The mouse event to stop propagation.
+ */
+  public addRoundToSuperset(exerciseControl: AbstractControl, event: Event): void {
+    event.stopPropagation();
+    if (this.isViewMode) return;
+
+    const supersetId = exerciseControl.get('supersetId')?.value;
+    if (!supersetId) return;
+
+    // Find all exercises in the same superset group
+    this.exercisesFormArray.controls.forEach(ctrl => {
+      const fg = ctrl as FormGroup;
+      if (fg.get('supersetId')?.value === supersetId) {
+        const setsArray = this.getSetsFormArray(fg);
+        // Use our existing helper to create a new set, intelligently copying the last one
+        const newSet = this.createSyncedSet(setsArray);
+        setsArray.push(newSet);
+      }
+    });
+
+    this.toastService.success("Round added to superset.", 2000);
+  }
+
+  /**
+   * Removes the last round from all exercises within a superset group.
+   * This is equivalent to removing the last set from each exercise.
+   * @param exerciseControl The form control of the exercise that triggered the action.
+   * @param event The mouse event to stop propagation.
+   */
+  public removeRoundFromSuperset(exerciseControl: AbstractControl, event: Event): void {
+    event.stopPropagation();
+    if (this.isViewMode) return;
+
+    const supersetId = exerciseControl.get('supersetId')?.value;
+    if (!supersetId) return;
+
+    // Find all exercises in the same superset group
+    this.exercisesFormArray.controls.forEach(ctrl => {
+      const fg = ctrl as FormGroup;
+      if (fg.get('supersetId')?.value === supersetId) {
+        const setsArray = this.getSetsFormArray(fg);
+        // Only remove if there is more than one set
+        if (setsArray.length > 1) {
+          setsArray.removeAt(setsArray.length - 1);
+        }
+      }
+    });
+
+    this.toastService.info("Round removed from superset.", 2000);
+  }
+
 
 }

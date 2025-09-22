@@ -52,13 +52,16 @@
                     <div class="col-span-2 text-center">Rest</div>
                     <div class="col-span-1 text-center"></div>
                 </div>
-                <!-- Data Rows -->
-                <div *ngFor="let set of exerciseData.sets; let i = index"
+                 <!-- Data Rows -->
+                <!-- The inner loop now uses the getSetsForRound helper -->
+                <div *ngFor="let set of getSetsForRound(roundIndex); let i = index"
                     class="grid grid-cols-12 gap-2 items-center p-1.5 rounded text-black dark:text-gray-300"
                     [ngClass]="{ 'bg-white dark:bg-gray-700/60': i % 2 === 0, 'bg-gray-100 dark:bg-gray-700/30': i % 2 !== 0 }">
-                    <div class="col-span-1 text-center font-semibold dark:text-white">#{{ i + 1 }}</div>
                     
-                    <!-- +++ REWRITTEN: Planned Column with Conditional Inputs +++ -->
+                    <!-- The set/round number is now calculated conditionally -->
+                    <div class="col-span-1 text-center font-semibold dark:text-white">#{{ exerciseData.supersetId ? roundIndex + 1 : i + 1 }}</div>
+                    
+                    <!-- Planned Column with Conditional Inputs -->
                     <div class="col-span-6">
                         <!-- Cardio View -->
                         <div *ngIf="isCardio()" class="flex items-center gap-1">
@@ -92,9 +95,9 @@
                          <input type="number" [(ngModel)]="set.restAfterSet" (ngModelChange)="handleModelChange()" class="w-full text-center p-1 border rounded-md dark:bg-gray-600">
                     </div>
                     
-                    <!-- Delete Button Column -->
+                    <!-- Delete Button Column (passes the correct index) -->
                     <div class="col-span-1 flex justify-center">
-                        <button (click)="removeSet(i)" title="Remove Set" class="p-1 rounded-full hover:bg-red-100 dark:hover:bg-red-700/50">
+                        <button (click)="removeSet(exerciseData.supersetId ? roundIndex : i)" title="Remove Set" class="p-1 rounded-full hover:bg-red-100 dark:hover:bg-red-700/50">
                             <app-icon name="trash" class="h-4 w-4 text-red-500 dark:text-red-400"></app-icon>
                         </button>
                     </div>
