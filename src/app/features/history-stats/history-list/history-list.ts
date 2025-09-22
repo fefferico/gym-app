@@ -44,6 +44,14 @@ import { MenuMode } from '../../../core/models/app-settings.model';
 import { createFromBtn, deleteBtn, editBtn, routineBtn, viewBtn } from '../../../core/services/buttons-data';
 import { FabAction, FabMenuComponent } from '../../../shared/components/fab-menu/fab-menu.component';
 
+
+interface CalendarMonth {
+  monthName: string;
+  year: number;
+  days: HistoryCalendarDay[];
+  spacers: any[]; // Used to align the first day of the month
+}
+
 interface HistoryCalendarDay {
   date: Date;
   isCurrentMonth: boolean;
@@ -107,15 +115,15 @@ type EnrichedHistoryListItem = HistoryListItem & {
       transition('* => void', [animate('100ms cubic-bezier(0.25, 0.8, 0.25, 1)')])
     ]),
     trigger('calendarMonthSlide', [
-      state('center', style({ transform: 'translateX(0%)', opacity: 1 })),
-      state('outLeft', style({ transform: 'translateX(-100%)', opacity: 0 })),
-      state('outRight', style({ transform: 'translateX(100%)', opacity: 0 })),
-      state('preloadFromRight', style({ transform: 'translateX(100%)', opacity: 0 })),
-      state('preloadFromLeft', style({ transform: 'translateX(-100%)', opacity: 0 })),
-      transition('center => outLeft', animate('200ms ease-in')),
-      transition('center => outRight', animate('200ms ease-in')),
-      transition('preloadFromRight => center', animate('200ms ease-out')),
-      transition('preloadFromLeft => center', animate('200ms ease-out')),
+      state('center', style({ transform: 'translateY(0%)', opacity: 1 })),
+      state('outUp', style({ transform: 'translateY(-100%)', opacity: 0 })),
+      state('outDown', style({ transform: 'translateY(100%)', opacity: 0 })),
+      state('preloadFromDown', style({ transform: 'translateY(100%)', opacity: 0 })),
+      state('preloadFromUp', style({ transform: 'translateY(-100%)', opacity: 0 })),
+      transition('center => outUp', animate('200ms ease-in')),
+      transition('center => outDown', animate('200ms ease-in')),
+      transition('preloadFromDown => center', animate('200ms ease-out')),
+      transition('preloadFromUp => center', animate('200ms ease-out')),
     ])
   ]
 })
@@ -167,35 +175,26 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
   showBackToTopButton = signal<boolean>(false);
   @HostListener('window:scroll', [])
   onWindowScroll(): void {
-    // Check if the user has scrolled down more than a certain amount (e.g., 400 pixels)
-    // You can adjust this value to your liking.
-    const verticalOffset = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
-    this.showBackToTopButton.set(verticalOffset > 400);
-  }
+    if (isPlatformBrowser(this.platformId)) {
+      this.showBackToTopButton.set(window.pageYOffset > 400);
 
-  historyCalendarDays = signal<HistoryCalendarDay[]>([]);
-  historyCalendarViewDate = signal<Date>(new Date());
-  historyCalendarLoading = signal(false);
-  historyCalendarAnimationState = signal<'center' | 'outLeft' | 'outRight' | 'preloadFromLeft' | 'preloadFromRight'>('center');
-  protected isHistoryCalendarAnimating = false;
-  private hammerInstanceHistoryCalendar: HammerManager | null = null;
-  weekStartsOn: 0 | 1 = 1;
-  readonly todayForCalendar = new Date(); // Property to hold today's date for the template
-
-
-
-  @ViewChild('historyCalendarSwipeContainerEl')
-  set historyCalendarSwipeContainer(elementRef: ElementRef<HTMLDivElement> | undefined) {
-    if (elementRef && isPlatformBrowser(this.platformId) && this.currentHistoryView() === 'calendar') {
-      if (this.hammerInstanceHistoryCalendar) {
-        this.hammerInstanceHistoryCalendar.destroy();
+      // +++ NEW: Infinite Scroll Logic +++
+      // If the user has scrolled to the bottom of the page and we're in calendar view...
+      if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 50) {
+        if (this.currentHistoryView() === 'calendar' && !this.historyCalendarLoading()) {
+          // ...load the next month.
+          this.loadNextCalendarMonth();
+        }
       }
-      this.setupHistoryCalendarSwipe(elementRef.nativeElement);
-    } else if (!elementRef && this.hammerInstanceHistoryCalendar) {
-      this.hammerInstanceHistoryCalendar.destroy();
-      this.hammerInstanceHistoryCalendar = null;
     }
   }
+
+  historyCalendarLoading = signal(false);
+  weekStartsOn: 0 | 1 = 1;
+  readonly todayForCalendar = new Date(); // Property to hold today's date for the template
+  historyCalendarMonths = signal<CalendarMonth[]>([]);
+  private currentCalendarDate = new Date(); // Start with the current month
+
 
   filteredHistoryItems = computed(() => {
     let items = this.allHistoryItems();
@@ -335,21 +334,21 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
             // No existing global PB of this type, so this set *could* be the first one.
             // Check if this set's workoutLogId and timestamp match the log, indicating it's the one that established it.
             if (set.workoutLogId === log.id && set.timestamp === (set.timestamp || new Date(log.startTime).toISOString())) {
-                 isNewGlobalBest = true;
+              isNewGlobalBest = true;
             }
           } else {
             // There's an existing global PB. Check if this candidate set is *the one* that achieved it.
             // This means its performance equals the global PB AND it comes from THIS log.
             const isSameLogAndSet = existingGlobalPb.workoutLogId === log.id &&
-                                    existingGlobalPb.timestamp === set.timestamp &&
-                                    existingGlobalPb.exerciseId === set.exerciseId;
+              existingGlobalPb.timestamp === set.timestamp &&
+              existingGlobalPb.exerciseId === set.exerciseId;
 
             // More robust check: The PB data in TrackingService's PB set will contain the *exact* set that achieved it.
             // So, we just need to see if the current log's ID and the set's timestamp match the global PB's record.
             if (isSameLogAndSet &&
-                existingGlobalPb.weightUsed === set.weightUsed &&
-                existingGlobalPb.repsAchieved === set.repsAchieved &&
-                existingGlobalPb.durationPerformed === set.durationPerformed) {
+              existingGlobalPb.weightUsed === set.weightUsed &&
+              existingGlobalPb.repsAchieved === set.repsAchieved &&
+              existingGlobalPb.durationPerformed === set.durationPerformed) {
               isNewGlobalBest = true;
             }
             // For estimated 1RM, the `weightUsed` could be slightly different due to float precision,
@@ -480,7 +479,7 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
       // Step 2: Use switchMap to handle the async enrichment process
       switchMap(async ({ combinedList, programMap, allGlobalPBs }) => { // Receive allGlobalPBs here
         // Use Promise.all to wait for all async enrichment operations to complete
-         const enrichedList = await Promise.all(
+        const enrichedList = await Promise.all(
           // Pass allGlobalPBs to enrichHistoryItem
           combinedList.map(item => this.enrichHistoryItem(item, programMap, allGlobalPBs))
         );
@@ -490,7 +489,9 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
       // Step 3: The result is now a clean, correctly typed array
       this.allHistoryItems.set(enrichedList);
       if (this.currentHistoryView() === 'calendar') {
-        this.generateHistoryCalendarDays(true);
+        this.historyCalendarMonths.set([]); // Clear previous
+        this.currentCalendarDate = new Date(); // Reset to today
+        this.generateCalendarMonths(this.currentCalendarDate, 3); // Initial load of 3 months
       }
     });
 
@@ -555,34 +556,12 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
     return enrichedItem;
   }
 
+  private calendarScrollDebounceTimer: any;
+
 
 
   ngAfterViewInit(): void {
     // HammerJS setup is handled by @ViewChild setter
-  }
-
-  private setupHistoryCalendarSwipe(calendarSwipeElement: HTMLElement): void {
-    let lastSwipeTime = 0;
-    const swipeDebounce = 350;
-
-    this.ngZone.runOutsideAngular(() => {
-      this.hammerInstanceHistoryCalendar = new Hammer(calendarSwipeElement);
-      this.hammerInstanceHistoryCalendar.get('swipe').set({ direction: Hammer.DIRECTION_HORIZONTAL, threshold: 40, velocity: 0.3 });
-
-      this.hammerInstanceHistoryCalendar.on('swipeleft', () => {
-        const now = Date.now();
-        if (now - lastSwipeTime < swipeDebounce || this.isHistoryCalendarAnimating) return;
-        lastSwipeTime = now;
-        this.ngZone.run(() => this.nextHistoryMonth());
-      });
-      this.hammerInstanceHistoryCalendar.on('swiperight', () => {
-        const now = Date.now();
-        if (now - lastSwipeTime < swipeDebounce || this.isHistoryCalendarAnimating) return;
-        lastSwipeTime = now;
-        this.ngZone.run(() => this.previousHistoryMonth());
-      });
-      console.log("HammerJS attached to HISTORY calendar swipe container");
-    });
   }
 
   setView(view: HistoryListView): void {
@@ -601,96 +580,24 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.historyViewAnimationParams.set({ value: view, params: { enterTransform, leaveTransform } });
     this.currentHistoryView.set(view);
     this.isFilterAccordionOpen.set(false);
-    if (view === 'calendar') {
-      this.historyCalendarAnimationState.set('center');
-      this.generateHistoryCalendarDays(true);
+    if (view === 'calendar' && this.historyCalendarMonths().length === 0) {
+      this.currentCalendarDate = new Date(); // Reset to today
+      this.generateCalendarMonths(this.currentCalendarDate, 3); // Initial load
     }
   }
 
-  generateHistoryCalendarDays(isInitialLoad: boolean = false): void {
-    if (!isPlatformBrowser(this.platformId)) {
-      this.historyCalendarDays.set([]);
-      this.historyCalendarLoading.set(false);
-      return;
-    }
-    this.historyCalendarLoading.set(true);
-    const viewDate = this.historyCalendarViewDate();
-    const monthStart = startOfMonth(viewDate);
-    const monthEnd = endOfMonth(viewDate);
-    const rangeStart = startOfWeek(monthStart, { weekStartsOn: this.weekStartsOn });
-    const rangeEnd = endOfWeek(monthEnd, { weekStartsOn: this.weekStartsOn });
-    const dateRange = eachDayOfInterval({ start: rangeStart, end: rangeEnd });
-
-    // +++ THIS IS THE FIX +++
-    // Use the unified allHistoryItems() signal, which contains both workouts and activities.
-    const logsForMonth = this.allHistoryItems().filter(item => {
-      const logDate = parseISO(item.date); // 'date' is a common property on both models
-      return logDate >= monthStart && logDate <= monthEnd;
-    });
-
-    const days: HistoryCalendarDay[] = dateRange.map(date => {
-      // Filter the items for this specific day.
-      const logsOnThisDay = logsForMonth.filter(item => isSameDay(parseISO(item.date), date));
-      return {
-        date: date,
-        isCurrentMonth: isSameMonth(date, viewDate),
-        isToday: isToday(date),
-        hasLog: logsOnThisDay.length > 0,
-        logCount: logsOnThisDay.length
-      };
-    });
-
-    this.historyCalendarDays.set(days);
-    this.historyCalendarLoading.set(false);
-
-    if (isInitialLoad) {
-      this.historyCalendarAnimationState.set('center');
-    } else if (this.historyCalendarAnimationState() === 'preloadFromLeft' || this.historyCalendarAnimationState() === 'preloadFromRight') {
-      Promise.resolve().then(() => this.historyCalendarAnimationState.set('center'));
-    }
-    this.isHistoryCalendarAnimating = false;
-    this.cdr.detectChanges();
+  getCalendarDayClasses(day: HistoryCalendarDay): object {
+    return {
+      'cursor-default': !day.hasLog,
+      'bg-primary text-white font-bold': day.isToday,
+      'text-gray-800 dark:text-gray-200': !day.isToday,
+      'text-gray-400 dark:text-gray-500': !day.isCurrentMonth, // This can be used if you re-add padding days
+      'cursor-pointer hover:bg-green-700 bg-green-500 text-white font-bold': day.hasLog,
+    };
   }
 
-  private changeHistoryCalendarMonth(direction: 'next' | 'previous'): void {
-    if (this.isHistoryCalendarAnimating) return;
-    this.isHistoryCalendarAnimating = true;
-    let outState: 'outLeft' | 'outRight'; let preloadState: 'preloadFromLeft' | 'preloadFromRight';
-    if (direction === 'next') {
-      outState = 'outLeft'; preloadState = 'preloadFromRight';
-      this.historyCalendarViewDate.update(d => addMonths(d, 1));
-    } else {
-      outState = 'outRight'; preloadState = 'preloadFromLeft';
-      this.historyCalendarViewDate.update(d => subMonths(d, 1));
-    }
-    this.historyCalendarAnimationState.set(outState);
-    setTimeout(() => {
-      this.historyCalendarAnimationState.set(preloadState);
-      this.generateHistoryCalendarDays();
-    }, 200);
-  }
-
-  previousHistoryMonth(): void { this.changeHistoryCalendarMonth('previous'); }
-  nextHistoryMonth(): void { this.changeHistoryCalendarMonth('next'); }
-
-  goToTodayHistoryCalendar(): void {
-    if (this.isHistoryCalendarAnimating || isSameMonth(this.historyCalendarViewDate(), new Date())) return;
-    this.isHistoryCalendarAnimating = true;
-    const today = new Date(); const currentCalDate = this.historyCalendarViewDate();
-    let outState: 'outLeft' | 'outRight'; let preloadState: 'preloadFromLeft' | 'preloadFromRight';
-    if (currentCalDate > today) { outState = 'outRight'; preloadState = 'preloadFromLeft'; }
-    else { outState = 'outLeft'; preloadState = 'preloadFromRight'; }
-    this.historyCalendarAnimationState.set(outState);
-    setTimeout(() => {
-      this.historyCalendarViewDate.set(new Date());
-      this.historyCalendarAnimationState.set(preloadState);
-      this.generateHistoryCalendarDays();
-    }, 200);
-  }
 
   selectHistoryDay(day: HistoryCalendarDay): void {
-    if (this.isHistoryCalendarAnimating) return;
-
     if (day.hasLog) {
       // +++ 2. UPDATE THIS LOGIC +++
       // Filter the master list to get all items for the selected date
@@ -785,7 +692,6 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.workoutLogsSubscription?.unsubscribe();
-    this.hammerInstanceHistoryCalendar?.destroy();
   }
 
   logPastWorkout(): void {
@@ -1057,32 +963,78 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   fabMenuItems: FabAction[] = [];
-    private refreshFabMenuItems(): void {
-      this.fabMenuItems = [{
-        label: 'LOG PAST WORKOUT',
-        actionKey: 'log_past_workout',
-        iconName: 'plus-circle',
-        cssClass: 'bg-blue-500 focus:ring-blue-400',
-        isPremium: false
-      },
-      {
-        label: 'LOG PAST ACTIVITY',
-        actionKey: 'log_past_activity',
-        iconName: 'plus-circle',
-        cssClass: 'bg-teal-500 focus:ring-teal-400',
-        isPremium: true
-      }
-      ];
+  private refreshFabMenuItems(): void {
+    this.fabMenuItems = [{
+      label: 'LOG PAST WORKOUT',
+      actionKey: 'log_past_workout',
+      iconName: 'plus-circle',
+      cssClass: 'bg-blue-500 focus:ring-blue-400',
+      isPremium: false
+    },
+    {
+      label: 'LOG PAST ACTIVITY',
+      actionKey: 'log_past_activity',
+      iconName: 'plus-circle',
+      cssClass: 'bg-teal-500 focus:ring-teal-400',
+      isPremium: true
     }
-  
-    onFabAction(actionKey: string): void {
-      switch (actionKey) {
-        case 'log_past_workout':
-          this.logPastWorkout();
-          break;
-        case 'log_past_activity':
-          this.logPastActivity();
-          break;
-      }
+    ];
+  }
+
+  onFabAction(actionKey: string): void {
+    switch (actionKey) {
+      case 'log_past_workout':
+        this.logPastWorkout();
+        break;
+      case 'log_past_activity':
+        this.logPastActivity();
+        break;
     }
+  }
+
+  generateCalendarMonths(startDate: Date, numberOfMonths: number): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    this.historyCalendarLoading.set(true);
+
+    const newMonths: CalendarMonth[] = [];
+    const allLogs = this.allHistoryItems();
+
+    for (let i = 0; i < numberOfMonths; i++) {
+      const targetDate = subMonths(startDate, i);
+      const monthStart = startOfMonth(targetDate);
+      const monthEnd = endOfMonth(targetDate);
+      const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
+
+      const firstDayOfMonth = startOfWeek(monthStart, { weekStartsOn: this.weekStartsOn });
+      const dayOfWeekForFirst = monthStart.getDay();
+      const effectiveStartOfWeek = (this.weekStartsOn === 1) ? (dayOfWeekForFirst === 0 ? 6 : dayOfWeekForFirst - 1) : dayOfWeekForFirst;
+
+      newMonths.push({
+        monthName: format(targetDate, 'LLLL'),
+        year: targetDate.getFullYear(),
+        spacers: Array(effectiveStartOfWeek).fill(0),
+        days: daysInMonth.map(date => {
+          const logsOnThisDay = allLogs.filter(log => isSameDay(parseISO(log.date), date));
+          return {
+            date: date,
+            isCurrentMonth: true, // All days belong to their month
+            isToday: isToday(date),
+            hasLog: logsOnThisDay.length > 0,
+            logCount: logsOnThisDay.length,
+          };
+        }),
+      });
+    }
+
+    this.historyCalendarMonths.update(existingMonths => [...existingMonths, ...newMonths]);
+    this.currentCalendarDate = subMonths(startDate, numberOfMonths); // Update the date for the next load
+    this.historyCalendarLoading.set(false);
+  }
+
+  // --- NEW: Helper to load the next batch of months ---
+  private loadNextCalendarMonth(): void {
+    // Load one more month, starting from the last loaded month
+    this.generateCalendarMonths(this.currentCalendarDate, 1);
+  }
+
 }

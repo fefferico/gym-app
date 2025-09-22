@@ -201,7 +201,7 @@
                       <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Notes</div>
                       <ng-container *ngFor="let set of item.sets; let i = index; let last = last">
                           <div class="font-medium text-gray-900 dark:text-white flex items-center space-x-2">
-                              <span [ngClass]="{'bg-blue-100 dark:bg-blue-400 p-1 rounded': set.type && set.type === 'warmup'}">{{ i + 1 }}{{set.type === 'warmup' ? '*':''}}</span>
+                              <span [ngClass]="{'bg-blue-300 dark:bg-blue-400 p-1 rounded': set.type && set.type === 'warmup'}">{{ i + 1 }}{{set.type === 'warmup' ? '*':''}}</span>
                               <div *ngIf="getPersonalBestTypesForSet(set, item.exerciseId).length > 0" class="flex-shrink-0" [title]="'Personal Best!\n' + getPersonalBestTypesForSet(set, item.exerciseId).join('\n')">
                                   <span class="px-1.5 py-0.5 text-xs font-semibold rounded-full bg-primary-dark text-white dark:text-amber-100">🏆 PB</span>
                               </div>

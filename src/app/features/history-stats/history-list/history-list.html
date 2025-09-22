@@ -91,7 +91,7 @@
               <div *ngIf="item.itemType === 'workout'"
                 class="bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow duration-200 relative group transform hover:-translate-y-1 border-l-4 border-primary text-primary dark:text-primary-light dark:hover:text-yellow-200 dark:hover:bg-gray-600 hover:bg-gray-200"
                 [style.zIndex]="areActionsVisible(item.id) ? 50 : 'auto'">
-                <div class="p-4 sm:p-6 cursor-pointer" (click)="viewLogDetails(item.id)">
+                <div class="p-4 sm:p-6 cursor-pointer border rounded-md" (click)="viewLogDetails(item.id)">
                   <div class="flex justify-between items-start mb-1.5">
                     <h2 class="text-lg sm:text-xl font-semibold truncate pr-8"
                       [title]="item.routineName || 'Ad-hoc Workout'">{{ item.routineName || 'Ad-hoc Workout' }}</h2>
@@ -140,8 +140,7 @@
                     </button>
                     <app-action-menu *ngIf="areActionsVisible(item.id) && (menuModeDropdown || menuModeModal)"
                       [modalTitle]="''" class="action-menu-container"
-                      [displayMode]="menuModeDropdown ? 'dropdown' : 'modal'"
-                      [gridClass]="' grid grid-cols-2 '"
+                      [displayMode]="menuModeDropdown ? 'dropdown' : 'modal'" [gridClass]="' grid grid-cols-2 '"
                       [items]="getLogDropdownActionItems(item.id, menuModeDropdown ? 'dropdown' : 'modal')"
                       [isVisible]="areActionsVisible(item.id)" (itemClick)="handleActionMenuItemClick($event)"
                       (closeMenu)="onCloseActionMenu()">
@@ -238,61 +237,42 @@
 
       <!-- CALENDAR VIEW -->
       <div *ngSwitchCase="'calendar'">
-        <div class="bg-white dark:bg-gray-800 rounded-md shadow-md p-4">
-          <div class="flex justify-between items-center mb-3 sm:mb-4">
-            <button appPress (shortPress)="previousHistoryMonth()" title="Previous Month"
-              class="p-1.5 sm:p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 disabled:opacity-50"
-              [disabled]="isHistoryCalendarAnimating"><svg xmlns="http://www.w3.org/2000/svg" fill="none"
-                viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 sm:w-5 sm:h-5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-              </svg></button>
-            <h2 class="text-md sm:text-lg font-semibold text-gray-700 dark:text-gray-200">{{ historyCalendarViewDate() |
-              date:'MMMM yyyy' }}</h2>
-            <button appPress (shortPress)="nextHistoryMonth()" title="Next Month"
-              class="p-1.5 sm:p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 disabled:opacity-50"
-              [disabled]="isHistoryCalendarAnimating"><svg xmlns="http://www.w3.org/2000/svg" fill="none"
-                viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 sm:w-5 sm:h-5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-              </svg></button>
-          </div>
-          <button appPress (shortPress)="goToTodayHistoryCalendar()"
-            *ngIf="!isSameMonth(historyCalendarViewDate(), todayForCalendar)"
-            class="text-xs text-primary dark:text-primary-light hover:underline mb-2 sm:mb-3 block text-center mx-auto disabled:opacity-50"
-            [disabled]="isHistoryCalendarAnimating">Jump to Current Month</button>
-          <div class="relative overflow-hidden min-h-[280px]" #historyCalendarSwipeContainerEl>
-            <div [@calendarMonthSlide]="historyCalendarAnimationState()">
-              <div *ngIf="historyCalendarLoading() && !isHistoryCalendarAnimating" class="text-center py-6">
-                <p class="text-gray-500 dark:text-gray-400">Loading calendar...</p>
+        <!-- This container will become the scrollable area -->
+        <div class="calendar-scroll-container">
+          <!-- Loop over each month's data -->
+          <div *ngFor="let month of historyCalendarMonths()" class="month-container mb-8">
+            <!-- Month Header -->
+            <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4 text-center">
+              {{ month.monthName | titlecase }} {{ month.year }}
+            </h2>
+
+            <!-- Grid for the days of the week headers -->
+            <div class="grid grid-cols-7 gap-x-2 text-center mb-2">
+              <div *ngFor="let dayName of getHistoryWeekDayNames()"
+                class="text-sm font-bold text-gray-500 dark:text-gray-400">
+                {{ dayName }}
               </div>
-              <div *ngIf="!historyCalendarLoading() || isHistoryCalendarAnimating">
-                <div *ngIf="historyCalendarDays().length > 0"
-                  class="grid grid-cols-7 gap-px border dark:border-gray-700 rounded-md overflow-hidden bg-gray-200 dark:bg-gray-600">
-                  <div *ngFor="let dayName of getHistoryWeekDayNames()"
-                    class="text-center py-1.5 sm:py-2 text-2xs sm:text-xs font-medium text-gray-600 dark:text-gray-500 bg-gray-100 dark:bg-gray-750">
-                    {{ dayName }}</div>
-                  <div *ngFor="let day of historyCalendarDays()" appPressScroll
-                    (shortPress)="!isHistoryCalendarAnimating && selectHistoryDay(day)"
-                    class="p-1 sm:p-2 min-h-[60px] sm:min-h-[80px] relative transition-colors text-left rounded-md transform hover:-translate-y-1 cursor-pointer"
-                    [class.cursor-pointer]="!isHistoryCalendarAnimating && day.hasLog"
-                    [class.hover:bg-gray-100]="day.isCurrentMonth && !isHistoryCalendarAnimating"
-                    [class.dark:hover:bg-gray-600]="day.isCurrentMonth && !isHistoryCalendarAnimating" [ngClass]="{
-                      'bg-white dark:bg-gray-700': day.isCurrentMonth,
-                      'bg-gray-50 dark:bg-gray-700/60 opacity-70': !day.isCurrentMonth,
-                      'ring-1 ring-inset ring-primary dark:ring-primary-light': day.isToday && day.isCurrentMonth
-                      }">
-                    <span class="text-lg font-semibold" [ngClass]="{'text-primary': day.isToday && day.isCurrentMonth,
-                      'text-gray-700 dark:text-gray-200': !day.isToday && day.isCurrentMonth,
-                      'text-gray-400 dark:text-gray-500': !day.isCurrentMonth}">{{
-                      day.date | date:'d' }}</span>
-                    <div *ngIf="day.hasLog && day.isCurrentMonth"
-                      class="absolute bottom-1 right-1 sm:bottom-1.5 sm:right-1.5 flex items-center justify-center w-4 h-4 sm:w-5 sm:h-5 rounded-full text-2xs sm:text-xs font-bold bg-green-500 text-white">
-                      {{ day.logCount }}
-                    </div>
-                  </div>
-                </div>
+            </div>
+
+            <!-- Grid for the actual days in the month -->
+            <div class="grid grid-cols-7 gap-x-2 gap-y-2">
+              <!-- This empty div is a spacer to align the first day correctly -->
+              <div *ngFor="let spacer of month.spacers" class="day-cell"></div>
+
+              <div *ngFor="let day of month.days" (click)="selectHistoryDay(day)"
+                class="day-cell flex items-center justify-center h-10 w-full rounded-full text-md font-medium transition-colors duration-200"
+                [ngClass]="getCalendarDayClasses(day)">
+                <span>{{ day.date | date:'d' }}</span>
+                <!-- Dot indicator for logged days -->
+                <div *ngIf="day.hasLog" class="absolute bottom-1 h-1.5 w-1.5 bg-primary rounded-full"></div>
               </div>
             </div>
           </div>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div *ngIf="historyCalendarLoading()" class="text-center py-10">
+          <p class="text-gray-500 dark:text-gray-400">Loading more months...</p>
         </div>
       </div>
     </div>
@@ -356,7 +336,7 @@
             </div>
             <div class="flex items-center">
               <button (click)="viewLogDetails(item.id)"
-                class="flex justify-center items-center w-full sm:w-auto px-6 py-3 bg-primary hover:bg-primary-dark text-white font-semibold rounded-md shadow-sm text-lg disabled:opacity-50 disabled:cursor-not-allowed">
+                class="flex justify-center items-center w-full sm:w-auto px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md shadow-sm text-lg disabled:opacity-50 disabled:cursor-not-allowed">
                 <app-icon name="eye" class="w-6 h-6 mr-1"></app-icon>
                 DETAILS
               </button>
@@ -389,6 +369,5 @@
     </div>
   </div>
 
-  <app-fab-menu [actions]="fabMenuItems" (actionClicked)="onFabAction($event)"></app-fab-menu>    
+  <app-fab-menu [actions]="fabMenuItems" (actionClicked)="onFabAction($event)"></app-fab-menu>
 </div>
-
