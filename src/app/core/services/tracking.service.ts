@@ -845,7 +845,7 @@ export class TrackingService {
     );
   }
 
-  getWorkoutLogByProgramId(programId: string): Observable<WorkoutLog[]> {
+  getWorkoutLogsByProgramId(programId: string): Observable<WorkoutLog[]> {
     if (!programId) return of([]);
     return this.workoutLogs$.pipe(
       map(allLogs =>
@@ -969,7 +969,7 @@ export class TrackingService {
       return of('#1');
     }
 
-    const programLogs$ = this.getWorkoutLogByProgramId(programId);
+    const programLogs$ = this.getWorkoutLogsByProgramId(programId);
 
     return programLogs$.pipe(
       map(logs => {

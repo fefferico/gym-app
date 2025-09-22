@@ -589,7 +589,7 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
   getCalendarDayClasses(day: HistoryCalendarDay): object {
     return {
       'cursor-default': !day.hasLog,
-      'bg-primary text-white font-bold': day.isToday,
+      'ring-2 ring-primary dark:ring-primary-light font-bold': day.isToday,
       'text-gray-800 dark:text-gray-200': !day.isToday,
       'text-gray-400 dark:text-gray-500': !day.isCurrentMonth, // This can be used if you re-add padding days
       'cursor-pointer hover:bg-green-700 bg-green-500 text-white font-bold': day.hasLog,

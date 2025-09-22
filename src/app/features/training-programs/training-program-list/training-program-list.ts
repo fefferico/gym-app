@@ -43,17 +43,20 @@ interface ScheduledItemWithLogs {
   logs: WorkoutLog[];
   isUnscheduled?: boolean;
 }
-
 interface CalendarDay {
   date: Date;
-  isCurrentMonth?: boolean;
   isToday: boolean;
   isPastDay: boolean;
   hasWorkout: boolean;
   isLogged: boolean;
   scheduledItems: ScheduledItemWithLogs[];
 }
-
+interface CalendarMonth {
+  monthName: string;
+  year: number;
+  days: CalendarDay[];
+  spacers: any[];
+}
 type ProgramListView = 'list' | 'calendar';
 type CalendarDisplayMode = 'week' | 'month';
 
@@ -126,7 +129,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
   private appSettingsService = inject(AppSettingsService);
   protected subscriptionService = inject(SubscriptionService);
 
-  programs$: Observable<TrainingProgram[]> | undefined;
+  isLoading = signal(true);
   allProgramsForList = signal<TrainingProgram[]>([]);
   private dataSubscription: Subscription | undefined;
   private programsListSubscription: Subscription | undefined; // NEW: For ongoing program list updates
@@ -175,8 +178,10 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
   uniqueProgramGoals = signal<string[]>([]);
   uniqueProgramMuscleGroups = signal<string[]>([]);
 
+  private subscriptions = new Subscription();
   private allRoutinesMap = new Map<string, Routine>();
   private allExercisesMap = new Map<string, Exercise>();
+  private currentCalendarDate = new Date();
 
   filteredPrograms = computed(() => {
     let programs = this.allProgramsForList();
@@ -232,6 +237,10 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
   });
 
   currentView = signal<ProgramListView>('list');
+  calendarMonths = signal<CalendarMonth[]>([]);
+  selectedCalendarDayDetails = signal<CalendarDay | null>(null);
+  isFabActionsOpen = signal(false);
+
   viewAnimationParams = signal<{ value: ProgramListView, params: { enterTransform: string, leaveTransform: string } }>({
     value: 'list', params: { enterTransform: 'translateX(100%)', leaveTransform: 'translateX(-100%)' }
   });
@@ -247,19 +256,12 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
   // This computed signal intelligently determines which single program (if any) to display on the calendar
   activeProgramForCalendar = computed<TrainingProgram | null>(() => {
     const active = this.activePrograms();
-    if (active.length === 1) {
-      return active[0]; // If only one program is active, use it automatically.
-    }
-    if (active.length > 1) {
-      return this.calendarViewProgram(); // If multiple are active, use the one the user selected.
-    }
-    return null; // If zero programs are active.
+    return active.length === 1 ? active[0] : this.calendarViewProgram();
   });
 
 
   weekStartsOn: 0 | 1 = 1;
   calendarDisplayMode = signal<CalendarDisplayMode>('week');
-  selectedCalendarDayDetails = signal<CalendarDay | null>(null);
   selectedCalendarDayLoggedWorkouts = signal<CalendarDay | null>(null);
   calendarAnimationState = signal<'center' | 'outLeft' | 'outRight' | 'preloadFromLeft' | 'preloadFromRight'>('center');
   protected isCalendarAnimating = false;
@@ -268,71 +270,52 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
   protected weekDayNames: string[] = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   readonly calendarHeaderFormat = computed(() => this.calendarDisplayMode() === 'month' ? 'MMMM yyyy' : 'MMMM yyyy');
 
-  constructor() { }
+  constructor() {
+    this.refreshFabMenuItems();
+  }
 
   protected allWorkoutLogs = signal<WorkoutLog[]>([]);
   private workoutLogsSubscription: Subscription | undefined;
 
-  isFabActionsOpen = signal(false);
   isTouchDevice = false;
 
   ngOnInit(): void {
-    if (!this.subscriptionService.canAccess(PremiumFeature.TRAINING_PROGRAMS)) {
-      this.subscriptionService.showUpgradeModal().then(() => {
-        this.router.navigate(['profile']);
-      });
-    }
-
     if (isPlatformBrowser(this.platformId)) {
       window.scrollTo(0, 0);
-      this.isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      this.isTouchDevice = 'ontouchstart' in window;
     }
-    this.menuModeDropdown = this.appSettingsService.isMenuModeDropdown();
-    this.menuModeCompact = this.appSettingsService.isMenuModeCompact();
-    this.menuModeModal = this.appSettingsService.isMenuModeModal();
 
-    this.workoutLogsSubscription = this.trackingService.workoutLogs$.subscribe(logs => this.allWorkoutLogs.set(logs));
+    const routines$ = this.workoutService.routines$.pipe(take(1));
+    const logs$ = this.trackingService.workoutLogs$;
+    const programs$ = this.trainingProgramService.programs$;
 
-    this.dataSubscription = forkJoin({
-      routines: this.workoutService.routines$.pipe(take(1)),
-      exercises: this.exerciseService.getExercises().pipe(take(1)),
-    }).subscribe(({ routines, exercises }) => {
+    this.subscriptions.add(routines$.subscribe(routines => {
       routines.forEach(r => this.allRoutinesMap.set(r.id, r));
-      exercises.forEach(e => this.allExercisesMap.set(e.id, e));
-    });
+    }));
 
-    this.programs$ = this.trainingProgramService.programs$;
-    this.programsListSubscription = this.trainingProgramService.programs$.subscribe(programs => {
+    this.subscriptions.add(logs$.subscribe(logs => {
+      this.allWorkoutLogs.set(logs);
+    }));
+
+    this.subscriptions.add(programs$.subscribe(programs => {
       this.allProgramsForList.set(
-        programs.sort((a, b) => {
-          // Primary sort: by isActive status (true comes first)
-          if (a.isActive && !b.isActive) {
-            return -1; // a is active, b is not -> a should come before b
-          }
-          if (!a.isActive && b.isActive) {
-            return 1; // b is active, a is not -> b should come before a
-          }
-
-          // Secondary sort: by name (alphabetical)
-          // This part is only reached if both programs have the same isActive status
-          return a.name.localeCompare(b.name);
-        })
+        programs.sort((a, b) => (b.isActive ? 1 : -1) - (a.isActive ? 1 : -1) || a.name.localeCompare(b.name))
       );
-      this.populateFilterOptions();
-
       const newActivePrograms = programs.filter(p => p.isActive);
       this.activePrograms.set(newActivePrograms);
 
-      if (this.currentView() === 'calendar') {
-        // If the program being viewed in the calendar is no longer active, clear it.
-        const currentCalendarProgId = this.calendarViewProgram()?.id;
-        if (currentCalendarProgId && !newActivePrograms.some(p => p.id === currentCalendarProgId)) {
-          this.calendarViewProgram.set(null);
-        }
-        this.generateCalendarDays(true);
+      // If the program being viewed in the calendar is no longer active, clear it.
+      const currentCalendarProgId = this.calendarViewProgram()?.id;
+      if (currentCalendarProgId && !newActivePrograms.some(p => p.id === currentCalendarProgId)) {
+        this.calendarViewProgram.set(null);
       }
-    });
 
+      // Refresh calendar if it's the current view
+      if (this.currentView() === 'calendar') {
+        this.refreshCalendarView();
+      }
+      this.isLoading.set(false);
+    }));
     this.refreshFabMenuItems();
   }
 
@@ -514,55 +497,45 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
   }
 
   async setView(view: ProgramListView): Promise<void> {
-    const current = this.currentView();
-    if (current === view) return;
+    if (this.currentView() === view) return;
 
-    // --- CALENDAR VIEW LOGIC ---
     if (view === 'calendar') {
       const activeProgs = this.activePrograms();
-      if (activeProgs.length > 1) {
-        // Prompt user to select a program for the calendar view
-        const programButtons: AlertButton[] = activeProgs.map(p => ({
-          text: p.name,
-          role: 'confirm',
-          data: p, // Pass the whole program object
-          cssClass: 'bg-primary hover:bg-primary-dark'
-        }));
-        programButtons.push({ text: 'Cancel', role: 'cancel', data: null, cssClass: 'bg-gray-400 hover:bg-gray-600', icon: 'cancel', iconClass: 'w-4 h-4 mr-1' });
+      if (activeProgs.length > 1 && !this.calendarViewProgram()) {
+        const programButtons: AlertButton[] = activeProgs.map(p => ({ text: p.name, role: 'confirm', data: p }));
+        programButtons.push({ text: 'Cancel', role: 'cancel', data: null });
+        const choice = await this.alertService.showConfirmationDialog('Select Program', 'Choose a program to view in the calendar.', programButtons);
 
-        const choice = await this.alertService.showConfirmationDialog(
-          'Select Program',
-          'You have multiple active programs. Please choose one to view on the calendar.',
-          programButtons
-        );
-
-        if (choice && choice.data) {
+        if (choice?.data) {
           this.calendarViewProgram.set(choice.data as TrainingProgram);
         } else {
-          // User cancelled, so we don't switch the view.
-          // this.toastService.info("Calendar view cancelled", 2000);
-          return;
+          return; // User cancelled
         }
-      } else {
-        // If 0 or 1 active programs, no selection is needed. The computed signal handles it.
-        this.calendarViewProgram.set(null); // Clear any previous selection
       }
     }
-    // --- END CALENDAR VIEW LOGIC ---
 
-    let enterTransform = 'translateX(100%)', leaveTransform = 'translateX(-100%)';
-    if (view === 'list') { enterTransform = 'translateX(-100%)'; leaveTransform = 'translateX(100%)'; }
-
-    this.viewAnimationParams.set({ value: view, params: { enterTransform, leaveTransform } });
     this.currentView.set(view);
-    this.isFilterAccordionOpen.set(false);
 
-    if (view === 'calendar') {
-      this.calendarDisplayMode.set('week');
-      this.calendarAnimationState.set('center');
-      this.generateCalendarDays(true);
+    if (view === 'calendar' && this.calendarMonths().length === 0) {
+      this.refreshCalendarView();
     }
-    this.goToTodayCalendar();
+  }
+
+  refreshCalendarView(): void {
+    this.calendarMonths.set([]);
+    this.currentCalendarDate = new Date();
+    this.generateCalendarMonths(this.currentCalendarDate, 3); // Initial load of 3 months
+  }
+
+  selectCalendarDay(day: CalendarDay | null): void {
+    if (day?.hasWorkout) {
+      this.selectedCalendarDayDetails.set(day);
+    } else if (day) {
+      this.toastService.info("It's a rest day!", 2000, format(day.date, 'EEEE'));
+      this.selectedCalendarDayDetails.set(null);
+    } else {
+      this.selectedCalendarDayDetails.set(null);
+    }
   }
 
 
@@ -799,7 +772,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
         );
 
         // 4. Group unscheduled logs by their routineId and map them to our display interface.
-        const unscheduledItemsWithLogs = this.mapWorkoutLogToScheduledItemWithLogs(unscheduledLogsForThisDate);
+        const unscheduledItemsWithLogs = this.mapWorkoutLogToScheduledItemWithLogs(unscheduledLogsForThisDate, activeProg);
 
         // 5. Combine the two lists.
         const allItemsForThisDay = [...scheduledItemsWithLogs, ...unscheduledItemsWithLogs];
@@ -856,26 +829,89 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
     return false;
   }
 
-  selectCalendarDay(day: CalendarDay | null): void {
-    if (this.isCalendarAnimating) return; // Prevent opening sheet during slide
-    const currentVibrator = navigator;
-    if (currentVibrator && 'vibrate' in currentVibrator) {
-      currentVibrator.vibrate(50); // Optional: provide haptic feedback on selection
-    }
-
-    if (day?.hasWorkout) this.selectedCalendarDayDetails.set(day);
-    else if (day && !day.hasWorkout) {
-      this.toastService.clearAll();
-      this.toastService.info("It's a rest day!", 2000, format(day.date, 'EEEE'));
-      this.selectedCalendarDayDetails.set(null);
-    }
-    else this.selectedCalendarDayDetails.set(null);
-  }
   startScheduledWorkout(routineId: string | undefined, programId: string | undefined, scheduledDayId: string | undefined): void {
     if (routineId) {
       this.workoutService.navigateToPlayer(routineId, { queryParams: { programId, scheduledDayId } });
       this.selectCalendarDay(null);
     }
+  }
+
+  private loadNextCalendarMonths(): void {
+    this.generateCalendarMonths(this.currentCalendarDate, 2); // Load next 2 months
+  }
+
+  async generateCalendarMonths(startDate: Date, numberOfMonths: number): Promise<void> {
+    const activeProg = this.activeProgramForCalendar();
+    if (!activeProg) {
+      this.calendarMonths.set([]);
+      return;
+    }
+    this.calendarLoading.set(true);
+
+    const newMonths: CalendarMonth[] = [];
+    const allLogsForProgram = this.allWorkoutLogs().filter(log => log.programId === activeProg.id);
+
+    for (let i = 0; i < numberOfMonths; i++) {
+      const targetDate = subMonths(startDate, i);
+      const monthStart = startOfMonth(targetDate);
+      const monthEnd = endOfMonth(targetDate);
+
+      const scheduledEntries = await firstValueFrom(
+        this.trainingProgramService.getScheduledRoutinesForDateRangeByProgramId(activeProg.id, monthStart, monthEnd)
+      );
+
+      const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
+      const firstDayOfMonth = daysInMonth[0];
+      const dayOfWeekForFirst = firstDayOfMonth.getDay();
+      const effectiveStartOfWeek = (this.weekStartsOn === 1) ? (dayOfWeekForFirst === 0 ? 6 : dayOfWeekForFirst - 1) : dayOfWeekForFirst;
+
+      newMonths.push({
+        monthName: format(targetDate, 'LLLL'),
+        year: targetDate.getFullYear(),
+        spacers: Array(effectiveStartOfWeek).fill(0),
+        days: daysInMonth.map(date => {
+          const logsOnThisDay = allLogsForProgram.filter(log => isSameDay(parseISO(log.date), date));
+          const scheduledForThisDay = scheduledEntries.filter(entry => isSameDay(entry.date, date));
+
+          const allItems = this.correlateScheduleWithLogs(scheduledForThisDay, logsOnThisDay, activeProg);
+
+          return {
+            date,
+            isToday: isToday(date),
+            isPastDay: isPast(date) && !isToday(date),
+            hasWorkout: allItems.length > 0,
+            isLogged: allItems.some(item => item.logs.length > 0),
+            logCount: logsOnThisDay.length,
+            scheduledItems: allItems,
+          };
+        }),
+      });
+    }
+
+    this.calendarMonths.update(existing => [...existing, ...newMonths]);
+    this.currentCalendarDate = subMonths(startDate, numberOfMonths);
+    this.calendarLoading.set(false);
+  }
+
+  private correlateScheduleWithLogs(scheduledEntries: { date: Date; scheduledDayInfo: ScheduledRoutineDay }[], logsOnThisDay: WorkoutLog[], activeProgram: TrainingProgram): ScheduledItemWithLogs[] {
+    const scheduledRoutineIds = new Set(scheduledEntries.map(e => e.scheduledDayInfo.routineId));
+
+    // 1. Map scheduled routines to their logs
+    const scheduledItems: ScheduledItemWithLogs[] = scheduledEntries.map(entry => {
+      const routine = this.allRoutinesMap.get(entry.scheduledDayInfo.routineId);
+      return routine ? {
+        routine,
+        scheduledDayInfo: entry.scheduledDayInfo,
+        logs: logsOnThisDay.filter(log => log.routineId === routine.id && log.iterationId === activeProgram.iterationId),
+        isUnscheduled: false
+      } : null;
+    }).filter(Boolean) as ScheduledItemWithLogs[];
+
+    // 2. Identify and map unscheduled (ad-hoc) logs for the same day
+    const unscheduledLogs = logsOnThisDay.filter(log => log.routineId && !scheduledRoutineIds.has(log.routineId));
+    const unscheduledItems = this.mapWorkoutLogToScheduledItemWithLogs(unscheduledLogs, activeProgram);
+
+    return [...scheduledItems, ...unscheduledItems];
   }
 
   startProgramWorkout(routineId: string, programId: string | undefined, scheduledDayId: string | undefined, event: Event): void {
@@ -929,47 +965,33 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
     return filteredLogs;
   }
 
-  mapWorkoutLogToScheduledItemWithLogs(logs: WorkoutLog[]): ScheduledItemWithLogs[] {
-    if (logs.length === 0) return [];
-
-    const activeProg = this.activeProgramForCalendar();
-    if (!activeProg) return [];
-
-    // Group logs by their routine ID
+  mapWorkoutLogToScheduledItemWithLogs(logs: WorkoutLog[], activeProgram: TrainingProgram): ScheduledItemWithLogs[] {
+    // This helper is for ad-hoc logs that are part of a program but weren't on the schedule for that specific day
     const logsByRoutine = new Map<string, WorkoutLog[]>();
-    for (const log of logs) {
-      if (!log.routineId) continue;
-      if (!logsByRoutine.has(log.routineId)) {
-        logsByRoutine.set(log.routineId, []);
-      }
+    logs.forEach(log => {
+      if (!log.routineId) return;
+      if (!logsByRoutine.has(log.routineId)) logsByRoutine.set(log.routineId, []);
       logsByRoutine.get(log.routineId)!.push(log);
-    }
+    });
 
     const result: ScheduledItemWithLogs[] = [];
-
-    for (const [routineId, groupedLogs] of logsByRoutine.entries()) {
+    logsByRoutine.forEach((groupedLogs, routineId) => {
       const routine = this.allRoutinesMap.get(routineId);
-      if (!routine) continue;
-
-      // For unscheduled items, we create a "dummy" scheduledDayInfo
-      // as it's required by the interface.
-      const dummyScheduledDayInfo: ScheduledRoutineDay = {
-        id: uuidv4(),
-        routineId: routineId,
-        dayOfWeek: parseISO(groupedLogs[0].date).getDay(), // Get day of week from the log
-        programId: activeProg.id,
-        programName: activeProg.name,
-        // cycleDay: 0 // Not applicable, but required
-      };
-
-      result.push({
-        routine,
-        scheduledDayInfo: dummyScheduledDayInfo,
-        logs: groupedLogs.sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime()),
-        isUnscheduled: true // Mark this item as not originally scheduled
-      });
-    }
-
+      if (routine) {
+        result.push({
+          routine,
+          logs: groupedLogs,
+          isUnscheduled: true,
+          scheduledDayInfo: { // Create a dummy schedule info for display consistency
+            id: groupedLogs[0].id,
+            routineId: routineId,
+            dayOfWeek: parseISO(groupedLogs[0].date).getDay(),
+            programId: activeProgram.id,
+            programName: activeProgram.name
+          }
+        });
+      }
+    });
     return result;
   }
 
@@ -1072,18 +1094,20 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
   }
 
   ngOnDestroy(): void {
-    this.dataSubscription?.unsubscribe();
-    this.programsListSubscription?.unsubscribe();
-    this.workoutLogsSubscription?.unsubscribe();
-    this.hammerInstanceCalendar?.destroy();
-    this.hammerInstanceMode?.destroy();
+    this.subscriptions.unsubscribe();
   }
 
   showBackToTopButton = signal<boolean>(false);
   @HostListener('window:scroll', [])
   onWindowScroll(): void {
-    const verticalOffset = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
-    this.showBackToTopButton.set(verticalOffset > 400);
+    if (!isPlatformBrowser(this.platformId)) return;
+    this.showBackToTopButton.set(window.pageYOffset > 400);
+
+    // Infinite Scroll for Calendar
+    const isAtBottom = (window.innerHeight + window.scrollY) >= document.body.offsetHeight - 200;
+    if (isAtBottom && this.currentView() === 'calendar' && !this.calendarLoading()) {
+      this.loadNextCalendarMonths();
+    }
   }
 
   scrollToTop(): void {
@@ -1125,4 +1149,25 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
         break;
     }
   }
+
+  getCalendarDayClasses(day: CalendarDay): object {
+    return {
+      // A day is clickable only if it has a workout scheduled or logged
+      'cursor-default': !day.hasWorkout,
+      
+      // Styling for today's date
+      'ring-2 ring-primary dark:ring-primary-light font-bold': day.isToday,
+      
+      // Default text color
+      'text-gray-800 dark:text-gray-200': !day.isToday,
+      'cursor-pointer hover:bg-yellow-700 bg-yellow-500 text-white font-bold': day.hasWorkout && !day.isLogged,
+      'cursor-pointer hover:bg-green-700 bg-green-500 text-white font-bold': day.hasWorkout && day.isLogged,
+    };
+  }
+
+  // 'cursor-default': !day.hasLog,
+  //     'bg-primary text-white font-bold': day.isToday,
+  //     'text-gray-800 dark:text-gray-200': !day.isToday,
+  //     'text-gray-400 dark:text-gray-500': !day.isCurrentMonth, // This can be used if you re-add padding days
+  //     'cursor-pointer hover:bg-green-700 bg-green-500 text-white font-bold': day.hasLog,
 }
