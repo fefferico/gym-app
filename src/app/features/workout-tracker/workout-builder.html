@@ -368,11 +368,10 @@
                                     <div class="flex-grow">
                                         <!-- Superset info remains on its own line if visible, which is correct -->
                                         <span *ngIf="exerciseControl.get('supersetId')?.value"
-                                            class="text-xs font-normal block mb-1"
+                                            class="text-xs font-mono block mb-1"
                                             [ngClass]="standarSuperSetOrEmomClass(exerciseControl, true)">
-                                            Superset exercise ({{ (exerciseControl.get('supersetOrder')?.value ?? 0) + 1
-                                            }} of {{
-                                            exerciseControl.get('sets')?.value?.length }})
+                                            Superset exercise [{{ (exerciseControl.get('supersetOrder')?.value ?? 0) + 1
+                                            }} of {{ getSupersetSize(exIndex) }}]
                                         </span>
 
                                         <!-- NEW: Flex container to align the icon and the title horizontally -->
