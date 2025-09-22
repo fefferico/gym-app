@@ -970,10 +970,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       fg.get('supersetRounds')?.enable({ emitEvent: false });
     }
 
-    const isRepsRangeMode = this.isRangeMode(fg, 'reps');
-    const isWeightRangeMode = this.isRangeMode(fg, 'weight');
-    const isDurationRangeMode = this.isRangeMode(fg, 'duration');
-
     fg.get('exerciseId')?.valueChanges.subscribe(newExerciseId => {
       const selectedBaseExercise = this.availableExercises.find(e => e.id === newExerciseId);
       fg.get('exerciseName')?.setValue(selectedBaseExercise?.name || 'Unknown Exercise', { emitEvent: false });
@@ -1027,7 +1023,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
 
   // isRepsRangeMode, isWeightRangeMode, isDurationRangeMode
-  private createSetFormGroup(setData?: ExerciseTargetSetParams | LoggedSet, forLogging: boolean = false, isRangeModeArray: boolean[] = []): FormGroup {
+  private createSetFormGroup(setData?: ExerciseTargetSetParams | LoggedSet, forLogging: boolean = false): FormGroup {
     let targetTargetReps, targetWeighValue, targetDurationValue, notesValue, typeValue, tempoValue, restValue;
     let targetRepsMinValue, targetRepsMaxValue, targetDurationMinValue, targetDurationMaxValue, targetWeightMinValue, targetWeightMaxValue; // For ranges
     let id = uuidv4();
@@ -1092,23 +1088,23 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
           Validators.min(0)
         ]
       ];
-      formGroupConfig['weightUsed'] = [this.unitService.convertWeight(targetWeighValue || 0, 'kg', this.unitService.currentWeightUnit()) ?? null, [Validators.min(0)]];
+      formGroupConfig['weightUsed'] = [targetWeighValue != null ? this.unitService.convertWeight(targetWeighValue, 'kg', this.unitService.currentWeightUnit()) : null, [Validators.min(0)]];
       formGroupConfig['durationPerformed'] = [targetDurationValue ?? null, [Validators.min(0)]];
       formGroupConfig['plannedSetId'] = [plannedSetIdValue];
       formGroupConfig['timestamp'] = [timestampValue];
       formGroupConfig['tempo'] = [tempoValue];
       formGroupConfig['restAfterSet'] = [restValue];
     } else { // For routine builder (planning mode)
-
-      
-
-
       formGroupConfig['targetReps'] = [targetTargetReps ?? null, [Validators.min(0)]];
       formGroupConfig['targetRepsMin'] = [targetRepsMinValue ?? null, [Validators.min(0)]];
       formGroupConfig['targetRepsMax'] = [targetRepsMaxValue ?? null, [Validators.min(0)]];
-      formGroupConfig['targetWeight'] = [this.unitService.convertWeight(targetWeighValue || 0, 'kg', this.unitService.currentWeightUnit()) ?? null, [Validators.min(0)]];
-      formGroupConfig['targetWeightMin'] = [this.unitService.convertWeight(targetWeightMinValue || 0, 'kg', this.unitService.currentWeightUnit()) ?? null, [Validators.min(0)]];
-      formGroupConfig['targetWeightMax'] = [this.unitService.convertWeight(targetWeightMaxValue || 0, 'kg', this.unitService.currentWeightUnit()) ?? null, [Validators.min(0)]];
+      
+      // =================== START: FIXED SNIPPET ===================
+      formGroupConfig['targetWeight'] = [targetWeighValue != null ? this.unitService.convertWeight(targetWeighValue, 'kg', this.unitService.currentWeightUnit()) : null, [Validators.min(0)]];
+      formGroupConfig['targetWeightMin'] = [targetWeightMinValue != null ? this.unitService.convertWeight(targetWeightMinValue, 'kg', this.unitService.currentWeightUnit()) : null, [Validators.min(0)]];
+      formGroupConfig['targetWeightMax'] = [targetWeightMaxValue != null ? this.unitService.convertWeight(targetWeightMaxValue, 'kg', this.unitService.currentWeightUnit()) : null, [Validators.min(0)]];
+      // =================== END: FIXED SNIPPET ===================
+      
       formGroupConfig['targetDuration'] = [targetDurationValue ?? null, [Validators.min(0)]];
       formGroupConfig['targetDurationMin'] = [targetDurationMinValue ?? null, [Validators.min(0)]];
       formGroupConfig['targetDurationMax'] = [targetDurationMaxValue ?? null, [Validators.min(0)]];
@@ -1118,18 +1114,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     const groupOptions = forLogging ? {} : { validators: this.createRangeValidator() };
 
     const setFG = this.fb.group(formGroupConfig, groupOptions);
-
-    if (isRangeModeArray) {
-        if (isRangeModeArray[0]){
-          this.toggleRepsMode(setFG);
-        }
-        if (isRangeModeArray[1]){
-          this.toggleWeightMode(setFG);
-        }
-        if (isRangeModeArray[2]){
-          this.toggleDurationMode(setFG);
-        }
-      }
 
     return setFG;
   }
@@ -1263,15 +1247,12 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
    * Helper method to create a new set, copying from the last one if it exists.
    * This will be used for both standard and superset set additions.
    */
-  private createSyncedSet(setsArray: FormArray, ctrl: AbstractControl): FormGroup {
-    const isRepsRangeMode = this.isRangeMode(ctrl, 'reps');
-    const isWeightRangeMode = this.isRangeMode(ctrl, 'weight');
-    const isDurationRangeMode = this.isRangeMode(ctrl, 'duration');
+private createSyncedSet(setsArray: FormArray, ctrl: AbstractControl): FormGroup {
     if (setsArray.length > 0) {
       const prevSet = setsArray.at(setsArray.length - 1).value;
       const setData = { ...prevSet };
       delete setData.id; // Ensure new set gets a new ID
-      return this.createSetFormGroup(setData, this.mode === 'manualLogEntry', [isRepsRangeMode, isWeightRangeMode, isDurationRangeMode]);
+      return this.createSetFormGroup(setData, this.mode === 'manualLogEntry');
     } else {
       // If no sets exist, create a blank default one.
       return this.createSetFormGroup(undefined, this.mode === 'manualLogEntry');
@@ -2116,8 +2097,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
   getRoutineDuration(): number {
     if (this.routine()) {
-      return 0;
-      // return this.workoutService.getEstimatedRoutineDuration(this.mapFormToRoutine(this.builderForm.getRawValue()));
+      return this.workoutService.getEstimatedRoutineDuration(this.mapFormToRoutine(this.builderForm.getRawValue()));
     } else {
       return 0;
     }
