@@ -91,7 +91,7 @@
 
               <!-- WORKOUT LOG CARD -->
               <div *ngIf="item.itemType === 'workout'"
-                class="bg-white dark:bg-gray-700 border dark:border-none rounded-md shadow-md hover:shadow-lg transition-shadow duration-200 relative group transform hover:-translate-y-1 border-l-4 border-primary text-primary dark:text-primary-light dark:hover:text-yellow-200 dark:hover:bg-gray-600 hover:bg-gray-200"
+                class="bg-white dark:bg-gray-700 border-2 border-l-4 dark:border-l-4 border-primary border-b-0 border-r-0 rounded-md shadow-md hover:shadow-lg transition-shadow duration-200 relative group transform hover:-translate-y-1 text-primary dark:text-primary-light dark:hover:text-yellow-200 dark:hover:bg-gray-600 hover:bg-gray-200"
                 [style.zIndex]="areActionsVisible(item.id) ? 50 : 'auto'">
                 <div class="p-4 sm:p-6 cursor-pointer border dark:border-none rounded-md" (click)="viewLogDetails(item.id)">
                   <div class="flex justify-between items-start mb-1.5">
@@ -157,7 +157,7 @@
 
               <!-- ACTIVITY LOG CARD -->
               <div *ngIf="item.itemType === 'activity'"
-                class="bg-white dark:bg-gray-700 border dark:border-none rounded-md shadow-md hover:shadow-lg transition-shadow duration-200 relative group transform hover:-translate-y-1 border-l-4 border-teal-400 text-teal-600 dark:text-teal-400 dark:hover:text-yellow-200"
+                class="bg-white dark:bg-gray-700 border-2 border-l-4 dark:border-l-4 border-teal-400 border-b-0 border-r-0 rounded-md shadow-md hover:shadow-lg transition-shadow duration-200 relative group transform hover:-translate-y-1  text-teal-600 dark:text-teal-400 dark:hover:text-yellow-200"
                 [style.zIndex]="areActionsVisible(item.id) ? 50 : 'auto'">
                 <div class="p-4 sm:p-6 cursor-pointer" (click)="viewActivityLogDetails(item.id)">
                   <div class="flex justify-between items-start mb-1.5">

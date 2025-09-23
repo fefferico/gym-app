@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy, signal, computed, ChangeDetectorRef, PLATFORM_ID, ViewChildren, QueryList, ElementRef, effect, ViewChild } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal, computed, ChangeDetectorRef, PLATFORM_ID, ViewChildren, QueryList, ElementRef, effect, ViewChild, afterNextRender, Injector, runInInjectionContext } from '@angular/core';
 import { CommonModule, DatePipe, DecimalPipe, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription, timer, of, lastValueFrom, firstValueFrom, combineLatest } from 'rxjs';
@@ -97,7 +97,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   private cdr = inject(ChangeDetectorRef);
   protected appSettingsService = inject(AppSettingsService);
   private platformId = inject(PLATFORM_ID);
-
+  private injector = inject(Injector);
   private unitService = inject(UnitsService);
 
   isAddToSupersetModalOpen = signal(false);
@@ -247,64 +247,11 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
   @ViewChildren('exerciseCard') exerciseCards!: QueryList<ElementRef>;
   @ViewChild('header') header!: ElementRef; // Get the header element
-  @ViewChildren('roundCard') roundCards!: QueryList<ElementRef>;
+
+  // The constructor is now empty or can be removed if not used for anything else.
+  constructor() { }
 
 
-  constructor() {
-    effect(() => {
-      const index = this.expandedExerciseIndex();
-
-      // We only want to scroll when an exercise is *expanded*
-      if (index !== null && this.exerciseCards && this.header) {
-        // Use a timeout to ensure the DOM has updated and the *ngIf content is visible
-        setTimeout(() => {
-          const exercise = this.routine()?.exercises[index];
-          const cardElement = this.exerciseCards.toArray()[index]?.nativeElement;
-          const headerElement = this.header.nativeElement;
-
-          if (!cardElement || !headerElement || !exercise) {
-            return; // Safety check
-          }
-
-          // --- NEW: SUPERSET SCROLL LOGIC ---
-          // Check if the expanded item is a superset
-          if (this.isSupersetStart(index)) {
-            // Find the index of the first round that is NOT completed
-            const targetRoundIndex = exercise.sets.findIndex((set, roundIdx) => !this.isRoundCompleted(index, roundIdx));
-            const roundElements = this.roundCards.toArray();
-            
-            // Check if we found an incomplete round AND its corresponding DOM element exists
-            if (targetRoundIndex > -1 && roundElements[targetRoundIndex]) {
-              const targetRoundElement = roundElements[targetRoundIndex].nativeElement;
-              const headerHeight = headerElement.offsetHeight;
-              const roundTopPosition = targetRoundElement.getBoundingClientRect().top + window.scrollY;
-              const scrollPadding = 15; // A little padding so it's not flush with the header
-
-              const scrollTopPosition = roundTopPosition - headerHeight - scrollPadding;
-
-              window.scrollTo({ top: scrollTopPosition, behavior: 'smooth' });
-              
-              // We've handled the specific scroll, so we exit here
-              return; 
-            }
-          }
-
-          // --- FALLBACK / ORIGINAL SCROLL LOGIC ---
-          // This will run for:
-          // 1. Standard (non-superset) exercises.
-          // 2. Supersets where all rounds are already completed (scrolling to the top of the card).
-          const headerHeight = headerElement.offsetHeight;
-          const cardTopPosition = cardElement.getBoundingClientRect().top + window.scrollY;
-          const scrollPadding = 10;
-
-          const scrollTopPosition = cardTopPosition - headerHeight - scrollPadding;
-
-          window.scrollTo({ top: scrollTopPosition, behavior: 'smooth' });
-
-        }, 100); // 100ms delay gives Angular time to render the new elements
-      }
-    });
-  }
 
   async ngOnInit(): Promise<void> {
     if (isPlatformBrowser(this.platformId)) { window.scrollTo(0, 0); }
@@ -784,7 +731,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         }
         return ex; // Return the original object for all other exercises
       });
-      
+
       // Also update the log in real-time if the exercise is already logged
       const log = this.currentWorkoutLog();
       const loggedEx = log.exercises?.find(ex => ex.id === r.exercises[exIndex].id);
@@ -864,8 +811,63 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return `${mins}:${secs}`;
   }
 
-  toggleExerciseExpansion(index: number): void {
-    this.expandedExerciseIndex.update(current => current === index ? null : index);
+toggleExerciseExpansion(index: number): void {
+    const isOpening = this.expandedExerciseIndex() !== index;
+    
+    // 1. Update the state signal to trigger the render
+    this.expandedExerciseIndex.update(current => (isOpening ? index : null));
+
+    // 2. Only run scroll logic if a card was just OPENED
+    if (isOpening) {
+      
+      // 3. Provide the injection context needed for afterNextRender
+      runInInjectionContext(this.injector, () => {
+        
+        // 4. Wait for Angular to finish its render pass
+        afterNextRender(() => {
+
+          // 5. Wait for the Browser to finish its layout/paint pass
+          requestAnimationFrame(() => {
+            const exercise = this.routine()?.exercises[index];
+            const headerElement = this.header?.nativeElement;
+            const cardElement = document.querySelector(`[data-exercise-index="${index}"]`) as HTMLElement;
+
+            if (!cardElement || !headerElement || !exercise) {
+              return; // Failsafe
+            }
+
+            let targetElement: HTMLElement | null = null;
+
+            // --- SCROLL LOGIC ---
+            if (this.isSupersetStart(index)) {
+              const targetRoundIndex = exercise.sets.findIndex((set, roundIdx) => !this.isRoundCompleted(index, roundIdx));
+              if (targetRoundIndex > -1) {
+                targetElement = cardElement.querySelector(`[data-round-index="${targetRoundIndex}"]`);
+              }
+            } else if (!this.isSuperSet(index)) {
+              const targetSetIndex = exercise.sets.findIndex((set, setIdx) => !this.isSetCompleted(index, setIdx, 0));
+              if (targetSetIndex > -1) {
+                targetElement = cardElement.querySelector(`[data-set-index="${targetSetIndex}"]`);
+              }
+            }
+
+            // --- EXECUTE SCROLL ---
+            const headerHeight = headerElement.offsetHeight;
+            let scrollTopPosition: number;
+
+            if (targetElement) {
+              const elementTopPosition = targetElement.getBoundingClientRect().top + window.scrollY;
+              scrollTopPosition = elementTopPosition - headerHeight - 10;
+            } else {
+              const cardTopPosition = cardElement.getBoundingClientRect().top + window.scrollY;
+              scrollTopPosition = cardTopPosition - headerHeight - 10;
+            }
+            
+            window.scrollTo({ top: scrollTopPosition, behavior: 'smooth' });
+          });
+        });
+      });
+    }
   }
 
   // +++ NEW: Signals and methods to toggle notes visibility for sets and exercises
@@ -1264,7 +1266,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       return { ...log };
     });
 
-      this.toastService.info(`Superset removed`);
+    this.toastService.info(`Superset removed`);
   }
 
   private removeExerciseNoPrompt(exIndex: number): void {
@@ -1299,8 +1301,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const supersetId = exerciseToRemove.supersetId;
 
     // --- CASE 0: Forcely removing an entire Superset group / exercise ---
-    if (confirmRequest ) {
-      if (supersetId){
+    if (confirmRequest) {
+      if (supersetId) {
         this.removeSuperset(exIndex);
       } else {
         this.removeExerciseNoPrompt(exIndex);
@@ -1429,7 +1431,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
   // +++ MODIFIED: Now accepts a fully formed WorkoutExercise +++
-addExerciseToRoutine(newWorkoutExercise: WorkoutExercise): void {
+  addExerciseToRoutine(newWorkoutExercise: WorkoutExercise): void {
     this.routine.update(r => {
       // If the routine doesn't exist, we can't add to it.
       if (!r) return r;
@@ -1446,8 +1448,8 @@ addExerciseToRoutine(newWorkoutExercise: WorkoutExercise): void {
     // We now set the expanded index *after* the update has been processed.
     // Use an effect or a simple timeout to ensure the DOM has time to react.
     setTimeout(() => {
-        const newIndex = (this.routine()?.exercises.length ?? 1) - 1;
-        this.expandedExerciseIndex.set(newIndex);
+      const newIndex = (this.routine()?.exercises.length ?? 1) - 1;
+      this.expandedExerciseIndex.set(newIndex);
     }, 0);
 
     this.closeAddExerciseModal();
@@ -1556,7 +1558,7 @@ addExerciseToRoutine(newWorkoutExercise: WorkoutExercise): void {
     // Base class for non-modal dropdowns/compact, if needed (adjust as per your `getMenuMode` logic)
     // Assuming `defaultBtnClass` is still relevant for non-modal modes
     const wFullClass = this.getMenuMode() === 'compact' ? '' : ' w-full';
-    const defaultBtnClass = 'rounded text-left p-3 sm:px-4 sm:py-2 font-medium text-white hover:bg-blue-600 flex items-center hover:text-white dark:hover:text-gray-100 dark:hover:text-white' + wFullClass;
+    const defaultBtnClass = 'rounded text-left p-3 font-medium text-white hover:bg-blue-600 flex items-center hover:text-white dark:hover:text-gray-100 dark:hover:text-white' + wFullClass;
 
     const addExerciseDisabledClass = (isPaused || !hasExercises ? 'disabled ' : '');
 
@@ -1728,7 +1730,6 @@ addExerciseToRoutine(newWorkoutExercise: WorkoutExercise): void {
   });
 
   // +++ MODIFIED: This method now also sets the next set's details for the rest timer UI
-  // +++ MODIFIED: This method now also sets the next set's details for the rest timer UI
   private async startRestPeriod(duration: number, completedExIndex: number, completedSetIndex: number): Promise<void> {
     this.playerSubState.set(PlayerSubState.Resting);
     this.restDuration.set(duration);
@@ -1739,7 +1740,6 @@ addExerciseToRoutine(newWorkoutExercise: WorkoutExercise): void {
 
     const nextStep = await this.peekNextStepInfo(completedExIndex, completedSetIndex);
 
-    // --- NEW FORMATTING LOGIC MOVED HERE ---
     if (!nextStep.exercise || !nextStep.details) {
       this.restTimerNextUpText.set("Workout Complete!");
       this.restTimerNextSetDetails.set(null);
@@ -1748,27 +1748,58 @@ addExerciseToRoutine(newWorkoutExercise: WorkoutExercise): void {
 
     const { exercise, details: plannedSet, historicalSet } = nextStep;
 
-    if (exercise.supersetType === 'emom') {
-      const totalRounds = exercise.sets.length;
-      const emomTime = exercise.emomTimeSeconds;
-      const line1 = `Next: ${exercise.exerciseName}`;
-      const line2 = `EMOM - ${totalRounds} Rounds, Every ${emomTime}s`;
-      this.restTimerNextUpText.set(`${line1}<br><span class="text-base opacity-80">${line2}</span>`);
+    // --- CASE 1: The next item is part of a Superset ---
+    if (exercise.supersetId) {
+      const supersetId = exercise.supersetId;
+      const roundIndex = exercise.sets.indexOf(plannedSet);
+      const exercisesInGroup = this.getSupersetExercises(supersetId);
+      const totalRounds = exercisesInGroup.length > 0 ? exercisesInGroup[0].sets.length : 0;
+
+      let titleLine: string;
+      if (exercise.supersetType === 'emom') {
+        const emomTime = exercise.emomTimeSeconds;
+        titleLine = `EMOM: Round ${roundIndex + 1}/${totalRounds} (Every ${emomTime}s)`;
+      } else {
+        titleLine = `Next Up: Round ${roundIndex + 1}/${totalRounds}`;
+      }
+
+      // Build an HTML string for each exercise in the upcoming round
+      const detailLines = exercisesInGroup.map(groupEx => {
+        const setForThisRound = groupEx.sets[roundIndex];
+        if (!setForThisRound) return ''; // Failsafe
+
+        const originalExIndex = this.getOriginalExIndex(groupEx.id);
+        const displayIndex = this.getExerciseDisplayIndex(originalExIndex);
+        const exName = groupEx.exerciseName;
+        const targetDetails = this.formatSetTargetForDisplay(setForThisRound, groupEx);
+
+        // This creates a small, structured block for each exercise
+        return `<div class="flex items-start gap-3 mt-3">
+                    <span class="font-bold text-gray-400 dark:text-gray-300 w-8 text-center">${displayIndex}</span>
+                    <div class="flex-1 text-left">
+                        <p class="font-semibold text-gray-800 dark:text-white">${exName}</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">${targetDetails}</p>
+                    </div>
+                </div>`;
+      }).join('');
+
+      // Combine the title and the detail lines into a single HTML block for display
+      this.restTimerNextUpText.set(`<div class="text-center"><p class="text-lg font-bold">${titleLine}</p></div><div class="mt-2">${detailLines}</div>`);
+
     } else {
+      // --- CASE 2: The next item is a Standard Exercise (Original Logic) ---
       const line1 = exercise.exerciseName;
-      const { round, totalRounds } = this.getRoundInfo(exercise);
       const setIndex = exercise.sets.indexOf(plannedSet);
-      const line2 = `Set ${setIndex + 1}/${exercise.sets.length}` + (totalRounds > 1 ? ` &nbsp; | &nbsp; Round ${round}/${totalRounds}` : '');
+      const line2 = `Set ${setIndex + 1}/${exercise.sets.length}`;
 
       let detailsLine = '';
       if (historicalSet) {
         const weight = this.weightUnitPipe.transform(historicalSet.weightUsed);
         detailsLine = `Last time: ${weight} x ${historicalSet.repsAchieved} reps`;
       } else {
-        const repsDisplay = this.getSetTargetDisplay(plannedSet, 'reps');
-        const weightDisplay = this.workoutService.getWeightDisplay(plannedSet, exercise);
-        detailsLine = `Target: ${weightDisplay} x ${repsDisplay} reps`;
+        detailsLine = this.formatSetTargetForDisplay(plannedSet, exercise);
       }
+
       this.restTimerNextUpText.set(`${line1}<br><span class="text-base opacity-80">${line2}</span><br><span class="text-base font-normal">${detailsLine}</span>`);
     }
 
@@ -1866,6 +1897,7 @@ addExerciseToRoutine(newWorkoutExercise: WorkoutExercise): void {
     let nextExercise: WorkoutExercise | undefined;
     let nextSetIndex: number | undefined;
 
+    // Logic to determine the next exercise and set index (remains the same)
     if (completedSetIndex + 1 < currentExercise.sets.length) {
       nextExercise = currentExercise;
       nextSetIndex = completedSetIndex + 1;
@@ -1874,23 +1906,25 @@ addExerciseToRoutine(newWorkoutExercise: WorkoutExercise): void {
       nextSetIndex = 0;
     }
 
-
     if (nextExercise && nextSetIndex !== undefined) {
       const plannedNextSet = nextExercise.sets[nextSetIndex];
       try {
         const lastPerformance = await firstValueFrom(this.trackingService.getLastPerformanceForExercise(nextExercise.exerciseId));
         const historicalSet = this.trackingService.findPreviousSetPerformance(lastPerformance, plannedNextSet, nextSetIndex);
 
-        // The suggested details are now just the planned details. The formatting logic will handle what to show.
-        const suggestedSetDetails: ExerciseTargetSetParams = { ...plannedNextSet };
+        // *** THE FIX IS HERE ***
+        // We now return the ORIGINAL 'plannedNextSet' object in the 'details' property.
+        // This ensures that `indexOf` will work correctly in the calling function.
+        return { text: '', details: plannedNextSet, exercise: nextExercise, historicalSet: historicalSet };
 
-        // We no longer format the text here, just return all the data.
-        return { text: '', details: suggestedSetDetails, exercise: nextExercise, historicalSet: historicalSet };
       } catch (error) {
         console.error("Could not fetch last performance for next set:", error);
+        // Also return the original object here on error.
         return { text: `${nextExercise.exerciseName} - Set ${nextSetIndex + 1}`, details: plannedNextSet, exercise: nextExercise, historicalSet: null };
       }
     }
+
+    // Return for when the workout is complete
     return { text: "Workout Complete!", details: null, exercise: null, historicalSet: null };
   }
 
@@ -2603,5 +2637,21 @@ addExerciseToRoutine(newWorkoutExercise: WorkoutExercise): void {
     if (!supersetId) return '';
     const exercisesInGroup = this.getSupersetExercises(supersetId);
     return exercisesInGroup.map(ex => ex.exerciseName).join(' / ');
+  }
+
+  private formatSetTargetForDisplay(set: ExerciseTargetSetParams, exercise: WorkoutExercise): string {
+    if (this.isCardio(exercise)) {
+      const distance = set.targetDistance ?? 0;
+      const duration = set.targetDuration ?? 0;
+      let parts: string[] = [];
+      if (distance > 0) parts.push(`${distance} km`);
+      if (duration > 0) parts.push(this.formatSecondsToTime(duration));
+      return parts.length > 0 ? `Target: ${parts.join(' for ')}` : 'No target set';
+    } else {
+      const repsDisplay = this.getSetTargetDisplay(set, 'reps');
+      const weightDisplay = this.workoutService.getWeightDisplay(set, exercise);
+      // Only show target if there are reps to perform
+      return repsDisplay ? `Target: ${weightDisplay} x ${repsDisplay} reps` : 'No target set';
+    }
   }
 }
