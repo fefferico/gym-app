@@ -2177,29 +2177,46 @@ toggleExerciseExpansion(index: number): void {
 
     const exIndex = routine.exercises.findIndex(e => e.id === exercise.id);
 
-    // --- Complete Round Logic for Supersets ---
+    // --- Superset Round Logic ---
     if (exercise.supersetId) {
       const roundIndex = setIndex;
-      // No confirmation needed as it's the primary action now
       const exercisesInSuperset = this.getSupersetExercises(exercise.supersetId);
+      const isAlreadyCompleted = this.isRoundCompleted(exIndex, roundIndex);
 
+      // If the round is already logged, confirm before un-logging it.
+      if (isAlreadyCompleted) {
+        const confirm = await this.alertService.showConfirm(
+          'Un-log Round',
+          `Are you sure you want to remove the log data for Round ${roundIndex + 1}?`,
+          'Yes, Remove Log',
+          'Cancel'
+        );
+        if (!confirm?.data) return;
+      }
+
+      // Toggle completion for every exercise set within that round.
       exercisesInSuperset.forEach(exInGroup => {
         const groupExIndex = this.getOriginalExIndex(exInGroup.id);
-        const setTemplate = exInGroup.sets[roundIndex]; // The set corresponding to this round
-
-        // Only toggle completion if it's not already completed
-        if (setTemplate && !this.isSetCompleted(groupExIndex, roundIndex, roundIndex)) {
+        const setTemplate = exInGroup.sets[roundIndex];
+        
+        // This will either log the un-logged sets or un-log the logged sets.
+        if (setTemplate) {
           this.toggleSetCompletion(exInGroup, setTemplate, groupExIndex, roundIndex, roundIndex);
         }
       });
-      this.toastService.success(`Round ${roundIndex + 1} completed!`);
+      
+      if (!isAlreadyCompleted) {
+        this.toastService.success(`Round ${roundIndex + 1} completed!`);
+      } else {
+        this.toastService.info(`Log for Round ${roundIndex + 1} removed.`);
+      }
 
     } else {
-      // --- Complete Set Logic for Standard Exercises ---
+      // --- Standard Set Logic (remains the same) ---
       const set = exercise.sets[setIndex];
-      if (!this.isSetCompleted(exIndex, setIndex, 0)) {
-        this.toggleSetCompletion(exercise, set, exIndex, setIndex, 0);
-      }
+      // Note: For standard sets, we might also want a confirmation to un-log,
+      // but for now, we'll keep the original toggle behavior as requested.
+      this.toggleSetCompletion(exercise, set, exIndex, setIndex, 0);
     }
   }
 
