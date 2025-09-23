@@ -65,20 +65,40 @@ export class WorkoutService {
   }
   // Add this helper method inside your WorkoutService class
   private _sortRoutines(routines: Routine[]): Routine[] {
-    // Use slice() to create a shallow copy to avoid mutating the original array directly
+    // Use slice() to create a shallow copy to avoid mutating the original array
     return routines.slice().sort((a, b) => {
-      // Primary sort: favourites first
-      // If 'a' is a favourite and 'b' is not, 'a' should come first (-1).
+      // 1. Primary Sort: Favourites on top
       if (a.isFavourite && !b.isFavourite) {
         return -1;
       }
-      // If 'b' is a favourite and 'a' is not, 'b' should come first (1).
       if (!a.isFavourite && b.isFavourite) {
         return 1;
       }
 
-      // Secondary sort: alphabetical by name
-      // If both are favourites or both are not, sort by name.
+      // If favourite status is the same, proceed to the next sort criteria.
+
+      // 2. Secondary Sort: Last Performed Date (most recent first)
+      const aHasDate = !!a.lastPerformed;
+      const bHasDate = !!b.lastPerformed;
+
+      if (aHasDate && !bHasDate) {
+        return -1; // 'a' has a date, 'b' does not, so 'a' comes first.
+      }
+      if (!aHasDate && bHasDate) {
+        return 1;  // 'b' has a date, 'a' does not, so 'b' comes first.
+      }
+      if (aHasDate && bHasDate) {
+        // If both have dates, sort descending (most recent date first).
+        // A direct string comparison on ISO dates works for this.
+        const dateComparison = b.lastPerformed!.localeCompare(a.lastPerformed!);
+        if (dateComparison !== 0) {
+          return dateComparison;
+        }
+      }
+
+      // If dates are the same (or both are null/undefined), proceed to the final sort.
+
+      // 3. Tertiary Sort: Alphabetical by name
       return a.name.localeCompare(b.name);
     });
   }
