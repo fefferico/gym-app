@@ -34,7 +34,7 @@ export class DataConversionService {
     this.spinnerService.show('Converting weight data...');
 
     // 1. Workout Logs & PBs (Unchanged)
-    const logs = this.trackingService.getLogsForBackup();
+    const logs = this.trackingService.getDataForBackup();
     logs.forEach(log => {
       log.exercises.forEach(ex => {
         ex.sets.forEach(set => {

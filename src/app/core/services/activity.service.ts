@@ -128,4 +128,46 @@ export class ActivityService {
     }
   }
 
+  /**
+   * Retrieves the current list of all activity logs for data backup purposes.
+   * @returns An array of all ActivityLog objects.
+   */
+  public getLogsForBackup(): ActivityLog[] {
+    return this.activityLogsSubject.getValue();
+  }
+
+  /**
+   * Merges imported activity logs with the current data.
+   * - If an imported log has an ID that already exists, it is skipped to avoid duplicates.
+   * - If an imported log has a new ID, it will be added.
+   *
+   * @param importedLogs The array of ActivityLog objects from a backup file.
+   */
+  public mergeData(importedLogs: ActivityLog[]): void {
+    if (!Array.isArray(importedLogs)) {
+      console.warn('ActivityService: Imported data for logs is not an array. Skipping.');
+      return;
+    }
+
+    const currentLogs = this.activityLogsSubject.getValue();
+    const existingLogIds = new Set(currentLogs.map(log => log.id));
+    let addedCount = 0;
+
+    const newLogsToAdd = importedLogs.filter(importedLog => {
+      if (importedLog.id && !existingLogIds.has(importedLog.id)) {
+        addedCount++;
+        return true;
+      }
+      return false;
+    });
+
+    if (newLogsToAdd.length > 0) {
+      const mergedLogs = [...currentLogs, ...newLogsToAdd];
+      this._saveLogsToStorage(mergedLogs);
+      this.toastService.success(`${addedCount} new activity logs imported.`, 3000, "Activities Merged");
+    } else {
+      this.toastService.info("No new activity logs to import.", 2000);
+    }
+  }
+
 }

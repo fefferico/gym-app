@@ -116,7 +116,12 @@ export class TrackingService {
       const usedExerciseIds = newLog.exercises.map(ex => ex.exerciseId);
       this.exerciseService.updateLastUsedTimestamp(usedExerciseIds);
     }
-    // -------------------------------------
+    // After adding the new log and saving, if it was associated with a routine,
+    // run our new helper to ensure the routine's lastPerformed date is correct.
+    if (newLog.routineId) {
+      this._updateRoutineLastPerformed(newLog.routineId, updatedLogs);
+    }
+    // +++++++++++++++++++++++++
 
     console.log('Added workout log:', newLog.id);
     return newLog;
@@ -479,7 +484,7 @@ export class TrackingService {
     );
   }
 
-  public getLogsForBackup(): WorkoutLog[] { return this.workoutLogsSubject.getValue(); }
+  public getDataForBackup(): WorkoutLog[] { return this.workoutLogsSubject.getValue(); }
   public getPBsForBackup(): Record<string, PersonalBestSet[]> { return this.personalBestsSubject.getValue(); }
 
   /**
@@ -730,7 +735,12 @@ export class TrackingService {
         const usedExerciseIds = fullyUpdatedLog.exercises.map(ex => ex.exerciseId);
         this.exerciseService.updateLastUsedTimestamp(usedExerciseIds);
       }
-      // ------------------------------------------------
+      // After updating the log and saving, if it's tied to a routine,
+      // re-check and update the routine's lastPerformed date.
+      if (fullyUpdatedLog.routineId) {
+        this._updateRoutineLastPerformed(fullyUpdatedLog.routineId, newLogsArray);
+      }
+      // +++++++++++++++++++++++++
 
       await this.recalculateAllPersonalBests();
       console.log('Updated workout log and recalculated PBs:', updatedLog.id);
@@ -1042,5 +1052,90 @@ export class TrackingService {
     console.log(`Updating log ${logId} with perceived effort: ${perceivedWorkoutInfo}. (Backend call would go here)`);
     return of(undefined).pipe(delay(200)); // Simulate async backend call
   }
+
+  /**
+   * Finds the most recent log for a given routine and updates the routine's
+   * `lastPerformed` timestamp. This ensures the timestamp always reflects the
+   * true latest performance, even when back-dating logs.
+   * @param routineId The ID of the routine to update.
+   * @param allLogs The complete, current list of all workout logs.
+   */
+  private _updateRoutineLastPerformed(routineId: string, allLogs: WorkoutLog[]): Promise<Routine | undefined> { // Return type changed
+    const logsForRoutine = allLogs.filter(log => log.routineId === routineId);
+
+    const routineToUpdate = this.workoutService.getRoutineByIdSync(routineId);
+    if (!routineToUpdate) {
+      return Promise.resolve(undefined);
+    }
+    
+    if (logsForRoutine.length === 0) {
+      // If no logs, ensure lastPerformed is null/undefined
+      if (routineToUpdate.lastPerformed) {
+        routineToUpdate.lastPerformed = undefined;
+        return this.workoutService.updateRoutine(routineToUpdate, true);
+      }
+      return Promise.resolve(routineToUpdate);
+    }
+    
+    const mostRecentLog = logsForRoutine.reduce((latest, current) => {
+      return current.startTime > latest.startTime ? current : latest;
+    });
+    
+    // Only update if the date is different
+    if (routineToUpdate.lastPerformed !== mostRecentLog.date) {
+      routineToUpdate.lastPerformed = mostRecentLog.date;
+      return this.workoutService.updateRoutine(routineToUpdate, true);
+    }
+
+    return Promise.resolve(routineToUpdate);
+  }
+
+  /**
+   * --- NEW PUBLIC METHOD ---
+   * Performs a full history sync, backfilling `lastUsedAt` for all exercises
+   * and ensuring `lastPerformed` is correct for all routines based on the log history.
+   * This is an intensive operation designed to correct any data inconsistencies.
+   */
+  public async syncAllHistory(): Promise<void> {
+    console.log('Starting full history sync for exercises and routines...');
+    this.toastService.info('Syncing all history...', 2000, "Please Wait");
+
+    const allLogs = this.workoutLogsSubject.getValue();
+    if (!allLogs || allLogs.length === 0) {
+      console.log('No logs found. Aborting history sync.');
+      this.toastService.info('No history to sync.');
+      return;
+    }
+
+    // --- Part 1: Backfill Exercise Timestamps ---
+    const lastUsedMap = new Map<string, string>();
+    for (const log of allLogs) {
+      for (const loggedEx of log.exercises) {
+        if (!lastUsedMap.has(loggedEx.exerciseId)) {
+          lastUsedMap.set(loggedEx.exerciseId, log.date);
+        }
+      }
+    }
+    await this.exerciseService.batchUpdateLastUsedTimestamps(lastUsedMap);
+    console.log(`Exercise sync complete. Updated timestamps for ${lastUsedMap.size} exercises.`);
+
+    // --- Part 2: Backfill Routine Timestamps ---
+    const allRoutines = this.workoutService.getCurrentRoutines();
+    // Use Promise.all to wait for all routine updates to complete.
+    await Promise.all(allRoutines.map(routine => {
+      // The _updateRoutineLastPerformed is an async-like operation because it calls updateRoutine
+      return this._updateRoutineLastPerformed(routine.id, allLogs);
+    }));
+    console.log(`Routine sync complete. Verified 'lastPerformed' date for ${allRoutines.length} routines.`);
+
+    // +++ THE FINAL FIX IS HERE +++
+    // After all routines have been updated, tell the WorkoutService to
+    // re-sort its list and notify all subscribers of the change.
+    this.workoutService.refreshRoutinesSort();
+    // ++++++++++++++++++++++++++++++
+
+    this.toastService.success('Full history has been synced!', 3000, "Sync Complete");
+  }
+
 
 }

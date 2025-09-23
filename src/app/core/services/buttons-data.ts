@@ -310,7 +310,7 @@ export const favouriteBtn = {
 }
 
 export const unmarkFavouriteBtn = {
-    label: 'UNMARK',
+    label: 'REMOVE',
     actionKey: 'unmarkAsFavourite',
     iconName: `unmark`,
     iconClass: 'w-8 h-8', // Adjusted for consistency if needed,

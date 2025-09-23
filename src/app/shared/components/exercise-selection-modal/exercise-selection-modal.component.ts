@@ -1,5 +1,5 @@
 // src/app/shared/components/exercise-selection-modal/exercise-selection-modal.component.ts
-import { Component, computed, inject, input, model, Output, ViewChild, ElementRef, AfterViewInit, EventEmitter } from '@angular/core';
+import { Component, computed, inject, input, model, Output, ViewChild, ElementRef, AfterViewInit, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule, TitleCasePipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Exercise } from '../../../core/models/exercise.model';
@@ -13,7 +13,13 @@ import { ScrollingModule } from '@angular/cdk/scrolling';
     imports: [CommonModule, FormsModule, TitleCasePipe, DatePipe, IconComponent, ScrollingModule],
     templateUrl: './exercise-selection-modal.component.html',
 })
-export class ExerciseSelectionModalComponent implements AfterViewInit {
+export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges {
+    ngOnChanges(changes: SimpleChanges): void {
+        // If the modal is opened, focus the input field
+        if (changes['isOpen'] && changes['isOpen'].currentValue) {
+            this.checkForInputFocus();
+        }
+    }
 
     @ViewChild('exerciseSearchFied') myExerciseInput!: ElementRef;
 
@@ -104,10 +110,14 @@ export class ExerciseSelectionModalComponent implements AfterViewInit {
         // ngOnChanges is not reliable for focusing. AfterViewInit is better.
         // We still need a small timeout to ensure the element is truly visible.
         if (this.isOpen()) {
-            setTimeout(() => {
-                this.myExerciseInput?.nativeElement.focus();
-                this.myExerciseInput?.nativeElement.select();
-            }, 50);
+            this.checkForInputFocus();
         }
+    }
+
+    private checkForInputFocus(): void {
+        setTimeout(() => {
+                        this.myExerciseInput?.nativeElement.focus();
+                        this.myExerciseInput?.nativeElement.select();
+                    }, 100);
     }
 }

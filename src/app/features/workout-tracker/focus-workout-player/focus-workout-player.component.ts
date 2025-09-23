@@ -31,7 +31,7 @@ import { format } from 'date-fns';
 import { ActionMenuComponent } from '../../../shared/components/action-menu/action-menu';
 import { MenuMode } from '../../../core/models/app-settings.model';
 import { ActionMenuItem } from '../../../core/models/action-menu.model';
-import { addExerciseBtn, addToSuperSetBtn, addWarmupSetBtn, createSuperSetBtn, finishEarlyBtn, jumpToExerciseBtn, markAsDoLaterBtn, openExercisePerformanceInsightsBtn, openSessionPerformanceInsightsBtn, pauseSessionBtn, quitWorkoutBtn, removeFromSuperSetBtn, skipCurrentExerciseBtn, skipCurrentSetBtn, switchExerciseBtn } from '../../../core/services/buttons-data';
+import { addExerciseBtn, addRoundToExerciseBtn, addSetToExerciseBtn, addToSuperSetBtn, addWarmupSetBtn, createSuperSetBtn, finishEarlyBtn, jumpToExerciseBtn, markAsDoLaterBtn, openExercisePerformanceInsightsBtn, openSessionPerformanceInsightsBtn, pauseSessionBtn, quitWorkoutBtn, removeFromSuperSetBtn, removeRoundFromExerciseBtn, removeSetFromExerciseBtn, skipCurrentExerciseBtn, skipCurrentSetBtn, switchExerciseBtn } from '../../../core/services/buttons-data';
 import { SessionOverviewModalComponent } from '../session-overview-modal/session-overview-modal.component';
 
 
@@ -4388,7 +4388,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     return '';
   }
 
-  actionItems = computed<ActionMenuItem[]>(() => {
+  compactActionItemsMap = computed<ActionMenuItem[]>(() => {
     const actionsArray: ActionMenuItem[] = [];
     const activeInfo = this.activeSetInfo();
     const routine = this.routine();
@@ -4416,7 +4416,6 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     if (this.canJumpToOtherExercise()) {
       actionsArray.push({ ...jumpToExerciseBtn, overrideCssButtonClass: jumpToExerciseBtn.buttonClass + ' ' + buttonCssClass });
     }
-
 
     // Add SKIP SET/EXERCISE/DO LATER if there is an active set
     if (activeInfo) {
@@ -4447,11 +4446,6 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       }
     }
 
-    // Add FINISH EARLY if any sets have been logged
-    if (workoutLog.length > 0) {
-      actionsArray.push({ ...finishEarlyBtn, overrideCssButtonClass: finishEarlyBtn.buttonClass + ' ' + buttonCssClass });
-    }
-
     // --- Superset Logic ---
     if (activeInfo?.exerciseData) {
       const { exerciseData } = activeInfo;
@@ -4471,10 +4465,32 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
             actionsArray.push({ ...createSuperSetBtn, data: { exIndex: activeInfo.exerciseIndex }, overrideCssButtonClass: createSuperSetBtn.buttonClass + ' ' + buttonCssClass } as ActionMenuItem);
           }
         }
+
+        if (activeInfo?.exerciseIndex !== undefined) {
+          const exerciseIndex = activeInfo?.exerciseIndex;
+          const baseAddSetRoundBtn = !this.isSuperSet(exerciseIndex) ? addSetToExerciseBtn : { ...addRoundToExerciseBtn, actionKey: 'add_set' };
+          const baseRemoveSetRoundBtn = !this.isSuperSet(exerciseIndex) ? removeSetFromExerciseBtn : { ...removeRoundFromExerciseBtn, actionKey: 'remove_set' };
+          const addSetRoundBtn = {
+            ...baseAddSetRoundBtn,
+            data: { exerciseIndex },
+            overrideCssButtonClass: baseAddSetRoundBtn.buttonClass + buttonCssClass
+          } as ActionMenuItem;
+          const removeSetRoundBtn = {
+            ...baseRemoveSetRoundBtn,
+            data: { exerciseIndex },
+            overrideCssButtonClass: baseRemoveSetRoundBtn.buttonClass + buttonCssClass
+          } as ActionMenuItem;
+
+          actionsArray.push(addSetRoundBtn, removeSetRoundBtn);
+        }
       }
     }
 
     // Always add QUIT
+    // Add FINISH EARLY if any sets have been logged
+    if (workoutLog.length > 0) {
+      actionsArray.push({ ...finishEarlyBtn, overrideCssButtonClass: finishEarlyBtn.buttonClass + ' ' + buttonCssClass });
+    }
     actionsArray.push({ ...quitWorkoutBtn, overrideCssButtonClass: quitWorkoutBtn.buttonClass + ' ' + buttonCssClass });
 
     return actionsArray;

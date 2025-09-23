@@ -1,6 +1,6 @@
 <ng-container *ngIf="routine() as currentRoutine; else loadingOrError"
   style="height: 60px; position: fixed; top: 0; left: 0; right: 0; z-index: 50;">
-  <div class="workout-player-container bg-gray-50 dark:bg-gray-950 flex flex-col justify-center"
+  <div class="workout-player-container bg-gray-50 dark:bg-gray-900 flex flex-col justify-center rounded-md"
     *ngIf="routine() !== undefined; else loadingOrError">
 
     <!-- PAUSED OVERLAY -->
@@ -44,14 +44,14 @@
             <app-icon name="menu-action" class="h-10 w-10"></app-icon>
           </button>
           <app-action-menu *ngIf="isWorkoutMenuVisible() && getMenuMode() !== 'compact'" class="action-menu-container"
-            [displayMode]="getMenuMode()" [modalTitle]="''" [items]="actionItems()" [isVisible]="isWorkoutMenuVisible()"
+            [displayMode]="getMenuMode()" [modalTitle]="''" [items]="compactActionItemsMap()" [isVisible]="isWorkoutMenuVisible()"
             (itemClick)="handleActionMenuItemClick($event)" (closeMenu)="closeWorkoutMenu()">
           </app-action-menu>
         </div>
 
       </div>
       <app-action-menu *ngIf="isWorkoutMenuVisible() && getMenuMode() === 'compact'" class="action-menu-container"
-        [gridClass]="'grid grid-cols-1'" [displayMode]="getMenuMode()" [modalTitle]="''" [items]="actionItems()"
+        [gridClass]="'grid grid-cols-1'" [displayMode]="getMenuMode()" [modalTitle]="''" [items]="compactActionItemsMap()"
         [isVisible]="isWorkoutMenuVisible()" (itemClick)="handleActionMenuItemClick($event)"
         (closeMenu)="closeWorkoutMenu()">
       </app-action-menu>
@@ -67,7 +67,7 @@
       </div>
     </header>
 
-    <main class="pt-4 px-2 pb-36 bg-gray-100 dark:bg-gray-900">
+    <main class="pt-4 px-2 pb-36 bg-gray-100 dark:bg-gray-900 rounded-md">
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm transition-all duration-300 relative py-2"
         *ngIf="activeSetInfo() as activeSet; else workoutCompleteOrError" [ngClass]="{
             'border border-blue-400 border-4 bg-blue-200' : activeSet?.type === 'warmup', 
@@ -201,7 +201,7 @@
                 ??
                 '?'}})
               </span>
-              <span *ngIf="totalBlockRounds() > 1 && currentBlockRound() > 0" class="ml-2">
+              <span *ngIf="activeSet?.exerciseData?.supersetId && totalBlockRounds() > 1 && currentBlockRound() > 0" class="ml-2">
                 [Round {{currentBlockRound()}}/{{totalBlockRounds()}}]
               </span>
             </p>

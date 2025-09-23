@@ -51,6 +51,7 @@ export class FabMenuComponent implements OnInit, OnDestroy {
 
   // --- Inputs & Outputs ---
   @Input() actions: FabAction[] = []; // <-- NEW: Actions are now an input
+  @Input() checkForPausedSession: boolean = true;
   @Output() actionClicked = new EventEmitter<string>(); // <-- NEW: Generic event emitter
 
   // --- Component State (Unchanged) ---
@@ -60,10 +61,12 @@ export class FabMenuComponent implements OnInit, OnDestroy {
 
   // --- Lifecycle Hooks (Unchanged) ---
   ngOnInit(): void {
-    this.isPausedSession.set(this.workoutService.isPausedSession());
-    this.pausedSub = this.workoutService.pausedWorkoutDiscarded$.subscribe(() => {
-        this.isPausedSession.set(false);
-    });
+    if (this.checkForPausedSession){
+      this.isPausedSession.set(this.workoutService.isPausedSession());
+      this.pausedSub = this.workoutService.pausedWorkoutDiscarded$.subscribe(() => {
+          this.isPausedSession.set(false);
+      });
+    }
   }
 
   ngOnDestroy(): void {

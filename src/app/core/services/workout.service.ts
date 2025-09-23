@@ -63,6 +63,20 @@ export class WorkoutService {
     // 3. Seed new data if necessary. The save method inside will handle re-sorting.
     this._seedAndMergeRoutinesFromStaticData(routinesFromStorage);
   }
+
+  /**
+   * --- NEW PUBLIC METHOD ---
+   * Manually triggers a re-sorting of the current routines list and emits
+   * the newly sorted array to all subscribers. This is useful when an external
+   * service (like TrackingService) modifies a property on a routine that affects its sort order.
+   */
+  public refreshRoutinesSort(): void {
+    const currentRoutines = this.routinesSubject.getValue();
+    // This call handles both sorting and emitting the new array reference
+    this._saveRoutinesToStorage(currentRoutines);
+    console.log('WorkoutService: Routines list re-sorted and refreshed.');
+  }
+
   // Add this helper method inside your WorkoutService class
   private _sortRoutines(routines: Routine[]): Routine[] {
     // Use slice() to create a shallow copy to avoid mutating the original array
@@ -326,22 +340,20 @@ export class WorkoutService {
   }
 
   /**
-       * Merges imported routine data with the current data.
-       * - If an imported routine has an ID that already exists, it will be updated.
-       * - If an imported routine has a new ID, it will be added.
-       * - Routines that exist locally but are not in the imported data will be preserved.
-       *
-       * @param newRoutines The array of Routine objects to merge.
-       */
+   * Merges imported routine data with the current data.
+   * - If an imported routine has an ID that already exists, it will be updated.
+   * - If an imported routine has a new ID, it will be added.
+   * - After merging, the entire list is re-sorted and saved.
+   *
+   * @param newRoutines The array of Routine objects to merge.
+   */
   public mergeData(newRoutines: Routine[]): void {
     // 1. Basic validation
     if (!Array.isArray(newRoutines)) {
-      console.error('RoutineService: Imported data for routines is not an array.');
-      this.toastService.error('Import failed: Invalid routine data file.', 0, "Import Error"); // Added user feedback
+      console.error('WorkoutService: Imported data for routines is not an array.');
+      this.toastService.error('Import failed: Invalid routine data file.', 0, "Import Error");
       return;
     }
-
-    // +++ START of new merge logic +++
 
     // 2. Get current state
     const currentRoutines = this.routinesSubject.getValue();
@@ -357,7 +369,6 @@ export class WorkoutService {
     // 4. Iterate over the imported routines and merge them into the map
     newRoutines.forEach(importedRoutine => {
       if (!importedRoutine.id || !importedRoutine.name) {
-        // Skip invalid entries in the import file
         console.warn('Skipping invalid routine during import:', importedRoutine);
         return;
       }
@@ -367,24 +378,24 @@ export class WorkoutService {
       } else {
         addedCount++;
       }
-      // Whether it's new or an update, set it in the map.
+      // Overwrite existing or add new
       routineMap.set(importedRoutine.id, importedRoutine);
     });
 
     // 5. Convert the map back to an array
     const mergedRoutines = Array.from(routineMap.values());
 
-    // 6. Save the new merged array
-    this._saveRoutinesToStorage(mergedRoutines);
+    // 6. *** THE FIX IS HERE ***
+    // Pass the newly merged array through the sorting function before saving.
+    this._saveRoutinesToStorage(this._sortRoutines(mergedRoutines));
 
     // 7. Provide user feedback
-    console.log(`RoutineService: Merged imported data. Updated: ${updatedCount}, Added: ${addedCount}`);
+    console.log(`WorkoutService: Merged imported routines. Updated: ${updatedCount}, Added: ${addedCount}`);
     this.toastService.success(
-      `Import complete. ${updatedCount} routines updated, ${addedCount} added.`,
+      `Routines imported. ${updatedCount} updated, ${addedCount} added.`,
       6000,
       "Routines Merged"
     );
-    // +++ END of new merge logic +++
   }
 
 
@@ -494,9 +505,9 @@ export class WorkoutService {
  * @param routine The full Routine object.
  * @returns The total estimated duration in minutes.
  */
-public getEstimatedRoutineDuration(routine: Routine): number {
+  public getEstimatedRoutineDuration(routine: Routine): number {
     if (!routine || !routine.exercises || routine.exercises.length === 0) {
-        return 0;
+      return 0;
     }
 
     let totalSeconds = 0;
@@ -504,73 +515,73 @@ public getEstimatedRoutineDuration(routine: Routine): number {
     const processedSupersetIds = new Set<string>();
 
     for (let i = 0; i < exercises.length; i++) {
-        const exercise = exercises[i];
+      const exercise = exercises[i];
 
-        if (exercise.supersetId && processedSupersetIds.has(exercise.supersetId)) {
-            continue; // Skip if this superset group has already been processed
+      if (exercise.supersetId && processedSupersetIds.has(exercise.supersetId)) {
+        continue; // Skip if this superset group has already been processed
+      }
+
+      if (exercise.supersetId) {
+        // --- SUPERSET OR EMOM BLOCK ---
+        processedSupersetIds.add(exercise.supersetId);
+        const groupExercises = exercises.filter(ex => ex.supersetId === exercise.supersetId);
+        const firstExerciseInGroup = groupExercises.find(ex => ex.supersetOrder === 0);
+
+        if (!firstExerciseInGroup) {
+          i += groupExercises.length - 1; // Skip malformed group
+          continue;
         }
 
-        if (exercise.supersetId) {
-            // --- SUPERSET OR EMOM BLOCK ---
-            processedSupersetIds.add(exercise.supersetId);
-            const groupExercises = exercises.filter(ex => ex.supersetId === exercise.supersetId);
-            const firstExerciseInGroup = groupExercises.find(ex => ex.supersetOrder === 0);
+        const totalRounds = firstExerciseInGroup.sets.length;
+        const isLastBlock = (i + groupExercises.length) >= exercises.length;
 
-            if (!firstExerciseInGroup) {
-                i += groupExercises.length - 1; // Skip malformed group
-                continue;
-            }
+        if (firstExerciseInGroup.supersetType === 'emom') {
+          // --- EMOM LOGIC ---
+          const emomTimePerRound = firstExerciseInGroup.emomTimeSeconds || 60;
+          const blockDuration = emomTimePerRound * totalRounds;
+          totalSeconds += blockDuration;
 
-            const totalRounds = firstExerciseInGroup.sets.length;
-            const isLastBlock = (i + groupExercises.length) >= exercises.length;
-
-            if (firstExerciseInGroup.supersetType === 'emom') {
-                // --- EMOM LOGIC ---
-                const emomTimePerRound = firstExerciseInGroup.emomTimeSeconds || 60;
-                const blockDuration = emomTimePerRound * totalRounds;
-                totalSeconds += blockDuration;
-
-                // Add rest after the entire block, unless it's the end of the workout.
-                if (!isLastBlock) {
-                    const lastExerciseInGroup = groupExercises[groupExercises.length - 1];
-                    const lastSetOfBlock = lastExerciseInGroup.sets[totalRounds - 1];
-                    totalSeconds += this.getRestTimeForSet(lastSetOfBlock);
-                }
-            } else {
-                // --- STANDARD SUPERSET LOGIC ---
-                for (let r = 0; r < totalRounds; r++) {
-                    groupExercises.forEach((groupEx, groupExIndex) => {
-                        const setForThisRound = groupEx.sets[r];
-                        if (setForThisRound) {
-                            totalSeconds += this.getEstimatedWorkTimeForSet(setForThisRound);
-
-                            const isLastRound = r === totalRounds - 1;
-                            const isLastExerciseInGroup = groupExIndex === groupExercises.length - 1;
-
-                            if (!(isLastRound && isLastExerciseInGroup && isLastBlock)) {
-                                totalSeconds += this.getRestTimeForSet(setForThisRound);
-                            }
-                        }
-                    });
-                }
-            }
-            // Advance the main loop to the end of the current superset group
-            i += groupExercises.length - 1;
+          // Add rest after the entire block, unless it's the end of the workout.
+          if (!isLastBlock) {
+            const lastExerciseInGroup = groupExercises[groupExercises.length - 1];
+            const lastSetOfBlock = lastExerciseInGroup.sets[totalRounds - 1];
+            totalSeconds += this.getRestTimeForSet(lastSetOfBlock);
+          }
         } else {
-            // --- STANDARD EXERCISE BLOCK ---
-            exercise.sets.forEach((set, setIndex) => {
-                totalSeconds += this.getEstimatedWorkTimeForSet(set);
-                const isLastExerciseInRoutine = i === exercises.length - 1;
-                const isLastSet = setIndex === exercise.sets.length - 1;
-                if (!(isLastExerciseInRoutine && isLastSet)) {
-                    totalSeconds += this.getRestTimeForSet(set);
+          // --- STANDARD SUPERSET LOGIC ---
+          for (let r = 0; r < totalRounds; r++) {
+            groupExercises.forEach((groupEx, groupExIndex) => {
+              const setForThisRound = groupEx.sets[r];
+              if (setForThisRound) {
+                totalSeconds += this.getEstimatedWorkTimeForSet(setForThisRound);
+
+                const isLastRound = r === totalRounds - 1;
+                const isLastExerciseInGroup = groupExIndex === groupExercises.length - 1;
+
+                if (!(isLastRound && isLastExerciseInGroup && isLastBlock)) {
+                  totalSeconds += this.getRestTimeForSet(setForThisRound);
                 }
+              }
             });
+          }
         }
+        // Advance the main loop to the end of the current superset group
+        i += groupExercises.length - 1;
+      } else {
+        // --- STANDARD EXERCISE BLOCK ---
+        exercise.sets.forEach((set, setIndex) => {
+          totalSeconds += this.getEstimatedWorkTimeForSet(set);
+          const isLastExerciseInRoutine = i === exercises.length - 1;
+          const isLastSet = setIndex === exercise.sets.length - 1;
+          if (!(isLastExerciseInRoutine && isLastSet)) {
+            totalSeconds += this.getRestTimeForSet(set);
+          }
+        });
+      }
     }
 
     return Math.round(totalSeconds / 60);
-}
+  }
 
 
   startWorkout(): void {
@@ -1016,7 +1027,7 @@ public getEstimatedRoutineDuration(routine: Routine): number {
       return '';
     }
     // --- MODIFICATION END ---
-    
+
     let min = -1;
     let max = -1;
     let single = -1;
@@ -1071,35 +1082,35 @@ public getEstimatedRoutineDuration(routine: Routine): number {
  * @param exercise The base exercise definition.
  * @returns A user-friendly string for the UI.
  */
-getWeightDisplay(set: ExerciseTargetSetParams, exercise: Exercise | WorkoutExercise): string {
-  
-  // Case 1: Cardio or Stretching
-  if (exercise.category === 'cardio' || exercise.category === 'stretching') {
-    return 'N/A';
-  }
+  getWeightDisplay(set: ExerciseTargetSetParams, exercise: Exercise | WorkoutExercise): string {
 
-  // Case 2: Bodyweight
-  if (exercise.category === 'bodyweight/calisthenics') {
-    // If weight is explicitly added (e.g., weighted pull-up), show it.
+    // Case 1: Cardio or Stretching
+    if (exercise.category === 'cardio' || exercise.category === 'stretching') {
+      return 'N/A';
+    }
+
+    // Case 2: Bodyweight
+    if (exercise.category === 'bodyweight/calisthenics') {
+      // If weight is explicitly added (e.g., weighted pull-up), show it.
+      if (set.targetWeight != null && set.targetWeight > 0) {
+        return `${set.targetWeight} ${this.unitsService.getWeightUnitSuffix()}`;
+      }
+      return 'Bodyweight';
+    }
+
+    // Case 3: Weighted exercise with a specific target
     if (set.targetWeight != null && set.targetWeight > 0) {
       return `${set.targetWeight} ${this.unitsService.getWeightUnitSuffix()}`;
     }
-    return 'Bodyweight';
-  }
 
-  // Case 3: Weighted exercise with a specific target
-  if (set.targetWeight != null && set.targetWeight > 0) {
-    return `${set.targetWeight} ${this.unitsService.getWeightUnitSuffix()}`;
-  }
+    // Case 4: Weighted exercise with zero weight target
+    if (set.targetWeight === 0) {
+      return 'No Added Wt.'; // Or "Bar Only"
+    }
 
-  // Case 4: Weighted exercise with zero weight target
-  if (set.targetWeight === 0) {
-    return 'No Added Wt.'; // Or "Bar Only"
+    // Case 5: Weighted exercise with no target set (null/undefined)
+    return 'User Defined';
   }
-
-  // Case 5: Weighted exercise with no target set (null/undefined)
-  return 'User Defined'; 
-}
 
 
   /**

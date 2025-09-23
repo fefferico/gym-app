@@ -31,6 +31,7 @@ import { AppSettingsService } from '../../../core/services/app-settings.service'
 // +++ NEW: Import the conversion service
 import { DataConversionService } from '../../../core/services/data-conversion.service';
 import { SubscriptionService, PremiumFeature } from '../../../core/services/subscription.service';
+import { ActivityService } from '../../../core/services/activity.service';
 
 @Component({
   selector: 'app-profile-settings',
@@ -44,6 +45,7 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private workoutService = inject(WorkoutService);
   private trackingService = inject(TrackingService);
+  private activityService = inject(ActivityService);
   private personalGymService = inject(PersonalGymService);
   private trainingProgramService = inject(TrainingProgramService);
   private exerciseService = inject(ExerciseService);
@@ -193,7 +195,7 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
     if (this.workoutService.isPausedSession()) {
       // Show the alert to the user.
       this.alertService.showAlert(
-        "Action Disabled", 
+        "Action Disabled",
         "It's not possible to change the player mode during a workout session. Please complete or discard your current workout first."
       );
 
@@ -204,7 +206,7 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
 
       // Ensure Angular's change detection knows about this manual DOM change.
       this.cdr.detectChanges();
-      
+
     } else {
       // If the workout is not paused, proceed with saving the new setting as normal.
       this.appSettingsForm.get('playerMode')?.setValue(newMode);
@@ -460,7 +462,8 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
       routines: this.workoutService.getDataForBackup(),
       programs: this.trainingProgramService.getDataForBackup(),
       exercises: this.exerciseService.getDataForBackup(),
-      workoutLogs: this.trackingService.getLogsForBackup(),
+      workoutLogs: this.trackingService.getDataForBackup(),
+      activitiyLogs: this.activityService.getLogsForBackup(),
       personalBests: this.trackingService.getPBsForBackup(),
       personalGym: this.personalGymService.getDataForBackup(),
     };
@@ -529,7 +532,7 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
             if (!this.subscriptionService.isPremium()) {
               // avaialable standard routines and imported one
               // must be enabled (isDisabled = false) for a maximum of 4 routines
-              
+
               const existingRoutines = this.workoutService.getCurrentRoutines().filter(r => !r.isDisabled);
               const importedRoutines = Array.isArray(importedData.routines) ? importedData.routines : [];
               const enabledImportedRoutines = importedRoutines.filter((r: any) => !r.isDisabled);
@@ -544,10 +547,18 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
               this.workoutService.mergeData(importedData.routines);
             }
 
-            this.trackingService.replaceLogs(importedData.workoutLogs);
-            this.trackingService.replacePBs(importedData.personalBests);
+            if (importedData.workoutLogs) {
+              this.trackingService.replaceLogs(importedData.workoutLogs || []);
+              this.trackingService.replacePBs(importedData.personalBests || {});
+            }
+
+            // +++ ADD THIS BLOCK TO MERGE ACTIVITY LOGS +++
+            if (Array.isArray(importedData.activityLogs)) {
+              this.activityService.mergeData(importedData.activityLogs);
+            }
+
             if (importedData.personalGym) {
-              this.personalGymService.mergeData(importedData.personalGym); // <-- ADD THIS LINE
+              this.personalGymService.mergeData(importedData.personalGym);
             }
 
             if (version >= 4) {
@@ -664,17 +675,6 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
     this.router.navigate(['/profile/personal-bests']);
   }
 
-  async onSyncExerciseHistoryClick(): Promise<void> {
-    const confirmation = await this.alertService.showConfirm(
-      'Sync Exercise History',
-      'This will scan your workout logs to update the "Last Used" date for all exercises. This may take a moment. Proceed?'
-    );
-
-    if (confirmation && confirmation.data) {
-      await this.trackingService.backfillLastUsedExerciseTimestamps();
-    }
-  }
-
   navigateToBodyMeasurements(): void {
     this.router.navigate(['/profile/measurements']);
   }
@@ -695,5 +695,22 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
       return;
     }
     this.appSettingsService.setMenuMode(mode);
+  }
+
+
+  /**
+   * Triggers a full synchronization of all historical data, including
+   * exercise `lastUsedAt` timestamps and routine `lastPerformed` dates.
+   */
+  async onSyncHistoryClick(): Promise<void> { // Method renamed for clarity
+    const confirmation = await this.alertService.showConfirm(
+      'Sync Full History',
+      'This will scan all workout logs to update the "Last Used" date for all exercises AND the "Last Performed" date for all routines. This may take a moment. Proceed?'
+    );
+
+    if (confirmation && confirmation.data) {
+      // Call the new, all-encompassing sync method in the TrackingService
+      await this.trackingService.syncAllHistory();
+    }
   }
 }
