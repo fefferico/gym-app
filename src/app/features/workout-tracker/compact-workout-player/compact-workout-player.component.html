@@ -45,9 +45,9 @@
     <!-- Workout Progress Bar -->
     <div class="w-full mt-2">
       <span class="flex justify-center text-primary-light font-mono">Overall progress</span>
-      <div class="progress-bar-container w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 relative">
-        <div class="progress-bar bg-primary h-2.5 rounded-full" [style.width.%]="workoutProgress()"></div>
-        <span *ngIf="workoutProgress() > 5"
+      <div class="progress-bar-container w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 relative">
+        <div class="progress-bar bg-primary h-3 rounded-full" [style.width.%]="workoutProgress()"></div>
+        <span
           class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white">
           {{ workoutProgress() | number:'1.0-0' }}%
         </span>
@@ -58,7 +58,7 @@
 
 
   <!-- Main Content: Exercises List -->
-  <main class="pt-4 px-2 pb-36">
+  <main class="pt-5 px-2 pb-36">
     <div *ngIf="routine() as currentRoutine; else loading" cdkDropList [cdkDropListData]="currentRoutine.exercises"
       (cdkDropListDropped)="onExerciseDrop($event)" class="">
       <ng-container *ngFor="let exercise of currentRoutine.exercises; let exIndex = index;">
@@ -144,7 +144,7 @@
           <div *ngIf="expandedExerciseIndex() === exIndex"
             class="bg-gray-50/50 dark:bg-gray-700/50 py-2 px-1 border-b rounded-md border-gray-200 dark:border-gray-700">
             <!-- Set Headers -->
-            <div class="grid grid-cols-12 gap-2 text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 px-2">
+            <div *ngIf="!isSuperSet(exIndex)" class="grid grid-cols-12 gap-2 text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 px-2">
               <div class="col-span-1 text-center">Set / Rounds</div>
               <ng-container *ngIf="!isCardio(exercise)">
                 <div class="col-span-3 text-center">Weight ({{ unitsService.getWeightUnitSuffix() }})</div>
@@ -225,7 +225,7 @@
               <ng-container *ngIf="isSupersetStart(exIndex)">
                 <!-- Loop through ROUNDS -->
                 <ng-container *ngFor="let roundSet of exercise.sets; let roundIndex = index">
-                  <div class="p-2 rounded-md mb-2"
+                  <div class="p-2 rounded-md mb-2" #roundCard 
                     [ngClass]="isRoundCompleted(exIndex, roundIndex) ? 'bg-green-100 dark:bg-green-800/70 border-2 rounde-md border-green-500' : 'bg-gray-100 dark:bg-gray-900/40'">
 
                     <!-- Round Header -->
@@ -271,9 +271,21 @@
                           </p>
 
                           <!-- Set Data Grid for this exercise in this round -->
-                          <div class="grid grid-cols-12 gap-2 items-start">
+                          <div class="grid grid-cols-12 gap-2 font-medium text-gray-500 dark:text-gray-400 mb-2 px-2 items-center">
+                            <!-- Round Headers -->
+                            <div class="text-xs col-span-1 text-center">Set / Rounds</div>
+                            <ng-container *ngIf="!isCardio(exercise)">
+                              <div class="text-xs col-span-5 text-center">Weight ({{ unitsService.getWeightUnitSuffix() }})</div>
+                              <div class="text-xs col-span-5 text-center">Reps</div>
+                            </ng-container>
+                            <ng-container *ngIf="isCardio(exercise)">
+                              <div class="text-xs col-span-3 text-center">Distance</div>
+                              <div class="text-xs col-span-3 text-center">Time</div>
+                            </ng-container>
+                            <div class="text-xs col-span-1 text-center"></div>
                             <ng-container *ngIf="ssExercise.sets[roundIndex] as set">
-                              <div class="col-span-1 text-center font-semibold text-gray-700 dark:text-gray-200 pt-1">
+
+                              <div class="col-span-1 text-center font-semibold text-gray-700 dark:text-gray-200 pt-1 flex items-start justify-center h-full">
                                 {{ ssExIndex + 1 }}
                               </div>
                               <!-- Inputs for this specific set -->
@@ -282,18 +294,18 @@
                                   <input type="number"
                                     [ngModel]="getInitialInputValue(getOriginalExIndex(ssExercise.id), roundIndex, 'weight')"
                                     (change)="updateSetData(getOriginalExIndex(ssExercise.id), roundIndex, roundIndex, 'weight', $event)"
-                                    class="w-full text-center bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md p-1">
-                                  <div class="text-center text-xs text-gray-400 dark:text-gray-500 mt-0.5"><span
-                                      *ngIf="getSetTargetDisplay(set, 'weight') as target">{{ target
+                                    class="w-full text-md text-center bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md p-1 text-gray-700 dark:text-white">
+                                  <div class="text-center text-xs text-gray-400 dark:text-gray-400 mt-0.5"><span
+                                      *ngIf="getSetTargetDisplay(set, 'weight') as target">Target: {{ target
                                       }}{{unitsService.getWeightUnitSuffix()}}</span></div>
                                 </div>
                                 <div class="col-span-5">
                                   <input type="number"
                                     [ngModel]="getInitialInputValue(getOriginalExIndex(ssExercise.id), roundIndex, 'reps')"
                                     (change)="updateSetData(getOriginalExIndex(ssExercise.id), roundIndex, roundIndex, 'reps', $event)"
-                                    class="w-full text-center bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md p-1">
-                                  <div class="text-center text-xs text-gray-400 dark:text-gray-500 mt-0.5"><span
-                                      *ngIf="getSetTargetDisplay(set, 'reps') as target">{{ target }}</span></div>
+                                    class="w-full text-md text-center bg-gray-100 dark:bg-gray-700 border-gray-300 rounded-md p-1 text-gray-700 dark:text-white">
+                                  <div class="text-center text-xs text-gray-400 dark:text-gray-400 mt-0.5"><span
+                                      *ngIf="getSetTargetDisplay(set, 'reps') as target">Target: {{ target }}</span></div>
                                 </div>
                               </ng-container>
                               <!-- Add cardio inputs if needed, similar to above -->

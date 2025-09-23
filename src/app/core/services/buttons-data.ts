@@ -208,6 +208,26 @@ export const addSetToExerciseBtn = {
     iconClass: 'w-8 h-8 mr-2'
 }
 
+export const removeSetFromExerciseBtn = {
+    label: 'Remove Set', actionKey: 'remove_set',
+    iconName: [
+        { name: 'dumbbell' },
+        {
+            name: 'none',
+            display: 'filled-padded',
+            class: 'bg-white dark:bg-gray-800'
+
+        },
+        {
+            name: 'minus-circle',
+            class: 'text-primary',
+            strokeWidth: 3,
+        }
+    ],
+    buttonClass: ' hover:bg-teal-800 ',
+    iconClass: 'w-8 h-8 mr-2'
+}
+
 export const addRoundToExerciseBtn = {
     label: 'Add Round', actionKey: 'add_round',
     iconName: [
@@ -220,6 +240,26 @@ export const addRoundToExerciseBtn = {
         },
         {
             name: 'plus-circle',
+            class: 'text-primary',
+            strokeWidth: 3,
+        }
+    ],
+    buttonClass: ' hover:bg-teal-800 ',
+    iconClass: 'w-8 h-8 mr-2'
+}
+
+export const removeRoundFromExerciseBtn = {
+    label: 'Remove Round', actionKey: 'remove_round',
+    iconName: [
+        { name: 'dumbbell' },
+        {
+            name: 'none',
+            display: 'filled-padded',
+            class: 'bg-white dark:bg-gray-800'
+
+        },
+        {
+            name: 'minus-circle',
             class: 'text-primary',
             strokeWidth: 3,
         }
