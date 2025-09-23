@@ -813,20 +813,25 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
 toggleExerciseExpansion(index: number): void {
     const isOpening = this.expandedExerciseIndex() !== index;
-    
-    // 1. Update the state signal to trigger the render
     this.expandedExerciseIndex.update(current => (isOpening ? index : null));
 
-    // 2. Only run scroll logic if a card was just OPENED
     if (isOpening) {
-      
-      // 3. Provide the injection context needed for afterNextRender
-      runInInjectionContext(this.injector, () => {
+      const exercise = this.routine()?.exercises[index];
+      // If it's a superset, set the initial collapsed/expanded state for its rounds
+      if (exercise && this.isSupersetStart(index)) {
+        const firstIncompleteRoundIndex = exercise.sets.findIndex((set, roundIdx) => !this.isRoundCompleted(index, roundIdx));
         
-        // 4. Wait for Angular to finish its render pass
-        afterNextRender(() => {
+        const newExpandedRounds = new Set<string>();
+        // If we found an incomplete round, expand it by default. Otherwise, all remain collapsed.
+        if (firstIncompleteRoundIndex > -1) {
+          newExpandedRounds.add(`${index}-${firstIncompleteRoundIndex}`);
+        }
+        this.expandedRounds.set(newExpandedRounds);
+      }
 
-          // 5. Wait for the Browser to finish its layout/paint pass
+      // The afterNextRender logic for scrolling remains the same
+      runInInjectionContext(this.injector, () => {
+        afterNextRender(() => {
           requestAnimationFrame(() => {
             const exercise = this.routine()?.exercises[index];
             const headerElement = this.header?.nativeElement;
@@ -862,17 +867,21 @@ toggleExerciseExpansion(index: number): void {
               const cardTopPosition = cardElement.getBoundingClientRect().top + window.scrollY;
               scrollTopPosition = cardTopPosition - headerHeight - 10;
             }
-            
+
             window.scrollTo({ top: scrollTopPosition, behavior: 'smooth' });
           });
         });
       });
+    } else {
+      // When closing a card, clear the round states
+      this.expandedRounds.set(new Set<string>());
     }
   }
 
   // +++ NEW: Signals and methods to toggle notes visibility for sets and exercises
   expandedExerciseNotes = signal<number | null>(null);
   expandedSetNotes = signal<string | null>(null); // Key will be "exIndex-setIndex"
+  expandedRounds = signal(new Set<string>());
 
   toggleExerciseNotes(exIndex: number, event: Event) {
     event.stopPropagation();
@@ -2509,16 +2518,18 @@ toggleExerciseExpansion(index: number): void {
     });
   }
 
-  getEmomState(exIndex: number, roundIndex: number): { status: 'idle' | 'running' | 'paused' | 'completed', remainingTime: number } {
-    const key = `${exIndex}-${roundIndex}`;
-    const allStates = this.emomState();
-    if (this.isRoundCompleted(exIndex, roundIndex) && allStates[key]?.status !== 'completed') {
-      this.emomState.update(states => {
-        states[key] = { ...states[key], status: 'completed' };
-        return states;
-      });
+getEmomState(exIndex: number, roundIndex: number): { status: 'idle' | 'running' | 'paused' | 'completed', remainingTime: number } {
+    // 1. FIRST, check the source of truth: the workout log.
+    // If the log shows this round is completed, ALWAYS return a 'completed' state.
+    // This is a PURE READ operation.
+    if (this.isRoundCompleted(exIndex, roundIndex)) {
+      return { status: 'completed', remainingTime: 0 };
     }
 
+    // 2. If the round is not completed, THEN read the current timer state from the signal.
+    // This handles the 'idle', 'running', and 'paused' states for active timers.
+    const key = `${exIndex}-${roundIndex}`;
+    const allStates = this.emomState();
     return allStates[key] || { status: 'idle', remainingTime: this.routine()?.exercises[exIndex].emomTimeSeconds ?? 60 };
   }
 
@@ -2542,10 +2553,10 @@ toggleExerciseExpansion(index: number): void {
   }
 
   // +++ NEW: Starts or resumes the EMOM timer for a specific round +++
-  private startEmomTimer(exIndex: number, roundIndex: number, key: string): void {
+    private startEmomTimer(exIndex: number, roundIndex: number, key: string): void {
     const firstExercise = this.routine()!.exercises[exIndex];
     const duration = firstExercise.emomTimeSeconds ?? 60;
-
+    
     this.emomState.update(states => {
       if (!states[key]) {
         states[key] = { status: 'running', remainingTime: duration };
@@ -2555,7 +2566,7 @@ toggleExerciseExpansion(index: number): void {
       return { ...states };
     });
 
-    this.emomTimerSub?.unsubscribe(); // Ensure only one timer runs
+    this.emomTimerSub?.unsubscribe();
     this.emomTimerSub = timer(0, 1000).subscribe(() => {
       const currentRemaining = this.emomState()[key]?.remainingTime;
       if (currentRemaining > 0) {
@@ -2566,11 +2577,38 @@ toggleExerciseExpansion(index: number): void {
       } else {
         this.emomTimerSub?.unsubscribe();
         this.logEmomRoundAsCompleted(exIndex, roundIndex, key);
+        
+        // --- AUTO-SCROLL LOGIC ---
+        const nextRoundIndex = roundIndex + 1;
+        const hasNextRound = nextRoundIndex < firstExercise.sets.length;
 
-        // Check for next round and auto-start
-        const hasNextRound = roundIndex + 1 < firstExercise.sets.length;
         if (hasNextRound) {
-          this.handleEmomAction(exIndex, roundIndex + 1);
+          // 1. Expand the next round and collapse the one we just finished
+          this.expandedRounds.update(currentSet => {
+            const newSet = new Set(currentSet);
+            newSet.delete(`${exIndex}-${roundIndex}`);
+            newSet.add(`${exIndex}-${nextRoundIndex}`);
+            return newSet;
+          });
+          
+          // 2. Start the next timer
+          this.handleEmomAction(exIndex, nextRoundIndex);
+
+          // 3. Scroll the next round into view after the DOM updates
+          afterNextRender(() => {
+            requestAnimationFrame(() => {
+              const cardElement = document.querySelector(`[data-exercise-index="${exIndex}"]`) as HTMLElement;
+              const nextRoundElement = cardElement?.querySelector(`[data-round-index="${nextRoundIndex}"]`) as HTMLElement;
+              const headerElement = this.header?.nativeElement;
+
+              if (nextRoundElement && headerElement) {
+                const headerHeight = headerElement.offsetHeight;
+                const elementTopPosition = nextRoundElement.getBoundingClientRect().top + window.scrollY;
+                const scrollTopPosition = elementTopPosition - headerHeight - 15;
+                window.scrollTo({ top: scrollTopPosition, behavior: 'smooth' });
+              }
+            });
+          });
         }
       }
     });
@@ -2653,5 +2691,28 @@ toggleExerciseExpansion(index: number): void {
       // Only show target if there are reps to perform
       return repsDisplay ? `Target: ${weightDisplay} x ${repsDisplay} reps` : 'No target set';
     }
+  }
+
+  /** Checks if a specific round is currently expanded. */
+  isRoundExpanded(exIndex: number, roundIndex: number): boolean {
+    const key = `${exIndex}-${roundIndex}`;
+    return this.expandedRounds().has(key);
+  }
+
+  // +++ ADD THIS METHOD +++
+  /** Toggles the expanded/collapsed state of a specific round. */
+  toggleRoundExpansion(exIndex: number, roundIndex: number, event: Event): void {
+    event.stopPropagation(); // Prevent the main card from toggling
+    const key = `${exIndex}-${roundIndex}`;
+
+    this.expandedRounds.update(currentSet => {
+      const newSet = new Set(currentSet); // Create a new instance to ensure signal change detection
+      if (newSet.has(key)) {
+        newSet.delete(key);
+      } else {
+        newSet.add(key);
+      }
+      return newSet;
+    });
   }
 }
