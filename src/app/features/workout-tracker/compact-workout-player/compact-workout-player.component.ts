@@ -208,6 +208,11 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     completedSetsInSession: LoggedSet[];
   } | null>(null);
 
+  // +++ NEW: State management for EMOM timers +++
+  // Key: "exIndex-roundIndex", Value: state object
+  emomState = signal<{ [key: string]: { status: 'idle' | 'running' | 'paused' | 'completed', remainingTime: number } }>({});
+  private emomTimerSub: Subscription | undefined;
+
   workoutProgress = computed(() => {
     const routine = this.routine();
     const log = this.currentWorkoutLog();
@@ -295,6 +300,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     }
     this.timerSub?.unsubscribe();
     this.routeSub?.unsubscribe();
+    this.emomTimerSub?.unsubscribe();
     this.unlockScreenOrientation();
   }
 
@@ -1578,39 +1584,39 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
     // --- NEW FORMATTING LOGIC MOVED HERE ---
     if (!nextStep.exercise || !nextStep.details) {
-        this.restTimerNextUpText.set("Workout Complete!");
-        this.restTimerNextSetDetails.set(null);
-        return;
+      this.restTimerNextUpText.set("Workout Complete!");
+      this.restTimerNextSetDetails.set(null);
+      return;
     }
 
     const { exercise, details: plannedSet, historicalSet } = nextStep;
 
     if (exercise.supersetType === 'emom') {
-        const totalRounds = exercise.sets.length;
-        const emomTime = exercise.emomTimeSeconds;
-        const line1 = `Next: ${exercise.exerciseName}`;
-        const line2 = `EMOM - ${totalRounds} Rounds, Every ${emomTime}s`;
-        this.restTimerNextUpText.set(`${line1}<br><span class="text-base opacity-80">${line2}</span>`);
+      const totalRounds = exercise.sets.length;
+      const emomTime = exercise.emomTimeSeconds;
+      const line1 = `Next: ${exercise.exerciseName}`;
+      const line2 = `EMOM - ${totalRounds} Rounds, Every ${emomTime}s`;
+      this.restTimerNextUpText.set(`${line1}<br><span class="text-base opacity-80">${line2}</span>`);
     } else {
-        const line1 = exercise.exerciseName;
-        const { round, totalRounds } = this.getRoundInfo(exercise);
-        const setIndex = exercise.sets.indexOf(plannedSet);
-        const line2 = `Set ${setIndex + 1}/${exercise.sets.length}` + (totalRounds > 1 ? ` &nbsp; | &nbsp; Round ${round}/${totalRounds}` : '');
-        
-        let detailsLine = '';
-        if (historicalSet) {
-            const weight = this.weightUnitPipe.transform(historicalSet.weightUsed);
-            detailsLine = `Last time: ${weight} x ${historicalSet.repsAchieved} reps`;
-        } else {
-            const repsDisplay = this.getSetTargetDisplay(plannedSet, 'reps');
-            const weightDisplay = this.workoutService.getWeightDisplay(plannedSet, exercise);
-            detailsLine = `Target: ${weightDisplay} x ${repsDisplay} reps`;
-        }
-        this.restTimerNextUpText.set(`${line1}<br><span class="text-base opacity-80">${line2}</span><br><span class="text-base font-normal">${detailsLine}</span>`);
+      const line1 = exercise.exerciseName;
+      const { round, totalRounds } = this.getRoundInfo(exercise);
+      const setIndex = exercise.sets.indexOf(plannedSet);
+      const line2 = `Set ${setIndex + 1}/${exercise.sets.length}` + (totalRounds > 1 ? ` &nbsp; | &nbsp; Round ${round}/${totalRounds}` : '');
+
+      let detailsLine = '';
+      if (historicalSet) {
+        const weight = this.weightUnitPipe.transform(historicalSet.weightUsed);
+        detailsLine = `Last time: ${weight} x ${historicalSet.repsAchieved} reps`;
+      } else {
+        const repsDisplay = this.getSetTargetDisplay(plannedSet, 'reps');
+        const weightDisplay = this.workoutService.getWeightDisplay(plannedSet, exercise);
+        detailsLine = `Target: ${weightDisplay} x ${repsDisplay} reps`;
+      }
+      this.restTimerNextUpText.set(`${line1}<br><span class="text-base opacity-80">${line2}</span><br><span class="text-base font-normal">${detailsLine}</span>`);
     }
 
     this.restTimerNextSetDetails.set(nextStep.details);
-}
+  }
 
   private handleAutoExpandNextExercise(): void {
     // Use a guard clause to ensure currentStepInfo is valid
@@ -1704,32 +1710,32 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     let nextSetIndex: number | undefined;
 
     if (completedSetIndex + 1 < currentExercise.sets.length) {
-        nextExercise = currentExercise;
-        nextSetIndex = completedSetIndex + 1;
+      nextExercise = currentExercise;
+      nextSetIndex = completedSetIndex + 1;
     } else if (completedExIndex + 1 < routine.exercises.length) {
-        nextExercise = routine.exercises[completedExIndex + 1];
-        nextSetIndex = 0;
+      nextExercise = routine.exercises[completedExIndex + 1];
+      nextSetIndex = 0;
     }
 
 
     if (nextExercise && nextSetIndex !== undefined) {
-        const plannedNextSet = nextExercise.sets[nextSetIndex];
-        try {
-            const lastPerformance = await firstValueFrom(this.trackingService.getLastPerformanceForExercise(nextExercise.exerciseId));
-            const historicalSet = this.trackingService.findPreviousSetPerformance(lastPerformance, plannedNextSet, nextSetIndex);
-            
-            // The suggested details are now just the planned details. The formatting logic will handle what to show.
-            const suggestedSetDetails: ExerciseTargetSetParams = { ...plannedNextSet };
+      const plannedNextSet = nextExercise.sets[nextSetIndex];
+      try {
+        const lastPerformance = await firstValueFrom(this.trackingService.getLastPerformanceForExercise(nextExercise.exerciseId));
+        const historicalSet = this.trackingService.findPreviousSetPerformance(lastPerformance, plannedNextSet, nextSetIndex);
 
-            // We no longer format the text here, just return all the data.
-            return { text: '', details: suggestedSetDetails, exercise: nextExercise, historicalSet: historicalSet };
-        } catch (error) {
-            console.error("Could not fetch last performance for next set:", error);
-            return { text: `${nextExercise.exerciseName} - Set ${nextSetIndex + 1}`, details: plannedNextSet, exercise: nextExercise, historicalSet: null };
-        }
+        // The suggested details are now just the planned details. The formatting logic will handle what to show.
+        const suggestedSetDetails: ExerciseTargetSetParams = { ...plannedNextSet };
+
+        // We no longer format the text here, just return all the data.
+        return { text: '', details: suggestedSetDetails, exercise: nextExercise, historicalSet: historicalSet };
+      } catch (error) {
+        console.error("Could not fetch last performance for next set:", error);
+        return { text: `${nextExercise.exerciseName} - Set ${nextSetIndex + 1}`, details: plannedNextSet, exercise: nextExercise, historicalSet: null };
+      }
     }
     return { text: "Workout Complete!", details: null, exercise: null, historicalSet: null };
-}
+  }
 
   // --- Pause, Resume, and State Management ---
 
@@ -1971,22 +1977,23 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
     const exIndex = routine.exercises.findIndex(e => e.id === exercise.id);
 
+    // --- Complete Round Logic for Supersets ---
     if (exercise.supersetId) {
-      // --- Complete Round Logic for Supersets ---
       const roundIndex = setIndex;
-      const confirm = await this.alertService.showConfirm('Complete Round', `Mark all sets in Round ${roundIndex + 1} as complete?`, 'Complete', 'Cancel');
-      if (!confirm?.data) return;
+      // No confirmation needed as it's the primary action now
+      const exercisesInSuperset = this.getSupersetExercises(exercise.supersetId);
 
-      const exercisesInSuperset = routine.exercises.filter(ex => ex.supersetId === exercise.supersetId);
       exercisesInSuperset.forEach(exInGroup => {
-        const groupExIndex = routine.exercises.findIndex(e => e.id === exInGroup.id);
-        // In a superset, there is only one template set per exercise, so we always use setIndex 0
-        const setTemplate = exInGroup.sets[setIndex];
-        if (setTemplate && !this.isSetCompleted(groupExIndex, setIndex, roundIndex)) {
-          this.toggleSetCompletion(exInGroup, setTemplate, groupExIndex, setIndex, roundIndex);
+        const groupExIndex = this.getOriginalExIndex(exInGroup.id);
+        const setTemplate = exInGroup.sets[roundIndex]; // The set corresponding to this round
+
+        // Only toggle completion if it's not already completed
+        if (setTemplate && !this.isSetCompleted(groupExIndex, roundIndex, roundIndex)) {
+          this.toggleSetCompletion(exInGroup, setTemplate, groupExIndex, roundIndex, roundIndex);
         }
       });
       this.toastService.success(`Round ${roundIndex + 1} completed!`);
+
     } else {
       // --- Complete Set Logic for Standard Exercises ---
       const set = exercise.sets[setIndex];
@@ -2066,8 +2073,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const ex = this.routine()?.exercises[exIndex];
     if (!ex) return false;
     return this.isSupersetEnd(exIndex);
-    // OLD LOGIC
-    // return this.isSupersetEnd(exIndex) && ex.sets.length === setIndex + 1;
   }
 
   getExerciseDisplayIndex(exIndex: number): string {
@@ -2135,7 +2140,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     };
 
     // --- State-Specific Logic ---
-    if (isExpanded){
+    if (isExpanded) {
       classes['border-yellow-400 ring-2 ring-yellow-400 dark:ring-yellow-500 z-10'] = true;
     }
     if ((isStandardSuperSet || isEmomSet) && isExpanded) {
@@ -2144,14 +2149,14 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       classes['rounded-md'] = true;       // Round all corners
       classes['border-t-2'] = true;       // Ensure it has a top border
       classes['border-b-2'] = true;       // Ensure it has a bottom border
-      classes['mb-2'] = this.isSupersetEnd(index);             // Add margin to visually detach it from the item below
+      classes['mb-3'] = true;             // Add margin to visually detach it from the item below
 
     } else {
       // STATE 2: THE EXERCISE IS COLLAPSED (OR STANDALONE)
       // Apply the normal start, middle, and end classes for visual grouping.
       classes['border-t-2 rounded-t-md'] = this.isSupersetStart(index);
       classes['border-b-0 rounded-none'] = this.isSupersetMiddle(index); // This correctly removes bottom border for middle items
-      classes['border-b-2 rounded-b-md mb-4'] = this.isSupersetEnd(index);
+      classes['border-b-2 rounded-b-md mb-4'] = true;
     }
 
     // --- Background Color Logic (applied last, doesn't affect layout) ---
@@ -2284,5 +2289,162 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         console.error('Failed to unlock screen orientation:', error);
       }
     }
+  }
+
+  // +++ NEW: Helper to get all exercises in a superset group +++
+  getSupersetExercises(supersetId: string): WorkoutExercise[] {
+    const r = this.routine();
+    if (!r) return [];
+    // Important: Ensure they are sorted by their defined order
+    return r.exercises
+      .filter(ex => ex.supersetId === supersetId)
+      .sort((a, b) => (a.supersetOrder ?? 0) - (b.supersetOrder ?? 0));
+  }
+
+  // +++ NEW: Helper to find the original index of an exercise from its ID +++
+  getOriginalExIndex(exerciseId: string): number {
+    return this.routine()?.exercises.findIndex(ex => ex.id === exerciseId) ?? -1;
+  }
+
+  // +++ NEW: Check if all sets in a round are complete +++
+  isRoundCompleted(exIndex: number, roundIndex: number): boolean {
+    const firstExercise = this.routine()?.exercises[exIndex];
+    if (!firstExercise?.supersetId) return false;
+
+    const exercisesInGroup = this.getSupersetExercises(firstExercise.supersetId);
+    return exercisesInGroup.every(ex => {
+      const originalExIndex = this.getOriginalExIndex(ex.id);
+      return this.isSetCompleted(originalExIndex, roundIndex, roundIndex);
+    });
+  }
+
+  getEmomState(exIndex: number, roundIndex: number): { status: 'idle' | 'running' | 'paused' | 'completed', remainingTime: number } {
+    const key = `${exIndex}-${roundIndex}`;
+    const allStates = this.emomState();
+    if (this.isRoundCompleted(exIndex, roundIndex) && allStates[key]?.status !== 'completed') {
+      this.emomState.update(states => {
+        states[key] = { ...states[key], status: 'completed' };
+        return states;
+      });
+    }
+
+    return allStates[key] || { status: 'idle', remainingTime: this.routine()?.exercises[exIndex].emomTimeSeconds ?? 60 };
+  }
+
+  // +++ NEW: Central handler for the EMOM button clicks +++
+  handleEmomAction(exIndex: number, roundIndex: number): void {
+    const key = `${exIndex}-${roundIndex}`;
+    const state = this.getEmomState(exIndex, roundIndex);
+
+    switch (state.status) {
+      case 'idle':
+      case 'paused':
+        this.startEmomTimer(exIndex, roundIndex, key);
+        break;
+      case 'running':
+        this.pauseEmomTimer(key);
+        break;
+      case 'completed':
+        // Do nothing if already completed
+        break;
+    }
+  }
+
+  // +++ NEW: Starts or resumes the EMOM timer for a specific round +++
+  private startEmomTimer(exIndex: number, roundIndex: number, key: string): void {
+    const firstExercise = this.routine()!.exercises[exIndex];
+    const duration = firstExercise.emomTimeSeconds ?? 60;
+
+    this.emomState.update(states => {
+      if (!states[key]) {
+        states[key] = { status: 'running', remainingTime: duration };
+      } else {
+        states[key].status = 'running';
+      }
+      return { ...states };
+    });
+
+    this.emomTimerSub?.unsubscribe(); // Ensure only one timer runs
+    this.emomTimerSub = timer(0, 1000).subscribe(() => {
+      const currentRemaining = this.emomState()[key]?.remainingTime;
+      if (currentRemaining > 0) {
+        this.emomState.update(states => {
+          states[key].remainingTime--;
+          return { ...states };
+        });
+      } else {
+        this.emomTimerSub?.unsubscribe();
+        this.logEmomRoundAsCompleted(exIndex, roundIndex, key);
+
+        // Check for next round and auto-start
+        const hasNextRound = roundIndex + 1 < firstExercise.sets.length;
+        if (hasNextRound) {
+          this.handleEmomAction(exIndex, roundIndex + 1);
+        }
+      }
+    });
+  }
+
+  // +++ NEW: Pauses the currently active EMOM timer +++
+  private pauseEmomTimer(key: string): void {
+    this.emomTimerSub?.unsubscribe();
+    this.emomState.update(states => {
+      if (states[key]) {
+        states[key].status = 'paused';
+      }
+      return { ...states };
+    });
+  }
+
+  // +++ NEW: Logs all sets in an EMOM round and marks it as complete +++
+  private logEmomRoundAsCompleted(exIndex: number, roundIndex: number, key: string): void {
+    const firstExercise = this.routine()!.exercises[exIndex];
+    const exercisesInGroup = this.getSupersetExercises(firstExercise.supersetId!);
+
+    exercisesInGroup.forEach(ex => {
+      const originalIndex = this.getOriginalExIndex(ex.id);
+      const setForRound = ex.sets[roundIndex];
+      if (setForRound && !this.isSetCompleted(originalIndex, roundIndex, roundIndex)) {
+        // Log with target values
+        this.toggleSetCompletion(ex, setForRound, originalIndex, roundIndex, roundIndex);
+      }
+    });
+
+    this.emomState.update(states => {
+      states[key] = { ...states[key], status: 'completed', remainingTime: 0 };
+      return { ...states };
+    });
+
+    this.toastService.success(`EMOM Round ${roundIndex + 1} Complete!`);
+  }
+
+  // +++ NEW: UI helpers for the EMOM button +++
+  getEmomButtonText(exIndex: number, roundIndex: number): string {
+    const state = this.getEmomState(exIndex, roundIndex);
+    const textMap = { idle: 'START ROUND', running: 'PAUSE', paused: 'RESUME', completed: 'COMPLETED' };
+    return textMap[state.status];
+  }
+
+  getEmomButtonIcon(exIndex: number, roundIndex: number): string {
+    const state = this.getEmomState(exIndex, roundIndex);
+    const iconMap = { idle: 'play', running: 'pause', paused: 'play', completed: 'done' };
+    return iconMap[state.status];
+  }
+
+  getEmomButtonClass(exIndex: number, roundIndex: number): string {
+    const state = this.getEmomState(exIndex, roundIndex);
+    const classMap = {
+      idle: 'bg-teal-500 hover:bg-teal-600',
+      running: 'bg-yellow-500 hover:bg-yellow-600',
+      paused: 'bg-teal-500 hover:bg-teal-600 animate-pulse',
+      completed: 'bg-green-600'
+    };
+    return classMap[state.status];
+  }
+
+  getSupersetDisplayName(supersetId: string): string {
+    if (!supersetId) return '';
+    const exercisesInGroup = this.getSupersetExercises(supersetId);
+    return exercisesInGroup.map(ex => ex.exerciseName).join(' / ');
   }
 }
