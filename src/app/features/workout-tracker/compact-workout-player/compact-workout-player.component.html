@@ -65,7 +65,9 @@
         <!-- Exercise Card -->
         <div #exerciseCard cdkDrag *ngIf="!exercise.supersetId || isSupersetStart(exIndex)"
           class="transition-all duration-300 relative" [ngClass]="getExerciseClasses(exercise, exIndex)"
-          [style.zIndex]="areActionsVisible(exIndex) ? 50 : 'auto'">
+          [style.zIndex]="areActionsVisible(exIndex) ? 50 : 'auto'"
+          [attr.data-exercise-index]="exIndex"
+          >
 
           <!-- Ghost element for drop placeholder -->
           <div *cdkDragPlaceholder></div>
@@ -142,7 +144,6 @@
 
           <!-- Sets Container -->
           <div *ngIf="expandedExerciseIndex() === exIndex"
-                    [attr.data-exercise-index]="exIndex"
             class="bg-gray-50/50 dark:bg-gray-700/50 py-2 px-1 border-b rounded-md border-gray-200 dark:border-gray-700">
             <!-- Set Headers -->
             <div *ngIf="!isSuperSet(exIndex)" class="grid grid-cols-12 gap-2 text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 px-2">
