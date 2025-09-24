@@ -15,12 +15,13 @@
             </div>
         </div>
 
-        <!-- +++ NEW: Filter and Sort Accordion Section +++ -->
+        <!-- Filter and Sort Accordion Section -->
         <div class="px-4 pt-4 flex-shrink-0">
             <div class="flex justify-between items-center">
                 <h4 class="font-semibold text-gray-700 dark:text-gray-200">Filters & Sorting</h4>
+                <!-- MODIFIED: This is now just one button -->
                 <button (click)="toggleFilterAccordion()"
-                    class="rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-light transition-all duration-300 ease-in-out">
+                    class="rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none transition-all duration-300 ease-in-out">
                     <app-icon name="filter" class="w-10 h-10 transition-transform duration-300"
                         [class.rotate-180]="isFilterAccordionOpen()"></app-icon>
                 </button>
@@ -51,13 +52,34 @@
                         </select>
                     </div>
                 </div>
-                <!-- Search Input -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Search Name</label>
-                    <input #exerciseSearchFied type="text" [placeholder]="searchPlaceholder()" [(ngModel)]="searchTerm"
-                        (keydown.enter)="onSearchEnter()"
-                        class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-gray-200" />
+
+                <!-- =================== START OF CORRECTION =================== -->
+                <!-- Search Input and Similar Buttons Container -->
+                <div class="text-center">
+                    <!-- Main Search Bar (visible in default view) -->
+                    <div *ngIf="!isShowingSimilarView()">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 text-left">Search
+                            Name</label>
+                        <input #exerciseSearchFied type="text" [placeholder]="searchPlaceholder()"
+                            [(ngModel)]="searchTerm" (keydown.enter)="onSearchEnter()"
+                            class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-gray-200" />
+                    </div>
+
+                    <!-- "Show Similar" button (conditionally rendered) -->
+                    <button *ngIf="showSimilarButton() && !isShowingSimilarView()" (click)="onFindSimilar()"
+                        class="justify-center inline-flex items-center mt-2 px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700">
+                        OR SHOW SIMILAR EXERCISES
+                    </button>
+
+                    <!-- "Back to Search" button (visible in 'similar' view) -->
+                    <button *ngIf="isShowingSimilarView()" (click)="onBackToSearch()"
+                        class="justify-center inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md shadow-sm text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                        <app-icon name="back" class="w-5 h-5 mr-2"></app-icon>
+                        SHOW ALL
+                    </button>
                 </div>
+                <!-- =================== END OF CORRECTION =================== -->
+
                 <!-- Sort By -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sort By</label>
@@ -104,16 +126,19 @@
                                 class="block text-xs text-gray-500 dark:text-gray-400 italic">
                                 [
                                 <ng-container *ngIf="item.isCustom">Custom</ng-container>
-                                
+
                                 <!-- Separator 1 -->
-                                <ng-container *ngIf="item.isCustom && (item.usageCount != null || item.lastUsedAt)"> | </ng-container>
-                                
-                                <ng-container *ngIf="item.usageCount != null">Count: {{ item.usageCount }}</ng-container>
-                                
+                                <ng-container *ngIf="item.isCustom && (item.usageCount != null || item.lastUsedAt)"> |
+                                </ng-container>
+
+                                <ng-container *ngIf="item.usageCount != null">Count: {{ item.usageCount
+                                    }}</ng-container>
+
                                 <!-- Separator 2 -->
                                 <ng-container *ngIf="item.usageCount != null && item.lastUsedAt"> | </ng-container>
-                                
-                                <ng-container *ngIf="item.lastUsedAt">Last used: {{ item.lastUsedAt | date:'dd-MM-yy':'UTC' }}</ng-container>
+
+                                <ng-container *ngIf="item.lastUsedAt">Last used: {{ item.lastUsedAt |
+                                    date:'dd-MM-yy':'UTC' }}</ng-container>
                                 ]
                             </span>
                         </div>

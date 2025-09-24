@@ -426,11 +426,11 @@
 
   <app-exercise-selection-modal [isOpen]="isSwitchExerciseModalOpen()" [(searchTerm)]="modalSearchTerm"
     [title]="isShowingSimilarInSwitchModal() ? 'SIMILAR EXERCISES' : 'SWITCH EXERCISE'"
-    [exercises]="filteredExercisesForSwitchModal()" searchPlaceholder="Search for a replacement..."
+    [exercises]="exercisesForSwitchModal()" searchPlaceholder="Search for a replacement..."
     [showSimilarButton]="true" [isShowingSimilarView]="isShowingSimilarInSwitchModal()" itemIconName="change"
     itemIconClass="text-green-500" (exerciseSelected)="handleExerciseSwitch($event)"
     (findSimilarClicked)="findAndShowSimilarExercises(exerciseToSwitchIndex())"
-    (backToSearchClicked)="isShowingSimilarInSwitchModal.set(false)" (close)="closeSwitchExerciseModal()">
+    (backToSearchClicked)="onBackToSearchFromSimilar()" (close)="closeSwitchExerciseModal()">
   </app-exercise-selection-modal>
 
   <app-full-screen-rest-timer [isVisible]="isRestTimerVisible()" [mainTimer]="sessionTimerDisplay"

@@ -8,6 +8,7 @@ import { IconComponent } from '../icon/icon.component';
 import { combineLatest, Observable, Subscription } from 'rxjs';
 import { ToastService } from '../../../core/services/toast.service';
 import { TrackingService } from '../../../core/services/tracking.service';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 // +++ NEW: Type definition for the list, which can now contain headers +++
 type ListItem = Exercise | { isHeader: true; label: string };
@@ -20,6 +21,10 @@ type ListItem = Exercise | { isHeader: true; label: string };
     templateUrl: './exercise-selection-modal.component.html',
 })
 export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges {
+    private exerciseService = inject(ExerciseService);
+    private trackingService = inject(TrackingService);
+    private toastService = inject(ToastService);
+
     ngOnChanges(changes: SimpleChanges): void {
         if (changes['isOpen'] && changes['isOpen'].currentValue) {
             this.checkForInputFocus();
@@ -28,27 +33,12 @@ export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges
         }
     }
 
-    ngOnInit(): void {
-        // This subscription reactively combines the input exercises with their usage counts.
-        // It will automatically re-run whenever the input 'exercises' array changes.
-        this.dataSub = combineLatest([
-            this.exerciseService.exercises$, // We can get the exercises directly from the service
-            this.trackingService.getExerciseUsageCounts()
-        ]).subscribe(([exercises, usageMap]) => {
-            const exercisesWithData = exercises.map(ex => ({
-                ...ex,
-                usageCount: usageMap.get(ex.id) || 0
-            }));
-            this.enrichedExercises.set(exercisesWithData);
-        });
-    }
-
-    ngOnDestroy(): void {
-        this.dataSub?.unsubscribe(); // Prevent memory leaks
-    }
-
-
     private enrichedExercises = signal<Exercise[]>([]); // This will hold the exercises with usage counts
+
+    private usageCounts = toSignal(this.trackingService.getExerciseUsageCounts(), {
+        initialValue: new Map<string, number>()
+    });
+
     private dataSub: Subscription | undefined;
 
     @ViewChild('exerciseSearchFied') myExerciseInput!: ElementRef;
@@ -56,26 +46,31 @@ export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges
 
 
     constructor() {
-        // Create an effect that triggers whenever the sortMode signal changes.
+        // This effect runs whenever the `exercises` input OR the `usageCounts` change.
         effect(() => {
-            // This line is the dependency that the effect tracks.
-            this.sortMode();
+            const exercisesFromInput = this.exercises(); // Dependency 1: The input signal
+            const usageMap = this.usageCounts();         // Dependency 2: The usage count signal
 
-            // Check if the scroll container element is available in the DOM.
+            // Enrich the list that was PASSED IN with the latest usage counts.
+            const exercisesWithData = exercisesFromInput.map(ex => ({
+                ...ex,
+                usageCount: usageMap.get(ex.id) || 0
+            }));
+            
+            this.enrichedExercises.set(exercisesWithData);
+        });
+
+        // Effect for scrolling remains the same
+        effect(() => {
+            this.sortMode();
             if (this.scrollContainer?.nativeElement) {
-                // Programmatically set its scroll position back to the top.
                 this.scrollContainer.nativeElement.scrollTop = 0;
             }
-
-            if (this.sortMode() === 'lastUsed') {
+            if (this.sortMode() === 'lastUsed'){
                 this.isFilterAccordionOpen.set(false);
             }
         });
     }
-
-    private exerciseService = inject(ExerciseService);
-    private trackingService = inject(TrackingService);
-    private toastService = inject(ToastService);
 
     // --- Inputs: (Unchanged) ---
     isOpen = model<boolean>(false);
@@ -113,7 +108,7 @@ export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges
     // --- CORE LOGIC: Replaced with a powerful computed signal for processing ---
     processedExercises = computed<ListItem[]>(() => {
         const term = this.searchTerm()?.toLowerCase() ?? '';
-        let exerciseList = this.enrichedExercises(); // Use the enriched list as the source
+        let exerciseList = this.enrichedExercises();
         const mode = this.sortMode();
         const category = this.selectedCategory();
         const muscleGroup = this.selectedMuscleGroup();
@@ -214,7 +209,7 @@ export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges
         this.close.emit();
     }
 
-    onFindSimilar(): void { this.findSimilarClicked.emit(); }
+    onFindSimilar(): void { this.findSimilarClicked.emit(); this.isFilterAccordionOpen.set(false);}
     onCreateCustom(): void { this.createCustomClicked.emit(); }
     onBackToSearch(): void { this.backToSearchClicked.emit(); }
 

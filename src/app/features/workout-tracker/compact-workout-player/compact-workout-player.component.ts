@@ -229,21 +229,21 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   });
 
 
-  filteredExercisesForSwitchModal = computed(() => {
-    const term = this.modalSearchTerm().toLowerCase();
-    if (this.isShowingSimilarInSwitchModal()) {
-      return this.exercisesForSwitchModal();
-    }
-    if (!term) {
-      return this.availableExercises;
-    }
-    const normalizedTerm = this.exerciseService.normalizeExerciseNameForSearch(term);
-    return this.availableExercises.filter(ex =>
-      ex.name.toLowerCase().includes(normalizedTerm) ||
-      ex.category?.toLowerCase().includes(normalizedTerm) ||
-      ex.primaryMuscleGroup?.toLowerCase().includes(normalizedTerm)
-    );
-  });
+  // filteredExercisesForSwitchModal = computed(() => {
+  //   const term = this.modalSearchTerm().toLowerCase();
+  //   if (this.isShowingSimilarInSwitchModal()) {
+  //     return this.exercisesForSwitchModal();
+  //   }
+  //   if (!term) {
+  //     return this.availableExercises;
+  //   }
+  //   const normalizedTerm = this.exerciseService.normalizeExerciseNameForSearch(term);
+  //   return this.availableExercises.filter(ex =>
+  //     ex.name.toLowerCase().includes(normalizedTerm) ||
+  //     ex.category?.toLowerCase().includes(normalizedTerm) ||
+  //     ex.primaryMuscleGroup?.toLowerCase().includes(normalizedTerm)
+  //   );
+  // });
 
   @ViewChildren('exerciseCard') exerciseCards!: QueryList<ElementRef>;
   @ViewChild('header') header!: ElementRef; // Get the header element
@@ -820,7 +820,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       // If it's a superset, set the initial collapsed/expanded state for its rounds
       if (exercise && this.isSupersetStart(index)) {
         const firstIncompleteRoundIndex = exercise.sets.findIndex((set, roundIdx) => !this.isRoundCompleted(index, roundIdx));
-        
+
         const newExpandedRounds = new Set<string>();
         // If we found an incomplete round, expand it by default. Otherwise, all remain collapsed.
         if (firstIncompleteRoundIndex > -1) {
@@ -842,7 +842,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
             }
 
             let targetElement: HTMLElement | null = null;
-            
+
             // +++ START OF CORRECTION +++
             // Check if any sets for THIS specific exercise have been logged.
             const hasLoggedSetsForThisExercise = this.getExerciseTotalLoggedSets(index) > 0;
@@ -1375,7 +1375,13 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
   openSwitchExerciseModal(exIndex: number): void {
     this.exerciseToSwitchIndex.set(exIndex);
+
+    // Set the initial list for the modal to the full, searchable list
+    this.exercisesForSwitchModal.set(this.availableExercises);
+
     this.isSwitchExerciseModalOpen.set(true);
+    this.isShowingSimilarInSwitchModal.set(false); // Ensure we start in search mode
+    this.modalSearchTerm.set('');
   }
   closeSwitchExerciseModal(): void {
     this.isSwitchExerciseModalOpen.set(false);
@@ -1532,6 +1538,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     if (exerciseToSwitchIndex === null) return;
     const exercise = this.routine()?.exercises[exerciseToSwitchIndex];
     if (!exercise) return;
+
     let baseExercise = this.availableExercises.find(ex => ex.id === exercise.exerciseId);
     if (!baseExercise) {
       baseExercise = await lastValueFrom(this.exerciseService.getExerciseById(exercise.exerciseId).pipe(take(1)));
@@ -1543,12 +1550,21 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     try {
       const similar = await lastValueFrom(this.exerciseService.getSimilarExercises(baseExercise, 12).pipe(take(1)));
       if (similar.length === 0) this.toastService.info("No similar exercises found.");
-      this.modalSearchTerm.set('');
+
+      // Overwrite the modal's list with the new 'similar' list
       this.exercisesForSwitchModal.set(similar);
-      this.isShowingSimilarInSwitchModal.set(true);
+      this.isShowingSimilarInSwitchModal.set(true); // Switch the view mode
+
     } catch (error) {
       this.toastService.error("Could not load similar exercises.");
     }
+  }
+
+  onBackToSearchFromSimilar(): void {
+    // Reset the modal's list back to the full, searchable list
+    this.exercisesForSwitchModal.set(this.availableExercises);
+    this.isShowingSimilarInSwitchModal.set(false); // Switch the view mode back
+    this.modalSearchTerm.set('');
   }
 
   toggleCompletedSetsForExerciseInfo(): void { this.showCompletedSetsForExerciseInfo.update(v => !v); }
@@ -2209,13 +2225,13 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       exercisesInSuperset.forEach(exInGroup => {
         const groupExIndex = this.getOriginalExIndex(exInGroup.id);
         const setTemplate = exInGroup.sets[roundIndex];
-        
+
         // This will either log the un-logged sets or un-log the logged sets.
         if (setTemplate) {
           this.toggleSetCompletion(exInGroup, setTemplate, groupExIndex, roundIndex, roundIndex);
         }
       });
-      
+
       if (!isAlreadyCompleted) {
         this.toastService.success(`Round ${roundIndex + 1} completed!`);
       } else {
@@ -2546,7 +2562,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     });
   }
 
-getEmomState(exIndex: number, roundIndex: number): { status: 'idle' | 'running' | 'paused' | 'completed', remainingTime: number } {
+  getEmomState(exIndex: number, roundIndex: number): { status: 'idle' | 'running' | 'paused' | 'completed', remainingTime: number } {
     // 1. FIRST, check the source of truth: the workout log.
     // If the log shows this round is completed, ALWAYS return a 'completed' state.
     // This is a PURE READ operation.
@@ -2581,10 +2597,10 @@ getEmomState(exIndex: number, roundIndex: number): { status: 'idle' | 'running' 
   }
 
   // +++ NEW: Starts or resumes the EMOM timer for a specific round +++
-    private startEmomTimer(exIndex: number, roundIndex: number, key: string): void {
+  private startEmomTimer(exIndex: number, roundIndex: number, key: string): void {
     const firstExercise = this.routine()!.exercises[exIndex];
     const duration = firstExercise.emomTimeSeconds ?? 60;
-    
+
     this.emomState.update(states => {
       if (!states[key]) {
         states[key] = { status: 'running', remainingTime: duration };
@@ -2605,7 +2621,7 @@ getEmomState(exIndex: number, roundIndex: number): { status: 'idle' | 'running' 
       } else {
         this.emomTimerSub?.unsubscribe();
         this.logEmomRoundAsCompleted(exIndex, roundIndex, key);
-        
+
         // --- AUTO-SCROLL LOGIC ---
         const nextRoundIndex = roundIndex + 1;
         const hasNextRound = nextRoundIndex < firstExercise.sets.length;
@@ -2618,7 +2634,7 @@ getEmomState(exIndex: number, roundIndex: number): { status: 'idle' | 'running' 
             newSet.add(`${exIndex}-${nextRoundIndex}`);
             return newSet;
           });
-          
+
           // 2. Start the next timer
           this.handleEmomAction(exIndex, nextRoundIndex);
 
