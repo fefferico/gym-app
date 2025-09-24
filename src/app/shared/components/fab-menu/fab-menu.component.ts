@@ -39,6 +39,15 @@ export interface FabAction {
       transition(':leave', [
         animate('200ms ease-in', style({ transform: 'translateY(20%)', opacity: 0 }))
       ])
+    ]),
+    trigger('fadeAnimation', [
+      transition(':enter', [
+        style({ opacity: 0 }),
+        animate('200ms ease-in', style({ opacity: 1 }))
+      ]),
+      transition(':leave', [
+        animate('200ms ease-out', style({ opacity: 0 }))
+      ])
     ])
   ]
 })
@@ -57,14 +66,15 @@ export class FabMenuComponent implements OnInit, OnDestroy {
   // --- Component State (Unchanged) ---
   isFabActionsOpen = signal(false);
   showBackToTopButton = signal(false);
+  showBackToBottomButton = signal(false);
   isPausedSession = signal(false);
 
   // --- Lifecycle Hooks (Unchanged) ---
   ngOnInit(): void {
-    if (this.checkForPausedSession){
+    if (this.checkForPausedSession) {
       this.isPausedSession.set(this.workoutService.isPausedSession());
       this.pausedSub = this.workoutService.pausedWorkoutDiscarded$.subscribe(() => {
-          this.isPausedSession.set(false);
+        this.isPausedSession.set(false);
       });
     }
   }
@@ -77,7 +87,25 @@ export class FabMenuComponent implements OnInit, OnDestroy {
   @HostListener('window:scroll', [])
   onWindowScroll(): void {
     if (isPlatformBrowser(this.platformId)) {
-      this.showBackToTopButton.set(window.pageYOffset > 400);
+      // The user's current scroll position from the top
+      const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+
+      // The height of the visible browser window
+      const windowHeight = window.innerHeight;
+
+      // The total height of the entire page
+      const documentHeight = document.body.scrollHeight;
+
+      // A small buffer so the button disappears slightly before the absolute bottom
+      const buffer = 100;
+
+      // --- Conditions ---
+
+      // Show the "Back to Top" button if the user has scrolled down a bit
+      this.showBackToTopButton.set(scrollY > 400);
+
+      // Show the "Back to Bottom" button if the user is NOT near the bottom of the page
+      this.showBackToBottomButton.set(scrollY + windowHeight < documentHeight - buffer);
     }
   }
   scrollToTop(): void {
@@ -85,14 +113,19 @@ export class FabMenuComponent implements OnInit, OnDestroy {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
+  scrollToBottom(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }
+  }
   handleFabClick(): void {
     this.isFabActionsOpen.update(v => !v);
   }
-  handleFabMouseEnter(): void {}
-  handleFabMouseLeave(): void {}
+  handleFabMouseEnter(): void { }
+  handleFabMouseLeave(): void { }
 
   // --- Action Methods ---
-  
+
   // NEW: Generic handler that emits the action key
   handleAction(actionKey: string): void {
     this.actionClicked.emit(actionKey);
@@ -101,7 +134,7 @@ export class FabMenuComponent implements OnInit, OnDestroy {
 
   handleClose(): void {
     if (this.isFabActionsOpen()) {
-        this.isFabActionsOpen.set(false);
+      this.isFabActionsOpen.set(false);
     }
   }
 }

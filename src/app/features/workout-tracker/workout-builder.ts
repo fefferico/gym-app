@@ -2085,6 +2085,9 @@ private createSyncedSet(setsArray: FormArray, ctrl: AbstractControl): FormGroup 
 
   // update current routine after adding a new exercise
   private updateCurrentRoutine(exercise: WorkoutExercise): void {
+    if (!this.routine()){
+      this.routine.set(this.mapFormToRoutine(this.builderForm.getRawValue()));
+    }
     if (this.routine()) {
       const updatedRoutine: Routine = {
         ...this.routine()!,

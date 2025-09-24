@@ -44,16 +44,17 @@
             <app-icon name="menu-action" class="h-10 w-10"></app-icon>
           </button>
           <app-action-menu *ngIf="isWorkoutMenuVisible() && getMenuMode() !== 'compact'" class="action-menu-container"
-            [displayMode]="getMenuMode()" [modalTitle]="''" [items]="compactActionItemsMap()" [isVisible]="isWorkoutMenuVisible()"
-            (itemClick)="handleActionMenuItemClick($event)" (closeMenu)="closeWorkoutMenu()">
+            [displayMode]="getMenuMode()" [modalTitle]="''" [items]="compactActionItemsMap()"
+            [isVisible]="isWorkoutMenuVisible()" (itemClick)="handleActionMenuItemClick($event)"
+            (closeMenu)="closeWorkoutMenu()">
           </app-action-menu>
         </div>
 
       </div>
       <app-action-menu *ngIf="isWorkoutMenuVisible() && getMenuMode() === 'compact'" class="action-menu-container"
-        [gridClass]="'grid grid-cols-1'" [displayMode]="getMenuMode()" [modalTitle]="''" [items]="compactActionItemsMap()"
-        [isVisible]="isWorkoutMenuVisible()" (itemClick)="handleActionMenuItemClick($event)"
-        (closeMenu)="closeWorkoutMenu()">
+        [gridClass]="'grid grid-cols-1'" [displayMode]="getMenuMode()" [modalTitle]="''"
+        [items]="compactActionItemsMap()" [isVisible]="isWorkoutMenuVisible()"
+        (itemClick)="handleActionMenuItemClick($event)" (closeMenu)="closeWorkoutMenu()">
       </app-action-menu>
       <!-- Workout Progress Bar -->
       <div class="w-full mt-2">
@@ -197,11 +198,10 @@
               </span>
               <span *ngIf="activeSet.exerciseData.supersetId" class="ml-2 text-purple-500 dark:text-purple-400 italic">
                 (Superset ex. {{ (activeSet.exerciseData.supersetOrder ?? 0) + 1
-                }}/{{activeSet.exerciseData.sets.length
-                ??
-                '?'}})
+                }}/{{activeSet.exerciseData.sets.length}})
               </span>
-              <span *ngIf="activeSet?.exerciseData?.supersetId && totalBlockRounds() > 1 && currentBlockRound() > 0" class="ml-2">
+              <span *ngIf="activeSet?.exerciseData?.supersetId && totalBlockRounds() > 1 && currentBlockRound() > 0"
+                class="ml-2">
                 [Round {{currentBlockRound()}}/{{totalBlockRounds()}}]
               </span>
             </p>

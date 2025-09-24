@@ -685,7 +685,7 @@ export class WorkoutService {
     const defaultSets = 3;
 
     const baseParams: AlertInput[] = [
-      { label: 'Exercise name', name: 'name', type: 'text', placeholder: 'Exercise name', value: selectedExercise.name, attributes: { required: true } },
+      { label: 'Exercise name', name: 'name', type: 'text', placeholder: 'Exercise name', value: selectedExercise.name, attributes: { required: true, disabled: true } },
       { label: 'Number of Sets', name: 'numSets', type: 'number', placeholder: 'e.g., 3', value: defaultSets, attributes: { min: 1, required: true } },
       { label: 'Rest Between Sets (seconds)', name: 'rest', type: 'number', placeholder: 'e.g., 60', value: defaultRest, attributes: { min: 1, required: true } }
     ];
@@ -709,7 +709,7 @@ export class WorkoutService {
     );
 
     if (!exerciseData) {
-      this.toastService.info("Exercise addition cancelled.", 2000);
+      // this.toastService.info("Exercise addition cancelled.", 2000);
       return null;
     }
 

@@ -69,6 +69,7 @@
                   {{ input.label }}
                 </label>
                 <input #alertInput [type]="input.type || 'text'" [id]="input.id || ('alert-input-' + i)"
+                  [disabled]="input.attributes && input.attributes.disabled"
                   [name]="input.name" [placeholder]="input.placeholder || ''" [(ngModel)]="inputValues[input.name]"
                   [required]="input.required ? true : false" [min]="input.min" [max]="input.max"
                   class="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-m dark:bg-gray-800 dark:text-gray-200">

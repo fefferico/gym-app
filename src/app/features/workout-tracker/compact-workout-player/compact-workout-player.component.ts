@@ -811,7 +811,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return `${mins}:${secs}`;
   }
 
-toggleExerciseExpansion(index: number): void {
+  toggleExerciseExpansion(index: number): void {
     const isOpening = this.expandedExerciseIndex() !== index;
     this.expandedExerciseIndex.update(current => (isOpening ? index : null));
 
@@ -842,28 +842,40 @@ toggleExerciseExpansion(index: number): void {
             }
 
             let targetElement: HTMLElement | null = null;
+            
+            // +++ START OF CORRECTION +++
+            // Check if any sets for THIS specific exercise have been logged.
+            const hasLoggedSetsForThisExercise = this.getExerciseTotalLoggedSets(index) > 0;
 
             // --- SCROLL LOGIC ---
-            if (this.isSupersetStart(index)) {
-              const targetRoundIndex = exercise.sets.findIndex((set, roundIdx) => !this.isRoundCompleted(index, roundIdx));
-              if (targetRoundIndex > -1) {
-                targetElement = cardElement.querySelector(`[data-round-index="${targetRoundIndex}"]`);
-              }
-            } else if (!this.isSuperSet(index)) {
-              const targetSetIndex = exercise.sets.findIndex((set, setIdx) => !this.isSetCompleted(index, setIdx, 0));
-              if (targetSetIndex > -1) {
-                targetElement = cardElement.querySelector(`[data-set-index="${targetSetIndex}"]`);
+            // If sets HAVE been logged, find the first uncompleted one to scroll to.
+            if (hasLoggedSetsForThisExercise) {
+              if (this.isSupersetStart(index)) {
+                const targetRoundIndex = exercise.sets.findIndex((set, roundIdx) => !this.isRoundCompleted(index, roundIdx));
+                if (targetRoundIndex > -1) {
+                  targetElement = cardElement.querySelector(`[data-round-index="${targetRoundIndex}"]`);
+                }
+              } else if (!this.isSuperSet(index)) {
+                const targetSetIndex = exercise.sets.findIndex((set, setIdx) => !this.isSetCompleted(index, setIdx, 0));
+                if (targetSetIndex > -1) {
+                  targetElement = cardElement.querySelector(`[data-set-index="${targetSetIndex}"]`);
+                }
               }
             }
+            // If NO sets have been logged for this exercise, 'targetElement' will remain null,
+            // which correctly triggers a scroll to the card header below.
+            // +++ END OF CORRECTION +++
 
             // --- EXECUTE SCROLL ---
             const headerHeight = headerElement.offsetHeight;
             let scrollTopPosition: number;
 
             if (targetElement) {
+              // Scroll to the first uncompleted set/round
               const elementTopPosition = targetElement.getBoundingClientRect().top + window.scrollY;
               scrollTopPosition = elementTopPosition - headerHeight - 10;
             } else {
+              // Scroll to the card header itself
               const cardTopPosition = cardElement.getBoundingClientRect().top + window.scrollY;
               scrollTopPosition = cardTopPosition - headerHeight - 10;
             }
@@ -1555,7 +1567,7 @@ toggleExerciseExpansion(index: number): void {
     const isModalMenu = this.appSettingsService.isMenuModeModal();
     const isCompactMenu = this.appSettingsService.isMenuModeCompact();
     // This is the common part for all buttons, if they need special modal styling
-    return isModalMenu ? " w-full flex justify-start items-center text-white text-left px-4 py-2 rounded-md text-xl font-medium " : '';
+    return isModalMenu ? " w-full flex justify-start items-center text-black dark:text-white hover:text-white text-left px-4 py-2 rounded-md text-xl font-medium " : '';
   });
 
   mainSessionActionItems = computed<ActionMenuItem[]>(() => {
@@ -1582,8 +1594,7 @@ toggleExerciseExpansion(index: number): void {
       },
       {
         ...addExerciseBtn,
-        buttonClass: addExerciseDisabledClass + defaultBtnClass, // Specific buttonClass for addExerciseBtn
-        overrideCssButtonClass: addExerciseBtn.buttonClass + commonModalButtonClass
+        overrideCssButtonClass: addExerciseDisabledClass + addExerciseBtn.buttonClass + commonModalButtonClass
       },
       { isDivider: true },
       {
@@ -2471,7 +2482,7 @@ toggleExerciseExpansion(index: number): void {
   * @param field The field to display ('reps', 'duration', or 'weight').
   * @returns A formatted string like "8-12", "60+", "10", or an empty string if no target is set.
   */
-  public getSetTargetDisplay(set: ExerciseTargetSetParams, field: 'reps' | 'duration' | 'weight'): string {
+  public getSetTargetDisplay(set: ExerciseTargetSetParams, field: 'reps' | 'duration' | 'weight' | 'distance'): string {
     return this.workoutService.getSetTargetDisplay(set, field);
   }
 

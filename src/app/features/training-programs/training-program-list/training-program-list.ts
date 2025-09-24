@@ -285,6 +285,10 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
       this.isTouchDevice = 'ontouchstart' in window;
     }
 
+    this.menuModeDropdown = this.appSettingsService.isMenuModeDropdown();
+    this.menuModeCompact = this.appSettingsService.isMenuModeCompact();
+    this.menuModeModal = this.appSettingsService.isMenuModeModal();
+
     const routines$ = this.workoutService.routines$.pipe(take(1));
     const logs$ = this.trackingService.workoutLogs$;
     const programs$ = this.trainingProgramService.programs$;
@@ -1072,13 +1076,13 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
 
   activeProgramIdActions = signal<string | null>(null);
 
-  toggleActions(routineId: string, event: MouseEvent): void {
+  toggleActions(programId: string, event: MouseEvent): void {
     event.stopPropagation();
-    this.activeProgramIdActions.update(current => (current === routineId ? null : routineId));
+    this.activeProgramIdActions.update(current => (current === programId ? null : programId));
   }
 
-  areActionsVisible(routineId: string): boolean {
-    return this.activeProgramIdActions() === routineId;
+  areActionsVisible(programId: string): boolean {
+    return this.activeProgramIdActions() === programId;
   }
 
   onCloseActionMenu() { this.activeProgramIdActions.set(null); }
@@ -1154,10 +1158,10 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
     return {
       // A day is clickable only if it has a workout scheduled or logged
       'text-black dark:text-white cursor-default': true,
-      
+
       // Styling for today's date
       'ring-4 ring-primary font-bold': day.isToday,
-      
+
       // Default text color
       'text-gray-800 dark:text-gray-200': !day.isToday,
       'hover:bg-yellow-600 bg-yellow-500 text-white font-bold': day.hasWorkout && !day.isLogged,

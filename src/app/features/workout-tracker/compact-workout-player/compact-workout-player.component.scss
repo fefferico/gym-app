@@ -107,3 +107,7 @@ input::-webkit-inner-spin-button {
 .cdk-drop-list-dragging .cdk-drag {
   transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
 }
+
+.target-class {
+  @apply text-center text-xs text-gray-400 dark:text-gray-500 mt-[-5px] py-1 dark:bg-white dark:rounded-none dark:rounded-b-md;
+}

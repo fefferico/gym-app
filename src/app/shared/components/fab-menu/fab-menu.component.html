@@ -1,21 +1,27 @@
 <!-- src/app/shared/components/fab-menu/fab-menu.component.html -->
 
-<div class="fixed right-4 sm:right-10 z-40 flex flex-col items-center gap-4 transition-all duration-300"
-    appClickOutside 
-    (clickOutside)="handleClose()"
-    [ngClass]="isPausedSession() ? 'bottom-36' : 'bottom-20'">
+<div class="fixed right-4 sm:right-10 z-40 flex flex-col items-center gap-4 transition-all duration-300" appClickOutside
+    (clickOutside)="handleClose()" [ngClass]="isPausedSession() ? 'bottom-36' : 'bottom-20'">
 
-    <!-- Back to Top Button (remains the same) -->
-    <button *ngIf="showBackToTopButton()" appPress (shortPress)="scrollToTop()" type="button"
-            class="bg-primary dark:bg-primary text-white rounded-full p-3 shadow-lg hover:bg-primary-dark dark:hover:bg-primary-light focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-focus dark:focus:ring-offset-gray-900 transition-opacity animate-fade-in flex items-center">
-            <app-icon name="back" [class.rotate-90]="true" class="w-6 h-6" [strokeWidth]="2.5"></app-icon>
-            <span class="sr-only">Back to Top</span>
-        </button>
+    <!-- Back to Top Button (Updated) -->
+    <button *ngIf="showBackToTopButton()" @fadeAnimation appPress (shortPress)="scrollToTop()" type="button"
+        class="bg-primary dark:bg-primary text-white rounded-full p-3 shadow-lg hover:bg-primary-dark dark:hover:bg-primary-light focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-focus dark:focus:ring-offset-gray-900 transition-opacity flex items-center">
+        <app-icon name="back" [class.rotate-90]="true" class="w-6 h-6" [strokeWidth]="2.5"></app-icon>
+        <span class="sr-only">Back to Top</span>
+    </button>
+
+    <!-- Back to Bottom Button (Updated) -->
+    <button *ngIf="showBackToBottomButton()" @fadeAnimation appPress (shortPress)="scrollToBottom()" type="button"
+        class="bg-primary dark:bg-primary text-white rounded-full p-3 shadow-lg hover:bg-primary-dark dark:hover:bg-primary-light focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-focus dark:focus:ring-offset-gray-900 transition-opacity flex items-center">
+        <app-icon name="chevron-down" class="w-6 h-6" [strokeWidth]="2.5"></app-icon>
+        <span class="sr-only">Back to Bottom</span>
+    </button>
 
     <div class="flex flex-col-reverse items-center gap-4" (mouseenter)="handleFabMouseEnter()"
         (mouseleave)="handleFabMouseLeave()">
         <!-- Main FAB Button (remains the same) -->
-        <button (click)="handleFabClick()" type="button" class="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-xl transition-all duration-300 hover:bg-primary-dark hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary-focus focus:ring-offset-2 dark:ring-offset-gray-900">
+        <button (click)="handleFabClick()" type="button"
+            class="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-xl transition-all duration-300 hover:bg-primary-dark hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary-focus focus:ring-offset-2 dark:ring-offset-gray-900">
             <app-icon name="plus" class="h-8 w-8 transition-transform duration-300"
                 [class.rotate-45]="isFabActionsOpen()"></app-icon>
             <span class="sr-only">Open creation menu</span>
@@ -25,11 +31,11 @@
         <div *ngIf="isFabActionsOpen()" @fabSlideUp class="flex flex-col items-center gap-4">
             <ng-container *ngFor="let action of actions">
                 <!-- Conditionally render based on the premium flag -->
-                <div *ngIf="!action.isPremium || subscriptionService.isPremium()" class="group relative flex items-center">
+                <div *ngIf="!action.isPremium || subscriptionService.isPremium()"
+                    class="group relative flex items-center">
                     <span appPress (shortPress)="handleAction(action.actionKey)"
                         class="absolute right-full mr-4 sm:hidden whitespace-nowrap rounded-md px-3 py-2 text-sm font-semibold text-white group-hover:block cursor-pointer"
-                        style="margin-right: -10px;"
-                        [ngClass]="action.cssClass">
+                        style="margin-right: -10px;" [ngClass]="action.cssClass">
                         {{ action.label }}
                     </span>
                     <button appPress (shortPress)="handleAction(action.actionKey)" type="button"

@@ -69,7 +69,7 @@ export const WORKOUT_TRACKER_ROUTES: Routes = [
     path: 'play/:routineId',
     component: CompactWorkoutPlayerComponent,
     title: 'Workout Session',
-    data: { showPausedWorkoutBanner: false}
+    data: { showPausedWorkoutBanner: false, shouldShowNavigationBanner: false },
   },
   {
     path: 'summary/:logId',

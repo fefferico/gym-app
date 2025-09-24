@@ -1,7 +1,7 @@
 // src/app/features/workout-routines/routine-list/routine-list.component.ts
 import { Component, inject, OnInit, PLATFORM_ID, signal, computed, OnDestroy, HostListener, ViewChildren } from '@angular/core'; // Added computed, OnDestroy
 import { CommonModule, DatePipe, isPlatformBrowser, TitleCasePipe } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { firstValueFrom, Observable, Subscription, take } from 'rxjs'; // Added Subscription
 import { PausedWorkoutState, Routine } from '../../core/models/workout.model'; // Added ExerciseDetail
 import { Exercise } from '../../core/models/exercise.model'; // Added Exercise
@@ -35,7 +35,7 @@ import { FabAction, FabMenuComponent } from '../../shared/components/fab-menu/fa
 @Component({
   selector: 'app-routine-list',
   standalone: true,
-  imports: [CommonModule, DatePipe, TitleCasePipe, RouterLink, ActionMenuComponent, PressDirective, IconComponent, GenerateWorkoutModalComponent,
+  imports: [CommonModule, DatePipe, TitleCasePipe, ActionMenuComponent, PressDirective, IconComponent, GenerateWorkoutModalComponent,
     GenerateWorkoutModalComponent,
     GeneratedWorkoutSummaryComponent,
     FabMenuComponent
@@ -667,47 +667,62 @@ export class RoutineListComponent implements OnInit, OnDestroy {
 
   getRoutineDropdownActionItems(routineId: string, mode: MenuMode): ActionMenuItem[] {
     const currentRoutine = this.allRoutinesForList().find(routine => routine.id === routineId);
+
+    const standardTextClass = ' w-full flex justify-center items-center text-left px-4 py-2 rounded-md text-xl font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 text-black dark:text-white hover:text-white ';
     const currHideRoutineButton = {
       ...hideBtn,
+      overrideCssButtonClass: standardTextClass + hideBtn.buttonClass,
       data: { routineId }
-    };
+    } as ActionMenuItem;
     const unhideRoutineButton = {
       ...unhideBtn,
+      overrideCssButtonClass: standardTextClass + unhideBtn.buttonClass,
       data: { routineId }
-    };
+    } as ActionMenuItem;
     const markAsFavouriteRoutineButton = {
       ...favouriteBtn,
+      overrideCssButtonClass: standardTextClass + favouriteBtn.buttonClass,
       data: { routineId }
-    };
+    } as ActionMenuItem;
     const unmarkAsFavouriteRoutineButton = {
       ...unmarkFavouriteBtn,
+      overrideCssButtonClass: standardTextClass + unmarkFavouriteBtn.buttonClass,
       data: { routineId }
-    };
+    } as ActionMenuItem;
 
     const routineHistoryBtn = {
       ...historyBtn,
+      overrideCssButtonClass: standardTextClass + historyBtn.buttonClass,
       data: { routineId }
     } as ActionMenuItem;
 
     const actionsArray = [
       {
         ...viewBtn,
+        overrideCssButtonClass: standardTextClass + viewBtn.buttonClass,
         data: { routineId }
       },
       {
         ...startBtn,
+        overrideCssButtonClass: standardTextClass + startBtn.buttonClass,
         data: { routineId }
       },
       {
         ...editBtn,
+        overrideCssButtonClass: standardTextClass + editBtn.buttonClass,
         data: { routineId }
       },
       {
         ...cloneBtn,
+        overrideCssButtonClass: standardTextClass + cloneBtn.buttonClass,
         data: { routineId }
       },
-      routineHistoryBtn
-    ];
+      {
+        ...routineHistoryBtn,
+        overrideCssButtonClass: standardTextClass + routineHistoryBtn.buttonClass,
+      }
+
+    ] as ActionMenuItem[];
 
     if (currentRoutine?.isHidden) {
       actionsArray.push(unhideRoutineButton);
@@ -726,6 +741,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     actionsArray.push(...[
       {
         ...deleteBtn,
+        overrideCssButtonClass: standardTextClass + deleteBtn.buttonClass,
         data: { routineId }
       }
     ] as ActionMenuItem[])

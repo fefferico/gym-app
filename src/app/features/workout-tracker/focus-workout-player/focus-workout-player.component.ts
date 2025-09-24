@@ -4653,7 +4653,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
   * @param field The field to display ('reps' or 'duration' or 'weight).
   * @returns A formatted string like "8-12" or "60+", or an empty string if no range is set.
   */
-  public getSetTargetDisplay(set: ExerciseTargetSetParams, field: 'reps' | 'duration' | 'weight'): string {
+  public getSetTargetDisplay(set: ExerciseTargetSetParams, field: 'reps' | 'duration' | 'weight' | 'distance'): string {
     // if EMOM returns string like "10 @ 5kg"
     if (this.activeSetInfo()?.supersetId && this.activeSetInfo()?.superSetType === 'emom') {
       const weightPart = set.targetWeight ? ` @ ${set.targetWeight}kg` : '';
