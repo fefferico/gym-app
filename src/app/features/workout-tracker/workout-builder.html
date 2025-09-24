@@ -503,7 +503,7 @@
                                         </label>
                                         <textarea [id]="'exerciseNotes-' + exIndex" formControlName="notes" rows="1"
                                             appAutoGrow
-                                            class="mt-0.5 block w-full p-1.5 text-sm border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200"
+                                            class="mt-0.5 mb-2 block w-full p-1.5 text-sm border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200"
                                             [readonly]="isViewMode"></textarea>
                                     </div>
 
@@ -586,18 +586,36 @@
 
                                     <!-- EXPANDED Only EDIT MODE - START -->
                                     <div *ngIf="!isCompactView && isEditableMode()" class="space-y-1">
-                                        <div class="flex justify-between items-center py-1">
-                                            <h4 class="text-m font-semibold text-gray-700 dark:text-gray-300">Sets{{ ' [
-                                                ' +
-                                                exerciseControl?.value?.sets?.length + ' ]'}}</h4>
-                                            <button *ngIf="!isViewMode && !isEmomExercise(exerciseControl)"
-                                                type="button"
-                                                (click)="addSet(exerciseControl, exIndex); $event.stopPropagation()"
-                                                class="inline-flex items-center text-xs bg-blue-200 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium py-0.5 px-1.5 rounded-md hover:enabled:bg-blue-100 dark:hover:bg-blue-900/50">
-                                                <app-icon name="plus-circle"></app-icon>
-                                                ADD SET
-                                            </button>
+                                        <!-- START: Control Panel for Standard Exercises -->
+                                        <div *ngIf="!exerciseControl.get('supersetId')?.value"
+                                            class="py-2 px-1 rounded-lg grid grid-cols-2 gap-x-3 gap-y-2">
+
+                                            <!-- Col 1: Sets Count -->
+                                            <div class="flex items-center gap-x-2">
+                                                <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                                    Sets:
+                                                </span>
+                                                <strong class="text-lg text-gray-900 dark:text-white">{{
+                                                    getSetsFormArray(exerciseControl).length }}</strong>
+                                            </div>
+
+                                            <!-- Col 2: Set +/- Buttons -->
+                                            <div class="flex items-center justify-end gap-x-2">
+                                                <button type="button" (click)="removeLastSet(exerciseControl, $event)"
+                                                    [disabled]="getSetsFormArray(exerciseControl).length <= 1"
+                                                    class="p-1.5 rounded-full bg-red-200 hover:bg-red-300 text-red-700 disabled:opacity-50 flex items-center"
+                                                    aria-label="Remove Last Set">
+                                                    <app-icon name="minus-circle" class="h-6 w-6"></app-icon>
+                                                </button>
+                                                <button type="button"
+                                                    (click)="addSet(exerciseControl, exIndex); $event.stopPropagation()"
+                                                    class="p-1.5 rounded-full bg-green-200 hover:bg-green-300 text-green-700 flex items-center"
+                                                    aria-label="Add Set">
+                                                    <app-icon name="plus-circle" class="h-6 w-6"></app-icon>
+                                                </button>
+                                            </div>
                                         </div>
+                                        <!-- END: Control Panel for Standard Exercises -->
 
                                         <div formArrayName="sets" class="space-y-1.5">
                                             <!-- Set Headers -->
@@ -696,8 +714,7 @@
                                                         class="grid grid-cols-2 sm:grid-cols-3 gap-x-3 gap-y-2 items-end">
                                                         <div class="col-span-full sm:col-span-1">
                                                             <p [ngClass]="setLabelClass(exerciseControl)">
-                                                                #{{setIndex+1}}
-                                                                set</p>
+                                                                #{{setIndex+1}} {{isSuperSet(exIndex) ? 'round':'set'}}</p>
                                                             <label [for]="'setType-exp-' + exIndex + '-' + setIndex"
                                                                 class="block text-s font-medium text-gray-600 dark:text-gray-400">Set
                                                                 Type</label>

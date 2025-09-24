@@ -3294,4 +3294,28 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     this.expandedSetPath.set(null);
     this.isAllExpandedInViewMode.set(false);
   }
+
+  /**
+   * Removes the last set from a standard (non-superset) exercise.
+   * @param exerciseControl The form control of the exercise that triggered the action.
+   * @param event The mouse event to stop propagation.
+   */
+  public removeLastSet(exerciseControl: AbstractControl, event: Event): void {
+    event.stopPropagation();
+    if (this.isViewMode) return;
+
+    const setsArray = this.getSetsFormArray(exerciseControl);
+    // Only remove if there is more than one set
+    if (setsArray.length > 1) {
+      setsArray.removeAt(setsArray.length - 1);
+      this.toastService.info("Set removed.", 2000);
+    }
+
+    // Collapse UI if the currently expanded set was the one removed.
+    const lastIndex = setsArray.length; // The index of the set that was just removed
+    const currentExpanded = this.expandedSetPath();
+    if (currentExpanded && currentExpanded.exerciseIndex === this.getExerciseIndexByControl(exerciseControl) && currentExpanded.setIndex === lastIndex) {
+      this.expandedSetPath.set(null);
+    }
+  }
 }
