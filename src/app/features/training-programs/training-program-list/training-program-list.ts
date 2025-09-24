@@ -67,6 +67,58 @@ type CalendarDisplayMode = 'week' | 'month';
   templateUrl: './training-program-list.html',
   styleUrls: ['./training-program-list.scss'],
   animations: [
+    trigger('slideView', [
+      transition('list => calendar', [
+        style({ position: 'relative' }),
+        query(':enter, :leave', [
+          style({
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%'
+          })
+        ], { optional: true }),
+        query(':enter', [
+          style({ left: '100%' })
+        ], { optional: true }),
+        query(':leave', [
+          style({ left: '0%' })
+        ], { optional: true }),
+        group([
+          query(':leave', [
+            animate('300ms ease-out', style({ left: '-100%' }))
+          ], { optional: true }),
+          query(':enter', [
+            animate('300ms ease-out', style({ left: '0%' }))
+          ], { optional: true })
+        ])
+      ]),
+      transition('calendar => list', [
+        style({ position: 'relative' }),
+        query(':enter, :leave', [
+          style({
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%'
+          })
+        ], { optional: true }),
+        query(':enter', [
+          style({ left: '-100%' })
+        ], { optional: true }),
+        query(':leave', [
+          style({ left: '0%' })
+        ], { optional: true }),
+        group([
+          query(':leave', [
+            animate('300ms ease-out', style({ left: '100%' }))
+          ], { optional: true }),
+          query(':enter', [
+            animate('300ms ease-out', style({ left: '0%' }))
+          ], { optional: true })
+        ])
+      ])
+    ]),
     trigger('fabSlideUp', [
       transition(':enter', [
         style({ opacity: 0, transform: 'translateY(200%)' }),
@@ -345,7 +397,31 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
     });
   }
 
-  private setupModeSwipe(modeSwipeElement: HTMLElement): void { }
+private setupModeSwipe(modeSwipeElement: HTMLElement): void {
+    if (isPlatformBrowser(this.platformId) && modeSwipeElement) {
+      this.ngZone.runOutsideAngular(() => {
+        this.hammerInstanceMode = new Hammer(modeSwipeElement);
+
+        // Listen for swipe left to go to the Calendar view
+        this.hammerInstanceMode.on('swipeleft', () => {
+          this.ngZone.run(() => {
+            if (this.currentView() === 'list') {
+              this.setView('calendar');
+            }
+          });
+        });
+
+        // Listen for swipe right to go to the List view
+        this.hammerInstanceMode.on('swiperight', () => {
+          this.ngZone.run(() => {
+            if (this.currentView() === 'calendar') {
+              this.setView('list');
+            }
+          });
+        });
+      });
+    }
+  }
 
   private populateFilterOptions(): void {
     const programs = this.allProgramsForList();
@@ -1099,6 +1175,13 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
+    // Clean up HammerJS instances to prevent memory leaks
+    if (this.hammerInstanceCalendar) {
+      this.hammerInstanceCalendar.destroy();
+    }
+    if (this.hammerInstanceMode) {
+      this.hammerInstanceMode.destroy();
+    }
   }
 
   showBackToTopButton = signal<boolean>(false);

@@ -80,6 +80,58 @@ type EnrichedHistoryListItem = HistoryListItem & {
   styleUrl: './history-list.scss',
   providers: [DecimalPipe],
   animations: [
+    trigger('slideView', [
+      transition('list => calendar', [
+        style({ position: 'relative' }),
+        query(':enter, :leave', [
+          style({
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%'
+          })
+        ], { optional: true }),
+        query(':enter', [
+          style({ left: '100%' })
+        ], { optional: true }),
+        query(':leave', [
+          style({ left: '0%' })
+        ], { optional: true }),
+        group([
+          query(':leave', [
+            animate('300ms ease-out', style({ left: '-100%' }))
+          ], { optional: true }),
+          query(':enter', [
+            animate('300ms ease-out', style({ left: '0%' }))
+          ], { optional: true })
+        ])
+      ]),
+      transition('calendar => list', [
+        style({ position: 'relative' }),
+        query(':enter, :leave', [
+          style({
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%'
+          })
+        ], { optional: true }),
+        query(':enter', [
+          style({ left: '-100%' })
+        ], { optional: true }),
+        query(':leave', [
+          style({ left: '0%' })
+        ], { optional: true }),
+        group([
+          query(':leave', [
+            animate('300ms ease-out', style({ left: '100%' }))
+          ], { optional: true }),
+          query(':enter', [
+            animate('300ms ease-out', style({ left: '0%' }))
+          ], { optional: true })
+        ])
+      ])
+    ]),
     trigger('fabSlideUp', [
       transition(':enter', [
         style({ opacity: 0, transform: 'translateY(100%)' }),
@@ -562,6 +614,7 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     // HammerJS setup is handled by @ViewChild setter
+    this.setupSwipeGestures();
   }
 
   setView(view: HistoryListView): void {
@@ -693,6 +746,9 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.workoutLogsSubscription?.unsubscribe();
+    if (this.hammerInstance) {
+      this.hammerInstance.destroy();
+    }
   }
 
   logPastWorkout(): void {
@@ -1036,6 +1092,33 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
   private loadNextCalendarMonth(): void {
     // Load one more month, starting from the last loaded month
     this.generateCalendarMonths(this.currentCalendarDate, 1);
+  }
+
+  @ViewChild('swipeContainer') swipeContainer: ElementRef | undefined;
+  private hammerInstance: HammerManager | undefined;
+
+  private setupSwipeGestures(): void {
+    if (isPlatformBrowser(this.platformId) && this.swipeContainer) {
+      this.ngZone.runOutsideAngular(() => {
+        this.hammerInstance = new Hammer(this.swipeContainer!.nativeElement);
+
+        this.hammerInstance.on('swipeleft', () => {
+          this.ngZone.run(() => {
+            if (this.currentHistoryView() === 'list') {
+              this.setView('calendar');
+            }
+          });
+        });
+
+        this.hammerInstance.on('swiperight', () => {
+          this.ngZone.run(() => {
+            if (this.currentHistoryView() === 'calendar') {
+              this.setView('list');
+            }
+          });
+        });
+      });
+    }
   }
 
 }

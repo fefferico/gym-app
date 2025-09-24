@@ -27,8 +27,8 @@
     </button>
   </div>
 
-  <div class="relative min-h-[400px]">
-    <div [ngSwitch]="currentHistoryView()">
+<div class="relative min-h-[400px] overflow-hidden" #swipeContainer>
+    <div [@slideView]="currentHistoryView()" [ngSwitch]="currentHistoryView()">
       <!-- LIST VIEW -->
       <div *ngSwitchCase="'list'">
         <div class="overflow-hidden transition-all duration-500 ease-in-out rounded-md"
