@@ -15,15 +15,15 @@
         <!-- Action Buttons Group -->
         <div class="flex items-center space-x-2 flex-shrink-0">
             <!-- Wrapper for "More Actions" button and its dropdown -->
-            <div *ngIf="routine() as log" class="">
-                <div class="relative">
-                    <button (click)="toggleActions(log.id, $event)"
+            <div *ngIf="routine() as routine" class="">
+                <div *ngIf="routine.id && !isNewMode" class="relative">
+                    <button (click)="toggleActions(routine.id, $event)"
                         class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center">
                         <app-icon name="menu-action" class="h-10 w-10"></app-icon>
                     </button>
-                    <app-action-menu *ngIf="areActionsVisible(log.id)" displayMode="dropdown"
-                        [items]="getRoutineDropdownActionItems(log.id, 'dropdown')"
-                        [isVisible]="areActionsVisible(log.id)" (itemClick)="handleActionMenuItemClick($event)"
+                    <app-action-menu *ngIf="areActionsVisible(routine.id)" displayMode="dropdown"
+                        [items]="getRoutineDropdownActionItems(routine.id, 'dropdown')"
+                        [isVisible]="areActionsVisible(routine.id)" (itemClick)="handleActionMenuItemClick($event)"
                         (closeMenu)="onCloseActionMenu()">
                     </app-action-menu>
                 </div>
@@ -247,13 +247,11 @@
 
             <div *ngIf="exercisesFormArray.length>0" cdkDropList [cdkDropListData]="exercisesFormArray.controls"
                 (cdkDropListDropped)="onExerciseDrop($event)" [cdkDropListDisabled]="!isEditableMode"
-                formArrayName="exercises" class="exercise-list-container space-y-4">
+                formArrayName="exercises" class="exercise-list-container">
                 <ng-container *ngFor="let exerciseControl of exercisesFormArray.controls; let exIndex = index;">
-                    <div class="relative group exercise-card-wrapper" (click)="toggleSetExpansion(exIndex,0, $event)"
-                        appClickOutside (clickOutside)="collapseExpandedSet(false,$event)"
-                        [title]="isEditableMode() ? 'Drag to reorder' : ''" [ngClass]="{
-                                        'superset-spacing': isSupersetSpacing(exIndex)
-                                        }">
+                    <div class="relative group exercise-card-wrapper"
+                        [style.zIndex]="isExerciseActionMenuVisible(exIndex) ? 50 : 'auto'"
+                        [ngClass]="getExerciseCardClasses(exerciseControl, exIndex)">
                         <div *ngIf="(isEditableMode()) && selectedExerciseIndicesForSuperset().length >= 2 && exIndex === firstSelectedExerciseIndexForSuperset"
                             class="absolute left-1/2 -translate-x-1/2 z-20" style="top: -1.25rem;">
                             <button *ngIf="!canUngroupSelectedExercises()" type="button"
@@ -271,42 +269,151 @@
                         <div cdkDrag [cdkDragDisabled]="!isEditableMode() || isSetExpanded(exIndex, 0)" appLongPressDrag
                             [longPressEnabled]="isEditableMode() && !isSetExpanded(exIndex, 0)" [longPressDelay]="150"
                             longPressClass="is-long-pressing" [cdkDragData]="exerciseControl" [formGroupName]="exIndex"
-                            [cdkDragStartDelay]="110" class="exercise-item relative transition-all"
-                            [ngClass]="getExerciseCardClasses(exerciseControl, exIndex)">
-                            <div *ngIf="!isSetExpanded(exIndex, 0) && exerciseControl.get('supersetId')?.value && getSetsFormArray(exerciseControl).controls.length > 0 
-                                        && exerciseControl.get('supersetOrder')?.value === 0"
-                                class="px-2 text-md font-medium mt-0.5"
-                                [ngClass]="standarSuperSetOrEmomClass(exerciseControl, false)">
-                                {{ standarSuperSetOrEmomLabel(exerciseControl) }}
-                            </div>
-                            <!-- COMPACT VIEW / HEADER AREA -->
-                            <div class="flex items-center space-x-1 pt-1">
-                                <!-- DRAG HANDLE ICON (Now just a visual cue) -->
-                                <div *ngIf="isEditableMode()"
-                                    class="p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 flex-shrink-0 flex item-center cursor-move rounded-md"
-                                    title="Drag to reorder">
-                                    <app-icon name="reorder"></app-icon>
-                                </div>
+                            [cdkDragStartDelay]="110" class="transition-all"
+                            (click)="toggleSetExpansion(exIndex,0, $event)" appClickOutside
+                            (clickOutside)="collapseExpandedSet(false,$event)"
+                            [title]="isEditableMode() ? 'Drag to reorder' : ''">
 
-                                <!-- CHECKBOX (if applicable) -->
-                                <input *ngIf="(isEditableMode() || isNewMode) && !isViewMode" type="checkbox"
-                                    title="Select the exercise for the Superset" [id]="'superset-select-' + exIndex"
-                                    (change)="toggleExerciseSelectionForSuperset(exIndex, $event)"
-                                    [checked]="selectedExerciseIndicesForSuperset().includes(exIndex)"
-                                    class="h-6 w-6 text-orange-600 border-gray-300 dark:border-gray-600 rounded-md focus:ring-orange-500 flex-shrink-0 disabled:opacity-50"
-                                    [disabled]="isViewMode">
-                                <!-- EXERCISE NAME & SUPERSET INFO / SETS SUMMARY FOR COMPACT -->
-                                <div *ngIf="!shouldShowExpandedExercise(exIndex)" class="flex-grow min-w-0 py-2 px-0">
-                                    <!-- COMPACT: Show SETS SUMMARY if in compact view -->
-                                    <div *ngIf="!shouldShowExpandedExercise(exIndex) && getSetsFormArray(exerciseControl).controls.length > 0"
-                                        class="flex items-center text-s text-gray-500 dark:text-gray-400 mt-0.5 gap-4 pl-2">
-                                        <img [src]="getIconPath(exerciseControl.get('exerciseId')?.value) | async"
-                                            alt="Exercise Icon" class="w-6 h-6 sm:w-8 sm:h-8 object-contain">
-                                        <div class="min-w-0"> <!-- Added min-w-0 for truncation -->
-                                            <div class="flex">
-                                                <h3 class="font-semibold text-gray-800 dark:text-gray-100 truncate"
-                                                    [title]="exerciseControl.get('exerciseName')?.value">
-                                                    {{ exerciseControl.get('exerciseName')?.value }}
+                            <div class="exercise-item-content">
+                                <!-- ... Paste ALL your existing card content here, from the drag handle down to the end of the expanded view ... -->
+
+                                <div *ngIf="!isSetExpanded(exIndex, 0) && exerciseControl.get('supersetId')?.value && getSetsFormArray(exerciseControl).controls.length > 0 
+                                        && exerciseControl.get('supersetOrder')?.value === 0"
+                                    class="px-2 text-md font-medium mt-0.5"
+                                    [ngClass]="standarSuperSetOrEmomClass(exerciseControl, false)">
+                                    {{ standarSuperSetOrEmomLabel(exerciseControl) }}
+                                </div>
+                                <!-- COMPACT VIEW / HEADER AREA -->
+                                <div class="flex items-center space-x-1 pt-1">
+                                    <!-- DRAG HANDLE ICON (Now just a visual cue) -->
+                                    <div *ngIf="isEditableMode()"
+                                        class="p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 flex-shrink-0 flex item-center cursor-move rounded-md"
+                                        title="Drag to reorder">
+                                        <app-icon name="reorder"></app-icon>
+                                    </div>
+
+                                    <!-- CHECKBOX (if applicable) -->
+                                    <input *ngIf="(isEditableMode() || isNewMode) && !isViewMode" type="checkbox"
+                                        title="Select the exercise for the Superset" [id]="'superset-select-' + exIndex"
+                                        (change)="toggleExerciseSelectionForSuperset(exIndex, $event)"
+                                        [checked]="selectedExerciseIndicesForSuperset().includes(exIndex)"
+                                        class="h-6 w-6 text-orange-600 border-gray-300 dark:border-gray-600 rounded-md focus:ring-orange-500 flex-shrink-0 disabled:opacity-50"
+                                        [disabled]="isViewMode">
+                                    <!-- EXERCISE NAME & SUPERSET INFO / SETS SUMMARY FOR COMPACT -->
+                                    <div *ngIf="!shouldShowExpandedExercise(exIndex)"
+                                        class="flex-grow min-w-0 py-2 px-0">
+                                        <!-- COMPACT: Show SETS SUMMARY if in compact view -->
+                                        <div *ngIf="!shouldShowExpandedExercise(exIndex) && getSetsFormArray(exerciseControl).controls.length > 0"
+                                            class="flex items-center text-s text-gray-500 dark:text-gray-400 mt-0.5 gap-4 pl-2">
+                                            <img [src]="getIconPath(exerciseControl.get('exerciseId')?.value) | async"
+                                                alt="Exercise Icon" class="w-6 h-6 sm:w-8 sm:h-8 object-contain">
+                                            <div class="min-w-0"> <!-- Added min-w-0 for truncation -->
+                                                <div class="flex">
+                                                    <h3 class="font-semibold text-gray-800 dark:text-gray-100 truncate"
+                                                        [title]="exerciseControl.get('exerciseName')?.value">
+                                                        {{ exerciseControl.get('exerciseName')?.value }}
+                                                    </h3>
+                                                    <app-icon name="info"
+                                                        class="h-4 w-4 text-gray-400 dark:text-gray-300 cursor-help"
+                                                        *ngIf="exerciseControl.get('exerciseId')?.value" width="20"
+                                                        height="20" viewBox="0 0 20 20"
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        (click)="openModal(exerciseControl.value, $event)"
+                                                        [appTooltip]="exerciseInfoTooltipString"></app-icon>
+                                                </div>
+                                                <div class="text-xs text-gray-500 dark:text-gray-400 truncate">
+                                                    <p
+                                                        *ngIf="exerciseControl?.get('sets')?.value?.length >= 1 && checkIfTimedExercise(exerciseControl) && getSetDurationDisplay(exerciseControl)">
+                                                        Duration (s):
+                                                        {{ getSetDurationDisplay(exerciseControl) }}
+                                                    </p>
+                                                    <!-- Show info about sets only if !isEmomExercise -->
+                                                    <p
+                                                        *ngIf="exerciseControl?.get('sets')?.value && exerciseControl?.get('sets')?.value.length >= 1">
+                                                        {{ !isEmomExercise(exerciseControl) ? 'Sets: ' +
+                                                        exerciseControl?.get('sets')?.value.length : '' }}
+                                                        {{
+                                                        !isExerciseCardioOnlyCtrl(exerciseControl) &&
+                                                        getSetReps(exerciseControl)
+                                                        ? '( Reps: ' + getSetReps(exerciseControl) + ' )'
+                                                        : ''
+                                                        }}
+                                                    </p>
+                                                    <p
+                                                        *ngIf="exerciseControl?.get('sets')?.value && exerciseControl?.get('sets')?.value.length >= 1 && checkIfWeightedExercise(exerciseControl)">
+                                                        Weight
+                                                        ({{unitService.getWeightUnitSuffix()}}):
+                                                        {{getSetWeightsUsed(exerciseControl)}}
+                                                    </p>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- COMPACT: Minimal actions for compact view (e.g., small remove icon) -->
+                                    <div *ngIf="!shouldShowExpandedExercise(exIndex) && !isViewMode"
+                                        class="flex ml-auto pr-2">
+                                        <!-- ml-auto to push to the right -->
+                                        <button type="button"
+                                            (click)="removeExercise(exIndex); $event.stopPropagation()"
+                                            title="Remove Exercise"
+                                            class="flex items-center p-1 hover:text-red-700 dark:hover:text-red-300 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30 disabled:opacity-50 bg-red-500 text-white">
+                                            <app-icon name="trash" class="h-5 w-5"></app-icon>
+                                        </button>
+                                        <ng-container *ngIf="!isSuperSet(exIndex)">
+                                            <button type="button"
+                                                (click)="openSwitchExerciseModal(exIndex)" title="Switch exercise"
+                                                class="mx-1 flex items-center p-1 rounded-full bg-purple-400 hover:bg-purple-600 disabled:opacity-50 text-white">
+                                                <app-icon name="change" class="h-5 w-5"></app-icon>
+                                            </button>
+                                        </ng-container>
+                                    </div>
+                                    <div *ngIf="!isViewMode && shouldShowExpandedExercise(exIndex)"
+                                        class="w-full flex justify-end pr-2 mt-2">
+                                        <button type="button"
+                                            (click)="removeExercise(exIndex)" title="Remove Exercise"
+                                            class="mx-1 flex items-center p-1 rounded-full hover:bg-red-600 disabled:opacity-50 bg-red-500 text-white">
+                                            <app-icon name="trash" class="h-5 w-5"></app-icon>
+                                        </button>
+                                        <ng-container *ngIf="!isSuperSet(exIndex)">
+                                            <button type="button"
+                                                (click)="convertToSingleExerciseEmom(exerciseControl)" title="Make EMOM"
+                                                class="mx-1 flex items-center p-1 rounded-full bg-teal-400 hover:bg-teal-600 disabled:opacity-50 text-white">
+                                                <app-icon name="clock" class="h-5 w-5"></app-icon>
+                                            </button>
+                                            <button type="button"
+                                                (click)="openSwitchExerciseModal(exIndex)" title="Switch exercise"
+                                                class="mx-1 flex items-center p-1 rounded-full bg-purple-400 hover:bg-purple-600 disabled:opacity-50 text-white">
+                                                <app-icon name="change" class="h-5 w-5"></app-icon>
+                                            </button>
+                                        </ng-container>
+                                    </div>
+                                </div>
+                                <!-- EXPANDED CONTENT AREA -->
+                                <div *ngIf="shouldShowExpandedExercise(exIndex)" class="p-2">
+                                    <div
+                                        class="flex flex-col sm:flex-row justify-between items-start pb-2 pt-1 px-1 sm:pt-0 rounded-md bg-gray-100 dark:bg-gray-800">
+                                        <div class="flex-grow">
+                                            <!-- Superset info remains on its own line if visible, which is correct -->
+                                            <span *ngIf="exerciseControl.get('supersetId')?.value"
+                                                class="text-xs font-mono block mb-1"
+                                                [ngClass]="standarSuperSetOrEmomClass(exerciseControl, true)">
+                                                Superset exercise [{{ (exerciseControl.get('supersetOrder')?.value ?? 0)
+                                                + 1
+                                                }} of {{ getSupersetSize(exIndex) }}]
+                                            </span>
+
+                                            <!-- NEW: Flex container to align the icon and the title horizontally -->
+                                            <div class="flex items-center">
+                                                <!-- The Image: Added margin-right for spacing and flex-shrink-0 -->
+                                                <img [src]="getIconPath(exerciseControl.get('exerciseId')?.value) | async"
+                                                    alt="Exercise Icon"
+                                                    class="w-6 h-6 sm:w-8 sm:h-8 object-contain mr-3 flex-shrink-0">
+
+                                                <!-- The Title Text: Now wrapped in its own h3 tag -->
+                                                <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">
+                                                    {{ exerciseControl.get('exerciseName')?.value || 'Select Exercise'
+                                                    }}
                                                 </h3>
                                                 <app-icon name="info"
                                                     class="h-4 w-4 text-gray-400 dark:text-gray-300 cursor-help"
@@ -315,579 +422,506 @@
                                                     (click)="openModal(exerciseControl.value, $event)"
                                                     [appTooltip]="exerciseInfoTooltipString"></app-icon>
                                             </div>
-                                            <div class="text-xs text-gray-500 dark:text-gray-400 truncate">
-                                                <p
-                                                    *ngIf="exerciseControl?.get('sets')?.value?.length >= 1 && checkIfTimedExercise(exerciseControl) && getSetDurationDisplay(exerciseControl)">
-                                                    Duration (s):
-                                                    {{ getSetDurationDisplay(exerciseControl) }}
-                                                </p>
-                                                <!-- Show info about sets only if !isEmomExercise -->
-                                                <p
-                                                    *ngIf="exerciseControl?.get('sets')?.value && exerciseControl?.get('sets')?.value.length >= 1">
-                                                    {{ !isEmomExercise(exerciseControl) ? 'Sets: ' +
-                                                    exerciseControl?.get('sets')?.value.length : '' }}
-                                                    {{
-                                                    !isExerciseCardioOnlyCtrl(exerciseControl) &&
-                                                    getSetReps(exerciseControl)
-                                                    ? '( Reps: ' + getSetReps(exerciseControl) + ' )'
-                                                    : ''
-                                                    }}
-                                                </p>
-                                                <p
-                                                    *ngIf="exerciseControl?.get('sets')?.value && exerciseControl?.get('sets')?.value.length >= 1 && checkIfWeightedExercise(exerciseControl)">
-                                                    Weight
-                                                    ({{unitService.getWeightUnitSuffix()}}):
-                                                    {{getSetWeightsUsed(exerciseControl)}}
-                                                </p>
-                                            </div>
-
                                         </div>
-                                    </div>
-                                </div>
-                                <!-- COMPACT: Minimal actions for compact view (e.g., small remove icon) -->
-                                <div *ngIf="!shouldShowExpandedExercise(exIndex) && !isViewMode"
-                                    class="flex-shrink-0 ml-auto pr-2">
-                                    <!-- ml-auto to push to the right -->
-                                    <button type="button" (click)="removeExercise(exIndex); $event.stopPropagation()"
-                                        title="Remove Exercise"
-                                        class="flex items-center p-1 hover:text-red-700 dark:hover:text-red-300 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30 disabled:opacity-50 bg-red-500 text-white">
-                                        <app-icon name="cancel" class="h-4 w-4"></app-icon>
-                                    </button>
-                                </div>
-                                <div *ngIf="!isViewMode && shouldShowExpandedExercise(exIndex)"
-                                    class="w-full flex justify-end pr-2 mt-2"><button type="button"
-                                        (click)="removeExercise(exIndex)" title="Remove Exercise"
-                                        class="flex items-center p-1 hover:text-red-700 dark:hover:text-red-300 rounded-md hover:bg-red-100 dark:hover:bg-red-900/30 disabled:opacity-50 bg-red-500 text-white">
-                                        <app-icon name="trash" class="h-5 w-5 mr-1"></app-icon>REMOVE
-                                    </button></div>
-                            </div>
-                            <!-- EXPANDED CONTENT AREA -->
-                            <div *ngIf="shouldShowExpandedExercise(exIndex)" class="p-2">
-                                <div
-                                    class="flex flex-col sm:flex-row justify-between items-start pb-2 pt-1 px-1 sm:pt-0 rounded-md bg-gray-100 dark:bg-gray-800">
-                                    <div class="flex-grow">
-                                        <!-- Superset info remains on its own line if visible, which is correct -->
-                                        <span *ngIf="exerciseControl.get('supersetId')?.value"
-                                            class="text-xs font-mono block mb-1"
-                                            [ngClass]="standarSuperSetOrEmomClass(exerciseControl, true)">
-                                            Superset exercise [{{ (exerciseControl.get('supersetOrder')?.value ?? 0) + 1
-                                            }} of {{ getSupersetSize(exIndex) }}]
-                                        </span>
 
-                                        <!-- NEW: Flex container to align the icon and the title horizontally -->
-                                        <div class="flex items-center">
-                                            <!-- The Image: Added margin-right for spacing and flex-shrink-0 -->
-                                            <img [src]="getIconPath(exerciseControl.get('exerciseId')?.value) | async"
-                                                alt="Exercise Icon"
-                                                class="w-6 h-6 sm:w-8 sm:h-8 object-contain mr-3 flex-shrink-0">
+                                        <div
+                                            class="flex flex-col items-end space-y-2 flex-shrink-0 w-full sm:w-auto mt-2 sm:mt-0">
 
-                                            <!-- The Title Text: Now wrapped in its own h3 tag -->
-                                            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">
-                                                {{ exerciseControl.get('exerciseName')?.value || 'Select Exercise' }}
-                                            </h3>
-                                            <app-icon name="info"
-                                                class="h-4 w-4 text-gray-400 dark:text-gray-300 cursor-help"
-                                                *ngIf="exerciseControl.get('exerciseId')?.value" width="20" height="20"
-                                                viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"
-                                                (click)="openModal(exerciseControl.value, $event)"
-                                                [appTooltip]="exerciseInfoTooltipString"></app-icon>
+                                            <!-- +++ START: NEW UNIFIED CONTROL PANEL +++ -->
+                                            <div *ngIf="isEditableMode() && exerciseControl.get('supersetId')?.value && exerciseControl.get('supersetOrder')?.value === 0"
+                                                class="py-2 px-1 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-sm w-full grid grid-cols-2 gap-x-3 gap-y-2">
+
+                                                <!-- Col 1: Round Management -->
+                                                <div class="flex items-center gap-x-2">
+                                                    <span
+                                                        class="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                                        Rounds:
+                                                    </span>
+                                                    <strong class="text-lg text-gray-900 dark:text-white">{{
+                                                        getSetsFormArray(exerciseControl).length }}</strong>
+                                                </div>
+
+                                                <!-- Col 2: Round +/- Buttons -->
+                                                <div class="flex items-center justify-end gap-x-2">
+                                                    <button type="button"
+                                                        (click)="removeRoundFromSuperset(exerciseControl, $event)"
+                                                        [disabled]="getSetsFormArray(exerciseControl).length <= 1"
+                                                        class="p-1.5 rounded-full bg-red-200 hover:bg-red-300 text-red-700 disabled:opacity-50 flex items-center"
+                                                        aria-label="Remove Round">
+                                                        <app-icon name="minus-circle" class="h-6 w-6"></app-icon>
+                                                    </button>
+                                                    <button type="button"
+                                                        (click)="addRoundToSuperset(exerciseControl, $event)"
+                                                        class="p-1.5 rounded-full bg-green-200 hover:bg-green-300 text-green-700 flex items-center"
+                                                        aria-label="Add Round">
+                                                        <app-icon name="plus-circle" class="h-6 w-6"></app-icon>
+                                                    </button>
+                                                </div>
+
+                                                <!-- Col 1 & 2: Divider -->
+                                                <div class="col-span-2 h-px bg-gray-200 dark:bg-gray-700"></div>
+
+                                                <!-- Col 1: Type Label -->
+                                                <div class="flex items-center">
+                                                    <span
+                                                        class="text-sm font-semibold text-gray-700 dark:text-gray-300">Type:</span>
+                                                </div>
+
+                                                <!-- Col 2: Type Value & Change Button -->
+                                                <div class="flex items-center justify-end">
+                                                    <strong class="text-sm"
+                                                        [ngClass]="standarSuperSetOrEmomClass(exerciseControl, true)">
+                                                        {{ (exerciseControl.get('supersetType')?.value || 'standard') |
+                                                        titlecase }}
+                                                    </strong>
+                                                    <button type="button" (click)="changeSupersetType(exerciseControl)"
+                                                        class="ml-2 text-xs font-semibold text-blue-600 hover:underline dark:text-blue-400">
+                                                        (Change)
+                                                    </button>
+                                                </div>
+
+                                                <!-- EMOM Time Input (Full Width) -->
+                                                <div *ngIf="exerciseControl.get('supersetType')?.value === 'emom'"
+                                                    class="col-span-2 flex items-center gap-x-2">
+                                                    <label [for]="'emomTime-' + exIndex"
+                                                        class="text-sm font-semibold text-gray-700 dark:text-gray-300 flex-shrink-0">Time
+                                                        (s):</label>
+                                                    <input type="number" [id]="'emomTime-' + exIndex"
+                                                        formControlName="emomTimeSeconds" min="10"
+                                                        class="w-full p-1 text-m border-gray-300 dark:border-gray-500 rounded-md focus:ring-primary dark:bg-gray-600 dark:text-gray-200 text-right">
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
 
-                                    <div
-                                        class="flex flex-col items-end space-y-2 flex-shrink-0 w-full sm:w-auto mt-2 sm:mt-0">
+                                    <!-- Exercise Notes -->
+                                    <div *ngIf="builderForm.get('notes')?.value || isEditableMode()">
+                                        <label [for]="'exerciseNotes-' + exIndex"
+                                            class="block text-s font-medium text-gray-600 dark:text-gray-400 mb-0.5">
+                                            {{ mode === 'routineBuilder' ? 'Exercise Notes (Optional)' : 'Notes for this
+                                            Logged Exercise (Optional)'}}
+                                        </label>
+                                        <textarea [id]="'exerciseNotes-' + exIndex" formControlName="notes" rows="1"
+                                            appAutoGrow
+                                            class="mt-0.5 block w-full p-1.5 text-sm border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200"
+                                            [readonly]="isViewMode"></textarea>
+                                    </div>
 
-                                        <!-- +++ START: NEW UNIFIED CONTROL PANEL +++ -->
-                                        <div *ngIf="isEditableMode() && exerciseControl.get('supersetId')?.value && exerciseControl.get('supersetOrder')?.value === 0"
-                                            class="py-2 px-1 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-sm w-full grid grid-cols-2 gap-x-3 gap-y-2">
+                                    <!-- Sets Section (Headers, Collapsed Sets, Expanded Set Form) -->
+                                    <!-- EXPANDED Only VIEW MODE - START -->
+                                    <div *ngIf="!isCompactView && isViewMode"
+                                        [ngClass]="getGridColsForExercise(exerciseControl)"
+                                        class="grid gap-x-4 gap-y-2 px-2 py-2 bg-white rounded-md dark:bg-gray-800 text-gray-900 dark:text-white">
 
-                                            <!-- Col 1: Round Management -->
-                                            <div class="flex items-center gap-x-2">
-                                                <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                                                    Rounds:
-                                                </span>
-                                                <strong class="text-lg text-gray-900 dark:text-white">{{
-                                                    getSetsFormArray(exerciseControl).length }}</strong>
-                                            </div>
+                                        <!-- === GRID HEADER === -->
+                                        <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Set
+                                        </div>
+                                        <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Reps
+                                        </div>
 
-                                            <!-- Col 2: Round +/- Buttons -->
-                                            <div class="flex items-center justify-end gap-x-2">
-                                                <button type="button"
-                                                    (click)="removeRoundFromSuperset(exerciseControl, $event)"
-                                                    [disabled]="getSetsFormArray(exerciseControl).length <= 1"
-                                                    class="p-1.5 rounded-full bg-red-200 hover:bg-red-300 text-red-700 disabled:opacity-50 flex items-center"
-                                                    aria-label="Remove Round">
-                                                    <app-icon name="minus-circle" class="h-6 w-6"></app-icon>
-                                                </button>
-                                                <button type="button"
-                                                    (click)="addRoundToSuperset(exerciseControl, $event)"
-                                                    class="p-1.5 rounded-full bg-green-200 hover:bg-green-300 text-green-700 flex items-center"
-                                                    aria-label="Add Round">
-                                                    <app-icon name="plus-circle" class="h-6 w-6"></app-icon>
-                                                </button>
-                                            </div>
+                                        <!-- The pipe is used here for the *ngIf condition -->
+                                        <div *ngIf="exerciseControl.getRawValue() | isWeighted"
+                                            class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">
+                                            Weight
+                                        </div>
 
-                                            <!-- Col 1 & 2: Divider -->
-                                            <div class="col-span-2 h-px bg-gray-200 dark:bg-gray-700"></div>
+                                        <div *ngIf="!isEmom(exerciseControl)"
+                                            class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Time
+                                        </div>
+                                        <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Rest
+                                        </div>
+                                        <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Notes
+                                        </div>
 
-                                            <!-- Col 1: Type Label -->
-                                            <div class="flex items-center">
-                                                <span
-                                                    class="text-sm font-semibold text-gray-700 dark:text-gray-300">Type:</span>
-                                            </div>
 
-                                            <!-- Col 2: Type Value & Change Button -->
-                                            <div class="flex items-center justify-end">
-                                                <strong class="text-sm"
-                                                    [ngClass]="standarSuperSetOrEmomClass(exerciseControl, true)">
-                                                    {{ (exerciseControl.get('supersetType')?.value || 'standard') |
-                                                    titlecase }}
+                                        <!-- === GRID ROWS (LOOP) === -->
+                                        <ng-container
+                                            *ngFor="let set of exerciseControl.get('sets')?.value; let i = index; let last = last">
+
+                                            <!-- Row data aligns perfectly -->
+                                            <div class="font-medium flex items-center">{{ i + 1 }}</div>
+                                            <div class="flex items-center ">
+                                                <strong>
+                                                    {{ getSetTargetDisplay(set, 'reps') || '-' }}
                                                 </strong>
-                                                <button type="button" (click)="changeSupersetType(exerciseControl)"
-                                                    class="ml-2 text-xs font-semibold text-blue-600 hover:underline dark:text-blue-400">
-                                                    (Change)
-                                                </button>
                                             </div>
 
-                                            <!-- EMOM Time Input (Full Width) -->
-                                            <div *ngIf="exerciseControl.get('supersetType')?.value === 'emom'"
-                                                class="col-span-2 flex items-center gap-x-2">
-                                                <label [for]="'emomTime-' + exIndex"
-                                                    class="text-sm font-semibold text-gray-700 dark:text-gray-300 flex-shrink-0">Time
-                                                    (s):</label>
-                                                <input type="number" [id]="'emomTime-' + exIndex"
-                                                    formControlName="emomTimeSeconds" min="10"
-                                                    class="w-full p-1 text-m border-gray-300 dark:border-gray-500 rounded-md focus:ring-primary dark:bg-gray-600 dark:text-gray-200 text-right">
+                                            <!-- The pipe is used a final time for the data cell -->
+                                            <div class="flex items-center"
+                                                *ngIf="exerciseControl.getRawValue() | isWeighted">
+                                                <strong>
+                                                    {{ set.targetWeight != null ? (set.targetWeight + ' ' +
+                                                    unitService.getWeightUnitSuffix()) : '-' }}
+                                                </strong>
+
                                             </div>
 
-                                        </div>
-                                        <!-- +++ END: NEW UNIFIED CONTROL PANEL +++ -->
+                                            <div *ngIf="!isEmom(exerciseControl)" class="flex items-center">
+                                                <strong>
+                                                    {{ set.targetDuration || '-' }}
+                                                </strong>
+                                            </div>
+                                            <div class="flex items-center">
+                                                <strong>
+                                                    {{ set.restAfterSet || '-' }}
+                                                </strong>
+                                            </div>
+                                            <div class="cursor-pointer">
+                                                <svg (click)="showNotesModal(set.notes)" *ngIf="set.notes"
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    class="h-8 w-8 text-gray-500 dark:text-white" fill="none"
+                                                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                                                </svg>
+                                                <span class="text-gray-500 dark:text-white" *ngIf="!set.notes">-</span>
+                                            </div>
+                                            <div *ngIf="!last" class="col-span-full h-px bg-gray-200 dark:bg-gray-700">
+                                            </div>
 
+                                        </ng-container>
 
-                                        <!-- Action Button / Menu (For ALL exercise types) -->
-                                        <div class="relative w-full flex justify-end" *ngIf="isEditableMode()">
-                                            <button type="button" (click)="toggleExerciseActionMenu(exIndex, $event)"
-                                                class="flex items-center gap-x-1 bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-200 font-semibold py-1.5 px-3 rounded-md text-xs mr-1">
-                                                <app-icon name="menu-action" class="h-4 w-4"></app-icon>
-                                                Actions
+                                    </div>
+                                    <!-- EXPANDED Only VIEW MODE - END -->
+
+                                    <!-- EXPANDED Only EDIT MODE - START -->
+                                    <div *ngIf="!isCompactView && isEditableMode()" class="space-y-1">
+                                        <div class="flex justify-between items-center py-1">
+                                            <h4 class="text-m font-semibold text-gray-700 dark:text-gray-300">Sets{{ ' [
+                                                ' +
+                                                exerciseControl?.value?.sets?.length + ' ]'}}</h4>
+                                            <button *ngIf="!isViewMode && !isEmomExercise(exerciseControl)"
+                                                type="button"
+                                                (click)="addSet(exerciseControl, exIndex); $event.stopPropagation()"
+                                                class="inline-flex items-center text-xs bg-blue-200 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium py-0.5 px-1.5 rounded-md hover:enabled:bg-blue-100 dark:hover:bg-blue-900/50">
+                                                <app-icon name="plus-circle"></app-icon>
+                                                ADD SET
                                             </button>
-                                            <app-action-menu *ngIf="isExerciseActionMenuVisible(exIndex)"
-                                                [items]="getExerciseActionMenuItems(exerciseControl)"
-                                                displayMode="dropdown"
-                                                [isVisible]="isExerciseActionMenuVisible(exIndex)"
-                                                (itemClick)="handleExerciseActionMenuItemClick($event, exIndex, exerciseControl)"
-                                                (closeMenu)="closeExerciseActionMenu()">
-                                            </app-action-menu>
                                         </div>
 
-                                    </div>
-                                </div>
+                                        <div formArrayName="sets" class="space-y-1.5">
+                                            <!-- Set Headers -->
+                                            <div *ngIf="getSetsFormArray(exerciseControl).controls.length > 0 && (expandedSetPath()?.exerciseIndex !== exIndex)"
+                                                class="grid grid-cols-12 gap-x-1 py-1 px-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 border-b dark:border-gray-600">
+                                                <div class="col-span-1 text-center">#</div>
+                                                <div class="col-span-2 text-center truncate">Type</div>
+                                                <div class="col-span-2 text-center">{{ mode === 'manualLogEntry' ? 'Reps
+                                                    Ach.' : 'Reps' }}</div>
+                                                <div class="col-span-2 text-center truncate">{{ mode ===
+                                                    'manualLogEntry' ?
+                                                    'Wt Used' : 'Weight' }} ({{unitService.getWeightUnitSuffix()}})
+                                                </div>
+                                                <div class="col-span-1 text-center">{{ mode === 'manualLogEntry' ? 'Time
+                                                    Perf.' : 'Time' }}</div>
+                                                <div class="col-span-2 text-center">{{ mode === 'routineBuilder' ?
+                                                    'Rest' :
+                                                    'Notes'}}</div>
+                                                <div class="col-span-1 text-center">{{ mode === 'routineBuilder' ?
+                                                    'Tempo' :
+                                                    ''}}</div>
+                                                <div class="col-span-1"></div> <!-- Action column -->
+                                            </div>
 
-                                <!-- Exercise Notes -->
-                                <div *ngIf="builderForm.get('notes')?.value || isEditableMode()">
-                                    <label [for]="'exerciseNotes-' + exIndex"
-                                        class="block text-s font-medium text-gray-600 dark:text-gray-400 mb-0.5">
-                                        {{ mode === 'routineBuilder' ? 'Exercise Notes (Optional)' : 'Notes for this
-                                        Logged Exercise (Optional)'}}
-                                    </label>
-                                    <textarea [id]="'exerciseNotes-' + exIndex" formControlName="notes" rows="1"
-                                        appAutoGrow
-                                        class="mt-0.5 block w-full p-1.5 text-sm border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200"
-                                        [readonly]="isViewMode"></textarea>
-                                </div>
-
-                                <!-- Sets Section (Headers, Collapsed Sets, Expanded Set Form) -->
-                                <!-- EXPANDED Only VIEW MODE - START -->
-                                <div *ngIf="!isCompactView && isViewMode"
-                                    [ngClass]="getGridColsForExercise(exerciseControl)"
-                                    class="grid gap-x-4 gap-y-2 px-2 py-2 bg-white rounded-md dark:bg-gray-800 text-gray-900 dark:text-white">
-
-                                    <!-- === GRID HEADER === -->
-                                    <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Set</div>
-                                    <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Reps</div>
-
-                                    <!-- The pipe is used here for the *ngIf condition -->
-                                    <div *ngIf="exerciseControl.getRawValue() | isWeighted"
-                                        class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">
-                                        Weight
-                                    </div>
-
-                                    <div *ngIf="!isEmom(exerciseControl)"
-                                        class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Time</div>
-                                    <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Rest</div>
-                                    <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Notes
-                                    </div>
-
-
-                                    <!-- === GRID ROWS (LOOP) === -->
-                                    <ng-container
-                                        *ngFor="let set of exerciseControl.get('sets')?.value; let i = index; let last = last">
-
-                                        <!-- Row data aligns perfectly -->
-                                        <div class="font-medium flex items-center">{{ i + 1 }}</div>
-                                        <div class="flex items-center ">
-                                            <strong>
-                                                {{ getSetTargetDisplay(set, 'reps') || '-' }}
-                                            </strong>
-                                        </div>
-
-                                        <!-- The pipe is used a final time for the data cell -->
-                                        <div class="flex items-center"
-                                            *ngIf="exerciseControl.getRawValue() | isWeighted">
-                                            <strong>
-                                                {{ set.targetWeight != null ? (set.targetWeight + ' ' +
-                                                unitService.getWeightUnitSuffix()) : '-' }}
-                                            </strong>
-
-                                        </div>
-
-                                        <div *ngIf="!isEmom(exerciseControl)" class="flex items-center">
-                                            <strong>
-                                                {{ set.targetDuration || '-' }}
-                                            </strong>
-                                        </div>
-                                        <div class="flex items-center">
-                                            <strong>
-                                                {{ set.restAfterSet || '-' }}
-                                            </strong>
-                                        </div>
-                                        <div class="cursor-pointer">
-                                            <svg (click)="showNotesModal(set.notes)" *ngIf="set.notes"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                class="h-8 w-8 text-gray-500 dark:text-white" fill="none"
-                                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                                            </svg>
-                                            <span class="text-gray-500 dark:text-white" *ngIf="!set.notes">-</span>
-                                        </div>
-                                        <div *ngIf="!last" class="col-span-full h-px bg-gray-200 dark:bg-gray-700">
-                                        </div>
-
-                                    </ng-container>
-
-                                </div>
-                                <!-- EXPANDED Only VIEW MODE - END -->
-
-                                <!-- EXPANDED Only EDIT MODE - START -->
-                                <div *ngIf="!isCompactView && isEditableMode()" class="space-y-1">
-                                    <div class="flex justify-between items-center py-1">
-                                        <h4 class="text-m font-semibold text-gray-700 dark:text-gray-300">Sets{{ ' [ ' +
-                                            exerciseControl?.value?.sets?.length + ' ]'}}</h4>
-                                        <button *ngIf="!isViewMode && !isEmomExercise(exerciseControl)" type="button"
-                                            (click)="addSet(exerciseControl, exIndex); $event.stopPropagation()"
-                                            class="inline-flex items-center text-xs bg-blue-200 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium py-0.5 px-1.5 rounded-md hover:enabled:bg-blue-100 dark:hover:bg-blue-900/50">
-                                            <app-icon name="plus-circle"></app-icon>
-                                            ADD SET
-                                        </button>
-                                    </div>
-
-                                    <div formArrayName="sets" class="space-y-1.5">
-                                        <!-- Set Headers -->
-                                        <div *ngIf="getSetsFormArray(exerciseControl).controls.length > 0 && (expandedSetPath()?.exerciseIndex !== exIndex)"
-                                            class="grid grid-cols-12 gap-x-1 py-1 px-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 border-b dark:border-gray-600">
-                                            <div class="col-span-1 text-center">#</div>
-                                            <div class="col-span-2 text-center truncate">Type</div>
-                                            <div class="col-span-2 text-center">{{ mode === 'manualLogEntry' ? 'Reps
-                                                Ach.' : 'Reps' }}</div>
-                                            <div class="col-span-2 text-center truncate">{{ mode === 'manualLogEntry' ?
-                                                'Wt Used' : 'Weight' }} ({{unitService.getWeightUnitSuffix()}})</div>
-                                            <div class="col-span-1 text-center">{{ mode === 'manualLogEntry' ? 'Time
-                                                Perf.' : 'Time' }}</div>
-                                            <div class="col-span-2 text-center">{{ mode === 'routineBuilder' ? 'Rest' :
-                                                'Notes'}}</div>
-                                            <div class="col-span-1 text-center">{{ mode === 'routineBuilder' ? 'Tempo' :
-                                                ''}}</div>
-                                            <div class="col-span-1"></div> <!-- Action column -->
-                                        </div>
-
-                                        <!-- Loop through sets for collapsed or expanded display -->
-                                        <div *ngFor="let setControl of getSetsFormArray(exerciseControl).controls; let setIndex = index"
-                                            [formGroupName]="setIndex">
-                                            <!-- Collapsed Set View -->
-                                            <div *ngIf="!isSetExpanded(exIndex, setIndex)"
-                                                (click)="toggleSetExpansion(exIndex, setIndex, $event)"
-                                                class="grid grid-cols-12 gap-x-1 items-center py-1.5 px-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800/60 cursor-pointer border dark:border-gray-700 dark:text-white"
-                                                [ngClass]="{
+                                            <!-- Loop through sets for collapsed or expanded display -->
+                                            <div *ngFor="let setControl of getSetsFormArray(exerciseControl).controls; let setIndex = index"
+                                                [formGroupName]="setIndex">
+                                                <!-- Collapsed Set View -->
+                                                <div *ngIf="!isSetExpanded(exIndex, setIndex)"
+                                                    (click)="toggleSetExpansion(exIndex, setIndex, $event)"
+                                                    class="grid grid-cols-12 gap-x-1 items-center py-1.5 px-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800/60 cursor-pointer border dark:border-gray-700 dark:text-white"
+                                                    [ngClass]="{
                                                     'bg-gray-50 dark:bg-gray-700/50 text-gray-800 dark:text-gray-200': !['warmup', 'dropset', 'failure', 'amrap', 'myorep', 'restpause'].includes(setControl.get('type')?.value ?? '') && !isViewMode,
                                                     'cursor-default': isViewMode
                                                 } ">
-                                                <div class="col-span-1 text-s text-center font-medium">{{ setIndex + 1
-                                                    }}</div>
-                                                <div class="col-span-2 text-xs text-center truncate"
-                                                    [title]="setControl.get('type')?.value | titlecase">{{
-                                                    (setControl.get('type')?.value | titlecase) || 'Standard' }}</div>
-                                                <div class="col-span-2 text-s text-center">
-                                                    <ng-container *ngIf="mode === 'routineBuilder'">{{
-                                                        getSetDisplayValue(setControl, 'reps') }}</ng-container>
-                                                    <ng-container *ngIf="mode === 'manualLogEntry'">{{
-                                                        setControl.get('repsAchieved')?.value ?? '-' }}</ng-container>
+                                                    <div class="col-span-1 text-s text-center font-medium">{{ setIndex +
+                                                        1
+                                                        }}</div>
+                                                    <div class="col-span-2 text-xs text-center truncate"
+                                                        [title]="setControl.get('type')?.value | titlecase">{{
+                                                        (setControl.get('type')?.value | titlecase) || 'Standard' }}
+                                                    </div>
+                                                    <div class="col-span-2 text-s text-center">
+                                                        <ng-container *ngIf="mode === 'routineBuilder'">{{
+                                                            getSetDisplayValue(setControl, 'reps') }}</ng-container>
+                                                        <ng-container *ngIf="mode === 'manualLogEntry'">{{
+                                                            setControl.get('repsAchieved')?.value ?? '-'
+                                                            }}</ng-container>
+                                                    </div>
+                                                    <div class="col-span-2 text-s text-center">{{ (setControl.get(mode
+                                                        ===
+                                                        'manualLogEntry' ? 'weightUsed' : 'targetWeight')?.value) |
+                                                        weightUnit:'1.0-2' }}</div>
+                                                    <div class="col-span-1 text-s text-center">
+                                                        <ng-container *ngIf="mode === 'routineBuilder'">{{
+                                                            getSetDisplayValue(setControl, 'duration') &&
+                                                            getSetDisplayValue(setControl, 'duration') !== '-' ?
+                                                            (getSetDisplayValue(setControl, 'duration') + 's') : '-'
+                                                            }}</ng-container>
+                                                        <ng-container *ngIf="mode === 'manualLogEntry'">{{
+                                                            (setControl.get('durationPerformed')?.value) ?
+                                                            (setControl.get('durationPerformed')?.value + 's') : '-'
+                                                            }}</ng-container>
+                                                    </div>
+                                                    <div class="col-span-2 text-s text-center truncate"
+                                                        [title]="mode === 'routineBuilder' ? (setControl.get('restAfterSet')?.value + 's') : setControl.get('notes')?.value">
+                                                        <ng-container *ngIf="mode === 'routineBuilder'">{{
+                                                            setControl.get('restAfterSet')?.value }}s</ng-container>
+                                                        <ng-container *ngIf="mode === 'manualLogEntry'">{{
+                                                            setControl.get('notes')?.value || '-' }}</ng-container>
+                                                    </div>
+                                                    <div class="col-span-1 text-s text-center truncate"
+                                                        [title]="setControl.get('tempo')?.value">
+                                                        <ng-container *ngIf="mode === 'routineBuilder'">{{
+                                                            setControl.get('tempo')?.value || '-' }}</ng-container>
+                                                    </div>
+                                                    <div *ngIf="!isViewMode"
+                                                        class="col-span-1 flex items-center justify-end">
+                                                        <button type="button"
+                                                            (click)="removeSet(exerciseControl, exIndex, setIndex); $event.stopPropagation()"
+                                                            [title]="isEmomExercise(exerciseControl) ? 'Remove Round' : 'Remove Set'"
+                                                            class="flex items-center text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 p-0.5 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30 disabled:opacity-50">
+                                                            <app-icon name="cancel" class="h-4 w-4"></app-icon>
+                                                        </button>
+                                                    </div>
+                                                    <div *ngIf="isViewMode" class="col-span-1"></div>
                                                 </div>
-                                                <div class="col-span-2 text-s text-center">{{ (setControl.get(mode ===
-                                                    'manualLogEntry' ? 'weightUsed' : 'targetWeight')?.value) |
-                                                    weightUnit:'1.0-2' }}</div>
-                                                <div class="col-span-1 text-s text-center">
-                                                    <ng-container *ngIf="mode === 'routineBuilder'">{{
-                                                        getSetDisplayValue(setControl, 'duration') &&
-                                                        getSetDisplayValue(setControl, 'duration') !== '-' ?
-                                                        (getSetDisplayValue(setControl, 'duration') + 's') : '-'
-                                                        }}</ng-container>
-                                                    <ng-container *ngIf="mode === 'manualLogEntry'">{{
-                                                        (setControl.get('durationPerformed')?.value) ?
-                                                        (setControl.get('durationPerformed')?.value + 's') : '-'
-                                                        }}</ng-container>
-                                                </div>
-                                                <div class="col-span-2 text-s text-center truncate"
-                                                    [title]="mode === 'routineBuilder' ? (setControl.get('restAfterSet')?.value + 's') : setControl.get('notes')?.value">
-                                                    <ng-container *ngIf="mode === 'routineBuilder'">{{
-                                                        setControl.get('restAfterSet')?.value }}s</ng-container>
-                                                    <ng-container *ngIf="mode === 'manualLogEntry'">{{
-                                                        setControl.get('notes')?.value || '-' }}</ng-container>
-                                                </div>
-                                                <div class="col-span-1 text-s text-center truncate"
-                                                    [title]="setControl.get('tempo')?.value">
-                                                    <ng-container *ngIf="mode === 'routineBuilder'">{{
-                                                        setControl.get('tempo')?.value || '-' }}</ng-container>
-                                                </div>
-                                                <div *ngIf="!isViewMode"
-                                                    class="col-span-1 flex items-center justify-end">
-                                                    <button type="button"
-                                                        (click)="removeSet(exerciseControl, exIndex, setIndex); $event.stopPropagation()"
-                                                        [title]="isEmomExercise(exerciseControl) ? 'Remove Round' : 'Remove Set'"
-                                                        class="flex items-center text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 p-0.5 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30 disabled:opacity-50">
-                                                        <app-icon name="cancel" class="h-4 w-4"></app-icon>
-                                                    </button>
-                                                </div>
-                                                <div *ngIf="isViewMode" class="col-span-1"></div>
-                                            </div>
 
-                                            <!-- Expanded Set Form -->
-                                            <div #expandedSetElement *ngIf="isSetExpanded(exIndex, setIndex)"
-                                                class="p-1 rounded-md shadow-inner space-y-2 border-yellow-400 ring-2 ring-yellow-400 dark:ring-yellow-500 z-10"
-                                                [ngClass]="{
+                                                <!-- Expanded Set Form -->
+                                                <div #expandedSetElement *ngIf="isSetExpanded(exIndex, setIndex)"
+                                                    class="p-1 rounded-md shadow-inner space-y-2 border-yellow-400 ring-2 ring-yellow-400 dark:ring-yellow-500 z-10"
+                                                    [ngClass]="{
                                                     'bg-gray-100 dark:bg-gray-800/50': !['warmup', 'dropset', 'failure', 'amrap', 'myorep', 'restpause'].includes(setControl.get('type')?.value ?? '')
                                                 }">
-                                                <div class="grid grid-cols-2 sm:grid-cols-3 gap-x-3 gap-y-2 items-end">
-                                                    <div class="col-span-full sm:col-span-1">
-                                                        <p [ngClass]="setLabelClass(exerciseControl)"> #{{setIndex+1}}
-                                                            set</p>
-                                                        <label [for]="'setType-exp-' + exIndex + '-' + setIndex"
-                                                            class="block text-s font-medium text-gray-600 dark:text-gray-400">Set
-                                                            Type</label>
-                                                        <select [id]="'setType-exp-' + exIndex + '-' + setIndex"
-                                                            formControlName="type" [disabled]="isViewMode"
-                                                            class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
-                                                            <option *ngFor="let typeOpt of availableSetTypes"
-                                                                [value]="typeOpt.value">{{ typeOpt.label }}</option>
-                                                        </select>
-                                                    </div>
-                                                    <!-- Reps Input: Conditional for ranges vs single value -->
-                                                    <div *ngIf="!isExerciseCardioOnlyCtrl(exerciseControl)">
-                                                        <label [for]="'reps-exp-' + exIndex + '-' + setIndex"
-                                                            class="flex items-center justify-between text-s font-medium text-gray-600 dark:text-gray-400">
-                                                            <span>Reps {{ mode === 'manualLogEntry' ? '(Achieved)' :
-                                                                ''}}</span>
-                                                            <!-- SWITCH BUTTON -->
-                                                            <button *ngIf="mode === 'routineBuilder'" type="button"
-                                                                (click)="toggleRepsMode(setControl,$event)"
-                                                                title="Toggle between single value and range"
-                                                                class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold p-0.5 rounded">
-                                                                {{ isRangeMode(setControl, 'reps') ? 'Use Single' : 'Use
-                                                                Range' }}
-                                                            </button>
-                                                        </label>
-                                                        <!-- ROUTINE BUILDER - REPS -->
-                                                        <ng-container *ngIf="mode === 'routineBuilder'">
-                                                            <!-- Range Inputs -->
-                                                            <div *ngIf="isRangeMode(setControl, 'reps')" class="mt-0.5">
-                                                                <div class="flex items-center space-x-1.5">
-                                                                    <input type="number" formControlName="targetRepsMin"
-                                                                        min="0" placeholder="Min"
-                                                                        [readonly]="isViewMode"
-                                                                        class="w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
-                                                                    <span
-                                                                        class="text-gray-500 dark:text-gray-400 font-bold">-</span>
-                                                                    <input type="number" formControlName="targetRepsMax"
-                                                                        min="0" placeholder="Max"
-                                                                        [readonly]="isViewMode"
-                                                                        class="w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed"
-                                                                        [ngClass]="{'border-red-500 dark:border-red-400': setControl.get('targetRepsMax')?.hasError('min')}">
-                                                                </div>
-                                                                <div *ngIf="setControl.get('targetRepsMax')?.hasError('min') && setControl.get('targetRepsMax')?.touched"
-                                                                    class="text-red-500 dark:text-red-400 text-xs mt-1">
-                                                                    Max must be greater than or equal to min.
-                                                                </div>
-                                                            </div>
-                                                            <!-- Single Value Input -->
-                                                            <input *ngIf="!isRangeMode(setControl, 'reps')"
-                                                                type="number" formControlName="targetReps" min="0"
-                                                                placeholder="Reps" [readonly]="isViewMode"
+                                                    <div
+                                                        class="grid grid-cols-2 sm:grid-cols-3 gap-x-3 gap-y-2 items-end">
+                                                        <div class="col-span-full sm:col-span-1">
+                                                            <p [ngClass]="setLabelClass(exerciseControl)">
+                                                                #{{setIndex+1}}
+                                                                set</p>
+                                                            <label [for]="'setType-exp-' + exIndex + '-' + setIndex"
+                                                                class="block text-s font-medium text-gray-600 dark:text-gray-400">Set
+                                                                Type</label>
+                                                            <select [id]="'setType-exp-' + exIndex + '-' + setIndex"
+                                                                formControlName="type" [disabled]="isViewMode"
                                                                 class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
-                                                        </ng-container>
-                                                        <!-- LOG ENTRY - SINGLE REPS ACHIEVED -->
-                                                        <input *ngIf="mode === 'manualLogEntry'" type="number"
-                                                            [id]="'reps-exp-' + exIndex + '-' + setIndex"
-                                                            formControlName="repsAchieved" placeholder="Reps"
-                                                            [readonly]="isViewMode"
-                                                            class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
-                                                    </div>
-
-                                                    <!-- Weight Input -->
-                                                    <div *ngIf="!isExerciseCardioOnlyCtrl(exerciseControl)">
-                                                        <label [for]="'weight-exp-' + exIndex + '-' + setIndex"
-                                                            class="flex items-center justify-between text-s font-medium text-gray-600 dark:text-gray-400">
-                                                            <span>Weight {{ mode === 'manualLogEntry' ? '(Used)' :
-                                                                ''}}</span>
-                                                            <!-- SWITCH BUTTON -->
-                                                            <button *ngIf="mode === 'routineBuilder'" type="button"
-                                                                (click)="toggleWeightMode(setControl,$event)"
-                                                                title="Toggle between single value and range"
-                                                                class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold p-0.5 rounded">
-                                                                {{ isRangeMode(setControl, 'weight') ? 'Use Single' :
-                                                                'Use
-                                                                Range' }}
-                                                            </button>
-                                                        </label>
-                                                        <!-- ROUTINE BUILDER - WEIGHT -->
-                                                        <ng-container *ngIf="mode === 'routineBuilder'">
-                                                            <!-- Range Inputs -->
-                                                            <div *ngIf="isRangeMode(setControl, 'weight')"
-                                                                class="mt-0.5">
-                                                                <div class="flex items-center space-x-1.5">
-                                                                    <input type="number"
-                                                                        formControlName="targetWeightMin" min="0"
-                                                                        placeholder="Min" [readonly]="isViewMode"
-                                                                        class="w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
-                                                                    <span
-                                                                        class="text-gray-500 dark:text-gray-400 font-bold">-</span>
-                                                                    <input type="number"
-                                                                        formControlName="targetWeightMax" min="0"
-                                                                        placeholder="Max" [readonly]="isViewMode"
-                                                                        class="w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed"
-                                                                        [ngClass]="{'border-red-500 dark:border-red-400': setControl.get('targetWeightMax')?.hasError('min')}">
+                                                                <option *ngFor="let typeOpt of availableSetTypes"
+                                                                    [value]="typeOpt.value">{{ typeOpt.label }}</option>
+                                                            </select>
+                                                        </div>
+                                                        <!-- Reps Input: Conditional for ranges vs single value -->
+                                                        <div *ngIf="!isExerciseCardioOnlyCtrl(exerciseControl)">
+                                                            <label [for]="'reps-exp-' + exIndex + '-' + setIndex"
+                                                                class="flex items-center justify-between text-s font-medium text-gray-600 dark:text-gray-400">
+                                                                <span>Reps {{ mode === 'manualLogEntry' ? '(Achieved)' :
+                                                                    ''}}</span>
+                                                                <!-- SWITCH BUTTON -->
+                                                                <button *ngIf="mode === 'routineBuilder'" type="button"
+                                                                    (click)="toggleRepsMode(setControl,$event)"
+                                                                    title="Toggle between single value and range"
+                                                                    class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold p-0.5 rounded">
+                                                                    {{ isRangeMode(setControl, 'reps') ? 'Use Single' :
+                                                                    'Use
+                                                                    Range' }}
+                                                                </button>
+                                                            </label>
+                                                            <!-- ROUTINE BUILDER - REPS -->
+                                                            <ng-container *ngIf="mode === 'routineBuilder'">
+                                                                <!-- Range Inputs -->
+                                                                <div *ngIf="isRangeMode(setControl, 'reps')"
+                                                                    class="mt-0.5">
+                                                                    <div class="flex items-center space-x-1.5">
+                                                                        <input type="number"
+                                                                            formControlName="targetRepsMin" min="0"
+                                                                            placeholder="Min" [readonly]="isViewMode"
+                                                                            class="w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
+                                                                        <span
+                                                                            class="text-gray-500 dark:text-gray-400 font-bold">-</span>
+                                                                        <input type="number"
+                                                                            formControlName="targetRepsMax" min="0"
+                                                                            placeholder="Max" [readonly]="isViewMode"
+                                                                            class="w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed"
+                                                                            [ngClass]="{'border-red-500 dark:border-red-400': setControl.get('targetRepsMax')?.hasError('min')}">
+                                                                    </div>
+                                                                    <div *ngIf="setControl.get('targetRepsMax')?.hasError('min') && setControl.get('targetRepsMax')?.touched"
+                                                                        class="text-red-500 dark:text-red-400 text-xs mt-1">
+                                                                        Max must be greater than or equal to min.
+                                                                    </div>
                                                                 </div>
-                                                                <div *ngIf="setControl.get('targetWeightMax')?.hasError('min') && setControl.get('targetWeightMax')?.touched"
-                                                                    class="text-red-500 dark:text-red-400 text-xs mt-1">
-                                                                    Max must be greater than or equal to min.
-                                                                </div>
-                                                            </div>
-                                                            <!-- Single Value Input -->
-                                                            <input *ngIf="!isRangeMode(setControl, 'weight')"
-                                                                type="number" formControlName="targetWeight" min="0"
-                                                                placeholder="Weight" [readonly]="isViewMode"
+                                                                <!-- Single Value Input -->
+                                                                <input *ngIf="!isRangeMode(setControl, 'reps')"
+                                                                    type="number" formControlName="targetReps" min="0"
+                                                                    placeholder="Reps" [readonly]="isViewMode"
+                                                                    class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
+                                                            </ng-container>
+                                                            <!-- LOG ENTRY - SINGLE REPS ACHIEVED -->
+                                                            <input *ngIf="mode === 'manualLogEntry'" type="number"
+                                                                [id]="'reps-exp-' + exIndex + '-' + setIndex"
+                                                                formControlName="repsAchieved" placeholder="Reps"
+                                                                [readonly]="isViewMode"
                                                                 class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
-                                                        </ng-container>
-                                                        <!-- LOG ENTRY - SINGLE WEIGHT ACHIEVED -->
-                                                        <input *ngIf="mode === 'manualLogEntry'" type="number"
-                                                            [id]="'weight-exp-' + exIndex + '-' + setIndex"
-                                                            formControlName="weightUsed" placeholder="Weight"
-                                                            [readonly]="isViewMode"
-                                                            class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
-                                                    </div>
+                                                        </div>
 
-                                                    <!-- Duration Input: Conditional for ranges vs single value -->
-                                                    <div>
-                                                        <label [for]="'duration-exp-' + exIndex + '-' + setIndex"
-                                                            class="flex items-center justify-between text-s font-medium text-gray-600 dark:text-gray-400">
-                                                            <span>Time (s) {{ mode === 'manualLogEntry' ? '(Performed)'
-                                                                : ''}}</span>
-                                                            <!-- SWITCH BUTTON -->
-                                                            <button *ngIf="mode === 'routineBuilder'" type="button"
-                                                                (click)="toggleDurationMode(setControl,$event)"
-                                                                title="Toggle between single value and range"
-                                                                class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold p-0.5 rounded">
-                                                                {{ isRangeMode(setControl, 'duration') ? 'Use Single' :
-                                                                'Use Range' }}
-                                                            </button>
-                                                        </label>
-                                                        <!-- ROUTINE BUILDER - DURATION -->
-                                                        <ng-container *ngIf="mode === 'routineBuilder'">
-                                                            <!-- Range Inputs -->
-                                                            <div *ngIf="isRangeMode(setControl, 'duration')"
-                                                                class="mt-0.5">
-                                                                <div class="flex items-center space-x-1.5">
-                                                                    <input type="number"
-                                                                        formControlName="targetDurationMin" min="0"
-                                                                        placeholder="Min" [readonly]="isViewMode"
-                                                                        class="w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
-                                                                    <span
-                                                                        class="text-gray-500 dark:text-gray-400 font-bold">-</span>
-                                                                    <input type="number"
-                                                                        formControlName="targetDurationMax" min="0"
-                                                                        placeholder="Max" [readonly]="isViewMode"
-                                                                        class="w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed"
-                                                                        [ngClass]="{'border-red-500 dark:border-red-400': setControl.get('targetDurationMax')?.hasError('min')}">
+                                                        <!-- Weight Input -->
+                                                        <div *ngIf="!isExerciseCardioOnlyCtrl(exerciseControl)">
+                                                            <label [for]="'weight-exp-' + exIndex + '-' + setIndex"
+                                                                class="flex items-center justify-between text-s font-medium text-gray-600 dark:text-gray-400">
+                                                                <span>Weight {{ mode === 'manualLogEntry' ? '(Used)' :
+                                                                    ''}}</span>
+                                                                <!-- SWITCH BUTTON -->
+                                                                <button *ngIf="mode === 'routineBuilder'" type="button"
+                                                                    (click)="toggleWeightMode(setControl,$event)"
+                                                                    title="Toggle between single value and range"
+                                                                    class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold p-0.5 rounded">
+                                                                    {{ isRangeMode(setControl, 'weight') ? 'Use Single'
+                                                                    :
+                                                                    'Use
+                                                                    Range' }}
+                                                                </button>
+                                                            </label>
+                                                            <!-- ROUTINE BUILDER - WEIGHT -->
+                                                            <ng-container *ngIf="mode === 'routineBuilder'">
+                                                                <!-- Range Inputs -->
+                                                                <div *ngIf="isRangeMode(setControl, 'weight')"
+                                                                    class="mt-0.5">
+                                                                    <div class="flex items-center space-x-1.5">
+                                                                        <input type="number"
+                                                                            formControlName="targetWeightMin" min="0"
+                                                                            placeholder="Min" [readonly]="isViewMode"
+                                                                            class="w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
+                                                                        <span
+                                                                            class="text-gray-500 dark:text-gray-400 font-bold">-</span>
+                                                                        <input type="number"
+                                                                            formControlName="targetWeightMax" min="0"
+                                                                            placeholder="Max" [readonly]="isViewMode"
+                                                                            class="w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed"
+                                                                            [ngClass]="{'border-red-500 dark:border-red-400': setControl.get('targetWeightMax')?.hasError('min')}">
+                                                                    </div>
+                                                                    <div *ngIf="setControl.get('targetWeightMax')?.hasError('min') && setControl.get('targetWeightMax')?.touched"
+                                                                        class="text-red-500 dark:text-red-400 text-xs mt-1">
+                                                                        Max must be greater than or equal to min.
+                                                                    </div>
                                                                 </div>
-                                                                <div *ngIf="setControl.get('targetDurationMax')?.hasError('min') && setControl.get('targetDurationMax')?.touched"
-                                                                    class="text-red-500 dark:text-red-400 text-xs mt-1">
-                                                                    Max must be greater than or equal to min.
-                                                                </div>
-                                                            </div>
-                                                            <!-- Single Value Input -->
-                                                            <input *ngIf="!isRangeMode(setControl, 'duration')"
-                                                                type="number" formControlName="targetDuration" min="0"
-                                                                placeholder="Secs" [readonly]="isViewMode"
+                                                                <!-- Single Value Input -->
+                                                                <input *ngIf="!isRangeMode(setControl, 'weight')"
+                                                                    type="number" formControlName="targetWeight" min="0"
+                                                                    placeholder="Weight" [readonly]="isViewMode"
+                                                                    class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
+                                                            </ng-container>
+                                                            <!-- LOG ENTRY - SINGLE WEIGHT ACHIEVED -->
+                                                            <input *ngIf="mode === 'manualLogEntry'" type="number"
+                                                                [id]="'weight-exp-' + exIndex + '-' + setIndex"
+                                                                formControlName="weightUsed" placeholder="Weight"
+                                                                [readonly]="isViewMode"
                                                                 class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
-                                                        </ng-container>
-                                                        <!-- LOG ENTRY - SINGLE DURATION PERFORMED -->
-                                                        <input *ngIf="mode === 'manualLogEntry'" type="number"
-                                                            [id]="'duration-exp-' + exIndex + '-' + setIndex"
-                                                            formControlName="durationPerformed" placeholder="Secs"
-                                                            [readonly]="isViewMode"
-                                                            class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
-                                                    </div>
+                                                        </div>
 
-                                                    <!-- Other inputs for tempo, rest, notes -->
-                                                    <div *ngIf="setControl.get('tempo')?.value || isEditableMode()">
-                                                        <label [for]="'tempo-exp-' + exIndex + '-' + setIndex"
-                                                            class="block text-s font-medium text-gray-600 dark:text-gray-400">Tempo</label>
-                                                        <input type="text"
-                                                            [id]="'tempo-exp-' + exIndex + '-' + setIndex"
-                                                            formControlName="tempo" placeholder="e.g. 2010"
-                                                            [readonly]="isViewMode"
-                                                            class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
+                                                        <!-- Duration Input: Conditional for ranges vs single value -->
+                                                        <div>
+                                                            <label [for]="'duration-exp-' + exIndex + '-' + setIndex"
+                                                                class="flex items-center justify-between text-s font-medium text-gray-600 dark:text-gray-400">
+                                                                <span>Time (s) {{ mode === 'manualLogEntry' ?
+                                                                    '(Performed)'
+                                                                    : ''}}</span>
+                                                                <!-- SWITCH BUTTON -->
+                                                                <button *ngIf="mode === 'routineBuilder'" type="button"
+                                                                    (click)="toggleDurationMode(setControl,$event)"
+                                                                    title="Toggle between single value and range"
+                                                                    class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold p-0.5 rounded">
+                                                                    {{ isRangeMode(setControl, 'duration') ? 'Use
+                                                                    Single' :
+                                                                    'Use Range' }}
+                                                                </button>
+                                                            </label>
+                                                            <!-- ROUTINE BUILDER - DURATION -->
+                                                            <ng-container *ngIf="mode === 'routineBuilder'">
+                                                                <!-- Range Inputs -->
+                                                                <div *ngIf="isRangeMode(setControl, 'duration')"
+                                                                    class="mt-0.5">
+                                                                    <div class="flex items-center space-x-1.5">
+                                                                        <input type="number"
+                                                                            formControlName="targetDurationMin" min="0"
+                                                                            placeholder="Min" [readonly]="isViewMode"
+                                                                            class="w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
+                                                                        <span
+                                                                            class="text-gray-500 dark:text-gray-400 font-bold">-</span>
+                                                                        <input type="number"
+                                                                            formControlName="targetDurationMax" min="0"
+                                                                            placeholder="Max" [readonly]="isViewMode"
+                                                                            class="w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed"
+                                                                            [ngClass]="{'border-red-500 dark:border-red-400': setControl.get('targetDurationMax')?.hasError('min')}">
+                                                                    </div>
+                                                                    <div *ngIf="setControl.get('targetDurationMax')?.hasError('min') && setControl.get('targetDurationMax')?.touched"
+                                                                        class="text-red-500 dark:text-red-400 text-xs mt-1">
+                                                                        Max must be greater than or equal to min.
+                                                                    </div>
+                                                                </div>
+                                                                <!-- Single Value Input -->
+                                                                <input *ngIf="!isRangeMode(setControl, 'duration')"
+                                                                    type="number" formControlName="targetDuration"
+                                                                    min="0" placeholder="Secs" [readonly]="isViewMode"
+                                                                    class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
+                                                            </ng-container>
+                                                            <!-- LOG ENTRY - SINGLE DURATION PERFORMED -->
+                                                            <input *ngIf="mode === 'manualLogEntry'" type="number"
+                                                                [id]="'duration-exp-' + exIndex + '-' + setIndex"
+                                                                formControlName="durationPerformed" placeholder="Secs"
+                                                                [readonly]="isViewMode"
+                                                                class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
+                                                        </div>
+
+                                                        <!-- Other inputs for tempo, rest, notes -->
+                                                        <div *ngIf="setControl.get('tempo')?.value || isEditableMode()">
+                                                            <label [for]="'tempo-exp-' + exIndex + '-' + setIndex"
+                                                                class="block text-s font-medium text-gray-600 dark:text-gray-400">Tempo</label>
+                                                            <input type="text"
+                                                                [id]="'tempo-exp-' + exIndex + '-' + setIndex"
+                                                                formControlName="tempo" placeholder="e.g. 2010"
+                                                                [readonly]="isViewMode"
+                                                                class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
+                                                        </div>
+                                                        <div>
+                                                            <label [for]="'rest-exp-' + exIndex + '-' + setIndex"
+                                                                class="block text-s font-medium text-gray-600 dark:text-gray-400">Rest
+                                                                (s) {{ mode === 'manualLogEntry' ? '(Done)' :
+                                                                ''}}</label>
+                                                            <input type="number"
+                                                                [id]="'rest-exp-' + exIndex + '-' + setIndex"
+                                                                formControlName="restAfterSet" placeholder="Rest"
+                                                                [readonly]="isViewMode"
+                                                                class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
+                                                        </div>
+                                                        <div class="col-span-full"
+                                                            *ngIf="(setControl.get('notes')?.value || isEditableMode())">
+                                                            <label [for]="'setNotes-exp-' + exIndex + '-' + setIndex"
+                                                                class="block text-s font-medium text-gray-600 dark:text-gray-400">Set
+                                                                Notes</label>
+                                                            <input type="text"
+                                                                [id]="'setNotes-exp-' + exIndex + '-' + setIndex"
+                                                                formControlName="notes" placeholder="e.g. Good form"
+                                                                [readonly]="isViewMode"
+                                                                class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
+                                                        </div>
                                                     </div>
-                                                    <div>
-                                                        <label [for]="'rest-exp-' + exIndex + '-' + setIndex"
-                                                            class="block text-s font-medium text-gray-600 dark:text-gray-400">Rest
-                                                            (s) {{ mode === 'manualLogEntry' ? '(Done)' :
-                                                            ''}}</label>
-                                                        <input type="number"
-                                                            [id]="'rest-exp-' + exIndex + '-' + setIndex"
-                                                            formControlName="restAfterSet" placeholder="Rest"
-                                                            [readonly]="isViewMode"
-                                                            class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
+                                                    <div class="mt-2 text-right">
+                                                        <button type="button"
+                                                            (click)="collapseExpandedSet(false,$event)"
+                                                            title="Collapse set"
+                                                            class="bg-blue-200 text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium py-1 px-2 rounded-md">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                                                width="24" height="24">
+                                                                <path
+                                                                    d="M 12 5 L 12 10 M 9 7 L 12 10 L 15 7 M 12 19 L 12 14 M 9 17 L 12 14 L 15 17"
+                                                                    fill="none" stroke="currentColor" stroke-width="1.5"
+                                                                    stroke-linecap="round" stroke-linejoin="round" />
+                                                            </svg></button>
                                                     </div>
-                                                    <div class="col-span-full"
-                                                        *ngIf="(setControl.get('notes')?.value || isEditableMode())">
-                                                        <label [for]="'setNotes-exp-' + exIndex + '-' + setIndex"
-                                                            class="block text-s font-medium text-gray-600 dark:text-gray-400">Set
-                                                            Notes</label>
-                                                        <input type="text"
-                                                            [id]="'setNotes-exp-' + exIndex + '-' + setIndex"
-                                                            formControlName="notes" placeholder="e.g. Good form"
-                                                            [readonly]="isViewMode"
-                                                            class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
-                                                    </div>
-                                                </div>
-                                                <div class="mt-2 text-right">
-                                                    <button type="button" (click)="collapseExpandedSet(false,$event)"
-                                                        title="Collapse set"
-                                                        class="bg-blue-200 text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium py-1 px-2 rounded-md">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                                                            width="24" height="24">
-                                                            <path
-                                                                d="M 12 5 L 12 10 M 9 7 L 12 10 L 15 7 M 12 19 L 12 14 M 9 17 L 12 14 L 15 17"
-                                                                fill="none" stroke="currentColor" stroke-width="1.5"
-                                                                stroke-linecap="round" stroke-linejoin="round" />
-                                                        </svg></button>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                                <!-- EXPANDED Only EDIT MODE - END -->
-                            </div> <!-- End of *ngIf="!isCompactView" -->
+                                    <!-- EXPANDED Only EDIT MODE - END -->
+                                </div> <!-- End of *ngIf="!isCompactView" -->
+                            </div>
                         </div>
                     </div>
                 </ng-container>
@@ -958,6 +992,15 @@
         (close)="closeExerciseSelectionModal()">
     </app-exercise-selection-modal>
 
+    <app-exercise-selection-modal [isOpen]="isSwitchExerciseModalOpen()" [(searchTerm)]="modalSearchTerm"
+        [title]="isShowingSimilarInSwitchModal() ? 'SIMILAR EXERCISES' : 'SWITCH EXERCISE'"
+        [exercises]="exercisesForSwitchModal()" searchPlaceholder="Search for a replacement..."
+        [showSimilarButton]="true" [isShowingSimilarView]="isShowingSimilarInSwitchModal()" itemIconName="change"
+        itemIconClass="text-green-500" (exerciseSelected)="handleExerciseSwitch($event)"
+        (findSimilarClicked)="findAndShowSimilarExercises()" (backToSearchClicked)="onBackToSearchFromSimilar()"
+        (close)="closeSwitchExerciseModal()">
+    </app-exercise-selection-modal>
+
     <!-- NOTES MODAL -->
     <app-modal *ngIf="notesModalsData() as data" [isOpen]="!!data" (isOpenChange)="notesModalsData.set(null)"
         [modalTitle]="'Notes'">
@@ -977,6 +1020,7 @@
         <app-exercise-detail [id]="exerciseDetailsId" [isModal]="true"></app-exercise-detail>
     </app-modal>
 
-    <app-fab-menu *ngIf="isEditableMode()" [actions]="fabMenuItems"
-        [checkForPausedSession]="false"
+    <app-fab-menu *ngIf="isEditableMode()" [actions]="fabMenuItems" [checkForPausedSession]="false"
+        [scrollToBottomDisabled]="true"
+        [scrollToTopDisabled]="true"
         (actionClicked)="onFabAction($event)"></app-fab-menu>

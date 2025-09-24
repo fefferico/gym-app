@@ -1541,7 +1541,7 @@ private createSyncedSet(setsArray: FormArray, ctrl: AbstractControl): FormGroup 
       const emomResult = await this.alertService.showPromptDialog('Set EMOM Details', 'Configure the EMOM parameters.', emomInputs);
 
       if (!emomResult || !emomResult['emomTime'] || !emomResult['numSets']) {
-        this.toastService.info("EMOM creation cancelled.", 2000);
+        // this.toastService.info("EMOM creation cancelled.", 2000);
         return;
       }
       emomTimeSeconds = Number(emomResult['emomTime']);
@@ -2088,7 +2088,7 @@ private createSyncedSet(setsArray: FormArray, ctrl: AbstractControl): FormGroup 
     if (!this.routine()){
       this.routine.set(this.mapFormToRoutine(this.builderForm.getRawValue()));
     }
-    if (this.routine()) {
+    if (this.routine() && exercise) {
       const updatedRoutine: Routine = {
         ...this.routine()!,
         exercises: [...this.routine()!.exercises, exercise]
@@ -2170,6 +2170,14 @@ private createSyncedSet(setsArray: FormArray, ctrl: AbstractControl): FormGroup 
       isDisabled: false,
     };
     return valueObj;
+  }
+
+  isSuperSet(index: number): boolean {
+    const exercises = this.routine()?.exercises;
+    if (!exercises) return false;
+    const ex = exercises[index];
+    if (!ex?.supersetId) return false;
+    return true;
   }
 
 
@@ -2903,7 +2911,7 @@ private createSyncedSet(setsArray: FormArray, ctrl: AbstractControl): FormGroup 
     const emomResult = await this.alertService.showPromptDialog('Create Single-Exercise EMOM', 'Configure EMOM parameters.', emomInputs);
 
     if (!emomResult || !emomResult['emomTime'] || !emomResult['numSets']) {
-      this.toastService.info("EMOM creation cancelled.", 2000);
+      // this.toastService.info("EMOM creation cancelled.", 2000);
       return;
     }
 
@@ -3046,45 +3054,6 @@ private createSyncedSet(setsArray: FormArray, ctrl: AbstractControl): FormGroup 
     this.activeExerciseActionMenu.set(null);
   }
 
-  // --- 3. Add a method to generate the items for the new action menu ---
-  getExerciseActionMenuItems(exerciseControl: AbstractControl): ActionMenuItem[] {
-    const items: ActionMenuItem[] = [];
-    const isSuperset = !!exerciseControl.get('supersetId')?.value;
-
-    if (isSuperset) {
-      items.push({
-        label: 'Ungroup',
-        buttonClass: 'bg-purple-400 text-white hover:bg-purple-600',
-        actionKey: 'ungroup',
-        iconName: 'ungroup', // Use a fitting icon name
-      });
-    } else {
-      items.push({
-        label: 'Make EMOM',
-        buttonClass: 'bg-teal-400 text-white hover:bg-teal-600',
-        actionKey: 'make_emom',
-        iconName: 'clock',
-      });
-    }
-
-    return items;
-  }
-
-  // --- 4. Add a handler to process clicks from the new action menu ---
-  handleExerciseActionMenuItemClick(event: { actionKey: string }, exIndex: number, exerciseControl: AbstractControl): void {
-    switch (event.actionKey) {
-      case 'ungroup':
-        this.ungroupSuperset(exIndex);
-        break;
-      case 'make_emom':
-        this.convertToSingleExerciseEmom(exerciseControl);
-        break;
-      // case 'duplicate':
-      // Add logic for duplicating an exercise here
-      // break;
-    }
-    this.closeExerciseActionMenu();
-  }
   fabMenuItems: FabAction[] = [];
 
   private refreshFabMenuItems(): void {
@@ -3116,4 +3085,155 @@ private createSyncedSet(setsArray: FormArray, ctrl: AbstractControl): FormGroup 
         break;
     }
   }
+
+
+
+
+
+
+
+  isSwitchExerciseModalOpen = signal(false);
+  exerciseToSwitchIndex = signal<number | null>(null);
+  isShowingSimilarInSwitchModal = signal(false);
+  // This signal will hold the list of exercises (either all or similar) for the modal
+  exercisesForSwitchModal = signal<Exercise[]>([]);
+
+  // ... (constructor and all existing methods are unchanged up to the action menu handlers)
+
+  // +++ NEW: Handler for the "Switch Exercise" menu item +++
+  handleExerciseActionMenuItemClick(event: { actionKey: string }, exIndex: number, exerciseControl: AbstractControl): void {
+    switch (event.actionKey) {
+      case 'ungroup':
+        this.ungroupSuperset(exIndex);
+        break;
+      case 'make_emom':
+        this.convertToSingleExerciseEmom(exerciseControl);
+        break;
+      // +++ NEW CASE +++
+      case 'switchExercise':
+        this.openSwitchExerciseModal(exIndex);
+        break;
+    }
+    this.closeExerciseActionMenu();
+  }
+
+  // +++ NEW: Method to generate items for the expanded exercise action menu +++
+  getExerciseActionMenuItems(exerciseControl: AbstractControl): ActionMenuItem[] {
+    const items: ActionMenuItem[] = [];
+    const isSuperset = !!exerciseControl.get('supersetId')?.value;
+
+    if (isSuperset) {
+      items.push({
+        label: 'Ungroup',
+        buttonClass: 'bg-purple-400 text-white hover:bg-purple-600',
+        actionKey: 'ungroup',
+        iconName: 'ungroup',
+      });
+    } else {
+      items.push({
+        label: 'Make EMOM',
+        buttonClass: 'bg-teal-400 text-white hover:bg-teal-600',
+        actionKey: 'make_emom',
+        iconName: 'clock',
+      });
+      // Add the "Switch Exercise" option only for non-superset exercises
+      items.push({
+        label: 'Switch Exercise',
+        buttonClass: 'bg-blue-400 text-white hover:bg-blue-600',
+        actionKey: 'switchExercise',
+        iconName: 'change', // Assuming you have a 'change' icon
+      });
+    }
+
+    return items;
+  }
+
+  // +++ NEW: Methods to control the Switch Exercise Modal +++
+
+  /**
+   * Opens the exercise selection modal in "switch" mode.
+   * @param exIndex The index of the exercise in the form array to be switched.
+   */
+  openSwitchExerciseModal(exIndex: number): void {
+    this.exerciseToSwitchIndex.set(exIndex);
+    // Initially populate the modal with all available exercises for searching
+    this.exercisesForSwitchModal.set(this.availableExercises);
+    
+    // Reset modal state
+    this.isShowingSimilarInSwitchModal.set(false);
+    this.modalSearchTerm.set('');
+    
+    // Open the modal
+    this.isSwitchExerciseModalOpen.set(true);
+  }
+
+  /**
+   * Closes the switch exercise modal and resets its state.
+   */
+  closeSwitchExerciseModal(): void {
+    this.isSwitchExerciseModalOpen.set(false);
+    this.exerciseToSwitchIndex.set(null);
+  }
+
+  /**
+   * Fetches exercises similar to the one being switched and updates the modal's list.
+   */
+  async findAndShowSimilarExercises(): Promise<void> {
+    const index = this.exerciseToSwitchIndex();
+    if (index === null) return;
+
+    const exerciseControl = this.exercisesFormArray.at(index);
+    const exerciseId = exerciseControl.get('exerciseId')?.value;
+    const baseExercise = this.availableExercises.find(ex => ex.id === exerciseId);
+
+    if (!baseExercise) {
+      this.toastService.error("Could not find the base exercise to search for similar ones.");
+      return;
+    }
+
+    try {
+      const similarExercises = await firstValueFrom(this.exerciseService.getSimilarExercises(baseExercise, 12));
+      if (similarExercises.length === 0) {
+        this.toastService.info("No similar exercises found.");
+      }
+      // Overwrite the modal's list with the new, shorter list of similar exercises
+      this.exercisesForSwitchModal.set(similarExercises);
+      this.isShowingSimilarInSwitchModal.set(true);
+    } catch (error) {
+      this.toastService.error("Failed to load similar exercises.");
+    }
+  }
+
+  /**
+   * Resets the modal from the "similar" view back to the main search view.
+   */
+  onBackToSearchFromSimilar(): void {
+    this.exercisesForSwitchModal.set(this.availableExercises);
+    this.isShowingSimilarInSwitchModal.set(false);
+    this.modalSearchTerm.set('');
+  }
+
+  /**
+   * Handles the final selection from the modal, replacing the exercise in the form.
+   * @param newExercise The new exercise selected by the user.
+   */
+  handleExerciseSwitch(newExercise: Exercise): void {
+    const index = this.exerciseToSwitchIndex();
+    if (index === null) return;
+
+    const exerciseControl = this.exercisesFormArray.at(index) as FormGroup;
+    const oldExerciseName = exerciseControl.get('exerciseName')?.value;
+
+    // Patch the form group with the new exercise's ID and name
+    exerciseControl.patchValue({
+      exerciseId: newExercise.id,
+      exerciseName: newExercise.name
+    });
+
+    this.toastService.success(`Switched '${oldExerciseName}' to '${newExercise.name}'.`);
+    this.closeSwitchExerciseModal();
+    this.routine.set(this.mapFormToRoutine(this.builderForm.getRawValue()));
+  }
+
+
 }

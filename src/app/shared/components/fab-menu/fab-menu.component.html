@@ -4,14 +4,14 @@
     (clickOutside)="handleClose()" [ngClass]="isPausedSession() ? 'bottom-36' : 'bottom-20'">
 
     <!-- Back to Top Button (Updated) -->
-    <button *ngIf="showBackToTopButton()" @fadeAnimation appPress (shortPress)="scrollToTop()" type="button"
+    <button *ngIf="showBackToTopButton() && !scrollToTopDisabled" @fadeAnimation appPress (shortPress)="scrollToTop()" type="button"
         class="bg-primary dark:bg-primary text-white rounded-full p-3 shadow-lg hover:bg-primary-dark dark:hover:bg-primary-light focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-focus dark:focus:ring-offset-gray-900 transition-opacity flex items-center">
         <app-icon name="back" [class.rotate-90]="true" class="w-6 h-6" [strokeWidth]="2.5"></app-icon>
         <span class="sr-only">Back to Top</span>
     </button>
 
     <!-- Back to Bottom Button (Updated) -->
-    <button *ngIf="showBackToBottomButton()" @fadeAnimation appPress (shortPress)="scrollToBottom()" type="button"
+    <button *ngIf="showBackToBottomButton() && !scrollToBottomDisabled" @fadeAnimation appPress (shortPress)="scrollToBottom()" type="button"
         class="bg-primary dark:bg-primary text-white rounded-full p-3 shadow-lg hover:bg-primary-dark dark:hover:bg-primary-light focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-focus dark:focus:ring-offset-gray-900 transition-opacity flex items-center">
         <app-icon name="chevron-down" class="w-6 h-6" [strokeWidth]="2.5"></app-icon>
         <span class="sr-only">Back to Bottom</span>

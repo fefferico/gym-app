@@ -62,6 +62,8 @@ export class FabMenuComponent implements OnInit, OnDestroy {
   @Input() actions: FabAction[] = []; // <-- NEW: Actions are now an input
   @Input() checkForPausedSession: boolean = true;
   @Output() actionClicked = new EventEmitter<string>(); // <-- NEW: Generic event emitter
+  @Input() scrollToBottomDisabled: boolean = false;
+  @Input() scrollToTopDisabled: boolean = false;
 
   // --- Component State (Unchanged) ---
   isFabActionsOpen = signal(false);
