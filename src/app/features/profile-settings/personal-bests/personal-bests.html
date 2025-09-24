@@ -98,7 +98,7 @@
     <div *ngIf="displayPersonalBests().length > 0; else noPBsOrFilters">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             <div *ngFor="let pb of displayPersonalBests()"
-                class="flex flex-col border bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow duration-200 relative group transform hover:-translate-y-1">
+                class="flex flex-col border dark:border-none bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow duration-200 relative group transform hover:-translate-y-1">
                 <div class="p-3 flex-grow">
                     <div class="flex justify-between items-start mb-1">
                         <div>
@@ -144,7 +144,7 @@
 
 
                 <div *ngIf="pb.pbType !== '1RM (Estimated)' && pb.workoutLogId"
-                    class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 rounded-b dark:border-gray-600 p-2">
+                    class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 bg-gray-50 dark:bg-gray-800 border-gray-200 rounded-b dark:border-gray-600 p-2">
 
                     <!-- The buttons no longer need any width classes -->
                     <button (click)="navigateToLogDetail(pb.workoutLogId, $event)"

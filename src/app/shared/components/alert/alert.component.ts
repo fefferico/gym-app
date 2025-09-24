@@ -6,6 +6,7 @@ import { AlertButton, AlertOptions, AlertInput } from '../../../core/models/aler
 import { PressDirective } from '../../directives/press.directive';
 import { IconComponent } from '../icon/icon.component';
 import { ToastService } from '../../../core/services/toast.service';
+import { trigger, style, animate, transition } from '@angular/animations';
 
 @Component({
   selector: 'app-alert',
@@ -13,7 +14,32 @@ import { ToastService } from '../../../core/services/toast.service';
   imports: [CommonModule, FormsModule, PressDirective, IconComponent], // <-- Add FormsModule
   templateUrl: './alert.component.html',
   styleUrls: ['./alert.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  // =================== START OF CORRECTION ===================
+  animations: [
+    trigger('modalOverlay', [
+      transition(':enter', [
+        style({ opacity: 0 }),
+        // A slightly longer, smoother fade-in for the backdrop
+        animate('300ms ease-in-out', style({ opacity: 1 })),
+      ]),
+      transition(':leave', [
+        animate('200ms ease-in-out', style({ opacity: 0 })),
+      ]),
+    ]),
+    trigger('modalContent', [
+      transition(':enter', [
+        // Start from further down and fully transparent
+        style({ transform: 'translateY(100%)', opacity: 0 }),
+        // Use a custom cubic-bezier for a natural ease-in-out effect
+        animate('300ms cubic-bezier(0.35, 0, 0.25, 1)', style({ transform: 'translateY(0)', opacity: 1 })),
+      ]),
+      transition(':leave', [
+        animate('200ms cubic-bezier(0.35, 0, 0.25, 1)', style({ transform: 'translateY(100%)', opacity: 0 })),
+      ]),
+    ]),
+  ]
+  // =================== END OF CORRECTION ===================
 })
 export class AlertComponent implements OnInit {
   @Input() options: AlertOptions | null = null;

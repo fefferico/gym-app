@@ -270,9 +270,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         }
 
         if (this.isViewMode) {
-          this.toggleFormState(true);
-          this.isAllExpandedInViewMode.set(true);
-          this.isCompactView = false; // This ensures the component doesn't start in compact mode
+          this.expandAllSets();
         } else {
           this.toggleFormState(false); // Enable for new/edit modes
         }
@@ -1098,13 +1096,13 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       formGroupConfig['targetReps'] = [targetTargetReps ?? null, [Validators.min(0)]];
       formGroupConfig['targetRepsMin'] = [targetRepsMinValue ?? null, [Validators.min(0)]];
       formGroupConfig['targetRepsMax'] = [targetRepsMaxValue ?? null, [Validators.min(0)]];
-      
+
       // =================== START: FIXED SNIPPET ===================
       formGroupConfig['targetWeight'] = [targetWeighValue != null ? this.unitService.convertWeight(targetWeighValue, 'kg', this.unitService.currentWeightUnit()) : null, [Validators.min(0)]];
       formGroupConfig['targetWeightMin'] = [targetWeightMinValue != null ? this.unitService.convertWeight(targetWeightMinValue, 'kg', this.unitService.currentWeightUnit()) : null, [Validators.min(0)]];
       formGroupConfig['targetWeightMax'] = [targetWeightMaxValue != null ? this.unitService.convertWeight(targetWeightMaxValue, 'kg', this.unitService.currentWeightUnit()) : null, [Validators.min(0)]];
       // =================== END: FIXED SNIPPET ===================
-      
+
       formGroupConfig['targetDuration'] = [targetDurationValue ?? null, [Validators.min(0)]];
       formGroupConfig['targetDurationMin'] = [targetDurationMinValue ?? null, [Validators.min(0)]];
       formGroupConfig['targetDurationMax'] = [targetDurationMaxValue ?? null, [Validators.min(0)]];
@@ -1247,7 +1245,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
    * Helper method to create a new set, copying from the last one if it exists.
    * This will be used for both standard and superset set additions.
    */
-private createSyncedSet(setsArray: FormArray, ctrl: AbstractControl): FormGroup {
+  private createSyncedSet(setsArray: FormArray, ctrl: AbstractControl): FormGroup {
     if (setsArray.length > 0) {
       const prevSet = setsArray.at(setsArray.length - 1).value;
       const setData = { ...prevSet };
@@ -1348,12 +1346,21 @@ private createSyncedSet(setsArray: FormArray, ctrl: AbstractControl): FormGroup 
     const currentPath = this.expandedSetPath();
     return currentPath?.exerciseIndex === exerciseIndex && currentPath?.setIndex === setIndex;
   }
+
   collapseExpandedSet(collapseAll: boolean = false, event?: Event): void {
-    this.isAllExpandedInViewMode.set(false); // <-- ADD THIS LINE
+    // Check if the click event exists and if its target is inside our control button container.
+    if (event && (event.target as HTMLElement).closest('.view-mode-controls')) {
+      // If the click was on one of the buttons, do nothing and exit the function.
+      return;
+    }
+
+    // If the click was anywhere else, proceed with the original collapse logic.
+    this.isAllExpandedInViewMode.set(false);
     this.expandedSetPath.set(null);
     this.isCompactView = collapseAll;
     event?.stopPropagation();
   }
+
   private getFormErrors(formGroup: FormGroup | FormArray): any {
     const errors: any = {};
     Object.keys(formGroup.controls).forEach(key => {
@@ -1637,6 +1644,7 @@ private createSyncedSet(setsArray: FormArray, ctrl: AbstractControl): FormGroup 
     }
     this.toastService.info("Exercise removed", 2000);
     this.expandedSetPath.set(null); // Collapse if an exercise is removed
+    this.updateCurrentRoutine();
   }
   errorMessage = signal<string | null>(null);
 
@@ -1697,19 +1705,19 @@ private createSyncedSet(setsArray: FormArray, ctrl: AbstractControl): FormGroup 
       this.builderForm.markAllAsTouched();
       // get the errors to be shown in the alert
       const errors: string[] = [];
-      if (this.builderForm.get('name')?.invalid){
+      if (this.builderForm.get('name')?.invalid) {
         errors.push("Routine name");
       }
-      if (this.builderForm.get('goal')?.invalid){
+      if (this.builderForm.get('goal')?.invalid) {
         errors.push("Routine goal");
       }
-      if (this.builderForm.get('workoutDate')?.invalid){
+      if (this.builderForm.get('workoutDate')?.invalid) {
         errors.push("Session date");
       }
-      if (this.builderForm.get('startTime')?.invalid){
+      if (this.builderForm.get('startTime')?.invalid) {
         errors.push("Start time");
       }
-      if (this.builderForm.get('endTime')?.invalid){
+      if (this.builderForm.get('endTime')?.invalid) {
         errors.push("End time");
       }
 
@@ -2084,16 +2092,18 @@ private createSyncedSet(setsArray: FormArray, ctrl: AbstractControl): FormGroup 
   }
 
   // update current routine after adding a new exercise
-  private updateCurrentRoutine(exercise: WorkoutExercise): void {
-    if (!this.routine()){
+  private updateCurrentRoutine(exercise?: WorkoutExercise): void {
+    if (!this.routine()) {
       this.routine.set(this.mapFormToRoutine(this.builderForm.getRawValue()));
     }
-    if (this.routine() && exercise) {
+    if (exercise) {
       const updatedRoutine: Routine = {
         ...this.routine()!,
         exercises: [...this.routine()!.exercises, exercise]
       };
       this.routine.set(updatedRoutine);
+    } else {
+      this.routine.set(this.mapFormToRoutine(this.builderForm.getRawValue()));
     }
   }
 
@@ -2194,6 +2204,24 @@ private createSyncedSet(setsArray: FormArray, ctrl: AbstractControl): FormGroup 
       data: { routineId }
     } as ActionMenuItem;
 
+    const expandAllBtn = {
+      label: 'EXPAND',
+      actionKey: 'expand',
+      iconName: `ungroup`,
+      iconClass: 'w-8 h-8 mr-2',
+      buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+      data: { routineId }
+    } as ActionMenuItem;
+
+    const collapseAllBtn = {
+      label: 'COLLAPSE',
+      actionKey: 'collapse',
+      iconName: `collapse`,
+      iconClass: 'w-8 h-8 mr-2',
+      buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+      data: { routineId }
+    } as ActionMenuItem;
+
     const deleteButton = {
       label: 'DELETE',
       actionKey: 'delete',
@@ -2235,6 +2263,10 @@ private createSyncedSet(setsArray: FormArray, ctrl: AbstractControl): FormGroup 
 
     if (this.isViewMode) {
       actionsArray.push(editButton);
+      if (this.exercisesFormArray?.length > 0) {
+        actionsArray.push(expandAllBtn);
+        actionsArray.push(collapseAllBtn);
+      }
     }
 
     actionsArray.push({ isDivider: true });
@@ -2263,6 +2295,12 @@ private createSyncedSet(setsArray: FormArray, ctrl: AbstractControl): FormGroup 
         break;
       case 'history':
         this.goToRoutineHistory(routineId);
+        break;
+      case 'collapse':
+        this.collapseAllSets();
+        break;
+      case 'expand':
+        this.expandAllSets();
         break;
     }
     this.activeRoutineIdActions.set(null); // Close the menu
@@ -2346,30 +2384,30 @@ private createSyncedSet(setsArray: FormArray, ctrl: AbstractControl): FormGroup 
 
   checkIfWeightedExercise(loggedEx: any): boolean {
     const loggedExActual = loggedEx?.getRawValue() as LoggedWorkoutExercise;
-    return loggedExActual?.sets.some(set => 
+    return loggedExActual?.sets.some(set =>
       (set.weightUsed || set.targetWeight || set.targetWeightMin || set.targetWeightMax));
   }
 
   getSetReps(loggedEx: any): string { // 'loggedEx' is an AbstractControl (FormGroup)
     const sets = loggedEx?.getRawValue()?.sets as LoggedSet[];
     if (!sets || sets.length === 0) {
-        return '';
+      return '';
     }
 
     const displayValues = sets.map(set => {
-        // Use the generic getSetDisplayValue which can handle both LoggedSet and ExerciseTargetSetParams
-        // by checking for the relevant min/max/single value properties.
-        return this.getSetDisplayValue(new FormGroup({
-            targetReps: new FormControl(set.targetReps),
-            targetRepsMin: new FormControl(set.targetRepsMin),
-            targetRepsMax: new FormControl(set.targetRepsMax),
-            repsAchieved: new FormControl(set.weightUsed)
-        }), 'reps');
+      // Use the generic getSetDisplayValue which can handle both LoggedSet and ExerciseTargetSetParams
+      // by checking for the relevant min/max/single value properties.
+      return this.getSetDisplayValue(new FormGroup({
+        targetReps: new FormControl(set.targetReps),
+        targetRepsMin: new FormControl(set.targetRepsMin),
+        targetRepsMax: new FormControl(set.targetRepsMax),
+        repsAchieved: new FormControl(set.weightUsed)
+      }), 'reps');
     });
 
     let stringResult = displayValues.join(', ');
     if (stringResult.length > 15) {
-        stringResult = stringResult.substring(0, 15) + '...';
+      stringResult = stringResult.substring(0, 15) + '...';
     }
     return stringResult;
   }
@@ -2549,26 +2587,26 @@ private createSyncedSet(setsArray: FormArray, ctrl: AbstractControl): FormGroup 
   getSetWeightsUsed(loggedEx: any): string {
     const sets = loggedEx?.getRawValue()?.sets as LoggedSet[];
     if (!sets || sets.length === 0) {
-        return '';
+      return '';
     }
 
     const displayValues = sets.map(set => {
-        // Use the generic getSetDisplayValue which can handle both LoggedSet and ExerciseTargetSetParams
-        // by checking for the relevant min/max/single value properties.
-        return this.getSetDisplayValue(new FormGroup({
-            targetWeight: new FormControl(set.targetWeight),
-            targetWeightMin: new FormControl(set.targetWeightMin),
-            targetWeightMax: new FormControl(set.targetWeightMax),
-            weightUsed: new FormControl(set.weightUsed)
-        }), 'weight');
+      // Use the generic getSetDisplayValue which can handle both LoggedSet and ExerciseTargetSetParams
+      // by checking for the relevant min/max/single value properties.
+      return this.getSetDisplayValue(new FormGroup({
+        targetWeight: new FormControl(set.targetWeight),
+        targetWeightMin: new FormControl(set.targetWeightMin),
+        targetWeightMax: new FormControl(set.targetWeightMax),
+        weightUsed: new FormControl(set.weightUsed)
+      }), 'weight');
     });
 
     let stringResult = displayValues.join(', ');
     if (stringResult.length > 15) {
-        stringResult = stringResult.substring(0, 15) + '...';
+      stringResult = stringResult.substring(0, 15) + '...';
     }
     return stringResult;
-}
+  }
 
   getSetDurationPerformed(loggedEx: any): string {
     if (this.currentLogId) {
@@ -3158,11 +3196,11 @@ private createSyncedSet(setsArray: FormArray, ctrl: AbstractControl): FormGroup 
     this.exerciseToSwitchIndex.set(exIndex);
     // Initially populate the modal with all available exercises for searching
     this.exercisesForSwitchModal.set(this.availableExercises);
-    
+
     // Reset modal state
     this.isShowingSimilarInSwitchModal.set(false);
     this.modalSearchTerm.set('');
-    
+
     // Open the modal
     this.isSwitchExerciseModalOpen.set(true);
   }
@@ -3235,5 +3273,25 @@ private createSyncedSet(setsArray: FormArray, ctrl: AbstractControl): FormGroup 
     this.routine.set(this.mapFormToRoutine(this.builderForm.getRawValue()));
   }
 
+  /**
+     * Expands all exercise cards when in view mode.
+     * It sets the global flag and clears any single-set expansion path.
+     */
+  expandAllSets(): void {
+    if (!this.isViewMode) return;
+    this.isCompactView = false;
+    this.expandedSetPath.set(null); // Clear any single expanded set
+    this.isAllExpandedInViewMode.set(true); // Set the global flag
+  }
 
+  /**
+   * Collapses all exercise cards when in view mode.
+   * It resets all expansion state flags.
+   */
+  collapseAllSets(): void {
+    if (!this.isViewMode) return;
+    this.isCompactView = true;
+    this.expandedSetPath.set(null);
+    this.isAllExpandedInViewMode.set(false);
+  }
 }

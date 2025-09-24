@@ -6,7 +6,7 @@ import { combineLatest, distinctUntilChanged, Subscription } from 'rxjs';
 // No need for startWith, distinctUntilChanged from rxjs/operators if using signals directly for form values
 import { parseISO, isValid, format, isSameDay } from 'date-fns'; // isSameDay was already here
 
-import { NgxChartsModule, ScaleType } from '@swimlane/ngx-charts';
+import { BarVerticalComponent, LineChartComponent, NgxChartsModule, ScaleType } from '@swimlane/ngx-charts';
 import * as shape from 'd3-shape';
 
 
@@ -53,6 +53,9 @@ export class StatsDashboardComponent implements OnInit, OnDestroy {
   // --- UPDATED: Renamed for clarity ---
   @ViewChild('weeklyChartWrapper') weeklyChartWrapperRef!: ElementRef<HTMLDivElement>;
   weeklyContainerView = signal<[number, number]>([320, 300]);
+
+  @ViewChild(BarVerticalComponent) muscleGroupChart!: BarVerticalComponent;
+  @ViewChild(LineChartComponent) weeklyVolumeChart!: LineChartComponent;
 
   chartHeight = 300;
   // --- UPDATED: More descriptive constants for responsive control ---
@@ -360,4 +363,25 @@ export class StatsDashboardComponent implements OnInit, OnDestroy {
     this.dataSub?.unsubscribe();
     this.filterFormSub?.unsubscribe();
   }
+
+  /**
+  * Manually deactivates any active entries on the ngx-charts components
+  * when their container is scrolled. This correctly hides the tooltips.
+  */
+  onChartScroll(): void {
+    // Check if the chart component exists and if its tooltip is active
+    if (this.muscleGroupChart && this.muscleGroupChart.activeEntries.length > 0) {
+      // Clear the active entries array to hide the tooltip
+      this.muscleGroupChart.activeEntries = [];
+      // Manually trigger change detection for the chart component to ensure the view updates
+      this.muscleGroupChart.update(); 
+    }
+
+    if (this.weeklyVolumeChart && this.weeklyVolumeChart.activeEntries.length > 0) {
+      this.weeklyVolumeChart.activeEntries = [];
+      this.weeklyVolumeChart.update();
+    }
+  }
+
+
 }

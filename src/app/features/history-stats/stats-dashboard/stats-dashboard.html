@@ -115,15 +115,16 @@
                 <div class="bg-white dark:bg-gray-700 p-4 rounded-md shadow-md min-h-[350px] flex flex-col">
                     <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">Volume by Muscle Group <span
                             *ngIf="hasActiveDateFilters()">(Period)</span></h3>
-                    <div *ngIf="muscleGroupChartDataForPeriod().length > 0; else noMuscleChartData"
+                    <div #muscleGroupChartContainer (scroll)="onChartScroll()"
+                        *ngIf="muscleGroupChartDataForPeriod().length > 0; else noMuscleChartData"
                         class="scrollable-chart-container">
                         <ngx-charts-bar-vertical [view]="muscleGroupChartView()"
                             [results]="muscleGroupChartDataForPeriod()" [scheme]="customColorScheme"
                             [gradient]="gradient" [xAxis]="showXAxis" [yAxis]="showYAxis" [legend]="false"
-                            [showXAxisLabel]="showXAxisLabel" [showYAxisLabel]="false"
-                            [xAxisLabel]="xAxisLabelMuscle" [yAxisLabel]="yAxisLabelVolume()"
-                            [yAxisTickFormatting]="yAxisTickFormat" [showDataLabel]="barChartShowDataLabel"
-                            [roundEdges]="barChartRoundEdges" (select)="onChartSelect($event)">
+                            [showXAxisLabel]="showXAxisLabel" [showYAxisLabel]="false" [xAxisLabel]="xAxisLabelMuscle"
+                            [yAxisLabel]="yAxisLabelVolume()" [yAxisTickFormatting]="yAxisTickFormat"
+                            [showDataLabel]="barChartShowDataLabel" [roundEdges]="barChartRoundEdges"
+                            (select)="onChartSelect($event)">
                         </ngx-charts-bar-vertical>
                     </div>
                     <ng-template #noMuscleChartData>
@@ -140,17 +141,18 @@
                     class="bg-white dark:bg-gray-700 p-4 rounded-md shadow-md min-h-[350px] flex flex-col">
                     <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">Weekly Volume Trend <span
                             *ngIf="hasActiveDateFilters()">(Period)</span></h3>
-                    <div *ngIf="weeklyVolumeChartDataForPeriod().length > 0 && weeklyVolumeChartDataForPeriod()[0].series.length > 0; else noWeeklyChartData"
+                    <div (scroll)="onChartScroll()"
+                        *ngIf="weeklyVolumeChartDataForPeriod().length > 0 && weeklyVolumeChartDataForPeriod()[0].series.length > 0; else noWeeklyChartData"
                         class="scrollable-chart-container flex-grow">
                         <!-- UPDATED: [view] is now bound to weeklyVolumeChartView() -->
                         <ngx-charts-line-chart [view]="weeklyVolumeChartView()"
                             [results]="weeklyVolumeChartDataForPeriod()" [gradient]="gradient" [xAxis]="showXAxis"
                             [yAxis]="showYAxis" [legend]="false" [showXAxisLabel]="showXAxisLabel"
-                            [showYAxisLabel]="false" [xAxisLabel]="xAxisLabelWeek"
-                            [yAxisLabel]="yAxisLabelVolume()" [yAxisTickFormatting]="yAxisTickFormat"
-                            [autoScale]="true" [scheme]="customColorScheme" [curve]="lineChartCurve"
-                            [timeline]="hasWeeklyVolumeChartData" [referenceLines]="lineChartReferenceLines()"
-                            (select)="onChartSelect($event)" class="chart-container weekly-trend-chart">
+                            [showYAxisLabel]="false" [xAxisLabel]="xAxisLabelWeek" [yAxisLabel]="yAxisLabelVolume()"
+                            [yAxisTickFormatting]="yAxisTickFormat" [autoScale]="true" [scheme]="customColorScheme"
+                            [curve]="lineChartCurve" [timeline]="hasWeeklyVolumeChartData"
+                            [referenceLines]="lineChartReferenceLines()" (select)="onChartSelect($event)"
+                            class="chart-container weekly-trend-chart">
                         </ngx-charts-line-chart>
                         <p *ngIf="!hasWeeklyVolumeChartData"
                             class="text-center text-xs text-gray-500 dark:text-gray-400 italic mt-1">
