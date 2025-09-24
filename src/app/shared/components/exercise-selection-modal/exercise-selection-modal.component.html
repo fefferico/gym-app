@@ -1,10 +1,11 @@
 <div *ngIf="isOpen()"
     class="fixed inset-0 bg-gray-700 bg-opacity-75 transition-opacity overflow-y-auto h-full w-full z-[70] flex items-center justify-center p-4 backdrop-blur-sm">
 
-    <div (clickOutside)="onClose()" class="relative transform overflow-hidden rounded-md bg-white dark:bg-gray-700 text-left shadow-xl transition-all sm:my-8 w-full flex flex-col max-h-[90vh]">
+    <div (clickOutside)="onClose()"
+        class="relative transform overflow-hidden rounded-md bg-white dark:bg-gray-700 text-left shadow-xl transition-all sm:my-8 w-full flex flex-col max-h-[90vh]">
 
-        <!-- Header & Search Section -->
-        <div class="px-5 py-2 flex-shrink-0">
+        <!-- Header -->
+        <div class="px-5 py-2 flex-shrink-0 border-b border-gray-200 dark:border-gray-600">
             <div class="flex justify-between items-center">
                 <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">{{ title() }}</h3>
                 <button type="button" (click)="onClose()"
@@ -12,57 +13,118 @@
                     <app-icon name="cancel" class="w-6 h-6"></app-icon>
                 </button>
             </div>
+        </div>
 
-            <div class="my-4 text-center">
-                <!-- Main Search Bar (visible in default view) -->
-                <input #exerciseSearchFied *ngIf="!isShowingSimilarView()" type="text" [placeholder]="searchPlaceholder()"
-                    [(ngModel)]="searchTerm"
-                    (keydown.enter)="onSearchEnter()"
-                    class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-gray-200" />
-
-                <!-- "Show Similar" button (conditionally rendered) -->
-                <button *ngIf="showSimilarButton() && !isShowingSimilarView()" (click)="onFindSimilar()"
-                    class="justify-center inline-flex items-center mt-2 px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700">
-                    OR SHOW SIMILAR EXERCISES
-                </button>
-
-                <!-- "Back to Search" button (visible in 'similar' view) -->
-                <button *ngIf="isShowingSimilarView()" (click)="onBackToSearch()"
-                    class="justify-center inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md shadow-sm text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                    <app-icon name="back" class="w-5 h-5 mr-2"></app-icon>
-                    BACK TO SEARCH
+        <!-- +++ NEW: Filter and Sort Accordion Section +++ -->
+        <div class="px-4 pt-4 flex-shrink-0">
+            <div class="flex justify-between items-center">
+                <h4 class="font-semibold text-gray-700 dark:text-gray-200">Filters & Sorting</h4>
+                <button (click)="toggleFilterAccordion()"
+                    class="rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-light transition-all duration-300 ease-in-out">
+                    <app-icon name="filter" class="w-10 h-10 transition-transform duration-300"
+                        [class.rotate-180]="isFilterAccordionOpen()"></app-icon>
                 </button>
             </div>
         </div>
+        <div class="overflow-hidden transition-all duration-300 ease-in-out px-4 flex-shrink-0"
+            [style.maxHeight]="isFilterAccordionOpen() ? '600px' : '0px'">
+            <div class="py-4 space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <!-- Category -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
+                        <select (change)="onCategoryChange($event)" [value]="selectedCategory() || ''"
+                            class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-gray-200">
+                            <option value="">All Categories</option>
+                            <option *ngFor="let cat of categories$ | async" [value]="cat">{{ cat | titlecase }}</option>
+                        </select>
+                    </div>
+                    <!-- Muscle Group -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Muscle
+                            Group</label>
+                        <select (change)="onMuscleGroupChange($event)" [value]="selectedMuscleGroup() || ''"
+                            class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-gray-200">
+                            <option value="">All Muscles</option>
+                            <option *ngFor="let muscle of primaryMuscleGroups$ | async" [value]="muscle">{{ muscle |
+                                titlecase }}</option>
+                        </select>
+                    </div>
+                </div>
+                <!-- Search Input -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Search Name</label>
+                    <input #exerciseSearchFied type="text" [placeholder]="searchPlaceholder()" [(ngModel)]="searchTerm"
+                        (keydown.enter)="onSearchEnter()"
+                        class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-gray-200" />
+                </div>
+                <!-- Sort By -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sort By</label>
+                    <select (change)="onSortModeChange($event)" [value]="sortMode()"
+                        class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-gray-200">
+                        <option value="alpha">Alphabetical</option>
+                        <option value="lastUsed">Last Used</option>
+                        <option value="frequency">Most Used</option>
+                    </select>
+                </div>
+                <!-- Clear Button -->
+                <div class="text-right">
+                    <button (click)="clearFilters()"
+                        class="text-sm text-blue-600 hover:underline dark:text-blue-400">Clear Filters</button>
+                </div>
+            </div>
+        </div>
+        <!-- +++ END: Filter Section +++ -->
 
         <!-- Scrollable Exercise List -->
-         <div class="h-80 px-4 sm:px-6 py-2">
-            <cdk-virtual-scroll-viewport itemSize="60" class="h-full custom-scrollbar ">
-                <!-- FIXED: Iterate over the reactive computed signal -->
-                <ul class="space-y-1">
-                    <li *cdkVirtualFor="let ex of filteredExercises(); let odd = odd" 
-                        (click)="onExerciseClicked(ex)"
+        <div #scrollContainer class="h-80 px-4 sm:px-6 py-2 overflow-y-auto custom-scrollbar">
+            <!-- +++ MODIFIED: Iterate over processed list and handle headers +++ -->
+            <ul class="space-y-1">
+                <ng-container *ngFor="let item of processedExercises(); let odd = odd">
+                    <!-- Case 1: Item is an Alphabetical Header -->
+                    <div *ngIf="!isExercise(item)"
+                        class="py-2 px-3 sticky top-0 bg-gray-200 dark:bg-gray-800 text-gray-600 dark:text-gray-200 font-bold text-lg z-10 rounded-md">
+                        {{ item.label }}
+                    </div>
+
+                    <!-- Case 2: Item is an Exercise (Unchanged) -->
+                    <li *ngIf="isExercise(item)" (click)="onExerciseClicked(item)"
                         class="p-3 rounded-md cursor-pointer transition-all duration-150 ease-in-out flex justify-between items-center transform hover:-translate-y-1 shadow-sm hover:shadow-md"
                         [ngClass]="{
                             'bg-gray-200 dark:bg-gray-600': odd,
                             'bg-gray-100 dark:bg-gray-500': !odd
                         }">
                         <div>
-                            <span class="font-medium text-gray-800 dark:text-gray-200">{{ ex.name }}</span>
-                            <span *ngIf="ex.category" class="block text-xs text-gray-500 dark:text-gray-400">{{ ex.category | titlecase }} {{ ex.primaryMuscleGroup ? (' - ' + ex.primaryMuscleGroup | titlecase) : '' }}</span>
-                            <span *ngIf="ex.isCustom || ex.lastUsedAt" class="block text-xs text-gray-500 dark:text-gray-400 italic">
-                                [ <ng-container *ngIf="ex.isCustom">Custom</ng-container>
-                                <ng-container *ngIf="ex.isCustom && ex.lastUsedAt"> | </ng-container>
-                                <ng-container *ngIf="ex.lastUsedAt">Used {{ ex.lastUsedAt | date:'dd-MM-yy':'UTC' }}</ng-container> ]
+                            <span class="font-medium text-gray-800 dark:text-gray-200">{{ item.name }}</span>
+                            <span *ngIf="item.category" class="block text-xs text-gray-500 dark:text-gray-400">{{
+                                item.category | titlecase }} {{ item.primaryMuscleGroup ? (' - ' +
+                                item.primaryMuscleGroup | titlecase) : '' }}</span>
+                            <span *ngIf="item.isCustom || item.lastUsedAt || item.usageCount != null"
+                                class="block text-xs text-gray-500 dark:text-gray-400 italic">
+                                [
+                                <ng-container *ngIf="item.isCustom">Custom</ng-container>
+                                
+                                <!-- Separator 1 -->
+                                <ng-container *ngIf="item.isCustom && (item.usageCount != null || item.lastUsedAt)"> | </ng-container>
+                                
+                                <ng-container *ngIf="item.usageCount != null">Count: {{ item.usageCount }}</ng-container>
+                                
+                                <!-- Separator 2 -->
+                                <ng-container *ngIf="item.usageCount != null && item.lastUsedAt"> | </ng-container>
+                                
+                                <ng-container *ngIf="item.lastUsedAt">Last used: {{ item.lastUsedAt | date:'dd-MM-yy':'UTC' }}</ng-container>
+                                ]
                             </span>
                         </div>
-                        <app-icon [name]="itemIconName()" [class]="'h-6 w-6 mr-1 flex-shrink-0 ' + itemIconClass()"></app-icon>
+                        <app-icon [name]="itemIconName()"
+                            [class]="'h-6 w-6 mr-1 flex-shrink-0 ' + itemIconClass()"></app-icon>
                     </li>
-                    <li *ngIf="filteredExercises().length === 0" class="text-gray-500 dark:text-gray-400 text-center p-4">
-                        {{ isShowingSimilarView() ? 'No similar exercises found.' : 'No exercises match your search.' }}
-                    </li>
-                </ul>
-            </cdk-virtual-scroll-viewport>
+                </ng-container>
+                <li *ngIf="processedExercises().length === 0" class="text-gray-500 dark:text-gray-400 text-center p-4">
+                    {{ isShowingSimilarView() ? 'No similar exercises found.' : 'No exercises match your filters.' }}
+                </li>
+            </ul>
         </div>
         <div *ngIf="showCreateCustomLink()" class="py-3 border-t border-gray-200 dark:border-gray-600 text-center">
             <button type="button" (click)="onCreateCustom()"

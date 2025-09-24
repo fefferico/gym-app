@@ -792,9 +792,17 @@ export class TrackingService {
     const updatedLogs = currentLogs.filter(log => log.id !== logId);
     this.saveWorkoutLogsToStorage(updatedLogs);
     console.log(`Workout log with ID ${logId} deleted. Recalculating PBs...`);
+    
     await this.recalculateAllPersonalBests();
-  }
 
+    // =================== START OF CORRECTION ===================
+    // After deleting a log and recalculating PBs, we must also
+    // resync the last used timestamps to ensure consistency.
+    console.log(`Syncing exercise timestamps after log deletion...`);
+    await this.backfillLastUsedExerciseTimestamps();
+    // =================== END OF CORRECTION ===================
+  }
+  
   /**
    * Retrieves all workout logs associated with a specific program ID and within a given date range.
    * @param programId The ID of the program to filter logs by.
@@ -897,13 +905,13 @@ export class TrackingService {
 
     // The logs are already sorted newest first, which is perfect.
     // We will iterate and the first time we see an exercise ID, that's its most recent use.
-    const lastUsedMap = new Map<string, string>(); // Map<exerciseId, lastUsedTimestamp>
+    const lastUsedMap = new Map<string, {lastUsedTimestamp: string, lastUsedLogId: string}>(); // Map<exerciseId, lastUsedTimestamp>
 
     for (const log of allLogs) {
       for (const loggedEx of log.exercises) {
         // If we haven't already found a newer log for this exercise, record this one.
         if (!lastUsedMap.has(loggedEx.exerciseId)) {
-          lastUsedMap.set(loggedEx.exerciseId, log.date);
+          lastUsedMap.set(loggedEx.exerciseId, {lastUsedTimestamp: log.date, lastUsedLogId: log.id});
         }
       }
     }
@@ -1067,7 +1075,7 @@ export class TrackingService {
     if (!routineToUpdate) {
       return Promise.resolve(undefined);
     }
-    
+
     if (logsForRoutine.length === 0) {
       // If no logs, ensure lastPerformed is null/undefined
       if (routineToUpdate.lastPerformed) {
@@ -1076,11 +1084,11 @@ export class TrackingService {
       }
       return Promise.resolve(routineToUpdate);
     }
-    
+
     const mostRecentLog = logsForRoutine.reduce((latest, current) => {
       return current.startTime > latest.startTime ? current : latest;
     });
-    
+
     // Only update if the date is different
     if (routineToUpdate.lastPerformed !== mostRecentLog.date) {
       routineToUpdate.lastPerformed = mostRecentLog.date;
@@ -1108,11 +1116,11 @@ export class TrackingService {
     }
 
     // --- Part 1: Backfill Exercise Timestamps ---
-    const lastUsedMap = new Map<string, string>();
+    const lastUsedMap = new Map<string, {lastUsedTimestamp: string, lastUsedLogId: string}>();
     for (const log of allLogs) {
       for (const loggedEx of log.exercises) {
         if (!lastUsedMap.has(loggedEx.exerciseId)) {
-          lastUsedMap.set(loggedEx.exerciseId, log.date);
+          lastUsedMap.set(loggedEx.exerciseId, {lastUsedTimestamp: log.date, lastUsedLogId: log.id});
         }
       }
     }
@@ -1135,6 +1143,39 @@ export class TrackingService {
     // ++++++++++++++++++++++++++++++
 
     this.toastService.success('Full history has been synced!', 3000, "Sync Complete");
+  }
+
+  /**
+   * --- NEW METHOD ---
+   * Returns an observable map of exercise usage counts.
+   * The key is the exercise ID, and the value is the number of workout logs
+   * in which the exercise appears at least once.
+   * @returns An Observable<Map<string, number>> that emits whenever the logs change.
+   */
+  public getExerciseUsageCounts(): Observable<Map<string, number>> {
+    return this.workoutLogs$.pipe(
+      map(logs => {
+        const usageMap = new Map<string, number>();
+        if (!logs) return usageMap;
+
+        for (const log of logs) {
+          // Use a Set to count each exercise only once per workout log,
+          // preventing multiple sets of the same exercise from inflating the count.
+          const exercisesInThisLog = new Set<string>();
+          for (const loggedEx of log.exercises) {
+            exercisesInThisLog.add(loggedEx.exerciseId);
+          }
+
+          // Increment the count for each unique exercise found in the log.
+          for (const exerciseId of exercisesInThisLog) {
+            const currentCount = usageMap.get(exerciseId) || 0;
+            usageMap.set(exerciseId, currentCount + 1);
+          }
+        }
+        return usageMap;
+      }),
+      shareReplay(1) // Cache the last emitted map for new subscribers
+    );
   }
 
 

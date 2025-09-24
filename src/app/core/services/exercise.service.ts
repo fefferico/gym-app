@@ -248,7 +248,7 @@ export class ExerciseService {
     const updatedExercises = currentExercises.map(ex => {
       if (uniqueExerciseIds.includes(ex.id)) {
         exercisesWereUpdated = true;
-        return { ...ex, lastUsedAt: now };
+        return { ...ex, lastUsedAt: now, lastUsedLogId: ex.lastUsedLogId};
       }
       return ex;
     });
@@ -679,26 +679,46 @@ export class ExerciseService {
     );
   }
 
-  /**
-  * --- NEW METHOD for Batch Updates ---
-  * Updates the `lastUsedAt` timestamp for multiple exercises at once.
-  * This is more efficient than updating them one by one.
-  * @param lastUsedMap A Map where the key is the exerciseId and the value is the ISO date string.
+   /**
+  * --- REWRITTEN for Full Synchronization ---
+  * Clears the `lastUsedAt` and `lastUsedLogId` for ALL exercises, then updates
+  * only the exercises present in the provided map. This ensures exercises
+  * that are no longer used have their timestamps correctly removed.
+  * @param lastUsedMap A Map where the key is the exerciseId and the value contains the new timestamp and logId.
   */
-  public async batchUpdateLastUsedTimestamps(lastUsedMap: Map<string, string>): Promise<void> {
+  public async batchUpdateLastUsedTimestamps(lastUsedMap: Map<string, {lastUsedTimestamp: string, lastUsedLogId: string}>): Promise<void> {
     const currentExercises = this.exercisesSubject.getValue();
     let exercisesWereUpdated = false;
 
     const updatedExercises = currentExercises.map(exercise => {
+      // Create a mutable copy of the exercise to work with
+      const mutableExercise = { ...exercise };
+      let needsUpdate = false;
+
+      // Check if this exercise should be updated with a new date
       if (lastUsedMap.has(exercise.id)) {
-        const newTimestamp = lastUsedMap.get(exercise.id);
-        // Only update if the timestamp is different to avoid unnecessary writes
-        if (exercise.lastUsedAt !== newTimestamp) {
-          exercisesWereUpdated = true;
-          return { ...exercise, lastUsedAt: newTimestamp };
+        const { lastUsedTimestamp, lastUsedLogId } = lastUsedMap.get(exercise.id)!;
+        // Update if the timestamp or logId is different
+        if (mutableExercise.lastUsedAt !== lastUsedTimestamp || mutableExercise.lastUsedLogId !== lastUsedLogId) {
+          mutableExercise.lastUsedAt = lastUsedTimestamp;
+          mutableExercise.lastUsedLogId = lastUsedLogId;
+          needsUpdate = true;
+        }
+      } else {
+        // This exercise was NOT in the logs. If it has a stale timestamp, clear it.
+        if (mutableExercise.lastUsedAt || mutableExercise.lastUsedLogId) {
+          mutableExercise.lastUsedAt = undefined;
+          mutableExercise.lastUsedLogId = undefined;
+          mutableExercise.usageCount = 0;
+          needsUpdate = true;
         }
       }
-      return exercise;
+      
+      if (needsUpdate) {
+        exercisesWereUpdated = true;
+      }
+
+      return mutableExercise;
     });
 
     if (exercisesWereUpdated) {

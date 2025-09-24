@@ -2,7 +2,7 @@
 import { Component, inject, OnInit, signal, computed, effect, PLATFORM_ID, HostListener } from '@angular/core';
 import { AsyncPipe, CommonModule, isPlatformBrowser, TitleCasePipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
-import { Observable } from 'rxjs';
+import { combineLatest, Observable } from 'rxjs';
 import { Exercise } from '../../core/models/exercise.model';
 import { ExerciseService } from '../../core/services/exercise.service';
 import { animate, state, style, transition, trigger } from '@angular/animations';
@@ -17,6 +17,7 @@ import { AppSettingsService } from '../../core/services/app-settings.service';
 import { MenuMode } from '../../core/models/app-settings.model';
 import { IconComponent } from '../../shared/components/icon/icon.component';
 import { deleteBtn, editBtn, hideBtn, unhideBtn, viewBtn } from '../../core/services/buttons-data';
+import { TrackingService } from '../../core/services/tracking.service';
 
 @Component({
   selector: 'app-exercise-list',
@@ -81,6 +82,7 @@ export class ExerciseListComponent implements OnInit {
   private themeService = inject(ThemeService);
   private platformId = inject(PLATFORM_ID);
   private appSettingsService = inject(AppSettingsService);
+  private trackingService = inject(TrackingService);
 
   categories$: Observable<string[]> | undefined;
   primaryMuscleGroups$: Observable<string[]> | undefined;
@@ -161,10 +163,13 @@ export class ExerciseListComponent implements OnInit {
     this.menuModeCompact = this.appSettingsService.isMenuModeCompact();
     this.menuModeModal = this.appSettingsService.isMenuModeModal();
 
-    // This subscription now gets ALL exercises from the service
+    // =================== START OF REVERT ===================
+    // The subscription is now simple again. It only fetches the raw exercise list.
+    // The modal will handle adding the usage counts.
     this.exerciseService.exercises$.subscribe(exercises => {
       this.allExercises.set(exercises);
     });
+    // =================== END OF REVERT ===================
   }
 
   onCategoryChange(event: Event): void {

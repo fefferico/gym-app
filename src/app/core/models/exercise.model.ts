@@ -34,5 +34,7 @@ export interface Exercise {
   createdAt?: string; // Timestamp for when the exercise was created
   updatedAt?: string; // Timestamp for when the exercise was last updated
   lastUsedAt?: string; // Timestamp for when the exercise was last used in a workout
+  lastUsedLogId?: string;
   isHidden?: boolean; // Flag to indicate if the exercise is hidden from the main list
+  usageCount?: number;
 }
