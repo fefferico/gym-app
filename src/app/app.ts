@@ -5,7 +5,6 @@ import { NavigationComponent } from './shared/components/navigation/navigation';
 import { CommonModule } from '@angular/common';
 
 import { TrackingService } from './core/services/tracking.service';
-import { LoggedWorkoutExercise, WorkoutLog } from './core/models/workout-log.model';
 import { SpinnerComponent } from './shared/components/spinner/spinner.component';
 import { ToastContainerComponent } from './shared/components/toast/toast.component';
 import { PausedWorkoutComponent } from './features/workout-tracker/paused-workout/paused-workout.component';
@@ -16,7 +15,7 @@ import { filter, map } from 'rxjs';
   standalone: true,
   imports: [RouterOutlet, NavigationComponent, CommonModule, SpinnerComponent, ToastContainerComponent, PausedWorkoutComponent],
   template: `
-    <div class="flex flex-col min-h-screen">
+    <div class="flex flex-col min-h-screen bg-gray-100 dark:bg-gray-900">
   
   <!-- Let's assume you have a header/navbar component here -->
   <!-- It should be fixed or sticky for this problem to occur -->
@@ -31,7 +30,7 @@ import { filter, map } from 'rxjs';
     ===============================================
   -->
   <!-- <main class="flex-grow container mx-auto pt-16 pb-20">  -->
-  <main class="flex-grow container mx-auto" 
+  <main class="flex-grow container mx-auto bg-gray-100 dark:bg-gray-900" 
       [ngClass]="{ 
         'pb-20': !isFullScreenPlayerActive,
         'mb-0': isFullScreenPlayerActive 

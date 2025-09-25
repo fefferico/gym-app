@@ -229,22 +229,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   });
 
 
-  // filteredExercisesForSwitchModal = computed(() => {
-  //   const term = this.modalSearchTerm().toLowerCase();
-  //   if (this.isShowingSimilarInSwitchModal()) {
-  //     return this.exercisesForSwitchModal();
-  //   }
-  //   if (!term) {
-  //     return this.availableExercises;
-  //   }
-  //   const normalizedTerm = this.exerciseService.normalizeExerciseNameForSearch(term);
-  //   return this.availableExercises.filter(ex =>
-  //     ex.name.toLowerCase().includes(normalizedTerm) ||
-  //     ex.category?.toLowerCase().includes(normalizedTerm) ||
-  //     ex.primaryMuscleGroup?.toLowerCase().includes(normalizedTerm)
-  //   );
-  // });
-
   @ViewChildren('exerciseCard') exerciseCards!: QueryList<ElementRef>;
   @ViewChild('header') header!: ElementRef; // Get the header element
 
@@ -269,7 +253,9 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     await this.lockScreenToPortrait();
   }
 
+  private isDestroyed = false;
   ngOnDestroy(): void {
+    this.isDestroyed = true;
     if (!this.isSessionConcluded && (this.sessionState() === SessionState.Playing || this.sessionState() === SessionState.Paused)) {
       this.savePausedSessionState();
     }
@@ -351,6 +337,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         return this.routineId ? this.workoutService.getRoutineById(this.routineId) : of(null);
       })
     ).subscribe(async (routine) => {
+      if (this.isDestroyed) { return; }
       if (routine) {
 
         // +++ NEW: PERCEIVED EFFORT CHECK - START +++
@@ -1592,11 +1579,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const hasExercises = (this.routine()?.exercises?.length ?? 0) > 0;
     const commonModalButtonClass = this.menuButtonBaseClass(); // Use the new computed property
 
-    // Base class for non-modal dropdowns/compact, if needed (adjust as per your `getMenuMode` logic)
-    // Assuming `defaultBtnClass` is still relevant for non-modal modes
-    const wFullClass = this.getMenuMode() === 'compact' ? '' : ' w-full';
-    const defaultBtnClass = 'rounded text-left p-3 font-medium text-white hover:bg-blue-600 flex items-center hover:text-white dark:hover:text-gray-100 dark:hover:text-white' + wFullClass;
-
     const addExerciseDisabledClass = (isPaused || !hasExercises ? 'disabled ' : '');
 
     const actions: ActionMenuItem[] = [
@@ -1669,7 +1651,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   compactActionItemsMap = computed<Map<number, ActionMenuItem[]>>(() => {
     const map = new Map<number, ActionMenuItem[]>();
     const routine = this.routine(); // Read the dependency signal once
-    const commonModalButtonClass = this.menuButtonBaseClass(); // Use the new computed property
+    const commonModalButtonClass = this.menuButtonBaseClass();
 
     if (!routine) {
       return map; // Return an empty map if there's no routine

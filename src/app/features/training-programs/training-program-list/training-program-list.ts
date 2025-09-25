@@ -75,22 +75,26 @@ type CalendarDisplayMode = 'week' | 'month';
             position: 'absolute',
             top: 0,
             left: 0,
-            width: '100%'
+            width: '100%',
+            height: '100%' // Ensure children take full height within their 'absolute' context
           })
         ], { optional: true }),
         query(':enter', [
-          style({ left: '100%' })
+          style({ left: '100%', opacity: 0 }) // Add opacity 0 for smoother entry
         ], { optional: true }),
         query(':leave', [
-          style({ left: '0%' })
+          style({ left: '0%', opacity: 1 }) // Start with full opacity
         ], { optional: true }),
         group([
           query(':leave', [
-            animate('300ms ease-out', style({ left: '-100%' }))
+            animate('300ms ease-out', style({ left: '-100%', opacity: 0 })) // Animate opacity out
           ], { optional: true }),
           query(':enter', [
-            animate('300ms ease-out', style({ left: '0%' }))
-          ], { optional: true })
+            animate('300ms ease-out', style({ left: '0%', opacity: 1 })) // Animate opacity in
+          ], { optional: true }),
+          // Add animation for the parent's height to adjust dynamically
+          // This targets the host element (the div with [@slideView])
+          animate('300ms ease-out', style({ height: '*' }))
         ])
       ]),
       transition('calendar => list', [
@@ -100,22 +104,25 @@ type CalendarDisplayMode = 'week' | 'month';
             position: 'absolute',
             top: 0,
             left: 0,
-            width: '100%'
+            width: '100%',
+            height: '100%' // Ensure children take full height within their 'absolute' context
           })
         ], { optional: true }),
         query(':enter', [
-          style({ left: '-100%' })
+          style({ left: '-100%', opacity: 0 }) // Add opacity 0 for smoother entry
         ], { optional: true }),
         query(':leave', [
-          style({ left: '0%' })
+          style({ left: '0%', opacity: 1 }) // Start with full opacity
         ], { optional: true }),
         group([
           query(':leave', [
-            animate('300ms ease-out', style({ left: '100%' }))
+            animate('300ms ease-out', style({ left: '100%', opacity: 0 })) // Animate opacity out
           ], { optional: true }),
           query(':enter', [
-            animate('300ms ease-out', style({ left: '0%' }))
-          ], { optional: true })
+            animate('300ms ease-out', style({ left: '0%', opacity: 1 })) // Animate opacity in
+          ], { optional: true }),
+          // Add animation for the parent's height to adjust dynamically
+          animate('300ms ease-out', style({ height: '*' }))
         ])
       ])
     ]),
@@ -397,7 +404,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
     });
   }
 
-private setupModeSwipe(modeSwipeElement: HTMLElement): void {
+  private setupModeSwipe(modeSwipeElement: HTMLElement): void {
     if (isPlatformBrowser(this.platformId) && modeSwipeElement) {
       this.ngZone.runOutsideAngular(() => {
         this.hammerInstanceMode = new Hammer(modeSwipeElement);
@@ -1238,24 +1245,35 @@ private setupModeSwipe(modeSwipeElement: HTMLElement): void {
   }
 
   getCalendarDayClasses(day: CalendarDay): object {
-    return {
-      // A day is clickable only if it has a workout scheduled or logged
-      'text-black dark:text-white cursor-default': true,
+    const baseClasses = ['cursor-pointer', 'font-bold'];
+    let backgroundClasses: string[] = [];
+    let textClasses: string[] = ['text-gray-800', 'dark:text-gray-200']; // Default text color
 
-      // Styling for today's date
-      'ring-4 ring-primary font-bold': day.isToday,
+    if (day.hasWorkout) {
+      if (day.isLogged) {
+        backgroundClasses.push('bg-green-500', 'hover:bg-green-700');
+        textClasses = ['text-white']; // Override default text color
+      } else {
+        backgroundClasses.push('bg-yellow-500', 'hover:bg-yellow-600');
+        textClasses = ['text-white']; // Override default text color
+      }
+    } else {
+      if (day.isLogged) {
+        backgroundClasses.push('bg-green-500', 'hover:bg-green-700');
+      } else {
+        // No workout, not logged: default styles apply, potentially with cursor-default
+        return { 'cursor-default text-gray-800 dark:text-gray-200 font-bold': true };
+      }
+    }
 
-      // Default text color
-      'text-gray-800 dark:text-gray-200': !day.isToday,
-      'hover:bg-yellow-600 bg-yellow-500 text-white font-bold': day.hasWorkout && !day.isLogged,
-      'hover:bg-green-700 bg-green-500 text-white font-bold': day.hasWorkout && day.isLogged,
-      'cursor-pointer': day.hasWorkout || day.isLogged
-    };
+    // Specific styles for today
+    if (day.isToday) {
+      baseClasses.push('ring-4', 'ring-primary');
+    }
+
+    // Combine all classes
+    const classes = [...baseClasses, ...backgroundClasses, ...textClasses];
+
+    return { [classes.join(' ')]: true };
   }
-
-  // 'cursor-default': !day.hasLog,
-  //     'bg-primary text-white font-bold': day.isToday,
-  //     'text-gray-800 dark:text-gray-200': !day.isToday,
-  //     'text-gray-400 dark:text-gray-500': !day.isCurrentMonth, // This can be used if you re-add padding days
-  //     'cursor-pointer hover:bg-green-700 bg-green-500 text-white font-bold': day.hasLog,
 }

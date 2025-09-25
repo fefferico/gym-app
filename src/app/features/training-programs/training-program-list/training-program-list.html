@@ -243,7 +243,7 @@
         </ng-template>
       </div>
 
-      <div *ngSwitchCase="'calendar'">
+      <div *ngSwitchCase="'calendar'" class="min-h-[500px]">
                 <div *ngIf="activeProgramForCalendar() as activeProgram; else noActiveProgramForCalendar">
                     <div class="calendar-scroll-container">
                         <div *ngFor="let month of calendarMonths()" class="month-container mb-8">

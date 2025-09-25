@@ -27,7 +27,7 @@
     </button>
   </div>
 
-<div class="relative min-h-[400px] overflow-hidden" #swipeContainer>
+<div class="relative min-h-[400px] overflow-hidden pt-1" #swipeContainer>
     <div [@slideView]="currentHistoryView()" [ngSwitch]="currentHistoryView()">
       <!-- LIST VIEW -->
       <div *ngSwitchCase="'list'">
@@ -91,7 +91,7 @@
 
               <!-- WORKOUT LOG CARD -->
               <div *ngIf="item.itemType === 'workout'"
-                class="bg-white dark:bg-gray-700 border-2 border-l-4 dark:border-l-4 border-primary border-b-0 border-r-0 rounded-md shadow-md hover:shadow-lg transition-shadow duration-200 relative group transform hover:-translate-y-1 text-primary dark:text-primary-light dark:hover:text-yellow-200 dark:hover:bg-gray-600 hover:bg-gray-200"
+                class="bg-white dark:bg-gray-700 border-2 border-l-4 dark:border-l-4 border-primary border-b-0 border-r-0 rounded-md shadow-md hover:shadow-lg transition-shadow duration-200 relative group transform hover:-translate-y-1 text-primary dark:text-primary-light hover:text-primary-dark dark:hover:text-yellow-200 dark:hover:bg-gray-600"
                 [style.zIndex]="areActionsVisible(item.id) ? 50 : 'auto'">
                 <div class="p-4 sm:p-6 cursor-pointer border dark:border-none rounded-md" (click)="viewLogDetails(item.id)">
                   <div class="flex justify-between items-start mb-1.5">
@@ -238,7 +238,7 @@
       </div>
 
       <!-- CALENDAR VIEW -->
-      <div *ngSwitchCase="'calendar'">
+      <div *ngSwitchCase="'calendar'" class="min-h-[500px]"> <!-- Add a minimum height here -->
         <!-- This container will become the scrollable area -->
         <div class="calendar-scroll-container">
           <!-- Loop over each month's data -->

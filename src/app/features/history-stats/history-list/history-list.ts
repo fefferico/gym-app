@@ -88,22 +88,26 @@ type EnrichedHistoryListItem = HistoryListItem & {
             position: 'absolute',
             top: 0,
             left: 0,
-            width: '100%'
+            width: '100%',
+            height: '100%' // Ensure children take full height within their 'absolute' context
           })
         ], { optional: true }),
         query(':enter', [
-          style({ left: '100%' })
+          style({ left: '100%', opacity: 0 }) // Add opacity 0 for smoother entry
         ], { optional: true }),
         query(':leave', [
-          style({ left: '0%' })
+          style({ left: '0%', opacity: 1 }) // Start with full opacity
         ], { optional: true }),
         group([
           query(':leave', [
-            animate('300ms ease-out', style({ left: '-100%' }))
+            animate('300ms ease-out', style({ left: '-100%', opacity: 0 })) // Animate opacity out
           ], { optional: true }),
           query(':enter', [
-            animate('300ms ease-out', style({ left: '0%' }))
-          ], { optional: true })
+            animate('300ms ease-out', style({ left: '0%', opacity: 1 })) // Animate opacity in
+          ], { optional: true }),
+          // Add animation for the parent's height to adjust dynamically
+          // This targets the host element (the div with [@slideView])
+          animate('300ms ease-out', style({ height: '*' }))
         ])
       ]),
       transition('calendar => list', [
@@ -113,22 +117,25 @@ type EnrichedHistoryListItem = HistoryListItem & {
             position: 'absolute',
             top: 0,
             left: 0,
-            width: '100%'
+            width: '100%',
+            height: '100%' // Ensure children take full height within their 'absolute' context
           })
         ], { optional: true }),
         query(':enter', [
-          style({ left: '-100%' })
+          style({ left: '-100%', opacity: 0 }) // Add opacity 0 for smoother entry
         ], { optional: true }),
         query(':leave', [
-          style({ left: '0%' })
+          style({ left: '0%', opacity: 1 }) // Start with full opacity
         ], { optional: true }),
         group([
           query(':leave', [
-            animate('300ms ease-out', style({ left: '100%' }))
+            animate('300ms ease-out', style({ left: '100%', opacity: 0 })) // Animate opacity out
           ], { optional: true }),
           query(':enter', [
-            animate('300ms ease-out', style({ left: '0%' }))
-          ], { optional: true })
+            animate('300ms ease-out', style({ left: '0%', opacity: 1 })) // Animate opacity in
+          ], { optional: true }),
+          // Add animation for the parent's height to adjust dynamically
+          animate('300ms ease-out', style({ height: '*' }))
         ])
       ])
     ]),

@@ -4388,33 +4388,39 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     return '';
   }
 
-  compactActionItemsMap = computed<ActionMenuItem[]>(() => {
+  protected menuButtonBaseClass = computed(() => {
+    const isModalMenu = this.appSettingsService.isMenuModeModal();
+    const isCompactMenu = this.appSettingsService.isMenuModeCompact();
+    // This is the common part for all buttons, if they need special modal styling
+    return isModalMenu ? " w-full flex justify-start items-center text-black dark:text-white hover:text-white text-left px-4 py-2 rounded-md text-xl font-medium " : '';
+  });
+
+  compactActionmainSessionActionItemsMap = computed<ActionMenuItem[]>(() => {
     const actionsArray: ActionMenuItem[] = [];
     const activeInfo = this.activeSetInfo();
     const routine = this.routine();
     const workoutLog = this.currentWorkoutLogExercises();
+    const commonModalButtonClass = this.menuButtonBaseClass();
 
-    const isModalMenu = this.appSettingsService.isMenuModeModal();
-    const buttonCssClass = isModalMenu ? " w-full flex justify-start items-center text-white text-left px-4 py-2 rounded-md text-xl font-medium " : '';
     // Always add PAUSE
-    actionsArray.push({ ...pauseSessionBtn, overrideCssButtonClass: pauseSessionBtn.buttonClass + ' ' + buttonCssClass });
+    actionsArray.push({ ...pauseSessionBtn, overrideCssButtonClass: pauseSessionBtn.buttonClass + ' ' + commonModalButtonClass });
 
     // Add INSIGHTS if any sets have been logged
     if (workoutLog.length > 0) {
-      actionsArray.push({ ...openExercisePerformanceInsightsBtn, overrideCssButtonClass: openExercisePerformanceInsightsBtn.buttonClass + ' ' + buttonCssClass });
+      actionsArray.push({ ...openExercisePerformanceInsightsBtn, overrideCssButtonClass: openExercisePerformanceInsightsBtn.buttonClass + ' ' + commonModalButtonClass });
     }
 
-    actionsArray.push({ ...openSessionPerformanceInsightsBtn, overrideCssButtonClass: openSessionPerformanceInsightsBtn.buttonClass + ' ' + buttonCssClass });
+    actionsArray.push({ ...openSessionPerformanceInsightsBtn, overrideCssButtonClass: openSessionPerformanceInsightsBtn.buttonClass + ' ' + commonModalButtonClass });
 
     // Always add ADD EXERCISE
-    actionsArray.push({ ...addExerciseBtn, overrideCssButtonClass: addExerciseBtn.buttonClass + ' ' + buttonCssClass });
+    actionsArray.push({ ...addExerciseBtn, overrideCssButtonClass: addExerciseBtn.buttonClass + ' ' + commonModalButtonClass });
 
     if (this.canSwitchExercise()) {
-      actionsArray.push({ ...switchExerciseBtn, overrideCssButtonClass: switchExerciseBtn.buttonClass + ' ' + buttonCssClass });
+      actionsArray.push({ ...switchExerciseBtn, overrideCssButtonClass: switchExerciseBtn.buttonClass + ' ' + commonModalButtonClass });
     }
 
     if (this.canJumpToOtherExercise()) {
-      actionsArray.push({ ...jumpToExerciseBtn, overrideCssButtonClass: jumpToExerciseBtn.buttonClass + ' ' + buttonCssClass });
+      actionsArray.push({ ...jumpToExerciseBtn, overrideCssButtonClass: jumpToExerciseBtn.buttonClass + ' ' + commonModalButtonClass });
     }
 
     // Add SKIP SET/EXERCISE/DO LATER if there is an active set
@@ -4423,7 +4429,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       // Add WARMUP if allowed for the current set
       const superSetId = this.retrieveSuperSetID(activeInfo?.exerciseIndex);
       if ((this.isSuperSet(activeInfo?.exerciseIndex) && !this.isSupersetPartiallyLogged(superSetId)) && this.canAddWarmupSet()) {
-        actionsArray.push({ ...addWarmupSetBtn, overrideCssButtonClass: addWarmupSetBtn.buttonClass + ' ' + buttonCssClass });
+        actionsArray.push({ ...addWarmupSetBtn, overrideCssButtonClass: addWarmupSetBtn.buttonClass + ' ' + commonModalButtonClass });
       }
 
       const isSuperset = !!activeInfo.exerciseData.supersetId;
@@ -4435,14 +4441,14 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       const canSkipExercise = !isSuperset || !isSupersetStarted;
       if (canSkipExercise) {
         if (!this.isExercisePartiallyLogged(activeInfo?.exerciseData)) {
-          actionsArray.push({ ...skipCurrentExerciseBtn, label: skipExBtnLabel, overrideCssButtonClass: skipCurrentExerciseBtn.buttonClass + ' ' + buttonCssClass });
+          actionsArray.push({ ...skipCurrentExerciseBtn, label: skipExBtnLabel, overrideCssButtonClass: skipCurrentExerciseBtn.buttonClass + ' ' + commonModalButtonClass });
         }
-        actionsArray.push({ ...skipCurrentSetBtn, label: skipSetBtnLabel, overrideCssButtonClass: skipCurrentSetBtn.buttonClass + ' ' + buttonCssClass });
+        actionsArray.push({ ...skipCurrentSetBtn, label: skipSetBtnLabel, overrideCssButtonClass: skipCurrentSetBtn.buttonClass + ' ' + commonModalButtonClass });
       }
 
       // Only show "Do Later" if the superset hasn't been started yet
       if (!isSupersetStarted && !this.isExercisePartiallyLogged(activeInfo?.exerciseData)) {
-        actionsArray.push({ ...markAsDoLaterBtn, overrideCssButtonClass: markAsDoLaterBtn.buttonClass + ' ' + buttonCssClass });
+        actionsArray.push({ ...markAsDoLaterBtn, overrideCssButtonClass: markAsDoLaterBtn.buttonClass + ' ' + commonModalButtonClass });
       }
     }
 
@@ -4453,16 +4459,16 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       if (exerciseData.supersetId) {
         // Only allow removing from superset if no sets in that group have been logged
         if (!this.isSupersetPartiallyLogged(exerciseData.supersetId)) {
-          actionsArray.push({ ...removeFromSuperSetBtn, data: { exIndex: activeInfo.exerciseIndex }, overrideCssButtonClass: removeFromSuperSetBtn.buttonClass + ' ' + buttonCssClass } as ActionMenuItem);
+          actionsArray.push({ ...removeFromSuperSetBtn, data: { exIndex: activeInfo.exerciseIndex }, overrideCssButtonClass: removeFromSuperSetBtn.buttonClass + ' ' + commonModalButtonClass } as ActionMenuItem);
         }
       } else {
         // Add ADD TO and CREATE SUPERSET if conditions are met
         if (routine && routine.exercises.length >= 2) {
           if (routine.exercises.some(ex => ex.supersetId)) {
-            actionsArray.push({ ...addToSuperSetBtn, data: { exIndex: activeInfo.exerciseIndex }, overrideCssButtonClass: addToSuperSetBtn.buttonClass + ' ' + buttonCssClass } as ActionMenuItem);
+            actionsArray.push({ ...addToSuperSetBtn, data: { exIndex: activeInfo.exerciseIndex }, overrideCssButtonClass: addToSuperSetBtn.buttonClass + ' ' + commonModalButtonClass } as ActionMenuItem);
           }
           if (routine.exercises.filter(ex => !ex.supersetId).length >= 2) {
-            actionsArray.push({ ...createSuperSetBtn, data: { exIndex: activeInfo.exerciseIndex }, overrideCssButtonClass: createSuperSetBtn.buttonClass + ' ' + buttonCssClass } as ActionMenuItem);
+            actionsArray.push({ ...createSuperSetBtn, data: { exIndex: activeInfo.exerciseIndex }, overrideCssButtonClass: createSuperSetBtn.buttonClass + ' ' + commonModalButtonClass } as ActionMenuItem);
           }
         }
 
@@ -4473,12 +4479,12 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
           const addSetRoundBtn = {
             ...baseAddSetRoundBtn,
             data: { exerciseIndex },
-            overrideCssButtonClass: baseAddSetRoundBtn.buttonClass + buttonCssClass
+            overrideCssButtonClass: baseAddSetRoundBtn.buttonClass + commonModalButtonClass
           } as ActionMenuItem;
           const removeSetRoundBtn = {
             ...baseRemoveSetRoundBtn,
             data: { exerciseIndex },
-            overrideCssButtonClass: baseRemoveSetRoundBtn.buttonClass + buttonCssClass
+            overrideCssButtonClass: baseRemoveSetRoundBtn.buttonClass + commonModalButtonClass
           } as ActionMenuItem;
 
           actionsArray.push(addSetRoundBtn, removeSetRoundBtn);
@@ -4489,9 +4495,9 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     // Always add QUIT
     // Add FINISH EARLY if any sets have been logged
     if (workoutLog.length > 0) {
-      actionsArray.push({ ...finishEarlyBtn, overrideCssButtonClass: finishEarlyBtn.buttonClass + ' ' + buttonCssClass });
+      actionsArray.push({ ...finishEarlyBtn, overrideCssButtonClass: finishEarlyBtn.buttonClass + ' ' + commonModalButtonClass });
     }
-    actionsArray.push({ ...quitWorkoutBtn, overrideCssButtonClass: quitWorkoutBtn.buttonClass + ' ' + buttonCssClass });
+    actionsArray.push({ ...quitWorkoutBtn, overrideCssButtonClass: quitWorkoutBtn.buttonClass + ' ' + commonModalButtonClass });
 
     return actionsArray;
   });

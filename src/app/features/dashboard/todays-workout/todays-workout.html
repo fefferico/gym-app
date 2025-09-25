@@ -233,7 +233,7 @@
                 <div class="mt-2 pt-2 border-t dark:border-gray-700 text-left"
                   *ngIf="availableRoutines$ | async as routines">
                   <h4 class="text-md font-semibold text-gray-600 dark:text-gray-200 mb-2">Or, pick one from below:</h4>
-                  <div class="max-h-40 overflow-y-auto space-y-2 px-4 py-2 custom-scrollbar rounded">
+                  <div class="max-h-40 overflow-y-auto space-y-2 py-2 custom-scrollbar rounded">
                     <div (click)="viewRoutineDetails(routine.id)" *ngFor="let routine of routines"
                       class="p-3 bg-gray-200/50 hover:bg-gray-300 dark:bg-gray-500 hover:dark:bg-gray-600 rounded-md shadow-sm hover:shadow-md transition-shadow flex justify-between items-center transform hover:-translate-y-1">
                       <div class="truncate">
@@ -340,7 +340,7 @@
                     class="text-md font-semibold text-gray-600 dark:text-gray-200 mb-2">Pick one from below:</h4>
                   <h4 *ngIf="isTrainingProgramsAvailable()"
                     class="text-md font-semibold text-gray-600 dark:text-gray-200 mb-2">Or pick one from below:</h4>
-                  <div class="max-h-40 overflow-y-auto space-y-2 px-4 py-2 custom-scrollbar rounded">
+                  <div class="max-h-40 overflow-y-auto space-y-2 py-2 custom-scrollbar rounded">
                     <div (click)="viewRoutineDetails(routine.id)" *ngFor="let routine of routines"
                       class="p-3 bg-gray-200/50 hover:bg-gray-300 dark:bg-gray-500 hover:dark:bg-gray-600 rounded-md shadow-sm hover:shadow-md transition-shadow flex justify-between items-center transform hover:-translate-y-1">
                       <div class="truncate">

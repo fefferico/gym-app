@@ -1935,7 +1935,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     return this.workoutService.getSupersetSize(this.routine(), index);
   }
 
-  getExerciseCardClasses(exerciseControl: AbstractControl, exIndex: number): { [klass: string]: boolean } {
+  getExerciseCardClass(exerciseControl: AbstractControl, exIndex: number): { [klass: string]: boolean } {
     // --- 1. Determine State ---
     const isEmom = exerciseControl.get('supersetType')?.value === 'emom';
     const isStandardSuperset = !!exerciseControl.get('supersetId')?.value && !isEmom;
@@ -1970,7 +1970,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
     } else if (isStandardSuperset) {
       classes = {
-        'border-orange-500 dark:border-orange-400': true,
+        'border-primary': true,
         'bg-orange-50 dark:bg-orange-900/10': !isSelected,
         'bg-orange-100 dark:bg-orange-800/50': isSelected,
         'rounded-t-md border-x-4 border-t-4 mt-4': isFirst,
@@ -1980,10 +1980,12 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
     } else {
       // This is a standard, non-superset exercise
+
       classes = {
         'border rounded-md mb-2': true,
         'bg-blue-50 dark:bg-blue-900/40 border-blue-400': isWarmup && !isSelected,
         'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600': !isWarmup && !isSelected,
+        'mt-5': this.isEditableMode() && this.selectedExerciseIndicesForSuperset().length >= 2 && exIndex === this.firstSelectedExerciseIndexForSuperset,
       };
     }
 
