@@ -1499,7 +1499,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     this.exercisesFormArray.updateValueAndValidity({ emitEvent: false });
   }
 
-  async groupSelectedAsSuperset(): Promise<void> {
+    async groupSelectedAsSuperset(): Promise<void> {
     if (this.isViewMode) return;
     const selectedIndices = this.selectedExerciseIndicesForSuperset().sort((a, b) => a - b);
 
@@ -1517,7 +1517,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
     let isEmom: boolean = false;
 
-    // --- START: NEW LOGIC TO ASK FOR SUPERSET TYPE ---
     const customBtns: AlertButton[] = [
       { text: 'STANDARD', role: 'confirm', data: 'standard', cssClass: 'bg-orange-500 text-white' },
       { text: 'EMOM', role: 'confirm', data: 'emom', cssClass: 'bg-teal-500 text-white' }
@@ -1531,7 +1530,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
     if (!typeResult || !typeResult.data) {
       this.toastService.info("Grouping cancelled.", 2000);
-      return; // User cancelled
+      return;
     }
 
     const supersetType: 'standard' | 'emom' = typeResult.data;
@@ -1540,7 +1539,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
     if (supersetType === 'emom') {
       isEmom = true;
-      // --- EMOM PATH ---
       const emomInputs: AlertInput[] = [
         { name: 'emomTime', type: 'number', label: 'Time per Round (s)', value: '60', attributes: { min: '10', required: true } },
         { name: 'numSets', type: 'number', label: 'Number of Rounds (Sets)', value: '5', attributes: { min: '1', required: true } }
@@ -1548,13 +1546,11 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       const emomResult = await this.alertService.showPromptDialog('Set EMOM Details', 'Configure the EMOM parameters.', emomInputs);
 
       if (!emomResult || !emomResult['emomTime'] || !emomResult['numSets']) {
-        // this.toastService.info("EMOM creation cancelled.", 2000);
         return;
       }
       emomTimeSeconds = Number(emomResult['emomTime']);
       numberOfSets = Number(emomResult['numSets']);
     } else {
-      // --- STANDARD SUPERSET PATH ---
       const setsResult = await this.alertService.showPromptDialog('Set Superset Rounds', 'How many rounds (sets) should this superset have?',
         [{ name: 'numSets', type: 'number', label: 'Number of Rounds (Sets)', value: '3', attributes: { min: '1', required: true } }]
       );
@@ -1565,7 +1561,55 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       }
       numberOfSets = Number(setsResult['numSets']);
     }
-    // --- END: NEW LOGIC ---
+
+    // --- START: CORRECTED LOGIC TO GATHER EXERCISE-SPECIFIC VALUES ---
+    const exerciseValueInputs: AlertInput[] = [];
+    const selectedExercises = selectedIndices.map(index => this.exercisesFormArray.at(index) as FormGroup);
+    const defaultWeightKg = 15;
+    const defaultWeightInCurrentUnit = this.unitService.convertWeight(defaultWeightKg, this.unitService.currentWeightUnit(), 'kg');
+
+    selectedExercises.forEach((exerciseControl, i) => {
+      const exerciseName = exerciseControl.get('exerciseName')?.value;
+      
+      // Get the base exercise details to determine its properties
+      const exerciseId = exerciseControl.get('exerciseId')?.value;
+      const baseExercise = this.availableExercises.find(ex => ex.id === exerciseId);
+      
+      // An exercise is considered weighted if its category is not 'cardio'.
+      // This is more reliable than checking the form's current state.
+      const isWeighted = baseExercise ? baseExercise.category !== 'cardio' : false;
+
+      exerciseValueInputs.push({
+        name: `reps_${i}`,
+        type: 'number',
+        label: `${exerciseName} - Reps`,
+        value: '8', // Default reps
+        attributes: { min: '0', required: true }
+      });
+
+      // Now, this check correctly determines if a weight input is needed.
+      if (isWeighted) {
+        exerciseValueInputs.push({
+          name: `weight_${i}`,
+          type: 'number',
+          label: `${exerciseName} - Weight (${this.unitService.getWeightUnitSuffix()})`,
+          value: String(Math.round(defaultWeightInCurrentUnit!)),
+          attributes: { min: '0' }
+        });
+      }
+    });
+
+    const exerciseValuesResult = await this.alertService.showPromptDialog(
+      'Set Exercise Targets',
+      'Enter the target reps and weight for each set in the group.',
+      exerciseValueInputs
+    );
+
+    if (!exerciseValuesResult) {
+      this.toastService.info("Grouping cancelled.", 2000);
+      return;
+    }
+    // --- END: CORRECTED LOGIC ---
 
     const newSupersetId = uuidv4();
     const supersetSize = selectedIndices.length;
@@ -1582,21 +1626,35 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       });
 
       const setsArray = exerciseControl.get('sets') as FormArray;
-      const templateSetData = setsArray.length > 0 ? { ...setsArray.at(0).value } : { id: uuidv4(), type: 'superset', targetReps: 8, targetWeight: 10, restAfterSet: 60 };
-      delete templateSetData.id;
+      const targetReps = Number(exerciseValuesResult[`reps_${orderInSuperset}`] ?? 8);
+      const targetWeightRaw = exerciseValuesResult[`weight_${orderInSuperset}`] !== undefined
+        ? Number(exerciseValuesResult[`weight_${orderInSuperset}`])
+        : null;
+      
+      const targetWeightKg = targetWeightRaw !== null 
+        ? this.unitService.convertWeight(targetWeightRaw, 'kg', this.unitService.currentWeightUnit()) 
+        : null;
 
-      setsArray.clear(); // Clear existing sets before adding the new ones
+      const templateSetData: ExerciseTargetSetParams = {
+        id: uuidv4(),
+        type: 'superset',
+        targetReps: targetReps,
+        targetWeight: targetWeightKg,
+        restAfterSet: 60
+      };
+
+      setsArray.clear();
 
       for (let i = 0; i < numberOfSets; i++) {
-
-        // if isEmom, override certain fields to fit EMOM style
-        if (isEmom && i <= 0) {
+        if (isEmom) {
           templateSetData.restAfterSet = 0;
         }
 
         const newSet = this.createSetFormGroup(templateSetData, false);
         const restValue = (orderInSuperset < supersetSize - 1) ? 0 : 60;
-        newSet.get('restAfterSet')?.setValue(restValue);
+        if (!isEmom) {
+          newSet.get('restAfterSet')?.setValue(restValue);
+        }
         setsArray.push(newSet);
       }
     });
@@ -2978,7 +3036,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     // udpate exercise control
     // this.builderForm.controls['exercises'].get(exerciseControl.get('id')?.value)?.setValue(exerciseControl.value);
 
-    this.toastService.success(`EMOM created for ${numberOfSets} rounds!`, 4000, "Success");
+    // this.toastService.success(`EMOM created for ${numberOfSets} rounds!`, 4000, "Success");
     this.routine.set(this.mapFormToRoutine(this.builderForm.getRawValue()));
   }
 
