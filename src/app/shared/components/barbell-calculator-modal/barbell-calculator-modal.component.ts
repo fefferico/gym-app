@@ -152,4 +152,23 @@ export class BarbellCalculatorModalComponent implements OnInit {
   clearLoadout(): void {
     this.loadout.set([]);
   }
+
+  /**
+   * Determines if the text on a plate should be light or dark based on its background color.
+   * @param plateColor The hex color string of the plate's background.
+   * @returns '#FFFFFF' for light text (on dark plates) or '#111111' for dark text.
+   */
+  getPlateTextColor(plateColor: string | undefined): string {
+    if (!plateColor) {
+      return '#111111'; // Default dark text for uncolored plates
+    }
+    // List of dark background colors that need light text for contrast
+    const darkColors = ['#D32F2F','#FF0000', '#1976D2', '#424242', '#111111', '#000000FF', '#0000FF']; 
+    
+    if (darkColors.includes(plateColor.toUpperCase())) {
+      return '#FFFFFF'; // Return white text for dark plates
+    }
+    
+    return '#111111'; // Return dark text for light plates (yellow, white)
+  }
 }

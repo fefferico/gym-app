@@ -30,6 +30,7 @@ export interface Collar {
 export class BarbellCalculatorService {
 
   private olympicPlatesKg: Plate[] = [
+    { weight: 50, color: '#000000ff', isOlympic: true, unit: 'kg' },
     { weight: 25, color: '#ff0000', isOlympic: true, unit: 'kg' },
     { weight: 20, color: '#0000ff', isOlympic: true, unit: 'kg' },
     { weight: 15, color: '#ffff00', isOlympic: true, unit: 'kg' },
@@ -43,6 +44,7 @@ export class BarbellCalculatorService {
   ];
 
   private standardPlatesKg: Plate[] = [
+    { weight: 50, isOlympic: false, unit: 'kg' },
     { weight: 20, isOlympic: false, unit: 'kg' },
     { weight: 15, isOlympic: false, unit: 'kg' },
     { weight: 10, isOlympic: false, unit: 'kg' },

@@ -3378,4 +3378,82 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       this.expandedSetPath.set(null);
     }
   }
+
+   /**
+   * Retrieves the last logged performance for an exercise and fills the
+   * current sets in the form with that data.
+   * @param exIndex The index of the exercise in the exercisesFormArray.
+   */
+  async fillWithLatestPerformanceData(exIndex: number): Promise<void> {
+    if (this.isViewMode) {
+      this.toastService.info("Cannot modify data in view mode.", 3000);
+      return;
+    }
+
+    const exerciseControl = this.exercisesFormArray.at(exIndex) as FormGroup;
+    if (!exerciseControl) {
+      console.error(`Exercise control at index ${exIndex} not found.`);
+      return;
+    }
+
+    const exerciseId = exerciseControl.get('exerciseId')?.value;
+    if (!exerciseId) {
+      this.toastService.warning("Please select an exercise first.", 3000);
+      return;
+    }
+
+    this.spinnerService.show("Loading last performance...");
+
+    try {
+      // Fetch the last performance log for this specific exercise
+      const lastPerformance = await firstValueFrom(
+        this.trackingService.getLastPerformanceForExercise(exerciseId)
+      );
+
+      if (!lastPerformance || lastPerformance.sets.length === 0) {
+        this.toastService.info("No recent performance data found for this exercise.", 3000);
+        return;
+      }
+
+      const setsFormArray = this.getSetsFormArray(exerciseControl);
+
+      // Iterate over the sets currently in the form
+      setsFormArray.controls.forEach((setControl, setIndex) => {
+        // Find the corresponding set from the historical log
+        const historicalSet = lastPerformance.sets[setIndex];
+        if (historicalSet) {
+          const patchData: { [key: string]: any } = {};
+          
+          // Convert the historical weight (stored in kg) to the user's current unit
+          const weightInCurrentUnit = historicalSet.weightUsed != null 
+            ? this.unitService.convertWeight(historicalSet.weightUsed, this.unitService.currentWeightUnit(), 'kg') 
+            : null;
+
+          // Apply data to the correct fields based on the builder's mode
+          if (this.mode === 'manualLogEntry') {
+            patchData['repsAchieved'] = historicalSet.repsAchieved;
+            patchData['weightUsed'] = weightInCurrentUnit;
+            patchData['durationPerformed'] = historicalSet.durationPerformed;
+          } else { // 'routineBuilder' mode
+            patchData['targetReps'] = historicalSet.repsAchieved;
+            patchData['targetWeight'] = weightInCurrentUnit;
+            patchData['targetDuration'] = historicalSet.durationPerformed;
+          }
+          
+          // Patch the form group for the individual set
+          setControl.patchValue(patchData);
+        }
+      });
+
+      this.builderForm.markAsDirty();
+      this.toastService.success("Sets pre-filled with your last performance data.", 3000, "Success");
+
+    } catch (error) {
+      console.error("Failed to load performance data:", error);
+      this.toastService.error("Could not load performance data.", 0, "Error");
+    } finally {
+      this.spinnerService.hide();
+    }
+  }
+
 }

@@ -23,7 +23,7 @@
                                 [style.background-color]="item.plate.color"
                                 [style.border-color]="item.plate.color === '#FAFAFA' ? '#ccc' : item.plate.color"
                                 (click)="removePlate(item.plate)">
-                                <span>{{ item.plate.weight }}</span>
+                                <span [style.color]="getPlateTextColor(item.plate.color)">{{ item.plate.weight }}</span>
                             </div>
                         </ng-container>
                         <!-- The collar is last, so flex-direction:row-reverse places it at the visual start (far left) -->
@@ -40,7 +40,7 @@
                                 [style.background-color]="item.plate.color"
                                 [style.border-color]="item.plate.color === '#FAFAFA' ? '#ccc' : item.plate.color"
                                 (click)="removePlate(item.plate)">
-                                <span>{{ item.plate.weight }}</span>
+                                <span [style.color]="getPlateTextColor(item.plate.color)">{{ item.plate.weight }}</span>
                             </div>
                         </ng-container>
                         <div *ngIf="selectedCollar() && selectedCollar()!.weight > 0" class="collar"></div>

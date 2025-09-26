@@ -376,6 +376,10 @@
                                             class="mx-1 flex items-center p-1 rounded-full hover:bg-red-600 disabled:opacity-50 bg-red-500 text-white">
                                             <app-icon name="trash" class="h-5 w-5"></app-icon>
                                         </button>
+                                        <button type="button" (click)="fillWithLatestPerformanceData(exIndex)" title="Fill with latest performance data"
+                                            class="mx-1 flex items-center p-1 rounded-full hover:bg-green-600 disabled:opacity-50 bg-green-500 text-white">
+                                            <app-icon name="task" class="h-5 w-5"></app-icon>
+                                        </button>
                                         <ng-container *ngIf="!isSuperSet(exIndex)">
                                             <button type="button" (click)="convertToSingleExerciseEmom(exerciseControl)"
                                                 title="Make EMOM"
