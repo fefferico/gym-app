@@ -64,6 +64,7 @@ export class FabMenuComponent implements OnInit, OnDestroy {
   @Output() actionClicked = new EventEmitter<string>(); // <-- NEW: Generic event emitter
   @Input() scrollToBottomDisabled: boolean = false;
   @Input() scrollToTopDisabled: boolean = false;
+  @Input() customBottomPositioning: number | undefined = undefined;
 
   // --- Component State (Unchanged) ---
   isFabActionsOpen = signal(false);
@@ -137,6 +138,14 @@ export class FabMenuComponent implements OnInit, OnDestroy {
   handleClose(): void {
     if (this.isFabActionsOpen()) {
       this.isFabActionsOpen.set(false);
+    }
+  }
+
+  checkClassForPositioning(): string {
+    if (!!this.customBottomPositioning){
+      return `bottom-${this.customBottomPositioning}`;
+    } else {
+      return this.isPausedSession() ? 'bottom-36' : 'bottom-20';
     }
   }
 }

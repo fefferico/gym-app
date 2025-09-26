@@ -513,7 +513,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     // If a weight is specified (even 0), it's treated as a weighted set.
     // Both reps and weight must be positive.
     if (set.targetWeight != null && set.targetWeight != undefined) {
-      return (set.targetWeight ?? 0) > 0 && set.targetWeight > 0;
+      return (set.targetWeight ?? 0) >= 0 && (set.targetReps ?? 0) > 0;
     }
 
     // If weight is not specified (null/undefined), it's a bodyweight exercise.

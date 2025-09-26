@@ -8,11 +8,12 @@ import { WorkoutGenerationOptions } from '../../../core/services/workout-generat
 import { ExerciseService } from '../../../core/services/exercise.service';
 import { Equipment } from '../../../core/models/equipment.model';
 import { PersonalGymService } from '../../../core/services/personal-gym.service';
+import { FabAction, FabMenuComponent } from '../../../shared/components/fab-menu/fab-menu.component';
 
 @Component({
     selector: 'app-generate-workout-modal',
     standalone: true,
-    imports: [CommonModule, IconComponent, FormsModule, TitleCasePipe],
+    imports: [CommonModule, IconComponent, FormsModule, TitleCasePipe, FabMenuComponent],
     templateUrl: './generate-workout-modal.component.html',
 })
 export class GenerateWorkoutModalComponent implements OnInit, OnChanges {
@@ -164,6 +165,34 @@ export class GenerateWorkoutModalComponent implements OnInit, OnChanges {
         const index = this.options.excludeEquipment.indexOf(equipment);
         if (index > -1) {
             this.options.excludeEquipment.splice(index, 1);
+        }
+    }
+
+    // Define the actions for the FAB menu
+    public fabActions: FabAction[] = [
+        {
+            actionKey: 'generate_detailed',
+            label: 'GENERATE CUSTOM WORKOUT',
+            iconName: 'magic-wand',
+            cssClass: 'bg-primary'
+        },
+        {
+            actionKey: 'generate_quick',
+            label: 'SURPRISE ME!',
+            iconName: 'random',
+            cssClass: 'bg-green-500'
+        }
+    ];
+
+    /**
+     * Handles the click event from the FAB menu.
+     * @param actionKey The key of the action that was clicked.
+     */
+    public handleFabAction(actionKey: string): void {
+        if (actionKey === 'generate_quick') {
+            this.generateQuick();
+        } else if (actionKey === 'generate_detailed') {
+            this.generateDetailed();
         }
     }
 }

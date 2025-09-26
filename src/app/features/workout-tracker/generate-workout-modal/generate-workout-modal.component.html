@@ -1,11 +1,11 @@
 <div *ngIf="isOpen" class="fixed inset-0 backdrop-blur-md flex items-center justify-center p-4 z-[100]"
     (click)="close.emit()">
-    <div class="bg-white dark:bg-gray-700 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col"
+    <div class="bg-white dark:bg-gray-700 rounded-xl shadow-2xl w-full max-w-2xl max-h-[95vh] flex flex-col transform"
         (click)="$event.stopPropagation()">
 
         <!-- Header -->
         <header
-            class="p-5 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center flex-shrink-0">
+            class="px-5 py-1 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center flex-shrink-0">
             <div class="flex items-center gap-3">
                 <app-icon name="magic-wand" class="h-7 w-7 text-primary dark:text-primary-light"></app-icon>
                 <h3 class="text-xl font-semibold text-gray-800 dark:text-gray-100">Generate Workout</h3>
@@ -16,14 +16,7 @@
         </header>
 
         <!-- Main Content (Scrollable) -->
-        <div class="p-6 overflow-y-auto flex-grow bg-gray-50 dark:bg-gray-900">
-            <!-- Quick and Simple Button -->
-            <button (click)="generateQuick()"
-                class="w-full mb-6 p-4 bg-green-500 text-white font-bold rounded-lg shadow-lg hover:bg-green-600 transition-all transform hover:scale-105 flex items-center justify-center gap-2">
-                <app-icon name="shuffle" class="h-6 w-6"></app-icon>
-                Surprise Me! (Quick & Simple)
-            </button>
-
+        <div class="px-6 py-2 overflow-y-auto flex-grow bg-gray-50 dark:bg-gray-900 pb-24 rounded-md">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                 <!-- Duration -->
                 <div>
@@ -98,36 +91,19 @@
                         <div class="flex flex-wrap gap-2">
                             <!-- Each item is now a button to toggle exclusion -->
                             <button type="button" *ngFor="let eq of allPersonalGymEquipment()"
-                                (click)="toggleExcludePersonalGymEquipment(eq)"
-                                [ngClass]="{
+                                (click)="toggleExcludePersonalGymEquipment(eq)" [ngClass]="{
                                     'bg-blue-100 text-white dark:bg-blue-700': !options.excludeEquipment.includes(eq.toLowerCase()),
                                     'bg-gray-300 text-gray-600 dark:bg-gray-600 dark:text-gray-300 line-through': options.excludeEquipment.includes(eq.toLowerCase())
-                                }"
-                                class="px-3 py-1.5 text-xs font-semibold rounded-full transition-colors">
+                                }" class="px-3 py-1.5 text-xs font-semibold rounded-full transition-colors">
                                 {{ eq | titlecase }}
                             </button>
                         </div>
                     </div>
                     <!-- +++ START: MODIFIED SECTION FOR SEARCHABLE EQUIPMENT +++ -->
-                <div *ngIf="!options.usePersonalGym" class="md:col-span-2 text-black dark:text-gray-200">
-                    <label class="block text-sm font-medium dark:text-gray-100">Exclude Equipment (Optional)</label>
-                        <!-- Display for Selected Equipment as Chips -->
-                        <div *ngIf="options.equipment.length > 0"
-                            class="p-2 border rounded-md mb-2 min-h-[40px] bg-white dark:bg-gray-800 flex flex-wrap gap-2">
-                            <p *ngIf="options.equipment.length === 0"
-                                class="text-sm italic text-gray-500 dark:text-gray-400">
-                                Search for and select available equipment below.
-                            </p>
-                            <span *ngFor="let eq of options.equipment"
-                                class="flex items-center gap-x-2 px-3 py-1.5 text-xs font-semibold rounded-full bg-primary text-white">
-                                <span>{{ eq | titlecase }}</span>
-                                <button type="button" (click)="removeEquipment(eq)"
-                                    class="text-white/70 hover:text-white focus:outline-none">
-                                    <app-icon name="cancel" class="h-4 w-4"></app-icon>
-                                </button>
-                            </span>
-                        </div>
-
+                    <div *ngIf="!options.usePersonalGym; else usePersonalGym"
+                        class="md:col-span-2 text-black dark:text-gray-200 relative">
+                        <label class="block text-sm font-medium dark:text-gray-100 my-1">Exclude Equipment
+                            (Optional)</label>
                         <!-- Search Input Textbox -->
                         <input type="text" [(ngModel)]="equipmentSearchTerm"
                             placeholder="Search for equipment (e.g., Dumbbell, Barbell)..."
@@ -142,12 +118,39 @@
                                 {{ eq | titlecase }}
                             </button>
                         </div>
+                        <!-- Display for Selected Equipment as Chips -->
+                        <div class="relative border rounded-md px-3 pt-5 pb-2 mt-4 dark:border-gray-600">
+
+                            <!-- The Label, absolutely positioned to look like a floating placeholder -->
+                            <label
+                                class="absolute top-0 left-3 -mt-2 px-2 text-xs font-medium text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-700 rounded-md">
+                                Excluded equipment
+                            </label>
+
+                            <!-- Content Div (The original div, but without its own border) -->
+                            <div *ngIf="options.equipment.length > 0" class="flex flex-wrap gap-2 min-h-[40px]">
+                                <!-- Note: This inner *ngIf is kept as-is -->
+                                <p *ngIf="options.equipment.length === 0"
+                                    class="text-sm italic text-gray-500 dark:text-gray-400">
+                                    Search for and select available equipment below.
+                                </p>
+                                <span *ngFor="let eq of options.equipment"
+                                    class="flex items-center gap-x-2 px-3 py-1.5 text-xs font-semibold rounded-full bg-primary text-white">
+                                    <span>{{ eq | titlecase }}</span>
+                                    <button type="button" (click)="removeEquipment(eq)"
+                                        class="text-white/70 hover:text-white focus:outline-none">
+                                        <app-icon name="cancel" class="h-4 w-4"></app-icon>
+                                    </button>
+                                </span>
+                            </div>
+                        </div>
                     </div>
                     <!-- +++ END: MODIFIED SECTION +++ -->
                 </div>
-                <div class="md:col-span-2 text-black dark:text-gray-200">
-                    <label class="block text-sm font-medium dark:text-gray-100">Exclude Equipment (Optional)</label>
-                    <div    *ngIf="options.excludeEquipment.length > 0"
+                <ng-template #usePersonalGym class="md:col-span-2 text-black dark:text-gray-200 relative">
+                    <label class="block text-sm font-medium dark:text-gray-100 my-1">Exclude personal gym equipment
+                        (Optional)</label>
+                    <div *ngIf="options.excludeEquipment.length > 0"
                         class="p-2 border rounded-md mb-2 min-h-[40px] bg-white dark:bg-gray-800 flex flex-wrap gap-2">
                         <p *ngIf="options.excludeEquipment.length === 0"
                             class="text-sm italic text-gray-500 dark:text-gray-400">
@@ -175,16 +178,14 @@
                             {{ eq | titlecase }}
                         </button>
                     </div>
-                </div>
+                </ng-template>
             </div>
         </div>
 
-        <!-- Footer -->
-        <footer class="p-4 bg-gray-100 dark:bg-gray-700 flex-shrink-0 text-right rounded-b-md">
-            <button (click)="generateDetailed()"
-                class="bg-primary text-white font-bold py-3 px-8 rounded-lg shadow-md hover:bg-primary-dark">
-                GENERATE WORKOUT
-            </button>
-        </footer>
+        <!-- FAB Menu for actions -->
+        <app-fab-menu [actions]="fabActions" (actionClicked)="handleFabAction($event)" [checkForPausedSession]="false"
+            [scrollToTopDisabled]="true" [scrollToBottomDisabled]="true" [customBottomPositioning]="1">
+        </app-fab-menu>
     </div>
 </div>
+<ng-template *ngIf="true" class="bottom-15"></ng-template>
