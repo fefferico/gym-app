@@ -23,6 +23,7 @@ export class BarbellCalculatorModalComponent implements OnInit {
   barbells: Barbell[] = [];
   collars: Collar[] = [];
   availablePlates = computed<Plate[]>(() => 
+    // The service already sorts these from heaviest to lightest
     this.barbellCalculatorService.getAvailablePlates(this.unit(), this.isOlympic())
   );
   
@@ -32,17 +33,14 @@ export class BarbellCalculatorModalComponent implements OnInit {
   targetWeight = signal(0);
   
   // --- Calculation Results ---
-  // In reverse mode, this is the source of truth. In calculate mode, it's a result.
   loadout = signal<PlateLoadout[]>([]);
 
-  // The final calculated total weight. It's computed from the loadout.
   totalWeight = computed(() => {
     const bar = this.selectedBarbell();
     const collar = this.selectedCollar();
     if (!bar || !collar) return 0;
 
     const platesWeight = this.loadout().reduce((acc, item) => {
-      // item.count is per side, so multiply by 2 for total
       return acc + (item.plate.weight * item.count * 2);
     }, 0);
 
@@ -67,9 +65,7 @@ export class BarbellCalculatorModalComponent implements OnInit {
   setMode(newMode: 'calculate' | 'reverse'): void {
     if (this.mode() === newMode) return;
     
-    // When switching, sync the states
     if (newMode === 'calculate') {
-      // Update the target weight from the visually built loadout
       this.targetWeight.set(this.totalWeight());
     }
     this.mode.set(newMode);
@@ -78,15 +74,29 @@ export class BarbellCalculatorModalComponent implements OnInit {
   setUnit(newUnit: 'kg' | 'lb'): void {
     if (this.unit() === newUnit) return;
     this.unit.set(newUnit);
-    // When unit changes, we must recalculate everything
     this.recalculateBasedOnMode();
+  }
+
+  // +++ FIX: Renamed for clarity +++
+  handleBarChange(bar: Barbell): void {
+    this.selectedBarbell.set(bar);
+    this.recalculateBasedOnMode();
+  }
+
+  // +++ FIX: New method to handle collar changes without resetting the bar in reverse mode +++
+  handleCollarChange(collar: Collar): void {
+    this.selectedCollar.set(collar);
+    // In 'calculate' mode, we must re-run the calculation
+    if (this.mode() === 'calculate') {
+      this.calculateFromTargetWeight();
+    }
+    // In 'reverse' mode, we do nothing else. The `totalWeight` computed signal will update automatically.
   }
 
   recalculateBasedOnMode(): void {
     if (this.mode() === 'calculate') {
       this.calculateFromTargetWeight();
     } else {
-      // In reverse mode, changing units or bar clears the loadout
       this.clearLoadout();
     }
   }
@@ -105,24 +115,25 @@ export class BarbellCalculatorModalComponent implements OnInit {
   // --- Reverse Mode Methods ---
 
   addPlate(plateToAdd: Plate): void {
-    const currentLoadout = this.loadout();
-    const existingPlate = currentLoadout.find(p => p.plate.weight === plateToAdd.weight);
-
-    if (existingPlate) {
-      existingPlate.count++;
-      this.loadout.set([...currentLoadout]);
-    } else {
-      this.loadout.set([...currentLoadout, { plate: plateToAdd, count: 1 }]);
-    }
+    this.loadout.update(currentLoadout => {
+      const existingPlate = currentLoadout.find(p => p.plate.weight === plateToAdd.weight);
+      if (existingPlate) {
+        existingPlate.count++;
+      } else {
+        currentLoadout.push({ plate: plateToAdd, count: 1 });
+      }
+      // +++ FIX: Ensure loadout is always sorted heaviest to lightest for consistent rendering +++
+      return currentLoadout.sort((a, b) => b.plate.weight - a.plate.weight);
+    });
   }
 
+  // +++ FIX: This method is now called from the plates on the bar itself +++
   removePlate(plateToRemove: Plate): void {
      this.loadout.update(currentLoadout => {
         const existing = currentLoadout.find(p => p.plate.weight === plateToRemove.weight);
         if (existing) {
             existing.count--;
             if (existing.count <= 0) {
-                // Filter out the plate if its count drops to 0
                 return currentLoadout.filter(p => p.plate.weight !== plateToRemove.weight);
             }
         }

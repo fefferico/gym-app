@@ -10,125 +10,85 @@
 }
 
 .modal-overlay {
-  position: fixed;
-  inset: 0;
+  position: fixed; inset: 0;
   background-color: rgba(0, 0, 0, 0.7);
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  display: flex; justify-content: center; align-items: center;
+  backdrop-filter: blur(10px); 
   z-index: 1050;
 }
 
 .calculator-modal {
   background-color: var(--modal-bg);
   color: var(--text-primary);
-  width: 90%;
-  max-width: 420px;
-  border-radius: 16px;
-  border: 1px solid var(--border-color);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
+  width: 90%; max-width: 420px;
+  border-radius: 16px; border: 1px solid var(--border-color);
+  display: flex; flex-direction: column;
+  max-height: 90vh;
 }
 
 .header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 16px;
-  border-bottom: 1px solid var(--border-color);
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 16px; border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
 }
 
 .mode-toggle {
-  display: flex;
-  background-color: var(--input-bg);
-  border-radius: 8px;
-  padding: 4px;
+  display: flex; background-color: var(--input-bg);
+  border-radius: 8px; padding: 4px;
   button {
-    background: none;
-    border: none;
-    color: var(--text-secondary);
-    padding: 6px 16px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: all 0.2s ease-in-out;
-    &.active {
-      background-color: var(--accent-red);
-      color: var(--text-primary);
-    }
+    background: none; border: none; color: var(--text-secondary);
+    padding: 6px 16px; border-radius: 6px; cursor: pointer;
+    font-weight: bold; transition: all 0.2s ease-in-out;
+    &.active { background-color: var(--accent-red); color: var(--text-primary); }
   }
 }
 
 .close-btn {
-  background: none;
-  border: none;
-  font-size: 2rem;
-  color: var(--text-secondary);
-  cursor: pointer;
+  background: none; border: none; font-size: 2rem;
+  color: var(--text-secondary); cursor: pointer;
 }
 
 .modal-body {
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  padding: 16px; display: flex; flex-direction: column;
+  gap: 16px; overflow-y: auto;
 }
 
 .visualization-container {
-  height: 80px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 10px;
+  height: 80px; display: flex; align-items: center; justify-content: center;
+  padding: 0 10px; flex-shrink: 0;
 }
 
 .barbell {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  height: 8px; // Thickness of the bar shaft
+  display: flex; align-items: center; width: 100%;
+  height: 8px;
   .sleeve {
-    display: flex;
-    align-items: center;
-    height: 60px; // Max height of plates
-
-    &.left {
-      // Renders items from right-to-left
-      flex-direction: row-reverse;
-    }
-    // &.right has the default flex-direction: row
+    display: flex; align-items: center; height: 60px;
+    &.left { flex-direction: row-reverse; }
   }
   .shaft {
-    flex-grow: 1;
-    height: 100%;
+    flex-grow: 1; height: 100%;
     background-color: var(--shaft-color);
   }
+  // +++ FIX: Simplified collar styling +++
   .collar {
-    display: none; // Hidden by default
     height: 24px;
     min-width: 10px;
     background-color: var(--collar-color);
     border-radius: 2px;
-    margin: 0 4px; // Adds space between collar and plates
-    &.visible { 
-      display: block; 
-    }
+    margin: 0 4px;
+    flex-shrink: 0;
   }
 }
 
 .plate {
-  border: 1px solid #000;
-  box-sizing: border-box;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.7rem;
-  font-weight: bold;
-  color: #111;
-  border-radius: 4px;
-  
-  // Plate specific dimensions for visualization
+  border: 1px solid #000; box-sizing: border-box; display: flex;
+  align-items: center; justify-content: center; font-size: 0.7rem;
+  font-weight: bold; color: #111; border-radius: 4px;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-left: 1px;
+  margin-right: 1px;
+
   &.plate-25 { height: 100%; width: 22px; }
   &.plate-20 { height: 95%; width: 20px; }
   &.plate-15 { height: 90%; width: 18px; }
@@ -140,17 +100,14 @@
 
 .total-weight-display {
   text-align: center;
-  h2 {
-    margin: 0;
-    font-size: 2.5rem;
-    font-weight: bold;
-    color: var(--text-primary);
-  }
+  h2 { margin: 0; font-size: 2.5rem; font-weight: bold; }
 }
 
 .input-group {
   display: flex;
+  flex-direction: column; // This is the line that stacks the elements
   gap: 8px;
+  
   .weight-input {
     flex-grow: 1;
     background-color: var(--input-bg);
@@ -160,22 +117,29 @@
     font-size: 1.5rem;
     text-align: center;
     padding: 8px;
-    -moz-appearance: textfield; // Hide number input arrows
+    -moz-appearance: textfield;
     &::-webkit-outer-spin-button, &::-webkit-inner-spin-button {
-      -webkit-appearance: none; margin: 0;
+      -webkit-appearance: none;
+      margin: 0;
     }
   }
+
   .unit-toggle {
     display: flex;
     button {
+      flex: 1; // Allows buttons to fill the width evenly
       padding: 12px 20px;
       font-weight: bold;
       border: 1px solid var(--border-color);
       background-color: var(--input-bg);
       color: var(--text-secondary);
       cursor: pointer;
-      &:first-child { border-radius: 8px 0 0 8px; }
-      &:last-child { border-radius: 0 8px 8px 0; }
+      &:first-child {
+        border-radius: 8px 0 0 8px;
+      }
+      &:last-child {
+        border-radius: 0 8px 8px 0;
+      }
       &.active {
         background-color: var(--text-primary);
         color: var(--modal-bg);
@@ -185,83 +149,73 @@
 }
 
 .reverse-mode-controls {
-  text-align: center;
-  color: var(--text-secondary);
-  font-size: 0.8rem;
+  text-align: center; color: var(--text-secondary); font-size: 0.8rem;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 16px;
   
+  p { margin: 0 0 12px 0; }
+
   .plate-selection {
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-    margin-top: 8px;
+    display: flex; justify-content: center; gap: 12px;
     flex-wrap: wrap;
-    .plate-option {
-      cursor: pointer;
-      height: 40px;
-      transition: transform 0.1s ease-in-out;
-      &:hover { transform: scale(1.05); }
+  }
+
+  .plate-option {
+    cursor: pointer; display: flex; flex-direction: column;
+    align-items: center; gap: 4px;
+    transition: transform 0.1s ease-in-out;
+    span { font-size: 0.9rem; font-weight: bold; }
+    &:hover { transform: scale(1.05); }
+
+    .plate-visual {
+      width: 44px; height: 44px;
+      border-radius: 50%; border: 2px solid;
+      position: relative;
+      &::before {
+        content: ''; position: absolute;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        width: 12px; height: 12px;
+        background-color: var(--modal-bg);
+        border-radius: 50%;
+        border: 1px solid var(--border-color);
+      }
     }
   }
   
   .clear-btn {
-      background: none;
-      border: 1px solid var(--accent-red);
-      color: var(--accent-red);
-      padding: 8px 16px;
-      border-radius: 8px;
-      cursor: pointer;
-      margin-top: 16px;
-      font-weight: bold;
+      background: none; border: 1px solid var(--accent-red);
+      color: var(--accent-red); padding: 8px 16px;
+      border-radius: 8px; cursor: pointer;
+      margin-top: 16px; font-weight: bold;
   }
 }
 
 .config-settings {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr; // Changed from '1fr 1fr' to stack the items
   gap: 16px;
-  margin-top: 16px;
 }
 
 .form-group {
-  display: flex;
-  flex-direction: column;
-  label {
-    font-size: 0.8rem;
-    color: var(--text-secondary);
-    margin-bottom: 4px;
-  }
+  display: flex; flex-direction: column;
+  label { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 4px; }
   select {
-    background-color: var(--input-bg);
-    border: 1px solid var(--border-color);
-    color: var(--text-primary);
-    padding: 8px;
-    border-radius: 8px;
+    background-color: var(--input-bg); border: 1px solid var(--border-color);
+    color: var(--text-primary); padding: 8px; border-radius: 8px;
   }
 }
 
 .loadout-summary {
-  margin-top: 16px;
-  h4 {
-    color: var(--text-secondary);
-    margin: 0 0 8px 0;
-    font-size: 0.9rem;
-  }
-  .summary-list {
-    display: flex;
-    gap: 12px;
-    overflow-x: auto;
-    padding-bottom: 8px;
-  }
+  flex-shrink: 0;
+  h4 { color: var(--text-secondary); margin: 0 0 8px 0; font-size: 0.9rem; }
+  .summary-list { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px; }
   .summary-item {
-    background-color: var(--input-bg);
-    padding: 8px;
-    border-radius: 8px;
-    text-align: center;
+    background-color: var(--input-bg); padding: 8px;
+    border-radius: 8px; text-align: center;
     .plate-count { font-weight: bold; font-size: 1.1rem; }
     .plate-weight { font-size: 0.8rem; color: var(--text-secondary); }
   }
-  .summary-item-empty {
-    color: var(--text-secondary);
-    font-style: italic;
-  }
+  .summary-item-empty { color: var(--text-secondary); font-style: italic; }
 }

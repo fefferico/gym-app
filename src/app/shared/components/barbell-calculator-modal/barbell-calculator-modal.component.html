@@ -1,7 +1,6 @@
 <div class="modal-overlay" (click)="onClose()">
   <div class="calculator-modal" (click)="$event.stopPropagation()">
     
-    <!-- Header -->
     <div class="header">
       <div class="mode-toggle">
         <button [class.active]="mode() === 'calculate'" (click)="setMode('calculate')">Calculate</button>
@@ -10,54 +9,49 @@
       <button class="close-btn" (click)="onClose()">&times;</button>
     </div>
 
-    <!-- Main Content -->
     <div class="modal-body">
 
-      <!-- Barbell Visualization -->
       <div class="visualization-container">
         <div class="barbell">
           <!-- Left Sleeve -->
           <div class="sleeve left">
-            <!-- The collar is now the first item, so with row-reverse it appears on the far left -->
-            <div class="collar" [class.visible]="selectedCollar() && selectedCollar()!.weight > 0"></div>
-            
-            <!-- Plates are rendered heaviest first (closest to center) -->
+            <!-- +++ FIX: The DOM order is now reversed for the left sleeve +++ -->
+            <!-- Plates come first in the markup -->
             <ng-container *ngFor="let item of loadout()">
               <div *ngFor="let i of [].constructor(item.count)" 
                    class="plate plate-{{ item.plate.weight | number:'1.0-0' }}" 
                    [style.background-color]="item.plate.color"
-                   [style.border-color]="item.plate.color === '#FAFAFA' ? '#ccc' : item.plate.color">
+                   [style.border-color]="item.plate.color === '#FAFAFA' ? '#ccc' : item.plate.color"
+                   (click)="removePlate(item.plate)">
                    <span>{{ item.plate.weight }}</span>
               </div>
             </ng-container>
+            <!-- The collar is last, so flex-direction:row-reverse places it at the visual start (far left) -->
+            <div *ngIf="selectedCollar() && selectedCollar()!.weight > 0" class="collar"></div>
           </div>
 
           <div class="shaft"></div>
 
-          <!-- Right Sleeve -->
+          <!-- Right Sleeve (Order remains the same here) -->
           <div class="sleeve right">
-            <!-- Plates are rendered heaviest first (closest to center) -->
             <ng-container *ngFor="let item of loadout()">
               <div *ngFor="let i of [].constructor(item.count)" 
                    class="plate plate-{{ item.plate.weight | number:'1.0-0' }}" 
                    [style.background-color]="item.plate.color"
-                   [style.border-color]="item.plate.color === '#FAFAFA' ? '#ccc' : item.plate.color">
+                   [style.border-color]="item.plate.color === '#FAFAFA' ? '#ccc' : item.plate.color"
+                   (click)="removePlate(item.plate)">
                    <span>{{ item.plate.weight }}</span>
               </div>
             </ng-container>
-
-            <!-- The collar is now the last item, so it appears on the far right -->
-            <div class="collar" [class.visible]="selectedCollar() && selectedCollar()!.weight > 0"></div>
+            <div *ngIf="selectedCollar() && selectedCollar()!.weight > 0" class="collar"></div>
           </div>
         </div>
       </div>
 
-      <!-- Total Weight Display -->
       <div class="total-weight-display">
         <h2>{{ totalWeight() | number:'1.0-2' }} {{ unit() }}</h2>
       </div>
 
-      <!-- Input for Calculate Mode -->
       <div class="input-group calculate-mode-input" *ngIf="mode() === 'calculate'">
         <input type="number" 
                [ngModel]="targetWeight()" 
@@ -69,28 +63,28 @@
         </div>
       </div>
 
-      <!-- Plate Selection for Reverse Mode -->
       <div class="reverse-mode-controls" *ngIf="mode() === 'reverse'">
         <p>TAP PLATES TO LOAD/UNLOAD BAR</p>
         <div class="plate-selection">
             <div *ngFor="let plate of availablePlates()" 
-                 class="plate-option plate-{{ plate.weight | number:'1.0-0' }}" 
-                 [style.background-color]="plate.color"
-                 [style.border-color]="plate.color === '#FAFAFA' ? '#ccc' : plate.color"
+                 class="plate-option"
                  (click)="addPlate(plate)">
+                 <div class="plate-visual" 
+                      [style.background-color]="plate.color"
+                      [style.border-color]="plate.color === '#FAFAFA' ? '#ccc' : plate.color">
+                 </div>
                  <span>{{ plate.weight }}</span>
             </div>
         </div>
         <button class="clear-btn" (click)="clearLoadout()">Clear Bar</button>
       </div>
 
-      <!-- Configuration Settings -->
       <div class="config-settings">
         <div class="form-group">
           <label for="barbell">Barbell</label>
           <select id="barbell" 
                   [ngModel]="selectedBarbell()" 
-                  (ngModelChange)="selectedBarbell.set($event); recalculateBasedOnMode()">
+                  (ngModelChange)="handleBarChange($event)">
             <option *ngFor="let bar of barbells" [ngValue]="bar">{{ bar.name }} ({{ bar.weight }}{{ bar.unit }})</option>
           </select>
         </div>
@@ -98,13 +92,12 @@
           <label for="collar">Collars</label>
           <select id="collar" 
                   [ngModel]="selectedCollar()" 
-                  (ngModelChange)="selectedCollar.set($event); recalculateBasedOnMode()">
+                  (ngModelChange)="handleCollarChange($event)">
             <option *ngFor="let collar of collars" [ngValue]="collar">{{ collar.name }} ({{ collar.weight }}{{ collar.unit }})</option>
           </select>
         </div>
       </div>
 
-      <!-- Loadout Summary -->
       <div class="loadout-summary">
         <h4>Plates Needed (Per Side)</h4>
         <div class="summary-list">
