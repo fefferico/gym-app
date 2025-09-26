@@ -2858,53 +2858,91 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
 
         let { sessionRoutineCopy, programId, routineId } = result;
 
-        // +++ MODIFIED: PERCEIVED EFFORT CHECK +++
-        if (routineId && routineId !== '-1') {
-          // Use the new, more robust getLogsForRoutine method
-          const lastLogArray = await firstValueFrom(this.trackingService.getLogsForRoutine(routineId, 1));
-          const lastLog = lastLogArray.length > 0 ? lastLogArray[0] : null;
+        // --- START: INTEGRATED PREFILL AND PROGRESSIVE OVERLOAD LOGIC ---
+        const poSettings = this.progressiveOverloadService.getSettings();
+        const isPoEnabled = poSettings.enabled && poSettings.strategy && poSettings.sessionsToIncrement && poSettings.sessionsToIncrement > 0;
 
-          if (lastLog && lastLog.perceivedWorkoutInfo?.perceivedEffort) {
-            const effort = lastLog.perceivedWorkoutInfo.perceivedEffort;
-            let adjustmentType: 'increase' | 'decrease' | null = null;
-            let dialogTitle = '';
-            let dialogMessage = '';
+        // Fetch logs needed for both PO and Perceived Effort checks
+        const allLogsForRoutine = (routineId && routineId !== '-1')
+          ? await firstValueFrom(this.trackingService.getLogsForRoutine(routineId, isPoEnabled ? 10 : 1)) // Fetch more logs if PO is on
+          : [];
 
-            if (effort >= 7) {
-              adjustmentType = 'decrease';
-              dialogTitle = 'Last Workout Was Tough';
-              dialogMessage = 'Your last session with this routine felt very challenging. Would you like to automatically reduce the intensity for today?';
-            } else if (effort <= 4) {
-              adjustmentType = 'increase';
-              dialogTitle = 'Last Workout Felt Light';
-              dialogMessage = 'Your last session with this routine felt light. Would you like to automatically increase the intensity for today?';
-            }
-
-            if (adjustmentType) {
-              const prompt = await this.alertService.showPromptDialog(
-                dialogTitle,
-                dialogMessage,
-                [{
-                  name: 'percentage',
-                  type: 'number',
-                  placeholder: 'e.g., 10',
-                  value: 10,
-                  attributes: { min: '1', max: '50', step: '1' }
-                }] as AlertInput[],
-                `Adjust by %`,
-                'NO, THANKS',
-              );
-
-              if (prompt && prompt['percentage']) {
-                const percentage = Number(prompt['percentage']);
-                // Store the adjustment preference instead of applying it immediately
-                this.intensityAdjustment = { direction: adjustmentType, percentage };
-                this.toastService.success(`Routine intensity will be adjusted by ${percentage}%`, 3000, "Intensity Adjusted");
-              }
+        // Perceived Effort Check (using the already fetched logs)
+        const lastLog = allLogsForRoutine.length > 0 ? allLogsForRoutine[0] : null;
+        if (lastLog && lastLog.perceivedWorkoutInfo?.perceivedEffort) {
+          const effort = lastLog.perceivedWorkoutInfo.perceivedEffort;
+          let adjustmentType: 'increase' | 'decrease' | null = null;
+          let dialogTitle = '', dialogMessage = '';
+          if (effort >= 7) {
+            adjustmentType = 'decrease'; dialogTitle = 'Last Workout Was Tough';
+            dialogMessage = 'Your last session felt challenging. Would you like to automatically reduce the intensity for today?';
+          } else if (effort <= 4) {
+            adjustmentType = 'increase'; dialogTitle = 'Last Workout Felt Light';
+            dialogMessage = 'Your last session felt light. Would you like to automatically increase the intensity for today?';
+          }
+          if (adjustmentType) {
+            const prompt = await this.alertService.showPromptDialog(dialogTitle, dialogMessage,
+              [{ name: 'percentage', type: 'number', placeholder: 'e.g., 10', value: 10, attributes: { min: '1', max: '50', step: '1' } }] as AlertInput[],
+              `Adjust by %`, 'NO, THANKS');
+            if (prompt && prompt['percentage']) {
+              const percentage = Number(prompt['percentage']);
+              this.intensityAdjustment = { direction: adjustmentType, percentage };
+              this.toastService.success(`Routine intensity will be adjusted by ${percentage}%`, 3000, "Intensity Adjusted");
             }
           }
         }
-        // +++ END MODIFICATION +++
+
+        // Apply Progressive Overload and Prefill Logic
+        for (const exercise of sessionRoutineCopy.exercises) {
+          try {
+            const lastPerformance = await firstValueFrom(this.trackingService.getLastPerformanceForExercise(exercise.exerciseId));
+            if (lastPerformance && lastPerformance.sets.length > 0) {
+              let overloadApplied = false;
+              if (isPoEnabled) {
+                const relevantLogs = allLogsForRoutine.filter(log => log.exercises.some(le => le.exerciseId === exercise.exerciseId));
+                if (relevantLogs.length >= poSettings.sessionsToIncrement!) {
+                  const recentLogsToCheck = relevantLogs.slice(-poSettings.sessionsToIncrement!);
+                  const allSessionsSuccessful = recentLogsToCheck.every(log => {
+                    const loggedEx = log.exercises.find(le => le.exerciseId === exercise.exerciseId);
+                    const originalEx = this.originalRoutineSnapshot?.exercises.find(oe => oe.exerciseId === exercise.exerciseId);
+                    if (!loggedEx || !originalEx || loggedEx.sets.length < originalEx.sets.length) return false;
+                    return originalEx.sets.every((originalSet, setIndex) => {
+                      if (originalSet.type === 'warmup') return true;
+                      const loggedSet = loggedEx.sets[setIndex];
+                      return loggedSet && (loggedSet.repsAchieved ?? 0) >= (originalSet.targetReps ?? 0);
+                    });
+                  });
+                  if (allSessionsSuccessful) {
+                    this.progressiveOverloadService.applyOverloadToExercise(exercise, poSettings);
+                    this.toastService.success(`Progressive Overload applied to ${exercise.exerciseName}!`, 2500, "Auto-Increment");
+                    overloadApplied = true;
+                  }
+                }
+              }
+              if (!overloadApplied) {
+                exercise.sets.forEach((set, setIndex) => {
+                  const historicalSet = lastPerformance.sets[setIndex];
+                  if (historicalSet) {
+                    set.targetReps = historicalSet.repsAchieved ?? set.targetReps;
+                    set.targetWeight = historicalSet.weightUsed ?? set.targetWeight;
+                    set.targetDuration = historicalSet.durationPerformed ?? set.targetDuration;
+                    set.targetDistance = historicalSet.distanceAchieved ?? set.targetDistance;
+                  }
+                });
+              }
+            }
+            if (this.intensityAdjustment) {
+              const { direction, percentage } = this.intensityAdjustment;
+              const multiplier = direction === 'increase' ? 1 + (percentage / 100) : 1 - (percentage / 100);
+              exercise.sets.forEach(set => {
+                if (set.targetWeight != null) set.targetWeight = Math.max(0, Math.round((set.targetWeight * multiplier) * 4) / 4);
+                if (set.targetReps != null) set.targetReps = Math.max(0, Math.round(set.targetReps * multiplier));
+                if (set.targetDuration != null) set.targetDuration = Math.max(0, Math.round(set.targetDuration * multiplier));
+                if (set.targetDistance != null) set.targetDistance = Math.max(0, Math.round(set.targetDistance * multiplier));
+              });
+            }
+          } catch (error) { console.error(`Failed to prefill data for exercise ${exercise.exerciseName}:`, error); }
+        }
 
         console.log('loadNewWorkoutFromRoute - tap operator. Session routine copy:', sessionRoutineCopy.name);
         console.log('loadNewWorkoutFromRoute - tap operator. Program ID:', programId);

@@ -44,6 +44,7 @@ import { AlertButton, AlertInput } from '../../../core/models/alert.model';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
 import { addExerciseBtn, addRoundToExerciseBtn, addSetToExerciseBtn, addToSuperSetBtn, addWarmupSetBtn, createSuperSetBtn, openSessionPerformanceInsightsBtn, pauseSessionBtn, quitWorkoutBtn, removeExerciseBtn, removeFromSuperSetBtn, removeRoundFromExerciseBtn, removeSetFromExerciseBtn, resumeSessionBtn, sessionNotesBtn, switchExerciseBtn } from '../../../core/services/buttons-data';
 import { mapExerciseTargetSetParamsToExerciseExecutedSetParams } from '../../../core/models/workout-mapper';
+import { ProgressiveOverloadService } from '../../../core/services/progressive-overload.service.ts';
 
 // Interface for saving the paused state
 
@@ -96,6 +97,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   private weightUnitPipe = inject(WeightUnitPipe);
   private cdr = inject(ChangeDetectorRef);
   protected appSettingsService = inject(AppSettingsService);
+  protected progressiveOverloadService = inject(ProgressiveOverloadService);
   private platformId = inject(PLATFORM_ID);
   private injector = inject(Injector);
   private unitService = inject(UnitsService);
@@ -407,6 +409,14 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const currentRoutine = this.routine();
     if (!currentRoutine) return;
 
+    const poSettings = this.progressiveOverloadService.getSettings();
+    const isPoEnabled = poSettings.enabled && poSettings.strategy && poSettings.sessionsToIncrement && poSettings.sessionsToIncrement > 0;
+
+    // Fetch all logs for this routine only if PO is enabled, to avoid unnecessary calls
+    const allLogsForRoutine = isPoEnabled
+      ? await firstValueFrom(this.trackingService.getLogsForRoutine(currentRoutine.id))
+      : [];
+
     const routineCopy = JSON.parse(JSON.stringify(currentRoutine)) as Routine;
 
     for (const exercise of routineCopy.exercises) {
@@ -416,41 +426,90 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         );
 
         if (lastPerformance && lastPerformance.sets.length > 0) {
-          exercise.sets.forEach((set, setIndex) => {
-            const historicalSet = lastPerformance.sets[setIndex];
-            if (historicalSet) {
-              set.targetReps = historicalSet.repsAchieved ?? set.targetReps;
-              set.targetWeight = historicalSet.weightUsed ?? set.targetWeight;
-              set.targetDuration = historicalSet.durationPerformed ?? set.targetDuration;
-              set.targetDistance = historicalSet.distanceAchieved ?? set.targetDistance;
-            }
+          // --- START: PROGRESSIVE OVERLOAD LOGIC ---
+          let overloadApplied = false;
+          if (isPoEnabled) {
+            // Filter logs that actually contain the current exercise
+            const relevantLogs = allLogsForRoutine.filter(log =>
+              log.exercises.some(le => le.exerciseId === exercise.exerciseId)
+            );
 
-            // +++ NEW: APPLY SESSION-WIDE INTENSITY ADJUSTMENT - START +++
-            // Check if an adjustment is active for this session
-            if (this.intensityAdjustment) {
-              const { direction, percentage } = this.intensityAdjustment;
-              const multiplier = direction === 'increase' ? 1 + (percentage / 100) : 1 - (percentage / 100);
+            if (relevantLogs.length >= poSettings.sessionsToIncrement!) {
+              const recentLogsToCheck = relevantLogs.slice(-poSettings.sessionsToIncrement!);
+              let allSessionsSuccessful = true;
 
-              if (set.targetWeight != null) {
-                const adjustedWeight = Math.round((set.targetWeight * multiplier) * 4) / 4;
-                set.targetWeight = adjustedWeight >= 0 ? adjustedWeight : 0;
+              for (const log of recentLogsToCheck) {
+                const loggedEx = log.exercises.find(le => le.exerciseId === exercise.exerciseId);
+                // Compare against the original routine structure from the time of the log, or snapshot if available
+                const originalEx = this.originalRoutineSnapshot()?.exercises.find(oe => oe.exerciseId === exercise.exerciseId);
+
+                // If the exercise structure is missing or doesn't match, it's not a successful session in this context
+                if (!loggedEx || !originalEx || loggedEx.sets.length < originalEx.sets.length) {
+                  allSessionsSuccessful = false;
+                  break;
+                }
+
+                // Check if user met or exceeded targets for all non-warmup sets
+                const wasSuccess = originalEx.sets.every((originalSet, setIndex) => {
+                  if (originalSet.type === 'warmup') return true;
+                  const loggedSet = loggedEx.sets[setIndex];
+                  return loggedSet && (loggedSet.repsAchieved ?? 0) >= (originalSet.targetReps ?? 0);
+                });
+
+                if (!wasSuccess) {
+                  allSessionsSuccessful = false;
+                  break;
+                }
               }
-              if (set.targetReps != null) {
-                const adjustedReps = Math.round(set.targetReps * multiplier);
-                set.targetReps = adjustedReps >= 0 ? adjustedReps : 0;
-              }
-              if (set.targetDuration != null) {
-                const adjustedDuration = Math.round(set.targetDuration * multiplier);
-                set.targetDuration = adjustedDuration >= 0 ? adjustedDuration : 0;
-              }
-              if (set.targetDistance != null) {
-                const adjustedDistance = Math.round(set.targetDistance * multiplier);
-                set.targetDistance = adjustedDistance >= 0 ? adjustedDistance : 0;
+
+              if (allSessionsSuccessful) {
+                this.progressiveOverloadService.applyOverloadToExercise(exercise, poSettings);
+                this.toastService.success(`Progressive Overload applied to ${exercise.exerciseName}!`, 2500, "Auto-Increment");
+                overloadApplied = true;
               }
             }
-            // +++ NEW: APPLY SESSION-WIDE INTENSITY ADJUSTMENT - END +++
+          }
+          // --- END: PROGRESSIVE OVERLOAD LOGIC ---
+
+          // Prefill from last performance ONLY if overload was NOT applied
+          if (!overloadApplied) {
+            exercise.sets.forEach((set, setIndex) => {
+              const historicalSet = lastPerformance.sets[setIndex];
+              if (historicalSet) {
+                set.targetReps = historicalSet.repsAchieved ?? set.targetReps;
+                set.targetWeight = historicalSet.weightUsed ?? set.targetWeight;
+                set.targetDuration = historicalSet.durationPerformed ?? set.targetDuration;
+                set.targetDistance = historicalSet.distanceAchieved ?? set.targetDistance;
+              }
+            });
+          }
+        }
+
+        // --- APPLY SESSION-WIDE INTENSITY ADJUSTMENT (runs after overload/prefill) ---
+        if (this.intensityAdjustment) {
+          const { direction, percentage } = this.intensityAdjustment;
+          const multiplier = direction === 'increase' ? 1 + (percentage / 100) : 1 - (percentage / 100);
+
+          exercise.sets.forEach(set => {
+            if (set.targetWeight != null) {
+              const adjustedWeight = Math.round((set.targetWeight * multiplier) * 4) / 4;
+              set.targetWeight = adjustedWeight >= 0 ? adjustedWeight : 0;
+            }
+            if (set.targetReps != null) {
+              const adjustedReps = Math.round(set.targetReps * multiplier);
+              set.targetReps = adjustedReps >= 0 ? adjustedReps : 0;
+            }
+            if (set.targetDuration != null) {
+              const adjustedDuration = Math.round(set.targetDuration * multiplier);
+              set.targetDuration = adjustedDuration >= 0 ? adjustedDuration : 0;
+            }
+            if (set.targetDistance != null) {
+              const adjustedDistance = Math.round(set.targetDistance * multiplier);
+              set.targetDistance = adjustedDistance >= 0 ? adjustedDistance : 0;
+            }
           });
         }
+
       } catch (error) {
         console.error(`Failed to prefill data for exercise ${exercise.exerciseName}:`, error);
       }
