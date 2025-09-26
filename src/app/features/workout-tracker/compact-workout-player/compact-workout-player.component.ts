@@ -878,6 +878,9 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       // The afterNextRender logic for scrolling remains the same
       runInInjectionContext(this.injector, () => {
         afterNextRender(() => {
+          if (this.isDestroyed) {
+            return;
+          }
           requestAnimationFrame(() => {
             const exercise = this.routine()?.exercises[index];
             const headerElement = this.header?.nativeElement;
@@ -2073,36 +2076,39 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     this.scheduledDay.set(state.scheduledDayId ?? undefined);
     this.routine.set(state.sessionRoutine);
 
-    // Restore the essential workoutStartTime property first
-    this.workoutStartTime = state.workoutStartTimeOriginal || Date.now(); // Fallback to now() as a safety measure
     this.sessionTimerElapsedSecondsBeforePause = state.sessionTimerElapsedSecondsBeforePause;
-
     const loggedExercises = state.currentWorkoutLogExercises;
 
+    const absoluteStartTime = state.workoutStartTimeOriginal || Date.now();
+
+
     if (loggedExercises) {
-      // --- THE CRITICAL FIX IS HERE ---
-      // When restoring the log, explicitly set the startTime from the paused state.
+      // --- START OF FIX ---
+      // Restore the log using the absolute start time.
       this.currentWorkoutLog.set({
         exercises: loggedExercises,
-        notes: state.sessionRoutine.notes || '', // Also good to restore notes
-        startTime: this.workoutStartTime, // Use the restored value
+        notes: state.sessionRoutine.notes || '',
+        startTime: absoluteStartTime, // Use the original start time for the log.
         routineId: this.routineId ?? undefined,
         programId: this.programId ?? undefined,
         scheduledDayId: this.scheduledDay() ?? undefined,
         routineName: state.sessionRoutine.name,
-        date: state.workoutDate || format(new Date(this.workoutStartTime), 'yyyy-MM-dd')
+        date: state.workoutDate || format(new Date(absoluteStartTime), 'yyyy-MM-dd')
       });
-      // --- END OF FIX ---
     }
+
+    // Now, reset the component's timer reference point to NOW for the new "playing" segment.
+    this.workoutStartTime = Date.now();
 
     this.expandedExerciseIndex.set(state.currentExerciseIndex);
 
-    // Set timers but don't start them yet
+    // Set the initial timer display based on the accumulated pause time.
     const totalElapsedSeconds = this.sessionTimerElapsedSecondsBeforePause;
     const mins = String(Math.floor(totalElapsedSeconds / 60)).padStart(2, '0');
     const secs = String(totalElapsedSeconds % 60).padStart(2, '0');
     this.sessionTimerDisplay.set(`${mins}:${secs}`);
 
+    // Start the session.
     this.sessionState.set(SessionState.Playing);
     this.startSessionTimer();
     this.toastService.success('Paused session resumed', 3000);
