@@ -552,3 +552,7 @@
     </div>
   </div>
 </div>
+
+<div class="modal-overlay" *ngIf="isCalculatorModalVisible">
+  <app-barbell-calculator-modal (close)="closeCalculatorModal()"></app-barbell-calculator-modal>
+</div>

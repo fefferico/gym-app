@@ -45,6 +45,7 @@ import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-
 import { addExerciseBtn, addRoundToExerciseBtn, addSetToExerciseBtn, addToSuperSetBtn, addWarmupSetBtn, createSuperSetBtn, openSessionPerformanceInsightsBtn, pauseSessionBtn, quitWorkoutBtn, removeExerciseBtn, removeFromSuperSetBtn, removeRoundFromExerciseBtn, removeSetFromExerciseBtn, resumeSessionBtn, sessionNotesBtn, switchExerciseBtn } from '../../../core/services/buttons-data';
 import { mapExerciseTargetSetParamsToExerciseExecutedSetParams } from '../../../core/models/workout-mapper';
 import { ProgressiveOverloadService } from '../../../core/services/progressive-overload.service.ts';
+import { BarbellCalculatorModalComponent } from '../../../shared/components/barbell-calculator-modal/barbell-calculator-modal.component';
 
 // Interface for saving the paused state
 
@@ -77,7 +78,7 @@ export interface NextStepInfo {
   imports: [
     CommonModule, DatePipe, WeightUnitPipe, IconComponent,
     ExerciseSelectionModalComponent, FormsModule, ActionMenuComponent, FullScreenRestTimerComponent,
-    DragDropModule
+    DragDropModule, BarbellCalculatorModalComponent
   ],
   templateUrl: './compact-workout-player.component.html',
   styleUrls: ['./compact-workout-player.component.scss'],
@@ -185,6 +186,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
   private readonly PAUSED_WORKOUT_KEY = 'fitTrackPro_pausedWorkoutState';
   private readonly PAUSED_STATE_VERSION = '1.0';
+
+  isCalculatorModalVisible: boolean = false;
 
   routineId: string | null = null;
   programId: string | null = null;
@@ -1635,6 +1638,14 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return isModalMenu ? " w-full flex justify-start items-center text-black dark:text-white hover:text-white text-left px-4 py-2 rounded-md text-xl font-medium " : '';
   });
 
+  openCalculatorModal(): void {
+    this.isCalculatorModalVisible = true;
+  }
+
+  closeCalculatorModal(): void {
+    this.isCalculatorModalVisible = false;
+  }
+
   mainSessionActionItems = computed<ActionMenuItem[]>(() => {
     // Read dependencies once at the beginning of the computed function
     const isPaused = this.sessionState() === 'paused';
@@ -1642,6 +1653,12 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const commonModalButtonClass = this.menuButtonBaseClass(); // Use the new computed property
 
     const addExerciseDisabledClass = (isPaused || !hasExercises ? 'disabled ' : '');
+
+    const barbellCalculatorBtn = {
+      actionKey: 'barbell_calc',
+      iconName: 'dumbbell',
+      buttonClass: 'bg-yellow-800'
+    } as ActionMenuItem;
 
     const actions: ActionMenuItem[] = [
       {
@@ -1660,7 +1677,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       {
         ...quitWorkoutBtn,
         overrideCssButtonClass: quitWorkoutBtn.buttonClass + commonModalButtonClass
-      }
+      },
+      barbellCalculatorBtn
     ];
 
     return actions;
@@ -1671,6 +1689,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const { actionKey } = event;
     switch (actionKey) {
       case 'pause': this.pauseSession(); break;
+      case 'barbell_calc': this.openCalculatorModal(); break;
       case 'play': this.resumeSession(); break;
       case 'session_notes': this.editSessionNotes(); break;
       case 'addExercise': this.openAddExerciseModal(); break;

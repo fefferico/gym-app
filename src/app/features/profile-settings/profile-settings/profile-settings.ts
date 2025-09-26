@@ -218,13 +218,13 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
     const oldUnit = this.unitsService.currentWeightUnit();
     if (unit === oldUnit) return; // No change
 
-    const confirm = await this.alertService.showConfirm(
-      'Convert All Weight Data?',
-      `You've changed the weight unit from ${oldUnit.toUpperCase()} to ${unit.toUpperCase()}. Would you like to convert all existing workout data (logs, routines, gym equipment) to the new unit?`
-    );
-    if (confirm && confirm.data) {
-      await this.dataConversionService.convertAllWeightData(oldUnit, unit);
-    }
+    // const confirm = await this.alertService.showConfirm(
+    //   'Convert All Weight Data?',
+    //   `You've changed the weight unit from ${oldUnit.toUpperCase()} to ${unit.toUpperCase()}. Would you like to convert all existing workout data (logs, routines, gym equipment) to the new unit?`
+    // );
+    // if (confirm && confirm.data) {
+    // }
+    await this.dataConversionService.convertAllWeightData(oldUnit, unit);
     this.unitsService.setWeightUnitPreference(unit);
   }
 
