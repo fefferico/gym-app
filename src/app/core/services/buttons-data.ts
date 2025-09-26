@@ -385,6 +385,14 @@ export const routineBtn = {
     buttonClass: ' hover:bg-primary ',
 }
 
+export const calculatorBtn = {
+    label: 'Barbell calc',
+    actionKey: 'barbell_calc',
+    iconName: `calc`,
+    iconClass: 'w-8 h-8 mr-2',
+    buttonClass: ' hover:bg-primary ',
+}
+
 export const trainingProgramPremiumBtn = {
     label: '',
     actionKey: '',
@@ -413,3 +421,4 @@ export const trainingProgramPremiumBtn = {
     iconClass: 'w-8 h-8 mr-2', // This class is applied to the <app-icon> host
     buttonClass: ' hover:bg-cyan-600 ',
 } as ActionMenuItem;
+

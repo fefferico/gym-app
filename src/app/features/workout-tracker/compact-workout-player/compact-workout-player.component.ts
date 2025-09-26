@@ -42,7 +42,7 @@ import { FullScreenRestTimerComponent } from '../../../shared/components/full-sc
 import { TrainingProgram } from '../../../core/models/training-program.model';
 import { AlertButton, AlertInput } from '../../../core/models/alert.model';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
-import { addExerciseBtn, addRoundToExerciseBtn, addSetToExerciseBtn, addToSuperSetBtn, addWarmupSetBtn, createSuperSetBtn, openSessionPerformanceInsightsBtn, pauseSessionBtn, quitWorkoutBtn, removeExerciseBtn, removeFromSuperSetBtn, removeRoundFromExerciseBtn, removeSetFromExerciseBtn, resumeSessionBtn, sessionNotesBtn, switchExerciseBtn } from '../../../core/services/buttons-data';
+import { addExerciseBtn, addRoundToExerciseBtn, addSetToExerciseBtn, addToSuperSetBtn, addWarmupSetBtn, calculatorBtn, createSuperSetBtn, openSessionPerformanceInsightsBtn, pauseSessionBtn, quitWorkoutBtn, removeExerciseBtn, removeFromSuperSetBtn, removeRoundFromExerciseBtn, removeSetFromExerciseBtn, resumeSessionBtn, sessionNotesBtn, switchExerciseBtn } from '../../../core/services/buttons-data';
 import { mapExerciseTargetSetParamsToExerciseExecutedSetParams } from '../../../core/models/workout-mapper';
 import { ProgressiveOverloadService } from '../../../core/services/progressive-overload.service.ts';
 import { BarbellCalculatorModalComponent } from '../../../shared/components/barbell-calculator-modal/barbell-calculator-modal.component';
@@ -186,8 +186,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
   private readonly PAUSED_WORKOUT_KEY = 'fitTrackPro_pausedWorkoutState';
   private readonly PAUSED_STATE_VERSION = '1.0';
-
-  isCalculatorModalVisible: boolean = false;
 
   routineId: string | null = null;
   programId: string | null = null;
@@ -1638,6 +1636,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return isModalMenu ? " w-full flex justify-start items-center text-black dark:text-white hover:text-white text-left px-4 py-2 rounded-md text-xl font-medium " : '';
   });
 
+  isCalculatorModalVisible: boolean = false;
   openCalculatorModal(): void {
     this.isCalculatorModalVisible = true;
   }
@@ -1673,12 +1672,15 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         ...addExerciseBtn,
         overrideCssButtonClass: addExerciseDisabledClass + addExerciseBtn.buttonClass + commonModalButtonClass
       },
+      {
+        ...calculatorBtn,
+        overrideCssButtonClass: calculatorBtn.buttonClass + commonModalButtonClass
+      },
       { isDivider: true },
       {
         ...quitWorkoutBtn,
         overrideCssButtonClass: quitWorkoutBtn.buttonClass + commonModalButtonClass
       },
-      barbellCalculatorBtn
     ];
 
     return actions;

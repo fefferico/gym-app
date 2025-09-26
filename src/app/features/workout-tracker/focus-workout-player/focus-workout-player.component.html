@@ -619,3 +619,7 @@
 <app-modal *ngIf="exerciseDetailsId" [(isOpen)]="isSimpleModalOpen" [modalTitle]="exerciseDetailsName">
   <app-exercise-detail [id]="exerciseDetailsId" [isModal]="true"></app-exercise-detail>
 </app-modal>
+
+<div class="modal-overlay" *ngIf="isCalculatorModalVisible">
+  <app-barbell-calculator-modal (close)="closeCalculatorModal()"></app-barbell-calculator-modal>
+</div>

@@ -89,13 +89,16 @@
   margin-left: 1px;
   margin-right: 1px;
 
-  &.plate-25 { height: 100%; width: 22px; }
-  &.plate-20 { height: 95%; width: 20px; }
-  &.plate-15 { height: 90%; width: 18px; }
-  &.plate-10 { height: 80%; width: 16px; }
-  &.plate-5  { height: 70%; width: 14px; }
-  &.plate-2   { height: 60%; width: 12px; }
-  &.plate-1   { height: 50%; width: 10px; }
+ &.plate-25    { height: 100%; width: 22px; }
+  &.plate-20    { height: 95%;  width: 20px; }
+  &.plate-15    { height: 90%;  width: 18px; }
+  &.plate-10    { height: 80%;  width: 18px; }
+  &.plate-5     { height: 70%;  width: 14px; }
+  &.plate-2-5   { height: 60%;  width: 18px; }
+  &.plate-2     { height: 55%;  width: 12px; }
+  &.plate-1-5   { height: 50%;  width: 18px; }
+  &.plate-1     { height: 45%;  width: 10px; }
+  &.plate-0-5   { height: 40%;  width: 18px;  }
 }
 
 .total-weight-display {

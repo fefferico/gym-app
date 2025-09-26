@@ -31,8 +31,9 @@ import { format } from 'date-fns';
 import { ActionMenuComponent } from '../../../shared/components/action-menu/action-menu';
 import { MenuMode } from '../../../core/models/app-settings.model';
 import { ActionMenuItem } from '../../../core/models/action-menu.model';
-import { addExerciseBtn, addRoundToExerciseBtn, addSetToExerciseBtn, addToSuperSetBtn, addWarmupSetBtn, createSuperSetBtn, finishEarlyBtn, jumpToExerciseBtn, markAsDoLaterBtn, openExercisePerformanceInsightsBtn, openSessionPerformanceInsightsBtn, pauseSessionBtn, quitWorkoutBtn, removeFromSuperSetBtn, removeRoundFromExerciseBtn, removeSetFromExerciseBtn, skipCurrentExerciseBtn, skipCurrentSetBtn, switchExerciseBtn } from '../../../core/services/buttons-data';
+import { addExerciseBtn, addRoundToExerciseBtn, addSetToExerciseBtn, addToSuperSetBtn, addWarmupSetBtn, calculatorBtn, createSuperSetBtn, finishEarlyBtn, jumpToExerciseBtn, markAsDoLaterBtn, openExercisePerformanceInsightsBtn, openSessionPerformanceInsightsBtn, pauseSessionBtn, quitWorkoutBtn, removeFromSuperSetBtn, removeRoundFromExerciseBtn, removeSetFromExerciseBtn, skipCurrentExerciseBtn, skipCurrentSetBtn, switchExerciseBtn } from '../../../core/services/buttons-data';
 import { SessionOverviewModalComponent } from '../session-overview-modal/session-overview-modal.component';
+import { BarbellCalculatorModalComponent } from '../../../shared/components/barbell-calculator-modal/barbell-calculator-modal.component';
 
 
 // Interface to manage the state of the currently active set/exercise
@@ -43,7 +44,7 @@ import { SessionOverviewModalComponent } from '../session-overview-modal/session
   imports: [CommonModule, DatePipe, ReactiveFormsModule,
     FormatSecondsPipe,
     FormsModule, WeightUnitPipe, FullScreenRestTimerComponent, PressDirective, ModalComponent, ExerciseDetailComponent,
-    IconComponent, ExerciseSelectionModalComponent, ActionMenuComponent, SessionOverviewModalComponent],
+    IconComponent, ExerciseSelectionModalComponent, ActionMenuComponent, SessionOverviewModalComponent, BarbellCalculatorModalComponent],
   templateUrl: './focus-workout-player.component.html',
   styleUrl: './focus-workout-player.component.scss',
   providers: [DecimalPipe, WeightUnitPipe]
@@ -1747,7 +1748,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     }
 
     this.cdr.detectChanges();
-    this.toastService.success('Workout session resumed', 3000, "Resumed");
+    // this.toastService.success('Workout session resumed', 3000, "Resumed");
   }
 
   private savePausedSessionState(): void {
@@ -3107,7 +3108,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
 
       this.closeWorkoutMenu();
       this.closePerformanceInsights();
-      this.toastService.info('Workout session resumed', 3000);
+      // this.toastService.info('Workout session resumed', 3000);
     } else {
       const resumed = await this.checkForPausedSession(true);
       if (!resumed && this.sessionState() !== SessionState.Playing && this.routineId) {
@@ -4535,6 +4536,10 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     if (workoutLog.length > 0) {
       actionsArray.push({ ...finishEarlyBtn, overrideCssButtonClass: finishEarlyBtn.buttonClass + ' ' + commonModalButtonClass });
     }
+
+    // barbell calc button
+    actionsArray.push({ ...calculatorBtn, overrideCssButtonClass: calculatorBtn.buttonClass + ' ' + commonModalButtonClass });
+
     actionsArray.push({ ...quitWorkoutBtn, overrideCssButtonClass: quitWorkoutBtn.buttonClass + ' ' + commonModalButtonClass });
 
     return actionsArray;
@@ -4555,6 +4560,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       case 'later': this.markCurrentExerciseDoLater(); break;
       case 'finish': this.finishWorkoutEarly(); break;
       case 'exit': this.quitWorkout(); break;
+      case 'barbell_calc': this.openCalculatorModal(); break;
       case 'create_superset': this.openCreateSupersetModal(); break;
       case 'add_to_superset': this.addToSupersetModal(); break;
       case 'remove_from_superset': this.removeFromSuperset(); break;
@@ -4852,4 +4858,13 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
   }
   // --- MODIFICATION END ---
 
+
+  isCalculatorModalVisible: boolean = false;
+  openCalculatorModal(): void {
+    this.isCalculatorModalVisible = true;
+  }
+
+  closeCalculatorModal(): void {
+    this.isCalculatorModalVisible = false;
+  }
 }

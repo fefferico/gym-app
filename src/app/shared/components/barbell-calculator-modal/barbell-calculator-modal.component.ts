@@ -83,6 +83,14 @@ export class BarbellCalculatorModalComponent implements OnInit {
     this.recalculateBasedOnMode();
   }
 
+  /**
+   * Generates a CSS-friendly class name from a plate's weight.
+   * e.g., 2.5 becomes 'plate-2-5'
+   */
+  getPlateClass(weight: number): string {
+    return `plate-${String(weight).replace('.', '-')}`;
+  }
+
   // +++ FIX: New method to handle collar changes without resetting the bar in reverse mode +++
   handleCollarChange(collar: Collar): void {
     this.selectedCollar.set(collar);
