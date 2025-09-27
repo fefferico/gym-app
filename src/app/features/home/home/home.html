@@ -167,6 +167,16 @@
           <p class="pl-2 text-md text-gray-600 dark:text-gray-400 text-left">Manage your available workout equipment and accessories</p>
         </div>
       </button>
+      <button (click)="openCalculatorModal()"
+        class="flex items-start block p-3 bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow transform hover:-translate-y-1 dark:hover:bg-gray-600 hover:bg-gray-200">
+        <div class="flex flex-col items-start text-center">
+          <div class="flex items-center mb-2">
+            <app-icon name="calc" class="w-14 h-14 mr-2 text-primary"></app-icon>
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 text-left">Barbell calculator</h3>
+          </div>
+          <p class="pl-2 text-md text-gray-600 dark:text-gray-400 text-left">Calculate the correct loadout</p>
+        </div>
+      </button>
     </div>
   </section>
 
@@ -179,4 +189,8 @@
   <footer>
     <label class="text-white dark:text-gray-100">AppVersion: {{getVersion()}}</label>
   </footer>
+</div>
+
+<div class="modal-overlay" *ngIf="isCalculatorModalVisible">
+  <app-barbell-calculator-modal (close)="closeCalculatorModal()"></app-barbell-calculator-modal>
 </div>

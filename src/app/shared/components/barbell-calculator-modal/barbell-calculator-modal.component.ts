@@ -107,7 +107,7 @@ export class BarbellCalculatorModalComponent implements OnInit, OnDestroy {
         this.targetWeight.set(maxWeight);
         this.calculateFromTargetWeight();
       }
-    }, { allowSignalWrites: true });
+    });
   }
 
   ngOnInit(): void {

@@ -13,12 +13,13 @@ import { AlertButton } from '../../../core/models/alert.model';
 import { Subscription } from 'rxjs';
 import { PausedWorkoutState, WorkoutExercise } from '../../../core/models/workout.model';
 import { SubscriptionService } from '../../../core/services/subscription.service';
+import { BarbellCalculatorModalComponent } from '../../../shared/components/barbell-calculator-modal/barbell-calculator-modal.component';
 
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, TodaysWorkoutComponent, IconComponent], // Added DatePipe
+  imports: [CommonModule, TodaysWorkoutComponent, IconComponent, BarbellCalculatorModalComponent], // Added DatePipe
   templateUrl: './home.html',
   styleUrls: ['./home.scss']
 })
@@ -211,6 +212,16 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   getVersion(): string {
     return this.storageService.getVersion();
+  }
+
+
+  isCalculatorModalVisible: boolean = false;
+  openCalculatorModal(): void {
+    this.isCalculatorModalVisible = true;
+  }
+
+  closeCalculatorModal(): void {
+    this.isCalculatorModalVisible = false;
   }
 
   ngOnDestroy(): void {
