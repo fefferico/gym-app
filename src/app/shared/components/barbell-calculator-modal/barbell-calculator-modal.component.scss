@@ -10,65 +10,107 @@
 }
 
 .modal-overlay {
-  position: fixed; inset: 0;
+  position: fixed;
+  inset: 0;
   background-color: rgba(0, 0, 0, 0.7);
-  display: flex; justify-content: center; align-items: center;
-  backdrop-filter: blur(10px); 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(10px);
   z-index: 1050;
 }
 
 .calculator-modal {
   background-color: var(--modal-bg);
   color: var(--text-primary);
-  width: 90%; max-width: 420px;
-  border-radius: 16px; border: 1px solid var(--border-color);
-  display: flex; flex-direction: column;
+  width: 90%;
+  max-width: 420px;
+  border-radius: 16px;
+  border: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
   max-height: 90vh;
 }
 
 .header {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 8px 16px; border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border-color);
   flex-shrink: 0;
 }
 
 .mode-toggle {
-  display: flex; background-color: var(--input-bg);
-  border-radius: 8px; padding: 4px;
+  display: flex;
+  background-color: var(--input-bg);
+  border-radius: 8px;
+  padding: 4px;
+
   button {
-    background: none; border: none; color: var(--text-secondary);
-    padding: 6px 16px; border-radius: 6px; cursor: pointer;
-    font-weight: bold; transition: all 0.2s ease-in-out;
-    &.active { background-color: var(--accent-red); color: var(--text-primary); }
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    padding: 6px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s ease-in-out;
+
+    &.active {
+      background-color: var(--accent-red);
+      color: var(--text-primary);
+    }
   }
 }
 
 .close-btn {
-  background: none; border: none; font-size: 2rem;
-  color: var(--text-secondary); cursor: pointer;
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: var(--text-secondary);
+  cursor: pointer;
 }
 
 .modal-body {
-  padding: 16px; display: flex; flex-direction: column;
-  gap: 16px; overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
 }
 
 .visualization-container {
-  height: 80px; display: flex; align-items: center; justify-content: center;
-  padding: 0 10px; flex-shrink: 0;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
+  flex-shrink: 0;
 }
 
 .barbell {
-  display: flex; align-items: center; width: 100%;
+  display: flex;
+  align-items: center;
+  width: 100%;
   height: 8px;
+
   .sleeve {
-    display: flex; align-items: center; height: 60px;
-    &.left { flex-direction: row-reverse; }
+    display: flex;
+    align-items: center;
+    height: 60px;
+
+    &.left {
+      flex-direction: row-reverse;
+    }
   }
+
   .shaft {
-    flex-grow: 1; height: 100%;
+    flex-grow: 1;
+    height: 100%;
     background-color: var(--shaft-color);
   }
+
   // +++ FIX: Simplified collar styling +++
   .collar {
     height: 24px;
@@ -81,37 +123,91 @@
 }
 
 .plate {
-  border: 1px solid #000; box-sizing: border-box; display: flex;
-  align-items: center; justify-content: center; font-size: 0.7rem;
-  font-weight: bold; color: #111; border-radius: 4px;
+  border: 1px solid #000;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: bold;
+  color: #111;
+  border-radius: 4px;
   cursor: pointer;
   flex-shrink: 0;
   margin-left: 1px;
   margin-right: 1px;
 
- &.plate-50    { height: 100%; width: 25px; }
- &.plate-25    { height: 95%; width: 22px; }
-  &.plate-20    { height: 90%;  width: 20px; }
-  &.plate-15    { height: 85%;  width: 18px; }
-  &.plate-10    { height: 80%;  width: 18px; }
-  &.plate-5     { height: 70%;  width: 14px; }
-  &.plate-2-5   { height: 60%;  width: 18px; }
-  &.plate-2     { height: 55%;  width: 12px; }
-  &.plate-1-5   { height: 50%;  width: 18px; }
-  &.plate-1     { height: 45%;  width: 10px; }
-  &.plate-0-5   { height: 40%;  width: 18px;  }
+  &.plate-50 {
+    height: 100%;
+    width: 25px;
+  }
+
+  &.plate-25 {
+    height: 95%;
+    width: 22px;
+  }
+
+  &.plate-20 {
+    height: 90%;
+    width: 20px;
+  }
+
+  &.plate-15 {
+    height: 85%;
+    width: 18px;
+  }
+
+  &.plate-10 {
+    height: 80%;
+    width: 18px;
+  }
+
+  &.plate-5 {
+    height: 70%;
+    width: 14px;
+  }
+
+  &.plate-2-5 {
+    height: 60%;
+    width: 18px;
+  }
+
+  &.plate-2 {
+    height: 55%;
+    width: 12px;
+  }
+
+  &.plate-1-5 {
+    height: 50%;
+    width: 18px;
+  }
+
+  &.plate-1 {
+    height: 45%;
+    width: 10px;
+  }
+
+  &.plate-0-5 {
+    height: 40%;
+    width: 18px;
+  }
 }
 
 .total-weight-display {
   text-align: center;
-  h2 { margin: 0; font-size: 2.5rem; font-weight: bold; }
+
+  h2 {
+    margin: 0;
+    font-size: 2.5rem;
+    font-weight: bold;
+  }
 }
 
 .input-group {
   display: flex;
   flex-direction: column; // This is the line that stacks the elements
   gap: 8px;
-  
+
   .weight-input {
     flex-grow: 1;
     background-color: var(--input-bg);
@@ -122,7 +218,9 @@
     text-align: center;
     padding: 8px;
     -moz-appearance: textfield;
-    &::-webkit-outer-spin-button, &::-webkit-inner-spin-button {
+
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
       -webkit-appearance: none;
       margin: 0;
     }
@@ -130,6 +228,7 @@
 
   .unit-toggle {
     display: flex;
+
     button {
       flex: 1; // Allows buttons to fill the width evenly
       padding: 12px 20px;
@@ -138,12 +237,15 @@
       background-color: var(--input-bg);
       color: var(--text-secondary);
       cursor: pointer;
+
       &:first-child {
         border-radius: 8px 0 0 8px;
       }
+
       &:last-child {
         border-radius: 0 8px 8px 0;
       }
+
       &.active {
         background-color: var(--text-primary);
         color: var(--modal-bg);
@@ -153,73 +255,229 @@
 }
 
 .reverse-mode-controls {
-  text-align: center; color: var(--text-secondary); font-size: 0.8rem;
+  text-align: center;
+  background-color: #e8e8e8;
+  // color: var(--text-secondary);
+  color: black;
+  font-size: 0.8rem;
   border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 16px;
-  
-  p { margin: 0 0 12px 0; }
+
+  p {
+    margin: 0 0 12px 0;
+  }
 
   .plate-selection {
-    display: flex; justify-content: center; gap: 12px;
+    display: flex;
+    justify-content: center;
+    gap: 12px;
     flex-wrap: wrap;
   }
 
   .plate-option {
-    cursor: pointer; display: flex; flex-direction: column;
-    align-items: center; gap: 4px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
     transition: transform 0.1s ease-in-out;
-    span { font-size: 0.9rem; font-weight: bold; }
-    &:hover { transform: scale(1.05); }
+
+    span {
+      font-size: 0.9rem;
+      font-weight: bold;
+    }
+
+    &:hover {
+      transform: scale(1.05);
+    }
 
     .plate-visual {
-      width: 44px; height: 44px;
-      border-radius: 50%; border: 2px solid;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 2px solid;
       position: relative;
+
       &::before {
-        content: ''; position: absolute;
-        top: 50%; left: 50%;
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
         transform: translate(-50%, -50%);
-        width: 12px; height: 12px;
-        background-color: var(--modal-bg);
+        width: 12px;
+        height: 12px;
+        // background-color: var(--modal-bg);
+        background-color: #e8e8e8;
         border-radius: 50%;
         border: 1px solid var(--border-color);
       }
     }
   }
-  
+
   .clear-btn {
-      background: none; border: 1px solid var(--accent-red);
-      color: var(--accent-red); padding: 8px 16px;
-      border-radius: 8px; cursor: pointer;
-      margin-top: 16px; font-weight: bold;
+    background: rgb(246, 77, 77);
+    border: 1px solid var(--accent-red);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 16px;
+    font-weight: bold;
   }
 }
 
 .config-settings {
-  display: grid;
-  grid-template-columns: 1fr; // Changed from '1fr 1fr' to stack the items
-  gap: 16px;
+  display: flex;
+  flex-wrap: wrap; // Allow items to wrap
+  gap: 1rem;
+  align-items: center; // Align items vertically
 }
 
 .form-group {
-  display: flex; flex-direction: column;
-  label { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 4px; }
-  select {
-    background-color: var(--input-bg); border: 1px solid var(--border-color);
-    color: var(--text-primary); padding: 8px; border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+
+  label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
   }
+
+  select {
+    background-color: var(--input-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 8px;
+    border-radius: 8px;
+  }
+
+  flex: 1 1 150px;
 }
 
 .loadout-summary {
   flex-shrink: 0;
-  h4 { color: var(--text-secondary); margin: 0 0 8px 0; font-size: 0.9rem; }
-  .summary-list { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px; }
-  .summary-item {
-    background-color: var(--input-bg); padding: 8px;
-    border-radius: 8px; text-align: center;
-    .plate-count { font-weight: bold; font-size: 1.1rem; }
-    .plate-weight { font-size: 0.8rem; color: var(--text-secondary); }
+
+  h4 {
+    color: var(--text-secondary);
+    margin: 0 0 8px 0;
+    font-size: 0.9rem;
   }
-  .summary-item-empty { color: var(--text-secondary); font-style: italic; }
+
+  .summary-list {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+  }
+
+  .summary-item {
+    background-color: var(--input-bg);
+    padding: 8px;
+    border-radius: 8px;
+    text-align: center;
+
+    .plate-count {
+      font-weight: bold;
+      font-size: 1.1rem;
+    }
+
+    .plate-weight {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+  }
+
+  .summary-item-empty {
+    color: var(--text-secondary);
+    font-style: italic;
+  }
+
+  .math-breakdown {
+    margin-top: 1rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border-color-soft, #e5e7eb);
+    font-size: 0.8rem;
+    color: var(--text-color-secondary, #6b7280);
+
+    .title {
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+      color: white
+    }
+
+    .formula {
+      display: flex;
+      flex-wrap: wrap; // Allows wrapping on small screens
+      align-items: center;
+      gap: 0.35rem;
+
+      .label {
+        font-style: italic;
+        color: var(--text-color-secondary, #9ca3af);
+      }
+    }
+  }
+}
+
+.toggle-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1 1 100%; // Make toggles take full width on smaller screens
+  justify-content: space-between;
+  padding: 0.5rem 0;
+
+  label {
+    margin-bottom: 0;
+    font-size: 0.9rem;
+  }
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 28px;
+
+  input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+
+    &.round {
+      border-radius: 28px;
+    }
+
+    &:before {
+      position: absolute;
+      content: "";
+      height: 20px;
+      width: 20px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+  }
+
+  input:checked+.slider {
+    background-color: #2196F3; // Or your app's primary color
+  }
+
+  input:checked+.slider:before {
+    transform: translateX(22px);
+  }
 }

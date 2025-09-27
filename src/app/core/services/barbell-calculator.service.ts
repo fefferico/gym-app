@@ -5,6 +5,7 @@ export interface Plate {
   color?: string;
   isOlympic: boolean;
   unit: 'kg' | 'lb';
+  quantity?: number;
 }
 
 export interface Barbell {
@@ -54,6 +55,7 @@ export class BarbellCalculatorService {
   ];
 
   private standardPlatesLb: Plate[] = [
+        { weight: 50, isOlympic: false, unit: 'lb' }, // Added 50lb for consistency
     { weight: 45, isOlympic: false, unit: 'lb' },
     { weight: 35, isOlympic: false, unit: 'lb' },
     { weight: 25, isOlympic: false, unit: 'lb' },
@@ -65,6 +67,7 @@ export class BarbellCalculatorService {
   private barbells: Barbell[] = [
     { name: 'Men\'s Olympic Bar', weight: 20, unit: 'kg' },
     { name: 'Women\'s Olympic Bar', weight: 15, unit: 'kg' },
+    { name: 'Standard Bar (LB)', weight: 45, unit: 'lb' },
     { name: 'EZ Curl Bar', weight: 10, unit: 'kg' },
     { name: 'Tricep Bar', weight: 10, unit: 'kg' },
     { name: 'Trap/Hex Bar', weight: 25, unit: 'kg' },
@@ -97,9 +100,7 @@ export class BarbellCalculatorService {
     return this.collars;
   }
 
-  calculatePlates(totalWeight: number, barbell: Barbell, collar: Collar, unit: 'kg' | 'lb', isOlympic: boolean): PlateLoadout[] {
-    const availablePlates = this.getAvailablePlates(unit, isOlympic);
-    
+ calculatePlates(totalWeight: number, barbell: Barbell, collar: Collar, availablePlates: Plate[]): PlateLoadout[] {
     // Subtract the weight of the bar AND the collars first
     let weightToLoad = totalWeight - barbell.weight - collar.weight;
 

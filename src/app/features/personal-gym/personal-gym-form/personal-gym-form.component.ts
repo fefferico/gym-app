@@ -3,17 +3,17 @@ import { Component, OnInit, OnDestroy, inject, signal, computed } from '@angular
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { switchMap, take } from 'rxjs/operators';
-import { of, Subscription } from 'rxjs';
+import { startWith, switchMap, take } from 'rxjs/operators';
+import { combineLatest, of, Subscription } from 'rxjs';
 
 import { PersonalGymService } from '../../../core/services/personal-gym.service';
 import { ToastService } from '../../../core/services/toast.service';
-import { 
-  EquipmentCategory, 
-  WeightType, 
-  BandType, 
-  MachineLoadType, 
-  PersonalGymEquipment 
+import {
+  EquipmentCategory,
+  WeightType,
+  BandType,
+  MachineLoadType,
+  PersonalGymEquipment
 } from '../../../core/models/personal-gym.model';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { UnitsService } from '../../../core/services/units.service';
@@ -35,13 +35,13 @@ export class PersonalGymFormComponent implements OnInit, OnDestroy {
   equipmentForm!: FormGroup;
   isEditMode = signal(false);
   editingEquipmentId: string | null = null;
-  
+
   pageTitle = computed(() => this.isEditMode() ? 'Edit Equipment' : 'Add New Equipment');
 
   private subscriptions = new Subscription();
 
   readonly categories: EquipmentCategory[] = [
-    'Dumbbell', 'Kettlebell', 'Plate', 'Barbell', 'Band', 'Machine', 
+    'Dumbbell', 'Kettlebell', 'Plate', 'Barbell', 'Band', 'Machine',
     'Accessory', 'Bag', 'Macebell', 'Club', 'Cardio', 'Custom'
   ];
   readonly weightTypes: WeightType[] = ['fixed', 'adjustable'];
@@ -50,6 +50,15 @@ export class PersonalGymFormComponent implements OnInit, OnDestroy {
   readonly barTypes = ['olympic', 'standard', 'ez-curl', 'hex', 'swiss', 'custom'];
   readonly resistanceLevels = ['extra-light', 'light', 'medium', 'heavy', 'extra-heavy'];
 
+  private readonly OLYMPIC_COLORS_KG: { [key: number]: string } = {
+    25: '#ff0000', 20: '#0000ff', 15: '#ffff00', 10: '#00ff00', 5: '#fafafa',
+    2.5: '#ff0000', 2: '#0000ff', 1.5: '#ffff00', 1: '#00ff00', 0.5: '#fafafa'
+  };
+  private readonly OLYMPIC_COLORS_LB: { [key: number]: string } = {
+    55: '#ff0000', 45: '#0000ff', 35: '#ffff00', 25: '#00ff00', 10: '#fafafa',
+    5: '#424242', 2.5: '#424242'
+  };
+
   constructor() {
     this.equipmentForm = this.fb.group({
       name: ['', Validators.required],
@@ -57,6 +66,7 @@ export class PersonalGymFormComponent implements OnInit, OnDestroy {
       quantity: [1, [Validators.required, Validators.min(1)]],
       brand: [''],
       notes: [''],
+      unit: [this.unitService.getWeightUnitSuffix()]
     });
   }
 
@@ -98,33 +108,38 @@ export class PersonalGymFormComponent implements OnInit, OnDestroy {
     const dynamicControls = [
       'weightType', 'weight', 'minweight', 'maxweight', 'increment',
       'barType', 'bandType', 'resistanceLevel', 'resistance', 'color', 'length',
-      'loadType', 'maxLoad', 'customCategoryName', 'properties'
+      'loadType', 'maxLoad', 'customCategoryName', 'properties', 'isOlympic' // +++ Add isOlympic
     ];
     dynamicControls.forEach(ctrl => this.removeControl(ctrl));
-    
+
     switch (category) {
-      case 'Dumbbell':
+      case 'Dumbbell': // ... same as before
       case 'Kettlebell':
       case 'Macebell':
       case 'Club':
         this.addControl('weightType', 'fixed', Validators.required);
-        // This is the key change to prevent dangling subscriptions.
-        // We now listen for changes on a control that we know exists.
-        if (!this.subscriptions.closed) { // Ensure we don't re-subscribe on destroy
-            const weightTypeSub = this.equipmentForm.get('weightType')?.valueChanges.subscribe(wt => {
-                this.updateFormForWeightType(wt);
-            });
-            if(weightTypeSub) this.subscriptions.add(weightTypeSub);
+        if (!this.subscriptions.closed) {
+          const weightTypeSub = this.equipmentForm.get('weightType')?.valueChanges.subscribe(wt => {
+            this.updateFormForWeightType(wt);
+          });
+          if (weightTypeSub) this.subscriptions.add(weightTypeSub);
         }
-        this.updateFormForWeightType('fixed'); // Initialize with fixed fields
+        this.updateFormForWeightType('fixed');
         break;
+
+      // +++ START: Modified Plate and Barbell cases
       case 'Plate':
+        this.addControl('weight', null, [Validators.required, Validators.min(0)]);
+        this.addControl('isOlympic', true); // Default to true
+        this.addControl('color', this.getOlympicPlateColor(0)); // Default color
+        this.setupPlateColorSubscription();
+        break;
       case 'Barbell':
         this.addControl('weight', null, [Validators.required, Validators.min(0)]);
-        if (category === 'Barbell') {
-          this.addControl('barType', 'olympic');
-        }
+        this.addControl('barType', 'olympic');
         break;
+      // +++ END: Modified cases
+
       case 'Band':
         this.addControl('bandType', 'loop', Validators.required);
         this.addControl('resistanceLevel', 'medium');
@@ -142,7 +157,7 @@ export class PersonalGymFormComponent implements OnInit, OnDestroy {
         break;
     }
   }
-  
+
   private updateFormForWeightType(weightType: WeightType | null): void {
     this.removeControl('weight');
     this.removeControl('minweight');
@@ -157,12 +172,12 @@ export class PersonalGymFormComponent implements OnInit, OnDestroy {
       this.addControl('increment', null, [Validators.required, Validators.min(0.1)]);
     }
   }
-  
+
   private patchFormForEditing(equipment: PersonalGymEquipment): void {
     // ** THE FIX for the race condition **:
     // 1. Synchronously build the form's structure based on the category.
     this.updateFormForCategory(equipment.category);
-    
+
     // 2. NOW that all controls exist, patch their values.
     this.equipmentForm.patchValue(equipment);
 
@@ -223,5 +238,31 @@ export class PersonalGymFormComponent implements OnInit, OnDestroy {
     }
 
     this.router.navigate(['/personal-gym']);
+  }
+
+  private setupPlateColorSubscription(): void {
+    const isOlympic$ = this.equipmentForm.get('isOlympic')?.valueChanges.pipe(startWith(this.equipmentForm.get('isOlympic')?.value));
+    const weight$ = this.equipmentForm.get('weight')?.valueChanges.pipe(startWith(this.equipmentForm.get('weight')?.value));
+    const colorControl = this.equipmentForm.get('color');
+
+    if (isOlympic$ && weight$ && colorControl) {
+      const sub = combineLatest([isOlympic$, weight$]).subscribe(([isOlympic, weight]) => {
+        if (isOlympic) {
+          const newColor = this.getOlympicPlateColor(weight || 0);
+          colorControl.setValue(newColor);
+          colorControl.disable(); // Disable color input for standard Olympic plates
+        } else {
+          colorControl.enable(); // Allow custom color for non-Olympic plates
+        }
+      });
+      this.subscriptions.add(sub);
+    }
+  }
+
+  // +++ NEW: Helper to get the standard color based on weight and unit
+  private getOlympicPlateColor(weight: number): string {
+    const unit = this.unitService.getWeightUnitSuffix();
+    const colorMap = unit === 'kg' ? this.OLYMPIC_COLORS_KG : this.OLYMPIC_COLORS_LB;
+    return colorMap[weight] || '#424242'; // Default to gray if no match
   }
 }

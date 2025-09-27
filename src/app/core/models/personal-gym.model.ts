@@ -18,6 +18,7 @@ export interface BaseEquipment {
   notes?: string;
   brand?: string;
   purchaseDate?: string;
+  unit: 'kg' | 'lb'
 }
 
 // ==========================================================
@@ -43,6 +44,8 @@ export interface AdjustableWeightEquipment extends BaseEquipment {
 export interface WeightPlate extends BaseEquipment {
   category: 'Plate';
   weight: number;
+  isOlympic: boolean;
+  color: string;
 }
 
 export interface Barbell extends BaseEquipment {
