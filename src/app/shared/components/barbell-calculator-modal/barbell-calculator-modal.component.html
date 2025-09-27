@@ -19,7 +19,7 @@
                         <!-- Plates come first in the markup -->
                         <ng-container *ngFor="let item of loadout()">
                             <div *ngFor="let i of [].constructor(item.count)"
-                                class="plate {{ getPlateClass(item.plate.weight) }}"
+                                class="{{ getPlateClass(item.plate.weight, item.plate.unit) }}"
                                 [style.background-color]="item.plate.color"
                                 [style.border-color]="item.plate.color === '#FAFAFA' ? '#ccc' : item.plate.color"
                                 (click)="removePlate(item.plate)">
@@ -36,7 +36,7 @@
                     <div class="sleeve right">
                         <ng-container *ngFor="let item of loadout()">
                             <div *ngFor="let i of [].constructor(item.count)"
-                                class="plate {{ getPlateClass(item.plate.weight) }}"
+                                class="{{ getPlateClass(item.plate.weight, item.plate.unit) }}"
                                 [style.background-color]="item.plate.color"
                                 [style.border-color]="item.plate.color === '#FAFAFA' ? '#ccc' : item.plate.color"
                                 (click)="removePlate(item.plate)">
@@ -114,7 +114,7 @@
                         <span class="slider round"></span>
                     </label>
                 </div>
-                <div class="toggle-group">
+                <div *ngIf="unit() === 'kg'" class="toggle-group">
                     <label for="50kgToggle">Enable 50{{ unit() }} Plate</label>
                     <label class="toggle-switch">
                         <input type="checkbox" id="50kgToggle" [checked]="enable50kgPlate()"

@@ -135,6 +135,9 @@ export class BarbellCalculatorModalComponent implements OnInit, OnDestroy {
   setUnit(newUnit: 'kg' | 'lb'): void {
     if (this.unit() === newUnit) return;
     this.unit.set(newUnit);
+    if (newUnit === 'lb'){
+      this.enable50kgPlate.set(false);
+    }
     this.recalculateBasedOnMode();
   }
 
@@ -148,8 +151,11 @@ export class BarbellCalculatorModalComponent implements OnInit, OnDestroy {
    * Generates a CSS-friendly class name from a plate's weight.
    * e.g., 2.5 becomes 'plate-2-5'
    */
-  getPlateClass(weight: number): string {
-    return `plate-${String(weight).replace('.', '-')}`;
+  getPlateClass(weight: number, unit: 'kg' | 'lb' = 'kg'): string {
+    if (unit === 'lb'){
+      return `plate-lb plate-lb-${String(weight).replace('.', '-')}`;
+    }
+    return `plate plate-${String(weight).replace('.', '-')}`;
   }
 
   // +++ FIX: New method to handle collar changes without resetting the bar in reverse mode +++
@@ -254,7 +260,7 @@ export class BarbellCalculatorModalComponent implements OnInit, OnDestroy {
    */
   getPlateTextColor(plateColor: string | undefined): string {
     if (!plateColor) {
-      return '#111111'; // Default dark text for uncolored plates
+      return '#FFFFFF'; // Default dark text for uncolored plates
     }
     // List of dark background colors that need light text for contrast
     const darkColors = ['#D32F2F', '#FF0000', '#1976D2', '#424242', '#111111', '#000000FF', '#0000FF'];

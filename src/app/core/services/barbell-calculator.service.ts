@@ -55,7 +55,6 @@ export class BarbellCalculatorService {
   ];
 
   private standardPlatesLb: Plate[] = [
-        { weight: 50, isOlympic: false, unit: 'lb' }, // Added 50lb for consistency
     { weight: 45, isOlympic: false, unit: 'lb' },
     { weight: 35, isOlympic: false, unit: 'lb' },
     { weight: 25, isOlympic: false, unit: 'lb' },
@@ -100,7 +99,7 @@ export class BarbellCalculatorService {
     return this.collars;
   }
 
- calculatePlates(totalWeight: number, barbell: Barbell, collar: Collar, availablePlates: Plate[]): PlateLoadout[] {
+  calculatePlates(totalWeight: number, barbell: Barbell, collar: Collar, availablePlates: Plate[]): PlateLoadout[] {
     // Subtract the weight of the bar AND the collars first
     let weightToLoad = totalWeight - barbell.weight - collar.weight;
 
