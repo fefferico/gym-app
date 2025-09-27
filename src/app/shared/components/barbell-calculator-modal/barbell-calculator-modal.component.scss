@@ -282,6 +282,7 @@
     align-items: center;
     gap: 4px;
     transition: transform 0.1s ease-in-out;
+    position: relative;
 
     span {
       font-size: 0.9rem;
@@ -315,6 +316,21 @@
     }
   }
 
+  .plate-quantity {
+    position: absolute;
+    bottom: 20px;
+    right: -1px;
+    background-color: rgba(0, 0, 0, 0.65);
+    color: #ffffff;
+    font-size: 0.65rem;
+    font-weight: bold;
+    line-height: 1;
+    padding: 2px 5px;
+    border-radius: 8px;
+    pointer-events: none;
+    /* Prevents the badge from interfering with click events on the plate */
+  }
+
   .clear-btn {
     background: rgb(246, 77, 77);
     border: 1px solid var(--accent-red);
@@ -330,7 +346,7 @@
 .config-settings {
   display: flex;
   flex-wrap: wrap; // Allow items to wrap
-  gap: 1rem;
+  gap: 0.2rem;
   align-items: center; // Align items vertically
 }
 
@@ -479,5 +495,96 @@
 
   input:checked+.slider:before {
     transform: translateX(22px);
+  }
+}
+
+.input-group.calculate-mode-input {
+  display: flex;
+  align-items: stretch; // Makes items the same height
+  gap: 8px;
+
+  // NEW: Wrapper for the input and its buttons
+  .weight-control {
+    display: flex;
+    flex-grow: 1; // Allows this group to take up available space
+  }
+
+  // ADJUSTED: The weight input now has no border-radius
+  .weight-input {
+    flex-grow: 1;
+    background-color: var(--input-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 0; // The container will handle the rounding
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    text-align: center;
+    padding: 8px;
+    width: 100%; // Ensure it fills the space
+    -moz-appearance: textfield;
+
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+  }
+
+  // NEW: Styles for the stepper buttons
+  .stepper-btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+    width: 50px; // A good touch-target size
+    background-color: var(--input-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    cursor: pointer;
+    user-select: none; // Prevents highlighting text when holding
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: #3a3a3a; // A slightly lighter shade for hover
+    }
+
+    &:first-of-type {
+      border-top-left-radius: 8px;
+      border-bottom-left-radius: 8px;
+      border-right: none; // Creates a seamless look with the input
+    }
+
+    &:last-of-type {
+      border-top-right-radius: 8px;
+      border-bottom-right-radius: 8px;
+    }
+  }
+
+  // No changes needed for .unit-toggle, but it's here for context
+  .unit-toggle {
+    display: flex;
+    flex-shrink: 0; // Prevent it from shrinking
+
+    button {
+      flex: 1;
+      padding: 12px 20px;
+      font-weight: bold;
+      border: 1px solid var(--border-color);
+      background-color: var(--input-bg);
+      color: var(--text-secondary);
+      cursor: pointer;
+
+      &:first-child {
+        border-radius: 8px 0 0 8px;
+      }
+
+      &:last-child {
+        border-radius: 0 8px 8px 0;
+      }
+
+      &.active {
+        background-color: var(--text-primary);
+        color: var(--modal-bg);
+      }
+    }
   }
 }

@@ -9,7 +9,7 @@
             <button class="close-btn" (click)="onClose()">&times;</button>
         </div>
 
-        <div class="modal-body">
+        <div class="modal-body custom-scrollbar">
 
             <div class="visualization-container">
                 <div class="barbell">
@@ -53,8 +53,31 @@
             </div>
 
             <div class="input-group calculate-mode-input" *ngIf="mode() === 'calculate'">
-                <input type="number" [ngModel]="targetWeight()"
-                    (ngModelChange)="targetWeight.set($event); calculateFromTargetWeight()" class="weight-input" />
+
+                <!-- +++ START: New Stepper Buttons and Wrapper +++ -->
+                <div class="weight-control">
+                    <!-- Decrease Button -->
+                    <button type="button" class="stepper-btn" (mousedown)="startChangingWeight('decrease')"
+                        (mouseup)="stopChangingWeight()" (mouseleave)="stopChangingWeight()"
+                        (touchstart)="startChangingWeight('decrease'); $event.preventDefault()"
+                        (touchend)="stopChangingWeight()" aria-label="Decrease weight">
+                        <app-icon name="minus" class="h-5 w-5"></app-icon>
+                    </button>
+
+                    <input type="number" [ngModel]="targetWeight()"
+                        (ngModelChange)="targetWeight.set($event); calculateFromTargetWeight()" class="weight-input"
+                        [step]="weightStep()" [min]="minPossibleWeight()" />
+
+                    <!-- Increase Button -->
+                    <button type="button" class="stepper-btn" (mousedown)="startChangingWeight('increase')"
+                        (mouseup)="stopChangingWeight()" (mouseleave)="stopChangingWeight()"
+                        (touchstart)="startChangingWeight('increase'); $event.preventDefault()"
+                        (touchend)="stopChangingWeight()" aria-label="Increase weight">
+                        <app-icon name="plus" class="h-5 w-5"></app-icon>
+                    </button>
+                </div>
+                <!-- +++ END: New Stepper Buttons and Wrapper +++ -->
+
                 <div class="unit-toggle">
                     <button [class.active]="unit() === 'kg'" (click)="setUnit('kg')">KG</button>
                     <button [class.active]="unit() === 'lb'" (click)="setUnit('lb')">LB</button>
@@ -69,6 +92,11 @@
                             [style.border-color]="plate.color === '#FAFAFA' ? '#ccc' : plate.color">
                         </div>
                         <span>{{ plate.weight }}</span>
+
+                        <!-- This badge now shows the count of plates currently ON THE BAR -->
+                        <span *ngIf="plateCountMap().has(plate.weight)" class="plate-quantity">
+                            {{ plateCountMap().get(plate.weight) }}x
+                        </span>
                     </div>
                 </div>
                 <button class="clear-btn inline-flex items-center" (click)="clearLoadout()">
@@ -115,7 +143,7 @@
             </div>
 
             <div class="loadout-summary">
-                <h4>Plates Needed (Per Side)</h4>
+                <h4 *ngIf="platesWeightPerSide()>0">Plates Needed (Per Side)</h4>
                 <div class="summary-list">
                     <div *ngFor="let item of loadout()" class="summary-item">
                         <div class="plate-count">{{ item.count }}x</div>

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, computed, signal, Output, EventEmitter, effect } from '@angular/core';
+import { Component, OnInit, inject, computed, signal, Output, EventEmitter, effect, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Barbell, BarbellCalculatorService, PlateLoadout, Collar, Plate } from '../../../core/services/barbell-calculator.service';
@@ -29,7 +29,7 @@ interface GymBarbell {
   templateUrl: './barbell-calculator-modal.component.html',
   styleUrls: ['./barbell-calculator-modal.component.scss']
 })
-export class BarbellCalculatorModalComponent implements OnInit {
+export class BarbellCalculatorModalComponent implements OnInit, OnDestroy {
   @Output() close = new EventEmitter<void>();
   private barbellCalculatorService = inject(BarbellCalculatorService);
 
@@ -98,12 +98,12 @@ export class BarbellCalculatorModalComponent implements OnInit {
   });
 
   constructor() {
-    // +++ Effect to check target weight against max possible weight
     effect(() => {
       const currentTarget = this.targetWeight();
       const maxWeight = this.maxPossibleWeight();
-      if (currentTarget > maxWeight && maxWeight > 0) {
-        this.toastService.warning(`Weight is too high for available plates. Setting to max: ${maxWeight} ${this.unit()}`, 4000, "Weight Adjusted");
+      // Only adjust if maxWeight is plausible and target is higher
+      if (maxWeight > 0 && currentTarget > maxWeight) {
+        this.toastService.warning(`Weight exceeds available plates. Setting to max: ${maxWeight} ${this.unit()}`, 4000, "Max Weight Reached");
         this.targetWeight.set(maxWeight);
         this.calculateFromTargetWeight();
       }
@@ -192,7 +192,7 @@ export class BarbellCalculatorModalComponent implements OnInit {
   addPlate(plateToAdd: Plate): void {
     this.loadout.update(currentLoadout => {
       const index = currentLoadout.findIndex(p => p.plate.weight === plateToAdd.weight);
-      
+
       let newLoadout: PlateLoadout[];
 
       if (index > -1) {
@@ -207,7 +207,7 @@ export class BarbellCalculatorModalComponent implements OnInit {
         // Plate is new, add it to a new array
         newLoadout = [...currentLoadout, { plate: plateToAdd, count: 1 }];
       }
-      
+
       // Sort the new array and return it
       return newLoadout.sort((a, b) => b.plate.weight - a.plate.weight);
     });
@@ -227,7 +227,7 @@ export class BarbellCalculatorModalComponent implements OnInit {
       }
 
       const item = currentLoadout[index];
-      
+
       if (item.count > 1) {
         // If count is more than 1, create a new array with the count decremented
         return currentLoadout.map((loadoutItem, i) => {
@@ -271,12 +271,19 @@ export class BarbellCalculatorModalComponent implements OnInit {
     const collar = this.selectedCollar();
     if (!bar || !collar) return 0;
 
-    // In a real scenario with finite plates, you'd sum up the actual inventory.
-    // For this calculator, we assume an infinite supply of the available plate types.
-    // This calculation is just a safeguard against absurdly high numbers.
-    const maxPlateWeight = this.availablePlates().reduce((max, plate) => Math.max(max, plate.weight * (plate.quantity ?? 1)), 0);
-    const reasonableMax = (bar.weight + collar.weight + (maxPlateWeight * 10 * 2)); // Bar + Collars + 10 of the heaviest plates per side
-    return reasonableMax;
+    let totalPlateWeight = 0;
+    if (this.usePersonalGym() && this.isPremiumUser()) {
+      // Accurately sum all plates from the user's inventory for the current unit
+      totalPlateWeight = this.availablePlates().reduce((acc, plate) => {
+        return acc + (plate.weight * (plate.quantity ?? 0));
+      }, 0);
+    } else {
+      // For default mode, use a high but reasonable limit as inventory is "infinite"
+      const heaviestPlate = this.availablePlates()[0]?.weight ?? 0;
+      totalPlateWeight = heaviestPlate * 10 * 2; // Approx. 10 of the heaviest plates per side
+    }
+
+    return bar.weight + collar.weight + totalPlateWeight;
   });
 
   // +++ NEW: Method to toggle the personal gym setting
@@ -362,5 +369,68 @@ export class BarbellCalculatorModalComponent implements OnInit {
       return acc + (item.plate.weight * item.count);
     }, 0);
   });
+
+  plateCountMap = computed(() => {
+    return new Map(this.loadout().map(item => [item.plate.weight, item.count]));
+  });
+
+  private holdTimeout: any = null;
+  private holdInterval: any = null;
+  weightStep = computed(() => this.unit() === 'kg' ? 0.25 : 1.25);
+  minPossibleWeight = computed(() => {
+    const bar = this.selectedBarbell();
+    const collar = this.selectedCollar();
+    return (bar?.weight ?? 0) + (collar?.weight ?? 0);
+  });
+
+  /**
+   * Handles a single weight change, respecting min/max boundaries.
+   * @param direction 'increase' or 'decrease'
+   */
+  changeWeight(direction: 'increase' | 'decrease'): void {
+    const step = this.weightStep();
+    const currentWeight = this.targetWeight();
+    const minWeight = this.minPossibleWeight();
+    const maxWeight = this.maxPossibleWeight();
+
+    let newWeight = direction === 'increase' ? currentWeight + step : currentWeight - step;
+
+    // Clamp the new weight within the valid range
+    if (newWeight < minWeight) newWeight = minWeight;
+    if (newWeight > maxWeight) newWeight = maxWeight;
+
+    // Round to the nearest step to prevent floating point errors
+    const roundedWeight = Math.round(newWeight / step) * step;
+
+    this.targetWeight.set(parseFloat(roundedWeight.toFixed(2)));
+    this.calculateFromTargetWeight();
+  }
+
+  /**
+   * Starts the process of changing weight, called on mousedown/touchstart.
+   * It changes the weight once immediately, then starts timers for repeated changes.
+   */
+  startChangingWeight(direction: 'increase' | 'decrease'): void {
+    this.stopChangingWeight(); // Clear any existing timers
+    this.changeWeight(direction); // Change once immediately
+
+    this.holdTimeout = setTimeout(() => {
+      this.holdInterval = setInterval(() => {
+        this.changeWeight(direction);
+      }, 100); // Repeat every 100ms
+    }, 500); // Initial delay of 500ms
+  }
+
+  /**
+   * Stops the timers for changing weight, called on mouseup/mouseleave/touchend.
+   */
+  stopChangingWeight(): void {
+    clearTimeout(this.holdTimeout);
+    clearInterval(this.holdInterval);
+  }
+
+  ngOnDestroy(): void {
+    this.stopChangingWeight();
+  }
 
 }
