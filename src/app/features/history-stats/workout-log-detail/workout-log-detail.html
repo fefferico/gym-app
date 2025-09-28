@@ -302,8 +302,13 @@
   </ng-template>
 </div>
 
-<app-modal *ngIf="exerciseDetailsId" [(isOpen)]="isSimpleModalOpen" [modalTitle]="exerciseDetailsName">
-  <app-exercise-detail [id]="exerciseDetailsId" [isModal]="true"></app-exercise-detail>
+<app-modal *ngIf="selectedExerciseForComparison() as exercise" [(isOpen)]="isPerformanceComparisonModalOpen"
+  [modalTitle]="'Performance Comparison'">
+  <app-performance-comparison-modal 
+    (logSelect)="goToPreviousLogDetail($event)"
+    [exercise]="exercise"
+    [currentLog]="workoutLog()!">
+  </app-performance-comparison-modal>
 </app-modal>
 
 <!-- NOTES MODAL -->

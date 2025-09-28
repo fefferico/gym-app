@@ -1,11 +1,13 @@
 <ng-container *ngIf="comparisonData() as data; else loading">
-  <div *ngIf="data; else noData" class="bg-gray-900 text-white p-4 font-sans max-h-[80vh] overflow-y-auto">
+  <div *ngIf="data; else noData" class="bg-gray-900 text-white p-4 font-sans max-h-[85vh] overflow-y-auto custom-scrollbar">
 
     <!-- Header and Dropdown -->
-    <div class="text-center mb-6">
-      <p class="font-semibold text-lg">{{ exercise.exerciseName }}</p>
+    <div class="text-center mb-4">
+      <!-- FIXED: Read from the public signal now -->
+      <p class="font-semibold text-lg">{{ exerciseSignal()?.exerciseName }}</p>
+      
       <div *ngIf="allHistoricalLogs().length > 0; else noHistory" class="mt-2">
-        <label for="log-select" class="text-md text-gray-400">COMPARED TO</label>
+        <label for="log-select" class="text-sm text-gray-400">COMPARING TO</label>
         <select id="log-select" [value]="selectedLogId" (change)="onComparisonLogChange($event)" class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-primary-light focus:border-primary-light block w-full p-1.5 mt-1">
           <option *ngFor="let log of allHistoricalLogs()" [value]="log.id">
             {{ log.date | date:'fullDate' }}
@@ -13,133 +15,144 @@
         </select>
       </div>
       <ng-template #noHistory>
-        <p class="text-md text-gray-400">COMPARED TO PREVIOUS</p>
+        <p class="text-sm text-gray-400">PREVIOUS SESSION</p>
       </ng-template>
     </div>
 
-    <!-- Dynamic Comparison Grid -->
-    <div class="grid grid-cols-2 gap-x-4 gap-y-6 mb-8 text-center">
+    <!-- Summary Table (This part remains the same from the previous correct version) -->
+    <div class="summary-table mb-6">
+       <!-- Headers -->
+      <div class="header-cell">Metric</div>
+      <div class="header-cell text-center">Today</div>
+      <div class="header-cell text-center">Previous</div>
+      
       <!-- Sets -->
-      <div>
-        <div class="text-4xl font-bold">{{ data.currentSummary.setsCount }}</div>
-        <div class="text-md text-gray-400">Sets</div>
-        <div class="flex items-center justify-center mt-1" [ngClass]="{'text-green-400': data.comparison.setsDiff > 0, 'text-red-400': data.comparison.setsDiff < 0, 'text-gray-500': data.comparison.setsDiff === 0}">
+      <div class="metric-cell">Sets</div>
+      <div class="value-cell">
+        <span class="main-value">{{ data.currentSummary.setsCount }}</span>
+        <span *ngIf="data.previousLog && data.comparison.setsDiff !== 0" class="percent-change" [ngClass]="{'text-green-400': data.comparison.setsDiff > 0, 'text-red-400': data.comparison.setsDiff < 0}">
           <app-icon [name]="getTrendIcon(data.comparison.setsDiff)" class="w-3 h-3 mr-1"></app-icon>
-          <span class="text-xs font-medium">{{ data.comparison.setsDiff > 0 ? '+' : '' }}{{ data.comparison.setsDiff }} ({{ data.comparison.setsPercentChange | number:'1.0-0' }}%)</span>
-        </div>
+          {{ data.comparison.setsDiff > 0 ? '+' : '' }}{{ data.comparison.setsPercentChange | number:'1.0-0' }}%
+        </span>
       </div>
-      <!-- Repetitions (if applicable) -->
-      <div *ngIf="data.currentSummary.totalReps > 0 || data.previousSummary.totalReps > 0">
-        <div class="text-4xl font-bold">{{ data.currentSummary.totalReps }}</div>
-        <div class="text-md text-gray-400">Repetitions</div>
-        <div class="flex items-center justify-center mt-1" [ngClass]="{'text-green-400': data.comparison.repsDiff > 0, 'text-red-400': data.comparison.repsDiff < 0, 'text-gray-500': data.comparison.repsDiff === 0}">
-          <app-icon [name]="getTrendIcon(data.comparison.repsDiff)" class="w-3 h-3 mr-1"></app-icon>
-          <span class="text-xs font-medium">{{ data.comparison.repsDiff > 0 ? '+' : '' }}{{ data.comparison.repsDiff }} ({{ data.comparison.repsPercentChange | number:'1.0-0' }}%)</span>
-        </div>
-      </div>
+      <div class="value-cell"><span class="main-value">{{ data.previousSummary.setsCount }}</span></div>
 
-      <!-- WEIGHTED METRICS -->
+      <!-- Reps -->
+      <ng-container *ngIf="data.currentSummary.totalReps > 0 || data.previousSummary.totalReps > 0">
+        <div class="metric-cell">Total Reps</div>
+        <div class="value-cell">
+          <span class="main-value">{{ data.currentSummary.totalReps }}</span>
+          <span *ngIf="data.previousLog && data.comparison.repsDiff !== 0" class="percent-change" [ngClass]="{'text-green-400': data.comparison.repsDiff > 0, 'text-red-400': data.comparison.repsDiff < 0}">
+            <app-icon [name]="getTrendIcon(data.comparison.repsDiff)" class="w-3 h-3 mr-1"></app-icon>
+            {{ data.comparison.repsDiff > 0 ? '+' : '' }}{{ data.comparison.repsPercentChange | number:'1.0-0' }}%
+          </span>
+        </div>
+        <div class="value-cell"><span class="main-value">{{ data.previousSummary.totalReps }}</span></div>
+      </ng-container>
+
+      <!-- Weight Metrics -->
       <ng-container *ngIf="showWeightMetrics()">
-        <div>
-          <div class="text-4xl font-bold">{{ data.currentSummary.maxWeight | number:'1.0-1' }}</div>
-          <div class="text-md text-gray-400">Max Weight ({{ unitService.getWeightUnitSuffix() }})</div>
-          <div class="flex items-center justify-center mt-1" [ngClass]="{'text-green-400': data.comparison.maxWeightDiff > 0, 'text-red-400': data.comparison.maxWeightDiff < 0, 'text-gray-500': data.comparison.maxWeightDiff === 0}">
+        <div class="metric-cell">Max Weight</div>
+        <div class="value-cell">
+          <span class="main-value">{{ data.currentSummary.maxWeight | weightUnit:'1.0-1' }}</span>
+           <span *ngIf="data.previousLog && data.comparison.maxWeightDiff !== 0" class="percent-change" [ngClass]="{'text-green-400': data.comparison.maxWeightDiff > 0, 'text-red-400': data.comparison.maxWeightDiff < 0}">
             <app-icon [name]="getTrendIcon(data.comparison.maxWeightDiff)" class="w-3 h-3 mr-1"></app-icon>
-            <span class="text-xs font-medium">{{ data.comparison.maxWeightDiff > 0 ? '+' : '' }}{{ data.comparison.maxWeightDiff | number:'1.0-1' }} ({{ data.comparison.maxWeightPercentChange | number:'1.0-0' }}%)</span>
-          </div>
+            {{ data.comparison.maxWeightDiff > 0 ? '+' : '' }}{{ data.comparison.maxWeightPercentChange | number:'1.0-0' }}%
+          </span>
         </div>
-        <div>
-          <div class="text-4xl font-bold">{{ data.currentSummary.totalVolume | number:'1.0-0' }}</div>
-          <div class="text-md text-gray-400">Volume ({{ unitService.getWeightUnitSuffix() }})</div>
-          <div class="flex items-center justify-center mt-1" [ngClass]="{'text-green-400': data.comparison.volumeDiff > 0, 'text-red-400': data.comparison.volumeDiff < 0, 'text-gray-500': data.comparison.volumeDiff === 0}">
+        <div class="value-cell"><span class="main-value">{{ data.previousSummary.maxWeight | weightUnit:'1.0-1' }}</span></div>
+
+        <div class="metric-cell">Total Volume</div>
+        <div class="value-cell">
+          <span class="main-value">{{ data.currentSummary.totalVolume | weightUnit:'1.0-0' }}</span>
+          <span *ngIf="data.previousLog && data.comparison.volumeDiff !== 0" class="percent-change" [ngClass]="{'text-green-400': data.comparison.volumeDiff > 0, 'text-red-400': data.comparison.volumeDiff < 0}">
             <app-icon [name]="getTrendIcon(data.comparison.volumeDiff)" class="w-3 h-3 mr-1"></app-icon>
-            <span class="text-xs font-medium">{{ data.comparison.volumeDiff > 0 ? '+' : '' }}{{ data.comparison.volumeDiff | number:'1.0-0' }} ({{ data.comparison.volumePercentChange | number:'1.0-0' }}%)</span>
-          </div>
+            {{ data.comparison.volumeDiff > 0 ? '+' : '' }}{{ data.comparison.volumePercentChange | number:'1.0-0' }}%
+          </span>
         </div>
+        <div class="value-cell"><span class="main-value">{{ data.previousSummary.totalVolume | weightUnit:'1.0-0' }}</span></div>
       </ng-container>
 
-      <!-- CARDIO METRICS -->
+      <!-- Cardio Metrics -->
       <ng-container *ngIf="showCardioMetrics()">
-        <div *ngIf="data.currentSummary.totalDuration > 0 || data.previousSummary.totalDuration > 0">
-          <div class="text-4xl font-bold">{{ formatDuration(data.currentSummary.totalDuration) }}</div>
-          <div class="text-md text-gray-400">Duration</div>
-          <div class="flex items-center justify-center mt-1" [ngClass]="{'text-green-400': data.comparison.durationDiff > 0, 'text-red-400': data.comparison.durationDiff < 0, 'text-gray-500': data.comparison.durationDiff === 0}">
+        <div class="metric-cell">Total Duration</div>
+        <div class="value-cell">
+          <span class="main-value">{{ formatDuration(data.currentSummary.totalDuration) }}</span>
+          <span *ngIf="data.previousLog && data.comparison.durationDiff !== 0" class="percent-change" [ngClass]="{'text-green-400': data.comparison.durationDiff > 0, 'text-red-400': data.comparison.durationDiff < 0}">
             <app-icon [name]="getTrendIcon(data.comparison.durationDiff)" class="w-3 h-3 mr-1"></app-icon>
-            <span class="text-xs font-medium">{{ data.comparison.durationDiff > 0 ? '+' : '' }}{{ formatDuration(data.comparison.durationDiff) }} ({{ data.comparison.durationPercentChange | number:'1.0-0' }}%)</span>
-          </div>
+            {{ data.comparison.durationDiff > 0 ? '+' : '' }}{{ data.comparison.durationPercentChange | number:'1.0-0' }}%
+          </span>
         </div>
-        <div *ngIf="data.currentSummary.totalDistance > 0 || data.previousSummary.totalDistance > 0">
-          <div class="text-4xl font-bold">{{ data.currentSummary.totalDistance | number:'1.0-2' }}</div>
-          <div class="text-md text-gray-400">Distance ({{ unitService.getDistanceMeasureUnitSuffix() }})</div>
-          <div class="flex items-center justify-center mt-1" [ngClass]="{'text-green-400': data.comparison.distanceDiff > 0, 'text-red-400': data.comparison.distanceDiff < 0, 'text-gray-500': data.comparison.distanceDiff === 0}">
+        <div class="value-cell"><span class="main-value">{{ formatDuration(data.previousSummary.totalDuration) }}</span></div>
+
+        <div class="metric-cell">Total Distance</div>
+        <div class="value-cell">
+          <span class="main-value">{{ data.currentSummary.totalDistance | number:'1.0-2' }} {{ unitService.getDistanceMeasureUnitSuffix() }}</span>
+          <span *ngIf="data.previousLog && data.comparison.distanceDiff !== 0" class="percent-change" [ngClass]="{'text-green-400': data.comparison.distanceDiff > 0, 'text-red-400': data.comparison.distanceDiff < 0}">
             <app-icon [name]="getTrendIcon(data.comparison.distanceDiff)" class="w-3 h-3 mr-1"></app-icon>
-            <span class="text-xs font-medium">{{ data.comparison.distanceDiff > 0 ? '+' : '' }}{{ data.comparison.distanceDiff | number:'1.0-2' }} ({{ data.comparison.distancePercentChange | number:'1.0-0' }}%)</span>
-          </div>
+            {{ data.comparison.distanceDiff > 0 ? '+' : '' }}{{ data.comparison.distancePercentChange | number:'1.0-0' }}%
+          </span>
         </div>
+        <div class="value-cell"><span class="main-value">{{ data.previousSummary.totalDistance | number:'1.0-2' }} {{ unitService.getDistanceMeasureUnitSuffix() }}</span></div>
       </ng-container>
     </div>
 
-    <!-- Today's Sets -->
-    <div class="space-y-2">
-        <h3 class="text-sm font-bold tracking-wider text-gray-300">TODAY</h3>
-        <ul class="space-y-1">
-            <li *ngFor="let set of data.currentSets; let i = index" class="bg-gray-800 p-2 rounded-md">
-                <div class="flex justify-between items-center text-md text-gray-400">
-                    <span>{{ set.timestamp || data.currentLog.startTime | date:'shortTime' }}</span>
-                    <span>SET {{ i + 1 }}</span>
+        <!-- Sets Table -->
+        <div class="sets-table">
+            <!-- Headers -->
+            <div class="header-cell">Set</div>
+            <div class="header-cell text-center min-w-[100px]">Today</div>
+            <div class="header-cell text-center min-w-[100px] flex items-center justify-center">
+                <span>Previous</span>
+                <button *ngIf="data.previousLog" type="button" (click)="goToPreviousLogDetail(data.previousLog?.id)"
+                    title="Go to previous log"
+                    class="ml-1 px-1 flex justify-center items-center w-fit bg-primary hover:bg-primary-dark text-white font-semibold rounded-md shadow-sm text-lg disabled:opacity-50 disabled:cursor-not-allowed">
+                    <app-icon name="right-arrow" class="w-5 h-5"></app-icon>
+                </button>
+            </div>
+            <!-- Table Rows -->
+            <ng-container *ngFor="let row of comparisonTableRows()">
+                <div class="set-number-cell">{{ row.setNumber }}</div>
+                <div class="set-data-cell">
+                    <ng-container *ngIf="row.todaySet; else noSetData">
+                        <span *ngIf="(row.todaySet.repsAchieved || 0) > 0" class="text-green-400">{{
+                            row.todaySet.repsAchieved }} reps</span>
+                        <span *ngIf="row.todaySet.weightUsed != null && row.todaySet.weightUsed > 0"
+                            class="text-yellow-400">@ {{ row.todaySet.weightUsed | weightUnit:'1.0-2' }}</span>
+                        <span *ngIf="(row.todaySet.durationPerformed || 0) > 0" class="text-purple-400">{{
+                            formatDuration(row.todaySet.durationPerformed!) }}</span>
+                        <span *ngIf="(row.todaySet.distanceAchieved || 0) > 0" class="text-cyan-400">{{
+                            row.todaySet.distanceAchieved | number:'1.0-2' }} {{
+                            unitService.getDistanceMeasureUnitSuffix() }}</span>
+                    </ng-container>
                 </div>
-                <div class="flex justify-end items-baseline space-x-4 mt-1 text-right text-base">
-                    <span *ngIf="(set.distanceAchieved || 0) > 0" class="font-semibold text-cyan-400">{{ set.distanceAchieved | number:'1.0-2' }} {{ unitService.getDistanceMeasureUnitSuffix() }}</span>
-                    <span *ngIf="(set.durationPerformed || 0) > 0" class="font-semibold text-purple-400">{{ formatDuration(set.durationPerformed!) }}</span>
-                    <span *ngIf="(set.repsAchieved || 0) > 0" class="font-semibold text-green-400">{{ set.repsAchieved }} reps</span>
-                    <span *ngIf="set.weightUsed != null && set.weightUsed > 0" class="font-semibold text-yellow-400">{{ set.weightUsed | weightUnit:'1.0-2' }}</span>
+                <div class="set-data-cell">
+                    <ng-container *ngIf="row.previousSet; else noSetData">
+                        <span *ngIf="(row.previousSet.repsAchieved || 0) > 0" class="text-green-400">{{
+                            row.previousSet.repsAchieved }} reps</span>
+                        <span *ngIf="row.previousSet.weightUsed != null && row.previousSet.weightUsed > 0"
+                            class="text-yellow-400">@ {{ row.previousSet.weightUsed | weightUnit:'1.0-2' }}</span>
+                        <span *ngIf="(row.previousSet.durationPerformed || 0) > 0" class="text-purple-400">{{
+                            formatDuration(row.previousSet.durationPerformed!) }}</span>
+                        <span *ngIf="(row.previousSet.distanceAchieved || 0) > 0" class="text-cyan-400">{{
+                            row.previousSet.distanceAchieved | number:'1.0-2' }} {{
+                            unitService.getDistanceMeasureUnitSuffix() }}</span>
+                    </ng-container>
                 </div>
-            </li>
-        </ul>
-    </div>
-    
-    <!-- Previous Sets -->
-    <div class="mt-6 space-y-2" *ngIf="data.previousLog && data.previousSets.length > 0">
-        <div class="flex items-center">
-            <h3 class="text-sm font-bold tracking-wider text-gray-300">{{ data.previousLog.date | date:'mediumDate' | uppercase
-                }}</h3>
-            <button type="button" (click)="goToPreviousLogDetail(data.previousLog?.id)"
-                title="Go to previous log"
-                class="ml-1 px-1 flex justify-center items-center w-fit bg-primary hover:bg-primary-dark text-white font-semibold rounded-md shadow-sm text-lg disabled:opacity-50 disabled:cursor-not-allowed">
-                <app-icon name="right-arrow" class="w-8 h-8"></app-icon>
-            </button>
+                <ng-template #noSetData><span class="text-gray-500">-</span></ng-template>
+            </ng-container>
         </div>
-        
-        <ul class="space-y-1">
-            <li *ngFor="let set of data.previousSets; let i = index" class="bg-gray-800 p-2 rounded-md">
-                <div class="flex justify-between items-center text-md text-gray-400">
-                    <span>{{ data.previousLog.startTime | date:'shortTime' }}</span>
-                    <span>SET {{ i + 1 }}</span>
-                </div>
-                <div class="flex justify-end items-baseline space-x-4 mt-1 text-right text-base">
-                    <span *ngIf="(set.distanceAchieved || 0) > 0" class="font-semibold text-cyan-400">{{ set.distanceAchieved | number:'1.0-2' }} {{ unitService.getDistanceMeasureUnitSuffix() }}</span>
-                    <span *ngIf="(set.durationPerformed || 0) > 0" class="font-semibold text-purple-400">{{ formatDuration(set.durationPerformed!) }}</span>
-                    <span *ngIf="(set.repsAchieved || 0) > 0" class="font-semibold text-green-400">{{ set.repsAchieved }} reps</span>
-                    <span *ngIf="set.weightUsed != null && set.weightUsed > 0" class="font-semibold text-yellow-400">{{ set.weightUsed | weightUnit:'1.0-2' }}</span>
-                </div>
-            </li>
-        </ul>
+        <div *ngIf="!data.previousLog" class="mt-6 text-center text-sm text-gray-500">
+            No previous performance found for this routine.
+        </div>
     </div>
-
-    <!-- Fallback messages -->
-    <div *ngIf="!data.previousLog" class="mt-6 text-center text-sm text-gray-500">
-      No previous performance found for this routine.
-    </div>
-    <div *ngIf="data.previousLog && data.previousSets.length === 0" class="mt-6 text-center text-sm text-gray-500">
-      This exercise was not performed in the selected session.
-    </div>
-  </div>
 </ng-container>
 
 <ng-template #loading>
-  <div class="p-8 text-center text-gray-400">Loading comparison...</div>
+    <div class="p-8 text-center text-gray-400">Loading comparison...</div>
 </ng-template>
 
 <ng-template #noData>
-    <div class="p-8 text-center text-gray-400">Could not load comparison data. This workout may not be part of a routine.</div>
+    <div class="p-8 text-center text-gray-400">Could not load comparison data. This workout may not be part of a
+        routine.</div>
 </ng-template>
