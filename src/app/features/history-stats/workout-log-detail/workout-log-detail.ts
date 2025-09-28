@@ -11,7 +11,6 @@ import { ExerciseService } from '../../../core/services/exercise.service';
 import { WeightUnitPipe } from '../../../shared/pipes/weight-unit-pipe';
 import { ModalComponent } from '../../../shared/components/modal/modal.component';
 import { ExerciseDetailComponent } from '../../exercise-library/exercise-detail';
-import { Routine } from '../../../core/models/workout.model';
 import { UnitsService } from '../../../core/services/units.service';
 import { IsWeightedPipe } from '../../../shared/pipes/is-weighted-pipe';
 import { WorkoutService } from '../../../core/services/workout.service';
@@ -26,7 +25,7 @@ import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
 import { TrainingProgramService } from '../../../core/services/training-program.service';
 import { ProgramDayInfo, TrainingProgram } from '../../../core/models/training-program.model';
 import { MenuMode } from '../../../core/models/app-settings.model';
-import { AbstractControl } from '@angular/forms';
+import { PerformanceComparisonModalComponent } from './performance-comparison-modal/performance-comparison-modal.component';
 
 interface DisplayLoggedExercise extends LoggedWorkoutExercise {
   baseExercise?: Exercise | null;
@@ -49,7 +48,7 @@ interface SupersetDisplayBlock {
   blockName: string; // e.g., "Bench Press / Dumbbell Fly"
   totalRounds: number;
   // Contains the definitions of exercises in the block for header info
-  exercises: DisplayLoggedExercise[]; 
+  exercises: DisplayLoggedExercise[];
   // Contains the actual performance data, grouped by round
   rounds: {
     roundNumber: number;
@@ -59,14 +58,14 @@ interface SupersetDisplayBlock {
 }
 
 interface EMOMDisplayBlock {
-    isEmomBlock: true;
-    supersetId: string;
-    blockName: string;
-    totalRounds: number;
-    emomTimeSeconds: number;
-    exercises: DisplayLoggedExercise[];
-    rounds: { roundNumber: number, sets: (LoggedSet | undefined)[] }[];
-    isExpanded: boolean;
+  isEmomBlock: true;
+  supersetId: string;
+  blockName: string;
+  totalRounds: number;
+  emomTimeSeconds: number;
+  exercises: DisplayLoggedExercise[];
+  rounds: { roundNumber: number, sets: (LoggedSet | undefined)[] }[];
+  isExpanded: boolean;
 }
 
 type DisplayItem = DisplayLoggedExercise | SupersetDisplayBlock | EMOMDisplayBlock;
@@ -80,7 +79,8 @@ interface TargetComparisonData {
 @Component({
   selector: 'app-workout-log-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, DatePipe, TitleCasePipe, ModalComponent, ExerciseDetailComponent, IsWeightedPipe, ActionMenuComponent, PressDirective, IconComponent, TooltipDirective, WeightUnitPipe],
+  imports: [CommonModule, RouterLink, DatePipe, TitleCasePipe, ModalComponent, ExerciseDetailComponent, 
+    IsWeightedPipe, ActionMenuComponent, PressDirective, IconComponent, TooltipDirective, WeightUnitPipe, PerformanceComparisonModalComponent],
   templateUrl: './workout-log-detail.html',
   providers: [DecimalPipe]
 })
@@ -117,7 +117,7 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
   weekName = signal<string | null>(null);
   dayInfo = signal<ProgramDayInfo | null>(null);
 
-  constructor() {}
+  constructor() { }
 
   async ngOnInit(): Promise<void> {
     window.scrollTo(0, 0);
@@ -199,11 +199,11 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
 
     forkJoin(exercisesWithBaseInfo$).subscribe(exercisesWithDetails => {
       const displayItems: DisplayItem[] = [];
-      
+
       for (const ex of exercisesWithDetails) {
         if (ex.supersetId && !processedSupersetIds.has(ex.supersetId)) {
           processedSupersetIds.add(ex.supersetId);
-          
+
           const blockExercises = exercisesWithDetails.filter(e => e.supersetId === ex.supersetId);
           if (blockExercises.length === 0) continue;
 
@@ -217,9 +217,9 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
           if (firstInBlock.supersetType === 'emom') {
             const rounds = Array.from({ length: totalRounds }, (_, i) => ({
               roundNumber: i + 1,
-              sets: blockExercises.map(bex => bex.sets.find((s,index) => index === i))
+              sets: blockExercises.map(bex => bex.sets.find((s, index) => index === i))
             })).filter(r => r.sets.some(s => s !== undefined));
-            
+
             displayItems.push({
               isEmomBlock: true,
               supersetId: ex.supersetId,
@@ -234,16 +234,16 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
             // STANDARD SUPERSET: Group all rounds into a single block
             const rounds = Array.from({ length: totalRounds }, (_, i) => {
               const roundNumber = i + 1;
-                const exercisesForRound = blockExercises
+              const exercisesForRound = blockExercises
                 .map(e => {
                   // Find the set for this round
-                  const setForRound = e.sets.find((s,index) => (index ?? -1 ) + 1 === roundNumber);
+                  const setForRound = e.sets.find((s, index) => (index ?? -1) + 1 === roundNumber);
                   if (setForRound) {
-                  // Return a shallow copy with only the set for this round
-                  return {
-                    ...e,
-                    sets: [setForRound]
-                  };
+                    // Return a shallow copy with only the set for this round
+                    return {
+                      ...e,
+                      sets: [setForRound]
+                    };
                   }
                   return null;
                 })
@@ -268,20 +268,20 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
           displayItems.push(ex);
         }
       }
-      
+
       this.displayItems.set(displayItems);
       this.fetchPersonalBestsForLog(exercisesWithDetails);
     });
   }
 
-   isEmomBlock(item: DisplayItem): item is EMOMDisplayBlock {
+  isEmomBlock(item: DisplayItem): item is EMOMDisplayBlock {
     return 'isEmomBlock' in item;
   }
-  
+
   isSupersetBlock(item: DisplayItem): item is SupersetDisplayBlock {
     return 'isSupersetBlock' in item;
   }
-  
+
   isStandardExercise(item: DisplayItem): item is DisplayLoggedExercise {
     return !('isEmomBlock' in item) && !('isSupersetBlock' in item);
   }
@@ -310,7 +310,7 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
   getPersonalBestTypesForSet(set: LoggedSet, exerciseId: string): string[] {
     const pbsForExercise = this.personalBestsForLog()[exerciseId];
     if (!pbsForExercise || !set.id) return [];
-    
+
     const achievedPbTypes: string[] = [];
     for (const currentPb of pbsForExercise) {
       if (currentPb.id === set.id) {
@@ -339,24 +339,24 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
     this.isSimpleModalOpen.set(true);
   }
 
-secondsToDateTime(totalSeconds: number | undefined): Date {
+  secondsToDateTime(totalSeconds: number | undefined): Date {
     if (totalSeconds == null || isNaN(totalSeconds)) {
-        // Return a date that will format to 00:00:00
-        const zeroDate = new Date(0);
-        // Using UTC setters ensures we start from a clean 00:00:00 base
-        zeroDate.setUTCHours(0, 0, 0, 0);
-        return zeroDate;
+      // Return a date that will format to 00:00:00
+      const zeroDate = new Date(0);
+      // Using UTC setters ensures we start from a clean 00:00:00 base
+      zeroDate.setUTCHours(0, 0, 0, 0);
+      return zeroDate;
     }
 
     const d = new Date(0);
-    
+
     // The setHours method can accept (hours, minutes, seconds, ms).
     // By setting hours and minutes to 0, we are purely representing the duration
     // in the time part of the Date object without timezone interference.
     d.setHours(0, 0, totalSeconds, 0);
-    
+
     return d;
-}
+  }
 
 
   getSetWeightsUsed(loggedEx: LoggedWorkoutExercise): string {
@@ -385,23 +385,23 @@ secondsToDateTime(totalSeconds: number | undefined): Date {
 
   checkTextClass(set: LoggedSet, type: 'reps' | 'duration' | 'weight' | 'rest'): string {
     if (!set) return 'text-gray-700 dark:text-gray-300';
-    
+
     const checkRange = (performed: number, min?: number | null, max?: number | null) => {
-        if (min != null && performed < min) return 'text-red-500 dark:text-red-400';
-        if (max != null && performed > max) return 'text-green-500 dark:text-green-400';
-        return 'text-gray-800 dark:text-white';
+      if (min != null && performed < min) return 'text-red-500 dark:text-red-400';
+      if (max != null && performed > max) return 'text-green-500 dark:text-green-400';
+      return 'text-gray-800 dark:text-white';
     };
 
     if (type === 'reps' && (set.targetRepsMin != null || set.targetRepsMax != null)) {
-        return checkRange(set.repsAchieved ?? 0, set.targetRepsMin, set.targetRepsMax);
+      return checkRange(set.repsAchieved ?? 0, set.targetRepsMin, set.targetRepsMax);
     }
     if (type === 'duration' && (set.targetDurationMin != null || set.targetDurationMax != null)) {
-        return checkRange(set.durationPerformed ?? 0, set.targetDurationMin, set.targetDurationMax);
+      return checkRange(set.durationPerformed ?? 0, set.targetDurationMin, set.targetDurationMax);
     }
 
     const performed = type === 'reps' ? set.repsAchieved : type === 'duration' ? set.durationPerformed : type === 'weight' ? set.weightUsed : set.restAfterSetUsed;
     const target = type === 'reps' ? set.targetReps : type === 'duration' ? set.targetDuration : type === 'weight' ? set.targetWeight : set.targetRestAfterSet;
-    
+
     if ((target ?? 0) > 0) {
       if ((performed ?? 0) > target!) return 'text-green-500 dark:text-green-400';
       if ((performed ?? 0) < target!) return 'text-red-500 dark:text-red-400';
@@ -427,30 +427,30 @@ secondsToDateTime(totalSeconds: number | undefined): Date {
     const isMiss = (performed: number, min?: number | null, single?: number | null) => (min != null && performed < min) || (min == null && performed < (single ?? 0));
 
     switch (type) {
-        case 'reps':
-            const performedReps = set.repsAchieved;
-            if (isMiss(performedReps ?? 0, set.targetRepsMin, set.targetReps)) {
-                modalData = { metric: 'Reps', targetValue: createTargetDisplay(set.targetRepsMin, set.targetRepsMax, set.targetReps), performedValue: `${performedReps ?? '-'}` };
-            }
-            break;
-        case 'duration':
-            const performedDuration = set.durationPerformed;
-            if (isMiss(performedDuration ?? 0, set.targetDurationMin, set.targetDuration)) {
-                modalData = { metric: 'Duration', targetValue: createTargetDisplay(set.targetDurationMin, set.targetDurationMax, set.targetDuration, ' s'), performedValue: `${performedDuration ?? '-'} s` };
-            }
-            break;
-        case 'weight':
-            const performedWeight = set.weightUsed;
-            if ((performedWeight ?? 0) < (set.targetWeight ?? 0)) {
-                modalData = { metric: 'Weight', targetValue: `${set.targetWeight ?? '-'} ${unitLabel}`, performedValue: `${performedWeight ?? '-'} ${unitLabel}` };
-            }
-            break;
-        case 'rest':
-            const performedRest = set.restAfterSetUsed;
-            if ((performedRest ?? 0) < (set.targetRestAfterSet ?? 0)) {
-                modalData = { metric: 'Rest', targetValue: `${set.targetRestAfterSet ?? '-'} s`, performedValue: `${performedRest ?? '-'} s` };
-            }
-            break;
+      case 'reps':
+        const performedReps = set.repsAchieved;
+        if (isMiss(performedReps ?? 0, set.targetRepsMin, set.targetReps)) {
+          modalData = { metric: 'Reps', targetValue: createTargetDisplay(set.targetRepsMin, set.targetRepsMax, set.targetReps), performedValue: `${performedReps ?? '-'}` };
+        }
+        break;
+      case 'duration':
+        const performedDuration = set.durationPerformed;
+        if (isMiss(performedDuration ?? 0, set.targetDurationMin, set.targetDuration)) {
+          modalData = { metric: 'Duration', targetValue: createTargetDisplay(set.targetDurationMin, set.targetDurationMax, set.targetDuration, ' s'), performedValue: `${performedDuration ?? '-'} s` };
+        }
+        break;
+      case 'weight':
+        const performedWeight = set.weightUsed;
+        if ((performedWeight ?? 0) < (set.targetWeight ?? 0)) {
+          modalData = { metric: 'Weight', targetValue: `${set.targetWeight ?? '-'} ${unitLabel}`, performedValue: `${performedWeight ?? '-'} ${unitLabel}` };
+        }
+        break;
+      case 'rest':
+        const performedRest = set.restAfterSetUsed;
+        if ((performedRest ?? 0) < (set.targetRestAfterSet ?? 0)) {
+          modalData = { metric: 'Rest', targetValue: `${set.targetRestAfterSet ?? '-'} s`, performedValue: `${performedRest ?? '-'} s` };
+        }
+        break;
     }
     if (modalData) this.comparisonModalData.set(modalData);
   }
@@ -596,6 +596,23 @@ secondsToDateTime(totalSeconds: number | undefined): Date {
 
     return tmpExerciseStringName || exercise.baseExercise?.name || 'Unnamed Exercise';
   }
+
+  isPerformanceComparisonModalOpen = signal(false);
+  selectedExerciseForComparison = signal<DisplayLoggedExercise | null>(null);
+
+  openPerformanceComparisonModal(exercise: DisplayLoggedExercise, event?: Event): void {
+    event?.stopPropagation(); // Prevents the accordion from toggling
+    this.selectedExerciseForComparison.set(exercise);
+    this.isPerformanceComparisonModalOpen.set(true);
+  }
+
+
+
+
+
+
+
+
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();

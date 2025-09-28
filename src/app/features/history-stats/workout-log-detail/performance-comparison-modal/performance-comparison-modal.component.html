@@ -1,0 +1,89 @@
+<ng-container *ngIf="comparisonData$ | async as data; else loading">
+  <div *ngIf="data; else noData" class="bg-gray-900 text-white p-4 font-sans">
+
+    <!-- Header -->
+    <div class="text-center mb-6">
+      <p class="font-semibold text-lg">{{ exercise.exerciseName }}</p>
+      <p class="text-xs text-gray-400">COMPARED TO PREVIOUS</p>
+    </div>
+
+    <!-- Comparison Grid -->
+    <div class="grid grid-cols-2 gap-x-4 gap-y-6 mb-8 text-center">
+      <!-- Sets -->
+      <div>
+        <div class="text-2xl font-bold">{{ data.currentSummary.setsCount }}</div>
+        <div class="text-xs text-gray-400">Sets</div>
+        <div class="flex items-center justify-center mt-1" [ngClass]="{'text-green-400': data.comparison.setsDiff > 0, 'text-red-400': data.comparison.setsDiff < 0, 'text-gray-500': data.comparison.setsDiff === 0}">
+          <app-icon [name]="getTrendIcon(data.comparison.setsDiff)" class="w-3 h-3 mr-1"></app-icon>
+          <span class="text-xs font-medium">{{ data.comparison.setsDiff }} ({{ data.comparison.setsPercentChange | number:'1.0-0' }}%)</span>
+        </div>
+      </div>
+      <!-- Repetitions -->
+      <div>
+        <div class="text-2xl font-bold">{{ data.currentSummary.totalReps }}</div>
+        <div class="text-xs text-gray-400">Repetitions</div>
+        <div class="flex items-center justify-center mt-1" [ngClass]="{'text-green-400': data.comparison.repsDiff > 0, 'text-red-400': data.comparison.repsDiff < 0, 'text-gray-500': data.comparison.repsDiff === 0}">
+          <app-icon [name]="getTrendIcon(data.comparison.repsDiff)" class="w-3 h-3 mr-1"></app-icon>
+          <span class="text-xs font-medium">{{ data.comparison.repsDiff }} ({{ data.comparison.repsPercentChange | number:'1.0-0' }}%)</span>
+        </div>
+      </div>
+      <!-- Volume -->
+      <div>
+        <div class="text-2xl font-bold">{{ data.currentSummary.totalVolume | number:'1.0-0' }}</div>
+        <div class="text-xs text-gray-400">Volume ({{ unitService.getWeightUnitSuffix() }})</div>
+        <div class="flex items-center justify-center mt-1" [ngClass]="{'text-green-400': data.comparison.volumeDiff > 0, 'text-red-400': data.comparison.volumeDiff < 0, 'text-gray-500': data.comparison.volumeDiff === 0}">
+          <app-icon [name]="getTrendIcon(data.comparison.volumeDiff)" class="w-3 h-3 mr-1"></app-icon>
+          <span class="text-xs font-medium">{{ data.comparison.volumeDiff | number:'1.0-0' }} ({{ data.comparison.volumePercentChange | number:'1.0-0' }}%)</span>
+        </div>
+      </div>
+      <!-- lb/rep -->
+      <div>
+        <div class="text-2xl font-bold">{{ data.currentSummary.avgWeightPerRep | number:'1.0-1' }}</div>
+        <div class="text-xs text-gray-400">{{ unitService.getWeightUnitSuffix() }}/rep</div>
+        <div class="flex items-center justify-center mt-1" [ngClass]="{'text-green-400': data.comparison.avgWeightDiff > 0, 'text-red-400': data.comparison.avgWeightDiff < 0, 'text-gray-500': data.comparison.avgWeightDiff === 0}">
+          <app-icon [name]="getTrendIcon(data.comparison.avgWeightDiff)" class="w-3 h-3 mr-1"></app-icon>
+          <span class="text-xs font-medium">{{ data.comparison.avgWeightDiff | number:'1.0-1' }} ({{ data.comparison.avgWeightPercentChange | number:'1.0-0' }}%)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Today's Sets -->
+    <div class="space-y-2">
+        <h3 class="text-sm font-bold tracking-wider text-gray-300">TODAY</h3>
+        <ul class="space-y-1">
+            <li *ngFor="let set of data.currentSets" class="flex justify-between items-center bg-gray-800 p-2 rounded-md">
+                <span class="text-sm text-gray-400">{{ data.currentLog.startTime | date:'shortTime' }}</span>
+                <div>
+                    <span class="font-semibold text-green-400">{{ set.repsAchieved }} rep</span>
+                    <span class="ml-4 font-semibold text-yellow-400">{{ set.weightUsed | weightUnit:'1.0-2' }}</span>
+                </div>
+            </li>
+        </ul>
+    </div>
+    
+    <!-- Previous Sets -->
+    <div class="mt-6 space-y-2" *ngIf="data.previousLog && data.previousSets.length > 0">
+        <h3 class="text-sm font-bold tracking-wider text-gray-300">{{ data.previousLog.date | date:'mediumDate' | uppercase }}</h3>
+        <ul class="space-y-1">
+            <li *ngFor="let set of data.previousSets" class="flex justify-between items-center bg-gray-800 p-2 rounded-md">
+                <span class="text-sm text-gray-400">{{ data.previousLog.startTime | date:'shortTime' }}</span>
+                <div>
+                    <span class="font-semibold text-green-400">{{ set.repsAchieved }} rep</span>
+                    <span class="ml-4 font-semibold text-yellow-400">{{ set.weightUsed | weightUnit:'1.0-2' }}</span>
+                </div>
+            </li>
+        </ul>
+    </div>
+    <div *ngIf="!data.previousLog" class="mt-6 text-center text-sm text-gray-500">
+      No previous performance found for this routine.
+    </div>
+  </div>
+</ng-container>
+
+<ng-template #loading>
+  <div class="p-8 text-center text-gray-400">Loading comparison...</div>
+</ng-template>
+
+<ng-template #noData>
+    <div class="p-8 text-center text-gray-400">Could not load comparison data. This workout may not be part of a routine.</div>
+</ng-template>
