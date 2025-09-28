@@ -1,10 +1,25 @@
-<ng-container *ngIf="comparisonData$ | async as data; else loading">
+<ng-container *ngIf="comparisonData() as data; else loading">
   <div *ngIf="data; else noData" class="bg-gray-900 text-white p-4 font-sans">
 
     <!-- Header -->
     <div class="text-center mb-6">
       <p class="font-semibold text-lg">{{ exercise.exerciseName }}</p>
-      <p class="text-xs text-gray-400">COMPARED TO PREVIOUS</p>
+      
+      <!-- LOG SELECTOR DROPDOWN -->
+      <div *ngIf="allHistoricalLogs().length > 0; else noHistory" class="mt-2">
+        <label for="log-select" class="text-xs text-gray-400">COMPARED TO</label>
+        <select id="log-select"
+                [value]="selectedLogId"
+                (change)="onComparisonLogChange($event)"
+                class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-primary-light focus:border-primary-light block w-full p-1.5 mt-1">
+          <option *ngFor="let log of allHistoricalLogs()" [value]="log.id">
+            {{ log.date | date:'fullDate' }}
+          </option>
+        </select>
+      </div>
+      <ng-template #noHistory>
+        <p class="text-xs text-gray-400">COMPARED TO PREVIOUS</p>
+      </ng-template>
     </div>
 
     <!-- Comparison Grid -->
@@ -74,9 +89,15 @@
             </li>
         </ul>
     </div>
+
+    <!-- Fallback messages -->
     <div *ngIf="!data.previousLog" class="mt-6 text-center text-sm text-gray-500">
       No previous performance found for this routine.
     </div>
+    <div *ngIf="data.previousLog && data.previousSets.length === 0" class="mt-6 text-center text-sm text-gray-500">
+      This exercise was not performed in the selected session.
+    </div>
+
   </div>
 </ng-container>
 

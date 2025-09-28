@@ -1,6 +1,5 @@
-import { Component, Input, inject, OnInit } from '@angular/core';
+import { Component, Input, inject, OnInit, signal } from '@angular/core';
 import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
-import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { LoggedSet, WorkoutLog } from '../../../../core/models/workout-log.model';
 import { IconComponent } from '../../../../shared/components/icon/icon.component';
@@ -8,7 +7,7 @@ import { TrackingService } from '../../../../core/services/tracking.service';
 import { UnitsService } from '../../../../core/services/units.service';
 import { WeightUnitPipe } from '../../../../shared/pipes/weight-unit-pipe';
 
-// This can be in the same file or a separate model file
+// Interfaces remain the same
 interface DisplayLoggedExercise {
     exerciseId: string;
     exerciseName: string;
@@ -56,52 +55,83 @@ export class PerformanceComparisonModalComponent implements OnInit {
     @Input({ required: true }) exercise!: DisplayLoggedExercise;
     @Input({ required: true }) currentLog!: WorkoutLog;
 
-    comparisonData$!: Observable<ComparisonData | null>;
+    // --- STATE MANAGEMENT REFACTORED TO USE SIGNALS ---
+    allHistoricalLogs = signal<WorkoutLog[]>([]);
+    comparisonData = signal<ComparisonData | null>(null);
+    selectedLogId: string | null = null; // Used to bind to the <select> element's value
 
     ngOnInit() {
-        // FIX: Add a guard clause to check for a routineId
         if (!this.currentLog.routineId) {
-            // Cannot compare if the log isn't part of a routine.
-            // Return an observable that emits null immediately.
-            this.comparisonData$ = of(null);
+            this.comparisonData.set(null);
             return;
         }
 
-        // Now, this line is safe because we've confirmed routineId is a string.
-        this.comparisonData$ = this.trackingService.getLogsForRoutine(this.currentLog.routineId, 2).pipe(
+        // Fetch ALL logs for the routine to populate the dropdown
+        this.trackingService.getLogsForRoutine(this.currentLog.routineId).pipe(
             map(logs => {
-                // The rest of the logic is the same, but we add an extra check for safety
-                if (!this.currentLog.routineId || logs.length === 0) return null;
+                if (logs.length <= 1) { // No other logs exist to compare to
+                    this.allHistoricalLogs.set([]);
+                    return null;
+                }
 
-                const sortedLogs = logs.sort((a, b) => b.startTime - a.startTime);
-                const currentLogInHistory = sortedLogs.find(log => log.id === this.currentLog.id);
-                const previousLog = sortedLogs.find(log => log.id !== this.currentLog.id);
+                // Filter out the current log from the list of choices
+                const historical = logs
+                    .filter(log => log.id !== this.currentLog.id)
+                    .sort((a, b) => b.startTime - a.startTime); // Ensure newest is first
 
-                if (!currentLogInHistory) return null;
+                this.allHistoricalLogs.set(historical);
 
-                const currentExercise = currentLogInHistory.exercises.find(ex => ex.exerciseId === this.exercise.exerciseId);
-                const previousExercise = previousLog?.exercises.find(ex => ex.exerciseId === this.exercise.exerciseId);
+                // Default to comparing with the most recent historical log
+                const defaultPreviousLog = historical.length > 0 ? historical[0] : null;
+                this.selectedLogId = defaultPreviousLog?.id ?? null;
 
-                const currentSets = currentExercise?.sets || [];
-                const previousSets = previousExercise?.sets || [];
-
-                const currentSummary = this.calculateSummary(currentSets);
-                const previousSummary = this.calculateSummary(previousSets);
-                const comparison = this.calculateComparison(currentSummary, previousSummary);
-
-                return {
-                    currentLog: currentLogInHistory,
-                    previousLog: previousLog || null,
-                    currentSets,
-                    previousSets,
-                    currentSummary,
-                    previousSummary,
-                    comparison
-                };
+                return defaultPreviousLog;
             })
-        );
+        ).subscribe(previousLog => {
+            // Generate the initial comparison against the default (most recent) log
+            this.generateComparisonData(previousLog);
+        });
     }
 
+    /**
+     * Triggered when the user selects a different historical workout from the dropdown.
+     */
+    onComparisonLogChange(event: Event): void {
+        const selectElement = event.target as HTMLSelectElement;
+        const logId = selectElement.value;
+        this.selectedLogId = logId;
+        const selectedLog = this.allHistoricalLogs().find(log => log.id === logId) ?? null;
+        this.generateComparisonData(selectedLog);
+    }
+
+    /**
+     * Performs all calculations and updates the main signal that drives the template.
+     * @param previousLog The historical log to compare against. Can be null.
+     */
+    private generateComparisonData(previousLog: WorkoutLog | null): void {
+        const currentExercise = this.currentLog.exercises.find(ex => ex.exerciseId === this.exercise.exerciseId);
+        
+        // Find the performance of the same exercise in the selected historical log
+        const previousExercise = previousLog?.exercises.find(ex => ex.exerciseId === this.exercise.exerciseId);
+
+        const currentSets = currentExercise?.sets || [];
+        const previousSets = previousExercise?.sets || [];
+
+        const currentSummary = this.calculateSummary(currentSets);
+        const previousSummary = this.calculateSummary(previousSets);
+        const comparison = this.calculateComparison(currentSummary, previousSummary);
+
+        // Update the signal, which will automatically refresh the component's view
+        this.comparisonData.set({
+            currentLog: this.currentLog,
+            previousLog: previousLog,
+            currentSets,
+            previousSets,
+            currentSummary,
+            previousSummary,
+            comparison
+        });
+    }
 
     private calculateSummary(sets: LoggedSet[]): PerformanceSummary {
         if (!sets || sets.length === 0) {
