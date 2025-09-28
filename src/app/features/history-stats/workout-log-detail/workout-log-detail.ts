@@ -79,7 +79,7 @@ interface TargetComparisonData {
 @Component({
   selector: 'app-workout-log-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, DatePipe, TitleCasePipe, ModalComponent, ExerciseDetailComponent, 
+  imports: [CommonModule, RouterLink, DatePipe, TitleCasePipe, ModalComponent, ExerciseDetailComponent,
     IsWeightedPipe, ActionMenuComponent, PressDirective, IconComponent, TooltipDirective, WeightUnitPipe, PerformanceComparisonModalComponent],
   templateUrl: './workout-log-detail.html',
   providers: [DecimalPipe]
@@ -120,17 +120,21 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
   constructor() { }
 
   async ngOnInit(): Promise<void> {
-    window.scrollTo(0, 0);
     this.subscriptions.add(
       this.trainingService.programs$.pipe(take(1)).subscribe(programs => {
         this.availablePrograms = programs;
       })
     );
 
-    const idSource$ = this.logId ? of(this.logId) : this.route.paramMap.pipe(map(params => params.get('logId')));
     this.subscriptions.add(
-      idSource$.pipe(
+      this.route.paramMap.pipe(
+        map(params => params.get('logId')),
+
+        // MODIFIED: Call the single, comprehensive reset method.
+        tap(() => this.resetComponentState()),
+
         switchMap(id => id ? this.trackingService.getWorkoutLogById(id) : of(null)),
+
         tap(async (log) => {
           this.workoutLog.set(log);
           if (log?.exercises?.length) {
@@ -138,15 +142,13 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
             await this.enrichLoggedExercisesWithTargets();
             this.trainingService.getWeekNameForLog(log).pipe(take(1)).subscribe(name => this.weekName.set(name));
             this.trainingService.getDayOfWeekForLog(log).pipe(take(1)).subscribe(info => this.dayInfo.set(info));
-          } else {
-            this.displayItems.set([]);
-            this.weekName.set(null);
-            this.dayInfo.set(null);
           }
         }),
+
         catchError(err => {
           console.error("Error fetching workout log:", err);
           this.workoutLog.set(null);
+          // Also reset here in case of error
           this.displayItems.set([]);
           this.weekName.set(null);
           return of(null);
@@ -607,12 +609,36 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
   }
 
 
+  goToPreviousLogDetail(logId: string | undefined): void {
+    if (!logId) return;
 
+    this.workoutService.vibrate();
+    this.isPerformanceComparisonModalOpen.set(false);
+    this.router.navigate(['/history/log', logId]);
+  }
 
+  private resetComponentState(): void {
+    window.scrollTo(0, 0);
 
+    // Reset core data signals
+    this.workoutLog.set(undefined);
+    this.displayItems.set([]);
+    this.personalBestsForLog.set({});
+    this.weekName.set(null);
+    this.dayInfo.set(null);
 
+    // Reset action menu state
+    this.activeRoutineIdActions.set(null);
 
-
+    // Reset ALL modal-related states to their initial values
+    this.comparisonModalData.set(null);
+    this.notesModalsData.set(null);
+    this.isSimpleModalOpen.set(false);
+    this.isPerformanceComparisonModalOpen.set(false);
+    this.selectedExerciseForComparison.set(null);
+    this.exerciseDetailsId = '';
+    this.exerciseDetailsName = '';
+  }
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();

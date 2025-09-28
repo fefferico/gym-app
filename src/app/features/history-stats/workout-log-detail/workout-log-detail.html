@@ -337,7 +337,9 @@
 
 <app-modal *ngIf="selectedExerciseForComparison() as exercise" [(isOpen)]="isPerformanceComparisonModalOpen"
   [modalTitle]="'Performance Comparison'">
-  <app-performance-comparison-modal [exercise]="exercise"
+  <app-performance-comparison-modal 
+    (logSelect)="goToPreviousLogDetail($event)"
+    [exercise]="exercise"
     [currentLog]="workoutLog()!"></app-performance-comparison-modal>
 </app-modal>
 

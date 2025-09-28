@@ -10,7 +10,7 @@ import { WorkoutService } from '../../../core/services/workout.service';
 import { TrackingService } from '../../../core/services/tracking.service';
 import { StorageService } from '../../../core/services/storage.service';
 // MODIFIED: Import all unit types
-import { UnitsService, WeightUnit, BodyWeightUnit, BodyMeasureUnit, MeasureUnit } from '../../../core/services/units.service';
+import { UnitsService, WeightUnit, BodyWeightUnit, BodyMeasureUnit, MeasureUnit, DistanceMeasureUnit } from '../../../core/services/units.service';
 import { AlertService } from '../../../core/services/alert.service';
 import { SpinnerService } from '../../../core/services/spinner.service';
 import { ThemeService } from '../../../core/services/theme.service';
@@ -223,6 +223,7 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
     //   `You've changed the weight unit from ${oldUnit.toUpperCase()} to ${unit.toUpperCase()}. Would you like to convert all existing workout data (logs, routines, gym equipment) to the new unit?`
     // );
     // if (confirm && confirm.data) {
+      // await this.dataConversionService.convertAllWeightData(oldUnit, unit);
     // }
     await this.dataConversionService.convertAllWeightData(oldUnit, unit);
     this.unitsService.setWeightUnitPreference(unit);
@@ -232,27 +233,44 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
     const oldUnit = this.unitsService.currentMeasureUnit();
     if (unit === oldUnit) return; // No change
 
-    const confirm = await this.alertService.showConfirm(
-      'Convert All Measure Data?',
-      `You've changed the measure unit from ${oldUnit.toUpperCase()} to ${unit.toUpperCase()}. Would you like to convert all existing workout data (logs, routines, gym equipment) to the new unit?`
-    );
-    if (confirm && confirm.data) {
-      await this.dataConversionService.convertAllMeasureData(oldUnit, unit);
-    }
+    // const confirm = await this.alertService.showConfirm(
+    //   'Convert All Measure Data?',
+    //   `You've changed the measure unit from ${oldUnit.toUpperCase()} to ${unit.toUpperCase()}. Would you like to convert all existing workout data (logs, routines, gym equipment) to the new unit?`
+    // );
+    // if (confirm && confirm.data) {
+    //   await this.dataConversionService.convertAllMeasureData(oldUnit, unit);
+    // }
+    await this.dataConversionService.convertAllMeasureData(oldUnit, unit);
     this.unitsService.setMeasureUnitPreference(unit);
+  }
+
+    async selectDistanceMeasureUnit(unit: DistanceMeasureUnit): Promise<void> {
+    const oldUnit = this.unitsService.currentDistanceMeasureUnit();
+    if (unit === oldUnit) return; // No change
+
+    // const confirm = await this.alertService.showConfirm(
+    //   'Convert All Distance Measure Data?',
+    //   `You've changed the measure unit from ${oldUnit.toUpperCase()} to ${unit.toUpperCase()}. Would you like to convert all existing workout data (logs, routines, gym equipment) to the new unit?`
+    // );
+    // if (confirm && confirm.data) {
+    //   await this.dataConversionService.convertAllDistanceMeasureData(oldUnit, unit);
+    // }
+    await this.dataConversionService.convertAllDistanceMeasureData(oldUnit, unit);
+    this.unitsService.setDistanceMeasureUnitPreference(unit);
   }
 
   async selectBodyWeightUnit(unit: BodyWeightUnit): Promise<void> {
     const oldUnit = this.unitsService.currentBodyWeightUnit();
     if (unit === oldUnit) return;
 
-    const confirm = await this.alertService.showConfirm(
-      'Convert All Body Weight Data?',
-      `You've changed the body weight unit from ${oldUnit.toUpperCase()} to ${unit.toUpperCase()}. Would you like to convert all your historical body weight entries to the new unit?`
-    );
-    if (confirm && confirm.data) {
-      await this.dataConversionService.convertAllBodyWeightData(oldUnit, unit);
-    }
+    // const confirm = await this.alertService.showConfirm(
+    //   'Convert All Body Weight Data?',
+    //   `You've changed the body weight unit from ${oldUnit.toUpperCase()} to ${unit.toUpperCase()}. Would you like to convert all your historical body weight entries to the new unit?`
+    // );
+    // if (confirm && confirm.data) {
+    //   await this.dataConversionService.convertAllBodyWeightData(oldUnit, unit);
+    // }
+    await this.dataConversionService.convertAllBodyWeightData(oldUnit, unit);
     this.unitsService.setBodyWeightUnitPreference(unit);
   }
 
@@ -260,13 +278,14 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
     const oldUnit = this.unitsService.currentBodyMeasureUnit();
     if (unit === oldUnit) return;
 
-    const confirm = await this.alertService.showConfirm(
-      'Convert All Body Measurement Data?',
-      `You've changed the measurement unit from ${oldUnit.toUpperCase()} to ${unit.toUpperCase()}. Would you like to convert all your historical measurements (height, waist, etc.) to the new unit?`
-    );
-    if (confirm && confirm.data) {
-      await this.dataConversionService.convertAllBodyMeasureData(oldUnit, unit);
-    }
+    // const confirm = await this.alertService.showConfirm(
+    //   'Convert All Body Measurement Data?',
+    //   `You've changed the measurement unit from ${oldUnit.toUpperCase()} to ${unit.toUpperCase()}. Would you like to convert all your historical measurements (height, waist, etc.) to the new unit?`
+    // );
+    // if (confirm && confirm.data) {
+    //   await this.dataConversionService.convertAllBodyMeasureData(oldUnit, unit);
+    // }
+    await this.dataConversionService.convertAllBodyMeasureData(oldUnit, unit);
     this.unitsService.setBodyMeasureUnitPreference(unit);
   }
 

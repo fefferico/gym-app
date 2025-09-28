@@ -531,6 +531,20 @@
                     </div>
                 </div>
 
+                <!-- Distance Measure Unit -->
+                <div>
+                    <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Distance Measure Units
+                    </p>
+                    <div class="flex space-x-4">
+                        <button appPress (shortPress)="selectDistanceMeasureUnit('km')"
+                            class="px-4 py-2 border rounded-md transition-colors text-sm"
+                            [ngClass]="{'bg-primary hover:bg-primary-dark text-white border-primary dark:border-primary': unitsService.currentDistanceMeasureUnit() === 'km', 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700': unitsService.currentDistanceMeasureUnit() !== 'km'}">km</button>
+                        <button appPress (shortPress)="selectDistanceMeasureUnit('mi')"
+                            class="px-4 py-2 border rounded-md transition-colors text-sm"
+                            [ngClass]="{'bg-primary hover:bg-primary-dark text-white border-primary dark:border-primary': unitsService.currentDistanceMeasureUnit() === 'mi', 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700': unitsService.currentDistanceMeasureUnit() !== 'mi'}">mi</button>
+                    </div>
+                </div>
+
                 <!-- Body Weight Unit -->
                 <div class="pt-4 border-t border-gray-200 dark:border-gray-600">
                     <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Body Weight Unit</p>

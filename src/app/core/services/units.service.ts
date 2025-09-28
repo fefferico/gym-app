@@ -4,6 +4,7 @@ import { StorageService } from './storage.service';
 
 export type WeightUnit = 'kg' | 'lbs';
 export type MeasureUnit = 'cm' | 'in';
+export type DistanceMeasureUnit = 'km' | 'mi';
 export type BodyWeightUnit = 'kg' | 'lbs';
 export type BodyMeasureUnit = 'cm' | 'in';
 
@@ -13,12 +14,14 @@ export type BodyMeasureUnit = 'cm' | 'in';
 export class UnitsService {
   private readonly WEIGHT_UNIT_KEY = 'fitTrackPro_weightUnit';
   private readonly MEASURE_UNIT_KEY = 'fitTrackPro_measureUnit';
+  private readonly DISTANCE_MEASURE_UNIT_KEY = 'fitTrackPro_distanceMeasureUnit';
   private readonly BODY_WEIGHT_UNIT_KEY = 'fitTrackPro_bodyWeightUnit';
   private readonly BODY_MEASURE_UNIT_KEY = 'fitTrackPro_bodyMeasureUnit';
 
   // --- SIGNALS for reactive unit preferences ---
   currentWeightUnit = signal<WeightUnit>('kg');
   currentMeasureUnit = signal<MeasureUnit>('cm');
+  currentDistanceMeasureUnit = signal<DistanceMeasureUnit>('km');
   currentBodyWeightUnit = signal<BodyWeightUnit>('kg');
   currentBodyMeasureUnit = signal<BodyMeasureUnit>('cm');
 
@@ -35,6 +38,9 @@ export class UnitsService {
 
     const storedMeasureUnit = this.storageService.getItem<MeasureUnit>(this.MEASURE_UNIT_KEY);
     this.currentMeasureUnit.set(storedMeasureUnit || 'cm');
+
+    const storedDistanceMeasureUnit = this.storageService.getItem<DistanceMeasureUnit>(this.DISTANCE_MEASURE_UNIT_KEY);
+    this.currentDistanceMeasureUnit.set(storedDistanceMeasureUnit || 'km');
 
     const storedBodyWeightUnit = this.storageService.getItem<BodyWeightUnit>(this.BODY_WEIGHT_UNIT_KEY);
     this.currentBodyWeightUnit.set(storedBodyWeightUnit || 'kg');
@@ -57,6 +63,13 @@ export class UnitsService {
     this.currentMeasureUnit.set(unit);
   }
 
+  public setDistanceMeasureUnitPreference(unit: DistanceMeasureUnit): void {
+    this.storageService.setItem(this.DISTANCE_MEASURE_UNIT_KEY, unit);
+    this.currentDistanceMeasureUnit.set(unit);
+  }
+
+
+
   public setBodyWeightUnitPreference(unit: BodyWeightUnit): void {
     this.storageService.setItem(this.BODY_WEIGHT_UNIT_KEY, unit);
     this.currentBodyWeightUnit.set(unit);
@@ -75,6 +88,10 @@ export class UnitsService {
 
   public getMeasureUnitSuffix(): string {
     return this.currentMeasureUnit() === 'cm' ? 'cm' : 'in';
+  }
+
+  public getDistanceMeasureUnitSuffix(): string {
+    return this.currentDistanceMeasureUnit() === 'km' ? 'km' : 'mi';
   }
 
   public getBodyWeightUnitSuffix(): string {
@@ -105,5 +122,14 @@ export class UnitsService {
     const cmToIn = 0.393701;
     const result = from === 'cm' ? value * cmToIn : value / cmToIn;
     return parseFloat(result.toFixed(2));
+  }
+
+  // Distance Measurement Conversions
+  public convertDistance(value: number, from: DistanceMeasureUnit, to: DistanceMeasureUnit): number {
+    if (from === to || !value) return value;
+    const kmToMi = 0.621371;
+    const result = from === 'km' ? value * kmToMi : value / kmToMi;
+    // Round to 3 decimal places for better precision with distance
+    return parseFloat(result.toFixed(3));
   }
 }

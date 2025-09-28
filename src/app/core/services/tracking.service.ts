@@ -78,7 +78,7 @@ export class TrackingService {
         ...set,
         id: set.id ?? uuidv4(),
         workoutLogId: newWorkoutLogId,
-        timestamp: logStartTimeISO,
+        timestamp: set.timestamp || logStartTimeISO,
         exerciseId: ex.exerciseId,
       }))
     }));

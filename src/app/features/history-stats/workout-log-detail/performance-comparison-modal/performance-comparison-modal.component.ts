@@ -1,4 +1,4 @@
-import { Component, Input, inject, OnInit, signal } from '@angular/core';
+import { Component, Input, inject, OnInit, signal, Output, EventEmitter } from '@angular/core';
 import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
 import { map } from 'rxjs/operators';
 import { LoggedSet, WorkoutLog } from '../../../../core/models/workout-log.model';
@@ -7,7 +7,7 @@ import { TrackingService } from '../../../../core/services/tracking.service';
 import { UnitsService } from '../../../../core/services/units.service';
 import { WeightUnitPipe } from '../../../../shared/pipes/weight-unit-pipe';
 
-// Interfaces remain the same
+// --- UPDATED INTERFACES ---
 interface DisplayLoggedExercise {
     exerciseId: string;
     exerciseName: string;
@@ -19,6 +19,9 @@ interface PerformanceSummary {
     totalReps: number;
     totalVolume: number;
     avgWeightPerRep: number;
+    maxWeight: number;       // New
+    totalDuration: number;   // New
+    totalDistance: number;   // New
 }
 
 interface PerformanceComparison {
@@ -30,6 +33,12 @@ interface PerformanceComparison {
     repsPercentChange: number;
     volumePercentChange: number;
     avgWeightPercentChange: number;
+    maxWeightDiff: number;            // New
+    maxWeightPercentChange: number;   // New
+    durationDiff: number;             // New
+    durationPercentChange: number;    // New
+    distanceDiff: number;             // New
+    distancePercentChange: number;    // New
 }
 
 interface ComparisonData {
@@ -54,11 +63,16 @@ export class PerformanceComparisonModalComponent implements OnInit {
 
     @Input({ required: true }) exercise!: DisplayLoggedExercise;
     @Input({ required: true }) currentLog!: WorkoutLog;
+    @Output() logSelect = new EventEmitter<string>();
 
-    // --- STATE MANAGEMENT REFACTORED TO USE SIGNALS ---
+
     allHistoricalLogs = signal<WorkoutLog[]>([]);
     comparisonData = signal<ComparisonData | null>(null);
-    selectedLogId: string | null = null; // Used to bind to the <select> element's value
+    selectedLogId: string | null = null;
+
+    // --- NEW SIGNALS FOR DYNAMIC UI ---
+    showWeightMetrics = signal<boolean>(false);
+    showCardioMetrics = signal<boolean>(false);
 
     ngOnInit() {
         if (!this.currentLog.routineId) {
@@ -66,36 +80,25 @@ export class PerformanceComparisonModalComponent implements OnInit {
             return;
         }
 
-        // Fetch ALL logs for the routine to populate the dropdown
         this.trackingService.getLogsForRoutine(this.currentLog.routineId).pipe(
             map(logs => {
-                if (logs.length <= 1) { // No other logs exist to compare to
+                if (logs.length <= 1) {
                     this.allHistoricalLogs.set([]);
                     return null;
                 }
-
-                // Filter out the current log from the list of choices
                 const historical = logs
                     .filter(log => log.id !== this.currentLog.id)
-                    .sort((a, b) => b.startTime - a.startTime); // Ensure newest is first
-
+                    .sort((a, b) => b.startTime - a.startTime);
                 this.allHistoricalLogs.set(historical);
-
-                // Default to comparing with the most recent historical log
                 const defaultPreviousLog = historical.length > 0 ? historical[0] : null;
                 this.selectedLogId = defaultPreviousLog?.id ?? null;
-
                 return defaultPreviousLog;
             })
         ).subscribe(previousLog => {
-            // Generate the initial comparison against the default (most recent) log
             this.generateComparisonData(previousLog);
         });
     }
 
-    /**
-     * Triggered when the user selects a different historical workout from the dropdown.
-     */
     onComparisonLogChange(event: Event): void {
         const selectElement = event.target as HTMLSelectElement;
         const logId = selectElement.value;
@@ -104,14 +107,8 @@ export class PerformanceComparisonModalComponent implements OnInit {
         this.generateComparisonData(selectedLog);
     }
 
-    /**
-     * Performs all calculations and updates the main signal that drives the template.
-     * @param previousLog The historical log to compare against. Can be null.
-     */
     private generateComparisonData(previousLog: WorkoutLog | null): void {
         const currentExercise = this.currentLog.exercises.find(ex => ex.exerciseId === this.exercise.exerciseId);
-        
-        // Find the performance of the same exercise in the selected historical log
         const previousExercise = previousLog?.exercises.find(ex => ex.exerciseId === this.exercise.exerciseId);
 
         const currentSets = currentExercise?.sets || [];
@@ -121,7 +118,13 @@ export class PerformanceComparisonModalComponent implements OnInit {
         const previousSummary = this.calculateSummary(previousSets);
         const comparison = this.calculateComparison(currentSummary, previousSummary);
 
-        // Update the signal, which will automatically refresh the component's view
+        // --- NEW: Determine which metric groups to show ---
+        this.showWeightMetrics.set(currentSummary.maxWeight > 0 || previousSummary.maxWeight > 0);
+        this.showCardioMetrics.set(
+            (currentSummary.totalDuration > 0 || currentSummary.totalDistance > 0) ||
+            (previousSummary.totalDuration > 0 || previousSummary.totalDistance > 0)
+        );
+
         this.comparisonData.set({
             currentLog: this.currentLog,
             previousLog: previousLog,
@@ -135,12 +138,18 @@ export class PerformanceComparisonModalComponent implements OnInit {
 
     private calculateSummary(sets: LoggedSet[]): PerformanceSummary {
         if (!sets || sets.length === 0) {
-            return { setsCount: 0, totalReps: 0, totalVolume: 0, avgWeightPerRep: 0 };
+            return { setsCount: 0, totalReps: 0, totalVolume: 0, avgWeightPerRep: 0, maxWeight: 0, totalDuration: 0, totalDistance: 0 };
         }
         const totalReps = sets.reduce((sum, set) => sum + (set.repsAchieved || 0), 0);
         const totalVolume = sets.reduce((sum, set) => sum + ((set.repsAchieved || 0) * (set.weightUsed || 0)), 0);
         const avgWeightPerRep = totalReps > 0 ? totalVolume / totalReps : 0;
-        return { setsCount: sets.length, totalReps, totalVolume, avgWeightPerRep };
+
+        // --- NEW CALCULATIONS ---
+        const maxWeight = Math.max(0, ...sets.map(set => set.weightUsed || 0));
+        const totalDuration = sets.reduce((sum, set) => sum + (set.durationPerformed || 0), 0);
+        const totalDistance = sets.reduce((sum, set) => sum + (set.distanceAchieved || 0), 0);
+
+        return { setsCount: sets.length, totalReps, totalVolume, avgWeightPerRep, maxWeight, totalDuration, totalDistance };
     }
 
     private calculateComparison(current: PerformanceSummary, previous: PerformanceSummary): PerformanceComparison {
@@ -154,12 +163,40 @@ export class PerformanceComparisonModalComponent implements OnInit {
             repsPercentChange: calcChange(current.totalReps, previous.totalReps),
             volumePercentChange: calcChange(current.totalVolume, previous.totalVolume),
             avgWeightPercentChange: calcChange(current.avgWeightPerRep, previous.avgWeightPerRep),
+            // --- NEW CALCULATIONS ---
+            maxWeightDiff: current.maxWeight - previous.maxWeight,
+            maxWeightPercentChange: calcChange(current.maxWeight, previous.maxWeight),
+            durationDiff: current.totalDuration - previous.totalDuration,
+            durationPercentChange: calcChange(current.totalDuration, previous.totalDuration),
+            distanceDiff: current.totalDistance - previous.totalDistance,
+            distancePercentChange: calcChange(current.totalDistance, previous.totalDistance),
         };
+    }
+
+    // --- NEW HELPER METHOD ---
+    protected formatDuration(totalSeconds: number): string {
+        if (isNaN(totalSeconds) || totalSeconds < 0) totalSeconds = 0;
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = Math.floor(totalSeconds % 60);
+
+        const pad = (num: number) => num.toString().padStart(2, '0');
+
+        if (hours > 0) {
+            return `${hours}:${pad(minutes)}:${pad(seconds)}`;
+        }
+        return `${minutes}:${pad(seconds)}`;
     }
 
     protected getTrendIcon(value: number): string {
         if (value > 0) return 'arrow-up';
         if (value < 0) return 'arrow-down';
         return 'minus';
+    }
+
+    goToPreviousLogDetail(logId: string | undefined): void {
+        if (logId) {
+            this.logSelect.emit(logId);
+        }
     }
 }

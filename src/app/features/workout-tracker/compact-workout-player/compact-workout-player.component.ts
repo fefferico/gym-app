@@ -878,10 +878,11 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
       // The afterNextRender logic for scrolling remains the same
       runInInjectionContext(this.injector, () => {
+        if (this.isDestroyed) {
+          return;
+        }
         afterNextRender(() => {
-          if (this.isDestroyed) {
-            return;
-          }
+
           requestAnimationFrame(() => {
             const exercise = this.routine()?.exercises[index];
             const headerElement = this.header?.nativeElement;

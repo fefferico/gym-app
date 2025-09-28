@@ -10,6 +10,8 @@ export interface ProgressiveOverloadSettings {
   weightIncrement: number | null;
   repsIncrement: number | null;
   sessionsToIncrement: number | null;
+  distanceIncrement: number | null;
+  durationIncrement: number | null;
 }
 
 import { Injectable, inject } from '@angular/core';
@@ -30,6 +32,8 @@ export class ProgressiveOverloadService {
     weightIncrement: null,
     repsIncrement: null,
     sessionsToIncrement: 1,
+    distanceIncrement: null,
+    durationIncrement: null,
   };
 
   private settingsSubject: BehaviorSubject<ProgressiveOverloadSettings>;

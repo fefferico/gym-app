@@ -6,6 +6,7 @@ import { PersonalGymService } from '../../../core/services/personal-gym.service'
 import { SubscriptionService } from '../../../core/services/subscription.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { IconComponent } from '../icon/icon.component';
+import { PlateSummaryComponent } from './plate-summary/plate-summary.component';
 
 
 interface GymPlate {
@@ -25,7 +26,7 @@ interface GymBarbell {
 @Component({
   selector: 'app-barbell-calculator-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, IconComponent],
+  imports: [CommonModule, FormsModule, IconComponent, PlateSummaryComponent],
   templateUrl: './barbell-calculator-modal.component.html',
   styleUrls: ['./barbell-calculator-modal.component.scss']
 })

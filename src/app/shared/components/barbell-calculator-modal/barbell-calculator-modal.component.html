@@ -144,14 +144,12 @@
 
             <div class="loadout-summary">
                 <h4 *ngIf="platesWeightPerSide()>0">Plates Needed (Per Side)</h4>
-                <div class="summary-list">
-                    <div *ngFor="let item of loadout()" class="summary-item">
-                        <div class="plate-count">{{ item.count }}x</div>
-                        <div class="plate-weight">{{ item.plate.weight }} {{ item.plate.unit }}</div>
-                    </div>
-                    <div *ngIf="loadout().length === 0" class="summary-item-empty">
-                        Bar and collars only
-                    </div>
+                
+                <!-- This is the new component in action -->
+                <app-plate-summary [loadout]="loadout()"></app-plate-summary>
+
+                <div *ngIf="loadout().length === 0" class="summary-item-empty">
+                    Bar and collars only
                 </div>
 
                 <div class="math-breakdown" *ngIf="selectedBarbell() && selectedCollar()">

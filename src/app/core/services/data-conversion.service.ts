@@ -1,6 +1,6 @@
 // src/app/core/services/data-conversion.service.ts
 import { Injectable, inject } from '@angular/core';
-import { UnitsService, WeightUnit, BodyWeightUnit, BodyMeasureUnit, MeasureUnit } from './units.service';
+import { UnitsService, WeightUnit, BodyWeightUnit, BodyMeasureUnit, MeasureUnit, DistanceMeasureUnit } from './units.service';
 import { TrackingService } from './tracking.service';
 import { WorkoutService } from './workout.service';
 import { UserProfileService } from './user-profile.service';
@@ -197,5 +197,59 @@ export class DataConversionService {
 
     this.spinnerService.hide();
     this.toastService.success('All measurement data converted successfully!', 3000, "Conversion Complete");
+  }
+
+  /**
+   * Converts all relevant general measurement data (km/mi) across the application.
+   * This is primarily for cardio exercises logged with distance.
+   * @param fromUnit The unit to convert from.
+   * @param toUnit The unit to convert to.
+   */
+  public async convertAllDistanceMeasureData(fromUnit: DistanceMeasureUnit, toUnit: DistanceMeasureUnit): Promise<void> {
+    this.spinnerService.show('Converting distance data...');
+
+    // 1. Convert Workout Logs
+    const logs = this.trackingService.getDataForBackup();
+    logs.forEach(log => {
+      log.exercises.forEach(ex => {
+        ex.sets.forEach(set => {
+          // Convert the actual distance performed
+          if (set.distanceAchieved != null) {
+            set.distanceAchieved = this.unitsService.convertDistance(set.distanceAchieved, fromUnit, toUnit);
+          }
+          // Convert the target distance, if one was set
+          if (set.targetDistance != null) {
+            set.targetDistance = this.unitsService.convertDistance(set.targetDistance, fromUnit, toUnit);
+          }
+        });
+      });
+    });
+    // Save the updated logs back to storage
+    await this.trackingService.replaceLogs(logs);
+
+    // 2. Convert Routines
+    const routines = this.workoutService.getDataForBackup();
+    routines.forEach(routine => {
+      routine.exercises.forEach(ex => {
+        ex.sets.forEach(set => {
+          // In routines, we only care about the target distance
+          if (set.targetDistance != null) {
+            set.targetDistance = this.unitsService.convertDistance(set.targetDistance, fromUnit, toUnit);
+          }
+        });
+      });
+    });
+    // Save the updated routines back to storage
+    this.workoutService.mergeData(routines);
+
+    // 3. Convert Progressive Overload Settings
+    const poSettings = this.progressiveOverloadService.getDataForBackup();
+    if (poSettings.distanceIncrement != null) {
+      poSettings.distanceIncrement = this.unitsService.convertDistance(poSettings.distanceIncrement, fromUnit, toUnit);
+      this.progressiveOverloadService.replaceData(poSettings);
+    }
+
+    this.spinnerService.hide();
+    this.toastService.success('All distance data converted successfully!', 3000, "Conversion Complete");
   }
 }
