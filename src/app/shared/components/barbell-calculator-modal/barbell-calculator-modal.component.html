@@ -7,7 +7,8 @@
             <button [class.active]="activePage() === 'percentage'" (click)="setPage('percentage')">Percentages</button>
             <button [class.active]="activePage() === 'oneRepMax'" (click)="setPage('oneRepMax')">1RM</button>
             <button [class.active]="activePage() === 'rpe'" (click)="setPage('rpe')">RPE</button>
-            <button [class.active]="activePage() === 'powerlifting'" (click)="setPage('powerlifting')">Powerlifting</button>
+            <button [class.active]="activePage() === 'powerlifting'"
+                (click)="setPage('powerlifting')">Powerlifting</button>
         </div>
 
         <!-- +++ NEW: SWITCH BETWEEN PAGE VIEWS +++ -->
@@ -110,7 +111,8 @@
                             <div class="visual-plate">
                                 <div class="visual-plate-circle" [style.background-color]="plate.color"
                                     [style.border-color]="plate.color === '#FFFFFF' ? '#ccc' : plate.color">
-                                    <span class="visual-plate-weight" [style.color]="getPlateTextColor(plate.color)">{{ plate.weight
+                                    <span class="visual-plate-weight" [style.color]="getPlateTextColor(plate.color)">{{
+                                        plate.weight
                                         }}</span>
                                     <div class="visual-plate-hole"></div>
                                 </div>
@@ -316,6 +318,12 @@
                 <h3>e1RM from RPE</h3>
                 <button class="close-btn" (click)="onClose()">&times;</button>
             </div>
+
+            <div class="mode-toggle exertion-toggle">
+                <button [class.active]="rpeInputMode() === 'rpe'" (click)="rpeInputMode.set('rpe')">RPE</button>
+                <button [class.active]="rpeInputMode() === 'rir'" (click)="rpeInputMode.set('rir')">RIR</button>
+            </div>
+
             <div class="calc-form">
                 <div class="form-group">
                     <label>Weight Lifted</label>
@@ -325,22 +333,38 @@
                     <label>Reps Performed</label>
                     <input type="number" placeholder="e.g., 5" [(ngModel)]="rpeReps">
                 </div>
-                <div class="form-group">
+
+                <!-- This group spans both columns -->
+                <div class="form-group full-width">
+                    @if (rpeInputMode() === 'rpe') {
                     <label>RPE (Rate of Perceived Exertion)</label>
                     <select [(ngModel)]="rpeValue">
                         @for (rpe of rpeOptions; track rpe) {
                         <option [ngValue]="rpe">{{ rpe }}</option>
                         }
                     </select>
+                    } @else {
+                    <label>RIR (Reps In Reserve)</label>
+                    <select [(ngModel)]="rirValue">
+                        @for (rir of rirOptions; track rir) {
+                        <option [ngValue]="rir">{{ rir }}</option>
+                        }
+                    </select>
+                    }
                 </div>
             </div>
+
             @if (estimated1RMFromRpe() > 0) {
             <div class="calc-results centered">
+                <!-- NEW: Display the equivalent RPE when in RIR mode -->
+                @if (rpeInputMode() === 'rir') {
+                <p class="equivalent-display">(Equivalent to RPE {{ derivedRpe() }})</p>
+                }
                 <h4>Estimated 1-Rep Max</h4>
                 <p class="big-result">{{ estimated1RMFromRpe() | number:'1.0-2' }}</p>
             </div>
             } @else {
-            <p class="empty-state">Enter weight, reps, and select an RPE. Not all Rep/RPE combinations are valid.</p>
+            <p class="empty-state">Enter weight, reps, and select an exertion level. Not all combinations are valid.</p>
             }
         </div>
         }
@@ -376,16 +400,21 @@
                     </div>
                 </div>
             </div>
-            @if (powerliftingScores().wilks > 0) {
+            @if (powerliftingScores().wilks1 > 0) {
             <div class="calc-results">
                 <h4>Calculated Scores</h4>
                 <div class="result-grid">
-                    <div>Wilks Score:</div>
-                    <div>{{ powerliftingScores().wilks | number:'1.0-2' }}</div>
+                    <!-- UPDATED & NEW: All scores displayed -->
+                    <div>Wilks (Original):</div>
+                    <div>{{ powerliftingScores().wilks1 | number:'1.0-2' }}</div>
+                    <div>Wilks 2 (2019):</div>
+                    <div>{{ powerliftingScores().wilks2 | number:'1.0-2' }}</div>
                     <div>DOTS Score:</div>
                     <div>{{ powerliftingScores().dots | number:'1.0-2' }}</div>
                     <div>Goodlift Points:</div>
                     <div>{{ powerliftingScores().glPoints | number:'1.0-2' }}</div>
+                    <div>Q Points:</div>
+                    <div>{{ powerliftingScores().qPoints | number:'1.0-2' }}</div>
                     <div>Sinclair Total:</div>
                     <div>{{ powerliftingScores().sinclair | number:'1.0-2' }}</div>
                 </div>

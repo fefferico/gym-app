@@ -34,10 +34,12 @@ interface PercentageResult {
 }
 
 interface PowerliftingScores {
-  wilks: number;
+  wilks1: number; // Original Wilks
+  wilks2: number; // New Wilks (2019)
   dots: number;
   glPoints: number;
   sinclair: number;
+  qPoints: number; // Q Points
 }
 
 // RPE Chart: [Reps @ RPE] -> % of 1RM
@@ -94,10 +96,13 @@ export class BarbellCalculatorModalComponent implements OnInit, OnDestroy {
   oneRmReps = signal<number | null>(null);
 
   // --- State Signals for PAGE 4: RPE CALCULATOR ---
+  rpeInputMode = signal<'rpe' | 'rir'>('rpe'); // NEW: To switch between RPE and RIR
   rpeWeight = signal<number | null>(null);
   rpeReps = signal<number | null>(null);
   rpeValue = signal<number>(8);
   rpeOptions = [10, 9.5, 9, 8.5, 8, 7.5, 7, 6.5, 6];
+  rirValue = signal<number>(2); // NEW: State for RIR input
+  rirOptions = [0, 1, 2, 3, 4]; // Common RIR values
 
   // --- State Signals for PAGE 5: POWERLIFTING SCORES ---
   plBodyweight = signal<number | null>(null);
@@ -576,11 +581,11 @@ export class BarbellCalculatorModalComponent implements OnInit, OnDestroy {
   estimated1RMFromRpe = computed(() => {
     const w = this.rpeWeight();
     const r = this.rpeReps();
-    const rpe = this.rpeValue();
+    const rpe = this.derivedRpe(); // Use the derived RPE
     if (!w || !r || w <= 0 || r <= 0) return 0;
 
     const percent = RPE_CHART[rpe]?.[r];
-    if (!percent) return 0; // Reps/RPE combo not in chart
+    if (!percent) return 0;
 
     return w / (percent / 100);
   });
@@ -593,25 +598,21 @@ export class BarbellCalculatorModalComponent implements OnInit, OnDestroy {
     const unit = this.plUnit();
 
     if (!bw || !total || bw <= 0 || total <= 0) {
-      return { wilks: 0, dots: 0, glPoints: 0, sinclair: 0 };
+      return { wilks1: 0, wilks2: 0, dots: 0, glPoints: 0, sinclair: 0, qPoints: 0 };
     }
 
-    // Formulas require KG, so convert if necessary
     const bwKg = unit === 'lb' ? bw * 0.453592 : bw;
     const totalKg = unit === 'lb' ? total * 0.453592 : total;
 
     return {
-      wilks: this.calculateWilks(bwKg, totalKg, gender),
+      wilks1: this.calculateWilks1(bwKg, totalKg, gender),
+      wilks2: this.calculateWilks2(bwKg, totalKg, gender),
       dots: this.calculateDots(bwKg, totalKg, gender),
       glPoints: this.calculateGlPoints(bwKg, totalKg, gender),
-      sinclair: this.calculateSinclair(bwKg, totalKg, gender)
+      sinclair: this.calculateSinclair(bwKg, totalKg, gender),
+      qPoints: this.calculateQPoints(bwKg, totalKg, gender)
     };
   });
-
-
-
-
-
 
   // --- NEW PUBLIC METHODS ---
 
@@ -643,7 +644,7 @@ export class BarbellCalculatorModalComponent implements OnInit, OnDestroy {
 
   // --- POWERLIFTING FORMULA HELPERS ---
 
-  private calculateWilks(bodyweight: number, total: number, gender: 'male' | 'female'): number {
+  private calculateWilks1(bodyweight: number, total: number, gender: 'male' | 'female'): number {
     const a = gender === 'male' ? -216.0475144 : 594.31747775582;
     const b = gender === 'male' ? 16.2606339 : -27.23842536447;
     const c = gender === 'male' ? -0.002388645 : 0.82112226871;
@@ -652,6 +653,28 @@ export class BarbellCalculatorModalComponent implements OnInit, OnDestroy {
     const f = gender === 'male' ? -1.291e-8 : -2.04619e-8;
     const denominator = a + b * bodyweight + c * Math.pow(bodyweight, 2) + d * Math.pow(bodyweight, 3) + e * Math.pow(bodyweight, 4) + f * Math.pow(bodyweight, 5);
     const coefficient = 500 / denominator;
+    return total * coefficient;
+  }
+
+  // NEW: This is the newer Wilks 2 formula (2019)
+  private calculateWilks2(bodyweight: number, total: number, gender: 'male' | 'female'): number {
+    const a = gender === 'male' ? 60.10356 : 97.35936;
+    const b = gender === 'male' ? 1646.42519 : 1299.7242;
+    const c = gender === 'male' ? -34.2324 : -28.4069;
+    const d = gender === 'male' ? -0.17187 : -0.1341;
+    const e = gender === 'male' ? 0.00063 : 0.00049;
+    const f = gender === 'male' ? -0.00000085 : -0.00000063;
+    const denominator = a + b * bodyweight + c * Math.pow(bodyweight, 2) + d * Math.pow(bodyweight, 3) + e * Math.pow(bodyweight, 4) + f * Math.pow(bodyweight, 5);
+    const coefficient = 600 / denominator;
+    return total * coefficient;
+  }
+
+  // NEW: Q Points formula
+  private calculateQPoints(bodyweight: number, total: number, gender: 'male' | 'female'): number {
+    const A = gender === 'male' ? 1236.23653 : 528.3284;
+    const B = gender === 'male' ? 1221.03159 : 517.1325;
+    const C = gender === 'male' ? 0.00845 : 0.01529;
+    const coefficient = 100 / (A - B * Math.exp(-C * bodyweight));
     return total * coefficient;
   }
 
@@ -683,6 +706,14 @@ export class BarbellCalculatorModalComponent implements OnInit, OnDestroy {
     const coefficient = Math.pow(10, A * Math.pow(x, 2));
     return total * coefficient;
   }
+
+  derivedRpe = computed(() => {
+    if (this.rpeInputMode() === 'rir') {
+      return 10 - this.rirValue();
+    }
+    return this.rpeValue();
+  });
+
 
 
   ngOnDestroy(): void {
