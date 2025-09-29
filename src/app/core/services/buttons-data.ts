@@ -386,8 +386,8 @@ export const routineBtn = {
 }
 
 export const calculatorBtn = {
-    label: 'Barbell calc',
-    actionKey: 'barbell_calc',
+    label: 'Weight toolkit',
+    actionKey: 'weight_toolkit',
     iconName: `calc`,
     iconClass: 'w-8 h-8 mr-2',
     buttonClass: ' hover:bg-primary ',

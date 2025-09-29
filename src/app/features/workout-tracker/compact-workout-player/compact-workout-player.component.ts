@@ -1655,7 +1655,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const addExerciseDisabledClass = (isPaused || !hasExercises ? 'disabled ' : '');
 
     const barbellCalculatorBtn = {
-      actionKey: 'barbell_calc',
+      actionKey: 'weight_toolkit',
       iconName: 'dumbbell',
       buttonClass: 'bg-yellow-800'
     } as ActionMenuItem;
@@ -1692,7 +1692,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const { actionKey } = event;
     switch (actionKey) {
       case 'pause': this.pauseSession(); break;
-      case 'barbell_calc': this.openCalculatorModal(); break;
+      case 'weight_toolkit': this.openCalculatorModal(); break;
       case 'play': this.resumeSession(); break;
       case 'session_notes': this.editSessionNotes(); break;
       case 'addExercise': this.openAddExerciseModal(); break;

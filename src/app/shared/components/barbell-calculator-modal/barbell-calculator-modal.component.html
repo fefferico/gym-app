@@ -7,7 +7,7 @@
             <button [class.active]="activePage() === 'percentage'" (click)="setPage('percentage')">Percentages</button>
             <button [class.active]="activePage() === 'oneRepMax'" (click)="setPage('oneRepMax')">1RM</button>
             <button [class.active]="activePage() === 'rpe'" (click)="setPage('rpe')">RPE</button>
-            <button [class.active]="activePage() === 'scores'" (click)="setPage('scores')">Scores</button>
+            <button [class.active]="activePage() === 'powerlifting'" (click)="setPage('powerlifting')">Powerlifting</button>
         </div>
 
         <!-- +++ NEW: SWITCH BETWEEN PAGE VIEWS +++ -->
@@ -105,20 +105,25 @@
                     <p>TAP PLATES TO LOAD/UNLOAD BAR</p>
                     <div class="plate-selection">
                         <div *ngFor="let plate of availablePlates()" class="plate-option" (click)="addPlate(plate)">
-                            <div class="plate-visual" [style.background-color]="plate.color"
-                                [style.border-color]="plate.color === '#FAFAFA' ? '#ccc' : plate.color">
-                            </div>
-                            <span>{{ plate.weight }}</span>
 
-                            <!-- This badge now shows the count of plates currently ON THE BAR -->
-                            <span *ngIf="plateCountMap().has(plate.weight)" class="plate-quantity">
-                                {{ plateCountMap().get(plate.weight) }}x
-                            </span>
+                            <!-- REVISED STRUCTURE for the visual plate -->
+                            <div class="visual-plate">
+                                <div class="visual-plate-circle" [style.background-color]="plate.color"
+                                    [style.border-color]="plate.color === '#FFFFFF' ? '#ccc' : plate.color">
+                                    <span class="visual-plate-weight" [style.color]="getPlateTextColor(plate.color)">{{ plate.weight
+                                        }}</span>
+                                    <div class="visual-plate-hole"></div>
+                                </div>
+                                <span *ngIf="plateCountMap().has(plate.weight)" class="visual-plate-count">
+                                    {{ plateCountMap().get(plate.weight) }}x
+                                </span>
+                            </div>
                         </div>
                     </div>
-                    <button class="clear-btn inline-flex items-center" (click)="clearLoadout()">
-                        <app-icon name="cancel" class="h-4 w-4 mr-1"></app-icon>
-                        CLEAR BAR</button>
+                    <button class="clear-btn" (click)="clearLoadout()">
+                        <app-icon name="cancel" class="h-5 w-5 mr-2"></app-icon>
+                        CLEAR BAR
+                    </button>
                 </div>
 
                 <div class="config-settings">
@@ -341,7 +346,7 @@
         }
 
         <!-- ~~~~~~~~~~ PAGE 5: POWERLIFTING SCORES ~~~~~~~~~~ -->
-        @case ('scores') {
+        @case ('powerlifting') {
         <div class="modal-body custom-scrollbar page-view">
             <div class="header">
                 <h3>Powerlifting Scores</h3>
@@ -365,7 +370,7 @@
                 </div>
                 <div class="form-group">
                     <label>Unit</label>
-                    <div class="unit-toggle small">
+                    <div class="percentage-unit-toggle">
                         <button [class.active]="plUnit() === 'kg'" (click)="plUnit.set('kg')">KG</button>
                         <button [class.active]="plUnit() === 'lb'" (click)="plUnit.set('lb')">LB</button>
                     </div>

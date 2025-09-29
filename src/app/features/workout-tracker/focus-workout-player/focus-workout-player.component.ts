@@ -4560,7 +4560,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       case 'later': this.markCurrentExerciseDoLater(); break;
       case 'finish': this.finishWorkoutEarly(); break;
       case 'exit': this.quitWorkout(); break;
-      case 'barbell_calc': this.openCalculatorModal(); break;
+      case 'weight_toolkit': this.openCalculatorModal(); break;
       case 'create_superset': this.openCreateSupersetModal(); break;
       case 'add_to_superset': this.addToSupersetModal(); break;
       case 'remove_from_superset': this.removeFromSuperset(); break;

@@ -24,7 +24,7 @@ interface GymBarbell {
 }
 
 // --- TYPE DEFINITIONS for new pages ---
-type ActivePage = 'calculator' | 'percentage' | 'oneRepMax' | 'rpe' | 'scores';
+type ActivePage = 'calculator' | 'percentage' | 'oneRepMax' | 'rpe' | 'powerlifting';
 
 interface PercentageResult {
   percentage: number;

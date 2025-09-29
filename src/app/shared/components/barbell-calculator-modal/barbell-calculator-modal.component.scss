@@ -47,7 +47,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 16px;
+  padding: 8px 4px;
   border-bottom: 1px solid var(--border-color);
   flex-shrink: 0;
 }
@@ -320,23 +320,24 @@
 
 .reverse-mode-controls {
   text-align: center;
-  background-color: #e8e8e8;
-  // color: var(--text-secondary);
-  color: black;
-  font-size: 0.8rem;
-  border: 1px solid var(--border-color);
+  background-color: var(--surface-bg); // Use the consistent surface color
+  color: var(--text-secondary);
   border-radius: 12px;
   padding: 16px;
 
   p {
-    margin: 0 0 12px 0;
+    margin: 0 0 16px 0;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
   }
 
   .plate-selection {
-    display: flex;
-    justify-content: center;
-    gap: 12px;
-    flex-wrap: wrap;
+    display: grid;
+    // Creates a responsive grid that fits as many 60px columns as possible
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+    gap: 24px 16px; // Vertical and horizontal gap
   }
 
   .plate-option {
@@ -344,66 +345,75 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
-    transition: transform 0.1s ease-in-out;
+    gap: 8px;
+    transition: transform 0.15s ease-in-out;
     position: relative;
-
-    span {
-      font-size: 0.9rem;
-      font-weight: bold;
-    }
 
     &:hover {
       transform: scale(1.05);
     }
 
-    .plate-visual {
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      border: 2px solid;
-      position: relative;
+    span {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+  }
 
-      &::before {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 12px;
-        height: 12px;
-        // background-color: var(--modal-bg);
-        background-color: #e8e8e8;
-        border-radius: 50%;
-        border: 1px solid var(--border-color);
-      }
+  // This is now the solid colored circle
+  .plate-visual {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    // Use the border as a fallback and for the white plate
+    border: 1px solid;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    // This is the small hole in the middle
+    .plate-hole {
+      width: 14px;
+      height: 14px;
+      background-color: var(--modal-bg); // Use the main modal background
+      border-radius: 50%;
+      border: 1px solid rgba(0, 0, 0, 0.5);
     }
   }
 
   .plate-quantity {
     position: absolute;
-    bottom: 20px;
-    right: -1px;
-    background-color: rgba(0, 0, 0, 0.65);
-    color: #ffffff;
-    font-size: 0.65rem;
+    top: -5px;
+    right: -5px;
+    background-color: var(--accent-blue); // Use the blue accent for visibility
+    color: var(--text-primary);
+    font-size: 0.7rem;
     font-weight: bold;
     line-height: 1;
-    padding: 2px 5px;
-    border-radius: 8px;
+    padding: 3px 6px;
+    border-radius: 10px;
     pointer-events: none;
-    /* Prevents the badge from interfering with click events on the plate */
   }
 
   .clear-btn {
-    background: rgb(246, 77, 77);
-    border: 1px solid var(--accent-red);
-    color: white;
-    padding: 8px 16px;
-    border-radius: 8px;
+    display: inline-flex; // Allows centering and proper alignment
+    align-items: center;
+    justify-content: center;
+    background: var(--accent-red);
+    border: none;
+    color: var(--text-primary);
+    padding: 12px 24px;
+    border-radius: 12px;
     cursor: pointer;
-    margin-top: 16px;
-    font-weight: bold;
+    margin-top: 24px;
+    font-weight: 700;
+    width: 100%; // Make it full-width inside its container
+    max-width: 250px; // But not too wide on larger screens
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: #c5302c; // A slightly darker red
+    }
   }
 }
 
@@ -978,5 +988,92 @@
     &.active {
       color: var(--accent-blue);
     }
+  }
+}
+
+.visual-plate {
+  position: relative; // Establishes a positioning context for the count badge
+  width: 70px;
+  height: 70px;
+}
+
+// This is the large colored circle representing the plate
+.visual-plate-circle {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column; // Stacks the weight text on top of the hole
+  justify-content: center;
+  align-items: center;
+  gap: 4px; // Space between the text and the hole
+  // Use a fallback color and add a border for white plates for visibility
+  background-color: var(--surface-bg);
+  border: 1px solid var(--border-color);
+}
+
+// The weight text (e.g., "25") inside the circle
+.visual-plate-weight {
+  position: absolute;
+  top: 10%;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+// The small hole in the center of the plate
+.visual-plate-hole {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 18px;
+  height: 18px;
+  background-color: var(--modal-bg);
+  border-radius: 50%;
+  border: 2px solid var(--text-primary); // This creates the white ring
+  box-sizing: border-box;
+}
+
+// The count badge (e.g., "1x")
+.visual-plate-count {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  background-color: rgba(0, 0, 0, 0.7); // Translucent black
+  backdrop-filter: blur(4px);
+  color: var(--text-primary);
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1;
+  padding: 4px 8px;
+  border-radius: 12px;
+  pointer-events: none; // Prevents the badge from interfering with click events
+  border: 1px solid rgba(255, 255, 255, 0.1); // Subtle border
+}
+
+/* --- Container Adjustments for the New Component --- */
+
+// For the Percentage Page:
+.visual-plate-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  align-items: center;
+}
+
+// For Reverse Mode on the Calculator Page:
+.reverse-mode-controls .plate-option {
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  transition: transform 0.15s ease-in-out;
+
+  // We no longer need the gap or flex-direction here
+  // since the visual-plate component handles its own layout.
+  &:hover {
+    transform: scale(1.05);
   }
 }
