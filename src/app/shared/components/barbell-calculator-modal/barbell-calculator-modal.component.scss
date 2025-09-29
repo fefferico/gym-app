@@ -950,3 +950,33 @@
     transform: scale(0.8); // Visually shrink the toggle switch
   }
 }
+
+// This new, specific class targets ONLY the unit toggle on the percentage page.
+// Its styling is simpler and matches the image provided.
+.percentage-unit-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem; // A bit of space between KG and LB
+
+  button {
+    background: none;
+    border: none;
+    padding: 0; // Remove default padding
+    margin: 0;
+    font-family: inherit; // Use the modal's font
+    color: var(--text-secondary);
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: color 0.2s ease-in-out;
+
+    &:hover {
+      color: var(--text-primary);
+    }
+
+    // The active button gets the highlight color
+    &.active {
+      color: var(--accent-blue);
+    }
+  }
+}

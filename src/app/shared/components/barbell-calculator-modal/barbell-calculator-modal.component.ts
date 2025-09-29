@@ -494,12 +494,10 @@ export class BarbellCalculatorModalComponent implements OnInit, OnDestroy {
 
   // For Percentage Page
   percentageResults = computed<PercentageResult[]>(() => {
-    const baseWeight = this.percentageBaseWeight(); // Use the new independent signal
+    const baseWeight = this.percentageBaseWeight();
     if (!baseWeight || baseWeight <= 0) return [];
 
-    const allPercentages = [...new Set([...this.percentagePresets, this.customPercentage()])].sort((a, b) => b - a);
-
-    return allPercentages.map(p => {
+    return this.percentagePresets.map(p => {
       const target = baseWeight * (p / 100);
       const calculation = this.calculateNearestAchievable(target);
       return {
@@ -508,8 +506,27 @@ export class BarbellCalculatorModalComponent implements OnInit, OnDestroy {
         achievableWeight: calculation.achievableWeight,
         loadout: calculation.loadout
       };
-    });
+    }).sort((a, b) => b.percentage - a.percentage); // Ensure it's sorted
   });
+
+  customPercentageResult = computed<PercentageResult>(() => {
+    const baseWeight = this.percentageBaseWeight();
+    const customP = this.customPercentage();
+    if (!baseWeight || baseWeight <= 0 || !customP || customP <= 0) {
+      // Return a default empty state
+      return { percentage: customP || 100, targetWeight: 0, achievableWeight: 0, loadout: [] };
+    }
+    const target = baseWeight * (customP / 100);
+    const calculation = this.calculateNearestAchievable(target);
+    return {
+      percentage: customP,
+      targetWeight: target,
+      achievableWeight: calculation.achievableWeight,
+      loadout: calculation.loadout
+    };
+  });
+
+
 
   /**
    * Calculates the closest weight that can be loaded on the bar for a given target.
