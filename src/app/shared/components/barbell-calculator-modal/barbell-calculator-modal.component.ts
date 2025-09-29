@@ -85,6 +85,7 @@ export class BarbellCalculatorModalComponent implements OnInit, OnDestroy {
   loadout = signal<PlateLoadout[]>([]);
 
   // --- State Signals for PAGE 2: PERCENTAGE CALCULATOR ---
+  percentageBaseWeight = signal<number | null>(100);
   percentagePresets = [90, 80, 75, 70, 60, 50];
   customPercentage = signal<number>(95);
 
@@ -493,16 +494,41 @@ export class BarbellCalculatorModalComponent implements OnInit, OnDestroy {
 
   // For Percentage Page
   percentageResults = computed<PercentageResult[]>(() => {
-    const baseWeight = this.totalWeight();
-    if (baseWeight <= 0) return [];
+    const baseWeight = this.percentageBaseWeight(); // Use the new independent signal
+    if (!baseWeight || baseWeight <= 0) return [];
 
     const allPercentages = [...new Set([...this.percentagePresets, this.customPercentage()])].sort((a, b) => b - a);
 
     return allPercentages.map(p => {
       const target = baseWeight * (p / 100);
-      return this.calculateNearestLoadableWeight(target);
+      const calculation = this.calculateNearestAchievable(target);
+      return {
+        percentage: p,
+        targetWeight: target,
+        achievableWeight: calculation.achievableWeight,
+        loadout: calculation.loadout
+      };
     });
   });
+
+  /**
+   * Calculates the closest weight that can be loaded on the bar for a given target.
+   * @param targetWeight The ideal weight you want to achieve.
+   * @returns An object with the actual achievable weight and the plate loadout.
+   */
+  private calculateNearestAchievable(targetWeight: number): { achievableWeight: number, loadout: PlateLoadout[] } {
+    const bar = this.selectedBarbell();
+    const collar = this.selectedCollar();
+    if (!bar || !collar) {
+      return { achievableWeight: 0, loadout: [] };
+    }
+
+    const loadout = this.barbellCalculatorService.calculatePlates(targetWeight, bar, collar, this.availablePlates());
+    const platesWeight = loadout.reduce((acc, item) => acc + (item.plate.weight * item.count * 2), 0);
+    const achievableWeight = bar.weight + collar.weight + platesWeight;
+
+    return { achievableWeight, loadout };
+  }
 
   // For 1RM Page
   estimated1RM = computed(() => {

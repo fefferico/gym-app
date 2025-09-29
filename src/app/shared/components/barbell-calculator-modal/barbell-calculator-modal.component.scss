@@ -28,8 +28,19 @@
   border-radius: 16px;
   border: 1px solid var(--border-color);
   display: flex;
+  /* Use flexbox for layout */
   flex-direction: column;
+  /* Stack children (nav and body) vertically */
   max-height: 90vh;
+  /* Prevent modal from being taller than the screen */
+  overflow: hidden;
+  /* Hide any overflow from the main container */
+
+  /* Make the modal wider on desktop screens */
+  @media (min-width: 768px) {
+    max-width: 800px;
+    width: 100%;
+  }
 }
 
 .header {
@@ -78,6 +89,11 @@
   flex-direction: column;
   gap: 16px;
   overflow-y: auto;
+  /* Allow vertical scrolling */
+  flex-grow: 1;
+  /* Allow the body to fill the remaining space */
+  min-height: 0;
+  /* A flexbox fix to prevent content from overflowing */
 }
 
 .visualization-container {
@@ -408,7 +424,8 @@
     margin-bottom: 4px;
   }
 
-  input,select {
+  input,
+  select {
     background-color: var(--input-bg);
     border: 1px solid var(--border-color);
     color: var(--text-primary);
@@ -606,35 +623,6 @@
       border-bottom-right-radius: 8px;
     }
   }
-
-  // No changes needed for .unit-toggle, but it's here for context
-  .unit-toggle {
-    display: flex;
-    flex-shrink: 0; // Prevent it from shrinking
-
-    button {
-      flex: 1;
-      padding: 12px 20px;
-      font-weight: bold;
-      border: 1px solid var(--border-color);
-      background-color: var(--input-bg);
-      color: var(--text-secondary);
-      cursor: pointer;
-
-      &:first-child {
-        border-radius: 8px 0 0 8px;
-      }
-
-      &:last-child {
-        border-radius: 0 8px 8px 0;
-      }
-
-      &.active {
-        background-color: var(--text-primary);
-        color: var(--modal-bg);
-      }
-    }
-  }
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -643,6 +631,8 @@
 
 // Styles for the new top navigation bar
 .page-nav {
+  flex-shrink: 0;
+  /* Prevent the nav from shrinking */
   display: flex;
   background-color: #2a2a2e; // A slightly darker shade for the nav
   border-top-left-radius: 12px;
@@ -895,4 +885,68 @@
   font-style: italic;
   color: #718096;
   padding: 0.5rem 0;
+}
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/* ~~~      PERCENTAGE PAGE HEADER STYLES      ~~~ */
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+.percentage-form-header {
+  display: flex;
+  flex-wrap: wrap;
+  /* Allow controls to wrap onto the next line on small screens */
+  gap: 1rem;
+  align-items: flex-end;
+  /* Align items nicely along their baseline */
+  border-bottom: 1px solid #4a4a4a;
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+
+  /* A container for the main weight input and the "sticky" custom % input */
+  .base-weight-group {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.5rem;
+    flex-grow: 1;
+    /* Allow this group to take up available horizontal space */
+  }
+
+  /* A container for the toggles */
+  .config-controls {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+}
+
+.percentage-form-header .form-group {
+  flex-grow: 1;
+  /* Make the label/input group fill the space in its container */
+  display: flex;
+  flex-direction: column;
+}
+
+/* This specifically targets the "sticky" custom percentage input box */
+.percentage-form-header .percentage-item.custom-input {
+  margin-bottom: 0;
+  /* Remove any default margin from the item */
+  flex-shrink: 0;
+  /* Prevent it from shrinking when space is tight */
+}
+
+/* Create a smaller version of the toggle switch for the header area */
+.toggle-group.small {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+
+  label {
+    margin-bottom: 0; // Override any default bottom margin
+  }
+
+  .toggle-switch {
+    transform: scale(0.8); // Visually shrink the toggle switch
+  }
 }

@@ -196,20 +196,48 @@
                 <h3>Percentage Calculator</h3>
                 <button class="close-btn" (click)="onClose()">&times;</button>
             </div>
-            <div class="info-box">
-                Calculates percentages based on the total weight from the 'Calculator' tab: <strong>{{ totalWeight() |
-                    number:'1.0-2' }} {{ unit() }}</strong>
-            </div>
 
-            @if (totalWeight() > 0) {
-            <div class="percentage-results">
-                <!-- Custom Percentage Input -->
-                <div class="percentage-item custom-input">
-                    <div class="p-header">
-                        <input type="number" [(ngModel)]="customPercentage" class="custom-p-input" />
-                        <span class="percent-sign">%</span>
+            <!-- NEW: Header container for all top controls -->
+            <div class="percentage-form-header">
+                <!-- Group for the main weight input and the "sticky" custom % input -->
+                <div class="base-weight-group">
+                    <div class="form-group">
+                        <label for="baseWeight">Working Weight (100%)</label>
+                        <input id="baseWeight" type="number" class="weight-input" placeholder="e.g., 100"
+                            [ngModel]="percentageBaseWeight()" (ngModelChange)="percentageBaseWeight.set($event)">
+                    </div>
+                    <!-- "Sticky" Custom Percentage Input -->
+                    <div class="percentage-item custom-input">
+                        <div class="p-header">
+                            <input type="number" class="custom-p-input" [ngModel]="customPercentage()"
+                                (ngModelChange)="customPercentage.set($event)" />
+                            <span class="percent-sign">%</span>
+                        </div>
                     </div>
                 </div>
+
+                <!-- Group for unit and 50kg toggles -->
+                <div class="config-controls">
+                    <!-- Unit Toggle -->
+                    <div class="unit-toggle small">
+                        <button [class.active]="unit() === 'kg'" (click)="setUnit('kg')">KG</button>
+                        <button [class.active]="unit() === 'lb'" (click)="setUnit('lb')">LB</button>
+                    </div>
+                    <!-- 50kg Plate Toggle -->
+                    <div *ngIf="unit() === 'kg'" class="toggle-group small">
+                        <label for="p50kgToggle">50kg Plate</label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="p50kgToggle" [checked]="enable50kgPlate()"
+                                (change)="toggle50kgPlate($any($event.target).checked)">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            @if (percentageBaseWeight() && percentageBaseWeight()! > 0) {
+            <h2 class="flex">Plates per side</h2>
+            <div class="percentage-results">
                 <!-- Preset Percentages -->
                 @for (result of percentageResults(); track result.percentage) {
                 <div class="percentage-item">
@@ -227,7 +255,7 @@
                 }
             </div>
             } @else {
-            <p class="empty-state">Set a weight on the 'Calculator' page first.</p>
+            <p class="empty-state">Enter a base weight to calculate percentages.</p>
             }
         </div>
         }
