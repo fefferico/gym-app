@@ -1,172 +1,367 @@
 <div class="modal-overlay" (click)="onClose()">
     <div class="calculator-modal" (click)="$event.stopPropagation()">
 
-        <div class="header">
-            <div class="mode-toggle">
-                <button [class.active]="mode() === 'calculate'" (click)="setMode('calculate')">Calculate</button>
-                <button [class.active]="mode() === 'reverse'" (click)="setMode('reverse')">Reverse</button>
-            </div>
-            <button class="close-btn" (click)="onClose()">&times;</button>
+        <!-- +++ NEW: MAIN PAGE NAVIGATION +++ -->
+        <div class="page-nav">
+            <button [class.active]="activePage() === 'calculator'" (click)="setPage('calculator')">Calculator</button>
+            <button [class.active]="activePage() === 'percentage'" (click)="setPage('percentage')">Percentages</button>
+            <button [class.active]="activePage() === 'oneRepMax'" (click)="setPage('oneRepMax')">1RM</button>
+            <button [class.active]="activePage() === 'rpe'" (click)="setPage('rpe')">RPE</button>
+            <button [class.active]="activePage() === 'scores'" (click)="setPage('scores')">Scores</button>
         </div>
 
+        <!-- +++ NEW: SWITCH BETWEEN PAGE VIEWS +++ -->
+        @switch (activePage()) {
+        <!-- ~~~~~~~~~~ PAGE 1: BARBELL CALCULATOR (Existing UI) ~~~~~~~~~~ -->
+        @case ('calculator') {
         <div class="modal-body custom-scrollbar">
 
-            <div class="visualization-container">
-                <div class="barbell">
-                    <!-- Left Sleeve -->
-                    <div class="sleeve left">
-                        <!-- +++ FIX: The DOM order is now reversed for the left sleeve +++ -->
-                        <!-- Plates come first in the markup -->
-                        <ng-container *ngFor="let item of loadout()">
-                            <div *ngFor="let i of [].constructor(item.count)"
-                                class="{{ getPlateClass(item.plate.weight, item.plate.unit) }}"
-                                [style.background-color]="item.plate.color"
-                                [style.border-color]="item.plate.color === '#FAFAFA' ? '#ccc' : item.plate.color"
-                                (click)="removePlate(item.plate)">
-                                <span [style.color]="getPlateTextColor(item.plate.color)">{{ item.plate.weight }}</span>
-                            </div>
-                        </ng-container>
-                        <!-- The collar is last, so flex-direction:row-reverse places it at the visual start (far left) -->
-                        <div *ngIf="selectedCollar() && selectedCollar()!.weight > 0" class="collar"></div>
-                    </div>
-
-                    <div class="shaft"></div>
-
-                    <!-- Right Sleeve (Order remains the same here) -->
-                    <div class="sleeve right">
-                        <ng-container *ngFor="let item of loadout()">
-                            <div *ngFor="let i of [].constructor(item.count)"
-                                class="{{ getPlateClass(item.plate.weight, item.plate.unit) }}"
-                                [style.background-color]="item.plate.color"
-                                [style.border-color]="item.plate.color === '#FAFAFA' ? '#ccc' : item.plate.color"
-                                (click)="removePlate(item.plate)">
-                                <span [style.color]="getPlateTextColor(item.plate.color)">{{ item.plate.weight }}</span>
-                            </div>
-                        </ng-container>
-                        <div *ngIf="selectedCollar() && selectedCollar()!.weight > 0" class="collar"></div>
-                    </div>
+            <div class="header">
+                <div class="mode-toggle">
+                    <button [class.active]="mode() === 'calculate'" (click)="setMode('calculate')">Calculate</button>
+                    <button [class.active]="mode() === 'reverse'" (click)="setMode('reverse')">Reverse</button>
                 </div>
+                <button class="close-btn" (click)="onClose()">&times;</button>
             </div>
 
-            <div class="total-weight-display">
-                <h2>{{ totalWeight() | number:'1.0-2' }} {{ unit() }}</h2>
-            </div>
+            <div class="modal-body custom-scrollbar">
 
-            <div class="input-group calculate-mode-input" *ngIf="mode() === 'calculate'">
-
-                <!-- +++ START: New Stepper Buttons and Wrapper +++ -->
-                <div class="weight-control">
-                    <!-- Decrease Button -->
-                    <button type="button" class="stepper-btn" (mousedown)="startChangingWeight('decrease')"
-                        (mouseup)="stopChangingWeight()" (mouseleave)="stopChangingWeight()"
-                        (touchstart)="startChangingWeight('decrease'); $event.preventDefault()"
-                        (touchend)="stopChangingWeight()" aria-label="Decrease weight">
-                        <app-icon name="minus" class="h-5 w-5"></app-icon>
-                    </button>
-
-                    <input type="number" [ngModel]="targetWeight()"
-                        (ngModelChange)="targetWeight.set($event); calculateFromTargetWeight()" class="weight-input"
-                        [step]="weightStep()" [min]="minPossibleWeight()" />
-
-                    <!-- Increase Button -->
-                    <button type="button" class="stepper-btn" (mousedown)="startChangingWeight('increase')"
-                        (mouseup)="stopChangingWeight()" (mouseleave)="stopChangingWeight()"
-                        (touchstart)="startChangingWeight('increase'); $event.preventDefault()"
-                        (touchend)="stopChangingWeight()" aria-label="Increase weight">
-                        <app-icon name="plus" class="h-5 w-5"></app-icon>
-                    </button>
-                </div>
-                <!-- +++ END: New Stepper Buttons and Wrapper +++ -->
-
-                <div class="unit-toggle">
-                    <button [class.active]="unit() === 'kg'" (click)="setUnit('kg')">KG</button>
-                    <button [class.active]="unit() === 'lb'" (click)="setUnit('lb')">LB</button>
-                </div>
-            </div>
-
-            <div class="reverse-mode-controls" *ngIf="mode() === 'reverse'">
-                <p>TAP PLATES TO LOAD/UNLOAD BAR</p>
-                <div class="plate-selection">
-                    <div *ngFor="let plate of availablePlates()" class="plate-option" (click)="addPlate(plate)">
-                        <div class="plate-visual" [style.background-color]="plate.color"
-                            [style.border-color]="plate.color === '#FAFAFA' ? '#ccc' : plate.color">
+                <div class="visualization-container">
+                    <div class="barbell">
+                        <!-- Left Sleeve -->
+                        <div class="sleeve left">
+                            <!-- +++ FIX: The DOM order is now reversed for the left sleeve +++ -->
+                            <!-- Plates come first in the markup -->
+                            <ng-container *ngFor="let item of loadout()">
+                                <div *ngFor="let i of [].constructor(item.count)"
+                                    class="{{ getPlateClass(item.plate.weight, item.plate.unit) }}"
+                                    [style.background-color]="item.plate.color"
+                                    [style.border-color]="item.plate.color === '#FAFAFA' ? '#ccc' : item.plate.color"
+                                    (click)="removePlate(item.plate)">
+                                    <span [style.color]="getPlateTextColor(item.plate.color)">{{ item.plate.weight
+                                        }}</span>
+                                </div>
+                            </ng-container>
+                            <!-- The collar is last, so flex-direction:row-reverse places it at the visual start (far left) -->
+                            <div *ngIf="selectedCollar() && selectedCollar()!.weight > 0" class="collar"></div>
                         </div>
-                        <span>{{ plate.weight }}</span>
 
-                        <!-- This badge now shows the count of plates currently ON THE BAR -->
-                        <span *ngIf="plateCountMap().has(plate.weight)" class="plate-quantity">
-                            {{ plateCountMap().get(plate.weight) }}x
-                        </span>
+                        <div class="shaft"></div>
+
+                        <!-- Right Sleeve (Order remains the same here) -->
+                        <div class="sleeve right">
+                            <ng-container *ngFor="let item of loadout()">
+                                <div *ngFor="let i of [].constructor(item.count)"
+                                    class="{{ getPlateClass(item.plate.weight, item.plate.unit) }}"
+                                    [style.background-color]="item.plate.color"
+                                    [style.border-color]="item.plate.color === '#FAFAFA' ? '#ccc' : item.plate.color"
+                                    (click)="removePlate(item.plate)">
+                                    <span [style.color]="getPlateTextColor(item.plate.color)">{{ item.plate.weight
+                                        }}</span>
+                                </div>
+                            </ng-container>
+                            <div *ngIf="selectedCollar() && selectedCollar()!.weight > 0" class="collar"></div>
+                        </div>
                     </div>
                 </div>
-                <button class="clear-btn inline-flex items-center" (click)="clearLoadout()">
-                    <app-icon name="cancel" class="h-4 w-4 mr-1"></app-icon>
-                    CLEAR BAR</button>
+
+                <div class="total-weight-display">
+                    <h2>{{ totalWeight() | number:'1.0-2' }} {{ unit() }}</h2>
+                </div>
+
+                <div class="input-group calculate-mode-input" *ngIf="mode() === 'calculate'">
+
+                    <!-- +++ START: New Stepper Buttons and Wrapper +++ -->
+                    <div class="weight-control">
+                        <!-- Decrease Button -->
+                        <button type="button" class="stepper-btn" (mousedown)="startChangingWeight('decrease')"
+                            (mouseup)="stopChangingWeight()" (mouseleave)="stopChangingWeight()"
+                            (touchstart)="startChangingWeight('decrease'); $event.preventDefault()"
+                            (touchend)="stopChangingWeight()" aria-label="Decrease weight">
+                            <app-icon name="minus" class="h-5 w-5"></app-icon>
+                        </button>
+
+                        <input type="number" [ngModel]="targetWeight()"
+                            (ngModelChange)="targetWeight.set($event); calculateFromTargetWeight()" class="weight-input"
+                            [step]="weightStep()" [min]="minPossibleWeight()" />
+
+                        <!-- Increase Button -->
+                        <button type="button" class="stepper-btn" (mousedown)="startChangingWeight('increase')"
+                            (mouseup)="stopChangingWeight()" (mouseleave)="stopChangingWeight()"
+                            (touchstart)="startChangingWeight('increase'); $event.preventDefault()"
+                            (touchend)="stopChangingWeight()" aria-label="Increase weight">
+                            <app-icon name="plus" class="h-5 w-5"></app-icon>
+                        </button>
+                    </div>
+                    <!-- +++ END: New Stepper Buttons and Wrapper +++ -->
+
+                    <div class="unit-toggle">
+                        <button [class.active]="unit() === 'kg'" (click)="setUnit('kg')">KG</button>
+                        <button [class.active]="unit() === 'lb'" (click)="setUnit('lb')">LB</button>
+                    </div>
+                </div>
+
+                <div class="reverse-mode-controls" *ngIf="mode() === 'reverse'">
+                    <p>TAP PLATES TO LOAD/UNLOAD BAR</p>
+                    <div class="plate-selection">
+                        <div *ngFor="let plate of availablePlates()" class="plate-option" (click)="addPlate(plate)">
+                            <div class="plate-visual" [style.background-color]="plate.color"
+                                [style.border-color]="plate.color === '#FAFAFA' ? '#ccc' : plate.color">
+                            </div>
+                            <span>{{ plate.weight }}</span>
+
+                            <!-- This badge now shows the count of plates currently ON THE BAR -->
+                            <span *ngIf="plateCountMap().has(plate.weight)" class="plate-quantity">
+                                {{ plateCountMap().get(plate.weight) }}x
+                            </span>
+                        </div>
+                    </div>
+                    <button class="clear-btn inline-flex items-center" (click)="clearLoadout()">
+                        <app-icon name="cancel" class="h-4 w-4 mr-1"></app-icon>
+                        CLEAR BAR</button>
+                </div>
+
+                <div class="config-settings">
+                    <!-- +++ START: New Toggles +++ -->
+                    <div class="toggle-group" *ngIf="isPremiumUser()">
+                        <label for="personalGymToggle">Use Personal Gym</label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="personalGymToggle" [checked]="usePersonalGym()"
+                                (change)="togglePersonalGym($any($event.target).checked)">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    <div *ngIf="unit() === 'kg'" class="toggle-group">
+                        <label for="50kgToggle">Enable 50{{ unit() }} Plate</label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="50kgToggle" [checked]="enable50kgPlate()"
+                                (change)="toggle50kgPlate($any($event.target).checked)">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    <!-- +++ END: New Toggles +++ -->
+
+                    <div class="form-group">
+                        <label for="barbell">Barbell</label>
+                        <select id="barbell" [ngModel]="selectedBarbell()" (ngModelChange)="handleBarChange($event)">
+                            <!-- +++ Use the new barbells() signal +++ -->
+                            <option *ngFor="let bar of barbells()" [ngValue]="bar">{{ bar.name }} ({{ bar.weight }}{{
+                                bar.unit }})</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="collar">Collars</label>
+                        <select id="collar" [ngModel]="selectedCollar()" (ngModelChange)="handleCollarChange($event)">
+                            <!-- +++ Use the new collars() signal +++ -->
+                            <option *ngFor="let collar of collars()" [ngValue]="collar">{{ collar.name }} ({{
+                                collar.weight
+                                }}{{ collar.unit }})</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="loadout-summary">
+                    <h4 *ngIf="platesWeightPerSide()>0">Plates Needed (Per Side)</h4>
+
+                    <!-- This is the new component in action -->
+                    <app-plate-summary [loadout]="loadout()"></app-plate-summary>
+
+                    <div *ngIf="loadout().length === 0" class="summary-item-empty">
+                        Bar and collars only
+                    </div>
+
+                    <div class="math-breakdown" *ngIf="selectedBarbell() && selectedCollar()">
+                        <p class="title">How the total is calculated:</p>
+                        <p class="formula">
+                            <span>{{ selectedBarbell()!.weight | number:'1.0-2' }} {{ unit() }}</span>
+                            <span class="label"> (Bar)</span>
+                            <span class="op"> + </span>
+                            <span>{{ selectedCollar()!.weight | number:'1.0-2' }} {{ unit() }}</span>
+                            <span class="label"> (Collars)</span>
+                            <span class="op"> + </span>
+                            <span>2 * {{ platesWeightPerSide() | number:'1.0-2' }} {{ unit() }}</span>
+                            <span class="label"> (Plates)</span>
+                        </p>
+                    </div>
+                </div>
+
             </div>
-
-            <div class="config-settings">
-                <!-- +++ START: New Toggles +++ -->
-                <div class="toggle-group" *ngIf="isPremiumUser()">
-                    <label for="personalGymToggle">Use Personal Gym</label>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="personalGymToggle" [checked]="usePersonalGym()"
-                            (change)="togglePersonalGym($any($event.target).checked)">
-                        <span class="slider round"></span>
-                    </label>
-                </div>
-                <div *ngIf="unit() === 'kg'" class="toggle-group">
-                    <label for="50kgToggle">Enable 50{{ unit() }} Plate</label>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="50kgToggle" [checked]="enable50kgPlate()"
-                            (change)="toggle50kgPlate($any($event.target).checked)">
-                        <span class="slider round"></span>
-                    </label>
-                </div>
-                <!-- +++ END: New Toggles +++ -->
-
-                <div class="form-group">
-                    <label for="barbell">Barbell</label>
-                    <select id="barbell" [ngModel]="selectedBarbell()" (ngModelChange)="handleBarChange($event)">
-                        <!-- +++ Use the new barbells() signal +++ -->
-                        <option *ngFor="let bar of barbells()" [ngValue]="bar">{{ bar.name }} ({{ bar.weight }}{{
-                            bar.unit }})</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="collar">Collars</label>
-                    <select id="collar" [ngModel]="selectedCollar()" (ngModelChange)="handleCollarChange($event)">
-                        <!-- +++ Use the new collars() signal +++ -->
-                        <option *ngFor="let collar of collars()" [ngValue]="collar">{{ collar.name }} ({{ collar.weight
-                            }}{{ collar.unit }})</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="loadout-summary">
-                <h4 *ngIf="platesWeightPerSide()>0">Plates Needed (Per Side)</h4>
-                
-                <!-- This is the new component in action -->
-                <app-plate-summary [loadout]="loadout()"></app-plate-summary>
-
-                <div *ngIf="loadout().length === 0" class="summary-item-empty">
-                    Bar and collars only
-                </div>
-
-                <div class="math-breakdown" *ngIf="selectedBarbell() && selectedCollar()">
-                    <p class="title">How the total is calculated:</p>
-                    <p class="formula">
-                        <span>{{ selectedBarbell()!.weight | number:'1.0-2' }} {{ unit() }}</span>
-                        <span class="label"> (Bar)</span>
-                        <span class="op"> + </span>
-                        <span>{{ selectedCollar()!.weight | number:'1.0-2' }} {{ unit() }}</span>
-                        <span class="label"> (Collars)</span>
-                        <span class="op"> + </span>
-                        <span>2 * {{ platesWeightPerSide() | number:'1.0-2' }} {{ unit() }}</span>
-                        <span class="label"> (Plates)</span>
-                    </p>
-                </div>
-            </div>
-
         </div>
+        }
+
+        <!-- ~~~~~~~~~~ PAGE 2: PERCENTAGE CALCULATOR ~~~~~~~~~~ -->
+        @case ('percentage') {
+        <div class="modal-body custom-scrollbar page-view">
+            <div class="header">
+                <h3>Percentage Calculator</h3>
+                <button class="close-btn" (click)="onClose()">&times;</button>
+            </div>
+            <div class="info-box">
+                Calculates percentages based on the total weight from the 'Calculator' tab: <strong>{{ totalWeight() |
+                    number:'1.0-2' }} {{ unit() }}</strong>
+            </div>
+
+            @if (totalWeight() > 0) {
+            <div class="percentage-results">
+                <!-- Custom Percentage Input -->
+                <div class="percentage-item custom-input">
+                    <div class="p-header">
+                        <input type="number" [(ngModel)]="customPercentage" class="custom-p-input" />
+                        <span class="percent-sign">%</span>
+                    </div>
+                </div>
+                <!-- Preset Percentages -->
+                @for (result of percentageResults(); track result.percentage) {
+                <div class="percentage-item">
+                    <div class="p-header">
+                        <h4>{{ result.percentage | number:'1.0-0' }}%</h4>
+                        <span class="p-weight">{{ result.achievableWeight | number:'1.0-2' }} {{ unit() }}</span>
+                    </div>
+                    <div class="p-body">
+                        <app-plate-summary [loadout]="result.loadout"></app-plate-summary>
+                        @if (result.loadout.length === 0) {
+                        <div class="summary-item-empty small">Bar/collars only</div>
+                        }
+                    </div>
+                </div>
+                }
+            </div>
+            } @else {
+            <p class="empty-state">Set a weight on the 'Calculator' page first.</p>
+            }
+        </div>
+        }
+
+        <!-- ~~~~~~~~~~ PAGE 3: 1RM CALCULATOR ~~~~~~~~~~ -->
+        @case ('oneRepMax') {
+        <div class="modal-body custom-scrollbar page-view">
+            <div class="header">
+                <h3>One-Rep Max (1RM) Estimator</h3>
+                <button class="close-btn" (click)="onClose()">&times;</button>
+            </div>
+            <div class="calc-form">
+                <div class="form-group">
+                    <label>Weight Lifted</label>
+                    <input type="number" placeholder="e.g., 100" [(ngModel)]="oneRmWeight">
+                </div>
+                <div class="form-group">
+                    <label>Reps Performed</label>
+                    <input type="number" placeholder="e.g., 5" [(ngModel)]="oneRmReps">
+                </div>
+            </div>
+
+            @if (estimated1RM().epley > 0) {
+            <div class="calc-results">
+                <h4>Estimated 1RM</h4>
+                <div class="result-grid">
+                    <div>Epley Formula:</div>
+                    <div>{{ estimated1RM().epley | number:'1.0-2' }}</div>
+                    <div>Brzycki Formula:</div>
+                    <div>{{ estimated1RM().brzycki | number:'1.0-2' }}</div>
+                </div>
+
+                <h4 class="mt-4">Rep Max Projections (based on Epley)</h4>
+                <div class="result-grid projection-table">
+                    <div class="header">Reps</div>
+                    <div class="header">Weight</div>
+                    @for (proj of oneRmProjectionTable(); track proj.reps) {
+                    <div>{{ proj.reps }} RM</div>
+                    <div>{{ proj.weight | number:'1.0-2' }}</div>
+                    }
+                </div>
+            </div>
+            } @else {
+            <p class="empty-state">Enter a valid weight and number of reps.</p>
+            }
+        </div>
+        }
+
+        <!-- ~~~~~~~~~~ PAGE 4: RPE CALCULATOR ~~~~~~~~~~ -->
+        @case ('rpe') {
+        <div class="modal-body custom-scrollbar page-view">
+            <div class="header">
+                <h3>e1RM from RPE</h3>
+                <button class="close-btn" (click)="onClose()">&times;</button>
+            </div>
+            <div class="calc-form">
+                <div class="form-group">
+                    <label>Weight Lifted</label>
+                    <input type="number" placeholder="e.g., 100" [(ngModel)]="rpeWeight">
+                </div>
+                <div class="form-group">
+                    <label>Reps Performed</label>
+                    <input type="number" placeholder="e.g., 5" [(ngModel)]="rpeReps">
+                </div>
+                <div class="form-group">
+                    <label>RPE (Rate of Perceived Exertion)</label>
+                    <select [(ngModel)]="rpeValue">
+                        @for (rpe of rpeOptions; track rpe) {
+                        <option [ngValue]="rpe">{{ rpe }}</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            @if (estimated1RMFromRpe() > 0) {
+            <div class="calc-results centered">
+                <h4>Estimated 1-Rep Max</h4>
+                <p class="big-result">{{ estimated1RMFromRpe() | number:'1.0-2' }}</p>
+            </div>
+            } @else {
+            <p class="empty-state">Enter weight, reps, and select an RPE. Not all Rep/RPE combinations are valid.</p>
+            }
+        </div>
+        }
+
+        <!-- ~~~~~~~~~~ PAGE 5: POWERLIFTING SCORES ~~~~~~~~~~ -->
+        @case ('scores') {
+        <div class="modal-body custom-scrollbar page-view">
+            <div class="header">
+                <h3>Powerlifting Scores</h3>
+                <button class="close-btn" (click)="onClose()">&times;</button>
+            </div>
+            <div class="calc-form">
+                <div class="form-group">
+                    <label>Bodyweight</label>
+                    <input type="number" placeholder="e.g., 80" [(ngModel)]="plBodyweight">
+                </div>
+                <div class="form-group">
+                    <label>Total (S+B+D)</label>
+                    <input type="number" placeholder="e.g., 500" [(ngModel)]="plTotal">
+                </div>
+                <div class="form-group">
+                    <label>Gender</label>
+                    <select [(ngModel)]="plGender">
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Unit</label>
+                    <div class="unit-toggle small">
+                        <button [class.active]="plUnit() === 'kg'" (click)="plUnit.set('kg')">KG</button>
+                        <button [class.active]="plUnit() === 'lb'" (click)="plUnit.set('lb')">LB</button>
+                    </div>
+                </div>
+            </div>
+            @if (powerliftingScores().wilks > 0) {
+            <div class="calc-results">
+                <h4>Calculated Scores</h4>
+                <div class="result-grid">
+                    <div>Wilks Score:</div>
+                    <div>{{ powerliftingScores().wilks | number:'1.0-2' }}</div>
+                    <div>DOTS Score:</div>
+                    <div>{{ powerliftingScores().dots | number:'1.0-2' }}</div>
+                    <div>Goodlift Points:</div>
+                    <div>{{ powerliftingScores().glPoints | number:'1.0-2' }}</div>
+                    <div>Sinclair Total:</div>
+                    <div>{{ powerliftingScores().sinclair | number:'1.0-2' }}</div>
+                </div>
+            </div>
+            } @else {
+            <p class="empty-state">Enter a valid bodyweight and total.</p>
+            }
+        </div>
+        }
+        }
     </div>
 </div>

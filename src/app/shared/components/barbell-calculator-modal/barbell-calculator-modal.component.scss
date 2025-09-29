@@ -137,27 +137,32 @@
   margin-left: 1px;
   margin-right: 1px;
 
-    //  LB plates
+  //  LB plates
   &.plate-lb-45 {
     height: 100%;
     width: 25px;
   }
+
   &.plate-lb-35 {
     height: 95%;
     width: 25px;
   }
+
   &.plate-lb-25 {
     height: 90%;
     width: 25px;
   }
+
   &.plate-lb-10 {
     height: 80%;
     width: 25px;
   }
+
   &.plate-lb-5 {
     height: 70%;
     width: 25px;
   }
+
   &.plate-lb-2-5 {
     height: 60%;
     width: 25px;
@@ -204,26 +209,32 @@
     height: 80%;
     width: 25px;
   }
+
   &.plate-5 {
     height: 70%;
     width: 18px;
   }
+
   &.plate-2-5 {
     height: 60%;
     width: 18px;
   }
+
   &.plate-2 {
     height: 55%;
     width: 12px;
   }
+
   &.plate-1-5 {
     height: 50%;
     width: 18px;
   }
+
   &.plate-1 {
     height: 45%;
     width: 10px;
   }
+
   &.plate-0-5 {
     height: 40%;
     width: 18px;
@@ -397,7 +408,7 @@
     margin-bottom: 4px;
   }
 
-  select {
+  input,select {
     background-color: var(--input-bg);
     border: 1px solid var(--border-color);
     color: var(--text-primary);
@@ -624,4 +635,264 @@
       }
     }
   }
+}
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/* ~~~      MAIN PAGE & NAVIGATION STYLES      ~~~ */
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+// Styles for the new top navigation bar
+.page-nav {
+  display: flex;
+  background-color: #2a2a2e; // A slightly darker shade for the nav
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  overflow: hidden;
+
+  button {
+    flex-grow: 1;
+    padding: 12px 8px;
+    border: none;
+    background-color: transparent;
+    color: #a0aec0; // Muted text color
+    font-weight: 600;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    border-bottom: 3px solid transparent; // Placeholder for active indicator
+
+    &:hover {
+      background-color: #3c3c41;
+      color: #ffffff;
+    }
+
+    &.active {
+      color: #ffffff;
+      background-color: #333336;
+      border-bottom-color: #4c82ff; // Highlight color for the active tab
+    }
+  }
+}
+
+// Container for the content of each new page
+.page-view {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem; // Space between sections
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #4a4a4a;
+
+    h3 {
+      margin: 0;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #fafafa;
+    }
+  }
+}
+
+// A generic box for providing context or information
+.info-box {
+  background-color: rgba(76, 130, 255, 0.1);
+  border: 1px solid rgba(76, 130, 255, 0.3);
+  color: #cbd5e0;
+  padding: 0.75rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  text-align: center;
+
+  strong {
+    color: #ffffff;
+    font-weight: 600;
+  }
+}
+
+// Placeholder text style
+.empty-state {
+  text-align: center;
+  color: #718096;
+  padding: 2rem 1rem;
+  font-style: italic;
+}
+
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/* ~~~        FORM & INPUT STYLES              ~~~ */
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+.calc-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+// On smaller screens, stack the form inputs
+@media (max-width: 500px) {
+  .calc-form {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/* ~~~        RESULTS DISPLAY STYLES           ~~~ */
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+.calc-results {
+  background-color: #2d3748; // Dark blue-gray background
+  padding: 1rem;
+  border-radius: 8px;
+
+  h4 {
+    margin-top: 0;
+    margin-bottom: 0.75rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #a0aec0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  &.centered {
+    text-align: center;
+  }
+}
+
+// A generic 2-column grid for displaying result key-value pairs
+.result-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  color: #e2e8f0;
+
+  // Alternating row background for readability
+  div:nth-child(4n-1),
+  div:nth-child(4n) {
+    background-color: rgba(255, 255, 255, 0.03);
+  }
+
+  div {
+    padding: 0.5rem;
+    border-radius: 4px;
+  }
+
+  // Style for the value column
+  div:nth-child(even) {
+    font-weight: 700;
+    text-align: right;
+    color: #ffffff;
+  }
+}
+
+.projection-table {
+  .header {
+    font-weight: 700;
+    color: #a0aec0;
+    border-bottom: 1px solid #4a5568;
+  }
+
+  div.header:nth-child(even) {
+    text-align: right;
+  }
+}
+
+// For the large result on the RPE page
+.big-result {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #4c82ff; // Highlight color
+  margin: 0.5rem 0;
+}
+
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/* ~~~      PAGE-SPECIFIC STYLES               ~~~ */
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+// --- Percentage Page ---
+.percentage-results {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.percentage-item {
+  background-color: #2d3748;
+  border-radius: 8px;
+  overflow: hidden;
+
+  &.custom-input {
+    background-color: #1a202c;
+    border: 2px dashed #4a5568;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .p-header {
+      border-bottom: none;
+      padding: 0.5rem;
+      border-radius: 8px;
+    }
+
+    .custom-p-input {
+      width: 70px;
+      font-size: 1.5rem;
+      font-weight: 700;
+      text-align: center;
+      background: transparent;
+      border: none;
+      color: #fff;
+      padding: 0;
+
+      &:focus {
+        outline: none;
+      }
+    }
+
+    .percent-sign {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #a0aec0;
+    }
+  }
+
+  .p-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    background-color: #3c475b;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid #4a5568;
+
+    h4 {
+      margin: 0;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .p-weight {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #a0aec0;
+    }
+  }
+
+  .p-body {
+    padding: 0.75rem;
+  }
+}
+
+.summary-item-empty.small {
+  font-size: 0.8rem;
+  text-align: center;
+  font-style: italic;
+  color: #718096;
+  padding: 0.5rem 0;
 }
