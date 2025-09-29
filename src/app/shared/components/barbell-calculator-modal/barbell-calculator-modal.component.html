@@ -385,6 +385,23 @@
                     <label>Total (S+B+D)</label>
                     <input type="number" placeholder="e.g., 500" [(ngModel)]="plTotal">
                 </div>
+                <!-- NEW: Event Dropdown -->
+                <div class="form-group">
+                    <label>Event</label>
+                    <select [(ngModel)]="plEvent">
+                        <option value="raw">Classic / Raw</option>
+                        <option value="equipped">Equipped</option>
+                    </select>
+                </div>
+
+                <!-- NEW: Category Dropdown -->
+                <div class="form-group">
+                    <label>Category</label>
+                    <select [(ngModel)]="plCategory">
+                        <option value="full">Full Meet</option>
+                        <option value="bench">Bench Only</option>
+                    </select>
+                </div>
                 <div class="form-group">
                     <label>Gender</label>
                     <select [(ngModel)]="plGender">

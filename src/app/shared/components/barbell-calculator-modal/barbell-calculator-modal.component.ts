@@ -25,6 +25,8 @@ interface GymBarbell {
 
 // --- TYPE DEFINITIONS for new pages ---
 type ActivePage = 'calculator' | 'percentage' | 'oneRepMax' | 'rpe' | 'powerlifting';
+type PowerliftingEvent = 'raw' | 'equipped'; // NEW
+type PowerliftingCategory = 'full' | 'bench'; // NEW
 
 interface PercentageResult {
   percentage: number;
@@ -53,6 +55,41 @@ const RPE_CHART: { [rpe: number]: { [reps: number]: number } } = {
   7: { 1: 89, 2: 86, 3: 84, 4: 81, 5: 79, 6: 76, 7: 74, 8: 71, 9: 68, 10: 65 },
   6.5: { 1: 88, 2: 85, 3: 82, 4: 80, 5: 77, 6: 75, 7: 72, 8: 69, 9: 67, 10: 64 },
   6: { 1: 86, 2: 84, 3: 81, 4: 79, 5: 76, 6: 74, 7: 71, 8: 68, 9: 65, 10: 62 }
+};
+
+const GL_COEFFICIENTS = {
+  male: {
+    raw: {
+      full: { a: 1199.72839, b: 1025.18162, c: 0.00921 },
+      bench: { a: 310.43089, b: 282.35340, c: 0.01008 }
+    },
+    equipped: {
+      full: { a: 1145.10269, b: 940.06378, c: 0.01014 },
+      bench: { a: 320.98040, b: 280.05240, c: 0.01138 }
+    }
+  },
+  female: {
+    raw: {
+      full: { a: 612.42879, b: 575.83848, c: 0.01458 },
+      bench: { a: 147.00109, b: 153.21310, c: 0.01940 }
+    },
+    equipped: {
+      full: { a: 562.46313, b: 498.05941, c: 0.01730 },
+      bench: { a: 182.23418, b: 179.35880, c: 0.01630 }
+    }
+  }
+};
+
+// NEW: Coefficients for Wilks 2
+const WILKS2_COEFFICIENTS = {
+    male: {
+        raw: { a: 60.10356, b: 1646.42519, c: -34.2324, d: -0.17187, e: 0.00063, f: -0.00000085 },
+        equipped: { a: 116.1478, b: 1033.5688, c: -16.183, d: -0.1342, e: 0.00049, f: -0.00000067 }
+    },
+    female: {
+        raw: { a: 97.35936, b: 1299.7242, c: -28.4069, d: -0.1341, e: 0.00049, f: -0.00000063 },
+        equipped: { a: 125.1358, b: 1018.843, c: -20.0863, d: -0.0963, e: 0.00035, f: -0.00000045 }
+    }
 };
 
 @Component({
@@ -109,6 +146,8 @@ export class BarbellCalculatorModalComponent implements OnInit, OnDestroy {
   plTotal = signal<number | null>(null);
   plGender = signal<'male' | 'female'>('male');
   plUnit = signal<'kg' | 'lb'>('kg');
+  plEvent = signal<PowerliftingEvent>('raw'); // NEW
+  plCategory = signal<PowerliftingCategory>('full'); // NEW
 
   availablePlates = computed<Plate[]>(() => {
     let plates: Plate[];
@@ -596,6 +635,8 @@ export class BarbellCalculatorModalComponent implements OnInit, OnDestroy {
     const total = this.plTotal();
     const gender = this.plGender();
     const unit = this.plUnit();
+    const event = this.plEvent();
+    const category = this.plCategory();
 
     if (!bw || !total || bw <= 0 || total <= 0) {
       return { wilks1: 0, wilks2: 0, dots: 0, glPoints: 0, sinclair: 0, qPoints: 0 };
@@ -606,9 +647,9 @@ export class BarbellCalculatorModalComponent implements OnInit, OnDestroy {
 
     return {
       wilks1: this.calculateWilks1(bwKg, totalKg, gender),
-      wilks2: this.calculateWilks2(bwKg, totalKg, gender),
+      wilks2: this.calculateWilks2(bwKg, totalKg, gender, event), // Pass event
       dots: this.calculateDots(bwKg, totalKg, gender),
-      glPoints: this.calculateGlPoints(bwKg, totalKg, gender),
+      glPoints: this.calculateGlPoints(bwKg, totalKg, gender, event, category), // Pass event & category
       sinclair: this.calculateSinclair(bwKg, totalKg, gender),
       qPoints: this.calculateQPoints(bwKg, totalKg, gender)
     };
@@ -651,22 +692,14 @@ export class BarbellCalculatorModalComponent implements OnInit, OnDestroy {
     const d = gender === 'male' ? -0.00113732 : -0.00930733913;
     const e = gender === 'male' ? 7.01863e-6 : 4.731582e-5;
     const f = gender === 'male' ? -1.291e-8 : -2.04619e-8;
-    const denominator = a + b * bodyweight + c * Math.pow(bodyweight, 2) + d * Math.pow(bodyweight, 3) + e * Math.pow(bodyweight, 4) + f * Math.pow(bodyweight, 5);
-    const coefficient = 500 / denominator;
-    return total * coefficient;
+    const denominator = a + b * bodyweight + c * bodyweight**2 + d * bodyweight**3 + e * bodyweight**4 + f * bodyweight**5;
+    return (total * 500) / denominator;
   }
 
-  // NEW: This is the newer Wilks 2 formula (2019)
-  private calculateWilks2(bodyweight: number, total: number, gender: 'male' | 'female'): number {
-    const a = gender === 'male' ? 60.10356 : 97.35936;
-    const b = gender === 'male' ? 1646.42519 : 1299.7242;
-    const c = gender === 'male' ? -34.2324 : -28.4069;
-    const d = gender === 'male' ? -0.17187 : -0.1341;
-    const e = gender === 'male' ? 0.00063 : 0.00049;
-    const f = gender === 'male' ? -0.00000085 : -0.00000063;
-    const denominator = a + b * bodyweight + c * Math.pow(bodyweight, 2) + d * Math.pow(bodyweight, 3) + e * Math.pow(bodyweight, 4) + f * Math.pow(bodyweight, 5);
-    const coefficient = 600 / denominator;
-    return total * coefficient;
+  private calculateWilks2(bodyweight: number, total: number, gender: 'male' | 'female', event: PowerliftingEvent): number {
+    const { a, b, c, d, e, f } = WILKS2_COEFFICIENTS[gender][event];
+    const denominator = a + b * bodyweight + c * bodyweight**2 + d * bodyweight**3 + e * bodyweight**4 + f * bodyweight**5;
+    return (total * 600) / denominator;
   }
 
   // NEW: Q Points formula
@@ -689,12 +722,9 @@ export class BarbellCalculatorModalComponent implements OnInit, OnDestroy {
     return total * coefficient;
   }
 
-  private calculateGlPoints(bodyweight: number, total: number, gender: 'male' | 'female'): number {
-    const a = gender === 'male' ? 1199.72839 : 382.16616;
-    const b = gender === 'male' ? 1025.18162 : 197.88418;
-    const c = gender === 'male' ? 0.00921 : 0.02594;
-    const d = gender === 'male' ? 6.48e-6 : 1.2e-5;
-    const coefficient = 100 / (a - b * Math.exp(-c * bodyweight) + d * Math.pow(bodyweight, 3));
+  private calculateGlPoints(bodyweight: number, total: number, gender: 'male' | 'female', event: PowerliftingEvent, category: PowerliftingCategory): number {
+    const { a, b, c } = GL_COEFFICIENTS[gender][event][category];
+    const coefficient = 100 / (a - b * Math.exp(-c * bodyweight));
     return total * coefficient;
   }
 
