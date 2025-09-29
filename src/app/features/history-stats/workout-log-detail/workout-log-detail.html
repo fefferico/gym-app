@@ -57,7 +57,15 @@
         <p *ngIf="log.notes" class="mt-2 text-m text-gray-600 dark:text-gray-400 italic">
           <strong>Overall Notes:</strong> {{ log.notes }}
         </p>
+
+        <button *ngIf="log?.routineId" (click)="openPerformanceComparisonModal()" type="button"
+          class="flex items-center mt-2 gap-2 px-3 py-2 text-sm font-medium text-center text-white bg-primary rounded-lg hover:bg-primary-dark focus:ring-4 focus:outline-none focus:ring-primary-light">
+          <app-icon name="compare" class="w-5 h-5"></app-icon>
+          COMPARE ROUTINE
+          <span class="hidden sm:inline">Compare Routine</span>
+        </button>
       </div>
+
 
       <div class="px-2 pb-5 mb-3">
         <div *ngIf="displayItems().length > 0; else noLoggedExercises">
@@ -193,18 +201,12 @@
                     </div>
                     <div class="min-w-0">
                       <div class="flex items-center">
-                        <h3 class="text-md sm:text-lg font-semibold truncate text-primary dark:text-primary-light"
+                        <h3 class="text-md sm:text-lg font-semibold text-primary dark:text-primary-light"
                           [title]="item.exerciseName" (click)="openModal(item, $event)">
                           {{ item.exerciseName }}
                         </h3>
                         <app-icon name="info" class="h-4 w-4 text-gray-400 dark:text-gray-300 cursor-help ml-1"
                           (click)="openModal(item, $event)" [appTooltip]="exerciseInfoTooltipString"></app-icon>
-
-                        <button (click)="openPerformanceComparisonModal(item, $event)"
-                          class="ml-2 p-2 rounded-full hover:bg-gray-300 dark:hover:bg-gray-600 focus:outline-none flex items-center"
-                          title="Compare Performance">
-                          <app-icon name="clock" class="h-5 w-5 text-gray-500 dark:text-gray-400"></app-icon>
-                        </button>
                       </div>
                       <div *ngIf="!item.isExpanded" class="text-xs text-gray-500 dark:text-gray-400 truncate">
                         <p *ngIf="item.baseExercise?.category" class="truncate">{{ item.baseExercise?.category |
@@ -218,6 +220,11 @@
                     </div>
                   </div>
                   <div class="flex items-center">
+                    <button (click)="openPerformanceComparisonModal(item, $event)"
+                          class="ml-2 p-2 rounded-full hover:bg-gray-300 dark:hover:bg-gray-600 focus:outline-none flex items-center"
+                          title="Compare Performance">
+                          <app-icon name="compare" class="h-5 w-5 text-gray-500 dark:text-gray-400"></app-icon>
+                        </button>
                     <app-icon name="collapse-card"
                       class="w-5 h-5 transition-transform duration-200 text-gray-500 dark:text-gray-400"
                       [ngClass]="{'rotate-180': item.isExpanded}"></app-icon>
@@ -302,12 +309,10 @@
   </ng-template>
 </div>
 
-<app-modal *ngIf="selectedExerciseForComparison() as exercise" [(isOpen)]="isPerformanceComparisonModalOpen"
-  [modalTitle]="'Performance Comparison'">
-  <app-performance-comparison-modal 
-    (logSelect)="goToPreviousLogDetail($event)"
-    [exercise]="exercise"
-    [currentLog]="workoutLog()!">
+<app-modal *ngIf="isPerformanceComparisonModalOpen()" [(isOpen)]="isPerformanceComparisonModalOpen"
+  [modalTitle]="selectedExerciseForComparison() ? 'Exercise Comparison' : 'Routine Comparison'">
+  <app-performance-comparison-modal (logSelect)="goToPreviousLogDetail($event)"
+    [exercise]="selectedExerciseForComparison()!" [currentLog]="workoutLog()!">
   </app-performance-comparison-modal>
 </app-modal>
 
@@ -340,21 +345,4 @@
   </div>
 </app-modal>
 
-<app-modal *ngIf="selectedExerciseForComparison() as exercise" [(isOpen)]="isPerformanceComparisonModalOpen"
-  [modalTitle]="'Performance Comparison'">
-  <app-performance-comparison-modal 
-    (logSelect)="goToPreviousLogDetail($event)"
-    [exercise]="exercise"
-    [currentLog]="workoutLog()!"></app-performance-comparison-modal>
-</app-modal>
-
-<div class="fixed bottom-20 right-6 z-40 flex flex-col items-center gap-4">
-  <button *ngIf="showBackToTopButton()" appPress (shortPress)="scrollToTop()" type="button"
-    class="bg-primary dark:bg-primary text-white rounded-full p-3 shadow-lg hover:bg-primary-dark dark:hover:bg-primary-light focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-focus dark:focus:ring-offset-gray-900 transition-opacity animate-fade-in">
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"
-      class="w-6 h-6">
-      <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
-    </svg>
-    <span class="sr-only">Back to Top</span>
-  </button>
-</div>
+<app-fab-menu [actions]="[]" [showMainButton]="false"></app-fab-menu>

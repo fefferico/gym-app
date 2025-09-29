@@ -64,6 +64,7 @@ export class FabMenuComponent implements OnInit, OnDestroy {
   @Output() actionClicked = new EventEmitter<string>(); // <-- NEW: Generic event emitter
   @Input() scrollToBottomDisabled: boolean = false;
   @Input() scrollToTopDisabled: boolean = false;
+  @Input() showMainButton: boolean = true;
   @Input() customBottomPositioning: number | undefined = undefined;
 
   // --- Component State (Unchanged) ---

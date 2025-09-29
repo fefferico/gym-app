@@ -26,8 +26,9 @@ import { TrainingProgramService } from '../../../core/services/training-program.
 import { ProgramDayInfo, TrainingProgram } from '../../../core/models/training-program.model';
 import { MenuMode } from '../../../core/models/app-settings.model';
 import { PerformanceComparisonModalComponent } from './performance-comparison-modal/performance-comparison-modal.component';
+import { FabAction, FabMenuComponent } from '../../../shared/components/fab-menu/fab-menu.component';
 
-interface DisplayLoggedExercise extends LoggedWorkoutExercise {
+export interface DisplayLoggedExercise extends LoggedWorkoutExercise {
   baseExercise?: Exercise | null;
   isExpanded?: boolean;
   iconName?: string;
@@ -80,7 +81,7 @@ interface TargetComparisonData {
   selector: 'app-workout-log-detail',
   standalone: true,
   imports: [CommonModule, RouterLink, DatePipe, TitleCasePipe, ModalComponent, ExerciseDetailComponent,
-    IsWeightedPipe, ActionMenuComponent, PressDirective, IconComponent, TooltipDirective, WeightUnitPipe, PerformanceComparisonModalComponent],
+    IsWeightedPipe, ActionMenuComponent, PressDirective, IconComponent, TooltipDirective, WeightUnitPipe, PerformanceComparisonModalComponent, FabMenuComponent],
   templateUrl: './workout-log-detail.html',
   providers: [DecimalPipe]
 })
@@ -602,12 +603,20 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
   isPerformanceComparisonModalOpen = signal(false);
   selectedExerciseForComparison = signal<DisplayLoggedExercise | null>(null);
 
-  openPerformanceComparisonModal(exercise: DisplayLoggedExercise, event?: Event): void {
-    event?.stopPropagation(); // Prevents the accordion from toggling
-    this.selectedExerciseForComparison.set(exercise);
+  /**
+   * Opens the performance comparison modal.
+   * If an exercise is provided, it compares that single exercise.
+   * If no exercise is provided, it compares the entire routine.
+   */
+  openPerformanceComparisonModal(exercise?: DisplayLoggedExercise, event?: Event): void {
+    event?.stopPropagation(); // Prevents the accordion from toggling when clicking the icon
+
+    // Set the exercise signal. It will be the specific exercise or null for a routine comparison.
+    this.selectedExerciseForComparison.set(exercise ?? null);
+
+    // Open the modal
     this.isPerformanceComparisonModalOpen.set(true);
   }
-
 
   goToPreviousLogDetail(logId: string | undefined): void {
     if (!logId) return;

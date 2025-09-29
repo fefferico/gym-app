@@ -1,4 +1,4 @@
-import { Component, Input, inject, OnInit, signal, Output, EventEmitter, effect } from '@angular/core';
+import { Component, Input, inject, signal, Output, EventEmitter, effect, computed } from '@angular/core';
 import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
 import { map } from 'rxjs/operators';
 import { LoggedSet, WorkoutLog } from '../../../../core/models/workout-log.model';
@@ -6,19 +6,13 @@ import { IconComponent } from '../../../../shared/components/icon/icon.component
 import { TrackingService } from '../../../../core/services/tracking.service';
 import { UnitsService } from '../../../../core/services/units.service';
 import { WeightUnitPipe } from '../../../../shared/pipes/weight-unit-pipe';
+import { DisplayLoggedExercise } from '../workout-log-detail';
 
-// Interfaces remain the same
-interface DisplayLoggedExercise {
-    exerciseId: string;
-    exerciseName: string;
-    sets: LoggedSet[];
-}
-
+// Interfaces for data structure
 interface PerformanceSummary {
     setsCount: number;
     totalReps: number;
     totalVolume: number;
-    avgWeightPerRep: number;
     maxWeight: number;
     totalDuration: number;
     totalDistance: number;
@@ -47,12 +41,23 @@ interface ComparisonData {
     comparison: PerformanceComparison;
 }
 
-// New interface for the table structure
 interface ComparisonTableRow {
     setNumber: number;
     todaySet: LoggedSet | null;
     previousSet: LoggedSet | null;
 }
+
+// New interface for the routine comparison table
+interface ExerciseComparisonSummary {
+    exerciseId: string;
+    exerciseName: string;
+    currentSummary: PerformanceSummary;
+    previousSummary: PerformanceSummary;
+    comparison: PerformanceComparison;
+    showWeight: boolean;
+    showCardio: boolean;
+}
+
 
 @Component({
     selector: 'app-performance-comparison-modal',
@@ -61,14 +66,14 @@ interface ComparisonTableRow {
     templateUrl: './performance-comparison-modal.component.html',
     styleUrl: './performance-comparison-modal.component.scss'
 })
-export class PerformanceComparisonModalComponent { // REMOVED OnInit
+export class PerformanceComparisonModalComponent {
     private trackingService = inject(TrackingService);
     protected unitService = inject(UnitsService);
 
-    // --- INPUTS ARE NOW BRIDGED TO INTERNAL SIGNALS ---
+    // --- INPUTS ---
     public readonly exerciseSignal = signal<DisplayLoggedExercise | undefined>(undefined);
-    @Input({ required: true })
-    set exercise(value: DisplayLoggedExercise) {
+    @Input() // No longer required, absence triggers routine comparison
+    set exercise(value: DisplayLoggedExercise | undefined) {
         this.exerciseSignal.set(value);
     }
 
@@ -80,53 +85,88 @@ export class PerformanceComparisonModalComponent { // REMOVED OnInit
 
     @Output() logSelect = new EventEmitter<string>();
 
+    // --- STATE MANAGEMENT SIGNALS ---
+    readonly comparisonMode = computed(() => this.exerciseSignal() ? 'exercise' : 'routine');
+
+    // For single exercise comparison
+    sameRoutineLogs = signal<WorkoutLog[]>([]);
+    otherRoutineLogs = signal<WorkoutLog[]>([]);
+
+    // For routine comparison
     allHistoricalLogs = signal<WorkoutLog[]>([]);
+
     comparisonData = signal<ComparisonData | null>(null);
     selectedLogId: string | null = null;
 
     showWeightMetrics = signal<boolean>(false);
     showCardioMetrics = signal<boolean>(false);
-    comparisonTableRows = signal<ComparisonTableRow[]>([]);
+    
+    // Data for tables
+    comparisonTableRows = signal<ComparisonTableRow[]>([]); // For exercise mode
+    exerciseComparisonRows = signal<ExerciseComparisonSummary[]>([]); // For routine mode
 
     constructor() {
-        // --- THIS EFFECT IS THE CORE OF THE FIX ---
-        // It automatically runs when the component is created AND
-        // every time the `exerciseSignal` or `currentLogSignal` changes.
         effect(() => {
-            const currentExercise = this.exerciseSignal();
             const currentLog = this.currentLogSignal();
-
-            // Guard against running before inputs are ready
-            if (!currentExercise || !currentLog) {
+            if (!currentLog) {
                 this.comparisonData.set(null);
                 return;
             }
 
-            // If the log has no routine, we can't compare.
-            if (!currentLog.routineId) {
-                this.comparisonData.set(null);
-                return;
+            if (this.comparisonMode() === 'exercise') {
+                this.initializeExerciseComparison();
+            } else {
+                this.initializeRoutineComparison();
             }
-
-            // This logic is now reactive and will re-fetch and re-calculate
-            // whenever the user clicks a new exercise in the parent component.
-            this.trackingService.getLogsForRoutine(currentLog.routineId).pipe(
-                map(logs => {
-                    if (logs.length <= 1) {
-                        this.allHistoricalLogs.set([]);
-                        return null;
-                    }
-                    const historical = logs.filter(log => log.id !== currentLog.id).sort((a, b) => b.startTime - a.startTime);
-                    this.allHistoricalLogs.set(historical);
-                    const defaultPreviousLog = historical[0] ?? null;
-                    this.selectedLogId = defaultPreviousLog?.id ?? null;
-                    return defaultPreviousLog;
-                })
-            ).subscribe(previousLog => {
-                this.generateComparisonData(previousLog);
-            });
         });
     }
+    
+    // --- INITIALIZATION LOGIC ---
+
+    private initializeExerciseComparison(): void {
+        const currentExercise = this.exerciseSignal();
+        const currentLog = this.currentLogSignal();
+        if (!currentExercise || !currentLog) return;
+
+        // FAKE SERVICE CALL: In a real app, this would fetch all logs containing this exercise
+        // this.trackingService.getAllLogsWithExercise(currentExercise.exerciseId).subscribe(logs => { ... });
+        // For demonstration, we'll simulate this by reusing the routine logs
+        this.trackingService.getLogsForRoutine(currentLog.routineId!).pipe(
+             map(logs => logs.filter(log => log.id !== currentLog.id).sort((a, b) => b.startTime - a.startTime))
+        ).subscribe(historicalLogs => {
+            // Logic to split logs into same routine vs. others
+            const sameRoutine = historicalLogs.filter(log => log.routineId === currentLog.routineId);
+            const otherRoutines = historicalLogs.filter(log => log.routineId !== currentLog.routineId); // This would be populated by a real service call
+
+            this.sameRoutineLogs.set(sameRoutine);
+            this.otherRoutineLogs.set(otherRoutines);
+            
+            const allLogs = [...sameRoutine, ...otherRoutines];
+            this.allHistoricalLogs.set(allLogs);
+
+            const defaultPreviousLog = allLogs[0] ?? null;
+            this.selectedLogId = defaultPreviousLog?.id ?? null;
+            this.generateComparisonData(defaultPreviousLog);
+        });
+    }
+
+    private initializeRoutineComparison(): void {
+        const currentLog = this.currentLogSignal();
+        if (!currentLog?.routineId) {
+            this.comparisonData.set(null);
+            return;
+        }
+
+        this.trackingService.getLogsForRoutine(currentLog.routineId).pipe(
+            map(logs => logs.filter(log => log.id !== currentLog.id).sort((a, b) => b.startTime - a.startTime))
+        ).subscribe(historicalLogs => {
+            this.allHistoricalLogs.set(historicalLogs);
+            const defaultPreviousLog = historicalLogs[0] ?? null;
+            this.selectedLogId = defaultPreviousLog?.id ?? null;
+            this.generateComparisonData(defaultPreviousLog);
+        });
+    }
+
 
     onComparisonLogChange(event: Event): void {
         const selectElement = event.target as HTMLSelectElement;
@@ -137,6 +177,15 @@ export class PerformanceComparisonModalComponent { // REMOVED OnInit
     }
 
     private generateComparisonData(previousLog: WorkoutLog | null): void {
+        if (this.comparisonMode() === 'exercise') {
+            this.generateExerciseComparison(previousLog);
+        } else {
+            this.generateRoutineComparison(previousLog);
+        }
+    }
+
+    // --- DATA GENERATION FOR EXERCISE MODE ---
+    private generateExerciseComparison(previousLog: WorkoutLog | null): void {
         const currentLog = this.currentLogSignal();
         const currentExercise = this.exerciseSignal();
         if (!currentLog || !currentExercise) return;
@@ -144,51 +193,93 @@ export class PerformanceComparisonModalComponent { // REMOVED OnInit
         const previousExercise = previousLog?.exercises.find(ex => ex.exerciseId === currentExercise.exerciseId);
         const currentSets = currentExercise.sets || [];
         const previousSets = previousExercise?.sets || [];
-        const currentSummary = this.calculateSummary(currentSets);
-        const previousSummary = this.calculateSummary(previousSets);
+        
+        const currentSummary = this.calculateSummaryForSets(currentSets);
+        const previousSummary = this.calculateSummaryForSets(previousSets);
         const comparison = this.calculateComparison(currentSummary, previousSummary);
 
         this.showWeightMetrics.set(currentSummary.maxWeight > 0 || previousSummary.maxWeight > 0);
-        this.showCardioMetrics.set((currentSummary.totalDuration > 0 || currentSummary.totalDistance > 0) || (previousSummary.totalDuration > 0 || previousSummary.totalDistance > 0));
+        this.showCardioMetrics.set(currentSummary.totalDuration > 0 || currentSummary.totalDistance > 0);
 
-        this.comparisonData.set({
-            currentLog: currentLog,
-            previousLog: previousLog,
-            currentSummary,
-            previousSummary,
-            comparison
-        });
+        this.comparisonData.set({ currentLog, previousLog, currentSummary, previousSummary, comparison });
 
         const maxSets = Math.max(currentSets.length, previousSets.length);
-        const rows: ComparisonTableRow[] = [];
-        for (let i = 0; i < maxSets; i++) {
-            rows.push({
-                setNumber: i + 1,
-                todaySet: currentSets[i] || null,
-                previousSet: previousSets[i] || null,
-            });
-        }
+        const rows: ComparisonTableRow[] = Array.from({ length: maxSets }, (_, i) => ({
+            setNumber: i + 1,
+            todaySet: currentSets[i] || null,
+            previousSet: previousSets[i] || null,
+        }));
         this.comparisonTableRows.set(rows);
     }
 
-    private calculateSummary(sets: LoggedSet[]): PerformanceSummary {
+    // --- DATA GENERATION FOR ROUTINE MODE ---
+    private generateRoutineComparison(previousLog: WorkoutLog | null): void {
+        const currentLog = this.currentLogSignal();
+        if (!currentLog) return;
+
+        const currentSummary = this.calculateSummaryForRoutine(currentLog.exercises);
+        const previousSummary = this.calculateSummaryForRoutine(previousLog?.exercises || []);
+        const comparison = this.calculateComparison(currentSummary, previousSummary);
+        
+        this.showWeightMetrics.set(currentSummary.maxWeight > 0 || previousSummary.maxWeight > 0);
+        this.showCardioMetrics.set(currentSummary.totalDuration > 0 || currentSummary.totalDistance > 0);
+
+        this.comparisonData.set({ currentLog, previousLog, currentSummary, previousSummary, comparison });
+        
+        // Generate per-exercise breakdown
+        const exerciseRows: ExerciseComparisonSummary[] = [];
+        const allExerciseIds = new Set([...currentLog.exercises.map(e => e.exerciseId), ...previousLog?.exercises.map(e => e.exerciseId) ?? []]);
+
+        allExerciseIds.forEach(exerciseId => {
+            const currentEx = currentLog.exercises.find(e => e.exerciseId === exerciseId);
+            const prevEx = previousLog?.exercises.find(e => e.exerciseId === exerciseId);
+            
+            const currentExSummary = this.calculateSummaryForSets(currentEx?.sets || []);
+            const prevExSummary = this.calculateSummaryForSets(prevEx?.sets || []);
+            const exComparison = this.calculateComparison(currentExSummary, prevExSummary);
+            
+            exerciseRows.push({
+                exerciseId,
+                exerciseName: currentEx?.exerciseName || prevEx?.exerciseName || 'Unknown Exercise',
+                currentSummary: currentExSummary,
+                previousSummary: prevExSummary,
+                comparison: exComparison,
+                showWeight: currentExSummary.maxWeight > 0 || prevExSummary.maxWeight > 0,
+                showCardio: currentExSummary.totalDuration > 0 || prevExSummary.totalDuration > 0 || currentExSummary.totalDistance > 0 || prevExSummary.totalDistance > 0
+            });
+        });
+
+        this.exerciseComparisonRows.set(exerciseRows);
+    }
+
+    // --- CALCULATION HELPERS ---
+
+    private calculateSummaryForSets(sets: LoggedSet[]): PerformanceSummary {
         if (!sets || sets.length === 0) {
-            return { setsCount: 0, totalReps: 0, totalVolume: 0, avgWeightPerRep: 0, maxWeight: 0, totalDuration: 0, totalDistance: 0 };
+            return { setsCount: 0, totalReps: 0, totalVolume: 0, maxWeight: 0, totalDuration: 0, totalDistance: 0 };
         }
         const totalReps = sets.reduce((sum, set) => sum + (set.repsAchieved || 0), 0);
         const totalVolume = sets.reduce((sum, set) => sum + ((set.repsAchieved || 0) * (set.weightUsed || 0)), 0);
-        const avgWeightPerRep = totalReps > 0 ? totalVolume / totalReps : 0;
         const maxWeight = Math.max(0, ...sets.map(set => set.weightUsed || 0));
         const totalDuration = sets.reduce((sum, set) => sum + (set.durationPerformed || 0), 0);
-        // CORRECTED to use distanceAchieved
         const totalDistance = sets.reduce((sum, set) => sum + (set.distanceAchieved || 0), 0);
-        return { setsCount: sets.length, totalReps, totalVolume, avgWeightPerRep, maxWeight, totalDuration, totalDistance };
+        return { setsCount: sets.length, totalReps, totalVolume, maxWeight, totalDuration, totalDistance };
+    }
+
+    private calculateSummaryForRoutine(exercises: DisplayLoggedExercise[]): PerformanceSummary {
+        const summaries = exercises.map(ex => this.calculateSummaryForSets(ex.sets));
+        return {
+            setsCount: summaries.reduce((sum, s) => sum + s.setsCount, 0),
+            totalReps: summaries.reduce((sum, s) => sum + s.totalReps, 0),
+            totalVolume: summaries.reduce((sum, s) => sum + s.totalVolume, 0),
+            maxWeight: Math.max(0, ...summaries.map(s => s.maxWeight)),
+            totalDuration: summaries.reduce((sum, s) => sum + s.totalDuration, 0),
+            totalDistance: summaries.reduce((sum, s) => sum + s.totalDistance, 0)
+        };
     }
 
     private calculateComparison(current: PerformanceSummary, previous: PerformanceSummary): PerformanceComparison {
-        // This helper function safely calculates percentage change
         const calcChange = (c: number, p: number) => (p > 0 ? ((c - p) / p) * 100 : c > 0 ? 100 : 0);
-
         return {
             setsDiff: current.setsCount - previous.setsCount,
             repsDiff: current.totalReps - previous.totalReps,
@@ -196,7 +287,6 @@ export class PerformanceComparisonModalComponent { // REMOVED OnInit
             maxWeightDiff: current.maxWeight - previous.maxWeight,
             durationDiff: current.totalDuration - previous.totalDuration,
             distanceDiff: current.totalDistance - previous.totalDistance,
-            // --- Calculate and include all percentage changes ---
             setsPercentChange: calcChange(current.setsCount, previous.setsCount),
             repsPercentChange: calcChange(current.totalReps, previous.totalReps),
             volumePercentChange: calcChange(current.totalVolume, previous.totalVolume),
@@ -205,6 +295,8 @@ export class PerformanceComparisonModalComponent { // REMOVED OnInit
             distancePercentChange: calcChange(current.totalDistance, previous.totalDistance),
         };
     }
+
+    // --- TEMPLATE HELPERS ---
 
     protected formatDuration(totalSeconds: number): string {
         if (isNaN(totalSeconds) || totalSeconds < 0) totalSeconds = 0;
