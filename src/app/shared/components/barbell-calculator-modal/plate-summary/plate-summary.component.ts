@@ -12,7 +12,7 @@ import { PlateLoadout } from '../../../../core/services/barbell-calculator.servi
       <div *ngFor="let item of sortedLoadout()" class="plate-group">
         <div class="summary-plate"
              [style.background-color]="item.plate.color"
-             [style.border-color]="item.plate.color === '#FAFAFA' ? '#ccc' : item.plate.color">
+             [style.border-color]="item.plate.color === '#FAFAFA' || !item.plate.color ? '#ccc' : item.plate.color">
           <span [style.color]="getTextColor(item.plate.color)">
             {{ item.plate.weight }}
           </span>
@@ -28,6 +28,7 @@ import { PlateLoadout } from '../../../../core/services/barbell-calculator.servi
     :host {
       --modal-bg: #1e1e1e;
       --border-color: #333333;
+      --border-color-white: white;
     }
     .summary-container {
       display: flex;
@@ -44,21 +45,15 @@ import { PlateLoadout } from '../../../../core/services/barbell-calculator.servi
       justify-content: center;
     }
     .summary-plate {
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      border: 2px solid;
+      width: 48px;
+      height: 48px;
+      border-radius: 80%;
+      border: 2px solid var(--border-color);
       position: relative; 
       flex-shrink: 0;
       display: flex;
-      
-      /* --- MODIFICATION START --- */
       align-items: flex-start; /* Aligns text to the top */
-      padding-top: 0px;       /* Pushes the text down from the top edge */
-      /* --- MODIFICATION END --- */
-
       justify-content: center; /* Keeps text centered horizontally */
-      
       font-size: 12px;
       font-weight: bold;
       box-sizing: border-box; /* Ensures padding is included in the height */
@@ -73,7 +68,7 @@ import { PlateLoadout } from '../../../../core/services/barbell-calculator.servi
       height: 12px;
       background-color: var(--modal-bg);
       border-radius: 50%;
-      border: 1px solid var(--border-color);
+      border: 2px solid var(--border-color-white);
     }
     .plate-quantity-badge {
       position: absolute;
@@ -105,7 +100,7 @@ export class PlateSummaryComponent {
   });
 
   getTextColor(plateColor: string | undefined): string {
-    if (!plateColor) return '#111111';
+    if (!plateColor) return '#FFFFFF';
     const darkColors = ['#D32F2F', '#FF0000', '#1976D2', '#424242', '#111111', '#000000FF', '#0000FF'];
     return darkColors.includes(plateColor.toUpperCase()) ? '#FFFFFF' : '#111111';
   }
