@@ -18,9 +18,11 @@
         <div class="modal-body custom-scrollbar">
 
             <div class="header">
-                <div class="mode-toggle">
-                    <button [class.active]="mode() === 'calculate'" (click)="setMode('calculate')">Calculate</button>
-                    <button [class.active]="mode() === 'reverse'" (click)="setMode('reverse')">Reverse</button>
+                <div class="flex justify-center w-full">
+                    <div class="mode-toggle">
+                        <button [class.active]="mode() === 'calculate'" (click)="setMode('calculate')">Calculate</button>
+                        <button [class.active]="mode() === 'reverse'" (click)="setMode('reverse')">Reverse</button>
+                    </div>
                 </div>
                 <button class="close-btn" (click)="onClose()">&times;</button>
             </div>

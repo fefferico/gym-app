@@ -154,7 +154,8 @@
             <ng-template #tooltipTemplate let-model="model">
               <div class="p-2 bg-gray-700 text-white rounded shadow-lg text-xs">
                 <div><strong>{{ model.name | date:'mediumDate' }}</strong></div>
-                <div>{{ model.series }}: {{ model.value | number:'1.0-2' }} {{this.unitService.getWeightUnitSuffix()}}</div>
+                <div>{{ model.series }}: {{ model.value | number:'1.0-2' }} {{this.unitService.getWeightUnitSuffix()}}
+                </div>
                 <div *ngIf="model.extra && model.extra.reps">Reps: {{ model.extra.reps }}</div>
               </div>
             </ng-template>
@@ -193,3 +194,5 @@
     </div>
   </ng-template>
 </ng-template>
+
+<app-muscle-map [muscles]="muscleDataForMap"></app-muscle-map>

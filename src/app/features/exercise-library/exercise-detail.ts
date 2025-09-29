@@ -16,11 +16,13 @@ import { ActionMenuItem } from '../../core/models/action-menu.model';
 import { MenuMode } from '../../core/models/app-settings.model';
 import { IconComponent } from '../../shared/components/icon/icon.component';
 import { UnitsService } from '../../core/services/units.service';
+import { MuscleHighlight } from '../../core/services/muscle-map.service';
+import { MuscleMapComponent } from '../../shared/components/muscle-map/muscle-map.component';
 
 @Component({
   selector: 'app-exercise-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, DatePipe, NgxChartsModule, ActionMenuComponent, IconComponent], // Added DatePipe, NgxChartsModule
+  imports: [CommonModule, RouterLink, DatePipe, NgxChartsModule, ActionMenuComponent, IconComponent, MuscleMapComponent], // Added DatePipe, NgxChartsModule
   templateUrl: './exercise-detail.html',
   styleUrl: './exercise-detail.scss',
 })
@@ -34,6 +36,8 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
 
   // Using a signal for the exercise data
   exercise = signal<Exercise | undefined | null>(undefined);
+  muscleDataForMap: MuscleHighlight = { primary: [], secondary: [] };
+
   // For image carousel
   currentImageIndex = signal<number>(0);
   exercisePBs = signal<PersonalBestSet[]>([]); // New signal for PBs
@@ -192,6 +196,15 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
       //      // Sort PBs (existing logic)
       const sortedPBs = pbs.sort((a, b) => /* your sorting logic */(b.weightUsed ?? 0) - (a.weightUsed ?? 0) || a.pbType.localeCompare(b.pbType));
       this.exercisePBs.set(sortedPBs);
+
+      const exercise = this.exercise();
+      if (exercise) {
+        this.muscleDataForMap = {
+          primary: [exercise.primaryMuscleGroup],
+          secondary: exercise.muscleGroups.filter(m => m !== exercise.primaryMuscleGroup)
+        };
+      }
+
       //      // Prepare data for progress chart
       if (progress && progress.length > 0) {
         this.exerciseProgressChartData.set([

@@ -1,4 +1,5 @@
 :host {
+  --app-primary: #e0460d;
   --modal-bg: #1e1e1e;
   --text-primary: #ffffff;
   --text-secondary: #a0a0a0;
@@ -15,7 +16,8 @@
   background-color: rgba(0, 0, 0, 0.7);
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
+  padding-top: 20px;
   backdrop-filter: blur(10px);
   z-index: 1050;
 }
@@ -69,7 +71,7 @@
     transition: all 0.2s ease-in-out;
 
     &.active {
-      background-color: var(--accent-red);
+      background-color: var(--app-primary);
       color: var(--text-primary);
     }
   }
@@ -565,7 +567,7 @@
   }
 
   input:checked+.slider {
-    background-color: #2196F3; // Or your app's primary color
+    background-color: var(--app-primary); // Or your app's primary color
   }
 
   input:checked+.slider:before {
@@ -669,7 +671,7 @@
     &.active {
       color: #ffffff;
       background-color: #333336;
-      border-bottom-color: #4c82ff; // Highlight color for the active tab
+      border-bottom-color: var(--app-primary); // Highlight color for the active tab
     }
   }
 }
