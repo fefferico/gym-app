@@ -2,16 +2,18 @@
 export enum ProgressiveOverloadStrategy {
   WEIGHT = 'weight',
   REPS = 'reps',
+  DISTANCE = 'distance',
+  DURATION = 'duration',
 }
 
 export interface ProgressiveOverloadSettings {
   enabled: boolean;
-  strategy: ProgressiveOverloadStrategy | null;
+  strategies: ProgressiveOverloadStrategy[];
   weightIncrement: number | null;
   repsIncrement: number | null;
-  sessionsToIncrement: number | null;
   distanceIncrement: number | null;
   durationIncrement: number | null;
+  sessionsToIncrement: number | null;
 }
 
 import { Injectable, inject } from '@angular/core';
@@ -28,12 +30,12 @@ export class ProgressiveOverloadService {
 
   private defaultSettings: ProgressiveOverloadSettings = {
     enabled: false,
-    strategy: null,
+    strategies: [],
     weightIncrement: null,
     repsIncrement: null,
-    sessionsToIncrement: 1,
     distanceIncrement: null,
     durationIncrement: null,
+    sessionsToIncrement: 1,
   };
 
   private settingsSubject: BehaviorSubject<ProgressiveOverloadSettings>;
@@ -41,7 +43,15 @@ export class ProgressiveOverloadService {
 
   constructor() {
     const storedSettings = this.storageService.getItem<ProgressiveOverloadSettings>(this.SETTINGS_KEY);
-    this.settingsSubject = new BehaviorSubject<ProgressiveOverloadSettings>(storedSettings || this.defaultSettings);
+    // Ensure that if old settings are loaded, `strategies` is an array and new fields exist
+    const initialSettings = storedSettings ?
+      {
+        ...this.defaultSettings, // Start with defaults to ensure all fields are present
+        ...storedSettings,
+        strategies: storedSettings.strategies || [] // Ensure strategies is an array
+      } : this.defaultSettings;
+
+    this.settingsSubject = new BehaviorSubject<ProgressiveOverloadSettings>(initialSettings);
     this.settings$ = this.settingsSubject.asObservable();
   }
 
@@ -75,7 +85,14 @@ export class ProgressiveOverloadService {
    * @param newSettings The new settings object to apply.
    */
   replaceData(newSettings: ProgressiveOverloadSettings | null): void {
-    const settingsToSet = newSettings || this.defaultSettings;
+    // Ensure newSettings has all properties, using default values if missing
+    const settingsToSet: ProgressiveOverloadSettings = newSettings ?
+      {
+        ...this.defaultSettings,
+        ...newSettings,
+        strategies: newSettings.strategies || [] // Ensure strategies is an array on import
+      } : this.defaultSettings;
+
     this.storageService.setItem(this.SETTINGS_KEY, settingsToSet);
     this.settingsSubject.next(settingsToSet);
   }
@@ -96,17 +113,44 @@ export class ProgressiveOverloadService {
    * @param settings The progressive overload settings to apply.
    */
   applyOverloadToExercise(exercise: WorkoutExercise, settings: ProgressiveOverloadSettings): void {
-    if (!settings.enabled || !settings.strategy) return;
+    if (!settings.enabled || !settings.strategies || settings.strategies.length === 0) return;
 
     exercise.sets.forEach(set => {
       // Do not apply overload to warm-up sets
       if (set.type === 'warmup') return;
 
-      if (settings.strategy === ProgressiveOverloadStrategy.WEIGHT && settings.weightIncrement) {
-        set.targetWeight = (set.targetWeight ?? 0) + settings.weightIncrement;
-      } else if (settings.strategy === ProgressiveOverloadStrategy.REPS && settings.repsIncrement) {
-        set.targetReps = (set.targetReps ?? 0) + settings.repsIncrement;
-      }
+      // MODIFIED: Iterate through all selected strategies
+      settings.strategies.forEach(strategy => {
+        switch (strategy) {
+          case ProgressiveOverloadStrategy.WEIGHT:
+            if (settings.weightIncrement) {
+              set.targetWeight = (set.targetWeight ?? 0) + settings.weightIncrement;
+            }
+            break;
+          case ProgressiveOverloadStrategy.REPS:
+            if (settings.repsIncrement) {
+              set.targetReps = (set.targetReps ?? 0) + settings.repsIncrement;
+            }
+            break;
+          // +++ NEW: Apply distance increment
+          case ProgressiveOverloadStrategy.DISTANCE:
+            if (settings.distanceIncrement) {
+              set.targetDistance = (set.targetDistance ?? 0) + settings.distanceIncrement;
+              set.targetDistanceMin = (set.targetDistanceMin ?? set.targetDistance ?? 0) + settings.distanceIncrement;
+            }
+            break;
+          // +++ NEW: Apply duration increment
+          case ProgressiveOverloadStrategy.DURATION:
+            if (settings.durationIncrement) {
+              // Assuming duration is stored in `set.durationSeconds`
+              set.targetDuration = (set.targetDuration ?? 0) + settings.durationIncrement;
+              set.targetDurationMin = (set.targetDurationMin ?? set.targetDuration ?? 0) + settings.durationIncrement;
+            }
+            break;
+          default:
+            break;
+        }
+      });
     });
   }
 }

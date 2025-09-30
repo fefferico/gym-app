@@ -410,7 +410,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     if (!currentRoutine) return;
 
     const poSettings = this.progressiveOverloadService.getSettings();
-    const isPoEnabled = poSettings.enabled && poSettings.strategy && poSettings.sessionsToIncrement && poSettings.sessionsToIncrement > 0;
+    const isPoEnabled = poSettings.enabled && poSettings.strategies && poSettings.sessionsToIncrement && poSettings.sessionsToIncrement > 0;
 
     // Fetch all logs for this routine only if PO is enabled, to avoid unnecessary calls
     const allLogsForRoutine = isPoEnabled

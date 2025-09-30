@@ -251,6 +251,8 @@ export class WorkoutService {
 
   /**
    * Suggests parameters for the next set based on last performance and user's progressive overload settings.
+   * This version handles multiple, simultaneous progression strategies (weight, reps, distance, duration).
+   *
    * @param lastPerformedSet The actual performance of the corresponding set last time. Can be null if no history.
    * @param plannedSet The originally planned parameters for the current set (from the routine).
    * @returns Updated ExerciseSetParams with suggested values for the current session.
@@ -266,66 +268,70 @@ export class WorkoutService {
     const poSettings = this.progressiveOverloadService.getSettings();
 
     // --- GUARD CLAUSES ---
-    // 1. If the progressive overload feature is disabled by the user, do nothing.
-    if (!poSettings.enabled) {
-      console.log('Progressive Overload disabled. Using planned set.');
+    // 1. If PO is disabled or no strategies are selected, do nothing.
+    if (!poSettings.enabled || !poSettings.strategies || poSettings.strategies.length === 0) {
+      // console.log('Progressive Overload disabled or no strategy set. Using planned set.');
       return suggestedParams;
     }
 
     // 2. If there's no history for this set, we can't make a suggestion.
     if (!lastPerformedSet) {
-      console.log('No last performance found. Using planned set.');
+      // console.log('No last performance found. Using planned set.');
       return suggestedParams;
     }
 
-    // Note: The logic for 'sessionsToIncrement' should be handled by the TrackingService 
-    // before this function is even called. This function assumes that if lastPerformedSet is provided,
-    // it's the correct one to base progression on.
-
-    const lastWeight = lastPerformedSet.weightUsed;
-    const lastReps = lastPerformedSet.repsAchieved;
-    const targetRepsInPlan = plannedSet.targetReps || plannedSet.targetRepsMin || 0;
-
     // --- MAIN PROGRESSION LOGIC ---
-    // Check if the user successfully completed the set last time.
-    // Definition of success: meeting or exceeding the planned reps for that set.
-    const wasSuccessful = (targetRepsInPlan !== undefined && lastReps >= targetRepsInPlan);
+    // Definition of success: meeting or exceeding any of the planned targets for that set.
+    // Note: This assumes cardio duration is logged in 'repsAchieved' and distance in 'weightUsed'.
+    const wasSuccessful = (
+      // Reps check
+      (plannedSet.targetReps && lastPerformedSet.repsAchieved >= plannedSet.targetReps) ||
+      (plannedSet.targetRepsMin && lastPerformedSet.repsAchieved >= plannedSet.targetRepsMin) ||
 
-    switch (poSettings.strategy) {
-      // === STRATEGY 1: INCREASE WEIGHT ===
-      case 'weight':
-        if (wasSuccessful && lastWeight !== undefined && lastWeight !== null && poSettings.weightIncrement) {
-          // SUCCESS: Increment the weight, reset reps to the planned target.
-          suggestedParams.targetWeight = parseFloat((lastWeight + poSettings.weightIncrement).toFixed(2));
-          suggestedParams.targetReps = targetRepsInPlan; // Reset reps to target
-          console.log(`PO Suggestion (Weight): Success last time. Increasing weight to ${suggestedParams.targetWeight}`);
-        } else if (lastWeight !== undefined && lastWeight !== null) {
-          // FAILURE: Stick to the same weight, try to hit the target reps again.
-          suggestedParams.targetWeight = lastWeight;
-          suggestedParams.targetReps = targetRepsInPlan;
-          console.log(`PO Suggestion (Weight): Failure last time. Sticking to weight ${suggestedParams.targetWeight}`);
+      // Duration check (uses repsAchieved from log)
+      (plannedSet.targetDuration && lastPerformedSet.repsAchieved >= plannedSet.targetDuration) ||
+      (plannedSet.targetDurationMin && lastPerformedSet.repsAchieved >= plannedSet.targetDurationMin) ||
+
+      // Distance check (uses weightUsed from log)
+      (plannedSet.targetDistance && lastPerformedSet.weightUsed && lastPerformedSet.weightUsed >= plannedSet.targetDistance) ||
+      (plannedSet.targetDistanceMin && lastPerformedSet.weightUsed && lastPerformedSet.weightUsed >= plannedSet.targetDistanceMin)
+    );
+
+    if (wasSuccessful) {
+      console.log(`PO Suggestion: Success last time. Applying progression for strategies: [${poSettings.strategies.join(', ')}]`);
+
+      // Apply increments based on all active strategies
+      poSettings.strategies.forEach(strategy => {
+        switch (strategy) {
+          case 'weight':
+            if (poSettings.weightIncrement && lastPerformedSet.weightUsed != null) {
+              suggestedParams.targetWeight = parseFloat((lastPerformedSet.weightUsed + poSettings.weightIncrement).toFixed(2));
+            }
+            break;
+          case 'reps':
+            if (poSettings.repsIncrement && lastPerformedSet.repsAchieved != null) {
+              suggestedParams.targetReps = (suggestedParams.targetReps || lastPerformedSet.repsAchieved) + poSettings.repsIncrement;
+            }
+            break;
+          case 'duration':
+            if (poSettings.durationIncrement && lastPerformedSet.repsAchieved != null) {
+              suggestedParams.targetDuration = (suggestedParams.targetDuration || lastPerformedSet.repsAchieved) + poSettings.durationIncrement;
+            }
+            break;
+          case 'distance':
+            if (poSettings.distanceIncrement && lastPerformedSet.weightUsed != null) {
+              suggestedParams.targetDistance = parseFloat(((suggestedParams.targetDistance || lastPerformedSet.weightUsed) + poSettings.distanceIncrement).toFixed(2));
+            }
+            break;
         }
-        break;
-
-      // === STRATEGY 2: INCREASE REPS ===
-      case 'reps':
-        if (wasSuccessful && poSettings.repsIncrement) {
-          // SUCCESS: Increment the reps, keep the same weight as last time.
-          suggestedParams.targetReps = lastReps + poSettings.repsIncrement;
-          suggestedParams.targetWeight = lastWeight ?? plannedSet.targetWeight; // Use last weight, fall back to planned
-          console.log(`PO Suggestion (Reps): Success last time. Increasing reps to ${suggestedParams.targetReps}`);
-        } else {
-          // FAILURE: Keep the same weight, try to hit the target reps again.
-          suggestedParams.targetReps = targetRepsInPlan;
-          suggestedParams.targetWeight = lastWeight ?? plannedSet.targetWeight;
-          console.log(`PO Suggestion (Reps): Failure last time. Sticking to ${suggestedParams.targetWeight} reps`);
-        }
-        break;
-
-      // === FALLBACK: NO STRATEGY SELECTED ===
-      default:
-        console.log('Progressive Overload enabled, but no strategy selected. Using planned set.');
-        return suggestedParams;
+      });
+    } else {
+      // FAILURE: Stick to the same parameters they used last time, but aim for the planned targets again.
+      console.log(`PO Suggestion: Failure last time. Sticking to previous attempt's parameters.`);
+      suggestedParams.targetWeight = plannedSet.targetWeight ?? plannedSet.targetWeightMin;
+      suggestedParams.targetReps = plannedSet.targetReps ?? plannedSet.targetRepsMin;
+      suggestedParams.targetDuration = plannedSet.targetDuration ?? plannedSet.targetDurationMin;
+      suggestedParams.targetDistance = plannedSet.targetDistance ?? plannedSet.targetDistanceMin;
     }
 
     // Ensure the original planned set ID is preserved

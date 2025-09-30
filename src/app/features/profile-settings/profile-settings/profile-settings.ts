@@ -2,7 +2,7 @@
 import { ChangeDetectorRef, Component, inject, OnDestroy, OnInit, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { format } from 'date-fns';
 import { debounceTime, filter, Subscription, tap } from 'rxjs';
 
@@ -128,7 +128,9 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
   ];
   protected readonly progressiveOverloadStrategies = [
     { label: 'Increase Weight', value: ProgressiveOverloadStrategy.WEIGHT },
-    { label: 'Increase Reps', value: ProgressiveOverloadStrategy.REPS }
+    { label: 'Increase Reps', value: ProgressiveOverloadStrategy.REPS },
+    { label: 'Increase Distance', value: ProgressiveOverloadStrategy.DISTANCE },
+    { label: 'Increase Duration', value: ProgressiveOverloadStrategy.DURATION }
   ];
 
   private readonly BACKUP_VERSION = 6;
@@ -169,9 +171,11 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
 
     this.progressiveOverloadForm = this.fb.group({
       enabled: [false],
-      strategy: [null as ProgressiveOverloadStrategy | null],
+      strategies: this.fb.array([]),
       weightIncrement: [null as number | null, [Validators.min(0.1)]],
       repsIncrement: [null as number | null, [Validators.min(1), Validators.pattern("^[0-9]*$")]],
+      distanceIncrement: [null as number | null, [Validators.min(0.01)]],
+      durationIncrement: [null as number | null, [Validators.min(1), Validators.pattern("^[0-9]*$")]],
       sessionsToIncrement: [1, [Validators.required, Validators.min(1)]]
     });
   }
@@ -223,7 +227,7 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
     //   `You've changed the weight unit from ${oldUnit.toUpperCase()} to ${unit.toUpperCase()}. Would you like to convert all existing workout data (logs, routines, gym equipment) to the new unit?`
     // );
     // if (confirm && confirm.data) {
-      // await this.dataConversionService.convertAllWeightData(oldUnit, unit);
+    // await this.dataConversionService.convertAllWeightData(oldUnit, unit);
     // }
     await this.dataConversionService.convertAllWeightData(oldUnit, unit);
     this.unitsService.setWeightUnitPreference(unit);
@@ -244,7 +248,7 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
     this.unitsService.setMeasureUnitPreference(unit);
   }
 
-    async selectDistanceMeasureUnit(unit: DistanceMeasureUnit): Promise<void> {
+  async selectDistanceMeasureUnit(unit: DistanceMeasureUnit): Promise<void> {
     const oldUnit = this.unitsService.currentDistanceMeasureUnit();
     if (unit === oldUnit) return; // No change
 
@@ -391,49 +395,61 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
    * - Manages dynamic validators based on user selections.
    */
   listenForProgressiveOverloadChanges(): void {
-    this.progressiveOverloadForm.valueChanges.pipe(
-      debounceTime(700),
-      filter(() => this.progressiveOverloadForm.valid && this.progressiveOverloadForm.dirty),
-      tap(settings => {
-        this.progressiveOverloadService.saveSettings(settings as ProgressiveOverloadSettings);
-        this.progressiveOverloadForm.markAsPristine({ onlySelf: false });
-        this.toastService.info("Progressive Overload settings auto-saved", 1500);
-      })
-    ).subscribe();
+    this.subscriptions.add(
+      this.progressiveOverloadForm.valueChanges.pipe(
+        debounceTime(700),
+        filter(() => this.progressiveOverloadForm.valid && this.progressiveOverloadForm.dirty),
+        tap(settings => {
+          this.progressiveOverloadService.saveSettings(settings as ProgressiveOverloadSettings);
+          this.progressiveOverloadForm.markAsPristine({ onlySelf: false });
+          this.toastService.info("Progressive Overload settings auto-saved", 1500);
+        })
+      ).subscribe()
+    );
 
     const enabledControl = this.progressiveOverloadForm.get('enabled');
-    const strategyControl = this.progressiveOverloadForm.get('strategy');
-    const weightIncrementControl = this.progressiveOverloadForm.get('weightIncrement');
-    const repsIncrementControl = this.progressiveOverloadForm.get('repsIncrement');
 
-    enabledControl?.valueChanges.subscribe(enabled => {
-      if (enabled) {
-        strategyControl?.setValidators(Validators.required);
-      } else {
-        strategyControl?.clearValidators();
-        strategyControl?.setValue(null, { emitEvent: false });
-      }
-      strategyControl?.updateValueAndValidity();
-    });
+    const setupStrategyValidators = (strategies: ProgressiveOverloadStrategy[]) => {
+      const weightControl = this.progressiveOverloadForm.get('weightIncrement');
+      const repsControl = this.progressiveOverloadForm.get('repsIncrement');
+      const distanceControl = this.progressiveOverloadForm.get('distanceIncrement');
+      const durationControl = this.progressiveOverloadForm.get('durationIncrement');
 
-    strategyControl?.valueChanges.subscribe(strategy => {
-      if (strategy === ProgressiveOverloadStrategy.WEIGHT) {
-        weightIncrementControl?.setValidators([Validators.required, Validators.min(0.1)]);
-        repsIncrementControl?.clearValidators();
-        repsIncrementControl?.setValue(null, { emitEvent: false });
-      } else if (strategy === ProgressiveOverloadStrategy.REPS) {
-        repsIncrementControl?.setValidators([Validators.required, Validators.min(1), Validators.pattern("^[0-9]*$")]);
-        weightIncrementControl?.clearValidators();
-        weightIncrementControl?.setValue(null, { emitEvent: false });
-      } else {
-        weightIncrementControl?.clearValidators();
-        repsIncrementControl?.clearValidators();
-        weightIncrementControl?.setValue(null, { emitEvent: false });
-        repsIncrementControl?.setValue(null, { emitEvent: false });
-      }
-      weightIncrementControl?.updateValueAndValidity();
-      repsIncrementControl?.updateValueAndValidity();
-    });
+      // Helper function to set or clear validators
+      const toggleValidators = (control: any, condition: boolean, validators: any[]) => {
+        if (condition) {
+          control?.setValidators(validators);
+        } else {
+          control?.clearValidators();
+          control?.setValue(null, { emitEvent: false });
+        }
+        control?.updateValueAndValidity();
+      };
+
+      toggleValidators(weightControl, strategies.includes(ProgressiveOverloadStrategy.WEIGHT), [Validators.required, Validators.min(0.1)]);
+      toggleValidators(repsControl, strategies.includes(ProgressiveOverloadStrategy.REPS), [Validators.required, Validators.min(1), Validators.pattern("^[0-9]*$")]);
+      toggleValidators(distanceControl, strategies.includes(ProgressiveOverloadStrategy.DISTANCE), [Validators.required, Validators.min(0.01)]);
+      toggleValidators(durationControl, strategies.includes(ProgressiveOverloadStrategy.DURATION), [Validators.required, Validators.min(1), Validators.pattern("^[0-9]*$")]);
+    };
+
+    // Listen to changes in the strategies array
+    this.subscriptions.add(
+      this.strategiesFormArray.valueChanges.subscribe(strategies => {
+        setupStrategyValidators(strategies);
+      })
+    );
+
+    // Listen to the main enabled toggle
+    this.subscriptions.add(
+      enabledControl?.valueChanges.subscribe(enabled => {
+        if (enabled) {
+          setupStrategyValidators(this.strategiesFormArray.value);
+        } else {
+          // Clear all strategy validators if the feature is disabled
+          setupStrategyValidators([]);
+        }
+      })
+    );
   }
 
   loadProfileData(): void {
@@ -463,7 +479,22 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
 
   loadProgressiveOverloadSettings(): void {
     const settings = this.progressiveOverloadService.getSettings();
-    this.progressiveOverloadForm.reset(settings, { emitEvent: false });
+
+    // Clear the form array before populating it
+    this.strategiesFormArray.clear();
+
+    // If there are saved strategies, create a form control for each
+    if (settings.strategies && settings.strategies.length > 0) {
+      settings.strategies.forEach(strategy => {
+        this.strategiesFormArray.push(this.fb.control(strategy), { emitEvent: false });
+      });
+    }
+
+    // Reset the rest of the form, excluding the array
+    this.progressiveOverloadForm.reset({
+      ...settings,
+      strategies: this.strategiesFormArray.value // Keep the array value
+    }, { emitEvent: false });
   }
 
   async exportData(): Promise<void> { // <-- Make the method async
@@ -732,4 +763,40 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
       await this.trackingService.syncAllHistory();
     }
   }
+
+  /**
+   * Helper to manage strategies FormArray.
+   * @returns The strategies FormArray.
+   */
+  get strategiesFormArray(): FormArray {
+    return this.progressiveOverloadForm.get('strategies') as FormArray;
+  }
+
+  /**
+   * Handles the change event for strategy checkboxes.
+   * Adds or removes the strategy from the FormArray.
+   */
+  onStrategyChange(event: Event): void {
+    const checkbox = event.target as HTMLInputElement;
+    const strategyValue = checkbox.value as ProgressiveOverloadStrategy;
+
+    if (checkbox.checked) {
+      this.strategiesFormArray.push(this.fb.control(strategyValue));
+    } else {
+      const index = this.strategiesFormArray.controls.findIndex(control => control.value === strategyValue);
+      if (index !== -1) {
+        this.strategiesFormArray.removeAt(index);
+      }
+    }
+    this.progressiveOverloadForm.markAsDirty(); // Mark form as dirty to trigger save
+  }
+
+  /**
+   * Checks if a specific strategy is currently selected in the FormArray.
+   * Used to conditionally show/hide increment input fields in the template.
+   */
+  isStrategySelected(strategy: ProgressiveOverloadStrategy): boolean {
+    return this.strategiesFormArray.value.includes(strategy);
+  }
+  public ProgressiveOverloadStrategy = ProgressiveOverloadStrategy;
 }

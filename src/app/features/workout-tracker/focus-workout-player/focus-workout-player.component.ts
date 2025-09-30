@@ -2861,7 +2861,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
 
         // --- START: INTEGRATED PREFILL AND PROGRESSIVE OVERLOAD LOGIC ---
         const poSettings = this.progressiveOverloadService.getSettings();
-        const isPoEnabled = poSettings.enabled && poSettings.strategy && poSettings.sessionsToIncrement && poSettings.sessionsToIncrement > 0;
+        const isPoEnabled = poSettings.enabled && poSettings.strategies && poSettings.sessionsToIncrement && poSettings.sessionsToIncrement > 0;
 
         // Fetch logs needed for both PO and Perceived Effort checks
         const allLogsForRoutine = (routineId && routineId !== '-1')
