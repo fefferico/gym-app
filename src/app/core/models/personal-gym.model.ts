@@ -41,10 +41,12 @@ export interface AdjustableWeightEquipment extends BaseEquipment {
   increment: number;
 }
 
+export type PlateType = 'bumper' | 'iron' | 'standard' | 'olympic';
+
 export interface WeightPlate extends BaseEquipment {
   category: 'Plate';
   weight: number;
-  isOlympic: boolean;
+  type: PlateType;
   color: string;
 }
 

@@ -7,12 +7,14 @@ import { SubscriptionService } from '../../../core/services/subscription.service
 import { ToastService } from '../../../core/services/toast.service';
 import { IconComponent } from '../icon/icon.component';
 import { PlateSummaryComponent } from './plate-summary/plate-summary.component';
+import { PlateType } from '../../../core/models/personal-gym.model';
+import { TooltipDirective } from '../../directives/tooltip.directive';
 
 
 interface GymPlate {
   weight?: number;
   unit?: string;
-  isOlympic?: boolean;
+  type?: PlateType;
   color?: string;
   quantity?: number;
 }
@@ -82,20 +84,66 @@ const GL_COEFFICIENTS = {
 
 // NEW: Coefficients for Wilks 2
 const WILKS2_COEFFICIENTS = {
-    male: {
-        raw: { a: 60.10356, b: 1646.42519, c: -34.2324, d: -0.17187, e: 0.00063, f: -0.00000085 },
-        equipped: { a: 116.1478, b: 1033.5688, c: -16.183, d: -0.1342, e: 0.00049, f: -0.00000067 }
-    },
-    female: {
-        raw: { a: 97.35936, b: 1299.7242, c: -28.4069, d: -0.1341, e: 0.00049, f: -0.00000063 },
-        equipped: { a: 125.1358, b: 1018.843, c: -20.0863, d: -0.0963, e: 0.00035, f: -0.00000045 }
-    }
+  male: {
+    raw: { a: 60.10356, b: 1646.42519, c: -34.2324, d: -0.17187, e: 0.00063, f: -0.00000085 },
+    equipped: { a: 116.1478, b: 1033.5688, c: -16.183, d: -0.1342, e: 0.00049, f: -0.00000067 }
+  },
+  female: {
+    raw: { a: 97.35936, b: 1299.7242, c: -28.4069, d: -0.1341, e: 0.00049, f: -0.00000063 },
+    equipped: { a: 125.1358, b: 1018.843, c: -20.0863, d: -0.0963, e: 0.00035, f: -0.00000045 }
+  }
 };
+
+// --- Add these new type definitions at the top of your file ---
+type Algorithm = 'wilks1' | 'wilks2' | 'dots' | 'glPoints' | 'qPoints' | 'sinclair';
+
+// +++ NEW: Define a type for our explanation objects for type safety +++
+interface AlgorithmExplanation {
+  id: Algorithm;
+  title: string;
+  description: string;
+}
+
+// +++ NEW: A constant array holding all the descriptions +++
+// This keeps the data clean and separate from the component's logic.
+const ALGORITHM_EXPLANATIONS: AlgorithmExplanation[] = [
+  {
+    id: 'wilks1',
+    title: 'Wilks (Original)',
+    description: 'The original Wilks coefficient compares powerlifters across different bodyweights to determine the best pound-for-pound lifter.'
+  },
+  {
+    id: 'wilks2',
+    title: 'Wilks 2 (2019)',
+    description: 'A successor to the original formula, using updated coefficients from more modern lifting data.'
+  },
+  {
+    id: 'dots',
+    title: 'DOTS Score',
+    description: 'DOTS (Dynamic Objective Totaling System) is a popular scoring system now used by many federations, like USA Powerlifting (USAPL).'
+  },
+  {
+    id: 'glPoints',
+    title: 'Goodlift Points (GLP)',
+    description: 'The official scoring system of the IPF. It is highly robust, accounting for raw vs. equipped events and full vs. bench-only meets.'
+  },
+  {
+    id: 'qPoints',
+    title: 'Q Points',
+    description: 'A strength-to-weight ratio formula developed for and used by the GPC (Global Powerlifting Committee) federation.'
+  },
+  {
+    id: 'sinclair',
+    title: 'Sinclair Total',
+    description: 'Primarily used in Olympic Weightlifting to compare athletes in the Snatch and Clean & Jerk. Included here for comparison.'
+  }
+];
+
 
 @Component({
   selector: 'app-barbell-calculator-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, IconComponent, PlateSummaryComponent],
+  imports: [CommonModule, FormsModule, IconComponent, PlateSummaryComponent, TooltipDirective],
   templateUrl: './barbell-calculator-modal.component.html',
   styleUrls: ['./barbell-calculator-modal.component.scss']
 })
@@ -106,13 +154,19 @@ export class BarbellCalculatorModalComponent implements OnInit, OnDestroy {
   private subscriptionService = inject(SubscriptionService);
   private toastService = inject(ToastService);
 
+
+
   // --- Main Page Navigation ---
   activePage = signal<ActivePage>('calculator');
+  private readonly pageOrder: ActivePage[] = ['calculator', 'percentage', 'oneRepMax', 'rpe', 'powerlifting'];
+  private swipeCoord?: [number, number];
+  private swipeTime?: number;
+  algorthmExplanation = signal<'wilks' | 'wilks2' | 'q' | 'sinclair' | 'dots' | 'goodlift' | undefined>('wilks');
 
   // --- State Signals for PAGE 1: CALCULATOR (Existing logic) ---
   mode = signal<'calculate' | 'reverse'>('calculate');
   unit = signal<'kg' | 'lb'>('kg');
-  isOlympic = signal(true);
+  plateType = signal<PlateType>('bumper');
   usePersonalGym = signal(false);
   enable50kgPlate = signal(false);
   isPremiumUser = signal(false);
@@ -149,24 +203,26 @@ export class BarbellCalculatorModalComponent implements OnInit, OnDestroy {
   plEvent = signal<PowerliftingEvent>('raw'); // NEW
   plCategory = signal<PowerliftingCategory>('full'); // NEW
 
+  public readonly algorithmExplanations = ALGORITHM_EXPLANATIONS;
+
   availablePlates = computed<Plate[]>(() => {
     let plates: Plate[];
     if (this.usePersonalGym() && this.isPremiumUser()) {
       plates = this.personalGymService.getDataForBackup()
         .filter(eq => eq.category === 'Plate')
-        // +++ FIX: Assert the type here to inform TypeScript that 'eq' now has plate-like properties.
         .map(eq => {
           const plateData = eq as GymPlate;
           return {
             weight: plateData.weight ?? 0,
             unit: plateData.unit as 'kg' | 'lb',
-            isOlympic: plateData.isOlympic ?? true,
+            type: plateData.type || 'standard',
             color: plateData.color,
             quantity: eq.quantity ?? 1
-          };
+          } as Plate;
         });
     } else {
-      plates = this.barbellCalculatorService.getAvailablePlates(this.unit(), this.isOlympic());
+      // +++ MODIFIED: Pass the new plateType signal to the service +++
+      plates = this.barbellCalculatorService.getAvailablePlates(this.unit(), this.plateType());
     }
 
     if (!this.enable50kgPlate()) {
@@ -204,14 +260,67 @@ export class BarbellCalculatorModalComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.isPremiumUser.set(this.subscriptionService.isPremium());
     this.collars.set(this.barbellCalculatorService.getCollars());
-    this.updateDataSource(); // Initial data load
+    this.updateDataSource();
     this.selectedCollar.set(this.collars()[0]);
   }
 
   // --- Public Methods for Template ---
 
+  onSwipeStart(e: TouchEvent): void {
+    this.swipeCoord = [e.changedTouches[0].clientX, e.changedTouches[0].clientY];
+    this.swipeTime = new Date().getTime();
+  }
+
+  onSwipeMove(e: TouchEvent): void {
+    e.preventDefault(); // Prevent vertical scroll while swiping
+  }
+
+  onSwipeEnd(e: TouchEvent): void {
+    const coord: [number, number] = [e.changedTouches[0].clientX, e.changedTouches[0].clientY];
+    const time = new Date().getTime();
+
+    if (this.swipeCoord && this.swipeTime) {
+      const dx = coord[0] - this.swipeCoord[0];
+      const dy = coord[1] - this.swipeCoord[1];
+      const dt = time - this.swipeTime;
+
+      // Detect a horizontal swipe that is not too vertical and is reasonably fast
+      if (dt < 500 && Math.abs(dx) > 50 && Math.abs(dy) < 100) {
+        if (dx > 0) { // Swiped right
+          this.navigatePage('prev');
+        } else { // Swiped left
+          this.navigatePage('next');
+        }
+      }
+    }
+  }
+
+  private navigatePage(direction: 'next' | 'prev'): void {
+    const currentIndex = this.pageOrder.indexOf(this.activePage());
+    let newIndex = direction === 'next' ? currentIndex + 1 : currentIndex - 1;
+
+    // Loop around
+    if (newIndex >= this.pageOrder.length) {
+      newIndex = 0;
+    }
+    if (newIndex < 0) {
+      newIndex = this.pageOrder.length - 1;
+    }
+
+    this.setPage(this.pageOrder[newIndex]);
+  }
+
   onClose(): void {
     this.close.emit();
+  }
+
+  public getExplanationText(algoId: Algorithm): string {
+    const explanation = this.algorithmExplanations.find(e => e.id === algoId);
+    if (!explanation) {
+      return 'No description available.';
+    }
+    // Using a newline character to separate title and description in the tooltip.
+    return `${explanation.title}\n\n${explanation.description}`;
   }
 
   setMode(newMode: 'calculate' | 'reverse'): void {
@@ -232,7 +341,12 @@ export class BarbellCalculatorModalComponent implements OnInit, OnDestroy {
     this.recalculateBasedOnMode();
   }
 
-  // +++ FIX: Renamed for clarity +++
+  handlePlateTypeChange(newType: PlateType): void {
+    this.plateType.set(newType);
+    this.recalculateBasedOnMode();
+  }
+
+
   handleBarChange(bar: Barbell): void {
     this.selectedBarbell.set(bar);
     this.recalculateBasedOnMode();
@@ -692,13 +806,13 @@ export class BarbellCalculatorModalComponent implements OnInit, OnDestroy {
     const d = gender === 'male' ? -0.00113732 : -0.00930733913;
     const e = gender === 'male' ? 7.01863e-6 : 4.731582e-5;
     const f = gender === 'male' ? -1.291e-8 : -2.04619e-8;
-    const denominator = a + b * bodyweight + c * bodyweight**2 + d * bodyweight**3 + e * bodyweight**4 + f * bodyweight**5;
+    const denominator = a + b * bodyweight + c * bodyweight ** 2 + d * bodyweight ** 3 + e * bodyweight ** 4 + f * bodyweight ** 5;
     return (total * 500) / denominator;
   }
 
   private calculateWilks2(bodyweight: number, total: number, gender: 'male' | 'female', event: PowerliftingEvent): number {
     const { a, b, c, d, e, f } = WILKS2_COEFFICIENTS[gender][event];
-    const denominator = a + b * bodyweight + c * bodyweight**2 + d * bodyweight**3 + e * bodyweight**4 + f * bodyweight**5;
+    const denominator = a + b * bodyweight + c * bodyweight ** 2 + d * bodyweight ** 3 + e * bodyweight ** 4 + f * bodyweight ** 5;
     return (total * 600) / denominator;
   }
 

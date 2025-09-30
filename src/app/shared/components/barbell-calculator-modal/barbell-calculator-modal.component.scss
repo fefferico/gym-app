@@ -832,7 +832,7 @@
   &.custom-input {
     background-color: #1a202c;
     border: 2px dashed #4a5568;
-    display: flex;
+    display: flex-col;
     align-items: center;
     justify-content: center;
 
@@ -847,8 +847,9 @@
       font-size: 1.5rem;
       font-weight: 700;
       text-align: center;
-      background: transparent;
+      background: var(--input-bg);
       border: none;
+      border-radius: 8px;
       color: #fff;
       padding: 0;
 
@@ -858,6 +859,8 @@
     }
 
     .percent-sign {
+      display: flex;
+      justify-content: start;
       font-size: 1.5rem;
       font-weight: 700;
       color: #a0aec0;

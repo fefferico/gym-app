@@ -72,7 +72,7 @@ interface EMOMDisplayBlock {
 type DisplayItem = DisplayLoggedExercise | SupersetDisplayBlock | EMOMDisplayBlock;
 
 interface TargetComparisonData {
-  metric: 'Reps' | 'Duration' | 'Weight' | 'Rest';
+  metric: 'Reps' | 'Duration' | 'Weight' | 'Rest' | 'Distance';
   targetValue: string;
   performedValue: string;
 }
@@ -386,7 +386,7 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
     return loggedEx?.sets.some(set => set.weightUsed);
   }
 
-  checkTextClass(set: LoggedSet, type: 'reps' | 'duration' | 'weight' | 'rest'): string {
+  checkTextClass(set: LoggedSet, type: 'reps' | 'duration' | 'weight' | 'rest' | 'distance'): string {
     if (!set) return 'text-gray-700 dark:text-gray-300';
 
     const checkRange = (performed: number, min?: number | null, max?: number | null) => {
@@ -401,9 +401,12 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
     if (type === 'duration' && (set.targetDurationMin != null || set.targetDurationMax != null)) {
       return checkRange(set.durationPerformed ?? 0, set.targetDurationMin, set.targetDurationMax);
     }
+    if (type === 'distance' && (set.targetDistanceMin != null || set.targetDistanceMax != null)) {
+      return checkRange(set.distanceAchieved ?? 0, set.targetDistanceMin, set.targetDistanceMax);
+    }
 
-    const performed = type === 'reps' ? set.repsAchieved : type === 'duration' ? set.durationPerformed : type === 'weight' ? set.weightUsed : set.restAfterSetUsed;
-    const target = type === 'reps' ? set.targetReps : type === 'duration' ? set.targetDuration : type === 'weight' ? set.targetWeight : set.targetRestAfterSet;
+    const performed = type === 'reps' ? set.repsAchieved : type === 'duration' ? set.durationPerformed : type === 'weight' ? set.weightUsed : type === 'distance' ? set.distanceAchieved : set.restAfterSetUsed;
+    const target = type === 'reps' ? set.targetReps : type === 'duration' ? set.targetDuration : type === 'weight' ? set.targetWeight : type === 'distance' ? set.targetDistance : set.targetRestAfterSet;
 
     if ((target ?? 0) > 0) {
       if ((performed ?? 0) > target!) return 'text-green-500 dark:text-green-400';
@@ -412,11 +415,12 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
     return 'text-gray-800 dark:text-white';
   }
 
-  showComparisonModal(set: LoggedSet, type: 'reps' | 'duration' | 'weight' | 'rest'): void {
+  showComparisonModal(set: LoggedSet, type: 'reps' | 'duration' | 'weight' | 'rest' | 'distance'): void {
     if (!set) return;
 
     let modalData: TargetComparisonData | null = null;
     const unitLabel = this.unitService.getWeightUnitSuffix();
+    const distUnitLabel = this.unitService.getDistanceMeasureUnitSuffix();
 
     const createTargetDisplay = (min?: number | null, max?: number | null, single?: number | null, suffix = ''): string => {
       if (min != null || max != null) {
@@ -454,11 +458,17 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
           modalData = { metric: 'Rest', targetValue: `${set.targetRestAfterSet ?? '-'} s`, performedValue: `${performedRest ?? '-'} s` };
         }
         break;
+      case 'distance':
+        const performedDistance = set.distanceAchieved;
+        if (isMiss(performedDistance ?? 0, set.targetDistanceMin, set.targetDistance)) {
+          modalData = { metric: 'Distance', targetValue: createTargetDisplay(set.targetDistanceMin, set.targetDistanceMax, set.targetDistance, ` ${distUnitLabel}`), performedValue: `${performedDistance ?? '-'} ${distUnitLabel}` };
+        }
+        break;
     }
     if (modalData) this.comparisonModalData.set(modalData);
   }
 
-  isTargetMissed(set: LoggedSet, type: 'reps' | 'duration' | 'weight' | 'rest'): boolean {
+  isTargetMissed(set: LoggedSet, type: 'reps' | 'duration' | 'weight' | 'rest' | 'distance'): boolean {
     if (!set) return false;
     if (type === 'reps') {
       const performed = set.repsAchieved ?? 0;
@@ -467,6 +477,10 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
     if (type === 'duration') {
       const performed = set.durationPerformed ?? 0;
       return (set.targetDurationMin != null) ? performed < set.targetDurationMin : performed < (set.targetDuration ?? 0);
+    }
+    if (type === 'distance') {
+      const performed = set.distanceAchieved ?? 0;
+      return (set.targetDistanceMin != null) ? performed < set.targetDistanceMin : performed < (set.targetDistance ?? 0);
     }
     const performed = (type === 'weight' ? set.weightUsed : set.restAfterSetUsed) ?? 0;
     const target = (type === 'weight' ? set.targetWeight : set.targetRestAfterSet) ?? 0;
@@ -647,6 +661,34 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
     this.selectedExerciseForComparison.set(null);
     this.exerciseDetailsId = '';
     this.exerciseDetailsName = '';
+  }
+
+  /**
+   * Calculates the appropriate Tailwind CSS grid class based on which metrics are present.
+   * This handles all combinations, including weighted cardio.
+   * @param item The exercise to analyze.
+   * @returns A string like 'grid-cols-5', 'grid-cols-6', etc.
+   */
+  protected getGridColsClass(item: DisplayLoggedExercise): string {
+    // Base columns are always present: Set, Reps, Rest, Notes
+    let cols = 4;
+
+    // Conditionally add a column for each additional metric found
+    if (this.isWeighted(item)) cols++;
+    if (this.hasPerformedTimedSets(item)) cols++;
+    if (this.hasPerformedDistanceSets(item)) cols++;
+
+    return `grid-cols-${cols}`;
+  }
+
+  // +++ NEW: Helper method specifically for distance +++
+  protected hasPerformedDistanceSets(loggedEx: DisplayLoggedExercise): boolean {
+    return loggedEx?.sets?.some(set => (set.distanceAchieved ?? 0) > 0) ?? false;
+  }
+
+  // +++ NEW: Replicated pipe logic as a component method for consistency +++
+  protected isWeighted(loggedEx: DisplayLoggedExercise): boolean {
+    return loggedEx?.sets?.some(set => set.weightUsed != null && set.weightUsed > 0) ?? false;
   }
 
   ngOnDestroy(): void {

@@ -167,7 +167,7 @@
                 <ng-container *ngFor="let set of exercise.sets; let setIndex = index">
                   <!-- (This section contains the original UI for a single set row, it has been slightly adapted) -->
                   <div [attr.data-set-index]="setIndex" #setCard
-                    class="grid grid-cols-12 gap-2 items-start rounded-md p-2 shadow-sm" [ngClass]="{
+                    class="grid grid-cols-12 gap-2 items-center rounded-md p-2 shadow-sm" [ngClass]="{
                       'bg-blue-300 dark:bg-blue-700/70': set.type === 'warmup', 
                       'bg-white dark:bg-gray-800': set.type !== 'warmup' && !isSetCompleted(exIndex, setIndex),
                       'bg-green-400/50': set.type !== 'warmup' && isSetCompleted(exIndex, setIndex)}">

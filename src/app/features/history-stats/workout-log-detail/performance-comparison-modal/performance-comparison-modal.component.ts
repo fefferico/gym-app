@@ -100,7 +100,7 @@ export class PerformanceComparisonModalComponent {
 
     showWeightMetrics = signal<boolean>(false);
     showCardioMetrics = signal<boolean>(false);
-    
+
     // Data for tables
     comparisonTableRows = signal<ComparisonTableRow[]>([]); // For exercise mode
     exerciseComparisonRows = signal<ExerciseComparisonSummary[]>([]); // For routine mode
@@ -120,7 +120,7 @@ export class PerformanceComparisonModalComponent {
             }
         });
     }
-    
+
     // --- INITIALIZATION LOGIC ---
 
     private initializeExerciseComparison(): void {
@@ -132,7 +132,7 @@ export class PerformanceComparisonModalComponent {
         // this.trackingService.getAllLogsWithExercise(currentExercise.exerciseId).subscribe(logs => { ... });
         // For demonstration, we'll simulate this by reusing the routine logs
         this.trackingService.getLogsForRoutine(currentLog.routineId!).pipe(
-             map(logs => logs.filter(log => log.id !== currentLog.id).sort((a, b) => b.startTime - a.startTime))
+            map(logs => logs.filter(log => log.id !== currentLog.id).sort((a, b) => b.startTime - a.startTime))
         ).subscribe(historicalLogs => {
             // Logic to split logs into same routine vs. others
             const sameRoutine = historicalLogs.filter(log => log.routineId === currentLog.routineId);
@@ -140,7 +140,7 @@ export class PerformanceComparisonModalComponent {
 
             this.sameRoutineLogs.set(sameRoutine);
             this.otherRoutineLogs.set(otherRoutines);
-            
+
             const allLogs = [...sameRoutine, ...otherRoutines];
             this.allHistoricalLogs.set(allLogs);
 
@@ -193,7 +193,7 @@ export class PerformanceComparisonModalComponent {
         const previousExercise = previousLog?.exercises.find(ex => ex.exerciseId === currentExercise.exerciseId);
         const currentSets = currentExercise.sets || [];
         const previousSets = previousExercise?.sets || [];
-        
+
         const currentSummary = this.calculateSummaryForSets(currentSets);
         const previousSummary = this.calculateSummaryForSets(previousSets);
         const comparison = this.calculateComparison(currentSummary, previousSummary);
@@ -220,12 +220,12 @@ export class PerformanceComparisonModalComponent {
         const currentSummary = this.calculateSummaryForRoutine(currentLog.exercises);
         const previousSummary = this.calculateSummaryForRoutine(previousLog?.exercises || []);
         const comparison = this.calculateComparison(currentSummary, previousSummary);
-        
+
         this.showWeightMetrics.set(currentSummary.maxWeight > 0 || previousSummary.maxWeight > 0);
         this.showCardioMetrics.set(currentSummary.totalDuration > 0 || currentSummary.totalDistance > 0);
 
         this.comparisonData.set({ currentLog, previousLog, currentSummary, previousSummary, comparison });
-        
+
         // Generate per-exercise breakdown
         const exerciseRows: ExerciseComparisonSummary[] = [];
         const allExerciseIds = new Set([...currentLog.exercises.map(e => e.exerciseId), ...previousLog?.exercises.map(e => e.exerciseId) ?? []]);
@@ -233,11 +233,11 @@ export class PerformanceComparisonModalComponent {
         allExerciseIds.forEach(exerciseId => {
             const currentEx = currentLog.exercises.find(e => e.exerciseId === exerciseId);
             const prevEx = previousLog?.exercises.find(e => e.exerciseId === exerciseId);
-            
+
             const currentExSummary = this.calculateSummaryForSets(currentEx?.sets || []);
             const prevExSummary = this.calculateSummaryForSets(prevEx?.sets || []);
             const exComparison = this.calculateComparison(currentExSummary, prevExSummary);
-            
+
             exerciseRows.push({
                 exerciseId,
                 exerciseName: currentEx?.exerciseName || prevEx?.exerciseName || 'Unknown Exercise',
@@ -318,5 +318,54 @@ export class PerformanceComparisonModalComponent {
         if (logId) {
             this.logSelect.emit(logId);
         }
+    }
+
+    /**
+         * +++ NEW: This is the adapted method as you requested. +++
+         * Checks if a *specific* performance metric has a non-zero difference.
+         * @param type The specific metric to check.
+         * @param comparison The performance comparison object.
+         * @returns `true` if the specified metric has changed, `false` otherwise.
+         */
+    protected hasChanges(type: 'sets' | 'reps' | 'weight' | 'volume' | 'duration' | 'distance', comparison: PerformanceComparison | undefined): boolean {
+        if (!comparison) {
+            return false;
+        }
+
+        switch (type) {
+            case 'sets':
+                return comparison.setsDiff !== 0;
+            case 'reps':
+                return comparison.repsDiff !== 0;
+            case 'weight':
+                return comparison.maxWeightDiff !== 0;
+            case 'volume':
+                return comparison.volumeDiff !== 0;
+            case 'duration':
+                return comparison.durationDiff !== 0;
+            case 'distance':
+                return comparison.distanceDiff !== 0;
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * +++ NEW: Renamed from the old `hasChanges` method. +++
+     * Checks if *any* of the performance metrics have a non-zero difference.
+     * This is used by the template to align the entire table for consistency.
+     * @param comparison The performance comparison object.
+     * @returns `true` if there is any change, `false` otherwise.
+     */
+    protected hasAnyChanges(comparison: PerformanceComparison | undefined): boolean {
+        if (!comparison) {
+            return false;
+        }
+        return comparison.setsDiff !== 0 ||
+            comparison.repsDiff !== 0 ||
+            comparison.volumeDiff !== 0 ||
+            comparison.maxWeightDiff !== 0 ||
+            comparison.durationDiff !== 0 ||
+            comparison.distanceDiff !== 0;
     }
 }

@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
+import { PlateType } from '../models/personal-gym.model';
 
 export interface Plate {
   weight: number;
   color?: string;
-  isOlympic: boolean;
+  type: PlateType;
   unit: 'kg' | 'lb';
   quantity?: number;
 }
@@ -21,7 +22,7 @@ export interface PlateLoadout {
 
 export interface Collar {
   name: string;
-  weight: number; // Combined weight for the pair
+  weight: number;
   unit: 'kg' | 'lb';
 }
 
@@ -30,37 +31,62 @@ export interface Collar {
 })
 export class BarbellCalculatorService {
 
+  private bumperPlatesKg: Plate[] = [
+    { weight: 50, color: '#424242', type: 'bumper', unit: 'kg'},
+    { weight: 25, color: '#d32f2f', type: 'bumper', unit: 'kg'},
+    { weight: 20, color: '#1976d2', type: 'bumper', unit: 'kg'},
+    { weight: 15, color: '#fdd835', type: 'bumper', unit: 'kg'},
+    { weight: 10, color: '#43a047', type: 'bumper', unit: 'kg'},
+    { weight: 5, color: '#fafafa', type: 'bumper', unit: 'kg'},
+    { weight: 2.5, color: '#424242', type: 'bumper', unit: 'kg'},
+    { weight: 2, color: '#424242', type: 'bumper', unit: 'kg'},
+    { weight: 1.5, color: '#424242', type: 'bumper', unit: 'kg'},
+    { weight: 1, color: '#424242', type: 'bumper', unit: 'kg'},
+    { weight: 0.5, color: '#424242', type: 'bumper', unit: 'kg'}
+  ];
+
+  private standardIronPlatesKg: Plate[] = [
+    { weight: 50, color: '#424242', type: 'iron', unit: 'kg'},
+    { weight: 25, color: '#424242', type: 'iron', unit: 'kg'},
+    { weight: 20, color: '#424242', type: 'iron', unit: 'kg'},
+    { weight: 15, color: '#424242', type: 'iron', unit: 'kg'},
+    { weight: 10, color: '#424242', type: 'iron', unit: 'kg'},
+    { weight: 5, color: '#424242', type: 'iron', unit: 'kg'},
+    { weight: 2.5, color: '#424242', type: 'iron', unit: 'kg'},
+    { weight: 1.25, color: '#424242', type: 'iron', unit: 'kg'}
+  ];
+
   private olympicPlatesKg: Plate[] = [
-    { weight: 50, color: '#000000ff', isOlympic: true, unit: 'kg' },
-    { weight: 25, color: '#ff0000', isOlympic: true, unit: 'kg' },
-    { weight: 20, color: '#0000ff', isOlympic: true, unit: 'kg' },
-    { weight: 15, color: '#ffff00', isOlympic: true, unit: 'kg' },
-    { weight: 10, color: '#00ff00', isOlympic: true, unit: 'kg' },
-    { weight: 5, color: '#ffffff', isOlympic: true, unit: 'kg' },
-    { weight: 2.5, color: '#ff0000', isOlympic: true, unit: 'kg' },
-    { weight: 2, color: '#0000ff', isOlympic: true, unit: 'kg' },
-    { weight: 1.5, color: '#ffff00', isOlympic: true, unit: 'kg' },
-    { weight: 1, color: '#00ff00', isOlympic: true, unit: 'kg' },
-    { weight: 0.5, color: '#ffffff', isOlympic: true, unit: 'kg' }
+    { type: 'standard', weight: 50, color: '#000000ff', unit: 'kg' },
+    { type: 'standard', weight: 25, color: '#ff0000', unit: 'kg' },
+    { type: 'standard', weight: 20, color: '#0000ff', unit: 'kg' },
+    { type: 'standard', weight: 15, color: '#ffff00', unit: 'kg' },
+    { type: 'standard', weight: 10, color: '#00ff00', unit: 'kg' },
+    { type: 'standard', weight: 5, color: '#ffffff', unit: 'kg' },
+    { type: 'standard', weight: 2.5, color: '#ff0000', unit: 'kg' },
+    { type: 'standard', weight: 2, color: '#0000ff', unit: 'kg' },
+    { type: 'standard', weight: 1.5, color: '#ffff00', unit: 'kg' },
+    { type: 'standard', weight: 1, color: '#00ff00', unit: 'kg' },
+    { type: 'standard', weight: 0.5, color: '#ffffff', unit: 'kg' }
   ];
 
   private standardPlatesKg: Plate[] = [
-    { weight: 50, isOlympic: false, unit: 'kg' },
-    { weight: 20, isOlympic: false, unit: 'kg' },
-    { weight: 15, isOlympic: false, unit: 'kg' },
-    { weight: 10, isOlympic: false, unit: 'kg' },
-    { weight: 5, isOlympic: false, unit: 'kg' },
-    { weight: 2.5, isOlympic: false, unit: 'kg' },
-    { weight: 1.25, isOlympic: false, unit: 'kg' }
+    { type: 'standard', weight: 50, unit: 'kg' },
+    { type: 'standard', weight: 20, unit: 'kg' },
+    { type: 'standard', weight: 15, unit: 'kg' },
+    { type: 'standard', weight: 10, unit: 'kg' },
+    { type: 'standard', weight: 5, unit: 'kg' },
+    { type: 'standard', weight: 2.5, unit: 'kg' },
+    { type: 'standard', weight: 1.25, unit: 'kg' }
   ];
 
   private standardPlatesLb: Plate[] = [
-    { weight: 45, isOlympic: false, unit: 'lb' },
-    { weight: 35, isOlympic: false, unit: 'lb' },
-    { weight: 25, isOlympic: false, unit: 'lb' },
-    { weight: 10, isOlympic: false, unit: 'lb' },
-    { weight: 5, isOlympic: false, unit: 'lb' },
-    { weight: 2.5, isOlympic: false, unit: 'lb' }
+    { type: 'standard', weight: 45, unit: 'lb' },
+    { type: 'standard', weight: 35, unit: 'lb' },
+    { type: 'standard', weight: 25, unit: 'lb' },
+    { type: 'standard', weight: 10, unit: 'lb' },
+    { type: 'standard', weight: 5, unit: 'lb' },
+    { type: 'standard', weight: 2.5, unit: 'lb' }
   ];
 
   private barbells: Barbell[] = [
@@ -82,11 +108,17 @@ export class BarbellCalculatorService {
 
   constructor() { }
 
-  getAvailablePlates(unit: 'kg' | 'lb', isOlympic: boolean): Plate[] {
+  getAvailablePlates(unit: 'kg' | 'lb', plateType: PlateType): Plate[] {
     if (unit === 'kg') {
-      return isOlympic ? this.olympicPlatesKg : this.standardPlatesKg;
+      switch (plateType) {
+        case 'bumper':
+          return this.bumperPlatesKg;
+        case 'iron':
+        default:
+          return this.standardIronPlatesKg;
+      }
     } else {
-      // For simplicity, we'll just use the standard lb plates for both olympic and standard in this example
+      // For LB, we will return the standard set regardless of the type for now.
       return this.standardPlatesLb;
     }
   }

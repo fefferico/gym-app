@@ -94,30 +94,14 @@ body {
 }
 
 
-// TOOLTIP CSS START
-// .tooltip-container {
-//   position: absolute; /* Crucial for positioning */
-//   background-color: #333;
-//   color: #fff;
-//   padding: 6px 12px;
-//   border-radius: 6px;
-//   font-size: 0.875rem;
-//   z-index: 1000; /* Ensure it appears on top */
-//   pointer-events: none; /* Prevent the tooltip from blocking mouse events */
-
-//   /* Fade-in / Fade-out transition */
-//   opacity: 0;
-//   transition: opacity 0.2s ease-in-out;
-// }
-
 .tooltip-container {
-  position: absolute;
+  position: fixed;
   background-color: #333;
   color: #fff;
   padding: 6px 12px;
   border-radius: 6px;
   font-size: 0.875rem;
-  z-index: 1000;
+  z-index: 9999;
   pointer-events: none;
 
   /* Use a consistent width */

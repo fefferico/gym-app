@@ -742,26 +742,71 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+ * Updates the data when a user types into an input field.
+ * - If the set is already completed, it updates the corresponding value in the workout log.
+ * - If the set is NOT completed, it updates the target value in the routine plan.
+ * THIS METHOD NEVER CREATES A LOG ENTRY OR MARKS A SET AS COMPLETE.
+ */
   updateSetData(exIndex: number, setIndex: number, roundIndex: number, field: 'reps' | 'weight' | 'distance' | 'time' | 'notes', event: Event): void {
     const value = (event.target as HTMLInputElement).value;
     const routine = this.routine();
     if (!routine) return;
 
-    const exercise = routine.exercises[exIndex];
-    const set = exercise.sets[setIndex];
+    const isCompleted = this.isSetCompleted(exIndex, setIndex, roundIndex);
 
-    switch (field) {
-      case 'reps': set.targetReps = parseFloat(value) || 0; break;
-      case 'weight': set.targetWeight = parseFloat(value) || undefined; break;
-      case 'distance': set.targetDistance = parseFloat(value) || 0; break;
-      case 'time': set.targetDuration = this.parseTimeToSeconds(value); break;
-      case 'notes': set.notes = value; break;
-    }
-    this.routine.set({ ...routine });
+    if (isCompleted) {
+      // --- SCENARIO 1: The set is already logged. Update the LOG. ---
+      this.currentWorkoutLog.update(log => {
+        if (!log.exercises) return log;
+        const exerciseLog = log.exercises.find(e => e.id === routine.exercises[exIndex].id);
+        if (exerciseLog) {
+          const targetLoggedSetId = this.isSuperSet(exIndex) ? `${routine.exercises[exIndex].sets[setIndex].id}-round-${roundIndex}` : routine.exercises[exIndex].sets[setIndex].id;
+          const setLog = exerciseLog.sets.find(s => s.plannedSetId === targetLoggedSetId);
 
-    if (this.isSetCompleted(exIndex, setIndex, roundIndex)) {
-      this.updateSetDataForRound(exercise, setIndex, roundIndex, field, value);
+          if (setLog) {
+            switch (field) {
+              case 'reps': setLog.repsAchieved = parseFloat(value) || 0; break;
+              case 'weight': setLog.weightUsed = value === '' ? undefined : parseFloat(value); break;
+              case 'distance': setLog.distanceAchieved = parseFloat(value) || undefined; break;
+              case 'time': setLog.durationPerformed = this.parseTimeToSeconds(value); break;
+              case 'notes': setLog.notes = value; break;
+            }
+          }
+        }
+        return { ...log };
+      });
+      if (field !== 'notes') {
+        this.toastService.info("Logged set updated.", 1500);
+      }
+
+    } else {
+      // // --- SCENARIO 2: The set is not yet logged. Update the PLAN (routine). ---
+      // this.routine.update(r => {
+      //   if (!r) return r;
+      //   // Create a new array and new exercise/set objects to ensure change detection
+      //   const newExercises = [...r.exercises];
+      //   const newExercise = { ...newExercises[exIndex] };
+      //   const newSets = [...newExercise.sets];
+      //   const newSet = { ...newSets[setIndex] };
+
+      //   switch (field) {
+      //     case 'reps': newSet.targetReps = parseFloat(value) || undefined; break;
+      //     case 'weight': newSet.targetWeight = value === '' ? undefined : parseFloat(value); break;
+      //     case 'distance': newSet.targetDistance = parseFloat(value) || undefined; break;
+      //     case 'time': newSet.targetDuration = this.parseTimeToSeconds(value); break;
+      //     case 'notes': newSet.notes = value; break;
+      //   }
+
+      //   newSets[setIndex] = newSet;
+      //   newExercise.sets = newSets;
+      //   newExercises[exIndex] = newExercise;
+
+      //   return { ...r, exercises: newExercises };
+      // });
     }
+
+    this.savePausedSessionState();
   }
 
   // +++ NEW: Method to update exercise-level notes
@@ -831,16 +876,40 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return '';
   }
 
+  /**
+ * Determines the initial value for an input field.
+ * - If the set is already logged, it shows the actual logged value (e.g., repsAchieved).
+ * - If the set is not logged, it shows the planned target value (e.g., targetReps).
+ */
   getInitialInputValue(exIndex: number, setIndex: number, field: 'reps' | 'weight' | 'distance' | 'time' | 'notes'): string {
-    const set = this.routine()!.exercises[exIndex].sets[setIndex];
-    switch (field) {
-      // If a range exists, default the input to the minimum value, otherwise use the single value.
-      case 'reps': return (set.targetRepsMin ?? set.targetReps ?? '').toString();
-      case 'weight': return (set.targetWeightMin ?? set.targetWeight ?? '').toString();
-      case 'distance': return (set.targetDistanceMin ?? set.targetDistance ?? '').toString();
-      // For time/duration, follow the same logic as reps.
-      case 'time': return this.formatSecondsToTime(set.targetDurationMin ?? set.targetDuration ?? 0);
-      case 'notes': return set.notes || '';
+    const routine = this.routine();
+    if (!routine) return '';
+
+    const exercise = routine.exercises[exIndex];
+    const plannedSet = exercise.sets[setIndex];
+
+    const roundIndex = this.isSuperSet(exIndex) ? setIndex : 0;
+    const loggedSet = this.getLoggedSet(exIndex, setIndex, roundIndex);
+
+    // If the set is completed, prioritize showing the actual logged data.
+    if (loggedSet) {
+      switch (field) {
+        case 'reps': return (loggedSet.repsAchieved ?? '').toString();
+        case 'weight': return (loggedSet.weightUsed ?? '').toString();
+        case 'distance': return (loggedSet.distanceAchieved ?? '').toString();
+        case 'time': return this.formatSecondsToTime(loggedSet.durationPerformed);
+        case 'notes': return loggedSet.notes ?? '';
+      }
+    }
+    // Otherwise, fall back to showing the planned target.
+    else {
+      switch (field) {
+        case 'reps': return (plannedSet.targetReps ?? '').toString();
+        case 'weight': return (plannedSet.targetWeight ?? '').toString();
+        case 'distance': return (plannedSet.targetDistance ?? '').toString();
+        case 'time': return this.formatSecondsToTime(plannedSet?.targetDuration || 0);
+        case 'notes': return plannedSet.notes ?? '';
+      }
     }
     return '';
   }
