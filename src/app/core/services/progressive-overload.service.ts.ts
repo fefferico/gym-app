@@ -124,27 +124,53 @@ export class ProgressiveOverloadService {
         switch (strategy) {
           case ProgressiveOverloadStrategy.WEIGHT:
             if (settings.weightIncrement) {
-              set.targetWeight = (set.targetWeight ?? 0) + settings.weightIncrement;
+              const originalSetWeight = set.targetWeight;
+              set.targetWeight = (originalSetWeight ?? 0) + settings.weightIncrement;
+              if (set.targetWeightMin) {
+                set.targetWeightMin = (set.targetWeightMin ?? originalSetWeight ?? 0) + settings.weightIncrement;
+                if (set.targetWeightMax && set.targetWeightMin > set.targetWeightMax){
+                  set.targetWeightMax = set.targetWeightMin + settings.weightIncrement;
+                }
+              }
             }
             break;
           case ProgressiveOverloadStrategy.REPS:
             if (settings.repsIncrement) {
-              set.targetReps = (set.targetReps ?? 0) + settings.repsIncrement;
+              const originalSetReps = set.targetReps;
+              set.targetReps = (originalSetReps ?? 0) + settings.repsIncrement;
+              if (set.targetRepsMin) {
+                set.targetRepsMin = (set.targetRepsMin ?? originalSetReps ?? 0) + settings.repsIncrement;
+                if (set.targetRepsMax && set.targetRepsMin > set.targetRepsMax){
+                  set.targetRepsMax = set.targetRepsMin + settings.repsIncrement;
+                }
+              }
             }
             break;
           // +++ NEW: Apply distance increment
           case ProgressiveOverloadStrategy.DISTANCE:
             if (settings.distanceIncrement) {
-              set.targetDistance = (set.targetDistance ?? 0) + settings.distanceIncrement;
-              set.targetDistanceMin = (set.targetDistanceMin ?? set.targetDistance ?? 0) + settings.distanceIncrement;
+              const originalSetDistance = set.targetDistance;
+              set.targetDistance = (originalSetDistance ?? 0) + settings.distanceIncrement;
+              if (set.targetDistanceMin) {
+                set.targetDistanceMin = (set.targetDistanceMin ?? originalSetDistance ?? 0) + settings.distanceIncrement;
+                if (set.targetDistanceMax && set.targetDistanceMin > set.targetDistanceMax){
+                  set.targetDistanceMax = set.targetDistanceMin + settings.distanceIncrement;
+                }
+              }
             }
             break;
           // +++ NEW: Apply duration increment
           case ProgressiveOverloadStrategy.DURATION:
             if (settings.durationIncrement) {
               // Assuming duration is stored in `set.durationSeconds`
-              set.targetDuration = (set.targetDuration ?? 0) + settings.durationIncrement;
-              set.targetDurationMin = (set.targetDurationMin ?? set.targetDuration ?? 0) + settings.durationIncrement;
+              const originalSetDuration = set.targetDuration;
+              set.targetDuration = (originalSetDuration ?? 0) + settings.durationIncrement;
+              if (set.targetDurationMin) {
+                set.targetDurationMin = (set.targetDurationMin ?? originalSetDuration ?? 0) + settings.durationIncrement;
+                if (set.targetDurationMax && set.targetDurationMin > set.targetDurationMax){
+                  set.targetDurationMax = set.targetDurationMin + settings.durationIncrement;
+                }
+              }
             }
             break;
           default:

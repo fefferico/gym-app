@@ -2429,18 +2429,40 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
   /**
-  * Generates a display string for a set's planned target, handling ranges and single values.
+  * Generates a display string for a set's planned target.
+  * For subsequent sets of a standard exercise, this method dynamically calculates a 
+  * progressive overload suggestion based on the performance of the previous set in this session.
+  *
   * @param set The ExerciseSetParams object from the routine plan.
-  * @param field The field to display ('reps', 'duration', or 'weight').
-  * @returns A formatted string like "8-12", "60+", "10", or an empty string if no target is set.
+  * @param exIndex The index of the exercise.
+  * @param setIndex The index of the set.
+  * @param field The specific target field to display ('reps', 'weight', etc.).
+  * @returns A formatted string like "8-12", "60+", "10".
   */
   public getSetTargetDisplay(set: ExerciseTargetSetParams, exIndex: number, setIndex: number, field: 'reps' | 'duration' | 'weight' | 'distance'): string {
-    const originalExercise = this.originalRoutineSnapshot()?.exercises[exIndex];
-    const originalSet = originalExercise?.sets[setIndex];
+    let setForDisplay: ExerciseTargetSetParams;
+    const exercise = this.routine()?.exercises[exIndex];
 
-    // Use the original, unmodified set data for displaying the target.
-    // Fall back to the current set if the snapshot somehow doesn't exist.
-    const setForDisplay = originalSet || set;
+    // For the first set of an exercise or any set within a superset, we use the pre-filled values.
+    // Real-time intra-session suggestions are best applied to standard, sequential sets.
+    if (setIndex === 0 || exercise?.supersetId) {
+      setForDisplay = set;
+    } else {
+      // For subsequent sets (Set 2, 3, etc.), get the performance of the PREVIOUS set.
+      const previousLoggedSet = this.getLoggedSet(exIndex, setIndex - 1);
+
+      if (previousLoggedSet) {
+        // If the previous set was logged, ask the service for a suggestion for the CURRENT set.
+        // The `set` parameter here represents the planned values for the current set.
+        setForDisplay = this.workoutService.suggestNextSetParameters(previousLoggedSet, set);
+      } else {
+        // If the previous set was skipped, there's no data for a suggestion, so use the planned values.
+        setForDisplay = set;
+      }
+    }
+
+    // Finally, use the workoutService's formatting helper with the determined set data (either planned or suggested).
+    // return this.workoutService.getSetTargetDisplay(setForDisplay, field);
 
     return this.workoutService.getSetTargetDisplay(setForDisplay, field);
   }
@@ -2785,7 +2807,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     });
   }
 
-  /**
+   /**
    * --- THIS IS THE OTHER HALF OF THE FIX ---
    * On completion, this method now builds the log entry by combining three sources:
    * 1. The user's input (`performanceInputValues`).
@@ -2839,12 +2861,14 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         plannedSetId: targetLoggedSetId,
         exerciseId: exercise.exerciseId,
         type: set.type,
-        // Performed values: Use user input, OR the planned value if user didn't type anything
-        repsAchieved: userInputs.repsAchieved ?? 0,
-        weightUsed: userInputs.weightUsed ?? 0,
-        durationPerformed: userInputs.actualDuration ?? 0,
-        distanceAchieved: userInputs.actualDistance ?? 0,
+        // --- THIS IS THE FIX ---
+        // Performed values: Prioritize user input. If none, fall back to the planned target for the set.
+        repsAchieved: userInputs.repsAchieved ?? set.targetReps ?? 0,
+        weightUsed: userInputs.weightUsed ?? set.targetWeight ?? 0,
+        durationPerformed: userInputs.actualDuration ?? set.targetDuration ?? 0,
+        distanceAchieved: userInputs.actualDistance ?? set.targetDistance ?? 0,
         notes: userInputs.notes ?? set.notes,
+
         timestamp: new Date().toISOString(),
         // Target values: Always come from the original, static snapshot
         targetRestAfterSet: originalSet?.restAfterSet || targetSetValues?.targetRestAfterSet || 0,

@@ -298,7 +298,7 @@ export class WorkoutService {
     );
 
     if (wasSuccessful) {
-      console.log(`PO Suggestion: Success last time. Applying progression for strategies: [${poSettings.strategies.join(', ')}]`);
+      // console.log(`PO Suggestion: Success last time. Applying progression for strategies: [${poSettings.strategies.join(', ')}]`);
 
       // Apply increments based on all active strategies
       poSettings.strategies.forEach(strategy => {
