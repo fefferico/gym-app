@@ -178,7 +178,7 @@
             <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">Workout Player Settings</h2>
             <form [formGroup]="appSettingsForm" class="space-y-4">
                 <!-- Player mode (Focus Player) -->
-                <div class="flex items-center justify-between p-2 rounded-md transition-colors"
+                <div class="flex items-center justify-between py-2 rounded-md transition-colors"
                     [class.hover:bg-gray-100]="subscriptionService.isPremium()"
                     [class.dark:hover:bg-gray-600/50]="subscriptionService.isPremium()"
                     [class.cursor-pointer]="subscriptionService.isPremium()"
@@ -442,46 +442,72 @@
             </form>
         </section>
 
-        <!-- Data Management Section -->
+        <!-- ========================================================== -->
+        <!-- START: Modified Data Management Section                    -->
+        <!-- ========================================================== -->
         <section class="bg-white dark:bg-gray-700 p-4 sm:p-6 rounded-md shadow-md">
             <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">Data Management</h2>
-            <div class="space-y-4">
-                <div>
-                    <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Backup your data to a JSON
-                        file</p>
+            <!-- Using divide-y to create separators between items for a list-like feel -->
+            <div class="divide-y divide-gray-200 dark:divide-gray-600">
+
+                <!-- Export Data -->
+                <div class="py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Backup your data</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Save all your data to a JSON file.</p>
+                    </div>
                     <button appPress (shortPress)="exportData()"
-                        class="flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md shadow-sm transition-colors text-sm">
-                        <app-icon name="export" class="w-6 h-6 mr-1"></app-icon>
-                        EXPORT DATA</button>
-                </div>
-                <div>
-                    <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Restore your data from a JSON
-                        backup file</p>
-                    <input type="file" (change)="importData($event); currentVibrator.vibrate(50)"
-                        accept="application/json"
-                        class="block w-full text-sm text-gray-700 dark:text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-200 file:text-gray-700 hover:file:bg-gray-300 dark:file:bg-gray-600 dark:file:text-gray-200 dark:hover:file:bg-gray-700">
-                </div>
-                <div class="pt-4 border-t border-gray-200 dark:border-gray-600">
-                    <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Data and History<app-icon
-                            name="info" class="h-4 w-4 text-gray-400 dark:text-gray-300 cursor-help"
-                            (click)="showSyncHistoryTooltip()" [appTooltip]="syncHistoryTooltipString"></app-icon></p>
-                    <button appPress (shortPress)="onSyncHistoryClick()"
-                        class="flex items-center px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-md shadow-sm transition-colors text-sm">
-                        <app-icon name="change" class="w-6 h-6 mr-1"></app-icon>
-                        SYNC HISTORY
+                        class="mt-2 sm:mt-0 flex-shrink-0 flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md shadow-sm transition-colors text-sm">
+                        <app-icon name="export" class="w-5 h-5 mr-2"></app-icon>
+                        Export Data
                     </button>
                 </div>
-                <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
-                    <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">Reset / Clear Data</h3>
-                    <p class="text-sm font-medium text-red-600 dark:text-red-400 mb-2">WARNING: This action will delete
-                        ALL your saved data</p>
+
+                <!-- Import Data -->
+                <div class="py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Restore your data</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Import from a JSON backup file.</p>
+                    </div>
+                    <input type="file" (change)="importData($event); currentVibrator.vibrate(50)"
+                        accept="application/json"
+                        class="mt-2 sm:mt-0 block w-full sm:w-auto text-sm text-gray-700 dark:text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-200 file:text-gray-700 hover:file:bg-gray-300 dark:file:bg-gray-600 dark:file:text-gray-200 dark:hover:file:bg-gray-700">
+                </div>
+
+                <!-- Sync History -->
+                <div class="py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center">
+                            Data and History
+                            <app-icon name="info" class="ml-1 h-4 w-4 text-gray-400 dark:text-gray-300 cursor-help"
+                                (click)="showSyncHistoryTooltip()" [appTooltip]="syncHistoryTooltipString"></app-icon>
+                        </p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Recalculate stats and achievements.</p>
+                    </div>
+                    <button appPress (shortPress)="onSyncHistoryClick()"
+                        class="mt-2 sm:mt-0 flex-shrink-0 flex items-center px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-md shadow-sm transition-colors text-sm">
+                        <app-icon name="change" class="w-5 h-5 mr-2"></app-icon>
+                        Sync History
+                    </button>
+                </div>
+
+                <!-- Reset / Clear Data -->
+                <div class="py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-red-600 dark:text-red-400">Reset All Data</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">This action cannot be undone.</p>
+                    </div>
                     <button appPress (shortPress)="clearAllAppData()"
-                        class="flex items-center px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-md shadow-sm transition-colors text-sm">
-                        <app-icon name="trash" class="w-6 h-6 mr-1"></app-icon>
-                        CLEAR ALL DATA</button>
+                        class="mt-2 sm:mt-0 flex-shrink-0 flex items-center px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-md shadow-sm transition-colors text-sm">
+                        <app-icon name="trash" class="w-5 h-5 mr-2"></app-icon>
+                        Clear All Data
+                    </button>
                 </div>
             </div>
         </section>
+        <!-- ========================================================== -->
+        <!-- END: Modified Data Management Section                      -->
+        <!-- ========================================================== -->
 
         <!-- Personal Gym Link Section & Exercise List Link Section -->
         <div class="grid sm:grid-cols-2 gap-2">
