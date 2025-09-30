@@ -5,7 +5,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray, Abs
 import { Subscription, of, firstValueFrom, Observable, from } from 'rxjs';
 import { switchMap, tap, take, distinctUntilChanged, map, mergeMap, startWith, debounceTime, filter, mergeAll } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
-import { format, parseISO, isValid as isValidDate } from 'date-fns';
+import { format, parseISO, isValid as isValidDate, set } from 'date-fns';
 
 import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 
@@ -917,6 +917,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         targetReps: loggedSet.repsAchieved,
         targetWeight: loggedSet.weightUsed ?? null,
         targetDuration: loggedSet.durationPerformed,
+        targetDistance: loggedSet.distanceAchieved,
         restAfterSet: loggedSet.targetRestAfterSet ?? 60, // Use original target rest, or default
         type: loggedSet.type,
         notes: loggedSet.notes,
@@ -1024,6 +1025,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   private createSetFormGroup(setData?: ExerciseTargetSetParams | LoggedSet, forLogging: boolean = false): FormGroup {
     let targetTargetReps, targetWeighValue, targetDurationValue, notesValue, typeValue, tempoValue, restValue;
     let targetRepsMinValue, targetRepsMaxValue, targetDurationMinValue, targetDurationMaxValue, targetWeightMinValue, targetWeightMaxValue; // For ranges
+    let targetDistanceValue, targetDistanceMinValue, targetDistanceMaxValue;
     let id = uuidv4();
     let plannedSetIdValue;
     let timestampValue = new Date().toISOString(); // Default for new sets being logged
@@ -1035,6 +1037,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         targetTargetReps = loggedS.repsAchieved;
         targetWeighValue = loggedS.weightUsed;
         targetDurationValue = loggedS.durationPerformed;
+        targetDistanceValue = loggedS.distanceAchieved;
         notesValue = loggedS.notes;
         typeValue = loggedS.type || 'standard'; // Use logged type, default to standard
         plannedSetIdValue = loggedS.plannedSetId;
@@ -1052,6 +1055,9 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         targetDurationValue = plannedS.targetDuration;
         targetDurationMinValue = plannedS.targetDurationMin;
         targetDurationMaxValue = plannedS.targetDurationMax;
+        targetDistanceValue = plannedS.targetDistance;
+        targetDistanceMinValue = plannedS.targetDistanceMin;
+        targetDistanceMaxValue = plannedS.targetDistanceMax;
         notesValue = plannedS.notes;
         typeValue = plannedS.type || 'standard';
         tempoValue = plannedS.tempo;
@@ -1059,7 +1065,13 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         plannedSetIdValue = plannedS.id; // This is the template set ID
       }
     } else { // New blank set
-      targetTargetReps = null; targetWeighValue = null; targetDurationValue = null; notesValue = ''; typeValue = 'standard'; tempoValue = ''; restValue = 60;
+      targetTargetReps = null;
+      targetWeighValue = null;
+      targetDurationValue = null;
+      notesValue = '';
+      typeValue = 'standard';
+      tempoValue = ''; restValue = 60;
+      targetDistanceValue = null;
     }
 
     const formGroupConfig: { [key: string]: any } = {
@@ -1088,6 +1100,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       ];
       formGroupConfig['weightUsed'] = [targetWeighValue != null ? this.unitService.convertWeight(targetWeighValue, 'kg', this.unitService.currentWeightUnit()) : null, [Validators.min(0)]];
       formGroupConfig['durationPerformed'] = [targetDurationValue ?? null, [Validators.min(0)]];
+      formGroupConfig['distanceAchieved'] = [targetDistanceValue ?? null, [Validators.min(0)]];
       formGroupConfig['plannedSetId'] = [plannedSetIdValue];
       formGroupConfig['timestamp'] = [timestampValue];
       formGroupConfig['tempo'] = [tempoValue];
@@ -1106,6 +1119,11 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       formGroupConfig['targetDuration'] = [targetDurationValue ?? null, [Validators.min(0)]];
       formGroupConfig['targetDurationMin'] = [targetDurationMinValue ?? null, [Validators.min(0)]];
       formGroupConfig['targetDurationMax'] = [targetDurationMaxValue ?? null, [Validators.min(0)]];
+
+      formGroupConfig['targetDistance'] = [targetDistanceValue ?? null, [Validators.min(0)]];
+      formGroupConfig['targetDistanceMin'] = [targetDistanceMinValue ?? null, [Validators.min(0)]];
+      formGroupConfig['targetDistanceMax'] = [targetDistanceMaxValue ?? null, [Validators.min(0)]];
+
       formGroupConfig['tempo'] = [tempoValue || ''];
       formGroupConfig['restAfterSet'] = [restValue ?? 60, [Validators.required, Validators.min(0)]];
     }
@@ -1499,7 +1517,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     this.exercisesFormArray.updateValueAndValidity({ emitEvent: false });
   }
 
-    async groupSelectedAsSuperset(): Promise<void> {
+  async groupSelectedAsSuperset(): Promise<void> {
     if (this.isViewMode) return;
     const selectedIndices = this.selectedExerciseIndicesForSuperset().sort((a, b) => a - b);
 
@@ -1570,11 +1588,11 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
     selectedExercises.forEach((exerciseControl, i) => {
       const exerciseName = exerciseControl.get('exerciseName')?.value;
-      
+
       // Get the base exercise details to determine its properties
       const exerciseId = exerciseControl.get('exerciseId')?.value;
       const baseExercise = this.availableExercises.find(ex => ex.id === exerciseId);
-      
+
       // An exercise is considered weighted if its category is not 'cardio'.
       // This is more reliable than checking the form's current state.
       const isWeighted = baseExercise ? baseExercise.category !== 'cardio' : false;
@@ -1630,9 +1648,9 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       const targetWeightRaw = exerciseValuesResult[`weight_${orderInSuperset}`] !== undefined
         ? Number(exerciseValuesResult[`weight_${orderInSuperset}`])
         : null;
-      
-      const targetWeightKg = targetWeightRaw !== null 
-        ? this.unitService.convertWeight(targetWeightRaw, 'kg', this.unitService.currentWeightUnit()) 
+
+      const targetWeightKg = targetWeightRaw !== null
+        ? this.unitService.convertWeight(targetWeightRaw, 'kg', this.unitService.currentWeightUnit())
         : null;
 
       const templateSetData: ExerciseTargetSetParams = {
@@ -1857,6 +1875,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
             type: setInput.type,
             repsAchieved: setInput.repsAchieved,
             weightUsed: this.unitService.convertWeight(setInput.weightUsed, 'kg', this.unitService.currentWeightUnit()) ?? undefined,
+            distanceAchieved: setInput.distanceAchieved,
             durationPerformed: setInput.durationPerformed,
             notes: setInput.notes,
             targetReps: setInput.targetReps,
@@ -2458,7 +2477,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       // Use the generic getSetDisplayValue which can handle both LoggedSet and ExerciseTargetSetParams
       // by checking for the relevant min/max/single value properties.
       return this.getSetDisplayValue(new FormGroup({
-        targetReps: new FormControl(set.targetReps),
+        targetReps: new FormControl(set.targetReps || set.repsAchieved),
         targetRepsMin: new FormControl(set.targetRepsMin),
         targetRepsMax: new FormControl(set.targetRepsMax),
         repsAchieved: new FormControl(set.weightUsed)
@@ -2654,7 +2673,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       // Use the generic getSetDisplayValue which can handle both LoggedSet and ExerciseTargetSetParams
       // by checking for the relevant min/max/single value properties.
       return this.getSetDisplayValue(new FormGroup({
-        targetWeight: new FormControl(set.targetWeight),
+        targetWeight: new FormControl(set.targetWeight || set.weightUsed),
         targetWeightMin: new FormControl(set.targetWeightMin),
         targetWeightMax: new FormControl(set.targetWeightMax),
         weightUsed: new FormControl(set.weightUsed)
@@ -3379,11 +3398,11 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     }
   }
 
-   /**
-   * Retrieves the last logged performance for an exercise and fills the
-   * current sets in the form with that data.
-   * @param exIndex The index of the exercise in the exercisesFormArray.
-   */
+  /**
+  * Retrieves the last logged performance for an exercise and fills the
+  * current sets in the form with that data.
+  * @param exIndex The index of the exercise in the exercisesFormArray.
+  */
   async fillWithLatestPerformanceData(exIndex: number): Promise<void> {
     if (this.isViewMode) {
       this.toastService.info("Cannot modify data in view mode.", 3000);
@@ -3423,10 +3442,10 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         const historicalSet = lastPerformance.sets[setIndex];
         if (historicalSet) {
           const patchData: { [key: string]: any } = {};
-          
+
           // Convert the historical weight (stored in kg) to the user's current unit
-          const weightInCurrentUnit = historicalSet.weightUsed != null 
-            ? this.unitService.convertWeight(historicalSet.weightUsed, this.unitService.currentWeightUnit(), 'kg') 
+          const weightInCurrentUnit = historicalSet.weightUsed != null
+            ? this.unitService.convertWeight(historicalSet.weightUsed, this.unitService.currentWeightUnit(), 'kg')
             : null;
 
           // Apply data to the correct fields based on the builder's mode
@@ -3439,7 +3458,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
             patchData['targetWeight'] = weightInCurrentUnit;
             patchData['targetDuration'] = historicalSet.durationPerformed;
           }
-          
+
           // Patch the form group for the individual set
           setControl.patchValue(patchData);
         }
@@ -3453,6 +3472,47 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       this.toastService.error("Could not load performance data.", 0, "Error");
     } finally {
       this.spinnerService.hide();
+    }
+  }
+
+  getSetDistanceDisplay(exerciseControl: AbstractControl): string {
+    if (!exerciseControl || !exerciseControl.value || !exerciseControl.value.sets || exerciseControl.value.sets.length === 0) {
+      return '';
+    }
+
+    if (this.mode === 'manualLogEntry') {
+      const rawValue = exerciseControl.getRawValue() as LoggedWorkoutExercise;
+      const distances = rawValue.sets.map(set => set.distanceAchieved).filter(d => d != null && d > 0);
+      return distances.length > 0 ? distances.join('-') : '';
+    } else {
+      const setsFormArray = this.getSetsFormArray(exerciseControl);
+      const displayValues = setsFormArray.controls.map(setControl => this.getSetDisplayValue(setControl, 'distance'));
+      const validDisplayValues = displayValues.filter(value => value && value !== '-');
+      return validDisplayValues.join(', ');
+    }
+  }
+  toggleDistanceMode(setControl: AbstractControl, event?: Event): void {
+    event?.stopPropagation();
+    if (this.isViewMode || !(setControl instanceof FormGroup)) return;
+
+    const distanceCtrl = setControl.get('targetDistance');
+    const distanceMinCtrl = setControl.get('targetDistanceMin');
+    const distanceMaxCtrl = setControl.get('targetDistanceMax');
+
+    const isCurrentlyRange = distanceMinCtrl?.value != null || distanceMaxCtrl?.value != null;
+
+    if (isCurrentlyRange) {
+      // Switch FROM Range TO Single
+      const singleValue = distanceMinCtrl?.value ?? 1; // Default to 1 km/mi
+      distanceCtrl?.setValue(singleValue);
+      distanceMinCtrl?.setValue(null);
+      distanceMaxCtrl?.setValue(null);
+    } else {
+      // Switch FROM Single TO Range
+      const rangeValue = distanceCtrl?.value ?? 1; // Default to 1 km/mi
+      distanceMinCtrl?.setValue(rangeValue);
+      distanceMaxCtrl?.setValue(rangeValue);
+      distanceCtrl?.setValue(null);
     }
   }
 

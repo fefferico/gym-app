@@ -273,8 +273,7 @@
                             [cdkDragStartDelay]="110" class="transition-all"
                             (click)="toggleSetExpansion(exIndex,0, $event)" appClickOutside
                             (clickOutside)="collapseExpandedSet(false,$event)"
-                            [title]="isEditableMode() ? 'Drag to reorder' : ''"
-                            >
+                            [title]="isEditableMode() ? 'Drag to reorder' : ''">
 
                             <div class="exercise-item-content">
                                 <!-- ... Paste ALL your existing card content here, from the drag handle down to the end of the expanded view ... -->
@@ -347,6 +346,11 @@
                                                         ({{unitService.getWeightUnitSuffix()}}):
                                                         {{getSetWeightsUsed(exerciseControl)}}
                                                     </p>
+                                                    <p
+                                                        *ngIf="isExerciseCardioOnlyCtrl(exerciseControl) && getSetDistanceDisplay(exerciseControl)">
+                                                        Distance ({{unitService.getDistanceMeasureUnitSuffix()}}):
+                                                        {{getSetDistanceDisplay(exerciseControl)}}
+                                                    </p>
                                                 </div>
 
                                             </div>
@@ -376,7 +380,8 @@
                                             class="mx-1 flex items-center p-1 rounded-full hover:bg-red-600 disabled:opacity-50 bg-red-500 text-white">
                                             <app-icon name="trash" class="h-5 w-5"></app-icon>
                                         </button>
-                                        <button type="button" (click)="fillWithLatestPerformanceData(exIndex)" title="Fill with latest performance data"
+                                        <button type="button" (click)="fillWithLatestPerformanceData(exIndex)"
+                                            title="Fill with latest performance data"
                                             class="mx-1 flex items-center p-1 rounded-full hover:bg-green-600 disabled:opacity-50 bg-green-500 text-white">
                                             <app-icon name="task" class="h-5 w-5"></app-icon>
                                         </button>
@@ -412,8 +417,7 @@
                                             <div class="flex items-center">
                                                 <!-- The Image: Added margin-right for spacing and flex-shrink-0 -->
                                                 <img [src]="getIconPath(exerciseControl.get('exerciseId')?.value) | async"
-                                                    alt="Exercise Icon"
-                                                    class="object-contain mr-3 flex-shrink-0"
+                                                    alt="Exercise Icon" class="object-contain mr-3 flex-shrink-0"
                                                     [ngClass]="{
                                                         'w-8 h-8 ': !isSetExpanded(exIndex, 0),
                                                         'w-10 h-10 py-1': isSetExpanded(exIndex, 0),
@@ -723,7 +727,8 @@
                                                         class="grid grid-cols-2 sm:grid-cols-3 gap-x-3 gap-y-2 items-end">
                                                         <div class="col-span-full sm:col-span-1">
                                                             <p [ngClass]="setLabelClass(exerciseControl)">
-                                                                #{{setIndex+1}} {{isSuperSet(exIndex) ? 'round':'set'}}</p>
+                                                                #{{setIndex+1}} {{isSuperSet(exIndex) ? 'round':'set'}}
+                                                            </p>
                                                             <label [for]="'setType-exp-' + exIndex + '-' + setIndex"
                                                                 class="block text-s font-medium text-gray-600 dark:text-gray-400">Set
                                                                 Type</label>
@@ -838,6 +843,50 @@
                                                                 [id]="'weight-exp-' + exIndex + '-' + setIndex"
                                                                 formControlName="weightUsed" placeholder="Weight"
                                                                 [readonly]="isViewMode"
+                                                                class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
+                                                        </div>
+
+                                                        <div *ngIf="isExerciseCardioOnlyCtrl(exerciseControl)">
+                                                            <label [for]="'distance-exp-' + exIndex + '-' + setIndex"
+                                                                class="flex items-center justify-between text-s font-medium text-gray-600 dark:text-gray-400">
+                                                                <span>Distance
+                                                                    ({{unitService.getDistanceMeasureUnitSuffix()}})</span>
+                                                                <button *ngIf="mode === 'routineBuilder'" type="button"
+                                                                    (click)="toggleDistanceMode(setControl,$event)"
+                                                                    title="Toggle between single value and range"
+                                                                    class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold p-0.5 rounded">
+                                                                    {{ isRangeMode(setControl, 'distance') ? 'Use
+                                                                    Single' : 'Use Range' }}
+                                                                </button>
+                                                            </label>
+                                                            <!-- ROUTINE BUILDER - DISTANCE -->
+                                                            <ng-container *ngIf="mode === 'routineBuilder'">
+                                                                <div *ngIf="isRangeMode(setControl, 'distance')"
+                                                                    class="mt-0.5">
+                                                                    <div class="flex items-center space-x-1.5">
+                                                                        <input type="number"
+                                                                            formControlName="targetDistanceMin" min="0"
+                                                                            placeholder="Min" [readonly]="isViewMode"
+                                                                            class="w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
+                                                                        <span
+                                                                            class="text-gray-500 dark:text-gray-400 font-bold">-</span>
+                                                                        <input type="number"
+                                                                            formControlName="targetDistanceMax" min="0"
+                                                                            placeholder="Max" [readonly]="isViewMode"
+                                                                            class="w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
+                                                                    </div>
+                                                                </div>
+                                                                <input *ngIf="!isRangeMode(setControl, 'distance')"
+                                                                    type="number" formControlName="targetDistance"
+                                                                    min="0" placeholder="Distance"
+                                                                    [readonly]="isViewMode"
+                                                                    class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
+                                                            </ng-container>
+                                                            <!-- LOG ENTRY - SINGLE DISTANCE ACHIEVED -->
+                                                            <input *ngIf="mode === 'manualLogEntry'" type="number"
+                                                                [id]="'distance-exp-' + exIndex + '-' + setIndex"
+                                                                formControlName="distanceAchieved"
+                                                                placeholder="Distance" [readonly]="isViewMode"
                                                                 class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
                                                         </div>
 

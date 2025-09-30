@@ -233,15 +233,12 @@
                 <div *ngIf="item.isExpanded" class="grid gap-x-4 gap-y-2 p-4 bg-white dark:bg-gray-800"
                   [ngClass]="getGridColsClass(item)">
                   <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Set</div>
-                  <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Reps</div>
-                  <div *ngIf="item | isWeighted" class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">
-                    Weight</div>
-                  <div *ngIf="hasPerformedDistanceSets(item)"
-                    class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Distance</div>
-                  <div *ngIf="hasPerformedTimedSets(item)"
-                    class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Time</div>
+                  <div *ngIf="hasPerformedReps(item)" class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Reps</div>
+                  <div *ngIf="item | isWeighted" class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Weight</div>
+                  <div *ngIf="hasPerformedDistanceSets(item)"class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Distance</div>
+                  <div *ngIf="hasPerformedTimedSets(item)"class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Time</div>
                   <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Rest</div>
-                  <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Notes</div>
+                  <div *ngIf="hasNotes(item)" class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Notes</div>
                   <ng-container *ngFor="let set of item.sets; let i = index; let last = last">
                     <div class="font-medium text-gray-900 dark:text-white flex items-center space-x-2">
                       <span
@@ -255,7 +252,7 @@
                       </div>
                     </div>
                     <!-- Reps -->
-                    <div><strong [ngClass]="checkTextClass(set, 'reps')"
+                    <div *ngIf="hasPerformedReps(item)"><strong [ngClass]="checkTextClass(set, 'reps')"
                         [class.cursor-pointer]="isTargetMissed(set, 'reps')"
                         [class.hover:underline]="isTargetMissed(set, 'reps')"
                         (click)="showComparisonModal(set, 'reps')">{{ set.repsAchieved ?? '-' }}</strong></div>
@@ -267,7 +264,7 @@
                         (click)="showComparisonModal(set, 'weight')">{{ set.weightUsed != null ? (set.weightUsed + ' ' +
                         unitService.getWeightUnitSuffix()) : '-' }}</strong></div>
 
-                    <!-- +++ NEW: Data cell for Distance +++ -->
+                    <!-- Distance +++ -->
                     <div *ngIf="hasPerformedDistanceSets(item)">
                       <strong [ngClass]="checkTextClass(set, 'distance')"
                         [class.cursor-pointer]="isTargetMissed(set, 'distance')"
@@ -289,12 +286,7 @@
                         (click)="showComparisonModal(set, 'rest')">{{ set.restAfterSetUsed ?? '-' }}</strong></div>
 
                     <!-- Notes -->
-                    <div class="cursor-pointer dark:text-white">
-                      <app-icon name="schedule" (click)="showNotesModal(set.notes)" *ngIf="set.notes"
-                        class="h-7 w-7"></app-icon>
-                      <span class="text-gray-500" *ngIf="!set.notes">-</span>
-                    </div>
-                    <div class="cursor-pointer dark:text-white">
+                    <div *ngIf="set.notes" class="cursor-pointer dark:text-white">
                       <app-icon name="schedule" (click)="showNotesModal(set.notes)" *ngIf="set.notes"
                         class="h-7 w-7"></app-icon>
                       <span class="text-gray-500" *ngIf="!set.notes">-</span>

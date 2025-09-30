@@ -588,6 +588,10 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
     return loggedEx?.sets?.some(set => (set.durationPerformed ?? 0) > 0) ?? false;
   }
 
+    protected hasPerformedReps(loggedEx: DisplayLoggedExercise): boolean {
+    return loggedEx?.sets?.some(set => (set.repsAchieved ?? 0) > 0) ?? false;
+  }
+
   protected emomLabel(exercise: EMOMDisplayBlock): string {
     const rounds = exercise.totalRounds || 1;
     let roundString = rounds > 1 ? ` (${rounds} ROUNDS)` : ` (${rounds} ROUND)`;
@@ -671,12 +675,14 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
    */
   protected getGridColsClass(item: DisplayLoggedExercise): string {
     // Base columns are always present: Set, Reps, Rest, Notes
-    let cols = 4;
+    let cols = 2;
 
     // Conditionally add a column for each additional metric found
+    if (this.hasPerformedReps(item)) cols++;
     if (this.isWeighted(item)) cols++;
     if (this.hasPerformedTimedSets(item)) cols++;
     if (this.hasPerformedDistanceSets(item)) cols++;
+    if (this.hasNotes(item)) cols++;
 
     return `grid-cols-${cols}`;
   }
@@ -684,6 +690,10 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
   // +++ NEW: Helper method specifically for distance +++
   protected hasPerformedDistanceSets(loggedEx: DisplayLoggedExercise): boolean {
     return loggedEx?.sets?.some(set => (set.distanceAchieved ?? 0) > 0) ?? false;
+  }
+
+  protected hasNotes(loggedEx: DisplayLoggedExercise): boolean {
+    return loggedEx?.sets?.some(set => (set.notes ?? undefined)) ?? false;
   }
 
   // +++ NEW: Replicated pipe logic as a component method for consistency +++

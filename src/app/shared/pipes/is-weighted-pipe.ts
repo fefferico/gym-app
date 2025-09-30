@@ -21,6 +21,11 @@ export class IsWeightedPipe implements PipeTransform {
 
     // Return true if ANY set in the array has a weightUsed property that is a number.
     // `set.weightUsed != null` also covers cases where it's 0.
-    return exercise.sets.some((set: any) => typeof set.weightUsed === 'number' || typeof set.weight === 'number' || typeof set.targetWeight === 'number');
+    const weighted = exercise.sets.some((set: any) => 
+      (typeof set.weightUsed === 'number' && set.weightUsed > 0 ) ||
+      (typeof set.weight === 'number' && set.weight > 0 ) ||
+      (typeof set.targetWeight === 'number' && set.targetWeight > 0 )
+    );
+    return weighted;
   }
 }
