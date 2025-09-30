@@ -680,6 +680,7 @@ export class WorkoutService {
     // Determine default values based on the last logged set or general defaults
     const defaultWeight = kbRelated && lastLoggedSet ? (lastLoggedSet.targetWeight ?? lastLoggedSet.weightUsed) : (this.unitsService.currentWeightUnit() === 'kg' ? 10 : 22.2);
     const defaultDuration = isCardioOnly ? 60 : undefined;
+    const defaultDistance = isCardioOnly ? 1 : undefined;
     const defaultRest = kbRelated ? 45 : 60;
     const defaultReps = kbRelated && lastLoggedSet ? (lastLoggedSet.targetReps ?? lastLoggedSet.repsAchieved) : 10;
     const defaultSets = 3;
@@ -694,6 +695,7 @@ export class WorkoutService {
     const exerciseParams: AlertInput[] = isCardioOnly
       ? [
         ...baseParams,
+        { label: `Target Distance (${this.unitsService.getDistanceMeasureUnitSuffix()})`, name: 'distance', type: 'number', placeholder: 'e.g., 1', value: defaultDistance, attributes: { min: 0, required: true } },
         { label: 'Target Duration (seconds)', name: 'duration', type: 'number', placeholder: 'e.g., 60', value: defaultDuration, attributes: { min: 0, required: true } },
       ]
       : [
@@ -717,6 +719,7 @@ export class WorkoutService {
     const numSets = parseInt(String(exerciseData['numSets'])) || defaultSets;
     const numReps = parseInt(String(exerciseData['numReps'])) || defaultReps;
     const weight = parseFloat(String(exerciseData['weight'])) ?? defaultWeight;
+    const distance = parseInt(String(exerciseData['distance'])) || defaultDistance;
     const duration = parseInt(String(exerciseData['duration'])) || defaultDuration;
     const rest = parseInt(String(exerciseData['rest'])) || defaultRest;
 
@@ -726,6 +729,7 @@ export class WorkoutService {
         id: `custom-set-${uuidv4()}`,
         targetReps: isCardioOnly ? undefined : numReps,
         targetWeight: isCardioOnly ? undefined : weight,
+        targetDistance: isCardioOnly ? distance : undefined,
         targetDuration: isCardioOnly ? duration : undefined,
         restAfterSet: rest,
         type: 'standard',

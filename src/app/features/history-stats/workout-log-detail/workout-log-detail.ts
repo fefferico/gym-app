@@ -386,29 +386,44 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
     return loggedEx?.sets.some(set => set.weightUsed);
   }
 
+  protected checkRange(performed: number | string, min?: number | string | null, max?: number | string | null): string {
+    const numericPerformed = typeof performed === 'string' ? parseFloat(performed) : performed;
+    const numericMin = typeof min === 'string' ? parseFloat(min) : min;
+    const numericMax = typeof max === 'string' ? parseFloat(max) : max;
+
+    if (isNaN(numericPerformed)) {
+      // Handle cases where 'performed' is not a valid number string or number
+      return 'text-gray-800 dark:text-white'; // Or throw an error, or a specific error class
+    }
+
+    if (numericMin != null && numericPerformed < numericMin) {
+      return 'text-red-500 dark:text-red-400';
+    }
+    if (numericMax != null && numericPerformed > numericMax) {
+      return 'text-green-500 dark:text-green-400';
+    }
+    return 'text-gray-800 dark:text-white';
+  }
+
   checkTextClass(set: LoggedSet, type: 'reps' | 'duration' | 'weight' | 'rest' | 'distance'): string {
     if (!set) return 'text-gray-700 dark:text-gray-300';
 
-    const checkRange = (performed: number, min?: number | null, max?: number | null) => {
-      if (min != null && performed < min) return 'text-red-500 dark:text-red-400';
-      if (max != null && performed > max) return 'text-green-500 dark:text-green-400';
-      return 'text-gray-800 dark:text-white';
-    };
+
 
     if (type === 'reps' && (set.targetRepsMin != null || set.targetRepsMax != null)) {
-      return checkRange(set.repsAchieved ?? 0, set.targetRepsMin, set.targetRepsMax);
+      return this.checkRange(set.repsAchieved ?? 0, set.targetRepsMin, set.targetRepsMax);
     }
     if (type === 'duration' && (set.targetDurationMin != null || set.targetDurationMax != null)) {
-      return checkRange(set.durationPerformed ?? 0, set.targetDurationMin, set.targetDurationMax);
+      return this.checkRange(set.durationPerformed ?? 0, set.targetDurationMin, set.targetDurationMax);
     }
     if (type === 'distance' && (set.targetDistanceMin != null || set.targetDistanceMax != null)) {
-      return checkRange(set.distanceAchieved ?? 0, set.targetDistanceMin, set.targetDistanceMax);
+      return this.checkRange(set.distanceAchieved ?? 0, set.targetDistanceMin, set.targetDistanceMax);
     }
 
     const performed = type === 'reps' ? set.repsAchieved : type === 'duration' ? set.durationPerformed : type === 'weight' ? set.weightUsed : type === 'distance' ? set.distanceAchieved : set.restAfterSetUsed;
     const target = type === 'reps' ? set.targetReps : type === 'duration' ? set.targetDuration : type === 'weight' ? set.targetWeight : type === 'distance' ? set.targetDistance : set.targetRestAfterSet;
 
-    if ((target ?? 0) > 0) {
+    if ((target ?? 0) >= 0) {
       if ((performed ?? 0) > target!) return 'text-green-500 dark:text-green-400';
       if ((performed ?? 0) < target!) return 'text-red-500 dark:text-red-400';
     }
@@ -431,18 +446,19 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
       return single != null ? `${single}${suffix}` : '-';
     };
 
-    const isMiss = (performed: number, min?: number | null, single?: number | null) => (min != null && performed < min) || (min == null && performed < (single ?? 0));
+    const isDifferent = (performed: number, min?: number | null, single?: number | null) =>
+      (min != null && performed <= min) || (min == null && performed != (single ?? 0));
 
     switch (type) {
       case 'reps':
         const performedReps = set.repsAchieved;
-        if (isMiss(performedReps ?? 0, set.targetRepsMin, set.targetReps)) {
+        if (isDifferent(performedReps ?? 0, set.targetRepsMin, set.targetReps)) {
           modalData = { metric: 'Reps', targetValue: createTargetDisplay(set.targetRepsMin, set.targetRepsMax, set.targetReps), performedValue: `${performedReps ?? '-'}` };
         }
         break;
       case 'duration':
         const performedDuration = set.durationPerformed;
-        if (isMiss(performedDuration ?? 0, set.targetDurationMin, set.targetDuration)) {
+        if (isDifferent(performedDuration ?? 0, set.targetDurationMin, set.targetDuration)) {
           modalData = { metric: 'Duration', targetValue: createTargetDisplay(set.targetDurationMin, set.targetDurationMax, set.targetDuration, ' s'), performedValue: `${performedDuration ?? '-'} s` };
         }
         break;
@@ -460,7 +476,7 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
         break;
       case 'distance':
         const performedDistance = set.distanceAchieved;
-        if (isMiss(performedDistance ?? 0, set.targetDistanceMin, set.targetDistance)) {
+        if (isDifferent(performedDistance ?? 0, set.targetDistanceMin, set.targetDistance)) {
           modalData = { metric: 'Distance', targetValue: createTargetDisplay(set.targetDistanceMin, set.targetDistanceMax, set.targetDistance, ` ${distUnitLabel}`), performedValue: `${performedDistance ?? '-'} ${distUnitLabel}` };
         }
         break;
@@ -468,23 +484,54 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
     if (modalData) this.comparisonModalData.set(modalData);
   }
 
-  isTargetMissed(set: LoggedSet, type: 'reps' | 'duration' | 'weight' | 'rest' | 'distance'): boolean {
+  protected isTargetDifferent(set: LoggedSet, type: 'reps' | 'duration' | 'weight' | 'rest' | 'distance'): boolean {
     if (!set) return false;
-    if (type === 'reps') {
-      const performed = set.repsAchieved ?? 0;
-      return (set.targetRepsMin != null) ? performed < set.targetRepsMin : performed < (set.targetReps ?? 0);
+
+    // A reusable helper function to handle the logic for any metric.
+    const check = (
+      performed: number | null | undefined,
+      target: number | null | undefined,
+      min: number | null | undefined,
+      max: number | null | undefined
+    ): boolean => {
+      const p = performed ?? 0;
+
+      // SCENARIO 1: A range is defined (e.g., 8-12 reps, 60-90s duration).
+      if (min != null || max != null) {
+        // It's different if performed value is LESS than the minimum.
+        if (min != null && p < min) return true;
+        // It's different if performed value is GREATER than the maximum.
+        if (max != null && p > max) return true;
+        // If neither of the above, it's within the range, so it's NOT different.
+        return false;
+      }
+
+      // SCENARIO 2: A single target value is defined.
+      if (target != null && target >= 0) {
+        // It's different if performed is not strictly equal to the target.
+        return p !== target;
+      }
+
+      // SCENARIO 3: No target was set, so it can't be different.
+      return false;
+    };
+
+    // Use the helper for each metric type.
+    switch (type) {
+      case 'reps':
+        return check(set.repsAchieved, set.targetReps, set.targetRepsMin, set.targetRepsMax);
+      case 'duration':
+        return check(set.durationPerformed, set.targetDuration, set.targetDurationMin, set.targetDurationMax);
+      case 'distance':
+        return check(set.distanceAchieved, set.targetDistance, set.targetDistanceMin, set.targetDistanceMax);
+      case 'weight':
+        // Weight and Rest are treated as single-value targets.
+        return check(set.weightUsed, set.targetWeight, null, null);
+      case 'rest':
+        return check(set.restAfterSetUsed, set.targetRestAfterSet, null, null);
+      default:
+        return false;
     }
-    if (type === 'duration') {
-      const performed = set.durationPerformed ?? 0;
-      return (set.targetDurationMin != null) ? performed < set.targetDurationMin : performed < (set.targetDuration ?? 0);
-    }
-    if (type === 'distance') {
-      const performed = set.distanceAchieved ?? 0;
-      return (set.targetDistanceMin != null) ? performed < set.targetDistanceMin : performed < (set.targetDistance ?? 0);
-    }
-    const performed = (type === 'weight' ? set.weightUsed : set.restAfterSetUsed) ?? 0;
-    const target = (type === 'weight' ? set.targetWeight : set.targetRestAfterSet) ?? 0;
-    return performed < target && target > 0;
   }
 
   showNotesModal(notes: string): void {
@@ -588,7 +635,7 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
     return loggedEx?.sets?.some(set => (set.durationPerformed ?? 0) > 0) ?? false;
   }
 
-    protected hasPerformedReps(loggedEx: DisplayLoggedExercise): boolean {
+  protected hasPerformedReps(loggedEx: DisplayLoggedExercise): boolean {
     return loggedEx?.sets?.some(set => (set.repsAchieved ?? 0) > 0) ?? false;
   }
 

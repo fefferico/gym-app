@@ -106,12 +106,12 @@
                         <div class="text-center py-1">
                           <ng-container *ngIf="set; else noSetData">
                             <strong [ngClass]="checkTextClass(set, 'reps')"
-                              [class.cursor-pointer]="isTargetMissed(set, 'reps')"
-                              [class.hover:underline]="isTargetMissed(set, 'reps')"
+                              [class.cursor-pointer]="isTargetDifferent(set, 'reps')"
+                              [class.hover:underline]="isTargetDifferent(set, 'reps')"
                               (click)="showComparisonModal(set, 'reps')">{{ set.repsAchieved ?? '-' }}</strong>
                             <span *ngIf="set.weightUsed != null" class="text-gray-600 dark:text-gray-400 text-sm"
-                              [class.cursor-pointer]="isTargetMissed(set, 'weight')"
-                              [class.hover:underline]="isTargetMissed(set, 'weight')"
+                              [class.cursor-pointer]="isTargetDifferent(set, 'weight')"
+                              [class.hover:underline]="isTargetDifferent(set, 'weight')"
                               (click)="showComparisonModal(set, 'weight')">
                               @ {{ set.weightUsed | weightUnit:'1.0-2' }}
                             </span>
@@ -234,9 +234,9 @@
                   [ngClass]="getGridColsClass(item)">
                   <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Set</div>
                   <div *ngIf="hasPerformedReps(item)" class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Reps</div>
-                  <div *ngIf="item | isWeighted" class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Weight</div>
-                  <div *ngIf="hasPerformedDistanceSets(item)"class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Distance</div>
-                  <div *ngIf="hasPerformedTimedSets(item)"class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Time</div>
+                  <div *ngIf="item | isWeighted" class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Weight ({{unitService.getBodyWeightUnitSuffix()}})</div>
+                  <div *ngIf="hasPerformedDistanceSets(item)"class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Distance ({{unitService.getDistanceMeasureUnitSuffix()}})</div>
+                  <div *ngIf="hasPerformedTimedSets(item)"class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Time (s)</div>
                   <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Rest</div>
                   <div *ngIf="hasNotes(item)" class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Notes</div>
                   <ng-container *ngFor="let set of item.sets; let i = index; let last = last">
@@ -253,36 +253,36 @@
                     </div>
                     <!-- Reps -->
                     <div *ngIf="hasPerformedReps(item)"><strong [ngClass]="checkTextClass(set, 'reps')"
-                        [class.cursor-pointer]="isTargetMissed(set, 'reps')"
-                        [class.hover:underline]="isTargetMissed(set, 'reps')"
+                        [class.cursor-pointer]="isTargetDifferent(set, 'reps')"
+                        [class.hover:underline]="isTargetDifferent(set, 'reps')"
                         (click)="showComparisonModal(set, 'reps')">{{ set.repsAchieved ?? '-' }}</strong></div>
 
                     <!-- Weight -->
                     <div *ngIf="isWeighted(item)"><strong [ngClass]="checkTextClass(set, 'weight')"
-                        [class.cursor-pointer]="isTargetMissed(set, 'weight')"
-                        [class.hover:underline]="isTargetMissed(set, 'weight')"
+                        [class.cursor-pointer]="isTargetDifferent(set, 'weight')"
+                        [class.hover:underline]="isTargetDifferent(set, 'weight')"
                         (click)="showComparisonModal(set, 'weight')">{{ set.weightUsed != null ? (set.weightUsed + ' ' +
                         unitService.getWeightUnitSuffix()) : '-' }}</strong></div>
 
                     <!-- Distance +++ -->
                     <div *ngIf="hasPerformedDistanceSets(item)">
                       <strong [ngClass]="checkTextClass(set, 'distance')"
-                        [class.cursor-pointer]="isTargetMissed(set, 'distance')"
-                        [class.hover:underline]="isTargetMissed(set, 'distance')"
+                        [class.cursor-pointer]="isTargetDifferent(set, 'distance')"
+                        [class.hover:underline]="isTargetDifferent(set, 'distance')"
                         (click)="showComparisonModal(set, 'distance')">{{ set.distanceAchieved ?? '-' }} {{
                         set.distanceAchieved ? unitService.getDistanceMeasureUnitSuffix() : '' }}</strong>
                     </div>
 
                     <!-- Time -->
                     <div *ngIf="hasPerformedTimedSets(item)"><strong [ngClass]="checkTextClass(set, 'duration')"
-                        [class.cursor-pointer]="isTargetMissed(set, 'duration')"
-                        [class.hover:underline]="isTargetMissed(set, 'duration')"
+                        [class.cursor-pointer]="isTargetDifferent(set, 'duration')"
+                        [class.hover:underline]="isTargetDifferent(set, 'duration')"
                         (click)="showComparisonModal(set, 'duration')">{{ set.durationPerformed ?? '-' }}</strong></div>
 
                     <!-- Rest -->
                     <div><strong [ngClass]="checkTextClass(set, 'rest')"
-                        [class.cursor-pointer]="isTargetMissed(set, 'rest')"
-                        [class.hover:underline]="isTargetMissed(set, 'rest')"
+                        [class.cursor-pointer]="isTargetDifferent(set, 'rest')"
+                        [class.hover:underline]="isTargetDifferent(set, 'rest')"
                         (click)="showComparisonModal(set, 'rest')">{{ set.restAfterSetUsed ?? '-' }}</strong></div>
 
                     <!-- Notes -->
@@ -350,7 +350,7 @@
       <div class="font-semibold border-b pb-2 dark:border-gray-600">Target</div>
       <div class="font-semibold border-b pb-2 dark:border-gray-600">Performed</div>
       <div class="text-gray-500 dark:text-gray-400">{{ data.targetValue }}</div>
-      <div class="text-red-500 dark:text-red-400 font-bold">{{ data.performedValue }}</div>
+      <div class="font-bold" [ngClass]="checkRange(data.performedValue,data.targetValue,data.targetValue)">{{ data.performedValue }}</div>
     </div>
     <button appPress (shortPress)="comparisonModalData.set(null)"
       class="mt-6 w-fit px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary-light">

@@ -180,7 +180,7 @@
                         <input type="number" [ngModel]="getInitialInputValue(exIndex, setIndex, 'weight')"
                           (change)="updateSetData(exIndex, setIndex, 0, 'weight', $event)"
                           class="w-full text-center bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md p-1 focus:ring-primary-dark focus:border-primary-dark dark:text-gray-200">
-                        <div *ngIf="getSetTargetDisplay(set, 'weight') as target" class="target-class"><span>Target: {{
+                        <div *ngIf="getSetTargetDisplay(set, exIndex, setIndex, 'weight') as target" class="target-class"><span>Target: {{
                             target
                             }}{{unitsService.getWeightUnitSuffix()}}</span></div>
                       </div>
@@ -188,7 +188,7 @@
                         <input type="number" [ngModel]="getInitialInputValue(exIndex, setIndex, 'reps')"
                           (change)="updateSetData(exIndex, setIndex, 0, 'reps', $event)"
                           class="w-full text-center bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md p-1 focus:ring-primary-dark focus:border-primary-dark dark:text-gray-200">
-                        <div *ngIf="getSetTargetDisplay(set, 'reps') as target" class="target-class"><span>Target: {{
+                        <div *ngIf="getSetTargetDisplay(set, exIndex, setIndex, 'reps') as target" class="target-class"><span>Target: {{
                             target }}</span></div>
                       </div>
                     </ng-container>
@@ -197,16 +197,16 @@
                         <input type="number" [ngModel]="getInitialInputValue(exIndex, setIndex, 'distance')"
                           (change)="updateSetData(exIndex, setIndex, 0, 'distance', $event)"
                           class="w-full text-center bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md p-1 focus:ring-primary-dark focus:border-primary-dark dark:text-gray-200">
-                        <div *ngIf="getSetTargetDisplay(set, 'distance') as target" class="target-class">
+                        <div *ngIf="getSetTargetDisplay(set, exIndex, setIndex, 'distance') as target" class="target-class">
                           <span>Target: {{ target }} km</span>
                         </div>
                       </div>
                       <div class="col-span-3">
-                        <input type="text" [ngModel]="getInitialInputValue(exIndex, setIndex, 'time')"
-                          (change)="updateSetData(exIndex, setIndex, 0, 'time', $event)"
+                        <input type="text" [ngModel]="getInitialInputValue(exIndex, setIndex, 'duration')"
+                          (change)="updateSetData(exIndex, setIndex, 0, 'duration', $event)"
                           class="w-full text-center bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md p-1 focus:ring-primary-dark focus:border-primary-dark dark:text-gray-200"
                           placeholder="mm:ss">
-                        <div *ngIf="getSetTargetDisplay(set, 'duration') as target" class="target-class">
+                        <div *ngIf="getSetTargetDisplay(set, exIndex, setIndex, 'duration') as target" class="target-class">
                           <span>Target: {{ target }}</span>
                         </div>
                       </div>
@@ -343,7 +343,7 @@
                                       [disabled]="isRoundCompleted(exIndex, roundIndex)"
                                       (change)="updateSetData(getOriginalExIndex(ssExercise.id), roundIndex, roundIndex, 'weight', $event)"
                                       class="w-full text-md text-center bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md p-1 text-gray-700 dark:text-white">
-                                    <div *ngIf="getSetTargetDisplay(set, 'weight') as target"
+                                    <div *ngIf="getSetTargetDisplay(set, getOriginalExIndex(ssExercise.id), roundIndex,  'weight') as target"
                                       class="text-center text-xs text-gray-400 dark:text-gray-400 mt-0.5"><span>Target:
                                         {{ target
                                         }}{{unitsService.getWeightUnitSuffix()}}</span></div>
@@ -354,7 +354,7 @@
                                       [disabled]="isRoundCompleted(exIndex, roundIndex)"
                                       (change)="updateSetData(getOriginalExIndex(ssExercise.id), roundIndex, roundIndex, 'reps', $event)"
                                       class="w-full text-md text-center bg-gray-100 dark:bg-gray-700 border-gray-300 rounded-md p-1 text-gray-700 dark:text-white">
-                                    <div *ngIf="getSetTargetDisplay(set, 'reps') as target"
+                                    <div *ngIf="getSetTargetDisplay(set, getOriginalExIndex(ssExercise.id), roundIndex, 'reps') as target"
                                       class="text-center text-xs text-gray-400 dark:text-gray-400 mt-0.5"><span>Target:
                                         {{ target }}</span>
                                     </div>

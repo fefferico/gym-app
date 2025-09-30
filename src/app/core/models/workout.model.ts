@@ -31,7 +31,7 @@ export interface ExerciseTargetSetParams {
   amrapTimeLimit?: number | null; // For AMRAP if it's time-bound rather than rep-bound
 }
 
-export interface ExerciseExecutionSetParams {
+export interface ExerciseCurrentExecutionSetParams {
   id: string;
   tempo?: string;
   notes?: string;
@@ -41,6 +41,26 @@ export interface ExerciseExecutionSetParams {
   weightUsed: number;
   actualDuration: number;
   actualDistance: number;
+}
+
+export interface ExerciseTargetExecutionSetParams {
+  id: string;
+  tempo?: string;
+  notes?: string;
+  type: 'standard' | 'warmup' | 'amrap' | 'dropset' | 'failure' | 'myorep' | 'restpause' | 'custom' | 'superset' | 'tabata' | string; // More flexible
+  targetRestAfterSet?: number | null; // For the set *within* an exercise. For supersets, this might be 0 for intermediate exercises.
+  targetReps?: number | null;
+  targetRepsMin?: number | null;
+  targetRepsMax?: number | null;
+  targetWeight?: number | null;
+  targetWeightMin?: number | null;
+  targetWeightMax?: number | null;
+  targetDuration?: number | null;
+  targetDurationMin?: number | null;
+  targetDurationMax?: number | null;
+  targetDistance?: number | null;
+  targetDistanceMin?: number | null;
+  targetDistanceMax?: number | null;
 }
 
 export interface WorkoutExercise {

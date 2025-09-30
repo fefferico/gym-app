@@ -10,7 +10,8 @@ import {
   ActiveSetInfo,
   PlayerSubState,
   PausedWorkoutState,
-  ExerciseExecutionSetParams,
+  ExerciseTargetExecutionSetParams,
+  ExerciseCurrentExecutionSetParams,
 } from '../../../core/models/workout.model';
 import { Exercise } from '../../../core/models/exercise.model';
 import { WorkoutService } from '../../../core/services/workout.service';
@@ -101,7 +102,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   protected progressiveOverloadService = inject(ProgressiveOverloadService);
   private platformId = inject(PLATFORM_ID);
   private injector = inject(Injector);
-  private unitService = inject(UnitsService);
+  protected unitService = inject(UnitsService);
 
   isAddToSupersetModalOpen = signal(false);
   exerciseToSupersetIndex = signal<number | null>(null);
@@ -343,7 +344,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       if (this.isDestroyed) { return; }
       if (routine) {
 
-        // +++ NEW: PERCEIVED EFFORT CHECK - START +++
         // We capture the routine before adjustments so we can apply them to a copy
         let routineForSession = JSON.parse(JSON.stringify(routine)) as Routine;
 
@@ -383,7 +383,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
             }
           }
         }
-        // +++ NEW: PERCEIVED EFFORT CHECK - END +++
 
         this.routine.set(routineForSession); // Use the (potentially unmodified) routine copy
         this.originalRoutineSnapshot.set(JSON.parse(JSON.stringify(routine))); // Snapshot is always the true original
@@ -622,98 +621,10 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return !!this.currentWorkoutLog()?.exercises?.find((e, index) => index === exIndex);
   }
 
-  toggleSetCompletion(exercise: WorkoutExercise, set: ExerciseTargetSetParams, exIndex: number, setIndex: number, roundIndex: number): void {
-    const log = this.currentWorkoutLog();
-    if (!log.exercises) log.exercises = [];
-
-    let exerciseLog = log.exercises.find(e => e.id === exercise.id);
-    const wasCompleted = !!this.getLoggedSet(exIndex, setIndex, roundIndex);
-
-    // CORRECTED: Use the same unique ID format here for consistency.
-    const targetLoggedSetId = exercise.supersetId ? `${set.id}-round-${roundIndex}` : set.id;
-
-    if (wasCompleted) {
-      if (exerciseLog) {
-        const existingIndex = exerciseLog.sets.findIndex(s => s.plannedSetId === targetLoggedSetId);
-        if (existingIndex > -1) {
-          exerciseLog.sets.splice(existingIndex, 1);
-        }
-        if (exerciseLog.sets.length === 0) {
-          const emptyLogIndex = log.exercises.findIndex(e => e.id === exerciseLog!.id);
-          if (emptyLogIndex > -1) log.exercises.splice(emptyLogIndex, 1);
-        }
-      }
-    } else {
-      if (!exerciseLog) {
-        exerciseLog = {
-          id: exercise.id,
-          exerciseId: exercise.exerciseId,
-          exerciseName: exercise.exerciseName!,
-          sets: [],
-          type: exercise.type || 'standard',
-          supersetId: exercise.supersetId,
-          supersetOrder: exercise.supersetOrder,
-          supersetType: exercise.supersetType
-        };
-        log.exercises.push(exerciseLog);
-      }
-
-      const executedSet: ExerciseExecutionSetParams = mapExerciseTargetSetParamsToExerciseExecutedSetParams(set);
-
-      const newLoggedSet: LoggedSet = {
-        id: uuidv4(),
-        exerciseName: exercise.exerciseName,
-        plannedSetId: targetLoggedSetId,
-        exerciseId: exercise.exerciseId,
-        type: executedSet.type,
-        repsAchieved: executedSet.repsAchieved,
-        weightUsed: executedSet.weightUsed,
-        durationPerformed: executedSet.actualDuration,
-        distanceAchieved: executedSet.actualDistance,
-        timestamp: new Date().toISOString(),
-        notes: set.notes,
-        targetRestAfterSet: set.restAfterSet,
-        targetReps: set.targetReps,
-        targetRepsMin: set.targetRepsMin,
-        targetRepsMax: set.targetRepsMax,
-        targetWeight: set.targetWeight,
-        targetDuration: set.targetDuration,
-        targetDurationMin: set.targetDurationMin,
-        targetDurationMax: set.targetDurationMax,
-        targetDistance: set.targetDistance,
-      };
-      exerciseLog.sets.push(newLoggedSet);
-    }
-
-    this.currentWorkoutLog.set({ ...log });
-    this.savePausedSessionState();
-    this.lastExerciseIndex.set(exIndex);
-    this.lastExerciseSetIndex.set(setIndex);
-    this.workoutService.vibrate();
-
-    if (!wasCompleted) { // Only run this logic when completing a set, not un-completing
-      // Populate the step info for the auto-expansion logic
-      const routine = this.routine()!;
-
-      const shouldStartRest = set.restAfterSet && set.restAfterSet > 0 &&
-        (!this.isSuperSet(exIndex) || (this.isSuperSet(exIndex) && this.isEndOfLastSupersetExercise(exIndex, setIndex)));
-
-      if (shouldStartRest) {
-        this.lastLoggedSetForRestUpdate = this.getLoggedSet(exIndex, setIndex, roundIndex) ?? null;
-        this.startRestPeriod(set.restAfterSet, exIndex, setIndex);
-      } else {
-        // If there's no rest period, trigger the auto-expand immediately
-        this.handleAutoExpandNextExercise();
-      }
-    }
-    // --- END: MODIFIED/FIXED SECTION ---
-  }
-
-  // +++ ADD THIS NEW HELPER METHOD +++
   /**
-   * Finds the specific logged set for a given exercise, set, and round, and updates its data.
-   * This is called by `updateSetData` when a user edits an already-completed set.
-   */
+     * Finds the specific logged set for a given exercise, set, and round, and updates its data.
+     * This is called by `updateSetData` when a user edits an already-completed set.
+     */
   private updateSetDataForRound(exercise: WorkoutExercise, setIndex: number, roundIndex: number, field: string, value: string): void {
     const loggedSetToUpdate = this.getLoggedSet(this.routine()!.exercises.indexOf(exercise), setIndex, roundIndex);
 
@@ -740,73 +651,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         this.toastService.info("Logged set updated.", 1500);
       }
     }
-  }
-
-  /**
- * Updates the data when a user types into an input field.
- * - If the set is already completed, it updates the corresponding value in the workout log.
- * - If the set is NOT completed, it updates the target value in the routine plan.
- * THIS METHOD NEVER CREATES A LOG ENTRY OR MARKS A SET AS COMPLETE.
- */
-  updateSetData(exIndex: number, setIndex: number, roundIndex: number, field: 'reps' | 'weight' | 'distance' | 'time' | 'notes', event: Event): void {
-    const value = (event.target as HTMLInputElement).value;
-    const routine = this.routine();
-    if (!routine) return;
-
-    const isCompleted = this.isSetCompleted(exIndex, setIndex, roundIndex);
-
-    if (isCompleted) {
-      // --- SCENARIO 1: The set is already logged. Update the LOG. ---
-      this.currentWorkoutLog.update(log => {
-        if (!log.exercises) return log;
-        const exerciseLog = log.exercises.find(e => e.id === routine.exercises[exIndex].id);
-        if (exerciseLog) {
-          const targetLoggedSetId = this.isSuperSet(exIndex) ? `${routine.exercises[exIndex].sets[setIndex].id}-round-${roundIndex}` : routine.exercises[exIndex].sets[setIndex].id;
-          const setLog = exerciseLog.sets.find(s => s.plannedSetId === targetLoggedSetId);
-
-          if (setLog) {
-            switch (field) {
-              case 'reps': setLog.repsAchieved = parseFloat(value) || 0; break;
-              case 'weight': setLog.weightUsed = value === '' ? undefined : parseFloat(value); break;
-              case 'distance': setLog.distanceAchieved = parseFloat(value) || undefined; break;
-              case 'time': setLog.durationPerformed = this.parseTimeToSeconds(value); break;
-              case 'notes': setLog.notes = value; break;
-            }
-          }
-        }
-        return { ...log };
-      });
-      if (field !== 'notes') {
-        this.toastService.info("Logged set updated.", 1500);
-      }
-
-    } else {
-      // // --- SCENARIO 2: The set is not yet logged. Update the PLAN (routine). ---
-      // this.routine.update(r => {
-      //   if (!r) return r;
-      //   // Create a new array and new exercise/set objects to ensure change detection
-      //   const newExercises = [...r.exercises];
-      //   const newExercise = { ...newExercises[exIndex] };
-      //   const newSets = [...newExercise.sets];
-      //   const newSet = { ...newSets[setIndex] };
-
-      //   switch (field) {
-      //     case 'reps': newSet.targetReps = parseFloat(value) || undefined; break;
-      //     case 'weight': newSet.targetWeight = value === '' ? undefined : parseFloat(value); break;
-      //     case 'distance': newSet.targetDistance = parseFloat(value) || undefined; break;
-      //     case 'time': newSet.targetDuration = this.parseTimeToSeconds(value); break;
-      //     case 'notes': newSet.notes = value; break;
-      //   }
-
-      //   newSets[setIndex] = newSet;
-      //   newExercise.sets = newSets;
-      //   newExercises[exIndex] = newExercise;
-
-      //   return { ...r, exercises: newExercises };
-      // });
-    }
-
-    this.savePausedSessionState();
   }
 
   // +++ NEW: Method to update exercise-level notes
@@ -876,44 +720,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return '';
   }
 
-  /**
- * Determines the initial value for an input field.
- * - If the set is already logged, it shows the actual logged value (e.g., repsAchieved).
- * - If the set is not logged, it shows the planned target value (e.g., targetReps).
- */
-  getInitialInputValue(exIndex: number, setIndex: number, field: 'reps' | 'weight' | 'distance' | 'time' | 'notes'): string {
-    const routine = this.routine();
-    if (!routine) return '';
-
-    const exercise = routine.exercises[exIndex];
-    const plannedSet = exercise.sets[setIndex];
-
-    const roundIndex = this.isSuperSet(exIndex) ? setIndex : 0;
-    const loggedSet = this.getLoggedSet(exIndex, setIndex, roundIndex);
-
-    // If the set is completed, prioritize showing the actual logged data.
-    if (loggedSet) {
-      switch (field) {
-        case 'reps': return (loggedSet.repsAchieved ?? '').toString();
-        case 'weight': return (loggedSet.weightUsed ?? '').toString();
-        case 'distance': return (loggedSet.distanceAchieved ?? '').toString();
-        case 'time': return this.formatSecondsToTime(loggedSet.durationPerformed);
-        case 'notes': return loggedSet.notes ?? '';
-      }
-    }
-    // Otherwise, fall back to showing the planned target.
-    else {
-      switch (field) {
-        case 'reps': return (plannedSet.targetReps ?? '').toString();
-        case 'weight': return (plannedSet.targetWeight ?? '').toString();
-        case 'distance': return (plannedSet.targetDistance ?? '').toString();
-        case 'time': return this.formatSecondsToTime(plannedSet?.targetDuration || 0);
-        case 'notes': return plannedSet.notes ?? '';
-      }
-    }
-    return '';
-  }
-
   parseTimeToSeconds(timeStr: string): number {
     if (!timeStr) return 0;
     const parts = timeStr.split(':').map(part => parseInt(part, 10) || 0);
@@ -963,7 +769,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
             let targetElement: HTMLElement | null = null;
 
-            // +++ START OF CORRECTION +++
             // Check if any sets for THIS specific exercise have been logged.
             const hasLoggedSetsForThisExercise = this.getExerciseTotalLoggedSets(index) > 0;
 
@@ -984,7 +789,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
             }
             // If NO sets have been logged for this exercise, 'targetElement' will remain null,
             // which correctly triggers a scroll to the card header below.
-            // +++ END OF CORRECTION +++
 
             // --- EXECUTE SCROLL ---
             const headerHeight = headerElement.offsetHeight;
@@ -1216,7 +1020,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     };
     exercise.sets.unshift(newWarmupSet);
 
-    // +++ FIX: Return a new object reference to trigger computed signal recalculation +++
     this.routine.set({ ...routine });
 
     this.toastService.success(`Warm-up set added to ${exercise.exerciseName}`);
@@ -1280,7 +1083,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       this.toastService.success(`${type === 'warmup' ? 'Warm-up set' : 'Set'} added to ${triggerExercise.exerciseName}`);
     }
 
-    // --- Update state and UI for both cases ---
     this.routine.set({ ...routine });
     // Ensure the current exercise remains expanded
     if (this.expandedExerciseIndex() !== exIndex) {
@@ -1583,9 +1385,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       // If the routine doesn't exist, we can't add to it.
       if (!r) return r;
 
-      // *** THE FIX ***
       // Return a NEW routine object with a NEW exercises array.
-      // The spread syntax (...) creates new copies instead of mutating the old ones.
       return {
         ...r,
         exercises: [...r.exercises, newWorkoutExercise]
@@ -1611,7 +1411,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         const oldWorkoutExercise = r.exercises[index];
         const oldExerciseName = oldWorkoutExercise.exerciseName;
 
-        // +++ NEW: Logic to check categories and clear incompatible data
         const oldBaseExercise = this.availableExercises.find(ex => ex.id === oldWorkoutExercise.exerciseId);
         const newBaseExercise = this.availableExercises.find(ex => ex.id === newExercise.id);
 
@@ -1631,7 +1430,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
             }
           });
         }
-        // +++ END NEW LOGIC
 
         oldWorkoutExercise.exerciseId = newExercise.id;
         oldWorkoutExercise.exerciseName = newExercise.name;
@@ -1918,6 +1716,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     }
 
     const { exercise, details: plannedSet, historicalSet } = nextStep;
+    const nextExIndex = this.getOriginalExIndex(exercise.id);
+    const nextSetIndex = exercise.sets.indexOf(plannedSet);
 
     // --- CASE 1: The next item is part of a Superset ---
     if (exercise.supersetId) {
@@ -1934,17 +1734,17 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         titleLine = `Next Up: Round ${roundIndex + 1}/${totalRounds}`;
       }
 
-      // Build an HTML string for each exercise in the upcoming round
       const detailLines = exercisesInGroup.map(groupEx => {
         const setForThisRound = groupEx.sets[roundIndex];
-        if (!setForThisRound) return ''; // Failsafe
+        if (!setForThisRound) return '';
 
         const originalExIndex = this.getOriginalExIndex(groupEx.id);
         const displayIndex = this.getExerciseDisplayIndex(originalExIndex);
         const exName = groupEx.exerciseName;
-        const targetDetails = this.formatSetTargetForDisplay(setForThisRound, groupEx);
 
-        // This creates a small, structured block for each exercise
+        // +++ MODIFIED: Pass all required indices to the formatting function +++
+        const targetDetails = this.formatSetTargetForDisplay(setForThisRound, groupEx, originalExIndex, roundIndex);
+
         return `<div class="flex items-start gap-3 mt-3">
                     <span class="font-bold text-gray-400 dark:text-gray-300 w-8 text-center">${displayIndex}</span>
                     <div class="flex-1 text-left">
@@ -1954,11 +1754,10 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
                 </div>`;
       }).join('');
 
-      // Combine the title and the detail lines into a single HTML block for display
       this.restTimerNextUpText.set(`<div class="text-center"><p class="text-lg font-bold">${titleLine}</p></div><div class="mt-2">${detailLines}</div>`);
 
     } else {
-      // --- CASE 2: The next item is a Standard Exercise (Original Logic) ---
+      // --- CASE 2: The next item is a Standard Exercise ---
       const line1 = exercise.exerciseName;
       const setIndex = exercise.sets.indexOf(plannedSet);
       const line2 = `Set ${setIndex + 1}/${exercise.sets.length}`;
@@ -1968,7 +1767,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         const weight = this.weightUnitPipe.transform(historicalSet.weightUsed);
         detailsLine = `Last time: ${weight} x ${historicalSet.repsAchieved} reps`;
       } else {
-        detailsLine = this.formatSetTargetForDisplay(plannedSet, exercise);
+        // +++ MODIFIED: Pass all required indices to the formatting function +++
+        detailsLine = this.formatSetTargetForDisplay(plannedSet, exercise, nextExIndex, nextSetIndex);
       }
 
       this.restTimerNextUpText.set(`${line1}<br><span class="text-base opacity-80">${line2}</span><br><span class="text-base font-normal">${detailsLine}</span>`);
@@ -2083,8 +1883,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         const lastPerformance = await firstValueFrom(this.trackingService.getLastPerformanceForExercise(nextExercise.exerciseId));
         const historicalSet = this.trackingService.findPreviousSetPerformance(lastPerformance, plannedNextSet, nextSetIndex);
 
-        // *** THE FIX IS HERE ***
-        // We now return the ORIGINAL 'plannedNextSet' object in the 'details' property.
+        // Return the ORIGINAL 'plannedNextSet' object in the 'details' property.
         // This ensures that `indexOf` will work correctly in the calling function.
         return { text: '', details: plannedNextSet, exercise: nextExercise, historicalSet: historicalSet };
 
@@ -2174,7 +1973,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
 
     if (loggedExercises) {
-      // --- START OF FIX ---
       // Restore the log using the absolute start time.
       this.currentWorkoutLog.set({
         exercises: loggedExercises,
@@ -2636,8 +2434,15 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   * @param field The field to display ('reps', 'duration', or 'weight').
   * @returns A formatted string like "8-12", "60+", "10", or an empty string if no target is set.
   */
-  public getSetTargetDisplay(set: ExerciseTargetSetParams, field: 'reps' | 'duration' | 'weight' | 'distance'): string {
-    return this.workoutService.getSetTargetDisplay(set, field);
+  public getSetTargetDisplay(set: ExerciseTargetSetParams, exIndex: number, setIndex: number, field: 'reps' | 'duration' | 'weight' | 'distance'): string {
+    const originalExercise = this.originalRoutineSnapshot()?.exercises[exIndex];
+    const originalSet = originalExercise?.sets[setIndex];
+
+    // Use the original, unmodified set data for displaying the target.
+    // Fall back to the current set if the snapshot somehow doesn't exist.
+    const setForDisplay = originalSet || set;
+
+    return this.workoutService.getSetTargetDisplay(setForDisplay, field);
   }
 
   /**
@@ -2859,18 +2664,22 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return exercisesInGroup.map(ex => ex.exerciseName).join(' / ');
   }
 
-  private formatSetTargetForDisplay(set: ExerciseTargetSetParams, exercise: WorkoutExercise): string {
+  private formatSetTargetForDisplay(set: ExerciseTargetSetParams, exercise: WorkoutExercise, exIndex: number, setIndex: number): string {
+    // Get the original, unmodified set data from the snapshot. Fall back to the current set if needed.
+    const setForDisplay = this.originalRoutineSnapshot()?.exercises[exIndex]?.sets[setIndex] || set;
+
     if (this.isCardio(exercise)) {
-      const distance = set.targetDistance ?? 0;
-      const duration = set.targetDuration ?? 0;
+      const distance = setForDisplay.targetDistance ?? 0;
+      const duration = setForDisplay.targetDuration ?? 0;
       let parts: string[] = [];
-      if (distance > 0) parts.push(`${distance} km`);
+      if (distance > 0) parts.push(`${distance} ${this.unitService.getDistanceMeasureUnitSuffix()}`);
       if (duration > 0) parts.push(this.formatSecondsToTime(duration));
       return parts.length > 0 ? `Target: ${parts.join(' for ')}` : 'No target set';
     } else {
-      const repsDisplay = this.getSetTargetDisplay(set, 'reps');
-      const weightDisplay = this.workoutService.getWeightDisplay(set, exercise);
-      // Only show target if there are reps to perform
+      // Use the original set data to get the display values for reps and weight
+      const repsDisplay = this.getSetTargetDisplay(setForDisplay, exIndex, setIndex, 'reps');
+      const weightDisplay = this.workoutService.getWeightDisplay(setForDisplay, exercise);
+
       return repsDisplay ? `Target: ${weightDisplay} x ${repsDisplay} reps` : 'No target set';
     }
   }
@@ -2896,5 +2705,180 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       }
       return newSet;
     });
+  }
+
+  performanceInputValues = signal<{ [key: string]: Partial<ExerciseCurrentExecutionSetParams> }>({});
+  /**
+ * Determines the initial value for an input field.
+ * 1. If the set is already logged, it shows the logged value.
+ * 2. If the user has typed something for this set, it shows their input.
+ * 3. Otherwise, it shows the planned target value as the default.
+ */
+  getInitialInputValue(exIndex: number, setIndex: number, field: 'reps' | 'weight' | 'distance' | 'duration' | 'notes'): string {
+    const routine = this.routine();
+    if (!routine) return '';
+
+    const key = `${exIndex}-${setIndex}`;
+    const userInputs = this.performanceInputValues()[key];
+    const plannedSet = routine.exercises[exIndex].sets[setIndex];
+    const loggedSet = this.getLoggedSet(exIndex, setIndex);
+
+    // PRIORITY 1: Show already logged data if it exists.
+    if (loggedSet) {
+      switch (field) {
+        case 'reps': return (loggedSet.repsAchieved ?? '').toString();
+        case 'weight': return (loggedSet.weightUsed ?? '').toString();
+        case 'distance': return (loggedSet.distanceAchieved ?? '').toString();
+        case 'duration': return this.formatSecondsToTime(loggedSet.durationPerformed);
+        case 'notes': return loggedSet.notes ?? '';
+      }
+    }
+
+    // PRIORITY 2: Show what the user has typed for this specific field if it exists.
+    if (userInputs) {
+      switch (field) {
+        case 'reps': if (userInputs.repsAchieved !== undefined) return userInputs.repsAchieved.toString(); break;
+        case 'weight': if (userInputs.weightUsed !== undefined) return userInputs.weightUsed.toString(); break;
+        case 'distance': if (userInputs.actualDistance !== undefined) return userInputs.actualDistance.toString(); break;
+        case 'duration': if (userInputs.actualDuration !== undefined) return this.formatSecondsToTime(userInputs.actualDuration); break;
+        case 'notes': if (userInputs.notes !== undefined) return userInputs.notes; break;
+      }
+    }
+
+    // PRIORITY 3: Fall back to the original planned target value.
+    switch (field) {
+      case 'reps': return (plannedSet.targetReps ?? '').toString();
+      case 'weight': return (plannedSet.targetWeight ?? '').toString();
+      case 'distance': return (plannedSet.targetDistance ?? '').toString();
+      case 'duration': return this.formatSecondsToTime(plannedSet.targetDuration ?? 0);
+      case 'notes': return plannedSet.notes ?? '';
+    }
+
+    return '';
+  }
+
+  /**
+   * --- THIS IS THE FIX ---
+   * This method now ONLY updates the temporary `performanceInputValues` signal.
+   * It DOES NOT touch the routine or the workout log. It is purely for capturing UI input.
+   */
+  updateSetData(exIndex: number, setIndex: number, roundIndex: number, field: 'reps' | 'weight' | 'distance' | 'duration' | 'notes', event: Event): void {
+    const value = (event.target as HTMLInputElement).value;
+    const key = `${exIndex}-${setIndex}`;
+
+    this.performanceInputValues.update(currentInputs => {
+      const newInputs = { ...currentInputs }; // Create a mutable copy
+      if (!newInputs[key]) {
+        newInputs[key] = {}; // Initialize if it doesn't exist
+      }
+
+      // Update the specific field in our temporary state object
+      switch (field) {
+        case 'reps': newInputs[key].repsAchieved = parseFloat(value) || undefined; break;
+        case 'weight': newInputs[key].weightUsed = value === '' ? undefined : parseFloat(value); break;
+        case 'distance': newInputs[key].actualDistance = parseFloat(value) || undefined; break;
+        case 'duration': newInputs[key].actualDuration = this.parseTimeToSeconds(value); break;
+        case 'notes': newInputs[key].notes = value; break;
+      }
+
+      return newInputs;
+    });
+  }
+
+  /**
+   * --- THIS IS THE OTHER HALF OF THE FIX ---
+   * On completion, this method now builds the log entry by combining three sources:
+   * 1. The user's input (`performanceInputValues`).
+   * 2. The routine's plan (as a fallback for performed values).
+   * 3. The original snapshot (for target values).
+   */
+  toggleSetCompletion(exercise: WorkoutExercise, set: ExerciseTargetSetParams, exIndex: number, setIndex: number, roundIndex: number): void {
+    const log = this.currentWorkoutLog();
+    if (!log.exercises) log.exercises = [];
+
+    let exerciseLog = log.exercises.find(e => e.id === exercise.id);
+    const wasCompleted = !!this.getLoggedSet(exIndex, setIndex, roundIndex);
+    const targetLoggedSetId = exercise.supersetId ? `${set.id}-round-${roundIndex}` : set.id;
+    const key = `${exIndex}-${setIndex}`;
+
+    if (wasCompleted) {
+      // Un-logging logic is now updated to restore values to the input state
+      if (exerciseLog) {
+        const setIndexInLog = exerciseLog.sets.findIndex(s => s.plannedSetId === targetLoggedSetId);
+        if (setIndexInLog > -1) {
+          const unloggedSet = exerciseLog.sets[setIndexInLog];
+          // Restore the unlogged values back into the temporary input state
+          this.performanceInputValues.update(inputs => {
+            inputs[key] = {
+              repsAchieved: unloggedSet.repsAchieved,
+              weightUsed: unloggedSet.weightUsed,
+              actualDuration: unloggedSet.durationPerformed,
+              actualDistance: unloggedSet.distanceAchieved,
+              notes: unloggedSet.notes
+            };
+            return { ...inputs };
+          });
+          exerciseLog.sets.splice(setIndexInLog, 1);
+        }
+      }
+    } else {
+      // Logging logic
+      if (!exerciseLog) {
+        exerciseLog = { id: exercise.id, exerciseId: exercise.exerciseId, exerciseName: exercise.exerciseName!, sets: [], type: exercise.type || 'standard', supersetId: exercise.supersetId, supersetOrder: exercise.supersetOrder, supersetType: exercise.supersetType };
+        log.exercises.push(exerciseLog);
+      }
+
+      const userInputs = this.performanceInputValues()[key] || {};
+      const originalSet = this.originalRoutineSnapshot()?.exercises[exIndex]?.sets[setIndex];
+      const targetSetValues: ExerciseTargetExecutionSetParams = mapExerciseTargetSetParamsToExerciseExecutedSetParams(set);
+
+      // Create the log entry by prioritizing user input, then falling back to the planned target
+      const newLoggedSet: LoggedSet = {
+        id: uuidv4(),
+        exerciseName: exercise.exerciseName,
+        plannedSetId: targetLoggedSetId,
+        exerciseId: exercise.exerciseId,
+        type: set.type,
+        // Performed values: Use user input, OR the planned value if user didn't type anything
+        repsAchieved: userInputs.repsAchieved ?? 0,
+        weightUsed: userInputs.weightUsed ?? 0,
+        durationPerformed: userInputs.actualDuration ?? 0,
+        distanceAchieved: userInputs.actualDistance ?? 0,
+        notes: userInputs.notes ?? set.notes,
+        timestamp: new Date().toISOString(),
+        // Target values: Always come from the original, static snapshot
+        targetRestAfterSet: originalSet?.restAfterSet || targetSetValues?.targetRestAfterSet || 0,
+        targetReps: originalSet?.targetReps || targetSetValues?.targetReps || 0,
+        targetWeight: originalSet?.targetWeight || targetSetValues?.targetWeight || 0,
+        targetDuration: originalSet?.targetDuration || targetSetValues?.targetDuration || 0,
+        targetDistance: originalSet?.targetDistance || targetSetValues?.targetDistance || 0,
+      };
+      exerciseLog.sets.push(newLoggedSet);
+
+      // Clean up the temporary input state for this set after logging
+      this.performanceInputValues.update(inputs => {
+        delete inputs[key];
+        return { ...inputs };
+      });
+    }
+
+    // --- (The rest of the method for state updates, saving, and timers remains the same) ---
+    this.currentWorkoutLog.set({ ...log });
+    this.savePausedSessionState();
+    this.lastExerciseIndex.set(exIndex);
+    this.lastExerciseSetIndex.set(setIndex);
+    this.workoutService.vibrate();
+
+    if (!wasCompleted) {
+      const shouldStartRest = set.restAfterSet && set.restAfterSet > 0 &&
+        (!this.isSuperSet(exIndex) || (this.isSuperSet(exIndex) && this.isEndOfLastSupersetExercise(exIndex, setIndex)));
+
+      if (shouldStartRest) {
+        this.lastLoggedSetForRestUpdate = this.getLoggedSet(exIndex, setIndex, roundIndex) ?? null;
+        this.startRestPeriod(set.restAfterSet, exIndex, setIndex);
+      } else {
+        this.handleAutoExpandNextExercise();
+      }
+    }
   }
 }

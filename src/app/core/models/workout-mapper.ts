@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { LoggedWorkoutExercise, LoggedSet } from './workout-log.model';
-import { WorkoutExercise, ExerciseTargetSetParams, ExerciseExecutionSetParams } from './workout.model';
+import { WorkoutExercise, ExerciseTargetSetParams, ExerciseTargetExecutionSetParams } from './workout.model';
 
 /**
  * Maps an array of logged exercises back into a routine snapshot format.
@@ -172,16 +172,24 @@ export function mapLegacyLoggedExercisesToCurrent(
 }
 
 export function mapExerciseTargetSetParamsToExerciseExecutedSetParams(exerciseTargetSetParams: ExerciseTargetSetParams
-): ExerciseExecutionSetParams {
+): ExerciseTargetExecutionSetParams {
     return {
         id: exerciseTargetSetParams.id,
-        restAfterSet: exerciseTargetSetParams.restAfterSet,
+        targetRestAfterSet: exerciseTargetSetParams.restAfterSet,
         type: exerciseTargetSetParams.type,
-        actualDistance: exerciseTargetSetParams.targetDistance || exerciseTargetSetParams.targetDistanceMin || 0,
-        actualDuration: exerciseTargetSetParams.targetDuration || exerciseTargetSetParams.targetDurationMin || 0,
-        weightUsed: exerciseTargetSetParams.targetWeight || exerciseTargetSetParams.targetWeightMin || 0,
-        repsAchieved: exerciseTargetSetParams.targetReps || exerciseTargetSetParams.targetRepsMin || 0,
+        targetReps: exerciseTargetSetParams.targetReps || 0,
+        targetRepsMin: exerciseTargetSetParams.targetRepsMin || 0,
+        targetRepsMax: exerciseTargetSetParams.targetRepsMax || 0,
+        targetWeight: exerciseTargetSetParams.targetWeight || 0,
+        targetWeightMin: exerciseTargetSetParams.targetWeightMin || 0,
+        targetWeightMax: exerciseTargetSetParams.targetWeightMax || 0,
+        targetDistance: exerciseTargetSetParams.targetDistance || 0,
+        targetDistanceMin: exerciseTargetSetParams.targetDistanceMin || 0,
+        targetDistanceMax: exerciseTargetSetParams.targetDistanceMax || 0,
+        targetDuration: exerciseTargetSetParams.targetDuration || 0,
+        targetDurationMin: exerciseTargetSetParams.targetDurationMin || 0,
+        targetDurationMax: exerciseTargetSetParams.targetDurationMax || 0,
         notes: exerciseTargetSetParams.notes || '',
         tempo: exerciseTargetSetParams.tempo
-    } as ExerciseExecutionSetParams;
+    } as ExerciseTargetExecutionSetParams;
 }
