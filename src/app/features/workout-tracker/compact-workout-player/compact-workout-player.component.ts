@@ -557,6 +557,22 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return base?.category === 'cardio';
   }
 
+  isDistancedExercise(exIndex: number): boolean {
+    const base = this.routine()?.exercises[exIndex];
+    if (!base){
+      return false;
+    }
+    return !!base?.sets?.some(set => set.targetDistance || set.targetDistanceMin) || this.isCardio(base);
+  }
+
+  isDurationExercise(exIndex: number): boolean {
+    const base = this.routine()?.exercises[exIndex];
+    if (!base){
+      return false;
+    }
+    return !!base?.sets?.some(set => set.targetDuration || set.targetDurationMin);
+  }
+
   isSetDataValid(exIndex: number, setIndex: number): boolean {
     const set = this.routine()?.exercises[exIndex]?.sets[setIndex];
     if (!set) return false;

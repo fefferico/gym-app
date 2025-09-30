@@ -123,7 +123,7 @@ export class ProgressiveOverloadService {
       settings.strategies.forEach(strategy => {
         switch (strategy) {
           case ProgressiveOverloadStrategy.WEIGHT:
-            if (settings.weightIncrement) {
+            if (settings.weightIncrement && (set.targetWeight || set.targetWeightMin)) {
               const originalSetWeight = set.targetWeight;
               set.targetWeight = (originalSetWeight ?? 0) + settings.weightIncrement;
               if (set.targetWeightMin) {
@@ -135,7 +135,7 @@ export class ProgressiveOverloadService {
             }
             break;
           case ProgressiveOverloadStrategy.REPS:
-            if (settings.repsIncrement) {
+            if (settings.repsIncrement && (set.targetReps || set.targetRepsMin)) {
               const originalSetReps = set.targetReps;
               set.targetReps = (originalSetReps ?? 0) + settings.repsIncrement;
               if (set.targetRepsMin) {
@@ -148,7 +148,7 @@ export class ProgressiveOverloadService {
             break;
           // +++ NEW: Apply distance increment
           case ProgressiveOverloadStrategy.DISTANCE:
-            if (settings.distanceIncrement) {
+            if (settings.distanceIncrement && (set.targetDistance || set.targetDistanceMin)) {
               const originalSetDistance = set.targetDistance;
               set.targetDistance = (originalSetDistance ?? 0) + settings.distanceIncrement;
               if (set.targetDistanceMin) {
@@ -161,7 +161,7 @@ export class ProgressiveOverloadService {
             break;
           // +++ NEW: Apply duration increment
           case ProgressiveOverloadStrategy.DURATION:
-            if (settings.durationIncrement) {
+            if (settings.durationIncrement && (set.targetDuration || set.targetDurationMin)) {
               // Assuming duration is stored in `set.durationSeconds`
               const originalSetDuration = set.targetDuration;
               set.targetDuration = (originalSetDuration ?? 0) + settings.durationIncrement;

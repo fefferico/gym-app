@@ -562,4 +562,23 @@ viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" >
 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
   <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
 </svg>`,
+'target': `
+<svg 
+  xmlns="http://www.w3.org/2000/svg" 
+  viewBox="0 0 24 24" 
+  fill="none" 
+  stroke="currentColor" 
+  stroke-width="2" 
+  stroke-linecap="round" 
+  stroke-linejoin="round"
+>
+  <!-- The main circle -->
+  <circle cx="12" cy="12" r="10"></circle>
+  <!-- The crosshair lines extending to the edges of the circle -->
+  <line x1="22" y1="12" x2="18" y2="12"></line>
+  <line x1="6" y1="12" x2="2" y2="12"></line>
+  <line x1="12" y1="6" x2="12" y2="2"></line>
+  <line x1="12" y1="22" x2="12" y2="18"></line>
+</svg>
+`
 };

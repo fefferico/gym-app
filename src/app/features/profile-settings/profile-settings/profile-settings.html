@@ -537,164 +537,166 @@
             </div>
         </section>
 
-        <!-- General Settings (Weight Units) -->
+        <!-- ========================================================== -->
+        <!-- START: Modified General & Appearance Section               -->
+        <!-- ========================================================== -->
         <section class="bg-white dark:bg-gray-700 p-4 sm:p-6 rounded-md shadow-md">
-            <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">General Settings</h2>
-            <div class="space-y-4">
+            <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">General & Appearance</h2>
+            <div class="space-y-5">
+                <!-- Units Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
 
-                <!-- Weight Unit -->
-                <div>
-                    <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Weight Units (for exercises and
-                        equipments)
-                    </p>
-                    <div class="flex space-x-4">
-                        <button appPress (shortPress)="selectWeightUnit('kg')"
-                            class="px-4 py-2 border rounded-md transition-colors text-sm"
-                            [ngClass]="{'bg-primary hover:bg-primary-dark text-white border-primary dark:border-primary': unitsService.currentWeightUnit() === 'kg', 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700': unitsService.currentWeightUnit() !== 'kg'}">kg</button>
-                        <button appPress (shortPress)="selectWeightUnit('lbs')"
-                            class="px-4 py-2 border rounded-md transition-colors text-sm"
-                            [ngClass]="{'bg-primary hover:bg-primary-dark text-white border-primary dark:border-primary': unitsService.currentWeightUnit() === 'lbs', 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700': unitsService.currentWeightUnit() !== 'lbs'}">lbs</button>
-                    </div>
-                </div>
-                <!-- Measure Unit -->
-                <div>
-                    <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Measure Units (for exercises
-                        and equipments)
-                    </p>
-                    <div class="flex space-x-4">
-                        <button appPress (shortPress)="selectMeasureUnit('cm')"
-                            class="px-4 py-2 border rounded-md transition-colors text-sm"
-                            [ngClass]="{'bg-primary hover:bg-primary-dark text-white border-primary dark:border-primary': unitsService.currentMeasureUnit() === 'cm', 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700': unitsService.currentMeasureUnit() !== 'cm'}">cm</button>
-                        <button appPress (shortPress)="selectMeasureUnit('in')"
-                            class="px-4 py-2 border rounded-md transition-colors text-sm"
-                            [ngClass]="{'bg-primary hover:bg-primary-dark text-white border-primary dark:border-primary': unitsService.currentMeasureUnit() === 'in', 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700': unitsService.currentMeasureUnit() !== 'in'}">in</button>
-                    </div>
-                </div>
-
-                <!-- Distance Measure Unit -->
-                <div>
-                    <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Distance Measure Units
-                    </p>
-                    <div class="flex space-x-4">
-                        <button appPress (shortPress)="selectDistanceMeasureUnit('km')"
-                            class="px-4 py-2 border rounded-md transition-colors text-sm"
-                            [ngClass]="{'bg-primary hover:bg-primary-dark text-white border-primary dark:border-primary': unitsService.currentDistanceMeasureUnit() === 'km', 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700': unitsService.currentDistanceMeasureUnit() !== 'km'}">km</button>
-                        <button appPress (shortPress)="selectDistanceMeasureUnit('mi')"
-                            class="px-4 py-2 border rounded-md transition-colors text-sm"
-                            [ngClass]="{'bg-primary hover:bg-primary-dark text-white border-primary dark:border-primary': unitsService.currentDistanceMeasureUnit() === 'mi', 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700': unitsService.currentDistanceMeasureUnit() !== 'mi'}">mi</button>
-                    </div>
-                </div>
-
-                <!-- Body Weight Unit -->
-                <div class="pt-4 border-t border-gray-200 dark:border-gray-600">
-                    <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Body Weight Unit</p>
-                    <div class="flex space-x-4">
-                        <button appPress (shortPress)="selectBodyWeightUnit('kg')"
-                            class="px-4 py-2 border rounded-md transition-colors text-sm"
-                            [ngClass]="{'bg-primary hover:bg-primary-dark text-white border-primary dark:border-primary': unitsService.currentBodyWeightUnit() === 'kg', 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700': unitsService.currentBodyWeightUnit() !== 'kg'}">kg</button>
-                        <button appPress (shortPress)="selectBodyWeightUnit('lbs')"
-                            class="px-4 py-2 border rounded-md transition-colors text-sm"
-                            [ngClass]="{'bg-primary hover:bg-primary-dark text-white border-primary dark:border-primary': unitsService.currentBodyWeightUnit() === 'lbs', 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700': unitsService.currentBodyWeightUnit() !== 'lbs'}">lbs</button>
-                    </div>
-                </div>
-
-                <!-- Body Measurement Unit -->
-                <div>
-                    <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Body Measurement Unit</p>
-                    <div class="flex space-x-4">
-                        <button appPress (shortPress)="selectBodyMeasureUnit('cm')"
-                            class="px-4 py-2 border rounded-md transition-colors text-sm"
-                            [ngClass]="{'bg-primary hover:bg-primary-dark text-white border-primary dark:border-primary': unitsService.currentBodyMeasureUnit() === 'cm', 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700': unitsService.currentBodyMeasureUnit() !== 'cm'}">cm</button>
-                        <button appPress (shortPress)="selectBodyMeasureUnit('in')"
-                            class="px-4 py-2 border rounded-md transition-colors text-sm"
-                            [ngClass]="{'bg-primary hover:bg-primary-dark text-white border-primary dark:border-primary': unitsService.currentBodyMeasureUnit() === 'in', 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700': unitsService.currentBodyMeasureUnit() !== 'in'}">in</button>
-                    </div>
-                </div>
-
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h3 class="text-md font-medium text-gray-700 dark:text-gray-300">WIP Message</h3>
-                        <p class="text-sm text-gray-500 dark:text-gray-400 mr-1">Toggle between showing or hiding WIP
-                            message</p>
-                    </div>
-                    <label for="show-wip-message" class="inline-flex items-center cursor-pointer">
-                        <span class="sr-only">Show WIP Disclaimer</span>
-                        <input type="checkbox" id="show-wip-message" class="sr-only peer"
-                            [checked]="!userProfileService.getHideWipDisclaimer()" (change)="toggleWipDisclaimer()">
-                        <div
-                            class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary dark:peer-checked:bg-primary-dark">
+                    <!-- Weight Unit -->
+                    <div class="flex items-center justify-between">
+                        <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Weight Units</p>
+                        <div class="relative w-28 flex rounded-lg bg-gray-200 dark:bg-gray-600 p-1">
+                            <div class="absolute top-1 bottom-1 bg-primary rounded-md shadow transition-all duration-300 ease-in-out"
+                                [ngClass]="{
+                             'left-1 right-1/2': unitsService.currentWeightUnit() === 'kg',
+                             'left-1/2 right-1': unitsService.currentWeightUnit() === 'lbs'
+                         }"></div>
+                            <button type="button" appPress (shortPress)="selectWeightUnit('kg')"
+                                class="relative z-10 flex-1 px-4 py-2 text-sm font-bold text-center transition-colors duration-300"
+                                [ngClass]="{'text-white': unitsService.currentWeightUnit() === 'kg', 'text-gray-700 dark:text-gray-300': unitsService.currentWeightUnit() !== 'kg'}">kg</button>
+                            <button type="button" appPress (shortPress)="selectWeightUnit('lbs')"
+                                class="relative z-10 flex-1 px-4 py-2 text-sm font-bold text-center transition-colors duration-300"
+                                [ngClass]="{'text-white': unitsService.currentWeightUnit() === 'lbs', 'text-gray-700 dark:text-gray-300': unitsService.currentWeightUnit() !== 'lbs'}">lbs</button>
                         </div>
-                        <span class="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">{{
-                            !userProfileService.getHideWipDisclaimer() ? 'On' : 'Off' }}</span>
-                    </label>
-                </div>
-
-
-            </div>
-        </section>
-
-        <!-- Appearance Settings -->
-        <section class="bg-white dark:bg-gray-700 p-4 sm:p-6 rounded-md shadow-md">
-            <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">Appearance</h2>
-            <div class="flex items-center justify-between">
-                <div>
-                    <h3 class="text-md font-medium text-gray-700 dark:text-gray-300">Dark Mode</h3>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mr-1">Toggle between light and dark themes</p>
-                </div>
-                <label for="theme-toggle" class="inline-flex items-center cursor-pointer">
-                    <span class="sr-only">Toggle Dark Mode</span>
-                    <input type="checkbox" id="theme-toggle" class="sr-only peer" [checked]="themeService.isDarkTheme()"
-                        (change)="themeService.toggleTheme()">
-                    <div
-                        class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary dark:peer-checked:bg-primary-dark">
                     </div>
-                    <span class="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">{{
-                        themeService.isDarkTheme() ? 'On' : 'Off' }}</span>
-                </label>
-            </div>
 
-            <!-- ========================================================== -->
-            <!-- START: Modified Menu Mode Section                          -->
-            <!-- ========================================================== -->
-            <div class="pt-5 border-t border-gray-200 dark:border-gray-600 mt-5">
-                <div class="mb-2">
-                    <h3 class="text-md font-medium text-gray-700 dark:text-gray-300 flex items-center">
-                        Menu Mode
-                        <span *ngIf="!subscriptionService.isPremium()"
-                            class="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full bg-yellow-400 text-yellow-900 flex items-center justify-center ">
-                            <app-icon name="crown" class="h-5 w-5 mr-1"></app-icon>
-                            PREMIUM
-                        </span>
-                    </h3>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mr-1">Toggle between dropdown, compact or modal
-                        mode
-                    </p>
+                    <!-- Measure Unit -->
+                    <div class="flex items-center justify-between">
+                        <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Measure Units</p>
+                        <div class="relative w-28 flex rounded-lg bg-gray-200 dark:bg-gray-600 p-1">
+                            <div class="absolute top-1 bottom-1 bg-primary rounded-md shadow transition-all duration-300 ease-in-out"
+                                [ngClass]="{
+                             'left-1 right-1/2': unitsService.currentMeasureUnit() === 'cm',
+                             'left-1/2 right-1': unitsService.currentMeasureUnit() === 'in'
+                         }"></div>
+                            <button type="button" appPress (shortPress)="selectMeasureUnit('cm')"
+                                class="relative z-10 flex-1 px-4 py-2 text-sm font-bold text-center transition-colors duration-300"
+                                [ngClass]="{'text-white': unitsService.currentMeasureUnit() === 'cm', 'text-gray-700 dark:text-gray-300': unitsService.currentMeasureUnit() !== 'cm'}">cm</button>
+                            <button type="button" appPress (shortPress)="selectMeasureUnit('in')"
+                                class="relative z-10 flex-1 px-4 py-2 text-sm font-bold text-center transition-colors duration-300"
+                                [ngClass]="{'text-white': unitsService.currentMeasureUnit() === 'in', 'text-gray-700 dark:text-gray-300': unitsService.currentMeasureUnit() !== 'in'}">in</button>
+                        </div>
+                    </div>
+
+                    <!-- Distance Measure Unit -->
+                    <div class="flex items-center justify-between">
+                        <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Distance Units</p>
+                        <div class="relative w-28 flex rounded-lg bg-gray-200 dark:bg-gray-600 p-1">
+                            <div class="absolute top-1 bottom-1 bg-primary rounded-md shadow transition-all duration-300 ease-in-out"
+                                [ngClass]="{
+                             'left-1 right-1/2': unitsService.currentDistanceMeasureUnit() === 'km',
+                             'left-1/2 right-1': unitsService.currentDistanceMeasureUnit() === 'mi'
+                         }"></div>
+                            <button type="button" appPress (shortPress)="selectDistanceMeasureUnit('km')"
+                                class="relative z-10 flex-1 px-4 py-2 text-sm font-bold text-center transition-colors duration-300"
+                                [ngClass]="{'text-white': unitsService.currentDistanceMeasureUnit() === 'km', 'text-gray-700 dark:text-gray-300': unitsService.currentDistanceMeasureUnit() !== 'km'}">km</button>
+                            <button type="button" appPress (shortPress)="selectDistanceMeasureUnit('mi')"
+                                class="relative z-10 flex-1 px-4 py-2 text-sm font-bold text-center transition-colors duration-300"
+                                [ngClass]="{'text-white': unitsService.currentDistanceMeasureUnit() === 'mi', 'text-gray-700 dark:text-gray-300': unitsService.currentDistanceMeasureUnit() !== 'mi'}">mi</button>
+                        </div>
+                    </div>
+
+                    <!-- Body Weight Unit -->
+                    <div class="flex items-center justify-between">
+                        <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Body Weight</p>
+                        <div class="relative w-28 flex rounded-lg bg-gray-200 dark:bg-gray-600 p-1">
+                            <div class="absolute top-1 bottom-1 bg-primary rounded-md shadow transition-all duration-300 ease-in-out"
+                                [ngClass]="{
+                             'left-1 right-1/2': unitsService.currentBodyWeightUnit() === 'kg',
+                             'left-1/2 right-1': unitsService.currentBodyWeightUnit() === 'lbs'
+                         }"></div>
+                            <button type="button" appPress (shortPress)="selectBodyWeightUnit('kg')"
+                                class="relative z-10 flex-1 px-4 py-2 text-sm font-bold text-center transition-colors duration-300"
+                                [ngClass]="{'text-white': unitsService.currentBodyWeightUnit() === 'kg', 'text-gray-700 dark:text-gray-300': unitsService.currentBodyWeightUnit() !== 'kg'}">kg</button>
+                            <button type="button" appPress (shortPress)="selectBodyWeightUnit('lbs')"
+                                class="relative z-10 flex-1 px-4 py-2 text-sm font-bold text-center transition-colors duration-300"
+                                [ngClass]="{'text-white': unitsService.currentBodyWeightUnit() === 'lbs', 'text-gray-700 dark:text-gray-300': unitsService.currentBodyWeightUnit() !== 'lbs'}">lbs</button>
+                        </div>
+                    </div>
+
+                    <!-- Body Measurement Unit -->
+                    <div class="flex items-center justify-between">
+                        <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Body Measure</p>
+                        <div class="relative w-28 flex rounded-lg bg-gray-200 dark:bg-gray-600 p-1">
+                            <div class="absolute top-1 bottom-1 bg-primary rounded-md shadow transition-all duration-300 ease-in-out"
+                                [ngClass]="{
+                             'left-1 right-1/2': unitsService.currentBodyMeasureUnit() === 'cm',
+                             'left-1/2 right-1': unitsService.currentBodyMeasureUnit() === 'in'
+                         }"></div>
+                            <button type="button" appPress (shortPress)="selectBodyMeasureUnit('cm')"
+                                class="relative z-10 flex-1 px-4 py-2 text-sm font-bold text-center transition-colors duration-300"
+                                [ngClass]="{'text-white': unitsService.currentBodyMeasureUnit() === 'cm', 'text-gray-700 dark:text-gray-300': unitsService.currentBodyMeasureUnit() !== 'cm'}">cm</button>
+                            <button type="button" appPress (shortPress)="selectBodyMeasureUnit('in')"
+                                class="relative z-10 flex-1 px-4 py-2 text-sm font-bold text-center transition-colors duration-300"
+                                [ngClass]="{'text-white': unitsService.currentBodyMeasureUnit() === 'in', 'text-gray-700 dark:text-gray-300': unitsService.currentBodyMeasureUnit() !== 'in'}">in</button>
+                        </div>
+                    </div>
                 </div>
-                <div class="flex flex-wrap gap-2">
-                    <button appPress (shortPress)="selectMenuMode('dropdown')"
-                        class="px-4 py-2 border rounded-md transition-colors text-sm font-semibold"
-                        [ngClass]="{'bg-primary text-white border-primary dark:border-primary': appSettingsService.menuMode() === 'dropdown', 
-                                    'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700': appSettingsService.menuMode() !== 'dropdown'}">
-                        DROPDOWN
-                    </button>
-                    <button appPress (shortPress)="selectMenuMode('compact')"
-                        class="px-4 py-2 border rounded-md transition-colors text-sm font-semibold"
-                        [ngClass]="{'bg-primary text-white border-primary dark:border-primary': appSettingsService.menuMode() === 'compact', 
-                                    'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700': appSettingsService.menuMode() !== 'compact'}">
-                        COMPACT
-                    </button>
-                    <button appPress (shortPress)="selectMenuMode('modal')"
-                        class="px-4 py-2 border rounded-md transition-colors text-sm font-semibold"
-                        [ngClass]="{'bg-primary text-white border-primary dark:border-primary': appSettingsService.menuMode() === 'modal', 
-                                    'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700': appSettingsService.menuMode() !== 'modal'}">
-                        MODAL
-                    </button>
+
+                <!-- Toggles Section -->
+                <div class="space-y-4 pt-4 border-t border-gray-200 dark:border-gray-600">
+                    <div class="grid grid-cols-2 items-center">
+                        <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300">Dark Mode</h3>
+                        <label for="theme-toggle" class="inline-flex items-center cursor-pointer justify-self-end">
+                            <input type="checkbox" id="theme-toggle" class="sr-only peer"
+                                [checked]="themeService.isDarkTheme()" (change)="themeService.toggleTheme()">
+                            <div
+                                class="relative w-11 h-6 bg-gray-200 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-500 peer-checked:bg-primary dark:peer-checked:bg-primary-dark">
+                            </div>
+                        </label>
+                    </div>
+                    <div class="grid grid-cols-2 items-center">
+                        <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300">WIP Message</h3>
+                        <label for="show-wip-message" class="inline-flex items-center cursor-pointer justify-self-end">
+                            <input type="checkbox" id="show-wip-message" class="sr-only peer"
+                                [checked]="!userProfileService.getHideWipDisclaimer()" (change)="toggleWipDisclaimer()">
+                            <div
+                                class="relative w-11 h-6 bg-gray-200 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-500 peer-checked:bg-primary dark:peer-checked:bg-primary-dark">
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Menu Mode -->
+                <div class="pt-4 border-t border-gray-200 dark:border-gray-600">
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between">
+                        <div class="mb-2 sm:mb-0">
+                            <h3 class="text-md font-medium text-gray-700 dark:text-gray-300 flex items-center">
+                                Menu Mode
+                                <span *ngIf="!subscriptionService.isPremium()"
+                                    class="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full bg-yellow-400 text-yellow-900 flex items-center justify-center">
+                                    <app-icon name="crown" class="h-5 w-5 mr-1"></app-icon>
+                                    PREMIUM
+                                </span>
+                            </h3>
+                        </div>
+                        <div class="relative flex w-full sm:w-auto rounded-lg bg-gray-200 dark:bg-gray-600 p-1">
+                            <div class="absolute top-1 bottom-1 w-1/3 bg-primary rounded-md shadow transition-transform duration-300 ease-in-out"
+                                [ngClass]="{
+                            'translate-x-0': appSettingsService.menuMode() === 'dropdown',
+                            'translate-x-full': appSettingsService.menuMode() === 'compact',
+                            'translate-x-[200%]': appSettingsService.menuMode() === 'modal'
+                        }"></div>
+                            <button appPress (shortPress)="selectMenuMode('dropdown')"
+                                class="relative z-10 flex-1 px-3 py-1.5 text-xs font-semibold transition-colors duration-300"
+                                [ngClass]="{'text-white': appSettingsService.menuMode() === 'dropdown', 'text-gray-700 dark:text-gray-300': appSettingsService.menuMode() !== 'dropdown'}">Dropdown</button>
+                            <button appPress (shortPress)="selectMenuMode('compact')"
+                                class="relative z-10 flex-1 px-3 py-1.5 text-xs font-semibold transition-colors duration-300"
+                                [ngClass]="{'text-white': appSettingsService.menuMode() === 'compact', 'text-gray-700 dark:text-gray-300': appSettingsService.menuMode() !== 'compact'}">Compact</button>
+                            <button appPress (shortPress)="selectMenuMode('modal')"
+                                class="relative z-10 flex-1 px-3 py-1.5 text-xs font-semibold transition-colors duration-300"
+                                [ngClass]="{'text-white': appSettingsService.menuMode() === 'modal', 'text-gray-700 dark:text-gray-300': appSettingsService.menuMode() !== 'modal'}">Modal</button>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <!-- ========================================================== -->
-            <!-- END: Modified Menu Mode Section                            -->
-            <!-- ========================================================== -->
-
         </section>
+        <!-- ========================================================== -->
+        <!-- END: Modified General & Appearance Section                 -->
+        <!-- ========================================================== -->
     </div>
 </div>

@@ -147,14 +147,10 @@
             <div *ngIf="!isSuperSet(exIndex)"
               class="grid grid-cols-12 gap-2 text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 px-2">
               <div class="col-span-1 text-center">Set / Rounds</div>
-              <ng-container *ngIf="!isCardio(exercise)">
-                <div class="col-span-3 text-center">Weight ({{ unitsService.getWeightUnitSuffix() }})</div>
-                <div class="col-span-3 text-center">Reps</div>
-              </ng-container>
-              <ng-container *ngIf="isCardio(exercise)">
-                <div class="col-span-3 text-center">Distance</div>
-                <div class="col-span-3 text-center">Time</div>
-              </ng-container>
+              <div class="col-span-3 text-center">Weight ({{ unitsService.getWeightUnitSuffix() }})</div>
+              <div class="col-span-3 text-center">Reps</div>
+              <div *ngIf="isDistancedExercise(exIndex)" class="col-span-2 text-center">Distance</div>
+              <div *ngIf="isDurationExercise(exIndex)" class="col-span-2 text-center">Time</div>
               <div class="col-span-2 text-center">Status</div>
               <div class="col-span-3 text-center">Actions</div> <!-- Actions Header -->
             </div>
@@ -180,7 +176,10 @@
                         <input type="number" [ngModel]="getInitialInputValue(exIndex, setIndex, 'weight')"
                           (change)="updateSetData(exIndex, setIndex, 0, 'weight', $event)"
                           class="w-full text-center bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md p-1 focus:ring-primary-dark focus:border-primary-dark dark:text-gray-200">
-                        <div *ngIf="getSetTargetDisplay(set, exIndex, setIndex, 'weight') as target" class="target-class"><span>Target: {{
+                        <div *ngIf="getSetTargetDisplay(set, exIndex, setIndex, 'weight') as target"
+                          class="target-class"><span class="flex items-center justify-center">
+                            <app-icon name="target" class="h-4 w-4 mr-1"></app-icon>
+                            {{
                             target
                             }}{{unitsService.getWeightUnitSuffix()}}</span></div>
                       </div>
@@ -188,7 +187,9 @@
                         <input type="number" [ngModel]="getInitialInputValue(exIndex, setIndex, 'reps')"
                           (change)="updateSetData(exIndex, setIndex, 0, 'reps', $event)"
                           class="w-full text-center bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md p-1 focus:ring-primary-dark focus:border-primary-dark dark:text-gray-200">
-                        <div *ngIf="getSetTargetDisplay(set, exIndex, setIndex, 'reps') as target" class="target-class"><span>Target: {{
+                        <div *ngIf="getSetTargetDisplay(set, exIndex, setIndex, 'reps') as target" class="target-class">
+                          <span class="flex items-center justify-center">
+                            <app-icon name="target" class="h-4 w-4 mr-1"></app-icon>{{
                             target }}</span></div>
                       </div>
                     </ng-container>
@@ -197,8 +198,10 @@
                         <input type="number" [ngModel]="getInitialInputValue(exIndex, setIndex, 'distance')"
                           (change)="updateSetData(exIndex, setIndex, 0, 'distance', $event)"
                           class="w-full text-center bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md p-1 focus:ring-primary-dark focus:border-primary-dark dark:text-gray-200">
-                        <div *ngIf="getSetTargetDisplay(set, exIndex, setIndex, 'distance') as target" class="target-class">
-                          <span>Target: {{ target }} km</span>
+                        <div *ngIf="getSetTargetDisplay(set, exIndex, setIndex, 'distance') as target"
+                          class="target-class">
+                          <span class="flex items-center justify-center">
+                            <app-icon name="target" class="h-4 w-4 mr-1"></app-icon>{{ target }} km</span>
                         </div>
                       </div>
                       <div class="col-span-3">
@@ -206,8 +209,10 @@
                           (change)="updateSetData(exIndex, setIndex, 0, 'duration', $event)"
                           class="w-full text-center bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md p-1 focus:ring-primary-dark focus:border-primary-dark dark:text-gray-200"
                           placeholder="mm:ss">
-                        <div *ngIf="getSetTargetDisplay(set, exIndex, setIndex, 'duration') as target" class="target-class">
-                          <span>Target: {{ target }}</span>
+                        <div *ngIf="getSetTargetDisplay(set, exIndex, setIndex, 'duration') as target"
+                          class="target-class">
+                          <span class="flex items-center justify-center">
+                            <app-icon name="target" class="h-4 w-4 mr-1"></app-icon>{{ target }}</span>
                         </div>
                       </div>
                     </ng-container>
@@ -220,17 +225,16 @@
                           name="done" class="h-6 w-6"></app-icon></button>
                     </div>
                     <!-- Set actions -->
-                    <div class="col-span-3 flex justify-center items-start"
-                      [ngClass]="{
+                    <div class="col-span-3 flex justify-center items-start" [ngClass]="{
                         ' bg-gray-50 dark:bg-gray-200 rounded-full py-1' : isSetCompleted(exIndex, setIndex, 0)
-                      }"
-                    >
+                      }">
                       <button (click)="toggleSetNotes(exIndex, setIndex, $event)"
                         class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center"><app-icon
                           name="clipboard-list" class="h-5 w-5 text-gray-500 dark:text-gray-400"></app-icon></button>
                       <button (click)="removeSet(exIndex, setIndex)"
                         class="p-2 rounded-full hover:bg-red-100 dark:hover:bg-red-600/50 flex items-center"><app-icon
-                          name="trash" class="h-5 w-5 text-red-500 dark:hover:text-red-700" [strokeWidth]="2"></app-icon></button>
+                          name="trash" class="h-5 w-5 text-red-500 dark:hover:text-red-700"
+                          [strokeWidth]="2"></app-icon></button>
                     </div>
                   </div>
                   <!-- Set Notes Textarea -->
@@ -343,7 +347,8 @@
                                       [disabled]="isRoundCompleted(exIndex, roundIndex)"
                                       (change)="updateSetData(getOriginalExIndex(ssExercise.id), roundIndex, roundIndex, 'weight', $event)"
                                       class="w-full text-md text-center bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md p-1 text-gray-700 dark:text-white">
-                                    <div *ngIf="getSetTargetDisplay(set, getOriginalExIndex(ssExercise.id), roundIndex,  'weight') as target"
+                                    <div
+                                      *ngIf="getSetTargetDisplay(set, getOriginalExIndex(ssExercise.id), roundIndex,  'weight') as target"
                                       class="text-center text-xs text-gray-400 dark:text-gray-400 mt-0.5"><span>Target:
                                         {{ target
                                         }}{{unitsService.getWeightUnitSuffix()}}</span></div>
@@ -354,7 +359,8 @@
                                       [disabled]="isRoundCompleted(exIndex, roundIndex)"
                                       (change)="updateSetData(getOriginalExIndex(ssExercise.id), roundIndex, roundIndex, 'reps', $event)"
                                       class="w-full text-md text-center bg-gray-100 dark:bg-gray-700 border-gray-300 rounded-md p-1 text-gray-700 dark:text-white">
-                                    <div *ngIf="getSetTargetDisplay(set, getOriginalExIndex(ssExercise.id), roundIndex, 'reps') as target"
+                                    <div
+                                      *ngIf="getSetTargetDisplay(set, getOriginalExIndex(ssExercise.id), roundIndex, 'reps') as target"
                                       class="text-center text-xs text-gray-400 dark:text-gray-400 mt-0.5"><span>Target:
                                         {{ target }}</span>
                                     </div>
@@ -426,9 +432,9 @@
 
   <app-exercise-selection-modal [isOpen]="isSwitchExerciseModalOpen()" [(searchTerm)]="modalSearchTerm"
     [title]="isShowingSimilarInSwitchModal() ? 'SIMILAR EXERCISES' : 'SWITCH EXERCISE'"
-    [exercises]="exercisesForSwitchModal()" searchPlaceholder="Search for a replacement..."
-    [showSimilarButton]="true" [isShowingSimilarView]="isShowingSimilarInSwitchModal()" itemIconName="change"
-    itemIconClass="text-green-500" (exerciseSelected)="handleExerciseSwitch($event)"
+    [exercises]="exercisesForSwitchModal()" searchPlaceholder="Search for a replacement..." [showSimilarButton]="true"
+    [isShowingSimilarView]="isShowingSimilarInSwitchModal()" itemIconName="change" itemIconClass="text-green-500"
+    (exerciseSelected)="handleExerciseSwitch($event)"
     (findSimilarClicked)="findAndShowSimilarExercises(exerciseToSwitchIndex())"
     (backToSearchClicked)="onBackToSearchFromSimilar()" (close)="closeSwitchExerciseModal()">
   </app-exercise-selection-modal>
