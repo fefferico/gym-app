@@ -559,7 +559,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
   isDistancedExercise(exIndex: number): boolean {
     const base = this.routine()?.exercises[exIndex];
-    if (!base){
+    if (!base) {
       return false;
     }
     return !!base?.sets?.some(set => set.targetDistance || set.targetDistanceMin) || this.isCardio(base);
@@ -567,33 +567,47 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
   isDurationExercise(exIndex: number): boolean {
     const base = this.routine()?.exercises[exIndex];
-    if (!base){
+    if (!base) {
       return false;
     }
     return !!base?.sets?.some(set => set.targetDuration || set.targetDurationMin);
   }
 
   isSetDataValid(exIndex: number, setIndex: number): boolean {
-    const set = this.routine()?.exercises[exIndex]?.sets[setIndex];
-    if (!set) return false;
+    const routine = this.routine();
+    if (!routine) return false;
 
-    const exercise = this.routine()!.exercises[exIndex];
+    const exercise = routine.exercises[exIndex];
+    const plannedSet = exercise.sets[setIndex];
+    if (!plannedSet) return false;
 
-    // Cardio validation remains the same
+    // Get the user's current, unlogged inputs for this set
+    const key = `${exIndex}-${setIndex}`;
+    const userInputs = this.performanceInputValues()[key] || {};
+
+    // Prioritize user input, but fall back to the planned set target if the user hasn't typed anything.
+    const weightToValidate = userInputs.weightUsed ?? plannedSet.targetWeight;
+    const repsToValidate = userInputs.repsAchieved ?? plannedSet.targetReps;
+    const distanceToValidate = userInputs.actualDistance ?? plannedSet.targetDistance;
+    const durationToValidate = userInputs.actualDuration ?? plannedSet.targetDuration;
+
+    // --- Validation Logic ---
+
     if (this.isCardio(exercise)) {
-      return (set.targetDistance ?? 0) > 0 || (set.targetDuration ?? 0) > 0;
+      // For cardio, at least one of the two metrics must be a positive number.
+      return (distanceToValidate ?? 0) > 0 || (durationToValidate ?? 0) > 0;
     }
 
     // For non-cardio exercises:
-    // If a weight is specified (even 0), it's treated as a weighted set.
-    // Both reps and weight must be positive.
-    if (set.targetWeight != null && set.targetWeight != undefined) {
-      return (set.targetWeight ?? 0) >= 0 && (set.targetReps ?? 0) > 0;
-    }
+    const hasWeightField = this.getFieldsForSet(exIndex, setIndex).visible.includes('weight');
 
-    // If weight is not specified (null/undefined), it's a bodyweight exercise.
-    // Only reps need to be positive.
-    return (set.targetReps ?? 0) > 0;
+    if (hasWeightField) {
+      // If a weight field is present (even if 0), reps must be positive.
+      return (repsToValidate ?? 0) > 0 && (weightToValidate ?? 0) >= 0;
+    } else {
+      // If it's a bodyweight exercise (no weight field), only reps need to be positive.
+      return (repsToValidate ?? 0) > 0;
+    }
   }
 
   getLoggedSet(exIndex: number, setIndex: number, roundIndex: number = 0): LoggedSet | undefined {
@@ -1052,7 +1066,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
     // --- CASE 1: Exercise is part of a Superset (Add a new ROUND) ---
     if (triggerExercise.supersetId) {
-      // Warm-up sets are not applicable for entire superset rounds
       if (type === 'warmup') {
         this.toastService.info("Cannot add a warm-up round to a superset.", 3000);
         return;
@@ -1060,36 +1073,63 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
       const exercisesInGroup = this.getSupersetExercises(triggerExercise.supersetId);
 
-      // Iterate over each exercise in the superset to add a new set to it
       exercisesInGroup.forEach(groupEx => {
-        // Use the last set of each specific exercise as a template for the new set
-        const lastSet = groupEx.sets[groupEx.sets.length - 1] ?? groupEx.sets[0];
-        if (!lastSet) return; // Failsafe for an exercise with no sets
+        const lastSet = groupEx.sets.length > 0 ? groupEx.sets[groupEx.sets.length - 1] : null;
 
         const newSet: ExerciseTargetSetParams = {
           id: uuidv4(),
-          targetReps: lastSet.targetReps ?? 8,
-          targetWeight: lastSet.targetWeight ?? 10,
-          targetDuration: lastSet.targetDuration,
-          targetDistance: lastSet.targetDistance,
-          restAfterSet: lastSet.restAfterSet ?? 60,
-          type: 'standard', // New rounds are always standard
+          type: 'standard',
+          restAfterSet: lastSet?.restAfterSet ?? 60,
         };
+
+        // Conditionally copy properties only if they existed on the last set
+        if (lastSet) {
+          if (lastSet.targetReps !== undefined && lastSet.targetReps !== null) newSet.targetReps = lastSet.targetReps;
+          if (lastSet.targetWeight !== undefined && lastSet.targetWeight !== null) newSet.targetWeight = lastSet.targetWeight;
+          if (lastSet.targetDistance !== undefined && lastSet.targetDistance !== null) newSet.targetDistance = lastSet.targetDistance;
+          if (lastSet.targetDuration !== undefined && lastSet.targetDuration !== null) newSet.targetDuration = lastSet.targetDuration;
+        } else {
+          // Failsafe: if an exercise in a superset has no sets, give it a default structure
+          newSet.targetReps = 8;
+          newSet.targetWeight = 10;
+        }
         groupEx.sets.push(newSet);
       });
 
       this.toastService.success(`Round added to ${this.isEmom(exIndex) ? 'EMOM' : 'Superset'}`);
 
     } else {
-      // --- CASE 2: Standard Exercise (Original logic) ---
-      const lastSet = triggerExercise.sets[triggerExercise.sets.length - 1] ?? triggerExercise.sets[0];
+      // --- CASE 2: Standard Exercise ---
+      const lastSet = triggerExercise.sets.length > 0 ? triggerExercise.sets[triggerExercise.sets.length - 1] : null;
+
       const newSet: ExerciseTargetSetParams = {
         id: uuidv4(),
-        targetReps: type === 'warmup' ? 12 : lastSet?.targetReps ?? 8,
-        targetWeight: type === 'warmup' ? (lastSet?.targetWeight ? parseFloat((lastSet.targetWeight / 2).toFixed(1)) : 0) : (lastSet?.targetWeight ?? 10),
-        restAfterSet: lastSet?.restAfterSet ?? 60,
         type: type,
+        restAfterSet: lastSet?.restAfterSet ?? 60,
       };
+
+      if (type === 'warmup') {
+        newSet.targetReps = 12;
+        if (lastSet && lastSet.targetWeight !== undefined && lastSet.targetWeight !== null) {
+          newSet.targetWeight = parseFloat((lastSet.targetWeight / 2).toFixed(1));
+        } else {
+          // If the last set was bodyweight, the warmup is also bodyweight (no weight property)
+          // Or if no last set exists, create a default bodyweight warmup
+          newSet.targetWeight = 0;
+        }
+      } else { // It's a 'standard' set
+        if (lastSet) {
+          // Copy properties from the last set only if they exist
+          if (lastSet.targetReps !== undefined && lastSet.targetReps !== null) newSet.targetReps = lastSet.targetReps;
+          if (lastSet.targetWeight !== undefined && lastSet.targetWeight !== null) newSet.targetWeight = lastSet.targetWeight;
+          if (lastSet.targetDistance !== undefined && lastSet.targetDistance !== null) newSet.targetDistance = lastSet.targetDistance;
+          if (lastSet.targetDuration !== undefined && lastSet.targetDuration !== null) newSet.targetDuration = lastSet.targetDuration;
+        } else {
+          // This is the very first set for this exercise, create a default structure
+          newSet.targetWeight = 10;
+          newSet.targetReps = 8;
+        }
+      }
 
       if (type === 'warmup') {
         triggerExercise.sets.unshift(newSet);
@@ -1100,7 +1140,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     }
 
     this.routine.set({ ...routine });
-    // Ensure the current exercise remains expanded
     if (this.expandedExerciseIndex() !== exIndex) {
       this.expandedExerciseIndex.set(exIndex);
     }
@@ -2823,13 +2862,13 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     });
   }
 
-   /**
-   * --- THIS IS THE OTHER HALF OF THE FIX ---
-   * On completion, this method now builds the log entry by combining three sources:
-   * 1. The user's input (`performanceInputValues`).
-   * 2. The routine's plan (as a fallback for performed values).
-   * 3. The original snapshot (for target values).
-   */
+  /**
+  * --- THIS IS THE OTHER HALF OF THE FIX ---
+  * On completion, this method now builds the log entry by combining three sources:
+  * 1. The user's input (`performanceInputValues`).
+  * 2. The routine's plan (as a fallback for performed values).
+  * 3. The original snapshot (for target values).
+  */
   toggleSetCompletion(exercise: WorkoutExercise, set: ExerciseTargetSetParams, exIndex: number, setIndex: number, roundIndex: number): void {
     const log = this.currentWorkoutLog();
     if (!log.exercises) log.exercises = [];
@@ -2921,4 +2960,207 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       }
     }
   }
+
+  /**
+   * CORRECTED: Checks all sets for an exercise to determine which columns should be visible.
+   * Now correctly checks for the existence of a property, allowing for values like 0.
+   */
+  public getVisibleSetColumns(exIndex: number): { [key: string]: boolean } {
+    const exercise = this.routine()?.exercises[exIndex];
+    if (!exercise || !exercise.sets || exercise.sets.length === 0) {
+      return { weight: true, reps: true, distance: false, duration: false };
+    }
+
+    return {
+      weight: exercise.sets.some(s => s.targetWeight !== undefined && s.targetWeight !== null),
+      reps: exercise.sets.some(s => s.targetReps !== undefined && s.targetReps !== null),
+      distance: exercise.sets.some(s => s.targetDistance !== undefined && s.targetDistance !== null),
+      duration: exercise.sets.some(s => s.targetDuration !== undefined && s.targetDuration !== null)
+    };
+  }
+
+  /**
+   * Generates a dynamic CSS 'grid-template-columns' string for standard exercise sets.
+   * This ensures that visible columns expand to fill the space correctly.
+   * The proportions are based on the original 24-column layout.
+   */
+  public getGridTemplateColumns(exIndex: number): string {
+    const cols = this.getVisibleSetColumns(exIndex);
+    const parts: string[] = [];
+    parts.push('2fr'); // Set # column
+    if (cols['weight']) parts.push('5fr');
+    if (cols['reps']) parts.push('4fr');
+    if (cols['distance']) parts.push('4fr');
+    if (cols['duration']) parts.push('4fr');
+    parts.push('2fr'); // Status column
+    parts.push('3fr'); // Actions column
+    return parts.join(' ');
+  }
+
+  /**
+   * Generates a dynamic CSS 'grid-template-columns' string for exercises within a superset.
+   * This creates an equal-width column for each visible input field.
+   */
+  public getGridTemplateColumnsForSuperset(exIndex: number): string {
+    const cols = this.getVisibleSetColumns(exIndex);
+    // Count how many columns are actually visible for this exercise
+    const visibleCount = Object.values(cols).filter(isVisible => isVisible).length;
+    if (visibleCount === 0) return '1fr'; // Failsafe
+    // Create a string like "1fr 1fr 1fr" for each visible column
+    return Array(visibleCount).fill('1fr').join(' ');
+  }
+
+  /**
+   * UPDATED: Determines visible/hidden fields based on the state of the entire exercise.
+   */
+  public getFieldsForSet(exIndex: number, setIndex: number): { visible: string[], hidden: string[] } {
+    const allFields = ['weight', 'reps', 'distance', 'duration'];
+    // As requested, this now uses the exercise-wide visibility check.
+    const visibleCols = this.getVisibleSetColumns(exIndex);
+
+    const visible = allFields.filter(field => visibleCols[field as keyof typeof visibleCols]);
+    const hidden = allFields.filter(field => !visible.includes(field));
+
+    return { visible, hidden };
+  }
+
+  /**
+   * Determines if the "Add Field" button should be shown for a specific set.
+   * @param exIndex The index of the exercise.
+   * @param setIndex The index of the set.
+   * @returns True if the button should be visible.
+   */
+  public canAddField(exIndex: number, setIndex: number): boolean {
+    if (this.isSuperSet(exIndex)) return false; // Don't show for supersets
+    const { visible } = this.getFieldsForSet(exIndex, setIndex);
+    return visible.length === 1 || visible.length === 3;
+  }
+
+  isFalsyOrZero(value: number | null | undefined): boolean {
+    return value === undefined || value === null || value === 0;
+  }
+
+  /**
+   * Checks if a dynamically added field can be removed by comparing it to the original routine.
+   * @param exIndex The index of the exercise.
+   * @param setIndex The index of the set.
+   * @param field The field key ('weight', 'reps', etc.) to check.
+   * @returns True if the field is removable.
+   */
+  public canRemoveField(exIndex: number, setIndex: number, field: string): boolean {
+    return true;
+    // const originalSet = this.originalRoutineSnapshot()?.exercises[exIndex]?.sets[setIndex];
+    // if (!originalSet) return false; // If there's no original, nothing is "dynamically added"
+
+    // switch (field) {
+    //   case 'weight': {
+    //     const targetSetWeight = originalSet.targetWeight || originalSet.targetDistanceMin;
+    //     return this.isFalsyOrZero(targetSetWeight);
+    //   }
+    //   case 'reps': {
+    //     const targetSetReps = originalSet.targetReps || originalSet.targetRepsMin;
+    //     return this.isFalsyOrZero(targetSetReps);
+    //   }
+    //   case 'distance': {
+    //     const targetSetDistance = originalSet.targetDistance || originalSet.targetDistanceMin;
+    //     return this.isFalsyOrZero(targetSetDistance);
+    //   }
+    //   case 'duration': {
+    //     const targetSetDuration = originalSet.targetDuration || originalSet.targetDurationMin;
+    //     return this.isFalsyOrZero(targetSetDuration);
+    //   }
+    //   default:
+    //     return false;
+    // }
+  }
+
+  /**
+   * Shows a prompt asking the user which field they want to add to the set.
+   */
+  public async promptAddField(exIndex: number, setIndex: number): Promise<void> {
+    const { hidden } = this.getFieldsForSet(exIndex, setIndex);
+    if (hidden.length === 0) return;
+
+    // Create alert buttons for each available field
+    const buttons: AlertButton[] = hidden.map(field => ({
+      text: field.charAt(0).toUpperCase() + field.slice(1), // Capitalize
+      role: 'add',
+      data: field
+    }));
+
+    const choice = await this.alertService.showConfirmationDialog(
+      'Add Field to Set',
+      'Which metric would you like to add?',
+      buttons
+    );
+
+    if (choice && choice.data) {
+      this.addFieldToSet(exIndex, setIndex, choice.data);
+    }
+  }
+
+  /**
+   * UPDATED: Adds a new field to ALL sets of an exercise for UI consistency.
+   */
+  private addFieldToSet(exIndex: number, setIndex: number, fieldToAdd: string): void {
+    this.routine.update(r => {
+      if (!r) return r;
+      const set = r.exercises[exIndex].sets[setIndex];
+      // Initialize with 0
+      switch (fieldToAdd) {
+        case 'weight': set.targetWeight = 0; break;
+        case 'reps': set.targetReps = 0; break;
+        case 'distance': set.targetDistance = 0; break;
+        case 'duration': set.targetDuration = 0; break;
+      }
+      this.toastService.success(`'${fieldToAdd}' field added to set #${setIndex + 1}.`);
+      return { ...r };
+    });
+  }
+
+  /**
+    * UPDATED: Removes a field from ALL sets of an exercise for UI consistency.
+    */
+  public removeFieldFromSet(exIndex: number, setIndex: number, fieldToRemove: string): void {
+    const routine = this.routine();
+    if (!routine) return;
+
+    const exercise = routine.exercises[exIndex];
+    const set = exercise.sets[setIndex];
+    const plannedSetId = set.id;
+
+    // 1. Update the routine signal to remove the target
+    this.routine.update(r => {
+      if (!r) return r;
+      const setToUpdate = r.exercises[exIndex].sets[setIndex];
+      switch (fieldToRemove) {
+        case 'weight': setToUpdate.targetWeight = undefined; break;
+        case 'reps': setToUpdate.targetReps = undefined; break;
+        case 'distance': setToUpdate.targetDistance = undefined; break;
+        case 'duration': setToUpdate.targetDuration = undefined; break;
+      }
+      return { ...r };
+    });
+
+    // 2. Update the workout log to remove the performed value, if it exists
+    this.currentWorkoutLog.update(log => {
+      const exerciseLog = log.exercises?.find(e => e.id === exercise.id);
+      if (exerciseLog) {
+        const loggedSet = exerciseLog.sets.find(s => s.plannedSetId === plannedSetId);
+        if (loggedSet) {
+          switch (fieldToRemove) {
+            case 'weight': loggedSet.weightUsed = undefined; break;
+            case 'reps': loggedSet.repsAchieved = 0; break;
+            case 'distance': loggedSet.distanceAchieved = undefined; break;
+            case 'duration': loggedSet.durationPerformed = undefined; break;
+          }
+        }
+      }
+      return { ...log };
+    });
+
+    this.toastService.info(`'${fieldToRemove}' field removed from set #${setIndex + 1}.`);
+  }
+
+
 }
