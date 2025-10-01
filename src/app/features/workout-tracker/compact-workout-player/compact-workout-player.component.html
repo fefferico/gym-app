@@ -188,8 +188,8 @@
                               class="flex items-center justify-center text-xs font-medium text-gray-500 dark:text-gray-400">
                               Weight ({{ unitsService.getWeightUnitSuffix() }})
                               <button 
-                                (click)="removeFieldFromSet(exIndex, setIndex, 'weight')"
-                                class="ml-1 text-red-400 hover:text-red-600">
+                                (click)="removeFieldFromSet(exIndex, setIndex, 'weight')" title="Remove metric"
+                                class="ml-1 text-red-400 hover:text-red-600 flex items-center">
                                 <app-icon name="cancel-circle" class="h-3 w-3"></app-icon>
                               </button>
                             </label>
@@ -207,8 +207,8 @@
                               class="flex items-center justify-center text-xs font-medium text-gray-500 dark:text-gray-400">
                               Reps
                               <button 
-                                (click)="removeFieldFromSet(exIndex, setIndex, 'reps')"
-                                class="ml-1 text-red-400 hover:text-red-600">
+                                (click)="removeFieldFromSet(exIndex, setIndex, 'reps')" title="Remove metric"
+                                class="ml-1 text-red-400 hover:text-red-600 flex items-center">
                                 <app-icon name="cancel-circle" class="h-3 w-3"></app-icon>
                               </button>
                             </label>
@@ -225,8 +225,8 @@
                               class="flex items-center justify-center text-xs font-medium text-gray-500 dark:text-gray-400">
                               Distance
                               <button 
-                                (click)="removeFieldFromSet(exIndex, setIndex, 'distance')"
-                                class="ml-1 text-red-400 hover:text-red-600">
+                                (click)="removeFieldFromSet(exIndex, setIndex, 'distance')" title="Remove metric"
+                                class="ml-1 text-red-400 hover:text-red-600 flex items-center">
                                 <app-icon name="cancel-circle" class="h-3 w-3"></app-icon>
                               </button>
                             </label>
@@ -243,8 +243,8 @@
                               class="flex items-center justify-center text-xs font-medium text-gray-500 dark:text-gray-400">
                               Time
                               <button 
-                                (click)="removeFieldFromSet(exIndex, setIndex, 'duration')"
-                                class="ml-1 text-red-400 hover:text-red-600">
+                                (click)="removeFieldFromSet(exIndex, setIndex, 'duration')" title="Remove metric"
+                                class="ml-1 text-red-400 hover:text-red-600 flex items-center">
                                 <app-icon name="cancel-circle" class="h-3 w-3"></app-icon>
                               </button>
                             </label>
@@ -348,7 +348,7 @@
                             <!-- Dynamic Inputs for Superset Exercise -->
                             <div class="grid grid-cols-2 gap-x-4 gap-y-2">
                               <ng-container *ngIf="getOriginalExIndex(ssExercise.id) as ssOriginalIndex">
-                                <ng-container *ngIf="getVisibleSetColumns(ssOriginalIndex) as cols">
+                                <ng-container *ngIf="getVisibleSetColumns(ssOriginalIndex, roundIndex) as cols">
                                   <div *ngIf="cols['weight']">
                                     <label
                                       class="block text-xs font-medium text-gray-500 dark:text-gray-400 text-center">Weight</label>

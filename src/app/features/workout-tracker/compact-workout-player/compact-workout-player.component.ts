@@ -2969,50 +2969,21 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
    * @param exIndex The index of the exercise in the routine.
    * @returns An object with boolean flags for each potential column.
    */
-  public getVisibleSetColumns(exIndex: number): { [key: string]: boolean } {
+  public getVisibleSetColumns(exIndex: number, setIndex: number): { [key: string]: boolean } {
     const exercise = this.routine()?.exercises[exIndex];
-    if (!exercise || !exercise.sets || exercise.sets.length === 0) {
-      // As a fallback for exercises with no sets, show standard weight/reps.
-      return { weight: true, reps: true, distance: false, duration: false };
+    const set = exercise?.sets[setIndex];
+
+    if (!set) {
+      // Fallback for safety, though it should always find a set.
+      return { weight: false, reps: false, distance: false, duration: false };
     }
 
     return {
-      weight: exercise.sets.some(s => (s.targetWeight ?? 0) > 0 || (s.targetWeightMin ?? 0) > 0),
-      reps: exercise.sets.some(s => (s.targetReps ?? 0) > 0 || (s.targetRepsMin ?? 0) > 0),
-      distance: exercise.sets.some(s => (s.targetDistance ?? 0) > 0 || (s.targetDistanceMin ?? 0) > 0),
-      duration: exercise.sets.some(s => (s.targetDuration ?? 0) > 0 || (s.targetDurationMin ?? 0) > 0),
+      weight:  (set.targetWeight ?? 0) > 0 || (set.targetWeightMin ?? 0) > 0,
+      reps:  (set.targetReps ?? 0) > 0 || (set.targetRepsMin ?? 0) > 0,
+      distance:  (set.targetDistance ?? 0) > 0 || (set.targetDistanceMin ?? 0) > 0,
+      duration:  (set.targetDuration ?? 0) > 0 || (set.targetDurationMin ?? 0) > 0,
     };
-  }
-
-  /**
-   * Generates a dynamic CSS 'grid-template-columns' string for standard exercise sets.
-   * This ensures that visible columns expand to fill the space correctly.
-   * The proportions are based on the original 24-column layout.
-   */
-  public getGridTemplateColumns(exIndex: number): string {
-    const cols = this.getVisibleSetColumns(exIndex);
-    const parts: string[] = [];
-    parts.push('2fr'); // Set # column
-    if (cols['weight']) parts.push('5fr');
-    if (cols['reps']) parts.push('4fr');
-    if (cols['distance']) parts.push('4fr');
-    if (cols['duration']) parts.push('4fr');
-    parts.push('2fr'); // Status column
-    parts.push('3fr'); // Actions column
-    return parts.join(' ');
-  }
-
-  /**
-   * Generates a dynamic CSS 'grid-template-columns' string for exercises within a superset.
-   * This creates an equal-width column for each visible input field.
-   */
-  public getGridTemplateColumnsForSuperset(exIndex: number): string {
-    const cols = this.getVisibleSetColumns(exIndex);
-    // Count how many columns are actually visible for this exercise
-    const visibleCount = Object.values(cols).filter(isVisible => isVisible).length;
-    if (visibleCount === 0) return '1fr'; // Failsafe
-    // Create a string like "1fr 1fr 1fr" for each visible column
-    return Array(visibleCount).fill('1fr').join(' ');
   }
 
   /**
@@ -3021,7 +2992,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   public getFieldsForSet(exIndex: number, setIndex: number): { visible: string[], hidden: string[] } {
     const allFields = ['weight', 'reps', 'distance', 'duration'];
     // As requested, this now uses the exercise-wide visibility check.
-    const visibleCols = this.getVisibleSetColumns(exIndex);
+    const visibleCols = this.getVisibleSetColumns(exIndex, setIndex);
 
     const visible = allFields.filter(field => visibleCols[field as keyof typeof visibleCols]);
     const hidden = allFields.filter(field => !visible.includes(field));
@@ -3036,9 +3007,10 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
    * @returns True if the button should be visible.
    */
   public canAddField(exIndex: number, setIndex: number): boolean {
-    if (this.isSuperSet(exIndex)) return false; // Don't show for supersets
-    const { visible } = this.getFieldsForSet(exIndex, setIndex);
-    return visible.length === 1 || visible.length === 3;
+    if (this.isSuperSet(exIndex)) return false;
+    const cols = this.getVisibleSetColumns(exIndex, setIndex);
+    const visibleCount = Object.values(cols).filter(v => v).length;
+    return visibleCount === 1 || visibleCount === 3;
   }
 
   isFalsyOrZero(value: number | null | undefined): boolean {
@@ -3080,17 +3052,31 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Determines if the small "Add Field" button in the set's action area should be visible.
+   * This is true only for non-superset exercises with exactly two visible metrics.
+   */
+  public shouldShowSmallAddButton(exIndex: number, setIndex: number): boolean {
+    if (this.isSuperSet(exIndex)) return false;
+    const cols = this.getVisibleSetColumns(exIndex, setIndex);
+    const visibleCount = Object.values(cols).filter(v => v).length;
+    return visibleCount === 2;
+  }
+
+  /**
    * Shows a prompt asking the user which field they want to add to the set.
    */
   public async promptAddField(exIndex: number, setIndex: number): Promise<void> {
-    const { hidden } = this.getFieldsForSet(exIndex, setIndex);
-    if (hidden.length === 0) return;
+    const cols = this.getVisibleSetColumns(exIndex, setIndex);
+    const hiddenFields = Object.keys(cols).filter(key => !cols[key as keyof typeof cols]);
+
+    if (hiddenFields.length === 0) return;
 
     // Create alert buttons for each available field
-    const buttons: AlertButton[] = hidden.map(field => ({
-      text: field.charAt(0).toUpperCase() + field.slice(1), // Capitalize
+    const buttons: AlertButton[] = hiddenFields.map(field => ({
+      text: field.charAt(0).toUpperCase() + field.slice(1),
       role: 'add',
-      data: field
+      data: field,
+      icon: field === 'duration' ? 'hourglass' : field === 'reps' ? 'repeat' : field
     }));
 
     const choice = await this.alertService.showConfirmationDialog(
@@ -3111,14 +3097,14 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     this.routine.update(r => {
       if (!r) return r;
       const set = r.exercises[exIndex].sets[setIndex];
-      // Initialize with 0
+      // Initialize with a non-zero value to ensure it's displayed
       switch (fieldToAdd) {
-        case 'weight': set.targetWeight = 0; break;
-        case 'reps': set.targetReps = 0; break;
-        case 'distance': set.targetDistance = 0; break;
-        case 'duration': set.targetDuration = 0; break;
+        case 'weight': set.targetWeight = 1; break;
+        case 'reps': set.targetReps = 1; break;
+        case 'distance': set.targetDistance = 1; break;
+        case 'duration': set.targetDuration = 1; break;
       }
-      this.toastService.success(`'${fieldToAdd}' field added to set #${setIndex + 1}.`);
+      this.toastService.success(`${fieldToAdd.toUpperCase()} field added to set #${setIndex + 1}.`);
       return { ...r };
     });
   }
@@ -3134,7 +3120,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const set = exercise.sets[setIndex];
     const plannedSetId = set.id;
 
-    // 1. Update the routine signal to remove the target
+    // 1. Update the routine signal to remove the target from the specific set
     this.routine.update(r => {
       if (!r) return r;
       const setToUpdate = r.exercises[exIndex].sets[setIndex];
@@ -3147,11 +3133,14 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       return { ...r };
     });
 
-    // 2. Update the workout log to remove the performed value, if it exists
+    // 2. Update the workout log to remove the performed value, if it exists for that set
     this.currentWorkoutLog.update(log => {
       const exerciseLog = log.exercises?.find(e => e.id === exercise.id);
       if (exerciseLog) {
-        const loggedSet = exerciseLog.sets.find(s => s.plannedSetId === plannedSetId);
+        // For supersets, we need to find the correct round
+        const targetLoggedSetId = exercise.supersetId ? `${plannedSetId}-round-${setIndex}` : plannedSetId;
+        const loggedSet = exerciseLog.sets.find(s => s.plannedSetId === targetLoggedSetId);
+
         if (loggedSet) {
           switch (fieldToRemove) {
             case 'weight': loggedSet.weightUsed = undefined; break;
@@ -3166,6 +3155,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
     this.toastService.info(`'${fieldToRemove}' field removed from set #${setIndex + 1}.`);
   }
+
 
 
 }
