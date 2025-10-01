@@ -101,7 +101,7 @@ export class PlateSummaryComponent {
 
   getTextColor(plateColor: string | undefined): string {
     if (!plateColor) return '#FFFFFF';
-    const darkColors = ['#D32F2F', '#FF0000', '#1976D2', '#424242', '#111111', '#000000FF', '#0000FF'];
+    const darkColors = ['#D32F2F', '#FF0000', '#1976D2', '#424242', '#111111', '#000000FF', '#0000FF','#43A047'];
     return darkColors.includes(plateColor.toUpperCase()) ? '#FFFFFF' : '#111111';
   }
 }

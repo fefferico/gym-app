@@ -191,7 +191,7 @@ export class BarbellCalculatorModalComponent implements OnInit, OnDestroy {
   rpeWeight = signal<number | null>(null);
   rpeReps = signal<number | null>(null);
   rpeValue = signal<number>(8);
-  rpeOptions = [10, 9.5, 9, 8.5, 8, 7.5, 7, 6.5, 6];
+  rpeOptions = [10, 9.5, 9, 8.5, 8, 7.5, 7, 6.5, 6, 5];
   rirValue = signal<number>(2); // NEW: State for RIR input
   rirOptions = [0, 1, 2, 3, 4]; // Common RIR values
 
@@ -257,11 +257,18 @@ export class BarbellCalculatorModalComponent implements OnInit, OnDestroy {
     });
   }
 
+  updateCollars(): void {
+    if (!this.unit()) {
+      this.unit.set('kg');
+    }
+    this.collars.set(this.barbellCalculatorService.getCollars().filter(collar => collar.unit === this.unit()));
+    this.selectedCollar.set(this.collars()[0]);
+  }
+
   ngOnInit(): void {
     this.isPremiumUser.set(this.subscriptionService.isPremium());
-    this.collars.set(this.barbellCalculatorService.getCollars());
+    this.updateCollars();
     this.updateDataSource();
-    this.selectedCollar.set(this.collars()[0]);
   }
 
   // --- Public Methods for Template ---
@@ -272,7 +279,18 @@ export class BarbellCalculatorModalComponent implements OnInit, OnDestroy {
   }
 
   onSwipeMove(e: TouchEvent): void {
-    e.preventDefault(); // Prevent vertical scroll while swiping
+    if (this.swipeCoord) {
+      const currentX = e.changedTouches[0].clientX;
+      const currentY = e.changedTouches[0].clientY;
+      const dx = currentX - this.swipeCoord[0];
+      const dy = currentY - this.swipeCoord[1];
+
+      // Only prevent default if it's primarily a horizontal swipe
+      // This allows vertical scrolling to happen naturally
+      if (Math.abs(dx) > Math.abs(dy) + 5) { // Add a small threshold (e.g., 5px) to confirm horizontal intent
+        e.preventDefault();
+      }
+    }
   }
 
   onSwipeEnd(e: TouchEvent): void {
@@ -338,6 +356,8 @@ export class BarbellCalculatorModalComponent implements OnInit, OnDestroy {
     if (newUnit === 'lb') {
       this.enable50kgPlate.set(false);
     }
+    this.updateDataSource();
+    this.updateCollars();
     this.recalculateBasedOnMode();
   }
 
@@ -468,7 +488,7 @@ export class BarbellCalculatorModalComponent implements OnInit, OnDestroy {
       return '#FFFFFF'; // Default dark text for uncolored plates
     }
     // List of dark background colors that need light text for contrast
-    const darkColors = ['#D32F2F', '#FF0000', '#1976D2', '#424242', '#111111', '#000000FF', '#0000FF'];
+    const darkColors = ['#D32F2F', '#FF0000', '#1976D2', '#424242', '#111111', '#000000FF', '#0000FF' ,'#43A047'];
 
     if (darkColors.includes(plateColor.toUpperCase())) {
       return '#FFFFFF'; // Return white text for dark plates

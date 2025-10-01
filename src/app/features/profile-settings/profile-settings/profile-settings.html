@@ -456,10 +456,11 @@
                         <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Backup your data</p>
                         <p class="text-xs text-gray-500 dark:text-gray-400">Save all your data to a JSON file.</p>
                     </div>
+                    <!-- REMOVED: w-full on mobile, flex-shrink-0 already handles not stretching -->
                     <button appPress (shortPress)="exportData()"
-                        class="mt-2 sm:mt-0 flex-shrink-0 flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md shadow-sm transition-colors text-sm">
+                        class="mt-2 sm:mt-0 flex-shrink-0 flex items-center justify-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md shadow-sm transition-colors text-sm">
                         <app-icon name="export" class="w-5 h-5 mr-2"></app-icon>
-                        Export Data
+                        EXPORT DATA
                     </button>
                 </div>
 
@@ -469,9 +470,12 @@
                         <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Restore your data</p>
                         <p class="text-xs text-gray-500 dark:text-gray-400">Import from a JSON backup file.</p>
                     </div>
+                    <!-- MODIFIED: Replaced block w-full with inline-block w-auto for mobile -->
+                    <!-- The file input styling is tricky. Instead of making the input itself small,
+                 we'll style the `file:` pseudo-elements to look like a button, and control the overall width of the input to be `w-auto` -->
                     <input type="file" (change)="importData($event); currentVibrator.vibrate(50)"
                         accept="application/json"
-                        class="mt-2 sm:mt-0 block w-full sm:w-auto text-sm text-gray-700 dark:text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-200 file:text-gray-700 hover:file:bg-gray-300 dark:file:bg-gray-600 dark:file:text-gray-200 dark:hover:file:bg-gray-700">
+                        class="mt-2 sm:mt-0 inline-block w-auto text-sm text-gray-700 dark:text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-200 file:text-gray-700 hover:file:bg-gray-300 dark:file:bg-gray-600 dark:file:text-gray-200 dark:hover:file:bg-gray-700">
                 </div>
 
                 <!-- Sync History -->
@@ -484,10 +488,11 @@
                         </p>
                         <p class="text-xs text-gray-500 dark:text-gray-400">Recalculate stats and achievements.</p>
                     </div>
+                    <!-- REMOVED: w-full on mobile -->
                     <button appPress (shortPress)="onSyncHistoryClick()"
-                        class="mt-2 sm:mt-0 flex-shrink-0 flex items-center px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-md shadow-sm transition-colors text-sm">
+                        class="mt-2 sm:mt-0 flex-shrink-0 flex items-center justify-center px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-md shadow-sm transition-colors text-sm">
                         <app-icon name="change" class="w-5 h-5 mr-2"></app-icon>
-                        Sync History
+                        SYNC HISTORY
                     </button>
                 </div>
 
@@ -497,10 +502,11 @@
                         <p class="text-sm font-medium text-red-600 dark:text-red-400">Reset All Data</p>
                         <p class="text-xs text-gray-500 dark:text-gray-400">This action cannot be undone.</p>
                     </div>
+                    <!-- REMOVED: w-full on mobile -->
                     <button appPress (shortPress)="clearAllAppData()"
-                        class="mt-2 sm:mt-0 flex-shrink-0 flex items-center px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-md shadow-sm transition-colors text-sm">
+                        class="mt-2 sm:mt-0 flex-shrink-0 flex items-center justify-center px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-md shadow-sm transition-colors text-sm">
                         <app-icon name="trash" class="w-5 h-5 mr-2"></app-icon>
-                        Clear All Data
+                        CLEAR ALL DATA
                     </button>
                 </div>
             </div>
@@ -510,7 +516,7 @@
         <!-- ========================================================== -->
 
         <!-- Personal Gym Link Section & Exercise List Link Section -->
-        <div class="grid sm:grid-cols-2 gap-2">
+        <div class="grid grid-cols-2 gap-2">
             <section class="bg-white dark:bg-gray-700 p-4 sm:p-6 rounded-md shadow-md">
                 <div>
                     <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">
@@ -526,7 +532,7 @@
                     <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">View your own equipment</p>
                     <button appPress
                         (shortPress)="handlePremiumFeatureOrNavigate(PremiumFeature.PERSONAL_GYM, $event, ['/personal-gym'])"
-                        class="px-4 py-2 bg-indigo-500 hover:bg-indigo-700 text-white font-semibold rounded-md shadow-sm transition-colors inline-flex items-center text-sm">
+                        class="px-4 py-2 bg-indigo-500 hover:bg-indigo-700 text-white font-semibold rounded-md shadow-sm transition-colors inline-flex items-center text-sm text-left">
                         <app-icon name="dumbbell" class="w-6 h-6 mr-1"></app-icon>
                         PERSONAL GYM
                     </button>

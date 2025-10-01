@@ -32,28 +32,28 @@ export interface Collar {
 export class BarbellCalculatorService {
 
   private bumperPlatesKg: Plate[] = [
-    { weight: 50, color: '#424242', type: 'bumper', unit: 'kg'},
-    { weight: 25, color: '#d32f2f', type: 'bumper', unit: 'kg'},
-    { weight: 20, color: '#1976d2', type: 'bumper', unit: 'kg'},
-    { weight: 15, color: '#fdd835', type: 'bumper', unit: 'kg'},
-    { weight: 10, color: '#43a047', type: 'bumper', unit: 'kg'},
-    { weight: 5, color: '#fafafa', type: 'bumper', unit: 'kg'},
-    { weight: 2.5, color: '#424242', type: 'bumper', unit: 'kg'},
-    { weight: 2, color: '#424242', type: 'bumper', unit: 'kg'},
-    { weight: 1.5, color: '#424242', type: 'bumper', unit: 'kg'},
-    { weight: 1, color: '#424242', type: 'bumper', unit: 'kg'},
-    { weight: 0.5, color: '#424242', type: 'bumper', unit: 'kg'}
+    { weight: 50, color: '#424242', type: 'bumper', unit: 'kg' },
+    { weight: 25, color: '#d32f2f', type: 'bumper', unit: 'kg' },
+    { weight: 20, color: '#1976d2', type: 'bumper', unit: 'kg' },
+    { weight: 15, color: '#fdd835', type: 'bumper', unit: 'kg' },
+    { weight: 10, color: '#43a047', type: 'bumper', unit: 'kg' },
+    { weight: 5, color: '#fafafa', type: 'bumper', unit: 'kg' },
+    { weight: 2.5, color: '#424242', type: 'bumper', unit: 'kg' },
+    { weight: 2, color: '#424242', type: 'bumper', unit: 'kg' },
+    { weight: 1.5, color: '#424242', type: 'bumper', unit: 'kg' },
+    { weight: 1, color: '#424242', type: 'bumper', unit: 'kg' },
+    { weight: 0.5, color: '#424242', type: 'bumper', unit: 'kg' }
   ];
 
   private standardIronPlatesKg: Plate[] = [
-    { weight: 50, color: '#424242', type: 'iron', unit: 'kg'},
-    { weight: 25, color: '#424242', type: 'iron', unit: 'kg'},
-    { weight: 20, color: '#424242', type: 'iron', unit: 'kg'},
-    { weight: 15, color: '#424242', type: 'iron', unit: 'kg'},
-    { weight: 10, color: '#424242', type: 'iron', unit: 'kg'},
-    { weight: 5, color: '#424242', type: 'iron', unit: 'kg'},
-    { weight: 2.5, color: '#424242', type: 'iron', unit: 'kg'},
-    { weight: 1.25, color: '#424242', type: 'iron', unit: 'kg'}
+    { weight: 50, color: '#424242', type: 'iron', unit: 'kg' },
+    { weight: 25, color: '#424242', type: 'iron', unit: 'kg' },
+    { weight: 20, color: '#424242', type: 'iron', unit: 'kg' },
+    { weight: 15, color: '#424242', type: 'iron', unit: 'kg' },
+    { weight: 10, color: '#424242', type: 'iron', unit: 'kg' },
+    { weight: 5, color: '#424242', type: 'iron', unit: 'kg' },
+    { weight: 2.5, color: '#424242', type: 'iron', unit: 'kg' },
+    { weight: 1.25, color: '#424242', type: 'iron', unit: 'kg' }
   ];
 
   private olympicPlatesKg: Plate[] = [
@@ -91,19 +91,28 @@ export class BarbellCalculatorService {
 
   private barbells: Barbell[] = [
     { name: 'Men\'s Olympic Bar', weight: 20, unit: 'kg' },
+    { name: 'Men\'s Olympic Bar', weight: 44, unit: 'lb' },
     { name: 'Women\'s Olympic Bar', weight: 15, unit: 'kg' },
-    { name: 'Standard Bar (LB)', weight: 45, unit: 'lb' },
+    { name: 'Women\'s Olympic Bar', weight: 33, unit: 'lb' },
+    { name: 'Standard Gym Bar', weight: 20, unit: 'kg' },
+    { name: 'Standard Gym Bar', weight: 44, unit: 'lb' },
     { name: 'EZ Curl Bar', weight: 10, unit: 'kg' },
+    { name: 'EZ Curl Bar', weight: 22, unit: 'lb' },
     { name: 'Tricep Bar', weight: 10, unit: 'kg' },
+    { name: "Tricep Bar", "weight": 22, "unit": "lb" },
     { name: 'Trap/Hex Bar', weight: 25, unit: 'kg' },
-    { name: 'Standard Gym Bar', weight: 20, unit: 'kg' }
+    { name: 'Trap/Hex Bar', weight: 55, unit: 'lb' },
   ];
 
   private collars: Collar[] = [
     { name: 'No Collars', weight: 0, unit: 'kg' },
+    { name: 'No Collars', weight: 0, unit: 'lb' },
     { name: 'Spring Clips', weight: 0.5, unit: 'kg' },
+    { name: "Spring Clips", "weight": 1.1, "unit": "lb" },
     { name: 'Lock-Jaw / Pro Collars', weight: 1, unit: 'kg' },
-    { name: 'Competition Collars', weight: 5, unit: 'kg' }
+    { name: "Lock-Jaw / Pro Collars", "weight": 2.2, "unit": "lb" },
+    { name: 'Competition Collars', weight: 5, unit: 'kg' }, 
+    { name: "Competition Collars", "weight": 11, "unit": "lb" }
   ];
 
   constructor() { }

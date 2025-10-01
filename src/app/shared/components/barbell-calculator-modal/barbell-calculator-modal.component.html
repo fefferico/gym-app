@@ -18,13 +18,22 @@
         <div class="modal-body custom-scrollbar">
             <!-- Header -->
             <div class="header">
-                <div class="flex justify-center w-full">
-                    <div class="mode-toggle">
-                        <button [class.active]="mode() === 'calculate'"
-                            (click)="setMode('calculate')">Calculate</button>
-                        <button [class.active]="mode() === 'reverse'" (click)="setMode('reverse')">Reverse</button>
+                <div class="flex w-full justify-center">
+                    <div class="relative w-fit flex rounded-lg bg-gray-200 dark:bg-gray-600 p-1">
+                        <div class="absolute top-1 bottom-1 bg-primary rounded-md shadow transition-all duration-300 ease-in-out"
+                            [ngClass]="{
+                             'left-1 right-1/2': mode() === 'calculate',
+                             'left-1/2 right-1': mode() === 'reverse',
+                         }"></div>
+                        <button type="button" (click)="setMode('calculate')"
+                            class="relative z-10 flex-1 px-8 py-2 text-sm font-bold text-center transition-colors duration-300"
+                            [ngClass]="{'text-white': mode() === 'calculate', 'text-gray-700 dark:text-gray-300': mode() !== 'calculate'}">CALCULATE</button>
+                        <button type="button" (click)="setMode('reverse')"
+                            class="relative z-10 flex-1 px-8 py-2 text-sm font-bold text-center transition-colors duration-300"
+                            [ngClass]="{'text-white': mode() === 'reverse', 'text-gray-700 dark:text-gray-300': mode() !== 'reverse'}">REVERSE</button>
                     </div>
                 </div>
+
                 <button class="close-btn" (click)="onClose()">&times;</button>
             </div>
 
@@ -68,6 +77,10 @@
             <div class="total-weight-display">
                 <h2>{{ totalWeight() | number:'1.0-2' }} {{ unit() }}</h2>
             </div>
+            <!-- Check if the loadout is empty -->
+            <p class="flex justify-center" [class.invisible]="loadout().length !== 0 || !selectedBarbell()">
+                <span>(Just bar and collars)</span>
+            </p>
 
             <div class="input-group calculate-mode-input" *ngIf="mode() === 'calculate'">
                 <div class="weight-control">
@@ -92,10 +105,22 @@
                     </button>
                 </div>
 
-                <div class="unit-toggle">
-                    <button [class.active]="unit() === 'kg'" (click)="setUnit('kg')">KG</button>
-                    <button [class.active]="unit() === 'lb'" (click)="setUnit('lb')">LB</button>
+                <div class="flex w-full justify-center">
+                    <div class="relative w-fit flex rounded-lg bg-gray-200 dark:bg-gray-600 p-1">
+                        <div class="absolute top-1 bottom-1 bg-white rounded-md shadow transition-all duration-300 ease-in-out"
+                            [ngClass]="{
+                             'left-1 right-1/2': unit() === 'kg',
+                             'left-1/2 right-1': unit() === 'lb',
+                         }"></div>
+                        <button type="button" (click)="setUnit('kg')"
+                            class="relative z-10 flex-1 px-8 py-2 text-sm font-bold text-center transition-colors duration-300"
+                            [ngClass]="{'text-black': unit() === 'kg', 'text-gray-700 dark:text-gray-300': unit() !== 'kg'}">KG</button>
+                        <button type="button" (click)="setUnit('lb')"
+                            class="relative z-10 flex-1 px-8 py-2 text-sm font-bold text-center transition-colors duration-300"
+                            [ngClass]="{'text-black': unit() === 'lb', 'text-gray-700 dark:text-gray-300': unit() !== 'lb'}">LB</button>
+                    </div>
                 </div>
+
             </div>
 
             <div class="reverse-mode-controls" *ngIf="mode() === 'reverse'">
@@ -104,7 +129,7 @@
                     <div *ngFor="let plate of availablePlates()" class="plate-option" (click)="addPlate(plate)">
                         <div class="visual-plate">
                             <div class="visual-plate-circle" [style.background-color]="plate.color"
-                                [style.border-color]="plate.color === '#FFFFFF' ? '#ccc' : plate.color">
+                                [style.border-color]="plate.color === '#FFFFFF' ? 'white' : plate.color">
                                 <span class="visual-plate-weight" [style.color]="getPlateTextColor(plate.color)">{{
                                     plate.weight
                                     }}</span>
@@ -117,7 +142,7 @@
                     </div>
                 </div>
                 <button class="clear-btn" (click)="clearLoadout()">
-                    <app-icon name="cancel" class="h-5 w-5 mr-2"></app-icon>
+                    <app-icon name="cancel" class="h-5 w-5 mr-2" [strokeWidth]="1"></app-icon>
                     CLEAR BAR
                 </button>
             </div>
@@ -140,19 +165,19 @@
                         <span class="slider round"></span>
                     </label>
                 </div>
+                <div class="form-group">
+                    <label for="barbell">Barbell</label>
+                    <select id="barbell" [ngModel]="selectedBarbell()" (ngModelChange)="handleBarChange($event)">
+                        <option *ngFor="let bar of barbells()" [ngValue]="bar">{{ bar.name }} ({{ bar.weight }}{{
+                            bar.unit }})</option>
+                    </select>
+                </div>
                 <!-- +++ MODIFIED: Replaced isOlympic toggle with a dropdown for plate types +++ -->
                 <div class="form-group">
                     <label for="plateType">Plate Type</label>
                     <select id="plateType" [ngModel]="plateType()" (ngModelChange)="handlePlateTypeChange($event)">
                         <option value="bumper">Bumper Plates</option>
                         <option value="iron">Standard Iron</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="barbell">Barbell</label>
-                    <select id="barbell" [ngModel]="selectedBarbell()" (ngModelChange)="handleBarChange($event)">
-                        <option *ngFor="let bar of barbells()" [ngValue]="bar">{{ bar.name }} ({{ bar.weight }}{{
-                            bar.unit }})</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -266,7 +291,7 @@
                 <h3>One-Rep Max (1RM) Estimator</h3>
                 <button class="close-btn" (click)="onClose()">&times;</button>
             </div>
-            <div class="calc-form">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div class="form-group">
                     <label>Weight Lifted</label>
                     <input type="number" placeholder="e.g., 100" [(ngModel)]="oneRmWeight">
@@ -309,12 +334,23 @@
                 <button class="close-btn" (click)="onClose()">&times;</button>
             </div>
 
-            <div class="mode-toggle exertion-toggle">
-                <button [class.active]="rpeInputMode() === 'rpe'" (click)="rpeInputMode.set('rpe')">RPE</button>
-                <button [class.active]="rpeInputMode() === 'rir'" (click)="rpeInputMode.set('rir')">RIR</button>
+            <div class="flex w-full justify-center">
+                <div class="relative w-fit flex rounded-lg bg-gray-200 dark:bg-gray-600 p-1">
+                    <div class="absolute top-1 bottom-1 bg-primary rounded-md shadow transition-all duration-300 ease-in-out"
+                        [ngClass]="{
+                             'left-1 right-1/2': rpeInputMode() === 'rpe',
+                             'left-1/2 right-1': rpeInputMode() === 'rir',
+                         }"></div>
+                    <button type="button" (click)="rpeInputMode.set('rpe')"
+                        class="relative z-10 flex-1 px-4 py-2 text-sm font-bold text-center transition-colors duration-300"
+                        [ngClass]="{'text-white': rpeInputMode() === 'rpe', 'text-gray-700 dark:text-gray-300': rpeInputMode() !== 'rpe'}">RPE</button>
+                    <button type="button" (click)="rpeInputMode.set('rir')"
+                        class="relative z-10 flex-1 px-4 py-2 text-sm font-bold text-center transition-colors duration-300"
+                        [ngClass]="{'text-white': rpeInputMode() === 'rir', 'text-gray-700 dark:text-gray-300': rpeInputMode() !== 'rir'}">RIR</button>
+                </div>
             </div>
 
-            <div class="calc-form">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div class="form-group">
                     <label>Weight Lifted</label>
                     <input type="number" placeholder="e.g., 100" [(ngModel)]="rpeWeight">
@@ -394,11 +430,20 @@
                         <option value="female">Female</option>
                     </select>
                 </div>
-                <div class="form-group">
-                    <label>Unit</label>
-                    <div class="percentage-unit-toggle">
-                        <button [class.active]="plUnit() === 'kg'" (click)="plUnit.set('kg')">KG</button>
-                        <button [class.active]="plUnit() === 'lb'" (click)="plUnit.set('lb')">LB</button>
+
+                <div class="flex w-full justify-center">
+                    <div class="relative w-fit flex rounded-lg bg-gray-200 dark:bg-gray-600 p-1">
+                        <div class="absolute top-1 bottom-1 bg-white rounded-md shadow transition-all duration-300 ease-in-out"
+                            [ngClass]="{
+                             'left-1 right-1/2': plUnit() === 'kg',
+                             'left-1/2 right-1': plUnit() === 'lb',
+                         }"></div>
+                        <button type="button" (click)="plUnit.set('kg')"
+                            class="relative z-10 flex-1 px-8 py-2 text-sm font-bold text-center transition-colors duration-300"
+                            [ngClass]="{'text-black': plUnit() === 'kg', 'text-gray-700 dark:text-gray-300': plUnit() !== 'kg'}">KG</button>
+                        <button type="button" (click)="plUnit.set('lb')"
+                            class="relative z-10 flex-1 px-8 py-2 text-sm font-bold text-center transition-colors duration-300"
+                            [ngClass]="{'text-black': plUnit() === 'lb', 'text-gray-700 dark:text-gray-300': plUnit() !== 'lb'}">LB</button>
                     </div>
                 </div>
             </div>
