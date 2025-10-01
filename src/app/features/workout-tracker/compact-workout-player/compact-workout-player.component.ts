@@ -2962,20 +2962,25 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * CORRECTED: Checks all sets for an exercise to determine which columns should be visible.
-   * Now correctly checks for the existence of a property, allowing for values like 0.
+   * CORRECTED: Checks all sets for an exercise to determine which data columns should be visible.
+   * A column is now only considered visible if at least one set has a target value GREATER THAN 0
+   * for that metric, or a corresponding "Min" value is set. This keeps the UI clean for
+   * exercises where a target might be initialized to 0 (e.g., bodyweight exercises).
+   * @param exIndex The index of the exercise in the routine.
+   * @returns An object with boolean flags for each potential column.
    */
   public getVisibleSetColumns(exIndex: number): { [key: string]: boolean } {
     const exercise = this.routine()?.exercises[exIndex];
     if (!exercise || !exercise.sets || exercise.sets.length === 0) {
+      // As a fallback for exercises with no sets, show standard weight/reps.
       return { weight: true, reps: true, distance: false, duration: false };
     }
 
     return {
-      weight: exercise.sets.some(s => s.targetWeight !== undefined && s.targetWeight !== null),
-      reps: exercise.sets.some(s => s.targetReps !== undefined && s.targetReps !== null),
-      distance: exercise.sets.some(s => s.targetDistance !== undefined && s.targetDistance !== null),
-      duration: exercise.sets.some(s => s.targetDuration !== undefined && s.targetDuration !== null)
+      weight: exercise.sets.some(s => (s.targetWeight ?? 0) > 0 || (s.targetWeightMin ?? 0) > 0),
+      reps: exercise.sets.some(s => (s.targetReps ?? 0) > 0 || (s.targetRepsMin ?? 0) > 0),
+      distance: exercise.sets.some(s => (s.targetDistance ?? 0) > 0 || (s.targetDistanceMin ?? 0) > 0),
+      duration: exercise.sets.some(s => (s.targetDuration ?? 0) > 0 || (s.targetDurationMin ?? 0) > 0),
     };
   }
 

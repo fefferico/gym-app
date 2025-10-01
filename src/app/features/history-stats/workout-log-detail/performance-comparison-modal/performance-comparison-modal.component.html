@@ -56,7 +56,7 @@
           <div class="header-cell text-center min-w-[120px]">Today</div>
           <div class="header-cell text-center min-w-[120px] flex items-center justify-center">
             <span>Previous</span>
-            <button *ngIf="data.previousLog" type="button" (click)="goToPreviousLogDetail(data.previousLog?.id)"
+            <button *ngIf="data.previousLog" type="button" (click)="goToPreviousLogDetail(data.previousLog.id)"
                     title="Go to previous log"
                     class="ml-1 px-1 flex justify-center items-center w-fit bg-primary hover:bg-primary-dark text-white font-semibold rounded-md shadow-sm text-lg">
               <app-icon name="right-arrow" class="w-5 h-5"></app-icon>

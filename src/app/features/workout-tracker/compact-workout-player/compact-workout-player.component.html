@@ -155,10 +155,10 @@
                   <!-- START: Set Card Layout -->
                   <div [attr.data-set-index]="setIndex" #setCard
                     class="flex items-center gap-3 p-2 rounded-lg shadow-sm" [ngClass]="{
-                'bg-blue-300 dark:bg-blue-700/70': set.type === 'warmup', 
-                'bg-white dark:bg-gray-800': set.type !== 'warmup' && !isSetCompleted(exIndex, setIndex),
-                'bg-green-100 dark:bg-green-900/50': set.type !== 'warmup' && isSetCompleted(exIndex, setIndex)
-            }">
+                        'bg-blue-300 dark:bg-blue-700/70': set.type === 'warmup', 
+                        'bg-white dark:bg-gray-800': set.type !== 'warmup' && !isSetCompleted(exIndex, setIndex),
+                        'bg-green-100 dark:bg-green-900/50': set.type !== 'warmup' && isSetCompleted(exIndex, setIndex)
+                    }">
 
                     <!-- Set Number -->
                     <div class="flex-shrink-0 w-8 text-center">
@@ -168,7 +168,7 @@
                     <!-- Inputs Grid -->
                     <div class="flex-1 grid grid-cols-2 gap-x-4 gap-y-2">
 
-                      <!-- NEW: Case for ZERO visible fields -->
+                      <!-- Case for ZERO visible fields -->
                       <ng-container *ngIf="getFieldsForSet(exIndex, setIndex).visible.length === 0">
                         <div class="col-span-2">
                           <button (click)="promptAddField(exIndex, setIndex)"
@@ -187,10 +187,10 @@
                             <label
                               class="flex items-center justify-center text-xs font-medium text-gray-500 dark:text-gray-400">
                               Weight ({{ unitsService.getWeightUnitSuffix() }})
-                              <!-- <button *ngIf="canRemoveField(exIndex, setIndex, 'weight')" -->
-                              <button (click)="removeFieldFromSet(exIndex, setIndex, 'weight')"
+                              <button 
+                                (click)="removeFieldFromSet(exIndex, setIndex, 'weight')"
                                 class="ml-1 text-red-400 hover:text-red-600">
-                                <app-icon name="cancel" class="h-3 w-3"></app-icon>
+                                <app-icon name="cancel-circle" class="h-3 w-3"></app-icon>
                               </button>
                             </label>
                             <input type="number" [ngModel]="getInitialInputValue(exIndex, setIndex, 'weight')"
@@ -206,10 +206,10 @@
                             <label
                               class="flex items-center justify-center text-xs font-medium text-gray-500 dark:text-gray-400">
                               Reps
-                              <!-- <button *ngIf="canRemoveField(exIndex, setIndex, 'reps')" -->
-                              <button (click)="removeFieldFromSet(exIndex, setIndex, 'reps')"
+                              <button 
+                                (click)="removeFieldFromSet(exIndex, setIndex, 'reps')"
                                 class="ml-1 text-red-400 hover:text-red-600">
-                                <app-icon name="cancel" class="h-3 w-3"></app-icon>
+                                <app-icon name="cancel-circle" class="h-3 w-3"></app-icon>
                               </button>
                             </label>
                             <input type="number" [ngModel]="getInitialInputValue(exIndex, setIndex, 'reps')"
@@ -224,10 +224,10 @@
                             <label
                               class="flex items-center justify-center text-xs font-medium text-gray-500 dark:text-gray-400">
                               Distance
-                              <!-- <button *ngIf="canRemoveField(exIndex, setIndex, 'distance')" -->
-                              <button (click)="removeFieldFromSet(exIndex, setIndex, 'distance')"
+                              <button 
+                                (click)="removeFieldFromSet(exIndex, setIndex, 'distance')"
                                 class="ml-1 text-red-400 hover:text-red-600">
-                                <app-icon name="cancel" class="h-3 w-3"></app-icon>
+                                <app-icon name="cancel-circle" class="h-3 w-3"></app-icon>
                               </button>
                             </label>
                             <input type="number" [ngModel]="getInitialInputValue(exIndex, setIndex, 'distance')"
@@ -242,10 +242,10 @@
                             <label
                               class="flex items-center justify-center text-xs font-medium text-gray-500 dark:text-gray-400">
                               Time
-                              <!-- <button *ngIf="canRemoveField(exIndex, setIndex, 'duration')" -->
-                              <button (click)="removeFieldFromSet(exIndex, setIndex, 'duration')"
+                              <button 
+                                (click)="removeFieldFromSet(exIndex, setIndex, 'duration')"
                                 class="ml-1 text-red-400 hover:text-red-600">
-                                <app-icon name="cancel" class="h-3 w-3"></app-icon>
+                                <app-icon name="cancel-circle" class="h-3 w-3"></app-icon>
                               </button>
                             </label>
                             <input type="text" [ngModel]="getInitialInputValue(exIndex, setIndex, 'duration')"
@@ -276,15 +276,30 @@
                         [ngClass]="isSetCompleted(exIndex, setIndex, 0) ? 'bg-green-500 text-white shadow-lg' : 'bg-gray-200 dark:bg-gray-600 text-gray-500 dark:text-gray-300'"><app-icon
                           name="done" class="h-6 w-6"></app-icon></button>
                       <div class="flex items-center">
+                        <!-- NEW "Add Field" button for the 2-metric case -->
+                        <button
+                          *ngIf="!canAddField(exIndex, setIndex) && getFieldsForSet(exIndex, setIndex).hidden.length > 0"
+                          (click)="promptAddField(exIndex, setIndex)" title="Add metrics"
+                          class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center">
+                          <app-icon name="plus-circle" class="h-6 w-6 text-blue-400"></app-icon>
+                        </button>
                         <button (click)="toggleSetNotes(exIndex, setIndex, $event)"
-                          class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600"><app-icon
+                          class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center"><app-icon
                             name="clipboard-list" class="h-6 w-6 text-gray-500 dark:text-gray-400"></app-icon></button>
                         <button (click)="removeSet(exIndex, setIndex)"
-                          class="p-1 rounded-full hover:bg-red-100 dark:hover:bg-red-600/50"><app-icon name="trash"
+                          class="p-1 rounded-full hover:bg-red-100 dark:hover:bg-red-600/50 flex items-center"><app-icon name="trash"
                             class="h-6 w-6 text-red-500" [strokeWidth]="2"></app-icon></button>
                       </div>
                     </div>
                   </div>
+                  <!-- Set Notes Textarea (if visible) -->
+                  <div *ngIf="expandedSetNotes() === (exIndex + '-' + setIndex)" class="px-2 pb-1">
+                    <textarea [ngModel]="getInitialInputValue(exIndex, setIndex, 'notes')"
+                      (change)="updateSetData(exIndex, setIndex, 0, 'notes', $event)"
+                      placeholder="Notes for this set..."
+                      class="w-full text-xs bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded-md p-1.5 focus:ring-primary-dark focus:border-primary-dark dark:text-gray-200"></textarea>
+                  </div>
+                  <!-- END: Set Card Layout -->
                   <!-- Set Notes Textarea (if visible) -->
                   <div *ngIf="expandedSetNotes() === (exIndex + '-' + setIndex)" class="px-2 pb-1">
                     <textarea [ngModel]="getInitialInputValue(exIndex, setIndex, 'notes')"

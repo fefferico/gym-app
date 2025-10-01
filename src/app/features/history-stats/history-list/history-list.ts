@@ -5,9 +5,9 @@ import {
   HostListener
 } from '@angular/core';
 import { CommonModule, DatePipe, DecimalPipe, isPlatformBrowser, TitleCasePipe } from '@angular/common';
-import { Router, RouterLink, ActivatedRoute } from '@angular/router';
-import { Observable, combineLatest, Subscription, forkJoin, of, firstValueFrom } from 'rxjs';
-import { map, startWith, distinctUntilChanged, take, filter, switchMap } from 'rxjs/operators';
+import { Router, ActivatedRoute } from '@angular/router';
+import { Observable, combineLatest, Subscription, firstValueFrom } from 'rxjs';
+import { map, distinctUntilChanged, take, switchMap } from 'rxjs/operators';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { ExerciseService } from '../../../core/services/exercise.service';
 import { TrackingService } from '../../../core/services/tracking.service';
@@ -22,7 +22,7 @@ import { AlertService } from '../../../core/services/alert.service';
 import { ToastService } from '../../../core/services/toast.service';
 import {
   format, parseISO, startOfMonth, endOfMonth, eachDayOfInterval,
-  isSameDay, addMonths, subMonths, isToday, startOfWeek, endOfWeek,
+  isSameDay, subMonths, isToday, startOfWeek,
   isSameMonth, // Ensure isSameMonth is imported
   addDays
 } from 'date-fns';
@@ -33,7 +33,6 @@ import { ActionMenuItem } from '../../../core/models/action-menu.model';
 import { TrainingProgramService } from '../../../core/services/training-program.service';
 import { ProgramDayInfo, TrainingProgram } from '../../../core/models/training-program.model';
 import { PressDirective } from '../../../shared/directives/press.directive';
-import { PressScrollDirective } from '../../../shared/directives/press-scroll.directive';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { AlertButton } from '../../../core/models/alert.model';
 import { ActivityLog } from '../../../core/models/activity-log.model';
@@ -75,7 +74,7 @@ type EnrichedHistoryListItem = HistoryListItem & {
 @Component({
   selector: 'app-history-list',
   standalone: true,
-  imports: [CommonModule, DatePipe, TitleCasePipe, FormsModule, ReactiveFormsModule, ActionMenuComponent, PressDirective, PressScrollDirective, IconComponent, FabMenuComponent],
+  imports: [CommonModule, DatePipe, TitleCasePipe, FormsModule, ReactiveFormsModule, ActionMenuComponent, PressDirective, IconComponent, FabMenuComponent],
   templateUrl: './history-list.html',
   styleUrl: './history-list.scss',
   providers: [DecimalPipe],

@@ -1,5 +1,5 @@
 // workout-log-detail.ts
-import { Component, HostListener, inject, Input, OnDestroy, OnInit, PLATFORM_ID, signal } from '@angular/core';
+import { afterNextRender, Component, HostListener, inject, Injector, Input, OnDestroy, OnInit, PLATFORM_ID, runInInjectionContext, signal } from '@angular/core';
 import { CommonModule, DatePipe, DecimalPipe, isPlatformBrowser, TitleCasePipe } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { firstValueFrom, forkJoin, Observable, of, Subscription } from 'rxjs';
@@ -96,12 +96,13 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
   private spinnerService = inject(SpinnerService);
   private toastService = inject(ToastService);
   private platformId = inject(PLATFORM_ID);
-  private trainingService = inject(TrainingProgramService);
+  private trainingService = inject(TrainingProgramService);  
+  private injector = inject(Injector);
+
 
   comparisonModalData = signal<TargetComparisonData | null>(null);
   notesModalsData = signal<string | null>(null);
   isExerciseDetailModalOpen = signal(false);
-  isSimpleModalOpen = signal(false);
   exerciseDetailsId: string = '';
   exerciseDetailsName: string = '';
 
@@ -339,7 +340,7 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
     event?.stopPropagation();
     this.exerciseDetailsId = exerciseData.exerciseId;
     this.exerciseDetailsName = exerciseData.exerciseName || 'Exercise details';
-    this.isSimpleModalOpen.set(true);
+    this.isExerciseDetailModalOpen.set(true);
   }
 
   secondsToDateTime(totalSeconds: number | undefined): Date {
@@ -707,9 +708,9 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
     // Reset ALL modal-related states to their initial values
     this.comparisonModalData.set(null);
     this.notesModalsData.set(null);
-    this.isSimpleModalOpen.set(false);
     this.isPerformanceComparisonModalOpen.set(false);
     this.selectedExerciseForComparison.set(null);
+    this.isExerciseDetailModalOpen.set(false);
     this.exerciseDetailsId = '';
     this.exerciseDetailsName = '';
   }
@@ -746,6 +747,27 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
   // +++ NEW: Replicated pipe logic as a component method for consistency +++
   protected isWeighted(loggedEx: DisplayLoggedExercise): boolean {
     return loggedEx?.sets?.some(set => set.weightUsed != null && set.weightUsed > 0) ?? false;
+  }
+
+  showExerciseDetails(exerciseData: DisplayLoggedExercise, event?: Event) {
+    event?.stopPropagation();
+    this.exerciseDetailsId = exerciseData.exerciseId;
+    this.exerciseDetailsName = exerciseData.exerciseName || 'Exercise details';
+
+    // Use afterNextRender to smoothly scroll the new section into view
+    // once it has been rendered in the DOM.
+    runInInjectionContext(this.injector, () => {
+      afterNextRender(() => {
+        const detailSection = document.getElementById('exerciseDetailSection');
+        detailSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+  }
+
+  // --- ADD THIS NEW METHOD ---
+  hideExerciseDetails() {
+    this.exerciseDetailsId = '';
+    this.exerciseDetailsName = '';
   }
 
   ngOnDestroy(): void {
