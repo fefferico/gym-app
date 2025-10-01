@@ -106,6 +106,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
   isAddToSupersetModalOpen = signal(false);
   exerciseToSupersetIndex = signal<number | null>(null);
+  expandedSets = signal(new Set<string>());
+
 
   lastExerciseIndex = signal<number>(-1);
   lastExerciseSetIndex = signal<number>(-1);
@@ -591,23 +593,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const distanceToValidate = userInputs.actualDistance ?? plannedSet.targetDistance;
     const durationToValidate = userInputs.actualDuration ?? plannedSet.targetDuration;
 
-    // --- Validation Logic ---
-
-    if (this.isCardio(exercise)) {
-      // For cardio, at least one of the two metrics must be a positive number.
-      return (distanceToValidate ?? 0) > 0 || (durationToValidate ?? 0) > 0;
-    }
-
-    // For non-cardio exercises:
-    const hasWeightField = this.getFieldsForSet(exIndex, setIndex).visible.includes('weight');
-
-    if (hasWeightField) {
-      // If a weight field is present (even if 0), reps must be positive.
-      return (repsToValidate ?? 0) > 0 && (weightToValidate ?? 0) >= 0;
-    } else {
-      // If it's a bodyweight exercise (no weight field), only reps need to be positive.
-      return (repsToValidate ?? 0) > 0;
-    }
+    return [weightToValidate, repsToValidate, distanceToValidate, durationToValidate].some(metric => metric !== 0 && metric !== undefined && metric !== null);
   }
 
   getLoggedSet(exIndex: number, setIndex: number, roundIndex: number = 0): LoggedSet | undefined {
@@ -769,16 +755,25 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
     if (isOpening) {
       const exercise = this.routine()?.exercises[index];
-      // If it's a superset, set the initial collapsed/expanded state for its rounds
-      if (exercise && this.isSupersetStart(index)) {
-        const firstIncompleteRoundIndex = exercise.sets.findIndex((set, roundIdx) => !this.isRoundCompleted(index, roundIdx));
-
-        const newExpandedRounds = new Set<string>();
-        // If we found an incomplete round, expand it by default. Otherwise, all remain collapsed.
-        if (firstIncompleteRoundIndex > -1) {
-          newExpandedRounds.add(`${index}-${firstIncompleteRoundIndex}`);
+      if (exercise) {
+        // If it's a superset, handle round expansion
+        if (this.isSupersetStart(index)) {
+          const firstIncompleteRoundIndex = exercise.sets.findIndex((set, roundIdx) => !this.isRoundCompleted(index, roundIdx));
+          const newExpandedRounds = new Set<string>();
+          if (firstIncompleteRoundIndex > -1) {
+            newExpandedRounds.add(`${index}-${firstIncompleteRoundIndex}`);
+          }
+          this.expandedRounds.set(newExpandedRounds);
         }
-        this.expandedRounds.set(newExpandedRounds);
+        // If it's a standard exercise, handle set expansion
+        else if (!this.isSuperSet(index)) {
+          const firstIncompleteSetIndex = exercise.sets.findIndex((set, setIdx) => !this.isSetCompleted(index, setIdx, 0));
+          const newExpandedSets = new Set<string>();
+          if (firstIncompleteSetIndex > -1) {
+            newExpandedSets.add(`${index}-${firstIncompleteSetIndex}`);
+          }
+          this.expandedSets.set(newExpandedSets);
+        }
       }
 
       // The afterNextRender logic for scrolling remains the same
@@ -841,6 +836,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     } else {
       // When closing a card, clear the round states
       this.expandedRounds.set(new Set<string>());
+      this.expandedSets.set(new Set<string>()); // Also clear sets
     }
   }
 
@@ -1832,54 +1828,118 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     this.restTimerNextSetDetails.set(nextStep.details);
   }
 
+  /**
+   * Advances the UI state after a rest period is finished or skipped.
+   * It collapses the completed set/round, and expands and scrolls to the next one.
+   */
   private handleAutoExpandNextExercise(): void {
-    // Use a guard clause to ensure currentStepInfo is valid
-    // Compute current step info locally
     const completedExIndex = this.lastExerciseIndex();
     const completedSetIndex = this.lastExerciseSetIndex();
     const routine = this.routine();
-    const exerciseSetLength = routine?.exercises[completedExIndex]?.sets.length ?? 0;
-    const maxExerciseIndex = routine?.exercises.length ? routine.exercises.length - 1 : 0;
-    const ex = routine?.exercises[completedExIndex];
-    const supersetInfo = ex?.supersetId
-      ? {
-        supersetId: ex.supersetId,
-        supersetSize: ex.sets.length ?? 0,
-        supersetOrder: ex.supersetOrder ?? 0,
-        supersetRounds: ex.sets.length
-      }
-      : undefined;
 
-    const isLastSetOfExercise = completedSetIndex >= exerciseSetLength - 1;
+    if (completedExIndex < 0 || completedSetIndex < 0 || !routine) return;
 
-    // Determine if we should advance to the next exercise card
-    let shouldAdvance = false;
+    const completedExercise = routine.exercises[completedExIndex];
+    const isLastSetOfExercise = completedSetIndex >= completedExercise.sets.length - 1;
 
-    if (supersetInfo) {
-      // For supersets, advance only if it's the last set of the LAST exercise in the group
-      const isLastExerciseInGroup = supersetInfo.supersetOrder >= supersetInfo.supersetSize - 1;
-      if (isLastSetOfExercise && isLastExerciseInGroup) {
-        shouldAdvance = true;
+    let shouldAdvanceToNextExercise = false;
+
+    // Determine if we need to move to the next exercise card entirely.
+    // This happens after the last set of a standard exercise, or after the last set of the LAST exercise in a superset group.
+    if (completedExercise.supersetId) {
+      const supersetGroup = this.getSupersetExercises(completedExercise.supersetId);
+      const lastExerciseInGroup = supersetGroup[supersetGroup.length - 1];
+      if (completedExercise.id === lastExerciseInGroup.id && isLastSetOfExercise) {
+        shouldAdvanceToNextExercise = true;
       }
     } else {
-      // For standard exercises, advance if it was the last set
       if (isLastSetOfExercise) {
-        shouldAdvance = true;
+        shouldAdvanceToNextExercise = true;
       }
     }
 
-    if (shouldAdvance) {
-      const nextIndex = completedExIndex + 1;
-      if (nextIndex <= maxExerciseIndex) {
-        // Expand the next exercise
-        this.expandedExerciseIndex.set(nextIndex);
+    // --- EXECUTE THE STATE CHANGE ---
+    if (shouldAdvanceToNextExercise) {
+      // ACTION 1: It was the last set. Advance to the next exercise card.
+      const nextExIndex = this.findNextExerciseIndex(completedExIndex);
+      if (nextExIndex !== -1) {
+        this.toggleExerciseExpansion(nextExIndex);
       } else {
-        // All exercises are done, collapse everything.
+        // End of workout, collapse everything.
         this.expandedExerciseIndex.set(null);
       }
+    } else {
+      // ACTION 2: The next set is in the SAME exercise. (This only applies to standard exercises).
+      if (!completedExercise.supersetId) {
+        const nextSetIndex = completedSetIndex + 1;
+
+        // Update the expandedSets signal to swap the expanded set.
+        this.expandedSets.update(currentSet => {
+          const newSet = new Set(currentSet);
+          newSet.delete(`${completedExIndex}-${completedSetIndex}`); // Collapse the old one
+          newSet.add(`${completedExIndex}-${nextSetIndex}`); // Expand the new one
+          return newSet;
+        });
+
+        // Scroll the new set into view.
+        this.scrollToSet(completedExIndex, nextSetIndex);
+      }
     }
-    // If we should not advance (e.g., in the middle of a superset), we do nothing,
-    // leaving the current exercise card expanded.
+  }
+
+  /**
+   * Finds the index of the next exercise to be performed, skipping over
+   * non-starting exercises in a superset group.
+   * @param currentIndex The index of the exercise just completed.
+   * @returns The index of the next exercise card to expand, or -1 if at the end.
+   */
+  private findNextExerciseIndex(currentIndex: number): number {
+    const exercises = this.routine()?.exercises;
+    if (!exercises) return -1;
+
+    const currentExercise = exercises[currentIndex];
+
+    if (currentExercise.supersetId) {
+      // If we just finished a superset, find the next index that is NOT part of the same superset.
+      for (let i = currentIndex + 1; i < exercises.length; i++) {
+        if (exercises[i].supersetId !== currentExercise.supersetId) {
+          return i; // This is the start of the next group or a standard exercise.
+        }
+      }
+      return -1; // Reached the end of the workout.
+    } else {
+      // If we just finished a standard exercise, the next one is simply index + 1.
+      const nextIndex = currentIndex + 1;
+      return nextIndex < exercises.length ? nextIndex : -1;
+    }
+  }
+
+
+  // +++ NEW HELPER METHOD: Add this new private method to the class +++
+
+  /**
+   * Smoothly scrolls the viewport to a specific set card within an exercise.
+   * @param exIndex The index of the parent exercise.
+   * @param setIndex The index of the target set.
+   */
+  private scrollToSet(exIndex: number, setIndex: number): void {
+    // This logic needs to run after the DOM has updated with the newly expanded set.
+    runInInjectionContext(this.injector, () => {
+      afterNextRender(() => {
+        requestAnimationFrame(() => {
+          const cardElement = document.querySelector(`[data-exercise-index="${exIndex}"]`) as HTMLElement;
+          const setElement = cardElement?.querySelector(`[data-set-index="${setIndex}"]`) as HTMLElement;
+          const headerElement = this.header?.nativeElement;
+
+          if (setElement && headerElement) {
+            const headerHeight = headerElement.offsetHeight;
+            const elementTopPosition = setElement.getBoundingClientRect().top + window.scrollY;
+            const scrollTopPosition = elementTopPosition - headerHeight - 15; // 15px top padding
+            window.scrollTo({ top: scrollTopPosition, behavior: 'smooth' });
+          }
+        });
+      });
+    });
   }
 
   private updateLogWithRestTime(actualRestTime: number): void {
@@ -2979,10 +3039,10 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     }
 
     return {
-      weight:  (set.targetWeight ?? 0) > 0 || (set.targetWeightMin ?? 0) > 0,
-      reps:  (set.targetReps ?? 0) > 0 || (set.targetRepsMin ?? 0) > 0,
-      distance:  (set.targetDistance ?? 0) > 0 || (set.targetDistanceMin ?? 0) > 0,
-      duration:  (set.targetDuration ?? 0) > 0 || (set.targetDurationMin ?? 0) > 0,
+      weight: (set.targetWeight ?? 0) > 0 || (set.targetWeightMin ?? 0) > 0,
+      reps: (set.targetReps ?? 0) > 0 || (set.targetRepsMin ?? 0) > 0,
+      distance: (set.targetDistance ?? 0) > 0 || (set.targetDistanceMin ?? 0) > 0,
+      duration: (set.targetDuration ?? 0) > 0 || (set.targetDurationMin ?? 0) > 0,
     };
   }
 
@@ -3112,7 +3172,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   /**
     * UPDATED: Removes a field from ALL sets of an exercise for UI consistency.
     */
-  public removeFieldFromSet(exIndex: number, setIndex: number, fieldToRemove: string): void {
+  public removeMetricFromSet(exIndex: number, setIndex: number, fieldToRemove: string): void {
     const routine = this.routine();
     if (!routine) return;
 
@@ -3156,6 +3216,68 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     this.toastService.info(`'${fieldToRemove}' field removed from set #${setIndex + 1}.`);
   }
 
+
+  isSetExpanded(exIndex: number, setIndex: number): boolean {
+    const key = `${exIndex}-${setIndex}`;
+    return this.expandedSets().has(key);
+  }
+
+  // +++ ADD THIS METHOD: Toggles the expanded/collapsed state of a specific set +++
+  toggleSetExpansion(exIndex: number, setIndex: number, event: Event): void {
+    event.stopPropagation(); // Prevent the main exercise card from toggling
+    const key = `${exIndex}-${setIndex}`;
+
+    this.expandedSets.update(currentSet => {
+      const newSet = new Set(currentSet); // Create a new instance for signal change detection
+      if (newSet.has(key)) {
+        newSet.delete(key);
+      } else {
+        newSet.add(key);
+      }
+      return newSet;
+    });
+  }
+
+  // +++ ADD THIS METHOD: Gets a summary of the set for the collapsed view +++
+  getSetSummary(exIndex: number, setIndex: number): string {
+    const routine = this.routine();
+    if (!routine) return '';
+    const exercise = routine.exercises[exIndex];
+    const loggedSet = this.getLoggedSet(exIndex, setIndex);
+    const plannedSet = exercise.sets[setIndex];
+
+    // Prioritize logged data for the summary, fall back to planned data
+    const data = loggedSet || plannedSet;
+
+    let parts: string[] = [];
+
+    const weight = loggedSet?.weightUsed ?? plannedSet.targetWeight;
+    const reps = loggedSet?.repsAchieved ?? plannedSet.targetReps;
+    const distance = loggedSet?.distanceAchieved ?? plannedSet.targetDistance;
+    const duration = loggedSet?.durationPerformed ?? plannedSet.targetDuration;
+
+    if (weight !== undefined && weight !== null && weight > 0) {
+      parts.push(`${this.weightUnitPipe.transform(weight)}`);
+    } else if (weight === 0) {
+      parts.push('Bodyweight');
+    }
+
+    if (reps !== undefined && reps !== null && reps > 0) {
+      parts.push(`${reps} reps`);
+    }
+
+    if (distance !== undefined && distance !== null && distance > 0) {
+      parts.push(`${distance} ${this.unitsService.getDistanceMeasureUnitSuffix()}`);
+    }
+
+    if (duration !== undefined && duration !== null && duration > 0) {
+      parts.push(this.formatSecondsToTime(duration));
+    }
+
+    if (parts.length === 0) return 'Tap to log...';
+
+    return parts.join(' x ');
+  }
 
 
 }

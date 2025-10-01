@@ -235,7 +235,7 @@
                   <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Set</div>
                   <div *ngIf="hasPerformedReps(item)"
                     class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Reps</div>
-                  <div *ngIf="item | isWeighted" class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">
+                  <div *ngIf="checkIfWeightedExercise(item)" class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">
                     Weight ({{unitService.getBodyWeightUnitSuffix()}})</div>
                   <div *ngIf="hasPerformedDistanceSets(item)"
                     class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Distance
@@ -264,7 +264,7 @@
                         (click)="showComparisonModal(set, 'reps')">{{ set.repsAchieved || '-' }}</strong></div>
 
                     <!-- Weight -->
-                    <div *ngIf="isWeighted(item)"><strong [ngClass]="checkTextClass(set, 'weight')"
+                    <div *ngIf="checkIfWeightedExercise(item)"><strong [ngClass]="checkTextClass(set, 'weight')"
                         [class.cursor-pointer]="isTargetDifferent(set, 'weight')"
                         [class.hover:underline]="isTargetDifferent(set, 'weight')"
                         (click)="showComparisonModal(set, 'weight')">{{ set.weightUsed != null ? (set.weightUsed + ' ' +

@@ -584,11 +584,12 @@ viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" >
 >
   <!-- The main circle -->
   <circle cx="12" cy="12" r="10"></circle>
+  <circle cx="12" cy="12" r="1"></circle>
   <!-- The crosshair lines extending to the edges of the circle -->
-  <line x1="22" y1="12" x2="18" y2="12"></line>
-  <line x1="6" y1="12" x2="2" y2="12"></line>
-  <line x1="12" y1="6" x2="12" y2="2"></line>
-  <line x1="12" y1="22" x2="12" y2="18"></line>
+  <line x1="24" y1="12" x2="17" y2="12"></line>
+  <line x1="0" y1="12" x2="7" y2="12"></line>
+  <line x1="12" y1="0" x2="12" y2="8"></line>
+  <line x1="12" y1="16" x2="12" y2="24"></line>
 </svg>
 `,
 'hourglass':`

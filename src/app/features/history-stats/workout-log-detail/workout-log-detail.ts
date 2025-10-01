@@ -380,11 +380,11 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
   }
 
   checkIfTimedExercise(loggedEx: LoggedWorkoutExercise): boolean {
-    return loggedEx.sets.some(set => set.durationPerformed);
+    return loggedEx.sets.some(set => (set.durationPerformed !== undefined && set.durationPerformed !== null) && set.durationPerformed > 0);
   }
 
   checkIfWeightedExercise(loggedEx: LoggedWorkoutExercise): boolean {
-    return loggedEx?.sets.some(set => set.weightUsed);
+    return loggedEx?.sets.some(set => (set.weightUsed !== undefined && set.weightUsed !== null) && set.weightUsed >= 0);
   }
 
   protected checkRange(performed: number | string, min?: number | string | null, max?: number | string | null): string {
@@ -727,7 +727,7 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
 
     // Conditionally add a column for each additional metric found
     if (this.hasPerformedReps(item)) cols++;
-    if (this.isWeighted(item)) cols++;
+    if (this.checkIfWeightedExercise(item)) cols++;
     if (this.hasPerformedTimedSets(item)) cols++;
     if (this.hasPerformedDistanceSets(item)) cols++;
     if (this.hasNotes(item)) cols++;
@@ -742,11 +742,6 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
 
   protected hasNotes(loggedEx: DisplayLoggedExercise): boolean {
     return loggedEx?.sets?.some(set => (set.notes ?? undefined)) ?? false;
-  }
-
-  // +++ NEW: Replicated pipe logic as a component method for consistency +++
-  protected isWeighted(loggedEx: DisplayLoggedExercise): boolean {
-    return loggedEx?.sets?.some(set => set.weightUsed != null && set.weightUsed > 0) ?? false;
   }
 
   showExerciseDetails(exerciseData: DisplayLoggedExercise, event?: Event) {
