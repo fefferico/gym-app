@@ -2354,6 +2354,17 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     return actionsArray;
   }
 
+  async checkEditRoutine(routineId: string): Promise<void> {
+    const pausedRoutine = this.workoutService.getPausedSession();
+    if (this.workoutService.isPausedSession() && pausedRoutine && pausedRoutine?.routineId === routineId) {
+      await this.alertService.showAlert("Info", "It's not possible to edit a running routine. Complete it or discard it before doing it.").then(() => {
+        return;
+      })
+      return;
+    }
+    this.router.navigate(['/workout/routine/edit', routineId]);
+  }
+
   handleActionMenuItemClick(event: { actionKey: string, data?: any }, originalMouseEvent?: MouseEvent): void {
     // originalMouseEvent.stopPropagation(); // Stop original event that opened the menu
     const routineId = this.routine()?.id;
@@ -2364,7 +2375,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         this.startCurrentWorkout();
         break;
       case 'edit':
-        this.router.navigate(['/workout/routine/edit', routineId]);
+        this.checkEditRoutine(routineId);
         break;
       case 'clone':
         this.cloneAndEditRoutine(routineId);

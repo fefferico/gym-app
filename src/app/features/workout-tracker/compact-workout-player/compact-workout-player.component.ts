@@ -88,7 +88,7 @@ export interface NextStepInfo {
 export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   protected router = inject(Router);
-  private workoutService = inject(WorkoutService);
+  protected workoutService = inject(WorkoutService);
   private exerciseService = inject(ExerciseService);
   protected trackingService = inject(TrackingService);
   protected trainingProgramService = inject(TrainingProgramService);
@@ -107,7 +107,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   isAddToSupersetModalOpen = signal(false);
   exerciseToSupersetIndex = signal<number | null>(null);
   expandedSets = signal(new Set<string>());
-
+  setTimerState = signal<{ [key: string]: { status: 'idle' | 'running' | 'paused', remainingTime: number } }>({});
+  private setTimerSub: Subscription | undefined;
 
   lastExerciseIndex = signal<number>(-1);
   lastExerciseSetIndex = signal<number>(-1);
@@ -268,6 +269,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     this.timerSub?.unsubscribe();
     this.routeSub?.unsubscribe();
     this.emomTimerSub?.unsubscribe();
+    this.setTimerSub?.unsubscribe();
     this.unlockScreenOrientation();
   }
 
@@ -742,8 +744,9 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return parts.length === 2 ? parts[0] * 60 + parts[1] : parts[0];
   }
 
-  formatSecondsToTime(totalSeconds: number | undefined): string {
-    if (totalSeconds == null) return '';
+  formatSecondsToTime(totalSeconds: number | string | undefined): string {
+    if (totalSeconds == null || totalSeconds == '') return '';
+    if (typeof totalSeconds === 'string') { totalSeconds = Number(totalSeconds)};
     const mins = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
     const secs = String(totalSeconds % 60).padStart(2, '0');
     return `${mins}:${secs}`;
@@ -1805,7 +1808,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
                 </div>`;
       }).join('');
 
-      this.restTimerNextUpText.set(`<div class="text-center"><p class="text-lg font-bold">${titleLine}</p></div><div class="mt-2">${detailLines}</div>`);
+      this.restTimerNextUpText.set(`<div class="text-left"><p class="text-lg font-bold">${titleLine}</p></div><div class="mt-2">${detailLines}</div>`);
 
     } else {
       // --- CASE 2: The next item is a Standard Exercise ---
@@ -2004,17 +2007,17 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     this.isRestTimerVisible.set(false);
     // this.toastService.success("Rest complete!", 2000);
     this.updateLogWithRestTime(this.restDuration()); // Update log with full rest duration
-    // this.handleAutoExpandNextExercise();
-    this.autoCollapsePreviousSets();
+    this.handleAutoExpandNextExercise();
+    // this.autoCollapsePreviousSets();
   }
 
   handleRestTimerSkipped(timeSkipped: number): void {
     this.isRestTimerVisible.set(false);
-    this.toastService.info("Rest skipped", 1500);
+    // this.toastService.info("Rest skipped", 1500);
     const actualRest = Math.ceil(this.restDuration() - timeSkipped);
     this.updateLogWithRestTime(actualRest); // Update log with actual rest taken
-    // this.handleAutoExpandNextExercise();
-    this.autoCollapsePreviousSets();
+    this.handleAutoExpandNextExercise();
+    // this.autoCollapsePreviousSets();
     this.playerSubState.set(PlayerSubState.PerformingSet);
   }
 
@@ -2329,7 +2332,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       if (!isAlreadyCompleted) {
         this.toastService.success(`Round ${roundIndex + 1} completed!`);
       } else {
-        this.toastService.info(`Log for Round ${roundIndex + 1} removed.`);
+        // this.toastService.info(`Log for Round ${roundIndex + 1} removed.`);
       }
 
     } else {
@@ -2647,41 +2650,40 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
   /**
+  * --- UPDATED ---
   * Generates a display string for a set's planned target.
-  * For subsequent sets of a standard exercise, this method dynamically calculates a 
-  * progressive overload suggestion based on the performance of the previous set in this session.
+  * For subsequent sets OR rounds, this method dynamically calculates a progressive 
+  * overload suggestion based on the performance of the previous set/round in this session.
   *
   * @param set The ExerciseSetParams object from the routine plan.
   * @param exIndex The index of the exercise.
-  * @param setIndex The index of the set.
+  * @param setIndex The index of the set (which is also the roundIndex for supersets).
   * @param field The specific target field to display ('reps', 'weight', etc.).
   * @returns A formatted string like "8-12", "60+", "10".
   */
   public getSetTargetDisplay(set: ExerciseTargetSetParams, exIndex: number, setIndex: number, field: 'reps' | 'duration' | 'weight' | 'distance'): string {
     let setForDisplay: ExerciseTargetSetParams;
-    const exercise = this.routine()?.exercises[exIndex];
-
-    // For the first set of an exercise or any set within a superset, we use the pre-filled values.
-    // Real-time intra-session suggestions are best applied to standard, sequential sets.
-    if (setIndex === 0 || exercise?.supersetId) {
+    
+    // For the first set/round of an exercise, we always use the pre-filled values.
+    // The progressive overload suggestion logic applies from the second set/round onwards.
+    if (setIndex === 0) {
       setForDisplay = set;
     } else {
-      // For subsequent sets (Set 2, 3, etc.), get the performance of the PREVIOUS set.
-      const previousLoggedSet = this.getLoggedSet(exIndex, setIndex - 1);
+      // For subsequent sets (Set 2, 3... or Round 2, 3...), get the performance of the PREVIOUS one.
+      // Note: For supersets, getLoggedSet requires the roundIndex as the third parameter.
+      const roundIndexForLog = this.isSuperSet(exIndex) ? setIndex - 1 : 0;
+      const previousLoggedSet = this.getLoggedSet(exIndex, setIndex - 1, roundIndexForLog);
 
       if (previousLoggedSet) {
-        // If the previous set was logged, ask the service for a suggestion for the CURRENT set.
-        // The `set` parameter here represents the planned values for the current set.
+        // If the previous set/round was logged, ask the service for a suggestion for the CURRENT one.
         setForDisplay = this.workoutService.suggestNextSetParameters(previousLoggedSet, set);
       } else {
-        // If the previous set was skipped, there's no data for a suggestion, so use the planned values.
+        // If the previous one was skipped, there's no data for a suggestion, so use the planned values.
         setForDisplay = set;
       }
     }
 
-    // Finally, use the workoutService's formatting helper with the determined set data (either planned or suggested).
-    // return this.workoutService.getSetTargetDisplay(setForDisplay, field);
-
+    // Finally, use the workoutService's formatting helper with the determined set data.
     return this.workoutService.getSetTargetDisplay(setForDisplay, field);
   }
 
@@ -3001,18 +3003,22 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
    * --- THIS IS THE FIX ---
    * This method now ONLY updates the temporary `performanceInputValues` signal.
    * It DOES NOT touch the routine or the workout log. It is purely for capturing UI input.
+   *
+   * --- ENHANCEMENT ---
+   * If the 'duration' field is changed for a set with an active timer, it now
+   * automatically stops the old timer and starts a new one with the new value.
    */
   updateSetData(exIndex: number, setIndex: number, roundIndex: number, field: 'reps' | 'weight' | 'distance' | 'duration' | 'notes', event: Event): void {
     const value = (event.target as HTMLInputElement).value;
     const key = `${exIndex}-${setIndex}`;
 
+    // 1. Update the temporary input state object as before.
     this.performanceInputValues.update(currentInputs => {
-      const newInputs = { ...currentInputs }; // Create a mutable copy
+      const newInputs = { ...currentInputs };
       if (!newInputs[key]) {
-        newInputs[key] = {}; // Initialize if it doesn't exist
+        newInputs[key] = {};
       }
 
-      // Update the specific field in our temporary state object
       switch (field) {
         case 'reps': newInputs[key].repsAchieved = parseFloat(value) || undefined; break;
         case 'weight': newInputs[key].weightUsed = value === '' ? undefined : parseFloat(value); break;
@@ -3020,9 +3026,26 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         case 'duration': newInputs[key].actualDuration = this.parseTimeToSeconds(value); break;
         case 'notes': newInputs[key].notes = value; break;
       }
-
       return newInputs;
     });
+
+    // 2. Check if we need to reset an active timer because the duration was changed.
+    if (field === 'duration') {
+      const state = this.setTimerState()[key]; // Check the current timer state directly
+
+      // Only act if a timer was already running or paused for this specific set.
+      if (state && (state.status === 'running' || state.status === 'paused')) {
+        // Stop the currently active global timer subscription.
+        this.setTimerSub?.unsubscribe();
+
+        // Immediately start a new timer for this set. The `startSetTimer` function
+        // is smart enough to read the new value we just set in `performanceInputValues`.
+        this.startSetTimer(exIndex, setIndex, key);
+        
+        // Give user feedback that the timer was reset
+        this.toastService.info("Timer reset with new duration.", 1500);
+      }
+    }
   }
 
   /**
@@ -3119,8 +3142,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         this.lastLoggedSetForRestUpdate = this.getLoggedSet(exIndex, setIndex, roundIndex) ?? null;
         this.startRestPeriod(set.restAfterSet, exIndex, setIndex);
       } else {
-        // this.handleAutoExpandNextExercise();
-        this.autoCollapsePreviousSets();
+        this.handleAutoExpandNextExercise();
+        // this.autoCollapsePreviousSets();
       }
     }
   }
@@ -3434,5 +3457,208 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return parts.join(' x ');
   }
 
+
+  /**
+   * Checks if a standard set is time-based and should display a timer.
+   * @param exIndex The index of the exercise.
+   * @param setIndex The index of the set.
+   * @returns True if the set is a timed set.
+   */
+  public isTimedSet(exIndex: number, setIndex: number): boolean {
+    const exercise = this.routine()?.exercises[exIndex];
+    const set = exercise?.sets[setIndex];
+    // A set is timed if it's NOT in a superset and has a duration target > 0
+    return !!(!exercise?.supersetId && set && (set.targetDuration ?? 0) > 0);
+  }
+
+  /**
+   * Helper to find the index of the first round in a superset that has not been logged yet.
+   * @param exIndex The index of the starting exercise of the superset.
+   * @returns The index of the first incomplete round, or -1 if all are complete.
+   */
+  protected findFirstIncompleteRoundIndex(exIndex: number): number {
+    const exercise = this.routine()?.exercises[exIndex];
+    if (!exercise?.supersetId) {
+      return -1;
+    }
+    return exercise.sets.findIndex((round, roundIdx) => !this.isRoundCompleted(exIndex, roundIdx));
+  }
+
+  /**
+   * Determines the dynamic CSS classes for a superset round card.
+   * Gives a special "focused" style to the first incomplete round when it's expanded.
+   * @param exIndex The index of the exercise.
+   * @param roundIndex The index of the round.
+   * @returns An object compatible with [ngClass].
+   */
+  public getRoundClasses(exIndex: number, roundIndex: number): any {
+    const isCompleted = this.isRoundCompleted(exIndex, roundIndex);
+    const isExpanded = this.isRoundExpanded(exIndex, roundIndex);
+    const firstIncompleteIndex = this.findFirstIncompleteRoundIndex(exIndex);
+
+    const isFocused = isExpanded && roundIndex === firstIncompleteIndex;
+
+    if (isFocused) {
+      return {
+        'rounded-md p-2 transition-all duration-300': true,
+        'ring-2 ring-yellow-400 dark:ring-yellow-500 z-10': true,
+        'bg-gray-100 dark:bg-gray-700/50': true
+      };
+    }
+
+    if (isCompleted) {
+      return {
+        'rounded-md p-2 transition-all duration-300': true,
+        'bg-green-300 dark:bg-green-700 border border-green-300 dark:border-green-800': true,
+      };
+    }
+
+    return {
+      'rounded-md p-2 transition-all duration-300': true,
+      'bg-gray-100 dark:bg-gray-800': true,
+    };
+  }
+
+/**
+   * Gets the current timer state for a specific standard set.
+   * It prioritizes the user's input for the duration if it differs from the planned target.
+   */
+  getSetTimerState(exIndex: number, setIndex: number): { status: 'idle' | 'running' | 'paused', remainingTime: number } {
+    if (this.isSetCompleted(exIndex, setIndex)) {
+      return { status: 'idle', remainingTime: 0 };
+    }
+    const key = `${exIndex}-${setIndex}`;
+    const allTimerStates = this.setTimerState();
+
+    // If a timer is already active (running/paused), return its current state immediately.
+    if (allTimerStates[key]) {
+      return allTimerStates[key];
+    }
+
+    // --- PRIORITY LOGIC FOR IDLE STATE ---
+    // If the timer is idle, determine the correct starting duration.
+    const userInputs = this.performanceInputValues()[key];
+    let duration: number;
+
+    // 1. Prioritize the user's typed input if it exists.
+    if (userInputs && userInputs.actualDuration !== undefined && userInputs.actualDuration !== null) {
+      duration = userInputs.actualDuration;
+    } else {
+      // 2. Fall back to the planned target duration from the routine.
+      duration = this.routine()?.exercises[exIndex].sets[setIndex].targetDuration ?? 0;
+    }
+
+    // Return the idle state with the correctly prioritized duration.
+    return { status: 'idle', remainingTime: duration };
+  }
+
+  /**
+   * Central handler for the timed set button clicks (play/pause/resume).
+   */
+  handleSetTimerAction(exIndex: number, setIndex: number, event: Event): void {
+    event.stopPropagation();
+    const key = `${exIndex}-${setIndex}`;
+    const state = this.getSetTimerState(exIndex, setIndex);
+
+    switch (state.status) {
+      case 'idle':
+      case 'paused':
+        this.startSetTimer(exIndex, setIndex, key);
+        break;
+      case 'running':
+        this.pauseSetTimer(key);
+        break;
+    }
+  }
+
+  /**
+   * Starts or resumes the timer for a specific standard set.
+   * --- CORRECTED ---
+   * It now uses getSetTimerState to ensure it starts with the correct duration,
+   * respecting any user input.
+   */
+  private startSetTimer(exIndex: number, setIndex: number, key: string): void {
+    // Get the state object, which correctly prioritizes user input for its `remainingTime`.
+    const state = this.getSetTimerState(exIndex, setIndex);
+    const duration = state.remainingTime;
+
+    this.setTimerState.update(states => {
+      // When starting fresh, use the correct duration.
+      // When resuming, the `remainingTime` is already correct from the state.
+      if (!states[key]) {
+        states[key] = { status: 'running', remainingTime: duration };
+      } else {
+        states[key].status = 'running';
+      }
+      return { ...states };
+    });
+
+    this.setTimerSub?.unsubscribe();
+    this.setTimerSub = timer(0, 1000).subscribe(() => {
+      const currentRemaining = this.setTimerState()[key]?.remainingTime;
+      if (currentRemaining > 0) {
+        this.setTimerState.update(states => {
+          states[key].remainingTime--;
+          return { ...states };
+        });
+      } else {
+        this.setTimerSub?.unsubscribe();
+        const exercise = this.routine()!.exercises[exIndex];
+        const set = exercise.sets[setIndex];
+        if (!this.isSetCompleted(exIndex, setIndex)) {
+          this.toastService.success(`Set #${setIndex + 1} complete!`);
+          this.toggleSetCompletion(exercise, set, exIndex, setIndex, 0);
+        }
+        this.setTimerState.update(states => {
+            delete states[key];
+            return { ...states };
+        });
+      }
+    });
+  }
+
+  /**
+   * Pauses the currently active standard set timer.
+   */
+  private pauseSetTimer(key: string): void {
+    this.setTimerSub?.unsubscribe();
+    this.setTimerState.update(states => {
+      if (states[key]) {
+        states[key].status = 'paused';
+      }
+      return { ...states };
+    });
+  }
+
+  /**
+   * UI helper to get the text for the timed set button.
+   */
+  getSetTimerButtonText(exIndex: number, setIndex: number): string {
+    const state = this.getSetTimerState(exIndex, setIndex);
+    const textMap = { idle: 'START', running: 'PAUSE', paused: 'RESUME' };
+    return textMap[state.status];
+  }
+
+  /**
+   * UI helper to get the icon for the timed set button.
+   */
+  getSetTimerButtonIcon(exIndex: number, setIndex: number): string {
+    const state = this.getSetTimerState(exIndex, setIndex);
+    const iconMap = { idle: 'play', running: 'pause', paused: 'play' };
+    return iconMap[state.status];
+  }
+
+  /**
+   * UI helper to get the CSS class for the timed set button.
+   */
+  getSetTimerButtonClass(exIndex: number, setIndex: number): string {
+    const state = this.getSetTimerState(exIndex, setIndex);
+    const classMap = {
+      idle: 'bg-teal-500 hover:bg-teal-600',
+      running: 'bg-yellow-500 hover:bg-yellow-600',
+      paused: 'bg-teal-500 hover:bg-teal-600 animate-pulse',
+    };
+    return classMap[state.status];
+  }
 
 }

@@ -427,7 +427,15 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     this.router.navigate(['/workout/routine/new']);
   }
 
-  editRoutine(routineId: string, event?: MouseEvent): void {
+  async editRoutine(routineId: string, event?: MouseEvent): Promise<void> {
+    const pausedRoutine = this.workoutService.getPausedSession();
+    if (this.workoutService.isPausedSession() && pausedRoutine && pausedRoutine?.routineId === routineId) {
+      await this.alertService.showAlert("Info", "It's not possible to edit a running routine. Complete it or discard it before doing it.").then(() => {
+        return;
+      })
+      return;
+    }
+
     this.router.navigate(['/workout/routine/edit', routineId]);
     this.visibleActionsRutineId.set(null);
   }
