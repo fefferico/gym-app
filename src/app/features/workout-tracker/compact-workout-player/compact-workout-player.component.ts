@@ -1829,6 +1829,47 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Collapses all sets in the given exercise that come before the specified setIndex.
+   * This is useful to keep the UI tidy after the user manually expands a later set.
+   * @param exIndex The index of the exercise.
+   * @param setIndex The index of the currently active/expanded set.
+   */
+  /**
+ * Collapses all sets in the last worked-on exercise that come before the most recently completed set.
+ * This is typically called after a set is completed to keep the UI clean.
+ */
+  private autoCollapsePreviousSets(): void {
+    const completedExIndex = this.lastExerciseIndex();
+    const completedSetIndex = this.lastExerciseSetIndex();
+    const routine = this.routine();
+
+    if (completedExIndex < 0 || completedSetIndex < 0 || !routine) {
+      return;
+    }
+
+    // No previous sets to collapse if it's the first one.
+    if (completedSetIndex <= 0) {
+      return;
+    }
+
+    this.expandedSets.update(currentSet => {
+      const newSet = new Set(currentSet); // Work with a new copy
+
+      // Iterate through all sets before the currently completed one
+      for (let i = 0; i < completedSetIndex; i++) {
+        // --- FIX IS HERE ---
+        // The key must be constructed with the exercise index, then the set index.
+        const keyToCollapse = `${completedExIndex}-${i}`;
+        if (newSet.has(keyToCollapse)) {
+          newSet.delete(keyToCollapse);
+        }
+      }
+
+      return newSet; // Return the modified set to update the signal
+    });
+  }
+
+  /**
    * Advances the UI state after a rest period is finished or skipped.
    * It collapses the completed set/round, and expands and scrolls to the next one.
    */
@@ -1963,7 +2004,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     this.isRestTimerVisible.set(false);
     // this.toastService.success("Rest complete!", 2000);
     this.updateLogWithRestTime(this.restDuration()); // Update log with full rest duration
-    this.handleAutoExpandNextExercise();
+    // this.handleAutoExpandNextExercise();
+    this.autoCollapsePreviousSets();
   }
 
   handleRestTimerSkipped(timeSkipped: number): void {
@@ -1971,7 +2013,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     this.toastService.info("Rest skipped", 1500);
     const actualRest = Math.ceil(this.restDuration() - timeSkipped);
     this.updateLogWithRestTime(actualRest); // Update log with actual rest taken
-    this.handleAutoExpandNextExercise();
+    // this.handleAutoExpandNextExercise();
+    this.autoCollapsePreviousSets();
     this.playerSubState.set(PlayerSubState.PerformingSet);
   }
 
@@ -2417,6 +2460,66 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Helper method to find the index of the first set in an exercise that has not been logged yet.
+   * @param exIndex The index of the exercise.
+   * @returns The index of the first incomplete set, or -1 if all are complete.
+   */
+  private findFirstIncompleteSetIndex(exIndex: number): number {
+    const exercise = this.routine()?.exercises[exIndex];
+    if (!exercise) {
+      return -1; // Should not happen in normal flow
+    }
+    // Find the index of the first set where isSetCompleted returns false
+    return exercise.sets.findIndex((set, setIdx) => !this.isSetCompleted(exIndex, setIdx));
+  }
+
+  /**
+   * Determines the dynamic CSS classes for a set card based on its state.
+   * Gives a special "focused" style to the first incomplete set when it's expanded.
+   * @param exIndex The index of the exercise.
+   * @param setIndex The index of the set.
+   * @param set The set data object.
+   * @returns An object compatible with [ngClass].
+   */
+  public getSetClasses(exIndex: number, setIndex: number, set: ExerciseTargetSetParams): any {
+    const isCompleted = this.isSetCompleted(exIndex, setIndex);
+    const isExpanded = this.isSetExpanded(exIndex, setIndex);
+    const firstIncompleteIndex = this.findFirstIncompleteSetIndex(exIndex);
+
+    // A set is "focused" if it's the first incomplete one AND the user has expanded it.
+    const isFocused = isExpanded && setIndex === firstIncompleteIndex;
+
+    // Define classes based on priority: focused > completed > warmup > default
+    if (isFocused) {
+      return {
+        'rounded-lg shadow-md transition-all duration-300': true,
+        'ring-2 ring-yellow-400 dark:ring-yellow-500 z-10': true, // Focus style
+        'bg-white dark:bg-gray-800': true // Default background when focused
+      };
+    }
+
+    if (isCompleted) {
+      return {
+        'rounded-lg shadow-sm transition-all duration-300': true,
+        'bg-green-300 dark:bg-green-700 border border-green-300 dark:border-green-800': true, // Subtle completed style
+      };
+    }
+
+    if (set.type === 'warmup') {
+      return {
+        'rounded-lg shadow-sm transition-all duration-300': true,
+        'bg-blue-200/60 dark:bg-blue-900/40 border border-blue-300 dark:border-blue-800': true, // Subtle warmup style
+      };
+    }
+
+    // Default style for a standard, non-focused, non-completed set
+    return {
+      'rounded-lg shadow-sm transition-all duration-300': true,
+      'bg-white dark:bg-gray-800': true
+    };
+  }
+
   getExerciseClasses(exercise: WorkoutExercise, index: number): any {
     const isStandardSuperSet = this.isSuperSet(index) && !this.isEmom(index);
     const isEmomSet = this.isEmom(index);
@@ -2436,7 +2539,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
     // --- State-Specific Logic ---
     if (isExpanded) {
-      classes['border-yellow-400 ring-2 ring-yellow-400 dark:ring-yellow-500 z-10'] = true;
+      // classes['border-yellow-400 ring-1 ring-yellow-400 dark:ring-yellow-500 z-10'] = true;
     }
     if ((isStandardSuperSet || isEmomSet) && isExpanded) {
       // STATE 1: THE EXERCISE IS EXPANDED
@@ -3016,7 +3119,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         this.lastLoggedSetForRestUpdate = this.getLoggedSet(exIndex, setIndex, roundIndex) ?? null;
         this.startRestPeriod(set.restAfterSet, exIndex, setIndex);
       } else {
-        this.handleAutoExpandNextExercise();
+        // this.handleAutoExpandNextExercise();
+        this.autoCollapsePreviousSets();
       }
     }
   }
@@ -3120,6 +3224,57 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const cols = this.getVisibleSetColumns(exIndex, setIndex);
     const visibleCount = Object.values(cols).filter(v => v).length;
     return visibleCount === 2;
+  }
+
+  /**
+  * Checks if any of the currently visible fields for a set are eligible for removal.
+  * @param exIndex The index of the exercise.
+  * @param setIndex The index of the set.
+  * @returns True if at least one field can be removed.
+  */
+  public canRemoveAnyField(exIndex: number, setIndex: number): boolean {
+    if (this.isSuperSet(exIndex)) return false;
+    const cols = this.getVisibleSetColumns(exIndex, setIndex);
+    const visibleFields = Object.keys(cols).filter(key => cols[key as keyof typeof cols]);
+
+    // Check if any of the visible fields are removable according to the existing logic.
+    // Given the current canRemoveField logic is `return true`, this will be true if any fields are visible.
+    return visibleFields.some(field => this.canRemoveField(exIndex, setIndex, field));
+  }
+
+  /**
+   * Shows a prompt asking the user which field they want to remove from the set.
+   */
+  public async promptRemoveField(exIndex: number, setIndex: number): Promise<void> {
+    const cols = this.getVisibleSetColumns(exIndex, setIndex);
+    const visibleFields = Object.keys(cols).filter(key => cols[key as keyof typeof cols]);
+
+    // Filter down to only the fields that are actually removable
+    const removableFields = visibleFields.filter(field => this.canRemoveField(exIndex, setIndex, field));
+
+    if (removableFields.length === 0) {
+      this.toastService.info("No fields can be removed from this set.");
+      return;
+    };
+
+    // Create alert buttons for each removable field
+    const buttons: AlertButton[] = removableFields.map(field => ({
+      text: field.charAt(0).toUpperCase() + field.slice(1),
+      role: 'remove',
+      data: field,
+      icon: field === 'duration' ? 'hourglass' : field === 'reps' ? 'repeat' : field,
+      cssClass: 'bg-red-500 hover:bg-red-600' // Destructive action styling
+    }));
+
+    const choice = await this.alertService.showConfirmationDialog(
+      'Remove Field from Set',
+      'Which metric would you like to remove?',
+      buttons
+    );
+
+    if (choice && choice.data) {
+      this.removeMetricFromSet(exIndex, setIndex, choice.data);
+    }
   }
 
   /**

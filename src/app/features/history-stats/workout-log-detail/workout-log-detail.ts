@@ -12,7 +12,6 @@ import { WeightUnitPipe } from '../../../shared/pipes/weight-unit-pipe';
 import { ModalComponent } from '../../../shared/components/modal/modal.component';
 import { ExerciseDetailComponent } from '../../exercise-library/exercise-detail';
 import { UnitsService } from '../../../core/services/units.service';
-import { IsWeightedPipe } from '../../../shared/pipes/is-weighted-pipe';
 import { WorkoutService } from '../../../core/services/workout.service';
 import { ActionMenuComponent } from '../../../shared/components/action-menu/action-menu';
 import { ActionMenuItem } from '../../../core/models/action-menu.model';
@@ -81,7 +80,7 @@ interface TargetComparisonData {
   selector: 'app-workout-log-detail',
   standalone: true,
   imports: [CommonModule, RouterLink, DatePipe, TitleCasePipe, ModalComponent, ExerciseDetailComponent,
-    IsWeightedPipe, ActionMenuComponent, PressDirective, IconComponent, TooltipDirective, WeightUnitPipe, PerformanceComparisonModalComponent, FabMenuComponent],
+    ActionMenuComponent, PressDirective, IconComponent, TooltipDirective, WeightUnitPipe, PerformanceComparisonModalComponent, FabMenuComponent],
   templateUrl: './workout-log-detail.html',
   providers: [DecimalPipe]
 })
