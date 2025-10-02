@@ -706,21 +706,25 @@
                                 </span>
                             </h3>
                         </div>
-                        <div class="relative flex w-full sm:w-auto rounded-lg bg-gray-200 dark:bg-gray-600 p-1">
+                        <div
+                            class="relative grid grid-cols-3 w-full sm:w-auto rounded-lg bg-gray-200 dark:bg-gray-600 p-1">
+                            <!-- The sliding indicator is unchanged -->
                             <div class="absolute top-1 bottom-1 w-1/3 bg-primary rounded-md shadow transition-transform duration-300 ease-in-out"
                                 [ngClass]="{
-                            'translate-x-0': appSettingsService.menuMode() === 'dropdown',
-                            'translate-x-full': appSettingsService.menuMode() === 'compact',
-                            'translate-x-[200%]': appSettingsService.menuMode() === 'modal'
-                        }"></div>
+                                        'translate-x-1': appSettingsService.menuMode() === 'dropdown',
+                                        'translate-x-full': appSettingsService.menuMode() === 'compact',
+                                        'translate-x-[195%]': appSettingsService.menuMode() === 'modal'
+                                    }"></div>
+
+                            <!-- The 'flex-1' class has been removed from all buttons -->
                             <button appPress (shortPress)="selectMenuMode('dropdown')"
-                                class="relative z-10 flex-1 px-3 py-1.5 text-xs font-semibold transition-colors duration-300"
+                                class="relative z-10 px-3 py-1.5 text-xs font-semibold transition-colors duration-300"
                                 [ngClass]="{'text-white': appSettingsService.menuMode() === 'dropdown', 'text-gray-700 dark:text-gray-300': appSettingsService.menuMode() !== 'dropdown'}">Dropdown</button>
                             <button appPress (shortPress)="selectMenuMode('compact')"
-                                class="relative z-10 flex-1 px-3 py-1.5 text-xs font-semibold transition-colors duration-300"
+                                class="relative z-10 px-3 py-1.5 text-xs font-semibold transition-colors duration-300"
                                 [ngClass]="{'text-white': appSettingsService.menuMode() === 'compact', 'text-gray-700 dark:text-gray-300': appSettingsService.menuMode() !== 'compact'}">Compact</button>
                             <button appPress (shortPress)="selectMenuMode('modal')"
-                                class="relative z-10 flex-1 px-3 py-1.5 text-xs font-semibold transition-colors duration-300"
+                                class="relative z-10 px-3 py-1.5 text-xs font-semibold transition-colors duration-300"
                                 [ngClass]="{'text-white': appSettingsService.menuMode() === 'modal', 'text-gray-700 dark:text-gray-300': appSettingsService.menuMode() !== 'modal'}">Modal</button>
                         </div>
                     </div>

@@ -6,7 +6,9 @@
 /* +++ START: CRITICAL LAYOUT FIX +++ */
 /* Ensure the root elements take up the full viewport height. */
 /* This is the foundation that allows h-screen to work correctly inside components. */
-html, body, app-root {
+html,
+body,
+app-root {
   height: 100%;
 }
 
@@ -16,6 +18,7 @@ app-root {
   display: flex;
   flex-direction: column;
 }
+
 /* +++ END: CRITICAL LAYOUT FIX +++ */
 
 // * {
@@ -144,8 +147,8 @@ body {
 
 
 // COLOR FOR NGH CHARTS
-.dark{
-/**
+.dark {
+  /**
      * Backgrounds
      */
   $color-bg-darkest: #13141b;
@@ -308,5 +311,20 @@ body {
     Set this to the actual height of your main bottom navigation bar.
     This variable will be used to offset the workout footer.
   */
-  --main-nav-height: 60px; 
+  --main-nav-height: 60px;
+}
+
+.disabled-div {
+  pointer-events: none;
+  /* Prevents all mouse events on the div and its children */
+  opacity: 0.7;
+  /* Makes it look greyed out */
+  cursor: not-allowed;
+  /* Changes cursor to indicate it's disabled */
+}
+
+.disabled-div-lower-opacity {
+  pointer-events: none;
+  opacity: 0.85;
+  cursor: not-allowed;
 }

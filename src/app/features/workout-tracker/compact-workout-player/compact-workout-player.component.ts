@@ -47,6 +47,7 @@ import { addExerciseBtn, addRoundToExerciseBtn, addSetToExerciseBtn, addToSuperS
 import { mapExerciseTargetSetParamsToExerciseExecutedSetParams } from '../../../core/models/workout-mapper';
 import { ProgressiveOverloadService } from '../../../core/services/progressive-overload.service.ts';
 import { BarbellCalculatorModalComponent } from '../../../shared/components/barbell-calculator-modal/barbell-calculator-modal.component';
+import { NgLetDirective } from '../../../shared/directives/ng-let.directive';
 
 // Interface for saving the paused state
 
@@ -78,7 +79,7 @@ export interface NextStepInfo {
   standalone: true,
   imports: [
     CommonModule, DatePipe, WeightUnitPipe, IconComponent,
-    ExerciseSelectionModalComponent, FormsModule, ActionMenuComponent, FullScreenRestTimerComponent,
+    ExerciseSelectionModalComponent, FormsModule, ActionMenuComponent, FullScreenRestTimerComponent, NgLetDirective,
     DragDropModule, BarbellCalculatorModalComponent
   ],
   templateUrl: './compact-workout-player.component.html',
@@ -746,7 +747,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
   formatSecondsToTime(totalSeconds: number | string | undefined): string {
     if (totalSeconds == null || totalSeconds == '') return '';
-    if (typeof totalSeconds === 'string') { totalSeconds = Number(totalSeconds)};
+    if (typeof totalSeconds === 'string') { totalSeconds = Number(totalSeconds) };
     const mins = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
     const secs = String(totalSeconds % 60).padStart(2, '0');
     return `${mins}:${secs}`;
@@ -1152,7 +1153,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
     // --- CASE 1: Removing a Superset Round ---
     if (exercise.supersetId) {
-      const roundIndexToRemove = setIndex;
+      const roundIndexToRemove = exercise.sets.length - 1;
       const exercisesInGroup = this.getSupersetExercises(exercise.supersetId);
 
       // Failsafe: if the exercise is somehow the last in a group and has no sets, treat it as an exercise removal.
@@ -1263,7 +1264,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       return { ...log };
     });
 
-    this.toastService.info(`Superset removed`);
+    // this.toastService.info(`Superset removed`);
   }
 
   private removeExerciseNoPrompt(exIndex: number): void {
@@ -1873,59 +1874,76 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Advances the UI state after a rest period is finished or skipped.
-   * It collapses the completed set/round, and expands and scrolls to the next one.
+   * --- CORRECTED ---
+   * Advances the UI state after a set/round is finished or skipped.
+   * It collapses the completed item, and expands and scrolls to the next one.
+   * It now correctly handles advancing between rounds within a superset.
    */
   private handleAutoExpandNextExercise(): void {
     const completedExIndex = this.lastExerciseIndex();
-    const completedSetIndex = this.lastExerciseSetIndex();
+    const completedSetIndex = this.lastExerciseSetIndex(); // This is the roundIndex for supersets
     const routine = this.routine();
 
     if (completedExIndex < 0 || completedSetIndex < 0 || !routine) return;
 
     const completedExercise = routine.exercises[completedExIndex];
-    const isLastSetOfExercise = completedSetIndex >= completedExercise.sets.length - 1;
-
-    let shouldAdvanceToNextExercise = false;
-
-    // Determine if we need to move to the next exercise card entirely.
-    // This happens after the last set of a standard exercise, or after the last set of the LAST exercise in a superset group.
-    if (completedExercise.supersetId) {
-      const supersetGroup = this.getSupersetExercises(completedExercise.supersetId);
-      const lastExerciseInGroup = supersetGroup[supersetGroup.length - 1];
-      if (completedExercise.id === lastExerciseInGroup.id && isLastSetOfExercise) {
-        shouldAdvanceToNextExercise = true;
-      }
-    } else {
-      if (isLastSetOfExercise) {
-        shouldAdvanceToNextExercise = true;
-      }
-    }
 
     // --- EXECUTE THE STATE CHANGE ---
-    if (shouldAdvanceToNextExercise) {
-      // ACTION 1: It was the last set. Advance to the next exercise card.
-      const nextExIndex = this.findNextExerciseIndex(completedExIndex);
-      if (nextExIndex !== -1) {
-        this.toggleExerciseExpansion(nextExIndex);
-      } else {
-        // End of workout, collapse everything.
-        this.expandedExerciseIndex.set(null);
-      }
-    } else {
-      // ACTION 2: The next set is in the SAME exercise. (This only applies to standard exercises).
-      if (!completedExercise.supersetId) {
-        const nextSetIndex = completedSetIndex + 1;
 
-        // Update the expandedSets signal to swap the expanded set.
-        this.expandedSets.update(currentSet => {
+    // BRANCH 1: The completed item was part of a SUPERSET
+    if (completedExercise.supersetId) {
+      const isLastRound = completedSetIndex >= completedExercise.sets.length - 1;
+
+      if (isLastRound) {
+        // ACTION 1A: It was the last round. Advance to the next exercise card.
+        const nextExIndex = this.findNextExerciseIndex(completedExIndex);
+        if (nextExIndex !== -1) {
+          this.toggleExerciseExpansion(nextExIndex);
+        } else {
+          // End of workout, collapse everything.
+          this.expandedExerciseIndex.set(null);
+        }
+      } else {
+        // ACTION 1B: Not the last round. Advance to the next round in the same superset.
+        const nextRoundIndex = completedSetIndex + 1;
+
+        // We need the index of the exercise that STARTS the superset group to manage the expanded state.
+        const firstExerciseInSupersetIndex = routine.exercises.findIndex(ex => ex.supersetId === completedExercise.supersetId);
+
+        this.expandedRounds.update(currentSet => {
           const newSet = new Set(currentSet);
-          newSet.delete(`${completedExIndex}-${completedSetIndex}`); // Collapse the old one
-          newSet.add(`${completedExIndex}-${nextSetIndex}`); // Expand the new one
+          newSet.delete(`${firstExerciseInSupersetIndex}-${completedSetIndex}`); // Collapse the old one
+          newSet.add(`${firstExerciseInSupersetIndex}-${nextRoundIndex}`);    // Expand the new one
           return newSet;
         });
 
-        // Scroll the new set into view.
+        // Scroll the new round into view.
+        this.scrollToRound(firstExerciseInSupersetIndex, nextRoundIndex);
+      }
+    }
+    // BRANCH 2: The completed item was a STANDARD EXERCISE
+    else {
+      const isLastSet = completedSetIndex >= completedExercise.sets.length - 1;
+
+      if (isLastSet) {
+        // ACTION 2A: It was the last set. Advance to the next exercise card.
+        const nextExIndex = this.findNextExerciseIndex(completedExIndex);
+        if (nextExIndex !== -1) {
+          this.toggleExerciseExpansion(nextExIndex);
+        } else {
+          this.expandedExerciseIndex.set(null);
+        }
+      } else {
+        // ACTION 2B: The next set is in the SAME exercise.
+        const nextSetIndex = completedSetIndex + 1;
+
+        this.expandedSets.update(currentSet => {
+          const newSet = new Set(currentSet);
+          newSet.delete(`${completedExIndex}-${completedSetIndex}`); // Collapse the old one
+          newSet.add(`${completedExIndex}-${nextSetIndex}`);       // Expand the new one
+          return newSet;
+        });
+
         this.scrollToSet(completedExIndex, nextSetIndex);
       }
     }
@@ -1978,6 +1996,30 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
           if (setElement && headerElement) {
             const headerHeight = headerElement.offsetHeight;
             const elementTopPosition = setElement.getBoundingClientRect().top + window.scrollY;
+            const scrollTopPosition = elementTopPosition - headerHeight - 15; // 15px top padding
+            window.scrollTo({ top: scrollTopPosition, behavior: 'smooth' });
+          }
+        });
+      });
+    });
+  }
+
+  /**
+   * Smoothly scrolls the viewport to a specific round card within a superset.
+   * @param exIndex The index of the parent exercise that starts the superset.
+   * @param roundIndex The index of the target round.
+   */
+  private scrollToRound(exIndex: number, roundIndex: number): void {
+    runInInjectionContext(this.injector, () => {
+      afterNextRender(() => {
+        requestAnimationFrame(() => {
+          const cardElement = document.querySelector(`[data-exercise-index="${exIndex}"]`) as HTMLElement;
+          const roundElement = cardElement?.querySelector(`[data-round-index="${roundIndex}"]`) as HTMLElement;
+          const headerElement = this.header?.nativeElement;
+
+          if (roundElement && headerElement) {
+            const headerHeight = headerElement.offsetHeight;
+            const elementTopPosition = roundElement.getBoundingClientRect().top + window.scrollY;
             const scrollTopPosition = elementTopPosition - headerHeight - 15; // 15px top padding
             window.scrollTo({ top: scrollTopPosition, behavior: 'smooth' });
           }
@@ -2308,15 +2350,15 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       const isAlreadyCompleted = this.isRoundCompleted(exIndex, roundIndex);
 
       // If the round is already logged, confirm before un-logging it.
-      if (isAlreadyCompleted) {
-        const confirm = await this.alertService.showConfirm(
-          'Un-log Round',
-          `Are you sure you want to remove the log data for Round ${roundIndex + 1}?`,
-          'Yes, Remove Log',
-          'Cancel'
-        );
-        if (!confirm?.data) return;
-      }
+      // if (isAlreadyCompleted) {
+      //   const confirm = await this.alertService.showConfirm(
+      //     'Un-log Round',
+      //     `Are you sure you want to remove the log data for Round ${roundIndex + 1}?`,
+      //     'Yes, Remove Log',
+      //     'Cancel'
+      //   );
+      //   if (!confirm?.data) return;
+      // }
 
       // Toggle completion for every exercise set within that round.
       exercisesInSuperset.forEach(exInGroup => {
@@ -2330,7 +2372,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       });
 
       if (!isAlreadyCompleted) {
-        this.toastService.success(`Round ${roundIndex + 1} completed!`);
+        // this.toastService.success(`Round ${roundIndex + 1} completed!`);
       } else {
         // this.toastService.info(`Log for Round ${roundIndex + 1} removed.`);
       }
@@ -2663,7 +2705,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   */
   public getSetTargetDisplay(set: ExerciseTargetSetParams, exIndex: number, setIndex: number, field: 'reps' | 'duration' | 'weight' | 'distance'): string {
     let setForDisplay: ExerciseTargetSetParams;
-    
+
     // For the first set/round of an exercise, we always use the pre-filled values.
     // The progressive overload suggestion logic applies from the second set/round onwards.
     if (setIndex === 0) {
@@ -3041,7 +3083,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         // Immediately start a new timer for this set. The `startSetTimer` function
         // is smart enough to read the new value we just set in `performanceInputValues`.
         this.startSetTimer(exIndex, setIndex, key);
-        
+
         // Give user feedback that the timer was reset
         this.toastService.info("Timer reset with new duration.", 1500);
       }
@@ -3502,7 +3544,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       return {
         'rounded-md p-2 transition-all duration-300': true,
         'ring-2 ring-yellow-400 dark:ring-yellow-500 z-10': true,
-        'bg-gray-100 dark:bg-gray-700/50': true
+        'bg-gray-100 dark:bg-gray-900': true
       };
     }
 
@@ -3513,16 +3555,23 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       };
     }
 
+    if (isExpanded){
+      return {
+      'rounded-md p-2 py-1 transition-all duration-300': true,
+        'bg-gray-100 dark:bg-gray-900': true
+      }
+    }
+
     return {
-      'rounded-md p-2 transition-all duration-300': true,
+      'rounded-md p-2 py-1 transition-all duration-300': true,
       'bg-gray-100 dark:bg-gray-800': true,
     };
   }
 
-/**
-   * Gets the current timer state for a specific standard set.
-   * It prioritizes the user's input for the duration if it differs from the planned target.
-   */
+  /**
+     * Gets the current timer state for a specific standard set.
+     * It prioritizes the user's input for the duration if it differs from the planned target.
+     */
   getSetTimerState(exIndex: number, setIndex: number): { status: 'idle' | 'running' | 'paused', remainingTime: number } {
     if (this.isSetCompleted(exIndex, setIndex)) {
       return { status: 'idle', remainingTime: 0 };
@@ -3610,8 +3659,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
           this.toggleSetCompletion(exercise, set, exIndex, setIndex, 0);
         }
         this.setTimerState.update(states => {
-            delete states[key];
-            return { ...states };
+          delete states[key];
+          return { ...states };
         });
       }
     });

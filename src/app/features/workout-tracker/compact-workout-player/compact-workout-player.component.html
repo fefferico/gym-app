@@ -339,8 +339,6 @@
               <ng-container *ngIf="isSupersetStart(exIndex)">
                 <ng-container *ngFor="let roundSet of exercise.sets; let roundIndex = index">
                   <div #roundCard [attr.data-round-index]="roundIndex" [ngClass]="getRoundClasses(exIndex, roundIndex)">
-                    <!-- Use the new class method -->
-
                     <!-- Round Header -->
                     <div (click)="toggleRoundExpansion(exIndex, roundIndex, $event)"
                       class="flex items-center justify-between p-1 cursor-pointer">
@@ -348,7 +346,7 @@
                       <div class="flex items-start gap-2">
                         <!-- <app-icon name="chevron-down" class="h-5 w-5 transition-transform duration-200 flex-shrink-0"
                           [class.rotate-180]="isRoundExpanded(exIndex, roundIndex)"></app-icon> -->
-                        <h4 class="text-sm font-bold text-gray-700 dark:text-gray-200">Round {{ roundIndex + 1 }}</h4>
+                        <h4 class="text-sm font-bold text-gray-700 dark:text-gray-100">Round {{ roundIndex + 1 }}</h4>
                         <div *ngIf="!isRoundExpanded(exIndex, roundIndex)">
                           <div (click)="$event.stopPropagation()">
                             <ng-container *ngIf="!isRoundCompleted(exIndex, roundIndex)">
@@ -403,80 +401,77 @@
 
                       <div class="mt-2 space-y-3">
                         <ng-container *ngFor="let ssExercise of getSupersetExercises(exercise.supersetId!)">
-                          <div class="p-2 rounded bg-white dark:bg-gray-800 shadow-sm">
-                            <p class="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-2">{{
-                              getExerciseDisplayIndex(getOriginalExIndex(ssExercise.id)) }} - {{ ssExercise.exerciseName
-                              }}</p>
+      
+  <!-- 
+    THE FIX IS HERE:
+    1. We create the variable 'ssOriginalIndex' using 'let'. It will be a number.
+    2. We use '*ngIf' on the child 'div' to check the condition.
+  -->
+  <ng-container *ngLet="getOriginalExIndex(ssExercise.id) as ssOriginalIndex">
+    <div *ngIf="ssOriginalIndex > -1" class="py-2 px-1 rounded bg-white dark:bg-gray-800 shadow-sm">
+      
+      <!-- Exercise Name -->
+      <p class="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-1">
+        {{ getExerciseDisplayIndex(ssOriginalIndex) }} - {{ ssExercise.exerciseName }}
+      </p>
 
-                            <!-- Dynamic Inputs for Superset Exercise -->
-                            <div class="grid grid-cols-2 gap-x-4 gap-y-2">
-                              <ng-container *ngIf="getOriginalExIndex(ssExercise.id) as ssOriginalIndex">
-                                <ng-container *ngIf="getVisibleSetColumns(ssOriginalIndex, roundIndex) as cols">
-                                  <div *ngIf="cols['weight']">
-                                    <label
-                                      class="block text-xs font-medium text-gray-500 dark:text-gray-400 text-center pb-1">
-                                      Weight ({{ unitsService.getWeightUnitSuffix() }})</label>
-                                    <input type="number"
-                                      [ngModel]="getInitialInputValue(ssOriginalIndex, roundIndex, 'weight')"
-                                      [disabled]="isRoundCompleted(exIndex, roundIndex)"
-                                      (change)="updateSetData(ssOriginalIndex, roundIndex, roundIndex, 'weight', $event)"
-                                      class="w-full text-md text-center bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md p-1 text-gray-700 dark:text-white">
-                                    <div class="target-class text-xs">
-                                      <ng-container *ngIf="getOriginalExIndex(ssExercise.id) as ssOriginalIndex">
-                                        <span class="flex items-center justify-center">
-                                          <app-icon name="target" class="h-3 w-3 mr-1"></app-icon>
-                                          <span>
-                                            {{ workoutService.getWeightDisplay(ssExercise.sets[roundIndex], ssExercise)
-                                            }}
-                                          </span>
-                                        </span>
-                                      </ng-container>
-                                    </div>
-                                  </div>
-                                  <div *ngIf="cols['reps']">
-                                    <label
-                                      class="block text-xs font-medium text-gray-500 dark:text-gray-400 text-center pb-1">Reps</label>
-                                    <input type="number"
-                                      [ngModel]="getInitialInputValue(ssOriginalIndex, roundIndex, 'reps')"
-                                      [disabled]="isRoundCompleted(exIndex, roundIndex)"
-                                      (change)="updateSetData(ssOriginalIndex, roundIndex, roundIndex, 'reps', $event)"
-                                      class="w-full text-md text-center bg-gray-100 dark:bg-gray-700 border-gray-300 rounded-md p-1 text-gray-700 dark:text-white">
-                                    <div class="target-class text-xs">
-                                      <ng-container *ngIf="getOriginalExIndex(ssExercise.id) as ssOriginalIndex">
-                                        <span class="flex items-center justify-center">
-                                          <app-icon name="target" class="h-3 w-3 mr-1"></app-icon>
-                                          <span>
-                                            {{ getSetTargetDisplay(ssExercise.sets[roundIndex], ssOriginalIndex,
-                                            roundIndex, 'reps') }} reps
-                                          </span>
-                                        </span>
-                                      </ng-container>
-                                    </div>
-                                  </div>
-                                  <div *ngIf="cols['distance']">
-                                    <label
-                                      class="block text-xs font-medium text-gray-500 dark:text-gray-400 text-center pb-1">Distance</label>
-                                    <input type="number"
-                                      [ngModel]="getInitialInputValue(ssOriginalIndex, roundIndex, 'distance')"
-                                      [disabled]="isRoundCompleted(exIndex, roundIndex)"
-                                      (change)="updateSetData(ssOriginalIndex, roundIndex, roundIndex, 'distance', $event)"
-                                      class="w-full text-md text-center bg-gray-100 dark:bg-gray-700 border-gray-300 rounded-md p-1 text-gray-700 dark:text-white">
-                                  </div>
-                                  <div *ngIf="cols['duration']">
-                                    <label
-                                      class="block text-xs font-medium text-gray-500 dark:text-gray-400 text-center pb-1">Time</label>
-                                    <input type="text"
-                                      [ngModel]="getInitialInputValue(ssOriginalIndex, roundIndex, 'duration')"
-                                      [disabled]="isRoundCompleted(exIndex, roundIndex)"
-                                      (change)="updateSetData(ssOriginalIndex, roundIndex, roundIndex, 'duration', $event)"
-                                      class="w-full text-md text-center bg-gray-100 dark:bg-gray-700 border-gray-300 rounded-md p-1 text-gray-700 dark:text-white"
-                                      placeholder="mm:ss">
-                                  </div>
-                                </ng-container>
-                              </ng-container>
-                            </div>
-                          </div>
-                        </ng-container>
+      <!-- Dynamic Inputs Grid -->
+      <div class="grid grid-cols-2 gap-x-4 gap-y-2"
+           [ngClass]="{'disabled-div-lower-opacity': isRoundCompleted(exIndex, roundIndex)}">
+        
+        <ng-container *ngIf="getVisibleSetColumns(ssOriginalIndex, roundIndex) as cols">
+          <!-- All the input fields (Weight, Reps, etc.) remain exactly the same -->
+          <!-- Weight Input -->
+          <div *ngIf="cols['weight']">
+            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 text-center pb-1">Weight</label>
+            <input type="number"
+              [ngModel]="getInitialInputValue(ssOriginalIndex, roundIndex, 'weight')"
+              [disabled]="isRoundCompleted(exIndex, roundIndex)"
+              (change)="updateSetData(ssOriginalIndex, roundIndex, roundIndex, 'weight', $event)"
+              class="w-full text-md text-center bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md p-1 text-gray-700 dark:text-white">
+              <div *ngIf="workoutService.getWeightDisplay(ssExercise.sets[roundIndex], ssExercise) as target"
+                                class="target-class text-xs"><span class="flex items-center justify-center"><app-icon
+                                    name="target" class="h-3 w-3 mr-0.5"></app-icon>{{ target
+                                  }}</span></div>
+          </div>
+          <!-- Reps Input -->
+          <div *ngIf="cols['reps']">
+            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 text-center pb-1">Reps</label>
+            <input type="number"
+              [ngModel]="getInitialInputValue(ssOriginalIndex, roundIndex, 'reps')"
+              [disabled]="isRoundCompleted(exIndex, roundIndex)"
+              (change)="updateSetData(ssOriginalIndex, roundIndex, roundIndex, 'reps', $event)"
+              class="w-full text-md text-center bg-gray-100 dark:bg-gray-700 border-gray-300 rounded-md p-1 text-gray-700 dark:text-white">
+              <div *ngIf="getSetTargetDisplay(ssExercise.sets[roundIndex], ssOriginalIndex, roundIndex, 'reps') as target"
+                                class="target-class text-xs"><span class="flex items-center justify-center"><app-icon
+                                    name="target" class="h-3 w-3 mr-0.5"></app-icon>{{ target
+                                  }}</span></div>
+          </div>
+          <!-- Distance Input -->
+          <div *ngIf="cols['distance']">
+            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 text-center pb-1">Distance</label>
+            <input type="number"
+              [ngModel]="getInitialInputValue(ssOriginalIndex, roundIndex, 'distance')"
+              [disabled]="isRoundCompleted(exIndex, roundIndex)"
+              (change)="updateSetData(ssOriginalIndex, roundIndex, roundIndex, 'distance', $event)"
+              class="w-full text-md text-center bg-gray-100 dark:bg-gray-700 border-gray-300 rounded-md p-1 text-gray-700 dark:text-white">
+          </div>
+          <!-- Duration Input -->
+          <div *ngIf="cols['duration']">
+            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 text-center pb-1">Time</label>
+            <input type="text"
+              [ngModel]="getInitialInputValue(ssOriginalIndex, roundIndex, 'duration')"
+              [disabled]="isRoundCompleted(exIndex, roundIndex)"
+              (change)="updateSetData(ssOriginalIndex, roundIndex, roundIndex, 'duration', $event)"
+              class="w-full text-md text-center bg-gray-100 dark:bg-gray-700 border-gray-300 rounded-md p-1 text-gray-700 dark:text-white"
+              placeholder="mm:ss">
+          </div>
+        </ng-container>
+      </div>
+    </div>
+  </ng-container>
+
+</ng-container>
                       </div>
                     </ng-container>
 

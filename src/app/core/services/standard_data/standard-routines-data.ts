@@ -2764,10 +2764,10 @@ export const ROUTINES_DATA: Routine[] = [
             {
                 id: 'we-10-1',
                 exerciseId: 'kettlebell-sumo-deadlift',
-                exerciseName: 'Banded Sumo Deadlift',
-                sets: [{ id: 'set-10-1-1', targetReps: 5, notes: 'Original exercise uses bands.', restAfterSet: 0, type: 'superset' },
-                    { id: 'set-10-1-2', targetReps: 5, notes: 'Original exercise uses bands.', restAfterSet: 0, type: 'superset' },
-                    { id: 'set-10-1-3', targetReps: 5, notes: 'Original exercise uses bands.', restAfterSet: 0, type: 'superset' }
+                exerciseName: 'Kettlebell Sumo Deadlift',
+                sets: [{ id: 'set-10-1-1', targetReps: 5, notes: '', restAfterSet: 0, type: 'superset' },
+                    { id: 'set-10-1-2', targetReps: 5, notes: '', restAfterSet: 0, type: 'superset' },
+                    { id: 'set-10-1-3', targetReps: 5, notes: '', restAfterSet: 0, type: 'superset' }
                 ],
                 supersetId: 'monster-maker-10',
                 
