@@ -361,9 +361,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
     }));
 
     this.subscriptions.add(programs$.subscribe(programs => {
-      this.allProgramsForList.set(
-        programs.sort((a, b) => (b.isActive ? 1 : -1) - (a.isActive ? 1 : -1) || a.name.localeCompare(b.name))
-      );
+      this.allProgramsForList.set(programs);
       const newActivePrograms = programs.filter(p => p.isActive);
       this.activePrograms.set(newActivePrograms);
 

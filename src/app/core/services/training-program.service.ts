@@ -50,9 +50,14 @@ export class TrainingProgramService {
     const programsFromStorage = this._loadProgramsFromStorage();
 
     this.programsSubject = new BehaviorSubject<TrainingProgram[]>(programsFromStorage);
+    
+    // --- THIS IS THE MODIFIED PART ---
     this.programs$ = this.programsSubject.asObservable().pipe(
+      // Add the map operator to apply the sorting logic to every emission.
+      map(programs => this.sortPrograms(programs)),
       shareReplay(1)
     );
+    // --- END OF MODIFICATION ---
 
     this._seedAndMergeProgramsFromStaticData(programsFromStorage);
   }
@@ -285,7 +290,7 @@ export class TrainingProgramService {
 
       // *** THE FIX: Use differenceInCalendarWeeks for consistency ***
       const calendarWeekIndex = differenceInCalendarWeeks(normalizedTargetDate, startOfDay(programStartDate));
-      
+
       let programWeekIndex = calendarWeekIndex;
       if (program.isRepeating) {
         programWeekIndex = calendarWeekIndex % totalWeeks;
@@ -301,8 +306,8 @@ export class TrainingProgramService {
         const dayOfWeek = getDay(targetDate); // 0=Sun, 1=Mon...
         scheduledDayInfo = targetWeek.schedule.find(s => s.dayOfWeek === dayOfWeek);
       }
-    
-    // --- LOGIC FOR CYCLED PROGRAMS (UNCHANGED) ---
+
+      // --- LOGIC FOR CYCLED PROGRAMS (UNCHANGED) ---
     } else if (program.programType === 'cycled' && program.schedule) {
       const cycleLength = program.cycleLength ?? 7;
 
@@ -325,7 +330,7 @@ export class TrainingProgramService {
     }
 
     return null; // No scheduled routine found for this day.
-}
+  }
 
   getRoutineForDay(targetDate: Date): Observable<{ routine: Routine, scheduledDayInfo: ScheduledRoutineDay } | null> {
     return this.getActiveProgram().pipe(
@@ -943,7 +948,7 @@ export class TrainingProgramService {
     if (today < startDate) {
       return null;
     }
-    
+
     const totalWeeks = program.weeks.length;
     // --- THE FIX ---
     // Use differenceInCalendarWeeks to align with the service and calendar view logic.
@@ -974,4 +979,58 @@ export class TrainingProgramService {
     // Fallback if something goes wrong.
     return null;
   }
+
+  /**
+   * Finds the most recent end date from a program's history.
+   * @param program The training program to inspect.
+   * @returns The latest end date as a Date object, or null if none exist.
+   */
+  private getLatestEndDate(program: TrainingProgram): Date | null {
+    if (!program.history || program.history.length === 0) {
+      return null;
+    }
+    // Find the entry with the most recent 'endDate'.
+    const latestEntry = program.history
+      .filter(entry => entry.endDate && entry.endDate !== '-')
+      // Sort by the actual endDate descending
+      .sort((a, b) => new Date(b.endDate!).getTime() - new Date(a.endDate!).getTime())[0];
+
+    return latestEntry ? new Date(latestEntry.endDate) : null;
+  }
+
+  /**
+   * Sorts an array of training programs based on the default criteria:
+   * 1. Active programs first.
+   * 2. Inactive programs sorted by the most recent end date.
+   * 3. Alphabetical order as a final tie-breaker.
+   * @param programs The array of programs to sort.
+   * @returns A new, sorted array of programs.
+   */
+  private sortPrograms(programs: TrainingProgram[]): TrainingProgram[] {
+    return [...programs].sort((a, b) => {
+      // Criterion 1: Active programs come first.
+      if (a.isActive && !b.isActive) return -1;
+      if (!a.isActive && b.isActive) return 1;
+
+      // Criterion 2: If both are inactive, sort by the latest end date (descending).
+      if (!a.isActive && !b.isActive) {
+        const endDateA = this.getLatestEndDate(a);
+        const endDateB = this.getLatestEndDate(b);
+
+        if (endDateA && endDateB) {
+          // If both have end dates, the more recent one (larger timestamp) comes first.
+          if (endDateA.getTime() !== endDateB.getTime()) {
+            return endDateB.getTime() - endDateA.getTime();
+          }
+        }
+        // A program with an end date should come before one without.
+        if (endDateA && !endDateB) return -1;
+        if (!endDateA && endDateB) return 1;
+      }
+
+      // Criterion 3: As a final tie-breaker, sort alphabetically by name.
+      return a.name.localeCompare(b.name);
+    });
+  }
+
 }
