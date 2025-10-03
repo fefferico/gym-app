@@ -174,14 +174,16 @@
                       <!-- <div [ngClass]="{'disabled-div-lower-opacity': isSetCompleted(exIndex, setIndex)}" *ngIf="isSetExpanded(exIndex,setIndex)" class="flex-shrink-0 flex flex-col items-center justify-center gap-1 py-1" -->
                       <div *ngIf="isSetExpanded(exIndex,setIndex)"
                         class="flex-shrink-0 flex flex-col items-center justify-center gap-1">
-                        <div *ngIf="!isSetCompleted(exIndex, setIndex)" class="flex items-center">
+                        <div *ngIf="!isSetCompleted(exIndex, setIndex)" class="flex items-center"
+                          [ngClass]="{'disabled-div': isTimedSet(exIndex, setIndex) && getSetTimerState(exIndex, setIndex).status === 'running'}">
                           <div class="flex items-center justify-center gap-1">
+                            <!-- Remove metric button -->
                             <button *ngIf="canRemoveAnyField(exIndex, setIndex)"
                               (click)="promptRemoveField(exIndex, setIndex); $event.stopPropagation()"
                               class="flex items-center gap-1 text-xs font-semibold text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-1 rounded-full hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors">
                               <app-icon name="minus-circle" class="h-5 w-5"></app-icon>
                             </button>
-                            <!-- ADD BUTTON -->
+                            <!-- ADD metric -->
                             <button *ngIf="getFieldsForSet(exIndex, setIndex).hidden.length > 0"
                               (click)="promptAddField(exIndex, setIndex); $event.stopPropagation()"
                               class="flex items-center gap-1 text-xs font-semibold text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 p-1 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors">
@@ -234,11 +236,24 @@
                         class="h-5 w-5 transition-transform duration-200 text-gray-500 dark:text-gray-400"
                         [class.rotate-180]="isSetExpanded(exIndex, setIndex)"></app-icon> -->
                     </div>
+
+                    <div
+                      *ngIf="isTimedSet(exIndex, setIndex) && getSetTimerState(exIndex, setIndex).status === 'running'"
+                      class="relative flex items-center px-2 pb-1 transition-all">
+                      <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                        <div class="bg-teal-400 h-2 rounded-full"
+                          [style.width.%]="(((performanceInputValues()[exIndex + '-' + setIndex]?.actualDuration ?? set.targetDuration) || 1) - getSetTimerState(exIndex, setIndex).remainingTime) / ((performanceInputValues()[exIndex + '-' + setIndex]?.actualDuration ?? set.targetDuration) || 1) * 100">
+                        </div>
+                      </div>
+                      <app-icon name="hourglass" class="h-4 w-4 text-teal-500 ml-2" [strokeWidth]="2.5"></app-icon>
+                    </div>
+
                     <div *ngIf="isSetExpanded(exIndex, setIndex)" class="border-t border-white dark:border-gray-600/50">
 
                       <!-- Inputs Grid -->
-                      <div class="flex-1 grid grid-cols-2 gap-x-4 gap-y-2 px-1 py-1"
-                        [ngClass]="{'disabled-div-lower-opacity': isSetCompleted(exIndex, setIndex)}">
+                      <div class="flex-1 grid grid-cols-2 gap-x-4 gap-y-2 px-1 py-1" [ngClass]="{'disabled-div-lower-opacity': isSetCompleted(exIndex, setIndex),
+                          'disabled-div': isTimedSet(exIndex, setIndex) && getSetTimerState(exIndex, setIndex).status === 'running'
+                        }">
 
                         <!-- Case for ZERO visible fields -->
                         <ng-container *ngIf="getFieldsForSet(exIndex, setIndex).visible.length === 0">
@@ -401,77 +416,86 @@
 
                       <div class="mt-2 space-y-3">
                         <ng-container *ngFor="let ssExercise of getSupersetExercises(exercise.supersetId!)">
-      
-  <!-- 
+
+                          <!-- 
     THE FIX IS HERE:
     1. We create the variable 'ssOriginalIndex' using 'let'. It will be a number.
     2. We use '*ngIf' on the child 'div' to check the condition.
   -->
-  <ng-container *ngLet="getOriginalExIndex(ssExercise.id) as ssOriginalIndex">
-    <div *ngIf="ssOriginalIndex > -1" class="py-2 px-1 rounded bg-white dark:bg-gray-800 shadow-sm">
-      
-      <!-- Exercise Name -->
-      <p class="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-1">
-        {{ getExerciseDisplayIndex(ssOriginalIndex) }} - {{ ssExercise.exerciseName }}
-      </p>
+                          <ng-container *ngLet="getOriginalExIndex(ssExercise.id) as ssOriginalIndex">
+                            <div *ngIf="ssOriginalIndex > -1"
+                              class="py-2 px-1 rounded bg-white dark:bg-gray-800 shadow-sm">
 
-      <!-- Dynamic Inputs Grid -->
-      <div class="grid grid-cols-2 gap-x-4 gap-y-2"
-           [ngClass]="{'disabled-div-lower-opacity': isRoundCompleted(exIndex, roundIndex)}">
-        
-        <ng-container *ngIf="getVisibleSetColumns(ssOriginalIndex, roundIndex) as cols">
-          <!-- All the input fields (Weight, Reps, etc.) remain exactly the same -->
-          <!-- Weight Input -->
-          <div *ngIf="cols['weight']">
-            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 text-center pb-1">Weight</label>
-            <input type="number"
-              [ngModel]="getInitialInputValue(ssOriginalIndex, roundIndex, 'weight')"
-              [disabled]="isRoundCompleted(exIndex, roundIndex)"
-              (change)="updateSetData(ssOriginalIndex, roundIndex, roundIndex, 'weight', $event)"
-              class="w-full text-md text-center bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md p-1 text-gray-700 dark:text-white">
-              <div *ngIf="workoutService.getWeightDisplay(ssExercise.sets[roundIndex], ssExercise) as target"
-                                class="target-class text-xs"><span class="flex items-center justify-center"><app-icon
-                                    name="target" class="h-3 w-3 mr-0.5"></app-icon>{{ target
-                                  }}</span></div>
-          </div>
-          <!-- Reps Input -->
-          <div *ngIf="cols['reps']">
-            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 text-center pb-1">Reps</label>
-            <input type="number"
-              [ngModel]="getInitialInputValue(ssOriginalIndex, roundIndex, 'reps')"
-              [disabled]="isRoundCompleted(exIndex, roundIndex)"
-              (change)="updateSetData(ssOriginalIndex, roundIndex, roundIndex, 'reps', $event)"
-              class="w-full text-md text-center bg-gray-100 dark:bg-gray-700 border-gray-300 rounded-md p-1 text-gray-700 dark:text-white">
-              <div *ngIf="getSetTargetDisplay(ssExercise.sets[roundIndex], ssOriginalIndex, roundIndex, 'reps') as target"
-                                class="target-class text-xs"><span class="flex items-center justify-center"><app-icon
-                                    name="target" class="h-3 w-3 mr-0.5"></app-icon>{{ target
-                                  }}</span></div>
-          </div>
-          <!-- Distance Input -->
-          <div *ngIf="cols['distance']">
-            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 text-center pb-1">Distance</label>
-            <input type="number"
-              [ngModel]="getInitialInputValue(ssOriginalIndex, roundIndex, 'distance')"
-              [disabled]="isRoundCompleted(exIndex, roundIndex)"
-              (change)="updateSetData(ssOriginalIndex, roundIndex, roundIndex, 'distance', $event)"
-              class="w-full text-md text-center bg-gray-100 dark:bg-gray-700 border-gray-300 rounded-md p-1 text-gray-700 dark:text-white">
-          </div>
-          <!-- Duration Input -->
-          <div *ngIf="cols['duration']">
-            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 text-center pb-1">Time</label>
-            <input type="text"
-              [ngModel]="getInitialInputValue(ssOriginalIndex, roundIndex, 'duration')"
-              [disabled]="isRoundCompleted(exIndex, roundIndex)"
-              (change)="updateSetData(ssOriginalIndex, roundIndex, roundIndex, 'duration', $event)"
-              class="w-full text-md text-center bg-gray-100 dark:bg-gray-700 border-gray-300 rounded-md p-1 text-gray-700 dark:text-white"
-              placeholder="mm:ss">
-          </div>
-        </ng-container>
-      </div>
-    </div>
-  </ng-container>
+                              <!-- Exercise Name -->
+                              <p class="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-1">
+                                {{ getExerciseDisplayIndex(ssOriginalIndex) }} - {{ ssExercise.exerciseName }}
+                              </p>
 
-</ng-container>
+                              <!-- Dynamic Inputs Grid -->
+                              <div class="grid grid-cols-2 gap-x-4 gap-y-2"
+                                [ngClass]="{'disabled-div-lower-opacity': isRoundCompleted(exIndex, roundIndex)}">
+
+                                <ng-container *ngIf="getVisibleSetColumns(ssOriginalIndex, roundIndex) as cols">
+                                  <!-- All the input fields (Weight, Reps, etc.) remain exactly the same -->
+                                  <!-- Weight Input -->
+                                  <div *ngIf="cols['weight']">
+                                    <label
+                                      class="block text-xs font-medium text-gray-500 dark:text-gray-400 text-center pb-1">Weight</label>
+                                    <input type="number"
+                                      [ngModel]="getInitialInputValue(ssOriginalIndex, roundIndex, 'weight')"
+                                      [disabled]="isRoundCompleted(exIndex, roundIndex)"
+                                      (change)="updateSetData(ssOriginalIndex, roundIndex, roundIndex, 'weight', $event)"
+                                      class="w-full text-md text-center bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md p-1 text-gray-700 dark:text-white">
+                                    <div
+                                      *ngIf="workoutService.getWeightDisplay(ssExercise.sets[roundIndex], ssExercise) as target"
+                                      class="target-class text-xs"><span
+                                        class="flex items-center justify-center"><app-icon name="target"
+                                          class="h-3 w-3 mr-0.5"></app-icon>{{ target
+                                        }}</span></div>
+                                  </div>
+                                  <!-- Reps Input -->
+                                  <div *ngIf="cols['reps']">
+                                    <label
+                                      class="block text-xs font-medium text-gray-500 dark:text-gray-400 text-center pb-1">Reps</label>
+                                    <input type="number"
+                                      [ngModel]="getInitialInputValue(ssOriginalIndex, roundIndex, 'reps')"
+                                      [disabled]="isRoundCompleted(exIndex, roundIndex)"
+                                      (change)="updateSetData(ssOriginalIndex, roundIndex, roundIndex, 'reps', $event)"
+                                      class="w-full text-md text-center bg-gray-100 dark:bg-gray-700 border-gray-300 rounded-md p-1 text-gray-700 dark:text-white">
+                                    <div
+                                      *ngIf="getSetTargetDisplay(ssExercise.sets[roundIndex], ssOriginalIndex, roundIndex, 'reps') as target"
+                                      class="target-class text-xs"><span
+                                        class="flex items-center justify-center"><app-icon name="target"
+                                          class="h-3 w-3 mr-0.5"></app-icon>{{ target
+                                        }}</span></div>
+                                  </div>
+                                  <!-- Distance Input -->
+                                  <div *ngIf="cols['distance']">
+                                    <label
+                                      class="block text-xs font-medium text-gray-500 dark:text-gray-400 text-center pb-1">Distance</label>
+                                    <input type="number"
+                                      [ngModel]="getInitialInputValue(ssOriginalIndex, roundIndex, 'distance')"
+                                      [disabled]="isRoundCompleted(exIndex, roundIndex)"
+                                      (change)="updateSetData(ssOriginalIndex, roundIndex, roundIndex, 'distance', $event)"
+                                      class="w-full text-md text-center bg-gray-100 dark:bg-gray-700 border-gray-300 rounded-md p-1 text-gray-700 dark:text-white">
+                                  </div>
+                                  <!-- Duration Input -->
+                                  <div *ngIf="cols['duration']">
+                                    <label
+                                      class="block text-xs font-medium text-gray-500 dark:text-gray-400 text-center pb-1">Time</label>
+                                    <input type="text"
+                                      [ngModel]="getInitialInputValue(ssOriginalIndex, roundIndex, 'duration')"
+                                      [disabled]="isRoundCompleted(exIndex, roundIndex)"
+                                      (change)="updateSetData(ssOriginalIndex, roundIndex, roundIndex, 'duration', $event)"
+                                      class="w-full text-md text-center bg-gray-100 dark:bg-gray-700 border-gray-300 rounded-md p-1 text-gray-700 dark:text-white"
+                                      placeholder="mm:ss">
+                                  </div>
+                                </ng-container>
+                              </div>
+                            </div>
+                          </ng-container>
+
+                        </ng-container>
                       </div>
                     </ng-container>
 
