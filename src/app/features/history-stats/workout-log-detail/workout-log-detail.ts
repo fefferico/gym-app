@@ -95,7 +95,7 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
   private spinnerService = inject(SpinnerService);
   private toastService = inject(ToastService);
   private platformId = inject(PLATFORM_ID);
-  private trainingService = inject(TrainingProgramService);  
+  private trainingService = inject(TrainingProgramService);
   private injector = inject(Injector);
 
 
@@ -762,6 +762,41 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
   hideExerciseDetails() {
     this.exerciseDetailsId = '';
     this.exerciseDetailsName = '';
+  }
+  /**
+    * Determines the status of the performed value compared to the target.
+    * Ensures values are treated as numbers before comparison.
+    * @returns 'success' if performed is greater than or equal to target, 'failure' otherwise.
+    */
+  getComparisonStatus(performed: number | string, target: number | string): 'success' | 'failure' {
+    // Convert both values to numbers using parseFloat before comparing.
+    const performedValue = parseFloat(String(performed));
+    const targetValue = parseFloat(String(target));
+
+    // Now the comparison is safely done with numbers.
+    return performedValue >= targetValue ? 'success' : 'failure';
+  }
+
+  /**
+   * Returns the appropriate Tailwind CSS class based on the comparison status.
+   * Ensures values are treated as numbers before comparison.
+   * @returns A string of CSS classes.
+   */
+  getComparisonClass(performed: number | string, target: number | string): string {
+    // Convert both values to numbers using parseFloat.
+    const performedValue = parseFloat(String(performed));
+    const targetValue = parseFloat(String(target));
+
+    const status = performedValue >= targetValue ? 'success' : 'failure';
+
+    switch (status) {
+      case 'success':
+        return 'text-green-500';
+      case 'failure':
+        return 'text-red-500 dark:text-red-400';
+      default:
+        return 'text-gray-800 dark:text-gray-100';
+    }
   }
 
   ngOnDestroy(): void {
