@@ -513,7 +513,7 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
       programs: this.trainingProgramService.getDataForBackup(),
       exercises: this.exerciseService.getDataForBackup(),
       workoutLogs: this.trackingService.getDataForBackup(),
-      activitiyLogs: this.activityService.getLogsForBackup(),
+      activityLogs: this.activityService.getLogsForBackup(),
       personalBests: this.trackingService.getPBsForBackup(),
       personalGym: this.personalGymService.getDataForBackup(),
     };
@@ -602,9 +602,10 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
               this.trackingService.replacePBs(importedData.personalBests || {});
             }
 
-            // +++ ADD THIS BLOCK TO MERGE ACTIVITY LOGS +++
-            if (Array.isArray(importedData.activityLogs)) {
-              this.activityService.mergeData(importedData.activityLogs);
+            // Check for either the old incorrect key or the new correct key for backward compatibility
+            const activityLogsToImport = importedData.activityLogs || importedData.activitiyLogs;
+            if (Array.isArray(activityLogsToImport)) {
+              this.activityService.mergeData(activityLogsToImport);
             }
 
             if (importedData.personalGym) {

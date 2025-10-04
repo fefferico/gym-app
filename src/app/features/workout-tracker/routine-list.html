@@ -133,12 +133,17 @@
                 class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
 
                 <button type="button" *ngFor="let routine of filteredRoutines()" [disabled]="routine.isDisabled"
-                    (click)="viewRoutineDetails(routine.id, $event)"
-                    [ngClass]="{ 'cursor-not-allowed opacity-50': routine.isDisabled } "
-                    class="bg-white  rounded-md shadow-md hover:shadow-lg transition-shadow duration-200 relative group transform hover:-translate-y-1 text-left border hover-dark-border-card hover-light-border-card"
+                    (click)="viewRoutineDetails(routine.id, $event)" 
+                    [ngClass]="{ 
+                        'cursor-not-allowed opacity-50': routine.isDisabled,
+                        'bg-white dark:bg-gray-800': !routine.cardColor,
+                        'text-white': !!routine.cardColor
+                    }" 
+                    [ngStyle]="{'background-color': routine.cardColor ? routine.cardColor : null}"
+                    class="rounded-md shadow-md hover:shadow-lg transition-shadow duration-200 relative group transform hover:-translate-y-1 text-left border hover-dark-border-card hover-light-border-card"
                     [style.zIndex]="areActionsVisible(routine.id) ? 50 : 'auto'">
 
-                    <div class="p-3 text-primary dark:text-primary-light dark:hover:text-yellow-200 h-full ">
+                    <div class="p-3 h-full" [ngClass]="{'text-primary dark:text-primary-light': !routine.cardColor}">
                         <!-- 
                             =================== START OF CORRECTION ===================
                             The title and the menu are now inside a single flex container.
@@ -153,8 +158,12 @@
                                 <button [disabled]="routine.isDisabled" (click)="toggleActions(routine.id, $event)"
                                     [attr.aria-label]="'Actions for ' + routine.name" aria-haspopup="true"
                                     [attr.aria-expanded]="areActionsVisible(routine.id)"
-                                    [ngClass]="{ 'cursor-not-allowed opacity-50': routine.isDisabled } "
-                                    class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center">
+                                    class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center"
+                                    [ngClass]="{ 
+                                        'cursor-not-allowed opacity-50': routine.isDisabled,
+                                        'bg-white dark:bg-gray-700': !routine.cardColor,
+                                        'text-white dark:text-white hover:bg-gray-200/40 dark:hover:bg-gray-200/40': !!routine.cardColor
+                                    }">
                                     <app-icon name="menu-action" class="h-10 w-10"></app-icon>
                                 </button>
                                 <app-action-menu
@@ -176,10 +185,11 @@
                         <!-- =================== END OF CORRECTION =================== -->
 
                         <p *ngIf="routine.description" [innerHTML]="updateSanitizedDescription(routine.description)"
-                            class="text-gray-600 dark:text-gray-400 mb-2 line-clamp-2 text-sm sm:text-xs"
+                            class="mb-2 line-clamp-2 text-sm sm:text-xs" [ngClass]="getCardTextColor(routine)"
                             [title]="routine.description"></p>
 
-                        <div class="flex justify-between text-sm text-gray-500 dark:text-gray-300 mb-2 space-x-2">
+                        <div class="flex justify-between text-sm text-gray-500 dark:text-gray-300 mb-2 space-x-2"
+                            [ngClass]="getCardTextColor(routine)">
                             <div *ngIf="routine.goal" class="flex items-center gap-1">
                                 <app-icon name="goal" class="w-6 h-6"></app-icon>
                                 <span class="font-medium">Goal:</span>
@@ -192,7 +202,8 @@
                             </div>
                         </div>
                         <div *ngIf="getRoutineMainMuscleGroups(routine).length > 0"
-                            class="flex items-center text-sm text-gray-500 dark:text-gray-300 mb-2 flex-wrap gap-1">
+                            class="flex items-center text-sm text-gray-500 dark:text-gray-300 mb-2 flex-wrap gap-1"
+                            [ngClass]="getCardTextColor(routine)">
                             <app-icon name="muscle" class="w-6 h-6"></app-icon>
                             <span class="font-medium">Muscles:</span>
                             <button type="button" *ngFor="let muscle of getRoutineMainMuscleGroups(routine)"
@@ -212,7 +223,8 @@
 
                             <!-- Case 1: The routine HAS been performed. We use the 'else' block for the other case. -->
                             <div *ngIf="routineInfo.startTime; else notPerformedYet">
-                                <div class="text-sm text-gray-500 dark:text-gray-300 flex gap-1 mb-2">
+                                <div class="text-sm text-gray-500 dark:text-gray-300 flex gap-1 mb-2"
+                                    [ngClass]="getCardTextColor(routine)">
                                     <app-icon name="calendar" class="w-6 h-6"></app-icon>
                                     <span class="font-medium">Last:</span>
                                     <!-- The 'date' pipe correctly receives a number from routineInfo.startTime -->
@@ -221,7 +233,8 @@
                             </div>
                             <!-- This <ng-template> is the 'else' block for the *ngIf above. -->
                             <ng-template #notPerformedYet>
-                                <div class="text-sm text-gray-500 dark:text-gray-300 italic flex gap-1 mb-2">
+                                <div class="text-sm text-gray-500 dark:text-gray-300 italic flex gap-1 mb-2"
+                                 [ngClass]="getCardTextColor(routine)">
                                     <app-icon name="calendar" class="w-6 h-6"></app-icon>
                                     Not performed yet
                                 </div>
@@ -230,7 +243,8 @@
                             <!-- Estimated Duration -->
                             <div>
                                 <div *ngIf="getRoutineDuration(routine) > 0"
-                                    class="text-sm text-gray-500 dark:text-gray-300 flex gap-1 mb-1">
+                                    class="text-sm text-gray-500 dark:text-gray-300 flex gap-1 mb-1"
+                                    [ngClass]="getCardTextColor(routine)">
                                     <app-icon name="clock" class="w-6 h-6"></app-icon>
                                     <span class="font-medium">Est. duration:</span>
                                     ~{{ getRoutineDuration(routine) }} min
@@ -240,7 +254,8 @@
                             <!-- Last Logged Duration (uses the aliased 'routineInfo') -->
                             <div>
                                 <div *ngIf="routineInfo.duration"
-                                    class="text-sm text-gray-500 dark:text-gray-300 flex gap-1">
+                                    class="text-sm text-gray-500 dark:text-gray-300 flex gap-1"
+                                    [ngClass]="getCardTextColor(routine)">
                                     <app-icon name="schedule" class="w-6 h-6"></app-icon>
                                     <span class="font-medium">Last duration:</span>
                                     {{ routineInfo.duration }} min

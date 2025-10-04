@@ -26,7 +26,7 @@ import { WorkoutLog } from '../../core/models/workout-log.model';
 import { AppSettingsService } from '../../core/services/app-settings.service';
 import { MenuMode } from '../../core/models/app-settings.model';
 import { PremiumFeature, SubscriptionService } from '../../core/services/subscription.service';
-import { cloneBtn, deleteBtn, editBtn, favouriteBtn, hideBtn, historyBtn, startBtn, unhideBtn, unmarkFavouriteBtn, viewBtn } from '../../core/services/buttons-data';
+import { cloneBtn, colorBtn, deleteBtn, editBtn, favouriteBtn, hideBtn, historyBtn, startBtn, unhideBtn, unmarkFavouriteBtn, viewBtn } from '../../core/services/buttons-data';
 import { GenerateWorkoutModalComponent } from './generate-workout-modal/generate-workout-modal.component';
 import { GeneratedWorkoutSummaryComponent } from './generated-workout-summary/generated-workout-summary.component';
 import { WorkoutGenerationOptions, WorkoutGeneratorService } from '../../core/services/workout-generator.service';
@@ -672,11 +672,23 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     return this.exerciseService.getIconPath(iconName);
   }
 
+  private cardColors = [
+    '#7f1d1d', '#86198f', '#4a044e', '#1e1b4b', '#1e3a8a', '#064e3b', '#14532d',
+    '#b91c1c', '#c026d3', '#701a75', '#312e81', '#2563eb', '#047857', '#15803d',
+    '#f97316', '#ca8a04', '#4d7c0f', '#0f766e', '#0369a1', '#1d4ed8', '#5b21b6'
+  ];
 
   getRoutineDropdownActionItems(routineId: string, mode: MenuMode): ActionMenuItem[] {
     const currentRoutine = this.allRoutinesForList().find(routine => routine.id === routineId);
 
     const standardTextClass = ' w-full flex justify-center items-center text-left px-4 py-2 rounded-md text-xl font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 text-black dark:text-white hover:text-white ';
+
+    const colorButton = {
+      ...colorBtn,
+      overrideCssButtonClass: standardTextClass + colorBtn.buttonClass,
+      data: { routineId }
+    } as ActionMenuItem;
+
     const currHideRoutineButton = {
       ...hideBtn,
       overrideCssButtonClass: standardTextClass + hideBtn.buttonClass,
@@ -725,6 +737,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
         overrideCssButtonClass: standardTextClass + cloneBtn.buttonClass,
         data: { routineId }
       },
+      colorButton,
       {
         ...routineHistoryBtn,
         overrideCssButtonClass: standardTextClass + routineHistoryBtn.buttonClass,
@@ -786,6 +799,9 @@ export class RoutineListComponent implements OnInit, OnDestroy {
         break;
       case 'clone':
         this.cloneAndEditRoutine(routineId);
+        break;
+      case 'color': // Add this new case
+        this.openColorPicker(routineId);
         break;
       case 'delete':
         this.deleteRoutine(routineId);
@@ -1111,6 +1127,68 @@ export class RoutineListComponent implements OnInit, OnDestroy {
       case 'random_workout':
         this.openGenerateWorkoutModal();
         break;
+    }
+  }
+
+  protected getCardTextColor(routine: Routine): string {
+    let classString = routine.isDisabled ? 'cursor-not-allowed opacity-50' : ''
+    if (!routine.cardColor) {
+      return classString + ' text-gray-600 dark:text-gray-200';
+    }
+    if (!!routine.cardColor) {
+      return classString + ' text-white dark:text-white';
+    }
+    return classString;
+  }
+
+  async openColorPicker(routineId: string): Promise<void> {
+    const routine = this.allRoutinesForList().find(r => r.id === routineId);
+    if (!routine) return;
+
+    // This part remains the same
+    const colorButtons: AlertButton[] = this.cardColors.map(color => ({
+      text: '',
+      role: 'confirm',
+      data: color,
+      cssClass: 'color-swatch',
+      styles: {
+        'background-color': color,
+        'width': '40px',
+        'height': '40px',
+        'border-radius': '50%',
+        'border': '2px solid white',
+        'box-shadow': '0 2px 4px rgba(0,0,0,0.2)'
+      }
+    }));
+
+    // --- START OF CORRECTION ---
+    // Add the `col-span-5` class to make the button span the full width of the grid.
+    // I also adjusted the margin for better spacing.
+    colorButtons.push({
+      text: 'Clear Color',
+      role: 'confirm',
+      data: 'clear',
+      cssClass: 'bg-gray-200 text-gray-800 dark:bg-gray-600 dark:text-gray-200 mt-4 col-span-5',
+      icon: 'trash'
+    });
+    // --- END OF CORRECTION ---
+
+    const result = await this.alertService.showConfirmationDialog(
+      `Select a Color for "${routine.name}"`,
+      '',
+      colorButtons,
+      { customButtonDivCssClass: 'grid grid-cols-5 gap-3 justify-center' }
+    );
+
+    if (result && result.data) {
+      if (result.data === 'clear') {
+        delete routine.cardColor;
+      } else {
+        routine.cardColor = result.data as string;
+      }
+
+      const savedRoutine = await this.workoutService.updateRoutine(routine);
+      this.toastService.success(`Color updated for "${routine.name}"`);
     }
   }
 }

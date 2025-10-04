@@ -13,21 +13,19 @@
   <!-- View Toggle Tabs -->
   <div class="mb-2 flex">
     <button appPress (shortPress)="setView('list')"
-      class="px-3 sm:px-4 py-2 sm:py-3 -mb-px text-md font-semibold focus:outline-none"
-      style="min-width: 120px;"
+      class="px-3 sm:px-4 py-2 sm:py-3 -mb-px text-md font-semibold focus:outline-none" style="min-width: 120px;"
       [ngClass]="{ 'border-b-2 border-primary text-primary dark:text-primary-light dark:border-primary-light': currentHistoryView() === 'list',
       'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200  border-b border-gray-200 dark:border-gray-700': currentHistoryView() !== 'list' }">
       LIST
     </button>
-    <button appPress (shortPress)="setView('calendar')"
-      style="min-width: 120px;"
+    <button appPress (shortPress)="setView('calendar')" style="min-width: 120px;"
       class="px-3 sm:px-4 py-2 sm:py-3 -mb-px text-md font-semibold focus:outline-none"
       [ngClass]="{ 'border-b-2 border-primary text-primary dark:text-primary-light dark:border-primary-light': currentHistoryView() === 'calendar', 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200  border-b border-gray-200 dark:border-gray-700': currentHistoryView() !== 'calendar' }">
       CALENDAR
     </button>
   </div>
 
-<div class="relative min-h-[400px] overflow-hidden pt-1" #swipeContainer>
+  <div class="relative min-h-[400px] overflow-hidden pt-1" #swipeContainer>
     <div [@slideView]="currentHistoryView()" [ngSwitch]="currentHistoryView()">
       <!-- LIST VIEW -->
       <div *ngSwitchCase="'list'">
@@ -91,9 +89,18 @@
 
               <!-- WORKOUT LOG CARD -->
               <div *ngIf="item.itemType === 'workout'"
-                class="bg-white dark:bg-gray-700 border-2 border-l-4 dark:border-l-4 border-primary border-b-0 border-r-0 rounded-md shadow-md hover:shadow-lg transition-shadow duration-200 relative group transform hover:-translate-y-1 text-primary dark:text-primary-light hover:text-primary-dark dark:hover:text-yellow-200 dark:hover:bg-gray-600"
+                class="bg-white dark:bg-gray-700 shadow-md hover:shadow-lg transition-shadow duration-200 relative group transform hover:-translate-y-1 text-primary dark:text-primary-light hover:text-primary-dark dark:hover:text-yellow-200 dark:hover:bg-gray-600"
+                [ngClass]="{
+                  'border-2 border-l-4 dark:border-l-4 border-primary border-b-0 border-r-0 rounded-lg': !item.cardColor,
+                  '': !!item.cardColor,
+                }"
                 [style.zIndex]="areActionsVisible(item.id) ? 50 : 'auto'">
-                <div class="p-4 sm:p-6 cursor-pointer border dark:border-none rounded-md" (click)="viewLogDetails(item.id)">
+                <div class="p-4 sm:p-6 cursor-pointer border dark:border-none rounded-md"
+                  (click)="viewLogDetails(item.id)" [ngClass]="{
+                    'bg-white dark:bg-gray-700 border-primary text-primary dark:text-primary-light hover:text-primary-dark dark:hover:text-yellow-200 dark:hover:bg-gray-600': !item.cardColor,
+                    'text-white border-transparent': !!item.cardColor
+                  }" [style.zIndex]="areActionsVisible(item.id) ? 50 : 'auto'"
+                  [style.background-color]="item.cardColor ? item.cardColor : null">
                   <div class="flex justify-between items-start mb-1.5">
                     <h2 class="text-lg sm:text-xl font-semibold truncate pr-8"
                       [title]="item.routineName || 'Ad-hoc Workout'">{{ item.routineName || 'Ad-hoc Workout' }}</h2>
@@ -106,7 +113,7 @@
                     <ng-container *ngIf="item.dayName"> - {{ item.dayName }}</ng-container>
                   </div>
 
-                  <div class="space-y-1 text-sm text-gray-500 dark:text-gray-300">
+                  <div class="space-y-1 text-sm text-gray-500 dark:text-gray-300" [ngClass]="getTextColor(item)">
                     <p class="flex gap-1 items-center"><app-icon name="calendar" class="w-6 h-6"></app-icon>
                       <span class="font-medium">Date: </span> {{ item.startTime | date:'fullDate' }} at {{
                       item.startTime |
@@ -137,7 +144,11 @@
                 <div class="absolute top-2 right-2 z-50">
                   <div class="relative">
                     <button (click)="toggleActions(item.id, $event)"
-                      class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center">
+                      class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center"
+                      [ngClass]="{ 
+                                        'bg-white dark:bg-gray-700': !item.cardColor,
+                                        'text-white dark:text-white hover:bg-gray-200/40 dark:hover:bg-gray-200/40': !!item.cardColor
+                                    }">
                       <app-icon name="menu-action" class="h-10 w-10"></app-icon>
                     </button>
                     <app-action-menu *ngIf="areActionsVisible(item.id) && (menuModeDropdown || menuModeModal)"

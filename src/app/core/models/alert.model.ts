@@ -12,6 +12,7 @@ export interface AlertButton {
   iconSvg?: string;   // For raw SVG
   iconClass?: string; // For styling the icon
   autofocus?: boolean;
+  styles?: { [key: string]: any };
 }
 
 export interface AlertInput {

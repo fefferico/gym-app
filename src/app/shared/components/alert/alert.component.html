@@ -4,7 +4,8 @@
   (click)="onBackdropClick()">
 
   <!-- Main alert container -->
-  <div @modalContent class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md dark:text-gray-200 flex flex-col"
+  <div @modalContent
+    class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md dark:text-gray-200 flex flex-col"
     [ngClass]="options.customCssClass" (click)="$event.stopPropagation()" (keydown.enter)="handleEnterPress()">
 
     <!-- Scrollable content wrapper -->
@@ -69,8 +70,8 @@
                   {{ input.label }}
                 </label>
                 <input #alertInput [type]="input.type || 'text'" [id]="input.id || ('alert-input-' + i)"
-                  [disabled]="input.attributes && input.attributes.disabled"
-                  [name]="input.name" [placeholder]="input.placeholder || ''" [(ngModel)]="inputValues[input.name]"
+                  [disabled]="input.attributes && input.attributes.disabled" [name]="input.name"
+                  [placeholder]="input.placeholder || ''" [(ngModel)]="inputValues[input.name]"
                   [required]="input.required ? true : false" [min]="input.min" [max]="input.max"
                   class="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-m dark:bg-gray-800 dark:text-gray-200">
               </div>
@@ -87,11 +88,11 @@
       [ngClass]="options && options.customButtonDivCssClass ? options.customButtonDivCssClass : options.buttons.length === 2 ? 'flex justify-center gap-2 sm:gap-3' : 'grid grid-cols-1 gap-2 sm:gap-3'">
 
       <button #alertButton *ngFor="let button of options.buttons" appPress (shortPress)="onButtonClick(button)"
-        style="line-height: 1.25;" [ngClass]="getButtonClass(button)">
+        style="line-height: 1.25;" [ngClass]="getButtonClass(button)" [ngStyle]="button.styles">
         <app-icon *ngIf="button.icon" [name]="button.icon"
           [class]="button.iconClass ? button.iconClass : 'h-5 w-5 mr-1'"></app-icon>
         <!-- <span class="w-full"> -->
-          {{ button.text | uppercase }}
+        {{ button.text | uppercase }}
         <!-- </span> -->
       </button>
 

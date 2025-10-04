@@ -350,7 +350,7 @@ export const editBtn = {
 }
 
 export const cloneBtn = {
-    label: 'CLONE',
+    label: 'COPY',
     actionKey: 'clone',
     iconName: `copy`,
     iconClass: 'w-8 h-8 mr-2',
@@ -422,3 +422,10 @@ export const trainingProgramPremiumBtn = {
     buttonClass: ' hover:bg-cyan-600 ',
 } as ActionMenuItem;
 
+export const colorBtn = {
+    label: 'COLOR',
+    actionKey: 'color',
+    iconName: `color`,
+    iconClass: 'w-8 h-8 mr-2',
+    buttonClass: ' hover:bg-primary ',
+}

@@ -117,7 +117,7 @@ export class AlertService {
             header,
             message,
             buttons: [
-                { text: cancelText, role: 'cancel', data: false, icon: 'cancel', cssClass:' bg-gray-400 hover:bg-gray-600 ' },
+                { text: cancelText, role: 'cancel', data: false, icon: 'cancel', cssClass: ' bg-gray-400 hover:bg-gray-600 ' },
                 { text: okText, role: 'confirm', data: true, icon: 'done', iconClass: 'h-7 w-7' }
             ]
         });
@@ -149,17 +149,17 @@ export class AlertService {
         title: string,
         message: string,
         customButtons?: AlertButton[],
-        // Add an optional extraOptions parameter
-        extraOptions?: { listItems?: string[] }
+        extraOptions?: { listItems?: string[], customButtonDivCssClass?: string }
     ): Promise<AlertResult | undefined> {
         const result = await this.present({
             header: title,
             message: message,
             buttons: customButtons ? customButtons : [
-                { text: 'Cancel', role: 'cancel', data: false} as AlertButton,
+                { text: 'Cancel', role: 'cancel', data: false } as AlertButton,
                 { text: 'OK', role: 'confirm', data: true, autofocus: true } as AlertButton,
             ],
-            listItems: extraOptions?.listItems, // Pass the list items here
+            listItems: extraOptions?.listItems,
+            customButtonDivCssClass: extraOptions?.customButtonDivCssClass,
             backdropDismiss: false
         });
         return result;
@@ -179,9 +179,10 @@ export class AlertService {
         const confirmFound = customButtons.some(btn => btn.role === 'confirm');
         const finalBtns = confirmFound ? customButtons : [{ text: okText, role: 'confirm', data: true, icon: 'done' } as AlertButton, ...customButtons];
 
-        const cancelBtn = isCancelVisible ? { text: cancelText, role: 'cancel', data: false, icon: 'cancel', iconClass: 'h-4 w-4 mr-1'} as AlertButton : null;
+        const cancelBtn = isCancelVisible ? { text: cancelText, role: 'cancel', data: false, icon: 'cancel', iconClass: 'h-4 w-4 mr-1' } as AlertButton : null;
 
-        let options = {header,
+        let options = {
+            header,
             message,
             inputs,
             buttons: [
@@ -189,7 +190,7 @@ export class AlertService {
             ],
             backdropDismiss: false
         };
-        if (cancelBtn){
+        if (cancelBtn) {
             options.buttons.push(cancelBtn);
         }
 

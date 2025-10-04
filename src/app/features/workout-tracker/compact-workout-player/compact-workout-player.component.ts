@@ -2203,7 +2203,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     // Start the session.
     this.sessionState.set(SessionState.Playing);
     this.startSessionTimer();
-    this.toastService.success('Paused session resumed', 3000);
+    // this.toastService.success('Paused session resumed', 3000);
   }
 
   private async checkForPausedSession(): Promise<boolean> {

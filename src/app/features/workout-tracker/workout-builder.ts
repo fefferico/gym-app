@@ -41,6 +41,7 @@ import { MillisecondsDatePipe } from '../../shared/pipes/milliseconds-date.pipe'
 import { AppSettingsService } from '../../core/services/app-settings.service';
 import { MenuMode } from '../../core/models/app-settings.model';
 import { FabAction, FabMenuComponent } from '../../shared/components/fab-menu/fab-menu.component';
+import { colorBtn } from '../../core/services/buttons-data';
 
 type BuilderMode = 'routineBuilder' | 'manualLogEntry';
 
@@ -2274,6 +2275,13 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     const defaultBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-primary flex items-center text-sm hover:text-white dark:hover:text-gray-100 dark:hover:text-white';
     const deleteBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-red-600 flex items-center text-sm hover:text-gray-100 hover:animate-pulse';
 
+
+    const colorButton = {
+      ...colorBtn,
+      buttonClass: (mode === 'dropdown' ? 'w-full ' : '') + defaultBtnClass,
+      data: { routineId }
+    } as ActionMenuItem;
+
     const editButton = {
       label: 'EDIT',
       actionKey: 'edit',
@@ -2347,6 +2355,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         actionsArray.push(collapseAllBtn);
       }
     }
+    actionsArray.push(colorButton);
 
     actionsArray.push({ isDivider: true });
     actionsArray.push(deleteButton);
@@ -2379,6 +2388,9 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         break;
       case 'clone':
         this.cloneAndEditRoutine(routineId);
+        break;
+      case 'color':
+        this.openColorPicker();
         break;
       case 'delete':
         this.deleteRoutine(routineId);
@@ -3527,4 +3539,85 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     }
   }
 
+
+  private cardColors = [
+    '#7f1d1d', '#86198f', '#4a044e', '#1e1b4b', '#1e3a8a', '#064e3b', '#14532d',
+    '#b91c1c', '#c026d3', '#701a75', '#312e81', '#2563eb', '#047857', '#15803d',
+    '#f97316', '#ca8a04', '#4d7c0f', '#0f766e', '#0369a1', '#1d4ed8', '#5b21b6'
+  ];
+
+  async openColorPicker(): Promise<void> {
+    // Note: Adjust how you get the 'routine' object based on the component
+    const routine = this.routine();
+    if (!routine) return;
+
+    // This part remains the same
+    const colorButtons: AlertButton[] = this.cardColors.map(color => ({
+      text: '',
+      role: 'confirm',
+      data: color,
+      cssClass: 'color-swatch',
+      styles: {
+        'background-color': color,
+        'width': '40px',
+        'height': '40px',
+        'border-radius': '50%',
+        'border': '2px solid white',
+        'box-shadow': '0 2px 4px rgba(0,0,0,0.2)'
+      }
+    }));
+
+    // --- START OF CORRECTION ---
+    // Add the `col-span-5` class to make the button span the full width of the grid.
+    // I also adjusted the margin for better spacing.
+    colorButtons.push({
+      text: 'Clear Color',
+      role: 'confirm',
+      data: 'clear',
+      cssClass: 'bg-gray-200 text-gray-800 dark:bg-gray-600 dark:text-gray-200 mt-4 col-span-5',
+      icon: 'trash'
+    });
+    // --- END OF CORRECTION ---
+
+    const result = await this.alertService.showConfirmationDialog(
+      `Select a Color for "${routine.name}"`,
+      '',
+      colorButtons,
+      { customButtonDivCssClass: 'grid grid-cols-5 gap-3 justify-center' }
+    );
+
+    if (result && result.data) {
+      if (result.data === 'clear') {
+        delete routine.cardColor;
+      } else {
+        routine.cardColor = result.data as string;
+      }
+
+      const savedRoutine = await this.workoutService.updateRoutine(routine);
+
+      // In workout-builder, remember to update the signal if you use it there
+      if (this.routine) {
+        this.routine.set(savedRoutine);
+      }
+
+      this.toastService.success(`Color updated for "${routine.name}"`);
+    }
+  }
+
+  protected getCardTextColor(): string {
+    if (!this.routine() || this.routine() === undefined) {
+      return '';
+    }
+    const routine = this.routine();
+    if (routine === undefined) {
+      return '';
+    }
+    if (!routine.cardColor) {
+      return 'text-gray-600 dark:text-gray-200';
+    }
+    if (!!routine.cardColor) {
+      return 'text-white';
+    }
+    return '';
+  }
 }

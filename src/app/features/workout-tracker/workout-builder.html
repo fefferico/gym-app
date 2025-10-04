@@ -33,17 +33,18 @@
     </header>
 
     <form [formGroup]="builderForm" (ngSubmit)="onSubmit()"
-        class="space-y-6 mb-6 p-1 bg-white dark:bg-gray-700 rounded-md shadow-xl overflow-hidden min-h-screen">
+        class="space-y-6 mb-6 p-1 rounded-md shadow-xl overflow-hidden min-h-screen" [ngClass]="getCardTextColor()"
+        [ngStyle]="{'background-color': routine()?.cardColor ? routine()?.cardColor : null}">
         <section class="space-y-2 p-2 rounded-md shadow-sm dark:shadow-none">
             <!-- ROUTINE BUILDER FIELDS -->
             <ng-container *ngIf="mode === 'routineBuilder'">
                 <!-- ROUTINE NAME -->
                 <div *ngIf="isViewMode">
-                    <label
-                        class="block text-xl font-black text-gray-700 dark:text-gray-300">{{builderForm.get('name')?.value}}</label>
+                    <label class="block text-xl font-black text-gray-700 dark:text-gray-300"
+                        [ngClass]=" getCardTextColor()">{{builderForm.get('name')?.value}}</label>
                 </div>
                 <div *ngIf="isEditableMode()">
-                    <label for="routineName" class="block text-m font-medium text-gray-700 dark:text-gray-300">Routine
+                    <label for="routineName" class="block text-m font-medium" [ngClass]="getCardTextColor()">Routine
                         Name</label>
                     <input type="text" id="routineName" formControlName="name" placeholder="Routine name"
                         class="mt-1 block w-full p-2 border rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200"
@@ -68,15 +69,17 @@
                 </div>
                 <!-- GOAL -->
                 <div *ngIf="isViewMode">
-                    <label class="block text-m text-gray-700 dark:text-gray-300">
+                    <label class="block text-m text-gray-700 dark:text-gray-300" [ngClass]="getCardTextColor()">
                         <span class="font-medium">Goal: </span>
                         {{ builderForm.get('goal')?.value?.toUpperCase() || ''}}</label>
                 </div>
                 <div *ngIf="isEditableMode()">
-                    <label for="goal" class="block text-m font-medium text-gray-700 dark:text-gray-300">Primary
+                    <label for="goal" class="block text-m font-medium text-gray-700 dark:text-gray-300"
+                        [ngClass]="getCardTextColor()">Primary
                         Goal</label>
                     <select id="goal" formControlName="goal"
-                        class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200">
+                        class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200"
+                        [ngClass]="getCardTextColor()">
                         <option value="">-- Set routine goal --</option>
                         <option *ngFor="let goalOpt of routineGoals" [value]="goalOpt.value">{{ goalOpt.label }}
                         </option>
@@ -86,21 +89,23 @@
                 <ng-container *ngIf="lastLogForCurrentRoutine() as lastLog; else notPerformedYet">
 
                     <!-- Display "Last Performed" Date -->
-                    <div class="text-m text-gray-500 dark:text-gray-300">
+                    <div class="text-m text-gray-500 dark:text-gray-300" [ngClass]="getCardTextColor()">
                         <span class="font-medium">Last:</span>
                         <!-- Use the millisecondsDate pipe we created -->
                         {{ lastLog.startTime | millisecondsDate }}
                     </div>
 
                     <!-- Display "Last Duration" -->
-                    <div *ngIf="lastLog.duration" class="text-sm text-gray-500 dark:text-gray-300 flex gap-1">
+                    <div *ngIf="lastLog.duration" class="text-sm text-gray-500 dark:text-gray-300 flex gap-1"
+                        [ngClass]="getCardTextColor()">
                         <span class="font-medium">Last duration:</span> {{ lastLog.duration }} min
                     </div>
                 </ng-container>
 
                 <!-- This template is shown if the routine has never been performed -->
                 <ng-template #notPerformedYet>
-                    <div class="text-sm text-gray-500 dark:text-gray-300 italic flex gap-1 mb-2">
+                    <div class="text-sm text-gray-500 dark:text-gray-300 italic flex gap-1 mb-2"
+                        [ngClass]="getCardTextColor()">
                         Not performed yet
                     </div>
 
@@ -108,7 +113,8 @@
 
                 <!-- Estimated Duration (this part is unchanged) -->
                 <div>
-                    <div *ngIf="routine() && getRoutineDuration() > 0" class="text-m text-gray-500 dark:text-gray-300">
+                    <div *ngIf="routine() && getRoutineDuration() > 0" class="text-m text-gray-500 dark:text-gray-300"
+                        [ngClass]="getCardTextColor()">
                         <span class="font-medium">Est. duration:</span> ~{{ getRoutineDuration() }} min
                     </div>
                 </div>
@@ -119,7 +125,7 @@
             <ng-container *ngIf="mode === 'manualLogEntry'">
                 <!-- HEADER FOR LOG -->
                 <header *ngIf="checkIfLogForProgram()" class="flex items-center justify-between py-2">
-                    <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">
+                    <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200" [ngClass]="getCardTextColor()">
                         <span *ngIf="isEditableMode">{{getLogTitleForProgramEntry()}}</span>
                     </h1>
                 </header>

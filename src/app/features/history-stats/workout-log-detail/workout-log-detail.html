@@ -360,18 +360,31 @@
 <!-- COMPARISON MODAL -->
 <app-modal *ngIf="comparisonModalData() as data" [isOpen]="!!data" (isOpenChange)="comparisonModalData.set(null)"
   [modalTitle]="data.metric + ' Target Comparison'">
-  <div class="p-4 text-center text-gray-700 dark:text-gray-200">
-    <div class="grid grid-cols-2 gap-4 text-lg">
-      <div class="font-semibold border-b pb-2 dark:border-gray-600">Target</div>
-      <div class="font-semibold border-b pb-2 dark:border-gray-600">Performed</div>
-      <div class="text-gray-500 dark:text-gray-400">{{ data.targetValue }}</div>
-      <div class="font-bold" [ngClass]="checkRange(data.performedValue,data.targetValue,data.targetValue)">{{
-        data.performedValue }}</div>
+  
+  <!-- Add a subtle background and more padding -->
+  <div class="p-6 text-center bg-gray-50 dark:bg-gray-800/50">
+    <div class="grid grid-cols-2 gap-4 items-center">
+      
+      <!-- Labels: smaller, uppercase for distinction -->
+      <div class="text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 border-b pb-2 dark:border-gray-600">Target</div>
+      <div class="text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 border-b pb-2 dark:border-gray-600">Performed</div>
+
+      <!-- Values: larger font size for emphasis -->
+      <div class="text-3xl font-semibold text-gray-600 dark:text-gray-300 pt-2">{{ data.targetValue }}</div>
+      <div class="text-3xl font-bold pt-2" [ngClass]="checkRange(data.performedValue, data.targetValue, data.targetValue)">
+        {{ data.performedValue }}
+      </div>
+
     </div>
-    <button appPress (shortPress)="comparisonModalData.set(null)"
-      class="mt-6 w-fit px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary-light">
-      CLOSE
-    </button>
+    
+    <!-- Button: more padding and centered in its own block -->
+    <div class="mt-8 flex justify-center">
+      <button appPress (shortPress)="comparisonModalData.set(null)"
+        class="flex items-center px-6 py-2 bg-primary text-white font-semibold rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-light dark:focus:ring-offset-gray-800">
+        <app-icon name="done" class="h-5 w-5 mr-1"></app-icon>
+        DONE
+      </button>
+    </div>
   </div>
 </app-modal>
 

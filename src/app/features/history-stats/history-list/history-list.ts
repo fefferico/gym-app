@@ -68,6 +68,7 @@ type EnrichedHistoryListItem = HistoryListItem & {
   dayName?: string;     // This is string | undefined
   totalVolume?: number;
   personalBests?: number;
+  cardColor?: string;
 };
 
 
@@ -523,23 +524,24 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
       this.activityService.activityLogs$,
       this.trainingProgramService.programs$.pipe(take(1)),
       // --- NEW: Include personalBests$ in the combined stream ---
-      this.trackingService.personalBests$
+      this.trackingService.personalBests$,
+      this.workoutService.routines$.pipe(take(1))
     ]).pipe(
       // Step 1: Combine sources and prepare initial data structures
-      map(([workouts, activities, allPrograms, allGlobalPBs]) => {
+      map(([workouts, activities, allPrograms, allGlobalPBs, allRoutines]) => {
         const programMap = new Map(allPrograms.map(p => [p.id, p.name]));
         const workoutItems: HistoryListItem[] = workouts.map(w => ({ ...w, itemType: 'workout' }));
         const activityItems: HistoryListItem[] = activities.map(a => ({ ...a, itemType: 'activity' }));
         const combinedList: HistoryListItem[] = [...workoutItems, ...activityItems];
         combinedList.sort((a, b) => b.startTime - a.startTime);
-        return { combinedList, programMap, allGlobalPBs }; // Pass allGlobalPBs down
+        return { combinedList, programMap, allGlobalPBs, allRoutines }; // Pass allGlobalPBs down
       }),
       // Step 2: Use switchMap to handle the async enrichment process
-      switchMap(async ({ combinedList, programMap, allGlobalPBs }) => { // Receive allGlobalPBs here
+      switchMap(async ({ combinedList, programMap, allGlobalPBs, allRoutines }) => { // Receive allGlobalPBs here
         // Use Promise.all to wait for all async enrichment operations to complete
         const enrichedList = await Promise.all(
-          // Pass allGlobalPBs to enrichHistoryItem
-          combinedList.map(item => this.enrichHistoryItem(item, programMap, allGlobalPBs))
+          // Pass allRoutines into the enrichment function
+          combinedList.map(item => this.enrichHistoryItem(item, programMap, allGlobalPBs, allRoutines))
         );
         return enrichedList;
       })
@@ -553,7 +555,6 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     });
 
-    // ... (rest of your ngOnInit method remains the same)
     this.workoutService.routines$.pipe(take(1)).subscribe(routines => this.availableRoutines = routines);
     this.availableExercisesForFilter$ = this.exerciseService.getExercises().pipe(
       map(exercises => exercises.sort((a, b) => a.name.localeCompare(b.name)))
@@ -581,10 +582,12 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.refreshFabMenuItems();
   }
 
+  // Update the function signature to accept `allRoutines` as an argument
   private async enrichHistoryItem(
     item: HistoryListItem,
     programMap: Map<string, string>,
-    allGlobalPBs: Record<string, PersonalBestSet[]> // Add this parameter
+    allGlobalPBs: Record<string, PersonalBestSet[]>,
+    allRoutines: Routine[] // <-- ADD THIS PARAMETER
   ): Promise<EnrichedHistoryListItem> {
     if (item.itemType === 'activity') {
       return item;
@@ -593,6 +596,9 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
     const workoutLogItem = item;
     let weekName: string | null = null;
     let dayInfo: ProgramDayInfo | null = null;
+
+    // Use the `allRoutines` array passed into the function, NOT `this.availableRoutines`
+    const routine = allRoutines.find(r => r.id === workoutLogItem.routineId);
 
     if (workoutLogItem.programId) {
       [weekName, dayInfo] = await firstValueFrom(combineLatest([
@@ -607,8 +613,8 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
       weekName: weekName ?? undefined,
       dayName: dayInfo?.dayName,
       totalVolume: this.getTotalVolume(workoutLogItem) ?? undefined,
-      // Use the passed allGlobalPBs
-      personalBests: this.getPersonalBestsFromLog(workoutLogItem, allGlobalPBs)?.length || 0
+      personalBests: this.getPersonalBestsFromLog(workoutLogItem, allGlobalPBs)?.length || 0,
+      cardColor: routine?.cardColor
     };
 
     return enrichedItem;
@@ -1125,6 +1131,23 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
         });
       });
     }
+  }
+
+  protected getTextColor(log: EnrichedHistoryListItem): string {
+    if (!log || log === undefined) {
+      return '';
+    }
+    const routine = log;
+    if (routine === undefined) {
+      return '';
+    }
+    if (!routine.cardColor) {
+      return 'text-gray-600 dark:text-gray-200';
+    }
+    if (!!routine.cardColor) {
+      return 'text-white';
+    }
+    return '';
   }
 
 }

@@ -121,6 +121,7 @@ export interface Routine {
   isHidden?: boolean;
   isFavourite?: boolean;
   isDisabled?: boolean;
+  cardColor?: string;
 }
 
 
