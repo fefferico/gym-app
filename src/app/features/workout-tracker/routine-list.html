@@ -93,6 +93,51 @@
                             </label>
                         </div>
                     </div>
+                    <div #colorFilterContainer class="relative">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Routine color</label>
+                        <button (click)="toggleColorFilterDropdown()" [disabled]="uniqueRoutineColors().length === 0"
+                            class="relative w-full cursor-pointer rounded-md bg-white dark:bg-gray-600 py-2 pl-3 pr-10 text-left border border-gray-300 dark:border-gray-600 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-light disabled:opacity-50 disabled:cursor-not-allowed">
+
+                            <!-- Display selected color -->
+                            <ng-container *ngIf="selectedColorFilter() as selectedColor; else anyColor">
+                                <span class="flex items-center gap-x-2">
+                                    <span class="inline-block h-4 w-4 rounded-full"
+                                        [style.background-color]="selectedColor"></span>
+                                    <span class="block truncate">{{ selectedColor }}</span>
+                                </span>
+                            </ng-container>
+
+                            <!-- Display 'Any Color' placeholder -->
+                            <ng-template #anyColor>
+                                <span class="block truncate text-gray-500 dark:text-gray-400">Any Color</span>
+                            </ng-template>
+
+                            <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                                <app-icon name="selector" class="h-5 w-5 text-gray-400"></app-icon>
+                            </span>
+                        </button>
+
+                        <!-- Dropdown Panel -->
+                        <ul *ngIf="isColorFilterOpen()" @dropdownMenu
+                            class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white dark:bg-gray-700 py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
+
+                            <!-- Any Color Option -->
+                            <li (click)="clearColorFilter($event)"
+                                class="text-gray-900 dark:text-gray-200 relative cursor-pointer select-none py-2 pl-3 pr-9 hover:bg-gray-100 dark:hover:bg-gray-600">
+                                <span class="block truncate font-normal">Any Color</span>
+                            </li>
+
+                            <!-- Color Options -->
+                            <li *ngFor="let color of uniqueRoutineColors()" (click)="selectColorFilter(color, $event)"
+                                class="text-gray-900 dark:text-gray-200 relative cursor-pointer select-none py-2 pl-3 pr-9 hover:bg-gray-100 dark:hover:bg-gray-600">
+                                <div class="flex items-center gap-x-2">
+                                    <span class="inline-block h-4 w-4 rounded-full"
+                                        [style.background-color]="color"></span>
+                                    <span class="block truncate font-normal">{{ color }}</span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
                 <div class="mt-4" *ngIf="uniqueRoutineEquipments().length > 0">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Equipment</label>
@@ -133,13 +178,11 @@
                 class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
 
                 <button type="button" *ngFor="let routine of filteredRoutines()" [disabled]="routine.isDisabled"
-                    (click)="viewRoutineDetails(routine.id, $event)" 
-                    [ngClass]="{ 
+                    (click)="viewRoutineDetails(routine.id, $event)" [ngClass]="{ 
                         'cursor-not-allowed opacity-50': routine.isDisabled,
                         'bg-white dark:bg-gray-800': !routine.cardColor,
                         'text-white': !!routine.cardColor
-                    }" 
-                    [ngStyle]="{'background-color': routine.cardColor ? routine.cardColor : null}"
+                    }" [ngStyle]="{'background-color': routine.cardColor ? routine.cardColor : null}"
                     class="rounded-md shadow-md hover:shadow-lg transition-shadow duration-200 relative group transform hover:-translate-y-1 text-left border hover-dark-border-card hover-light-border-card"
                     [style.zIndex]="areActionsVisible(routine.id) ? 50 : 'auto'">
 
@@ -234,7 +277,7 @@
                             <!-- This <ng-template> is the 'else' block for the *ngIf above. -->
                             <ng-template #notPerformedYet>
                                 <div class="text-sm text-gray-500 dark:text-gray-300 italic flex gap-1 mb-2"
-                                 [ngClass]="getCardTextColor(routine)">
+                                    [ngClass]="getCardTextColor(routine)">
                                     <app-icon name="calendar" class="w-6 h-6"></app-icon>
                                     Not performed yet
                                 </div>

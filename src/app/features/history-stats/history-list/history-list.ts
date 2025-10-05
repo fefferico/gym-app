@@ -287,6 +287,10 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
 
       // --- Type-Specific Filters ---
       if (item.itemType === 'workout') {
+        if (filters.cardColor) {
+          match &&= item.cardColor === filters.cardColor;
+        }
+
         // Now that we know it's a workout, we can safely access workout properties.
         const routineNameFilter = filters.routineName?.trim().toLowerCase();
         if (routineNameFilter) {
@@ -303,8 +307,9 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
         if (filters.routineName || filters.exerciseId || filters.programId) {
           match = false;
         }
-        // You could add activity-specific filters here in the future
-        // e.g., if (filters.activityName) { ... }
+        if (filters.cardColor) { // An activity cannot match a color filter
+          match = false;
+        }
       }
 
       return match;
@@ -319,7 +324,8 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
       dateTo: [''],
       routineName: [''],
       exerciseId: [''],
-      programId: ['']
+      programId: [''],
+      cardColor: ['']
     });
     this.filterValuesSignal.set(this.filterForm.value);
     this.filterForm.valueChanges.pipe(
@@ -548,6 +554,7 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
     ).subscribe(enrichedList => {
       // Step 3: The result is now a clean, correctly typed array
       this.allHistoryItems.set(enrichedList);
+      this.populateHistoryColorFilter(enrichedList);
       if (this.currentHistoryView() === 'calendar') {
         this.historyCalendarMonths.set([]); // Clear previous
         this.currentCalendarDate = new Date(); // Reset to today
@@ -692,7 +699,8 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   toggleFilterAccordion(): void { this.isFilterAccordionOpen.update(isOpen => !isOpen); }
   resetFilters(): void {
-    this.filterForm.reset({ dateFrom: '', dateTo: '', routineName: '', exerciseId: '', programId: '' });
+    this.filterForm.reset({ dateFrom: '', dateTo: '', routineName: '', exerciseId: '', programId: '', cardColor: '' });
+    this.isColorFilterOpen.set(false); // Also close dropdown
   }
 
   viewLogDetails(logId: string, event?: MouseEvent): void {
@@ -903,6 +911,9 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
       if (!clickedElement.closest('.action-menu-container')) {
         this.activeItemIdActions.set(null); // ...then close it.
       }
+    }
+    if (this.isColorFilterOpen() && !this.colorFilterContainer.nativeElement.contains(event.target)) {
+      this.isColorFilterOpen.set(false);
     }
   }
 
@@ -1142,12 +1153,44 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
       return '';
     }
     if (!routine.cardColor) {
-      return 'text-gray-600 dark:text-gray-200';
+      return 'text-gray-600 dark:text-gray-100';
     }
     if (!!routine.cardColor) {
       return 'text-white';
     }
     return '';
+  }
+
+  uniqueHistoryColors = signal<string[]>([]);
+  private populateHistoryColorFilter(items: EnrichedHistoryListItem[]): void {
+    const colors = new Set<string>();
+    items.forEach(item => {
+      if (item.itemType === 'workout' && item.cardColor) {
+        colors.add(item.cardColor);
+      }
+    });
+    this.uniqueHistoryColors.set(Array.from(colors).sort());
+  }
+
+  // --- START: ADD/UPDATE PROPERTIES ---
+  isColorFilterOpen = signal(false);
+  @ViewChild('colorFilterContainer') colorFilterContainer!: ElementRef;
+  // --- END: ADD/UPDATE PROPERTIES ---
+
+  // --- ADD/UPDATE METHODS FOR THE CUSTOM DROPDOWN ---
+  toggleColorFilterDropdown(): void {
+    this.isColorFilterOpen.update(isOpen => !isOpen);
+  }
+
+  selectColorFilter(color: string | null, event: Event): void {
+    event.stopPropagation();
+    this.filterForm.patchValue({ cardColor: color || '' });
+    this.isColorFilterOpen.set(false);
+  }
+
+  // Helper for the template to get the current value
+  getCurrentColorFilterValue(): string {
+    return this.filterForm.get('cardColor')?.value || '';
   }
 
 }

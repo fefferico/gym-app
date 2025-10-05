@@ -68,6 +68,49 @@
                   </option>
                 </select>
               </div>
+              <div #colorFilterContainer class="lg:col-span-1 relative">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Card Color</label>
+                <button (click)="toggleColorFilterDropdown()" [disabled]="uniqueHistoryColors().length === 0"
+                  class="relative w-full cursor-pointer rounded-md bg-white dark:bg-gray-700 py-2 pl-3 pr-10 text-left border border-gray-300 dark:border-gray-600 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-light disabled:opacity-50 disabled:cursor-not-allowed">
+
+                  <!-- Display selected color -->
+                  <ng-container *ngIf="getCurrentColorFilterValue() as selectedColor; else anyColorHistory">
+                    <span class="flex items-center gap-x-2">
+                      <span class="inline-block h-4 w-4 rounded-full" [style.background-color]="selectedColor"></span>
+                      <span class="block truncate">{{ selectedColor }}</span>
+                    </span>
+                  </ng-container>
+
+                  <!-- Display 'Any Color' placeholder -->
+                  <ng-template #anyColorHistory>
+                    <span class="block truncate text-gray-500 dark:text-gray-400">Any Color</span>
+                  </ng-template>
+
+                  <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                    <app-icon name="selector" class="h-5 w-5 text-gray-400"></app-icon>
+                  </span>
+                </button>
+
+                <!-- Dropdown Panel -->
+                <ul *ngIf="isColorFilterOpen()" @dropdownMenu
+                  class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white dark:bg-gray-700 py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
+
+                  <!-- Any Color Option -->
+                  <li (click)="selectColorFilter(null, $event)"
+                    class="text-gray-900 dark:text-gray-200 relative cursor-pointer select-none py-2 pl-3 pr-9 hover:bg-gray-100 dark:hover:bg-gray-600">
+                    <span class="block truncate font-normal">Any Color</span>
+                  </li>
+
+                  <!-- Color Options -->
+                  <li *ngFor="let color of uniqueHistoryColors()" (click)="selectColorFilter(color, $event)"
+                    class="text-gray-900 dark:text-gray-200 relative cursor-pointer select-none py-2 pl-3 pr-9 hover:bg-gray-100 dark:hover:bg-gray-600">
+                    <div class="flex items-center gap-x-2">
+                      <span class="inline-block h-4 w-4 rounded-full" [style.background-color]="color"></span>
+                      <span class="block truncate font-normal">{{ color }}</span>
+                    </div>
+                  </li>
+                </ul>
+              </div>
             </div>
             <div class="flex justify-between items-center pt-3">
               <button type="button" (click)="resetFilters()"
@@ -93,8 +136,7 @@
                 [ngClass]="{
                   'border-2 border-l-4 dark:border-l-4 border-primary border-b-0 border-r-0 rounded-lg': !item.cardColor,
                   '': !!item.cardColor,
-                }"
-                [style.zIndex]="areActionsVisible(item.id) ? 50 : 'auto'">
+                }" [style.zIndex]="areActionsVisible(item.id) ? 50 : 'auto'">
                 <div class="p-4 sm:p-6 cursor-pointer border dark:border-none rounded-md"
                   (click)="viewLogDetails(item.id)" [ngClass]="{
                     'bg-white dark:bg-gray-700 border-primary text-primary dark:text-primary-light hover:text-primary-dark dark:hover:text-yellow-200 dark:hover:bg-gray-600': !item.cardColor,
@@ -113,7 +155,7 @@
                     <ng-container *ngIf="item.dayName"> - {{ item.dayName }}</ng-container>
                   </div>
 
-                  <div class="space-y-1 text-sm text-gray-500 dark:text-gray-300" [ngClass]="getTextColor(item)">
+                  <div class="space-y-1 text-sm" [ngClass]="getTextColor(item)">
                     <p class="flex gap-1 items-center"><app-icon name="calendar" class="w-6 h-6"></app-icon>
                       <span class="font-medium">Date: </span> {{ item.startTime | date:'fullDate' }} at {{
                       item.startTime |
@@ -176,7 +218,7 @@
                       {{ item.activityName }}
                     </h2>
                   </div>
-                  <div class="space-y-1 text-sm text-gray-500 dark:text-gray-300">
+                  <div class="space-y-1 text-sm" [ngClass]="getTextColor(item)">
                     <p class="flex gap-1 items-center"><app-icon name="calendar" class="w-6 h-6"></app-icon>
                       <span class="font-medium">Date: </span> {{ item.startTime | date:'fullDate' }} at {{
                       item.startTime |

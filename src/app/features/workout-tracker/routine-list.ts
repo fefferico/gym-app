@@ -1,5 +1,5 @@
 // src/app/features/workout-routines/routine-list/routine-list.component.ts
-import { Component, inject, OnInit, PLATFORM_ID, signal, computed, OnDestroy, HostListener, ViewChildren } from '@angular/core'; // Added computed, OnDestroy
+import { Component, inject, OnInit, PLATFORM_ID, signal, computed, OnDestroy, HostListener, ViewChildren, ViewChild, ElementRef } from '@angular/core'; // Added computed, OnDestroy
 import { CommonModule, DatePipe, isPlatformBrowser, TitleCasePipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { firstValueFrom, Observable, Subscription, take } from 'rxjs'; // Added Subscription
@@ -177,6 +177,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     if (showFavouriteRoutinesOnlyFilter) {
       routines = routines.filter(routine => routine.isFavourite);
     }
+    const colorFilter = this.selectedColorFilter(); // <-- Add this
     const searchTerm = this.routineSearchTerm().toLowerCase();
     const goalFilter = this.selectedRoutineGoal();
     const muscleFilter = this.selectedRoutineMuscleGroup();
@@ -236,6 +237,10 @@ export class RoutineListComponent implements OnInit, OnDestroy {
         return equipmentFilter.every(filterEq => routineEquipment.has(filterEq));
       });
     }
+
+    if (colorFilter) {
+      routines = routines.filter(r => r.cardColor === colorFilter);
+    }
     return routines;
   });
 
@@ -280,11 +285,6 @@ export class RoutineListComponent implements OnInit, OnDestroy {
 
   private async loadRoutinesAndPopulateFilters(): Promise<void> {
     this.routinesSubscription = this.workoutService.routines$.subscribe(async routines => {
-      // routines.map(routine => ({
-      //   ...routine,
-      //   description: this.updateSanitizedDescription(routine.description || '')
-      // }));
-
       this.allRoutinesForList.set(routines);
       this.populateRoutineFilterOptions(routines);
       await this.populateLastRoutineLoggedInfo(routines);
@@ -294,16 +294,23 @@ export class RoutineListComponent implements OnInit, OnDestroy {
   private populateRoutineFilterOptions(routines: Routine[]): void {
     if (!routines || routines.length === 0) {
       this.maxDuration.set(120); // Reset to default if no routines
+      this.uniqueRoutineColors.set([]);
       return;
     };
 
     const goals = new Set<string>();
     const muscles = new Set<string>();
     const equipments = new Set<string>();
+    const colors = new Set<string>();
     let maxCalculatedDuration = 0;
 
     routines.forEach(routine => {
       // Calculate duration for each routine
+      if (routine.cardColor) {
+        colors.add(routine.cardColor);
+      }
+      this.uniqueRoutineColors.set(Array.from(colors).sort());
+
       const duration = this.getRoutineDuration(routine);
       if (duration > maxCalculatedDuration) {
         maxCalculatedDuration = duration;
@@ -398,6 +405,8 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     this.routineSearchTerm.set('');
     this.selectedRoutineGoal.set(null);
     this.selectedRoutineMuscleGroup.set(null);
+    this.selectedColorFilter.set(null);
+    this.isColorFilterOpen.set(false);
     this.selectedEquipment.set([]);
     this.showHiddenRoutines.set(false);
     this.showFavouriteRoutinesOnly.set(false);
@@ -411,6 +420,8 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     if (muscleSelect) muscleSelect.value = '';
     const equipmentSelect = document.getElementById('routine-equipment-filter') as HTMLSelectElement; // This ID will be removed, but keeping logic just in case
     if (equipmentSelect) equipmentSelect.value = '';
+    const colorSelect = document.getElementById('routine-color-filter') as HTMLSelectElement;
+    if (colorSelect) colorSelect.value = '';
   }
 
 
@@ -1191,4 +1202,38 @@ export class RoutineListComponent implements OnInit, OnDestroy {
       this.toastService.success(`Color updated for "${routine.name}"`);
     }
   }
+
+  selectedColorFilter = signal<string | null>(null);
+  uniqueRoutineColors = signal<string[]>([]);
+  isColorFilterOpen = signal(false); // Controls the dropdown visibility
+  @ViewChild('colorFilterContainer') colorFilterContainer!: ElementRef;
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (this.isColorFilterOpen() && !this.colorFilterContainer.nativeElement.contains(event.target)) {
+      this.isColorFilterOpen.set(false);
+    }
+  }
+
+  toggleColorFilterDropdown(): void {
+    this.isColorFilterOpen.update(isOpen => !isOpen);
+  }
+
+  selectColorFilter(color: string | null, event: Event): void {
+    event.stopPropagation();
+    this.selectedColorFilter.set(color);
+    this.isColorFilterOpen.set(false);
+  }
+
+  clearColorFilter(event: Event): void {
+    event.stopPropagation();
+    this.selectedColorFilter.set(null);
+    this.isColorFilterOpen.set(false);
+  }
+
+  onColorFilterChange(event: Event): void {
+    const target = event.target as HTMLSelectElement;
+    this.selectedColorFilter.set(target.value || null);
+  }
+
 }

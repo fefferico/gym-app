@@ -2599,7 +2599,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       // Apply the normal start, middle, and end classes for visual grouping.
       classes['border-t-2 rounded-t-md'] = this.isSupersetStart(index);
       classes['border-b-0 rounded-none'] = this.isSupersetMiddle(index); // This correctly removes bottom border for middle items
-      classes['border-b-2 rounded-b-md mb-4'] = true;
+      classes['rounded-b-md mb-4'] = true;
     }
 
     // --- Background Color Logic (applied last, doesn't affect layout) ---
