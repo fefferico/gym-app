@@ -792,7 +792,7 @@ export class TrackingService {
     const updatedLogs = currentLogs.filter(log => log.id !== logId);
     this.saveWorkoutLogsToStorage(updatedLogs);
     console.log(`Workout log with ID ${logId} deleted. Recalculating PBs...`);
-    
+
     await this.recalculateAllPersonalBests();
 
     // =================== START OF CORRECTION ===================
@@ -802,7 +802,7 @@ export class TrackingService {
     await this.backfillLastUsedExerciseTimestamps();
     // =================== END OF CORRECTION ===================
   }
-  
+
   /**
    * Retrieves all workout logs associated with a specific program ID and within a given date range.
    * @param programId The ID of the program to filter logs by.
@@ -905,13 +905,13 @@ export class TrackingService {
 
     // The logs are already sorted newest first, which is perfect.
     // We will iterate and the first time we see an exercise ID, that's its most recent use.
-    const lastUsedMap = new Map<string, {lastUsedTimestamp: string, lastUsedLogId: string}>(); // Map<exerciseId, lastUsedTimestamp>
+    const lastUsedMap = new Map<string, { lastUsedTimestamp: string, lastUsedLogId: string }>(); // Map<exerciseId, lastUsedTimestamp>
 
     for (const log of allLogs) {
       for (const loggedEx of log.exercises) {
         // If we haven't already found a newer log for this exercise, record this one.
         if (!lastUsedMap.has(loggedEx.exerciseId)) {
-          lastUsedMap.set(loggedEx.exerciseId, {lastUsedTimestamp: log.date, lastUsedLogId: log.id});
+          lastUsedMap.set(loggedEx.exerciseId, { lastUsedTimestamp: log.date, lastUsedLogId: log.id });
         }
       }
     }
@@ -1116,11 +1116,11 @@ export class TrackingService {
     }
 
     // --- Part 1: Backfill Exercise Timestamps ---
-    const lastUsedMap = new Map<string, {lastUsedTimestamp: string, lastUsedLogId: string}>();
+    const lastUsedMap = new Map<string, { lastUsedTimestamp: string, lastUsedLogId: string }>();
     for (const log of allLogs) {
       for (const loggedEx of log.exercises) {
         if (!lastUsedMap.has(loggedEx.exerciseId)) {
-          lastUsedMap.set(loggedEx.exerciseId, {lastUsedTimestamp: log.date, lastUsedLogId: log.id});
+          lastUsedMap.set(loggedEx.exerciseId, { lastUsedTimestamp: log.date, lastUsedLogId: log.id });
         }
       }
     }
@@ -1175,6 +1175,27 @@ export class TrackingService {
         return usageMap;
       }),
       shareReplay(1) // Cache the last emitted map for new subscribers
+    );
+  }
+
+  /**
+  * Retrieves all workout logs that contain a specific exercise, sorted most recent first.
+  * @param exerciseId The ID of the exercise to search for.
+  * @returns An Observable emitting an array of workout logs.
+  */
+  getLogsForExercise(exerciseId: string): Observable<WorkoutLog[]> {
+    return this.workoutLogs$.pipe(
+      map(logs => {
+        // Filter logs to find any that include the specified exerciseId
+        const exerciseLogs = logs.filter(log =>
+          log.exercises.some(ex => ex.exerciseId === exerciseId)
+        );
+
+        // The main workoutLogs$ is already sorted, but we can ensure it here just in case.
+        exerciseLogs.sort((a, b) => b.startTime - a.startTime);
+
+        return exerciseLogs;
+      })
     );
   }
 

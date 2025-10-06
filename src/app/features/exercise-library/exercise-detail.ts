@@ -1,11 +1,11 @@
-import { Component, inject, Input, OnInit, signal, OnDestroy, PLATFORM_ID, OnChanges, SimpleChanges } from '@angular/core'; // Added OnDestroy
-import { CommonModule, TitleCasePipe, DatePipe, isPlatformBrowser } from '@angular/common'; // Added DatePipe
+import { Component, inject, Input, OnInit, signal, OnDestroy, PLATFORM_ID, OnChanges, SimpleChanges, computed } from '@angular/core'; // Added OnDestroy
+import { CommonModule, TitleCasePipe, DatePipe, isPlatformBrowser, DecimalPipe } from '@angular/common'; // Added DatePipe
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Observable, of, Subscription, forkJoin, map, take, tap } from 'rxjs'; // Added Subscription, forkJoin
 import { Exercise } from '../../core/models/exercise.model';
 import { ExerciseService } from '../../core/services/exercise.service';
 import { TrackingService, ExercisePerformanceDataPoint } from '../../core/services/tracking.service'; // Import new type
-import { PersonalBestSet } from '../../core/models/workout-log.model';
+import { LoggedSet, PersonalBestSet, WorkoutLog } from '../../core/models/workout-log.model';
 
 import { NgxChartsModule, ScaleType } from '@swimlane/ngx-charts'; // Import NgxChartsModule and ScaleType
 import { ChartDataPoint, ChartSeries } from '../../features/history-stats/stats-dashboard/stats-dashboard'; // Reuse chart types if suitable
@@ -18,15 +18,34 @@ import { IconComponent } from '../../shared/components/icon/icon.component';
 import { UnitsService } from '../../core/services/units.service';
 import { MuscleHighlight } from '../../core/services/muscle-map.service';
 import { MuscleMapComponent } from '../../shared/components/muscle-map/muscle-map.component';
+import { WeightUnitPipe } from '../../shared/pipes/weight-unit-pipe';
+
+type RepRecord = {
+  reps: number;
+  bestPerformance: {
+    weight: number;
+    reps: number;
+    date: number;
+  } | null;
+  estimated1RM: number;
+};
+
+type TopLevelRecord = {
+  label: string;
+  value: string;
+  unit: string;
+};
 
 @Component({
   selector: 'app-exercise-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, DatePipe, NgxChartsModule, ActionMenuComponent, IconComponent, MuscleMapComponent], // Added DatePipe, NgxChartsModule
+  providers: [DecimalPipe],
+  imports: [CommonModule, RouterLink, DatePipe, NgxChartsModule, ActionMenuComponent, IconComponent, MuscleMapComponent, WeightUnitPipe], // Added DatePipe, NgxChartsModule
   templateUrl: './exercise-detail.html',
   styleUrl: './exercise-detail.scss',
 })
 export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
+   private decimalPipe = inject(DecimalPipe);
   private route = inject(ActivatedRoute);
   private router = inject(Router); // Inject Router if you want to navigate from chart clicks
   private exerciseService = inject(ExerciseService);
@@ -65,6 +84,16 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
   private platformId = inject(PLATFORM_ID); // Inject PLATFORM_ID
 
   isViewMode = signal<boolean | null>(null);
+
+  // --- START: ADD/UPDATE SIGNALS ---
+  activeTab = signal<'description' | 'history' | 'graphs' | 'records'>('description');
+  exerciseHistory = signal<WorkoutLog[]>([]); // Will store logs containing this exercise
+  
+  // Chart Signals
+  est1rmChartData = signal<ChartSeries[]>([]);
+  maxWeightChartData = signal<ChartSeries[]>([]);
+  totalVolumeChartData = signal<ChartSeries[]>([]);
+  // --- END: ADD/UPDATE SIGNALS ---
 
   // This hook is called whenever an @Input() property changes.
   ngOnChanges(changes: SimpleChanges): void {
@@ -185,45 +214,33 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   private loadExerciseData(exerciseId: string): void {
-    // Use forkJoin to load base exercise, PBs, and progress data concurrently
     forkJoin({
       baseExercise: this.exerciseService.getExerciseById(exerciseId).pipe(take(1)),
       pbs: this.trackingService.getAllPersonalBestsForExercise(exerciseId).pipe(take(1)),
-      progress: this.trackingService.getExercisePerformanceHistory(exerciseId).pipe(take(1))
-    }).subscribe(({ baseExercise, pbs, progress }) => {
+      history: this.trackingService.getLogsForExercise(exerciseId).pipe(take(1)) // <-- Fetch history
+    }).subscribe(({ baseExercise, pbs, history }) => {
       this.exercise.set(baseExercise || null);
       this.currentImageIndex.set(0);
-      //      // Sort PBs (existing logic)
-      const sortedPBs = pbs.sort((a, b) => /* your sorting logic */(b.weightUsed ?? 0) - (a.weightUsed ?? 0) || a.pbType.localeCompare(b.pbType));
+      
+      const sortedPBs = pbs.sort((a, b) => (b.weightUsed ?? 0) - (a.weightUsed ?? 0) || a.pbType.localeCompare(b.pbType));
       this.exercisePBs.set(sortedPBs);
+      
+      this.exerciseHistory.set(history); // <-- Set history signal
 
-      const exercise = this.exercise();
-      if (exercise) {
+      if (baseExercise) {
         this.muscleDataForMap = {
-          primary: [exercise.primaryMuscleGroup],
-          secondary: exercise.muscleGroups.filter(m => m !== exercise.primaryMuscleGroup)
+          primary: [baseExercise.primaryMuscleGroup],
+          secondary: baseExercise.muscleGroups.filter(m => m !== baseExercise.primaryMuscleGroup)
         };
       }
 
-      //      // Prepare data for progress chart
-      if (progress && progress.length > 0) {
-        this.exerciseProgressChartData.set([
-          {
-            name: baseExercise?.name || 'Max Weight', // Series name
-            series: progress.map(p => ({
-              name: p.date, // ngx-charts will handle date formatting on axis
-              value: p.value, // Max weight
-              // You can add extra data here if you want to use it in tooltips or click events
-              extra: { reps: p.reps, logId: p.logId }
-            }))
-          }
-        ]);
-      } else {
-        this.exerciseProgressChartData.set([]); // Ensure empty if no progress data
-      }
+      // --- START: NEW CHART DATA PREPARATION ---
+      this.prepareChartData(history, baseExercise?.name || 'Progress');
+      // --- END: NEW CHART DATA PREPARATION ---
+
     }, error => {
       console.error("Error loading exercise details page data:", error);
-      this.exercise.set(null); // Set to null on error to show "not found" or error state
+      this.exercise.set(null);
     });
   }
 
@@ -362,6 +379,127 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
   // When closing menu from the component's output
   onCloseActionMenu() {
     this.activeRoutineIdActions.set(null);
+  }
+
+   // --- START: NEW COMPUTED SIGNALS FOR RECORDS TAB ---
+
+  // Computes top-level records like max weight, volume, and estimated 1RM
+  personalRecords = computed<TopLevelRecord[]>(() => {
+    const pbs = this.exercisePBs();
+    const est1RM = pbs.find(p => p.pbType === '1RM (Estimated)');
+    const maxVol = pbs.find(p => p.pbType === 'Max Volume');
+    const maxWeight = pbs.find(p => p.pbType === 'Heaviest Lifted');
+
+    const records: TopLevelRecord[] = [];
+    if (est1RM) records.push({ label: '1RM stimata', value: this.decimalPipe.transform(est1RM.weightUsed, '1.0-1') ?? '0', unit: 'kg' });
+    if (maxVol) records.push({ label: 'Volume massimo', value: this.decimalPipe.transform(maxVol.volume, '1.0-1') ?? '0', unit: 'kg' });
+    if (maxWeight) records.push({ label: 'Peso massimo', value: this.decimalPipe.transform(maxWeight.weightUsed, '1.0-1') ?? '0', unit: 'kg' });
+    
+    return records;
+  });
+
+  // Computes the best performance for each rep number (1-12)
+  repRecords = computed<RepRecord[]>(() => {
+    const history = this.exerciseHistory();
+    const exerciseId = this.exercise()?.id;
+    if (!history.length || !exerciseId) return [];
+
+    const bestsByRep: { [reps: number]: { weight: number; reps: number; date: number; } } = {};
+
+    for (const log of history) {
+      const exerciseLog = log.exercises.find(ex => ex.exerciseId === exerciseId);
+      if (exerciseLog) {
+        for (const set of exerciseLog.sets) {
+          const reps = set.repsAchieved;
+          const weight = set.weightUsed ?? 0;
+          if (reps > 0 && weight > 0) {
+            if (!bestsByRep[reps] || weight > bestsByRep[reps].weight) {
+              bestsByRep[reps] = { weight, reps, date: log.startTime };
+            }
+          }
+        }
+      }
+    }
+
+    const records: RepRecord[] = [];
+    for (let i = 1; i <= 12; i++) {
+      const best = bestsByRep[i];
+      records.push({
+        reps: i,
+        bestPerformance: best || null,
+        // Calculate estimated 1RM using Brzycki formula
+        estimated1RM: best ? best.weight * (36 / (37 - best.reps)) : 0
+      });
+    }
+    return records;
+  });
+  // --- END: NEW COMPUTED SIGNALS ---
+
+   // --- ADD THIS NEW METHOD TO PREPARE ALL CHART DATA ---
+  private prepareChartData(history: WorkoutLog[], seriesName: string): void {
+    if (!history || history.length < 2) {
+        this.est1rmChartData.set([]);
+        this.maxWeightChartData.set([]);
+        this.totalVolumeChartData.set([]);
+        return;
+    }
+
+    const est1rmSeries: ChartDataPoint[] = [];
+    const maxWeightSeries: ChartDataPoint[] = [];
+    const totalVolumeSeries: ChartDataPoint[] = [];
+
+    const exerciseId = this.exercise()?.id;
+
+    history.forEach(log => {
+        const exerciseLog = log.exercises.find(ex => ex.exerciseId === exerciseId);
+        if (exerciseLog) {
+            let maxWeight = 0;
+            let totalVolume = 0;
+            let bestSetFor1RM: { weight: number, reps: number } | null = null;
+
+            exerciseLog.sets.forEach(set => {
+                const weight = set.weightUsed ?? 0;
+                totalVolume += weight * set.repsAchieved;
+                if (weight > maxWeight) maxWeight = weight;
+                if (weight > 0 && (!bestSetFor1RM || weight > bestSetFor1RM.weight)) {
+                    bestSetFor1RM = { weight, reps: set.repsAchieved };
+                }
+            });
+            
+            if (bestSetFor1RM) {
+                const bestSet = bestSetFor1RM as { weight: number, reps: number };
+                const est1RM = bestSet.weight * (36 / (37 - bestSet.reps));
+                est1rmSeries.push({ name: new Date(log.startTime), value: est1RM });
+            }
+            if (maxWeight > 0) maxWeightSeries.push({ name: new Date(log.startTime), value: maxWeight });
+            if (totalVolume > 0) totalVolumeSeries.push({ name: new Date(log.startTime), value: totalVolume });
+        }
+    });
+
+    this.est1rmChartData.set([{ name: seriesName, series: est1rmSeries }]);
+    this.maxWeightChartData.set([{ name: seriesName, series: maxWeightSeries }]);
+    this.totalVolumeChartData.set([{ name: seriesName, series: totalVolumeSeries }]);
+}
+  // --- END: NEW CHART DATA PREPARATION ---
+
+
+  // --- ADD THIS NEW METHOD TO CHANGE TABS ---
+  selectTab(tab: 'description' | 'history' | 'graphs' | 'records'): void {
+    this.activeTab.set(tab);
+  }
+
+  /**
+   * Helper function for the template to extract the sets for the current
+   * exercise from a given workout log.
+   * @param log The WorkoutLog to search within.
+   * @returns An array of LoggedSet, or an empty array if not found.
+   */
+  public getSetsForExerciseInLog(log: WorkoutLog): LoggedSet[] {
+    const exerciseId = this.exercise()?.id;
+    if (!exerciseId) return [];
+
+    const exerciseInLog = log.exercises.find(e => e.exerciseId === exerciseId);
+    return exerciseInLog?.sets || [];
   }
 
 }

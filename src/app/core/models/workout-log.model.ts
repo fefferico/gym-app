@@ -100,6 +100,7 @@ export interface PersonalBestSet extends LoggedSet {
   exerciseId: string;
   repsAchieved: number;
   weightUsed?: number | undefined;
+  volume?: number | undefined;
   durationPerformed?: number; // In seconds
   estimatedOneRepMax?: number | null;
   timestamp: string; // ISO date string of when this PB was achieved
