@@ -132,6 +132,8 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
   est1rmChartData = signal<ChartSeries[]>([]);
   maxWeightChartData = signal<ChartSeries[]>([]);
   totalVolumeChartData = signal<ChartSeries[]>([]);
+  maxDurationChartData = signal<ChartSeries[]>([]);
+  maxDistanceChartData = signal<ChartSeries[]>([]);
   // --- END: ADD/UPDATE SIGNALS ---
 
   // This hook is called whenever an @Input() property changes.
@@ -425,14 +427,22 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
   // Computes top-level records like max weight, volume, and estimated 1RM
   personalRecords = computed<TopLevelRecord[]>(() => {
     const pbs = this.exercisePBs();
-    const est1RM = pbs.find(p => p.pbType === '1RM (Estimated)');
-    const maxVol = pbs.find(p => p.pbType === 'Max Volume');
-    const maxWeight = pbs.find(p => p.pbType === 'Heaviest Lifted');
-
+    const ex = this.exercise();
     const records: TopLevelRecord[] = [];
-    if (est1RM) records.push({ label: '1RM stimata', value: this.decimalPipe.transform(est1RM.weightUsed, '1.0-1') ?? '0', unit: 'kg' });
-    if (maxVol) records.push({ label: 'Volume massimo', value: this.decimalPipe.transform(maxVol.volume, '1.0-1') ?? '0', unit: 'kg' });
-    if (maxWeight) records.push({ label: 'Peso massimo', value: this.decimalPipe.transform(maxWeight.weightUsed, '1.0-1') ?? '0', unit: 'kg' });
+
+    if (ex?.category === 'cardio') {
+      const maxDist = pbs.find(p => p.pbType === 'Max Distance');
+      const maxDur = pbs.find(p => p.pbType === 'Max Duration');
+      if (maxDist) records.push({ label: 'Distanza massima', value: this.decimalPipe.transform(maxDist.distanceAchieved, '1.0-2') ?? '0', unit: this.unitService.getDistanceMeasureUnitSuffix() });
+      if (maxDur) records.push({ label: 'Durata massima', value: this.formatDurationForRecord(maxDur.durationPerformed), unit: '' });
+    } else {
+      const est1RM = pbs.find(p => p.pbType === '1RM (Estimated)');
+      const maxVol = pbs.find(p => p.pbType === 'Max Volume');
+      const maxWeight = pbs.find(p => p.pbType === 'Heaviest Lifted');
+      if (est1RM) records.push({ label: '1RM stimata', value: this.decimalPipe.transform(est1RM.weightUsed, '1.0-1') ?? '0', unit: 'kg' });
+      if (maxVol) records.push({ label: 'Volume massimo', value: this.decimalPipe.transform(maxVol.volume, '1.0-1') ?? '0', unit: 'kg' });
+      if (maxWeight) records.push({ label: 'Peso massimo', value: this.decimalPipe.transform(maxWeight.weightUsed, '1.0-1') ?? '0', unit: 'kg' });
+    }
 
     return records;
   });
@@ -477,47 +487,72 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
   // --- ADD THIS NEW METHOD TO PREPARE ALL CHART DATA ---
   private prepareChartData(history: WorkoutLog[], seriesName: string): void {
     if (!history || history.length < 2) {
+      // Clear all charts
       this.est1rmChartData.set([]);
       this.maxWeightChartData.set([]);
       this.totalVolumeChartData.set([]);
+      this.maxDurationChartData.set([]);
+      this.maxDistanceChartData.set([]);
       return;
     }
 
+    const exerciseId = this.exercise()?.id;
+    const isCardio = this.exercise()?.category === 'cardio';
+
+    // Strength Chart Series
     const est1rmSeries: ChartDataPoint[] = [];
     const maxWeightSeries: ChartDataPoint[] = [];
     const totalVolumeSeries: ChartDataPoint[] = [];
 
-    const exerciseId = this.exercise()?.id;
+    // Cardio Chart Series
+    const maxDurationSeries: ChartDataPoint[] = [];
+    const maxDistanceSeries: ChartDataPoint[] = [];
 
     history.forEach(log => {
       const exerciseLog = log.exercises.find(ex => ex.exerciseId === exerciseId);
       if (exerciseLog) {
-        let maxWeight = 0;
-        let totalVolume = 0;
-        let bestSetFor1RM: { weight: number, reps: number } | null = null;
-
-        exerciseLog.sets.forEach(set => {
-          const weight = set.weightUsed ?? 0;
-          totalVolume += weight * set.repsAchieved;
-          if (weight > maxWeight) maxWeight = weight;
-          if (weight > 0 && (!bestSetFor1RM || weight > bestSetFor1RM.weight)) {
-            bestSetFor1RM = { weight, reps: set.repsAchieved };
+        if (isCardio) {
+          let maxDuration = 0;
+          let maxDistance = 0;
+          exerciseLog.sets.forEach(set => {
+            if (set.durationPerformed && set.durationPerformed > maxDuration) maxDuration = set.durationPerformed;
+            if (set.distanceAchieved && set.distanceAchieved > maxDistance) maxDistance = set.distanceAchieved;
+          });
+          if (maxDuration > 0) maxDurationSeries.push({ name: new Date(log.startTime), value: maxDuration });
+          if (maxDistance > 0) maxDistanceSeries.push({ name: new Date(log.startTime), value: maxDistance });
+        } else {
+          // Existing strength logic
+          let maxWeight = 0;
+          let totalVolume = 0;
+          let bestSetFor1RM: { weight: number, reps: number } | null = null;
+          exerciseLog.sets.forEach(set => {
+            const weight = set.weightUsed ?? 0;
+            totalVolume += weight * set.repsAchieved;
+            if (weight > maxWeight) maxWeight = weight;
+            if (weight > 0 && (!bestSetFor1RM || weight > bestSetFor1RM.weight)) {
+              bestSetFor1RM = { weight, reps: set.repsAchieved };
+            }
+          });
+          if (bestSetFor1RM) {
+            const bestSet = bestSetFor1RM as { weight: number, reps: number };
+            const est1RM = bestSet.weight * (36 / (37 - bestSet.reps));
+            est1rmSeries.push({ name: new Date(log.startTime), value: est1RM });
           }
-        });
-
-        if (bestSetFor1RM) {
-          const bestSet = bestSetFor1RM as { weight: number, reps: number };
-          const est1RM = bestSet.weight * (36 / (37 - bestSet.reps));
-          est1rmSeries.push({ name: new Date(log.startTime), value: est1RM });
+          if (maxWeight > 0) maxWeightSeries.push({ name: new Date(log.startTime), value: maxWeight });
+          if (totalVolume > 0) totalVolumeSeries.push({ name: new Date(log.startTime), value: totalVolume });
         }
-        if (maxWeight > 0) maxWeightSeries.push({ name: new Date(log.startTime), value: maxWeight });
-        if (totalVolume > 0) totalVolumeSeries.push({ name: new Date(log.startTime), value: totalVolume });
       }
     });
 
-    this.est1rmChartData.set([{ name: seriesName, series: est1rmSeries }]);
-    this.maxWeightChartData.set([{ name: seriesName, series: maxWeightSeries }]);
-    this.totalVolumeChartData.set([{ name: seriesName, series: totalVolumeSeries }]);
+    // Set the appropriate chart signals
+    if (isCardio) {
+      this.maxDurationChartData.set([{ name: "Max Duration (s)", series: maxDurationSeries }]);
+      this.maxDistanceChartData.set([{ name: `Max Distance (${this.unitService.getDistanceMeasureUnitSuffix()})`, series: maxDistanceSeries }]);
+    } else {
+      this.est1rmChartData.set([{ name: seriesName, series: est1rmSeries }]);
+      this.maxWeightChartData.set([{ name: seriesName, series: maxWeightSeries }]);
+      this.totalVolumeChartData.set([{ name: seriesName, series: totalVolumeSeries }]);
+    }
   }
   // --- END: NEW CHART DATA PREPARATION ---
 
@@ -592,5 +627,36 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
     if (activeTabContent) {
       this.contentHeight = `${activeTabContent.offsetHeight}px`;
     }
+  }
+
+  /**
+  * Formats a single logged set into a human-readable string based on the metrics it contains.
+  */
+  public formatSetDisplay(set: LoggedSet): string {
+    const parts: string[] = [];
+    if (set.weightUsed != null && set.weightUsed > 0) {
+      parts.push(`${this.decimalPipe.transform(set.weightUsed, '1.0-2')} ${this.unitService.getWeightUnitSuffix()}`);
+    } else if ((set.weightUsed === 0 || set.weightUsed === null) && set.repsAchieved > 0) {
+      parts.push('Bodyweight');
+    }
+
+    if (set.repsAchieved > 0) parts.push(`${set.repsAchieved} reps`);
+    if (set.distanceAchieved && set.distanceAchieved > 0) parts.push(`${this.decimalPipe.transform(set.distanceAchieved, '1.0-2')} ${this.unitService.getDistanceMeasureUnitSuffix()}`);
+    if (set.durationPerformed && set.durationPerformed > 0) parts.push(this.formatDurationForRecord(set.durationPerformed));
+
+    return parts.length > 0 ? parts.join(' x ') : 'Set data not recorded';
+  }
+
+  /**
+   * Formats a duration in seconds into a string like "1m 30s".
+   */
+  public formatDurationForRecord(totalSeconds: number | null | undefined): string {
+    if (!totalSeconds) return '';
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    let result = '';
+    if (minutes > 0) result += `${minutes}m `;
+    if (seconds > 0) result += `${seconds}s`;
+    return result.trim();
   }
 }

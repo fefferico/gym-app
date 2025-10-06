@@ -257,6 +257,7 @@ export class TrackingService {
         if (candidateSet.weightUsed === undefined || candidateSet.weightUsed === null || candidateSet.weightUsed === 0) {
           if (candidateSet.repsAchieved > 0) this.updateSpecificPB(exercisePBsList, candidateSet, `Max Reps (Bodyweight)`);
           if (candidateSet.durationPerformed && candidateSet.durationPerformed > 0) this.updateSpecificPB(exercisePBsList, candidateSet, `Max Duration`);
+          if (candidateSet.distanceAchieved && candidateSet.distanceAchieved > 0) this.updateSpecificPB(exercisePBsList, candidateSet, `Max Distance`);
           return;
         }
 
