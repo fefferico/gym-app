@@ -61,17 +61,18 @@
   </div>
   <!-- =================== END: NEW TAB NAVIGATION =================== -->
 
-  <div class="bg-white dark:bg-gray-800 rounded-md shadow-xl overflow-hidden mx-1">
+
+  <div class="rounded-md shadow-xl overflow-hidden mx-1">
 
     <!-- Tab Content Area -->
-    <div [ngSwitch]="activeTab()">
+    <div (swipeleft)="onSwipe('left')" (swiperight)="onSwipe('right')">
+      <div [ngSwitch]="activeTab()" [@tabSlide]="activeTabIndex()" [style.height]="contentHeight" class="relative">
 
-      <!-- =================== DESCRIPTION TAB =================== -->
-      <div *ngSwitchCase="'description'" class="p-4">
-        <h1 class="flex text-3xl md:text-4xl font-bold mb-3 text-gray-800 dark:text-gray-100">{{ ex.name }}</h1>
-        <div class="mb-4">
-          <!-- DESCRIPTION TAB -->
-          <div class="bg-white dark:bg-gray-700 rounded-md shadow-xl overflow-hidden mx-1">
+        <!-- =================== DESCRIPTION TAB =================== -->
+        <div *ngSwitchCase="'description'" class="tab-content"
+          [class.tab-content-active]="activeTab() === 'description'">
+          <div class="mb-4">
+            <!-- DESCRIPTION TAB -->
             <!-- Image Carousel -->
             <div *ngIf="false" class="relative">
               <!-- <div *ngIf="ex.imageUrls && ex.imageUrls.length > 0" class="relative"> -->
@@ -94,20 +95,11 @@
                 </span>
               </div>
             </div>
-            <!-- <div *ngIf="!ex.imageUrls || ex.imageUrls.length === 0"
-      class="w-full h-64 sm:h-80 md:h-96 bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-      <p class="text-gray-500 dark:text-gray-400">No image available</p>
-    </div> -->
 
             <div class="p-3">
               <div *ngIf="!isModal" class="flex justify-between pb-1 sm:flex-row">
-                <!-- <button routerLink="/library"
-          class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-light p-2 -ml-1"><svg
-            fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-          </svg></button> -->
-
-                <h1 class="flex text-3xl md:text-4xl font-bold mb-3 text-gray-800 dark:text-gray-100">{{ ex.name }}</h1>
+                <h1 class="flex text-3xl md:text-4xl font-bold mb-3 text-gray-800 dark:text-gray-100">{{ ex.name }}
+                </h1>
               </div>
 
               <div class="mb-4">
@@ -160,8 +152,7 @@
 
               <!-- PBs -->
 
-              <div *ngIf="exercisePBs().length > 0"
-                class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+              <div *ngIf="exercisePBs().length > 0" class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
                 <h3 class="text-xl font-semibold mb-3 text-gray-700 dark:text-gray-300">Your Personal Bests</h3>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-2">
                   <div *ngFor="let pb of exercisePBs()"
@@ -220,7 +211,8 @@
                 <div *ngIf="allLogsGlobally && allLogsGlobally.length > 0 && !hasSufficientProgressData"
                   class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
                   <p class="text-md text-gray-600 dark:text-gray-400 italic">
-                    Not enough history for <strong class="dark:text-gray-200">{{ exercise()?.name }}</strong> to plot a
+                    Not enough history for <strong class="dark:text-gray-200">{{ exercise()?.name }}</strong> to plot
+                    a
                     progress trend (need at least 2 workouts for this exercise). Keep logging!
                   </p>
                 </div>
@@ -228,118 +220,123 @@
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- =================== HISTORY TAB =================== -->
-      <div *ngSwitchCase="'history'" class="p-4">
-        <div *ngIf="exerciseHistory().length > 0; else noHistory">
-          <div *ngFor="let log of exerciseHistory()"
-            class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg border dark:border-gray-600 mb-2">
-            <div class="flex justify-between items-baseline mb-2">
-              <h3 class="font-semibold text-gray-800 dark:text-gray-100">{{ log.routineName || 'Ad-hoc Workout' }}</h3>
-              <p class="text-xs text-gray-500 dark:text-gray-400">{{ log.startTime | date:'medium' }}</p>
-            </div>
-            <ul class="space-y-1 text-sm text-gray-600 dark:text-gray-300">
-              <li *ngFor="let set of getSetsForExerciseInLog(log); let i = index" class="flex justify-between">
-                <span>Set {{i + 1}}: <strong class="text-gray-800 dark:text-white">{{ set.weightUsed | weightUnit }} x
-                    {{ set.repsAchieved }} reps</strong></span>
-                <span class="font-mono text-xs text-gray-500">1RM: {{ (set.weightUsed ?? 0) * (36 / (37 -
-                  set.repsAchieved)) | number:'1.0-1' }}</span>
-              </li>
-            </ul>
-          </div>
-        </div>
-        <ng-template #noHistory>
-          <p class="text-center text-gray-500 dark:text-gray-400 py-8">No workout history found for this exercise.</p>
-        </ng-template>
-      </div>
-
-      <!-- =================== GRAPHS TAB =================== -->
-      <div *ngSwitchCase="'graphs'" class="p-4 space-y-6">
-        <!-- Chart 1: Estimated 1RM -->
-        <div>
-          <h3 class="font-semibold text-gray-800 dark:text-gray-100 mb-2">Best set (est. 1RM)</h3>
-          <div *ngIf="est1rmChartData().length > 0; else noChartData"
-            class="bg-white dark:bg-gray-700 p-1 rounded-md shadow-md h-64">
-            <ngx-charts-line-chart [results]="est1rmChartData()" [scheme]="progressChartColorScheme" [xAxis]="true"
-              [yAxis]="true" [timeline]="true" [autoScale]="true"></ngx-charts-line-chart>
-          </div>
-        </div>
-        <!-- Chart 2: Max Weight -->
-        <div>
-          <h3 class="font-semibold text-gray-800 dark:text-gray-100 mb-2">Best set (max weight)</h3>
-          <div *ngIf="maxWeightChartData().length > 0; else noChartData"
-            class="bg-white dark:bg-gray-700 p-1 rounded-md shadow-md h-64">
-            <ngx-charts-line-chart [results]="maxWeightChartData()" [scheme]="progressChartColorScheme" [xAxis]="true"
-              [yAxis]="true" [timeline]="true" [autoScale]="true"></ngx-charts-line-chart>
-          </div>
-        </div>
-        <!-- Chart 3: Total Volume -->
-        <div>
-          <h3 class="font-semibold text-gray-800 dark:text-gray-100 mb-2">Total volume
-            ({{unitService.getWeightUnitSuffix()}})</h3>
-          <div *ngIf="totalVolumeChartData().length > 0; else noChartData"
-            class="bg-white dark:bg-gray-700 p-1 rounded-md shadow-md h-64">
-            <ngx-charts-line-chart [results]="totalVolumeChartData()" [scheme]="progressChartColorScheme" [xAxis]="true"
-              [yAxis]="true" [timeline]="true" [autoScale]="true"></ngx-charts-line-chart>
-          </div>
-        </div>
-        <ng-template #noChartData>
-          <p class="text-center text-gray-500 dark:text-gray-400 py-8 text-sm">Not enough data to create a chart. Log at
-            least two sessions to see your progress.</p>
-        </ng-template>
-      </div>
-
-      <!-- =================== RECORDS TAB =================== -->
-      <div *ngSwitchCase="'records'" class="p-4">
-        <div *ngIf="personalRecords() && personalRecords().length; else noPB">
-          <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">PERSONAL BESTS</h3>
-          <div class="grid grid-cols-3 gap-4 mb-8">
-            <div *ngFor="let record of personalRecords()" class="text-center bg-gray-100 dark:bg-gray-700 p-3 rounded-lg">
-              <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ record.value }}<span
-                  class="text-base font-medium">{{ record.unit }}</span></p>
-              <p class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ record.label }}</p>
+        <!-- =================== HISTORY TAB =================== -->
+        <div *ngSwitchCase="'history'" class="tab-content" [class.tab-content-active]="activeTab() === 'history'">
+          <div *ngIf="exerciseHistory().length > 0; else noHistory">
+            <div *ngFor="let log of exerciseHistory()"
+              class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg border dark:border-gray-600 mb-2">
+              <div class="flex justify-between items-baseline mb-2">
+                <h3 class="font-semibold text-gray-800 dark:text-gray-100">{{ log.routineName || 'Ad-hoc Workout' }}
+                </h3>
+                <p class="text-xs text-gray-500 dark:text-gray-400">{{ log.startTime | date:'medium' }}</p>
+              </div>
+              <ul class="space-y-1 text-sm text-gray-600 dark:text-gray-300">
+                <li *ngFor="let set of getSetsForExerciseInLog(log); let i = index" class="flex justify-between">
+                  <span>Set {{i + 1}}: <strong class="text-gray-800 dark:text-white">{{ set.weightUsed | weightUnit }} x
+                      {{ set.repsAchieved }} reps</strong></span>
+                  <span class="font-mono text-xs text-gray-500">1RM: {{ (set.weightUsed ?? 0) * (36 / (37 -
+                    set.repsAchieved)) | number:'1.0-1' }}</span>
+                </li>
+              </ul>
             </div>
           </div>
-  
-          <div class="overflow-x-auto">
-            <table class="min-w-full text-sm text-left text-gray-500 dark:text-gray-400">
-              <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                <tr>
-                  <th scope="col" class="py-3 px-4 rounded-md rounded-b-none rounded-r-none">REPS.</th>
-                  <th scope="col" class="py-3 px-4">BEST PERFORMANCE</th>
-                  <th scope="col" class="py-3 px-4 text-right rounded-md rounded-b-none rounded-l-none">ESTIMATED</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let record of repRecords()" class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                  <td class="py-3 px-4 font-bold text-gray-900 dark:text-white">{{ record.reps }}</td>
-  
-                  <!-- =================== START OF CORRECTION =================== -->
-                  <td class="py-3 px-4">
-                    <!-- 
+          <ng-template #noHistory>
+            <p class="text-center text-gray-500 dark:text-gray-400 py-8">No workout history found for this exercise.</p>
+          </ng-template>
+        </div>
+
+        <!-- =================== GRAPHS TAB =================== -->
+        <div *ngSwitchCase="'graphs'" class="tab-content" [class.tab-content-active]="activeTab() === 'graphs'">
+          <!-- Chart 1: Estimated 1RM -->
+          <div>
+            <h3 class="font-semibold text-gray-800 dark:text-gray-100 mb-2">Best set (est. 1RM)</h3>
+            <div *ngIf="est1rmChartData().length > 0; else noChartData"
+              class="bg-white dark:bg-gray-700 p-1 rounded-md shadow-md h-64">
+              <ngx-charts-line-chart [results]="est1rmChartData()" [scheme]="progressChartColorScheme" [xAxis]="true"
+                [yAxis]="true" [timeline]="true" [autoScale]="true"></ngx-charts-line-chart>
+            </div>
+          </div>
+          <!-- Chart 2: Max Weight -->
+          <div>
+            <h3 class="font-semibold text-gray-800 dark:text-gray-100 mb-2">Best set (max weight)</h3>
+            <div *ngIf="maxWeightChartData().length > 0; else noChartData"
+              class="bg-white dark:bg-gray-700 p-1 rounded-md shadow-md h-64">
+              <ngx-charts-line-chart [results]="maxWeightChartData()" [scheme]="progressChartColorScheme" [xAxis]="true"
+                [yAxis]="true" [timeline]="true" [autoScale]="true"></ngx-charts-line-chart>
+            </div>
+          </div>
+          <!-- Chart 3: Total Volume -->
+          <div>
+            <h3 class="font-semibold text-gray-800 dark:text-gray-100 mb-2">Total volume
+              ({{unitService.getWeightUnitSuffix()}})</h3>
+            <div *ngIf="totalVolumeChartData().length > 0; else noChartData"
+              class="bg-white dark:bg-gray-700 p-1 rounded-md shadow-md h-64">
+              <ngx-charts-line-chart [results]="totalVolumeChartData()" [scheme]="progressChartColorScheme"
+                [xAxis]="true" [yAxis]="true" [timeline]="true" [autoScale]="true"></ngx-charts-line-chart>
+            </div>
+          </div>
+          <ng-template #noChartData>
+            <p class="text-center text-gray-500 dark:text-gray-400 py-8 text-sm">Not enough data to create a chart. Log
+              at
+              least two sessions to see your progress.</p>
+          </ng-template>
+        </div>
+
+        <!-- =================== RECORDS TAB =================== -->
+        <div *ngSwitchCase="'records'" class="tab-content" [class.tab-content-active]="activeTab() === 'records'">
+          <div *ngIf="personalRecords() && personalRecords().length; else noPB">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">PERSONAL BESTS</h3>
+            <div class="grid grid-cols-3 gap-4 mb-8">
+              <div *ngFor="let record of personalRecords()"
+                class="text-center bg-gray-100 dark:bg-gray-700 p-3 rounded-lg">
+                <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ record.value }}<span
+                    class="text-base font-medium">{{ record.unit }}</span></p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ record.label }}</p>
+              </div>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="min-w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                  <tr>
+                    <th scope="col" class="py-3 px-4 rounded-md rounded-b-none rounded-r-none">REPS.</th>
+                    <th scope="col" class="py-3 px-4">BEST PERFORMANCE</th>
+                    <th scope="col" class="py-3 px-4 text-right rounded-md rounded-b-none rounded-l-none">ESTIMATED</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let record of repRecords()"
+                    class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                    <td class="py-3 px-4 font-bold text-gray-900 dark:text-white">{{ record.reps }}</td>
+
+                    <!-- =================== START OF CORRECTION =================== -->
+                    <td class="py-3 px-4">
+                      <!-- 
               By using 'as bestPerformance', we create a new variable that is 
               guaranteed to be non-null within this container.
             -->
-                    <ng-container *ngIf="record.bestPerformance as bestPerformance; else noPerformance">
-                      <span class="font-semibold">{{ bestPerformance.weight | weightUnit }} (×{{ bestPerformance.reps
-                        }})</span>
-                      <span class="block text-xs text-gray-500">{{ bestPerformance.date | date:'mediumDate' }}</span>
-                    </ng-container>
-                    <ng-template #noPerformance>-</ng-template>
-                  </td>
-                  <!-- =================== END OF CORRECTION =================== -->
-  
-                  <td class="py-3 px-4 text-right">{{ record.estimated1RM | number:'1.0-1' }} kg</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+                      <ng-container *ngIf="record.bestPerformance as bestPerformance; else noPerformance">
+                        <span class="font-semibold">{{ bestPerformance.weight | weightUnit }} (×{{ bestPerformance.reps
+                          }})</span>
+                        <span class="block text-xs text-gray-500">{{ bestPerformance.date | date:'mediumDate' }}</span>
+                      </ng-container>
+                      <ng-template #noPerformance>-</ng-template>
+                    </td>
+                    <!-- =================== END OF CORRECTION =================== -->
 
+                    <td class="py-3 px-4 text-right">{{ record.estimated1RM | number:'1.0-1' }} kg</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+          <ng-template #noPB>
+            <p class="text-center text-gray-500 dark:text-gray-400 py-8 ng-star-inserted">No PBs for this exercise yet
+            </p>
+          </ng-template>
         </div>
-        <ng-template #noPB>
-          <p class="text-center text-gray-500 dark:text-gray-400 py-8 ng-star-inserted">No PBs for this exercise yet</p>
-        </ng-template>
       </div>
     </div>
   </div>

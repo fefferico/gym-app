@@ -1,4 +1,4 @@
-import { Component, inject, Input, OnInit, signal, OnDestroy, PLATFORM_ID, OnChanges, SimpleChanges, computed } from '@angular/core'; // Added OnDestroy
+import { Component, inject, Input, OnInit, signal, OnDestroy, PLATFORM_ID, OnChanges, SimpleChanges, computed, ElementRef } from '@angular/core'; // Added OnDestroy
 import { CommonModule, TitleCasePipe, DatePipe, isPlatformBrowser, DecimalPipe } from '@angular/common'; // Added DatePipe
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Observable, of, Subscription, forkJoin, map, take, tap } from 'rxjs'; // Added Subscription, forkJoin
@@ -19,6 +19,7 @@ import { UnitsService } from '../../core/services/units.service';
 import { MuscleHighlight } from '../../core/services/muscle-map.service';
 import { MuscleMapComponent } from '../../shared/components/muscle-map/muscle-map.component';
 import { WeightUnitPipe } from '../../shared/pipes/weight-unit-pipe';
+import { animate, group, query, style, transition, trigger } from '@angular/animations';
 
 type RepRecord = {
   reps: number;
@@ -43,9 +44,47 @@ type TopLevelRecord = {
   imports: [CommonModule, RouterLink, DatePipe, NgxChartsModule, ActionMenuComponent, IconComponent, MuscleMapComponent, WeightUnitPipe], // Added DatePipe, NgxChartsModule
   templateUrl: './exercise-detail.html',
   styleUrl: './exercise-detail.scss',
+  animations: [
+    trigger('tabSlide', [
+      // Transition for moving to the next tab (e.g., index 0 -> 1)
+      transition(':increment', [
+        style({ position: 'relative', overflow: 'hidden' }),
+        query(':enter, :leave', [
+          style({ position: 'absolute', top: 0, left: 0, width: '100%' })
+        ], { optional: true }),
+        group([
+          query(':leave', [
+            animate('300ms ease-in-out', style({ transform: 'translateX(-100%)', opacity: 0 }))
+          ], { optional: true }),
+          query(':enter', [
+            style({ transform: 'translateX(100%)', opacity: 0 }),
+            animate('300ms ease-in-out', style({ transform: 'translateX(0%)', opacity: 1 }))
+          ], { optional: true }),
+        ])
+      ]),
+      // Transition for moving to the previous tab (e.g., index 1 -> 0)
+      transition(':decrement', [
+        style({ position: 'relative', overflow: 'hidden' }),
+        query(':enter, :leave', [
+          style({ position: 'absolute', top: 0, left: 0, width: '100%' })
+        ], { optional: true }),
+        group([
+          query(':leave', [
+            animate('300ms ease-in-out', style({ transform: 'translateX(100%)', opacity: 0 }))
+          ], { optional: true }),
+          query(':enter', [
+            style({ transform: 'translateX(-100%)', opacity: 0 }),
+            animate('300ms ease-in-out', style({ transform: 'translateX(0%)', opacity: 1 }))
+          ], { optional: true }),
+        ])
+      ]),
+    ])
+  ]
 })
 export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
-   private decimalPipe = inject(DecimalPipe);
+  private tabs: ('description' | 'history' | 'graphs' | 'records')[] = ['description', 'history', 'graphs', 'records'];
+
+  private decimalPipe = inject(DecimalPipe);
   private route = inject(ActivatedRoute);
   private router = inject(Router); // Inject Router if you want to navigate from chart clicks
   private exerciseService = inject(ExerciseService);
@@ -88,7 +127,7 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
   // --- START: ADD/UPDATE SIGNALS ---
   activeTab = signal<'description' | 'history' | 'graphs' | 'records'>('description');
   exerciseHistory = signal<WorkoutLog[]>([]); // Will store logs containing this exercise
-  
+
   // Chart Signals
   est1rmChartData = signal<ChartSeries[]>([]);
   maxWeightChartData = signal<ChartSeries[]>([]);
@@ -221,10 +260,10 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
     }).subscribe(({ baseExercise, pbs, history }) => {
       this.exercise.set(baseExercise || null);
       this.currentImageIndex.set(0);
-      
+
       const sortedPBs = pbs.sort((a, b) => (b.weightUsed ?? 0) - (a.weightUsed ?? 0) || a.pbType.localeCompare(b.pbType));
       this.exercisePBs.set(sortedPBs);
-      
+
       this.exerciseHistory.set(history); // <-- Set history signal
 
       if (baseExercise) {
@@ -381,7 +420,7 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
     this.activeRoutineIdActions.set(null);
   }
 
-   // --- START: NEW COMPUTED SIGNALS FOR RECORDS TAB ---
+  // --- START: NEW COMPUTED SIGNALS FOR RECORDS TAB ---
 
   // Computes top-level records like max weight, volume, and estimated 1RM
   personalRecords = computed<TopLevelRecord[]>(() => {
@@ -394,7 +433,7 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
     if (est1RM) records.push({ label: '1RM stimata', value: this.decimalPipe.transform(est1RM.weightUsed, '1.0-1') ?? '0', unit: 'kg' });
     if (maxVol) records.push({ label: 'Volume massimo', value: this.decimalPipe.transform(maxVol.volume, '1.0-1') ?? '0', unit: 'kg' });
     if (maxWeight) records.push({ label: 'Peso massimo', value: this.decimalPipe.transform(maxWeight.weightUsed, '1.0-1') ?? '0', unit: 'kg' });
-    
+
     return records;
   });
 
@@ -435,13 +474,13 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
   });
   // --- END: NEW COMPUTED SIGNALS ---
 
-   // --- ADD THIS NEW METHOD TO PREPARE ALL CHART DATA ---
+  // --- ADD THIS NEW METHOD TO PREPARE ALL CHART DATA ---
   private prepareChartData(history: WorkoutLog[], seriesName: string): void {
     if (!history || history.length < 2) {
-        this.est1rmChartData.set([]);
-        this.maxWeightChartData.set([]);
-        this.totalVolumeChartData.set([]);
-        return;
+      this.est1rmChartData.set([]);
+      this.maxWeightChartData.set([]);
+      this.totalVolumeChartData.set([]);
+      return;
     }
 
     const est1rmSeries: ChartDataPoint[] = [];
@@ -451,41 +490,73 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
     const exerciseId = this.exercise()?.id;
 
     history.forEach(log => {
-        const exerciseLog = log.exercises.find(ex => ex.exerciseId === exerciseId);
-        if (exerciseLog) {
-            let maxWeight = 0;
-            let totalVolume = 0;
-            let bestSetFor1RM: { weight: number, reps: number } | null = null;
+      const exerciseLog = log.exercises.find(ex => ex.exerciseId === exerciseId);
+      if (exerciseLog) {
+        let maxWeight = 0;
+        let totalVolume = 0;
+        let bestSetFor1RM: { weight: number, reps: number } | null = null;
 
-            exerciseLog.sets.forEach(set => {
-                const weight = set.weightUsed ?? 0;
-                totalVolume += weight * set.repsAchieved;
-                if (weight > maxWeight) maxWeight = weight;
-                if (weight > 0 && (!bestSetFor1RM || weight > bestSetFor1RM.weight)) {
-                    bestSetFor1RM = { weight, reps: set.repsAchieved };
-                }
-            });
-            
-            if (bestSetFor1RM) {
-                const bestSet = bestSetFor1RM as { weight: number, reps: number };
-                const est1RM = bestSet.weight * (36 / (37 - bestSet.reps));
-                est1rmSeries.push({ name: new Date(log.startTime), value: est1RM });
-            }
-            if (maxWeight > 0) maxWeightSeries.push({ name: new Date(log.startTime), value: maxWeight });
-            if (totalVolume > 0) totalVolumeSeries.push({ name: new Date(log.startTime), value: totalVolume });
+        exerciseLog.sets.forEach(set => {
+          const weight = set.weightUsed ?? 0;
+          totalVolume += weight * set.repsAchieved;
+          if (weight > maxWeight) maxWeight = weight;
+          if (weight > 0 && (!bestSetFor1RM || weight > bestSetFor1RM.weight)) {
+            bestSetFor1RM = { weight, reps: set.repsAchieved };
+          }
+        });
+
+        if (bestSetFor1RM) {
+          const bestSet = bestSetFor1RM as { weight: number, reps: number };
+          const est1RM = bestSet.weight * (36 / (37 - bestSet.reps));
+          est1rmSeries.push({ name: new Date(log.startTime), value: est1RM });
         }
+        if (maxWeight > 0) maxWeightSeries.push({ name: new Date(log.startTime), value: maxWeight });
+        if (totalVolume > 0) totalVolumeSeries.push({ name: new Date(log.startTime), value: totalVolume });
+      }
     });
 
     this.est1rmChartData.set([{ name: seriesName, series: est1rmSeries }]);
     this.maxWeightChartData.set([{ name: seriesName, series: maxWeightSeries }]);
     this.totalVolumeChartData.set([{ name: seriesName, series: totalVolumeSeries }]);
-}
+  }
   // --- END: NEW CHART DATA PREPARATION ---
 
 
   // --- ADD THIS NEW METHOD TO CHANGE TABS ---
   selectTab(tab: 'description' | 'history' | 'graphs' | 'records'): void {
+    // Before changing the tab, measure the height of the current content
+    this.measureContentHeight();
     this.activeTab.set(tab);
+    // After the animation starts, reset the height to 'auto' so it can resize
+    setTimeout(() => this.contentHeight = 'auto', 300); // Duration should match animation
+  }
+
+  /**
+   * Handles swipe gestures to navigate between tabs.
+   * @param direction The direction of the swipe ('left' or 'right').
+   */
+  onSwipe(direction: 'left' | 'right'): void {
+    // If an animation is already in progress, ignore this swipe
+    if (this.isAnimating) {
+      return;
+    }
+    this.isAnimating = true; // Set the flag
+
+    const currentIndex = this.tabs.indexOf(this.activeTab());
+    let newIndex: number;
+
+    if (direction === 'left') {
+      newIndex = currentIndex + 1;
+    } else {
+      newIndex = currentIndex - 1;
+    }
+
+    if (newIndex >= 0 && newIndex < this.tabs.length) {
+      this.selectTab(this.tabs[newIndex]);
+    }
+
+    // After the animation duration, reset the flag
+    setTimeout(() => this.isAnimating = false, 300); // Match your animation duration
   }
 
   /**
@@ -502,4 +573,24 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
     return exerciseInLog?.sets || [];
   }
 
+  /**
+   * Computes the numeric index of the active tab.
+   * This is used by the animation trigger to detect :increment and :decrement.
+   */
+  activeTabIndex = computed(() => this.tabs.indexOf(this.activeTab()));
+
+  private elRef = inject(ElementRef); // <-- ADD THIS INJECTION
+  private isAnimating = false; // Flag to prevent rapid-fire swipes
+  contentHeight = 'auto'; // Will hold the height for the animation container
+
+  /**
+   * Measures the height of the currently active tab content and sets it on the
+   * animation container to prevent it from collapsing during the transition.
+   */
+  private measureContentHeight(): void {
+    const activeTabContent = this.elRef.nativeElement.querySelector('.tab-content-active');
+    if (activeTabContent) {
+      this.contentHeight = `${activeTabContent.offsetHeight}px`;
+    }
+  }
 }
