@@ -1,6 +1,6 @@
 // src/app/shared/alert/alert.component.ts
-import { Component, Input, Output, EventEmitter, HostListener, ChangeDetectionStrategy, OnInit, QueryList, ElementRef, ViewChildren, ViewChild, SimpleChanges, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, Input, Output, EventEmitter, HostListener, ChangeDetectionStrategy, OnInit, QueryList, ElementRef, ViewChildren, ViewChild, SimpleChanges, inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms'; // <-- Import FormsModule
 import { AlertButton, AlertOptions, AlertInput } from '../../../core/models/alert.model';
 import { PressDirective } from '../../directives/press.directive';
@@ -53,6 +53,7 @@ export class AlertComponent implements OnInit {
   inputValues: { [key: string]: string | number | boolean } = {};
 
   private toastService = inject(ToastService);
+  private platformId = inject(PLATFORM_ID); // Inject PLATFORM_ID
 
   ngOnInit(): void {
     if (this.options?.inputs) {
@@ -150,7 +151,7 @@ export class AlertComponent implements OnInit {
     }
   }
 
- onButtonClick(button: AlertButton): void {
+  onButtonClick(button: AlertButton): void {
     if (button.role === 'confirm' || button.role !== 'cancel') {
       if (this.options?.inputs) {
         for (const input of this.options.inputs) {
@@ -168,20 +169,20 @@ export class AlertComponent implements OnInit {
 
             // Check if the input is a valid number (especially if required)
             if (isNaN(numericValue) && String(this.inputValues[input.name]).trim() !== '') {
-                this.toastService.info(`Please enter a valid number for '${input.label || input.name}'.`);
-                return; // Stop dismissal
+              this.toastService.info(`Please enter a valid number for '${input.label || input.name}'.`);
+              return; // Stop dismissal
             }
 
             // Check against the minimum value, if defined
             if (input.attributes !== undefined && input.attributes.min !== undefined && numericValue < parseFloat(String(input.attributes.min))) {
-                this.toastService.info(`The value for '${input.label || input.name}' must be at least ${input.attributes.min}.`);
-                return; // Stop dismissal
+              this.toastService.info(`The value for '${input.label || input.name}' must be at least ${input.attributes.min}.`);
+              return; // Stop dismissal
             }
 
             // Check against the maximum value, if defined
             if (input.attributes !== undefined && input.attributes.max !== undefined && numericValue > parseFloat(String(input.attributes.max))) {
-                this.toastService.info(`The value for '${input.label || input.name}' must not exceed ${input.attributes.max}.`);
-                return; // Stop dismissal
+              this.toastService.info(`The value for '${input.label || input.name}' must not exceed ${input.attributes.max}.`);
+              return; // Stop dismissal
             }
           }
           // --- End of Validation Logic ---
@@ -202,13 +203,15 @@ export class AlertComponent implements OnInit {
   }
 
   getButtonClass(button: AlertButton): string {
+    const isDesktop = isPlatformBrowser(this.platformId) && !('ontouchstart' in window || navigator.maxTouchPoints > 0);
+
     let classes = this.standardCssButtonClass;
     switch (button.role) {
       case 'confirm':
         if (button.cssClass) {
           classes += button.cssClass + ' ';
         } else {
-          classes += 'bg-indigo-600 hover:bg-indigo-700 text-white focus:ring-indigo-500 dark:bg-indigo-500 dark:hover:bg-indigo-400 dark:focus:ring-indigo-600';
+          classes += 'bg-indigo-600 hover:bg-indigo-700 text-white dark:bg-indigo-500 dark:hover:bg-indigo-400' + (isDesktop? ' focus:ring-indigo-500 dark:focus:ring-indigo-600' : '');
         }
         break;
       case 'cancel': if (button.cssClass) {

@@ -1,21 +1,9 @@
 <!-- src/app/layout/paused-workout/paused-workout.component.html -->
 
-<!--
-  OUTER CONTAINER:
-  - This div handles the initial slide-in animation (`animate-slide-in-up`).
-  - It holds the background, border, and shape.
-  - It does NOT have the pulse animation.
--->
 <div *ngIf="workoutService.isPausedSession()"
   class="paused-workout-banner bg-primary dark:bg-primary-dark rounded-lg border-2 rounded-b-none border-b-0 border-primary-light/80 animate-slide-in-up">
 
-  <!--
-    INNER WRAPPER:
-    - This div wraps all the visible content.
-    - It handles the FLEX layout.
-    - It gets the new, delayed pulse animation (`animate-pulse-opacity`).
-  -->
-  <div class="banner-content-wrapper flex items-center justify-between gap-4 p-2 px-4 animate-pulse-opacity">
+  <div class="banner-content-wrapper flex items-center justify-between gap-4 p-2 px-4">
 
     <!-- Information section (no changes here) -->
     <div class="flex items-center gap-3 min-w-0 text-white">

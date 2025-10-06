@@ -33,23 +33,22 @@
     </header>
 
     <form [formGroup]="builderForm" (ngSubmit)="onSubmit()"
-        class="space-y-6 mb-6 p-1 rounded-md shadow-xl overflow-hidden min-h-screen" [ngClass]="getCardTitleTextColor()"
-        [ngStyle]="{'background-color': routine()?.cardColor ? routine()?.cardColor : null}">
-        <section class="space-y-2 p-2 rounded-md shadow-sm dark:shadow-none">
+        class="space-y-6 mb-6 p-1 rounded-md shadow-xl overflow-hidden min-h-screen"
+        >
+        <section class="space-y-2 p-2 rounded-md shadow-sm dark:shadow-none text-gray-700 dark:text-gray-200">
             <!-- ROUTINE BUILDER FIELDS -->
             <ng-container *ngIf="mode === 'routineBuilder'">
                 <!-- ROUTINE NAME -->
                 <div *ngIf="isViewMode">
-                    <label class="block text-xl font-black text-gray-700 dark:text-gray-300"
-                        [ngClass]=" getCardTitleTextColor()">{{builderForm.get('name')?.value}}</label>
+                    <label class="block text-xl font-black text-gray-700 dark:text-gray-200">{{builderForm.get('name')?.value}}</label>
                 </div>
-                <div *ngIf="isEditableMode()">
-                    <label for="routineName" class="block text-m font-medium" [ngClass]="getCardTitleTextColor()">Routine
+                <div *ngIf="isEditableMode()" class="text-gray-700 dark:text-gray-200">
+                    <label for="routineName" class="block text-m font-medium">Routine
                         Name</label>
                     <input type="text" id="routineName" formControlName="name" placeholder="Routine name"
-                        class="mt-1 block w-full p-2 border rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200"
+                        class="mt-1 block w-full p-2 border rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:border-gray-500"
                         [ngClass]="{'border-red-500 dark:border-red-400': builderForm.get('name')?.invalid && builderForm.get('name')?.touched, 'border-gray-300 dark:border-gray-500': !(builderForm.get('name')?.invalid && builderForm.get('name')?.touched) }"
-                        [ngClass]="getCardValueTextColor()">
+                        >
                     <div *ngIf="builderForm.get('name')?.invalid && (builderForm.get('name')?.dirty || builderForm.get('name')?.touched)"
                         class="text-red-500 dark:text-red-400 text-xs mt-1">
                         <span *ngIf="builderForm.get('name')?.errors?.['required']">Routine name is required</span>
@@ -57,26 +56,26 @@
                 </div>
                 <!-- DESCRIPTION -->
                 <div *ngIf="isViewMode">
-                    <p class="mt-1 block w-full shadow-sm dark:shadow-none dark:text-gray-200"
+                    <p class="mt-1 block w-full shadow-sm dark:shadow-none text-gray-700 dark:text-gray-200"
                         [innerHTML]="sanitizedDescription">
                     </p>
                 </div>
-                <div *ngIf="isEditableMode()" [ngClass]="getCardValueTextColor()">
+                <div *ngIf="isEditableMode()" >
                     <label for="description" class="block text-m font-medium text-gray-700 dark:text-gray-300"
-                        [ngClass]="getCardTitleTextColor()">Description (Optional)</label>
+                       >Description (Optional)</label>
                     <textarea id="description" formControlName="description" rows="3"
                         placeholder="Description (optional)"
                         class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200"></textarea>
                 </div>
                 <!-- GOAL -->
                 <div *ngIf="isViewMode">
-                    <label class="block text-m text-gray-700 dark:text-gray-300" [ngClass]="getCardTitleTextColor()">
+                    <label class="block text-m text-gray-700 dark:text-gray-300">
                         <span class="font-medium">Goal: </span>
                         {{ builderForm.get('goal')?.value?.toUpperCase() || ''}}</label>
                 </div>
-                <div *ngIf="isEditableMode()" [ngClass]="getCardValueTextColor()">
+                <div *ngIf="isEditableMode()" class="text-gray-700 dark:text-gray-200">
                     <label for="goal" class="block text-m font-medium text-gray-700 dark:text-gray-300"
-                        [ngClass]="getCardTitleTextColor()">Primary
+                       >Primary
                         Goal</label>
                     <select id="goal" formControlName="goal"
                         class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200"
@@ -94,18 +93,18 @@
             -->
                 <!-- PRIMARY CATEGORY -->
                 <div *ngIf="isViewMode && builderForm.get('primaryCategory')?.value">
-                    <label class="block text-m text-gray-700 dark:text-gray-300"  [ngClass]="getCardTitleTextColor()">
+                    <label class="block text-m text-gray-700 dark:text-gray-300" >
                         <span class="font-medium">Category: </span>
                         {{ builderForm.get('primaryCategory')?.value }}
                     </label>
                 </div>
-                <div *ngIf="isEditableMode()" [ngClass]="getCardTitleTextColor()">
-                    <label for="primaryCategory" class="block text-m font-medium">
+                <div *ngIf="isEditableMode()">
+                    <label for="primaryCategory" class="block text-m font-medium text-gray-700 dark:text-gray-200">
                         Primary Category
                     </label>
                     <select id="primaryCategory" formControlName="primaryCategory"
                         class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 text-gray-700 dark:text-gray-200"
-                         [ngClass]="getCardValueTextColor()">
+                         >
                         <option value="">-- Select a category --</option>
                         <option *ngFor="let cat of primaryCategories" [value]="cat.value">{{ cat.label }}</option>
                     </select>
@@ -113,13 +112,13 @@
 
                 <!-- SECONDARY CATEGORY -->
                 <div *ngIf="isViewMode && builderForm.get('secondaryCategory')?.value">
-                    <label class="block text-m text-gray-700 dark:text-gray-300" [ngClass]="getCardTitleTextColor()">
+                    <label class="block text-m text-gray-700 dark:text-gray-300">
                         <span class="font-medium">Sub-Category: </span>
                         {{ builderForm.get('secondaryCategory')?.value }}
                     </label>
                 </div>
                 <div *ngIf="isEditableMode()">
-                    <label for="secondaryCategory" class="block text-m font-medium" [ngClass]="getCardTitleTextColor()">
+                    <label for="secondaryCategory" class="block text-m font-medium text-gray-700 dark:text-gray-200">
                         Secondary Category (Optional)
                     </label>
                     <input type="text" id="secondaryCategory" formControlName="secondaryCategory"
@@ -130,7 +129,7 @@
                 <!-- TAGS -->
                 <div *ngIf="isViewMode && builderForm.get('tags')?.value" class="mt-2">
                     <div class="flex items-center gap-2 flex-wrap">
-                        <label class="block text-m font-medium">Tags: </label>
+                        <label class="block text-m font-medium text-gray-700 dark:text-gray-200">Tags: </label>
                         <span *ngFor="let tag of builderForm.get('tags')?.value.split(',')"
                             class="bg-gray-200 text-gray-700 dark:bg-gray-600 text-gray-700 dark:text-gray-200 text-xs font-semibold px-2 py-1 rounded-full">
                             {{ tag.trim() }}
@@ -138,7 +137,7 @@
                     </div>
                 </div>
                 <div *ngIf="isEditableMode()">
-                    <label for="tags" class="block text-m font-medium" [ngClass]="getCardTitleTextColor()">
+                    <label for="tags" class="block text-m font-medium text-gray-700 dark:text-gray-200">
                         Tags (comma-separated)
                     </label>
                     <input type="text" id="tags" formControlName="tags" placeholder="e.g., HIIT, Dumbbells, Full Body"
@@ -149,7 +148,7 @@
                 <ng-container *ngIf="lastLogForCurrentRoutine() as lastLog; else notPerformedYet">
 
                     <!-- Display "Last Performed" Date -->
-                    <div class="text-m text-gray-500 dark:text-gray-300" [ngClass]="getCardTitleTextColor()">
+                    <div class="text-m text-gray-500 dark:text-gray-300">
                         <span class="font-medium">Last:</span>
                         <!-- Use the millisecondsDate pipe we created -->
                         {{ lastLog.startTime | millisecondsDate }}
@@ -157,7 +156,7 @@
 
                     <!-- Display "Last Duration" -->
                     <div *ngIf="lastLog.duration" class="text-sm text-gray-500 dark:text-gray-300 flex gap-1"
-                        [ngClass]="getCardTitleTextColor()">
+                       >
                         <span class="font-medium">Last duration:</span> {{ lastLog.duration }} min
                     </div>
                 </ng-container>
@@ -165,7 +164,7 @@
                 <!-- This template is shown if the routine has never been performed -->
                 <ng-template #notPerformedYet>
                     <div class="text-sm text-gray-500 dark:text-gray-300 italic flex gap-1 mb-2"
-                        [ngClass]="getCardTitleTextColor()">
+                       >
                         Not performed yet
                     </div>
 
@@ -174,7 +173,7 @@
                 <!-- Estimated Duration (this part is unchanged) -->
                 <div>
                     <div *ngIf="routine() && getRoutineDuration() > 0" class="text-m text-gray-500 dark:text-gray-300"
-                        [ngClass]="getCardTitleTextColor()">
+                       >
                         <span class="font-medium">Est. duration:</span> ~{{ getRoutineDuration() }} min
                     </div>
                 </div>
@@ -185,7 +184,7 @@
             <ng-container *ngIf="mode === 'manualLogEntry'">
                 <!-- HEADER FOR LOG -->
                 <header *ngIf="checkIfLogForProgram()" class="flex items-center justify-between py-2">
-                    <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200" [ngClass]="getCardTitleTextColor()">
+                    <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">
                         <span *ngIf="isEditableMode">{{getLogTitleForProgramEntry()}}</span>
                     </h1>
                 </header>
@@ -301,17 +300,6 @@
         </section>
 
         <section *ngIf="mode === 'manualLogEntry' || builderForm.get('goal')?.value !== 'rest'">
-            <!-- <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300">{{ mode === 'routineBuilder' ?
-                    'Exercises' : 'Logged Exercises' }}</h2>
-                <button *ngIf="!isViewMode && (!exercisesFormArray.controls || exercisesFormArray.controls.length > 0)"
-                    type="button" (click)="openExerciseSelectionModal()"
-                    class="flex items-center bg-green-500 hover:enabled:bg-green-600 text-white text-m font-medium py-2 px-3 rounded-md transition-all duration-150 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed">
-                    <app-icon name="create" class="h-5 w-5 mr-1"></app-icon>
-                    ADD EXERCISE
-                </button>
-            </div> -->
-
             <div *ngIf="exercisesFormArray.length>0" cdkDropList [cdkDropListData]="exercisesFormArray.controls"
                 (cdkDropListDropped)="onExerciseDrop($event)" [cdkDropListDisabled]="!isEditableMode"
                 formArrayName="exercises" class="exercise-list-container">
@@ -1156,6 +1144,6 @@
         <app-exercise-detail [id]="exerciseDetailsId" [isModal]="true"></app-exercise-detail>
     </app-modal>
 
-    <app-fab-menu *ngIf="isEditableMode()" [actions]="fabMenuItems" [checkForPausedSession]="false"
+    <app-fab-menu [actions]="fabMenuItems" [checkForPausedSession]="false"
         [scrollToBottomDisabled]="true" [scrollToTopDisabled]="true"
         (actionClicked)="onFabAction($event)"></app-fab-menu>

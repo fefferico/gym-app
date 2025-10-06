@@ -113,6 +113,8 @@ export class AlertService {
         okText: string = 'OK',
         cancelText: string = 'Cancel'
     ): Promise<{ role: 'confirm' | 'cancel', data?: any } | undefined> {
+        const isDesktop = isPlatformBrowser(this.platformId) && !('ontouchstart' in window || navigator.maxTouchPoints > 0);
+
         const result = await this.present({
             header,
             message,
@@ -154,12 +156,14 @@ export class AlertService {
             showCloseButton?: boolean
         },
     ): Promise<AlertResult | undefined> {
+        const isDesktop = isPlatformBrowser(this.platformId) && !('ontouchstart' in window || navigator.maxTouchPoints > 0);
+
         const result = await this.present({
             header: title,
             message: message,
             buttons: customButtons ? customButtons : [
                 { text: 'Cancel', role: 'cancel', data: false } as AlertButton,
-                { text: 'OK', role: 'confirm', data: true, autofocus: true } as AlertButton,
+                { text: 'OK', role: 'confirm', data: true, autofocus: isDesktop } as AlertButton,
             ],
             listItems: extraOptions?.listItems,
             customButtonDivCssClass: extraOptions?.customButtonDivCssClass,

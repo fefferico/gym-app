@@ -139,7 +139,7 @@
                   '': !!item.cardColor,
                 }" [style.zIndex]="areActionsVisible(item.id) ? 50 : 'auto'">
                 <div class="p-4 sm:p-6 cursor-pointer border dark:border-none rounded-md"
-                  (click)="viewLogDetails(item.id)" [ngClass]="{
+                  (click)="toggleActions(item.id, $event)" [ngClass]="{
                     'bg-white dark:bg-gray-700 border-primary text-primary dark:text-primary-light hover:text-primary-dark dark:hover:text-yellow-200 dark:hover:bg-gray-600': !item.cardColor,
                     'text-white border-transparent': !!item.cardColor
                   }" [style.zIndex]="areActionsVisible(item.id) ? 50 : 'auto'"
@@ -213,7 +213,7 @@
               <div *ngIf="item.itemType === 'activity'"
                 class="bg-white dark:bg-gray-700 border-2 border-l-4 dark:border-l-4 border-teal-400 border-b-0 border-r-0 rounded-md shadow-md hover:shadow-lg transition-shadow duration-200 relative group transform hover:-translate-y-1  text-teal-600 dark:text-teal-400 dark:hover:text-yellow-200"
                 [style.zIndex]="areActionsVisible(item.id) ? 50 : 'auto'">
-                <div class="p-4 sm:p-6 cursor-pointer" (click)="viewActivityLogDetails(item.id)">
+                <div class="p-4 sm:p-6 cursor-pointer" (click)="toggleActions(item.id, $event)">
                   <div class="flex justify-between items-start mb-1.5">
                     <h2 class="text-lg sm:text-xl font-semibold truncate pr-8" [title]="item.activityName">
                       {{ item.activityName }}
