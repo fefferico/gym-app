@@ -62,13 +62,15 @@ interface ExerciseComparisonSummary {
 @Component({
     selector: 'app-performance-comparison-modal',
     standalone: true,
+    providers: [WeightUnitPipe],
     imports: [CommonModule, DatePipe, DecimalPipe, IconComponent, WeightUnitPipe],
-    templateUrl: './performance-comparison-modal.component.html',
-    styleUrl: './performance-comparison-modal.component.scss'
+    templateUrl: './performance-comparison-modal.component.html'
 })
 export class PerformanceComparisonModalComponent {
     private trackingService = inject(TrackingService);
     protected unitService = inject(UnitsService);
+    protected weightUnitPipe = inject(WeightUnitPipe);
+    protected decimalPipe = inject(DecimalPipe);
 
     // --- INPUTS ---
     public readonly exerciseSignal = signal<DisplayLoggedExercise | undefined>(undefined);
@@ -368,4 +370,65 @@ export class PerformanceComparisonModalComponent {
             comparison.durationDiff !== 0 ||
             comparison.distanceDiff !== 0;
     }
+
+     // Helper to structure the summary data for the template's *ngFor loop
+  getSummaryRows(data: any): any[] {
+    const rows = [];
+    
+    // Sets
+    rows.push({
+      metric: 'Sets',
+      currentValue: data.currentSummary.setsCount,
+      previousValue: data.previousSummary.setsCount,
+      diff: data.comparison.setsDiff,
+      percentChange: data.comparison.setsPercentChange,
+    });
+
+    // Reps (if applicable)
+    if (data.currentSummary.totalReps > 0 || data.previousSummary.totalReps > 0) {
+      rows.push({
+        metric: 'Total Reps',
+        currentValue: data.currentSummary.totalReps,
+        previousValue: data.previousSummary.totalReps,
+        diff: data.comparison.repsDiff,
+        percentChange: data.comparison.repsPercentChange,
+      });
+    }
+
+    // Weight Metrics (if applicable)
+    if (this.showWeightMetrics()) {
+      rows.push({
+        metric: 'Max Weight',
+        currentValue: this.weightUnitPipe.transform(data.currentSummary.maxWeight, '1.0-1'),
+        previousValue: this.weightUnitPipe.transform(data.previousSummary.maxWeight, '1.0-1'),
+        diff: data.comparison.maxWeightDiff,
+        percentChange: data.comparison.maxWeightPercentChange,
+      }, {
+        metric: 'Total Volume',
+        currentValue: this.weightUnitPipe.transform(data.currentSummary.totalVolume, '1.0-0'),
+        previousValue: this.weightUnitPipe.transform(data.previousSummary.totalVolume, '1.0-0'),
+        diff: data.comparison.volumeDiff,
+        percentChange: data.comparison.volumePercentChange,
+      });
+    }
+
+    // Cardio Metrics (if applicable)
+    if (this.showCardioMetrics()) {
+      rows.push({
+        metric: 'Total Duration',
+        currentValue: this.formatDuration(data.currentSummary.totalDuration),
+        previousValue: this.formatDuration(data.previousSummary.totalDuration),
+        diff: data.comparison.durationDiff,
+        percentChange: data.comparison.durationPercentChange,
+      }, {
+        metric: 'Total Distance',
+        currentValue: `${this.decimalPipe.transform(data.currentSummary.totalDistance, '1.0-2')} ${this.unitService.getDistanceMeasureUnitSuffix()}`,
+        previousValue: `${this.decimalPipe.transform(data.previousSummary.totalDistance, '1.0-2')} ${this.unitService.getDistanceMeasureUnitSuffix()}`,
+        diff: data.comparison.distanceDiff,
+        percentChange: data.comparison.distancePercentChange,
+      });
+    }
+
+    return rows;
+  }
 }

@@ -177,7 +177,9 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     if (showFavouriteRoutinesOnlyFilter) {
       routines = routines.filter(routine => routine.isFavourite);
     }
-    const colorFilter = this.selectedColorFilter(); // <-- Add this
+    const categoryFilter = this.selectedPrimaryCategory();
+
+    const colorFilter = this.selectedColorFilter();
     const searchTerm = this.routineSearchTerm().toLowerCase();
     const goalFilter = this.selectedRoutineGoal();
     const muscleFilter = this.selectedRoutineMuscleGroup();
@@ -241,6 +243,10 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     if (colorFilter) {
       routines = routines.filter(r => r.cardColor === colorFilter);
     }
+
+    if (categoryFilter) {
+      routines = routines.filter(r => r.primaryCategory === categoryFilter);
+    }
     return routines;
   });
 
@@ -295,6 +301,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     if (!routines || routines.length === 0) {
       this.maxDuration.set(120); // Reset to default if no routines
       this.uniqueRoutineColors.set([]);
+      this.uniquePrimaryCategories.set([]); // Clear categories
       return;
     };
 
@@ -302,6 +309,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     const muscles = new Set<string>();
     const equipments = new Set<string>();
     const colors = new Set<string>();
+    const categories = new Set<string>();
     let maxCalculatedDuration = 0;
 
     routines.forEach(routine => {
@@ -309,6 +317,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
       if (routine.cardColor) {
         colors.add(routine.cardColor);
       }
+      this.uniquePrimaryCategories.set(Array.from(categories).sort());
       this.uniqueRoutineColors.set(Array.from(colors).sort());
 
       const duration = this.getRoutineDuration(routine);
@@ -319,6 +328,11 @@ export class RoutineListComponent implements OnInit, OnDestroy {
       if (routine.goal) {
         goals.add(routine.goal);
       }
+
+      if (routine.primaryCategory) {
+        categories.add(routine.primaryCategory);
+      }
+
       routine.exercises.forEach(exDetail => {
         const fullExercise = this.allExercisesMap.get(exDetail.exerciseId);
         if (fullExercise?.primaryMuscleGroup) {
@@ -405,6 +419,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     this.routineSearchTerm.set('');
     this.selectedRoutineGoal.set(null);
     this.selectedRoutineMuscleGroup.set(null);
+    this.selectedPrimaryCategory.set(null);
     this.selectedColorFilter.set(null);
     this.isColorFilterOpen.set(false);
     this.selectedEquipment.set([]);
@@ -1234,6 +1249,14 @@ export class RoutineListComponent implements OnInit, OnDestroy {
   onColorFilterChange(event: Event): void {
     const target = event.target as HTMLSelectElement;
     this.selectedColorFilter.set(target.value || null);
+  }
+
+  uniquePrimaryCategories = signal<string[]>([]);
+  selectedPrimaryCategory = signal<string | null>(null);
+  selectPrimaryCategory(category: string | null, event?: Event): void {
+    event?.stopPropagation();
+    this.selectedPrimaryCategory.update(current => (current === category ? null : category));
+    this.workoutService.vibrate();
   }
 
 }

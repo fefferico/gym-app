@@ -30,9 +30,10 @@
       <!-- LIST VIEW -->
       <div *ngSwitchCase="'list'">
         <div class="overflow-hidden transition-all duration-500 ease-in-out rounded-md"
-          [style.maxHeight]="isFilterAccordionOpen() ? '600px' : '0px'" [class.mb-8]="isFilterAccordionOpen()">
+          [style.maxHeight]="isFilterAccordionOpen() ? '600px' : '0px'" [class.mb-8]="isFilterAccordionOpen()"
+          [ngClass]="{ '!overflow-visible relative z-20': isColorFilterOpen() }">
           <form [formGroup]="filterForm"
-            class="p-4 bg-white dark:bg-gray-700 rounded-md shadow-md space-y-4 border dark:border-gray-700">
+            class="px-4 py-2 bg-white dark:bg-gray-700 rounded-md shadow-md space-y-4 border dark:border-gray-700">
             <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-3">Filter History</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div><label for="dateFrom" class="block text-sm font-medium text-gray-700 dark:text-gray-300">From
@@ -71,7 +72,7 @@
               <div #colorFilterContainer class="lg:col-span-1 relative">
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Card Color</label>
                 <button (click)="toggleColorFilterDropdown()" [disabled]="uniqueHistoryColors().length === 0"
-                  class="relative w-full cursor-pointer rounded-md bg-white dark:bg-gray-700 py-2 pl-3 pr-10 text-left border border-gray-300 dark:border-gray-600 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-light disabled:opacity-50 disabled:cursor-not-allowed">
+                  class="relative w-full cursor-pointer rounded-md bg-white dark:bg-gray-700 py-2 pl-3 pr-10 text-left border border-gray-300 dark:border-gray-600 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-light disabled:opacity-50 disabled:cursor-not-allowed dark:text-gray-100">
 
                   <!-- Display selected color -->
                   <ng-container *ngIf="getCurrentColorFilterValue() as selectedColor; else anyColorHistory">
@@ -132,7 +133,7 @@
 
               <!-- WORKOUT LOG CARD -->
               <div *ngIf="item.itemType === 'workout'"
-                class="bg-white dark:bg-gray-700 shadow-md hover:shadow-lg transition-shadow duration-200 relative group transform hover:-translate-y-1 text-primary dark:text-primary-light hover:text-primary-dark dark:hover:text-yellow-200 dark:hover:bg-gray-600"
+                class="rounded-md shadow-md hover:shadow-lg transition-shadow duration-200 relative group transform hover:-translate-y-1 text-primary dark:text-primary-light hover:text-primary-dark dark:hover:text-yellow-200 dark:hover:bg-gray-600"
                 [ngClass]="{
                   'border-2 border-l-4 dark:border-l-4 border-primary border-b-0 border-r-0 rounded-lg': !item.cardColor,
                   '': !!item.cardColor,
@@ -295,7 +296,7 @@
         <!-- This container will become the scrollable area -->
         <div class="calendar-scroll-container">
           <!-- Loop over each month's data -->
-          <div *ngFor="let month of historyCalendarMonths()" class="month-container mb-8">
+          <div *ngFor="let month of historyCalendarMonths()" class="month-container mb-8 px-2">
             <!-- Month Header -->
             <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4 text-center">
               {{ month.monthName | titlecase }} {{ month.year }}

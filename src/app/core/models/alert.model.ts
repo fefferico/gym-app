@@ -39,5 +39,6 @@ export interface AlertOptions {
   backdropDismiss?: boolean; // Default true (dismiss on backdrop click)
   customCssClass?: string; // Optional custom class for the alert box itself
   customButtonDivCssClass?: string;
+  showCloseButton?: boolean;
   // Add other options like subHeader, custom component, etc. if needed later
 }

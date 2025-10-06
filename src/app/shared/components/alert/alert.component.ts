@@ -234,4 +234,17 @@ export class AlertComponent implements OnInit {
 
     return classes;
   }
+
+  // --- START: ADD THIS NEW METHOD ---
+  /**
+   * Handles the click event for the optional close button in the corner.
+   * Stops the event from propagating to the backdrop and dismisses the alert
+   * with a 'cancel' role.
+   * @param event The mouse event from the button click.
+   */
+  onCloseButtonClick(event: Event): void {
+    event.stopPropagation(); // Prevent the backdrop click from also firing.
+    this.dismissWith({ role: 'cancel' });
+  }
+  // --- END: ADD THIS NEW METHOD ---
 }

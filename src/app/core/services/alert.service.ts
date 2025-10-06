@@ -149,7 +149,10 @@ export class AlertService {
         title: string,
         message: string,
         customButtons?: AlertButton[],
-        extraOptions?: { listItems?: string[], customButtonDivCssClass?: string }
+        extraOptions?: {
+            listItems?: string[], customButtonDivCssClass?: string,
+            showCloseButton?: boolean
+        },
     ): Promise<AlertResult | undefined> {
         const result = await this.present({
             header: title,
@@ -160,6 +163,7 @@ export class AlertService {
             ],
             listItems: extraOptions?.listItems,
             customButtonDivCssClass: extraOptions?.customButtonDivCssClass,
+            showCloseButton: extraOptions?.showCloseButton,
             backdropDismiss: false
         });
         return result;

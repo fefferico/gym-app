@@ -1212,10 +1212,12 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
     } else {
       // --- CASE 2: Removing a Standard Set (Logic remains the same as it's already robust) ---
-      const setToRemove = exercise.sets[setIndex];
+
+      const newSetIndex = setIndex < 0 ? exercise.sets.length - 1 : setIndex;
+      const setToRemove = exercise.sets[newSetIndex];
       const isLastSet = exercise.sets.length <= 1;
 
-      let confirmMessage = `Are you sure you want to remove this set from ${exercise.exerciseName}?`;
+      let confirmMessage = `Are you sure you want to remove the set from ${exercise.exerciseName}?`;
       if (isLastSet) {
         confirmMessage = `This will also remove the exercise from the workout. Continue?`;
       }
@@ -1233,7 +1235,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       });
 
       // Remove from routine definition
-      exercise.sets.splice(setIndex, 1);
+      exercise.sets.splice(newSetIndex, 1);
 
       if (exercise.sets.length === 0) {
         this.removeExercise(exIndex, true);
@@ -3310,34 +3312,50 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   /**
    * Shows a prompt asking the user which field they want to remove from the set.
    */
+  /**
+  * --- CORRECTED ---
+  * Shows a prompt asking the user which field they want to remove from the set.
+  * Includes a 'Cancel' button and the corner close button.
+  */
   public async promptRemoveField(exIndex: number, setIndex: number): Promise<void> {
     const cols = this.getVisibleSetColumns(exIndex, setIndex);
-    const visibleFields = Object.keys(cols).filter(key => cols[key as keyof typeof cols]);
-
-    // Filter down to only the fields that are actually removable
-    const removableFields = visibleFields.filter(field => this.canRemoveField(exIndex, setIndex, field));
+    const removableFields = Object.keys(cols).filter(key => cols[key as keyof typeof cols] && this.canRemoveField(exIndex, setIndex, key));
 
     if (removableFields.length === 0) {
       this.toastService.info("No fields can be removed from this set.");
       return;
     };
 
-    // Create alert buttons for each removable field
     const buttons: AlertButton[] = removableFields.map(field => ({
       text: field.charAt(0).toUpperCase() + field.slice(1),
       role: 'remove',
       data: field,
       icon: field === 'duration' ? 'hourglass' : field === 'reps' ? 'repeat' : field,
-      cssClass: 'bg-red-500 hover:bg-red-600' // Destructive action styling
+      cssClass: 'bg-red-500 hover:bg-red-600'
     }));
 
+    // --- START OF CORRECTION ---
+    // Add a dedicated "Cancel" button to the array.
+    buttons.push({
+      text: 'Cancel',
+      role: 'cancel',
+      data: null,
+      icon: 'cancel'
+    });
+    // --- END OF CORRECTION ---
+
     const choice = await this.alertService.showConfirmationDialog(
-      'Remove Field from Set',
-      'Which metric would you like to remove?',
-      buttons
+      'Remove Field from Exercise',
+      'Which metric would you like to remove from all sets of this exercise?',
+      buttons,
+      // --- START OF CORRECTION ---
+      // Pass the option to show the corner 'X' close button.
+      { showCloseButton: true }
+      // --- END OF CORRECTION ---
     );
 
-    if (choice && choice.data) {
+    // Only proceed if the user made a choice and didn't cancel.
+    if (choice && choice.role !== 'cancel' && choice.data) {
       this.removeMetricFromSet(exIndex, setIndex, choice.data);
     }
   }
@@ -3345,13 +3363,22 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   /**
    * Shows a prompt asking the user which field they want to add to the set.
    */
+  /**
+   * --- CORRECTED ---
+   * Shows a prompt asking the user which field they want to add to the set.
+   * Includes a 'Cancel' button and the corner close button.
+   */
+  /**
+   * --- CORRECTED & ENHANCED ---
+   * Shows a prompt asking which field to add, then a second prompt for the target value.
+   */
   public async promptAddField(exIndex: number, setIndex: number): Promise<void> {
     const cols = this.getVisibleSetColumns(exIndex, setIndex);
     const hiddenFields = Object.keys(cols).filter(key => !cols[key as keyof typeof cols]);
 
     if (hiddenFields.length === 0) return;
 
-    // Create alert buttons for each available field
+    // --- Step 1: Ask WHICH field to add ---
     const buttons: AlertButton[] = hiddenFields.map(field => ({
       text: field.charAt(0).toUpperCase() + field.slice(1),
       role: 'add',
@@ -3359,30 +3386,62 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       icon: field === 'duration' ? 'hourglass' : field === 'reps' ? 'repeat' : field
     }));
 
+    buttons.push({ text: 'Cancel', role: 'cancel', data: null, icon: 'cancel' });
+
     const choice = await this.alertService.showConfirmationDialog(
       'Add Field to Set',
-      'Which metric would you like to add?',
-      buttons
+      'Which metric would you like to add to all sets of this exercise?',
+      buttons,
+      { showCloseButton: true }
     );
 
-    if (choice && choice.data) {
-      this.addFieldToSet(exIndex, setIndex, choice.data);
+    if (!choice || choice.role === 'cancel' || !choice.data) {
+      return; // User cancelled the first prompt
+    }
+
+    const fieldToAdd = choice.data;
+
+    // --- Step 2: Ask for the VALUE of the chosen field ---
+    let inputLabel = `Target ${fieldToAdd.charAt(0).toUpperCase() + fieldToAdd.slice(1)}`;
+    if (fieldToAdd === 'weight') {
+      inputLabel += ` (${this.unitsService.getWeightUnitSuffix()})`;
+    } else if (fieldToAdd === 'duration') {
+      inputLabel += ' (s)';
+    } else if (fieldToAdd === 'distance') {
+      inputLabel += ` (${this.unitsService.getDistanceMeasureUnitSuffix()})`
+    }
+
+    const valueResult = await this.alertService.showPromptDialog(
+      `Set Target ${fieldToAdd.charAt(0).toUpperCase() + fieldToAdd.slice(1)}`,
+      `Enter the target value you want to apply to the current set for this exercise.`,
+      [{ name: 'targetValue', type: 'number', label: inputLabel, value: '', attributes: { min: '0', required: true } }] as AlertInput[],
+      'Apply Target'
+    );
+
+    if (valueResult && valueResult['targetValue'] !== null && valueResult['targetValue'] !== undefined) {
+      const targetValue = Number(valueResult['targetValue']);
+      if (!isNaN(targetValue) && targetValue >= 0) {
+        // --- Step 3: Call the updated method with the new value ---
+        this.addFieldToSet(exIndex, setIndex, fieldToAdd, targetValue);
+        this.toastService.success(`${fieldToAdd.toUpperCase()} field added to all sets.`);
+      } else {
+        this.toastService.error("Invalid value provided.");
+      }
     }
   }
 
   /**
-   * UPDATED: Adds a new field to ALL sets of an exercise for UI consistency.
    */
-  private addFieldToSet(exIndex: number, setIndex: number, fieldToAdd: string): void {
+  private addFieldToSet(exIndex: number, setIndex: number, fieldToAdd: string, targetValue: number): void {
     this.routine.update(r => {
       if (!r) return r;
       const set = r.exercises[exIndex].sets[setIndex];
       // Initialize with a non-zero value to ensure it's displayed
       switch (fieldToAdd) {
-        case 'weight': set.targetWeight = 1; break;
-        case 'reps': set.targetReps = 1; break;
-        case 'distance': set.targetDistance = 1; break;
-        case 'duration': set.targetDuration = 1; break;
+        case 'weight': set.targetWeight = targetValue; break;
+        case 'reps': set.targetReps = targetValue; break;
+        case 'distance': set.targetDistance = targetValue; break;
+        case 'duration': set.targetDuration = targetValue; break;
       }
       this.toastService.success(`${fieldToAdd.toUpperCase()} field added to set #${setIndex + 1}.`);
       return { ...r };
@@ -3555,9 +3614,9 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       };
     }
 
-    if (isExpanded){
+    if (isExpanded) {
       return {
-      'rounded-md p-2 py-1 transition-all duration-300': true,
+        'rounded-md p-2 py-1 transition-all duration-300': true,
         'bg-gray-100 dark:bg-gray-900': true
       }
     }
@@ -3708,6 +3767,17 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       paused: 'bg-teal-500 hover:bg-teal-600 animate-pulse',
     };
     return classMap[state.status];
+  }
+
+  cardHeaderText(): string {
+    const routine = this.routine();
+    const sessioneState = this.sessionState();
+
+    if (!routine || routine === undefined) {
+      return '';
+    }
+    const sessionStatePaused = sessioneState === 'paused' ? ' animate-pulse' : '';
+    return !!routine.cardColor ? 'text-white' + sessionStatePaused : '' + sessionStatePaused;
   }
 
 }

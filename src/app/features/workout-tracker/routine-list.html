@@ -15,7 +15,8 @@
         <!-- Filter Accordion Section for Routines -->
         <div id="filter-accordion"
             class="overflow-y-auto transition-all duration-500 ease-in-out rounded-md scrollbar-thin scrollbar-thumb-primary scrollbar-track-gray-200 dark:scrollbar-track-gray-800"
-            [style.maxHeight]="isFilterAccordionOpen() ? '600px' : '0px'" [class.mb-6]="isFilterAccordionOpen()">
+            [style.maxHeight]="isFilterAccordionOpen() ? '600px' : '0px'" [class.mb-6]="isFilterAccordionOpen()"
+            [ngClass]="{ '!overflow-visible relative z-20': isColorFilterOpen() }">
             <div class="p-4 bg-white dark:bg-gray-700 rounded-md shadow-md border dark:border-gray-600 mt-2">
                 <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">Filter Routines</h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
@@ -82,8 +83,8 @@
                                 <p class="text-sm text-gray-500 dark:text-gray-400 mr-1">Favourite routines</p>
                             </div>
                             <label for="show-favourite-routine" class="inline-flex items-center cursor-pointer mt-2">
-                                <input type="checkbox" id="show-favourite-routine" class="sr-only peer" appPress
-                                    (change)="showFavouriteOnlyRoutines(!showFavouriteRoutinesOnly())">
+                                <input type="checkbox" id="show-favourite-routine" class="sr-only peer" 
+                                    (click)="showFavouriteOnlyRoutines(!showFavouriteRoutinesOnly())">
                                 <div
                                     class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary dark:peer-checked:bg-primary-dark">
                                 </div>
@@ -142,8 +143,8 @@
                 <div class="mt-4" *ngIf="uniqueRoutineEquipments().length > 0">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Equipment</label>
                     <div class="flex flex-wrap gap-2">
-                        <button *ngFor="let equipment of uniqueRoutineEquipments()" appPress
-                            (shortPress)="toggleEquipmentFilter(equipment)" type="button" role="switch"
+                        <button *ngFor="let equipment of uniqueRoutineEquipments()" 
+                            (click)="toggleEquipmentFilter(equipment)" type="button" role="switch"
                             [attr.aria-checked]="selectedEquipment().includes(equipment)"
                             class="px-3 py-1.5 text-xs font-semibold rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
                             [ngClass]="{
@@ -172,6 +173,37 @@
                 </div>
             </div>
         </div>
+
+        <!-- 
+            =================== START OF NEW SNIPPET ===================
+            This section adds the horizontal scrollable list of category chips.
+            It only appears if there are categories to filter by.
+        -->
+        <div *ngIf="uniquePrimaryCategories().length > 0" class="py-3">
+            <div class="flex items-center space-x-3 overflow-x-auto custom-scrollbar py-1 px-2">
+                <!-- "All" Chip -->
+                <button (click)="selectPrimaryCategory(null)"
+                        class="px-4 py-1.5 text-sm font-semibold rounded-full transition-colors duration-200 ease-in-out whitespace-nowrap flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+                        [ngClass]="{
+                            'bg-primary text-white focus:ring-primary-dark': selectedPrimaryCategory() === null,
+                            'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500 focus:ring-gray-400': selectedPrimaryCategory() !== null
+                        }">
+                    All Categories
+                </button>
+
+                <!-- Dynamic Category Chips -->
+                <button *ngFor="let category of uniquePrimaryCategories()"
+                        (click)="selectPrimaryCategory(category)"
+                        class="px-4 py-1.5 text-sm font-semibold rounded-full transition-colors duration-200 ease-in-out whitespace-nowrap flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+                        [ngClass]="{
+                            'bg-primary text-white focus:ring-primary-dark': selectedPrimaryCategory() === category,
+                            'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500 focus:ring-gray-400': selectedPrimaryCategory() !== category
+                        }">
+                    {{ category }}
+                </button>
+            </div>
+        </div>
+        <!-- =================== END OF NEW SNIPPET =================== -->
 
         <div *ngIf="routines$ | async as allRoutinesFromObservable; else loadingRoutines">
             <div *ngIf="filteredRoutines().length > 0; else noRoutines"
@@ -241,6 +273,19 @@
                                     [ngClass]="{ 'cursor-not-allowed opacity-50': routine.isDisabled } "
                                     class="bg-blue-100 text-xs text-blue-700 dark:bg-blue-700 dark:text-blue-200 px-1.5 py-0.5 rounded-full hover:bg-blue-200 dark:hover:bg-blue-600">
                                     {{ routine.goal | titlecase }}
+                                </button>
+                            </div>
+                        </div>
+                        <div class="flex justify-between text-sm text-gray-500 dark:text-gray-300 mb-2 space-x-2"
+                            [ngClass]="getCardTextColor(routine)">
+                            <div *ngIf="routine.primaryCategory" class="flex items-center gap-1">
+                                <app-icon name="category" class="w-6 h-6"></app-icon>
+                                <span class="font-medium">Category:</span>
+                                <button type="button" (click)="selectPrimaryCategory(routine.primaryCategory, $event)"
+                                    [disabled]="routine.isDisabled"
+                                    [ngClass]="{ 'cursor-not-allowed opacity-50': routine.isDisabled } "
+                                    class="bg-blue-100 text-xs text-blue-700 dark:bg-blue-700 dark:text-blue-200 px-1.5 py-0.5 rounded-full hover:bg-blue-200 dark:hover:bg-blue-600">
+                                    {{ routine.primaryCategory | titlecase }}
                                 </button>
                             </div>
                         </div>

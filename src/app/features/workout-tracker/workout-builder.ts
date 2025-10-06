@@ -179,6 +179,12 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       description: [''], // Only for routineBuilder
       goal: [''], // Only for routineBuilder
 
+      // --- START: ADD NEW FORM CONTROLS ---
+      primaryCategory: [''],
+      secondaryCategory: [''],
+      tags: [''],
+      // --- END: ADD NEW FORM CONTROLS ---
+
       workoutDate: [''], // Only for manualLogEntry
       startTime: [''],   // Only for manualLogEntry
       endTime: [''],   // Only for manualLogEntry
@@ -786,6 +792,11 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       name: routine.name,
       description: routine.description,
       goal: routine.goal,
+      // --- START: ADD NEW PATCH VALUES ---
+      primaryCategory: routine.primaryCategory,
+      secondaryCategory: routine.secondaryCategory,
+      tags: routine.tags?.join(', ') || '', // Convert array to comma-separated string
+      // --- END: ADD NEW PATCH VALUES ---
     }, { emitEvent: false });
     this.updateSanitizedDescription(routine.description || '');
     this.exercisesFormArray.clear({ emitEvent: false });
@@ -1828,6 +1839,10 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
           savedRoutine = await this.workoutService.addRoutine(routinePayload);
         } else {
           // Await the async service call
+          // color handling
+          const currentRoutineColor: string | undefined = this.routine() ? this.routine()?.cardColor : '';
+          routinePayload.cardColor = currentRoutineColor;
+
           const tmpResult = await this.workoutService.updateRoutine(routinePayload);
           if (tmpResult) {
             savedRoutine = tmpResult;
@@ -2219,11 +2234,24 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   private mapFormToRoutine(formValue: any): Routine {
     const currentRoutine = this.routine();
 
+    // Convert comma-separated tags string into a clean string array
+    const tagsValue = formValue.tags || '';
+    const tagsArray = tagsValue.split(',')
+      .map((tag: string) => tag.trim())
+      .filter((tag: string) => tag.length > 0);
+
     const valueObj: Routine = {
       id: this.currentRoutineId || uuidv4(),
       name: formValue.name,
       description: formValue.description,
       goal: formValue.goal,
+
+      // --- START: ADD NEW MAPPED PROPERTIES ---
+      primaryCategory: formValue.primaryCategory || undefined,
+      secondaryCategory: formValue.secondaryCategory || undefined,
+      tags: tagsArray,
+      // --- END: ADD NEW MAPPED PROPERTIES ---
+
       exercises: (formValue.goal === 'rest') ? [] : formValue.exercises.map((exInput: any) => {
         const isSuperset = !!exInput.supersetId;
         return {
@@ -3604,7 +3632,11 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     }
   }
 
-  protected getCardTextColor(): string {
+  protected getCardValueTextColor(): string {
+    return 'text-gray-700 dark:text-gray-200';
+  }
+
+  protected getCardTitleTextColor(): string {
     if (!this.routine() || this.routine() === undefined) {
       return '';
     }
@@ -3620,4 +3652,21 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     }
     return '';
   }
+
+  // --- START: ADD NEW PROPERTY FOR CATEGORY OPTIONS ---
+  primaryCategories: { value: Routine['primaryCategory'], label: string }[] = [
+    { value: 'Strength Training', label: 'Strength Training' },
+    { value: 'Cardio & Endurance', label: 'Cardio & Endurance' },
+    { value: 'Flexibility & Mobility', label: 'Flexibility & Mobility' },
+    { value: 'Mind-Body & Recovery', label: 'Mind-Body & Recovery' },
+    { value: 'Sport-Specific Training', label: 'Sport-Specific Training' },
+    { value: 'Quick Workouts', label: 'Quick Workouts' },
+    { value: 'Specialty/Unique Classes', label: 'Specialty/Unique Classes' },
+    { value: 'Targeted Workouts (by Body Part/Focus)', label: 'Targeted Workouts' },
+    { value: 'Guided Programs/Challenges', label: 'Guided Programs/Challenges' },
+    { value: 'Equipment-Specific (Beyond weights)', label: 'Equipment-Specific' },
+    { value: 'custom', label: 'Custom' }
+  ];
+  // --- END: ADD NEW PROPERTY ---
+
 }

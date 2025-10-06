@@ -13,8 +13,7 @@
         <h1 class="text-lg font-bold text-gray-800 dark:text-gray-100 truncate max-w-xs">
           {{ routine()?.name || 'Workout' }}
         </h1>
-        <div class="flex-col text-xl font-mono font-semibold text-primary dark:text-primary-light tracking-wider"
-          [ngClass]="{' animate-pulse':  sessionState() === 'paused'}">
+        <div class="flex-col text-xl font-mono font-semibold text-primary dark:text-primary-light tracking-wider">
           {{ sessionTimerDisplay() }}
           <p>{{ sessionState() === 'paused' ? '[PAUSED]':''}}</p>
         </div>
@@ -44,7 +43,8 @@
 
     <!-- Workout Progress Bar -->
     <div class="w-full mt-2">
-      <span class="flex justify-center text-primary-light font-mono">Overall progress</span>
+      <span class="flex justify-center text-primary-light font-mono">Overall
+        progress</span>
       <div class="progress-bar-container w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 relative">
         <div class="progress-bar bg-primary h-3 rounded-full" [style.width.%]="workoutProgress()"></div>
         <span class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white">
@@ -81,7 +81,7 @@
 
           <!-- Exercise Header -->
           <div (click)="toggleExerciseExpansion(exIndex)"
-            class="py-2 px-1 mt-1 flex-col items-center justify-between cursor-pointer hover:bg-gray-100/50 dark:hover:bg-gray-700/50 hover:rounded-md">
+            class="py-2 px-1 my-1 flex-col items-center justify-between cursor-pointer hover:bg-gray-100/50 dark:hover:bg-gray-700/50 hover:rounded-md">
             <div class="flex-col justify-start items-start space-x-3 min-w-0">
               <div class="flex items-start">
                 <div cdkDragHandle class="cursor-move pr-2">
@@ -347,7 +347,22 @@
                     <!-- END: Set Card Layout -->
 
                   </div>
+
                 </ng-container>
+                <!-- Col 2: Set +/- Buttons STANDAR SET -->
+                <div class="flex items-center justify-center gap-x-2">
+                  <label class="text-black dark:text-gray-100">Set</label>
+                  <button type="button" (click)="removeSet(exIndex, -1)"
+                    class="p-1.5 rounded-full bg-red-200 hover:bg-red-300 text-red-700 disabled:opacity-50 flex items-center"
+                    aria-label="Remove Last Set">
+                    <app-icon name="minus-circle" class="h-6 w-6"></app-icon>
+                  </button>
+                  <button type="button" (click)="addSet(exIndex, 'standard'); $event.stopPropagation()"
+                    class="p-1.5 rounded-full bg-green-200 hover:bg-green-300 text-green-700 flex items-center"
+                    aria-label="Add Set">
+                    <app-icon name="plus-circle" class="h-6 w-6"></app-icon>
+                  </button>
+                </div>
               </ng-container>
 
               <!-- CASE 2: Superset (uses a similar card logic for each exercise within the round) -->
@@ -418,10 +433,10 @@
                         <ng-container *ngFor="let ssExercise of getSupersetExercises(exercise.supersetId!)">
 
                           <!-- 
-    THE FIX IS HERE:
-    1. We create the variable 'ssOriginalIndex' using 'let'. It will be a number.
-    2. We use '*ngIf' on the child 'div' to check the condition.
-  -->
+                        THE FIX IS HERE:
+                        1. We create the variable 'ssOriginalIndex' using 'let'. It will be a number.
+                        2. We use '*ngIf' on the child 'div' to check the condition.
+                      -->
                           <ng-container *ngLet="getOriginalExIndex(ssExercise.id) as ssOriginalIndex">
                             <div *ngIf="ssOriginalIndex > -1"
                               class="py-2 px-1 rounded bg-white dark:bg-gray-800 shadow-sm">
@@ -501,9 +516,24 @@
 
                   </div>
                 </ng-container>
+                <!-- Col 2: Set +/- Buttons SUPER SET -->
+                <div class="flex items-center justify-center gap-x-2">
+                  <label class="text-black dark:text-gray-100">Round</label>
+                  <button type="button" (click)="removeSet(exIndex, -1)"
+                    class="p-1.5 rounded-full bg-red-200 hover:bg-red-300 text-red-700 disabled:opacity-50 flex items-center"
+                    aria-label="Remove Last Set">
+                    <app-icon name="minus-circle" class="h-6 w-6"></app-icon>
+                  </button>
+                  <button type="button" (click)="addSet(exIndex, 'standard'); $event.stopPropagation()"
+                    class="p-1.5 rounded-full bg-green-200 hover:bg-green-300 text-green-700 flex items-center"
+                    aria-label="Add Set">
+                    <app-icon name="plus-circle" class="h-6 w-6"></app-icon>
+                  </button>
+                </div>
               </ng-container>
             </div>
           </div>
+
 
         </div>
       </ng-container>

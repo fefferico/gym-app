@@ -99,7 +99,7 @@ export interface WorkoutExercise {
    * Only relevant if supersetOrder is 0.
    */
   emomTimeSeconds?: number | null;
-  
+
   workoutLogId?: string;
   sessionStatus?: 'pending' | 'skipped' | 'do_later' | 'completed' | 'started'; // For in-session tracking
   type: 'standard' | 'warmup' | 'amrap' | 'dropset' | 'failure' | 'myorep' | 'restpause' | 'custom' | 'superset' | string; // More flexible
@@ -122,6 +122,11 @@ export interface Routine {
   isFavourite?: boolean;
   isDisabled?: boolean;
   cardColor?: string;
+  // === NEW CATEGORY FIELDS ===
+  primaryCategory?: 'Strength Training' | 'Cardio & Endurance' | 'Flexibility & Mobility' | 'Mind-Body & Recovery' | 'Sport-Specific Training' | 'Quick Workouts' | 'Specialty/Unique Classes' | 'Targeted Workouts (by Body Part/Focus)' | 'Guided Programs/Challenges' | 'Equipment-Specific (Beyond weights)' | 'custom';
+  secondaryCategory?: string; // For sub-categories, or even a different categorization axis
+  tags?: string[]; // A flexible way to add specific labels like "Bodyweight", "HIIT", "Dumbbells", "Yoga" etc.
+  // ==========================
 }
 
 
