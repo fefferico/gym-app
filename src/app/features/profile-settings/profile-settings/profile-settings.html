@@ -457,7 +457,7 @@
                         <p class="text-xs text-gray-500 dark:text-gray-400">Save all your data to a JSON file.</p>
                     </div>
                     <!-- REMOVED: w-full on mobile, flex-shrink-0 already handles not stretching -->
-                    <button appPress (shortPress)="exportData()"
+                    <button (click)="exportData()"
                         class="mt-2 sm:mt-0 flex-shrink-0 flex items-center justify-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md shadow-sm transition-colors text-sm">
                         <app-icon name="export" class="w-5 h-5 mr-2"></app-icon>
                         EXPORT DATA
@@ -489,7 +489,7 @@
                         <p class="text-xs text-gray-500 dark:text-gray-400">Recalculate stats and achievements.</p>
                     </div>
                     <!-- REMOVED: w-full on mobile -->
-                    <button appPress (shortPress)="onSyncHistoryClick()"
+                    <button (click)="onSyncHistoryClick()"
                         class="mt-2 sm:mt-0 flex-shrink-0 flex items-center justify-center px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-md shadow-sm transition-colors text-sm">
                         <app-icon name="change" class="w-5 h-5 mr-2"></app-icon>
                         SYNC HISTORY
@@ -503,7 +503,7 @@
                         <p class="text-xs text-gray-500 dark:text-gray-400">This action cannot be undone.</p>
                     </div>
                     <!-- REMOVED: w-full on mobile -->
-                    <button appPress (shortPress)="clearAllAppData()"
+                    <button (click)="clearAllAppData()"
                         class="mt-2 sm:mt-0 flex-shrink-0 flex items-center justify-center px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-md shadow-sm transition-colors text-sm">
                         <app-icon name="trash" class="w-5 h-5 mr-2"></app-icon>
                         CLEAR ALL DATA
@@ -530,8 +530,7 @@
                 </div>
                 <div>
                     <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">View your own equipment</p>
-                    <button appPress
-                        (shortPress)="handlePremiumFeatureOrNavigate(PremiumFeature.PERSONAL_GYM, $event, ['/personal-gym'])"
+                    <button (click)="handlePremiumFeatureOrNavigate(PremiumFeature.PERSONAL_GYM, $event, ['/personal-gym'])"
                         class="px-4 py-2 bg-indigo-500 hover:bg-indigo-700 text-white font-semibold rounded-md shadow-sm transition-colors inline-flex items-center text-sm text-left">
                         <app-icon name="dumbbell" class="w-6 h-6 mr-1"></app-icon>
                         PERSONAL GYM
@@ -546,7 +545,7 @@
                     <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">View all the available exercise
                         and
                         add your own ones</p>
-                    <button appPress (shortPress)="navigateToExerciseLibrary()"
+                    <button (click)="navigateToExerciseLibrary()"
                         class="px-4 py-2 bg-primary hover:bg-primary-dark text-white font-semibold rounded-md shadow-sm transition-colors inline-flex items-center text-sm">
                         <app-icon name="exercise-list" class="w-6 h-6 mr-1"></app-icon>
                         EXERCISES
@@ -561,7 +560,7 @@
             <div>
                 <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">View all your tracked Personal
                     Bests</p>
-                <button appPress (shortPress)="navigateToPersonalBests()"
+                <button (click)="navigateToPersonalBests()"
                     class="px-4 py-2 bg-primary hover:bg-primary-dark text-white font-semibold rounded-md shadow-sm transition-colors inline-flex items-center text-sm">
                     <app-icon name="pb" class="w-6 h-6 mr-1"></app-icon>
                     VIEW PBs

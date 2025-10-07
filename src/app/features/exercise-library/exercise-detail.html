@@ -285,7 +285,7 @@
           <!-- --- START: CONDITIONAL CHARTS FOR CARDIO --- -->
           <ng-container *ngIf="ex.category === 'cardio'">
             <div>
-              <h3 class="font-semibold text-gray-800 dark:text-gray-100 mb-2">Distanza massima ({{
+              <h3 class="font-semibold text-gray-800 dark:text-gray-100 mb-2">Max distance ({{
                 unitService.getDistanceMeasureUnitSuffix() }})</h3>
               <div *ngIf="maxDistanceChartData().length > 0; else noChartData"
                 class="bg-white dark:bg-gray-700 p-1 rounded-md shadow-md h-64">
@@ -294,7 +294,7 @@
               </div>
             </div>
             <div>
-              <h3 class="font-semibold text-gray-800 dark:text-gray-100 mb-2">Durata massima (secondi)</h3>
+              <h3 class="font-semibold text-gray-800 dark:text-gray-100 mb-2">Max duration (s)</h3>
               <div *ngIf="maxDurationChartData().length > 0; else noChartData"
                 class="bg-white dark:bg-gray-700 p-1 rounded-md shadow-md h-64">
                 <ngx-charts-line-chart [results]="maxDurationChartData()" [scheme]="progressChartColorScheme"
@@ -312,7 +312,7 @@
 
         <!-- =================== RECORDS TAB =================== -->
         <div *ngSwitchCase="'records'" class="tab-content" [class.tab-content-active]="activeTab() === 'records'">
-          <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">RECORD PERSONALI</h3>
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">PERSONAL BESTS</h3>
           <div *ngIf="personalRecords().length > 0; else noRecords" class="grid grid-cols-3 gap-4 mb-8">
             <div *ngFor="let record of personalRecords()"
               class="text-center bg-gray-100 dark:bg-gray-700 p-3 rounded-lg">

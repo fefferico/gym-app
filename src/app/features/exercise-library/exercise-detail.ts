@@ -433,8 +433,8 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
     if (ex?.category === 'cardio') {
       const maxDist = pbs.find(p => p.pbType === 'Max Distance');
       const maxDur = pbs.find(p => p.pbType === 'Max Duration');
-      if (maxDist) records.push({ label: 'Distanza massima', value: this.decimalPipe.transform(maxDist.distanceAchieved, '1.0-2') ?? '0', unit: this.unitService.getDistanceMeasureUnitSuffix() });
-      if (maxDur) records.push({ label: 'Durata massima', value: this.formatDurationForRecord(maxDur.durationPerformed), unit: '' });
+      if (maxDist) records.push({ label: 'Max distance', value: this.decimalPipe.transform(maxDist.distanceAchieved, '1.0-2') ?? '0', unit: this.unitService.getDistanceMeasureUnitSuffix() });
+      if (maxDur) records.push({ label: 'Max duration', value: this.formatDurationForRecord(maxDur.durationPerformed), unit: '' });
     } else {
       const est1RM = pbs.find(p => p.pbType === '1RM (Estimated)');
       const maxVol = pbs.find(p => p.pbType === 'Max Volume');
