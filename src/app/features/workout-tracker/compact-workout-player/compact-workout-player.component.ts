@@ -3238,7 +3238,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
    * @returns True if the button should be visible.
    */
   public canAddField(exIndex: number, setIndex: number): boolean {
-    if (this.isSuperSet(exIndex)) return false;
+    // if (this.isSuperSet(exIndex)) return false;
     const cols = this.getVisibleSetColumns(exIndex, setIndex);
     const visibleCount = Object.values(cols).filter(v => v).length;
     return visibleCount === 1 || visibleCount === 3;
@@ -3300,7 +3300,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   * @returns True if at least one field can be removed.
   */
   public canRemoveAnyField(exIndex: number, setIndex: number): boolean {
-    if (this.isSuperSet(exIndex)) return false;
+    // if (this.isSuperSet(exIndex)) return false;
     const cols = this.getVisibleSetColumns(exIndex, setIndex);
     const visibleFields = Object.keys(cols).filter(key => cols[key as keyof typeof cols]);
 
@@ -3346,7 +3346,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
     const choice = await this.alertService.showConfirmationDialog(
       'Remove Field from Exercise',
-      'Which metric would you like to remove from all sets of this exercise?',
+      'Which metric would you like to remove from this set of this exercise?',
       buttons,
       // --- START OF CORRECTION ---
       // Pass the option to show the corner 'X' close button.
@@ -3411,10 +3411,29 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       inputLabel += ` (${this.unitsService.getDistanceMeasureUnitSuffix()})`
     }
 
+    let placeholderValueToAdd = 0;
+    switch (fieldToAdd) {
+      case 'weight':
+        placeholderValueToAdd = 5;
+        break;
+      case 'reps':
+        placeholderValueToAdd = 8;
+        break;
+      case 'duration':
+        placeholderValueToAdd = 60;
+        break;
+      case 'distance':
+        placeholderValueToAdd = 1;
+        break;
+
+      default:
+        break;
+    }
+
     const valueResult = await this.alertService.showPromptDialog(
       `Set Target ${fieldToAdd.charAt(0).toUpperCase() + fieldToAdd.slice(1)}`,
       `Enter the target value you want to apply to the current set for this exercise.`,
-      [{ name: 'targetValue', type: 'number', label: inputLabel, value: '', attributes: { min: '0', required: true } }] as AlertInput[],
+      [{ name: 'targetValue', type: 'number', label: inputLabel, value: placeholderValueToAdd, attributes: { min: '0', required: true } }] as AlertInput[],
       'Apply Target'
     );
 
@@ -3422,8 +3441,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       const targetValue = Number(valueResult['targetValue']);
       if (!isNaN(targetValue) && targetValue >= 0) {
         // --- Step 3: Call the updated method with the new value ---
-        this.addFieldToSet(exIndex, setIndex, fieldToAdd, targetValue);
-        this.toastService.success(`${fieldToAdd.toUpperCase()} field added to all sets.`);
+        this.addFieldToSet(exIndex, setIndex, fieldToAdd, targetValue ? targetValue : 1);
+        this.toastService.success(`${fieldToAdd.toUpperCase()} field added to the set.`);
       } else {
         this.toastService.error("Invalid value provided.");
       }

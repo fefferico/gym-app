@@ -171,7 +171,6 @@
                       </div>
 
                       <!-- Actions -->
-                      <!-- <div [ngClass]="{'disabled-div-lower-opacity': isSetCompleted(exIndex, setIndex)}" *ngIf="isSetExpanded(exIndex,setIndex)" class="flex-shrink-0 flex flex-col items-center justify-center gap-1 py-1" -->
                       <div *ngIf="isSetExpanded(exIndex,setIndex)"
                         class="flex-shrink-0 flex flex-col items-center justify-center gap-1">
                         <div *ngIf="!isSetCompleted(exIndex, setIndex)" class="flex items-center"
@@ -327,7 +326,7 @@
                           </ng-container>
                         </ng-container>
 
-                        <!-- "Add Field" Button for 1 or 3 fields -->
+                        <!-- "Add GHOST Field" Button for 1 or 3 fields -->
                         <div *ngIf="canAddField(exIndex, setIndex)" class="flex items-center justify-center h-full">
                           <button [disabled]="isSetCompleted(exIndex, setIndex)"
                             (click)="promptAddField(exIndex, setIndex); $event.stopPropagation()"
@@ -398,6 +397,12 @@
                       <div class="flex items-center">
                         <!-- +++ NEW BUTTON/STATUS ELEMENT +++ -->
 
+                        <!-- ROUND NOTES BUTTON -->
+                        <button (click)="toggleSetNotes(exIndex, roundIndex, $event)" [title]="'Toggle notes for round'"
+                          class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center p-2">
+                          <app-icon name="clipboard-list" class="h-6 w-6"></app-icon>
+                        </button>
+
                         <!-- EMOM Controls (for EMOM supersets) -->
                         <div *ngIf="isEmom(exIndex)" class="flex items-center gap-2 text-white font-semibold">
                           <!-- Timer Display (for EMOM) -->
@@ -420,8 +425,17 @@
                           <app-icon name="done" class="h-6 w-6"></app-icon>
                         </button>
 
+
+
                         <!-- +++ END NEW BUTTON/STATUS ELEMENT +++ -->
                       </div>
+                    </div>
+                    <!-- Set Notes Textarea (if visible) -->
+                    <div *ngIf="expandedSetNotes() === (exIndex + '-' + roundIndex)" class="px-2 pb-1">
+                      <textarea [ngModel]="getInitialInputValue(exIndex, roundIndex, 'notes')"
+                        (change)="updateSetData(exIndex, roundIndex, 0, 'notes', $event)"
+                        placeholder="Notes for this round..."
+                        class="w-full text-xs bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded-md p-1.5 focus:ring-primary-dark focus:border-primary-dark dark:text-gray-200"></textarea>
                     </div>
 
                     <!-- Collapsible Round Body -->
@@ -429,22 +443,38 @@
                       <div *ngIf="isRoundCompleted(exIndex, roundIndex)"
                         class="flex items-start text-xs text-white italic font-bold">Mark as undone to edit</div>
 
+
+
                       <div class="mt-2 space-y-3">
                         <ng-container *ngFor="let ssExercise of getSupersetExercises(exercise.supersetId!)">
 
-                          <!-- 
-                        THE FIX IS HERE:
-                        1. We create the variable 'ssOriginalIndex' using 'let'. It will be a number.
-                        2. We use '*ngIf' on the child 'div' to check the condition.
-                      -->
                           <ng-container *ngLet="getOriginalExIndex(ssExercise.id) as ssOriginalIndex">
                             <div *ngIf="ssOriginalIndex > -1"
                               class="py-2 px-1 rounded bg-white dark:bg-gray-800 shadow-sm">
+                              <div class="flex justify-between">
+                                <!-- Exercise Name -->
+                                <p class="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-1">
+                                  {{ getExerciseDisplayIndex(ssOriginalIndex) }} - {{ ssExercise.exerciseName }}
+                                </p>
 
-                              <!-- Exercise Name -->
-                              <p class="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-1">
-                                {{ getExerciseDisplayIndex(ssOriginalIndex) }} - {{ ssExercise.exerciseName }}
-                              </p>
+                                <!-- METRICS BUTTONS FOR SUPERSET -->
+                                <div class="flex items-center justify-center gap-1 px-1">
+                                  <!-- Remove metric button -->
+                                  <button *ngIf="canRemoveAnyField(ssOriginalIndex, roundIndex)"
+                                    (click)="promptRemoveField(ssOriginalIndex, roundIndex); $event.stopPropagation()"
+                                    class="flex items-center gap-1 text-xs font-semibold text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-1 rounded-full hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors">
+                                    <app-icon name="minus-circle" class="h-5 w-5"></app-icon>
+                                  </button>
+                                  <!-- ADD metric -->
+                                  <button *ngIf="getFieldsForSet(ssOriginalIndex, roundIndex).hidden.length > 0"
+                                    (click)="promptAddField(ssOriginalIndex, roundIndex); $event.stopPropagation()"
+                                    class="flex items-center gap-1 text-xs font-semibold text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 p-1 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors">
+                                    <app-icon name="plus-circle" class="h-5 w-5"></app-icon>
+                                  </button>
+                                </div>
+                              </div>
+
+
 
                               <!-- Dynamic Inputs Grid -->
                               <div class="grid grid-cols-2 gap-x-4 gap-y-2"
@@ -493,6 +523,12 @@
                                       [disabled]="isRoundCompleted(exIndex, roundIndex)"
                                       (change)="updateSetData(ssOriginalIndex, roundIndex, roundIndex, 'distance', $event)"
                                       class="w-full text-md text-center bg-gray-100 dark:bg-gray-700 border-gray-300 rounded-md p-1 text-gray-700 dark:text-white">
+                                    <div
+                                      *ngIf="getSetTargetDisplay(ssExercise.sets[roundIndex], ssOriginalIndex, roundIndex, 'distance') as target"
+                                      class="target-class text-xs"><span
+                                        class="flex items-center justify-center"><app-icon name="target"
+                                          class="h-3 w-3 mr-0.5"></app-icon>{{ target
+                                        }}</span></div>
                                   </div>
                                   <!-- Duration Input -->
                                   <div *ngIf="cols['duration']">
@@ -504,8 +540,28 @@
                                       (change)="updateSetData(ssOriginalIndex, roundIndex, roundIndex, 'duration', $event)"
                                       class="w-full text-md text-center bg-gray-100 dark:bg-gray-700 border-gray-300 rounded-md p-1 text-gray-700 dark:text-white"
                                       placeholder="mm:ss">
+                                    <div
+                                      *ngIf="getSetTargetDisplay(ssExercise.sets[roundIndex], ssOriginalIndex, roundIndex, 'duration') as target"
+                                      class="target-class text-xs"><span
+                                        class="flex items-center justify-center"><app-icon name="target"
+                                          class="h-3 w-3 mr-0.5"></app-icon>{{ target
+                                        }}</span></div>
                                   </div>
+
+                                  <!-- "Add GHOST Field" Button for 1 or 3 fields - SUPERSET -->
+                                  <div *ngIf="canAddField(ssOriginalIndex, roundIndex)"
+                                    class="flex items-center justify-center h-full">
+                                    <button [disabled]="isSetCompleted(exIndex, roundIndex)"
+                                      (click)="promptAddField(ssOriginalIndex, roundIndex); $event.stopPropagation()"
+                                      class="flex items-center justify-center w-full p-2 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-md text-gray-400 hover:bg-gray-200/50 dark:hover:bg-gray-700/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                      <app-icon name="plus-circle" class="h-5 w-5"></app-icon>
+                                    </button>
+                                  </div>
+
                                 </ng-container>
+
+
+
                               </div>
                             </div>
                           </ng-container>
