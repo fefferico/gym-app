@@ -249,7 +249,7 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
     } else if (pb.repsAchieved > 0 && pb.pbType.includes('Max Reps')) {
       value = `${pb.repsAchieved} reps`;
     } else if (pb.durationPerformed && pb.durationPerformed > 0 && pb.pbType.includes('Max Duration')) {
-      value = `${pb.durationPerformed}s`;
+      value = `${this.formatDurationForRecord(pb.durationPerformed)}s`;
     }
     return value || 'N/A';
   }
@@ -439,9 +439,9 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
       const est1RM = pbs.find(p => p.pbType === '1RM (Estimated)');
       const maxVol = pbs.find(p => p.pbType === 'Max Volume');
       const maxWeight = pbs.find(p => p.pbType === 'Heaviest Lifted');
-      if (est1RM) records.push({ label: '1RM stimata', value: this.decimalPipe.transform(est1RM.weightUsed, '1.0-1') ?? '0', unit: 'kg' });
-      if (maxVol) records.push({ label: 'Volume massimo', value: this.decimalPipe.transform(maxVol.volume, '1.0-1') ?? '0', unit: 'kg' });
-      if (maxWeight) records.push({ label: 'Peso massimo', value: this.decimalPipe.transform(maxWeight.weightUsed, '1.0-1') ?? '0', unit: 'kg' });
+      if (est1RM) records.push({ label: '1RM estimated', value: this.decimalPipe.transform(est1RM.weightUsed, '1.0-1') ?? '0', unit: 'kg' });
+      if (maxVol) records.push({ label: 'Max volume', value: this.decimalPipe.transform(maxVol.volume, '1.0-1') ?? '0', unit: 'kg' });
+      if (maxWeight) records.push({ label: 'Max weight', value: this.decimalPipe.transform(maxWeight.weightUsed, '1.0-1') ?? '0', unit: 'kg' });
     }
 
     return records;
