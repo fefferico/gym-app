@@ -51,7 +51,7 @@ type BuilderMode = 'routineBuilder' | 'manualLogEntry';
   imports: [CommonModule, ReactiveFormsModule, RouterLink,
     FormsModule, DragDropModule, WeightUnitPipe, TitleCasePipe,
     LongPressDragDirective, AutoGrowDirective, ActionMenuComponent,
-    IsWeightedPipe, ModalComponent, ClickOutsideDirective,
+    ModalComponent, ClickOutsideDirective,
     ExerciseDetailComponent, IconComponent, TooltipDirective, ExerciseSelectionModalComponent, MillisecondsDatePipe, FabMenuComponent],
   templateUrl: './workout-builder.html',
   styleUrl: './workout-builder.scss',
@@ -3317,7 +3317,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     if (!isEmom) {
       if (visibleColumns.duration) { defaultColumns += 1; }
     }
-    return 'grid-cols-' + defaultColumns;
+
+    return 'gap-x-4 gap-y-2 px-2 py-2 bg-white rounded-md rounded-t-none dark:bg-gray-800 text-gray-900 dark:text-white gap-4 grid grid-cols-'+defaultColumns;
   }
 
   // --- 1. Add a new signal to manage the action menu's visibility ---
