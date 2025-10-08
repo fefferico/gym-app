@@ -127,6 +127,7 @@ export class ExerciseListComponent implements OnInit {
       exercises = exercises.filter(ex => {
         const searchable = [
           ex.name,
+          ex.category,
           ex.description || ''
         ].join(' ').toLowerCase();
         return words.every(word => searchable.includes(word));

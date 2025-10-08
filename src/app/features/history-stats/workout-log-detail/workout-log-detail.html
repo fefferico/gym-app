@@ -155,7 +155,7 @@
                       </h4>
                     </div>
                     <!-- Loop through exercises within this round -->
-                    <div *ngFor="let loggedEx of round.exercisesForRound"
+                    <div *ngFor="let loggedEx of round.exercisesForRound;"
                       class="p-2 border-t border-gray-200 dark:border-gray-700">
                       <div class="flex items-center min-w-0">
                         <div class="flex-shrink-0 mr-2 w-10 h-10 flex items-center justify-center">
@@ -169,7 +169,7 @@
                             {{ loggedEx.exerciseName }}
                           </h5>
                           <div class="text-xs font-normal text-gray-500 dark:text-gray-400 leading-tight">
-                            Exercise {{ (loggedEx.supersetOrder ?? 0) + 1 }} of {{ loggedEx.sets.length }}
+                            Exercise {{ (loggedEx.supersetOrder ?? 0) + 1 }} of {{ round.totalExercisesForRound }}
                           </div>
                         </div>
                         <div *ngIf="loggedEx.sets.length > 0; else noSetData"

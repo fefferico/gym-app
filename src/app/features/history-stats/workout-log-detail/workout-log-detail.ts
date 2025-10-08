@@ -53,6 +53,7 @@ interface SupersetDisplayBlock {
   rounds: {
     roundNumber: number;
     exercisesForRound: DisplayLoggedExercise[];
+    totalExercisesForRound: number;
   }[];
   isExpanded: boolean;
 }
@@ -252,7 +253,8 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
                 })
                 .filter(e => e !== null)
                 .sort((a, b) => (a!.supersetOrder ?? 0) - (b!.supersetOrder ?? 0)) as DisplayLoggedExercise[];
-              return { roundNumber, exercisesForRound };
+              const totalExercisesForRound = blockExercises.length
+              return { roundNumber, exercisesForRound, totalExercisesForRound };
             }).filter(r => r.exercisesForRound.length > 0);
 
             if (rounds.length > 0) {

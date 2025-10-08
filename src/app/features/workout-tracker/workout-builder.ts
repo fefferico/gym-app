@@ -165,6 +165,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     return this.availableExercises.filter(ex =>
       ex.name.toLowerCase().includes(term) ||
       (ex.category && ex.category.toLowerCase().includes(term)) ||
+      (ex.description && ex.description.toLowerCase().includes(term)) ||
       (ex.primaryMuscleGroup && ex.primaryMuscleGroup.toLowerCase().includes(term))
     );
   });
@@ -378,7 +379,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
     this.previousGoalValue = this.builderForm.get('goal')?.value;
     const goalSub = this.builderForm.get('goal')?.valueChanges.subscribe(async goalValue => {
-      if (this.previousGoalValue !== goalValue && goalValue !== 'tabata'){
+      if (this.previousGoalValue !== goalValue && goalValue !== 'tabata') {
         this.previousGoalValue = goalValue;
       }
       if (this.mode === 'routineBuilder' && goalValue === 'rest') {
@@ -728,9 +729,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
               return of(null);
             }
 
-            // --- THE CORRECTED PATTERN ---
-            // Use `from` to create a stream of observables, then `mergeAll` to flatten them.
-            // This avoids the spread operator `...` entirely.
             return from(observables).pipe(
               mergeAll(),
               map(() => ({ // This map now correctly receives emissions from any of the merged streams
@@ -2561,7 +2559,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     return stringResult;
   }
 
-  /**
+   /**
    * Toggles the input mode for a set's repetitions between a single value and a range.
    * @param setControl The form group for the specific set.
    */
@@ -2573,27 +2571,41 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     const repsMinCtrl = setControl.get('targetRepsMin');
     const repsMaxCtrl = setControl.get('targetRepsMax');
 
+    // Check if we are currently in range mode by seeing if either min or max has a value.
     const isCurrentlyRange = repsMinCtrl?.value != null || repsMaxCtrl?.value != null;
 
     if (isCurrentlyRange) {
-      // Switch FROM Range TO Single
-      // Use repsMin as the default, or 0 if null.
-      const singleValue = repsMinCtrl?.value ?? 0;
-      repsCtrl?.setValue(singleValue);
-      repsMinCtrl?.setValue(null);
-      repsMaxCtrl?.setValue(null);
+      // --- BEHAVIOR 1: Switch FROM Range TO Single ---
+      // Get the current min and max, defaulting to 0 if they are null.
+      const minVal = repsMinCtrl?.value ?? 0;
+      const maxVal = repsMaxCtrl?.value ?? 0;
+
+      // Calculate the average of the range and round it to the nearest whole number.
+      const averageValue = Math.round((minVal + maxVal) / 2);
+
+      repsCtrl?.setValue(averageValue); // Set the single value to the calculated average.
+      repsMinCtrl?.setValue(null);      // Clear the min range value.
+      repsMaxCtrl?.setValue(null);      // Clear the max range value.
+
     } else {
-      // Switch FROM Single TO Range
-      const rangeValue = repsCtrl?.value ?? 8; // Default to 8 if null
-      repsMinCtrl?.setValue(rangeValue);
-      repsMaxCtrl?.setValue(rangeValue);
-      repsCtrl?.setValue(null);
+      // --- BEHAVIOR 2: Switch FROM Single TO Range ---
+      // Get the current single value, defaulting to 8 if it's null.
+      const singleValue = repsCtrl?.value ?? 8; 
+
+      // Calculate the new range [value - 2, value + 2].
+      // Ensure the new minimum value is never less than 0.
+      const newMin = Math.max(0, singleValue - 2);
+      const newMax = singleValue + 2;
+
+      repsMinCtrl?.setValue(newMin); // Set the new min value.
+      repsMaxCtrl?.setValue(newMax); // Set the new max value.
+      repsCtrl?.setValue(null);     // Clear the single value field.
     }
   }
 
-  // generate toggleWeightMode
   /**
    * Toggles the input mode for a set's weight between a single value and a range.
+   * Applies a +/- 5kg offset when creating a range.
    * @param setControl The form group for the specific set.
    */
   toggleWeightMode(setControl: AbstractControl, event?: Event): void {
@@ -2608,26 +2620,36 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
     if (isCurrentlyRange) {
       // Switch FROM Range TO Single
-      const singleValue = weightMinCtrl?.value ?? 0;
-      weightCtrl?.setValue(singleValue);
+      const minVal = weightMinCtrl?.value ?? 0;
+      const maxVal = weightMaxCtrl?.value ?? 0;
+      const averageValue = Math.round((minVal + maxVal) / 2);
+
+      weightCtrl?.setValue(averageValue);
       weightMinCtrl?.setValue(null);
       weightMaxCtrl?.setValue(null);
     } else {
       // Switch FROM Single TO Range
-      const rangeValue = weightCtrl?.value ?? 0;
-      weightMinCtrl?.setValue(rangeValue);
-      weightMaxCtrl?.setValue(rangeValue);
+      const singleValue = weightCtrl?.value ?? 0;
+      
+      // Convert 5kg offset to the user's current weight unit
+      const offsetInCurrentUnit = this.unitService.convertWeight(5, this.unitService.currentWeightUnit(), 'kg');
+
+      const newMin = Math.max(0, singleValue - offsetInCurrentUnit);
+      const newMax = singleValue + offsetInCurrentUnit;
+
+      weightMinCtrl?.setValue(Math.round(newMin));
+      weightMaxCtrl?.setValue(Math.round(newMax));
       weightCtrl?.setValue(null);
     }
   }
 
-  /**
+   /**
    * Toggles the input mode for a set's duration between a single value and a range.
+   * Applies a +/- 30 second offset when creating a range.
    * @param setControl The form group for the specific set.
    */
   toggleDurationMode(setControl: AbstractControl, event?: Event): void {
     event?.stopPropagation();
-
     if (this.isViewMode || !(setControl instanceof FormGroup)) return;
 
     const durationCtrl = setControl.get('targetDuration');
@@ -2638,15 +2660,23 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
     if (isCurrentlyRange) {
       // Switch FROM Range TO Single
-      const singleValue = durationMinCtrl?.value ?? 30; // Default to 30s
-      durationCtrl?.setValue(singleValue);
+      const minVal = durationMinCtrl?.value ?? 0;
+      const maxVal = durationMaxCtrl?.value ?? 0;
+      const averageValue = Math.round((minVal + maxVal) / 2);
+
+      durationCtrl?.setValue(averageValue);
       durationMinCtrl?.setValue(null);
       durationMaxCtrl?.setValue(null);
     } else {
       // Switch FROM Single TO Range
-      const rangeValue = durationCtrl?.value ?? 30; // Default to 30s
-      durationMinCtrl?.setValue(rangeValue);
-      durationMaxCtrl?.setValue(rangeValue);
+      const singleValue = durationCtrl?.value ?? 30; // Default to 30s
+      const offset = 30;
+
+      const newMin = Math.max(0, singleValue - offset);
+      const newMax = singleValue + offset;
+
+      durationMinCtrl?.setValue(newMin);
+      durationMaxCtrl?.setValue(newMax);
       durationCtrl?.setValue(null);
     }
   }
@@ -3197,31 +3227,100 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     return exerciseControl.get('supersetType')?.value === 'emom';
   }
 
+  protected checkIfWeightIsVisible(control: any): boolean {
+    if (!control) return false;
+    // Handle both AbstractControl and plain object
+    if (typeof control.get === 'function') {
+      if (typeof control.getRawValue === 'function' && control.getRawValue() && control.getRawValue()['sets']){
+        return ((control.getRawValue()['sets'].some((innerControl : any) => innerControl['targetWeight']) ?? 0) > 0) || ((control.getRawValue()['sets'].some((innerControl : any) => innerControl['targetWeightMin']) ?? 0) > 0);
+      } else {
+        return ((control.get('targetWeight')?.value ?? 0) > 0) || ((control.get('targetWeightMin')?.value ?? 0) > 0);
+      }
+    }
+    return (control.targetWeight ?? 0) > 0 || (control.targetWeightMin ?? 0) > 0;
+  }
+  protected checkIfRepsIsVisible(control: any): boolean {
+    if (!control) return false;
+    // Handle both AbstractControl and plain object
+    if (typeof control.get === 'function') {
+      if (typeof control.getRawValue === 'function' && control.getRawValue() && control.getRawValue()['sets']){
+        return ((control.getRawValue()['sets'].some((innerControl : any) => innerControl['targetReps']) ?? 0) > 0) || ((control.getRawValue()['sets'].some((innerControl : any) => innerControl['targetRepsMin']) ?? 0) > 0);
+      } else {
+        return ((control.get('targetReps')?.value ?? 0) > 0) || ((control.get('targetRepsMin')?.value ?? 0) > 0);
+      }
+    }
+    return (control.targetReps ?? 0) > 0 || (control.targetRepsMin ?? 0) > 0;
+  }
+  protected checkIfDistanceIsVisible(control: any): boolean {
+    if (!control) return false;
+    // Handle both AbstractControl and plain object
+    if (typeof control.get === 'function') {
+      if (typeof control.getRawValue === 'function' && control.getRawValue() && control.getRawValue()['sets']){
+        return ((control.getRawValue()['sets'].some((innerControl : any) => innerControl['targetDistance']) ?? 0) > 0) || ((control.getRawValue()['sets'].some((innerControl : any) => innerControl['targetDistanceMin']) ?? 0) > 0);
+      } else {
+        return ((control.get('targetDistance')?.value ?? 0) > 0) || ((control.get('targetDistanceMin')?.value ?? 0) > 0);
+      }
+    }
+    return (control.targetDistance ?? 0) > 0 || (control.targetDistanceMin ?? 0) > 0;
+  }
+  protected checkIfDurationIsVisible(control: any): boolean {
+    if (!control) return false;
+    // Handle both AbstractControl and plain object
+    if (typeof control.get === 'function') {
+      if (typeof control.getRawValue === 'function' && control.getRawValue() && control.getRawValue()['sets']){
+        return ((control.getRawValue()['sets'].some((innerControl : any) => innerControl['targetDuration']) ?? 0) > 0) || ((control.getRawValue()['sets'].some((innerControl : any) => innerControl['targetDurationMin']) ?? 0) > 0);
+      } else {
+        return ((control.get('targetDuration')?.value ?? 0) > 0) || ((control.get('targetDurationMin')?.value ?? 0) > 0);
+      }
+    }
+    return (control.targetDuration ?? 0) > 0 || (control.targetDurationMin ?? 0) > 0;
+  }
+    protected checkIfNotesIsVisible(control: any): boolean {
+    if (!control) return false;
+    // Handle both AbstractControl and plain object
+    if (typeof control.get === 'function') {
+      if (typeof control.getRawValue === 'function' && control.getRawValue() && control.getRawValue()['sets']){
+        return control.getRawValue()['sets'].some((innerControl : any) => !!innerControl['notes']);
+      } else {
+        return !!(control.get('notes')?.value);
+      }
+    }
+    
+    return !!(control.notes);
+  }
+
   protected getGridColsForExercise(exerciseControl: AbstractControl): string {
     const isInSuperset = !!exerciseControl.get('supersetId')?.value;
     const isCardioOnly = this.isExerciseCardioOnlyCtrl(exerciseControl);
     const isEmom = this.isEmom(exerciseControl);
     const isWeighted = this.checkIfWeightedExercise(exerciseControl);
 
-    // no duration in EMOM
-    if (isEmom) {
-      return 'grid-cols-5';
-      // if (isWeighted) {
-      //   return 'grid-cols-5';
-      // } else {
-      //   return 'grid-cols-4';
-      // }
+    let defaultColumns: number = 2; // set Id and rest (even if 0 seconds)
+
+    const setsControls = exerciseControl.get('sets') as FormArray;
+    let visibleColumns: any = {};
+    if (setsControls && setsControls.controls && setsControls.controls[0]){
+      const setControl: AbstractControl = setsControls.controls[0];
+      visibleColumns = {
+        weight: this.checkIfWeightIsVisible(setControl),
+        reps: this.checkIfRepsIsVisible(setControl),
+        distance: this.checkIfDistanceIsVisible(setControl),
+        duration: this.checkIfDurationIsVisible(setControl),
+        notes: this.checkIfNotesIsVisible(setControl)
+      };
+
     }
 
-    return 'grid-cols-6';
+    if (visibleColumns.weight) { defaultColumns += 1; }
+    if (visibleColumns.reps) { defaultColumns += 1; }
+    if (visibleColumns.distance) { defaultColumns += 1; }
+    if (visibleColumns.notes) { defaultColumns += 1; }
 
-    // if (isWeighted) {
-    //   return 'grid-cols-6';
-    // } else {
-    //   return 'grid-cols-5';
-    // }
-    // return 'grid-cols-6'; 
-
+    // no duration in EMOM
+    if (!isEmom) {
+      if (visibleColumns.duration) { defaultColumns += 1; }
+    }
+    return 'grid-cols-' + defaultColumns;
   }
 
   // --- 1. Add a new signal to manage the action menu's visibility ---
@@ -3584,6 +3683,13 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       return validDisplayValues.join(', ');
     }
   }
+  
+  
+   /**
+   * Toggles the input mode for a set's distance between a single value and a range.
+   * Applies a +/- 1km offset when creating a range.
+   * @param setControl The form group for the specific set.
+   */
   toggleDistanceMode(setControl: AbstractControl, event?: Event): void {
     event?.stopPropagation();
     if (this.isViewMode || !(setControl instanceof FormGroup)) return;
@@ -3596,15 +3702,26 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
     if (isCurrentlyRange) {
       // Switch FROM Range TO Single
-      const singleValue = distanceMinCtrl?.value ?? 1; // Default to 1 km/mi
-      distanceCtrl?.setValue(singleValue);
+      const minVal = distanceMinCtrl?.value ?? 0;
+      const maxVal = distanceMaxCtrl?.value ?? 0;
+      // For distance, we might want decimals, so let's round to 2 decimal places.
+      const averageValue = Math.round(((minVal + maxVal) / 2) * 100) / 100;
+
+      distanceCtrl?.setValue(averageValue);
       distanceMinCtrl?.setValue(null);
       distanceMaxCtrl?.setValue(null);
     } else {
       // Switch FROM Single TO Range
-      const rangeValue = distanceCtrl?.value ?? 1; // Default to 1 km/mi
-      distanceMinCtrl?.setValue(rangeValue);
-      distanceMaxCtrl?.setValue(rangeValue);
+      const singleValue = distanceCtrl?.value ?? 1; // Default to 1
+      
+      // Convert 1km offset to the user's current distance unit
+      const offsetInCurrentUnit = this.unitService.convertDistance(1, this.unitService.currentDistanceMeasureUnit(), 'km');
+
+      const newMin = Math.max(0, singleValue - offsetInCurrentUnit);
+      const newMax = singleValue + offsetInCurrentUnit;
+
+      distanceMinCtrl?.setValue(Math.round(newMin * 100) / 100);
+      distanceMaxCtrl?.setValue(Math.round(newMax * 100) / 100);
       distanceCtrl?.setValue(null);
     }
   }
@@ -3637,9 +3754,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       }
     }));
 
-    // --- START OF CORRECTION ---
-    // Add the `col-span-5` class to make the button span the full width of the grid.
-    // I also adjusted the margin for better spacing.
     colorButtons.push({
       text: 'Clear Color',
       role: 'confirm',
@@ -3647,7 +3761,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       cssClass: 'bg-gray-200 text-gray-800 dark:bg-gray-600 dark:text-gray-200 mt-4 col-span-5',
       icon: 'trash'
     });
-    // --- END OF CORRECTION ---
 
     const result = await this.alertService.showConfirmationDialog(
       `Select a Color for "${routine.name}"`,

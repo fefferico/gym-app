@@ -126,6 +126,7 @@ export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges
                 return normalizedTerm.split(' ').every(part =>
                     ex.name.toLowerCase().includes(part) ||
                     (ex.category?.toLowerCase().includes(part)) ||
+                    (ex.description?.toLowerCase().includes(part)) ||
                     (ex.primaryMuscleGroup?.toLowerCase().includes(part))
                 );
             });

@@ -146,6 +146,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     return this.availableExercises.filter(ex =>
       ex.name.toLowerCase().includes(term) ||
       (ex.category && ex.category.toLowerCase().includes(term)) ||
+      (ex.description && ex.description.toLowerCase().includes(term)) ||
       (ex.primaryMuscleGroup && ex.primaryMuscleGroup.toLowerCase().includes(term))
     );
   });
@@ -4190,6 +4191,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
     return this.availableExercises.filter(ex =>
       ex.name.toLowerCase().includes(term) ||
       (ex.category && ex.category.toLowerCase().includes(term)) ||
+      (ex.description && ex.description.toLowerCase().includes(term)) ||
       (ex.primaryMuscleGroup && ex.primaryMuscleGroup.toLowerCase().includes(term))
     );
   });
