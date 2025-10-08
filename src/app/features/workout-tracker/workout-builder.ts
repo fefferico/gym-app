@@ -3291,34 +3291,35 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
   protected getGridColsForExercise(exerciseControl: AbstractControl): string {
     const isEmom = this.isEmom(exerciseControl);
-
-    let defaultColumns: number = 2; // set Id and rest (even if 0 seconds)
+    let columnCount = 2; // Always start with columns for 'Set #' and 'Rest'
 
     const setsControls = exerciseControl.get('sets') as FormArray;
-    let visibleColumns: any = {};
-    // Check if there are any sets to evaluate
     if (setsControls && setsControls.length > 0) {
-        visibleColumns = {
-            weight: this.checkIfWeightIsVisible(exerciseControl),
-            reps: this.checkIfRepsIsVisible(exerciseControl),
-            distance: this.checkIfDistanceIsVisible(exerciseControl),
-            duration: this.checkIfDurationIsVisible(exerciseControl),
-            notes: this.checkIfNotesIsVisible(exerciseControl)
-        };
+      if (this.checkIfWeightIsVisible(exerciseControl)) { columnCount++; }
+      if (this.checkIfRepsIsVisible(exerciseControl)) { columnCount++; }
+      if (this.checkIfDistanceIsVisible(exerciseControl)) { columnCount++; }
+      if (this.checkIfNotesIsVisible(exerciseControl)) { columnCount++; }
+      // Duration/Time column is not shown for EMOMs in the view-only grid
+      if (!isEmom && this.checkIfDurationIsVisible(exerciseControl)) { columnCount++; }
     }
 
+    let gridColsClass: string;
 
-    if (visibleColumns.weight) { defaultColumns += 1; }
-    if (visibleColumns.reps) { defaultColumns += 1; }
-    if (visibleColumns.distance) { defaultColumns += 1; }
-    if (visibleColumns.notes) { defaultColumns += 1; }
-
-    // no duration in EMOM
-    if (!isEmom) {
-      if (visibleColumns.duration) { defaultColumns += 1; }
+    // By using full class names in the switch, we ensure Tailwind's JIT compiler finds and generates them.
+    switch (columnCount) {
+      case 1: gridColsClass = 'grid-cols-1'; break;
+      case 2: gridColsClass = 'grid-cols-2'; break;
+      case 3: gridColsClass = 'grid-cols-3'; break;
+      case 4: gridColsClass = 'grid-cols-4'; break;
+      case 5: gridColsClass = 'grid-cols-5'; break;
+      case 6: gridColsClass = 'grid-cols-6'; break;
+      case 7: gridColsClass = 'grid-cols-7'; break; // Max possible columns (Set, Reps, Wt, Dist, Time, Rest, Notes)
+      default: gridColsClass = 'grid-cols-2'; // A sensible fallback
     }
 
-    return 'gap-x-4 gap-y-2 px-2 py-2 bg-white rounded-md rounded-t-none dark:bg-gray-800 text-gray-900 dark:text-white gap-4 grid grid-cols-'+defaultColumns;
+    const baseClasses = 'grid';
+    
+    return `${baseClasses} ${gridColsClass}`;
   }
 
   // --- 1. Add a new signal to manage the action menu's visibility ---

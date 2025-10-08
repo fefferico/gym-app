@@ -28,6 +28,7 @@ export class GenerateWorkoutModalComponent implements OnInit, OnChanges {
     allAvailableEquipment = signal<string[]>([]);
     allPersonalGymEquipment = signal<string[]>([]);
     equipmentSearchTerm = signal<string>('');
+    excludeEquipmentSearchTerm = signal<string>(''); // NEW
 
     filteredAvailableEquipment = computed(() => {
         const term = this.equipmentSearchTerm().toLowerCase().trim();
@@ -58,11 +59,14 @@ export class GenerateWorkoutModalComponent implements OnInit, OnChanges {
 
         const personalGymEquipment = await firstValueFrom(this.personalGymService.getAllEquipment());
         this.allPersonalGymEquipment.set(personalGymEquipment.map((eq: Equipment) => eq.category));
+
+        this.updateEquipmentFromPersonalGym();
     }
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes['isOpen'] && changes['isOpen'].currentValue === true) {
             this.resetOptions(); // Reset options when the modal is opened
+            this.updateEquipmentFromPersonalGym(); // Ensure equipment is populated on open
         }
     }
 
@@ -101,7 +105,6 @@ export class GenerateWorkoutModalComponent implements OnInit, OnChanges {
         this.excludeEquipmentSearchTerm.set('');
     }
 
-    // NEW: Method to toggle equipment selection when not using personal gym
     selectEquipment(equipment: string) {
         if (!this.options.equipment.includes(equipment)) {
             this.options.equipment.push(equipment);
@@ -116,12 +119,6 @@ export class GenerateWorkoutModalComponent implements OnInit, OnChanges {
         }
     }
 
-    // NEW: Handle change for 'Use Personal Gym Equipment' checkbox
-    onUsePersonalGymChange() {
-        this.options.equipment = [];
-        this.options.excludeEquipment = []; // Clear exclusions when toggling
-        this.equipmentSearchTerm.set('');
-    }
 
     // Handles clicking on a personal gym equipment item
     toggleExcludePersonalGymEquipment(equipment: string) {
@@ -134,9 +131,8 @@ export class GenerateWorkoutModalComponent implements OnInit, OnChanges {
             // add the equipment to the exclusion list, not jsut the equipment name
             this.options.excludeEquipment.push(equipment.toLowerCase());
         }
+        this.updateEquipmentFromPersonalGym();
     }
-
-    excludeEquipmentSearchTerm = signal<string>(''); // NEW
 
     filteredAvailableEquipmentToExclude = computed(() => { // NEW
         const term = this.excludeEquipmentSearchTerm().toLowerCase().trim();
@@ -150,13 +146,14 @@ export class GenerateWorkoutModalComponent implements OnInit, OnChanges {
         const sourceList = this.options.usePersonalGym ? personalGymEq : allEq;
 
         return sourceList.filter(eq =>
-            eq.toLowerCase().includes(term) && !this.options.excludeEquipment.includes(eq)
+            eq.toLowerCase().includes(term) && !this.options.excludeEquipment.includes(eq.toLowerCase())
         );
     });
 
     addExcludedEquipment(equipment: string) {
-        if (!this.options.excludeEquipment.includes(equipment)) {
-            this.options.excludeEquipment.push(equipment);
+        const lowerCaseEquipment = equipment.toLowerCase();
+        if (!this.options.excludeEquipment.includes(lowerCaseEquipment)) {
+            this.options.excludeEquipment.push(lowerCaseEquipment);
         }
         this.excludeEquipmentSearchTerm.set('');
     }
@@ -193,6 +190,32 @@ export class GenerateWorkoutModalComponent implements OnInit, OnChanges {
             this.generateQuick();
         } else if (actionKey === 'generate_detailed') {
             this.generateDetailed();
+        }
+    }
+
+    onUsePersonalGymChange() {
+        this.options.excludeEquipment = []; // Clear exclusions when toggling
+        this.equipmentSearchTerm.set('');
+        // +++ MODIFIED: This now correctly populates or clears the equipment list
+        this.updateEquipmentFromPersonalGym();
+    }
+
+    /**
+     * --- START: NEW HELPER FUNCTION ---
+     * Populates the `options.equipment` array based on the user's personal gym
+     * and their exclusion choices. This is the central logic for this feature.
+     */
+    private updateEquipmentFromPersonalGym(): void {
+        if (this.options.usePersonalGym) {
+            const personalEquipment = this.allPersonalGymEquipment();
+            const excludedEquipment = this.options.excludeEquipment;
+            // The final list is the personal equipment MINUS the excluded items.
+            this.options.equipment = personalEquipment.filter(
+                eq => !excludedEquipment.includes(eq.toLowerCase())
+            );
+        } else {
+            // When not using personal gym, the equipment list is managed manually, so it should be empty.
+            this.options.equipment = [];
         }
     }
 }

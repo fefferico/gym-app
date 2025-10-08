@@ -39,47 +39,59 @@
             </h6>
             <div class="text-xs space-y-1">
                 <!-- Header Row -->
-                <div class="grid grid-cols-12 gap-2 font-bold text-gray-600 dark:text-gray-300 p-1.5 rounded bg-gray-200/60 dark:bg-gray-700">
-                    <div class="col-span-1 text-center">Set</div>
-                    <div class="col-span-6 flex items-center">
+                <div
+                    class="grid grid-cols-12 gap-2 font-bold text-gray-600 dark:text-gray-300 p-1.5 rounded bg-gray-200/60 dark:bg-gray-700">
+                    <div class="col-span-1 text-center flex items-center justify-center">Set</div>
+                    <div class="col-span-6 flex items-center justify-center">
                         Planned
                         <!-- +++ NEW: Rep Range Toggle Button +++ -->
-                        <button *ngIf="!isCardio()" (click)="toggleRepRange($event)" [title]="useRepRange() ? 'Use single rep target' : 'Use rep range'" class="ml-auto p-1 rounded-full hover:bg-gray-300 dark:hover:bg-gray-600">
+                        <button *ngIf="!isCardio()" (click)="toggleRepRange($event)"
+                            [title]="useRepRange() ? 'Use single rep target' : 'Use rep range'"
+                            class="ml-auto p-1 rounded-full hover:bg-gray-300 dark:hover:bg-gray-600">
                             <app-icon name="change" class="h-4 w-4"></app-icon>
                         </button>
                     </div>
-                    <div *ngIf="!isBodyweight() && !isCardio()" class="col-span-2 text-center">Weight</div>
-                    <div class="col-span-2 text-center">Rest</div>
+                    <div *ngIf="!isBodyweight() && !isCardio()"
+                        class="col-span-2 text-center flex items-center justify-center">Weight
+                        ({{unitsService.getWeightUnitSuffix()}})</div>
+                    <div class="col-span-2 text-center flex items-center justify-center">Rest (s)</div>
                     <div class="col-span-1 text-center"></div>
                 </div>
-                 <!-- Data Rows -->
+                <!-- Data Rows -->
                 <!-- The inner loop now uses the getSetsForRound helper -->
                 <div *ngFor="let set of getSetsForRound(roundIndex); let i = index"
                     class="grid grid-cols-12 gap-2 items-center p-1.5 rounded text-black dark:text-gray-300"
                     [ngClass]="{ 'bg-white dark:bg-gray-700/60': i % 2 === 0, 'bg-gray-100 dark:bg-gray-700/30': i % 2 !== 0 }">
-                    
+
                     <!-- The set/round number is now calculated conditionally -->
-                    <div class="col-span-1 text-center font-semibold dark:text-white">#{{ exerciseData.supersetId ? roundIndex + 1 : i + 1 }}</div>
-                    
+                    <div class="col-span-1 text-center font-semibold dark:text-white">#{{ exerciseData.supersetId ?
+                        roundIndex + 1 : i + 1 }}</div>
+
                     <!-- Planned Column with Conditional Inputs -->
                     <div class="col-span-6">
                         <!-- Cardio View -->
                         <div *ngIf="isCardio()" class="flex items-center gap-1">
-                            <input type="number" [(ngModel)]="set.targetDuration" (ngModelChange)="handleModelChange()" class="w-1/2 text-center p-1 border rounded-md dark:bg-gray-600">
+                            <input type="number" [(ngModel)]="set.targetDuration" (ngModelChange)="handleModelChange()"
+                                class="w-1/2 text-center p-1 border rounded-md dark:bg-gray-600">
                             <span>seconds</span>
                         </div>
                         <!-- Reps View -->
                         <div *ngIf="!isCardio()">
                             <!-- Single Rep Input -->
                             <div *ngIf="!useRepRange()" class="flex items-center gap-1">
-                                <input type="number" [(ngModel)]="set.targetReps" (ngModelChange)="handleModelChange()" class="w-1/2 text-center p-1 border rounded-md dark:bg-gray-600">
+                                <input type="number" [(ngModel)]="set.targetReps" (ngModelChange)="handleModelChange()"
+                                    class="w-1/2 text-center p-1 border rounded-md dark:bg-gray-600">
                                 <span>reps</span>
                             </div>
-                             <!-- Rep Range Inputs -->
+                            <!-- Rep Range Inputs -->
                             <div *ngIf="useRepRange()" class="flex items-center gap-1">
-                                <input type="number" [(ngModel)]="set.targetRepsMin" (ngModelChange)="handleModelChange()" class="w-1/2 text-center p-1 border rounded-md dark:bg-gray-600">
+                                <input type="number" [(ngModel)]="set.targetRepsMin"
+                                    (ngModelChange)="handleModelChange()"
+                                    class="w-1/2 text-center p-1 border rounded-md dark:bg-gray-600">
                                 <span>-</span>
-                                <input type="number" [(ngModel)]="set.targetRepsMax" (ngModelChange)="handleModelChange()" class="w-1/2 text-center p-1 border rounded-md dark:bg-gray-600">
+                                <input type="number" [(ngModel)]="set.targetRepsMax"
+                                    (ngModelChange)="handleModelChange()"
+                                    class="w-1/2 text-center p-1 border rounded-md dark:bg-gray-600">
                                 <span>reps</span>
                             </div>
                         </div>
@@ -87,17 +99,20 @@
 
                     <!-- Weight Column (Conditional) -->
                     <div *ngIf="!isBodyweight() && !isCardio()" class="col-span-2">
-                        <input type="number" [(ngModel)]="set.targetWeight" (ngModelChange)="handleModelChange()" class="w-full text-center p-1 border rounded-md dark:bg-gray-600">
+                        <input type="number" [(ngModel)]="set.targetWeight" (ngModelChange)="handleModelChange()"
+                            class="w-full text-center p-1 border rounded-md dark:bg-gray-600">
                     </div>
-                    
+
                     <!-- Rest Column (Editable) -->
                     <div class="col-span-2">
-                         <input type="number" [(ngModel)]="set.restAfterSet" (ngModelChange)="handleModelChange()" class="w-full text-center p-1 border rounded-md dark:bg-gray-600">
+                        <input type="number" [(ngModel)]="set.restAfterSet" (ngModelChange)="handleModelChange()"
+                            class="w-full text-center p-1 border rounded-md dark:bg-gray-600">
                     </div>
-                    
+
                     <!-- Delete Button Column (passes the correct index) -->
                     <div class="col-span-1 flex justify-center">
-                        <button (click)="removeSet(exerciseData.supersetId ? roundIndex : i)" title="Remove Set" class="p-1 rounded-full hover:bg-red-100 dark:hover:bg-red-700/50">
+                        <button (click)="removeSet(exerciseData.supersetId ? roundIndex : i)" title="Remove Set"
+                            class="p-1 rounded-full hover:bg-red-100 dark:hover:bg-red-700/50">
                             <app-icon name="trash" class="h-4 w-4 text-red-500 dark:text-red-400"></app-icon>
                         </button>
                     </div>
@@ -105,12 +120,22 @@
             </div>
         </div>
     </div>
-    
-    <!-- Add Set Button -->
-    <div class="mt-3 flex justify-center">
-        <button (click)="addSet()" class="flex items-center gap-2 px-4 py-1.5 text-xs font-semibold text-primary dark:text-primary-light bg-primary/10 hover:bg-primary/20 rounded-full transition-colors">
-            <app-icon name="plus-circle" class="h-4 w-4"></app-icon> Add Set
+
+    <div class="mt-3 flex justify-center items-center gap-x-2">
+        <label class="text-black dark:text-gray-100">Set</label>
+        <button type="button" (click)="removeSet(-1)"
+            class="p-1.5 rounded-full bg-red-200 hover:bg-red-300 text-red-700 disabled:opacity-50 flex items-center"
+            aria-label="Remove Last Set"
+            title="Remove Last Set"
+            >
+            <app-icon name="minus-circle" class="h-6 w-6"></app-icon>
+        </button>
+        <button type="button" (click)="addSet(); $event.stopPropagation()"
+            class="p-1.5 rounded-full bg-green-200 hover:bg-green-300 text-green-700 flex items-center"
+            aria-label="Add Set"
+            title="Add Set">
+            <app-icon name="plus-circle" class="h-6 w-6"></app-icon>
         </button>
     </div>
-</ng-container>
 
+</ng-container>

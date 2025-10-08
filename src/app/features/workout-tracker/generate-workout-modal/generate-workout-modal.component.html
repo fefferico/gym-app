@@ -100,26 +100,27 @@
                         </div>
                     </div>
                     <!-- +++ START: MODIFIED SECTION FOR SEARCHABLE EQUIPMENT +++ -->
-                    <div *ngIf="!options.usePersonalGym; else usePersonalGym"
+                    <div *ngIf="!options.usePersonalGym; else usePersonalGymSection"
                         class="md:col-span-2 text-black dark:text-gray-200 relative">
                         <label class="block text-sm font-medium dark:text-gray-100 my-1">Exclude Equipment
                             (Optional)</label>
                         <!-- Search Input Textbox -->
-                        <input type="text" [(ngModel)]="equipmentSearchTerm"
-                            placeholder="Search for equipment (e.g., Dumbbell, Barbell)..."
+                        <input type="text" [(ngModel)]="excludeEquipmentSearchTerm"
+                            placeholder="Search equipment to exclude..."
                             class="block w-full p-2 border rounded-md dark:bg-gray-800 dark:border-gray-600 focus:ring-primary focus:border-primary">
 
                         <!-- Autocomplete Suggestions Dropdown -->
-                        <div *ngIf="filteredAvailableEquipment().length > 0"
+                        <div *ngIf="filteredAvailableEquipmentToExclude().length > 0 && excludeEquipmentSearchTerm().length > 0"
                             class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-md shadow-lg max-h-40 overflow-y-auto">
-                            <button type="button" *ngFor="let eq of filteredAvailableEquipment()"
-                                (click)="selectEquipment(eq)"
+                            <button type="button" *ngFor="let eq of filteredAvailableEquipmentToExclude()"
+                                (click)="addExcludedEquipment(eq)"
                                 class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600">
                                 {{ eq | titlecase }}
                             </button>
                         </div>
-                        <!-- Display for Selected Equipment as Chips -->
-                        <div class="relative border rounded-md px-3 pt-5 pb-2 mt-4 dark:border-gray-600">
+                        <!-- Display for Excluded Equipment as Chips -->
+                        <div *ngIf="options.excludeEquipment.length > 0"
+                            class="relative border rounded-md px-3 pt-5 pb-2 mt-4 dark:border-gray-600">
 
                             <!-- The Label, absolutely positioned to look like a floating placeholder -->
                             <label
@@ -127,18 +128,13 @@
                                 Excluded equipment
                             </label>
 
-                            <!-- Content Div (The original div, but without its own border) -->
-                            <div *ngIf="options.equipment.length > 0" class="flex flex-wrap gap-2 min-h-[40px]">
-                                <!-- Note: This inner *ngIf is kept as-is -->
-                                <p *ngIf="options.equipment.length === 0"
-                                    class="text-sm italic text-gray-500 dark:text-gray-400">
-                                    Search for and select available equipment below.
-                                </p>
-                                <span *ngFor="let eq of options.equipment"
-                                    class="flex items-center gap-x-2 px-3 py-1.5 text-xs font-semibold rounded-full bg-primary text-white">
+                            <!-- Content Div -->
+                            <div class="flex flex-wrap gap-2 min-h-[40px]">
+                                <span *ngFor="let eq of options.excludeEquipment"
+                                    class="flex items-center gap-x-2 px-3 py-1.5 text-xs font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-700 dark:text-white">
                                     <span>{{ eq | titlecase }}</span>
-                                    <button type="button" (click)="removeEquipment(eq)"
-                                        class="text-white/70 hover:text-white focus:outline-none">
+                                    <button type="button" (click)="removeExcludedEquipment(eq)"
+                                        class="text-red-800/70 hover:text-red-800 focus:outline-none dark:text-white/70 dark:hover:text-white">
                                         <app-icon name="cancel" class="h-4 w-4"></app-icon>
                                     </button>
                                 </span>
@@ -147,7 +143,7 @@
                     </div>
                     <!-- +++ END: MODIFIED SECTION +++ -->
                 </div>
-                <ng-template #usePersonalGym class="md:col-span-2 text-black dark:text-gray-200 relative">
+                <ng-template #usePersonalGymSection class="md:col-span-2 text-black dark:text-gray-200 relative">
                     <label class="block text-sm font-medium dark:text-gray-100 my-1">Exclude personal gym equipment
                         (Optional)</label>
                     <div *ngIf="options.excludeEquipment.length > 0"
@@ -184,7 +180,7 @@
 
         <!-- FAB Menu for actions -->
         <app-fab-menu [actions]="fabActions" (actionClicked)="handleFabAction($event)" [checkForPausedSession]="false"
-            [scrollToTopDisabled]="true" [scrollToBottomDisabled]="true" [customBottomPositioning]="1">
+            [scrollToTopDisabled]="true" [scrollToBottomDisabled]="true" [customBottomPositioning]="2">
         </app-fab-menu>
     </div>
 </div>

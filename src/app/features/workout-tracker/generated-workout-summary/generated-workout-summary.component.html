@@ -74,23 +74,36 @@
         </div>
 
         <!-- Footer -->
+        <!-- Footer -->
         <footer
-            class="p-4 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-700 justify-center items-center flex-shrink-0 grid gap-2 flex-row sm:flex">
+            class="p-4 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700 flex-shrink-0 
+                   flex flex-col sm:flex-row items-center justify-center gap-3">
+
+            <!-- Back Button (Secondary Action) -->
             <button (click)="back.emit()"
-                class="px-6 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500 rounded-md transition-colors inline-flex items-center">
-                <app-icon name="cancel" class="h-6 w-6 mr-2"></app-icon>
-                BACK
+                class="w-full sm:w-auto inline-flex items-center justify-center px-5 py-3 rounded-lg text-sm font-bold uppercase tracking-wider
+                       text-gray-700 dark:text-gray-200 bg-transparent hover:bg-gray-200 dark:hover:bg-gray-600 
+                       border border-gray-300 dark:border-gray-500 transition-colors duration-200">
+                <app-icon name="cancel" class="h-5 w-5 mr-2"></app-icon>
+                <span>Back</span>
             </button>
-            <!-- +++ NEW: REGEN Button +++ -->
+
+            <!-- Regen Button -->
             <button (click)="retry.emit()"
-                class="inline-flex items-center bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2.5 px-6 rounded-md text-sm transition-colors">
-                <app-icon name="change" class="h-6 w-6 mr-2"></app-icon>
-                REGEN
+                class="w-full sm:w-auto inline-flex items-center justify-center px-5 py-3 rounded-lg text-sm font-bold uppercase tracking-wider
+                       bg-yellow-500 hover:bg-yellow-600 text-white border border-transparent 
+                       shadow-sm hover:shadow-md transition-all duration-200">
+                <app-icon name="change" class="h-5 w-5 mr-2"></app-icon>
+                <span>Regen</span>
             </button>
+
+            <!-- Start Button (Primary Action) -->
             <button (click)="start.emit(generatedRoutineSignal()!)"
-                class="inline-flex items-center bg-green-500 hover:bg-green-600 focus:ring-4 focus:ring-green-300 text-white font-bold py-2.5 px-8 rounded-md text-sm transition-colors shadow-md hover:shadow-lg">
-                <app-icon name="play" class="h-6 w-6 mr-2"></app-icon>
-                START
+                class="w-full sm:w-auto inline-flex items-center justify-center px-5 py-3 rounded-lg text-sm font-bold uppercase tracking-wider
+                       bg-primary hover:bg-primary-dark text-white border border-transparent 
+                       shadow-sm hover:shadow-md transition-all duration-200">
+                <app-icon name="play" class="h-5 w-5 mr-2"></app-icon>
+                <span>Start</span>
             </button>
         </footer>
     </div>

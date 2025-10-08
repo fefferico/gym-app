@@ -161,6 +161,11 @@ export class GeneratedExerciseItemComponent implements OnInit {
         }
 
         const updatedExercise = JSON.parse(JSON.stringify(currentExercise)) as WorkoutExercise;
+
+        if (setIndexToRemove === -1){
+            setIndexToRemove = updatedExercise.sets.length - 1;
+        }
+
         updatedExercise.sets.splice(setIndexToRemove, 1);
         this.exerciseUpdated.emit(updatedExercise);
     }
