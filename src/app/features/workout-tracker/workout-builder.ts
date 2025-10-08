@@ -3290,26 +3290,23 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   protected getGridColsForExercise(exerciseControl: AbstractControl): string {
-    const isInSuperset = !!exerciseControl.get('supersetId')?.value;
-    const isCardioOnly = this.isExerciseCardioOnlyCtrl(exerciseControl);
     const isEmom = this.isEmom(exerciseControl);
-    const isWeighted = this.checkIfWeightedExercise(exerciseControl);
 
     let defaultColumns: number = 2; // set Id and rest (even if 0 seconds)
 
     const setsControls = exerciseControl.get('sets') as FormArray;
     let visibleColumns: any = {};
-    if (setsControls && setsControls.controls && setsControls.controls[0]){
-      const setControl: AbstractControl = setsControls.controls[0];
-      visibleColumns = {
-        weight: this.checkIfWeightIsVisible(setControl),
-        reps: this.checkIfRepsIsVisible(setControl),
-        distance: this.checkIfDistanceIsVisible(setControl),
-        duration: this.checkIfDurationIsVisible(setControl),
-        notes: this.checkIfNotesIsVisible(setControl)
-      };
-
+    // Check if there are any sets to evaluate
+    if (setsControls && setsControls.length > 0) {
+        visibleColumns = {
+            weight: this.checkIfWeightIsVisible(exerciseControl),
+            reps: this.checkIfRepsIsVisible(exerciseControl),
+            distance: this.checkIfDistanceIsVisible(exerciseControl),
+            duration: this.checkIfDurationIsVisible(exerciseControl),
+            notes: this.checkIfNotesIsVisible(exerciseControl)
+        };
     }
+
 
     if (visibleColumns.weight) { defaultColumns += 1; }
     if (visibleColumns.reps) { defaultColumns += 1; }
