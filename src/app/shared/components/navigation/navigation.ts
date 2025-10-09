@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router'; // Ensure Router is imported
 import { PressDirective } from '../../directives/press.directive';
 import { IconComponent } from '../icon/icon.component';
-import { SubscriptionService } from '../../../core/services/subscription.service';
+import { PremiumFeature, SubscriptionService } from '../../../core/services/subscription.service';
 
 interface NavItem {
   path: string;
@@ -14,6 +14,7 @@ interface NavItem {
   iconSvgPath?: string;
   iconName?: string;
   exact?: boolean;
+  premiumFeature?: PremiumFeature;
 }
 
 @Component({
@@ -44,7 +45,7 @@ export class NavigationComponent {
     { path: '/home', label: 'HOME', iconName: 'home', exact: true },
     { path: this.routinesPath, label: 'ROUTINES', iconName: 'routines', exact: false },
     { path: this.historyPath, label: 'HISTORY', iconName: 'clock', exact: false },
-    { path: this.trainingProgramsPath, label: 'PROGRAMS', iconName: 'calendar', exact: false },
+    { path: this.trainingProgramsPath, label: 'PROGRAMS', iconName: 'calendar', exact: false, premiumFeature: PremiumFeature.TRAINING_PROGRAMS },
     { path: this.statsPath, label: 'STATS', iconName: 'stats-new', exact: true },
     { path: this.profilePath, label: 'PROFILE', iconName: 'profile', exact: true },
   ];
@@ -99,8 +100,27 @@ export class NavigationComponent {
    * Navigates to the given path.
    * This is triggered by the (shortPress) event from the appPress directive.
    */
-  onNavigate(path: string): void {
-    this.router.navigate([path]);
+  onNavigate(item: NavItem): void {
+    // Check if the item is associated with a premium feature.
+    if (item.premiumFeature) {
+      // If it is, use the handler that checks for subscription status.
+      this.handlePremiumFeatureOrNavigate(item.premiumFeature, [item.path]);
+    } else {
+      // If it's not a premium feature, navigate directly.
+      this.router.navigate([item.path]);
+    }
+  }
+
+  handlePremiumFeatureOrNavigate(feature: PremiumFeature, route?: any[]): void {
+    if (this.subscriptionService.canAccess(feature)) {
+      // User has access, proceed with navigation.
+      if (route) {
+        this.router.navigate(route);
+      }
+    } else {
+      // User does not have access, show the upgrade modal.
+      this.subscriptionService.showUpgradeModal();
+    }
   }
 
   /**

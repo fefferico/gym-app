@@ -18,6 +18,7 @@ import { PressDirective } from '../../../shared/directives/press.directive';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { ActivityLog } from '../../../core/models/activity-log.model';
 import { ActivityService } from '../../../core/services/activity.service';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 export interface ChartDataPoint {
   name: string | Date;
@@ -36,7 +37,8 @@ export interface ChartSeries { name: string; series: ChartDataPoint[]; }
     NgxChartsModule,
     ReactiveFormsModule, // Add ReactiveFormsModule here
     PressDirective,
-    IconComponent
+    IconComponent,
+    TranslateModule
   ],
   templateUrl: './stats-dashboard.html',
   styleUrl: './stats-dashboard.scss',
@@ -49,6 +51,7 @@ export class StatsDashboardComponent implements OnInit, OnDestroy {
   protected unitsService = inject(UnitsService);
   protected router = inject(Router);
   private activityService = inject(ActivityService); // Inject the ActivityService
+  private translate = inject(TranslateService);
 
   // --- UPDATED: Renamed for clarity ---
   @ViewChild('weeklyChartWrapper') weeklyChartWrapperRef!: ElementRef<HTMLDivElement>;
@@ -165,9 +168,9 @@ export class StatsDashboardComponent implements OnInit, OnDestroy {
   gradient = false;
   showXAxisLabel = true;
   showYAxisLabel = true;
-  yAxisLabelVolume = computed(() => `Total Volume (${this.unitsService.getWeightUnitSuffix()})`);
-  xAxisLabelMuscle = 'Muscle Group';
-  xAxisLabelWeek = 'Week';
+  yAxisLabelVolume = computed(() => this.translate.instant('statsDashboard.charts.yAxisVolume', { unit: this.unitsService.getWeightUnitSuffix() }));
+  xAxisLabelMuscle = this.translate.instant('statsDashboard.charts.xAxisMuscle');
+  xAxisLabelWeek = this.translate.instant('statsDashboard.charts.xAxisWeek');
   barChartShowDataLabel = true;
   barChartRoundEdges = true;
   lineChartTimeline = true;
@@ -242,7 +245,7 @@ export class StatsDashboardComponent implements OnInit, OnDestroy {
     }
 
     if (dateFromObj && dateToObj && dateFromObj > dateToObj) {
-      alert("'From Date' cannot be after 'To Date'. Filters not applied");
+      alert(this.translate.instant('statsDashboard.filters.dateOrderError'));
       return;
     }
 
@@ -287,10 +290,10 @@ export class StatsDashboardComponent implements OnInit, OnDestroy {
     const weeklyVol = this.statsService.getWeeklyVolumeForChart(logs);
     if (weeklyVol.length > 0) {
       const seriesData = weeklyVol.map(wv => ({ name: wv.weekLabel, value: wv.totalVolume }));
-      this.weeklyVolumeChartDataForPeriod.set([{ name: 'Total Volume', series: seriesData }]);
+      this.weeklyVolumeChartDataForPeriod.set([{ name: this.translate.instant('statsDashboard.cards.totalVolume'), series: seriesData }]);
       const totalVolume = seriesData.reduce((sum, item) => sum + item.value, 0);
       const averageVolume = totalVolume / seriesData.length;
-      this.lineChartReferenceLines.set([{ name: `Avg: ${averageVolume.toFixed(0)}`, value: averageVolume }]);
+      this.lineChartReferenceLines.set([{ name: this.translate.instant('statsDashboard.charts.avgLine', { value: averageVolume.toFixed(0) }), value: averageVolume }]);
     } else {
       this.weeklyVolumeChartDataForPeriod.set([]);
       this.lineChartReferenceLines.set([]);
@@ -374,7 +377,7 @@ export class StatsDashboardComponent implements OnInit, OnDestroy {
       // Clear the active entries array to hide the tooltip
       this.muscleGroupChart.activeEntries = [];
       // Manually trigger change detection for the chart component to ensure the view updates
-      this.muscleGroupChart.update(); 
+      this.muscleGroupChart.update();
     }
 
     if (this.weeklyVolumeChart && this.weeklyVolumeChart.activeEntries.length > 0) {

@@ -262,10 +262,10 @@
           <div class="calendar-scroll-container">
             <div *ngFor="let month of calendarMonths()" class="month-container mb-8">
               <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4 text-center">
-                {{ month.monthName | titlecase }} {{ month.year }}
+                {{ month.monthDate | date:'LLLL y' }}
               </h2>
               <div class="grid grid-cols-7 gap-x-2 text-center mb-2">
-                <div *ngFor="let dayName of weekDayNames" class="text-sm font-bold text-gray-500 dark:text-gray-400">
+                <div *ngFor="let dayName of weekDayNames()" class="text-sm font-bold text-gray-500 dark:text-gray-400">
                   {{ dayName }}
                 </div>
               </div>

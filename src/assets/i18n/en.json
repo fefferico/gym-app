@@ -8,6 +8,55 @@
   "GENERATE_CUSTOM_WORKOUT": "Generate Custom Workout",
   "SURPRISE_ME": "Surprise Me!",
 
+  "dates": {
+    "months": {
+      "january": "January",
+      "february": "February",
+      "march": "March",
+      "april": "April",
+      "may": "May",
+      "june": "June",
+      "july": "July",
+      "august": "August",
+      "september": "September",
+      "october": "October",
+      "november": "November",
+      "december": "December"
+    },
+    "monthsShort": {
+      "jan": "Jan",
+      "feb": "Feb",
+      "mar": "Mar",
+      "apr": "Apr",
+      "may": "May",
+      "jun": "Jun",
+      "jul": "Jul",
+      "aug": "Aug",
+      "sep": "Sep",
+      "oct": "Oct",
+      "nov": "Nov",
+      "dec": "Dec"
+    },
+    "days": {
+      "sunday": "Sunday",
+      "monday": "Monday",
+      "tuesday": "Tuesday",
+      "wednesday": "Wednesday",
+      "thursday": "Thursday",
+      "friday": "Friday",
+      "saturday": "Saturday"
+    },
+    "daysShort": {
+      "sun": "Sun",
+      "mon": "Mon",
+      "tue": "Tue",
+      "wed": "Wed",
+      "thu": "Thu",
+      "fri": "Fri",
+      "sat": "Sat"
+    }
+  },
+
   "home": {
     "welcomeBack": "Welcome Back, {{name}}!",
     "readyMessage": "Ready to crush your goals today?",
@@ -575,6 +624,108 @@
       "activate": "ACTIVATE",
       "deactivate": "DEACTIVATE",
       "finish": "FINISH"
+    }
+  },
+
+  "statsDashboard": {
+    "title": "My Statistics",
+    "personalBests": "Personal Bests",
+    "toggleFilters": "Toggle Date Filters",
+    "filters": {
+      "title": "Filter Statistics by Date",
+      "from": "From Date",
+      "to": "To Date",
+      "reset": "RESET",
+      "dateOrderError": "'From Date' cannot be after 'To Date'. Filters not applied"
+    },
+    "cards": {
+      "workouts": "Workouts",
+      "period": "(Period)",
+      "totalVolume": "Total Volume",
+      "currentStreak": "Current Streak",
+      "week": "week",
+      "weeks": "weeks",
+      "noCurrentStreak": "No current streak",
+      "longestStreak": "Longest Streak",
+      "from": "From:",
+      "to": "To:",
+      "noWorkoutsYet": "No workouts logged yet"
+    },
+    "charts": {
+      "volumeByMuscle": "Volume by Muscle Group",
+      "weeklyVolume": "Weekly Volume Trend",
+      "noData": "Not enough data for this chart.",
+      "timelineRequirement": "Timeline view requires at least two weeks of data.",
+      "yAxisVolume": "Total Volume ({{unit}})",
+      "xAxisMuscle": "Muscle Group",
+      "xAxisWeek": "Week",
+      "avgLine": "Avg: {{value}}"
+    },
+    "tables": {
+      "weeklySummaryTitle": "Weekly Summary",
+      "weekHeader": "Week",
+      "workoutsHeader": "Workouts",
+      "volumeHeader": "Total Volume ({{unit}})",
+      "noWeeklyData": "No weekly data to display for this period",
+      "muscleGroupTitle": "Volume by Muscle Group",
+      "muscleGroupHeader": "Muscle Group",
+      "noMuscleData": "No muscle group performance data to display for this period"
+    },
+    "noData": {
+      "inPeriodTitle": "No Workout Data in Selected Period",
+      "inPeriodMessage": "Try adjusting the date range or reset filters to view all-time statistics",
+      "overallTitle": "No Data for Statistics",
+      "overallMessage": "Complete some workouts to see your statistics here",
+      "browseWorkouts": "workouts"
+    }
+  },
+
+  "personalBests": {
+    "title": "Personal Bests",
+    "toggleFilters": "Toggle Filters",
+    "filters": {
+      "title": "Filter PBs",
+      "byNameLabel": "Filter by Exercise Name",
+      "byNamePlaceholder": "e.g., Bench Press",
+      "byTypeLabel": "Filter by PB Type",
+      "allTypes": "All PB Types",
+      "byCategoryLabel": "Filter by Category",
+      "allCategories": "All Categories",
+      "clearButton": "CLEAR FILTERS",
+      "recalculateButton": "RECALCULATE",
+      "recalculateTooltip": "Recalculate all Personal Bests from your workout history",
+      "resetButton": "RESET PBs",
+      "resetTooltip": "Reset all PBs",
+      "showingResult": "Showing {{count}} PBs",
+      "showingResultOf": "Showing {{count}} of {{total}} PBs"
+    },
+    "card": {
+      "previous": "Prev:",
+      "viewLog": "VIEW LOG",
+      "trend": "TREND",
+      "showTrendTooltip": "Show Trend for this PB"
+    },
+    "noPBs": {
+      "noMatchTitle": "No Personal Bests Match Your Filters",
+      "noPBsTitle": "No Personal Bests Yet!",
+      "noMatchMessage": "Try adjusting your filter criteria or ",
+      "resetFiltersLink": "reset all filters",
+      "noPBsMessage": "Keep logging your workouts to track your progress and achievements here",
+      "recalculatePrompt": "Try clearing filters, or perhaps ",
+      "recalculateLink": "recalculate PBs",
+      "recalculateSuggestion": " if you've recently imported data."
+    },
+    "backToTop": "Back to Top",
+    "toasts": {
+      "logNotFound": "Could not find the associated workout log for this personal best. It's possible that the related workout session has been removed.",
+      "navigationError": "Navigation Error",
+      "recalcError": "An error occurred while trying to recalculate personal bests.",
+      "resetError": "An error occurred while trying to reset personal bests.",
+      "trendError": "Cannot show trend: Missing exercise ID or PB type."
+    },
+    "units": {
+      "reps": "reps",
+      "seconds": "s"
     }
   }
 }

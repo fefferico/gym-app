@@ -15,8 +15,10 @@ import {
   isSameDay, isToday, addMonths, subMonths, startOfMonth, endOfMonth,
   isSameMonth, isPast, isFuture, parseISO,
   differenceInDays,
-  differenceInCalendarWeeks
+  differenceInCalendarWeeks,
+  Locale
 } from 'date-fns';
+import { it, es, fr, enUS } from 'date-fns/locale';
 import { DayOfWeekPipe } from '../../../shared/pipes/day-of-week-pipe';
 import { animate, group, query, state, style, transition, trigger } from '@angular/animations';
 import { TrackingService } from '../../../core/services/tracking.service';
@@ -37,6 +39,7 @@ import { MenuMode } from '../../../core/models/app-settings.model';
 import { PremiumFeature, SubscriptionService } from '../../../core/services/subscription.service';
 import { FabAction, FabMenuComponent } from '../../../shared/components/fab-menu/fab-menu.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { LanguageService } from '../../../core/services/language.service';
 
 interface ScheduledItemWithLogs {
   routine: Routine;
@@ -54,6 +57,7 @@ interface CalendarDay {
 }
 interface CalendarMonth {
   monthName: string;
+  monthDate: Date;
   year: number;
   days: CalendarDay[];
   spacers: any[];
@@ -188,7 +192,14 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
   private sanitizer = inject(DomSanitizer);
   private appSettingsService = inject(AppSettingsService);
   protected subscriptionService = inject(SubscriptionService);
-  private translate = inject(TranslateService); 
+  private translate = inject(TranslateService);
+  private languageService = inject(LanguageService);
+  private dateFnsLocales: { [key: string]: Locale } = {
+    en: enUS,
+    it: it,
+    es: es,
+    fr: fr
+  };
 
   isLoading = signal(true);
   allProgramsForList = signal<TrainingProgram[]>([]);
@@ -328,7 +339,18 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
   protected isCalendarAnimating = false;
   protected isCardAnimating = false;
 
-  protected weekDayNames: string[] = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  weekDayNames = computed(() => {
+    const currentLang = this.languageService.currentLang();
+    const locale = this.dateFnsLocales[currentLang] || enUS;
+    const start = startOfWeek(new Date(), { weekStartsOn: this.weekStartsOn, locale });
+    return eachDayOfInterval({ start, end: addDays(start, 6) }).map(d => format(d, 'EE', { locale }));
+  });
+
+  private getWeekDayHeaders(): string[] {
+    const start = startOfWeek(new Date(), { weekStartsOn: this.weekStartsOn });
+    return eachDayOfInterval({ start, end: addDays(start, 6) }).map(d => format(d, 'EE'));
+  }
+
   readonly calendarHeaderFormat = computed(() => this.calendarDisplayMode() === 'month' ? 'MMMM yyyy' : 'MMMM yyyy');
 
   constructor() {
@@ -584,7 +606,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
   }
 
 
-   async setView(view: ProgramListView): Promise<void> {
+  async setView(view: ProgramListView): Promise<void> {
     if (this.currentView() === view) return;
 
     if (view === 'calendar') {
@@ -647,7 +669,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
     * @param program The program to analyze.
     * @returns A formatted string like "Avg. 4.5 days/week" or "5 days".
     */
-getDaysScheduled(program: TrainingProgram): string {
+  getDaysScheduled(program: TrainingProgram): string {
     // --- NEW: Logic for 'linear' (week-by-week) programs ---
     if (program.programType === 'linear') {
       if (!program.weeks || program.weeks.length === 0) {
@@ -954,6 +976,7 @@ getDaysScheduled(program: TrainingProgram): string {
 
       newMonths.push({
         monthName: format(targetDate, 'LLLL'),
+        monthDate: targetDate,
         year: targetDate.getFullYear(),
         spacers: Array(effectiveStartOfWeek).fill(0),
         days: daysInMonth.map(date => {
@@ -1008,7 +1031,7 @@ getDaysScheduled(program: TrainingProgram): string {
     }
   }
 
-   logPreviousSession(scheduledDayInfo: ScheduledItemWithLogs, workoutDate: Date): void {
+  logPreviousSession(scheduledDayInfo: ScheduledItemWithLogs, workoutDate: Date): void {
     const programId = this.activeProgramForCalendar()?.id;
     if (!programId) {
       this.toastService.error(this.translate.instant('trainingPrograms.toasts.logFailed'), 0, "Error");

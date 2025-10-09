@@ -2,20 +2,21 @@
     <div class="flex justify-between">
         <div>
             <header class="items-center">
-                <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">My Statistics</h1>
+                <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">{{ 'statsDashboard.title' | translate }}
+                </h1>
             </header>
         </div>
         <div>
-            <button appPress (shortPress)="goToPBs()" type="button" [title]="'Personal Bests'"
+            <button appPress (shortPress)="goToPBs()" type="button" [title]="'statsDashboard.personalBests' | translate"
                 class="rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary">
                 <app-icon name="pb" class="w-10 h-10"></app-icon>
-                <span class="sr-only">Personal Bests</span>
+                <span class="sr-only">{{ 'statsDashboard.personalBests' | translate }}</span>
             </button>
             <button appPress (shortPress)="toggleStatsFilterAccordion()" type="button"
                 class="rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary ml-1">
                 <app-icon name="filter" class="w-10 h-10 transition-transform duration-300"
                     [class.rotate-180]="isFilterAccordionOpen()"></app-icon>
-                <span class="sr-only">Toggle Date Filters</span>
+                <span class="sr-only">{{ 'statsDashboard.toggleFilters' | translate }}</span>
             </button>
         </div>
     </div>
@@ -25,17 +26,18 @@
         [style.maxHeight]="isFilterAccordionOpen() ? '600px' : '0px'" [class.mb-8]="isFilterAccordionOpen()">
         <form [formGroup]="statsFilterForm" (ngSubmit)="applyStatsFilters()"
             class="p-4 bg-white dark:bg-gray-700 rounded-md shadow-md space-y-4 border dark:border-gray-700 mt-2">
-            <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-3">Filter Statistics by Date</h2>
+            <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-3">{{ 'statsDashboard.filters.title' |
+                translate }}</h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
                 <div>
-                    <label for="statsDateFrom" class="block text-sm font-medium text-gray-700 dark:text-gray-300">From
-                        Date</label>
+                    <label for="statsDateFrom" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                        'statsDashboard.filters.from' | translate }}</label>
                     <input type="date" id="statsDateFrom" formControlName="dateFrom"
                         class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-gray-200">
                 </div>
                 <div>
-                    <label for="statsDateTo" class="block text-sm font-medium text-gray-700 dark:text-gray-300">To
-                        Date</label>
+                    <label for="statsDateTo" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                        'statsDashboard.filters.to' | translate }}</label>
                     <input type="date" id="statsDateTo" formControlName="dateTo"
                         class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-gray-200">
                 </div>
@@ -43,7 +45,7 @@
                     <button type="button" appPress (shortPress)="resetStatsFilters()"
                         class="flex px-4 py-2 bg-yellow-200 dark:bg-yellow-700 text-gray-700 dark:text-gray-200 rounded-md hover:bg-yellow-300 dark:hover:bg-yellow-500 text-sm items-center font-medium">
                         <app-icon name="trash" class="w-6 h-6 mr-1" [strokeWidth]="2"></app-icon>
-                        RESET
+                        {{ 'statsDashboard.filters.reset' | translate }}
                     </button>
                 </div>
             </div>
@@ -57,13 +59,15 @@
             <!-- Overall Stats Cards -->
             <section class="mb-8 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 mt-2">
                 <div class="bg-white dark:bg-gray-700 p-6 rounded-md shadow-md text-center border dark:border-none">
-                    <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Workouts <span
-                            *ngIf="hasActiveDateFilters()">(Period)</span></h2>
+                    <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">{{
+                        'statsDashboard.cards.workouts' | translate }} <span *ngIf="hasActiveDateFilters()">{{
+                            'statsDashboard.cards.period' | translate }}</span></h2>
                     <p class="text-4xl font-bold text-primary dark:text-primary-light">{{ workoutsInPeriodCount() }}</p>
                 </div>
                 <div class="bg-white dark:bg-gray-700 p-6 rounded-md shadow-md text-center border dark:border-none">
-                    <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Total Volume <span
-                            *ngIf="hasActiveDateFilters()">(Period)</span></h2>
+                    <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">{{
+                        'statsDashboard.cards.totalVolume' | translate }} <span *ngIf="hasActiveDateFilters()">{{
+                            'statsDashboard.cards.period' | translate }}</span></h2>
                     <p class="text-4xl font-bold text-primary dark:text-primary-light">
                         {{ volumeInPeriod() | number:'1.0-0' }} <span class="text-lg font-medium">{{
                             unitsService.getWeightUnitSuffix() }}</span>
@@ -71,12 +75,14 @@
                 </div>
                 <div class="bg-white dark:bg-gray-700 p-6 rounded-md shadow-md text-center border dark:border-none">
                     <div class="flex items-center justify-center mb-2 text-gray-600 dark:text-gray-300">
-                        <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300">Current Streak</h2>
+                        <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300">{{
+                            'statsDashboard.cards.currentStreak' | translate }}</h2>
                         <app-icon name="flame-2" class="h-10 w-10"></app-icon>
                     </div>
                     <p class="text-4xl font-bold text-primary dark:text-primary-light">
                         {{ currentWorkoutStreakInfo().length }} <span class="text-lg font-medium">{{
-                            currentWorkoutStreakInfo().length === 1 ? 'week' : 'weeks' }}</span>
+                            currentWorkoutStreakInfo().length === 1 ? ('statsDashboard.cards.week' | translate) :
+                            ('statsDashboard.cards.weeks' | translate) }}</span>
                     </p>
                     <div *ngIf="currentWorkoutStreakInfo().length > 0 && currentWorkoutStreakInfo().startDate && currentWorkoutStreakInfo().endDate"
                         class="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -87,25 +93,30 @@
                         </span>
                     </div>
                     <p *ngIf="currentWorkoutStreakInfo().length === 0"
-                        class="text-xs text-gray-500 dark:text-gray-400 mt-1">No current streak</p>
+                        class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ 'statsDashboard.cards.noCurrentStreak'
+                        | translate }}</p>
                 </div>
                 <div class="bg-white dark:bg-gray-700 p-6 rounded-md shadow-md text-center border dark:border-none">
                     <div class="flex items-center justify-center mb-2 text-gray-600 dark:text-gray-300">
-                        <h2 class="text-xl font-semibold">Longest Streak</h2>
+                        <h2 class="text-xl font-semibold">{{ 'statsDashboard.cards.longestStreak' | translate }}</h2>
                         <app-icon name="goal" class="h-10 w-10"></app-icon>
                     </div>
                     <p class="text-4xl font-bold text-primary dark:text-primary-light">
                         {{ longestWorkoutStreakInfo().length }} <span class="text-lg font-medium">{{
-                            longestWorkoutStreakInfo().length === 1 ? 'week' : 'weeks' }}</span>
+                            longestWorkoutStreakInfo().length === 1 ? ('statsDashboard.cards.week' | translate) :
+                            ('statsDashboard.cards.weeks' | translate) }}</span>
                     </p>
                     <div *ngIf="longestWorkoutStreakInfo().length > 0 && longestWorkoutStreakInfo().startDate && longestWorkoutStreakInfo().endDate"
                         class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                        From: {{ longestWorkoutStreakInfo().startDate | date:'mediumDate' }}
+                        {{ 'statsDashboard.cards.from' | translate }} {{ longestWorkoutStreakInfo().startDate |
+                        date:'mediumDate' }}
                         <br>
-                        To: {{ longestWorkoutStreakInfo().endDate | date:'mediumDate' }}
+                        {{ 'statsDashboard.cards.to' | translate }} {{ longestWorkoutStreakInfo().endDate |
+                        date:'mediumDate' }}
                     </div>
                     <p *ngIf="longestWorkoutStreakInfo().length === 0"
-                        class="text-xs text-gray-500 dark:text-gray-400 mt-1">No workouts logged yet</p>
+                        class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ 'statsDashboard.cards.noWorkoutsYet' |
+                        translate }}</p>
                 </div>
             </section>
 
@@ -113,8 +124,9 @@
             <section class="mb-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <!-- Bar Chart: Volume by Muscle Group -->
                 <div class="bg-white dark:bg-gray-700 p-4 rounded-md shadow-md min-h-[350px] flex flex-col">
-                    <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">Volume by Muscle Group <span
-                            *ngIf="hasActiveDateFilters()">(Period)</span></h3>
+                    <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">{{
+                        'statsDashboard.charts.volumeByMuscle' | translate }} <span
+                            *ngIf="hasActiveDateFilters()">{{'statsDashboard.cards.period' | translate}}</span></h3>
                     <div #muscleGroupChartContainer (scroll)="onChartScroll()"
                         *ngIf="muscleGroupChartDataForPeriod().length > 0; else noMuscleChartData"
                         class="scrollable-chart-container">
@@ -129,7 +141,8 @@
                     </div>
                     <ng-template #noMuscleChartData>
                         <div class="flex-grow flex items-center justify-center">
-                            <p class="text-sm text-gray-500 dark:text-gray-400 italic">Not enough data for this chart.
+                            <p class="text-sm text-gray-500 dark:text-gray-400 italic">{{
+                                'statsDashboard.charts.noData' | translate }}
                             </p>
                         </div>
                     </ng-template>
@@ -139,8 +152,9 @@
                 <!-- UPDATED: Added #weeklyChartWrapper template reference -->
                 <div #weeklyChartWrapper
                     class="bg-white dark:bg-gray-700 p-4 rounded-md shadow-md min-h-[350px] flex flex-col">
-                    <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">Weekly Volume Trend <span
-                            *ngIf="hasActiveDateFilters()">(Period)</span></h3>
+                    <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">{{
+                        'statsDashboard.charts.weeklyVolume' | translate }} <span
+                            *ngIf="hasActiveDateFilters()">{{'statsDashboard.cards.period' | translate}}</span></h3>
                     <div (scroll)="onChartScroll()"
                         *ngIf="weeklyVolumeChartDataForPeriod().length > 0 && weeklyVolumeChartDataForPeriod()[0].series.length > 0; else noWeeklyChartData"
                         class="scrollable-chart-container flex-grow">
@@ -156,12 +170,13 @@
                         </ngx-charts-line-chart>
                         <p *ngIf="!hasWeeklyVolumeChartData"
                             class="text-center text-xs text-gray-500 dark:text-gray-400 italic mt-1">
-                            Timeline view requires at least two weeks of data.
+                            {{ 'statsDashboard.charts.timelineRequirement' | translate }}
                         </p>
                     </div>
                     <ng-template #noWeeklyChartData>
                         <div class="flex-grow flex items-center justify-center">
-                            <p class="text-sm text-gray-500 dark:text-gray-400 italic">Not enough data for this chart.
+                            <p class="text-sm text-gray-500 dark:text-gray-400 italic">{{
+                                'statsDashboard.charts.noData' | translate }}
                             </p>
                         </div>
                     </ng-template>
@@ -170,8 +185,9 @@
 
             <!-- Tables, etc. remain the same... -->
             <section class="mb-8">
-                <h2 class="text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-4">Weekly Summary <span
-                        *ngIf="hasActiveDateFilters()">(Period)</span></h2>
+                <h2 class="text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-4">{{
+                    'statsDashboard.tables.weeklySummaryTitle' | translate }} <span
+                        *ngIf="hasActiveDateFilters()">{{'statsDashboard.cards.period' | translate}}</span></h2>
                 <div *ngIf="weeklySummariesTableDataForPeriod().length > 0; else noWeeklyDataMsg"
                     class="overflow-x-auto bg-white dark:bg-gray-700 rounded-md shadow-md">
                     <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -179,13 +195,14 @@
                             <tr>
                                 <th scope="col"
                                     class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                    Week</th>
+                                    {{ 'statsDashboard.tables.weekHeader' | translate }}</th>
                                 <th scope="col"
                                     class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                    Workouts</th>
+                                    {{ 'statsDashboard.tables.workoutsHeader' | translate }}</th>
                                 <th scope="col"
                                     class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                    Total Volume ({{unitsService.getWeightUnitSuffix()}})</th>
+                                    {{ 'statsDashboard.tables.volumeHeader' | translate:{unit:
+                                    unitsService.getWeightUnitSuffix()} }}</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white dark:bg-gray-700 divide-y divide-gray-200 dark:divide-gray-700">
@@ -204,13 +221,15 @@
                     </table>
                 </div>
                 <ng-template #noWeeklyDataMsg>
-                    <p class="text-gray-500 dark:text-gray-400 italic">No weekly data to display for this period</p>
+                    <p class="text-gray-500 dark:text-gray-400 italic">{{ 'statsDashboard.tables.noWeeklyData' |
+                        translate }}</p>
                 </ng-template>
             </section>
 
             <section class="mb-8">
-                <h2 class="text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-4 ">Volume by Muscle Group <span
-                        *ngIf="hasActiveDateFilters()">(Period)</span></h2>
+                <h2 class="text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-4 ">{{
+                    'statsDashboard.tables.muscleGroupTitle' | translate }} <span
+                        *ngIf="hasActiveDateFilters()">{{'statsDashboard.cards.period' | translate}}</span></h2>
                 <div *ngIf="muscleGroupPerformanceTableDataForPeriod().length > 0; else noMuscleDataMsg"
                     class="overflow-x-auto bg-white dark:bg-gray-700 rounded-md shadow-md">
                     <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -218,13 +237,14 @@
                             <tr>
                                 <th scope="col"
                                     class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider text-balance">
-                                    Muscle Group</th>
+                                    {{ 'statsDashboard.tables.muscleGroupHeader' | translate }}</th>
                                 <th scope="col"
                                     class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                    Workouts</th>
+                                    {{ 'statsDashboard.tables.workoutsHeader' | translate }}</th>
                                 <th scope="col"
                                     class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                    Total Volume ({{unitsService.getWeightUnitSuffix()}})</th>
+                                    {{ 'statsDashboard.tables.volumeHeader' | translate:{unit:
+                                    unitsService.getWeightUnitSuffix()} }}</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white dark:bg-gray-700 divide-y divide-gray-200 dark:divide-gray-700">
@@ -241,8 +261,8 @@
                     </table>
                 </div>
                 <ng-template #noMuscleDataMsg>
-                    <p class="text-gray-500 dark:text-gray-400 italic">No muscle group performance data to display for
-                        this period</p>
+                    <p class="text-gray-500 dark:text-gray-400 italic">{{ 'statsDashboard.tables.noMuscleData' |
+                        translate }}</p>
                 </ng-template>
             </section>
         </div>
@@ -255,10 +275,11 @@
                     <path stroke-linecap="round" stroke-linejoin="round"
                         d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
                 </svg>
-                <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">No Workout Data in Selected
-                    Period</h3>
-                <p class="text-gray-500 dark:text-gray-400">Try adjusting the date range or reset filters to view
-                    all-time statistics</p>
+                <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">{{
+                    'statsDashboard.noData.inPeriodTitle' | translate }}
+                </h3>
+                <p class="text-gray-500 dark:text-gray-400">{{ 'statsDashboard.noData.inPeriodMessage' | translate }}
+                </p>
             </div>
         </ng-template>
 
@@ -272,10 +293,12 @@
                     d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941">
                 </path>
             </svg>
-            <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">No Data for Statistics</h3>
-            <p class="text-gray-500 dark:text-gray-400">Complete some <button appPress (shortPress)="browseRoutines()"
-                    class="text-primary dark:text-primary-light hover:underline">workouts</button> to see your
-                statistics here</p>
+            <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">{{
+                'statsDashboard.noData.overallTitle' | translate }}</h3>
+            <p class="text-gray-500 dark:text-gray-400">{{ 'statsDashboard.noData.overallMessage' | translate }} <button
+                    appPress (shortPress)="browseRoutines()" class="text-primary dark:text-primary-light hover:underline">{{
+                    'statsDashboard.noData.browseWorkouts' | translate }}</button>
+            </p>
         </div>
     </ng-template>
 </div>

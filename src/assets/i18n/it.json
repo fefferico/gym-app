@@ -562,5 +562,153 @@
             "deactivate": "DISATTIVA",
             "finish": "COMPLETA"
         }
+    },
+    "statsDashboard": {
+        "title": "Le Mie Statistiche",
+        "personalBests": "Record Personali",
+        "toggleFilters": "Mostra/Nascondi Filtri Data",
+        "filters": {
+            "title": "Filtra Statistiche per Data",
+            "from": "Dal",
+            "to": "Al",
+            "reset": "RESETTA",
+            "dateOrderError": "'Data Inizio' non può essere successiva a 'Data Fine'. Filtri non applicati"
+        },
+        "cards": {
+            "workouts": "Allenamenti",
+            "period": "(Periodo)",
+            "totalVolume": "Volume Totale",
+            "currentStreak": "Serie Attuale",
+            "week": "settimana",
+            "weeks": "settimane",
+            "noCurrentStreak": "Nessuna serie attuale",
+            "longestStreak": "Serie più Lunga",
+            "from": "Dal:",
+            "to": "Al:",
+            "noWorkoutsYet": "Nessun allenamento ancora registrato"
+        },
+        "charts": {
+            "volumeByMuscle": "Volume per Gruppo Muscolare",
+            "weeklyVolume": "Andamento Volume Settimanale",
+            "noData": "Dati insufficienti per questo grafico.",
+            "timelineRequirement": "La vista cronologica richiede almeno due settimane di dati.",
+            "yAxisVolume": "Volume Totale ({{unit}})",
+            "xAxisMuscle": "Gruppo Muscolare",
+            "xAxisWeek": "Settimana",
+            "avgLine": "Media: {{value}}"
+        },
+        "tables": {
+            "weeklySummaryTitle": "Riepilogo Settimanale",
+            "weekHeader": "Settimana",
+            "workoutsHeader": "Allenamenti",
+            "volumeHeader": "Volume Totale ({{unit}})",
+            "noWeeklyData": "Nessun dato settimanale da mostrare per questo periodo",
+            "muscleGroupTitle": "Volume per Gruppo Muscolare",
+            "muscleGroupHeader": "Gruppo Muscolare",
+            "noMuscleData": "Nessun dato sulla performance dei gruppi muscolari da mostrare per questo periodo"
+        },
+        "noData": {
+            "inPeriodTitle": "Nessun Dato di Allenamento nel Periodo Selezionato",
+            "inPeriodMessage": "Prova a modificare l'intervallo di date o resetta i filtri per visualizzare le statistiche di sempre",
+            "overallTitle": "Nessun Dato per le Statistiche",
+            "overallMessage": "Completa qualche allenamento per vedere qui le tue statistiche",
+            "browseWorkouts": "allenamenti"
+        }
+    },
+    "personalBests": {
+        "title": "Record Personali",
+        "toggleFilters": "Mostra/Nascondi Filtri",
+        "filters": {
+            "title": "Filtra Record",
+            "byNameLabel": "Filtra per Nome Esercizio",
+            "byNamePlaceholder": "es., Panca Piana",
+            "byTypeLabel": "Filtra per Tipo di Record",
+            "allTypes": "Tutti i Tipi di Record",
+            "byCategoryLabel": "Filtra per Categoria",
+            "allCategories": "Tutte le Categorie",
+            "clearButton": "PULISCI FILTRI",
+            "recalculateButton": "RICALCOLA",
+            "recalculateTooltip": "Ricalcola tutti i Record Personali dalla tua cronologia allenamenti",
+            "resetButton": "AZZERA RECORD",
+            "resetTooltip": "Azzera tutti i Record",
+            "showingResult": "Mostrando {{count}} Record",
+            "showingResultOf": "Mostrando {{count}} di {{total}} Record"
+        },
+        "card": {
+            "previous": "Prec:",
+            "viewLog": "VEDI LOG",
+            "trend": "ANDAMENTO",
+            "showTrendTooltip": "Mostra l'andamento per questo Record"
+        },
+        "noPBs": {
+            "noMatchTitle": "Nessun Record Personale Corrisponde ai Tuoi Filtri",
+            "noPBsTitle": "Ancora Nessun Record Personale!",
+            "noMatchMessage": "Prova a modificare i criteri di filtro o ",
+            "resetFiltersLink": "resetta tutti i filtri",
+            "noPBsMessage": "Continua a registrare i tuoi allenamenti per tracciare i tuoi progressi e successi qui",
+            "recalculatePrompt": "Prova a pulire i filtri, o magari ",
+            "recalculateLink": "ricalcola i record",
+            "recalculateSuggestion": " se hai importato dati di recente."
+        },
+        "backToTop": "Torna su",
+        "toasts": {
+            "logNotFound": "Impossibile trovare la registrazione dell'allenamento associata a questo record. È possibile che la sessione di allenamento correlata sia stata rimossa.",
+            "navigationError": "Errore di Navigazione",
+            "recalcError": "Si è verificato un errore durante il ricalcolo dei record personali.",
+            "resetError": "Si è verificato un errore durante il tentativo di azzerare i record personali.",
+            "trendError": "Impossibile mostrare l'andamento: ID esercizio o tipo di record mancante."
+        },
+        "units": {
+            "reps": "rip",
+            "seconds": "s"
+        }
+    },
+    "dates": {
+        "months": {
+            "january": "Gennaio",
+            "february": "Febbraio",
+            "march": "Marzo",
+            "april": "Aprile",
+            "may": "Maggio",
+            "june": "Giugno",
+            "july": "Luglio",
+            "august": "Agosto",
+            "september": "Settembre",
+            "october": "Ottobre",
+            "november": "Novembre",
+            "december": "Dicembre"
+        },
+        "monthsShort": {
+            "jan": "Gen",
+            "feb": "Feb",
+            "mar": "Mar",
+            "apr": "Apr",
+            "may": "Mag",
+            "jun": "Giu",
+            "jul": "Lug",
+            "aug": "Ago",
+            "sep": "Set",
+            "oct": "Ott",
+            "nov": "Nov",
+            "dec": "Dic"
+        },
+        "days": {
+            "sunday": "Domenica",
+            "monday": "Lunedì",
+            "tuesday": "Martedì",
+            "wednesday": "Mercoledì",
+            "thursday": "Giovedì",
+            "friday": "Venerdì",
+            "saturday": "Sabato"
+        },
+        "daysShort": {
+            "sun": "Dom",
+            "mon": "Lun",
+            "tue": "Mar",
+            "wed": "Mer",
+            "thu": "Gio",
+            "fri": "Ven",
+            "sat": "Sab"
+        }
     }
 }

@@ -8,13 +8,13 @@
             </svg>
         </button>
         <header class="flex flex-grow justify-between items-center pb-2">
-            <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">Personal Bests</h1>
+            <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">{{ 'personalBests.title' | translate }}</h1>
             <button (click)="toggleFiltersVisibility()" type="button"
                 class="rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-light transition-all duration-300 ease-in-out">
                 <!-- License: PD. Made by mono-company: https://github.com/mono-company/mono-icons -->
                 <app-icon name="filter" class="w-10 h-10 transition-transform duration-300"
                     [class.rotate-180]="filtersVisible() === true"></app-icon>
-                <span class="sr-only">Toggle Filters</span>
+                <span class="sr-only">{{ 'personalBests.toggleFilters' | translate }}</span>
             </button>
         </header>
 
@@ -26,38 +26,41 @@
     <div class="overflow-hidden transition-all duration-500 ease-in-out"
         [style.maxHeight]="filtersVisible() ? '1000px' : '0px'" [class.mb-6]="filtersVisible()">
         <div class="p-4 bg-white dark:bg-gray-700 rounded-md shadow-md border dark:border-gray-600">
-            <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">Filter PBs</h2>
+            <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">{{ 'personalBests.filters.title' |
+                translate }}</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
                     <label for="exerciseNameFilter"
                         class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Filter by Exercise Name
+                        {{ 'personalBests.filters.byNameLabel' | translate }}
                     </label>
                     <input type="text" id="exerciseNameFilter" #nameFilterInput [value]="exerciseNameFilter()"
-                        (input)="exerciseNameFilter.set(nameFilterInput.value)" placeholder="e.g., Bench Press"
+                        (input)="exerciseNameFilter.set(nameFilterInput.value)"
+                        [placeholder]="'personalBests.filters.byNamePlaceholder' | translate"
                         class="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500">
                 </div>
                 <div>
                     <label for="pbTypeFilter" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Filter by PB Type
+                        {{ 'personalBests.filters.byTypeLabel' | translate }}
                     </label>
                     <select id="pbTypeFilter" #pbTypeFilterInput [value]="pbTypeFilter()"
                         (change)="pbTypeFilter.set(pbTypeFilterInput.value)"
                         class="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm text-gray-900 dark:text-gray-100">
-                        <option value="">All PB Types</option>
+                        <option value="">{{ 'personalBests.filters.allTypes' | translate }}</option>
                         <option *ngFor="let type of availablePbTypes()" [value]="type">
                             {{ type }}
                         </option>
                     </select>
                 </div>
                 <div>
-                    <label for="categoryFilter" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Filter by Category
+                    <label for="categoryFilter"
+                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        {{ 'personalBests.filters.byCategoryLabel' | translate }}
                     </label>
                     <select id="categoryFilter" #categoryFilterInput [value]="exerciseCategoryFilter()"
                         (change)="exerciseCategoryFilter.set(categoryFilterInput.value)"
                         class="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm text-gray-900 dark:text-gray-100">
-                        <option value="">All Categories</option>
+                        <option value="">{{ 'personalBests.filters.allCategories' | translate }}</option>
                         <option *ngFor="let category of availableCategories()" [value]="category">
                             {{ category | titlecase }}
                         </option>
@@ -68,28 +71,30 @@
                 <button appPress (shortPress)="resetFilters()"
                     class="flex px-4 py-2 bg-yellow-200 dark:bg-yellow-700 text-gray-700 dark:text-gray-200 rounded-md hover:bg-yellow-300 dark:hover:bg-yellow-500 text-sm items-center">
                     <app-icon name="trash"></app-icon>
-                    CLEAR FILTERS
+                    {{ 'personalBests.filters.clearButton' | translate }}
                 </button>
                 <button appPress (shortPress)="triggerRecalculatePBs()"
-                    title="Recalculate all Personal Bests from your workout history"
+                    [title]="'personalBests.filters.recalculateTooltip' | translate"
                     class="ml-2 p-2 text-sm text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary-light rounded-md border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center">
                     <app-icon name="change"></app-icon>
-                    <span class="hidden sm:inline-block ml-1">RECALCULATE</span>
+                    <span class="hidden sm:inline-block ml-1">{{ 'personalBests.filters.recalculateButton' | translate
+                        }}</span>
                 </button>
                 <!-- Reset PBs Button -->
-                <button appPress (shortPress)="resetPBs()" title="Reset all PBs"
+                <button appPress (shortPress)="resetPBs()" [title]="'personalBests.filters.resetTooltip' | translate"
                     class="ml-2 p-2 text-sm text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-500 rounded-md border border-gray-300 dark:border-gray-600 hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors flex items-center">
                     <app-icon name="trash"></app-icon>
-                    <span class="hidden sm:inline-block ml-1">RESET PBs</span>
+                    <span class="hidden sm:inline-block ml-1">{{ 'personalBests.filters.resetButton' | translate
+                        }}</span>
                 </button>
                 <div *ngIf="combinedPersonalBests().length > 0" class="text-sm text-gray-600 dark:text-gray-400">
-                    Showing <strong class="text-gray-800 dark:text-gray-200">{{ displayPersonalBests().length
-                        }}</strong>
-                    <span *ngIf="exerciseNameFilter() || exerciseCategoryFilter() || pbTypeFilter()">
-                        of <strong class="text-gray-800 dark:text-gray-200">{{ combinedPersonalBests().length
-                            }}</strong>
+                    <span *ngIf="exerciseNameFilter() || exerciseCategoryFilter() || pbTypeFilter(); else totalOnly">
+                        {{ 'personalBests.filters.showingResultOf' | translate:{count: displayPersonalBests().length,
+                        total: combinedPersonalBests().length} }}
                     </span>
-                    PBs
+                    <ng-template #totalOnly>
+                        {{ 'personalBests.filters.showingResult' | translate:{count: displayPersonalBests().length} }}
+                    </ng-template>
                 </div>
             </div>
         </div>
@@ -123,7 +128,7 @@
 
                     <div *ngIf="pb.history && pb.history.length > 0"
                         class="mt-2 pt-1 border-t border-gray-200 dark:border-gray-600 text-xs text-gray-500 dark:text-gray-400">
-                        <span class="font-medium">Prev:</span>
+                        <span class="font-medium">{{ 'personalBests.card.previous' | translate }}</span>
                         <span *ngFor="let prevPb of pb.history.slice(0,1); let isLast = last">
                             {{ formatPbValue(prevPb, pb.pbType) }} ({{ prevPb.timestamp | date:'shortDate' |
                             date:'dd-MM-yy':'UTC' }}){{ !isLast
@@ -150,13 +155,14 @@
                     <button (click)="navigateToLogDetail(pb.workoutLogId, $event)"
                         class="flex justify-center items-center px-6 py-3 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-md shadow-sm text-lg disabled:opacity-50 disabled:cursor-not-allowed">
                         <app-icon name="eye" class="w-8 h-8 mr-1"></app-icon>
-                        <span>VIEW LOG</span>
+                        <span>{{ 'personalBests.card.viewLog' | translate }}</span>
                     </button>
 
-                    <button (click)="showPbTrend(pb.exerciseId, pb.pbType)" title="Show Trend for this PB"
+                    <button (click)="showPbTrend(pb.exerciseId, pb.pbType)"
+                        [title]="'personalBests.card.showTrendTooltip' | translate"
                         class="flex justify-center items-center px-6 py-3 bg-primary hover:bg-primary-light text-white font-semibold rounded-md shadow-sm text-lg disabled:opacity-50 disabled:cursor-not-allowed">
                         <app-icon name="trend" class="w-8 h-8 mr-1"></app-icon>
-                        <span>TREND</span>
+                        <span>{{ 'personalBests.card.trend' | translate }}</span>
                     </button>
                 </div>
             </div>
@@ -171,20 +177,24 @@
                     d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM13.5 10.5h-6" />
             </svg>
             <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                <span *ngIf="hasActiveFilters(); else noPBsMessage">No Personal Bests Match Your Filters</span>
-                <ng-template #noPBsMessage>No Personal Bests Yet!</ng-template>
+                <span *ngIf="hasActiveFilters(); else noPBsMessage">{{ 'personalBests.noPBs.noMatchTitle' | translate
+                    }}</span>
+                <ng-template #noPBsMessage>{{ 'personalBests.noPBs.noPBsTitle' | translate }}</ng-template>
             </h2>
             <p class="text-gray-500 dark:text-gray-400 px-4">
-                <span *ngIf="hasActiveFilters()">Try adjusting your filter criteria or <button appPress
+                <span *ngIf="hasActiveFilters()">{{ 'personalBests.noPBs.noMatchMessage' | translate }} <button appPress
                         (shortPress)="resetFiltersAndShow()"
-                        class="text-primary dark:text-primary-light hover:underline">reset all filters</button></span>
-                <span *ngIf="!hasActiveFilters() && allPersonalBestsSignalEmpty()">Keep logging your workouts to track
-                    your progress and achievements here</span>
+                        class="text-primary dark:text-primary-light hover:underline">{{
+                        'personalBests.noPBs.resetFiltersLink' | translate }}</button></span>
+                <span *ngIf="!hasActiveFilters() && allPersonalBestsSignalEmpty()">{{
+                    'personalBests.noPBs.noPBsMessage' | translate }}</span>
                 <span
                     *ngIf="!allPersonalBestsSignalEmpty() && displayPersonalBests().length === 0 && !hasActiveFilters()">
-                    Try clearing filters, or perhaps <button appPress (shortPress)="triggerRecalculatePBs()"
-                        class="text-primary dark:text-primary-light hover:underline">recalculate PBs</button> if you've
-                    recently imported data.
+                    {{ 'personalBests.noPBs.recalculatePrompt' | translate }}<button appPress
+                        (shortPress)="triggerRecalculatePBs()"
+                        class="text-primary dark:text-primary-light hover:underline">{{
+                        'personalBests.noPBs.recalculateLink' | translate }}</button>{{
+                    'personalBests.noPBs.recalculateSuggestion' | translate }}
                 </span>
             </p>
         </div>
@@ -200,7 +210,7 @@
             class="w-6 h-6">
             <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
         </svg>
-        <span class="sr-only">Back to Top</span>
+        <span class="sr-only">{{ 'personalBests.backToTop' | translate }}</span>
     </button>
     <!-- ========================================================== -->
     <!-- END: "Back to Top" Button -->

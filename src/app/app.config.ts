@@ -1,5 +1,5 @@
 // src/app/app.config.ts
-import { ApplicationConfig, importProvidersFrom, provideZoneChangeDetection } from '@angular/core';
+import { APP_INITIALIZER, ApplicationConfig, importProvidersFrom, LOCALE_ID, PLATFORM_ID, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { provideHttpClient, withFetch, HttpClient } from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
@@ -24,6 +24,21 @@ export function createTranslateLoader(http: HttpClient) {
 // =========================================================================================
 
 
+// Import locale data for each language
+import localeEn from '@angular/common/locales/en';
+import localeEs from '@angular/common/locales/es';
+import localeIt from '@angular/common/locales/it';
+import localeFr from '@angular/common/locales/fr';
+import localeDe from '@angular/common/locales/de';
+import { isPlatformBrowser, registerLocaleData } from '@angular/common';
+import { LanguageService } from './core/services/language.service';
+
+// Register the locale data
+registerLocaleData(localeEn);
+registerLocaleData(localeEs);
+registerLocaleData(localeIt);
+registerLocaleData(localeFr);
+registerLocaleData(localeDe);
 
 export class CustomHammerConfig extends HammerGestureConfig {
   override overrides = {
@@ -46,6 +61,10 @@ const dbConfig: DBConfig = {
   }]
 };
 
+export function appInitializerFactory(languageService: LanguageService) {
+  return () => languageService.init();
+}
+
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
@@ -58,7 +77,16 @@ export const appConfig: ApplicationConfig = {
       useClass: CustomHammerConfig
     },
     importProvidersFrom(NgxIndexedDBModule.forRoot(dbConfig)),
-    // ngx-translate configuration
+    
+    // ==========================================================
+    // START: CORRECTED PROVIDER ORDER
+    // ==========================================================
+    {
+      provide: APP_INITIALIZER,
+      useFactory: appInitializerFactory,
+      deps: [LanguageService],
+      multi: true
+    },
     importProvidersFrom(
       TranslateModule.forRoot({
         loader: {
@@ -67,6 +95,14 @@ export const appConfig: ApplicationConfig = {
           deps: [HttpClient]
         }
       })
-    )
+    ),
+    {
+      provide: LOCALE_ID,
+      deps: [LanguageService], // Now this depends on the already-initialized service
+      useFactory: (languageService: LanguageService) => languageService.currentLang()
+    },
+    // ==========================================================
+    // END: CORRECTED PROVIDER ORDER
+    // ==========================================================
   ]
 };

@@ -18,6 +18,7 @@ import { animate, state, style, transition, trigger } from '@angular/animations'
 import { PressDirective } from '../../../shared/directives/press.directive';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { WorkoutService } from '../../../core/services/workout.service';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 
 // Interface to combine PB data with Exercise details
@@ -30,7 +31,7 @@ interface DisplayPersonalBest extends PersonalBestSet {
 @Component({
   selector: 'app-personal-bests',
   standalone: true,
-  imports: [CommonModule, RouterLink, DatePipe, TitleCasePipe, PressDirective, IconComponent], // Add DecimalPipe to imports if not already
+  imports: [CommonModule, RouterLink, DatePipe, TitleCasePipe, PressDirective, IconComponent, TranslateModule], // Add DecimalPipe to imports if not already
   templateUrl: './personal-bests.html',
   styleUrl: './personal-bests.scss',
   animations: [
@@ -65,6 +66,7 @@ export class PersonalBestsComponent implements OnInit {
   private toastService = inject(ToastService);
   private platformId = inject(PLATFORM_ID);
   private workoutService = inject(WorkoutService);
+  private translate = inject(TranslateService);
 
   // Signals for raw data
   protected allPersonalBestsRaw = signal<Record<string, PersonalBestSet[]>>({});
@@ -241,13 +243,13 @@ export class PersonalBestsComponent implements OnInit {
         }
       }
     } else if (item.repsAchieved > 0 && effectivePbType?.includes('Max Reps')) {
-      value = `${item.repsAchieved} reps`;
+      value = `${item.repsAchieved} ${this.translate.instant('personalBests.units.reps')}`;
     } else if (item.durationPerformed && item.durationPerformed > 0 && effectivePbType?.includes('Max Duration')) {
-      value = `${item.durationPerformed}s`;
+      value = `${item.durationPerformed}${this.translate.instant('personalBests.units.seconds')}`;
     } else if (item.repsAchieved > 0) { // Fallback if no weight and not a specific 'Max Reps' type
-      value = `${item.repsAchieved} reps`;
+      value = `${item.repsAchieved} ${this.translate.instant('personalBests.units.reps')}`;
     } else if (item.durationPerformed && item.durationPerformed > 0) { // Fallback if no weight and not 'Max Duration'
-      value = `${item.durationPerformed}s`;
+      value = `${item.durationPerformed}${this.translate.instant('personalBests.units.seconds')}`;
     }
 
     return value || 'N/A';
@@ -259,7 +261,7 @@ export class PersonalBestsComponent implements OnInit {
       this.workoutService.vibrate();
       this.router.navigate(['/history/log', workoutLogId]);
     } else {
-      this.toastService.error('Could not find the associated workout log for this personal best. It\'s possible that the related workout session has been removed.', 0, 'Navigation Error');
+      this.toastService.error(this.translate.instant('personalBests.toasts.logNotFound'), 0, this.translate.instant('personalBests.toasts.navigationError'));
       console.warn('Attempted to navigate to log detail, but workoutLogId is undefined for PB:', event);
     }
   }
@@ -272,7 +274,7 @@ export class PersonalBestsComponent implements OnInit {
       this.filtersVisible.set(false);
     } catch (error) {
       console.error('Error initiating PB recalculation:', error);
-      this.toastService.error('An error occurred while trying to recalculate personal bests.');
+      this.toastService.error(this.translate.instant('personalBests.toasts.recalcError'));
     }
   }
 
@@ -281,13 +283,13 @@ export class PersonalBestsComponent implements OnInit {
       await this.trackingService.clearAllPersonalBests_DEV_ONLY();
     } catch (error) {
       console.error('Error clearAllPersonalBests_DEV_ONLY:', error);
-      this.toastService.error('An error occurred while trying to reset personal bests.');
+      this.toastService.error(this.translate.instant('personalBests.toasts.resetError'));
     }
   }
 
   showPbTrend(exerciseId: string, pbType: string): void {
     if (!exerciseId || !pbType) {
-      this.toastService.error('Cannot show trend: Missing exercise ID or PB type.', 0, "Error");
+      this.toastService.error(this.translate.instant('personalBests.toasts.trendError'), 0, "Error");
       return;
     }
     // Encode pbType to make it URL-safe, especially if it contains spaces or special characters
