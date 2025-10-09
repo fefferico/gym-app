@@ -1,0 +1,580 @@
+{
+  "GENERATE_WORKOUT_TITLE": "Generate Workout",
+  "GOAL": "Goal",
+  "DURATION": "Duration",
+  "HYPERTROPHY_GOAL": "Hypertrophy (Size)",
+  "STRENGTH_GOAL": "Strength",
+  "ENDURANCE_GOAL": "Endurance",
+  "GENERATE_CUSTOM_WORKOUT": "Generate Custom Workout",
+  "SURPRISE_ME": "Surprise Me!",
+
+  "home": {
+    "welcomeBack": "Welcome Back, {{name}}!",
+    "readyMessage": "Ready to crush your goals today?",
+    "quickActionsTitle": "Quick Actions",
+    "appVersion": "AppVersion:"
+  },
+  "user": {
+    "defaultName": "Fitness Enthusiast"
+  },
+  "pausedWorkout": {
+    "inProgress": "You have a workout in progress!",
+    "routineLabel": "Routine:",
+    "programLabel": "Program:",
+    "loggedOn": "Logged on the:",
+    "pausedAt": "Paused at:",
+    "defaultRoutineName": "New session",
+    "fallbackRoutineName": "your workout",
+    "adHocWorkout": "Ad-hoc Workout",
+    "resumeButton": "RESUME WORKOUT",
+    "detailsButton": "DETAILS",
+    "discardButton": "DISCARD",
+    "discardPromptTitle": "Discard Paused Workout?",
+    "discardPromptMessage": "Are you sure you want to discard this paused workout session? This action cannot be undone.",
+    "summaryTitle": "Paused: {{routineName}}",
+    "summaryMessage": "You have executed {{exercisesDone}} of {{exercisesAvailable}} exercises, with {{setsDone}} set(s) logged{{targetSetsInfo}}. Elapsed time: {{timeElapsed}}. Resume the workout to continue it.",
+    "noPausedWorkoutFound": "No paused workout found to resume",
+    "sessionDiscarded": "Paused workout session discarded."
+  },
+  "quickActions": {
+    "startNewSessionTitle": "Start a new session",
+    "startNewSessionDescription": "Start a brand new session and refine it as you do it",
+    "logActivityTitle": "Log an Activity",
+    "logActivityDescription": "Record other activities like hiking, football, or yoga",
+    "myRoutinesTitle": "My Routines",
+    "myRoutinesDescription": "View, create, or edit your workout routines",
+    "trainingProgramsTitle": "Training Programs",
+    "trainingProgramsDescription": "Manage your long-term training schedules",
+    "workoutHistoryTitle": "Workout History",
+    "workoutHistoryDescription": "Review your past workout logs and progress",
+    "profileAndSettingsTitle": "Profile & Settings",
+    "profileAndSettingsDescription": "Manage your data and app preferences",
+    "personalGymTitle": "Personal Gym",
+    "personalGymDescription": "Manage your available workout equipment and accessories",
+    "weightToolkitTitle": "Weight toolkit",
+    "weightToolkitDescription": "An all-in-one lifting toolkit. Instantly calculate plate math, percentages, 1RM, RPE, and official powerlifting scores"
+  },
+  "common": {
+    "cancel": "Cancel",
+    "discard": "Discard",
+    "premium": "PREMIUM"
+  },
+
+
+
+  "settings": {
+    "title": "Profile & Settings",
+    "subscription": {
+      "title": "Subscription Status",
+      "premiumMember": "Premium Member",
+      "freeTier": "Free Tier",
+      "allFeaturesUnlocked": "All features unlocked!",
+      "upgradeMessage": "Upgrade to unlock all features.",
+      "manageButton": "Manage",
+      "upgradeButton": "Upgrade"
+    },
+    "userProfile": {
+      "title": "User Profile",
+      "usernameLabel": "Username",
+      "usernamePlaceholder": "Your display name",
+      "genderLabel": "Gender",
+      "genderPlaceholder": "Select Gender...",
+      "ageLabel": "Age",
+      "agePlaceholder": "Years",
+      "genders": {
+        "male": "Male",
+        "female": "Female",
+        "other": "Other",
+        "preferNotToSay": "Prefer not to say"
+      }
+    },
+    "measurements": {
+      "title": "Measurements",
+      "heightLabel": "Height ({{unit}})",
+      "weightLabel": "Weight ({{unit}})",
+      "chestLabel": "Chest ({{unit}})",
+      "neckLabel": "Neck ({{unit}})",
+      "waistLabel": "Waist ({{unit}})",
+      "hipsLabel": "Hips ({{unit}})",
+      "rightArmLabel": "Right Arm ({{unit}})",
+      "saveButton": "SAVE MEASUREMENTS",
+      "historyButton": "MEASUREMENTS HISTORY"
+    },
+    "goals": {
+      "title": "Measurement Goals",
+      "targetWeightLabel": "Target Weight ({{unit}})",
+      "targetWaistLabel": "Target Waist ({{unit}})"
+    },
+    "player": {
+      "title": "Workout Player Settings",
+      "playerModeLabel": "Player Mode",
+      "playerModeDescription": "Choose between Compact and Focus player",
+      "playerModeFocus": "Focus",
+      "playerModeCompact": "Compact",
+      "weightIncrementLabel": "Weight Increment Step",
+      "weightIncrementDescription": "Default step for +/- weight buttons in player (in {{unit}})",
+      "weightIncrementError": "Must be a positive number (e.g., 2.5 or 5). Max 50.",
+      "countdownSoundLabel": "Timed Set Countdown Sound",
+      "countdownSoundDescription": "Play sound X seconds before a timed set ends",
+      "countdownSoundSecondsLabel": "Countdown From (seconds)",
+      "countdownSoundError": "Must be 1-20s."
+    },
+    "progressiveOverload": {
+      "title": "Progressive Overload",
+      "enableLabel": "Enable Automatic Progression",
+      "enableDescription": "Automatically increase weight or reps based on performance.",
+      "strategyLabel": "Progression Strategy",
+      "strategyDescription": "Choose what to increase when you meet your goals.",
+      "strategyError": "Please select at least one strategy.",
+      "weightIncrementLabel": "Weight Increment ({{unit}})",
+      "weightIncrementPlaceholder": "e.g., 2.5",
+      "weightIncrementError": "Must be a positive number.",
+      "repsIncrementLabel": "Repetitions Increment",
+      "repsIncrementPlaceholder": "e.g., 1",
+      "repsIncrementError": "Must be a whole number (e.g., 1, 2).",
+      "distanceIncrementLabel": "Distance Increment ({{unit}})",
+      "distanceIncrementPlaceholder": "e.g., 0.25",
+      "distanceIncrementError": "Must be a positive number.",
+      "durationIncrementLabel": "Duration Increment (seconds)",
+      "durationIncrementPlaceholder": "e.g., 5",
+      "durationIncrementError": "Must be a whole number (e.g., 5, 10).",
+      "sessionsToIncrementLabel": "Apply After # Successful Sessions",
+      "sessionsToIncrementDescription": "Increase after completing this many workouts for an exercise successfully.",
+      "sessionsToIncrementError": "Must be at least 1 session.",
+      "strategies": {
+        "increaseWeight": "Increase Weight",
+        "increaseReps": "Increase Reps",
+        "increaseDistance": "Increase Distance",
+        "increaseDuration": "Increase Duration"
+      }
+    },
+    "dataManagement": {
+      "title": "Data Management",
+      "exportTitle": "Backup your data",
+      "exportDescription": "Save all your data to a JSON file.",
+      "exportButton": "EXPORT DATA",
+      "importTitle": "Restore your data",
+      "importDescription": "Import from a JSON backup file.",
+      "syncTitle": "Data and History",
+      "syncDescription": "Recalculate stats and achievements.",
+      "syncButton": "SYNC HISTORY",
+      "resetTitle": "Reset All Data",
+      "resetDescription": "This action cannot be undone.",
+      "resetButton": "CLEAR ALL DATA",
+      "syncTooltip": "This will scan all workout logs to update the \"Last Used\" date for every exercise in your library. Run this if the dates seem out of sync after an import or an update."
+    },
+    "personalGym": {
+      "title": "Personal Gym",
+      "description": "View your own equipment",
+      "button": "PERSONAL GYM"
+    },
+    "exerciseLibrary": {
+      "title": "Exercise library",
+      "description": "View all the available exercise and add your own ones",
+      "button": "EXERCISES"
+    },
+    "achievements": {
+      "title": "Your Achievements",
+      "description": "View all your tracked Personal Bests",
+      "button": "VIEW PBs"
+    },
+    "general": {
+      "title": "General & Appearance",
+      "language": "Language",
+      "languageDescription": "Choose the display language for the app.",
+      "weightUnits": "Weight Units",
+      "measureUnits": "Measure Units",
+      "distanceUnits": "Distance Units",
+      "bodyWeightUnits": "Body Weight",
+      "bodyMeasureUnits": "Body Measure",
+      "darkMode": "Dark Mode",
+      "wipMessage": "WIP Message",
+      "menuMode": "Menu Mode",
+      "menuModes": {
+        "dropdown": "Dropdown",
+        "compact": "Compact",
+        "modal": "Modal"
+      }
+    },
+    "languageSelector": {
+      "english": "English",
+      "spanish": "Spanish",
+      "italian": "Italian",
+      "german": "German",
+      "french": "French"
+    }
+  },
+  "common": {
+    "on": "On",
+    "off": "Off",
+    "premium": "PREMIUM",
+    "error": "Error",
+    "warning": "WARNING",
+    "info": "Info",
+    "cancel": "Cancel",
+    "cancelled": "Cancelled"
+  },
+  "toasts": {
+    "statusUpdated": "Status Updated",
+    "thankYou": "Thank You!",
+    "upgradeSuccess": "You are now on the {{status}} tier!",
+    "upgradeGratitude": "Thank you for supporting the app! All premium features are now unlocked.",
+    "measurementsSaved": "Measurements history updated",
+    "profileSaved": "Profile auto-saved",
+    "goalsSaved": "Goals auto-saved",
+    "appSettingsSaved": "App settings auto-saved",
+    "progressiveOverloadSaved": "Progressive Overload settings auto-saved",
+    "exportInitiated": "Data export initiated",
+    "importSuccess": "Data imported successfully!",
+    "importComplete": "Import Complete",
+    "importCancelled": "Data import cancelled",
+    "languageSet": "Language set to {{language}}",
+    "routinesDisabledOnImport": "Import detected {{count}} enabled routines. Free users can only have 4 enabled routines. All imported routines have been disabled. You can enable them after upgrading to Premium.",
+    "routinesDisabledTitle": "Routines Disabled"
+  },
+  "alerts": {
+    "playerModeChangeDisabledTitle": "Action Disabled",
+    "playerModeChangeDisabledMessage": "It's not possible to change the player mode during a workout session. Please complete or discard your current workout first.",
+    "invalidFields": "Please fill in all required fields correctly: at least age, height and weight should be filled.",
+    "invalidFileType": "Invalid file type. Please select a JSON file.",
+    "invalidBackupFormat": "Invalid backup file format. Expected an object.",
+    "backupVersionTooNew": "Backup version {{version}} is newer than the app's supported version {{appVersion}}. Please update the app.",
+    "importWarning": "Importing data will try to MERGE your current data with the IMPORTED one. Are you sure?",
+    "errorProcessingFile": "Error processing backup file. Ensure it is valid JSON.",
+    "errorReadingFile": "Error reading file.",
+    "clearAllDataWarningTitle": "WARNING",
+    "clearAllDataWarningMessage": "This will delete ALL your workout data, profile, and settings. This cannot be undone. Are you sure?",
+    "clearAllDataConfirmationTitle": "Confirm Data Deletion",
+    "clearAllDataConfirmationMessage": "To confirm, please type \"DELETE\" in the input below. This will delete ALL your workout data, profile, and settings. This cannot be undone.",
+    "clearAllDataConfirmationPlaceholder": "Type DELETE to confirm",
+    "clearAllDataButton": "CLEAR ALL DATA",
+    "clearAllDataCancelledMessage": "Data clearing cancelled. No changes made.",
+    "clearAllDataSuccessMessage": "All application data has been cleared",
+    "syncHistoryTitle": "Sync Exercise History",
+    "syncFullHistoryTitle": "Sync Full History",
+    "syncFullHistoryMessage": "This will scan all workout logs to update the \"Last Used\" date for all exercises AND the \"Last Performed\" date for all routines. This may take a moment. Proceed?"
+  },
+  "spinners": {
+    "exporting": "Exporting data...",
+    "importing": "Importing data..."
+  },
+
+
+  "todaysWorkout": {
+    "previousDay": "Previous Day",
+    "nextDay": "Next Day",
+    "started": "Started:",
+    "jumpToToday": "Jump to Today",
+    "checkingSchedule": "Checking your schedule...",
+    "scheduled": "Scheduled:",
+    "loggedUnscheduled": "Logged (Unscheduled):",
+    "program": "Program:",
+    "currentWeek": "Current Week:",
+    "workoutCompleted": "Workout Completed!",
+    "details": "DETAILS",
+    "sessionSkipped": "Session Skipped",
+    "logIt": "Log it",
+    "ifYouHavent": ", if you haven't already",
+    "start": "START",
+    "restDay": "Rest Day",
+    "noWorkoutPlanned": "No workout planned in your program for this day",
+    "loggedToday": "Logged today:",
+    "loggedOnThisDay": "Logged on this day:",
+    "feelFreeTo": "Feel free to ",
+    "pickAnotherRoutine": "pick any other routine",
+    "ifYouPrefer": ", if you'd prefer",
+    "orPickOne": "Or, pick one from below:",
+    "pickOne": "Pick one from below:",
+    "estimatedTime": "Est: ~{{duration}} min",
+    "latest": "Latest: ",
+    "noRoutinesAvailable": "No routines available",
+    "noProgramActive": "No Program Active",
+    "activateProgramPrompt": "Activate a program to see your future schedule",
+    "managePrograms": "MANAGE PROGRAMS",
+    "noWorkoutsLogged": "No workouts logged yet",
+    "youCan": "You can ",
+    "setActiveProgram": "set an active program",
+    "or": " or ",
+    "browseRoutines": "browser the available routines",
+    "viewProgramDetailsTooltip": "Click to navigate to program details"
+  },
+
+
+  "routineList": {
+    "title": "My Routines",
+    "toggleFilters": "Toggle Filters",
+    "filters": {
+      "title": "Filter Routines",
+      "searchLabel": "Search Name/Desc.",
+      "searchPlaceholder": "Enter routine name or description...",
+      "goalLabel": "Goal",
+      "anyGoal": "Any Goal",
+      "muscleLabel": "Targets Muscle",
+      "anyMuscle": "Any Muscle Group",
+      "durationLabel": "Max Duration: {{duration}} min",
+      "hiddenLabel": "Hidden routines",
+      "showHidden": "Show Hidden Routines",
+      "hideHidden": "Hide Hidden Routines",
+      "favouriteLabel": "Favourite routines",
+      "onlyFavourite": "Only Favourite Routines",
+      "normalFavourite": "Normal Favourite Routines",
+      "colorLabel": "Routine color",
+      "anyColor": "Any Color",
+      "equipmentLabel": "Equipment",
+      "clearButton": "CLEAR FILTERS",
+      "showingResult": "Showing {{count}} of {{total}} routines",
+      "allCategories": "All Categories"
+    },
+    "card": {
+      "goal": "Goal:",
+      "category": "Category:",
+      "muscles": "Muscles:",
+      "lastPerformed": "Last:",
+      "notPerformed": "Not performed yet",
+      "estimatedDuration": "Est. duration:",
+      "lastDuration": "Last duration:",
+      "hidden": "Hidden",
+      "favourite": "Favourite",
+      "favouriteTooltip": "Click to filter for favourites. Long-press for unmark as favourite"
+    },
+    "noRoutines": {
+      "noMatchTitle": "No Routines Match Filters",
+      "noRoutinesTitle": "No Routines Yet!",
+      "noMatchMessage": "Try adjusting your filters.",
+      "noRoutinesMessage": "Get started by creating your first workout routine.",
+      "createFirstButton": "CREATE YOUR FIRST ROUTINE"
+    },
+    "loading": "Loading routines...",
+    "fab": {
+      "create": "CREATE NEW ROUTINE",
+      "start": "START NEW SESSION",
+      "generate": "GENERATE RANDOM WORKOUT"
+    },
+    "toasts": {
+      "showingHidden": "Showing hidden routines",
+      "hidingHidden": "Hiding hidden routines",
+      "showingOnlyFavourites": "Showing only favourite routines",
+      "showingAllRoutines": "Showing all routines",
+      "filterUpdate": "Filter Update",
+      "routineNotFound": "Routine not found",
+      "routineDeleted": "Routine \"{{name}}\" deleted successfully.",
+      "routineCloned": "Routine \"{{name}}\" cloned successfully.",
+      "colorUpdated": "Color updated for \"{{name}}\"",
+      "unhidden": "Removed {{name}} from hidden ones",
+      "addedToFavourites": "Routine \"{{name}}\" added to favourites",
+      "removedFromFavourites": "Routine \"{{name}}\" removed from favourites",
+      "generationFailed": "Could not generate a workout with the selected criteria. Please try again.",
+      "generationFailedTitle": "Generation Failed",
+      "retryFailed": "Failed to generate a new workout. Please try adjusting your options."
+    },
+    "alerts": {
+      "editRunningTitle": "Info",
+      "editRunningMessage": "It's not possible to edit a running routine. Complete it or discard it before doing it.",
+      "deleteTitle": "Delete Routine",
+      "deleteMessage": "Are you sure you want to delete the routine \"{{name}}\"?",
+      "deleteWithLogs": "This will also delete {{count}} associated workout log(s).",
+      "deleteWithPrograms": "This will also delete the entries in {{count}} associated program(s).",
+      "deleteWithOneProgram": "This will also delete the entries in '{{name}}' associated program(s).",
+      "cannotBeUndone": "This action cannot be undone.",
+      "deleteButton": "Delete",
+      "pausedWorkoutTitle": "Workout in Progress",
+      "pausedWorkoutMessage": "You have a paused workout (\"{{name}}\" from {{date}}). What would you like to do?",
+      "resumeButton": "Resume: {{name}}",
+      "discardAndStart": "Discard Paused & Start New",
+      "unhideTitle": "Unhide routine",
+      "unhideMessage": "Would you like to unhide {{name}} from hidden ones?",
+      "unmarkButton": "Unmark",
+      "unmarkFavouriteTitle": "Unmark favourite routine",
+      "unmarkFavouriteMessage": "Would you like to unmark {{name}} from favourites?",
+      "selectColorTitle": "Select a Color for \"{{name}}\"",
+      "clearColorButton": "Clear Color"
+    },
+    "wip": {
+      "startTracking": "START TRACKING (VERY WIP)"
+    }
+  },
+
+  "historyList": {
+    "title": "History",
+    "toggleFilters": "Toggle Filters",
+    "view": {
+      "list": "LIST",
+      "calendar": "CALENDAR"
+    },
+    "filters": {
+      "title": "Filter History",
+      "fromDate": "From Date",
+      "toDate": "To Date",
+      "routineName": "Routine Name",
+      "routinePlaceholder": "Search routine name...",
+      "exercise": "Exercise Performed",
+      "anyExercise": "Any Exercise",
+      "program": "Program",
+      "anyProgram": "Any Program",
+      "cardColor": "Card Color",
+      "anyColor": "Any Color",
+      "clearButton": "CLEAR FILTERS",
+      "showingResult": "Showing {{count}} of {{total}} entries"
+    },
+    "card": {
+      "adHocWorkout": "Ad-hoc Workout",
+      "program": "Program:",
+      "date": "Date:",
+      "duration": "Duration:",
+      "exercises": "Ex:",
+      "pbs": "PBs:",
+      "details": "DETAILS",
+      "location": "Location:",
+      "distance": "Distance:",
+      "notes": "Notes:"
+    },
+    "noResults": {
+      "noMatchTitle": "No Entries Match Your Filters",
+      "noMatchMessage": "Try adjusting your filters or view all entries by resetting them",
+      "noDataMessage": "There is no data here yet. Time to get active!"
+    },
+    "loading": {
+      "history": "Loading history...",
+      "moreMonths": "Loading more months...",
+      "srLoading": "Loading..."
+    },
+    "calendar": {
+      "today": "(Today)"
+    },
+    "fab": {
+      "logWorkout": "LOG PAST WORKOUT",
+      "logActivity": "LOG PAST ACTIVITY"
+    },
+    "toasts": {
+      "filteredByProgram": "Showing logs filtered out by training program",
+      "filteredByRoutine": "Showing logs filtered out by routine name",
+      "logDeleted": "Workout log deleted successfully",
+      "logDeleteFailed": "Failed to delete workout log",
+      "pausedDiscarded": "Paused workout session discarded.",
+      "noLogsOnDay": "No activities logged on this day"
+    },
+    "alerts": {
+      "noRoutineTitle": "No routine for log",
+      "noRoutineMessage": "There is no routine associated with this log: would you like to create one? If so remember to link it to this log once created",
+      "deleteLogTitle": "Delete Workout Log",
+      "deleteLogMessage": "Are you sure you want to delete this workout log? This action cannot be undone",
+      "deleteActivityTitle": "Delete Activity Log?",
+      "deleteActivityMessage": "Are you sure you want to delete the log for \"{{name}}\"? This action cannot be undone.",
+      "deleteButton": "Delete",
+      "pausedWorkoutTitle": "Pending Workout found",
+      "pausedWorkoutMessage": "There's a pending workout: do you want to discard this paused workout session and log a new one? This action cannot be undone.",
+      "discardButton": "Discard"
+    },
+    "wip": {
+      "startTracking": "START TRACKING (VERY WIP)"
+    }
+  },
+
+  "trainingPrograms": {
+    "title": "Programs",
+    "toggleFilters": "Toggle Filters",
+    "view": {
+      "myPrograms": "MY PROGRAMS",
+      "calendar": "CALENDAR"
+    },
+    "filters": {
+      "title": "Filter Programs",
+      "searchLabel": "Search Name",
+      "searchPlaceholder": "Enter program name...",
+      "cycleTypeLabel": "Cycle Type",
+      "allCycleTypes": "All Cycle Types",
+      "weekly": "Weekly",
+      "fixedCycle": "Fixed Cycle Length",
+      "programTypeLabel": "Program Type",
+      "allProgramTypes": "All Program Types",
+      "cycled": "Cycled",
+      "linear": "Linear",
+      "goalLabel": "Overall Goal",
+      "anyGoal": "Any Goal",
+      "muscleLabel": "Targets Muscle",
+      "anyMuscle": "Any Muscle Group",
+      "clearButton": "CLEAR FILTERS",
+      "showingResult": "Showing {{count}} programs",
+      "showingResultOf": "Showing {{count}} of {{total}} programs"
+    },
+    "card": {
+      "active": "Active",
+      "schedule": "Schedule:",
+      "days": "{{count}} day",
+      "days_plural": "{{count}} days",
+      "avgDaysPerWeek": "Avg. {{count}} days/week",
+      "started": "Started:",
+      "lastScheduling": "Last scheduling:",
+      "goals": "Goals:",
+      "iteration": "Iteration:",
+      "currentWeek": "Current Week:"
+    },
+    "noPrograms": {
+      "noMatchTitle": "No Programs Match Filters",
+      "noProgramsTitle": "No Training Programs Yet!",
+      "noMatchMessage": "Try adjusting your filters.",
+      "noProgramsMessage": "Create a structured program to follow your routines.",
+      "createFirstButton": "CREATE YOUR FIRST PROGRAM"
+    },
+    "calendar": {
+      "noActiveProgramTitle": "No Active Program",
+      "selectProgramTitle": "Select a Program",
+      "noActiveProgramMessage": "Please activate a program to see its schedule.",
+      "selectProgramMessage": "Choose an active program to view its calendar.",
+      "goToPrograms": "Go to My Programs",
+      "loadingMonths": "Loading more months...",
+      "today": "(Today)",
+      "notScheduled": "Not Scheduled",
+      "sessionsLogged": "({{count}} sessions logged)",
+      "programNote": "Program Note:",
+      "suggestedTime": "Suggested Time:",
+      "loggedSessions": "Logged Session(s):",
+      "loggedAt": "Logged: {{time}} ({{duration}} min)",
+      "viewButton": "VIEW",
+      "startButton": "START",
+      "notLogged": "NOT LOGGED",
+      "logPastButton": "LOG PAST",
+      "allLogsButton": "ALL LOGS FOR THIS PROGRAM",
+      "restDay": "It's a rest day!",
+      "wasRestDay": "It was a rest day!"
+    },
+    "loading": "Loading programs...",
+    "fab": {
+      "create": "NEW PROGRAM"
+    },
+    "toasts": {
+      "programActivated": "Program activated",
+      "statusUpdateFailed": "Failed to update program status",
+      "finishFailed": "Failed to finish program",
+      "deactivateFailed": "Failed to deactivate",
+      "setActiveFailed": "Failed to set active program",
+      "logFailed": "Cannot log session: No active program is being viewed.",
+      "cloneSuccess": "Program \"{{name}}\" cloned successfully.",
+      "cloneFailed": "Failed to clone program"
+    },
+    "alerts": {
+      "deleting": "Deleting program...",
+      "updating": "Updating program...",
+      "completing": "Completing program...",
+      "deactivating": "Deactivating program...",
+      "settingActive": "Setting active program...",
+      "programActiveTitle": "Program is currently active.",
+      "programActiveMessage": "What would you like to do?",
+      "deactivate": "Deactivate",
+      "complete": "Complete",
+      "finishTitle": "Finish Program",
+      "finishMessage": "Are you sure you want to mark this program as completed?",
+      "finishButton": "Finish Program",
+      "selectProgramTitle": "Select Program",
+      "selectProgramMessage": "Choose a program to view in the calendar."
+    },
+    "actions": {
+      "view": "VIEW",
+      "edit": "EDIT",
+      "delete": "DELETE",
+      "activate": "ACTIVATE",
+      "deactivate": "DEACTIVATE",
+      "finish": "FINISH"
+    }
+  }
+}
