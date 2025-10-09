@@ -1,68 +1,76 @@
 <div class="container mx-auto p-2 sm:p-4">
     <header class="flex justify-between items-center pb-2">
-        <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">Profile & Settings</h1>
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">{{ 'settings.title' | translate }}</h1>
     </header>
 
     <div class="space-y-6 sm:space-y-8">
 
         <section
             class="bg-gradient-to-r from-primary to-indigo-600 dark:from-primary-dark dark:to-indigo-700 p-4 sm:p-6 rounded-md shadow-lg text-white">
-            <h2 class="text-xl font-semibold mb-2">Subscription Status</h2>
+            <h2 class="text-xl font-semibold mb-2">{{ 'settings.subscription.title' | translate }}</h2>
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-lg font-bold">
-                        {{ subscriptionService.isPremium() ? 'Premium Member' : 'Free Tier' }}
+                        {{ (subscriptionService.isPremium() ? 'settings.subscription.premiumMember' :
+                        'settings.subscription.freeTier') | translate }}
                     </p>
                     <p class="text-sm opacity-90">
-                        {{ subscriptionService.isPremium() ? 'All features unlocked!' : 'Upgrade to unlock all
-                        features.' }}
+                        {{ (subscriptionService.isPremium() ? 'settings.subscription.allFeaturesUnlocked' :
+                        'settings.subscription.upgradeMessage') | translate }}
                     </p>
                 </div>
                 <button appPress (shortPress)="handleUpgradeClick()"
                     class="px-4 py-2 bg-white text-primary-dark font-semibold rounded-md shadow-md hover:bg-gray-200 transition-colors">
-                    {{ subscriptionService.isPremium() ? 'Manage' : 'Upgrade' }}
+                    {{ (subscriptionService.isPremium() ? 'settings.subscription.manageButton' :
+                    'settings.subscription.upgradeButton') | translate }}
                 </button>
             </div>
         </section>
 
         <!-- User Profile Section -->
         <section class="bg-white dark:bg-gray-700 p-4 sm:p-6 rounded-md shadow-md">
-            <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">User Profile</h2>
+            <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">{{ 'settings.userProfile.title' |
+                translate }}</h2>
             <form [formGroup]="profileForm" class="space-y-4 dark:text-gray-300">
                 <div formGroupName="general" class="space-y-4 pt-4 border-t border-gray-200 dark:border-gray-600">
                     <div>
-                        <label for="username"
-                            class="block text-md font-medium text-gray-700 dark:text-gray-300">Username</label>
+                        <label for="username" class="block text-md font-medium text-gray-700 dark:text-gray-300">{{
+                            'settings.userProfile.usernameLabel' | translate }}</label>
                         <input type="text" id="username" formControlName="username"
-                            (change)="currentVibrator.vibrate(50)" placeholder="Your display name"
+                            (change)="currentVibrator.vibrate(50)"
+                            [placeholder]="'settings.userProfile.usernamePlaceholder' | translate"
                             class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg">
                     </div>
 
                     <div class=" dark:text-gray-300">
-                        <label for="gender"
-                            class="block text-md font-medium text-gray-700 dark:text-gray-300">Gender</label>
+                        <label for="gender" class="block text-md font-medium text-gray-700 dark:text-gray-300">{{
+                            'settings.userProfile.genderLabel' | translate }}</label>
                         <select id="gender" formControlName="gender" (change)="currentVibrator.vibrate(50)"
                             class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg">
-                            <option [ngValue]="null">Select Gender...</option>
-                            <option *ngFor="let genderOpt of genders" [value]="genderOpt.value">{{ genderOpt.label }}
+                            <option [ngValue]="null">{{ 'settings.userProfile.genderPlaceholder' | translate }}</option>
+                            <option *ngFor="let genderOpt of genders" [value]="genderOpt.value">{{ genderOpt.label |
+                                translate }}
                             </option>
                         </select>
                     </div>
 
                     <div class=" dark:text-gray-300">
-                        <label for="saveAppSettings"
-                            class="block text-md font-medium text-gray-700 dark:text-gray-300">Age</label>
-                        <input type="number" min="0" id="age" formControlName="age" placeholder="Years" required
+                        <label for="age" class="block text-md font-medium text-gray-700 dark:text-gray-300">{{
+                            'settings.userProfile.ageLabel' | translate }}</label>
+                        <input type="number" min="0" id="age" formControlName="age"
+                            [placeholder]="'settings.userProfile.agePlaceholder' | translate" required
                             class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200 text-lg">
                     </div>
                 </div>
 
                 <div formGroupName="measurements" class="space-y-4 pt-4 border-t border-gray-200 dark:border-gray-600">
-                    <h3 class="text-lg font-medium text-gray-700 dark:text-gray-300">Measurements</h3>
+                    <h3 class="text-lg font-medium text-gray-700 dark:text-gray-300">{{ 'settings.measurements.title' |
+                        translate }}</h3>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div>
                             <label for="height" class="block text-md font-medium text-gray-600 dark:text-gray-400">
-                                Height ({{unitsService.getBodyMeasureUnitSuffix()}})<span class="text-red-500">*</span>
+                                {{ 'settings.measurements.heightLabel' | translate:{unit:
+                                unitsService.getBodyMeasureUnitSuffix()} }}<span class="text-red-500">*</span>
                             </label>
                             <input type="number" min="0" id="height" formControlName="height"
                                 [placeholder]="unitsService.getBodyMeasureUnitSuffix()"
@@ -70,44 +78,49 @@
                         </div>
                         <div>
                             <label for="weight" class="block text-md font-medium text-gray-600 dark:text-gray-400">
-                                Weight ({{unitsService.getBodyWeightUnitSuffix()}})<span class="text-red-500">*</span>
+                                {{ 'settings.measurements.weightLabel' | translate:{unit:
+                                unitsService.getBodyWeightUnitSuffix()} }}<span class="text-red-500">*</span>
                             </label>
                             <input type="number" min="0" id="weight" formControlName="weight"
                                 [placeholder]="unitsService.getBodyWeightUnitSuffix()"
                                 class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200 text-lg">
                         </div>
                         <div>
-                            <label for="chest" class="block text-md font-medium text-gray-600 dark:text-gray-400">Chest
-                                ({{unitsService.getBodyMeasureUnitSuffix()}})</label>
+                            <label for="chest" class="block text-md font-medium text-gray-600 dark:text-gray-400">{{
+                                'settings.measurements.chestLabel' | translate:{unit:
+                                unitsService.getBodyMeasureUnitSuffix()} }}</label>
                             <input type="number" min="0" id="chest" formControlName="chest"
                                 [placeholder]="unitsService.getBodyMeasureUnitSuffix()"
                                 class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200 text-lg">
                         </div>
                         <div>
-                            <label for="neck" class="block text-md font-medium text-gray-600 dark:text-gray-400">Neck
-                                ({{unitsService.getBodyMeasureUnitSuffix()}})</label>
+                            <label for="neck" class="block text-md font-medium text-gray-600 dark:text-gray-400">{{
+                                'settings.measurements.neckLabel' | translate:{unit:
+                                unitsService.getBodyMeasureUnitSuffix()} }}</label>
                             <input type="number" min="0" id="neck" formControlName="neck"
                                 [placeholder]="unitsService.getBodyMeasureUnitSuffix()"
                                 class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200 text-lg">
                         </div>
                         <div>
-                            <label for="waist" class="block text-md font-medium text-gray-600 dark:text-gray-400">Waist
-                                ({{unitsService.getBodyMeasureUnitSuffix()}})</label>
+                            <label for="waist" class="block text-md font-medium text-gray-600 dark:text-gray-400">{{
+                                'settings.measurements.waistLabel' | translate:{unit:
+                                unitsService.getBodyMeasureUnitSuffix()} }}</label>
                             <input type="number" min="0" id="waist" formControlName="waist"
                                 [placeholder]="unitsService.getBodyMeasureUnitSuffix()"
                                 class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200 text-lg">
                         </div>
                         <div>
-                            <label for="hips" class="block text-md font-medium text-gray-600 dark:text-gray-400">Hips
-                                ({{unitsService.getBodyMeasureUnitSuffix()}})</label>
+                            <label for="hips" class="block text-md font-medium text-gray-600 dark:text-gray-400">{{
+                                'settings.measurements.hipsLabel' | translate:{unit:
+                                unitsService.getBodyMeasureUnitSuffix()} }}</label>
                             <input type="number" min="0" id="hips" formControlName="hips"
                                 [placeholder]="unitsService.getBodyMeasureUnitSuffix()"
                                 class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200 text-lg">
                         </div>
                         <div>
-                            <label for="rightArm"
-                                class="block text-md font-medium text-gray-600 dark:text-gray-400">Right Arm
-                                ({{unitsService.getBodyMeasureUnitSuffix()}})</label>
+                            <label for="rightArm" class="block text-md font-medium text-gray-600 dark:text-gray-400">{{
+                                'settings.measurements.rightArmLabel' | translate:{unit:
+                                unitsService.getBodyMeasureUnitSuffix()} }}</label>
                             <input type="number" min="0" id="rightArm" formControlName="rightArm"
                                 [placeholder]="unitsService.getBodyMeasureUnitSuffix()"
                                 class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200 text-lg">
@@ -115,69 +128,52 @@
                     </div>
                     <div
                         class="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4 pt-4">
-                        <!-- 
-                        - flex-col: Stacks buttons vertically by default (for mobile).
-                        - sm:flex-row: Switches to a side-by-side layout on small screens and up.
-                        - space-y-4: Adds vertical space between buttons in the stacked view.
-                        - sm:space-y-0: Removes the vertical space on larger screens.
-                        - sm:space-x-4: Adds horizontal space on larger screens.
-                        -->
-
                         <button type="button" (click)="saveMeasurements()"
                             class="flex justify-center items-center w-full sm:w-auto px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-md shadow-sm text-lg disabled:opacity-50 disabled:cursor-not-allowed">
-                            <!--
-                            - w-full sm:w-auto: Makes the button full-width on mobile and auto-width on larger screens.
-                            - justify-center: Ensures icon and text are centered.
-                            - Increased padding (px-6 py-3) to give the larger text more space.
-                            -->
                             <app-icon name="save" class="w-8 h-8 mr-1"></app-icon>
-                            <span>SAVE MEASUREMENTS</span>
+                            <span>{{ 'settings.measurements.saveButton' | translate }}</span>
                         </button>
 
                         <button type="button" (click)="navigateToBodyMeasurements()"
                             class="flex justify-center items-center w-full sm:w-auto px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md shadow-sm text-lg disabled:opacity-50 disabled:cursor-not-allowed">
                             <app-icon name="chart2" class="w-8 h-8 mr-1"></app-icon>
-                            <span>MEASUREMENTS HISTORY</span>
+                            <span>{{ 'settings.measurements.historyButton' | translate }}</span>
                         </button>
                     </div>
-
-
                 </div>
-                <!-- <div class="pt-3 flex justify-end">
-                    
-                </div> -->
             </form>
         </section>
 
         <section class="bg-white dark:bg-gray-700 p-4 sm:p-6 rounded-md shadow-md">
-            <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">Measurement Goals</h2>
+            <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">{{ 'settings.goals.title' |
+                translate }}</h2>
             <form [formGroup]="goalsForm" class="space-y-4">
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                     <div>
-                        <label for="goalweight"
-                            class="block text-md font-medium text-gray-600 dark:text-gray-400">Target Weight
-                            ({{unitsService.getBodyWeightUnitSuffix()}})</label>
+                        <label for="goalweight" class="block text-md font-medium text-gray-600 dark:text-gray-400">{{
+                            'settings.goals.targetWeightLabel' | translate:{unit:
+                            unitsService.getBodyWeightUnitSuffix()} }}</label>
                         <input type="number" min="0" id="goalweight" formControlName="weight"
                             [placeholder]="unitsService.getBodyWeightUnitSuffix()"
                             class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200 text-lg">
                     </div>
                     <div>
-                        <label for="goalwaist" class="block text-md font-medium text-gray-600 dark:text-gray-400">Target
-                            Waist ({{unitsService.getBodyMeasureUnitSuffix()}})</label>
+                        <label for="goalwaist" class="block text-md font-medium text-gray-600 dark:text-gray-400">{{
+                            'settings.goals.targetWaistLabel' | translate:{unit:
+                            unitsService.getBodyMeasureUnitSuffix()} }}</label>
                         <input type="number" min="0" id="goalwaist" formControlName="waist"
                             [placeholder]="unitsService.getBodyMeasureUnitSuffix()"
                             class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200 text-lg">
                     </div>
-                    <!-- Add inputs for other goals (chest, hips, etc.) as needed -->
                 </div>
             </form>
         </section>
 
         <!-- App Settings Section -->
         <section class="bg-white dark:bg-gray-700 p-4 sm:p-6 rounded-md shadow-md">
-            <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">Workout Player Settings</h2>
+            <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">{{ 'settings.player.title' |
+                translate }}</h2>
             <form [formGroup]="appSettingsForm" class="space-y-4">
-                <!-- Player mode (Focus Player) -->
                 <div class="flex items-center justify-between py-2 rounded-md transition-colors"
                     [class.hover:bg-gray-100]="subscriptionService.isPremium()"
                     [class.dark:hover:bg-gray-600/50]="subscriptionService.isPremium()"
@@ -186,14 +182,15 @@
                     (click)="handlePremiumFeatureOrNavigate(PremiumFeature.FOCUS_PLAYER, $event)">
                     <div>
                         <h3 class="text-md font-medium text-gray-700 dark:text-gray-300 flex items-center">
-                            Player Mode
+                            {{ 'settings.player.playerModeLabel' | translate }}
                             <span *ngIf="!subscriptionService.isPremium()"
                                 class="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full bg-yellow-400 text-yellow-900 flex items-center justify-center ">
                                 <app-icon name="crown" class="h-5 w-5 mr-1"></app-icon>
-                                PREMIUM
+                                {{ 'common.premium' | translate }}
                             </span>
                         </h3>
-                        <p class="text-sm text-gray-500 dark:text-gray-400 mr-1">Choose between Compact and Focus player
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mr-1">{{
+                            'settings.player.playerModeDescription' | translate }}
                         </p>
                     </div>
                     <label class="inline-flex items-center"
@@ -206,31 +203,32 @@
                             class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary dark:peer-checked:bg-primary-dark peer-disabled:opacity-50">
                         </div>
                         <span class="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
-                            {{ appSettingsForm.get('playerMode')?.value === 'focus' ? 'Focus' : 'Compact' }}
+                            {{ appSettingsForm.get('playerMode')?.value === 'focus' ? ('settings.player.playerModeFocus'
+                            | translate) : ('settings.player.playerModeCompact' | translate) }}
                         </span>
                     </label>
                 </div>
-                <!-- Weight Step -->
                 <div class="border-b border-gray-200 dark:border-gray-600 pb-4">
-                    <label for="weightStep" class="block text-md font-medium text-gray-700 dark:text-gray-300">Weight
-                        Increment Step</label>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">Default step for +/- weight buttons in
-                        player (in {{unitsService.currentWeightUnit() | uppercase}})</p>
+                    <label for="weightStep" class="block text-md font-medium text-gray-700 dark:text-gray-300">{{
+                        'settings.player.weightIncrementLabel' | translate }}</label>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">{{
+                        'settings.player.weightIncrementDescription' | translate:{unit:
+                        unitsService.currentWeightUnit() | uppercase} }}</p>
                     <input type="number" id="weightStep" formControlName="weightStep" min="0.01" step="any"
                         (change)="currentVibrator.vibrate(50)"
                         class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200 text-lg">
                     <div *ngIf="appSettingsForm.get('weightStep')?.invalid && appSettingsForm.get('weightStep')?.touched"
                         class="text-red-500 dark:text-red-400 text-xs mt-1">
-                        Must be a positive number (e.g., 2.5 or 5). Max 50.
+                        {{ 'settings.player.weightIncrementError' | translate }}
                     </div>
                 </div>
 
-                <!-- Countdown Sound for Timed Sets -->
                 <div class="flex items-center justify-between pt-4">
                     <div>
-                        <h3 class="text-md font-medium text-gray-700 dark:text-gray-300">Timed Set Countdown Sound</h3>
-                        <p class="text-sm text-gray-500 dark:text-gray-400 mr-1">Play sound X seconds before a timed set
-                            ends</p>
+                        <h3 class="text-md font-medium text-gray-700 dark:text-gray-300">{{
+                            'settings.player.countdownSoundLabel' | translate }}</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mr-1">{{
+                            'settings.player.countdownSoundDescription' | translate }}</p>
                     </div>
                     <label for="countdown-sound-toggle" class="inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="countdown-sound-toggle" class="sr-only peer"
@@ -239,54 +237,22 @@
                             class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary dark:peer-checked:bg-primary-dark">
                         </div>
                         <span class="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
-                            {{ appSettingsForm.get('enableTimerCountdownSound')?.value ? 'On' : 'Off' }}
+                            {{ appSettingsForm.get('enableTimerCountdownSound')?.value ? ('common.on' | translate) :
+                            ('common.off' | translate) }}
                         </span>
                     </label>
                 </div>
                 <div *ngIf="appSettingsForm.get('enableTimerCountdownSound')?.value" class=" dark:text-gray-300">
-                    <label for="countdownSeconds"
-                        class="block text-sm font-medium text-gray-700 dark:text-gray-300">Countdown From
-                        (seconds)</label>
+                    <label for="countdownSeconds" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                        'settings.player.countdownSoundSecondsLabel' | translate }}</label>
                     <input type="number" id="countdownSeconds" formControlName="countdownSoundSeconds"
                         (change)="currentVibrator.vibrate(50)" min="1" max="20"
                         class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg">
                     <div *ngIf="appSettingsForm.get('countdownSoundSeconds')?.invalid && appSettingsForm.get('countdownSoundSeconds')?.touched"
                         class="text-red-500 dark:text-red-400 text-xs mt-1">
-                        Must be 1-20s.
+                        {{ 'settings.player.countdownSoundError' | translate }}
                     </div>
                 </div>
-
-                <!-- Pre-Set Timer -->
-                <!-- <div class="pt-4 border-t border-gray-200 dark:border-gray-600"></div>
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h3 class="text-md font-medium text-gray-700 dark:text-gray-300">Pre-Set Timer</h3>
-                        <p class="text-sm text-gray-500 dark:text-gray-400 mr-1">Show a countdown before each set
-                            starts</p>
-                    </div>
-                    <label for="preset-timer-toggle" class="inline-flex items-center cursor-pointer">
-                        <span class="sr-only">Toggle Pre-Set Timer</span>
-                        <input type="checkbox" id="preset-timer-toggle" class="sr-only peer"
-                            formControlName="enablePresetTimer" (change)="currentVibrator.vibrate(50)">
-                        <div
-                            class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary dark:peer-checked:bg-primary-dark">
-                        </div>
-                        <span class="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
-                            {{ appSettingsForm.get('enablePresetTimer')?.value ? 'On' : 'Off' }}
-                        </span>
-                    </label>
-                </div>
-                <div *ngIf="appSettingsForm.get('enablePresetTimer')?.value" class="text-gray-700 dark:text-gray-300">
-                    <label for="presetTimerDurationSeconds" class="block text-sm font-medium">Pre-Set Timer Duration
-                        (seconds)</label>
-                    <input type="number" id="presetTimerDurationSeconds" formControlName="presetTimerDurationSeconds"
-                        min="3" max="60" (change)="currentVibrator.vibrate(50)"
-                        class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-lg">
-                    <div *ngIf="appSettingsForm.get('presetTimerDurationSeconds')?.invalid && appSettingsForm.get('presetTimerDurationSeconds')?.touched"
-                        class="text-red-500 dark:text-red-400 text-xs mt-1">
-                        Must be 3-60s.
-                    </div>
-                </div> -->
             </form>
         </section>
 
@@ -294,17 +260,15 @@
         <section class="bg-white dark:bg-gray-700 p-4 sm:p-6 rounded-md shadow-md">
             <div>
                 <h2 class="text-xl font-medium text-gray-700 dark:text-gray-300 flex items-center">
-                    Progressive Overload
+                    {{ 'settings.progressiveOverload.title' | translate }}
                     <span *ngIf="!subscriptionService.isPremium()"
                         class="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full bg-yellow-400 text-yellow-900 flex items-center justify-center ">
                         <app-icon name="crown" class="h-5 w-5 mr-1"></app-icon>
-                        PREMIUM
+                        {{ 'common.premium' | translate }}
                     </span>
                 </h2>
             </div>
-            <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4"></h2>
             <form [formGroup]="progressiveOverloadForm" class="space-y-4">
-                <!-- Enable/Disable Toggle -->
                 <div class="flex items-center justify-between py-2 rounded-md transition-colors"
                     [class.hover:bg-gray-100]="subscriptionService.isPremium()"
                     [class.dark:hover:bg-gray-600/50]="subscriptionService.isPremium()"
@@ -312,11 +276,11 @@
                     [class.cursor-not-allowed]="!subscriptionService.isPremium()"
                     (click)="handlePremiumFeatureOrNavigate(PremiumFeature.PROGRESSIVE_OVERLOAD, $event)">
                     <div>
-                        <h3 class="text-md font-medium text-gray-700 dark:text-gray-300">Enable Automatic Progression
+                        <h3 class="text-md font-medium text-gray-700 dark:text-gray-300">{{
+                            'settings.progressiveOverload.enableLabel' | translate }}
                         </h3>
-                        <p class="text-sm text-gray-500 dark:text-gray-400 mr-1">Automatically increase weight or reps
-                            based
-                            on performance.</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mr-1">{{
+                            'settings.progressiveOverload.enableDescription' | translate }}</p>
                     </div>
                     <label for="po-enabled-toggle" class="inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="po-enabled-toggle" class="sr-only peer" formControlName="enabled"
@@ -325,21 +289,18 @@
                             class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary dark:peer-checked:bg-primary-dark">
                         </div>
                         <span class="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
-                            {{ progressiveOverloadForm.get('enabled')?.value ? 'On' : 'Off' }}
+                            {{ progressiveOverloadForm.get('enabled')?.value ? ('common.on' | translate) : ('common.off'
+                            | translate) }}
                         </span>
                     </label>
                 </div>
 
-                <!-- Settings Container - shows only when enabled -->
                 <div *ngIf="progressiveOverloadForm.get('enabled')?.value" class="space-y-4 pt-4">
-                    <!-- Strategy Selection -->
                     <div>
-                        <label class="block text-md font-medium text-gray-700 dark:text-gray-300">Progression
-                            Strategy</label>
-                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">Choose what to increase when you meet
-                            your goals.</p>
-
-                        <!-- Checkbox Grid -->
+                        <label class="block text-md font-medium text-gray-700 dark:text-gray-300">{{
+                            'settings.progressiveOverload.strategyLabel' | translate }}</label>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">{{
+                            'settings.progressiveOverload.strategyDescription' | translate }}</p>
                         <div class="grid grid-cols-2 gap-x-8 gap-y-2">
                             <div *ngFor="let strategy of progressiveOverloadStrategies" class="flex items-center">
                                 <input type="checkbox" [id]="'strategy-' + strategy.value" [value]="strategy.value"
@@ -347,239 +308,218 @@
                                     class="focus:ring-primary h-4 w-4 text-primary border-gray-300 rounded dark:border-gray-600 dark:bg-gray-700">
                                 <label [for]="'strategy-' + strategy.value"
                                     class="ml-3 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    {{ strategy.label }}
+                                    {{ strategy.label | translate }}
                                 </label>
                             </div>
                         </div>
                         <div *ngIf="progressiveOverloadForm.get('enabled')?.value && strategiesFormArray.length === 0 && progressiveOverloadForm.dirty"
                             class="text-red-500 dark:text-red-400 text-xs mt-1">
-                            Please select at least one strategy.
+                            {{ 'settings.progressiveOverload.strategyError' | translate }}
                         </div>
                     </div>
 
-                    <!-- Responsive Grid for Increment Inputs -->
                     <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
-                        <!-- Weight Increment -->
                         <div *ngIf="isStrategySelected(ProgressiveOverloadStrategy.WEIGHT)">
                             <label for="weightIncrement"
                                 class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Weight Increment ({{unitsService.currentWeightUnit() | uppercase}})
+                                {{ 'settings.progressiveOverload.weightIncrementLabel' | translate:{unit:
+                                unitsService.currentWeightUnit() | uppercase} }}
                             </label>
                             <input type="number" id="weightIncrement" formControlName="weightIncrement" min="0.1"
                                 step="any"
                                 class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200 text-lg"
-                                placeholder="e.g., 2.5">
+                                [placeholder]="'settings.progressiveOverload.weightIncrementPlaceholder' | translate">
                             <div *ngIf="progressiveOverloadForm.get('weightIncrement')?.invalid && progressiveOverloadForm.get('weightIncrement')?.touched"
                                 class="text-red-500 dark:text-red-400 text-xs mt-1">
-                                Must be a positive number.
+                                {{ 'settings.progressiveOverload.weightIncrementError' | translate }}
                             </div>
                         </div>
 
-                        <!-- Reps Increment -->
                         <div *ngIf="isStrategySelected(ProgressiveOverloadStrategy.REPS)">
                             <label for="repsIncrement"
                                 class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Repetitions Increment
+                                {{ 'settings.progressiveOverload.repsIncrementLabel' | translate }}
                             </label>
                             <input type="number" id="repsIncrement" formControlName="repsIncrement" min="1" step="1"
                                 class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200 text-lg"
-                                placeholder="e.g., 1">
+                                [placeholder]="'settings.progressiveOverload.repsIncrementPlaceholder' | translate">
                             <div *ngIf="progressiveOverloadForm.get('repsIncrement')?.invalid && progressiveOverloadForm.get('repsIncrement')?.touched"
                                 class="text-red-500 dark:text-red-400 text-xs mt-1">
-                                Must be a whole number (e.g., 1, 2).
+                                {{ 'settings.progressiveOverload.repsIncrementError' | translate }}
                             </div>
                         </div>
 
-                        <!-- Distance Increment -->
                         <div *ngIf="isStrategySelected(ProgressiveOverloadStrategy.DISTANCE)">
                             <label for="distanceIncrement"
                                 class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Distance Increment ({{unitsService.currentDistanceMeasureUnit() | uppercase}})
+                                {{ 'settings.progressiveOverload.distanceIncrementLabel' | translate:{unit:
+                                unitsService.currentDistanceMeasureUnit() | uppercase} }}
                             </label>
                             <input type="number" id="distanceIncrement" formControlName="distanceIncrement" min="0.01"
                                 step="any"
                                 class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200 text-lg"
-                                placeholder="e.g., 0.25">
+                                [placeholder]="'settings.progressiveOverload.distanceIncrementPlaceholder' | translate">
                             <div *ngIf="progressiveOverloadForm.get('distanceIncrement')?.invalid && progressiveOverloadForm.get('distanceIncrement')?.touched"
                                 class="text-red-500 dark:text-red-400 text-xs mt-1">
-                                Must be a positive number.
+                                {{ 'settings.progressiveOverload.distanceIncrementError' | translate }}
                             </div>
                         </div>
 
-                        <!-- Duration Increment -->
                         <div *ngIf="isStrategySelected(ProgressiveOverloadStrategy.DURATION)">
                             <label for="durationIncrement"
                                 class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Duration Increment (seconds)
+                                {{ 'settings.progressiveOverload.durationIncrementLabel' | translate }}
                             </label>
                             <input type="number" id="durationIncrement" formControlName="durationIncrement" min="1"
                                 step="1"
                                 class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200 text-lg"
-                                placeholder="e.g., 5">
+                                [placeholder]="'settings.progressiveOverload.durationIncrementPlaceholder' | translate">
                             <div *ngIf="progressiveOverloadForm.get('durationIncrement')?.invalid && progressiveOverloadForm.get('durationIncrement')?.touched"
                                 class="text-red-500 dark:text-red-400 text-xs mt-1">
-                                Must be a whole number (e.g., 5, 10).
+                                {{ 'settings.progressiveOverload.durationIncrementError' | translate }}
                             </div>
                         </div>
                     </div>
 
-                    <!-- Sessions to Increment -->
                     <div>
                         <label for="sessionsToIncrement"
-                            class="block text-sm font-medium text-gray-700 dark:text-gray-300">Apply After # Successful
-                            Sessions</label>
-                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">Increase after completing this many
-                            workouts for an exercise successfully.</p>
+                            class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                            'settings.progressiveOverload.sessionsToIncrementLabel' | translate }}</label>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">{{
+                            'settings.progressiveOverload.sessionsToIncrementDescription' | translate }}</p>
                         <input type="number" id="sessionsToIncrement" formControlName="sessionsToIncrement" min="1"
                             step="1"
                             class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200 text-lg">
                         <div *ngIf="progressiveOverloadForm.get('sessionsToIncrement')?.invalid && progressiveOverloadForm.get('sessionsToIncrement')?.touched"
                             class="text-red-500 dark:text-red-400 text-xs mt-1">
-                            Must be at least 1 session.
+                            {{ 'settings.progressiveOverload.sessionsToIncrementError' | translate }}
                         </div>
                     </div>
                 </div>
             </form>
         </section>
 
-        <!-- ========================================================== -->
-        <!-- START: Modified Data Management Section                    -->
-        <!-- ========================================================== -->
         <section class="bg-white dark:bg-gray-700 p-4 sm:p-6 rounded-md shadow-md">
-            <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">Data Management</h2>
-            <!-- Using divide-y to create separators between items for a list-like feel -->
+            <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">{{ 'settings.dataManagement.title'
+                | translate }}</h2>
             <div class="divide-y divide-gray-200 dark:divide-gray-600">
-
-                <!-- Export Data -->
                 <div class="py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Backup your data</p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">Save all your data to a JSON file.</p>
+                        <p class="text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                            'settings.dataManagement.exportTitle' | translate }}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">{{
+                            'settings.dataManagement.exportDescription' | translate }}</p>
                     </div>
-                    <!-- REMOVED: w-full on mobile, flex-shrink-0 already handles not stretching -->
                     <button (click)="exportData()"
                         class="mt-2 sm:mt-0 flex-shrink-0 flex items-center justify-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md shadow-sm transition-colors text-sm">
                         <app-icon name="export" class="w-5 h-5 mr-2"></app-icon>
-                        EXPORT DATA
+                        {{ 'settings.dataManagement.exportButton' | translate }}
                     </button>
                 </div>
 
-                <!-- Import Data -->
                 <div class="py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Restore your data</p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">Import from a JSON backup file.</p>
+                        <p class="text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                            'settings.dataManagement.importTitle' | translate }}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">{{
+                            'settings.dataManagement.importDescription' | translate }}</p>
                     </div>
-                    <!-- MODIFIED: Replaced block w-full with inline-block w-auto for mobile -->
-                    <!-- The file input styling is tricky. Instead of making the input itself small,
-                 we'll style the `file:` pseudo-elements to look like a button, and control the overall width of the input to be `w-auto` -->
                     <input type="file" (change)="importData($event); currentVibrator.vibrate(50)"
                         accept="application/json"
                         class="mt-2 sm:mt-0 inline-block w-auto text-sm text-gray-700 dark:text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-200 file:text-gray-700 hover:file:bg-gray-300 dark:file:bg-gray-600 dark:file:text-gray-200 dark:hover:file:bg-gray-700">
                 </div>
 
-                <!-- Sync History -->
                 <div class="py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <p class="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center">
-                            Data and History
+                            {{ 'settings.dataManagement.syncTitle' | translate }}
                             <app-icon name="info" class="ml-1 h-4 w-4 text-gray-400 dark:text-gray-300 cursor-help"
                                 (click)="showSyncHistoryTooltip()" [appTooltip]="syncHistoryTooltipString"></app-icon>
                         </p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">Recalculate stats and achievements.</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">{{
+                            'settings.dataManagement.syncDescription' | translate }}</p>
                     </div>
-                    <!-- REMOVED: w-full on mobile -->
                     <button (click)="onSyncHistoryClick()"
                         class="mt-2 sm:mt-0 flex-shrink-0 flex items-center justify-center px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-md shadow-sm transition-colors text-sm">
                         <app-icon name="change" class="w-5 h-5 mr-2"></app-icon>
-                        SYNC HISTORY
+                        {{ 'settings.dataManagement.syncButton' | translate }}
                     </button>
                 </div>
 
-                <!-- Reset / Clear Data -->
                 <div class="py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <p class="text-sm font-medium text-red-600 dark:text-red-400">Reset All Data</p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">This action cannot be undone.</p>
+                        <p class="text-sm font-medium text-red-600 dark:text-red-400">{{
+                            'settings.dataManagement.resetTitle' | translate }}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">{{
+                            'settings.dataManagement.resetDescription' | translate }}</p>
                     </div>
-                    <!-- REMOVED: w-full on mobile -->
                     <button (click)="clearAllAppData()"
                         class="mt-2 sm:mt-0 flex-shrink-0 flex items-center justify-center px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-md shadow-sm transition-colors text-sm">
                         <app-icon name="trash" class="w-5 h-5 mr-2"></app-icon>
-                        CLEAR ALL DATA
+                        {{ 'settings.dataManagement.resetButton' | translate }}
                     </button>
                 </div>
             </div>
         </section>
-        <!-- ========================================================== -->
-        <!-- END: Modified Data Management Section                      -->
-        <!-- ========================================================== -->
 
-        <!-- Personal Gym Link Section & Exercise List Link Section -->
         <div class="grid grid-cols-2 gap-2">
             <section class="bg-white dark:bg-gray-700 p-4 sm:p-6 rounded-md shadow-md">
                 <div>
                     <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">
-                        Personal Gym
+                        {{ 'settings.personalGym.title' | translate }}
                         <span *ngIf="!subscriptionService.isPremium()"
                             class="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full bg-yellow-400 text-yellow-900 flex items-center justify-center w-fit">
                             <app-icon name="crown" class="h-5 w-5 mr-1"></app-icon>
-                            PREMIUM
+                            {{ 'common.premium' | translate }}
                         </span>
                     </h2>
                 </div>
                 <div>
-                    <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">View your own equipment</p>
+                    <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{
+                        'settings.personalGym.description' | translate }}</p>
                     <button
                         (click)="handlePremiumFeatureOrNavigate(PremiumFeature.PERSONAL_GYM, $event, ['/personal-gym'])"
                         class="px-4 py-2 bg-indigo-500 hover:bg-indigo-700 text-white font-semibold rounded-md shadow-sm transition-colors inline-flex items-center text-sm text-left">
                         <app-icon name="dumbbell" class="w-6 h-6 mr-1"></app-icon>
-                        PERSONAL GYM
+                        {{ 'settings.personalGym.button' | translate }}
                     </button>
                 </div>
             </section>
 
-            <!-- Exercise List Link Section -->
             <section class="bg-white dark:bg-gray-700 p-4 sm:p-6 rounded-md shadow-md">
-                <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">Exercise library</h2>
+                <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">{{
+                    'settings.exerciseLibrary.title' | translate }}</h2>
                 <div>
-                    <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">View all the available exercise
-                        and
-                        add your own ones</p>
+                    <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{
+                        'settings.exerciseLibrary.description' | translate }}</p>
                     <button (click)="navigateToExerciseLibrary()"
                         class="px-4 py-2 bg-primary hover:bg-primary-dark text-white font-semibold rounded-md shadow-sm transition-colors inline-flex items-center text-sm">
                         <app-icon name="exercise-list" class="w-6 h-6 mr-1"></app-icon>
-                        EXERCISES
+                        {{ 'settings.exerciseLibrary.button' | translate }}
                     </button>
                 </div>
             </section>
         </div>
 
-        <!-- Personal Bests Link Section -->
         <section class="bg-white dark:bg-gray-700 p-4 sm:p-6 rounded-md shadow-md">
-            <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">Your Achievements</h2>
+            <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">{{ 'settings.achievements.title' |
+                translate }}</h2>
             <div>
-                <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">View all your tracked Personal
-                    Bests</p>
+                <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{
+                    'settings.achievements.description' | translate }}</p>
                 <button (click)="navigateToPersonalBests()"
                     class="px-4 py-2 bg-primary hover:bg-primary-dark text-white font-semibold rounded-md shadow-sm transition-colors inline-flex items-center text-sm">
                     <app-icon name="pb" class="w-6 h-6 mr-1"></app-icon>
-                    VIEW PBs
+                    {{ 'settings.achievements.button' | translate }}
                 </button>
             </div>
         </section>
 
-        <!-- ========================================================== -->
-        <!-- START: Modified General & Appearance Section               -->
-        <!-- ========================================================== -->
         <section class="bg-white dark:bg-gray-700 p-4 sm:p-6 rounded-md shadow-md">
             <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">{{ 'settings.general.title' |
                 translate }}</h2>
             <div class="space-y-5">
 
-                <!-- ========================================================== -->
-                <!-- START: Add This New Language Selector Here                 -->
-                <!-- ========================================================== -->
                 <div class="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-600">
                     <div>
                         <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -589,23 +529,19 @@
                             {{ 'settings.general.languageDescription' | translate }}
                         </p>
                     </div>
-                    <select [value]="languageService.currentLang()" (change)="onLanguageChange($event)"
+                    <select [formControl]="languageControl"
                         class="block w-40 p-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-sm dark:text-gray-200">
                         <option *ngFor="let lang of languageService.supportedLanguages" [value]="lang">
-                            {{ languageDisplayNames[lang] || lang }}
+                            {{ languageDisplayNames[lang] | translate }}
                         </option>
                     </select>
                 </div>
-                <!-- ========================================================== -->
-                <!-- END: New Language Selector                                 -->
-                <!-- ========================================================== -->
 
-                <!-- Units Grid -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
-
-                    <!-- Weight Unit -->
                     <div class="flex items-center justify-between">
-                        <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Weight Units</p>
+                        <p class="text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                            'settings.general.weightUnits'
+                            | translate }}</p>
                         <div class="relative w-28 flex rounded-lg bg-gray-200 dark:bg-gray-600 p-1">
                             <div class="absolute top-1 bottom-1 bg-primary rounded-md shadow transition-all duration-300 ease-in-out"
                                 [ngClass]="{
@@ -621,9 +557,9 @@
                         </div>
                     </div>
 
-                    <!-- Measure Unit -->
                     <div class="flex items-center justify-between">
-                        <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Measure Units</p>
+                        <p class="text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                            'settings.general.measureUnits' | translate }}</p>
                         <div class="relative w-28 flex rounded-lg bg-gray-200 dark:bg-gray-600 p-1">
                             <div class="absolute top-1 bottom-1 bg-primary rounded-md shadow transition-all duration-300 ease-in-out"
                                 [ngClass]="{
@@ -639,9 +575,9 @@
                         </div>
                     </div>
 
-                    <!-- Distance Measure Unit -->
                     <div class="flex items-center justify-between">
-                        <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Distance Units</p>
+                        <p class="text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                            'settings.general.distanceUnits' | translate }}</p>
                         <div class="relative w-28 flex rounded-lg bg-gray-200 dark:bg-gray-600 p-1">
                             <div class="absolute top-1 bottom-1 bg-primary rounded-md shadow transition-all duration-300 ease-in-out"
                                 [ngClass]="{
@@ -657,9 +593,9 @@
                         </div>
                     </div>
 
-                    <!-- Body Weight Unit -->
                     <div class="flex items-center justify-between">
-                        <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Body Weight</p>
+                        <p class="text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                            'settings.general.bodyWeightUnits' | translate }}</p>
                         <div class="relative w-28 flex rounded-lg bg-gray-200 dark:bg-gray-600 p-1">
                             <div class="absolute top-1 bottom-1 bg-primary rounded-md shadow transition-all duration-300 ease-in-out"
                                 [ngClass]="{
@@ -675,9 +611,9 @@
                         </div>
                     </div>
 
-                    <!-- Body Measurement Unit -->
                     <div class="flex items-center justify-between">
-                        <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Body Measure</p>
+                        <p class="text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                            'settings.general.bodyMeasureUnits' | translate }}</p>
                         <div class="relative w-28 flex rounded-lg bg-gray-200 dark:bg-gray-600 p-1">
                             <div class="absolute top-1 bottom-1 bg-primary rounded-md shadow transition-all duration-300 ease-in-out"
                                 [ngClass]="{
@@ -694,10 +630,10 @@
                     </div>
                 </div>
 
-                <!-- Toggles Section -->
                 <div class="space-y-4 pt-4 border-t border-gray-200 dark:border-gray-600">
                     <div class="grid grid-cols-2 items-center">
-                        <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300">Dark Mode</h3>
+                        <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ 'settings.general.darkMode'
+                            | translate }}</h3>
                         <label for="theme-toggle" class="inline-flex items-center cursor-pointer justify-self-end">
                             <input type="checkbox" id="theme-toggle" class="sr-only peer"
                                 [checked]="themeService.isDarkTheme()" (change)="themeService.toggleTheme()">
@@ -707,7 +643,9 @@
                         </label>
                     </div>
                     <div class="grid grid-cols-2 items-center">
-                        <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300">WIP Message</h3>
+                        <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                            'settings.general.wipMessage'
+                            | translate }}</h3>
                         <label for="show-wip-message" class="inline-flex items-center cursor-pointer justify-self-end">
                             <input type="checkbox" id="show-wip-message" class="sr-only peer"
                                 [checked]="!userProfileService.getHideWipDisclaimer()" (change)="toggleWipDisclaimer()">
@@ -718,46 +656,42 @@
                     </div>
                 </div>
 
-                <!-- Menu Mode -->
                 <div class="pt-4 border-t border-gray-200 dark:border-gray-600">
                     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between">
                         <div class="mb-2 sm:mb-0">
                             <h3 class="text-md font-medium text-gray-700 dark:text-gray-300 flex items-center">
-                                Menu Mode
+                                {{ 'settings.general.menuMode' | translate }}
                                 <span *ngIf="!subscriptionService.isPremium()"
                                     class="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full bg-yellow-400 text-yellow-900 flex items-center justify-center">
                                     <app-icon name="crown" class="h-5 w-5 mr-1"></app-icon>
-                                    PREMIUM
+                                    {{ 'common.premium' | translate }}
                                 </span>
                             </h3>
                         </div>
                         <div
                             class="relative grid grid-cols-3 w-full sm:w-auto rounded-lg bg-gray-200 dark:bg-gray-600 p-1">
-                            <!-- The sliding indicator is unchanged -->
                             <div class="absolute top-1 bottom-1 w-1/3 bg-primary rounded-md shadow transition-transform duration-300 ease-in-out"
                                 [ngClass]="{
                                         'translate-x-1': appSettingsService.menuMode() === 'dropdown',
                                         'translate-x-full': appSettingsService.menuMode() === 'compact',
                                         'translate-x-[195%]': appSettingsService.menuMode() === 'modal'
                                     }"></div>
-
-                            <!-- The 'flex-1' class has been removed from all buttons -->
                             <button appPress (shortPress)="selectMenuMode('dropdown')"
                                 class="relative z-10 px-3 py-1.5 text-xs font-semibold transition-colors duration-300"
-                                [ngClass]="{'text-white': appSettingsService.menuMode() === 'dropdown', 'text-gray-700 dark:text-gray-300': appSettingsService.menuMode() !== 'dropdown'}">Dropdown</button>
+                                [ngClass]="{'text-white': appSettingsService.menuMode() === 'dropdown', 'text-gray-700 dark:text-gray-300': appSettingsService.menuMode() !== 'dropdown'}">{{
+                                'settings.general.menuModes.dropdown' | translate }}</button>
                             <button appPress (shortPress)="selectMenuMode('compact')"
                                 class="relative z-10 px-3 py-1.5 text-xs font-semibold transition-colors duration-300"
-                                [ngClass]="{'text-white': appSettingsService.menuMode() === 'compact', 'text-gray-700 dark:text-gray-300': appSettingsService.menuMode() !== 'compact'}">Compact</button>
+                                [ngClass]="{'text-white': appSettingsService.menuMode() === 'compact', 'text-gray-700 dark:text-gray-300': appSettingsService.menuMode() !== 'compact'}">{{
+                                'settings.general.menuModes.compact' | translate }}</button>
                             <button appPress (shortPress)="selectMenuMode('modal')"
                                 class="relative z-10 px-3 py-1.5 text-xs font-semibold transition-colors duration-300"
-                                [ngClass]="{'text-white': appSettingsService.menuMode() === 'modal', 'text-gray-700 dark:text-gray-300': appSettingsService.menuMode() !== 'modal'}">Modal</button>
+                                [ngClass]="{'text-white': appSettingsService.menuMode() === 'modal', 'text-gray-700 dark:text-gray-300': appSettingsService.menuMode() !== 'modal'}">{{
+                                'settings.general.menuModes.modal' | translate }}</button>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
-        <!-- ========================================================== -->
-        <!-- END: Modified General & Appearance Section                 -->
-        <!-- ========================================================== -->
     </div>
 </div>

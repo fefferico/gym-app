@@ -2,7 +2,7 @@
 import { ChangeDetectorRef, Component, inject, OnDestroy, OnInit, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
-import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { format } from 'date-fns';
 import { debounceTime, filter, Subscription, tap } from 'rxjs';
 
@@ -33,7 +33,7 @@ import { DataConversionService } from '../../../core/services/data-conversion.se
 import { SubscriptionService, PremiumFeature } from '../../../core/services/subscription.service';
 import { ActivityService } from '../../../core/services/activity.service';
 import { LanguageService } from '../../../core/services/language.service';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-profile-settings',
@@ -62,17 +62,19 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
   private platformId = inject(PLATFORM_ID);
   private toastService = inject(ToastService);
   private imageStorageService = inject(ImageStorageService);
-  // +++ NEW: Inject the conversion service
   private dataConversionService = inject(DataConversionService);
   protected subscriptionService = inject(SubscriptionService);
   protected languageService = inject(LanguageService);
-  private cdr = inject(ChangeDetectorRef); // <-- Inject ChangeDetectorRef
+  private cdr = inject(ChangeDetectorRef);
+  private translate = inject(TranslateService); // Inject TranslateService
 
+  // Map language codes to their translation keys
   languageDisplayNames: { [key: string]: string } = {
-    en: 'English',
-    es: 'Spanish',
-    it: 'Italian',
-    fr: 'French'
+    en: 'settings.languageSelector.english',
+    es: 'settings.languageSelector.spanish',
+    it: 'settings.languageSelector.italian',
+    de: 'settings.languageSelector.german',
+    fr: 'settings.languageSelector.french'
   };
 
   private subscriptions = new Subscription();
@@ -81,66 +83,49 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
 
   protected currentVibrator = navigator;
 
-  syncHistoryTooltipString = 'This will scan all workout logs to update the "Last Used" date for every exercise in your library. Run this if the dates seem out of sync after an import or an update.'
+  syncHistoryTooltipString = this.translate.instant('settings.dataManagement.syncTooltip');
 
   goalsForm!: FormGroup;
   profileForm!: FormGroup;
   appSettingsForm!: FormGroup;
   progressiveOverloadForm!: FormGroup;
 
-  // +++ NEW: Add a method to handle the upgrade button click
   handleUpgradeClick(): void {
-    // In a real app, this would navigate to a pricing page.
-    // For now, we'll just toggle the premium status for development.
     this.subscriptionService.togglePremium_DEV_ONLY();
-    const newStatus = this.subscriptionService.isPremium() ? 'Premium' : 'Free';
-    this.toastService.success(`You are now on the ${newStatus} tier!`, 3000, "Status Updated");
+    const newStatus = this.subscriptionService.isPremium() ? this.translate.instant('settings.subscription.premiumMember') : this.translate.instant('settings.subscription.freeTier');
+    this.toastService.success(this.translate.instant('toasts.upgradeSuccess', { status: newStatus }), 3000, this.translate.instant('toasts.statusUpdated'));
 
     if (this.subscriptionService.isPremium()) {
-      this.toastService.veryImportant("Thank you for supporting the app! All premium features are now unlocked.", 10000, "Thank You!");
-      // Ensure all routines are enabled upon upgrade
+      this.toastService.veryImportant(this.translate.instant('toasts.upgradeGratitude'), 10000, this.translate.instant('toasts.thankYou'));
       this.workoutService.enableAllRoutines_DEV_ONLY();
     }
   }
 
-  /**
-      * A reusable handler for features that navigate or perform an action.
-      * Checks for premium access. If access is denied, it shows the upgrade modal.
-      * If access is granted and a route is provided, it navigates.
-      * @param feature The premium feature to check.
-      * @param event The mouse event, used to prevent default behavior if access is denied.
-      * @param route Optional. The Angular route to navigate to if access is granted.
-      */
   handlePremiumFeatureOrNavigate(feature: PremiumFeature, event: Event, route?: any[]): void {
     this.workoutService.vibrate();
-
     if (this.subscriptionService.canAccess(feature)) {
-      // Access granted. If a route is provided, navigate to it.
       if (route) {
         this.router.navigate(route);
       }
-      // If no route is provided, do nothing and let the default event (like a toggle) proceed.
     } else {
-      // Access denied.
-      event.preventDefault();  // *** THIS IS THE CRITICAL FIX ***
-      event.stopPropagation(); // Stop the event from propagating further.
+      event.preventDefault();
+      event.stopPropagation();
       this.subscriptionService.showUpgradeModal();
     }
   }
 
-  // REMOVED: No longer need this, using signals from service directly
-  // currentUnit = this.unitsService.currentWeightUnit;
+  // Populate arrays with translation keys
   readonly genders: { label: string, value: Gender }[] = [
-    { label: 'Male', value: 'male' },
-    { label: 'Female', value: 'female' },
-    { label: 'Other', value: 'other' },
-    { label: 'Prefer not to say', value: 'prefer_not_to_say' },
+    { label: 'settings.userProfile.genders.male', value: 'male' },
+    { label: 'settings.userProfile.genders.female', value: 'female' },
+    { label: 'settings.userProfile.genders.other', value: 'other' },
+    { label: 'settings.userProfile.genders.preferNotToSay', value: 'prefer_not_to_say' },
   ];
   protected readonly progressiveOverloadStrategies = [
-    { label: 'Increase Weight', value: ProgressiveOverloadStrategy.WEIGHT },
-    { label: 'Increase Reps', value: ProgressiveOverloadStrategy.REPS },
-    { label: 'Increase Distance', value: ProgressiveOverloadStrategy.DISTANCE },
-    { label: 'Increase Duration', value: ProgressiveOverloadStrategy.DURATION }
+    { label: 'settings.progressiveOverload.strategies.increaseWeight', value: ProgressiveOverloadStrategy.WEIGHT },
+    { label: 'settings.progressiveOverload.strategies.increaseReps', value: ProgressiveOverloadStrategy.REPS },
+    { label: 'settings.progressiveOverload.strategies.increaseDistance', value: ProgressiveOverloadStrategy.DISTANCE },
+    { label: 'settings.progressiveOverload.strategies.increaseDuration', value: ProgressiveOverloadStrategy.DURATION }
   ];
 
   private readonly BACKUP_VERSION = 6;
@@ -163,11 +148,9 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
       })
     });
 
-    // Initialize the new goals form
     this.goalsForm = this.fb.group({
       weight: [null as number | null, [Validators.min(0)]],
       waist: [null as number | null, [Validators.min(0)]],
-      // Add other goal controls
     });
 
     this.appSettingsForm = this.fb.group({
@@ -190,16 +173,6 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
     });
   }
 
-  // ... (ngOnInit and other methods remain the same)
-  // ... (make sure you have the other methods like loadProfileData, saveMeasurements, etc.)
-
-  // +++ NEW: Methods to handle unit changes and trigger conversion workflow +++
-
-  /**
-   * Toggles the playerMode form control between 'compact' and 'focus'.
-   * This is triggered by the (change) event of the checkbox input.
-   * @param event The change event from the input element.
-   */
   togglePlayerMode(event: Event): void {
     this.workoutService.vibrate();
     const inputElement = event.target as HTMLInputElement;
@@ -207,22 +180,13 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
     const newMode = isChecked ? 'focus' : 'compact';
 
     if (this.workoutService.isPausedSession()) {
-      // Show the alert to the user.
       this.alertService.showAlert(
-        "Action Disabled",
-        "It's not possible to change the player mode during a workout session. Please complete or discard your current workout first."
+        this.translate.instant('alerts.playerModeChangeDisabledTitle'),
+        this.translate.instant('alerts.playerModeChangeDisabledMessage')
       );
-
-      // *** THE CORE FIX ***
-      // Prevent the visual change by directly reverting the checkbox's checked state.
-      // This is more reliable than trying to patch the form value after the fact.
       inputElement.checked = !isChecked;
-
-      // Ensure Angular's change detection knows about this manual DOM change.
       this.cdr.detectChanges();
-
     } else {
-      // If the workout is not paused, proceed with saving the new setting as normal.
       this.appSettingsForm.get('playerMode')?.setValue(newMode);
       this.appSettingsService.saveSettings({ playerMode: newMode });
     }
@@ -230,45 +194,21 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
 
   async selectWeightUnit(unit: WeightUnit): Promise<void> {
     const oldUnit = this.unitsService.currentWeightUnit();
-    if (unit === oldUnit) return; // No change
-
-    // const confirm = await this.alertService.showConfirm(
-    //   'Convert All Weight Data?',
-    //   `You've changed the weight unit from ${oldUnit.toUpperCase()} to ${unit.toUpperCase()}. Would you like to convert all existing workout data (logs, routines, gym equipment) to the new unit?`
-    // );
-    // if (confirm && confirm.data) {
-    // await this.dataConversionService.convertAllWeightData(oldUnit, unit);
-    // }
+    if (unit === oldUnit) return;
     await this.dataConversionService.convertAllWeightData(oldUnit, unit);
     this.unitsService.setWeightUnitPreference(unit);
   }
 
   async selectMeasureUnit(unit: MeasureUnit): Promise<void> {
     const oldUnit = this.unitsService.currentMeasureUnit();
-    if (unit === oldUnit) return; // No change
-
-    // const confirm = await this.alertService.showConfirm(
-    //   'Convert All Measure Data?',
-    //   `You've changed the measure unit from ${oldUnit.toUpperCase()} to ${unit.toUpperCase()}. Would you like to convert all existing workout data (logs, routines, gym equipment) to the new unit?`
-    // );
-    // if (confirm && confirm.data) {
-    //   await this.dataConversionService.convertAllMeasureData(oldUnit, unit);
-    // }
+    if (unit === oldUnit) return;
     await this.dataConversionService.convertAllMeasureData(oldUnit, unit);
     this.unitsService.setMeasureUnitPreference(unit);
   }
 
   async selectDistanceMeasureUnit(unit: DistanceMeasureUnit): Promise<void> {
     const oldUnit = this.unitsService.currentDistanceMeasureUnit();
-    if (unit === oldUnit) return; // No change
-
-    // const confirm = await this.alertService.showConfirm(
-    //   'Convert All Distance Measure Data?',
-    //   `You've changed the measure unit from ${oldUnit.toUpperCase()} to ${unit.toUpperCase()}. Would you like to convert all existing workout data (logs, routines, gym equipment) to the new unit?`
-    // );
-    // if (confirm && confirm.data) {
-    //   await this.dataConversionService.convertAllDistanceMeasureData(oldUnit, unit);
-    // }
+    if (unit === oldUnit) return;
     await this.dataConversionService.convertAllDistanceMeasureData(oldUnit, unit);
     this.unitsService.setDistanceMeasureUnitPreference(unit);
   }
@@ -276,14 +216,6 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
   async selectBodyWeightUnit(unit: BodyWeightUnit): Promise<void> {
     const oldUnit = this.unitsService.currentBodyWeightUnit();
     if (unit === oldUnit) return;
-
-    // const confirm = await this.alertService.showConfirm(
-    //   'Convert All Body Weight Data?',
-    //   `You've changed the body weight unit from ${oldUnit.toUpperCase()} to ${unit.toUpperCase()}. Would you like to convert all your historical body weight entries to the new unit?`
-    // );
-    // if (confirm && confirm.data) {
-    //   await this.dataConversionService.convertAllBodyWeightData(oldUnit, unit);
-    // }
     await this.dataConversionService.convertAllBodyWeightData(oldUnit, unit);
     this.unitsService.setBodyWeightUnitPreference(unit);
   }
@@ -291,44 +223,44 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
   async selectBodyMeasureUnit(unit: BodyMeasureUnit): Promise<void> {
     const oldUnit = this.unitsService.currentBodyMeasureUnit();
     if (unit === oldUnit) return;
-
-    // const confirm = await this.alertService.showConfirm(
-    //   'Convert All Body Measurement Data?',
-    //   `You've changed the measurement unit from ${oldUnit.toUpperCase()} to ${unit.toUpperCase()}. Would you like to convert all your historical measurements (height, waist, etc.) to the new unit?`
-    // );
-    // if (confirm && confirm.data) {
-    //   await this.dataConversionService.convertAllBodyMeasureData(oldUnit, unit);
-    // }
     await this.dataConversionService.convertAllBodyMeasureData(oldUnit, unit);
     this.unitsService.setBodyMeasureUnitPreference(unit);
   }
 
-  ngOnInit(): void {
+ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       window.scrollTo(0, 0);
     }
     this.loadProfileData();
-    // REMOVED: this.loadAppSettingsData();
     this.loadProgressiveOverloadSettings();
     this.loadGoalsData();
 
-    // +++ START: THE FIX - Subscribe to AppSettings changes +++
-    // This subscription will run for the lifetime of the component.
-    // It handles both the initial data load and any subsequent updates (like a downgrade).
-    this.subscriptions.add(
-      this.appSettingsService.appSettings$.subscribe(settings => {
-        if (settings) {
-          // Reset the form with the latest settings.
-          // `emitEvent: false` prevents an infinite loop with the valueChanges autosave.
-          this.appSettingsForm.reset(settings, { emitEvent: false });
-          this.cdr.detectChanges();
+    // +++ 2. INITIALIZE the control and SUBSCRIBE to its changes +++
+    // Initialize with the current language from the service
+    this.languageControl = new FormControl(this.languageService.currentLang(), { nonNullable: true });
 
+    // Listen for changes from the dropdown and update the service
+    this.subscriptions.add(
+      this.languageControl.valueChanges.subscribe(lang => {
+        // Check if the new value is different from the current one to avoid redundant calls
+        if (lang && lang !== this.languageService.currentLang()) {
+            this.workoutService.vibrate();
+            this.languageService.setLanguage(lang);
+            const translatedLangName = this.translate.instant(this.languageDisplayNames[lang] || lang);
+            this.toastService.success(this.translate.instant('toasts.languageSet', { language: translatedLangName }), 2000);
         }
       })
     );
-    // +++ END: THE FIX +++
 
-    // This auto-save logic remains the same.
+    this.subscriptions.add(
+      this.appSettingsService.appSettings$.subscribe(settings => {
+        if (settings) {
+          this.appSettingsForm.reset(settings, { emitEvent: false });
+          this.cdr.detectChanges();
+        }
+      })
+    );
+
     this.subscriptions.add(
       this.appSettingsForm.valueChanges.pipe(
         debounceTime(700),
@@ -336,7 +268,7 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
         tap(value => {
           this.appSettingsService.saveSettings(value as AppSettings);
           this.appSettingsForm.markAsPristine({ onlySelf: false });
-          this.toastService.info("App settings auto-saved", 1500);
+          this.toastService.info(this.translate.instant('toasts.appSettingsSaved'), 1500);
         })
       ).subscribe()
     );
@@ -356,13 +288,12 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
         tap(goals => {
           this.userProfileService.saveGoals(goals);
           this.goalsForm.markAsPristine();
-          this.toastService.info("Goals auto-saved", 1500);
+          this.toastService.info(this.translate.instant('toasts.goalsSaved'), 1500);
         })
       ).subscribe()
     );
   }
 
-  // +++ NEW: Implement OnDestroy to clean up subscriptions +++
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
   }
@@ -377,17 +308,15 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
   saveMeasurements(): void {
     const measurementsGroup = this.profileForm?.get('measurements');
     if (!this.profileForm || !measurementsGroup || measurementsGroup.invalid) {
-      this.toastService.error("Please fill in all required fields correctly: at least age, height and weight should be filled.");
+      this.toastService.error(this.translate.instant('alerts.invalidFields'));
       return;
     }
     const measurements = this.profileForm.get('measurements')?.value as UserMeasurements;
     this.userProfileService.addOrUpdateMeasurementEntry(measurements as MeasurementEntry);
-    this.profileForm.get('measurements')!.markAsPristine(); // Mark as saved
-    this.toastService.info("Measurements history updated", 1500);
+    this.profileForm.get('measurements')!.markAsPristine();
+    this.toastService.info(this.translate.instant('toasts.measurementsSaved'), 1500);
   }
 
-
-  // Helper to save non-measurement profile data
   private saveGeneralData(): void {
     const profileData = {
       username: this.profileForm.get('general.username')?.value,
@@ -395,15 +324,10 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
       age: this.profileForm.get('general.age')?.value
     };
     this.userProfileService.saveProfile(profileData);
-    this.toastService.info("Profile auto-saved", 1500);
+    this.toastService.info(this.translate.instant('toasts.profileSaved'), 1500);
     this.profileForm.markAsPristine();
   }
 
-  /**
-   * Sets up listeners for the progressive overload form.
-   * - Handles auto-saving on value changes.
-   * - Manages dynamic validators based on user selections.
-   */
   listenForProgressiveOverloadChanges(): void {
     this.subscriptions.add(
       this.progressiveOverloadForm.valueChanges.pipe(
@@ -412,20 +336,17 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
         tap(settings => {
           this.progressiveOverloadService.saveSettings(settings as ProgressiveOverloadSettings);
           this.progressiveOverloadForm.markAsPristine({ onlySelf: false });
-          this.toastService.info("Progressive Overload settings auto-saved", 1500);
+          this.toastService.info(this.translate.instant('toasts.progressiveOverloadSaved'), 1500);
         })
       ).subscribe()
     );
 
     const enabledControl = this.progressiveOverloadForm.get('enabled');
-
     const setupStrategyValidators = (strategies: ProgressiveOverloadStrategy[]) => {
       const weightControl = this.progressiveOverloadForm.get('weightIncrement');
       const repsControl = this.progressiveOverloadForm.get('repsIncrement');
       const distanceControl = this.progressiveOverloadForm.get('distanceIncrement');
       const durationControl = this.progressiveOverloadForm.get('durationIncrement');
-
-      // Helper function to set or clear validators
       const toggleValidators = (control: any, condition: boolean, validators: any[]) => {
         if (condition) {
           control?.setValidators(validators);
@@ -435,37 +356,19 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
         }
         control?.updateValueAndValidity();
       };
-
       toggleValidators(weightControl, strategies.includes(ProgressiveOverloadStrategy.WEIGHT), [Validators.required, Validators.min(0.1)]);
       toggleValidators(repsControl, strategies.includes(ProgressiveOverloadStrategy.REPS), [Validators.required, Validators.min(1), Validators.pattern("^[0-9]*$")]);
       toggleValidators(distanceControl, strategies.includes(ProgressiveOverloadStrategy.DISTANCE), [Validators.required, Validators.min(0.01)]);
       toggleValidators(durationControl, strategies.includes(ProgressiveOverloadStrategy.DURATION), [Validators.required, Validators.min(1), Validators.pattern("^[0-9]*$")]);
     };
 
-    // Listen to changes in the strategies array
-    this.subscriptions.add(
-      this.strategiesFormArray.valueChanges.subscribe(strategies => {
-        setupStrategyValidators(strategies);
-      })
-    );
-
-    // Listen to the main enabled toggle
-    this.subscriptions.add(
-      enabledControl?.valueChanges.subscribe(enabled => {
-        if (enabled) {
-          setupStrategyValidators(this.strategiesFormArray.value);
-        } else {
-          // Clear all strategy validators if the feature is disabled
-          setupStrategyValidators([]);
-        }
-      })
-    );
+    this.subscriptions.add(this.strategiesFormArray.valueChanges.subscribe(strategies => setupStrategyValidators(strategies)));
+    this.subscriptions.add(enabledControl?.valueChanges.subscribe(enabled => setupStrategyValidators(enabled ? this.strategiesFormArray.value : [])));
   }
 
   loadProfileData(): void {
     const profile = this.userProfileService.getProfile();
     if (profile) {
-      // We load the latest measurements into the form
       const latestMeasurements = this.userProfileService.getMeasurements();
       this.profileForm.reset({
         general: {
@@ -477,11 +380,7 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
       }, { emitEvent: false });
     } else {
       this.profileForm.reset({
-        general: {
-          username: null,
-          gender: null,
-          age: null,
-        },
+        general: { username: null, gender: null, age: null },
         measurements: { height: null, weight: null, age: null, chest: null, waist: null, hips: null, rightArm: null }
       }, { emitEvent: false });
     }
@@ -489,34 +388,23 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
 
   loadProgressiveOverloadSettings(): void {
     const settings = this.progressiveOverloadService.getSettings();
-
-    // Clear the form array before populating it
     this.strategiesFormArray.clear();
-
-    // If there are saved strategies, create a form control for each
     if (settings.strategies && settings.strategies.length > 0) {
       settings.strategies.forEach(strategy => {
         this.strategiesFormArray.push(this.fb.control(strategy), { emitEvent: false });
       });
     }
-
-    // Reset the rest of the form, excluding the array
-    this.progressiveOverloadForm.reset({
-      ...settings,
-      strategies: this.strategiesFormArray.value // Keep the array value
-    }, { emitEvent: false });
+    this.progressiveOverloadForm.reset({ ...settings, strategies: this.strategiesFormArray.value }, { emitEvent: false });
   }
 
-  async exportData(): Promise<void> { // <-- Make the method async
-    this.spinnerService.show('Exporting data...');
-
+  async exportData(): Promise<void> {
+    this.spinnerService.show(this.translate.instant('spinners.exporting'));
     const photos = await this.imageStorageService.getAllImagesForBackup();
-
     const backupData = {
       version: this.BACKUP_VERSION,
       timestamp: new Date().toISOString(),
       profile: this.userProfileService.getDataForBackup(),
-      progressPhotos: photos, // <-- Add photos to the backup object
+      progressPhotos: photos,
       appSettings: this.appSettingsService.getDataForBackup(),
       progressiveOverload: this.progressiveOverloadService.getDataForBackup(),
       routines: this.workoutService.getDataForBackup(),
@@ -537,162 +425,125 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
     a.click();
     URL.revokeObjectURL(url);
     this.spinnerService.hide();
-    this.toastService.success("Data export initiated", 3000);
+    this.toastService.success(this.translate.instant('toasts.exportInitiated'), 3000);
   }
 
   importData(event: Event): void {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
-
     if (!file) return;
     if (file.type !== 'application/json') {
-      this.alertService.showAlert('Error', 'Invalid file type. Please select a JSON file.');
+      this.alertService.showAlert(this.translate.instant('common.error'), this.translate.instant('alerts.invalidFileType'));
       input.value = '';
       return;
     }
-
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
         const fileContent = e.target?.result as string;
         const importedData = JSON.parse(fileContent);
-
         if (typeof importedData !== 'object' || importedData === null) {
-          this.alertService.showAlert('Error', 'Invalid backup file format. Expected an object.');
+          this.alertService.showAlert(this.translate.instant('common.error'), this.translate.instant('alerts.invalidBackupFormat'));
           input.value = ''; return;
         }
-
         const version = importedData.version;
         if (version > this.BACKUP_VERSION) {
-          this.alertService.showAlert('Error', `Backup version ${version} is newer than the app's supported version ${this.BACKUP_VERSION}. Please update the app.`);
+          this.alertService.showAlert(this.translate.instant('common.error'), this.translate.instant('alerts.backupVersionTooNew', { version: version, appVersion: this.BACKUP_VERSION }));
           input.value = ''; return;
         }
-
-        this.alertService.showConfirm("WARNING", "Importing data will try to MERGE your current data with the IMPORTED one. Are you sure?").then(async (result) => {
+        this.alertService.showConfirm(this.translate.instant('common.warning'), this.translate.instant('alerts.importWarning')).then(async (result) => {
           if (result && result.data) {
-            this.spinnerService.show('Importing data...');
-
-            // Check for the new version and presence of photo data
+            this.spinnerService.show(this.translate.instant('spinners.importing'));
             if (version >= 6 && importedData.progressPhotos) {
               await this.imageStorageService.importImages(importedData.progressPhotos);
             }
-
-            // --- UPDATED PROFILE IMPORT LOGIC ---
             if (version >= 5) {
-              // Use the new smart merge for modern backups
               this.userProfileService.mergeData(importedData.profile as UserProfile | null);
             } else if (version >= 2) {
-              // Use the old replace method for legacy backups
               this.userProfileService.replaceData(importedData.profile as UserProfile | null);
             } else {
               this.userProfileService.replaceData(null);
             }
-
-            // Other data can still use their existing merge/replace logic
             if (!this.subscriptionService.isPremium()) {
-              // avaialable standard routines and imported one
-              // must be enabled (isDisabled = false) for a maximum of 4 routines
-
               const existingRoutines = this.workoutService.getCurrentRoutines().filter(r => !r.isDisabled);
               const importedRoutines = Array.isArray(importedData.routines) ? importedData.routines : [];
               const enabledImportedRoutines = importedRoutines.filter((r: any) => !r.isDisabled);
               const totalEnabledCount = existingRoutines.length + enabledImportedRoutines.length;
               if (totalEnabledCount > 4) {
-                // disable all imported routines, apart from top 4
                 importedRoutines.forEach((r: any, index: number) => r.isDisabled = index > 3 ? true : false);
-                this.toastService.veryImportant(`Import detected ${enabledImportedRoutines.length} enabled routines. Free users can only have 4 enabled routines. All imported routines have been disabled. You can enable them after upgrading to Premium.`, 10000, "Routines Disabled");
+                this.toastService.veryImportant(this.translate.instant('toasts.routinesDisabledOnImport', { count: enabledImportedRoutines.length }), 10000, this.translate.instant('toasts.routinesDisabledTitle'));
                 this.workoutService.mergeData(importedRoutines);
               }
             } else {
               this.workoutService.mergeData(importedData.routines);
             }
-
             if (importedData.workoutLogs) {
               this.trackingService.replaceLogs(importedData.workoutLogs || []);
               this.trackingService.replacePBs(importedData.personalBests || {});
             }
-
-            // Check for either the old incorrect key or the new correct key for backward compatibility
             const activityLogsToImport = importedData.activityLogs || importedData.activitiyLogs;
             if (Array.isArray(activityLogsToImport)) {
               this.activityService.mergeData(activityLogsToImport);
             }
-
             if (importedData.personalGym) {
               this.personalGymService.mergeData(importedData.personalGym);
             }
-
-            if (version >= 4) {
-              this.progressiveOverloadService.replaceData(importedData.progressiveOverload);
-            }
+            if (version >= 4) this.progressiveOverloadService.replaceData(importedData.progressiveOverload);
             if (version >= 3) {
               this.exerciseService.mergeData(importedData.exercises);
               this.trainingProgramService.mergeData(importedData.programs);
             }
-            if (version >= 2) {
-              this.appSettingsService.replaceData(importedData.appSettings);
-            }
-
+            if (version >= 2) this.appSettingsService.replaceData(importedData.appSettings);
             this.loadProfileData();
-            // this.loadAppSettingsData();
             this.loadProgressiveOverloadSettings();
-            this.loadGoalsData(); // <-- Reload goals form as well
-
+            this.loadGoalsData();
             this.spinnerService.hide();
-            this.toastService.success("Data imported successfully!", 5000, "Import Complete");
+            this.toastService.success(this.translate.instant('toasts.importSuccess'), 5000, this.translate.instant('toasts.importComplete'));
           } else {
-            this.toastService.info("Data import cancelled", 2000);
+            this.toastService.info(this.translate.instant('toasts.importCancelled'), 2000);
           }
         });
       } catch (error) {
         console.error('Error processing imported file:', error);
-        this.alertService.showAlert('Error', 'Error processing backup file. Ensure it is valid JSON.');
+        this.alertService.showAlert(this.translate.instant('common.error'), this.translate.instant('alerts.errorProcessingFile'));
       } finally {
         input.value = '';
       }
     };
     reader.onerror = () => {
-      this.alertService.showAlert('Error', 'Error reading file.');
+      this.alertService.showAlert(this.translate.instant('common.error'), this.translate.instant('alerts.errorReadingFile'));
       input.value = '';
     };
     reader.readAsText(file);
   }
 
   async clearAllAppData(): Promise<void> {
-
     const initialConfirmation = await this.alertService.showConfirmationDialog(
-      "WARNING",
-      `This will delete ALL your workout data, profile, and settings. This cannot be undone. Are you sure?`,
+      this.translate.instant('alerts.clearAllDataWarningTitle'),
+      this.translate.instant('alerts.clearAllDataWarningMessage'),
       [
-        { text: "Cancel", role: "cancel", data: false, icon: 'cancel' } as AlertButton,
-        { text: "Clear all data", role: "confirm", data: true, cssClass: "bg-red-600", icon: 'trash' } as AlertButton,
+        { text: this.translate.instant('common.cancel'), role: "cancel", data: false, icon: 'cancel' } as AlertButton,
+        { text: this.translate.instant('settings.dataManagement.resetButton'), role: "confirm", data: true, cssClass: "bg-red-600", icon: 'trash' } as AlertButton,
       ],
     );
-
     if (initialConfirmation && initialConfirmation.data) {
-      // show a second confirmation dialog asking the user to exactly type "DELETE" to confirm
-
       const absoluteConfirmation = await this.alertService.showPromptDialog(
-        'Confirm Data Deletion',
-        `To confirm, please type "DELETE" in the input below. This will delete ALL your workout data, profile, and settings. This cannot be undone.`,
+        this.translate.instant('alerts.clearAllDataConfirmationTitle'),
+        this.translate.instant('alerts.clearAllDataConfirmationMessage'),
         [{
           name: 'confirmDialogInput',
           type: 'text',
-          placeholder: `Type DELETE to confirm`,
+          placeholder: this.translate.instant('alerts.clearAllDataConfirmationPlaceholder'),
           value: '',
           autofocus: true,
         }] as AlertInput[],
-        'CLEAR ALL DATA'
+        this.translate.instant('alerts.clearAllDataButton')
       );
-
-      const response: string | null = absoluteConfirmation && typeof absoluteConfirmation['confirmDialogInput'] === 'string'
-        ? absoluteConfirmation['confirmDialogInput']
-        : null;
+      const response: string | null = absoluteConfirmation && typeof absoluteConfirmation['confirmDialogInput'] === 'string' ? absoluteConfirmation['confirmDialogInput'] : null;
       if (!response || response.toUpperCase() !== 'DELETE') {
-        this.alertService.showAlert("Cancelled", "Data clearing cancelled. No changes made.");
+        this.alertService.showAlert(this.translate.instant('common.cancelled'), this.translate.instant('alerts.clearAllDataCancelledMessage'));
         return;
       }
-
       if (this.trackingService.clearAllWorkoutLogs_DEV_ONLY) await this.trackingService.clearAllWorkoutLogs_DEV_ONLY();
       if (this.trackingService.clearAllPersonalBests_DEV_ONLY) await this.trackingService.clearAllPersonalBests_DEV_ONLY();
       if (this.workoutService.clearAllRoutines_DEV_ONLY) await this.workoutService.clearAllRoutines_DEV_ONLY();
@@ -700,12 +551,9 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
       if (this.appSettingsService.clearAppSettings_DEV_ONLY) this.appSettingsService.clearAppSettings_DEV_ONLY();
       if (this.progressiveOverloadService.clearSettings_DEV_ONLY) this.progressiveOverloadService.clearSettings_DEV_ONLY();
       if (this.trainingProgramService.deactivateAllPrograms) this.trainingProgramService.deactivateAllPrograms();
-
       this.loadProfileData();
-      // this.loadAppSettingsData();
       this.loadProgressiveOverloadSettings();
-
-      await this.alertService.showAlert("Info", "All application data has been cleared");
+      await this.alertService.showAlert(this.translate.instant('common.info'), this.translate.instant('alerts.clearAllDataSuccessMessage'));
     }
   }
 
@@ -728,10 +576,9 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
       this.subscriptionService.showUpgradeModal();
       return;
     }
-
-    // 4. If the check passes, proceed with navigation
     this.router.navigate(['/personal-gym']);
   }
+
   navigateToPersonalBests(): void {
     this.router.navigate(['/profile/personal-bests']);
   }
@@ -741,10 +588,9 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
   }
 
   showSyncHistoryTooltip(): void {
-    // show only if on mobile 
     if (this.platformId === 'browser' && window.innerWidth <= 768) {
       this.workoutService.vibrate();
-      this.alertService.showAlert("Sync Exercise History", this.syncHistoryTooltipString);
+      this.alertService.showAlert(this.translate.instant('alerts.syncHistoryTitle'), this.syncHistoryTooltipString);
       return;
     }
   }
@@ -758,39 +604,23 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
     this.appSettingsService.setMenuMode(mode);
   }
 
-
-  /**
-   * Triggers a full synchronization of all historical data, including
-   * exercise `lastUsedAt` timestamps and routine `lastPerformed` dates.
-   */
-  async onSyncHistoryClick(): Promise<void> { // Method renamed for clarity
+  async onSyncHistoryClick(): Promise<void> {
     const confirmation = await this.alertService.showConfirm(
-      'Sync Full History',
-      'This will scan all workout logs to update the "Last Used" date for all exercises AND the "Last Performed" date for all routines. This may take a moment. Proceed?'
+      this.translate.instant('alerts.syncFullHistoryTitle'),
+      this.translate.instant('alerts.syncFullHistoryMessage')
     );
-
     if (confirmation && confirmation.data) {
-      // Call the new, all-encompassing sync method in the TrackingService
       await this.trackingService.syncAllHistory();
     }
   }
 
-  /**
-   * Helper to manage strategies FormArray.
-   * @returns The strategies FormArray.
-   */
   get strategiesFormArray(): FormArray {
     return this.progressiveOverloadForm.get('strategies') as FormArray;
   }
 
-  /**
-   * Handles the change event for strategy checkboxes.
-   * Adds or removes the strategy from the FormArray.
-   */
   onStrategyChange(event: Event): void {
     const checkbox = event.target as HTMLInputElement;
     const strategyValue = checkbox.value as ProgressiveOverloadStrategy;
-
     if (checkbox.checked) {
       this.strategiesFormArray.push(this.fb.control(strategyValue));
     } else {
@@ -799,29 +629,25 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
         this.strategiesFormArray.removeAt(index);
       }
     }
-    this.progressiveOverloadForm.markAsDirty(); // Mark form as dirty to trigger save
+    this.progressiveOverloadForm.markAsDirty();
   }
 
-  /**
-   * Checks if a specific strategy is currently selected in the FormArray.
-   * Used to conditionally show/hide increment input fields in the template.
-   */
   isStrategySelected(strategy: ProgressiveOverloadStrategy): boolean {
     return this.strategiesFormArray.value.includes(strategy);
   }
   public ProgressiveOverloadStrategy = ProgressiveOverloadStrategy;
 
-  /**
-   * Sets the application language when the user selects a new one from the dropdown.
-   * @param event The change event from the select element.
-   */
   onLanguageChange(event: Event): void {
     const selectElement = event.target as HTMLSelectElement;
     const lang = selectElement.value;
     if (lang) {
       this.workoutService.vibrate();
       this.languageService.setLanguage(lang);
-      this.toastService.success(`Language set to ${this.languageDisplayNames[lang] || lang}`, 2000);
+      const translatedLangName = this.translate.instant(this.languageDisplayNames[lang] || lang);
+      this.toastService.success(this.translate.instant('toasts.languageSet', { language: translatedLangName }), 2000);
     }
   }
+
+    languageControl!: FormControl<string>;
+
 }

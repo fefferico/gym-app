@@ -9,6 +9,7 @@ import { SpinnerComponent } from './shared/components/spinner/spinner.component'
 import { ToastContainerComponent } from './shared/components/toast/toast.component';
 import { PausedWorkoutComponent } from './features/workout-tracker/paused-workout/paused-workout.component';
 import { filter, map } from 'rxjs';
+import { LanguageService } from './core/services/language.service';
 
 @Component({
   selector: 'app-root',
@@ -52,6 +53,7 @@ import { filter, map } from 'rxjs';
   // or global styles in styles.scss
 })
 export class AppComponent implements OnInit {
+  private languageService = inject(LanguageService);
   private themeService = inject(ThemeService); // Keep for early initialization via constructor
   private trackingService = inject(TrackingService); // Inject for testing
   // Signal to control the visibility of the paused workout banner
@@ -60,9 +62,10 @@ export class AppComponent implements OnInit {
   private router = inject(Router);
   private activatedRoute = inject(ActivatedRoute);
 
-    isFullScreenPlayerActive = false;
+  isFullScreenPlayerActive = false;
 
   constructor() {
+    this.languageService.init();
     this.router.events.pipe(
       filter((event): event is NavigationEnd => event instanceof NavigationEnd)
     ).subscribe((event: NavigationEnd) => {
