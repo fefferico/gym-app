@@ -1,13 +1,13 @@
 <div class="container mx-auto p-2 sm:p-4">
     <header class="flex justify-between items-center pb-2">
-        <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">My Routines</h1>
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">{{ 'routineList.title' | translate }}</h1>
 
         <button appPress (shortPress)="toggleFilterAccordion()" aria-controls="filter-accordion"
             [attr.aria-expanded]="isFilterAccordionOpen()"
             class="rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-light transition-all duration-300 ease-in-out">
             <app-icon name="filter" class="w-10 h-10 transition-transform duration-300"
                 [class.rotate-180]="isFilterAccordionOpen()"></app-icon>
-            <span class="sr-only">Toggle Filters</span>
+            <span class="sr-only">{{ 'routineList.toggleFilters' | translate }}</span>
         </button>
     </header>
 
@@ -18,35 +18,38 @@
             [style.maxHeight]="isFilterAccordionOpen() ? '600px' : '0px'" [class.mb-6]="isFilterAccordionOpen()"
             [ngClass]="{ '!overflow-visible relative z-20': isColorFilterOpen() }">
             <div class="p-4 bg-white dark:bg-gray-700 rounded-md shadow-md border dark:border-gray-600 mt-2">
-                <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">Filter Routines</h2>
+                <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">{{ 'routineList.filters.title' |
+                    translate }}</h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
                     <div>
                         <label for="routine-search-term"
-                            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Search
-                            Name/Desc.</label>
-                        <input type="text" id="routine-search-term" placeholder="Enter routine name or description..."
+                            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{
+                            'routineList.filters.searchLabel' | translate }}</label>
+                        <input type="text" id="routine-search-term"
+                            [placeholder]="'routineList.filters.searchPlaceholder' | translate"
                             [value]="routineSearchTerm()" (input)="onRoutineSearchTermChange($event)"
                             class="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200">
                     </div>
                     <div>
                         <label for="routine-goal-filter"
-                            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Goal</label>
+                            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{
+                            'routineList.filters.goalLabel' | translate }}</label>
                         <select id="routine-goal-filter" (change)="onRoutineGoalChange($event)"
                             [value]="selectedRoutineGoal() || ''"
                             class="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200">
-                            <option value="">Any Goal</option>
+                            <option value="">{{ 'routineList.filters.anyGoal' | translate }}</option>
                             <option *ngFor="let goal of uniqueRoutineGoals()" [value]="goal">{{ goal | titlecase }}
                             </option>
                         </select>
                     </div>
                     <div>
                         <label for="routine-muscle-filter"
-                            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Targets
-                            Muscle</label>
+                            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{
+                            'routineList.filters.muscleLabel' | translate }}</label>
                         <select id="routine-muscle-filter" (change)="onRoutineMuscleGroupChange($event)"
                             [value]="selectedRoutineMuscleGroup() || ''"
                             class="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200">
-                            <option value="">Any Muscle Group</option>
+                            <option value="">{{ 'routineList.filters.anyMuscle' | translate }}</option>
                             <option *ngFor="let muscle of uniqueRoutineMuscleGroups()" [value]="muscle">{{ muscle |
                                 titlecase }}</option>
                         </select>
@@ -54,9 +57,7 @@
                     <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600 md:border-none">
                         <label for="duration-filter"
                             class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Max Duration: <strong class="text-primary dark:text-primary-light">{{ selectedMaxDuration()
-                                }}
-                                min</strong>
+                            {{ 'routineList.filters.durationLabel' | translate:{duration: selectedMaxDuration()} }}
                         </label>
                         <input type="range" id="duration-filter" min="0" [max]="maxDuration()" step="5"
                             [value]="selectedMaxDuration()" (input)="onDurationFilterChange($event)"
@@ -65,7 +66,8 @@
                     <div class="border-t border-gray-200 dark:border-gray-600 md:border-none">
                         <div class="flex flex-col tems-center justify-between pt-4">
                             <div>
-                                <p class="text-sm text-gray-500 dark:text-gray-400 mr-1">Hidden routines</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 mr-1">{{
+                                    'routineList.filters.hiddenLabel' | translate }}</p>
                             </div>
                             <label for="show-hidden-routine" class="inline-flex items-center cursor-pointer mt-2">
                                 <input type="checkbox" id="show-hidden-routine" class="sr-only peer" appPress
@@ -74,28 +76,32 @@
                                     class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary dark:peer-checked:bg-primary-dark">
                                 </div>
                                 <span class="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
-                                    {{ showHiddenRoutines() ? 'Hide' : 'Show' }} Hidden Routines
+                                    {{ (showHiddenRoutines() ? 'routineList.filters.hideHidden' :
+                                    'routineList.filters.showHidden') | translate }}
                                 </span>
                             </label>
                         </div>
                         <div class="flex flex-col tems-center justify-between pt-4">
                             <div>
-                                <p class="text-sm text-gray-500 dark:text-gray-400 mr-1">Favourite routines</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 mr-1">{{
+                                    'routineList.filters.favouriteLabel' | translate }}</p>
                             </div>
                             <label for="show-favourite-routine" class="inline-flex items-center cursor-pointer mt-2">
-                                <input type="checkbox" id="show-favourite-routine" class="sr-only peer" 
+                                <input type="checkbox" id="show-favourite-routine" class="sr-only peer"
                                     (click)="showFavouriteOnlyRoutines(!showFavouriteRoutinesOnly())">
                                 <div
                                     class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary dark:peer-checked:bg-primary-dark">
                                 </div>
                                 <span class="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
-                                    {{ showFavouriteRoutinesOnly() ? 'Normal' : 'Only' }} Favourite Routines
+                                    {{ (showFavouriteRoutinesOnly() ? 'routineList.filters.normalFavourite' :
+                                    'routineList.filters.onlyFavourite') | translate }}
                                 </span>
                             </label>
                         </div>
                     </div>
                     <div #colorFilterContainer class="relative">
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Routine color</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{
+                            'routineList.filters.colorLabel' | translate }}</label>
                         <button (click)="toggleColorFilterDropdown()" [disabled]="uniqueRoutineColors().length === 0"
                             class="relative w-full cursor-pointer rounded-md bg-white dark:bg-gray-600 py-2 pl-3 pr-10 text-left border border-gray-300 dark:border-gray-600 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-light disabled:opacity-50 disabled:cursor-not-allowed">
 
@@ -110,7 +116,8 @@
 
                             <!-- Display 'Any Color' placeholder -->
                             <ng-template #anyColor>
-                                <span class="block truncate text-gray-500 dark:text-gray-400">Any Color</span>
+                                <span class="block truncate text-gray-500 dark:text-gray-400">{{
+                                    'routineList.filters.anyColor' | translate }}</span>
                             </ng-template>
 
                             <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
@@ -125,7 +132,8 @@
                             <!-- Any Color Option -->
                             <li (click)="clearColorFilter($event)"
                                 class="text-gray-900 dark:text-gray-200 relative cursor-pointer select-none py-2 pl-3 pr-9 hover:bg-gray-100 dark:hover:bg-gray-600">
-                                <span class="block truncate font-normal">Any Color</span>
+                                <span class="block truncate font-normal">{{ 'routineList.filters.anyColor' | translate
+                                    }}</span>
                             </li>
 
                             <!-- Color Options -->
@@ -141,9 +149,10 @@
                     </div>
                 </div>
                 <div class="mt-4" *ngIf="uniqueRoutineEquipments().length > 0">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Equipment</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{
+                        'routineList.filters.equipmentLabel' | translate }}</label>
                     <div class="flex flex-wrap gap-2">
-                        <button *ngFor="let equipment of uniqueRoutineEquipments()" 
+                        <button *ngFor="let equipment of uniqueRoutineEquipments()"
                             (click)="toggleEquipmentFilter(equipment)" type="button" role="switch"
                             [attr.aria-checked]="selectedEquipment().includes(equipment)"
                             class="px-3 py-1.5 text-xs font-semibold rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
@@ -159,15 +168,12 @@
                     <button (click)="clearFilters()"
                         class="flex px-4 py-2 bg-yellow-200 dark:bg-yellow-700 text-gray-700 dark:text-gray-200 rounded-md hover:bg-yellow-300 dark:hover:bg-yellow-500 text-sm items-center font-medium">
                         <app-icon name="trash" class="w-5 h-5 mr-1"></app-icon>
-                        CLEAR FILTERS
+                        {{ 'routineList.filters.clearButton' | translate }}
                     </button>
                     <div aria-live="polite" aria-atomic="true" class="text-sm text-gray-600 dark:text-gray-400">
                         <span *ngIf="allRoutinesForList().length > 0">
-                            Showing <strong class="text-gray-800 dark:text-gray-200">{{ filteredRoutines().length
-                                }}</strong>
-                            of <strong class="text-gray-800 dark:text-gray-200">{{ allRoutinesForList().length
-                                }}</strong>
-                            routines
+                            {{ 'routineList.filters.showingResult' | translate:{count: filteredRoutines().length,
+                            total: allRoutinesForList().length} }}
                         </span>
                     </div>
                 </div>
@@ -183,19 +189,18 @@
             <div class="flex items-center space-x-3 overflow-x-auto custom-scrollbar py-1 px-2">
                 <!-- "All" Chip -->
                 <button (click)="selectPrimaryCategory(null)"
-                        class="px-4 py-1.5 text-sm font-semibold rounded-full transition-colors duration-200 ease-in-out whitespace-nowrap flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
-                        [ngClass]="{
+                    class="px-4 py-1.5 text-sm font-semibold rounded-full transition-colors duration-200 ease-in-out whitespace-nowrap flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+                    [ngClass]="{
                             'bg-primary text-white focus:ring-primary-dark': selectedPrimaryCategory() === null,
                             'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500 focus:ring-gray-400': selectedPrimaryCategory() !== null
                         }">
-                    All Categories
+                    {{ 'routineList.filters.allCategories' | translate }}
                 </button>
 
                 <!-- Dynamic Category Chips -->
-                <button *ngFor="let category of uniquePrimaryCategories()"
-                        (click)="selectPrimaryCategory(category)"
-                        class="px-4 py-1.5 text-sm font-semibold rounded-full transition-colors duration-200 ease-in-out whitespace-nowrap flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
-                        [ngClass]="{
+                <button *ngFor="let category of uniquePrimaryCategories()" (click)="selectPrimaryCategory(category)"
+                    class="px-4 py-1.5 text-sm font-semibold rounded-full transition-colors duration-200 ease-in-out whitespace-nowrap flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+                    [ngClass]="{
                             'bg-primary text-white focus:ring-primary-dark': selectedPrimaryCategory() === category,
                             'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500 focus:ring-gray-400': selectedPrimaryCategory() !== category
                         }">
@@ -267,7 +272,7 @@
                             [ngClass]="getCardTextColor(routine)">
                             <div *ngIf="routine.goal" class="flex items-center gap-1">
                                 <app-icon name="goal" class="w-6 h-6"></app-icon>
-                                <span class="font-medium">Goal:</span>
+                                <span class="font-medium">{{ 'routineList.card.goal' | translate }}</span>
                                 <button type="button" (click)="filterByGoal(routine.goal, $event)"
                                     [disabled]="routine.isDisabled"
                                     [ngClass]="{ 'cursor-not-allowed opacity-50': routine.isDisabled } "
@@ -280,7 +285,7 @@
                             [ngClass]="getCardTextColor(routine)">
                             <div *ngIf="routine.primaryCategory" class="flex items-center gap-1">
                                 <app-icon name="category" class="w-6 h-6"></app-icon>
-                                <span class="font-medium">Category:</span>
+                                <span class="font-medium">{{ 'routineList.card.category' | translate }}</span>
                                 <button type="button" (click)="selectPrimaryCategory(routine.primaryCategory, $event)"
                                     [disabled]="routine.isDisabled"
                                     [ngClass]="{ 'cursor-not-allowed opacity-50': routine.isDisabled } "
@@ -293,7 +298,7 @@
                             class="flex items-center text-sm text-gray-500 dark:text-gray-300 mb-2 flex-wrap gap-1"
                             [ngClass]="getCardTextColor(routine)">
                             <app-icon name="muscle" class="w-6 h-6"></app-icon>
-                            <span class="font-medium">Muscles:</span>
+                            <span class="font-medium">{{ 'routineList.card.muscles' | translate }}</span>
                             <button type="button" *ngFor="let muscle of getRoutineMainMuscleGroups(routine)"
                                 (click)="filterByMuscleGroup(muscle,$event)" [disabled]="routine.isDisabled"
                                 [ngClass]="{ 'cursor-not-allowed opacity-50': routine.isDisabled } "
@@ -314,7 +319,7 @@
                                 <div class="text-sm text-gray-500 dark:text-gray-300 flex gap-1 mb-2"
                                     [ngClass]="getCardTextColor(routine)">
                                     <app-icon name="calendar" class="w-6 h-6"></app-icon>
-                                    <span class="font-medium">Last:</span>
+                                    <span class="font-medium">{{ 'routineList.card.lastPerformed' | translate }}</span>
                                     <!-- The 'date' pipe correctly receives a number from routineInfo.startTime -->
                                     {{ routineInfo.startTime | date:'dd/MM/yy HH:mm' }}
                                 </div>
@@ -324,7 +329,7 @@
                                 <div class="text-sm text-gray-500 dark:text-gray-300 italic flex gap-1 mb-2"
                                     [ngClass]="getCardTextColor(routine)">
                                     <app-icon name="calendar" class="w-6 h-6"></app-icon>
-                                    Not performed yet
+                                    {{ 'routineList.card.notPerformed' | translate }}
                                 </div>
                             </ng-template>
 
@@ -334,7 +339,8 @@
                                     class="text-sm text-gray-500 dark:text-gray-300 flex gap-1 mb-1"
                                     [ngClass]="getCardTextColor(routine)">
                                     <app-icon name="clock" class="w-6 h-6"></app-icon>
-                                    <span class="font-medium">Est. duration:</span>
+                                    <span class="font-medium">{{ 'routineList.card.estimatedDuration' | translate
+                                        }}</span>
                                     ~{{ getRoutineDuration(routine) }} min
                                 </div>
                             </div>
@@ -345,7 +351,7 @@
                                     class="text-sm text-gray-500 dark:text-gray-300 flex gap-1"
                                     [ngClass]="getCardTextColor(routine)">
                                     <app-icon name="schedule" class="w-6 h-6"></app-icon>
-                                    <span class="font-medium">Last duration:</span>
+                                    <span class="font-medium">{{ 'routineList.card.lastDuration' | translate }}</span>
                                     {{ routineInfo.duration }} min
                                 </div>
                             </div>
@@ -361,17 +367,17 @@
                                 <span
                                     class="text-2xs bg-yellow-300 text-yellow-600 dark:bg-yellow-700 dark:text-yellow-200 text-2xs text-white px-1.5 py-0.5 rounded-full mx-1 mb-1 inline-block flex gap-1 items-center">
                                     <app-icon name="hidden" class="h-5 w-5"></app-icon>
-                                    {{ 'Hidden' | titlecase }}
+                                    {{ 'routineList.card.hidden' | translate | titlecase }}
                                 </span>
                             </div>
                             <div *ngIf="routine.isFavourite" appPress
                                 (shortPress)="toggleOnlyFavouriteRoutines($event);"
                                 (longPress)="unmarkAsFavourite(routine.id, $event, true)" class="favourite-span"
-                                [title]="'Click to filter for favourites. Long-press for unmark as favourite'">
+                                [title]="'routineList.card.favouriteTooltip' | translate">
                                 <span
                                     class="bg-primary text-2xs text-white px-1.5 py-0.5 rounded-full mx-1 mb-1 inline-block flex gap-1 items-center">
                                     <app-icon name="favourite" class="h-5 w-5"></app-icon>
-                                    {{ 'Favourite' | titlecase }}
+                                    {{ 'routineList.card.favourite' | translate | titlecase }}
                                 </span>
                             </div>
                         </div>
@@ -395,18 +401,18 @@
                 <app-icon name="routines" class="h-16 w-16 text-gray-400 dark:text-gray-500"
                     aria-hidden="true"></app-icon>
                 <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                    {{ routineSearchTerm() || selectedRoutineGoal() || selectedRoutineMuscleGroup() ? 'No Routines Match
-                    Filters' : 'No Routines Yet!' }}
+                    {{ (routineSearchTerm() || selectedRoutineGoal() || selectedRoutineMuscleGroup() ?
+                    'routineList.noRoutines.noMatchTitle' : 'routineList.noRoutines.noRoutinesTitle') | translate }}
                 </h3>
                 <p class="text-gray-500 dark:text-gray-400 mb-6">
-                    {{ routineSearchTerm() || selectedRoutineGoal() || selectedRoutineMuscleGroup() ? 'Try adjusting
-                    your filters.' : 'Get started by creating your first workout routine.' }}
+                    {{ (routineSearchTerm() || selectedRoutineGoal() || selectedRoutineMuscleGroup() ?
+                    'routineList.noRoutines.noMatchMessage' : 'routineList.noRoutines.noRoutinesMessage') | translate }}
                 </p>
                 <div class="flex justify-center"><button appPress (shortPress)="navigateToCreateRoutine()"
                         *ngIf="!(routineSearchTerm() || selectedRoutineGoal() || selectedRoutineMuscleGroup())"
                         class="flex items-center bg-primary hover:bg-primary-dark text-white font-semibold py-2 px-6 rounded-md shadow-md hover:shadow-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary-light focus:ring-opacity-75">
                         <app-icon name="create" class="h-5 w-5 mr-2"></app-icon>
-                        CREATE YOUR FIRST ROUTINE
+                        {{ 'routineList.noRoutines.createFirstButton' | translate }}
                     </button></div>
             </div>
         </ng-template>
@@ -421,8 +427,9 @@
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
                 </path>
             </svg>
-            <p class="sr-only">Loading...</p>
-            <p class="text-lg text-gray-600 dark:text-gray-400 mt-3" aria-hidden="true">Loading routines...</p>
+            <p class="sr-only">{{ 'common.loading' | translate }}</p>
+            <p class="text-lg text-gray-600 dark:text-gray-400 mt-3" aria-hidden="true">{{ 'routineList.loading' |
+                translate }}</p>
         </div>
     </ng-template>
 
@@ -430,7 +437,7 @@
     <button (click)="startKB()" type="button" *ngIf="subscriptionService.isPremium()"
         class="p-2 rounded-md mt-5 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-light transition-all duration-300 ease-in-out">
         <img [src]="getIconPath('kettlebell')" class="w-6 h-6 sm:w-8 sm:h-8 object-contain" alt="">
-        START TRACKING (VERY WIP)
+        {{ 'routineList.wip.startTracking' | translate }}
     </button>
 
 </div>

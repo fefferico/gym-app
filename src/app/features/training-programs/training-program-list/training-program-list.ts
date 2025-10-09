@@ -36,6 +36,7 @@ import { AppSettingsService } from '../../../core/services/app-settings.service'
 import { MenuMode } from '../../../core/models/app-settings.model';
 import { PremiumFeature, SubscriptionService } from '../../../core/services/subscription.service';
 import { FabAction, FabMenuComponent } from '../../../shared/components/fab-menu/fab-menu.component';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 interface ScheduledItemWithLogs {
   routine: Routine;
@@ -63,7 +64,7 @@ type CalendarDisplayMode = 'week' | 'month';
 @Component({
   selector: 'app-training-program-list',
   standalone: true,
-  imports: [CommonModule, DatePipe, TitleCasePipe, ActionMenuComponent, PressDirective, IconComponent, FabMenuComponent],
+  imports: [CommonModule, DatePipe, TitleCasePipe, ActionMenuComponent, PressDirective, IconComponent, FabMenuComponent, TranslateModule],
   templateUrl: './training-program-list.html',
   styleUrls: ['./training-program-list.scss'],
   animations: [
@@ -187,6 +188,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
   private sanitizer = inject(DomSanitizer);
   private appSettingsService = inject(AppSettingsService);
   protected subscriptionService = inject(SubscriptionService);
+  private translate = inject(TranslateService); 
 
   isLoading = signal(true);
   allProgramsForList = signal<TrainingProgram[]>([]);
@@ -487,7 +489,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
   async deleteProgram(programId: string, event?: MouseEvent): Promise<void> {
     event?.stopPropagation(); this.activeProgramActions.set(null);
     try {
-      this.spinnerService.show("Deleting program...");
+      this.spinnerService.show(this.translate.instant('trainingPrograms.alerts.deleting'));
       await this.trainingProgramService.deleteProgram(programId);
     } catch (error) { this.toastService.error("An unexpected error occurred", 0, "Deletion Error"); }
     finally { this.spinnerService.hide(); }
@@ -501,17 +503,17 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
 
     event?.stopPropagation();
     this.activeProgramActions.set(null);
-    this.spinnerService.show("Updating program...");
+    this.spinnerService.show(this.translate.instant('trainingPrograms.alerts.updating'));
     try {
       if (currentProgram.isActive) {
         // Option to deactivate
         const choice = await this.alertService.showConfirmationDialog(
-          "Program is currently active.",
-          "What would you like to do?",
+          this.translate.instant('trainingPrograms.alerts.programActiveTitle'),
+          this.translate.instant('trainingPrograms.alerts.programActiveMessage'),
           [
-            { text: "Deactivate", role: "deactivate", data: "deactivate", icon: 'deactivate' },
-            { text: "Complete", role: "complete", data: "complete", icon: 'goal', cssClass: 'bg-green-500 hover:bg-green-600' },
-            { text: "Cancel", role: "cancel", data: "cancel", icon: 'cancel' },
+            { text: this.translate.instant('trainingPrograms.alerts.deactivate'), role: "deactivate", data: "deactivate", icon: 'deactivate' },
+            { text: this.translate.instant('trainingPrograms.alerts.complete'), role: "complete", data: "complete", icon: 'goal', cssClass: 'bg-green-500 hover:bg-green-600' },
+            { text: this.translate.instant('common.cancel'), role: "cancel", data: "cancel", icon: 'cancel' },
           ]
         );
 
@@ -522,36 +524,36 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
 
         if (choice.data === "complete") {
           try {
-            this.spinnerService.show("Completing program...");
+            this.spinnerService.show(this.translate.instant('trainingPrograms.alerts.completing'));
             await this.trainingProgramService.toggleProgramActivation(programId, 'completed');
             // Service emits updated list
           } catch (error) {
-            this.toastService.error("Failed to complete program", 0, "Error");
+            this.toastService.error(this.translate.instant('trainingPrograms.toasts.finishFailed'), 0, "Error");
           } finally {
             this.spinnerService.hide();
           }
           return;
         } else {
           try {
-            this.spinnerService.show("Deactivating program...");
+            this.spinnerService.show(this.translate.instant('trainingPrograms.alerts.deactivating'));
             await this.trainingProgramService.deactivateProgram(programId, 'cancelled');
             // Service emits updated list
-          } catch (error) { this.toastService.error("Failed to deactivate", 0, "Error"); }
+          } catch (error) { this.toastService.error(this.translate.instant('trainingPrograms.toasts.deactivateFailed'), 0, "Error"); }
           finally { this.spinnerService.hide(); }
         }
         return;
       }
       // Activate new program
       try {
-        this.spinnerService.show("Setting active program...");
+        this.spinnerService.show(this.translate.instant('trainingPrograms.alerts.settingActive'));
         // The service method should handle setting the new active program,
         // updating isActive flags on all programs, and emitting the updated list.
         await this.trainingProgramService.toggleProgramActivation(programId, 'active');
-        this.toastService.success("Program activated", 0, "Error");
-      } catch (error) { this.toastService.error("Failed to set active program", 0, "Error"); }
+        this.toastService.success(this.translate.instant('trainingPrograms.toasts.programActivated'), 0, "Error");
+      } catch (error) { this.toastService.error(this.translate.instant('trainingPrograms.toasts.setActiveFailed'), 0, "Error"); }
       finally { this.spinnerService.hide(); }
     } catch (error) {
-      this.toastService.error("Failed to update program status", 0, "Error");
+      this.toastService.error(this.translate.instant('trainingPrograms.toasts.statusUpdateFailed'), 0, "Error");
     } finally {
       this.spinnerService.hide();
     }
@@ -560,36 +562,37 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
   async setProgramAsFinished(programId: string): Promise<void> {
     // ask for confirmation before finishing
     const confirm = await this.alertService.showConfirmationDialog(
-      'Finish Program',
-      'Are you sure you want to mark this program as completed?',
+      this.translate.instant('trainingPrograms.alerts.finishTitle'),
+      this.translate.instant('trainingPrograms.alerts.finishMessage'),
       [
-        { text: 'Cancel', role: 'cancel', cssClass: 'bg-gray-400 hover:bg-gray-600', icon: 'cancel' },
-        { text: 'Finish Program', role: 'confirm', cssClass: 'bg-primary hover:bg-primary-dark', icon: 'done' }
+        { text: this.translate.instant('common.cancel'), role: 'cancel', cssClass: 'bg-gray-400 hover:bg-gray-600', icon: 'cancel' },
+        { text: this.translate.instant('trainingPrograms.alerts.finishButton'), role: 'confirm', cssClass: 'bg-primary hover:bg-primary-dark', icon: 'done' }
       ]
     );
     if (!confirm || confirm.role !== 'confirm') return;
     this.activeProgramActions.set(null);
 
-    this.spinnerService.show("Finishing program...");
+    this.spinnerService.show(this.translate.instant('trainingPrograms.alerts.completing'));
     try {
       await this.trainingProgramService.toggleProgramActivation(programId, 'completed');
       // No need to manually update local array; programs$ will emit updated list.
     } catch (error) {
-      this.toastService.error("Failed to finish program", 0, "Error");
+      this.toastService.error(this.translate.instant('trainingPrograms.toasts.finishFailed'), 0, "Error");
     } finally {
       this.spinnerService.hide();
     }
   }
 
-  async setView(view: ProgramListView): Promise<void> {
+
+   async setView(view: ProgramListView): Promise<void> {
     if (this.currentView() === view) return;
 
     if (view === 'calendar') {
       const activeProgs = this.activePrograms();
       if (activeProgs.length > 1 && !this.calendarViewProgram()) {
         const programButtons: AlertButton[] = activeProgs.map(p => ({ text: p.name, role: 'confirm', data: p }));
-        programButtons.push({ text: 'Cancel', role: 'cancel', data: null });
-        const choice = await this.alertService.showConfirmationDialog('Select Program', 'Choose a program to view in the calendar.', programButtons);
+        programButtons.push({ text: this.translate.instant('common.cancel'), role: 'cancel', data: null });
+        const choice = await this.alertService.showConfirmationDialog(this.translate.instant('trainingPrograms.alerts.selectProgramTitle'), this.translate.instant('trainingPrograms.alerts.selectProgramMessage'), programButtons);
 
         if (choice?.data) {
           this.calendarViewProgram.set(choice.data as TrainingProgram);
@@ -606,23 +609,22 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
     }
   }
 
-  refreshCalendarView(): void {
-    this.calendarMonths.set([]);
-    this.currentCalendarDate = new Date();
-    this.generateCalendarMonths(this.currentCalendarDate, 3); // Initial load of 3 months
-  }
-
   selectCalendarDay(day: CalendarDay | null): void {
     if (day?.hasWorkout) {
       this.selectedCalendarDayDetails.set(day);
     } else if (day) {
-      this.toastService.info("It's a rest day!", 2000, format(day.date, 'EEEE'));
+      this.toastService.info(this.translate.instant(day.isPastDay ? 'trainingPrograms.calendar.wasRestDay' : 'trainingPrograms.calendar.restDay'), 2000, format(day.date, 'EEEE'));
       this.selectedCalendarDayDetails.set(null);
     } else {
       this.selectedCalendarDayDetails.set(null);
     }
   }
 
+  refreshCalendarView(): void {
+    this.calendarMonths.set([]);
+    this.currentCalendarDate = new Date();
+    this.generateCalendarMonths(this.currentCalendarDate, 3); // Initial load of 3 months
+  }
 
   handleActionMenuItemClick(event: { actionKey: string, data?: any }, originalMouseEvent?: MouseEvent): void {
     const programId = event.data?.programId;
@@ -645,18 +647,18 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
     * @param program The program to analyze.
     * @returns A formatted string like "Avg. 4.5 days/week" or "5 days".
     */
-  getDaysScheduled(program: TrainingProgram): string {
+getDaysScheduled(program: TrainingProgram): string {
     // --- NEW: Logic for 'linear' (week-by-week) programs ---
     if (program.programType === 'linear') {
       if (!program.weeks || program.weeks.length === 0) {
-        return '0 days';
+        return this.translate.instant('trainingPrograms.card.days', { count: 0 });
       }
 
       const totalWeeks = program.weeks.length;
       const totalScheduledDays = program.weeks.reduce((accumulator, currentWeek) => accumulator + currentWeek.schedule.length, 0);
 
       if (totalScheduledDays === 0) {
-        return '0 days';
+        return this.translate.instant('trainingPrograms.card.days', { count: 0 });
       }
 
       const avgDaysPerWeek = totalScheduledDays / totalWeeks;
@@ -665,16 +667,16 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
       // For example, 4.0 becomes "4", but 4.5 remains "4.5".
       const formattedAvg = avgDaysPerWeek.toFixed(1).replace(/\.0$/, '');
 
-      return `Avg. ${formattedAvg} days/week`;
+      return this.translate.instant('trainingPrograms.card.avgDaysPerWeek', { count: formattedAvg });
     }
     // --- EXISTING: Logic for 'cycled' programs (and fallback for old data) ---
     else {
       if (!program.schedule || program.schedule.length === 0) {
-        return '0 days';
+        return this.translate.instant('trainingPrograms.card.days', { count: 0 });
       }
       // This correctly counts the number of unique active days in the cycle.
       const count = new Set(program.schedule.map(s => s.dayOfWeek)).size;
-      return `${count} day${count === 1 ? '' : 's'}`;
+      return this.translate.instant(count === 1 ? 'trainingPrograms.card.days' : 'trainingPrograms.card.days_plural', { count: count });
     }
   }
 
@@ -1006,10 +1008,10 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
     }
   }
 
-  logPreviousSession(scheduledDayInfo: ScheduledItemWithLogs, workoutDate: Date): void {
+   logPreviousSession(scheduledDayInfo: ScheduledItemWithLogs, workoutDate: Date): void {
     const programId = this.activeProgramForCalendar()?.id;
     if (!programId) {
-      this.toastService.error("Cannot log session: No active program is being viewed.", 0, "Error");
+      this.toastService.error(this.translate.instant('trainingPrograms.toasts.logFailed'), 0, "Error");
       return;
     }
 
@@ -1089,7 +1091,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
     const currentProgram = this.allProgramsForList().find(program => program.id === programId);
 
     const activateProgramBtn = {
-      label: 'ACTIVATE',
+      label: this.translate.instant('trainingPrograms.actions.activate'),
       actionKey: 'activate',
       iconName: `activate`,
       iconClass: 'w-8 h-8 mr-2',
@@ -1099,7 +1101,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
 
     const deactivateProgramBtn =
     {
-      label: 'DEACTIVATE',
+      label: this.translate.instant('trainingPrograms.actions.deactivate'),
       actionKey: 'deactivate',
       iconName: `deactivate`,
       iconClass: 'w-7 h-7 mr-2',
@@ -1108,7 +1110,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
     };
 
     const finishProgramBtn = {
-      label: 'FINISH',
+      label: this.translate.instant('trainingPrograms.actions.finish'),
       actionKey: 'finish',
       iconName: `goal`,
       iconClass: 'w-8 h-8 mr-2',
@@ -1118,7 +1120,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
 
     let actionsArray = [
       {
-        label: 'VIEW',
+        label: this.translate.instant('trainingPrograms.actions.view'),
         actionKey: 'view',
         iconName: `eye`,
         iconClass: 'w-8 h-8 mr-2',
@@ -1126,7 +1128,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
         data: { programId: programId }
       },
       {
-        label: 'EDIT',
+        label: this.translate.instant('trainingPrograms.actions.edit'),
         actionKey: 'edit',
         iconName: `edit`,
         iconClass: 'w-8 h-8 mr-2',
@@ -1144,7 +1146,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
 
     actionsArray.push({ isDivider: true });
     actionsArray.push({
-      label: 'DELETE',
+      label: this.translate.instant('trainingPrograms.actions.delete'),
       actionKey: 'delete',
       iconName: `trash`,
       iconClass: 'w-8 h-8 mr-2',
@@ -1225,7 +1227,7 @@ export class TrainingProgramListComponent implements OnInit, AfterViewInit, OnDe
   fabMenuItems: FabAction[] = [];
   private refreshFabMenuItems(): void {
     this.fabMenuItems = [{
-      label: 'NEW PROGRAM',
+      label: 'trainingPrograms.fab.create',
       actionKey: 'create_program',
       iconName: 'plus-circle',
       cssClass: 'bg-blue-500 focus:ring-blue-400',

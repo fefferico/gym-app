@@ -1,12 +1,12 @@
 <div class="container mx-auto p-2 sm:p-4">
   <header class="flex justify-between items-center pb-2">
-    <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">History</h1>
+    <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">{{ 'historyList.title' | translate }}</h1>
     <button [disabled]="currentHistoryView() !== 'list'" [pressDisabled]="currentHistoryView() !== 'list'" appPress
       (shortPress)="toggleFilterAccordion()" type="button"
       class="rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-light transition-all duration-300 ease-in-out disabled:opacity-50">
       <app-icon name="filter" class="w-10 h-10 transition-transform duration-300"
         [class.rotate-180]="currentHistoryView() === 'list' && isFilterAccordionOpen()"></app-icon>
-      <span class="sr-only">Toggle Filters</span>
+      <span class="sr-only">{{ 'historyList.toggleFilters' | translate }}</span>
     </button>
   </header>
 
@@ -16,12 +16,12 @@
       class="px-3 sm:px-4 py-2 sm:py-3 -mb-px text-md font-semibold focus:outline-none" style="min-width: 120px;"
       [ngClass]="{ 'border-b-2 border-primary text-primary dark:text-primary-light dark:border-primary-light': currentHistoryView() === 'list',
       'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200  border-b border-gray-200 dark:border-gray-700': currentHistoryView() !== 'list' }">
-      LIST
+      {{ 'historyList.view.list' | translate }}
     </button>
     <button appPress (shortPress)="setView('calendar')" style="min-width: 120px;"
       class="px-3 sm:px-4 py-2 sm:py-3 -mb-px text-md font-semibold focus:outline-none"
       [ngClass]="{ 'border-b-2 border-primary text-primary dark:text-primary-light dark:border-primary-light': currentHistoryView() === 'calendar', 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200  border-b border-gray-200 dark:border-gray-700': currentHistoryView() !== 'calendar' }">
-      CALENDAR
+      {{ 'historyList.view.calendar' | translate }}
     </button>
   </div>
 
@@ -34,43 +34,47 @@
           [ngClass]="{ '!overflow-visible relative z-20': isColorFilterOpen() }">
           <form [formGroup]="filterForm"
             class="px-4 py-2 bg-white dark:bg-gray-700 rounded-md shadow-md space-y-4 border dark:border-gray-700">
-            <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-3">Filter History</h2>
+            <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-3">{{ 'historyList.filters.title' |
+              translate }}</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div><label for="dateFrom" class="block text-sm font-medium text-gray-700 dark:text-gray-300">From
-                  Date</label><input type="date" id="dateFrom" formControlName="dateFrom"
+              <div><label for="dateFrom" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                  'historyList.filters.fromDate' | translate }}</label><input type="date" id="dateFrom"
+                  formControlName="dateFrom"
                   class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-gray-200">
               </div>
-              <div><label for="dateTo" class="block text-sm font-medium text-gray-700 dark:text-gray-300">To
-                  Date</label><input type="date" id="dateTo" formControlName="dateTo"
+              <div><label for="dateTo" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                  'historyList.filters.toDate' | translate }}</label><input type="date" id="dateTo"
+                  formControlName="dateTo"
                   class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-gray-200">
               </div>
-              <div><label for="routineName" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Routine
-                  Name</label><input type="text" id="routineName" formControlName="routineName"
-                  placeholder="Search routine name..."
+              <div><label for="routineName" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                  'historyList.filters.routineName' | translate }}</label><input type="text" id="routineName"
+                  formControlName="routineName" [placeholder]="'historyList.filters.routinePlaceholder' | translate"
                   class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-gray-200">
               </div>
               <div>
-                <label for="exerciseId" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Exercise
-                  Performed</label>
+                <label for="exerciseId" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                  'historyList.filters.exercise' | translate }}</label>
                 <select id="exerciseId" formControlName="exerciseId"
                   class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-gray-200">
-                  <option value="">Any Exercise</option>
+                  <option value="">{{ 'historyList.filters.anyExercise' | translate }}</option>
                   <option *ngFor="let ex of availableExercisesForFilter$ | async" [value]="ex.id">{{ ex.name }} ({{
                     ex.category | titlecase }})</option>
                 </select>
               </div>
               <div class="lg:col-span-1">
-                <label for="programId"
-                  class="block text-sm font-medium text-gray-700 dark:text-gray-300">Program</label>
+                <label for="programId" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                  'historyList.filters.program' | translate }}</label>
                 <select id="programId" formControlName="programId"
                   class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-gray-200">
-                  <option value="">Any Program</option>
+                  <option value="">{{ 'historyList.filters.anyProgram' | translate }}</option>
                   <option *ngFor="let program of availableProgramsForFilter()" [value]="program.id">{{ program.name }}
                   </option>
                 </select>
               </div>
               <div #colorFilterContainer class="lg:col-span-1 relative">
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Card Color</label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{
+                  'historyList.filters.cardColor' | translate }}</label>
                 <button (click)="toggleColorFilterDropdown()" [disabled]="uniqueHistoryColors().length === 0"
                   class="relative w-full cursor-pointer rounded-md bg-white dark:bg-gray-700 py-2 pl-3 pr-10 text-left border border-gray-300 dark:border-gray-600 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-light disabled:opacity-50 disabled:cursor-not-allowed dark:text-gray-100">
 
@@ -84,7 +88,8 @@
 
                   <!-- Display 'Any Color' placeholder -->
                   <ng-template #anyColorHistory>
-                    <span class="block truncate text-gray-500 dark:text-gray-400">Any Color</span>
+                    <span class="block truncate text-gray-500 dark:text-gray-400">{{ 'historyList.filters.anyColor' |
+                      translate }}</span>
                   </ng-template>
 
                   <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
@@ -99,7 +104,7 @@
                   <!-- Any Color Option -->
                   <li (click)="selectColorFilter(null, $event)"
                     class="text-gray-900 dark:text-gray-200 relative cursor-pointer select-none py-2 pl-3 pr-9 hover:bg-gray-100 dark:hover:bg-gray-600">
-                    <span class="block truncate font-normal">Any Color</span>
+                    <span class="block truncate font-normal">{{ 'historyList.filters.anyColor' | translate }}</span>
                   </li>
 
                   <!-- Color Options -->
@@ -117,11 +122,10 @@
               <button type="button" (click)="resetFilters()"
                 class="flex px-4 py-2 bg-yellow-200 dark:bg-yellow-700 text-gray-700 dark:text-gray-200 rounded-md hover:bg-yellow-300 dark:hover:bg-yellow-500 text-sm items-center font-medium">
                 <app-icon name="trash" class="w-5 h-5 mr-1"></app-icon>
-                CLEAR FILTERS</button>
+                {{ 'historyList.filters.clearButton' | translate }}</button>
               <div class="text-sm text-gray-600 dark:text-gray-400">
-                Showing <strong class="text-gray-800 dark:text-gray-200">{{ filteredHistoryItems().length }}</strong>
-                of <strong class="text-gray-800 dark:text-gray-200">{{ allHistoryItems().length }}</strong>
-                entries
+                {{ 'historyList.filters.showingResult' | translate:{count: filteredHistoryItems().length, total:
+                allHistoryItems().length} }}
               </div>
             </div>
           </form>
@@ -146,31 +150,34 @@
                   [style.background-color]="item.cardColor ? item.cardColor : null">
                   <div class="flex justify-between items-start mb-1.5">
                     <h2 class="text-lg sm:text-xl font-semibold truncate pr-8"
-                      [title]="item.routineName || 'Ad-hoc Workout'">{{ item.routineName || 'Ad-hoc Workout' }}</h2>
+                      [title]="item.routineName || ('historyList.card.adHocWorkout' | translate)">{{ item.routineName ||
+                      ('historyList.card.adHocWorkout' | translate) }}</h2>
                   </div>
 
                   <div *ngIf="item.programId"
                     class="my-2 text-xs font-semibold text-white bg-primary rounded-md p-1 flex-shrink w-fit">
-                    Program: {{ item.programName }} {{ item.iterationId}}
+                    {{ 'historyList.card.program' | translate }} {{ item.programName }} {{ item.iterationId}}
                     <ng-container *ngIf="item.weekName"> - {{ item.weekName }}</ng-container>
                     <ng-container *ngIf="item.dayName"> - {{ item.dayName }}</ng-container>
                   </div>
 
                   <div class="space-y-1 text-sm" [ngClass]="getTextColor(item)">
                     <p class="flex gap-1 items-center"><app-icon name="calendar" class="w-6 h-6"></app-icon>
-                      <span class="font-medium">Date: </span> {{ item.startTime | date:'fullDate' }} at {{
+                      <span class="font-medium">{{ 'historyList.card.date' | translate }} </span> {{ item.startTime |
+                      date:'fullDate' }} at {{
                       item.startTime |
                       date:'shortTime' }}
                     </p>
                     <p class="flex gap-1 items-center">
                       <app-icon name="clock" class="w-6 h-6"></app-icon>
-                      <span><span class="font-medium">Duration: </span>
+                      <span><span class="font-medium">{{ 'historyList.card.duration' | translate }} </span>
                         {{ item.durationMinutes || 0 }} min</span>
                     </p>
                     <div class="flex justify-between">
                       <p class="flex gap-1 items-center">
                         <app-icon name="muscle" class="w-6 h-6"></app-icon>
-                        <span class="font-medium">Ex:</span> {{ item.exercises.length }}
+                        <span class="font-medium">{{ 'historyList.card.exercises' | translate }}</span> {{
+                        item.exercises.length }}
                       </p>
                       <p *ngIf="item.totalVolume" class="flex gap-1 items-center">
                         <app-icon name="weight" class="w-6 h-6"></app-icon>
@@ -178,7 +185,8 @@
                       </p>
                       <p *ngIf="item.personalBests" class="flex gap-1 items-center">
                         <app-icon name="pb" class="w-6 h-6"></app-icon>
-                        <span class="font-medium">PBs:</span> {{ item.personalBests }}
+                        <span class="font-medium">{{ 'historyList.card.pbs' | translate }}</span> {{ item.personalBests
+                        }}
                       </p>
                     </div>
                   </div>
@@ -221,25 +229,28 @@
                   </div>
                   <div class="space-y-1 text-sm" [ngClass]="getTextColor(item)">
                     <p class="flex gap-1 items-center"><app-icon name="calendar" class="w-6 h-6"></app-icon>
-                      <span class="font-medium">Date: </span> {{ item.startTime | date:'fullDate' }} at {{
+                      <span class="font-medium">{{ 'historyList.card.date' | translate }} </span> {{ item.startTime |
+                      date:'fullDate' }} at {{
                       item.startTime |
                       date:'shortTime' }}
                     </p>
                     <p class="flex gap-1 items-center">
                       <app-icon name="clock" class="w-6 h-6"></app-icon>
-                      <span class="font-medium">Duration: </span> {{ item.durationMinutes }} minutes
+                      <span class="font-medium">{{ 'historyList.card.duration' | translate }} </span> {{
+                      item.durationMinutes }} minutes
                     </p>
                     <p *ngIf="item.location" class="flex gap-1 items-center">
                       <app-icon name="map" class="w-6 h-6"></app-icon>
-                      <span><span class="font-medium">Location: </span>
+                      <span><span class="font-medium">{{ 'historyList.card.location' | translate }} </span>
                         {{ item.location}}</span>
                     </p>
                     <p *ngIf="item.distanceKm" class="flex gap-1 items-center"><app-icon name="distance"
                         class="w-6 h-6"></app-icon>
-                      <span class="font-medium">Distance:</span> {{ item.distanceKm }} km
+                      <span class="font-medium">{{ 'historyList.card.distance' | translate }}</span> {{ item.distanceKm
+                      }} km
                     </p>
                     <p *ngIf="item.notes" class="italic mt-1 line-clamp-1" [title]="item.notes"><span
-                        class="font-medium">Notes:</span> {{ item.notes }}</p>
+                        class="font-medium">{{ 'historyList.card.notes' | translate }}</span> {{ item.notes }}</p>
                   </div>
                 </div>
                 <!-- Action Menu for Workouts -->
@@ -272,20 +283,20 @@
                 <path stroke-linecap="round" stroke-linejoin="round"
                   d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
               </svg>
-              <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">No Entries Match Your Filters
+              <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">{{
+                'historyList.noResults.noMatchTitle' | translate }}
               </h3>
-              <p class="text-gray-500 dark:text-gray-400">Try adjusting your filters or view all entries by resetting
-                them</p>
+              <p class="text-gray-500 dark:text-gray-400">{{ 'historyList.noResults.noMatchMessage' | translate }}</p>
             </div>
           </ng-template>
         </div>
         <ng-template #loadingOrInitialLogs_List>
           <div *ngIf="allHistoryItems().length === 0; else loadingLogs_List"
-            class="text-center py-12 px-6 bg-white dark:bg-gray-700 dark:text-gray-200 rounded-md shadow-md">There is no
-            data here yet. Time to get active!</div>
+            class="text-center py-12 px-6 bg-white dark:bg-gray-700 dark:text-gray-200 rounded-md shadow-md">{{
+            'historyList.noResults.noDataMessage' | translate }}</div>
           <ng-template #loadingLogs_List>
             <div class="text-center py-10">
-              <p class="text-xl text-gray-600 dark:text-gray-400">Loading history...</p>
+              <p class="text-xl text-gray-600 dark:text-gray-400">{{ 'historyList.loading.history' | translate }}</p>
             </div>
           </ng-template>
         </ng-template>
@@ -328,7 +339,7 @@
 
         <!-- Loading Indicator -->
         <div *ngIf="historyCalendarLoading()" class="text-center py-10">
-          <p class="text-gray-500 dark:text-gray-400">Loading more months...</p>
+          <p class="text-gray-500 dark:text-gray-400">{{ 'historyList.loading.moreMonths' | translate }}</p>
         </div>
       </div>
     </div>
@@ -345,7 +356,8 @@
       <div class="flex justify-between items-center mb-2">
         <h3 class="text-lg sm:text-xl font-semibold text-gray-800 dark:text-gray-100">{{ pastLoggedWorkoutsDay?.date |
           date:'fullDate' }}<span *ngIf="pastLoggedWorkoutsDay?.isToday"
-            class="text-xs text-primary dark:text-primary-light ml-2">(Today)</span></h3>
+            class="text-xs text-primary dark:text-primary-light ml-2">{{ 'historyList.calendar.today' | translate
+            }}</span></h3>
         <button (click)="toggleShowPastLoggedWorkouts()"
           class="p-1.5 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none"><svg
             xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
@@ -366,19 +378,20 @@
               </h4>
               <div *ngIf="item.programId"
                 class="my-2 text-xs font-semibold text-white bg-primary rounded-md p-1 flex-shrink w-fit">
-                Program: {{ item.programName }} {{ item.iterationId}}
+                {{ 'historyList.card.program' | translate }} {{ item.programName }} {{ item.iterationId}}
                 <ng-container *ngIf="item.weekName"> - {{ item.weekName }}</ng-container>
                 <ng-container *ngIf="item.dayName"> - {{ item.dayName }}</ng-container>
               </div>
               <span *ngIf="item.startTime" class="text-sm text-gray-600 dark:text-gray-300 mb-2">
-                Date: {{ item.startTime | date:'dd/MM/yy HH:mm' }}
+                {{ 'historyList.card.date' | translate }} {{ item.startTime | date:'dd/MM/yy HH:mm' }}
               </span>
               <span *ngIf="item.durationMinutes" class="text-sm text-gray-600 dark:text-gray-300 mb-2">
-                Duration: {{ item.durationMinutes }} min
+                {{ 'historyList.card.duration' | translate }} {{ item.durationMinutes }} min
               </span>
               <p class="flex gap-1 items-center text-sm text-gray-600 dark:text-gray-300 mb-2">
                 <app-icon name="muscle" class="w-6 h-6"></app-icon>
-                <span class="font-medium">Ex:</span> {{ item.exercises.length }}
+                <span class="font-medium">{{ 'historyList.card.exercises' | translate }}</span> {{ item.exercises.length
+                }}
               </p>
               <p *ngIf="item.totalVolume" class="flex gap-1 items-center text-sm text-gray-600 dark:text-gray-300 mb-2">
                 <app-icon name="weight" class="w-6 h-6"></app-icon>
@@ -387,14 +400,14 @@
               <p *ngIf="item.personalBests"
                 class="flex gap-1 items-center text-sm text-gray-600 dark:text-gray-300 mb-2">
                 <app-icon name="pb" class="w-6 h-6"></app-icon>
-                <span class="font-medium">PBs:</span> {{ item.personalBests }}
+                <span class="font-medium">{{ 'historyList.card.pbs' | translate }}</span> {{ item.personalBests }}
               </p>
             </div>
             <div class="flex items-center">
               <button (click)="viewLogDetails(item.id)"
                 class="flex justify-center items-center w-full sm:w-auto px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md shadow-sm text-lg disabled:opacity-50 disabled:cursor-not-allowed">
                 <app-icon name="eye" class="w-6 h-6 mr-1"></app-icon>
-                DETAILS
+                {{ 'historyList.card.details' | translate }}
               </button>
             </div>
           </div>
@@ -405,10 +418,10 @@
               <h4 class="text-md sm:text-lg font-semibold text-teal-600 dark:text-teal-400 mb-1">{{ item.activityName }}
               </h4>
               <span *ngIf="item.startTime" class="text-sm text-gray-600 dark:text-gray-300 mb-2">
-                Date: {{ item.startTime | date:'dd/MM/yy HH:mm' }}
+                {{ 'historyList.card.date' | translate }} {{ item.startTime | date:'dd/MM/yy HH:mm' }}
               </span>
               <span *ngIf="item.durationMinutes" class="text-sm text-gray-600 dark:text-gray-300 mb-2">
-                Duration: {{ item.durationMinutes }} min
+                {{ 'historyList.card.duration' | translate }} {{ item.durationMinutes }} min
               </span>
             </div>
 
@@ -416,7 +429,7 @@
               <button (click)="viewActivityLogDetails(item.id)"
                 class="flex justify-center items-center w-full sm:w-auto px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md shadow-sm text-lg disabled:opacity-50 disabled:cursor-not-allowed">
                 <app-icon name="eye" class="w-6 h-6 mr-1"></app-icon>
-                DETAILS
+                {{ 'historyList.card.details' | translate }}
               </button>
             </div>
           </div>

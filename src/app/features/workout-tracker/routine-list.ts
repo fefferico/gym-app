@@ -31,6 +31,7 @@ import { GenerateWorkoutModalComponent } from './generate-workout-modal/generate
 import { GeneratedWorkoutSummaryComponent } from './generated-workout-summary/generated-workout-summary.component';
 import { WorkoutGenerationOptions, WorkoutGeneratorService } from '../../core/services/workout-generator.service';
 import { FabAction, FabMenuComponent } from '../../shared/components/fab-menu/fab-menu.component';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-routine-list',
@@ -38,7 +39,8 @@ import { FabAction, FabMenuComponent } from '../../shared/components/fab-menu/fa
   imports: [CommonModule, DatePipe, TitleCasePipe, ActionMenuComponent, PressDirective, IconComponent, GenerateWorkoutModalComponent,
     GenerateWorkoutModalComponent,
     GeneratedWorkoutSummaryComponent,
-    FabMenuComponent
+    FabMenuComponent,
+    TranslateModule
   ],
   templateUrl: './routine-list.html',
   styleUrl: './routine-list.scss',
@@ -90,6 +92,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
   private appSettingsService = inject(AppSettingsService);
   private workoutGeneratorService = inject(WorkoutGeneratorService);
   protected subscriptionService = inject(SubscriptionService);
+  private translate = inject(TranslateService);
 
   private sanitizer = inject(DomSanitizer);
   public sanitizedDescription: SafeHtml = '';
@@ -143,9 +146,9 @@ export class RoutineListComponent implements OnInit, OnDestroy {
   hideRoutines = (hide: boolean): void => {
     this.showHiddenRoutines.set(hide);
     if (hide) {
-      this.toastService.info('Showing hidden routines', 2000, 'Hidden Routines');
+      this.toastService.info(this.translate.instant('routineList.toasts.showingHidden'), 2000, this.translate.instant('routineList.filters.hiddenLabel'));
     } else {
-      this.toastService.info('Hiding hidden routines', 2000, 'Hidden Routines');
+      this.toastService.info(this.translate.instant('routineList.toasts.hidingHidden'), 2000, this.translate.instant('routineList.filters.hiddenLabel'));
     }
     this.workoutService.vibrate();
     this.closeFilterAndScrollToTop();
@@ -154,7 +157,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
   showFavouriteOnlyRoutines = (show: boolean): void => {
     this.showFavouriteRoutinesOnly.set(show);
     if (show) {
-      this.toastService.info('Showing only favourite routines', 2000, 'Hidden Routines');
+      this.toastService.info(this.translate.instant('routineList.toasts.showingOnlyFavourites'), 2000, this.translate.instant('routineList.filters.favouriteLabel'));
     }
     this.workoutService.vibrate();
     this.closeFilterAndScrollToTop();
@@ -456,7 +459,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
   async editRoutine(routineId: string, event?: MouseEvent): Promise<void> {
     const pausedRoutine = this.workoutService.getPausedSession();
     if (this.workoutService.isPausedSession() && pausedRoutine && pausedRoutine?.routineId === routineId) {
-      await this.alertService.showAlert("Info", "It's not possible to edit a running routine. Complete it or discard it before doing it.").then(() => {
+      await this.alertService.showAlert(this.translate.instant('routineList.alerts.editRunningTitle'), this.translate.instant('routineList.alerts.editRunningMessage')).then(() => {
         return;
       })
       return;
@@ -471,31 +474,31 @@ export class RoutineListComponent implements OnInit, OnDestroy {
 
     const routineToDelete = this.allRoutinesForList().find(r => r.id === routineId); // Use signal value
     if (!routineToDelete) {
-      this.toastService.error("Routine not found for deletion", 0, "Error");
+      this.toastService.error(this.translate.instant('routineList.toasts.routineNotFound'), 0, "Error");
       return;
     }
 
     const associatedLogs = await firstValueFrom(this.trackingService.getWorkoutLogsByRoutineId(routineId).pipe(take(1))) || [];
     const associatedPrograms = await firstValueFrom(this.trainingService.getProgramsByRoutineId(routineId).pipe(take(1))) || [];
-    let confirmationMessage = `Are you sure you want to delete the routine "${routineToDelete.name}"?`;
+    let confirmationMessage = this.translate.instant('routineList.alerts.deleteMessage', { name: routineToDelete.name });
     if (associatedLogs.length > 0) {
-      confirmationMessage += ` This will also delete ${associatedLogs.length} associated workout log(s).`;
+      confirmationMessage += ` ${this.translate.instant('routineList.alerts.deleteWithLogs', { count: associatedLogs.length })}`;
     }
     if (associatedPrograms.length > 0) {
       if (associatedPrograms.length === 1) {
         const associatedProgram = associatedPrograms[0].schedule.find(sched => sched.routineId === routineId);
         const programName = associatedProgram ? '\'' + associatedProgram.routineName + '\'' : '';
-        confirmationMessage += ` This will also delete the entries in ${programName ? programName : '1'} associated program(s).`;
+        confirmationMessage += ` ${this.translate.instant('routineList.alerts.deleteWithOneProgram', { name: programName })}`;
       } else {
-        confirmationMessage += ` This will also delete the entries in ${associatedPrograms.length} associated program(s).`;
+        confirmationMessage += ` ${this.translate.instant('routineList.alerts.deleteWithPrograms', { count: associatedPrograms.length })}`;
       }
     }
 
     if (associatedLogs.length > 0 || associatedPrograms.length > 0) {
-      confirmationMessage += ' This action cannot be undone.';
+      confirmationMessage += ` ${this.translate.instant('routineList.alerts.cannotBeUndone')}`;
     }
 
-    const confirm = await this.alertService.showConfirm('Delete Routine', confirmationMessage, 'Delete');
+    const confirm = await this.alertService.showConfirm(this.translate.instant('routineList.alerts.deleteTitle'), confirmationMessage, this.translate.instant('routineList.alerts.deleteButton'));
 
     if (confirm && confirm.data) {
       try {
@@ -504,10 +507,10 @@ export class RoutineListComponent implements OnInit, OnDestroy {
           await this.trackingService.clearWorkoutLogsByRoutineId(routineId);
         }
         await this.workoutService.deleteRoutine(routineId); // Assuming this is async now
-        this.toastService.success(`Routine "${routineToDelete.name}" deleted successfully.`, 4000, "Routine Deleted");
+        this.toastService.success(this.translate.instant('routineList.toasts.routineDeleted', { name: routineToDelete.name }), 4000, this.translate.instant('routineList.alerts.deleteTitle'));
       } catch (error) {
         console.error("Error during deletion:", error);
-        this.toastService.error("Failed to delete routine or its logs", 0, "Deletion Failed");
+        this.toastService.error(this.translate.instant('routineList.toasts.routineNotFound'), 0, "Deletion Failed");
       } finally {
         this.spinnerService.hide();
       }
@@ -526,11 +529,11 @@ export class RoutineListComponent implements OnInit, OnDestroy {
       const pausedRoutineName = pausedState.sessionRoutine?.name || 'a previous session';
       const pausedDate = pausedState.workoutDate ? ` from ${format(new Date(pausedState.workoutDate), 'MMM d, HH:mm')}` : '';
       const buttons: AlertButton[] = [
-        { text: `Resume: ${pausedRoutineName.substring(0, 15)}${pausedRoutineName.length > 15 ? '...' : ''}`, role: 'confirm', data: 'resume_paused', cssClass: 'bg-green-500 hover:bg-green-600 text-white', icon: 'play' },
-        { text: 'Discard Paused & Start New', role: 'confirm', data: 'discard_start_new', cssClass: 'bg-red-500 hover:bg-red-600 text-white', icon: 'change' },
-        { text: 'Cancel', role: 'cancel', data: 'cancel', icon: 'cancel' },
+        { text: this.translate.instant('routineList.alerts.resumeButton', { name: `${pausedRoutineName.substring(0, 15)}${pausedRoutineName.length > 15 ? '...' : ''}` }), role: 'confirm', data: 'resume_paused', cssClass: 'bg-green-500 hover:bg-green-600 text-white', icon: 'play' },
+        { text: this.translate.instant('routineList.alerts.discardAndStart'), role: 'confirm', data: 'discard_start_new', cssClass: 'bg-red-500 hover:bg-red-600 text-white', icon: 'change' },
+        { text: this.translate.instant('common.cancel'), role: 'cancel', data: 'cancel', icon: 'cancel' },
       ];
-      const confirmation = await this.alertService.showConfirmationDialog('Workout in Progress', `You have a paused workout ("${pausedRoutineName}"${pausedDate}). What would you like to do?`, buttons);
+      const confirmation = await this.alertService.showConfirmationDialog(this.translate.instant('routineList.alerts.pausedWorkoutTitle'), this.translate.instant('routineList.alerts.pausedWorkoutMessage', { name: pausedRoutineName, date: pausedDate }), buttons);
 
       if (confirmation && confirmation.data === 'resume_paused') {
         const targetRoutineId = pausedState.routineId || 'ad-hoc';
@@ -538,7 +541,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
         // this.router.navigate([playerRoute, pausedState.routineId || ''], { queryParams: { resume: 'true' } }); // Handle undefined routineId
       } else if (confirmation && confirmation.data === 'discard_start_new') {
         this.workoutService.removePausedWorkout();
-        this.toastService.info('Previous paused workout discarded.', 3000);
+        this.toastService.info(this.translate.instant('pausedWorkout.sessionDiscarded'), 3000);
         // this.router.navigate([playerRoute, newRoutineId]);
         this.workoutService.navigateToPlayer(newRoutineId);
       } else {
@@ -588,10 +591,10 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     if (hiddenRoutine) {
       if (confirmation) {
         const buttons: AlertButton[] = [
-          { text: 'Cancel', role: 'cancel', data: 'cancel' },
-          { text: 'Unmark', role: 'confirm', data: 'confirm' },
+          { text: this.translate.instant('common.cancel'), role: 'cancel', data: 'cancel' },
+          { text: this.translate.instant('routineList.alerts.unmarkButton'), role: 'confirm', data: 'confirm' },
         ];
-        const confirmation = await this.alertService.showConfirmationDialog('Unhide routine', `Would you like to unhide ${hiddenRoutine.name} from hidden ones?`, buttons);
+        const confirmation = await this.alertService.showConfirmationDialog(this.translate.instant('routineList.alerts.unhideTitle'), this.translate.instant('routineList.alerts.unhideMessage', { name: hiddenRoutine.name }), buttons);
         if (!confirmation || !confirmation.data || confirmation.data === 'cancel') {
           return;
         }
@@ -599,7 +602,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
       hiddenRoutine.isHidden = false;
       this.workoutService.updateRoutine(hiddenRoutine);
       this.loadRoutinesAndPopulateFilters();
-      this.toastService.success(`Removed ${hiddenRoutine.name} from hidden ones`)
+      this.toastService.success(this.translate.instant('routineList.toasts.unhidden', { name: hiddenRoutine.name }))
     }
   }
 
@@ -610,7 +613,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
       favouriteRoutine.isFavourite = true;
       this.workoutService.updateRoutine(favouriteRoutine);
       this.loadRoutinesAndPopulateFilters();
-      this.toastService.info(`Routine "${favouriteRoutine.name}" added to favourites`)
+      this.toastService.info(this.translate.instant('routineList.toasts.addedToFavourites', { name: favouriteRoutine.name }))
     }
   }
 
@@ -620,10 +623,10 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     if (favouriteRoutine) {
       if (confirmation) {
         const buttons: AlertButton[] = [
-          { text: 'Cancel', role: 'cancel', data: 'cancel' },
-          { text: 'Unmark', role: 'confirm', data: 'confirm' },
+          { text: this.translate.instant('common.cancel'), role: 'cancel', data: 'cancel' },
+          { text: this.translate.instant('routineList.alerts.unmarkButton'), role: 'confirm', data: 'confirm' },
         ];
-        const confirmation = await this.alertService.showConfirmationDialog('Unmark favourite routine', `Would you like to unmark ${favouriteRoutine.name} from favourites?`, buttons);
+        const confirmation = await this.alertService.showConfirmationDialog(this.translate.instant('routineList.alerts.unmarkFavouriteTitle'), this.translate.instant('routineList.alerts.unmarkFavouriteMessage', { name: favouriteRoutine.name }), buttons);
         if (!confirmation || !confirmation.data || confirmation.data === 'cancel') {
           return;
         }
@@ -631,7 +634,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
       favouriteRoutine.isFavourite = false;
       this.workoutService.updateRoutine(favouriteRoutine);
       this.loadRoutinesAndPopulateFilters();
-      this.toastService.info(`Routine "${favouriteRoutine.name}" removed from favourites`)
+      this.toastService.info(this.translate.instant('routineList.toasts.removedFromFavourites', { name: favouriteRoutine.name }))
     }
   }
 
@@ -653,7 +656,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
 
     const originalRoutine = this.allRoutinesForList().find(r => r.id === routineId);
     if (!originalRoutine) {
-      this.toastService.error("Routine not found for cloning", 0, "Error");
+      this.toastService.error(this.translate.instant('routineList.toasts.routineNotFound'), 0, "Error");
       return;
     }
 
@@ -668,7 +671,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     try {
       this.spinnerService.show();
       clonedRoutine = await this.workoutService.addRoutine(clonedRoutine);
-      this.toastService.success(`Routine "${clonedRoutine.name}" cloned successfully.`, 3000, "Routine Cloned");
+      this.toastService.success(this.translate.instant('routineList.toasts.routineCloned', { name: clonedRoutine.name }), 3000, "Routine Cloned");
       this.router.navigate(['/workout/routine/edit', clonedRoutine.id]);
       this.visibleActionsRutineId.set(null);
     } catch (error) {
@@ -931,7 +934,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
   toggleOnlyFavouriteRoutines(event: Event): void {
     event?.stopPropagation();
     this.showFavouriteRoutinesOnly.set(!this.showFavouriteRoutinesOnly());
-    this.toastService.info(`Showing ${this.showFavouriteRoutinesOnly() ? 'only favourite' : 'all'} routines`, 3000, "Filter Update");
+    this.toastService.info(this.translate.instant(this.showFavouriteRoutinesOnly() ? 'routineList.toasts.showingOnlyFavourites' : 'routineList.toasts.showingAllRoutines'), 3000, this.translate.instant('routineList.toasts.filterUpdate'));
   }
 
   toggleOnlyHiddenRoutines(event: Event): void {
@@ -947,7 +950,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
       target.value = goal;
       this.clearFilters();
       this.onRoutineGoalChange(event);
-      this.toastService.info(`Filtered routines by goal '${goal}'`);
+      this.toastService.info(this.translate.instant('Filtered routines by goal \'{{goal}}\'', { goal: goal }));
     }
   }
 
@@ -958,7 +961,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
       target.value = muscle;
       this.clearFilters();
       this.onRoutineMuscleGroupChange(event);
-      this.toastService.info(`Filtered routines by muscle '${muscle}'`);
+      this.toastService.info(this.translate.instant('Filtered routines by muscle \'{{muscle}}\'', { muscle: muscle }));
     }
   }
 
@@ -1030,7 +1033,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
       this.generatedRoutine.set(routine);
       this.isSummaryModalOpen.set(true);
     } else {
-      this.toastService.warning("Could not generate a workout with the selected criteria. Please try again.", 5000, "Generation Failed");
+      this.toastService.warning(this.translate.instant('routineList.toasts.generationFailed'), 5000, this.translate.instant('routineList.toasts.generationFailedTitle'));
     }
   }
 
@@ -1088,7 +1091,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     } else {
       // This should rarely happen with the fallback logic, but it's a good safeguard
       this.isSummaryModalOpen.set(false); // Close the modal on failure
-      this.toastService.error("Failed to generate a new workout. Please try adjusting your options.", 0, "Error");
+      this.toastService.error(this.translate.instant('routineList.toasts.retryFailed'), 0, "Error");
     }
   }
 
@@ -1119,21 +1122,21 @@ export class RoutineListComponent implements OnInit, OnDestroy {
   fabMenuItems: FabAction[] = [];
   private refreshFabMenuItems(): void {
     this.fabMenuItems = [{
-      label: 'CREATE NEW ROUTINE',
+      label: 'routineList.fab.create',
       actionKey: 'add_routine',
       iconName: 'plus-circle',
       cssClass: 'bg-blue-500 focus:ring-blue-400',
       isPremium: false
     },
     {
-      label: 'START NEW SESSION',
+      label: 'routineList.fab.start',
       actionKey: 'start_routine',
       iconName: 'play',
       cssClass: 'bg-green-500 focus:ring-green-400',
       isPremium: false
     },
     {
-      label: 'GENERATE RANDOM WORKOUT',
+      label: 'routineList.fab.generate',
       actionKey: 'random_workout',
       iconName: 'magic-wand',
       cssClass: 'bg-violet-500 focus:ring-violet-400',
@@ -1191,7 +1194,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     // Add the `col-span-5` class to make the button span the full width of the grid.
     // I also adjusted the margin for better spacing.
     colorButtons.push({
-      text: 'Clear Color',
+      text: this.translate.instant('routineList.alerts.clearColorButton'),
       role: 'confirm',
       data: 'clear',
       cssClass: 'bg-gray-200 text-gray-800 dark:bg-gray-600 dark:text-gray-200 mt-4 col-span-5',
@@ -1200,7 +1203,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     // --- END OF CORRECTION ---
 
     const result = await this.alertService.showConfirmationDialog(
-      `Select a Color for "${routine.name}"`,
+      this.translate.instant('routineList.alerts.selectColorTitle', { name: routine.name }),
       '',
       colorButtons,
       { customButtonDivCssClass: 'grid grid-cols-5 gap-3 justify-center' }
@@ -1214,7 +1217,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
       }
 
       const savedRoutine = await this.workoutService.updateRoutine(routine);
-      this.toastService.success(`Color updated for "${routine.name}"`);
+      this.toastService.success(this.translate.instant('routineList.toasts.colorUpdated', { name: routine.name }));
     }
   }
 

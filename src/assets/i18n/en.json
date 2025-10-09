@@ -297,5 +297,284 @@
     "or": " or ",
     "browseRoutines": "browser the available routines",
     "viewProgramDetailsTooltip": "Click to navigate to program details"
+  },
+
+
+  "routineList": {
+    "title": "My Routines",
+    "toggleFilters": "Toggle Filters",
+    "filters": {
+      "title": "Filter Routines",
+      "searchLabel": "Search Name/Desc.",
+      "searchPlaceholder": "Enter routine name or description...",
+      "goalLabel": "Goal",
+      "anyGoal": "Any Goal",
+      "muscleLabel": "Targets Muscle",
+      "anyMuscle": "Any Muscle Group",
+      "durationLabel": "Max Duration: {{duration}} min",
+      "hiddenLabel": "Hidden routines",
+      "showHidden": "Show Hidden Routines",
+      "hideHidden": "Hide Hidden Routines",
+      "favouriteLabel": "Favourite routines",
+      "onlyFavourite": "Only Favourite Routines",
+      "normalFavourite": "Normal Favourite Routines",
+      "colorLabel": "Routine color",
+      "anyColor": "Any Color",
+      "equipmentLabel": "Equipment",
+      "clearButton": "CLEAR FILTERS",
+      "showingResult": "Showing {{count}} of {{total}} routines",
+      "allCategories": "All Categories"
+    },
+    "card": {
+      "goal": "Goal:",
+      "category": "Category:",
+      "muscles": "Muscles:",
+      "lastPerformed": "Last:",
+      "notPerformed": "Not performed yet",
+      "estimatedDuration": "Est. duration:",
+      "lastDuration": "Last duration:",
+      "hidden": "Hidden",
+      "favourite": "Favourite",
+      "favouriteTooltip": "Click to filter for favourites. Long-press for unmark as favourite"
+    },
+    "noRoutines": {
+      "noMatchTitle": "No Routines Match Filters",
+      "noRoutinesTitle": "No Routines Yet!",
+      "noMatchMessage": "Try adjusting your filters.",
+      "noRoutinesMessage": "Get started by creating your first workout routine.",
+      "createFirstButton": "CREATE YOUR FIRST ROUTINE"
+    },
+    "loading": "Loading routines...",
+    "fab": {
+      "create": "CREATE NEW ROUTINE",
+      "start": "START NEW SESSION",
+      "generate": "GENERATE RANDOM WORKOUT"
+    },
+    "toasts": {
+      "showingHidden": "Showing hidden routines",
+      "hidingHidden": "Hiding hidden routines",
+      "showingOnlyFavourites": "Showing only favourite routines",
+      "showingAllRoutines": "Showing all routines",
+      "filterUpdate": "Filter Update",
+      "routineNotFound": "Routine not found",
+      "routineDeleted": "Routine \"{{name}}\" deleted successfully.",
+      "routineCloned": "Routine \"{{name}}\" cloned successfully.",
+      "colorUpdated": "Color updated for \"{{name}}\"",
+      "unhidden": "Removed {{name}} from hidden ones",
+      "addedToFavourites": "Routine \"{{name}}\" added to favourites",
+      "removedFromFavourites": "Routine \"{{name}}\" removed from favourites",
+      "generationFailed": "Could not generate a workout with the selected criteria. Please try again.",
+      "generationFailedTitle": "Generation Failed",
+      "retryFailed": "Failed to generate a new workout. Please try adjusting your options."
+    },
+    "alerts": {
+      "editRunningTitle": "Info",
+      "editRunningMessage": "It's not possible to edit a running routine. Complete it or discard it before doing it.",
+      "deleteTitle": "Delete Routine",
+      "deleteMessage": "Are you sure you want to delete the routine \"{{name}}\"?",
+      "deleteWithLogs": "This will also delete {{count}} associated workout log(s).",
+      "deleteWithPrograms": "This will also delete the entries in {{count}} associated program(s).",
+      "deleteWithOneProgram": "This will also delete the entries in '{{name}}' associated program(s).",
+      "cannotBeUndone": "This action cannot be undone.",
+      "deleteButton": "Delete",
+      "pausedWorkoutTitle": "Workout in Progress",
+      "pausedWorkoutMessage": "You have a paused workout (\"{{name}}\" from {{date}}). What would you like to do?",
+      "resumeButton": "Resume: {{name}}",
+      "discardAndStart": "Discard Paused & Start New",
+      "unhideTitle": "Unhide routine",
+      "unhideMessage": "Would you like to unhide {{name}} from hidden ones?",
+      "unmarkButton": "Unmark",
+      "unmarkFavouriteTitle": "Unmark favourite routine",
+      "unmarkFavouriteMessage": "Would you like to unmark {{name}} from favourites?",
+      "selectColorTitle": "Select a Color for \"{{name}}\"",
+      "clearColorButton": "Clear Color"
+    },
+    "wip": {
+      "startTracking": "START TRACKING (VERY WIP)"
+    }
+  },
+
+  "historyList": {
+    "title": "History",
+    "toggleFilters": "Toggle Filters",
+    "view": {
+      "list": "LIST",
+      "calendar": "CALENDAR"
+    },
+    "filters": {
+      "title": "Filter History",
+      "fromDate": "From Date",
+      "toDate": "To Date",
+      "routineName": "Routine Name",
+      "routinePlaceholder": "Search routine name...",
+      "exercise": "Exercise Performed",
+      "anyExercise": "Any Exercise",
+      "program": "Program",
+      "anyProgram": "Any Program",
+      "cardColor": "Card Color",
+      "anyColor": "Any Color",
+      "clearButton": "CLEAR FILTERS",
+      "showingResult": "Showing {{count}} of {{total}} entries"
+    },
+    "card": {
+      "adHocWorkout": "Ad-hoc Workout",
+      "program": "Program:",
+      "date": "Date:",
+      "duration": "Duration:",
+      "exercises": "Ex:",
+      "pbs": "PBs:",
+      "details": "DETAILS",
+      "location": "Location:",
+      "distance": "Distance:",
+      "notes": "Notes:"
+    },
+    "noResults": {
+      "noMatchTitle": "No Entries Match Your Filters",
+      "noMatchMessage": "Try adjusting your filters or view all entries by resetting them",
+      "noDataMessage": "There is no data here yet. Time to get active!"
+    },
+    "loading": {
+      "history": "Loading history...",
+      "moreMonths": "Loading more months...",
+      "srLoading": "Loading..."
+    },
+    "calendar": {
+      "today": "(Today)"
+    },
+    "fab": {
+      "logWorkout": "LOG PAST WORKOUT",
+      "logActivity": "LOG PAST ACTIVITY"
+    },
+    "toasts": {
+      "filteredByProgram": "Showing logs filtered out by training program",
+      "filteredByRoutine": "Showing logs filtered out by routine name",
+      "logDeleted": "Workout log deleted successfully",
+      "logDeleteFailed": "Failed to delete workout log",
+      "pausedDiscarded": "Paused workout session discarded.",
+      "noLogsOnDay": "No activities logged on this day"
+    },
+    "alerts": {
+      "noRoutineTitle": "No routine for log",
+      "noRoutineMessage": "There is no routine associated with this log: would you like to create one? If so remember to link it to this log once created",
+      "deleteLogTitle": "Delete Workout Log",
+      "deleteLogMessage": "Are you sure you want to delete this workout log? This action cannot be undone",
+      "deleteActivityTitle": "Delete Activity Log?",
+      "deleteActivityMessage": "Are you sure you want to delete the log for \"{{name}}\"? This action cannot be undone.",
+      "deleteButton": "Delete",
+      "pausedWorkoutTitle": "Pending Workout found",
+      "pausedWorkoutMessage": "There's a pending workout: do you want to discard this paused workout session and log a new one? This action cannot be undone.",
+      "discardButton": "Discard"
+    },
+    "wip": {
+      "startTracking": "START TRACKING (VERY WIP)"
+    }
+  },
+
+  "trainingPrograms": {
+    "title": "Programs",
+    "toggleFilters": "Toggle Filters",
+    "view": {
+      "myPrograms": "MY PROGRAMS",
+      "calendar": "CALENDAR"
+    },
+    "filters": {
+      "title": "Filter Programs",
+      "searchLabel": "Search Name",
+      "searchPlaceholder": "Enter program name...",
+      "cycleTypeLabel": "Cycle Type",
+      "allCycleTypes": "All Cycle Types",
+      "weekly": "Weekly",
+      "fixedCycle": "Fixed Cycle Length",
+      "programTypeLabel": "Program Type",
+      "allProgramTypes": "All Program Types",
+      "cycled": "Cycled",
+      "linear": "Linear",
+      "goalLabel": "Overall Goal",
+      "anyGoal": "Any Goal",
+      "muscleLabel": "Targets Muscle",
+      "anyMuscle": "Any Muscle Group",
+      "clearButton": "CLEAR FILTERS",
+      "showingResult": "Showing {{count}} programs",
+      "showingResultOf": "Showing {{count}} of {{total}} programs"
+    },
+    "card": {
+      "active": "Active",
+      "schedule": "Schedule:",
+      "days": "{{count}} day",
+      "days_plural": "{{count}} days",
+      "avgDaysPerWeek": "Avg. {{count}} days/week",
+      "started": "Started:",
+      "lastScheduling": "Last scheduling:",
+      "goals": "Goals:",
+      "iteration": "Iteration:",
+      "currentWeek": "Current Week:"
+    },
+    "noPrograms": {
+      "noMatchTitle": "No Programs Match Filters",
+      "noProgramsTitle": "No Training Programs Yet!",
+      "noMatchMessage": "Try adjusting your filters.",
+      "noProgramsMessage": "Create a structured program to follow your routines.",
+      "createFirstButton": "CREATE YOUR FIRST PROGRAM"
+    },
+    "calendar": {
+      "noActiveProgramTitle": "No Active Program",
+      "selectProgramTitle": "Select a Program",
+      "noActiveProgramMessage": "Please activate a program to see its schedule.",
+      "selectProgramMessage": "Choose an active program to view its calendar.",
+      "goToPrograms": "Go to My Programs",
+      "loadingMonths": "Loading more months...",
+      "today": "(Today)",
+      "notScheduled": "Not Scheduled",
+      "sessionsLogged": "({{count}} sessions logged)",
+      "programNote": "Program Note:",
+      "suggestedTime": "Suggested Time:",
+      "loggedSessions": "Logged Session(s):",
+      "loggedAt": "Logged: {{time}} ({{duration}} min)",
+      "viewButton": "VIEW",
+      "startButton": "START",
+      "notLogged": "NOT LOGGED",
+      "logPastButton": "LOG PAST",
+      "allLogsButton": "ALL LOGS FOR THIS PROGRAM",
+      "restDay": "It's a rest day!",
+      "wasRestDay": "It was a rest day!"
+    },
+    "loading": "Loading programs...",
+    "fab": {
+      "create": "NEW PROGRAM"
+    },
+    "toasts": {
+      "programActivated": "Program activated",
+      "statusUpdateFailed": "Failed to update program status",
+      "finishFailed": "Failed to finish program",
+      "deactivateFailed": "Failed to deactivate",
+      "setActiveFailed": "Failed to set active program",
+      "logFailed": "Cannot log session: No active program is being viewed.",
+      "cloneSuccess": "Program \"{{name}}\" cloned successfully.",
+      "cloneFailed": "Failed to clone program"
+    },
+    "alerts": {
+      "deleting": "Deleting program...",
+      "updating": "Updating program...",
+      "completing": "Completing program...",
+      "deactivating": "Deactivating program...",
+      "settingActive": "Setting active program...",
+      "programActiveTitle": "Program is currently active.",
+      "programActiveMessage": "What would you like to do?",
+      "deactivate": "Deactivate",
+      "complete": "Complete",
+      "finishTitle": "Finish Program",
+      "finishMessage": "Are you sure you want to mark this program as completed?",
+      "finishButton": "Finish Program",
+      "selectProgramTitle": "Select Program",
+      "selectProgramMessage": "Choose a program to view in the calendar."
+    },
+    "actions": {
+      "view": "VIEW",
+      "edit": "EDIT",
+      "delete": "DELETE",
+      "activate": "ACTIVATE",
+      "deactivate": "DEACTIVATE",
+      "finish": "FINISH"
+    }
   }
 }

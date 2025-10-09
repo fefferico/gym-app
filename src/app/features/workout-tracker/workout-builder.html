@@ -289,7 +289,7 @@
 
         <section *ngIf="mode === 'manualLogEntry' || builderForm.get('goal')?.value !== 'rest'">
             <div *ngIf="exercisesFormArray.length>0" cdkDropList [cdkDropListData]="exercisesFormArray.controls"
-                (cdkDropListDropped)="onExerciseDrop($event)" [cdkDropListDisabled]="!isEditableMode"
+                (cdkDropListDropped)="onExerciseDrop($event)" [cdkDropListDisabled]="!isEditableMode()"
                 formArrayName="exercises" class="exercise-list-container">
                 <ng-container *ngFor="let exerciseControl of exercisesFormArray.controls; let exIndex = index;">
                     <div class="relative group exercise-card-wrapper"

@@ -42,6 +42,7 @@ import { AppSettingsService } from '../../../core/services/app-settings.service'
 import { MenuMode } from '../../../core/models/app-settings.model';
 import { createFromBtn, deleteBtn, editBtn, routineBtn, viewBtn } from '../../../core/services/buttons-data';
 import { FabAction, FabMenuComponent } from '../../../shared/components/fab-menu/fab-menu.component';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 
 interface CalendarMonth {
@@ -75,7 +76,7 @@ type EnrichedHistoryListItem = HistoryListItem & {
 @Component({
   selector: 'app-history-list',
   standalone: true,
-  imports: [CommonModule, DatePipe, TitleCasePipe, FormsModule, ReactiveFormsModule, ActionMenuComponent, PressDirective, IconComponent, FabMenuComponent],
+  imports: [CommonModule, DatePipe, TitleCasePipe, FormsModule, ReactiveFormsModule, ActionMenuComponent, PressDirective, IconComponent, FabMenuComponent, TranslateModule],
   templateUrl: './history-list.html',
   styleUrl: './history-list.scss',
   providers: [DecimalPipe],
@@ -206,7 +207,7 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
   private elementRef = inject(ElementRef);
   private spinnerService = inject(SpinnerService);
   private trainingProgramService = inject(TrainingProgramService);
-
+  private translate = inject(TranslateService);
 
   selectedDayItems = signal<EnrichedHistoryListItem[]>([]);
   protected allHistoryItems = signal<EnrichedHistoryListItem[]>([]);
@@ -575,14 +576,14 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
       if (programId) {
         this.filterForm.patchValue({ programId: programId });
         this.isFilterAccordionOpen.set(true);
-        this.toastService.info("Showing logs filtered out by training program");
+        this.toastService.info(this.translate.instant('historyList.toasts.filteredByProgram'));
       }
       if (routineId) {
         const routine = this.availableRoutines.find(r => r.id === routineId);
         if (routine && routine.name) {
           this.filterForm.patchValue({ routineName: routine.name });
           this.isFilterAccordionOpen.set(true);
-          this.toastService.info("Showing logs filtered out by routine name");
+          this.toastService.info(this.translate.instant('historyList.toasts.filteredByRoutine'));
         }
       }
     });
@@ -672,7 +673,6 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   selectHistoryDay(day: HistoryCalendarDay): void {
     if (day.hasLog) {
-      // +++ 2. UPDATE THIS LOGIC +++
       // Filter the master list to get all items for the selected date
       const itemsForDay = this.allHistoryItems().filter(item =>
         isSameDay(new Date(item.startTime), day.date)
@@ -683,7 +683,7 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
       this.pastLoggedWorkoutsDay = day;
     } else {
       this.toastService.clearAll();
-      this.toastService.info("No activities logged on this day", 2000);
+      this.toastService.info(this.translate.instant('historyList.toasts.noLogsOnDay'), 2000);
     }
   }
 
@@ -722,7 +722,7 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
       if (currentLog && currentLog.routineId && currentLog.routineId !== '-1') {
         this.router.navigate(['/workout/routine/view/', currentLog.routineId]);
       } else {
-        const createNewRoutineFromLog = await this.alertService.showConfirm("No routine for log", "There is no routine associated with this log: would you like to create one? If so remember to link it to this log once created");
+        const createNewRoutineFromLog = await this.alertService.showConfirm(this.translate.instant('historyList.alerts.noRoutineTitle'), this.translate.instant('historyList.alerts.noRoutineMessage'));
         if (createNewRoutineFromLog && createNewRoutineFromLog.data) {
           this.createRoutineFromLog(logId);
         }
@@ -734,21 +734,22 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
     event?.stopPropagation(); this.visibleActionsRutineId.set(null);
 
     const confirm = await this.alertService.showConfirmationDialog(
-      "Delete Workout Log",
-      `Are you sure you want to delete this workout log? This action cannot be undone`,
+      this.translate.instant('historyList.alerts.deleteLogTitle'),
+      this.translate.instant('historyList.alerts.deleteLogMessage'),
       [
-        { text: "Cancel", role: "cancel", data: false, icon: 'cancel', iconClass: 'w-4 h-4 mr-1' } as AlertButton,
-        { text: "Delete", role: "confirm", data: true, cssClass: "bg-red-600", icon: 'trash' } as AlertButton,
+        { text: this.translate.instant('common.cancel'), role: "cancel", data: false, icon: 'cancel', iconClass: 'w-4 h-4 mr-1' } as AlertButton,
+        { text: this.translate.instant('historyList.alerts.deleteButton'), role: "confirm", data: true, cssClass: "bg-red-600", icon: 'trash' } as AlertButton,
       ],
     );
     if (confirm && confirm.data) {
       try {
         this.spinnerService.show(); await this.trackingService.deleteWorkoutLog(logId);
-        this.toastService.success("Workout log deleted successfully");
-      } catch (err) { this.toastService.error("Failed to delete workout log"); }
+        this.toastService.success(this.translate.instant('historyList.toasts.logDeleted'));
+      } catch (err) { this.toastService.error(this.translate.instant('historyList.toasts.logDeleteFailed')); }
       finally { this.spinnerService.hide(); }
     }
   }
+
   async clearAllLogsForDev(): Promise<void> {
     if (this.trackingService.clearAllWorkoutLogs_DEV_ONLY) { await this.trackingService.clearAllWorkoutLogs_DEV_ONLY(); }
     if (this.trackingService.clearAllPersonalBests_DEV_ONLY) { await this.trackingService.clearAllPersonalBests_DEV_ONLY(); }
@@ -793,23 +794,24 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.workoutService.vibrate();
 
     const buttons: AlertButton[] = [
-      { text: 'Cancel', role: 'cancel', data: false, icon: 'cancel' },
-      { text: 'Discard', role: 'confirm', data: true, cssClass: 'bg-red-500 hover:bg-red-600 text-white', icon: 'trash' },
+      { text: this.translate.instant('common.cancel'), role: 'cancel', data: false, icon: 'cancel' },
+      { text: this.translate.instant('historyList.alerts.discardButton'), role: 'confirm', data: true, cssClass: 'bg-red-500 hover:bg-red-600 text-white', icon: 'trash' },
     ];
 
     const confirm = await this.alertService.showConfirmationDialog(
-      'Pending Workout found',
-      'There\'s a pending workout: do you want to discard this paused workout session and log a new one? This action cannot be undone.',
+      this.translate.instant('historyList.alerts.pausedWorkoutTitle'),
+      this.translate.instant('historyList.alerts.pausedWorkoutMessage'),
       buttons
     );
     if (confirm && confirm.data) {
       if (isPlatformBrowser(this.platformId)) {
         this.storageService.removeItem('fitTrackPro_pausedWorkoutState');
-        this.toastService.info('Paused workout session discarded.', 3000);
+        this.toastService.info(this.translate.instant('historyList.toasts.pausedDiscarded'), 3000);
       }
       this.navigateToLogWorkout();
     }
   }
+
 
   scrollToTop(): void {
     if (isPlatformBrowser(this.platformId)) {
@@ -1020,11 +1022,11 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!logToDelete) return; // Safety check
 
     const confirm = await this.alertService.showConfirmationDialog(
-      'Delete Activity Log?',
-      `Are you sure you want to delete the log for "${logToDelete.activityName}"? This action cannot be undone.`,
+      this.translate.instant('historyList.alerts.deleteActivityTitle'),
+      this.translate.instant('historyList.alerts.deleteActivityMessage', { name: logToDelete.activityName }),
       [
-        { text: 'Cancel', role: 'cancel', data: false, icon: 'cancel' },
-        { text: 'Delete', role: 'confirm', data: true, cssClass: 'bg-red-500', icon: 'trash' }
+        { text: this.translate.instant('common.cancel'), role: 'cancel', data: false, icon: 'cancel' },
+        { text: this.translate.instant('historyList.alerts.deleteButton'), role: 'confirm', data: true, cssClass: 'bg-red-500', icon: 'trash' }
       ] as AlertButton[]
     );
 
@@ -1045,14 +1047,14 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
   fabMenuItems: FabAction[] = [];
   private refreshFabMenuItems(): void {
     this.fabMenuItems = [{
-      label: 'LOG PAST WORKOUT',
+      label: 'historyList.fab.logWorkout',
       actionKey: 'log_past_workout',
       iconName: 'plus-circle',
       cssClass: 'bg-blue-500 focus:ring-blue-400',
       isPremium: false
     },
     {
-      label: 'LOG PAST ACTIVITY',
+      label: 'historyList.fab.logActivity',
       actionKey: 'log_past_activity',
       iconName: 'plus-circle',
       cssClass: 'bg-teal-500 focus:ring-teal-400',

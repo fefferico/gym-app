@@ -1,12 +1,12 @@
 <div class="container mx-auto p-2 sm:p-4 overflow-hidden" #viewSwipeContainerEl view-swipe-container>
   <header class="flex justify-between items-center pb-2">
-    <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">Programs</h1>
+    <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">{{ 'trainingPrograms.title' | translate }}</h1>
     <button [disabled]="currentView() !== 'list'" [pressDisabled]="currentView() !== 'list'" appPress
       (shortPress)="toggleFilterAccordion()" type="button"
       class="rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-light transition-all duration-300 ease-in-out disabled:opacity-50">
       <app-icon name="filter" class="w-10 h-10 transition-transform duration-300"
         [class.rotate-180]="currentView() === 'list' && isFilterAccordionOpen()"></app-icon>
-      <span class="sr-only">Toggle Filters</span>
+      <span class="sr-only">{{ 'trainingPrograms.toggleFilters' | translate }}</span>
     </button>
   </header>
 
@@ -16,13 +16,13 @@
       class="px-3 sm:px-4 py-2 sm:py-3 -mb-px text-md font-semibold focus:outline-none"
       style="min-width: 150px;"
       [ngClass]="{ 'border-b-2 border-primary text-primary dark:text-primary-light dark:border-primary-light': currentView() === 'list', 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200  border-b border-gray-200 dark:border-gray-700': currentView() !== 'list' }">
-      MY PROGRAMS
+      {{ 'trainingPrograms.view.myPrograms' | translate }}
     </button>
     <button appPress (shortPress)="setView('calendar')"
       class="px-3 sm:px-4 py-2 sm:py-3 -mb-px text-md font-semibold focus:outline-none"
       style="min-width: 150px;"
       [ngClass]="{ 'border-b-2 border-primary text-primary dark:text-primary-light dark:border-primary-light': currentView() === 'calendar', 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200  border-b border-gray-200 dark:border-gray-700': currentView() !== 'calendar' }">
-      CALENDAR
+      {{ 'trainingPrograms.view.calendar' | translate }}
     </button>
   </div>
 
@@ -33,54 +33,61 @@
         <div class="overflow-y-auto transition-all duration-500 ease-in-out rounded-md"
           [style.maxHeight]="isFilterAccordionOpen() ? '600px' : '0px'" [class.mb-6]="isFilterAccordionOpen()">
           <div class="p-4 bg-white dark:bg-gray-700 rounded-md shadow-md border dark:border-gray-600">
-            <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">Filter Programs</h2>
+            <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">{{ 'trainingPrograms.filters.title'
+              | translate }}</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
               <div>
                 <label for="program-search-term"
-                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Search Name</label>
-                <input type="text" id="program-search-term" placeholder="Enter program name..."
+                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{
+                  'trainingPrograms.filters.searchLabel' | translate }}</label>
+                <input type="text" id="program-search-term"
+                  [placeholder]="'trainingPrograms.filters.searchPlaceholder' | translate"
                   [value]="programSearchTerm()" (input)="onProgramSearchTermChange($event)"
                   class="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200">
               </div>
               <div>
                 <label for="program-cycle-type-filter"
-                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cycle Type</label>
+                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{
+                  'trainingPrograms.filters.cycleTypeLabel' | translate }}</label>
                 <select id="program-cycle-type-filter" (change)="onProgramCycleTypeChange($event)"
                   [value]="selectedProgramCycleType() || ''"
                   class="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200">
-                  <option value="">All Cycle Types</option>
-                  <option value="weekly">Weekly</option>
-                  <option value="cycled">Fixed Cycle Length</option>
+                  <option value="">{{ 'trainingPrograms.filters.allCycleTypes' | translate }}</option>
+                  <option value="weekly">{{ 'trainingPrograms.filters.weekly' | translate }}</option>
+                  <option value="cycled">{{ 'trainingPrograms.filters.fixedCycle' | translate }}</option>
                 </select>
               </div>
               <div>
                 <label for="program-type-filter"
-                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Program Type</label>
+                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{
+                  'trainingPrograms.filters.programTypeLabel' | translate }}</label>
                 <select id="program-type-filter" (change)="onProgramTypeChange($event)"
                   [value]="selectedProgramType() || ''"
                   class="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200">
-                  <option value="">All Program Types</option>
-                  <option value="cycled">Cycled</option>
-                  <option value="linear">Linear</option>
+                  <option value="">{{ 'trainingPrograms.filters.allProgramTypes' | translate }}</option>
+                  <option value="cycled">{{ 'trainingPrograms.filters.cycled' | translate }}</option>
+                  <option value="linear">{{ 'trainingPrograms.filters.linear' | translate }}</option>
                 </select>
               </div>
               <div>
                 <label for="program-goal-filter"
-                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Overall Goal</label>
+                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{
+                  'trainingPrograms.filters.goalLabel' | translate }}</label>
                 <select id="program-goal-filter" (change)="onProgramGoalChange($event)"
                   [value]="selectedProgramGoal() || ''"
                   class="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200">
-                  <option value="">Any Goal</option>
+                  <option value="">{{ 'trainingPrograms.filters.anyGoal' | translate }}</option>
                   <option *ngFor="let goal of uniqueProgramGoals()" [value]="goal">{{ goal | titlecase }}</option>
                 </select>
               </div>
               <div>
                 <label for="program-muscle-filter"
-                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Targets Muscle</label>
+                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{
+                  'trainingPrograms.filters.muscleLabel' | translate }}</label>
                 <select id="program-muscle-filter" (change)="onProgramMuscleGroupChange($event)"
                   [value]="selectedProgramMuscleGroup() || ''"
                   class="block w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200">
-                  <option value="">Any Muscle Group</option>
+                  <option value="">{{ 'trainingPrograms.filters.anyMuscle' | translate }}</option>
                   <option *ngFor="let muscle of uniqueProgramMuscleGroups()" [value]="muscle">{{ muscle | titlecase }}
                   </option>
                 </select>
@@ -94,19 +101,22 @@
                   <path stroke-linecap="round" stroke-linejoin="round"
                     d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
                 </svg>
-                CLEAR FILTERS
+                {{ 'trainingPrograms.filters.clearButton' | translate }}
               </button>
               <div *ngIf="allProgramsForList().length > 0" class="text-sm text-gray-600 dark:text-gray-400">
-                Showing <strong class="text-gray-800 dark:text-gray-200">{{ filteredPrograms().length }}</strong>
                 <span
-                  *ngIf="programSearchTerm() || selectedProgramCycleType() || selectedProgramGoal() || selectedProgramMuscleGroup()">of
-                  <strong class="text-gray-800 dark:text-gray-200">{{ allProgramsForList().length }}</strong></span>
-                programs
+                  *ngIf="programSearchTerm() || selectedProgramCycleType() || selectedProgramGoal() || selectedProgramMuscleGroup(); else totalOnly">
+                  {{ 'trainingPrograms.filters.showingResultOf' | translate:{count: filteredPrograms().length, total:
+                  allProgramsForList().length} }}
+                </span>
+                <ng-template #totalOnly>
+                  {{ 'trainingPrograms.filters.showingResult' | translate:{count: filteredPrograms().length} }}
+                </ng-template>
               </div>
             </div>
           </div>
         </div>
-          <div *ngIf="!isLoading(); else loadingProgramsOrList">
+        <div *ngIf="!isLoading(); else loadingProgramsOrList">
           <div *ngIf="filteredPrograms().length > 0; else noPrograms"
             class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
             <div *ngFor="let program of filteredPrograms()" (click)="toggleActions(program.id, $event)"
@@ -119,7 +129,8 @@
                     program.name }}</h2>
                   <div *ngIf="program.isActive" class="flex items-center bg-green-700 text-green-100 rounded-full">
                     <app-icon name="activate" class="h-6 w-6"></app-icon>
-                    <span *ngIf="program.isActive" class=" text-2xs sm:text-xs font-semibold p-1 ">Active</span>
+                    <span *ngIf="program.isActive" class=" text-2xs sm:text-xs font-semibold p-1 ">{{
+                      'trainingPrograms.card.active' | translate }}</span>
                   </div>
                 </div>
                 <p *ngIf="program.description"
@@ -130,13 +141,15 @@
                   <div class="flex items-center gap-1">
                     <app-icon name="schedule" class="w-6 h-6 text-gray-500 dark:text-gray-300"
                       [strokeWidth]="2"></app-icon>
-                    <span class="font-medium">Schedule:</span> {{ getDaysScheduled(program) }} / {{
+                    <span class="font-medium">{{ 'trainingPrograms.card.schedule' | translate }}</span> {{
+                    getDaysScheduled(program) }} / {{
                     getCycleInfo(program) }}
                   </div>
                   <div *ngIf="program.startDate && program.isActive" class="flex items-center gap-1">
                     <app-icon name="calendar" class="w-6 h-6 text-gray-500 dark:text-gray-300"
                       [strokeWidth]="2"></app-icon>
-                    <span class="font-medium">Started:</span> {{ program.startDate |
+                    <span class="font-medium">{{ 'trainingPrograms.card.started' | translate }}</span> {{
+                    program.startDate |
                     date:'mediumDate' }}
                   </div>
                   <div
@@ -144,14 +157,14 @@
                     class="flex items-center gap-1">
                     <app-icon name="clock" class="w-6 h-6 text-gray-500 dark:text-gray-300"
                       [strokeWidth]="2"></app-icon>
-                    <span class="font-medium">Last scheduling:</span> {{
+                    <span class="font-medium">{{ 'trainingPrograms.card.lastScheduling' | translate }}</span> {{
                     (program.history[0].startDate && program.history[0].startDate !== '-') ?
                     (program.history[0].startDate | date:'mediumDate') : '-' }} - {{ (program.history[0].endDate &&
                     program.history[0].endDate !== '-') ? (program.history[0].endDate | date:'mediumDate') : '-' }}
                   </div>
                   <div *ngIf="getProgramOverallGoals(program).length > 0" class="mt-1 flex items-center gap-1">
                     <app-icon name="goal" class="w-6 h-6 text-gray-500 dark:text-gray-300" [strokeWidth]="2"></app-icon>
-                    <span class="font-medium">Goals:</span>
+                    <span class="font-medium">{{ 'trainingPrograms.card.goals' | translate }}</span>
                     <span *ngFor="let goal of (getProgramOverallGoals(program) | slice:0:2)"
                       class="text-center text-xs bg-blue-100 text-blue-700 dark:bg-blue-700 dark:text-blue-200 px-1.5 py-0.5 rounded-full mx-1 inline-block">
                       {{ goal | titlecase }}
@@ -165,7 +178,8 @@
                   <div *ngIf="program.iterationId" class="flex items-center gap-1">
                     <app-icon name="change" class="w-6 h-6 text-gray-500 dark:text-gray-300"
                       [strokeWidth]="2"></app-icon>
-                    <span class="font-medium">Iteration:</span> {{ program.iterationId }}
+                    <span class="font-medium">{{ 'trainingPrograms.card.iteration' | translate }}</span> {{
+                    program.iterationId }}
                   </div>
                   <!-- ========================================================== -->
                   <!-- START: Add This Snippet Here                             -->
@@ -173,7 +187,8 @@
                   <div *ngIf="getCurrentWeekInfo(program) as weekInfo"
                     class="flex items-center gap-1 text-green-700 dark:text-green-300 font-semibold animate-pulse">
                     <app-icon name="calendar-page" class="w-6 h-6" [strokeWidth]="2"></app-icon>
-                    <span class="font-medium">Current Week:</span> {{ weekInfo.name }}
+                    <span class="font-medium">{{ 'trainingPrograms.card.currentWeek' | translate }}</span> {{
+                    weekInfo.name }}
                   </div>
                   <!-- ========================================================== -->
                   <!-- END: Add This Snippet Here                               -->
@@ -186,9 +201,7 @@
                     class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center">
                     <app-icon name="menu-action" class="h-10 w-10"></app-icon>
                   </button>
-                  <app-action-menu 
-                    *ngIf="areActionsVisible(program.id) && menuModeDropdown" 
-                    displayMode="dropdown"
+                  <app-action-menu *ngIf="areActionsVisible(program.id) && menuModeDropdown" displayMode="dropdown"
                     [items]="getProgramDropdownActionItems(program.id, 'dropdown')"
                     [isVisible]="areActionsVisible(program.id)" (itemClick)="handleActionMenuItemClick($event)"
                     (closeMenu)="onCloseActionMenu()">
@@ -217,16 +230,17 @@
                   d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5m-9-3.75h.008v.008H12v-.008zM12 15h.008v.008H12V15zm0 2.25h.008v.008H12v-.008zM9.75 15h.008v.008H9.75V15zm0 2.25h.008v.008H9.75v-.008zM7.5 15h.008v.008H7.5V15zm0 2.25h.008v.008H7.5v-.008zm6.75-4.5h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V15zm0 2.25h.008v.008h-.008v-.008zm2.25-4.5h.008v.008H16.5v-.008zm0 2.25h.008v.008H16.5V15z">
                 </path>
               </svg>
-              <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">{{ programSearchTerm() ||
-                selectedProgramCycleType() || selectedProgramGoal() || selectedProgramMuscleGroup() ? 'No Programs Match
-                Filters' : 'No Training Programs Yet!' }}</h3>
-              <p class="text-gray-500 dark:text-gray-400 mb-6">{{ programSearchTerm() || selectedProgramCycleType() ||
-                selectedProgramGoal() || selectedProgramMuscleGroup() ? 'Try adjusting your filters.' : 'Create a
-                structured program to follow your routines.' }}</p><button
+              <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">{{ (programSearchTerm() ||
+                selectedProgramCycleType() || selectedProgramGoal() || selectedProgramMuscleGroup() ?
+                'trainingPrograms.noPrograms.noMatchTitle' : 'trainingPrograms.noPrograms.noProgramsTitle') | translate
+                }}</h3>
+              <p class="text-gray-500 dark:text-gray-400 mb-6">{{ (programSearchTerm() || selectedProgramCycleType() ||
+                selectedProgramGoal() || selectedProgramMuscleGroup() ? 'trainingPrograms.noPrograms.noMatchMessage' :
+                'trainingPrograms.noPrograms.noProgramsMessage') | translate }}</p><button
                 *ngIf="!(programSearchTerm() || selectedProgramCycleType() || selectedProgramGoal() || selectedProgramMuscleGroup())"
                 appPress (shortPress)="navigateToCreateProgram()"
-                class="bg-primary hover:bg-primary-dark text-white font-semibold py-2 px-6 rounded-md shadow-md hover:shadow-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary-light focus:ring-opacity-75">CREATE
-                YOUR FIRST PROGRAM</button>
+                class="bg-primary hover:bg-primary-dark text-white font-semibold py-2 px-6 rounded-md shadow-md hover:shadow-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary-light focus:ring-opacity-75">{{
+                'trainingPrograms.noPrograms.createFirstButton' | translate }}</button>
             </div>
           </ng-template>
         </div>
@@ -238,38 +252,38 @@
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
               </path>
             </svg>
-            <p class="text-lg text-gray-600 dark:text-gray-400 mt-3">Loading programs...</p>
+            <p class="text-lg text-gray-600 dark:text-gray-400 mt-3">{{ 'trainingPrograms.loading' | translate }}</p>
           </div>
         </ng-template>
       </div>
 
       <div *ngSwitchCase="'calendar'" class="min-h-[500px]">
-                <div *ngIf="activeProgramForCalendar() as activeProgram; else noActiveProgramForCalendar">
-                    <div class="calendar-scroll-container">
-                        <div *ngFor="let month of calendarMonths()" class="month-container mb-8">
-                            <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4 text-center">
-                                {{ month.monthName | titlecase }} {{ month.year }}
-                            </h2>
-                            <div class="grid grid-cols-7 gap-x-2 text-center mb-2">
-                                <div *ngFor="let dayName of weekDayNames" class="text-sm font-bold text-gray-500 dark:text-gray-400">
-                                    {{ dayName }}
-                                </div>
-                            </div>
-                            <div class="grid grid-cols-7 gap-x-2 gap-y-2">
-                                <div *ngFor="let spacer of month.spacers"></div>
-                                <div *ngFor="let day of month.days" (click)="selectCalendarDay(day)"
-                                    class="day-cell flex items-center justify-center h-10 w-full rounded-full text-md font-medium transition-colors duration-200"
-                                    [ngClass]="getCalendarDayClasses(day)">
-                                    <span>{{ day.date | date:'d' }}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div *ngIf="calendarLoading()" class="text-center py-10">
-                        <p class="text-gray-500 dark:text-gray-400">Loading more months...</p>
-                    </div>
+        <div *ngIf="activeProgramForCalendar() as activeProgram; else noActiveProgramForCalendar">
+          <div class="calendar-scroll-container">
+            <div *ngFor="let month of calendarMonths()" class="month-container mb-8">
+              <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4 text-center">
+                {{ month.monthName | titlecase }} {{ month.year }}
+              </h2>
+              <div class="grid grid-cols-7 gap-x-2 text-center mb-2">
+                <div *ngFor="let dayName of weekDayNames" class="text-sm font-bold text-gray-500 dark:text-gray-400">
+                  {{ dayName }}
                 </div>
-                <ng-template #noActiveProgramForCalendar>
+              </div>
+              <div class="grid grid-cols-7 gap-x-2 gap-y-2">
+                <div *ngFor="let spacer of month.spacers"></div>
+                <div *ngFor="let day of month.days" (click)="selectCalendarDay(day)"
+                  class="day-cell flex items-center justify-center h-10 w-full rounded-full text-md font-medium transition-colors duration-200"
+                  [ngClass]="getCalendarDayClasses(day)">
+                  <span>{{ day.date | date:'d' }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div *ngIf="calendarLoading()" class="text-center py-10">
+            <p class="text-gray-500 dark:text-gray-400">{{ 'trainingPrograms.calendar.loadingMonths' | translate }}</p>
+          </div>
+        </div>
+        <ng-template #noActiveProgramForCalendar>
           <div class="text-center py-12 bg-white dark:bg-gray-700 rounded-md shadow-md">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
               stroke="currentColor" class="w-16 h-16 mx-auto text-gray-400 dark:text-gray-200 mb-4">
@@ -278,15 +292,16 @@
               </path>
             </svg>
             <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">
-              {{ activePrograms().length > 1 ? 'Select a Program' : 'No Active Program' }}
+              {{ (activePrograms().length > 1 ? 'trainingPrograms.calendar.selectProgramTitle' :
+              'trainingPrograms.calendar.noActiveProgramTitle') | translate }}
             </h3>
             <p class="text-gray-500 dark:text-gray-400 mb-6">
-              {{ activePrograms().length > 1 ? 'Choose an active program to view its calendar.' : 'Please activate a
-              program to see its schedule.' }}
+              {{ (activePrograms().length > 1 ? 'trainingPrograms.calendar.selectProgramMessage' :
+              'trainingPrograms.calendar.noActiveProgramMessage') | translate }}
             </p>
             <button *ngIf="activePrograms().length === 0" (click)="setView('list')"
               class="mt-4 text-primary dark:text-primary-light hover:underline font-semibold">
-              Go to My Programs
+              {{ 'trainingPrograms.calendar.goToPrograms' | translate }}
             </button>
           </div>
         </ng-template>
@@ -305,7 +320,8 @@
         <div class="flex justify-between items-center mb-2">
           <h3 class="text-lg sm:text-xl font-semibold text-gray-800 dark:text-gray-100">{{ selectedDay.date |
             date:'fullDate' }}<span *ngIf="selectedDay.isToday"
-              class="text-xs text-primary dark:text-primary-light ml-2">(Today)</span></h3>
+              class="text-xs text-primary dark:text-primary-light ml-2">{{ 'trainingPrograms.calendar.today' |
+              translate }}</span></h3>
           <button (click)="selectCalendarDay(null)"
             class="p-1.5 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none"><svg
               xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-6 h-6">
@@ -329,38 +345,40 @@
               {{ item.routine.name}}
               <span *ngIf="item.isUnscheduled"
                 class="text-xs font-semibold bg-yellow-200 text-yellow-800 dark:bg-yellow-700 dark:text-yellow-100 px-2 py-1 rounded-full">
-                Not Scheduled
+                {{ 'trainingPrograms.calendar.notScheduled' | translate }}
               </span>
-              <span *ngIf="item.logs.length > 1" class="text-xs text-gray-500 dark:text-gray-400"> ({{
-                item.logs.length
-                }} sessions logged)</span>
+              <span *ngIf="item.logs.length > 1" class="text-xs text-gray-500 dark:text-gray-400"> {{
+                'trainingPrograms.calendar.sessionsLogged' | translate:{count: item.logs.length} }}</span>
             </h4>
             <p *ngIf="item.routine.description"
               class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-1.5 line-clamp-3"
               [title]="item.routine.description" [innerHTML]="updateSanitizedDescription(item.routine.description)"></p>
             <p *ngIf="item.scheduledDayInfo.notes"
-              class="text-xs sm:text-sm text-blue-600 dark:text-blue-400 italic mb-1.5">Program Note: {{
+              class="text-xs sm:text-sm text-blue-600 dark:text-blue-400 italic mb-1.5">{{
+              'trainingPrograms.calendar.programNote' | translate }} {{
               item.scheduledDayInfo.notes }}</p>
             <p *ngIf="item.scheduledDayInfo.timeOfDay"
-              class="text-2xs sm:text-xs text-gray-500 dark:text-gray-400 mb-2">Suggested Time: {{
+              class="text-2xs sm:text-xs text-gray-500 dark:text-gray-400 mb-2">{{
+              'trainingPrograms.calendar.suggestedTime' | translate }} {{
               item.scheduledDayInfo.timeOfDay }}</p>
 
             <!-- ============================================= -->
             <!-- OPTIMIZED: Logged Sessions for this Routine   -->
             <!-- ============================================= -->
             <div *ngIf="item.logs.length > 0" class="mt-2 space-y-2 mb-2">
-              <p class="text-xs font-medium text-gray-700 dark:text-gray-300">Logged Session(s):</p>
+              <p class="text-xs font-medium text-gray-700 dark:text-gray-300">{{
+                'trainingPrograms.calendar.loggedSessions' | translate }}</p>
 
               <!-- Iterate over the pre-calculated `item.logs` array -->
               <div *ngFor="let log of item.logs"
                 class="p-2 bg-sky-50 dark:bg-sky-900/50 rounded-md border border-sky-200 dark:border-sky-700">
                 <div class="flex justify-between items-center">
-                  <span class="text-md text-sky-700 dark:text-sky-300">Logged: {{ log.startTime | date:'shortTime' }}
-                    ({{ log.durationMinutes }} min)</span>
+                  <span class="text-md text-sky-700 dark:text-sky-300">{{ 'trainingPrograms.calendar.loggedAt' |
+                    translate:{time: (log.startTime | date:'shortTime'), duration: log.durationMinutes} }}</span>
                   <button appPress (shortPress)="viewSessionSummary(log.id)"
                     class="flex justify-center items-center max-w-[200px] sm:w-auto px-6 py-3 bg-sky-500 hover:bg-sky-600 text-white font-semibold rounded-md shadow-sm text-lg disabled:opacity-50 disabled:cursor-not-allowed ng-tns-c2615860199-17">
                     <app-icon name="eye" class="h-6 w-6 mr-1"></app-icon>
-                    VIEW
+                    {{ 'trainingPrograms.calendar.viewButton' | translate }}
                   </button>
                 </div>
               </div>
@@ -385,7 +403,8 @@
                         'bg-gray-500': selectedDay.isPastDay && !selectedDay.isToday
                     }">
                   <app-icon name="play" class="h-7 w-7 mr-1"></app-icon>
-                  {{ selectedDay.isToday ? 'START' : 'NOT LOGGED' }}
+                  {{ (selectedDay.isToday ? 'trainingPrograms.calendar.startButton' :
+                  'trainingPrograms.calendar.notLogged') | translate }}
                 </button>
 
                 <!-- "Log Past Session" button -->
@@ -399,7 +418,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round"
                       d="M2 17.25V21h3.75L17.81 9.94l-3.75-3.75L2 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
                   </svg>
-                  LOG PAST
+                  {{ 'trainingPrograms.calendar.logPastButton' | translate }}
                 </button>
               </div>
             </div>
@@ -412,7 +431,7 @@
               <button appPress (shortPress)="goToProgramLogs(activeProgramForCalendar()?.id)"
                 class="flex justify-center items-center w-full sm:w-auto px-6 py-3 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold rounded-md shadow-sm text-lg disabled:opacity-50 disabled:cursor-not-allowed">
                 <app-icon name="clock" class="h-7 w-7 mr-1"></app-icon>
-                ALL LOGS FOR THIS PROGRAM
+                {{ 'trainingPrograms.calendar.allLogsButton' | translate }}
               </button>
             </div>
 
@@ -421,12 +440,13 @@
 
         <!-- Fallback for when no workout is scheduled on the selected day -->
         <ng-template #noWorkoutScheduledForSelectedDay>
-          <p class="text-sm text-gray-500 dark:text-gray-400 text-center py-5">{{ selectedDay.isPastDay &&
-            !selectedDay.isToday ? 'It was a' : "It's a" }} rest day!</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400 text-center py-5">{{ (selectedDay.isPastDay &&
+            !selectedDay.isToday ? 'trainingPrograms.calendar.wasRestDay' : 'trainingPrograms.calendar.restDay') |
+            translate }}</p>
         </ng-template>
       </div>
     </div>
   </div>
 </div>
 
-<app-fab-menu [actions]="fabMenuItems" (actionClicked)="onFabAction($event)"></app-fab-menu>    
+<app-fab-menu [actions]="fabMenuItems" (actionClicked)="onFabAction($event)"></app-fab-menu>
