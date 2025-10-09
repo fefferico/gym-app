@@ -7,14 +7,14 @@
     <button *ngIf="showBackToTopButton() && !scrollToTopDisabled" @fadeAnimation appPress (shortPress)="scrollToTop()" type="button"
         class="bg-primary dark:bg-primary text-white rounded-full p-3 shadow-lg hover:bg-primary-dark dark:hover:bg-primary-light focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-focus dark:focus:ring-offset-gray-900 transition-opacity flex items-center">
         <app-icon name="back" [class.rotate-90]="true" class="w-6 h-6" [strokeWidth]="2.5"></app-icon>
-        <span class="sr-only">Back to Top</span>
+        <span class="sr-only">{{ 'fab.scrollTop' | translate}} </span>
     </button>
 
     <!-- Back to Bottom Button (Updated) -->
     <button *ngIf="showBackToBottomButton() && !scrollToBottomDisabled" @fadeAnimation appPress (shortPress)="scrollToBottom()" type="button"
         class="bg-primary dark:bg-primary text-white rounded-full p-3 shadow-lg hover:bg-primary-dark dark:hover:bg-primary-light focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-focus dark:focus:ring-offset-gray-900 transition-opacity flex items-center">
         <app-icon name="chevron-down" class="w-6 h-6" [strokeWidth]="2.5"></app-icon>
-        <span class="sr-only">Back to Bottom</span>
+        <span class="sr-only">{{ 'fab.scrollBottom' | translate}}</span>
     </button>
 
     <div *ngIf="showMainButton" class="flex flex-col-reverse items-center gap-4" (mouseenter)="handleFabMouseEnter()"
@@ -36,13 +36,13 @@
                     <span appPress (shortPress)="handleAction(action.actionKey)"
                         class="absolute right-full mr-4 sm:hidden whitespace-nowrap rounded-md px-3 py-2 text-sm font-semibold text-white group-hover:block cursor-pointer"
                         style="margin-right: -10px;" [ngClass]="action.cssClass">
-                        {{ action.label }}
+                        {{ action.label | translate }}
                     </span>
                     <button appPress (shortPress)="handleAction(action.actionKey)" type="button"
                         class="flex h-12 w-12 items-center justify-center rounded-full text-white shadow-lg transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:ring-offset-gray-900"
                         [ngClass]="action.cssClass">
                         <app-icon [name]="action.iconName" class="h-7 w-7"></app-icon>
-                        <span class="sr-only">{{ action.label }}</span>
+                        <span class="sr-only">{{ action.label | translate }}</span>
                     </button>
                 </div>
             </ng-container>

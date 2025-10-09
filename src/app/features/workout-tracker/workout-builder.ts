@@ -42,6 +42,7 @@ import { AppSettingsService } from '../../core/services/app-settings.service';
 import { MenuMode } from '../../core/models/app-settings.model';
 import { FabAction, FabMenuComponent } from '../../shared/components/fab-menu/fab-menu.component';
 import { colorBtn } from '../../core/services/buttons-data';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 type BuilderMode = 'routineBuilder' | 'manualLogEntry';
 
@@ -52,7 +53,7 @@ type BuilderMode = 'routineBuilder' | 'manualLogEntry';
     FormsModule, DragDropModule, WeightUnitPipe, TitleCasePipe,
     LongPressDragDirective, AutoGrowDirective, ActionMenuComponent,
     ModalComponent, ClickOutsideDirective,
-    ExerciseDetailComponent, IconComponent, TooltipDirective, ExerciseSelectionModalComponent, MillisecondsDatePipe, FabMenuComponent],
+    ExerciseDetailComponent, IconComponent, TooltipDirective, ExerciseSelectionModalComponent, MillisecondsDatePipe, FabMenuComponent, TranslateModule],
   templateUrl: './workout-builder.html',
   styleUrl: './workout-builder.scss',
   providers: [DecimalPipe]
@@ -72,6 +73,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   private cdr = inject(ChangeDetectorRef);
   private platformId = inject(PLATFORM_ID);
   private appSettingsService = inject(AppSettingsService);
+  private translate = inject(TranslateService);
 
 
   @ViewChildren('setRepsInput') setRepsInputs!: QueryList<ElementRef<HTMLInputElement>>;
@@ -80,7 +82,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
   isAllExpandedInViewMode = signal(false);
 
-  exerciseInfoTooltipString = 'Exercise details and progression';
+  exerciseInfoTooltipString = this.translate.instant('workoutBuilder.exerciseInfoTooltip');
   lastRoutineDuration: number = 0;
 
   routine = signal<Routine | undefined>(undefined);
@@ -123,26 +125,26 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   });
 
   availableSetTypes: { value: string, label: string }[] = [
-    { value: 'standard', label: 'Standard' },
-    { value: 'warmup', label: 'Warm-up' },
-    { value: 'superset', label: 'Superset' },
-    { value: 'amrap', label: 'AMRAP' },
-    { value: 'dropset', label: 'Dropset' },
-    { value: 'failure', label: 'To Failure' },
-    { value: 'myorep', label: 'Myo-rep' },
-    { value: 'restpause', label: 'Rest-Pause' },
-    { value: 'custom', label: 'Custom Type' }
+    { value: 'standard', label: this.translate.instant('workoutBuilder.setTypes.standard') },
+    { value: 'warmup', label: this.translate.instant('workoutBuilder.setTypes.warmup') },
+    { value: 'superset', label: this.translate.instant('workoutBuilder.setTypes.superset') },
+    { value: 'amrap', label: this.translate.instant('workoutBuilder.setTypes.amrap') },
+    { value: 'dropset', label: this.translate.instant('workoutBuilder.setTypes.dropset') },
+    { value: 'failure', label: this.translate.instant('workoutBuilder.setTypes.failure') },
+    { value: 'myorep', label: this.translate.instant('workoutBuilder.setTypes.myorep') },
+    { value: 'restpause', label: this.translate.instant('workoutBuilder.setTypes.restpause') },
+    { value: 'custom', label: this.translate.instant('workoutBuilder.setTypes.custom') }
   ];
   routineGoals: { value: Routine['goal'], label: string }[] = [
-    { value: 'hypertrophy', label: 'Hypertrophy' }, { value: 'strength', label: 'Strength' },
-    { value: 'tabata', label: 'Tabata' },
-    { value: 'muscular endurance', label: 'Muscular endurance' }, { value: 'cardiovascular endurance', label: 'Cardiovascular endurance' },
-    { value: 'fat loss / body composition', label: 'Fat loss / body composition' }, { value: 'mobility & flexibility', label: 'Mobility & flexibility' },
-    { value: 'power / explosiveness', label: 'Power / explosiveness' }, { value: 'speed & agility', label: 'Speed & agility' },
-    { value: 'balance & coordination', label: 'Balance & coordination' }, { value: 'skill acquisition', label: 'Skill acquisition' },
-    { value: 'rehabilitation / injury prevention', label: 'Rehabilitation / injury prevention' }, { value: 'mental health / stress relief', label: 'Mental health' },
-    { value: 'general health & longevity', label: 'General health & longevity' }, { value: 'sport-specific performance', label: 'Sport-specific performance' },
-    { value: 'maintenance', label: 'Maintenance' }, { value: 'rest', label: 'Rest' }, { value: 'custom', label: 'Custom' }
+    { value: 'hypertrophy', label: this.translate.instant('workoutBuilder.goals.hypertrophy') }, { value: 'strength', label: this.translate.instant('workoutBuilder.goals.strength') },
+    { value: 'tabata', label: this.translate.instant('workoutBuilder.goals.tabata') },
+    { value: 'muscular endurance', label: this.translate.instant('workoutBuilder.goals.muscularEndurance') }, { value: 'cardiovascular endurance', label: this.translate.instant('workoutBuilder.goals.cardiovascularEndurance') },
+    { value: 'fat loss / body composition', label: this.translate.instant('workoutBuilder.goals.fatLoss') }, { value: 'mobility & flexibility', label: this.translate.instant('workoutBuilder.goals.mobility') },
+    { value: 'power / explosiveness', label: this.translate.instant('workoutBuilder.goals.power') }, { value: 'speed & agility', label: this.translate.instant('workoutBuilder.goals.speed') },
+    { value: 'balance & coordination', label: this.translate.instant('workoutBuilder.goals.balance') }, { value: 'skill acquisition', label: this.translate.instant('workoutBuilder.goals.skill') },
+    { value: 'rehabilitation / injury prevention', label: this.translate.instant('workoutBuilder.goals.rehabilitation') }, { value: 'mental health / stress relief', label: this.translate.instant('workoutBuilder.goals.mentalHealth') },
+    { value: 'general health & longevity', label: this.translate.instant('workoutBuilder.goals.generalHealth') }, { value: 'sport-specific performance', label: this.translate.instant('workoutBuilder.goals.sportSpecific') },
+    { value: 'maintenance', label: this.translate.instant('workoutBuilder.goals.maintenance') }, { value: 'rest', label: this.translate.instant('workoutBuilder.goals.rest') }, { value: 'custom', label: this.translate.instant('workoutBuilder.goals.custom') }
   ];
 
   isExerciseModalOpen = false;
@@ -888,7 +890,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       this.retrieveProgramInfo(this.currentProgramId);
     }
     const patchData: any = {
-      name: `Log: ${routine.name}`,
+      name: `${this.translate.instant('workoutBuilder.logEntry.logForProgramTitle', { programName: '', routineName: '' })}${routine.name}`,
       routineIdForLog: routine.id,
       iterationIdForLog: this.initialProgramIterationIdForLogEdit,
       scheduledDayIdForLog: this.initialProgramScheduledIdForLogEdit,
@@ -915,7 +917,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   prefillRoutineFormFromLog(log: WorkoutLog): void {
     this.builderForm.patchValue({
       // Suggest a name for the new routine based on the log
-      name: `${log.routineName || 'Logged Workout'} - As Routine`,
+      name: `${log.routineName || this.translate.instant('workoutBuilder.logEntry.adHocTitle')} - As Routine`,
       // Use the log's notes as a starting point for the routine description
       description: log.notes || '',
       // Try to find the original goal, otherwise default to 'custom'
@@ -1751,8 +1753,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   errorMessage = signal<string | null>(null);
 
   async onSubmit(): Promise<void> {
-    if (this.isViewMode) { this.toastService.info("View mode. No changes", 3000, "View Mode"); return; }
-
+    if (this.isViewMode) { this.toastService.info(this.translate.instant('workoutBuilder.toasts.viewMode'), 3000, this.translate.instant('workoutBuilder.toasts.viewMode')); return; }
     this.recalculateSupersetOrders();
 
     // --- NEW: TABATA VALIDATION BLOCK ---
@@ -1766,14 +1767,14 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
         // 1. All exercises must be in the same, single superset
         if (!firstSupersetId || !exercises.every(ex => ex.get('supersetId')?.value === firstSupersetId)) {
-          this.toastService.error('For a Tabata routine, all exercises must be in a single superset. Please re-select the Tabata goal to fix.', 0, "Validation Error");
+          this.toastService.error(this.translate.instant('workoutBuilder.toasts.tabataValidationError1'), 0, this.translate.instant('workoutBuilder.toasts.validationErrorTitle'));
           this.spinnerService.hide();
           return;
         }
 
         // 2. All exercises must have the same number of sets (rounds)
         if (!exercises.every(ex => (ex.get('sets') as FormArray).length === numSetsInFirst)) {
-          this.toastService.error('For a Tabata routine, all exercises must have the same number of rounds. Please fix it manually or re-select the Tabata goal.', 0, "Validation Error");
+          this.toastService.error(this.translate.instant('workoutBuilder.toasts.tabataValidationError2'), 0, this.translate.instant('workoutBuilder.toasts.validationErrorTitle'));
           this.spinnerService.hide();
           return;
         }
@@ -1793,7 +1794,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         });
 
       } else {
-        this.toastService.error('Tabata routines require at least 2 exercises.', 0, "Validation Error");
+        this.toastService.error(this.translate.instant('workoutBuilder.toasts.tabataSizeError'), 0, this.translate.instant('workoutBuilder.toasts.validationErrorTitle'));
         this.spinnerService.hide();
         return;
       }
@@ -1811,34 +1812,34 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       // get the errors to be shown in the alert
       const errors: string[] = [];
       if (this.builderForm.get('name')?.invalid) {
-        errors.push("Routine name");
+        errors.push(this.translate.instant('workoutBuilder.routineBuilder.nameLabel'));
       }
       if (this.builderForm.get('goal')?.invalid) {
-        errors.push("Routine goal");
+        errors.push(this.translate.instant('workoutBuilder.routineBuilder.goalLabel'));
       }
       if (this.builderForm.get('workoutDate')?.invalid) {
-        errors.push("Session date");
+        errors.push(this.translate.instant('workoutBuilder.logEntry.dateLabel'));
       }
       if (this.builderForm.get('startTime')?.invalid) {
-        errors.push("Start time");
+        errors.push(this.translate.instant('workoutBuilder.logEntry.startTimeLabel'));
       }
       if (this.builderForm.get('endTime')?.invalid) {
-        errors.push("End time");
+        errors.push(this.translate.instant('workoutBuilder.logEntry.endTimeLabel'));
       }
 
-      this.toastService.error('Please fill all required details: ' + errors.join(', '), 0, "Validation Error");
+      this.toastService.error(`${this.translate.instant('workoutBuilder.toasts.validationError', { errors: errors.join(', ') })}`, 0, this.translate.instant('workoutBuilder.toasts.validationErrorTitle'));
       return;
     }
     if (!isRestGoalRoutine && this.exercisesFormArray.length === 0) {
-      this.toastService.error(this.mode === 'manualLogEntry' ? 'Log must have exercises' : 'Routine needs exercises', 0, "Validation Error");
+      this.toastService.error(this.mode === 'manualLogEntry' ? this.translate.instant('workoutBuilder.toasts.noExercisesLogError') : this.translate.instant('workoutBuilder.toasts.noExercisesRoutineError'), 0, this.translate.instant('workoutBuilder.toasts.validationErrorTitle'));
       return;
     }
     if (!isRestGoalRoutine && !this.validateSupersetIntegrity()) {
-      this.toastService.error('Invalid superset configuration', 0, "Validation Error"); return;
+      this.toastService.error(this.translate.instant('workoutBuilder.toasts.invalidSupersetError'), 0, this.translate.instant('workoutBuilder.toasts.validationErrorTitle')); return;
     }
 
     if (this.builderForm.invalid) {
-      this.toastService.error('Please correct validation errors', 0, "Validation Error");
+      this.toastService.error(this.translate.instant('workoutBuilder.toasts.formError'), 0, this.translate.instant('workoutBuilder.toasts.validationErrorTitle'));
       this.builderForm.markAllAsTouched(); return;
     }
 
@@ -1946,7 +1947,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
           routineId: formValue.routineIdForLog || undefined,
           routineName: formValue.routineIdForLog ?
             (this.availableRoutines.find(r => r.id === formValue.routineIdForLog)?.name || formValue.name || 'Workout from Routine') :
-            (formValue.name || 'Ad-hoc Workout'), // Use form 'name' as log title if no routine
+            (formValue.name || this.translate.instant('workoutBuilder.logEntry.adHocTitle')), // Use form 'name' as log title if no routine
           programId: formValue.programIdForLog || undefined,
           notes: formValue.overallNotesLog, // Overall log notes
           exercises: logExercises,
@@ -1958,12 +1959,12 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         if (this.isEditMode && this.currentLogId) {
           const updatedLog: WorkoutLog = { ...logPayloadBase, id: this.currentLogId };
           await this.trackingService.updateWorkoutLog(updatedLog);
-          this.toastService.success("Log updated!", 4000, "Success");
+          this.toastService.success(this.translate.instant('workoutBuilder.toasts.logUpdated'), 4000, "Success");
           this.router.navigate(['/history/log', this.currentLogId]);
         } else {
           const newLog: Omit<WorkoutLog, 'id'> = logPayloadBase;
           const savedLog = await this.trackingService.addWorkoutLog(newLog);
-          this.toastService.success("Workout logged!", 4000, "Success");
+          this.toastService.success(this.translate.instant('workoutBuilder.toasts.logSaved'), 4000, "Success");
           this.router.navigate(['/history/log', savedLog.id]);
         }
       }
@@ -2328,7 +2329,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     } as ActionMenuItem;
 
     const editButton = {
-      label: 'EDIT',
+      label: 'actionButtons.edit',
       actionKey: 'edit',
       iconName: `edit`,
       iconClass: 'w-8 h-8 mr-2',
@@ -2337,7 +2338,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     } as ActionMenuItem;
 
     const expandAllBtn = {
-      label: 'EXPAND',
+      label: 'actionButtons.expand',
       actionKey: 'expand',
       iconName: `ungroup`,
       iconClass: 'w-8 h-8 mr-2',
@@ -2346,7 +2347,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     } as ActionMenuItem;
 
     const collapseAllBtn = {
-      label: 'COLLAPSE',
+      label: 'actionButtons.collapse',
       actionKey: 'collapse',
       iconName: `collapse`,
       iconClass: 'w-8 h-8 mr-2',
@@ -2355,7 +2356,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     } as ActionMenuItem;
 
     const deleteButton = {
-      label: 'DELETE',
+      label: 'actionButtons.delete',
       actionKey: 'delete',
       iconName: `trash`,
       iconClass: 'w-8 h-8 mr-2',
@@ -2364,7 +2365,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     } as ActionMenuItem;
 
     const routineHistoryBtn = {
-      label: 'HISTORY',
+      label: 'actionButtons.logs',
       actionKey: 'history',
       iconName: `clock`,
       iconClass: 'w-8 h-8 mr-2',
@@ -2375,7 +2376,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
     const actionsArray = [
       {
-        label: 'START',
+        label: 'actionButtons.start',
         actionKey: 'start',
         iconName: 'play',
         iconClass: 'w-8 h-8 mr-2',
@@ -2383,7 +2384,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         data: { routineId }
       },
       {
-        label: 'CLONE',
+        label: 'actionButtons.copy',
         actionKey: 'clone',
         iconName: 'copy',
         iconClass: 'w-8 h-8 mr-2',
@@ -2559,10 +2560,10 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     return stringResult;
   }
 
-   /**
-   * Toggles the input mode for a set's repetitions between a single value and a range.
-   * @param setControl The form group for the specific set.
-   */
+  /**
+  * Toggles the input mode for a set's repetitions between a single value and a range.
+  * @param setControl The form group for the specific set.
+  */
   toggleRepsMode(setControl: AbstractControl, event?: Event): void {
     event?.stopPropagation();
     if (this.isViewMode || !(setControl instanceof FormGroup)) return;
@@ -2590,7 +2591,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     } else {
       // --- BEHAVIOR 2: Switch FROM Single TO Range ---
       // Get the current single value, defaulting to 8 if it's null.
-      const singleValue = repsCtrl?.value ?? 8; 
+      const singleValue = repsCtrl?.value ?? 8;
 
       // Calculate the new range [value - 2, value + 2].
       // Ensure the new minimum value is never less than 0.
@@ -2630,7 +2631,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     } else {
       // Switch FROM Single TO Range
       const singleValue = weightCtrl?.value ?? 0;
-      
+
       // Convert 5kg offset to the user's current weight unit
       const offsetInCurrentUnit = this.unitService.convertWeight(5, this.unitService.currentWeightUnit(), 'kg');
 
@@ -2643,11 +2644,11 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     }
   }
 
-   /**
-   * Toggles the input mode for a set's duration between a single value and a range.
-   * Applies a +/- 30 second offset when creating a range.
-   * @param setControl The form group for the specific set.
-   */
+  /**
+  * Toggles the input mode for a set's duration between a single value and a range.
+  * Applies a +/- 30 second offset when creating a range.
+  * @param setControl The form group for the specific set.
+  */
   toggleDurationMode(setControl: AbstractControl, event?: Event): void {
     event?.stopPropagation();
     if (this.isViewMode || !(setControl instanceof FormGroup)) return;
@@ -3231,8 +3232,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     if (!control) return false;
     // Handle both AbstractControl and plain object
     if (typeof control.get === 'function') {
-      if (typeof control.getRawValue === 'function' && control.getRawValue() && control.getRawValue()['sets']){
-        return ((control.getRawValue()['sets'].some((innerControl : any) => innerControl['targetWeight']) ?? 0) > 0) || ((control.getRawValue()['sets'].some((innerControl : any) => innerControl['targetWeightMin']) ?? 0) > 0);
+      if (typeof control.getRawValue === 'function' && control.getRawValue() && control.getRawValue()['sets']) {
+        return ((control.getRawValue()['sets'].some((innerControl: any) => innerControl['targetWeight']) ?? 0) > 0) || ((control.getRawValue()['sets'].some((innerControl: any) => innerControl['targetWeightMin']) ?? 0) > 0);
       } else {
         return ((control.get('targetWeight')?.value ?? 0) > 0) || ((control.get('targetWeightMin')?.value ?? 0) > 0);
       }
@@ -3243,8 +3244,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     if (!control) return false;
     // Handle both AbstractControl and plain object
     if (typeof control.get === 'function') {
-      if (typeof control.getRawValue === 'function' && control.getRawValue() && control.getRawValue()['sets']){
-        return ((control.getRawValue()['sets'].some((innerControl : any) => innerControl['targetReps']) ?? 0) > 0) || ((control.getRawValue()['sets'].some((innerControl : any) => innerControl['targetRepsMin']) ?? 0) > 0);
+      if (typeof control.getRawValue === 'function' && control.getRawValue() && control.getRawValue()['sets']) {
+        return ((control.getRawValue()['sets'].some((innerControl: any) => innerControl['targetReps']) ?? 0) > 0) || ((control.getRawValue()['sets'].some((innerControl: any) => innerControl['targetRepsMin']) ?? 0) > 0);
       } else {
         return ((control.get('targetReps')?.value ?? 0) > 0) || ((control.get('targetRepsMin')?.value ?? 0) > 0);
       }
@@ -3255,8 +3256,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     if (!control) return false;
     // Handle both AbstractControl and plain object
     if (typeof control.get === 'function') {
-      if (typeof control.getRawValue === 'function' && control.getRawValue() && control.getRawValue()['sets']){
-        return ((control.getRawValue()['sets'].some((innerControl : any) => innerControl['targetDistance']) ?? 0) > 0) || ((control.getRawValue()['sets'].some((innerControl : any) => innerControl['targetDistanceMin']) ?? 0) > 0);
+      if (typeof control.getRawValue === 'function' && control.getRawValue() && control.getRawValue()['sets']) {
+        return ((control.getRawValue()['sets'].some((innerControl: any) => innerControl['targetDistance']) ?? 0) > 0) || ((control.getRawValue()['sets'].some((innerControl: any) => innerControl['targetDistanceMin']) ?? 0) > 0);
       } else {
         return ((control.get('targetDistance')?.value ?? 0) > 0) || ((control.get('targetDistanceMin')?.value ?? 0) > 0);
       }
@@ -3267,25 +3268,25 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     if (!control) return false;
     // Handle both AbstractControl and plain object
     if (typeof control.get === 'function') {
-      if (typeof control.getRawValue === 'function' && control.getRawValue() && control.getRawValue()['sets']){
-        return ((control.getRawValue()['sets'].some((innerControl : any) => innerControl['targetDuration']) ?? 0) > 0) || ((control.getRawValue()['sets'].some((innerControl : any) => innerControl['targetDurationMin']) ?? 0) > 0);
+      if (typeof control.getRawValue === 'function' && control.getRawValue() && control.getRawValue()['sets']) {
+        return ((control.getRawValue()['sets'].some((innerControl: any) => innerControl['targetDuration']) ?? 0) > 0) || ((control.getRawValue()['sets'].some((innerControl: any) => innerControl['targetDurationMin']) ?? 0) > 0);
       } else {
         return ((control.get('targetDuration')?.value ?? 0) > 0) || ((control.get('targetDurationMin')?.value ?? 0) > 0);
       }
     }
     return (control.targetDuration ?? 0) > 0 || (control.targetDurationMin ?? 0) > 0;
   }
-    protected checkIfNotesIsVisible(control: any): boolean {
+  protected checkIfNotesIsVisible(control: any): boolean {
     if (!control) return false;
     // Handle both AbstractControl and plain object
     if (typeof control.get === 'function') {
-      if (typeof control.getRawValue === 'function' && control.getRawValue() && control.getRawValue()['sets']){
-        return control.getRawValue()['sets'].some((innerControl : any) => !!innerControl['notes']);
+      if (typeof control.getRawValue === 'function' && control.getRawValue() && control.getRawValue()['sets']) {
+        return control.getRawValue()['sets'].some((innerControl: any) => !!innerControl['notes']);
       } else {
         return !!(control.get('notes')?.value);
       }
     }
-    
+
     return !!(control.notes);
   }
 
@@ -3318,7 +3319,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     }
 
     const baseClasses = 'grid';
-    
+
     return `${baseClasses} ${gridColsClass}`;
   }
 
@@ -3345,21 +3346,21 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     const isSave = this.mode === 'routineBuilder' ? (!this.currentRoutineId ? false : true) : (this.isNewMode ? true : false);
     if (this.isEditableMode()) {
       this.fabMenuItems = [{
-        label: 'ADD EXERCISE',
+        label: 'fab.add_exercise',
         actionKey: 'add_exercise',
         iconName: 'plus-circle',
         cssClass: 'bg-green-500 focus:ring-green-400',
         isPremium: false
       },
       {
-        label: this.mode === 'routineBuilder' ? 'SAVE ROUTINE' : (this.isNewMode ? 'LOG WORKOUT' : 'SAVE LOG CHANGES'),
+        label: this.mode === 'routineBuilder' ? 'fab.save_routine' : (this.isNewMode ? 'fab.save_log' : 'fab.save_log_changes'),
         actionKey: 'save_routine',
         iconName: 'save',
         cssClass: 'bg-primary focus:ring-primary-light',
         isPremium: false
       },
       {
-        label: 'START',
+        label: 'fab.start',
         actionKey: 'start',
         iconName: 'play',
         cssClass: 'bg-blue-400 focus:ring-blue-600',
@@ -3369,7 +3370,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     } else {
       this.fabMenuItems = [
         {
-          label: 'START',
+          label: 'fab.start',
           actionKey: 'start',
           iconName: 'play',
           cssClass: 'bg-blue-400 focus:ring-blue-600',
@@ -3682,13 +3683,13 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       return validDisplayValues.join(', ');
     }
   }
-  
-  
-   /**
-   * Toggles the input mode for a set's distance between a single value and a range.
-   * Applies a +/- 1km offset when creating a range.
-   * @param setControl The form group for the specific set.
-   */
+
+
+  /**
+  * Toggles the input mode for a set's distance between a single value and a range.
+  * Applies a +/- 1km offset when creating a range.
+  * @param setControl The form group for the specific set.
+  */
   toggleDistanceMode(setControl: AbstractControl, event?: Event): void {
     event?.stopPropagation();
     if (this.isViewMode || !(setControl instanceof FormGroup)) return;
@@ -3712,7 +3713,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     } else {
       // Switch FROM Single TO Range
       const singleValue = distanceCtrl?.value ?? 1; // Default to 1
-      
+
       // Convert 1km offset to the user's current distance unit
       const offsetInCurrentUnit = this.unitService.convertDistance(1, this.unitService.currentDistanceMeasureUnit(), 'km');
 

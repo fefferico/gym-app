@@ -10,6 +10,7 @@ import { SubscriptionService } from '../../../core/services/subscription.service
 import { IconComponent } from '../icon/icon.component';
 import { PressDirective } from '../../directives/press.directive';
 import { ClickOutsideDirective } from '../../directives/click-outside.directive';
+import { TranslateModule } from '@ngx-translate/core';
 
 export interface FabAction {
   actionKey: string;  // A unique key for the action, e.g., 'create_routine'
@@ -26,7 +27,8 @@ export interface FabAction {
     CommonModule,
     IconComponent,
     PressDirective,
-    ClickOutsideDirective
+    ClickOutsideDirective,
+    TranslateModule
   ],
   templateUrl: './fab-menu.component.html',
   styleUrls: ['./fab-menu.component.scss'],
