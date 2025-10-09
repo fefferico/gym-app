@@ -18,10 +18,10 @@
     },
     "pausedWorkout": {
         "inProgress": "Hai un allenamento in corso!",
-        "routineLabel": "Routine:",
-        "programLabel": "Programma:",
-        "loggedOn": "Registrato il:",
-        "pausedAt": "In pausa dal:",
+        "routineLabel": "Routine",
+        "programLabel": "Programma",
+        "loggedOn": "Registrato il",
+        "pausedAt": "In pausa dal",
         "defaultRoutineName": "Nuova sessione",
         "fallbackRoutineName": "il tuo allenamento",
         "adHocWorkout": "Allenamento Estemporaneo",
@@ -192,7 +192,12 @@
             "spanish": "Spagnolo",
             "italian": "Italiano",
             "german": "Tedesco",
-            "french": "Francese"
+            "french": "Francese",
+            "russian": "Russo",
+            "japanese": "Giapponese",
+            "chinese": "Cinese",
+            "portuguese": "Portoghese",
+            "arabic": "Arabo"
         }
     },
     "common": {
@@ -253,13 +258,13 @@
     "todaysWorkout": {
         "previousDay": "Giorno Precedente",
         "nextDay": "Giorno Successivo",
-        "started": "Iniziato:",
+        "started": "Iniziato",
         "jumpToToday": "Vai a Oggi",
         "checkingSchedule": "Controllo il tuo programma...",
-        "scheduled": "Previsto:",
-        "loggedUnscheduled": "Registrato (Non previsto):",
-        "program": "Programma:",
-        "currentWeek": "Settimana Corrente:",
+        "scheduled": "Previsto",
+        "loggedUnscheduled": "Registrato (Non previsto)",
+        "program": "Programma",
+        "currentWeek": "Settimana Corrente",
         "workoutCompleted": "Allenamento Completato!",
         "details": "DETTAGLI",
         "sessionSkipped": "Sessione Saltata",
@@ -268,13 +273,13 @@
         "start": "INIZIA",
         "restDay": "Giorno di Riposo",
         "noWorkoutPlanned": "Nessun allenamento previsto dal tuo programma per oggi",
-        "loggedToday": "Registrati oggi:",
-        "loggedOnThisDay": "Registrati in questo giorno:",
+        "loggedToday": "Registrati oggi",
+        "loggedOnThisDay": "Registrati in questo giorno",
         "feelFreeTo": "Sentiti libero di ",
         "pickAnotherRoutine": "scegliere un'altra scheda",
         "ifYouPrefer": ", se preferisci",
-        "orPickOne": "Oppure, scegline una qui sotto:",
-        "pickOne": "Scegline una qui sotto:",
+        "orPickOne": "Oppure, scegline una qui sotto",
+        "pickOne": "Scegline una qui sotto",
         "estimatedTime": "Stima: ~{{duration}} min",
         "latest": "Recente: ",
         "noRoutinesAvailable": "Nessuna scheda disponibile",
@@ -314,13 +319,13 @@
             "allCategories": "Tutte le Categorie"
         },
         "card": {
-            "goal": "Obiettivo:",
-            "category": "Categoria:",
-            "muscles": "Muscoli:",
-            "lastPerformed": "Ultima volta:",
+            "goal": "Obiettivo",
+            "category": "Categoria",
+            "muscles": "Muscoli",
+            "lastPerformed": "Ultima volta",
             "notPerformed": "Mai eseguita",
-            "estimatedDuration": "Durata stimata:",
-            "lastDuration": "Ultima durata:",
+            "estimatedDuration": "Durata stimata",
+            "lastDuration": "Ultima durata",
             "hidden": "Nascosta",
             "favourite": "Preferita",
             "favouriteTooltip": "Clicca per filtrare i preferiti. Pressione lunga per rimuovere dai preferiti."
@@ -405,14 +410,14 @@
         },
         "card": {
             "adHocWorkout": "Allenamento non programmato",
-            "program": "Programma:",
-            "date": "Data:",
-            "duration": "Durata:",
-            "exercises": "Es:",
-            "pbs": "Record:",
+            "program": "Programma",
+            "date": "Data",
+            "duration": "Durata",
+            "exercises": "Es",
+            "pbs": "Record",
             "details": "DETTAGLI",
-            "location": "Luogo:",
-            "distance": "Distanza:",
+            "location": "Luogo",
+            "distance": "Distanza",
             "notes": "Note:"
         },
         "noResults": {
@@ -485,14 +490,14 @@
         },
         "card": {
             "active": "Attivo",
-            "schedule": "Programmazione:",
+            "schedule": "Programmazione",
             "days": "{{count}} giorno",
             "days_plural": "{{count}} giorni",
             "avgDaysPerWeek": "Media {{count}} giorni/settimana",
-            "started": "Iniziato il:",
-            "lastScheduling": "Ultima programmazione:",
-            "goals": "Obiettivi:",
-            "iteration": "Iterazione:",
+            "started": "Iniziato il",
+            "lastScheduling": "Ultima programmazione",
+            "goals": "Obiettivi",
+            "iteration": "Iterazione",
             "currentWeek": "Settimana Corrente:"
         },
         "noPrograms": {
@@ -512,9 +517,9 @@
             "today": "(Oggi)",
             "notScheduled": "Non Pianificato",
             "sessionsLogged": "({{count}} sessioni registrate)",
-            "programNote": "Nota del Programma:",
-            "suggestedTime": "Orario Suggerito:",
-            "loggedSessions": "Sessione/i Registrata/e:",
+            "programNote": "Nota del Programma",
+            "suggestedTime": "Orario Suggerito",
+            "loggedSessions": "Sessione/i Registrata/e",
             "loggedAt": "Registrato: {{time}} ({{duration}} min)",
             "viewButton": "VEDI",
             "startButton": "INIZIA",
@@ -560,7 +565,8 @@
             "delete": "ELIMINA",
             "activate": "ATTIVA",
             "deactivate": "DISATTIVA",
-            "finish": "COMPLETA"
+            "finish": "COMPLETA",
+            "history": "REGISTRO"
         }
     },
     "statsDashboard": {
@@ -583,8 +589,8 @@
             "weeks": "settimane",
             "noCurrentStreak": "Nessuna serie attuale",
             "longestStreak": "Serie più Lunga",
-            "from": "Dal:",
-            "to": "Al:",
+            "from": "Dal",
+            "to": "Al",
             "noWorkoutsYet": "Nessun allenamento ancora registrato"
         },
         "charts": {
@@ -635,7 +641,7 @@
             "showingResultOf": "Mostrando {{count}} di {{total}} Record"
         },
         "card": {
-            "previous": "Prec:",
+            "previous": "Prec",
             "viewLog": "VEDI LOG",
             "trend": "ANDAMENTO",
             "showTrendTooltip": "Mostra l'andamento per questo Record"
@@ -721,7 +727,7 @@
         "sets": "Serie",
         "notesPlaceholder": "Note per questo esercizio...",
         "toggleNotes": "Mostra/Nascondi note esercizio",
-        "logPerformance": "Registra performance:",
+        "logPerformance": "Registra performance",
         "markAsUndone": "Segna come non fatto per modificare",
         "addMetric": "Aggiungi Metrica",
         "weightLabel": "Peso ({{unit}})",
@@ -839,10 +845,10 @@
             "updateOriginal": "Aggiorna la Scheda Originale",
             "saveAsNew": "Salva come Nuova Scheda",
             "newRoutineNameTitle": "Nome Nuova Scheda",
-            "newRoutineNameMessage": "Inserisci un nome:",
+            "newRoutineNameMessage": "Inserisci un nome",
             "saveRoutine": "Salva Scheda",
             "saveAdHocTitle": "Salva come Nuova Scheda",
-            "saveAdHocMessage": "Inserisci un nome per questa scheda di allenamento:",
+            "saveAdHocMessage": "Inserisci un nome per questa scheda di allenamento",
             "createAndLog": "Crea Scheda e Registra",
             "logWithoutSaving": "Registra Senza Salvare",
             "removeFieldTitle": "Rimuovi Campo dall'Esercizio",
@@ -985,10 +991,10 @@
             "secondaryCategoryPlaceholder": "es., Corpo Libero, Ipertrofia Fase 1",
             "tagsLabel": "Tag (separati da virgola)",
             "tagsPlaceholder": "es., HIIT, Manubri, Total Body",
-            "lastPerformed": "Ultima volta:",
+            "lastPerformed": "Ultima volta",
             "notPerformed": "Mai eseguita",
-            "estimatedDuration": "Durata stimata:",
-            "lastDuration": "Ultima durata:",
+            "estimatedDuration": "Durata stimata",
+            "lastDuration": "Ultima durata",
             "saveButton": "SALVA SCHEDA"
         },
         "logEntry": {
@@ -1152,7 +1158,7 @@
             "removeExerciseLoggedMessage": "Sei sicuro di voler rimuovere {{name}}? Tutti i dati registrati per questo esercizio in questa sessione andranno persi.",
             "removeExerciseMessage": "Sei sicuro di voler rimuovere {{name}}?",
             "customExerciseTitle": "Aggiungi Nuovo Esercizio Personalizzato",
-            "customExerciseMessage": "Definisci nome dell'esercizio e serie:",
+            "customExerciseMessage": "Definisci nome dell'esercizio e serie",
             "customExerciseNameLabel": "Nome Esercizio Personalizzato",
             "customExerciseSetsLabel": "Numero di Serie",
             "customExerciseEquipmentLabel": "Attrezzatura",
@@ -1214,5 +1220,600 @@
         "save_log_changes": "SALVA MODIFICHE",
         "start": "INIZIA",
         "log": "LOG"
+    },
+    "logDetail": {
+        "title": "Dettaglio Allenamento",
+        "toggleFilters": "Mostra/Nascondi Filtri",
+        "adHocWorkout": "Allenamento non programmato",
+        "logForProgram": "Log per Programma: {{programName}} - Settimana {{week}} - Giorno {{day}}",
+        "date": "Data",
+        "from": "Dalle {{start}} alle {{end}}",
+        "exercises": "Esercizi",
+        "duration": "Durata",
+        "durationMinutes": "{{minutes}} minuti",
+        "overallNotes": "Note Generali",
+        "compareRoutine": "CONFRONTA SCHEDA",
+        "emomBlock": "Blocco EMOM - {{label}}",
+        "rounds": "{{count}} Round",
+        "everySecond": "Ogni {{seconds}}s",
+        "roundHeader": "Round",
+        "supersetBlock": "Blocco Superset",
+        "exerciseLabel": "Esercizio {{order}} di {{total}}",
+        "noLoggedExercises": "Nessun esercizio specifico è stato registrato per questo allenamento",
+        "loading": "Caricamento dettagli allenamento...",
+        "notFoundTitle": "Registrazione Allenamento Non Trovata",
+        "notFoundMessage": "La registrazione dell'allenamento che stai cercando non esiste",
+        "backToHistory": "Torna alla Cronologia",
+        "comparisonModal": {
+            "exerciseTitle": "Confronto Esercizio",
+            "routineTitle": "Confronto Scheda",
+            "target": "Obiettivo",
+            "performed": "Eseguito",
+            "ok": "OK"
+        },
+        "notesModal": {
+            "title": "Note",
+            "close": "CHIUDI"
+        },
+        "fab": {
+            "scrollTop": "Torna su",
+            "scrollBottom": "Vai in fondo"
+        },
+        "actions": {
+            "summary": "RIEPILOGO",
+            "edit": "MODIFICA LOG",
+            "routine": "SCHEDA",
+            "delete": "ELIMINA"
+        },
+        "alerts": {
+            "noRoutineTitle": "Nessuna scheda per questa registrazione",
+            "noRoutineMessage": "Non c'è nessuna scheda associata a questa registrazione: vuoi crearne una? Se sì, ricorda di collegarla a questa registrazione una volta creata",
+            "deleteTitle": "Elimina Registrazione Allenamento",
+            "deleteMessage": "Sei sicuro di voler eliminare questa registrazione? L'azione non può essere annullata",
+            "deleteButton": "Elimina"
+        },
+        "toasts": {
+            "logDeleted": "Registrazione allenamento eliminata con successo",
+            "logDeleteFailed": "Impossibile eliminare la registrazione dell'allenamento"
+        },
+        "card": {
+            "set": "Serie",
+            "reps": "Rip",
+            "weight": "Peso",
+            "distance": "Distanza",
+            "time": "Tempo (s)",
+            "rest": "Recupero",
+            "notes": "Note",
+            "noSetData": "-",
+            "pb": "Record",
+            "pbTooltip": "Record Personale!\n{{types}}",
+            "noNotes": "-",
+            "viewLog": "VEDI LOG",
+            "trend": "ANDAMENTO",
+            "showTrendTooltip": "Mostra l'andamento per questo Record"
+        },
+        "insights": {
+            "title": "Statistiche Performance",
+            "completedSets": "Serie Completate in questa Sessione ({{count}})",
+            "noSetsCompleted": "Nessuna serie ancora completata per questo esercizio in questo allenamento.",
+            "lastPerformance": "Ultima Performance ({{date}})",
+            "noPreviousPerformance": "Nessuna performance precedente registrata per questo esercizio.",
+            "personalBests": "Record Personali",
+            "noPBs": "Nessun record personale ancora registrato per questo esercizio.",
+            "onDate": "il {{date}}",
+            "done": "FATTO",
+            "repsLabel": "Rip",
+            "weightLabel": "Peso",
+            "distanceLabel": "Distanza",
+            "timeLabel": "Tempo"
+        }
+    },
+    "performanceComparison": {
+        "title": "Performance Scheda",
+        "comparingTo": "CONFRONTO CON",
+        "fromThisRoutine": "Da Questa Scheda",
+        "fromOtherWorkouts": "Da Altri Allenamenti",
+        "previousSession": "SESSIONE PRECEDENTE",
+        "metric": "Metrica",
+        "today": "Oggi",
+        "previous": "Precedente",
+        "set": "Serie",
+        "goToPreviousLog": "Vai al log precedente",
+        "noPreviousPerformance": "Nessuna performance precedente trovata per questa scheda.",
+        "loading": "Caricamento confronto...",
+        "noData": "Impossibile caricare i dati del confronto.",
+        "summary": {
+            "title": "Riepilogo Generale",
+            "breakdownTitle": "Dettaglio per Esercizio",
+            "sets": "Serie",
+            "totalReps": "Ripetizioni Totali",
+            "maxWeight": "Peso Massimo",
+            "totalVolume": "Volume Totale",
+            "totalDuration": "Durata Totale",
+            "totalDistance": "Distanza Totale"
+        },
+        "units": {
+            "reps": "rip"
+        }
+    },
+    "workoutSummary": {
+        "title": "Allenamento Completato!",
+        "subtitle": "Ottimo lavoro per aver completato la tua sessione",
+        "routine": "Scheda",
+        "adHocWorkout": "Allenamento non programmato",
+        "date": "Data",
+        "duration": "Durata",
+        "durationUnit": "minuti",
+        "totalVolume": "Volume Totale",
+        "perceivedEffort": "Sforzo Percepito",
+        "perceivedFeeling": "Sensazione",
+        "newPBs": "🎉 Nuovo Record Personale! 🎉",
+        "newPBs_plural": "🎉 Nuovi Record Personali! 🎉",
+        "yourNotes": "Le Tue Note per questa Sessione",
+        "viewFullLog": "VEDI DETTAGLI LOG COMPLETI",
+        "loading": "Caricamento riepilogo allenamento...",
+        "notFound": {
+            "title": "Registrazione Allenamento Non Trovata",
+            "message": "La registrazione dell'allenamento che stai cercando non esiste",
+            "backToHistory": "Torna alla Cronologia"
+        },
+        "toasts": {
+            "effortSaved": "Sforzo percepito salvato con successo!",
+            "effortSaveFailed": "Salvataggio sforzo percepito fallito:"
+        },
+        "units": {
+            "reps": "rip",
+            "seconds": "s"
+        }
+    },
+    "programBuilder": {
+        "title": "Programmi",
+        "toggleFilters": "Mostra/Nascondi Filtri",
+        "active": "Attivo",
+        "progress": {
+            "overallWorkout": "Progresso Allenamenti Totale",
+            "currentCycle": "Progresso Ciclo Attuale",
+            "overallWeeks": "Progresso Totale (Settimane Completate)",
+            "weekCompleted": " - Completata",
+            "weekIncomplete": " - Incompleta",
+            "currentWeek": "Progresso Settimana Corrente",
+            "workouts": "Allenamenti"
+        },
+        "form": {
+            "nameLabel": "Nome Programma",
+            "namePlaceholder": "Nome programma",
+            "nameRequired": "Il nome del programma è obbligatorio",
+            "descriptionLabel": "Descrizione (Opzionale)",
+            "descriptionPlaceholder": "Descrizione (opzionale)",
+            "goalsLabel": "Obiettivi",
+            "startDateLabel": "Data di Inizio",
+            "structureLabel": "Struttura Programma",
+            "repeatingCycle": "Ciclo Ripetuto",
+            "weekByWeek": "Progressione Settimanale",
+            "repeatWeeks": "Ripeti le settimane al termine",
+            "repeatWeeksHint": "Se selezionato, il programma settimanale si ripeterà all'infinito finché non verrà interrotto manualmente.",
+            "cycleLengthLabel": "Durata Ciclo (Giorni)",
+            "cycleLengthPlaceholder": "es., 4 per Upper/Lower/Riposo/Riposo",
+            "cycleLengthHint": "Giorni totali nel ciclo, inclusi i riposi. Lascia vuoto per una settimana standard.",
+            "iterationLabel": "Basato su Iterazione Programma",
+            "editWarning": "(MODIFICA SOLO SE SAI COSA STAI FACENDO)",
+            "notesLabel": "Note Generali del Programma (Opzionale)"
+        },
+        "schedule": {
+            "title": "Programmazione",
+            "addDay": "AGGIUNGI GIORNO ALLA PROGRAMMAZIONE",
+            "dayNamePlaceholder": "es., Giorno di Spinta",
+            "dayOfWeekLabel": "Giorno della Settimana",
+            "cycleDayLabel": "Numero Giorno del Ciclo",
+            "dayRequired": "Il giorno è obbligatorio.",
+            "routineLabel": "Scheda",
+            "loadingRoutine": "Caricamento scheda...",
+            "noRoutine": "Nessuna Scheda Selezionata",
+            "change": "CAMBIA",
+            "select": "SELEZIONA",
+            "routineRequired": "La selezione della scheda è obbligatoria.",
+            "timeLabel": "Orario (Opzionale)",
+            "timePlaceholder": "es., Mattina, Pomeriggio, 08:00",
+            "notesLabel": "Note per questo Giorno (Opzionale)",
+            "noDays": "Nessun giorno ancora pianificato per questo programma",
+            "addFirstDay": "Aggiungi il primo giorno pianificato"
+        },
+        "weeks": {
+            "title": "Programmazione Settimanale",
+            "addWeek": "AGGIUNGI SETTIMANA",
+            "weekNamePlaceholder": "es., Settimana 1: Volume",
+            "removeWeek": "RIMUOVI SETTIMANA",
+            "addDayToWeek": "AGGIUNGI GIORNO ALLA SETTIMANA",
+            "emptyWeek": "Questa settimana è vuota.",
+            "noWeeks": "Nessuna settimana ancora creata per questo programma.",
+            "addFirstWeek": "Aggiungi la prima settimana"
+        },
+        "actions": {
+            "cancel": "ANNULLA",
+            "createProgram": "CREA PROGRAMMA",
+            "saveChanges": "SALVA MODIFICHE"
+        },
+        "modal": {
+            "selectRoutineTitle": "Seleziona una Scheda",
+            "searchPlaceholder": "Cerca schede...",
+            "noMatches": "Nessuna scheda corrisponde alla tua ricerca",
+            "noRoutines": "Nessuna scheda disponibile. Crea prima qualche scheda!",
+            "historyTitle": "Cronologia Programma",
+            "historyTable": {
+                "start": "Inizio",
+                "end": "Fine",
+                "status": "Stato",
+                "logged": "Registrati",
+                "actions": "Azioni"
+            },
+            "editEntry": "Modifica voce",
+            "deleteEntry": "Elimina voce",
+            "editing": "Modifica in corso...",
+            "saveChanges": "Salva modifiche",
+            "cancelEdit": "Annulla modifica",
+            "noHistory": "Nessuna esecuzione precedente trovata per questo programma.",
+            "close": "CHIUDI"
+        },
+        "toasts": {
+            "validationError": "Errore di Convalida",
+            "linearNoWeeks": "I programmi lineari devono avere almeno una settimana.",
+            "linearEmptyWeeks": "Aggiungi schede a ogni settimana o rimuovi le settimane vuote.",
+            "cycledNoDays": "Aggiungi almeno un giorno pianificato al programma.",
+            "formInvalid": "Compila tutti i campi obbligatori, inclusa la selezione di una scheda per ogni giorno pianificato.",
+            "saveError": "Salvataggio fallito: {{error}}",
+            "saveErrorTitle": "Errore di Salvataggio",
+            "created": "Programma \"{{name}}\" creato.",
+            "createdTitle": "Programma Creato",
+            "saved": "Programma salvato con successo",
+            "saveSuccess": "Successo",
+            "deleteError": "Nessun programma selezionato per l'eliminazione",
+            "deleteErrorTitle": "Errore di Eliminazione",
+            "deleteUnexpectedError": "Si è verificato un errore imprevisto durante l'eliminazione del programma",
+            "completeFailed": "Impossibile completare il programma",
+            "deactivateFailed": "Disattivazione fallita",
+            "setActiveFailed": "Impossibile impostare il programma come attivo",
+            "statusUpdateFailed": "Aggiornamento stato programma fallito",
+            "noHistory": "Nessuna cronologia disponibile per questo programma.",
+            "historyRemoved": "Voce della cronologia rimossa.",
+            "historyRemoveFailed": "Rimozione voce della cronologia fallita.",
+            "historySaveFailed": "Salvataggio voce della cronologia fallito.",
+            "weekAddAllDays": "Tutti i 7 giorni di questa settimana sono stati pianificati.",
+            "cycleAddAllDays": "Tutti i {{count}} giorni del ciclo sono stati pianificati.",
+            "dayNameHint": "Promemoria: il nome del giorno è \"{{currentName}}\". Potresti volerlo aggiornare per corrispondere alla nuova selezione \"{{expectedName}}\" o per dargli un nome appropriato.",
+            "checkDayName": "Controlla Nome Giorno",
+            "supersetGrouped": "Superset creato con {{count}} round!",
+            "emomGrouped": "EMOM creato per {{count}} round!",
+            "groupingCancelled": "Raggruppamento annullato."
+        },
+        "alerts": {
+            "finishTitle": "Completa Programma",
+            "finishMessage": "Sei sicuro di voler contrassegnare questo programma come completato?",
+            "finishButton": "Completa Programma",
+            "activeTitle": "Il programma è attualmente attivo.",
+            "activeMessage": "Cosa vorresti fare?",
+            "deactivate": "Disattiva",
+            "complete": "Completa",
+            "deleteTitle": "Elimina Programma",
+            "deleteMessage": "Sei sicuro di voler eliminare questo programma? Questa azione non può essere annullata",
+            "delete": "Elimina",
+            "cloneSuccess": "Programma \"{{name}}\" clonato con successo.",
+            "cloneFailed": "Clonazione programma fallita",
+            "selectGroupTypeTitle": "Seleziona Tipo di Gruppo",
+            "selectGroupTypeMessage": "Come vorresti raggruppare questi esercizi?",
+            "setEmomTitle": "Imposta Dettagli EMOM",
+            "setEmomMessage": "Configura i parametri dell'EMOM.",
+            "emomTimeLabel": "Tempo per Round (s)",
+            "emomRoundsLabel": "Numero di Round (Serie)",
+            "setSupersetRoundsTitle": "Imposta Round Superset",
+            "setSupersetRoundsMessage": "Quanti round (serie) dovrebbe avere questo superset?",
+            "setExerciseTargetsTitle": "Imposta Target Esercizio",
+            "setExerciseTargetsMessage": "Inserisci le ripetizioni e il peso target per ogni serie del gruppo."
+        }
+    },
+    "measurementHistory": {
+        "title": "Cronologia Misure",
+        "addPastEntry": "AGGIUNGI VOCE PASSATA",
+        "comparisonTitle": "Confronto Affiancato",
+        "selectStartDate": "-- Seleziona Data Inizio --",
+        "selectEndDate": "-- Seleziona Data Fine --",
+        "compare": "CONFRONTA",
+        "chartTitle": "Grafico Progressi",
+        "logHistoryTitle": "Cronologia Registrazioni",
+        "changePhoto": "Cambia Foto",
+        "addPhoto": "Aggiungi Foto",
+        "deleteEntry": "Elimina Voce",
+        "editEntry": "Modifica Voce",
+        "weight": "Peso",
+        "chest": "Petto",
+        "waist": "Vita",
+        "hips": "Fianchi",
+        "neck": "Collo",
+        "rightArm": "Braccio Dx",
+        "notes": "Note",
+        "notesPlaceholder": "Aggiungi note...",
+        "noDataTitle": "Nessuna cronologia misure trovata.",
+        "noDataMessage": "Vai alle impostazioni del tuo profilo per aggiungere la tua prima voce!",
+        "addEntryModal": {
+            "title": "Aggiungi Misura",
+            "dateLabel": "Data",
+            "weightLabel": "Peso ({{unit}})",
+            "chestLabel": "Petto ({{unit}})",
+            "waistLabel": "Vita ({{unit}})",
+            "hipsLabel": "Fianchi ({{unit}})",
+            "neckLabel": "Collo ({{unit}})",
+            "rightArmLabel": "Braccio Destro ({{unit}})",
+            "notesPlaceholder": "Note...",
+            "cancel": "ANNULLA",
+            "save": "SALVA"
+        },
+        "comparisonModal": {
+            "title": "Confronto Affiancato",
+            "sliderView": "Vista Slider",
+            "sideBySideView": "Vista Affiancata",
+            "sliderTitle": "Slider Confronto Immagini",
+            "before": "PRIMA: {{date}}",
+            "after": "DOPO: {{date}}",
+            "metric": "Metrica",
+            "change": "Variazione",
+            "close": "CHIUDI"
+        },
+        "alerts": {
+            "deleteTitle": "Elimina Voce",
+            "deleteMessage": "Sei sicuro di voler eliminare permanentemente tutti i dati per il {{date}}? Questo include qualsiasi foto associata e non può essere annullato."
+        },
+        "toasts": {
+            "entrySaved": "Voce Salvata!",
+            "notesSaved": "Note salvate automaticamente.",
+            "photoSaved": "Foto salvata!",
+            "photoSaveError": "Impossibile salvare la foto.",
+            "selectDatesError": "Seleziona due date da confrontare.",
+            "findEntriesError": "Impossibile trovare le voci selezionate.",
+            "entryNotFound": "Voce non trovata.",
+            "entryDeleted": "Voce eliminata con successo.",
+            "deleteError": "Impossibile eliminare la voce."
+        },
+        "metrics": {
+            "weight": "Peso ({{unit}})",
+            "bmi": "Indice di Massa Corporea (IMC)",
+            "bodyFat": "% Massa Grassa (Navy)",
+            "chest": "Petto ({{unit}})",
+            "waist": "Vita ({{unit}})",
+            "hips": "Fianchi ({{unit}})",
+            "neck": "Collo ({{unit}})",
+            "rightArm": "Braccio Destro ({{unit}})"
+        }
+    },
+    "restTimer": {
+        "nextUp": "Prossimo",
+        "skip": "Salta"
+    },
+    "barbellCalculator": {
+        "nav": {
+            "calculator": "Calcolatrice",
+            "percentages": "Percentuali",
+            "oneRepMax": "1RM",
+            "rpe": "RPE",
+            "powerlifting": "Powerlifting"
+        },
+        "calculator": {
+            "calculate": "CALCOLA",
+            "reverse": "INVERSO",
+            "justBar": "(Solo bilanciere e collari)",
+            "decreaseWeight": "Diminuisci peso",
+            "increaseWeight": "Aumenta peso",
+            "tapToLoad": "TOCCA I DISCHI PER CARICARE/SCARICARE IL BILANCIERE",
+            "clearBar": "SVUOTA BILANCIERE",
+            "usePersonalGym": "Usa Palestra Personale",
+            "enable50kg": "Abilita Disco da 50{{unit}}",
+            "barbell": "Bilanciere",
+            "plateType": "Tipo di Disco",
+            "bumperPlates": "Dischi Bumper",
+            "standardIron": "Ghisa Standard",
+            "collars": "Collari",
+            "platesNeeded": "Dischi Necessari (Per Lato)",
+            "barAndCollarsOnly": "Solo bilanciere e collari",
+            "howCalculated": "Come viene calcolato il totale:",
+            "barLabel": "(Bilanciere)",
+            "collarsLabel": "(Collari)",
+            "platesLabel": "(Dischi)"
+        },
+        "percentages": {
+            "title": "Calcolatrice Percentuali",
+            "workingWeight": "Carico bilanciere (100%)",
+            "workingWeightPlaceholder": "es., 100",
+            "platesPerSide": "Dischi per lato",
+            "barCollarsOnly": "Solo bilanciere/collari",
+            "emptyState": "Inserisci un peso base per calcolare le percentuali."
+        },
+        "oneRepMax": {
+            "title": "Stimatore Massimale (1RM)",
+            "weightLifted": "Peso Sollevato",
+            "weightPlaceholder": "es., 100",
+            "repsPerformed": "Ripetizioni Eseguite",
+            "repsPlaceholder": "es., 5",
+            "estimatedTitle": "1RM Stimato",
+            "epley": "Formula di Epley:",
+            "brzycki": "Formula di Brzycki:",
+            "projectionsTitle": "Proiezioni Massimali (basate su Epley)",
+            "repsHeader": "Rip",
+            "weightHeader": "Peso",
+            "emptyState": "Inserisci un peso e un numero di ripetizioni validi."
+        },
+        "rpe": {
+            "title": "e1RM da RPE",
+            "rpe": "RPE",
+            "rir": "RIR",
+            "weightLifted": "Peso Sollevato",
+            "repsPerformed": "Ripetizioni Eseguite",
+            "rpeLabel": "RPE (Scala di Sforzo Percepito)",
+            "rirLabel": "RIR (Ripetizioni in Riserva)",
+            "equivalentRpe": "(Equivalente a RPE {{rpe}})",
+            "estimatedTitle": "Massimale (1-Rep) Stimato",
+            "emptyState": "Inserisci peso, ripetizioni e seleziona un livello di sforzo. Non tutte le combinazioni sono valide."
+        },
+        "powerlifting": {
+            "title": "Punteggi Powerlifting",
+            "bodyweight": "Peso Corporeo",
+            "bodyweightPlaceholder": "es., 80",
+            "total": "Totale (S+B+D)",
+            "totalPlaceholder": "es., 500",
+            "event": "Evento",
+            "raw": "Classic / Raw",
+            "equipped": "Attrezzato",
+            "category": "Categoria",
+            "fullMeet": "Gara Completa",
+            "benchOnly": "Solo Panca",
+            "gender": "Sesso",
+            "male": "Uomo",
+            "female": "Donna",
+            "calculatedScores": "Punteggi Calcolati",
+            "wilks1": "Wilks (Originale):",
+            "wilks2": "Wilks 2 (2019):",
+            "dots": "Punteggio DOTS:",
+            "glPoints": "Punti Goodlift:",
+            "qPoints": "Punti Q:",
+            "sinclair": "Totale Sinclair:",
+            "emptyState": "Inserisci un peso corporeo e un totale validi."
+        },
+        "toasts": {
+            "maxWeightReached": "Il peso supera i dischi disponibili. Impostato al massimo: {{weight}} {{unit}}",
+            "maxWeightTitle": "Peso Massimo Raggiunto",
+            "premiumFeature": "Per usare l'attrezzatura dalla tua Palestra Personale, passa a Premium.",
+            "noBarbells": "Nessun bilanciere da {{unit}} trovato nella tua Palestra Personale.",
+            "equipmentMissing": "Attrezzatura Mancante",
+            "noPlates": "Nessun disco trovato nella tua palestra per questa unità di misura.",
+            "headsUp": "Attenzione"
+        },
+        "tooltips": {
+            "wilks1": "Il coefficiente Wilks originale confronta i powerlifter di diverse categorie di peso per determinare il miglior sollevatore pound-for-pound.",
+            "wilks2": "Un successore della formula originale, che utilizza coefficienti aggiornati da dati di sollevamento più moderni.",
+            "dots": "DOTS (Dynamic Objective Totaling System) è un sistema di punteggio popolare ora utilizzato da molte federazioni, come la USA Powerlifting (USAPL).",
+            "glPoints": "Il sistema di punteggio ufficiale dell'IPF. È molto robusto, tenendo conto di eventi raw vs. attrezzati e gare complete vs. solo panca.",
+            "qPoints": "Una formula per il rapporto forza-peso sviluppata e utilizzata dalla federazione GPC (Global Powerlifting Committee).",
+            "sinclair": "Utilizzato principalmente nel Sollevamento Pesi Olimpico per confrontare gli atleti nello Strappo e nello Slancio. Incluso qui per confronto."
+        }
+    },
+
+  "barbellData": {
+    "barbells": {
+      "mensOlympic": "Bilanciere Olimpico Maschile",
+      "womensOlympic": "Bilanciere Olimpico Femminile",
+      "standardGym": "Bilanciere Standard da Palestra",
+      "ezCurl": "Bilanciere EZ (o Sagomato)",
+      "tricep": "Bilanciere per Tricipiti (Hammer)",
+      "trapHex": "Trap Bar / Quadra Bar",
+      "olympic120": "Bilanciere Olimpico 120cm",
+      "olympic152": "Bilanciere Olimpico 152cm",
+      "olympic182": "Bilanciere Olimpico 182cm",
+      "olympic186": "Bilanciere Olimpico 186cm",
+      "olympic219": "Bilanciere Olimpico 219cm",
+      "olympic47in": "Bilanciere Olimpico 47.24in",
+      "olympic60in": "Bilanciere Olimpico 59.84in",
+      "olympic72in": "Bilanciere Olimpico 71.65in",
+      "olympic73in": "Bilanciere Olimpico 73.23in",
+      "olympic86in": "Bilanciere Olimpico 86.22in"
+    },
+    "collars": {
+      "none": "Senza Collari",
+      "spring": "Molle",
+      "lockjaw": "Collari a Bloccaggio / Professionali",
+      "competition": "Collari da Competizione"
     }
+  },
+
+  "logActivity": {
+    "logTitle": "Registra un'Attività",
+    "editTitle": "Modifica Registro Attività",
+    "logSubtitle": "Registra qualsiasi attività fisica che hai svolto.",
+    "editSubtitle": "Aggiorna i dettagli della tua attività registrata.",
+    "activityLabel": "Attività",
+    "selectActivity": "-- Seleziona un'Attività --",
+    "activityRequired": "Seleziona un'attività.",
+    "dateLabel": "Data",
+    "dateRequired": "È richiesta una data valida.",
+    "startTimeLabel": "Orario di Inizio",
+    "startTimeRequired": "È richiesto un orario di inizio.",
+    "endTimeLabel": "Orario di Fine",
+    "endTimeRequired": "È richiesto un orario di fine.",
+    "timeInvalid": "L'orario di fine deve essere successivo a quello di inizio.",
+    "intensityLabel": "Intensità Percepita",
+    "intensityOptions": {
+      "low": "Bassa",
+      "medium": "Media",
+      "high": "Alta"
+    },
+    "locationLabel": "Luogo (opzionale)",
+    "locationPlaceholder": "es., Via Roma",
+    "distanceLabel": "Distanza (km)",
+    "distancePlaceholder": "es., 5.5",
+    "caloriesLabel": "Calorie Bruciate (opzionale)",
+    "caloriesPlaceholder": "es., 350",
+    "notesLabel": "Note",
+    "notesPlaceholder": "Qualsiasi dettaglio sulla tua attività...",
+    "logButton": "REGISTRA ATTIVITÀ",
+    "updateButton": "AGGIORNA REGISTRO",
+    "toasts": {
+      "editError": "Impossibile trovare il registro dell'attività da modificare.",
+      "invalidForm": "Compila tutti i campi obbligatori e assicurati che gli orari siano validi.",
+      "invalidFormTitle": "Modulo non Valido"
+    }
+  },
+
+  "activityLogDetails": {
+    "duration": "Durata",
+    "intensity": "Intensità",
+    "location": "Luogo",
+    "distance": "Distanza",
+    "calories": "Calorie",
+    "notes": "Note",
+    "loading": "Caricamento dettagli attività...",
+    "actions": {
+      "edit": "MODIFICA",
+      "delete": "ELIMINA"
+    },
+    "alerts": {
+      "deleteTitle": "Eliminare Registro Attività?",
+      "deleteMessage": "Sei sicuro di voler eliminare questa registrazione per \"{{name}}\"? L'azione non può essere annullata.",
+      "cancel": "Annulla",
+      "deleteButton": "Elimina"
+    }
+  },
+
+  "pbTrend": {
+    "title": "{{exercise}} - {{pbType}}",
+    "defaultTitle": "Andamento Record",
+    "loading": "Caricamento dati andamento...",
+    "error": {
+      "missingParams": "ID Esercizio o Tipo di Record mancante nell'URL.",
+      "invalidPbType": "Tipo di Record non valido nell'URL.",
+      "fetchFailed": "Impossibile caricare i dati per il grafico dell'andamento.",
+      "noData": "Nessun dato di Record Personale trovato per \"{{exercise}}\" di tipo \"{{pbType}}\"",
+      "notEnoughData": "Dati insufficienti per tracciare un andamento. Sono necessarie almeno due registrazioni."
+    },
+    "backButton": "Torna ai Record Personali",
+    "chart": {
+      "xAxisLabel": "Data",
+      "tooltip": {
+        "value": "Valore: {{value}} {{unit}}",
+        "reps": "Rip: {{reps}}",
+        "notes": "Note: {{notes}}",
+        "viewLog": "Clicca per vedere il log"
+      },
+      "averageLine": "Media: {{value}}"
+    },
+    "history": {
+      "title": "Cronologia Record Personali",
+      "dateHeader": "Data",
+      "repsHeader": "Rip",
+      "logHeader": "Log",
+      "viewLog": "LOG"
+    },
+    "yAxis": {
+      "weight": "Peso ({{unit}})",
+      "reps": "Ripetizioni",
+      "duration": "Durata (secondi)",
+      "value": "Valore"
+    }
+  }
+
 }
