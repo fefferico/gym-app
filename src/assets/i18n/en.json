@@ -1,0 +1,260 @@
+{
+  "GENERATE_WORKOUT_TITLE": "Generate Workout",
+  "GOAL": "Goal",
+  "DURATION": "Duration",
+  "HYPERTROPHY_GOAL": "Hypertrophy (Size)",
+  "STRENGTH_GOAL": "Strength",
+  "ENDURANCE_GOAL": "Endurance",
+  "GENERATE_CUSTOM_WORKOUT": "Generate Custom Workout",
+  "SURPRISE_ME": "Surprise Me!",
+
+  "home": {
+    "welcomeBack": "Welcome Back, {{name}}!",
+    "readyMessage": "Ready to crush your goals today?",
+    "quickActionsTitle": "Quick Actions",
+    "appVersion": "AppVersion:"
+  },
+  "user": {
+    "defaultName": "Fitness Enthusiast"
+  },
+  "pausedWorkout": {
+    "inProgress": "You have a workout in progress!",
+    "routineLabel": "Routine:",
+    "programLabel": "Program:",
+    "loggedOn": "Logged on the:",
+    "pausedAt": "Paused at:",
+    "defaultRoutineName": "New session",
+    "fallbackRoutineName": "your workout",
+    "adHocWorkout": "Ad-hoc Workout",
+    "resumeButton": "RESUME WORKOUT",
+    "detailsButton": "DETAILS",
+    "discardButton": "DISCARD",
+    "discardPromptTitle": "Discard Paused Workout?",
+    "discardPromptMessage": "Are you sure you want to discard this paused workout session? This action cannot be undone.",
+    "summaryTitle": "Paused: {{routineName}}",
+    "summaryMessage": "You have executed {{exercisesDone}} of {{exercisesAvailable}} exercises, with {{setsDone}} set(s) logged{{targetSetsInfo}}. Elapsed time: {{timeElapsed}}. Resume the workout to continue it.",
+    "noPausedWorkoutFound": "No paused workout found to resume",
+    "sessionDiscarded": "Paused workout session discarded."
+  },
+  "quickActions": {
+    "startNewSessionTitle": "Start a new session",
+    "startNewSessionDescription": "Start a brand new session and refine it as you do it",
+    "logActivityTitle": "Log an Activity",
+    "logActivityDescription": "Record other activities like hiking, football, or yoga",
+    "myRoutinesTitle": "My Routines",
+    "myRoutinesDescription": "View, create, or edit your workout routines",
+    "trainingProgramsTitle": "Training Programs",
+    "trainingProgramsDescription": "Manage your long-term training schedules",
+    "workoutHistoryTitle": "Workout History",
+    "workoutHistoryDescription": "Review your past workout logs and progress",
+    "profileAndSettingsTitle": "Profile & Settings",
+    "profileAndSettingsDescription": "Manage your data and app preferences",
+    "personalGymTitle": "Personal Gym",
+    "personalGymDescription": "Manage your available workout equipment and accessories",
+    "weightToolkitTitle": "Weight toolkit",
+    "weightToolkitDescription": "An all-in-one lifting toolkit. Instantly calculate plate math, percentages, 1RM, RPE, and official powerlifting scores"
+  },
+  "common": {
+    "cancel": "Cancel",
+    "discard": "Discard",
+    "premium": "PREMIUM"
+  },
+
+
+
+  "settings": {
+    "title": "Profile & Settings",
+    "subscription": {
+      "title": "Subscription Status",
+      "premiumMember": "Premium Member",
+      "freeTier": "Free Tier",
+      "allFeaturesUnlocked": "All features unlocked!",
+      "upgradeMessage": "Upgrade to unlock all features.",
+      "manageButton": "Manage",
+      "upgradeButton": "Upgrade"
+    },
+    "userProfile": {
+      "title": "User Profile",
+      "usernameLabel": "Username",
+      "usernamePlaceholder": "Your display name",
+      "genderLabel": "Gender",
+      "genderPlaceholder": "Select Gender...",
+      "ageLabel": "Age",
+      "agePlaceholder": "Years",
+      "genders": {
+        "male": "Male",
+        "female": "Female",
+        "other": "Other",
+        "preferNotToSay": "Prefer not to say"
+      }
+    },
+    "measurements": {
+      "title": "Measurements",
+      "heightLabel": "Height ({{unit}})",
+      "weightLabel": "Weight ({{unit}})",
+      "chestLabel": "Chest ({{unit}})",
+      "neckLabel": "Neck ({{unit}})",
+      "waistLabel": "Waist ({{unit}})",
+      "hipsLabel": "Hips ({{unit}})",
+      "rightArmLabel": "Right Arm ({{unit}})",
+      "saveButton": "SAVE MEASUREMENTS",
+      "historyButton": "MEASUREMENTS HISTORY"
+    },
+    "goals": {
+      "title": "Measurement Goals",
+      "targetWeightLabel": "Target Weight ({{unit}})",
+      "targetWaistLabel": "Target Waist ({{unit}})"
+    },
+    "player": {
+      "title": "Workout Player Settings",
+      "playerModeLabel": "Player Mode",
+      "playerModeDescription": "Choose between Compact and Focus player",
+      "playerModeFocus": "Focus",
+      "playerModeCompact": "Compact",
+      "weightIncrementLabel": "Weight Increment Step",
+      "weightIncrementDescription": "Default step for +/- weight buttons in player (in {{unit}})",
+      "weightIncrementError": "Must be a positive number (e.g., 2.5 or 5). Max 50.",
+      "countdownSoundLabel": "Timed Set Countdown Sound",
+      "countdownSoundDescription": "Play sound X seconds before a timed set ends",
+      "countdownSoundSecondsLabel": "Countdown From (seconds)",
+      "countdownSoundError": "Must be 1-20s."
+    },
+    "progressiveOverload": {
+      "title": "Progressive Overload",
+      "enableLabel": "Enable Automatic Progression",
+      "enableDescription": "Automatically increase weight or reps based on performance.",
+      "strategyLabel": "Progression Strategy",
+      "strategyDescription": "Choose what to increase when you meet your goals.",
+      "strategyError": "Please select at least one strategy.",
+      "weightIncrementLabel": "Weight Increment ({{unit}})",
+      "weightIncrementPlaceholder": "e.g., 2.5",
+      "weightIncrementError": "Must be a positive number.",
+      "repsIncrementLabel": "Repetitions Increment",
+      "repsIncrementPlaceholder": "e.g., 1",
+      "repsIncrementError": "Must be a whole number (e.g., 1, 2).",
+      "distanceIncrementLabel": "Distance Increment ({{unit}})",
+      "distanceIncrementPlaceholder": "e.g., 0.25",
+      "distanceIncrementError": "Must be a positive number.",
+      "durationIncrementLabel": "Duration Increment (seconds)",
+      "durationIncrementPlaceholder": "e.g., 5",
+      "durationIncrementError": "Must be a whole number (e.g., 5, 10).",
+      "sessionsToIncrementLabel": "Apply After # Successful Sessions",
+      "sessionsToIncrementDescription": "Increase after completing this many workouts for an exercise successfully.",
+      "sessionsToIncrementError": "Must be at least 1 session.",
+      "strategies": {
+        "increaseWeight": "Increase Weight",
+        "increaseReps": "Increase Reps",
+        "increaseDistance": "Increase Distance",
+        "increaseDuration": "Increase Duration"
+      }
+    },
+    "dataManagement": {
+      "title": "Data Management",
+      "exportTitle": "Backup your data",
+      "exportDescription": "Save all your data to a JSON file.",
+      "exportButton": "EXPORT DATA",
+      "importTitle": "Restore your data",
+      "importDescription": "Import from a JSON backup file.",
+      "syncTitle": "Data and History",
+      "syncDescription": "Recalculate stats and achievements.",
+      "syncButton": "SYNC HISTORY",
+      "resetTitle": "Reset All Data",
+      "resetDescription": "This action cannot be undone.",
+      "resetButton": "CLEAR ALL DATA",
+      "syncTooltip": "This will scan all workout logs to update the \"Last Used\" date for every exercise in your library. Run this if the dates seem out of sync after an import or an update."
+    },
+    "personalGym": {
+      "title": "Personal Gym",
+      "description": "View your own equipment",
+      "button": "PERSONAL GYM"
+    },
+    "exerciseLibrary": {
+      "title": "Exercise library",
+      "description": "View all the available exercise and add your own ones",
+      "button": "EXERCISES"
+    },
+    "achievements": {
+      "title": "Your Achievements",
+      "description": "View all your tracked Personal Bests",
+      "button": "VIEW PBs"
+    },
+    "general": {
+      "title": "General & Appearance",
+      "language": "Language",
+      "languageDescription": "Choose the display language for the app.",
+      "weightUnits": "Weight Units",
+      "measureUnits": "Measure Units",
+      "distanceUnits": "Distance Units",
+      "bodyWeightUnits": "Body Weight",
+      "bodyMeasureUnits": "Body Measure",
+      "darkMode": "Dark Mode",
+      "wipMessage": "WIP Message",
+      "menuMode": "Menu Mode",
+      "menuModes": {
+        "dropdown": "Dropdown",
+        "compact": "Compact",
+        "modal": "Modal"
+      }
+    },
+    "languageSelector": {
+      "english": "English",
+      "spanish": "Spanish",
+      "italian": "Italian",
+      "french": "French"
+    }
+  },
+  "common": {
+    "on": "On",
+    "off": "Off",
+    "premium": "PREMIUM",
+    "error": "Error",
+    "warning": "WARNING",
+    "info": "Info",
+    "cancel": "Cancel",
+    "cancelled": "Cancelled"
+  },
+  "toasts": {
+    "statusUpdated": "Status Updated",
+    "thankYou": "Thank You!",
+    "upgradeSuccess": "You are now on the {{status}} tier!",
+    "upgradeGratitude": "Thank you for supporting the app! All premium features are now unlocked.",
+    "measurementsSaved": "Measurements history updated",
+    "profileSaved": "Profile auto-saved",
+    "goalsSaved": "Goals auto-saved",
+    "appSettingsSaved": "App settings auto-saved",
+    "progressiveOverloadSaved": "Progressive Overload settings auto-saved",
+    "exportInitiated": "Data export initiated",
+    "importSuccess": "Data imported successfully!",
+    "importComplete": "Import Complete",
+    "importCancelled": "Data import cancelled",
+    "languageSet": "Language set to {{language}}",
+    "routinesDisabledOnImport": "Import detected {{count}} enabled routines. Free users can only have 4 enabled routines. All imported routines have been disabled. You can enable them after upgrading to Premium.",
+    "routinesDisabledTitle": "Routines Disabled"
+  },
+  "alerts": {
+    "playerModeChangeDisabledTitle": "Action Disabled",
+    "playerModeChangeDisabledMessage": "It's not possible to change the player mode during a workout session. Please complete or discard your current workout first.",
+    "invalidFields": "Please fill in all required fields correctly: at least age, height and weight should be filled.",
+    "invalidFileType": "Invalid file type. Please select a JSON file.",
+    "invalidBackupFormat": "Invalid backup file format. Expected an object.",
+    "backupVersionTooNew": "Backup version {{version}} is newer than the app's supported version {{appVersion}}. Please update the app.",
+    "importWarning": "Importing data will try to MERGE your current data with the IMPORTED one. Are you sure?",
+    "errorProcessingFile": "Error processing backup file. Ensure it is valid JSON.",
+    "errorReadingFile": "Error reading file.",
+    "clearAllDataWarningTitle": "WARNING",
+    "clearAllDataWarningMessage": "This will delete ALL your workout data, profile, and settings. This cannot be undone. Are you sure?",
+    "clearAllDataConfirmationTitle": "Confirm Data Deletion",
+    "clearAllDataConfirmationMessage": "To confirm, please type \"DELETE\" in the input below. This will delete ALL your workout data, profile, and settings. This cannot be undone.",
+    "clearAllDataConfirmationPlaceholder": "Type DELETE to confirm",
+    "clearAllDataButton": "CLEAR ALL DATA",
+    "clearAllDataCancelledMessage": "Data clearing cancelled. No changes made.",
+    "clearAllDataSuccessMessage": "All application data has been cleared",
+    "syncHistoryTitle": "Sync Exercise History",
+    "syncFullHistoryTitle": "Sync Full History",
+    "syncFullHistoryMessage": "This will scan all workout logs to update the \"Last Used\" date for all exercises AND the \"Last Performed\" date for all routines. This may take a moment. Proceed?"
+  },
+  "spinners": {
+    "exporting": "Exporting data...",
+    "importing": "Importing data..."
+  }
+}

@@ -1,7 +1,7 @@
 // src/app/app.config.ts
-import { ApplicationConfig, importProvidersFrom, provideZoneChangeDetection } from '@angular/core'; // Ensure provideZoneChangeDetection is imported
+import { ApplicationConfig, importProvidersFrom, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
-import { provideHttpClient, withFetch } from '@angular/common/http';
+import { provideHttpClient, withFetch, HttpClient } from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { DBConfig, NgxIndexedDBModule } from 'ngx-indexed-db';
 
@@ -9,6 +9,21 @@ import { APP_ROUTES } from './app.routes';
 
 import { HAMMER_GESTURE_CONFIG, HammerGestureConfig, HammerModule } from '@angular/platform-browser';
 import * as Hammer from 'hammerjs';
+
+// ngx-translate imports
+import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
+import { TranslateHttpLoader } from '@ngx-translate/http-loader';
+
+// =========================================================================================
+//  ** THIS IS THE CORRECT PLACEMENT FOR THE LOADER FUNCTION **
+//  It must be an exported function at the top level of this file.
+// =========================================================================================
+export function createTranslateLoader(http: HttpClient) {
+    return new TranslateHttpLoader(http, './assets/i18n/', '.json');
+}
+// =========================================================================================
+
+
 
 export class CustomHammerConfig extends HammerGestureConfig {
   override overrides = {
@@ -33,20 +48,25 @@ const dbConfig: DBConfig = {
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    // This explicitly configures Angular to use Zone.js for change detection.
-    // The `{ eventCoalescing: true }` is a performance optimization.
     provideZoneChangeDetection({ eventCoalescing: true }),
-
     provideRouter(APP_ROUTES, withComponentInputBinding()),
     provideAnimations(),
     provideHttpClient(withFetch()),
-    importProvidersFrom(HammerModule), // <-- ADD THIS
-    // --- START: ADD THE PROVIDER FOR THE CONFIG ---
+    importProvidersFrom(HammerModule),
     {
       provide: HAMMER_GESTURE_CONFIG,
       useClass: CustomHammerConfig
     },
-    // ThemeService is providedIn: 'root', so it's available.
-    importProvidersFrom(NgxIndexedDBModule.forRoot(dbConfig))
+    importProvidersFrom(NgxIndexedDBModule.forRoot(dbConfig)),
+    // ngx-translate configuration
+    importProvidersFrom(
+      TranslateModule.forRoot({
+        loader: {
+          provide: TranslateLoader,
+          useFactory: createTranslateLoader,
+          deps: [HttpClient]
+        }
+      })
+    )
   ]
 };

@@ -14,12 +14,13 @@ import { Subscription } from 'rxjs';
 import { PausedWorkoutState, WorkoutExercise } from '../../../core/models/workout.model';
 import { SubscriptionService } from '../../../core/services/subscription.service';
 import { BarbellCalculatorModalComponent } from '../../../shared/components/barbell-calculator-modal/barbell-calculator-modal.component';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, TodaysWorkoutComponent, IconComponent, BarbellCalculatorModalComponent], // Added DatePipe
+  imports: [CommonModule, TodaysWorkoutComponent, IconComponent, BarbellCalculatorModalComponent, TranslateModule], // Added DatePipe
   templateUrl: './home.html',
   styleUrls: ['./home.scss']
 })
@@ -32,8 +33,9 @@ export class HomeComponent implements OnInit, OnDestroy {
   private workoutService = inject(WorkoutService); // For fetching routine name if only ID is in paused state
   private userProfileService = inject(UserProfileService); // Inject UserProfileService
   protected subscriptionService = inject(SubscriptionService);
+  private translate = inject(TranslateService);
 
-  userName = computed(() => this.userProfileService.username() || 'Fitness Enthusiast');
+  userName = computed(() => this.userProfileService.username() || this.translate.instant('user.defaultName'));
 
 
   // Signal to hold information about a paused/active workout
@@ -129,7 +131,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       if (isPlatformBrowser(this.platformId)) {
         this.workoutService.removePausedWorkout();
         // The subscription above will now handle setting pausedWorkoutInfo.set(null);
-        this.toastService.info('Paused workout session discarded.', 3000);
+        this.toastService.info(this.translate.instant('pausedWorkout.sessionDiscarded'), 3000);
       }
     }
   }

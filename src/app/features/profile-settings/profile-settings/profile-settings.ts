@@ -32,11 +32,13 @@ import { AppSettingsService } from '../../../core/services/app-settings.service'
 import { DataConversionService } from '../../../core/services/data-conversion.service';
 import { SubscriptionService, PremiumFeature } from '../../../core/services/subscription.service';
 import { ActivityService } from '../../../core/services/activity.service';
+import { LanguageService } from '../../../core/services/language.service';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-profile-settings',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, PressDirective, IconComponent, TooltipDirective],
+  imports: [CommonModule, ReactiveFormsModule, PressDirective, IconComponent, TooltipDirective, TranslateModule],
   templateUrl: './profile-settings.html',
   styleUrl: './profile-settings.scss',
 })
@@ -63,7 +65,15 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
   // +++ NEW: Inject the conversion service
   private dataConversionService = inject(DataConversionService);
   protected subscriptionService = inject(SubscriptionService);
+  protected languageService = inject(LanguageService);
   private cdr = inject(ChangeDetectorRef); // <-- Inject ChangeDetectorRef
+
+  languageDisplayNames: { [key: string]: string } = {
+    en: 'English',
+    es: 'Spanish',
+    it: 'Italian',
+    fr: 'French'
+  };
 
   private subscriptions = new Subscription();
 
@@ -800,4 +810,18 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
     return this.strategiesFormArray.value.includes(strategy);
   }
   public ProgressiveOverloadStrategy = ProgressiveOverloadStrategy;
+
+  /**
+   * Sets the application language when the user selects a new one from the dropdown.
+   * @param event The change event from the select element.
+   */
+  onLanguageChange(event: Event): void {
+    const selectElement = event.target as HTMLSelectElement;
+    const lang = selectElement.value;
+    if (lang) {
+      this.workoutService.vibrate();
+      this.languageService.setLanguage(lang);
+      this.toastService.success(`Language set to ${this.languageDisplayNames[lang] || lang}`, 2000);
+    }
+  }
 }

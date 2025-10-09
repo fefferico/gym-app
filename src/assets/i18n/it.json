@@ -1,0 +1,252 @@
+{
+  "GENERATE_WORKOUT_TITLE": "Genera Allenamento",
+  "GOAL": "Obiettivo",
+  "DURATION": "Durata",
+  "HYPERTROPHY_GOAL": "Ipertrofia (Massa)",
+  "STRENGTH_GOAL": "Forza",
+  "ENDURANCE_GOAL": "Resistenza",
+  "GENERATE_CUSTOM_WORKOUT": "Genera Allenamento Personalizzato",
+  "SURPRISE_ME": "Sorprendimi!",
+  "home": {
+    "welcomeBack": "Bentornato, {{name}}!",
+    "readyMessage": "Pronto a superare i tuoi obiettivi oggi?",
+    "quickActionsTitle": "Azioni Rapide",
+    "appVersion": "Versione App:"
+  },
+  "user": {
+    "defaultName": "Appassionato di Fitness"
+  },
+  "pausedWorkout": {
+    "inProgress": "Hai un allenamento in corso!",
+    "routineLabel": "Routine:",
+    "programLabel": "Programma:",
+    "loggedOn": "Registrato il:",
+    "pausedAt": "In pausa dal:",
+    "defaultRoutineName": "Nuova sessione",
+    "fallbackRoutineName": "il tuo allenamento",
+    "adHocWorkout": "Allenamento Estemporaneo",
+    "resumeButton": "RIPRENDI ALLENAMENTO",
+    "detailsButton": "DETTAGLI",
+    "discardButton": "SCARTA",
+    "discardPromptTitle": "Scartare l'Allenamento in Pausa?",
+    "discardPromptMessage": "Sei sicuro di voler scartare questa sessione di allenamento in pausa? L'azione non può essere annullata.",
+    "summaryTitle": "In Pausa: {{routineName}}",
+    "summaryMessage": "Hai eseguito {{exercisesDone}} esercizi su {{exercisesAvailable}}, con {{setsDone}} serie registrate{{targetSetsInfo}}. Tempo trascorso: {{timeElapsed}}. Riprendi l'allenamento per continuare.",
+    "noPausedWorkoutFound": "Nessun allenamento in pausa trovato da riprendere",
+    "sessionDiscarded": "Sessione di allenamento in pausa scartata."
+  },
+  "quickActions": {
+    "startNewSessionTitle": "Inizia una nuova sessione",
+    "startNewSessionDescription": "Inizia una sessione da zero e definiscila mentre ti alleni",
+    "logActivityTitle": "Registra un'Attività",
+    "logActivityDescription": "Registra altre attività come trekking, calcio o yoga",
+    "myRoutinesTitle": "Le Mie Routine",
+    "myRoutinesDescription": "Visualizza, crea o modifica le tue routine di allenamento",
+    "trainingProgramsTitle": "Programmi di Allenamento",
+    "trainingProgramsDescription": "Gestisci le tue schede di allenamento a lungo termine",
+    "workoutHistoryTitle": "Cronologia Allenamenti",
+    "workoutHistoryDescription": "Rivedi i tuoi allenamenti passati e i tuoi progressi",
+    "profileAndSettingsTitle": "Profilo e Impostazioni",
+    "profileAndSettingsDescription": "Gestisci i tuoi dati e le preferenze dell'app",
+    "personalGymTitle": "La Mia Attrezzatura",
+    "personalGymDescription": "Gestisci gli attrezzi e gli accessori disponibili per i tuoi allenamenti",
+    "weightToolkitTitle": "Toolkit Pesi",
+    "weightToolkitDescription": "Un toolkit completo per il sollevamento. Calcola dischi, percentuali, 1RM, RPE e punteggi ufficiali."
+  },
+  "settings": {
+    "title": "Profilo & Impostazioni",
+    "subscription": {
+      "title": "Stato Abbonamento",
+      "premiumMember": "Membro Premium",
+      "freeTier": "Versione Gratuita",
+      "allFeaturesUnlocked": "Tutte le funzionalità sbloccate!",
+      "upgradeMessage": "Passa a Premium per sbloccare tutte le funzionalità.",
+      "manageButton": "Gestisci",
+      "upgradeButton": "AGGIORNA"
+    },
+    "userProfile": {
+      "title": "Profilo Utente",
+      "usernameLabel": "Nome Utente",
+      "usernamePlaceholder": "Il tuo nome visualizzato",
+      "genderLabel": "Sesso",
+      "genderPlaceholder": "Seleziona sesso...",
+      "ageLabel": "Età",
+      "agePlaceholder": "Anni",
+      "genders": {
+        "male": "Uomo",
+        "female": "Donna",
+        "other": "Altro",
+        "preferNotToSay": "Preferisco non specificare"
+      }
+    },
+    "measurements": {
+      "title": "Misure",
+      "heightLabel": "Altezza ({{unit}})",
+      "weightLabel": "Peso ({{unit}})",
+      "chestLabel": "Petto ({{unit}})",
+      "neckLabel": "Collo ({{unit}})",
+      "waistLabel": "Vita ({{unit}})",
+      "hipsLabel": "Fianchi ({{unit}})",
+      "rightArmLabel": "Braccio Dx ({{unit}})",
+      "saveButton": "SALVA MISURE",
+      "historyButton": "CRONOLOGIA MISURE"
+    },
+    "goals": {
+      "title": "Obiettivi Misure",
+      "targetWeightLabel": "Peso Target ({{unit}})",
+      "targetWaistLabel": "Vita Target ({{unit}})"
+    },
+    "player": {
+      "title": "Impostazioni Player Allenamento",
+      "playerModeLabel": "Modalità Player",
+      "playerModeDescription": "Scegli tra la modalità Compatta e Focus",
+      "playerModeFocus": "Focus",
+      "playerModeCompact": "Compatta",
+      "weightIncrementLabel": "Incremento Peso",
+      "weightIncrementDescription": "Passo predefinito per i pulsanti +/- del peso nel player (in {{unit}})",
+      "weightIncrementError": "Deve essere un numero positivo (es. 2.5 o 5). Max 50.",
+      "countdownSoundLabel": "Suono Conto alla Rovescia",
+      "countdownSoundDescription": "Riproduci un suono X secondi prima della fine di una serie a tempo",
+      "countdownSoundSecondsLabel": "Inizia da (secondi)",
+      "countdownSoundError": "Deve essere tra 1-20s."
+    },
+    "progressiveOverload": {
+      "title": "Sovraccarico Progressivo",
+      "enableLabel": "Abilita Progressione Automatica",
+      "enableDescription": "Aumenta automaticamente peso o ripetizioni in base alla performance.",
+      "strategyLabel": "Strategia di Progressione",
+      "strategyDescription": "Scegli cosa aumentare quando raggiungi i tuoi obiettivi.",
+      "strategyError": "Seleziona almeno una strategia.",
+      "weightIncrementLabel": "Incremento Peso ({{unit}})",
+      "weightIncrementPlaceholder": "es. 2.5",
+      "weightIncrementError": "Deve essere un numero positivo.",
+      "repsIncrementLabel": "Incremento Ripetizioni",
+      "repsIncrementPlaceholder": "es. 1",
+      "repsIncrementError": "Deve essere un numero intero (es. 1, 2).",
+      "distanceIncrementLabel": "Incremento Distanza ({{unit}})",
+      "distanceIncrementPlaceholder": "es. 0.25",
+      "distanceIncrementError": "Deve essere un numero positivo.",
+      "durationIncrementLabel": "Incremento Durata (secondi)",
+      "durationIncrementPlaceholder": "es. 5",
+      "durationIncrementError": "Deve essere un numero intero (es. 5, 10).",
+      "sessionsToIncrementLabel": "Applica dopo # sessioni completate",
+      "sessionsToIncrementDescription": "Aumenta dopo aver completato con successo questo numero di allenamenti per un esercizio.",
+      "sessionsToIncrementError": "Deve essere almeno 1 sessione.",
+      "strategies": {
+        "increaseWeight": "Aumenta Peso",
+        "increaseReps": "Aumenta Ripetizioni",
+        "increaseDistance": "Aumenta Distanza",
+        "increaseDuration": "Aumenta Durata"
+      }
+    },
+    "dataManagement": {
+      "title": "Gestione Dati",
+      "exportTitle": "Backup dei tuoi dati",
+      "exportDescription": "Salva tutti i tuoi dati in un file JSON.",
+      "exportButton": "ESPORTA DATI",
+      "importTitle": "Ripristino dei tuoi dati",
+      "importDescription": "Importa da un file di backup JSON.",
+      "syncTitle": "Dati e Cronologia",
+      "syncDescription": "Ricalcola statistiche e record.",
+      "syncButton": "SINCRONIZZA CRONOLOGIA",
+      "resetTitle": "Azzera Tutti i Dati",
+      "resetDescription": "Questa azione non può essere annullata.",
+      "resetButton": "CANCELLA TUTTI I DATI",
+      "syncTooltip": "Questa operazione analizzerà tutti gli allenamenti per aggiornare la data di \"Ultimo Utilizzo\" di ogni esercizio. Eseguila se le date non sembrano sincronizzate dopo un'importazione."
+    },
+    "personalGym": {
+      "title": "La Mia Attrezzatura",
+      "description": "Visualizza la tua attrezzatura",
+      "button": "LA MIA ATTREZZATURA"
+    },
+    "exerciseLibrary": {
+      "title": "Libreria Esercizi",
+      "description": "Visualizza tutti gli esercizi disponibili e aggiungi i tuoi",
+      "button": "ESERCIZI"
+    },
+    "achievements": {
+      "title": "I Tuoi Record",
+      "description": "Visualizza tutti i tuoi record personali (PB)",
+      "button": "VEDI I PB"
+    },
+    "general": {
+      "title": "Generali e Aspetto",
+      "language": "Lingua",
+      "languageDescription": "Scegli la lingua di visualizzazione dell'app.",
+      "weightUnits": "Unità di Peso",
+      "measureUnits": "Unità di Misura",
+      "distanceUnits": "Unità di Distanza",
+      "bodyWeightUnits": "Peso Corporeo",
+      "bodyMeasureUnits": "Misure Corporee",
+      "darkMode": "Modalità Scura",
+      "wipMessage": "Messaggio WIP",
+      "menuMode": "Modalità Menu",
+      "menuModes": {
+        "dropdown": "Dropdown",
+        "compact": "Compatto",
+        "modal": "Modale"
+      }
+    },
+    "languageSelector": {
+      "english": "Inglese",
+      "spanish": "Spagnolo",
+      "italian": "Italiano",
+      "french": "Francese"
+    }
+  },
+  "common": {
+    "on": "On",
+    "off": "Off",
+    "premium": "PREMIUM",
+    "error": "Errore",
+    "warning": "ATTENZIONE",
+    "info": "Info",
+    "cancel": "Annulla",
+    "cancelled": "Annullato",
+    "discard": "Scarta"
+  },
+  "toasts": {
+    "statusUpdated": "Stato Aggiornato",
+    "thankYou": "Grazie!",
+    "upgradeSuccess": "Ora sei un utente {{status}}!",
+    "upgradeGratitude": "Grazie per supportare l'app! Tutte le funzionalità premium sono ora sbloccate.",
+    "measurementsSaved": "Cronologia misure aggiornata",
+    "profileSaved": "Profilo salvato automaticamente",
+    "goalsSaved": "Obiettivi salvati automaticamente",
+    "appSettingsSaved": "Impostazioni app salvate automaticamente",
+    "progressiveOverloadSaved": "Impostazioni di Sovraccarico Progressivo salvate",
+    "exportInitiated": "Esportazione dati avviata",
+    "importSuccess": "Dati importati con successo!",
+    "importComplete": "Importazione Completata",
+    "importCancelled": "Importazione dati annullata",
+    "languageSet": "Lingua impostata su {{language}}",
+    "routinesDisabledOnImport": "L'importazione ha rilevato {{count}} routine abilitate. Gli utenti gratuiti possono avere solo 4 routine abilitate. Tutte le routine importate sono state disabilitate. Puoi abilitarle dopo l'aggiornamento a Premium.",
+    "routinesDisabledTitle": "Routine Disabilitate"
+  },
+  "alerts": {
+    "playerModeChangeDisabledTitle": "Azione Disabilitata",
+    "playerModeChangeDisabledMessage": "Non è possibile cambiare la modalità del player durante una sessione di allenamento. Completa o scarta prima l'allenamento in corso.",
+    "invalidFields": "Compila correttamente tutti i campi richiesti: almeno età, altezza e peso devono essere inseriti.",
+    "invalidFileType": "Tipo di file non valido. Seleziona un file JSON.",
+    "invalidBackupFormat": "Formato del file di backup non valido. Previsto un oggetto.",
+    "backupVersionTooNew": "La versione del backup {{version}} è più recente della versione supportata dall'app {{appVersion}}. Aggiorna l'applicazione.",
+    "importWarning": "L'importazione dei dati tenterà di UNIRE i dati attuali con quelli IMPORTATI. Sei sicuro di voler procedere?",
+    "errorProcessingFile": "Errore durante l'elaborazione del file di backup. Assicurati che sia un JSON valido.",
+    "errorReadingFile": "Errore durante la lettura del file.",
+    "clearAllDataWarningTitle": "ATTENZIONE",
+    "clearAllDataWarningMessage": "Questo eliminerà TUTTI i tuoi dati di allenamento, profilo e impostazioni. L'azione non può essere annullata. Sei sicuro?",
+    "clearAllDataConfirmationTitle": "Conferma Eliminazione Dati",
+    "clearAllDataConfirmationMessage": "Per confermare, digita \"DELETE\" nel campo sottostante. Questo eliminerà TUTTI i tuoi dati di allenamento, profilo e impostazioni. L'azione non può essere annullata.",
+    "clearAllDataConfirmationPlaceholder": "Scrivi DELETE per confermare",
+    "clearAllDataButton": "CANCELLA TUTTI I DATI",
+    "clearAllDataCancelledMessage": "Cancellazione dati annullata. Nessuna modifica apportata.",
+    "clearAllDataSuccessMessage": "Tutti i dati dell'applicazione sono stati cancellati",
+    "syncHistoryTitle": "Sincronizza Cronologia Esercizi",
+    "syncFullHistoryTitle": "Sincronizzazione Completa",
+    "syncFullHistoryMessage": "Questa operazione analizzerà tutti i tuoi allenamenti per aggiornare la data di \"Ultimo Utilizzo\" per ogni esercizio E la data di \"Ultima Esecuzione\" per ogni routine. Potrebbe richiedere qualche istante. Procedere?"
+  },
+  "spinners": {
+    "exporting": "Esportazione dati in corso...",
+    "importing": "Importazione dati in corso..."
+  }
+}

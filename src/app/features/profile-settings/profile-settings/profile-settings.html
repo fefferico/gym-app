@@ -530,7 +530,8 @@
                 </div>
                 <div>
                     <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">View your own equipment</p>
-                    <button (click)="handlePremiumFeatureOrNavigate(PremiumFeature.PERSONAL_GYM, $event, ['/personal-gym'])"
+                    <button
+                        (click)="handlePremiumFeatureOrNavigate(PremiumFeature.PERSONAL_GYM, $event, ['/personal-gym'])"
                         class="px-4 py-2 bg-indigo-500 hover:bg-indigo-700 text-white font-semibold rounded-md shadow-sm transition-colors inline-flex items-center text-sm text-left">
                         <app-icon name="dumbbell" class="w-6 h-6 mr-1"></app-icon>
                         PERSONAL GYM
@@ -572,8 +573,33 @@
         <!-- START: Modified General & Appearance Section               -->
         <!-- ========================================================== -->
         <section class="bg-white dark:bg-gray-700 p-4 sm:p-6 rounded-md shadow-md">
-            <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">General & Appearance</h2>
+            <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">{{ 'settings.general.title' |
+                translate }}</h2>
             <div class="space-y-5">
+
+                <!-- ========================================================== -->
+                <!-- START: Add This New Language Selector Here                 -->
+                <!-- ========================================================== -->
+                <div class="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-600">
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            {{ 'settings.general.language' | translate }}
+                        </h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">
+                            {{ 'settings.general.languageDescription' | translate }}
+                        </p>
+                    </div>
+                    <select [value]="languageService.currentLang()" (change)="onLanguageChange($event)"
+                        class="block w-40 p-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 text-sm dark:text-gray-200">
+                        <option *ngFor="let lang of languageService.supportedLanguages" [value]="lang">
+                            {{ languageDisplayNames[lang] || lang }}
+                        </option>
+                    </select>
+                </div>
+                <!-- ========================================================== -->
+                <!-- END: New Language Selector                                 -->
+                <!-- ========================================================== -->
+
                 <!-- Units Grid -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
 
