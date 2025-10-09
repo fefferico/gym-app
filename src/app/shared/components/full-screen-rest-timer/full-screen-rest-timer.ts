@@ -5,6 +5,7 @@ import { PressDirective } from '../../directives/press.directive';
 import { trigger, style, animate, transition } from '@angular/animations';
 import { IconComponent } from '../icon/icon.component';
 import { AppSettingsService } from '../../../core/services/app-settings.service';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 
 @Injectable()
@@ -79,7 +80,7 @@ export class AudioService {
 @Component({
   selector: 'app-full-screen-rest-timer',
   standalone: true,
-  imports: [CommonModule, PressDirective, IconComponent],
+  imports: [CommonModule, PressDirective, IconComponent, TranslateModule],
   templateUrl: './full-screen-rest-timer.html',
   styleUrls: ['./full-screen-rest-timer.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -112,6 +113,7 @@ export class FullScreenRestTimerComponent implements OnChanges, OnDestroy, After
   private appSettingsService = inject(AppSettingsService);
   private audioService = inject(AudioService);
   private lastBeepSecond: number | null = null;
+    private translate = inject(TranslateService);
 
   @ViewChild('progressCircleSvg') progressCircleSvg!: ElementRef<SVGSVGElement>;
 

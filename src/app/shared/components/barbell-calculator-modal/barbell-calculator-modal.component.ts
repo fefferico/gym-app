@@ -9,6 +9,7 @@ import { IconComponent } from '../icon/icon.component';
 import { PlateSummaryComponent } from './plate-summary/plate-summary.component';
 import { PlateType } from '../../../core/models/personal-gym.model';
 import { TooltipDirective } from '../../directives/tooltip.directive';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 
 interface GymPlate {
@@ -143,7 +144,7 @@ const ALGORITHM_EXPLANATIONS: AlgorithmExplanation[] = [
 @Component({
   selector: 'app-barbell-calculator-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, IconComponent, PlateSummaryComponent, TooltipDirective],
+  imports: [CommonModule, FormsModule, IconComponent, PlateSummaryComponent, TooltipDirective, TranslateModule],
   templateUrl: './barbell-calculator-modal.component.html',
   styleUrls: ['./barbell-calculator-modal.component.scss']
 })
@@ -153,6 +154,7 @@ export class BarbellCalculatorModalComponent implements OnInit, OnDestroy {
   private personalGymService = inject(PersonalGymService);
   private subscriptionService = inject(SubscriptionService);
   private toastService = inject(ToastService);
+  private translate = inject(TranslateService);
 
 
 
@@ -250,7 +252,7 @@ export class BarbellCalculatorModalComponent implements OnInit, OnDestroy {
       const maxWeight = this.maxPossibleWeight();
       // Only adjust if maxWeight is plausible and target is higher
       if (maxWeight > 0 && currentTarget > maxWeight) {
-        this.toastService.warning(`Weight exceeds available plates. Setting to max: ${maxWeight} ${this.unit()}`, 4000, "Max Weight Reached");
+        this.toastService.warning(this.translate.instant('barbellCalculator.toasts.maxWeightReached', { weight: maxWeight, unit: this.unit() }), 4000, this.translate.instant('barbellCalculator.toasts.maxWeightTitle'));
         this.targetWeight.set(maxWeight);
         this.calculateFromTargetWeight();
       }
@@ -338,7 +340,7 @@ export class BarbellCalculatorModalComponent implements OnInit, OnDestroy {
       return 'No description available.';
     }
     // Using a newline character to separate title and description in the tooltip.
-    return `${explanation.title}\n\n${explanation.description}`;
+    return `${this.translate.instant('barbellCalculator.tooltips.' + explanation.id + 'Title')}\n\n${this.translate.instant('barbellCalculator.tooltips.' + explanation.id)}`;
   }
 
   setMode(newMode: 'calculate' | 'reverse'): void {
@@ -520,7 +522,7 @@ export class BarbellCalculatorModalComponent implements OnInit, OnDestroy {
   // +++ NEW: Method to toggle the personal gym setting
   togglePersonalGym(useGym: boolean): void {
     if (!this.isPremiumUser()) {
-      this.subscriptionService.showUpgradeModal("To use equipment from your Personal Gym, please upgrade to Premium.");
+      this.subscriptionService.showUpgradeModal(this.translate.instant('barbellCalculator.toasts.premiumFeature'));
       this.usePersonalGym.set(false);
       return;
     }
@@ -555,12 +557,12 @@ export class BarbellCalculatorModalComponent implements OnInit, OnDestroy {
         });
 
       if (sourceBarbells.length === 0) {
-        this.toastService.error(`No ${this.unit().toUpperCase()} barbells found in your Personal Gym.`, 5000, "Equipment Missing");
+        this.toastService.error(this.translate.instant('barbellCalculator.toasts.noBarbells', { unit: this.unit().toUpperCase() }), 5000, this.translate.instant('barbellCalculator.toasts.equipmentMissing'));
       } else {
         // Optional: Warn if there are no plates, but still proceed.
         const hasPlates = personalEquipment.some(eq => eq.category === 'Plate');
         if (!hasPlates) {
-          this.toastService.info('No plates found in your gym for this unit.', 3000, 'Heads Up');
+          this.toastService.info(this.translate.instant('barbellCalculator.toasts.noPlates'), 3000, this.translate.instant('barbellCalculator.toasts.headsUp'));
         }
       }
     } else {

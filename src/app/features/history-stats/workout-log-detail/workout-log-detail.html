@@ -29,8 +29,8 @@
     <div class="bg-white dark:bg-gray-700 rounded-md shadow-xl overflow-hidden">
       <div class="px-2 py-2">
         <h1 class="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-100 text-left flex-grow truncate mb-2"
-          [title]="workoutLog()?.routineName || 'Ad-hoc Workout'">
-          {{ workoutLog()?.routineName || 'Ad-hoc Workout' }}
+          [title]="workoutLog()?.routineName || ('logDetail.adHocWorkout' | translate)">
+          {{ workoutLog()?.routineName || ('logDetail.adHocWorkout' | translate) }}
         </h1>
         <h2 *ngIf="checkIfLogForProgram()" class="font-bold text-gray-800 dark:text-gray-200 mb-2">
           <span>{{getLogTitleForProgramEntry()}}</span>
@@ -40,29 +40,30 @@
           <div>
             <p class="font-bold">{{ log.startTime | date:'fullDate' }}</p>
             <p class="text-sm text-gray-600 dark:text-gray-400">
-              From {{ log.startTime | date:'shortTime' }} to {{ log.endTime | date:'shortTime' }}
+              {{ 'logDetail.from' | translate:{start: (log.startTime | date:'shortTime'), end: (log.endTime |
+              date:'shortTime')} }}
             </p>
           </div>
         </div>
         <div class="flex items-center text-md text-gray-600 dark:text-gray-400 mt-1 gap-x-2">
           <app-icon name="muscle" class="h-7 w-7"></app-icon>
-          <span class="ml-1"> Exercises: {{ log.exercises.length }}</span>
+          <span class="ml-1"> {{ 'logDetail.exercises' | translate }}: {{ log.exercises.length }}</span>
         </div>
         <div class="flex items-center text-md text-gray-600 dark:text-gray-400 mt-1 gap-x-2">
           <app-icon name="clock" class="h-7 w-7 mr-1"></app-icon>
-          <span *ngIf="log.durationSeconds">Duration: {{ secondsToDateTime(log.durationSeconds) | date:'HH:mm:ss'
+          <span *ngIf="log.durationSeconds">{{ 'logDetail.duration' | translate }}: {{ secondsToDateTime(log.durationSeconds) | date:'HH:mm:ss'
             }}</span>
-          <span *ngIf="!log.durationSeconds">Duration: {{ log.durationMinutes }} minutes</span>
+          <span *ngIf="!log.durationSeconds">{{ 'logDetail.duration' | translate }}: {{ 'logDetail.durationMinutes' |
+            translate:{minutes: log.durationMinutes} }}</span>
         </div>
         <p *ngIf="log.notes" class="mt-2 text-m text-gray-600 dark:text-gray-400 italic">
-          <strong>Overall Notes:</strong> {{ log.notes }}
+          <strong>{{ 'logDetail.overallNotes' | translate }}:</strong> {{ log.notes }}
         </p>
 
         <button *ngIf="log?.routineId" (click)="openPerformanceComparisonModal()" type="button"
           class="flex items-center mt-2 gap-2 px-3 py-2 text-sm font-medium text-center text-white bg-primary rounded-lg hover:bg-primary-dark focus:ring-4 focus:outline-none focus:ring-primary-light">
           <app-icon name="compare" class="w-5 h-5"></app-icon>
-          COMPARE ROUTINE
-          <span class="hidden sm:inline">Compare Routine</span>
+          {{ 'logDetail.compareRoutine' | translate }}
         </button>
       </div>
 
@@ -77,13 +78,14 @@
                 <button (click)="toggleExerciseAccordion(item)"
                   class="w-full flex justify-between items-center p-2 text-left bg-teal-50 dark:bg-teal-900/40 hover:bg-teal-100 dark:hover:bg-teal-800/60 transition-colors">
                   <div class="flex-grow min-w-0">
-                    <span class="text-xs font-semibold text-teal-600 dark:text-teal-400 uppercase">EMOM Block - {{
-                      emomLabel(item) }} </span>
+                    <span class="text-xs font-semibold text-teal-600 dark:text-teal-400 uppercase">{{
+                      'logDetail.emomBlock' | translate:{label: emomLabel(item)} }} </span>
                     <h3 class="text-md sm:text-lg font-bold text-teal-800 dark:text-teal-200" [title]="item.blockName">
                       {{ item.blockName }}
                     </h3>
                     <div *ngIf="!item.isExpanded" class="text-xs text-gray-500 dark:text-gray-400">
-                      {{ item.totalRounds }} Rounds | Every {{ item.emomTimeSeconds }}s
+                      {{ 'logDetail.rounds' | translate:{count: item.totalRounds} }} | {{ 'logDetail.everySecond' |
+                      translate:{seconds: item.emomTimeSeconds} }}
                     </div>
                   </div>
                   <app-icon name="collapse-card"
@@ -93,7 +95,8 @@
                 <div *ngIf="item.isExpanded" class="bg-white dark:bg-gray-800 p-2 sm:p-3">
                   <div class="grid gap-x-2 sm:gap-x-4"
                     [style.grid-template-columns]="'auto repeat(' + item.exercises.length + ', 1fr)'">
-                    <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400 py-2">Round</div>
+                    <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400 py-2">{{
+                      'logDetail.roundHeader' | translate }}</div>
                     <div *ngFor="let ex of item.exercises"
                       class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400 py-2 text-center"
                       [title]="ex.exerciseName">
@@ -116,7 +119,8 @@
                               @ {{ set.weightUsed | weightUnit:'1.0-2' }}
                             </span>
                           </ng-container>
-                          <ng-template #noSetData><span class="text-gray-400">-</span></ng-template>
+                          <ng-template #noSetData><span class="text-gray-400">{{ 'logDetail.card.noSetData' | translate
+                              }}</span></ng-template>
                         </div>
                       </ng-container>
                       <div *ngIf="!last" class="h-px bg-gray-200 dark:bg-gray-700" [style.grid-column]="'1 / -1'"></div>
@@ -132,14 +136,14 @@
                 <button (click)="toggleExerciseAccordion(item)"
                   class="w-full flex justify-between items-center p-2 text-left bg-orange-50 dark:bg-orange-900/40 hover:bg-orange-100 dark:hover:bg-orange-800/60 transition-colors">
                   <div class="flex-grow min-w-0">
-                    <span class="text-xs font-semibold text-orange-600 dark:text-orange-400 uppercase">Superset
-                      Block</span>
+                    <span class="text-xs font-semibold text-orange-600 dark:text-orange-400 uppercase">{{
+                      'logDetail.supersetBlock' | translate }}</span>
                     <h3 class="text-md sm:text-lg font-bold text-orange-800 dark:text-orange-200 truncate"
                       [title]="item.blockName">
                       {{ item.blockName }}
                     </h3>
                     <div *ngIf="!item.isExpanded" class="text-xs text-gray-500 dark:text-gray-400">
-                      {{ item.totalRounds }} Rounds
+                      {{ 'logDetail.rounds' | translate:{count: item.totalRounds} }}
                     </div>
                   </div>
                   <app-icon name="collapse-card"
@@ -151,7 +155,8 @@
                   <!-- Loop through the rounds -->
                   <div *ngFor="let round of item.rounds" class="border border-gray-200 dark:border-gray-700 rounded-md">
                     <div class="bg-gray-100 dark:bg-gray-700/50 p-1.5">
-                      <h4 class="font-semibold text-sm text-gray-700 dark:text-gray-300">Round {{ round.roundNumber }}
+                      <h4 class="font-semibold text-sm text-gray-700 dark:text-gray-300">{{ 'logDetail.roundHeader' |
+                        translate }} {{ round.roundNumber }}
                       </h4>
                     </div>
                     <!-- Loop through exercises within this round -->
@@ -169,7 +174,8 @@
                             {{ loggedEx.exerciseName }}
                           </h5>
                           <div class="text-xs font-normal text-gray-500 dark:text-gray-400 leading-tight">
-                            Exercise {{ (loggedEx.supersetOrder ?? 0) + 1 }} of {{ round.totalExercisesForRound }}
+                            {{ 'logDetail.exerciseLabel' | translate:{order: (loggedEx.supersetOrder ?? 0) + 1, total:
+                            round.totalExercisesForRound} }}
                           </div>
                         </div>
                         <div *ngIf="loggedEx.sets.length > 0; else noSetData"
@@ -180,7 +186,8 @@
                             @ {{ loggedEx.sets[0].weightUsed | weightUnit:'1.0-2' }}
                           </span>
                         </div>
-                        <ng-template #noSetData><span class="text-gray-400 text-sm ml-auto">-</span></ng-template>
+                        <ng-template #noSetData><span class="text-gray-400 text-sm ml-auto">{{ 'logDetail.card.noSetData'
+                            | translate }}</span></ng-template>
                       </div>
                     </div>
                   </div>
@@ -211,10 +218,13 @@
                       <div *ngIf="!item.isExpanded" class="text-xs text-gray-500 dark:text-gray-400 truncate">
                         <p *ngIf="item.baseExercise?.category" class="truncate">{{ item.baseExercise?.category |
                           titlecase }}</p>
-                        <p *ngIf="checkIfTimedExercise(item)">Duration (s): {{getSetDurationPerformed(item)}}</p>
-                        <p>Sets: {{item.sets.length}} <span *ngIf="getSetReps(item) !== '0'">(Reps:
+                        <p *ngIf="checkIfTimedExercise(item)">{{ 'logDetail.card.time' | translate }}:
+                          {{getSetDurationPerformed(item)}}</p>
+                        <p>{{ 'logDetail.card.set' | translate }}: {{item.sets.length}} <span
+                            *ngIf="getSetReps(item) !== '0'">({{ 'logDetail.card.reps' | translate }}:
                             {{getSetReps(item)}})</span></p>
-                        <p *ngIf="checkIfWeightedExercise(item)">Weight ({{unitService.getWeightUnitSuffix()}}):
+                        <p *ngIf="checkIfWeightedExercise(item)">{{ 'logDetail.card.weight' | translate }}
+                          ({{unitService.getWeightUnitSuffix()}}):
                           {{getSetWeightsUsed(item)}}</p>
                       </div>
                     </div>
@@ -232,18 +242,25 @@
                 </button>
                 <div *ngIf="item.isExpanded" class="grid gap-x-4 gap-y-2 p-4 bg-white dark:bg-gray-800"
                   [ngClass]="getGridColsClass(item)">
-                  <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Set</div>
+                  <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">{{ 'logDetail.card.set' |
+                    translate }}</div>
                   <div *ngIf="hasPerformedReps(item)"
-                    class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Reps</div>
-                  <div *ngIf="checkIfWeightedExercise(item)" class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">
-                    Weight ({{unitService.getBodyWeightUnitSuffix()}})</div>
+                    class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">{{ 'logDetail.card.reps' |
+                    translate }}</div>
+                  <div *ngIf="checkIfWeightedExercise(item)"
+                    class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">
+                    {{ 'logDetail.card.weight' | translate }} ({{unitService.getBodyWeightUnitSuffix()}})</div>
                   <div *ngIf="hasPerformedDistanceSets(item)"
-                    class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Distance
+                    class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">{{ 'logDetail.card.distance' |
+                    translate }}
                     ({{unitService.getDistanceMeasureUnitSuffix()}})</div>
                   <div *ngIf="hasPerformedTimedSets(item)"
-                    class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Time (s)</div>
-                  <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Rest</div>
-                  <div *ngIf="hasNotes(item)" class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">Notes
+                    class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">{{ 'logDetail.card.time' |
+                    translate }}</div>
+                  <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">{{ 'logDetail.card.rest' |
+                    translate }}</div>
+                  <div *ngIf="hasNotes(item)" class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">{{
+                    'logDetail.card.notes' | translate }}
                   </div>
                   <ng-container *ngFor="let set of item.sets; let i = index; let last = last">
                     <div class="font-medium text-gray-900 dark:text-white flex items-center space-x-2">
@@ -251,10 +268,10 @@
                         [ngClass]="{'bg-blue-300 dark:bg-blue-400 p-1 rounded': set.type && set.type === 'warmup'}">{{ i
                         + 1 }}{{set.type === 'warmup' ? '*':''}}</span>
                       <div *ngIf="getPersonalBestTypesForSet(set, item.exerciseId).length > 0" class="flex-shrink-0"
-                        [title]="'Personal Best!\n' + getPersonalBestTypesForSet(set, item.exerciseId).join('\n')">
+                        [title]="'logDetail.card.pbTooltip' | translate:{types: getPersonalBestTypesForSet(set, item.exerciseId).join('\n')}">
                         <span
                           class="px-1.5 py-0.5 text-xs font-semibold rounded-full bg-primary-dark text-white dark:text-amber-100">🏆
-                          PB</span>
+                          {{ 'logDetail.card.pb' | translate }}</span>
                       </div>
                     </div>
                     <!-- Reps -->
@@ -295,7 +312,7 @@
                     <div *ngIf="set.notes" class="cursor-pointer dark:text-white">
                       <app-icon name="schedule" (click)="showNotesModal(set.notes)" *ngIf="set.notes"
                         class="h-7 w-7"></app-icon>
-                      <span class="text-gray-500" *ngIf="!set.notes">-</span>
+                      <span class="text-gray-500" *ngIf="!set.notes">{{ 'logDetail.card.noNotes' | translate }}</span>
                     </div>
                     <div *ngIf="!last" class="col-span-full h-px bg-gray-200 dark:bg-gray-700"></div>
                   </ng-container>
@@ -305,7 +322,7 @@
           </div>
         </div>
         <ng-template #noLoggedExercises>
-          <p class="text-gray-500 dark:text-gray-400">No specific exercises were logged for this workout</p>
+          <p class="text-gray-500 dark:text-gray-400">{{ 'logDetail.noLoggedExercises' | translate }}</p>
         </ng-template>
       </div>
     </div>
@@ -313,16 +330,17 @@
 
   <ng-template #loadingOrNotFound>
     <div *ngIf="workoutLog() === undefined; else notFound" class="text-center py-20">
-      <p class="text-xl text-gray-600 dark:text-gray-400">Loading workout details...</p>
+      <p class="text-xl text-gray-600 dark:text-gray-400">{{ 'logDetail.loading' | translate }}</p>
     </div>
     <ng-template #notFound>
       <div class="text-center py-20">
-        <h2 class="text-2xl font-semibold text-red-600 dark:text-red-400 mb-4">Workout Log Not Found</h2>
-        <p class="text-gray-600 dark:text-gray-400">The workout log you are looking for does not exist</p>
+        <h2 class="text-2xl font-semibold text-red-600 dark:text-red-400 mb-4">{{ 'logDetail.notFoundTitle' | translate
+          }}</h2>
+        <p class="text-gray-600 dark:text-gray-400">{{ 'logDetail.notFoundMessage' | translate }}</p>
         <button routerLink="/history/list"
           class="inline-flex items-center text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-light p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
           <app-icon name="back"></app-icon>
-          Back to History
+          {{ 'logDetail.backToHistory' | translate }}
         </button>
       </div>
     </ng-template>
@@ -330,7 +348,7 @@
 </div>
 
 <app-modal *ngIf="isPerformanceComparisonModalOpen()" [(isOpen)]="isPerformanceComparisonModalOpen"
-  [modalTitle]="selectedExerciseForComparison() ? 'Exercise Comparison' : 'Routine Comparison'">
+  [modalTitle]="(selectedExerciseForComparison() ? 'logDetail.comparisonModal.exerciseTitle' : 'logDetail.comparisonModal.routineTitle') | translate">
   <app-performance-comparison-modal (logSelect)="goToPreviousLogDetail($event)"
     [exercise]="selectedExerciseForComparison()!" [currentLog]="workoutLog()!">
   </app-performance-comparison-modal>
@@ -338,12 +356,12 @@
 
 <!-- NOTES MODAL -->
 <app-modal *ngIf="notesModalsData() as data" [isOpen]="!!data" (isOpenChange)="notesModalsData.set(null)"
-  [modalTitle]="'Notes'">
+  [modalTitle]="'logDetail.notesModal.title' | translate">
   <div class="flex flex-col p-4 text-left text-gray-700 dark:text-gray-200">
     <textarea [disabled]="true" class="font-semibold pb-2 dark:border-gray-600 dark:bg-gray-800">{{data}}</textarea>
     <button appPress (shortPress)="notesModalsData.set(null)"
       class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary-light">
-      CLOSE
+      {{ 'logDetail.notesModal.close' | translate }}
     </button>
   </div>
 </app-modal>
@@ -367,23 +385,25 @@
 
       <!-- Target Column -->
       <div>
-        <div class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Target</div>
+        <div class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{
+          'logDetail.comparisonModal.target' | translate }}</div>
         <div class="mt-1 text-4xl font-bold text-gray-700 dark:text-gray-200">{{ data.targetValue }}</div>
       </div>
 
       <!-- Performed Column with Icon -->
       <div>
-        <div class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Performed</div>
-        <div class="mt-1 text-4xl font-bold flex items-center justify-center gap-x-2" 
-             [ngClass]="getComparisonClass(data.performedValue, data.targetValue)">
+        <div class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{
+          'logDetail.comparisonModal.performed' | translate }}</div>
+        <div class="mt-1 text-4xl font-bold flex items-center justify-center gap-x-2"
+          [ngClass]="getComparisonClass(data.performedValue, data.targetValue)">
           <span>{{ data.performedValue }}</span>
-          
+
           <!-- Success Icon -->
-            <app-icon *ngIf="getComparisonStatus(data.performedValue, data.targetValue) === 'success'" 
-                    name="check-circle" class="w-7 h-7 text-green-500"></app-icon>
+          <app-icon *ngIf="getComparisonStatus(data.performedValue, data.targetValue) === 'success'"
+            name="check-circle" class="w-7 h-7 text-green-500"></app-icon>
           <!-- Failure Icon -->
-          <app-icon *ngIf="getComparisonStatus(data.performedValue, data.targetValue) === 'failure'" 
-                    name="x-circle" class="w-7 h-7 text-red-500"></app-icon>
+          <app-icon *ngIf="getComparisonStatus(data.performedValue, data.targetValue) === 'failure'" name="x-circle"
+            class="w-7 h-7 text-red-500"></app-icon>
         </div>
       </div>
 
@@ -394,7 +414,7 @@
   <div class="bg-gray-50 dark:bg-gray-800/50 px-6 py-3 flex justify-end border-t dark:border-gray-700">
     <button appPress (shortPress)="comparisonModalData.set(null)"
       class="px-5 py-2 bg-gray-200 text-gray-700 dark:bg-gray-600 dark:text-gray-200 font-semibold rounded-md hover:bg-gray-300 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-light dark:focus:ring-offset-gray-800">
-      OK
+      {{ 'logDetail.comparisonModal.ok' | translate }}
     </button>
   </div>
 </app-modal>

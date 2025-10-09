@@ -34,6 +34,7 @@ import { SubscriptionService, PremiumFeature } from '../../../core/services/subs
 import { ActivityService } from '../../../core/services/activity.service';
 import { LanguageService } from '../../../core/services/language.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { ru } from 'date-fns/locale';
 
 @Component({
   selector: 'app-profile-settings',
@@ -74,7 +75,12 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
     es: 'settings.languageSelector.spanish',
     it: 'settings.languageSelector.italian',
     de: 'settings.languageSelector.german',
-    fr: 'settings.languageSelector.french'
+    fr: 'settings.languageSelector.french',
+    ru: 'settings.languageSelector.russian',
+    ja: 'settings.languageSelector.japanese',
+    zh: 'settings.languageSelector.chinese',
+    pt: 'settings.languageSelector.portuguese',
+    ar: 'settings.languageSelector.arabic'
   };
 
   private subscriptions = new Subscription();

@@ -12,6 +12,7 @@ import { ToastService } from '../../../core/services/toast.service';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { ActivityLog } from '../../../core/models/activity-log.model';
 import { PremiumFeature, SubscriptionService } from '../../../core/services/subscription.service';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 export function timeOrderValidator(startTimeKey: string, endTimeKey: string): (group: AbstractControl) => ValidationErrors | null {
     return (group: AbstractControl): ValidationErrors | null => {
@@ -27,7 +28,7 @@ export function timeOrderValidator(startTimeKey: string, endTimeKey: string): (g
 @Component({
     selector: 'app-log-activity',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, IconComponent],
+    imports: [CommonModule, ReactiveFormsModule, IconComponent, TranslateModule],
     templateUrl: './log-activity.component.html',
     styleUrls: ['./log-activity.component.scss']
 })
@@ -39,6 +40,7 @@ export class LogActivityComponent implements OnInit {
     private router = inject(Router);
     private route = inject(ActivatedRoute);
     protected subscriptionService = inject(SubscriptionService);
+    protected translate = inject(TranslateService);
 
     // --- Component State ---
     logActivityForm!: FormGroup;
@@ -128,7 +130,7 @@ export class LogActivityComponent implements OnInit {
                 // in that method will ensure the form state is correct.
 
             } else {
-                this.toastService.error('Could not find the activity log to edit.', 0);
+                this.toastService.error(this.translate.instant('logActivity.toasts.editError'), 0);
                 this.router.navigate(['/history']);
             }
         });
@@ -160,7 +162,7 @@ export class LogActivityComponent implements OnInit {
 
     onSubmit(): void {
         if (this.logActivityForm.invalid) {
-            this.toastService.error('Please fill out all required fields and ensure times are valid.', 0, 'Invalid Form');
+            this.toastService.error(this.translate.instant('logActivity.toasts.invalidForm'), 0, this.translate.instant('logActivity.toasts.invalidFormTitle'));
             Object.values(this.logActivityForm.controls).forEach(control => {
                 control.markAsTouched();
             });

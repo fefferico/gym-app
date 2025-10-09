@@ -13,12 +13,13 @@ import { AlertButton } from '../../../core/models/alert.model';
 // +++ ADD THESE IMPORTS +++
 import { ActionMenuComponent } from '../../../shared/components/action-menu/action-menu';
 import { ActionMenuItem } from '../../../core/models/action-menu.model';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+
 
 @Component({
   selector: 'app-activity-log-details',
   standalone: true,
-  // +++ ADD ActionMenuComponent TO IMPORTS +++
-  imports: [CommonModule, DatePipe, IconComponent, ActionMenuComponent],
+  imports: [CommonModule, DatePipe, IconComponent, ActionMenuComponent, TranslateModule],
   templateUrl: './activity-log-details.component.html',
   styles: [`:host { display: block; }`]
 })
@@ -27,6 +28,7 @@ export class ActivityLogDetailsComponent implements OnInit {
   private router = inject(Router);
   private activityService = inject(ActivityService);
   private alertService = inject(AlertService);
+  private translate = inject(TranslateService);
 
   activityLog = signal<ActivityLog | null>(null);
   baseActivity = signal<Activity | null>(null);
@@ -68,11 +70,11 @@ export class ActivityLogDetailsComponent implements OnInit {
   // --- This method will now be called by the action menu handler ---
   async deleteLog(log: ActivityLog): Promise<void> {
     const confirm = await this.alertService.showConfirmationDialog(
-      'Delete Activity Log?',
-      `Are you sure you want to delete this log for "${log.activityName}"? This cannot be undone.`,
+      this.translate.instant('activityLogDetails.alerts.deleteTitle'),
+      this.translate.instant('activityLogDetails.alerts.deleteMessage', { name: log.activityName }),
       [
-        { text: 'Cancel', role: 'cancel', data: false },
-        { text: 'Delete', role: 'confirm', data: true, cssClass: 'bg-red-500' }
+        { text: this.translate.instant('activityLogDetails.alerts.cancel'), role: 'cancel', data: false },
+        { text: this.translate.instant('activityLogDetails.alerts.deleteButton'), role: 'confirm', data: true, cssClass: 'bg-red-500' }
       ] as AlertButton[]
     );
 
@@ -102,7 +104,7 @@ export class ActivityLogDetailsComponent implements OnInit {
 
     return [
       {
-        label: 'EDIT',
+        label: this.translate.instant('activityLogDetails.actions.edit'),
         actionKey: 'edit',
         iconSvg: 'asdasd',
         iconName: 'edit',
@@ -112,7 +114,7 @@ export class ActivityLogDetailsComponent implements OnInit {
       },
       { isDivider: true },
       {
-        label: 'DELETE',
+        label: this.translate.instant('activityLogDetails.actions.delete'),
         actionKey: 'delete',
         iconName: 'trash',
         iconClass: 'w-8 h-8 mr-2',

@@ -7,7 +7,6 @@
   "ENDURANCE_GOAL": "Endurance",
   "GENERATE_CUSTOM_WORKOUT": "Generate Custom Workout",
   "SURPRISE_ME": "Surprise Me!",
-
   "dates": {
     "months": {
       "january": "January",
@@ -56,7 +55,6 @@
       "sat": "Sat"
     }
   },
-
   "home": {
     "welcomeBack": "Welcome Back, {{name}}!",
     "readyMessage": "Ready to crush your goals today?",
@@ -68,10 +66,10 @@
   },
   "pausedWorkout": {
     "inProgress": "You have a workout in progress!",
-    "routineLabel": "Routine:",
-    "programLabel": "Program:",
-    "loggedOn": "Logged on the:",
-    "pausedAt": "Paused at:",
+    "routineLabel": "Routine",
+    "programLabel": "Program",
+    "loggedOn": "Logged on the",
+    "pausedAt": "Paused at",
     "defaultRoutineName": "New session",
     "fallbackRoutineName": "your workout",
     "adHocWorkout": "Ad-hoc Workout",
@@ -108,9 +106,6 @@
     "discard": "Discard",
     "premium": "PREMIUM"
   },
-
-
-
   "settings": {
     "title": "Profile & Settings",
     "subscription": {
@@ -250,7 +245,12 @@
       "spanish": "Spanish",
       "italian": "Italian",
       "german": "German",
-      "french": "French"
+      "french": "French",
+      "russian": "Russian",
+      "japanese": "Japanese",
+      "chinese": "Chinese",
+      "portuguese": "Portuguese",
+      "arabic": "Arabic"
     }
   },
   "common": {
@@ -307,18 +307,16 @@
     "exporting": "Exporting data...",
     "importing": "Importing data..."
   },
-
-
   "todaysWorkout": {
     "previousDay": "Previous Day",
     "nextDay": "Next Day",
-    "started": "Started:",
+    "started": "Started",
     "jumpToToday": "Jump to Today",
     "checkingSchedule": "Checking your schedule...",
-    "scheduled": "Scheduled:",
-    "loggedUnscheduled": "Logged (Unscheduled):",
-    "program": "Program:",
-    "currentWeek": "Current Week:",
+    "scheduled": "Scheduled",
+    "loggedUnscheduled": "Logged (Unscheduled)",
+    "program": "Program",
+    "currentWeek": "Current Week",
     "workoutCompleted": "Workout Completed!",
     "details": "DETAILS",
     "sessionSkipped": "Session Skipped",
@@ -327,13 +325,13 @@
     "start": "START",
     "restDay": "Rest Day",
     "noWorkoutPlanned": "No workout planned in your program for this day",
-    "loggedToday": "Logged today:",
-    "loggedOnThisDay": "Logged on this day:",
+    "loggedToday": "Logged today",
+    "loggedOnThisDay": "Logged on this day",
     "feelFreeTo": "Feel free to ",
     "pickAnotherRoutine": "pick any other routine",
     "ifYouPrefer": ", if you'd prefer",
-    "orPickOne": "Or, pick one from below:",
-    "pickOne": "Pick one from below:",
+    "orPickOne": "Or, pick one from below",
+    "pickOne": "Pick one from below",
     "estimatedTime": "Est: ~{{duration}} min",
     "latest": "Latest: ",
     "noRoutinesAvailable": "No routines available",
@@ -347,8 +345,6 @@
     "browseRoutines": "browser the available routines",
     "viewProgramDetailsTooltip": "Click to navigate to program details"
   },
-
-
   "routineList": {
     "title": "My Routines",
     "toggleFilters": "Toggle Filters",
@@ -375,13 +371,13 @@
       "allCategories": "All Categories"
     },
     "card": {
-      "goal": "Goal:",
-      "category": "Category:",
-      "muscles": "Muscles:",
-      "lastPerformed": "Last:",
+      "goal": "Goal",
+      "category": "Category",
+      "muscles": "Muscles",
+      "lastPerformed": "Last",
       "notPerformed": "Not performed yet",
-      "estimatedDuration": "Est. duration:",
-      "lastDuration": "Last duration:",
+      "estimatedDuration": "Est. duration",
+      "lastDuration": "Last duration",
       "hidden": "Hidden",
       "favourite": "Favourite",
       "favouriteTooltip": "Click to filter for favourites. Long-press for unmark as favourite"
@@ -442,7 +438,6 @@
       "startTracking": "START TRACKING (VERY WIP)"
     }
   },
-
   "historyList": {
     "title": "History",
     "toggleFilters": "Toggle Filters",
@@ -467,14 +462,14 @@
     },
     "card": {
       "adHocWorkout": "Ad-hoc Workout",
-      "program": "Program:",
-      "date": "Date:",
-      "duration": "Duration:",
-      "exercises": "Ex:",
-      "pbs": "PBs:",
+      "program": "Program",
+      "date": "Date",
+      "duration": "Duration",
+      "exercises": "Ex",
+      "pbs": "PBs",
       "details": "DETAILS",
-      "location": "Location:",
-      "distance": "Distance:",
+      "location": "Location",
+      "distance": "Distance",
       "notes": "Notes:"
     },
     "noResults": {
@@ -518,7 +513,6 @@
       "startTracking": "START TRACKING (VERY WIP)"
     }
   },
-
   "trainingPrograms": {
     "title": "Programs",
     "toggleFilters": "Toggle Filters",
@@ -548,14 +542,14 @@
     },
     "card": {
       "active": "Active",
-      "schedule": "Schedule:",
+      "schedule": "Schedule",
       "days": "{{count}} day",
       "days_plural": "{{count}} days",
       "avgDaysPerWeek": "Avg. {{count}} days/week",
-      "started": "Started:",
-      "lastScheduling": "Last scheduling:",
-      "goals": "Goals:",
-      "iteration": "Iteration:",
+      "started": "Started",
+      "lastScheduling": "Last scheduling",
+      "goals": "Goals",
+      "iteration": "Iteration",
       "currentWeek": "Current Week:"
     },
     "noPrograms": {
@@ -575,9 +569,9 @@
       "today": "(Today)",
       "notScheduled": "Not Scheduled",
       "sessionsLogged": "({{count}} sessions logged)",
-      "programNote": "Program Note:",
-      "suggestedTime": "Suggested Time:",
-      "loggedSessions": "Logged Session(s):",
+      "programNote": "Program Note",
+      "suggestedTime": "Suggested Time",
+      "loggedSessions": "Logged Session(s)",
       "loggedAt": "Logged: {{time}} ({{duration}} min)",
       "viewButton": "VIEW",
       "startButton": "START",
@@ -623,10 +617,10 @@
       "delete": "DELETE",
       "activate": "ACTIVATE",
       "deactivate": "DEACTIVATE",
-      "finish": "FINISH"
+      "finish": "FINISH",
+      "history": "LOGS"
     }
   },
-
   "statsDashboard": {
     "title": "My Statistics",
     "personalBests": "Personal Bests",
@@ -647,8 +641,8 @@
       "weeks": "weeks",
       "noCurrentStreak": "No current streak",
       "longestStreak": "Longest Streak",
-      "from": "From:",
-      "to": "To:",
+      "from": "From",
+      "to": "To",
       "noWorkoutsYet": "No workouts logged yet"
     },
     "charts": {
@@ -679,7 +673,6 @@
       "browseWorkouts": "workouts"
     }
   },
-
   "personalBests": {
     "title": "Personal Bests",
     "toggleFilters": "Toggle Filters",
@@ -700,7 +693,7 @@
       "showingResultOf": "Showing {{count}} of {{total}} PBs"
     },
     "card": {
-      "previous": "Prev:",
+      "previous": "Prev",
       "viewLog": "VIEW LOG",
       "trend": "TREND",
       "showTrendTooltip": "Show Trend for this PB"
@@ -728,7 +721,6 @@
       "seconds": "s"
     }
   },
-
   "compactPlayer": {
     "defaultWorkoutName": "Workout",
     "paused": "[PAUSED]",
@@ -739,7 +731,7 @@
     "sets": "Sets",
     "notesPlaceholder": "Notes for this exercise...",
     "toggleNotes": "Toggle notes for exercise",
-    "logPerformance": "Log performance:",
+    "logPerformance": "Log performance",
     "markAsUndone": "Mark as undone to edit",
     "addMetric": "Add Metric",
     "weightLabel": "Weight ({{unit}})",
@@ -857,10 +849,10 @@
       "updateOriginal": "Update Original Routine",
       "saveAsNew": "Save as New Routine",
       "newRoutineNameTitle": "New Routine Name",
-      "newRoutineNameMessage": "Enter a name:",
+      "newRoutineNameMessage": "Enter a name",
       "saveRoutine": "Save Routine",
       "saveAdHocTitle": "Save as New Routine",
-      "saveAdHocMessage": "Enter a name for this workout routine:",
+      "saveAdHocMessage": "Enter a name for this workout routine",
       "createAndLog": "Create Routine & Log",
       "logWithoutSaving": "Just Log without Saving",
       "removeFieldTitle": "Remove Field from Exercise",
@@ -880,8 +872,6 @@
       "quit": "QUIT WORKOUT"
     }
   },
-
-
   "actionButtons": {
     "pause": "Pause",
     "addExercise": "Add Exercise",
@@ -920,12 +910,11 @@
     "routine": "ROUTINE",
     "weightToolkit": "Weight toolkit",
     "color": "COLOR",
-      "expand": "EXPAND",
-      "collapse": "COLLAPSE",
-      "ungroup": "Ungroup",
-      "makeEmom": "Make EMOM"
+    "expand": "EXPAND",
+    "collapse": "COLLAPSE",
+    "ungroup": "Ungroup",
+    "makeEmom": "Make EMOM"
   },
-
   "exerciseSelectionModal": {
     "filtersTitle": "Filters & Sorting",
     "categoryLabel": "Category",
@@ -959,7 +948,6 @@
       "filtersCleared": "Filters cleared"
     }
   },
-
   "workoutBuilder": {
     "exerciseInfoTooltip": "Exercise details and progression",
     "setTypes": {
@@ -1007,10 +995,10 @@
       "secondaryCategoryPlaceholder": "e.g., Bodyweight, Hypertrophy Phase 1",
       "tagsLabel": "Tags (comma-separated)",
       "tagsPlaceholder": "e.g., HIIT, Dumbbells, Full Body",
-      "lastPerformed": "Last:",
+      "lastPerformed": "Last",
       "notPerformed": "Not performed yet",
-      "estimatedDuration": "Est. duration:",
-      "lastDuration": "Last duration:",
+      "estimatedDuration": "Est. duration",
+      "lastDuration": "Last duration",
       "saveButton": "SAVE ROUTINE"
     },
     "logEntry": {
@@ -1174,7 +1162,7 @@
       "removeExerciseLoggedMessage": "Are you sure you want to remove {{name}}? All logged data for this exercise in this session will be lost.",
       "removeExerciseMessage": "Are you sure you want to remove {{name}}?",
       "customExerciseTitle": "Add New Custom Exercise",
-      "customExerciseMessage": "Define exercise name and sets:",
+      "customExerciseMessage": "Define exercise name and sets",
       "customExerciseNameLabel": "Custom Exercise Name",
       "customExerciseSetsLabel": "Number of Sets",
       "customExerciseEquipmentLabel": "Equipment",
@@ -1236,5 +1224,600 @@
     "save_log_changes": "SAVE LOG CHANGES",
     "start": "START",
     "log": "LOG"
+  },
+  "logDetail": {
+    "title": "Personal Bests",
+    "toggleFilters": "Toggle Filters",
+    "adHocWorkout": "Ad-hoc Workout",
+    "logForProgram": "Log for Program: {{programName}} - Week {{week}} - Day {{day}}",
+    "date": "Date",
+    "from": "From {{start}} to {{end}}",
+    "exercises": "Exercises",
+    "duration": "Duration",
+    "durationMinutes": "{{minutes}} minutes",
+    "overallNotes": "Overall Notes",
+    "compareRoutine": "COMPARE ROUTINE",
+    "emomBlock": "EMOM Block - {{label}}",
+    "rounds": "{{count}} Rounds",
+    "everySecond": "Every {{seconds}}s",
+    "roundHeader": "Round",
+    "supersetBlock": "Superset Block",
+    "exerciseLabel": "Exercise {{order}} of {{total}}",
+    "noLoggedExercises": "No specific exercises were logged for this workout",
+    "loading": "Loading workout details...",
+    "notFoundTitle": "Workout Log Not Found",
+    "notFoundMessage": "The workout log you are looking for does not exist",
+    "backToHistory": "Back to History",
+    "comparisonModal": {
+      "exerciseTitle": "Exercise Comparison",
+      "routineTitle": "Routine Comparison",
+      "target": "Target",
+      "performed": "Performed",
+      "ok": "OK"
+    },
+    "notesModal": {
+      "title": "Notes",
+      "close": "CLOSE"
+    },
+    "fab": {
+      "scrollTop": "Back to Top",
+      "scrollBottom": "Scroll to Bottom"
+    },
+    "actions": {
+      "summary": "SUMMARY",
+      "edit": "EDIT LOG",
+      "routine": "ROUTINE",
+      "delete": "DELETE"
+    },
+    "alerts": {
+      "noRoutineTitle": "No routine for log",
+      "noRoutineMessage": "There is no routine associated with this log: would you like to create one? If so remember to link it to this log once created",
+      "deleteTitle": "Delete Workout Log",
+      "deleteMessage": "Are you sure you want to delete this workout log? This action cannot be undone",
+      "deleteButton": "Delete"
+    },
+    "toasts": {
+      "logDeleted": "Workout log deleted successfully",
+      "logDeleteFailed": "Failed to delete workout log"
+    },
+    "card": {
+      "set": "Set",
+      "reps": "Reps",
+      "weight": "Weight",
+      "distance": "Distance",
+      "time": "Time (s)",
+      "rest": "Rest",
+      "notes": "Notes",
+      "noSetData": "-",
+      "pb": "PB",
+      "pbTooltip": "Personal Best!\n{{types}}",
+      "noNotes": "-",
+      "viewLog": "VIEW LOG",
+      "trend": "TREND",
+      "showTrendTooltip": "Show Trend for this PB"
+    },
+    "insights": {
+      "title": "Performance Insights",
+      "completedSets": "Completed Sets in this Session ({{count}})",
+      "noSetsCompleted": "No sets completed yet for this exercise in this workout.",
+      "lastPerformance": "Last Performance ({{date}})",
+      "noPreviousPerformance": "No previous performance recorded for this exercise.",
+      "personalBests": "Personal Bests",
+      "noPBs": "No personal bests recorded for this exercise yet.",
+      "onDate": "on {{date}}",
+      "done": "DONE",
+      "repsLabel": "Reps",
+      "weightLabel": "Weight",
+      "distanceLabel": "Distance",
+      "timeLabel": "Time:"
+    }
+  },
+  "performanceComparison": {
+    "title": "Routine Performance",
+    "comparingTo": "COMPARING TO",
+    "fromThisRoutine": "From This Routine",
+    "fromOtherWorkouts": "From Other Workouts",
+    "previousSession": "PREVIOUS SESSION",
+    "metric": "Metric",
+    "today": "Today",
+    "previous": "Previous",
+    "set": "Set",
+    "goToPreviousLog": "Go to previous log",
+    "noPreviousPerformance": "No previous performance found for this routine.",
+    "loading": "Loading comparison...",
+    "noData": "Could not load comparison data.",
+    "summary": {
+      "title": "Overall Summary",
+      "breakdownTitle": "Per-Exercise Breakdown",
+      "sets": "Sets",
+      "totalReps": "Total Reps",
+      "maxWeight": "Max Weight",
+      "totalVolume": "Total Volume",
+      "totalDuration": "Total Duration",
+      "totalDistance": "Total Distance"
+    },
+    "units": {
+      "reps": "reps"
+    }
+  },
+  "workoutSummary": {
+    "title": "Workout Complete!",
+    "subtitle": "Great job on finishing your session",
+    "routine": "Routine",
+    "adHocWorkout": "Ad-hoc Workout",
+    "date": "Date",
+    "duration": "Duration",
+    "durationUnit": "minutes",
+    "totalVolume": "Total Volume",
+    "perceivedEffort": "Perceived Effort",
+    "perceivedFeeling": "Perceived Feeling",
+    "newPBs": "🎉 New Personal Best! 🎉",
+    "newPBs_plural": "🎉 New Personal Bests! 🎉",
+    "yourNotes": "Your Notes for this Session",
+    "viewFullLog": "VIEW FULL LOG DETAILS",
+    "loading": "Loading workout summary...",
+    "notFound": {
+      "title": "Workout Log Not Found",
+      "message": "The workout log you are looking for does not exist",
+      "backToHistory": "Back to History"
+    },
+    "toasts": {
+      "effortSaved": "Perceived effort saved successfully!",
+      "effortSaveFailed": "Failed to save perceived effort:"
+    },
+    "units": {
+      "reps": "reps",
+      "seconds": "s"
+    }
+  },
+  "programBuilder": {
+    "title": "Programs",
+    "toggleFilters": "Toggle Filters",
+    "active": "Active",
+    "progress": {
+      "overallWorkout": "Overall Workout Progress",
+      "currentCycle": "Current Cycle Progress",
+      "overallWeeks": "Overall Progress (Weeks Completed)",
+      "weekCompleted": " - Completed",
+      "weekIncomplete": " - Incomplete",
+      "currentWeek": "Current Week Progress",
+      "workouts": "Workouts"
+    },
+    "form": {
+      "nameLabel": "Program Name",
+      "namePlaceholder": "Program name",
+      "nameRequired": "Program name is required",
+      "descriptionLabel": "Description (Optional)",
+      "descriptionPlaceholder": "Description (optional)",
+      "goalsLabel": "Goals",
+      "startDateLabel": "Start Date",
+      "structureLabel": "Program Structure",
+      "repeatingCycle": "Repeating Cycle",
+      "weekByWeek": "Week-by-Week Progression",
+      "repeatWeeks": "Repeat weeks after completion",
+      "repeatWeeksHint": "If checked, the weekly schedule will loop indefinitely until the program is manually stopped.",
+      "cycleLengthLabel": "Cycle Length (Days)",
+      "cycleLengthPlaceholder": "e.g., 4 for Upper/Lower/Rest/Rest",
+      "cycleLengthHint": "Total days in the cycle, including rest. Leave blank for a standard week.",
+      "iterationLabel": "Based on Program Iteration",
+      "editWarning": "(EDIT IF YOU ONLY KNOW WHAT YOU ARE DOING)",
+      "notesLabel": "General Program Notes (Optional)"
+    },
+    "schedule": {
+      "title": "Schedule",
+      "addDay": "ADD DAY TO SCHEDULE",
+      "dayNamePlaceholder": "e.g., Push Day",
+      "dayOfWeekLabel": "Day of Week",
+      "cycleDayLabel": "Cycle Day Number",
+      "dayRequired": "Day is required.",
+      "routineLabel": "Routine",
+      "loadingRoutine": "Loading routine...",
+      "noRoutine": "No Routine Selected",
+      "change": "CHANGE",
+      "select": "SELECT",
+      "routineRequired": "Routine selection is required.",
+      "timeLabel": "Time (Optional)",
+      "timePlaceholder": "e.g., AM, PM, 08:00",
+      "notesLabel": "Notes for this Day (Optional)",
+      "noDays": "No days scheduled for this program yet",
+      "addFirstDay": "Add the first scheduled day"
+    },
+    "weeks": {
+      "title": "Weekly Schedule",
+      "addWeek": "ADD WEEK",
+      "weekNamePlaceholder": "e.g., Week 1: Volume",
+      "removeWeek": "REMOVE WEEK",
+      "addDayToWeek": "ADD DAY TO WEEK",
+      "emptyWeek": "This week is empty.",
+      "noWeeks": "No weeks created for this program yet.",
+      "addFirstWeek": "Add the first week"
+    },
+    "actions": {
+      "cancel": "CANCEL",
+      "createProgram": "CREATE PROGRAM",
+      "saveChanges": "SAVE CHANGES"
+    },
+    "modal": {
+      "selectRoutineTitle": "Select a Routine",
+      "searchPlaceholder": "Search routines...",
+      "noMatches": "No routines match your search",
+      "noRoutines": "No routines available to select. Create some routines first!",
+      "historyTitle": "Program History",
+      "historyTable": {
+        "start": "Start",
+        "end": "End",
+        "status": "Status",
+        "logged": "Logged",
+        "actions": "Actions"
+      },
+      "editEntry": "Edit entry",
+      "deleteEntry": "Delete entry",
+      "editing": "Editing...",
+      "saveChanges": "Save changes",
+      "cancelEdit": "Cancel edit",
+      "noHistory": "No previous executions found for this program.",
+      "close": "CLOSE"
+    },
+    "toasts": {
+      "validationError": "Validation Error",
+      "linearNoWeeks": "Linear programs must have at least one week.",
+      "linearEmptyWeeks": "Please add routines to every week or remove any empty weeks.",
+      "cycledNoDays": "Please add at least one scheduled day to the program.",
+      "formInvalid": "Please fill all required fields, including selecting a routine for each scheduled day.",
+      "saveError": "Failed to save: {{error}}",
+      "saveErrorTitle": "Save Error",
+      "created": "Program \"{{name}}\" created.",
+      "createdTitle": "Program Created",
+      "saved": "Program saved successfully",
+      "saveSuccess": "Success",
+      "deleteError": "No program selected for deletion",
+      "deleteErrorTitle": "Deletion Error",
+      "deleteUnexpectedError": "An unexpected error occurred while deleting the program",
+      "completeFailed": "Failed to complete program",
+      "deactivateFailed": "Failed to deactivate",
+      "setActiveFailed": "Failed to set active program",
+      "statusUpdateFailed": "Failed to update program status",
+      "noHistory": "No history available for this program.",
+      "historyRemoved": "History entry removed.",
+      "historyRemoveFailed": "Failed to remove history entry.",
+      "historySaveFailed": "Failed to save history entry.",
+      "weekAddAllDays": "All 7 days of this week have been scheduled.",
+      "cycleAddAllDays": "All {{count}} days of the cycle have been scheduled.",
+      "dayNameHint": "Reminder: Day name is \"{{currentName}}\". You might want to update it to match the new selection of \"{{expectedName}} or to give it a proper name\".",
+      "checkDayName": "Check Day Name",
+      "supersetGrouped": "Superset created with {{count}} rounds!",
+      "emomGrouped": "EMOM created for {{count}} rounds!",
+      "groupingCancelled": "Grouping cancelled."
+    },
+    "alerts": {
+      "finishTitle": "Finish Program",
+      "finishMessage": "Are you sure you want to mark this program as completed?",
+      "finishButton": "Finish Program",
+      "activeTitle": "Program is currently active.",
+      "activeMessage": "What would you like to do?",
+      "deactivate": "Deactivate",
+      "complete": "Complete",
+      "deleteTitle": "Delete Program",
+      "deleteMessage": "Are you sure you want to delete this workout? This action cannot be undone",
+      "delete": "Delete",
+      "cloneSuccess": "Program \"{{name}}\" cloned successfully.",
+      "cloneFailed": "Failed to clone program",
+      "selectGroupTypeTitle": "Select Group Type",
+      "selectGroupTypeMessage": "How would you like to group these exercises?",
+      "setEmomTitle": "Set EMOM Details",
+      "setEmomMessage": "Configure the EMOM parameters.",
+      "emomTimeLabel": "Time per Round (s)",
+      "emomRoundsLabel": "Number of Rounds (Sets)",
+      "setSupersetRoundsTitle": "Set Superset Rounds",
+      "setSupersetRoundsMessage": "How many rounds (sets) should this superset have?",
+      "setExerciseTargetsTitle": "Set Exercise Targets",
+      "setExerciseTargetsMessage": "Enter the target reps and weight for each set in the group."
+    }
+  },
+  "measurementHistory": {
+    "title": "Measurement History",
+    "addPastEntry": "ADD PAST ENTRY",
+    "comparisonTitle": "Side-by-Side Comparison",
+    "selectStartDate": "-- Select Start Date --",
+    "selectEndDate": "-- Select End Date --",
+    "compare": "COMPARE",
+    "chartTitle": "Progress Chart",
+    "logHistoryTitle": "Log History",
+    "changePhoto": "Change Photo",
+    "addPhoto": "Add Photo",
+    "deleteEntry": "Delete Entry",
+    "editEntry": "Edit Entry",
+    "weight": "Weight",
+    "chest": "Chest",
+    "waist": "Waist",
+    "hips": "Hips",
+    "neck": "Neck",
+    "rightArm": "R. Arm",
+    "notes": "Notes",
+    "notesPlaceholder": "Add notes...",
+    "noDataTitle": "No measurement history found.",
+    "noDataMessage": "Go to your profile settings to add your first entry!",
+    "addEntryModal": {
+      "title": "Add Measurement Entry",
+      "dateLabel": "Date",
+      "weightLabel": "Target Weight ({{unit}})",
+      "chestLabel": "Chest ({{unit}})",
+      "waistLabel": "Waist ({{unit}})",
+      "hipsLabel": "Hips ({{unit}})",
+      "neckLabel": "Neck ({{unit}})",
+      "rightArmLabel": "Right Arm ({{unit}})",
+      "notesPlaceholder": "Notes...",
+      "cancel": "CANCEL",
+      "save": "SAVE"
+    },
+    "comparisonModal": {
+      "title": "Side-by-Side Comparison",
+      "sliderView": "Slider View",
+      "sideBySideView": "Side-by-Side View",
+      "sliderTitle": "Image Comparison Slider",
+      "before": "BEFORE: {{date}}",
+      "after": "AFTER: {{date}}",
+      "metric": "Metric",
+      "change": "Change",
+      "close": "CLOSE"
+    },
+    "alerts": {
+      "deleteTitle": "Delete Entry",
+      "deleteMessage": "Are you sure you want to permanently delete all data for {{date}}? This includes any associated photo and cannot be undone."
+    },
+    "toasts": {
+      "entrySaved": "Entry Saved!",
+      "notesSaved": "Notes auto-saved.",
+      "photoSaved": "Photo saved!",
+      "photoSaveError": "Could not save photo.",
+      "selectDatesError": "Please select two dates to compare.",
+      "findEntriesError": "Could not find the selected entries.",
+      "entryNotFound": "Entry not found.",
+      "entryDeleted": "Entry deleted successfully.",
+      "deleteError": "Could not delete the entry."
+    },
+    "metrics": {
+      "weight": "Weight ({{unit}})",
+      "bmi": "Body Mass Index (BMI)",
+      "bodyFat": "Body Fat % (Navy)",
+      "chest": "Chest ({{unit}})",
+      "waist": "Waist ({{unit}})",
+      "hips": "Hips ({{unit}})",
+      "neck": "Neck ({{unit}})",
+      "rightArm": "Right Arm ({{unit}})"
+    }
+  },
+  "restTimer": {
+    "nextUp": "Next Up",
+    "skip": "Skip"
+  },
+  "barbellCalculator": {
+    "nav": {
+      "calculator": "Calculator",
+      "percentages": "Percentages",
+      "oneRepMax": "1RM",
+      "rpe": "RPE",
+      "powerlifting": "Powerlifting"
+    },
+    "calculator": {
+      "calculate": "CALCULATE",
+      "reverse": "REVERSE",
+      "justBar": "(Just bar and collars)",
+      "decreaseWeight": "Decrease weight",
+      "increaseWeight": "Increase weight",
+      "tapToLoad": "TAP PLATES TO LOAD/UNLOAD BAR",
+      "clearBar": "CLEAR BAR",
+      "usePersonalGym": "Use Personal Gym",
+      "enable50kg": "Enable 50{{unit}} Plate",
+      "barbell": "Barbell",
+      "plateType": "Plate Type",
+      "bumperPlates": "Bumper Plates",
+      "standardIron": "Standard Iron",
+      "collars": "Collars",
+      "platesNeeded": "Plates Needed (Per Side)",
+      "barAndCollarsOnly": "Bar and collars only",
+      "howCalculated": "How the total is calculated:",
+      "barLabel": "(Bar)",
+      "collarsLabel": "(Collars)",
+      "platesLabel": "(Plates)"
+    },
+    "percentages": {
+      "title": "Percentage Calculator",
+      "workingWeight": "Working Weight (100%)",
+      "workingWeightPlaceholder": "e.g., 100",
+      "platesPerSide": "Plates per side",
+      "barCollarsOnly": "Bar/collars only",
+      "emptyState": "Enter a base weight to calculate percentages."
+    },
+    "oneRepMax": {
+      "title": "One-Rep Max (1RM) Estimator",
+      "weightLifted": "Weight Lifted",
+      "weightPlaceholder": "e.g., 100",
+      "repsPerformed": "Reps Performed",
+      "repsPlaceholder": "e.g., 5",
+      "estimatedTitle": "Estimated 1RM",
+      "epley": "Epley Formula:",
+      "brzycki": "Brzycki Formula:",
+      "projectionsTitle": "Rep Max Projections (based on Epley)",
+      "repsHeader": "Reps",
+      "weightHeader": "Weight",
+      "emptyState": "Enter a valid weight and number of reps."
+    },
+    "rpe": {
+      "title": "e1RM from RPE",
+      "rpe": "RPE",
+      "rir": "RIR",
+      "weightLifted": "Weight Lifted",
+      "repsPerformed": "Reps Performed",
+      "rpeLabel": "RPE (Rate of Perceived Exertion)",
+      "rirLabel": "RIR (Reps In Reserve)",
+      "equivalentRpe": "(Equivalent to RPE {{rpe}})",
+      "estimatedTitle": "Estimated 1-Rep Max",
+      "emptyState": "Enter weight, reps, and select an exertion level. Not all combinations are valid."
+    },
+    "powerlifting": {
+      "title": "Powerlifting Scores",
+      "bodyweight": "Bodyweight",
+      "bodyweightPlaceholder": "e.g., 80",
+      "total": "Total (S+B+D)",
+      "totalPlaceholder": "e.g., 500",
+      "event": "Event",
+      "raw": "Classic / Raw",
+      "equipped": "Equipped",
+      "category": "Category",
+      "fullMeet": "Full Meet",
+      "benchOnly": "Bench Only",
+      "gender": "Gender",
+      "male": "Male",
+      "female": "Female",
+      "calculatedScores": "Calculated Scores",
+      "wilks1": "Wilks (Original):",
+      "wilks2": "Wilks 2 (2019):",
+      "dots": "DOTS Score:",
+      "glPoints": "Goodlift Points:",
+      "qPoints": "Q Points:",
+      "sinclair": "Sinclair Total:",
+      "emptyState": "Enter a valid bodyweight and total."
+    },
+    "toasts": {
+      "maxWeightReached": "Weight exceeds available plates. Setting to max: {{weight}} {{unit}}",
+      "maxWeightTitle": "Max Weight Reached",
+      "premiumFeature": "To use equipment from your Personal Gym, please upgrade to Premium.",
+      "noBarbells": "No {{unit}} barbells found in your Personal Gym.",
+      "equipmentMissing": "Equipment Missing",
+      "noPlates": "No plates found in your gym for this unit.",
+      "headsUp": "Heads Up"
+    },
+    "tooltips": {
+      "wilks1": "The original Wilks coefficient compares powerlifters across different bodyweights to determine the best pound-for-pound lifter.",
+      "wilks2": "A successor to the original formula, using updated coefficients from more modern lifting data.",
+      "dots": "DOTS (Dynamic Objective Totaling System) is a popular scoring system now used by many federations, like USA Powerlifting (USAPL).",
+      "glPoints": "The official scoring system of the IPF. It is highly robust, accounting for raw vs. equipped events and full vs. bench-only meets.",
+      "qPoints": "A strength-to-weight ratio formula developed for and used by the GPC (Global Powerlifting Committee) federation.",
+      "sinclair": "Primarily used in Olympic Weightlifting to compare athletes in the Snatch and Clean & Jerk. Included here for comparison."
+    }
+  },
+
+  "barbellData": {
+    "barbells": {
+      "mensOlympic": "Men's Olympic Bar",
+      "womensOlympic": "Women's Olympic Bar",
+      "standardGym": "Standard Gym Bar",
+      "ezCurl": "EZ Curl Bar",
+      "tricep": "Tricep Bar",
+      "trapHex": "Trap/Hex Bar",
+      "olympic120": "Olympic Bar 120cm",
+      "olympic152": "Olympic Bar 152cm",
+      "olympic182": "Olympic Bar 182cm",
+      "olympic186": "Olympic Bar 186cm",
+      "olympic219": "Olympic Bar 219cm",
+      "olympic47in": "Olympic Bar 47.24in",
+      "olympic60in": "Olympic Bar 59.84in",
+      "olympic72in": "Olympic Bar 71.65in",
+      "olympic73in": "Olympic Bar 73.23in",
+      "olympic86in": "Olympic Bar 86.22in"
+    },
+    "collars": {
+      "none": "No Collars",
+      "spring": "Spring Clips",
+      "lockjaw": "Lock-Jaw / Pro Collars",
+      "competition": "Competition Collars"
+    }
+  },
+
+  "logActivity": {
+    "logTitle": "Log an Activity",
+    "editTitle": "Edit Activity Log",
+    "logSubtitle": "Record any physical activity you've done.",
+    "editSubtitle": "Update the details of your logged activity.",
+    "activityLabel": "Activity",
+    "selectActivity": "-- Select an Activity --",
+    "activityRequired": "Please select an activity.",
+    "dateLabel": "Date",
+    "dateRequired": "A valid date is required.",
+    "startTimeLabel": "Start Time",
+    "startTimeRequired": "A start time is required.",
+    "endTimeLabel": "End Time",
+    "endTimeRequired": "An end time is required.",
+    "timeInvalid": "End time must be after start time.",
+    "intensityLabel": "Perceived Intensity",
+    "intensityOptions": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High"
+    },
+    "locationLabel": "Location (optional)",
+    "locationPlaceholder": "e.g., Wonderful Street",
+    "distanceLabel": "Distance (km)",
+    "distancePlaceholder": "e.g., 5.5",
+    "caloriesLabel": "Calories Burned (optional)",
+    "caloriesPlaceholder": "e.g., 350",
+    "notesLabel": "Notes",
+    "notesPlaceholder": "Any details about your activity...",
+    "logButton": "LOG ACTIVITY",
+    "updateButton": "UPDATE LOG",
+    "toasts": {
+      "editError": "Could not find the activity log to edit.",
+      "invalidForm": "Please fill out all required fields and ensure times are valid.",
+      "invalidFormTitle": "Invalid Form"
+    }
+  },
+
+  "activityLogDetails": {
+    "duration": "Duration",
+    "intensity": "Intensity",
+    "location": "Location",
+    "distance": "Distance",
+    "calories": "Calories",
+    "notes": "Notes",
+    "loading": "Loading activity details...",
+    "actions": {
+      "edit": "EDIT",
+      "delete": "DELETE"
+    },
+    "alerts": {
+      "deleteTitle": "Delete Activity Log?",
+      "deleteMessage": "Are you sure you want to delete this log for \"{{name}}\"? This cannot be undone.",
+      "cancel": "Cancel",
+      "deleteButton": "Delete"
+    }
+  },
+
+  "pbTrend": {
+    "title": "{{exercise}} - {{pbType}}",
+    "defaultTitle": "PB Trend",
+    "loading": "Loading trend data...",
+    "error": {
+      "missingParams": "Exercise ID or PB Type missing in URL.",
+      "invalidPbType": "Invalid PB Type in URL.",
+      "fetchFailed": "Failed to load data for the trend chart.",
+      "noData": "No Personal Best data found for \"{{exercise}}\" of type \"{{pbType}}\"",
+      "notEnoughData": "Not enough data points to plot a trend. At least two records are needed."
+    },
+    "backButton": "Back to Personal Bests",
+    "chart": {
+      "xAxisLabel": "Date",
+      "tooltip": {
+        "value": "Value: {{value}} {{unit}}",
+        "reps": "Reps: {{reps}}",
+        "notes": "Notes: {{notes}}",
+        "viewLog": "Click to view log"
+      },
+      "averageLine": "Avg: {{value}}"
+    },
+    "history": {
+      "title": "Personal Best History",
+      "dateHeader": "Date",
+      "repsHeader": "Reps",
+      "logHeader": "Log",
+      "viewLog": "LOG"
+    },
+    "yAxis": {
+      "weight": "Weight ({{unit}})",
+      "reps": "Repetitions",
+      "duration": "Duration (seconds)",
+      "value": "Value"
+    }
   }
+
 }

@@ -43,7 +43,7 @@
         <app-icon name="flame-2" class="h-12 w-12 text-yellow-400"></app-icon>
       </div>
       <div class="min-w-0 flex-1 overflow-y-auto max-h-40 pr-2 custom-scrollbar">
-        <h3 class="font-semibold text-gray-300 uppercase tracking-wider text-sm">Next Up</h3>
+        <h3 class="font-semibold text-gray-300 uppercase tracking-wider text-sm">{{ 'restTimer.nextUp' | translate }}</h3>
 
         <!-- START: MODIFIED ELEMENT -->
         <!-- We use a div with [innerHTML] to render the line breaks and styles -->
@@ -65,7 +65,7 @@
 
       <button appPress (shortPress)="skipTimer()"
         class="py-4 px-12 bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold rounded-full shadow-lg transition-transform duration-150 text-lg uppercase tracking-wider transform active:scale-95">
-        Skip
+        {{ 'restTimer.skip' | translate }}
       </button>
 
       <button (click)="adjustTimer(15)"

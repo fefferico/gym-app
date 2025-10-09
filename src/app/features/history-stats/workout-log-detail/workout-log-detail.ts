@@ -26,6 +26,7 @@ import { ProgramDayInfo, TrainingProgram } from '../../../core/models/training-p
 import { MenuMode } from '../../../core/models/app-settings.model';
 import { PerformanceComparisonModalComponent } from './performance-comparison-modal/performance-comparison-modal.component';
 import { FabAction, FabMenuComponent } from '../../../shared/components/fab-menu/fab-menu.component';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 export interface DisplayLoggedExercise extends LoggedWorkoutExercise {
   baseExercise?: Exercise | null;
@@ -81,7 +82,7 @@ interface TargetComparisonData {
   selector: 'app-workout-log-detail',
   standalone: true,
   imports: [CommonModule, RouterLink, DatePipe, TitleCasePipe, ModalComponent, ExerciseDetailComponent,
-    ActionMenuComponent, PressDirective, IconComponent, TooltipDirective, WeightUnitPipe, PerformanceComparisonModalComponent, FabMenuComponent],
+    ActionMenuComponent, PressDirective, IconComponent, TooltipDirective, WeightUnitPipe, PerformanceComparisonModalComponent, FabMenuComponent, TranslateModule],
   templateUrl: './workout-log-detail.html',
   providers: [DecimalPipe]
 })
@@ -98,6 +99,7 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
   private platformId = inject(PLATFORM_ID);
   private trainingService = inject(TrainingProgramService);
   private injector = inject(Injector);
+  private translate = inject(TranslateService);
 
 
   comparisonModalData = signal<TargetComparisonData | null>(null);
@@ -111,7 +113,7 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
   personalBestsForLog = signal<Record<string, PersonalBestSet[]>>({});
 
   @Input() logId?: string;
-  exerciseInfoTooltipString = 'Exercise details and progression';
+  exerciseInfoTooltipString = this.translate.instant('workoutBuilder.exerciseInfoTooltip');
 
   private subscriptions = new Subscription();
   availablePrograms: TrainingProgram[] = [];
@@ -559,11 +561,11 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
     const defaultBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-primary flex items-center text-sm hover:text-white dark:hover:text-gray-100';
     const deleteBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-red-600 flex items-center text-sm hover:text-gray-100 hover:animate-pulse';
     return [
-      { label: 'SUMMARY', actionKey: 'view', iconName: 'eye', buttonClass: `${mode === 'dropdown' ? 'w-full ' : ''}${defaultBtnClass}`, data: { routineId } },
-      { label: 'EDIT LOG', actionKey: 'edit', iconName: 'edit', buttonClass: `${mode === 'dropdown' ? 'w-full ' : ''}${defaultBtnClass}`, data: { routineId } },
-      { label: 'ROUTINE', actionKey: 'routine', iconName: 'routines', buttonClass: `${mode === 'dropdown' ? 'w-full ' : ''}${defaultBtnClass}`, data: { routineId } },
+      { label: this.translate.instant('logDetail.actions.summary'), actionKey: 'view', iconName: 'eye', buttonClass: `${mode === 'dropdown' ? 'w-full ' : ''}${defaultBtnClass}`, data: { routineId } },
+      { label: this.translate.instant('logDetail.actions.edit'), actionKey: 'edit', iconName: 'edit', buttonClass: `${mode === 'dropdown' ? 'w-full ' : ''}${defaultBtnClass}`, data: { routineId } },
+      { label: this.translate.instant('logDetail.actions.routine'), actionKey: 'routine', iconName: 'routines', buttonClass: `${mode === 'dropdown' ? 'w-full ' : ''}${defaultBtnClass}`, data: { routineId } },
       { isDivider: true },
-      { label: 'DELETE', actionKey: 'delete', iconName: 'trash', buttonClass: `${mode === 'dropdown' ? 'w-full ' : ''}${deleteBtnClass}`, data: { routineId } }
+      { label: this.translate.instant('logDetail.actions.delete'), actionKey: 'delete', iconName: 'trash', buttonClass: `${mode === 'dropdown' ? 'w-full ' : ''}${deleteBtnClass}`, data: { routineId } }
     ];
   }
 
@@ -584,7 +586,7 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
     if (log?.routineId && log.routineId !== '-1') {
       this.router.navigate(['/workout/routine/view/', log.routineId]);
     } else {
-      const confirm = await this.alertService.showConfirm("No routine for log", "There is no routine associated with this log: would you like to create one? If so remember to link it to this log once created");
+      const confirm = await this.alertService.showConfirm(this.translate.instant('logDetail.alerts.noRoutineTitle'), this.translate.instant('logDetail.alerts.noRoutineMessage'));
       if (log && confirm?.data) {
         this.router.navigate(['/workout/routine/new-from-log', log.id]);
       }
@@ -592,15 +594,15 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
   }
 
   async deleteLogDetails(logId: string): Promise<void> {
-    const confirm = await this.alertService.showConfirm("Delete Workout Log", "Are you sure you want to delete this workout log? This action cannot be undone.", "Delete");
+    const confirm = await this.alertService.showConfirm(this.translate.instant('logDetail.alerts.deleteTitle'), this.translate.instant('logDetail.alerts.deleteMessage'), this.translate.instant('logDetail.alerts.deleteButton'));
     if (confirm?.data) {
       try {
         this.spinnerService.show();
         await this.trackingService.deleteWorkoutLog(logId);
-        this.toastService.success("Workout log deleted successfully");
+        this.toastService.success(this.translate.instant('logDetail.toasts.logDeleted'));
         this.router.navigate(['/history/list']);
       } catch (err) {
-        this.toastService.error("Failed to delete workout log");
+        this.toastService.error(this.translate.instant('logDetail.toasts.logDeleteFailed'));
       } finally {
         this.spinnerService.hide();
       }
@@ -627,10 +629,14 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
     if (this.checkIfLogForProgram()) {
       const program = this.availablePrograms.find(p => p.id === this.workoutLog()?.programId);
       if (program) {
-        return `Log for Program: ${program.name}${this.weekName() ? ' - ' + this.weekName() : ''}${this.dayInfo() ? ' - Day ' + this.dayInfo()?.dayNumber : ''}`;
+        return this.translate.instant('logDetail.logForProgram', {
+          programName: program.name,
+          week: this.weekName() || '',
+          day: this.dayInfo()?.dayNumber || ''
+        });
       }
     }
-    return 'Ad-hoc Workout';
+    return this.translate.instant('logDetail.adHocWorkout');
   }
 
   protected hasPerformedTimedSets(loggedEx: DisplayLoggedExercise): boolean {
@@ -643,9 +649,9 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
 
   protected emomLabel(exercise: EMOMDisplayBlock): string {
     const rounds = exercise.totalRounds || 1;
-    let roundString = rounds > 1 ? ` (${rounds} ROUNDS)` : ` (${rounds} ROUND)`;
+    let roundString = this.translate.instant(rounds > 1 ? 'trainingPrograms.card.roundsLabel' : 'trainingPrograms.card.roundLabel', { count: rounds });
 
-    return `EMOM${roundString} - Every ${exercise.emomTimeSeconds || 60}s`;
+    return this.translate.instant('trainingPrograms.superset.emomInfo', { rounds: roundString, time: exercise.emomTimeSeconds || 60 });
   }
 
   protected exerciseNameDisplay(exercise: DisplayLoggedExercise): string {

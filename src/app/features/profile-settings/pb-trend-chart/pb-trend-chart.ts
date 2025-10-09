@@ -14,6 +14,7 @@ import { ToastService } from '../../../core/services/toast.service';
 import { AppSettingsService } from '../../../core/services/app-settings.service';
 import { ThemeService } from '../../../core/services/theme.service';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 interface ChartSeriesPoint {
     name: Date;
@@ -38,7 +39,8 @@ interface ChartData {
         NgxChartsModule,
         DatePipe,
         RouterLink,
-        IconComponent
+        IconComponent,
+        TranslateModule
     ],
     templateUrl: './pb-trend-chart.html',
     styleUrls: ['./pb-trend-chart.scss'],
@@ -57,6 +59,7 @@ export class PbTrendChartComponent implements OnInit {
     private themeService = inject(ThemeService);
     private renderer = inject(Renderer2);
     private el = inject(ElementRef);
+    private translate = inject(TranslateService);
     private themeSubscription: Subscription | undefined;
 
     chartData = signal<ChartData[] | null>(null);
@@ -129,7 +132,7 @@ export class PbTrendChartComponent implements OnInit {
                 const encodedPbTypeParam = params.get('pbType');
 
                 if (!exerciseIdParam || !encodedPbTypeParam) {
-                    this.errorMessage.set('Exercise ID or PB Type missing in URL.');
+                    this.errorMessage.set(this.translate.instant('pbTrend.error.missingParams'));
                     this.isLoading.set(false);
                     return of({ pb: null, exercise: null, error: 'Missing parameters' });
                 }
@@ -138,7 +141,7 @@ export class PbTrendChartComponent implements OnInit {
                 try {
                     this.currentPbType = decodeURIComponent(encodedPbTypeParam);
                 } catch (e) {
-                    this.errorMessage.set('Invalid PB Type in URL.');
+                    this.errorMessage.set(this.translate.instant('pbTrend.error.invalidPbType'));
                     this.isLoading.set(false);
                     return of({ pb: null, exercise: null, error: 'Invalid PB Type' });
                 }
@@ -152,7 +155,7 @@ export class PbTrendChartComponent implements OnInit {
                     map(([pb, exercise]) => ({ pb, exercise, error: null })),
                     catchError(err => {
                         console.error('Error fetching PB trend data:', err);
-                        this.errorMessage.set('Failed to load data for the trend chart.');
+                        this.errorMessage.set(this.translate.instant('pbTrend.error.fetchFailed'));
                         return of({ pb: null, exercise: null, error: 'Fetch error' });
                     })
                 );
@@ -166,7 +169,7 @@ export class PbTrendChartComponent implements OnInit {
             if (pb) {
                 this.prepareChartData(pb);
             } else {
-                this.errorMessage.set(`No Personal Best data found for "${this.currentExerciseName()}" of type "${this.currentPbType}"`);
+                this.errorMessage.set(this.translate.instant('pbTrend.error.noData', { exercise: this.currentExerciseName(), pbType: this.currentPbType }));
             }
             this.isLoading.set(false);
         });
@@ -179,13 +182,13 @@ export class PbTrendChartComponent implements OnInit {
 
     private setYAxisLabel(pbType: string): void {
         if (pbType.includes('RM') || pbType.includes('Heaviest Lifted')) {
-            this.yAxisLabel.set(`Weight (${this.unitsService.getWeightUnitSuffix()})`);
+            this.yAxisLabel.set(this.translate.instant('pbTrend.yAxis.weight', { unit: this.unitsService.getWeightUnitSuffix() }));
         } else if (pbType.includes('Max Reps')) {
-            this.yAxisLabel.set('Repetitions');
+            this.yAxisLabel.set(this.translate.instant('pbTrend.yAxis.reps'));
         } else if (pbType.includes('Max Duration')) {
-            this.yAxisLabel.set('Duration (seconds)');
+            this.yAxisLabel.set(this.translate.instant('pbTrend.yAxis.duration'));
         } else {
-            this.yAxisLabel.set('Value');
+            this.yAxisLabel.set(this.translate.instant('pbTrend.yAxis.value'));
         }
     }
 
@@ -216,7 +219,7 @@ export class PbTrendChartComponent implements OnInit {
 
         // +++ UPDATED LOGIC for handling 0 or 1 data points
         if (seriesData.length < 2) {
-            this.errorMessage.set(`Not enough data points to plot a trend. At least two records are needed.`);
+            this.errorMessage.set(this.translate.instant('pbTrend.error.notEnoughData'));
             this.chartData.set(null); // Ensure chart doesn't render
             this.lineChartReferenceLines.set([]);
             return;
@@ -227,7 +230,7 @@ export class PbTrendChartComponent implements OnInit {
         // +++ ADD logic to calculate average for reference line
         const totalValue = seriesData.reduce((sum, item) => sum + item.value, 0);
         const averageValue = totalValue / seriesData.length;
-        this.lineChartReferenceLines.set([{ name: `Avg: ${averageValue.toFixed(1)}`, value: averageValue }]);
+        this.lineChartReferenceLines.set([{ name: this.translate.instant('pbTrend.chart.averageLine', { value: averageValue.toFixed(1) }), value: averageValue }]);
 
         this.chartData.set([{
             name: `${this.currentPbType || 'PB'} Trend`,
@@ -257,7 +260,7 @@ export class PbTrendChartComponent implements OnInit {
         if (event && event.extra && event.extra.workoutLogId) {
             this.router.navigate(['/history/log', event.extra.workoutLogId]);
         } else if (event && event.extra) {
-            this.toastService.info(`PB achieved: ${event.value} ${this.yAxisLabel().split(' ')[0]} on ${this.datePipe.transform(event.name, 'mediumDate')}. ${event.extra.reps ? 'Reps: ' + event.extra.reps : ''}`, 5000, "PB Detail");
+            this.toastService.info(this.translate.instant('pbTrend.chart.tooltip.value', { value: event.value, unit: this.yAxisLabel().split(' ')[0] }) + ` on ${this.datePipe.transform(event.name, 'mediumDate')}. ${event.extra.reps ? this.translate.instant('pbTrend.chart.tooltip.reps', { reps: event.extra.reps }) : ''}`, 5000, "PB Detail");
         }
     }
 

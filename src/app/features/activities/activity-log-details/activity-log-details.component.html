@@ -37,38 +37,38 @@
       <!-- Duration -->
       <div class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
         <app-icon name="clock" class="w-8 h-8 mx-auto text-primary mb-2"></app-icon>
-        <div class="text-sm text-gray-500 dark:text-gray-400">Duration</div>
+        <div class="text-sm text-gray-500 dark:text-gray-400">{{ 'activityLogDetails.duration' | translate }}</div>
         <div class="text-2xl font-semibold text-black dark:text-gray-200">{{ log.durationMinutes }} min</div>
       </div>
       <!-- Intensity -->
       <div class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
         <app-icon name="flame" class="w-8 h-8 mx-auto text-primary mb-2"></app-icon>
-        <div class="text-sm text-gray-500 dark:text-gray-400">Intensity</div>
+        <div class="text-sm text-gray-500 dark:text-gray-400">{{ 'activityLogDetails.intensity' | translate }}</div>
         <div class="text-2xl font-semibold text-black dark:text-gray-200">{{ log.intensity }}</div>
       </div>
       <!-- Location -->
       <div *ngIf="log.location" class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
         <app-icon name="map" class="w-8 h-8 mx-auto text-primary mb-2"></app-icon>
-        <div class="text-sm text-gray-500 dark:text-gray-400">Location</div>
+        <div class="text-sm text-gray-500 dark:text-gray-400">{{ 'activityLogDetails.location' | translate }}</div>
         <div class="text-2xl font-semibold text-black dark:text-gray-200">{{ log.location }}</div>
       </div>
       <!-- Distance -->
       <div class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
         <app-icon name="distance" class="w-8 h-8 mx-auto text-primary mb-2"></app-icon>
-        <div class="text-sm text-gray-500 dark:text-gray-400">Distance</div>
+        <div class="text-sm text-gray-500 dark:text-gray-400">{{ 'activityLogDetails.distance' | translate }}</div>
         <div class="text-2xl font-semibold text-black dark:text-gray-200">{{ log.distanceKm ? log.distanceKm +' km' : 'N.A.' }}</div>
       </div>
       <!-- Calories -->
       <div class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
         <app-icon name="calories" class="w-8 h-8 mx-auto text-primary mb-2"></app-icon>
-        <div class="text-sm text-gray-500 dark:text-gray-400">Calories</div>
+        <div class="text-sm text-gray-500 dark:text-gray-400">{{ 'activityLogDetails.calories' | translate }}</div>
         <div class="text-2xl font-semibold text-black dark:text-gray-200">{{ log.caloriesBurned ? log.caloriesBurned + ' kcal': 'N.A.' }}</div>
 
       </div>
     </div>
     <!-- Notes -->
     <div *ngIf="log.notes" class="pt-4 border-t border-gray-200 dark:border-gray-700">
-      <h3 class="text-lg font-semibold mb-2">Notes</h3>
+      <h3 class="text-lg font-semibold mb-2">{{ 'activityLogDetails.notes' | translate }}</h3>
       <p class="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{{ log.notes }}</p>
     </div>
   </div>
@@ -76,6 +76,6 @@
 
 <ng-template #loading>
   <div class="text-center p-20">
-    <p class="text-xl text-gray-600 dark:text-gray-400">Loading activity details...</p>
+    <p class="text-xl text-gray-600 dark:text-gray-400">{{ 'activityLogDetails.loading' | translate }}</p>
   </div>
 </ng-template>

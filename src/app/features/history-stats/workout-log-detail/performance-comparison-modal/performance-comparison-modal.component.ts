@@ -7,6 +7,7 @@ import { TrackingService } from '../../../../core/services/tracking.service';
 import { UnitsService } from '../../../../core/services/units.service';
 import { WeightUnitPipe } from '../../../../shared/pipes/weight-unit-pipe';
 import { DisplayLoggedExercise } from '../workout-log-detail';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 // Interfaces for data structure
 interface PerformanceSummary {
@@ -63,7 +64,7 @@ interface ExerciseComparisonSummary {
     selector: 'app-performance-comparison-modal',
     standalone: true,
     providers: [WeightUnitPipe],
-    imports: [CommonModule, DatePipe, DecimalPipe, IconComponent, WeightUnitPipe],
+    imports: [CommonModule, DatePipe, DecimalPipe, IconComponent, WeightUnitPipe, TranslateModule],
     templateUrl: './performance-comparison-modal.component.html'
 })
 export class PerformanceComparisonModalComponent {
@@ -71,6 +72,7 @@ export class PerformanceComparisonModalComponent {
     protected unitService = inject(UnitsService);
     protected weightUnitPipe = inject(WeightUnitPipe);
     protected decimalPipe = inject(DecimalPipe);
+    private translate = inject(TranslateService);
 
     // --- INPUTS ---
     public readonly exerciseSignal = signal<DisplayLoggedExercise | undefined>(undefined);
@@ -377,7 +379,7 @@ export class PerformanceComparisonModalComponent {
     
     // Sets
     rows.push({
-      metric: 'Sets',
+      metric: this.translate.instant('performanceComparison.summary.sets'),
       currentValue: data.currentSummary.setsCount,
       previousValue: data.previousSummary.setsCount,
       diff: data.comparison.setsDiff,
@@ -387,7 +389,7 @@ export class PerformanceComparisonModalComponent {
     // Reps (if applicable)
     if (data.currentSummary.totalReps > 0 || data.previousSummary.totalReps > 0) {
       rows.push({
-        metric: 'Total Reps',
+        metric: this.translate.instant('performanceComparison.summary.totalReps'),
         currentValue: data.currentSummary.totalReps,
         previousValue: data.previousSummary.totalReps,
         diff: data.comparison.repsDiff,
@@ -398,13 +400,13 @@ export class PerformanceComparisonModalComponent {
     // Weight Metrics (if applicable)
     if (this.showWeightMetrics()) {
       rows.push({
-        metric: 'Max Weight',
+        metric: this.translate.instant('performanceComparison.summary.maxWeight'),
         currentValue: this.weightUnitPipe.transform(data.currentSummary.maxWeight, '1.0-1'),
         previousValue: this.weightUnitPipe.transform(data.previousSummary.maxWeight, '1.0-1'),
         diff: data.comparison.maxWeightDiff,
         percentChange: data.comparison.maxWeightPercentChange,
       }, {
-        metric: 'Total Volume',
+        metric: this.translate.instant('performanceComparison.summary.totalVolume'),
         currentValue: this.weightUnitPipe.transform(data.currentSummary.totalVolume, '1.0-0'),
         previousValue: this.weightUnitPipe.transform(data.previousSummary.totalVolume, '1.0-0'),
         diff: data.comparison.volumeDiff,
@@ -415,13 +417,13 @@ export class PerformanceComparisonModalComponent {
     // Cardio Metrics (if applicable)
     if (this.showCardioMetrics()) {
       rows.push({
-        metric: 'Total Duration',
+        metric: this.translate.instant('performanceComparison.summary.totalDuration'),
         currentValue: this.formatDuration(data.currentSummary.totalDuration),
         previousValue: this.formatDuration(data.previousSummary.totalDuration),
         diff: data.comparison.durationDiff,
         percentChange: data.comparison.durationPercentChange,
       }, {
-        metric: 'Total Distance',
+        metric: this.translate.instant('performanceComparison.summary.totalDistance'),
         currentValue: `${this.decimalPipe.transform(data.currentSummary.totalDistance, '1.0-2')} ${this.unitService.getDistanceMeasureUnitSuffix()}`,
         previousValue: `${this.decimalPipe.transform(data.previousSummary.totalDistance, '1.0-2')} ${this.unitService.getDistanceMeasureUnitSuffix()}`,
         diff: data.comparison.distanceDiff,

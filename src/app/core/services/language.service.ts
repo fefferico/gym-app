@@ -12,7 +12,7 @@ const LANG_STORAGE_KEY = 'app_language';
 export class LanguageService {
   
   currentLang = signal<string>('en');
-  supportedLanguages = ['en', 'es', 'it', 'fr', 'de'];
+  supportedLanguages = ['en', 'es', 'it', 'fr', 'de', 'zh', 'ja', 'ru', 'pt', 'ar'];
   private platformId = inject(PLATFORM_ID);
 
   constructor(private translate: TranslateService) {}

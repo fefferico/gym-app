@@ -30,6 +30,11 @@ import localeEs from '@angular/common/locales/es';
 import localeIt from '@angular/common/locales/it';
 import localeFr from '@angular/common/locales/fr';
 import localeDe from '@angular/common/locales/de';
+import localeRu from '@angular/common/locales/ru';
+import localeJa from '@angular/common/locales/ja';
+import localeZh from '@angular/common/locales/zh';
+import localePr from '@angular/common/locales/pt';
+import localeAr from '@angular/common/locales/ar';
 import { isPlatformBrowser, registerLocaleData } from '@angular/common';
 import { LanguageService } from './core/services/language.service';
 
@@ -39,6 +44,11 @@ registerLocaleData(localeEs);
 registerLocaleData(localeIt);
 registerLocaleData(localeFr);
 registerLocaleData(localeDe);
+registerLocaleData(localeRu);
+registerLocaleData(localeJa);
+registerLocaleData(localeZh);
+registerLocaleData(localePr);
+registerLocaleData(localeAr);
 
 export class CustomHammerConfig extends HammerGestureConfig {
   override overrides = {

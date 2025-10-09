@@ -12,6 +12,7 @@ import { debounceTime } from 'rxjs/operators';
 import { IconComponent } from '../../shared/components/icon/icon.component';
 import { AlertService } from '../../core/services/alert.service';
 import { UnitsService } from '../../core/services/units.service';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 // Data format for ngx-charts
 export interface ChartData {
@@ -37,7 +38,7 @@ export interface ComparisonData {
 @Component({
   selector: 'app-measurement-history',
   standalone: true,
-  imports: [CommonModule, NgxChartsModule, ReactiveFormsModule, IconComponent],
+  imports: [CommonModule, NgxChartsModule, ReactiveFormsModule, IconComponent, TranslateModule],
   templateUrl: './measurement-history.html',
   styleUrls: ['./measurement-history.scss']
 })
@@ -49,6 +50,7 @@ export class MeasurementHistoryComponent implements OnInit {
   private fb = inject(FormBuilder);
   private alertService = inject(AlertService);
   unitsService = inject(UnitsService);
+  private translate = inject(TranslateService);
 
   compareFromDate: string = '';
   compareToDate: string = '';
@@ -87,14 +89,14 @@ export class MeasurementHistoryComponent implements OnInit {
 
   setupAvailableMetrics(): void {
     this.availableMetrics = [
-      { key: 'weight', label: `Weight (${this.unitsService.getBodyWeightUnitSuffix()})` },
-      { key: 'bmi', label: 'Body Mass Index (BMI)' },
-      { key: 'bodyFat', label: 'Body Fat % (Navy)' },
-      { key: 'chest', label: `Chest (${this.unitsService.getBodyMeasureUnitSuffix()})` },
-      { key: 'waist', label: `Waist (${this.unitsService.getBodyMeasureUnitSuffix()})` },
-      { key: 'hips', label: `Hips (${this.unitsService.getBodyMeasureUnitSuffix()})` },
-      { key: 'neck', label: `Neck (${this.unitsService.getBodyMeasureUnitSuffix()})` },
-      { key: 'rightArm', label: `Right Arm (${this.unitsService.getBodyMeasureUnitSuffix()})` },
+      { key: 'weight', label: this.translate.instant('measurementHistory.metrics.weight', { unit: this.unitsService.getBodyWeightUnitSuffix() }) },
+      { key: 'bmi', label: this.translate.instant('measurementHistory.metrics.bmi') },
+      { key: 'bodyFat', label: this.translate.instant('measurementHistory.metrics.bodyFat') },
+      { key: 'chest', label: this.translate.instant('measurementHistory.metrics.chest', { unit: this.unitsService.getBodyMeasureUnitSuffix() }) },
+      { key: 'waist', label: this.translate.instant('measurementHistory.metrics.waist', { unit: this.unitsService.getBodyMeasureUnitSuffix() }) },
+      { key: 'hips', label: this.translate.instant('measurementHistory.metrics.hips', { unit: this.unitsService.getBodyMeasureUnitSuffix() }) },
+      { key: 'neck', label: this.translate.instant('measurementHistory.metrics.neck', { unit: this.unitsService.getBodyMeasureUnitSuffix() }) },
+      { key: 'rightArm', label: this.translate.instant('measurementHistory.metrics.rightArm', { unit: this.unitsService.getBodyMeasureUnitSuffix() }) },
     ];
   }
 
@@ -199,12 +201,12 @@ export class MeasurementHistoryComponent implements OnInit {
     this.isAddEntryModalOpen = true;
   }
 
-  saveEntry(): void {
+saveEntry(): void {
     if (this.entryForm.invalid) return;
     this.userProfileService.addOrUpdateMeasurementEntry(this.entryForm.value);
     this.isAddEntryModalOpen = false;
     this.loadHistory(); // Reload to reflect changes
-    this.toastService.success('Entry Saved!');
+    this.toastService.success(this.translate.instant('measurementHistory.toasts.entrySaved'));
   }
 
   // --- Notes Logic ---
@@ -219,7 +221,7 @@ export class MeasurementHistoryComponent implements OnInit {
       const updatedEntry = { ...entry, notes };
       delete updatedEntry.photoUrl; // Ensure temporary property is not saved
       this.userProfileService.addOrUpdateMeasurementEntry(updatedEntry);
-      this.toastService.info('Notes auto-saved.', 1500);
+      this.toastService.info(this.translate.instant('measurementHistory.toasts.notesSaved'), 1500);
     }
   }
 
@@ -236,10 +238,10 @@ export class MeasurementHistoryComponent implements OnInit {
         if (entryToUpdate.photoUrl) URL.revokeObjectURL(entryToUpdate.photoUrl);
         entryToUpdate.photoUrl = URL.createObjectURL(file);
       }
-      this.toastService.success('Photo saved!');
+      this.toastService.success(this.translate.instant('measurementHistory.toasts.photoSaved'));
     } catch (error) {
       console.error('Failed to save photo:', error);
-      this.toastService.error('Could not save photo.');
+      this.toastService.error(this.translate.instant('measurementHistory.toasts.photoSaveError'));
     } finally {
       input.value = '';
     }
@@ -281,7 +283,7 @@ export class MeasurementHistoryComponent implements OnInit {
     this.comparisonSliderValue = 50;
 
     if (!fromDate || !toDate) {
-      this.toastService.error('Please select two dates to compare.');
+      this.toastService.error(this.translate.instant('measurementHistory.toasts.selectDatesError'));
       return;
     }
 
@@ -289,7 +291,7 @@ export class MeasurementHistoryComponent implements OnInit {
     let toEntry = this.measurementHistory.find(e => e.date === toDate);
 
     if (!fromEntry || !toEntry) {
-      this.toastService.error('Could not find the selected entries.');
+      this.toastService.error(this.translate.instant('measurementHistory.toasts.findEntriesError'));
       return;
     }
 
@@ -340,7 +342,7 @@ export class MeasurementHistoryComponent implements OnInit {
   editEntry(date: string): void {
     const entry = this.measurementHistory.find(e => e.date === date);
     if (!entry) {
-      this.toastService.error('Entry not found.');
+      this.toastService.error(this.translate.instant('measurementHistory.toasts.entryNotFound'));
       return;
     }
     // Populate the form with the entry's data
@@ -364,8 +366,8 @@ export class MeasurementHistoryComponent implements OnInit {
    */
   async confirmDeleteEntry(date: string): Promise<void> {
     const confirmation = await this.alertService.showConfirm(
-      'Delete Entry',
-      `Are you sure you want to permanently delete all data for ${date}? This includes any associated photo and cannot be undone.`
+      this.translate.instant('measurementHistory.alerts.deleteTitle'),
+      this.translate.instant('measurementHistory.alerts.deleteMessage', { date: date })
     );
 
     // Proceed only if the user confirmed
@@ -377,14 +379,14 @@ export class MeasurementHistoryComponent implements OnInit {
         // 2. Delete the associated photo from IndexedDB
         await this.imageStorageService.deleteImage(date);
 
-        this.toastService.success('Entry deleted successfully.');
+        this.toastService.success(this.translate.instant('measurementHistory.toasts.entryDeleted'));
 
         // 3. Refresh the component's view to reflect the changes
         await this.loadHistory();
 
       } catch (error) {
         console.error('Failed to delete entry:', error);
-        this.toastService.error('Could not delete the entry.');
+        this.toastService.error(this.translate.instant('measurementHistory.toasts.deleteError'));
       }
     }
   }

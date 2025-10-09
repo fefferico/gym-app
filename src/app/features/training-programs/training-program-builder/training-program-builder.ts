@@ -25,6 +25,7 @@ import { addDays, differenceInDays, format, getDay, parseISO } from 'date-fns';
 import { TrackingService } from '../../../core/services/tracking.service';
 import { WorkoutLog } from '../../../core/models/workout-log.model';
 import { MenuMode } from '../../../core/models/app-settings.model';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 interface DayOption {
     value: number;
@@ -47,7 +48,8 @@ interface ProgramGoal { value: Routine['goal'], label: string }
         ActionMenuComponent,
         PressDirective,
         TooltipDirective,
-        IconComponent
+        IconComponent,
+        TranslateModule
     ],
     templateUrl: './training-program-builder.html',
     styleUrls: ['./training-program-builder.scss']
@@ -63,6 +65,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
     private toastService = inject(ToastService);
     private cdr = inject(ChangeDetectorRef);
     private trackingService = inject(TrackingService);
+    private translate = inject(TranslateService); 
 
     programForm!: FormGroup;
     submitted = false; // Add this flag
@@ -79,8 +82,8 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
     private sanitizer = inject(DomSanitizer);
     public sanitizedDescription: SafeHtml = '';
 
-    infoTooltipString: string = 'The total number of days in the repeating cycle, INCLUDING rest days. Example: For an Upper/Lower split with a rest day after each workout (Upper, Rest, Lower, Rest), set Cycle Length to 4.';
-
+exerciseInfoTooltipString = this.translate.instant('workoutBuilder.exerciseInfoTooltip');
+    infoTooltipString: string = this.translate.instant('programBuilder.form.cycleLengthHint');
     // For routine selection modal
     isRoutineModalOpen = signal(false);
     availableRoutines: Routine[] = [];
@@ -90,9 +93,9 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
 
     // Day options for dropdown
     dayOfWeekOptions: DayOption[] = [
-        { value: 1, label: 'Monday' }, { value: 2, label: 'Tuesday' }, { value: 3, label: 'Wednesday' },
-        { value: 4, label: 'Thursday' }, { value: 5, label: 'Friday' }, { value: 6, label: 'Saturday' },
-        { value: 0, label: 'Sunday' }
+        { value: 1, label: this.translate.instant('dates.days.monday') }, { value: 2, label: this.translate.instant('dates.days.tuesday') }, { value: 3, label: this.translate.instant('dates.days.wednesday') },
+        { value: 4, label: this.translate.instant('dates.days.thursday') }, { value: 5, label: this.translate.instant('dates.days.friday') }, { value: 6, label: this.translate.instant('dates.days.saturday') },
+        { value: 0, label: this.translate.instant('dates.days.sunday') }
     ];
 
     // --- FIX 1: Create a signal to bridge RxJS valueChanges to the signal world ---
@@ -123,15 +126,15 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
 
     selectedGoals = signal<string[]>([]);
     programGoals: ProgramGoal[] = [
-        { value: 'hypertrophy', label: 'Hypertrophy' }, { value: 'strength', label: 'Strength' },
-        { value: 'tabata', label: 'Tabata' },
-        { value: 'muscular endurance', label: 'Muscular endurance' }, { value: 'cardiovascular endurance', label: 'Cardiovascular endurance' },
-        { value: 'fat loss / body composition', label: 'Fat loss / body composition' }, { value: 'mobility & flexibility', label: 'Mobility & flexibility' },
-        { value: 'power / explosiveness', label: 'Power / explosiveness' }, { value: 'speed & agility', label: 'Speed & agility' },
-        { value: 'balance & coordination', label: 'Balance & coordination' }, { value: 'skill acquisition', label: 'Skill acquisition' },
-        { value: 'rehabilitation / injury prevention', label: 'Rehabilitation / injury prevention' }, { value: 'mental health / stress relief', label: 'Mental health' },
-        { value: 'general health & longevity', label: 'General health & longevity' }, { value: 'sport-specific performance', label: 'Sport-specific performance' },
-        { value: 'maintenance', label: 'Maintenance' }, { value: 'rest', label: 'Rest' }, { value: 'custom', label: 'Custom' }
+        { value: 'hypertrophy', label: this.translate.instant('workoutBuilder.goals.hypertrophy') }, { value: 'strength', label: this.translate.instant('workoutBuilder.goals.strength') },
+        { value: 'tabata', label: this.translate.instant('workoutBuilder.goals.tabata') },
+        { value: 'muscular endurance', label: this.translate.instant('workoutBuilder.goals.muscularEndurance') }, { value: 'cardiovascular endurance', label: this.translate.instant('workoutBuilder.goals.cardiovascularEndurance') },
+        { value: 'fat loss / body composition', label: this.translate.instant('workoutBuilder.goals.fatLoss') }, { value: 'mobility & flexibility', label: this.translate.instant('workoutBuilder.goals.mobility') },
+        { value: 'power / explosiveness', label: this.translate.instant('workoutBuilder.goals.power') }, { value: 'speed & agility', label: this.translate.instant('workoutBuilder.goals.speed') },
+        { value: 'balance & coordination', label: this.translate.instant('workoutBuilder.goals.balance') }, { value: 'skill acquisition', label: this.translate.instant('workoutBuilder.goals.skill') },
+        { value: 'rehabilitation / injury prevention', label: this.translate.instant('workoutBuilder.goals.rehabilitation') }, { value: 'mental health / stress relief', label: this.translate.instant('workoutBuilder.goals.mentalHealth') },
+        { value: 'general health & longevity', label: this.translate.instant('workoutBuilder.goals.generalHealth') }, { value: 'sport-specific performance', label: this.translate.instant('workoutBuilder.goals.sportSpecific') },
+        { value: 'maintenance', label: this.translate.instant('workoutBuilder.goals.maintenance') }, { value: 'rest', label: this.translate.instant('workoutBuilder.goals.rest') }, { value: 'custom', label: this.translate.instant('workoutBuilder.goals.custom') }
     ];
 
     historyEditForm!: FormGroup; // Form for editing a history entry
@@ -419,7 +422,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         const weekGroup = this.fb.group({
             id: [week?.id || uuidv4()],
             weekNumber: [week?.weekNumber ?? this.weeksFormArray.length + 1],
-            name: [week?.name ?? `Week ${this.weeksFormArray.length + 1}`, Validators.required],
+            name: [week?.name ?? `${this.translate.instant('programBuilder.weeks.weekLabel')} ${this.weeksFormArray.length + 1}`, Validators.required],
             schedule: this.fb.array([])
         });
 
@@ -824,11 +827,11 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
 
     async deleteProgram(): Promise<void> {
         if (!this.currentProgramId) {
-            this.toastService.error("No program selected for deletion", 0, "Deletion Error");
+            this.toastService.error(this.translate.instant('programBuilder.toasts.deleteError'), 0, this.translate.instant('programBuilder.toasts.deleteErrorTitle'));
             return;
         }
         try {
-            this.spinnerService.show("Deleting program...");
+            this.spinnerService.show(this.translate.instant('programBuilder.alerts.deleting'));
             await this.trainingProgramService.deleteProgram(this.currentProgramId);
 
             if (
@@ -839,7 +842,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
             }
         } catch (error) {
             console.error("Error during program deletion process in component:", error);
-            this.toastService.error("An unexpected error occurred while deleting the program", 0, "Deletion Error");
+            this.toastService.error(this.translate.instant('programBuilder.toasts.deleteUnexpectedError'), 0, this.translate.instant('programBuilder.toasts.deleteErrorTitle'));
         } finally {
             this.spinnerService.hide();
         }
@@ -983,7 +986,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
 
         const editProgramButton =
         {
-            label: 'EDIT',
+            label: 'trainingPrograms.actions.edit',
             actionKey: 'edit',
             iconName: `edit`,
             iconClass: 'w-8 h-8 mr-2',
@@ -992,7 +995,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         };
 
         const activateProgramBtn = {
-            label: 'ACTIVATE',
+            label: 'trainingPrograms.actions.activate',
             actionKey: 'activate',
             iconName: 'activate',
             iconClass: 'w-8 h-8 mr-2',
@@ -1001,7 +1004,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         };
 
         const historyProgramBtn = {
-            label: 'HISTORY',
+            label: 'trainingPrograms.actions.history',
             actionKey: 'history',
             iconName: 'clock',
             iconClass: 'w-8 h-8 mr-2',
@@ -1010,7 +1013,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
         };
 
         const finishProgramBtn = {
-            label: 'FINISH',
+            label: 'trainingPrograms.actions.finish',
             actionKey: 'finish',
             iconName: 'goal',
             iconClass: 'w-8 h-8 mr-2',
@@ -1020,7 +1023,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
 
         const deactivateProgramBtn =
         {
-            label: 'DEACTIVATE',
+            label: 'trainingPrograms.actions.deactivate',
             actionKey: 'deactivate',
             iconName: `deactivate`,
             iconClass: 'w-7 h-7 mr-2',
@@ -1046,7 +1049,7 @@ export class TrainingProgramBuilderComponent implements OnInit, OnDestroy {
 
         actionsArray.push({ isDivider: true });
         actionsArray.push({
-            label: 'DELETE',
+            label: 'trainingPrograms.actions.delete',
             actionKey: 'delete',
             iconName: `trash`,
             iconClass: 'w-8 h-8 mr-2',

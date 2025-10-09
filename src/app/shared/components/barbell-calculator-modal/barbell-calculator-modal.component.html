@@ -5,12 +5,16 @@
 
         <!-- Page Navigation -->
         <div class="page-nav">
-            <button [class.active]="activePage() === 'calculator'" (click)="setPage('calculator')">Calculator</button>
-            <button [class.active]="activePage() === 'percentage'" (click)="setPage('percentage')">Percentages</button>
-            <button [class.active]="activePage() === 'oneRepMax'" (click)="setPage('oneRepMax')">1RM</button>
-            <button [class.active]="activePage() === 'rpe'" (click)="setPage('rpe')">RPE</button>
-            <button [class.active]="activePage() === 'powerlifting'"
-                (click)="setPage('powerlifting')">Powerlifting</button>
+            <button [class.active]="activePage() === 'calculator'" (click)="setPage('calculator')">{{
+                'barbellCalculator.nav.calculator' | translate }}</button>
+            <button [class.active]="activePage() === 'percentage'" (click)="setPage('percentage')">{{
+                'barbellCalculator.nav.percentages' | translate }}</button>
+            <button [class.active]="activePage() === 'oneRepMax'" (click)="setPage('oneRepMax')">{{
+                'barbellCalculator.nav.oneRepMax' | translate }}</button>
+            <button [class.active]="activePage() === 'rpe'" (click)="setPage('rpe')">{{ 'barbellCalculator.nav.rpe' |
+                translate }}</button>
+            <button [class.active]="activePage() === 'powerlifting'" (click)="setPage('powerlifting')">{{
+                'barbellCalculator.nav.powerlifting' | translate }}</button>
         </div>
 
         @switch (activePage()) {
@@ -27,10 +31,12 @@
                          }"></div>
                         <button type="button" (click)="setMode('calculate')"
                             class="relative z-10 flex-1 px-8 py-2 text-sm font-bold text-center transition-colors duration-300"
-                            [ngClass]="{'text-white': mode() === 'calculate', 'text-gray-700 dark:text-gray-300': mode() !== 'calculate'}">CALCULATE</button>
+                            [ngClass]="{'text-white': mode() === 'calculate', 'text-gray-700 dark:text-gray-300': mode() !== 'calculate'}">{{
+                            'barbellCalculator.calculator.calculate' | translate }}</button>
                         <button type="button" (click)="setMode('reverse')"
                             class="relative z-10 flex-1 px-8 py-2 text-sm font-bold text-center transition-colors duration-300"
-                            [ngClass]="{'text-white': mode() === 'reverse', 'text-gray-700 dark:text-gray-300': mode() !== 'reverse'}">REVERSE</button>
+                            [ngClass]="{'text-white': mode() === 'reverse', 'text-gray-700 dark:text-gray-300': mode() !== 'reverse'}">{{
+                            'barbellCalculator.calculator.reverse' | translate }}</button>
                     </div>
                 </div>
 
@@ -79,7 +85,7 @@
             </div>
             <!-- Check if the loadout is empty -->
             <p class="flex justify-center" [class.invisible]="loadout().length !== 0 || !selectedBarbell()">
-                <span>(Just bar and collars)</span>
+                <span>{{ 'barbellCalculator.calculator.justBar' | translate }}</span>
             </p>
 
             <div class="input-group calculate-mode-input" *ngIf="mode() === 'calculate'">
@@ -88,7 +94,8 @@
                     <button type="button" class="stepper-btn" (mousedown)="startChangingWeight('decrease')"
                         (mouseup)="stopChangingWeight()" (mouseleave)="stopChangingWeight()"
                         (touchstart)="startChangingWeight('decrease'); $event.preventDefault()"
-                        (touchend)="stopChangingWeight()" aria-label="Decrease weight">
+                        (touchend)="stopChangingWeight()"
+                        [attr.aria-label]="'barbellCalculator.calculator.decreaseWeight' | translate">
                         <app-icon name="minus" class="h-5 w-5"></app-icon>
                     </button>
 
@@ -100,7 +107,8 @@
                     <button type="button" class="stepper-btn" (mousedown)="startChangingWeight('increase')"
                         (mouseup)="stopChangingWeight()" (mouseleave)="stopChangingWeight()"
                         (touchstart)="startChangingWeight('increase'); $event.preventDefault()"
-                        (touchend)="stopChangingWeight()" aria-label="Increase weight">
+                        (touchend)="stopChangingWeight()"
+                        [attr.aria-label]="'barbellCalculator.calculator.increaseWeight' | translate">
                         <app-icon name="plus" class="h-5 w-5"></app-icon>
                     </button>
                 </div>
@@ -124,7 +132,7 @@
             </div>
 
             <div class="reverse-mode-controls" *ngIf="mode() === 'reverse'">
-                <p>TAP PLATES TO LOAD/UNLOAD BAR</p>
+                <p>{{ 'barbellCalculator.calculator.tapToLoad' | translate }}</p>
                 <div class="plate-selection">
                     <div *ngFor="let plate of availablePlates()" class="plate-option" (click)="addPlate(plate)">
                         <div class="visual-plate">
@@ -143,14 +151,15 @@
                 </div>
                 <button class="clear-btn" (click)="clearLoadout()">
                     <app-icon name="cancel" class="h-5 w-5 mr-2" [strokeWidth]="1"></app-icon>
-                    CLEAR BAR
+                    {{ 'barbellCalculator.calculator.clearBar' | translate }}
                 </button>
             </div>
 
             <!-- Config Settings -->
             <div class="config-settings">
                 <div class="toggle-group" *ngIf="isPremiumUser()">
-                    <label for="personalGymToggle">Use Personal Gym</label>
+                    <label for="personalGymToggle">{{ 'barbellCalculator.calculator.usePersonalGym' | translate
+                        }}</label>
                     <label class="toggle-switch">
                         <input type="checkbox" id="personalGymToggle" [checked]="usePersonalGym()"
                             (change)="togglePersonalGym($any($event.target).checked)">
@@ -158,7 +167,8 @@
                     </label>
                 </div>
                 <div *ngIf="unit() === 'kg'" class="toggle-group">
-                    <label for="50kgToggle">Enable 50{{ unit() }} Plate</label>
+                    <label for="50kgToggle">{{ 'barbellCalculator.calculator.enable50kg' | translate:{unit: unit()}
+                        }}</label>
                     <label class="toggle-switch">
                         <input type="checkbox" id="50kgToggle" [checked]="enable50kgPlate()"
                             (change)="toggle50kgPlate($any($event.target).checked)">
@@ -166,48 +176,50 @@
                     </label>
                 </div>
                 <div class="form-group">
-                    <label for="barbell">Barbell</label>
+                    <label for="barbell">{{ 'barbellCalculator.calculator.barbell' | translate }}</label>
                     <select id="barbell" [ngModel]="selectedBarbell()" (ngModelChange)="handleBarChange($event)">
-                        <option *ngFor="let bar of barbells()" [ngValue]="bar">{{ bar.name }} ({{ bar.weight }}{{
-                            bar.unit }})</option>
+                        <option *ngFor="let bar of barbells()" [ngValue]="bar">
+                            {{ bar.name | translate }} ({{ bar.weight }}{{ bar.unit }})
+                        </option>
                     </select>
                 </div>
                 <!-- +++ MODIFIED: Replaced isOlympic toggle with a dropdown for plate types +++ -->
                 <div class="form-group">
-                    <label for="plateType">Plate Type</label>
+                    <label for="plateType">{{ 'barbellCalculator.calculator.plateType' | translate }}</label>
                     <select id="plateType" [ngModel]="plateType()" (ngModelChange)="handlePlateTypeChange($event)">
-                        <option value="bumper">Bumper Plates</option>
-                        <option value="iron">Standard Iron</option>
+                        <option value="bumper">{{ 'barbellCalculator.calculator.bumperPlates' | translate }}</option>
+                        <option value="iron">{{ 'barbellCalculator.calculator.standardIron' | translate }}</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="collar">Collars</label>
+                    <label for="collar">{{ 'barbellCalculator.calculator.collars' | translate }}</label>
                     <select id="collar" [ngModel]="selectedCollar()" (ngModelChange)="handleCollarChange($event)">
-                        <option *ngFor="let collar of collars()" [ngValue]="collar">{{ collar.name }} ({{ collar.weight
-                            }}{{ collar.unit }})</option>
+                        <option *ngFor="let collar of collars()" [ngValue]="collar">
+                            {{ collar.name | translate }} ({{ collar.weight }}{{ collar.unit }})
+                        </option>
                     </select>
                 </div>
             </div>
             <!-- Loadout Summary -->
             <div class="loadout-summary">
-                <h4 *ngIf="platesWeightPerSide()>0">Plates Needed (Per Side)</h4>
+                <h4 *ngIf="platesWeightPerSide()>0">{{ 'barbellCalculator.calculator.platesNeeded' | translate }}</h4>
                 <app-plate-summary [loadout]="loadout()"></app-plate-summary>
 
                 <div *ngIf="loadout().length === 0" class="summary-item-empty">
-                    Bar and collars only
+                    {{ 'barbellCalculator.calculator.barAndCollarsOnly' | translate }}
                 </div>
 
                 <div class="math-breakdown" *ngIf="selectedBarbell() && selectedCollar()">
-                    <p class="title">How the total is calculated:</p>
+                    <p class="title">{{ 'barbellCalculator.calculator.howCalculated' | translate }}:</p>
                     <p class="formula">
                         <span>{{ selectedBarbell()!.weight | number:'1.0-2' }} {{ unit() }}</span>
-                        <span class="label"> (Bar)</span>
+                        <span class="label"> {{ 'barbellCalculator.calculator.barLabel' | translate }}</span>
                         <span class="op"> + </span>
                         <span>{{ selectedCollar()!.weight | number:'1.0-2' }} {{ unit() }}</span>
-                        <span class="label"> (Collars)</span>
+                        <span class="label"> {{ 'barbellCalculator.calculator.collarsLabel' | translate }}</span>
                         <span class="op"> + </span>
                         <span>2 * {{ platesWeightPerSide() | number:'1.0-2' }} {{ unit() }}</span>
-                        <span class="label"> (Plates)</span>
+                        <span class="label"> {{ 'barbellCalculator.calculator.platesLabel' | translate }}</span>
                     </p>
                 </div>
             </div>
@@ -216,15 +228,16 @@
         @case ('percentage') {
         <div class="modal-body custom-scrollbar page-view">
             <div class="header">
-                <h3>Percentage Calculator</h3>
+                <h3>{{ 'barbellCalculator.percentages.title' | translate }}</h3>
                 <button class="close-btn" (click)="onClose()">&times;</button>
             </div>
             <!-- Percentage Form -->
             <div class="percentage-form-header">
                 <div class="base-weight-group">
                     <div class="form-group">
-                        <label for="baseWeight">Working Weight (100%)</label>
-                        <input id="baseWeight" type="number" class="weight-input" placeholder="e.g., 100"
+                        <label for="baseWeight">{{ 'barbellCalculator.percentages.workingWeight' | translate }}</label>
+                        <input id="baseWeight" type="number" class="weight-input"
+                            [placeholder]="'barbellCalculator.percentages.workingWeightPlaceholder' | translate"
                             [ngModel]="percentageBaseWeight()" (ngModelChange)="percentageBaseWeight.set($event)">
                     </div>
                 </div>
@@ -245,7 +258,7 @@
             </div>
 
             @if (percentageBaseWeight() && percentageBaseWeight()! > 0) {
-            <h2 class="flex">Plates per side</h2>
+            <h2 class="flex">{{ 'barbellCalculator.percentages.platesPerSide' | translate }}</h2>
             <div class="percentage-results">
                 <div class="percentage-item custom-input">
                     <div class="p-header mt-1 mx-1">
@@ -258,7 +271,8 @@
                     <div class="p-body">
                         <app-plate-summary [loadout]="customPercentageResult().loadout"></app-plate-summary>
                         @if (customPercentageResult().loadout.length === 0) {
-                        <div class="summary-item-empty small">Bar/collars only</div>
+                        <div class="summary-item-empty small">{{ 'barbellCalculator.percentages.barCollarsOnly' |
+                            translate }}</div>
                         }
                     </div>
                 </div>
@@ -273,14 +287,15 @@
                     <div class="p-body">
                         <app-plate-summary [loadout]="result.loadout"></app-plate-summary>
                         @if (result.loadout.length === 0) {
-                        <div class="summary-item-empty small">Bar/collars only</div>
+                        <div class="summary-item-empty small">{{ 'barbellCalculator.percentages.barCollarsOnly' |
+                            translate }}</div>
                         }
                     </div>
                 </div>
                 }
             </div>
             } @else {
-            <p class="empty-state">Enter a base weight to calculate percentages.</p>
+            <p class="empty-state">{{ 'barbellCalculator.percentages.emptyState' | translate }}</p>
             }
         </div>
         }
@@ -288,34 +303,36 @@
         @case ('oneRepMax') {
         <div class="modal-body custom-scrollbar page-view">
             <div class="header">
-                <h3>One-Rep Max (1RM) Estimator</h3>
+                <h3>{{ 'barbellCalculator.oneRepMax.title' | translate }}</h3>
                 <button class="close-btn" (click)="onClose()">&times;</button>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div class="form-group">
-                    <label>Weight Lifted</label>
-                    <input type="number" placeholder="e.g., 100" [(ngModel)]="oneRmWeight">
+                    <label>{{ 'barbellCalculator.oneRepMax.weightLifted' | translate }}</label>
+                    <input type="number" [placeholder]="'barbellCalculator.oneRepMax.weightPlaceholder' | translate"
+                        [(ngModel)]="oneRmWeight">
                 </div>
                 <div class="form-group">
-                    <label>Reps Performed</label>
-                    <input type="number" placeholder="e.g., 5" [(ngModel)]="oneRmReps">
+                    <label>{{ 'barbellCalculator.oneRepMax.repsPerformed' | translate }}</label>
+                    <input type="number" [placeholder]="'barbellCalculator.oneRepMax.repsPlaceholder' | translate"
+                        [(ngModel)]="oneRmReps">
                 </div>
             </div>
 
             @if (estimated1RM().epley > 0) {
             <div class="calc-results">
-                <h4>Estimated 1RM</h4>
+                <h4>{{ 'barbellCalculator.oneRepMax.estimatedTitle' | translate }}</h4>
                 <div class="result-grid">
-                    <div>Epley Formula:</div>
+                    <div>{{ 'barbellCalculator.oneRepMax.epley' | translate }}</div>
                     <div>{{ estimated1RM().epley | number:'1.0-2' }}</div>
-                    <div>Brzycki Formula:</div>
+                    <div>{{ 'barbellCalculator.oneRepMax.brzycki' | translate }}</div>
                     <div>{{ estimated1RM().brzycki | number:'1.0-2' }}</div>
                 </div>
 
-                <h4 class="mt-4">Rep Max Projections (based on Epley)</h4>
+                <h4 class="mt-4">{{ 'barbellCalculator.oneRepMax.projectionsTitle' | translate }}</h4>
                 <div class="result-grid projection-table">
-                    <div class="header">Reps</div>
-                    <div class="header">Weight</div>
+                    <div class="header">{{ 'barbellCalculator.oneRepMax.repsHeader' | translate }}</div>
+                    <div class="header">{{ 'barbellCalculator.oneRepMax.weightHeader' | translate }}</div>
                     @for (proj of oneRmProjectionTable(); track proj.reps) {
                     <div>{{ proj.reps }} RM</div>
                     <div>{{ proj.weight | number:'1.0-2' }}</div>
@@ -323,14 +340,14 @@
                 </div>
             </div>
             } @else {
-            <p class="empty-state">Enter a valid weight and number of reps.</p>
+            <p class="empty-state">{{ 'barbellCalculator.oneRepMax.emptyState' | translate }}</p>
             }
         </div>
         }
         @case ('rpe') {
         <div class="modal-body custom-scrollbar page-view">
             <div class="header">
-                <h3>e1RM from RPE</h3>
+                <h3>{{ 'barbellCalculator.rpe.title' | translate }}</h3>
                 <button class="close-btn" (click)="onClose()">&times;</button>
             </div>
 
@@ -343,34 +360,38 @@
                          }"></div>
                     <button type="button" (click)="rpeInputMode.set('rpe')"
                         class="relative z-10 flex-1 px-4 py-2 text-sm font-bold text-center transition-colors duration-300"
-                        [ngClass]="{'text-white': rpeInputMode() === 'rpe', 'text-gray-700 dark:text-gray-300': rpeInputMode() !== 'rpe'}">RPE</button>
+                        [ngClass]="{'text-white': rpeInputMode() === 'rpe', 'text-gray-700 dark:text-gray-300': rpeInputMode() !== 'rpe'}">{{
+                        'barbellCalculator.rpe.rpe' | translate }}</button>
                     <button type="button" (click)="rpeInputMode.set('rir')"
                         class="relative z-10 flex-1 px-4 py-2 text-sm font-bold text-center transition-colors duration-300"
-                        [ngClass]="{'text-white': rpeInputMode() === 'rir', 'text-gray-700 dark:text-gray-300': rpeInputMode() !== 'rir'}">RIR</button>
+                        [ngClass]="{'text-white': rpeInputMode() === 'rir', 'text-gray-700 dark:text-gray-300': rpeInputMode() !== 'rir'}">{{
+                        'barbellCalculator.rpe.rir' | translate }}</button>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div class="form-group">
-                    <label>Weight Lifted</label>
-                    <input type="number" placeholder="e.g., 100" [(ngModel)]="rpeWeight">
+                    <label>{{ 'barbellCalculator.rpe.weightLifted' | translate }}</label>
+                    <input type="number" [placeholder]="'barbellCalculator.oneRepMax.weightPlaceholder' | translate"
+                        [(ngModel)]="rpeWeight">
                 </div>
                 <div class="form-group">
-                    <label>Reps Performed</label>
-                    <input type="number" placeholder="e.g., 5" [(ngModel)]="rpeReps">
+                    <label>{{ 'barbellCalculator.rpe.repsPerformed' | translate }}</label>
+                    <input type="number" [placeholder]="'barbellCalculator.oneRepMax.repsPlaceholder' | translate"
+                        [(ngModel)]="rpeReps">
                 </div>
 
                 <!-- This group spans both columns -->
                 <div class="form-group full-width">
                     @if (rpeInputMode() === 'rpe') {
-                    <label>RPE (Rate of Perceived Exertion)</label>
+                    <label>{{ 'barbellCalculator.rpe.rpeLabel' | translate }}</label>
                     <select [(ngModel)]="rpeValue">
                         @for (rpe of rpeOptions; track rpe) {
                         <option [ngValue]="rpe">{{ rpe }}</option>
                         }
                     </select>
                     } @else {
-                    <label>RIR (Reps In Reserve)</label>
+                    <label>{{ 'barbellCalculator.rpe.rirLabel' | translate }}</label>
                     <select [(ngModel)]="rirValue">
                         @for (rir of rirOptions; track rir) {
                         <option [ngValue]="rir">{{ rir }}</option>
@@ -383,51 +404,55 @@
             @if (estimated1RMFromRpe() > 0) {
             <div class="calc-results centered">
                 @if (rpeInputMode() === 'rir') {
-                <p class="equivalent-display">(Equivalent to RPE {{ derivedRpe() }})</p>
+                <p class="equivalent-display">{{ 'barbellCalculator.rpe.equivalentRpe' | translate:{rpe: derivedRpe()}
+                    }}</p>
                 }
-                <h4>Estimated 1-Rep Max</h4>
+                <h4>{{ 'barbellCalculator.rpe.estimatedTitle' | translate }}</h4>
                 <p class="big-result">{{ estimated1RMFromRpe() | number:'1.0-2' }}</p>
             </div>
             } @else {
-            <p class="empty-state">Enter weight, reps, and select an exertion level. Not all combinations are valid.</p>
+            <p class="empty-state">{{ 'barbellCalculator.rpe.emptyState' | translate }}</p>
             }
         </div>
         }
         @case ('powerlifting') {
         <div class="modal-body custom-scrollbar page-view">
             <div class="header">
-                <h3>Powerlifting Scores</h3>
+                <h3>{{ 'barbellCalculator.powerlifting.title' | translate }}</h3>
                 <button class="close-btn" (click)="onClose()">&times;</button>
             </div>
             <!-- Powerlifting Form -->
             <div class="calc-form">
                 <div class="form-group">
-                    <label>Bodyweight</label>
-                    <input type="number" placeholder="e.g., 80" [(ngModel)]="plBodyweight">
+                    <label>{{ 'barbellCalculator.powerlifting.bodyweight' | translate }}</label>
+                    <input type="number"
+                        [placeholder]="'barbellCalculator.powerlifting.bodyweightPlaceholder' | translate"
+                        [(ngModel)]="plBodyweight">
                 </div>
                 <div class="form-group">
-                    <label>Total (S+B+D)</label>
-                    <input type="number" placeholder="e.g., 500" [(ngModel)]="plTotal">
+                    <label>{{ 'barbellCalculator.powerlifting.total' | translate }}</label>
+                    <input type="number" [placeholder]="'barbellCalculator.powerlifting.totalPlaceholder' | translate"
+                        [(ngModel)]="plTotal">
                 </div>
                 <div class="form-group">
-                    <label>Event</label>
+                    <label>{{ 'barbellCalculator.powerlifting.event' | translate }}</label>
                     <select [(ngModel)]="plEvent">
-                        <option value="raw">Classic / Raw</option>
-                        <option value="equipped">Equipped</option>
+                        <option value="raw">{{ 'barbellCalculator.powerlifting.raw' | translate }}</option>
+                        <option value="equipped">{{ 'barbellCalculator.powerlifting.equipped' | translate }}</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Category</label>
+                    <label>{{ 'barbellCalculator.powerlifting.category' | translate }}</label>
                     <select [(ngModel)]="plCategory">
-                        <option value="full">Full Meet</option>
-                        <option value="bench">Bench Only</option>
+                        <option value="full">{{ 'barbellCalculator.powerlifting.fullMeet' | translate }}</option>
+                        <option value="bench">{{ 'barbellCalculator.powerlifting.benchOnly' | translate }}</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Gender</label>
+                    <label>{{ 'barbellCalculator.powerlifting.gender' | translate }}</label>
                     <select [(ngModel)]="plGender">
-                        <option value="male">Male</option>
-                        <option value="female">Female</option>
+                        <option value="male">{{ 'barbellCalculator.powerlifting.male' | translate }}</option>
+                        <option value="female">{{ 'barbellCalculator.powerlifting.female' | translate }}</option>
                     </select>
                 </div>
 
@@ -451,42 +476,42 @@
             @if (powerliftingScores().wilks1 > 0) {
             <div class="calc-results">
                 <!-- REMOVED: The header with the info button is no longer needed -->
-                <h4>Calculated Scores</h4>
+                <h4>{{ 'barbellCalculator.powerlifting.calculatedScores' | translate }}</h4>
 
                 <div class="result-grid">
-                    <div class="flex">Wilks (Original):<app-icon name="info"
+                    <div class="flex">{{ 'barbellCalculator.powerlifting.wilks1' | translate }}<app-icon name="info"
                             class="h-4 w-4 text-gray-400 dark:text-gray-300 cursor-help ml-1"
                             [appTooltip]="getExplanationText('wilks1')"></app-icon></div>
                     <div>{{ powerliftingScores().wilks1 | number:'1.0-2' }}</div>
 
-                    <div>Wilks 2 (2019):<app-icon name="info"
+                    <div>{{ 'barbellCalculator.powerlifting.wilks2' | translate }}<app-icon name="info"
                             class="h-4 w-4 text-gray-400 dark:text-gray-300 cursor-help ml-1"
                             [appTooltip]="getExplanationText('wilks2')"></app-icon></div>
                     <div>{{ powerliftingScores().wilks2 | number:'1.0-2' }}</div>
 
-                    <div>DOTS Score:<app-icon name="info"
+                    <div>{{ 'barbellCalculator.powerlifting.dots' | translate }}<app-icon name="info"
                             class="h-4 w-4 text-gray-400 dark:text-gray-300 cursor-help ml-1"
                             [appTooltip]="getExplanationText('dots')"></app-icon></div>
                     <div>{{ powerliftingScores().dots | number:'1.0-2' }}</div>
 
-                    <div>Goodlift Points:<app-icon name="info"
+                    <div>{{ 'barbellCalculator.powerlifting.glPoints' | translate }}<app-icon name="info"
                             class="h-4 w-4 text-gray-400 dark:text-gray-300 cursor-help ml-1"
                             [appTooltip]="getExplanationText('glPoints')"></app-icon></div>
                     <div>{{ powerliftingScores().glPoints | number:'1.0-2' }}</div>
 
-                    <div>Q Points:<app-icon name="info"
+                    <div>{{ 'barbellCalculator.powerlifting.qPoints' | translate }}<app-icon name="info"
                             class="h-4 w-4 text-gray-400 dark:text-gray-300 cursor-help ml-1"
                             [appTooltip]="getExplanationText('qPoints')"></app-icon></div>
                     <div>{{ powerliftingScores().qPoints | number:'1.0-2' }}</div>
 
-                    <div>Sinclair Total:<app-icon name="info"
+                    <div>{{ 'barbellCalculator.powerlifting.sinclair' | translate }}<app-icon name="info"
                             class="h-4 w-4 text-gray-400 dark:text-gray-300 cursor-help ml-1"
                             [appTooltip]="getExplanationText('sinclair')"></app-icon></div>
                     <div>{{ powerliftingScores().sinclair | number:'1.0-2' }}</div>
                 </div>
             </div>
             } @else {
-            <p class="empty-state">Enter a valid bodyweight and total.</p>
+            <p class="empty-state">{{ 'barbellCalculator.powerlifting.emptyState' | translate }}</p>
             }
         </div>
         }

@@ -13,6 +13,7 @@ import { WeightUnitPipe } from '../../../shared/pipes/weight-unit-pipe';
 import { PressDirective } from '../../../shared/directives/press.directive';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { PerceivedEffortModalComponent, PerceivedWorkoutInfo } from '../perceived-effort-modal.component';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 
 interface DisplayLoggedExerciseSummary extends LoggedWorkoutExercise {
@@ -30,7 +31,7 @@ interface SessionPbInfo {
 @Component({
   selector: 'app-workout-summary',
   standalone: true,
-  imports: [CommonModule, DatePipe, RouterLink, PressDirective, IconComponent, PerceivedEffortModalComponent],
+  imports: [CommonModule, DatePipe, RouterLink, PressDirective, IconComponent, PerceivedEffortModalComponent, TranslateModule],
   templateUrl: './workout-summary.html',
   styleUrl: './workout-summary.scss',
 })
@@ -41,6 +42,7 @@ export class WorkoutSummaryComponent implements OnInit {
   private exerciseService = inject(ExerciseService);
   private statsService = inject(StatsService); // For volume
   protected unitsService = inject(UnitsService); // Use 'protected' for direct template access
+  private translate = inject(TranslateService);
 
   workoutLog = signal<WorkoutLog | null | undefined>(undefined);
   displayExercisesSummary = signal<DisplayLoggedExerciseSummary[]>([]);
@@ -100,9 +102,9 @@ export class WorkoutSummaryComponent implements OnInit {
         next: () => {
           // Update the local state instantly for immediate UI feedback
           this.workoutLog.update(log => ({ ...log!, perceivedWorkoutInfo: perceivedInfo }));
-          console.log("Perceived effort saved successfully!");
+          console.log(this.translate.instant('workoutSummary.toasts.effortSaved'));
         },
-        error: (err) => console.error("Failed to save perceived effort:", err),
+        error: (err) => console.error(this.translate.instant('workoutSummary.toasts.effortSaveFailed'), err),
       });
     }
   }
@@ -183,9 +185,9 @@ export class WorkoutSummaryComponent implements OnInit {
         value += ` x ${pb.repsAchieved}`;
       }
     } else if (pb.repsAchieved > 0 && pb.pbType.includes('Max Reps')) {
-      value = `${pb.repsAchieved} reps`;
+      value = `${pb.repsAchieved} ${this.translate.instant('workoutSummary.units.reps')}`;
     } else if (pb.durationPerformed && pb.durationPerformed > 0 && pb.pbType.includes('Max Duration')) {
-      value = `${pb.durationPerformed}s`;
+      value = `${pb.durationPerformed}${this.translate.instant('workoutSummary.units.seconds')}`;
     }
     return value || 'N/A';
   }

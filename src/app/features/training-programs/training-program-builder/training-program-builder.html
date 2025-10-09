@@ -45,7 +45,7 @@
                             d="M16.403 12.652a3 3 0 000-5.304 3 3 0 00-3.75-3.751 3 3 0 00-5.305 0 3 3 0 00-3.751 3.75 3 3 0 000 5.305 3 3 0 003.75 3.751 3 3 0 005.305 0 3 3 0 003.751-3.75Zm-2.546-4.46a.75.75 0 00-1.214-.883l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5Z"
                             clip-rule="evenodd"></path>
                     </svg><span
-                        class="text-2xs sm:text-xs font-semibold px-1.5 sm:px-2.5 py-0.5">Active</span><!--container-->
+                        class="text-2xs sm:text-xs font-semibold px-1.5 sm:px-2.5 py-0.5">{{ 'programBuilder.active' | translate }}</span><!--container-->
                 </div>
             </div>
 
@@ -54,8 +54,7 @@
                 <div *ngIf="programProgress() as progress" class="space-y-1">
                     <div class="flex justify-between items-baseline">
                         <h3 class="text-sm font-medium text-gray-600 dark:text-gray-300">
-                            {{ currentProgram()?.programType === 'linear' ? 'Overall Workout Progress' : 'Current Cycle
-                            Progress' }}
+                            {{ (currentProgram()?.programType === 'linear' ? 'programBuilder.progress.overallWorkout' : 'programBuilder.progress.currentCycle') | translate }}
                         </h3>
                         <span class="text-sm font-semibold text-primary dark:text-primary-light">
                             {{ progress.completedCount }} / {{ progress.totalCount }}
@@ -77,13 +76,13 @@
 
                 <!-- 1. Overall Week Completion Bar -->
                 <div *ngIf="overallWeekProgress() as weeks" class="space-y-1">
-                    <h3 class="text-sm font-medium text-gray-600 dark:text-gray-300">Overall Progress (Weeks Completed)
+                    <h3 class="text-sm font-medium text-gray-600 dark:text-gray-300">{{ 'programBuilder.progress.overallWeeks' | translate }}
                     </h3>
                     <div class="flex w-full h-4 rounded-md overflow-hidden border border-gray-300 dark:border-gray-600">
                         <div *ngFor="let week of weeks"
                             class="flex-1 border-r border-gray-300 dark:border-gray-600 last:border-r-0 transition-colors duration-300"
                             [ngClass]="week.isCompleted ? 'bg-primary' : 'bg-gray-200 dark:bg-gray-700'"
-                            [title]="week.name + (week.isCompleted ? ' - Completed' : ' - Incomplete')">
+                            [title]="week.name + (week.isCompleted ? ('programBuilder.progress.weekCompleted' | translate) : ('programBuilder.progress.weekIncomplete' | translate))">
                         </div>
                     </div>
                 </div>
@@ -92,10 +91,10 @@
                 <div *ngIf="currentWeekProgress() as currentWeek" class="space-y-1">
                     <div class="flex justify-between items-baseline">
                         <h3 class="text-sm font-medium text-gray-600 dark:text-gray-300">
-                            Current Week Progress <span class="font-semibold">({{ currentWeek.weekName }})</span>
+                            {{ 'programBuilder.progress.currentWeek' | translate }} <span class="font-semibold">({{ currentWeek.weekName }})</span>
                         </h3>
                         <span class="text-sm font-semibold text-primary dark:text-primary-light">
-                            {{ currentWeek.completedCount }} / {{ currentWeek.totalCount }} Workouts
+                            {{ currentWeek.completedCount }} / {{ currentWeek.totalCount }} {{ 'programBuilder.progress.workouts' | translate }}
                         </span>
                     </div>
                     <div class="flex w-full h-4 rounded-md overflow-hidden border border-gray-300 dark:border-gray-600">
@@ -112,14 +111,13 @@
             <!-- =================================================================== -->
 
             <div *ngIf="isEditableMode()">
-                <label for="programName" class="block text-m font-medium text-gray-700 dark:text-gray-300">Program
-                    Name</label>
-                <input type="text" id="programName" formControlName="name" placeholder="Program name"
+                <label for="programName" class="block text-m font-medium text-gray-700 dark:text-gray-300">{{ 'programBuilder.form.nameLabel' | translate }}</label>
+                <input type="text" id="programName" formControlName="name" [placeholder]="'programBuilder.form.namePlaceholder' | translate"
                     class="mt-1 block w-full p-2 border rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200"
                     [ngClass]="{'border-red-500 dark:border-red-400': programForm.get('name')?.invalid && programForm.get('name')?.touched, 'border-gray-300 dark:border-gray-500': !(programForm.get('name')?.invalid && programForm.get('name')?.touched) }">
                 <div *ngIf="programForm.get('name')?.invalid && (programForm.get('name')?.dirty || programForm.get('name')?.touched)"
                     class="text-red-500 dark:text-red-400 text-xs mt-1">
-                    <span *ngIf="programForm.get('name')?.errors?.['required']">Program name is required</span>
+                    <span *ngIf="programForm.get('name')?.errors?.['required']">{{ 'programBuilder.form.nameRequired' | translate }}</span>
                 </div>
             </div>
             <!-- DESCRIPTION -->
@@ -128,14 +126,13 @@
                 </p>
             </div>
             <div *ngIf="isEditableMode()">
-                <label for="description" class="block text-m font-medium text-gray-700 dark:text-gray-300">Description
-                    (Optional)</label>
-                <textarea id="description" formControlName="description" rows="3" placeholder="Description (optional)"
+                <label for="description" class="block text-m font-medium text-gray-700 dark:text-gray-300">{{ 'programBuilder.form.descriptionLabel' | translate }}</label>
+                <textarea id="description" formControlName="description" rows="3" [placeholder]="'programBuilder.form.descriptionPlaceholder' | translate"
                     class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200"></textarea>
             </div>
             <!-- GOAL -->
             <div *ngIf="(isViewMode && currentProgram()?.goals) || (isEditableMode())" class="mt-4">
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Goals</label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ 'programBuilder.form.goalsLabel' | translate }}</label>
                 <div class="flex flex-wrap gap-2">
                     <button *ngFor="let goal of programGoals" [disabled]="isViewMode" (click)="toggleGoal(goal)"
                         type="button"
@@ -150,15 +147,13 @@
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div *ngIf="programForm.get('startDate')?.value || isEditableMode()">
-                    <label for="startDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Start
-                        Date</label>
+                    <label for="startDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ 'programBuilder.form.startDateLabel' | translate }}</label>
                     <input type="date" id="startDate" formControlName="startDate"
                         class="mt-1 block w-full p-2 border rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:[color-scheme:dark]">
                 </div>
                 <!-- --- Program Type Selector --- -->
                 <div class="md:col-span-2">
-                    <label class="block text-m font-medium text-gray-700 dark:text-gray-300 mb-2">Program
-                        Structure</label>
+                    <label class="block text-m font-medium text-gray-700 dark:text-gray-300 mb-2">{{ 'programBuilder.form.structureLabel' | translate }}</label>
                     <div class="p-2 bg-gray-100 dark:bg-gray-700 rounded-md">
 
                         <div class="flex items-center space-x-4">
@@ -168,7 +163,7 @@
                                 <span [ngClass]="{
                                     'text-primary dark:text-primary-light font-semibold': programForm.get('programType')?.value === 'cycled',
                                     'text-gray-700 dark:text-gray-300': programForm.get('programType')?.value !== 'cycled'
-                                }">Repeating Cycle</span>
+                                }">{{ 'programBuilder.form.repeatingCycle' | translate }}</span>
                             </label>
                             <label class="flex items-center space-x-2 cursor-pointer">
                                 <input type="radio" formControlName="programType" value="linear"
@@ -176,7 +171,7 @@
                                 <span [ngClass]="{
                                     'text-primary dark:text-primary-light font-semibold': programForm.get('programType')?.value === 'linear',
                                     'text-gray-700 dark:text-gray-300': programForm.get('programType')?.value !== 'linear'
-                                }">Week-by-Week Progression</span>
+                                }">{{ 'programBuilder.form.weekByWeek' | translate }}</span>
                             </label>
                         </div>
                         <!-- NEW: Repeat option for Linear programs -->
@@ -184,12 +179,10 @@
                             <label class="flex items-center space-x-2 cursor-pointer">
                                 <input type="checkbox" formControlName="isRepeating"
                                     class="form-checkbox h-4 w-4 rounded text-primary focus:ring-primary-dark dark:bg-gray-600 dark:border-gray-500">
-                                <span class="text-sm text-gray-700 dark:text-gray-300">Repeat weeks after
-                                    completion</span>
+                                <span class="text-sm text-gray-700 dark:text-gray-300">{{ 'programBuilder.form.repeatWeeks' | translate }}</span>
                             </label>
                             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                If checked, the weekly schedule will loop indefinitely until the program is manually
-                                stopped.
+                                {{ 'programBuilder.form.repeatWeeksHint' | translate }}
                             </p>
                         </div>
                     </div>
@@ -200,32 +193,30 @@
                     *ngIf="(programForm.get('cycleLength')?.value || isEditableMode()) && programForm.get('programType')?.value === 'cycled'">
                     <label for="cycleLength"
                         class="block text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center">
-                        Cycle Length (Days)
+                        {{ 'programBuilder.form.cycleLengthLabel' | translate }}
                         <span class="ml-1">
                             <app-icon name="info" class="h-4 w-4 text-gray-400 dark:text-gray-500 cursor-help"
                                 [appTooltip]="infoTooltipString"></app-icon>
                         </span>
                     </label>
                     <input type="number" id="cycleLength" formControlName="cycleLength" min="1"
-                        placeholder="e.g., 4 for Upper/Lower/Rest/Rest"
+                        [placeholder]="'programBuilder.form.cycleLengthPlaceholder' | translate"
                         class="mt-1 block w-full p-2 border rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:[color-scheme:dark]">
                     <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                        Total days in the cycle, including rest. Leave blank for a standard week.
+                        {{ 'programBuilder.form.cycleLengthHint' | translate }}
                     </p>
                 </div>
                 <div>
-                    <label for="iterationId" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Based on
-                        Program Iteration</label>
+                    <label for="iterationId" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ 'programBuilder.form.iterationLabel' | translate }}</label>
                     <input type="text" id="iterationId" formControlName="iterationId" placeholder=""
                         class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200">
                     <p *ngIf="isEditableMode()" class="mt-1 text-xs text-red dark:text-primary-light">
-                        (EDIT IF YOU ONLY KNOW WHAT YOU ARE DOING)
+                        {{ 'programBuilder.form.editWarning' | translate }}
                     </p>
                 </div>
             </div>
             <div *ngIf="programForm.get('programNotes')?.value || isEditableMode()">
-                <label for="programNotes" class="block text-sm font-medium text-gray-700 dark:text-gray-300">General
-                    Program Notes (Optional)</label>
+                <label for="programNotes" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ 'programBuilder.form.notesLabel' | translate }}</label>
                 <textarea id="programNotes" formControlName="programNotes" rows="3"
                     class="mt-1 block w-full p-2 border rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:[color-scheme:dark]"></textarea>
             </div>
@@ -240,11 +231,11 @@
             <!-- --- UI for 'cycled' programs --- -->
             <section *ngIf="programForm.get('programType')?.value === 'cycled'">
                 <div class="flex justify-between items-center mb-1">
-                    <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300">Schedule</h2>
+                    <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300">{{ 'programBuilder.schedule.title' | translate }}</h2>
                     <button *ngIf="!isViewMode" type="button" appPress (shortPress)="addScheduledDay()"
                         class="flex items-center justify-center bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium py-1.5 px-3 rounded-md shadow-sm">
                         <app-icon name="create" class="h-4 w-4"></app-icon>
-                        <span class="ml-1">ADD DAY TO SCHEDULE</span>
+                        <span class="ml-1">{{ 'programBuilder.schedule.addDay' | translate }}</span>
                     </button>
                 </div>
 
@@ -283,7 +274,7 @@
                             <h4 class="text-md font-medium text-gray-800 dark:text-gray-100">
                                 <label [for]="'dayName-cycled-' + i" class="sr-only">Day Name</label>
                                 <input type="text" [id]="'dayName-cycled-' + i" formControlName="dayName"
-                                    placeholder="e.g., Push Day"
+                                    [placeholder]="'programBuilder.schedule.dayNamePlaceholder' | translate"
                                     class="text-lg font-bold bg-transparent border-0 border-b-2 border-gray-300 dark:border-gray-500 focus:ring-0 focus:border-primary dark:text-gray-100 p-1 w-full sm:w-1/2">
                             </h4>
                         </div>
@@ -297,7 +288,7 @@
                                 <div>
                                     <label [for]="'dayOfWeek-' + i"
                                         class="block text-xs font-medium text-gray-700 dark:text-gray-300">
-                                        {{ f['cycleLength'].value > 0 ? 'Cycle Day Number' : 'Day of Week' }}
+                                        {{ f['cycleLength'].value > 0 ? ('programBuilder.schedule.cycleDayLabel' | translate) : ('programBuilder.schedule.dayOfWeekLabel' | translate) }}
                                     </label>
                                     <select [id]="'dayOfWeek-' + i" formControlName="dayOfWeek"
                                         class="mt-1 block w-full p-2 text-sm border rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700 dark:border-gray-500 dark:text-gray-300">
@@ -306,16 +297,16 @@
                                     </select>
                                     <div *ngIf="getScheduleDayControl(i).get('dayOfWeek')?.invalid && getScheduleDayControl(i).get('dayOfWeek')?.touched"
                                         class="text-red-500 dark:text-red-400 text-xs mt-1">
-                                        Day is required.
+                                        {{ 'programBuilder.schedule.dayRequired' | translate }}
                                     </div>
                                 </div>
                                 <div>
                                     <label [for]="'routineName-' + i"
-                                        class="block text-xs font-medium text-gray-700 dark:text-gray-300">Routine</label>
+                                        class="block text-xs font-medium text-gray-700 dark:text-gray-300">{{ 'programBuilder.schedule.routineLabel' | translate }}</label>
                                     <div class="mt-1 flex rounded-md shadow-sm"
                                         [ngClass]="{'ring-2 ring-offset-1 ring-red-500 dark:ring-red-400': getScheduleDayControl(i).get('routineId')?.invalid && (getScheduleDayControl(i).get('routineId')?.touched || submitted)}">
                                         <input type="text" [id]="'routineName-' + i" readonly
-                                            [value]="getScheduleDayControl(i).get('routineName')?.value || (getScheduleDayControl(i).get('routineId')?.value ? 'Loading routine...' : 'No Routine Selected')"
+                                            [value]="getScheduleDayControl(i).get('routineName')?.value || (getScheduleDayControl(i).get('routineId')?.value ? ('programBuilder.schedule.loadingRoutine' | translate) : ('programBuilder.schedule.noRoutine' | translate))"
                                             class="flex-1 min-w-0 block w-full px-3 py-2 text-sm rounded-none rounded-l-md border-gray-300 dark:border-gray-200 dark:bg-gray-400 cursor-default focus:outline-none focus:ring-0 focus:border-gray-300 dark:text-gray-800 font-medium"
                                             [ngClass]="{'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 placeholder-red-400': getScheduleDayControl(i).get('routineId')?.invalid && (getScheduleDayControl(i).get('routineId')?.touched || submitted), 'rounded-r-md':isViewMode}">
                                         <button *ngIf="!isViewMode" type="button" appPress
@@ -328,29 +319,26 @@
                                 }">
                                             <app-icon name="change" class="h-4 w-4"></app-icon>
                                             <span class="ml-1">
-                                                {{ getScheduleDayControl(i).get('routineId')?.value ? 'CHANGE' :
-                                                'SELECT' }}
+                                                {{ (getScheduleDayControl(i).get('routineId')?.value ? 'programBuilder.schedule.change' :
+                                                'programBuilder.schedule.select') | translate }}
                                             </span>
                                         </button>
                                     </div>
                                     <div *ngIf="getScheduleDayControl(i).get('routineId')?.invalid && (getScheduleDayControl(i).get('routineId')?.touched || submitted)"
                                         class="text-red-500 dark:text-red-400 text-xs mt-1">
-                                        Routine selection is required.
+                                        {{ 'programBuilder.schedule.routineRequired' | translate }}
                                     </div>
                                 </div>
                                 <div class="sm:col-span-2" *ngIf="programForm.get('timeOfDay')?.value || isEditableMode()">
                                     <label [for]="'timeOfDay-' + i"
-                                        class="block text-xs font-medium text-gray-700 dark:text-gray-300">Time
-                                        (Optional)</label>
+                                        class="block text-xs font-medium text-gray-700 dark:text-gray-300">{{ 'programBuilder.schedule.timeLabel' | translate }}</label>
                                     <input type="text" [id]="'timeOfDay-' + i" formControlName="timeOfDay"
-                                        placeholder="e.g., AM, PM, 08:00"
+                                        [placeholder]="'programBuilder.schedule.timePlaceholder' | translate"
                                         class="mt-1 block w-full p-2 text-sm border rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700 dark:border-gray-500">
                                 </div>
                                 <div class="sm:col-span-2" *ngIf="programForm.get('notes')?.value || isEditableMode()">
                                     <label [for]="'dayNotes-' + i"
-                                        class="block text-xs font-medium text-gray-700 dark:text-gray-300">Notes
-                                        for this Day
-                                        (Optional)</label>
+                                        class="block text-xs font-medium text-gray-700 dark:text-gray-300">{{ 'programBuilder.schedule.notesLabel' | translate }}</label>
                                     <textarea [id]="'dayNotes-' + i" formControlName="notes" rows="2"
                                         class="mt-1 block w-full p-2 text-sm border rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700 dark:border-gray-500"></textarea>
                                 </div>
@@ -359,17 +347,17 @@
                         <!-- Collapsed Preview -->
                         <div *ngIf="!isDayExpanded(dayCtrl.get('id')?.value)" class="mt-2 text-sm">
                             <span class="font-medium text-gray-800 dark:text-gray-200">{{
-                                dayCtrl.get('routineName')?.value || 'No Routine Selected' }}</span>
+                                dayCtrl.get('routineName')?.value || ('programBuilder.schedule.noRoutine' | translate) }}</span>
                         </div>
                     </div>
                 </div>
 
                 <div *ngIf="scheduleFormArray.length === 0; else addDayToSchedule"
                     class="text-center py-6 text-gray-500 dark:text-gray-400 border border-dashed dark:border-gray-700 rounded-md">
-                    <p>No days scheduled for this program yet</p>
+                    <p>{{ 'programBuilder.schedule.noDays' | translate }}</p>
                     <button *ngIf="!isViewMode" type="button" (click)="addScheduledDay()"
                         class="mt-2 text-sm text-primary hover:underline">
-                        Add the first scheduled day
+                        {{ 'programBuilder.schedule.addFirstDay' | translate }}
                     </button>
                 </div>
                 <ng-template #addDayToSchedule>
@@ -377,7 +365,7 @@
                         <button *ngIf="!isViewMode" type="button" appPress (shortPress)="addScheduledDay()"
                             class="flex items-center justify-center bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium py-1.5 px-3 rounded-md shadow-sm">
                             <app-icon name="create" class="h-4 w-4"></app-icon>
-                            <span class="ml-1">ADD DAY TO SCHEDULE</span>
+                            <span class="ml-1">{{ 'programBuilder.schedule.addDay' | translate }}</span>
                         </button>
                     </div>
                 </ng-template>
@@ -386,11 +374,11 @@
             <!-- --- UI for 'linear' week-by-week programs --- -->
             <section *ngIf="programForm.get('programType')?.value === 'linear'">
                 <div class="flex justify-between items-center mb-1">
-                    <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300">Weekly Schedule</h2>
+                    <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300">{{ 'programBuilder.weeks.title' | translate }}</h2>
                     <button *ngIf="!isViewMode" type="button" appPress (shortPress)="addWeek()"
                         class="flex items-center justify-center bg-green-500 hover:bg-green-600 text-white text-sm font-medium py-1.5 px-3 rounded-md shadow-sm">
                         <app-icon name="create" class="h-4 w-4"></app-icon>
-                        <span class="ml-1">ADD WEEK</span>
+                        <span class="ml-1">{{ 'programBuilder.weeks.addWeek' | translate }}</span>
                     </button>
                 </div>
 
@@ -423,13 +411,13 @@
                             <div class="flex-grow mx-2">
                                 <label [for]="'weekName-' + weekIndex" class="sr-only">Week Name</label>
                                 <input type="text" [id]="'weekName-' + weekIndex" formControlName="name"
-                                    placeholder="e.g., Week 1: Volume"
+                                    [placeholder]="'programBuilder.weeks.weekNamePlaceholder' | translate"
                                     class="text-lg font-bold bg-transparent border-0 border-b-2 border-gray-300 dark:border-gray-500 focus:ring-0 focus:border-primary dark:text-gray-100 p-1 w-full sm:w-1/2">
                             </div>
                             <button *ngIf="!isViewMode" type="button" appPress (shortPress)="removeWeek(weekIndex)"
                                 title="Remove WEEK"
                                 class="flex items-center p-1 hover:text-red-700 dark:hover:text-red-300 rounded-md hover:bg-red-100 dark:hover:bg-red-900/30 disabled:opacity-50 bg-red-500 text-white">
-                                <app-icon name="cancel" class="h-5 w-5 mr-1"></app-icon>REMOVE WEEK
+                                <app-icon name="cancel" class="h-5 w-5 mr-1"></app-icon>{{ 'programBuilder.weeks.removeWeek' | translate }}
                             </button>
                         </div>
 
@@ -468,7 +456,7 @@
                                         <h4 class="text-md font-medium text-gray-800 dark:text-gray-100">
                                             <label [for]="'dayName-' + dayIndex" class="sr-only">Day Name</label>
                                             <input type="text" [id]="'dayName-' + dayIndex" formControlName="dayName"
-                                                placeholder="e.g., Day 1: Volume"
+                                                [placeholder]="'programBuilder.schedule.dayNamePlaceholder' | translate"
                                                 class="text-lg font-bold bg-transparent border-0 border-b-2 border-gray-300 dark:border-gray-500 focus:ring-0 focus:border-primary dark:text-gray-100 p-1 w-full sm:w-1/2">
                                         </h4>
                                     </div>
@@ -479,8 +467,7 @@
                                             <!-- Day of Week -->
                                             <div>
                                                 <label [for]="'dayOfWeek-' + weekIndex + '-' + dayIndex"
-                                                    class="block text-xs font-medium text-gray-700 dark:text-gray-300">Day
-                                                    of Week</label>
+                                                    class="block text-xs font-medium text-gray-700 dark:text-gray-300">{{ 'programBuilder.schedule.dayOfWeekLabel' | translate }}</label>
                                                 <select [id]="'dayOfWeek-' + weekIndex + '-' + dayIndex"
                                                     formControlName="dayOfWeek"
                                                     class="mt-1 block w-full p-2 text-sm border rounded-md shadow-sm dark:bg-gray-700 dark:border-gray-500">
@@ -492,11 +479,11 @@
                                             <!-- Routine Selection -->
                                             <div>
                                                 <label [for]="'routineName-' + weekIndex + '-' + dayIndex"
-                                                    class="block text-xs font-medium text-gray-700 dark:text-gray-300">Routine</label>
+                                                    class="block text-xs font-medium text-gray-700 dark:text-gray-300">{{ 'programBuilder.schedule.routineLabel' | translate }}</label>
                                                 <div class="mt-1 flex rounded-md shadow-sm">
                                                     <input type="text"
                                                         [id]="'routineName-' + weekIndex + '-' + dayIndex" readonly
-                                                        [value]="getWeekScheduleDayControl(weekIndex, dayIndex).get('routineName')?.value || 'No Routine'"
+                                                        [value]="getWeekScheduleDayControl(weekIndex, dayIndex).get('routineName')?.value || ('programBuilder.schedule.noRoutine' | translate)"
                                                         class="flex-1 block w-full px-3 py-2 text-sm rounded-l-md dark:bg-gray-400 cursor-default dark:text-gray-800 font-medium">
                                                     <button *ngIf="!isViewMode" type="button" appPress
                                                         (shortPress)="openRoutineSelectionModal(weekIndex, dayIndex)"
@@ -508,17 +495,16 @@
                                 }">
                                                         <app-icon name="change" class="h-5 w-5 mr-1"></app-icon>
                                                         {{
-                                                        getWeekScheduleDayControl(weekIndex,
+                                                        (getWeekScheduleDayControl(weekIndex,
                                                         dayIndex).get('routineName')?.value
-                                                        ? 'CHANGE': 'SELECT'}}
+                                                        ? 'programBuilder.schedule.change': 'programBuilder.schedule.select') | translate}}
                                                     </button>
                                                 </div>
                                             </div>
                                             <!-- Notes and Time -->
                                             <div class="sm:col-span-2">
                                                 <label [for]="'dayNotes-' + weekIndex + '-' + dayIndex"
-                                                    class="block text-xs font-medium text-gray-700 dark:text-gray-300">Notes
-                                                    (Optional)</label>
+                                                    class="block text-xs font-medium text-gray-700 dark:text-gray-300">{{ 'programBuilder.schedule.notesLabel' | translate }}</label>
                                                 <textarea [id]="'dayNotes-' + weekIndex + '-' + dayIndex"
                                                     formControlName="notes" rows="2"
                                                     class="mt-1 block w-full p-2 text-sm border rounded-md shadow-sm dark:bg-gray-700 dark:border-gray-500"></textarea>
@@ -528,7 +514,7 @@
                                     <!-- Collapsed Day Preview -->
                                     <div *ngIf="!isDayExpanded(dayCtrl.get('id')?.value)" class="mt-2 text-sm">
                                         <span class="font-medium text-gray-800 dark:text-gray-200">{{
-                                            dayCtrl.get('routineName')?.value || 'No Routine Selected' }}</span>
+                                            dayCtrl.get('routineName')?.value || ('programBuilder.schedule.noRoutine' | translate) }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -539,11 +525,11 @@
                                     appPress (shortPress)="addScheduledDay(weekIndex)"
                                     class="flex items-center justify-center bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium py-1.5 px-3 rounded-md shadow-sm">
                                     <app-icon name="create" class="h-4 w-4"></app-icon>
-                                    <span class="ml-1">ADD DAY TO WEEK</span>
+                                    <span class="ml-1">{{ 'programBuilder.weeks.addDayToWeek' | translate }}</span>
                                 </button>
                             </div>
                             <div *ngIf="getWeekScheduleGroups(weekIndex).length === 0"
-                                class="text-center text-sm text-gray-500 dark:text-gray-400 py-4">This week is empty.
+                                class="text-center text-sm text-gray-500 dark:text-gray-400 py-4">{{ 'programBuilder.weeks.emptyWeek' | translate }}
                             </div>
                         </div>
                         <!-- Collapsed Week Preview -->
@@ -555,11 +541,11 @@
                                     <span class="font-semibold">{{ day.get('dayName')?.value ||
                                         (day.get('dayOfWeek')?.value
                                         | dayOfWeek : false) }}:</span>
-                                    <span class="italic ml-2">{{ day.get('routineName')?.value || 'No routine' }}</span>
+                                    <span class="italic ml-2">{{ day.get('routineName')?.value || ('programBuilder.schedule.noRoutine' | translate) }}</span>
                                 </li>
                                 <li *ngIf="getWeekScheduleGroups(weekIndex).length === 0"
                                     class="text-sm text-gray-500 italic">
-                                    This week is empty.
+                                    {{ 'programBuilder.weeks.emptyWeek' | translate }}
                                 </li>
                             </ul>
                         </div>
@@ -568,17 +554,17 @@
 
                 <div *ngIf="weeksFormArray.length === 0; else addWeekButton"
                     class="text-center py-6 text-gray-500 dark:text-gray-400 border border-dashed dark:border-gray-700 rounded-md">
-                    <p>No weeks created for this program yet.</p>
+                    <p>{{ 'programBuilder.weeks.noWeeks' | translate }}</p>
                     <button *ngIf="!isViewMode" type="button" (click)="addWeek()"
                         class="mt-2 text-sm text-primary hover:underline">
-                        Add the first week
+                        {{ 'programBuilder.weeks.addFirstWeek' | translate }}
                     </button>
                 </div>
                 <ng-template #addWeekButton>
                     <div class="flex justify-center mt-2">
                         <button *ngIf="!isViewMode" type="button" appPress (shortPress)="addWeek()"
                             class="flex items-center justify-center bg-green-500 hover:bg-green-600 text-white text-sm font-medium py-1.5 px-3 rounded-md shadow-sm">
-                            <app-icon name="create" class="h-7 w-7 mr-1"></app-icon>ADD WEEK
+                            <app-icon name="create" class="h-7 w-7 mr-1"></app-icon>{{ 'programBuilder.weeks.addWeek' | translate }}
                         </button>
                     </div>
                 </ng-template>
@@ -593,14 +579,14 @@
             <button appPress (shortPress)="navigateToPrograms()"
                 class="flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700">
                 <app-icon name="cancel" class="h-5 w-5 mr-1"></app-icon>
-                CANCEL
+                {{ 'programBuilder.actions.cancel' | translate }}
             </button>
             <button type="submit" appPress [disabled]="programForm.invalid" (shortPress)="onSubmit()"
                 class="flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark disabled:opacity-50">
                 <app-icon *ngIf="isNewMode" name="create" class="h-5 w-5"></app-icon>
                 <app-icon *ngIf="!isNewMode" name="save" class="h-5 w-5"></app-icon>
                 <span class="ml-1">
-                    {{ isNewMode ? 'CREATE PROGRAM' : 'SAVE CHANGES' }}
+                    {{ (isNewMode ? 'programBuilder.actions.createProgram' : 'programBuilder.actions.saveChanges') | translate }}
                 </span>
             </button>
         </div>
@@ -617,14 +603,14 @@
                     <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
                         <div class="flex justify-between items-center pb-3">
                             <h3 class="text-xl font-semibold leading-6 text-gray-900 dark:text-gray-100"
-                                id="modal-title">Select a Routine</h3>
+                                id="modal-title">{{ 'programBuilder.modal.selectRoutineTitle' | translate }}</h3>
                             <button type="button" (click)="closeRoutineSelectionModal()"
                                 class="p-1 rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none">
                                 <app-icon name="cancel" class="h-6 w-6"></app-icon>
                             </button>
                         </div>
                         <div class="my-4">
-                            <input type="text" placeholder="Search routines..." [ngModel]="modalSearchTerm()"
+                            <input type="text" [placeholder]="'programBuilder.modal.searchPlaceholder' | translate" [ngModel]="modalSearchTerm()"
                                 (ngModelChange)="modalSearchTerm.set($event)"
                                 class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-gray-200">
                         </div>
@@ -645,11 +631,9 @@
                                     </svg>
                                 </li>
                                 <li *ngIf="filteredAvailableRoutines().length === 0 && availableRoutines.length > 0"
-                                    class="text-gray-500 dark:text-gray-400 text-center p-4">No routines match your
-                                    search</li>
+                                    class="text-gray-500 dark:text-gray-400 text-center p-4">{{ 'programBuilder.modal.noMatches' | translate }}</li>
                                 <li *ngIf="availableRoutines.length === 0"
-                                    class="text-gray-500 dark:text-gray-400 text-center p-4">No routines available to
-                                    select. Create some routines first!</li>
+                                    class="text-gray-500 dark:text-gray-400 text-center p-4">{{ 'programBuilder.modal.noRoutines' | translate }}</li>
                             </ul>
                         </div>
                     </div>
@@ -658,7 +642,7 @@
             <div class="bg-gray-50 dark:bg-gray-600 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
                 <button type="button" (click)="closeRoutineSelectionModal()"
                     class="mt-3 inline-flex w-full justify-center rounded-md bg-white dark:bg-gray-700 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-gray-200 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-500 hover:bg-gray-50 dark:hover:bg-gray-500 sm:mt-0 sm:w-auto">
-                    Cancel
+                    {{ 'programBuilder.actions.cancel' | translate }}
                 </button>
             </div>
         </div>
@@ -671,7 +655,7 @@
             (click)="$event.stopPropagation()">
             <!-- Modal Header -->
             <div class="flex justify-between items-center px-4 py-3 border-b dark:border-gray-700 flex-shrink-0">
-                <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100">Program History</h2>
+                <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100">{{ 'programBuilder.modal.historyTitle' | translate }}</h2>
                 <button type="button" (click)="closeProgramHistoryModal()"
                     class="p-1 rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
                     <app-icon name="cancel" class="h-6 w-6"></app-icon>
@@ -689,19 +673,19 @@
                                 <tr>
                                     <th
                                         class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">
-                                        Start</th>
+                                        {{ 'programBuilder.modal.historyTable.start' | translate }}</th>
                                     <th
                                         class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">
-                                        End</th>
+                                        {{ 'programBuilder.modal.historyTable.end' | translate }}</th>
                                     <th
                                         class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">
-                                        Status</th>
+                                        {{ 'programBuilder.modal.historyTable.status' | translate }}</th>
                                     <th
                                         class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">
-                                        Logged</th>
+                                        {{ 'programBuilder.modal.historyTable.logged' | translate }}</th>
                                     <th
                                         class="px-4 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-400">
-                                        Actions</th>
+                                        {{ 'programBuilder.modal.historyTable.actions' | translate }}</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -720,11 +704,11 @@
                                         <td class="px-4 py-3">
                                             <div class="flex items-center space-x-2 justify-center">
                                                 <button type="button" (click)="editHistoryEntry(entry)"
-                                                    title="Edit entry"
+                                                    [title]="'programBuilder.modal.editEntry' | translate"
                                                     class="p-1.5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-md flex items-center"><app-icon
                                                         name="edit" class="w-8 h-8"></app-icon></button>
                                                 <button type="button" (click)="removeProgramHistoryEntry(entry.id)"
-                                                    title="Delete entry"
+                                                    [title]="'programBuilder.modal.deleteEntry' | translate"
                                                     class="p-1.5 text-red-500 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 rounded-md"><app-icon
                                                         name="trash" class="w-8 h-8"></app-icon></button>
                                             </div>
@@ -746,16 +730,16 @@
                                                     | titlecase }}</option>
                                             </select>
                                         </td>
-                                        <td class="px-4 py-2 text-sm text-gray-500 dark:text-gray-400 italic">Editing...
+                                        <td class="px-4 py-2 text-sm text-gray-500 dark:text-gray-400 italic">{{ 'programBuilder.modal.editing' | translate }}...
                                         </td>
                                         <td class="px-4 py-2">
                                             <div class="flex items-center space-x-2">
                                                 <button type="submit" [disabled]="historyEditForm.invalid"
-                                                    title="Save changes"
+                                                    [title]="'programBuilder.modal.saveChanges' | translate"
                                                     class="p-1.5 text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/50 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"><app-icon
                                                         name="save" class="w-8 h-8"></app-icon></button>
                                                 <button type="button" (click)="cancelEditHistoryEntry()"
-                                                    title="Cancel edit"
+                                                    [title]="'programBuilder.modal.cancelEdit' | translate"
                                                     class="p-1.5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-md flex items-center"><app-icon
                                                         name="cancel" class="w-8 h-8"></app-icon></button>
                                             </div>
@@ -772,20 +756,20 @@
                                 <!-- View Mode Card -->
                                 <div *ngIf="editingHistoryEntryId() !== entry.id">
                                     <div class="grid grid-cols-2 gap-x-3 gap-y-2">
-                                        <div class="text-xs font-medium text-gray-500 dark:text-gray-400">Status</div>
+                                        <div class="text-xs font-medium text-gray-500 dark:text-gray-400">{{ 'programBuilder.modal.historyTable.status' | translate }}</div>
                                         <div class="font-semibold dark:text-gray-100">{{ entry.status | titlecase }}
                                         </div>
 
-                                        <div class="text-xs font-medium text-gray-500 dark:text-gray-400">Start Date
+                                        <div class="text-xs font-medium text-gray-500 dark:text-gray-400">{{ 'programBuilder.modal.historyTable.start' | translate }}
                                         </div>
                                         <div class="dark:text-gray-300">{{ entry.startDate && entry.startDate !== '-' ?
                                             (entry.startDate | date:'MMM d, yyyy') : '-' }}</div>
 
-                                        <div class="text-xs font-medium text-gray-500 dark:text-gray-400">End Date</div>
+                                        <div class="text-xs font-medium text-gray-500 dark:text-gray-400">{{ 'programBuilder.modal.historyTable.end' | translate }}</div>
                                         <div class="dark:text-gray-300">{{ entry.endDate && entry.endDate !== '-' ?
                                             (entry.endDate | date:'MMM d, yyyy') : '-' }}</div>
 
-                                        <div class="text-xs font-medium text-gray-500 dark:text-gray-400">Logged</div>
+                                        <div class="text-xs font-medium text-gray-500 dark:text-gray-400">{{ 'programBuilder.modal.historyTable.logged' | translate }}</div>
                                         <div class="dark:text-gray-300 text-xs">{{ entry.date && entry.date !== '-' ?
                                             (entry.date | date:'MMM d, yyyy HH:mm') : '-' }}</div>
                                     </div>
@@ -793,11 +777,11 @@
                                         class="flex justify-end items-center space-x-2 mt-3 pt-3 border-t dark:border-gray-600">
                                         <button type="button" (click)="editHistoryEntry(entry)"
                                             class="flex items-center text-sm px-3 py-1.5 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600">
-                                            <app-icon name="edit" class="w-8 h-8 mr-1"></app-icon> EDIT
+                                            <app-icon name="edit" class="w-8 h-8 mr-1"></app-icon> {{ 'programBuilder.actions.edit' | translate }}
                                         </button>
                                         <button type="button" (click)="removeProgramHistoryEntry(entry.id)"
                                             class="flex items-center text-sm px-3 py-1.5 rounded-md text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50">
-                                            <app-icon name="trash" class="w-8 h-8 mr-1"></app-icon> DELETE
+                                            <app-icon name="trash" class="w-8 h-8 mr-1"></app-icon> {{ 'programBuilder.actions.delete' | translate }}
                                         </button>
                                     </div>
                                 </div>
@@ -806,7 +790,7 @@
                                 <div *ngIf="editingHistoryEntryId() === entry.id" class="space-y-3">
                                     <div>
                                         <label
-                                            class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Status</label>
+                                            class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{{ 'programBuilder.modal.historyTable.status' | translate }}</label>
                                         <select formControlName="status"
                                             class="w-full p-2 text-sm border rounded-md shadow-sm dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200"
                                             (change)="historyEditForm.get('status')?.value === 'active' ? forceEndDateToNull() : enableEndDate()">
@@ -816,15 +800,13 @@
                                     </div>
                                     <div>
                                         <label
-                                            class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Start
-                                            Date</label>
+                                            class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{{ 'programBuilder.modal.historyTable.start' | translate }}</label>
                                         <input type="date" formControlName="startDate"
                                             class="w-full p-2 text-sm border rounded-md shadow-sm dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200 dark:[color-scheme:dark]">
                                     </div>
                                     <div>
                                         <label
-                                            class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">End
-                                            Date</label>
+                                            class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{{ 'programBuilder.modal.historyTable.end' | translate }}</label>
                                         <input type="date" formControlName="endDate"
                                             class="w-full p-2 text-sm border rounded-md shadow-sm dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200 dark:[color-scheme:dark]">
                                     </div>
@@ -832,11 +814,11 @@
                                         class="flex justify-end items-center space-x-2 mt-3 pt-3 border-t dark:border-gray-600">
                                         <button type="button" (click)="cancelEditHistoryEntry()"
                                             class="flex items-center text-sm px-3 py-1.5 rounded-md text-gray-600 dark:text-gray-300 bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500">
-                                            Cancel
+                                            {{ 'programBuilder.actions.cancel' | translate }}
                                         </button>
                                         <button type="submit" [disabled]="historyEditForm.invalid"
                                             class="flex items-center text-sm px-3 py-1.5 rounded-md text-white bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed">
-                                            <app-icon name="save" class="w-8 h-8 mr-1"></app-icon> Save
+                                            <app-icon name="save" class="w-8 h-8 mr-1"></app-icon> {{ 'programBuilder.actions.saveChanges' | translate }}
                                         </button>
                                     </div>
                                 </div>
@@ -846,7 +828,7 @@
                 </div>
                 <ng-template #noHistory>
                     <div class="text-center text-gray-500 dark:text-gray-400 py-6">
-                        No previous executions found for this program.
+                        {{ 'programBuilder.modal.noHistory' | translate }}
                     </div>
                 </ng-template>
             </div>
@@ -855,7 +837,7 @@
                 <button type="button" (click)="closeProgramHistoryModal()"
                     class="px-4 py-2 rounded-md bg-primary text-white hover:bg-primary-dark flex items-center">
                     <app-icon name="cancel" class="h-5 w-5 mr-1"></app-icon>
-                    CLOSE
+                    {{ 'programBuilder.modal.close' | translate }}
                 </button>
             </div>
         </div>

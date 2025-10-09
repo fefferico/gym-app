@@ -3,18 +3,18 @@
 
     <!-- Header and Dropdown -->
     <div class="text-center mb-4">
-      <p class="font-semibold text-lg text-gray-900 dark:text-gray-100">{{ exerciseSignal()?.exerciseName || 'Routine Performance' }}</p>
+      <p class="font-semibold text-lg text-gray-900 dark:text-gray-100">{{ exerciseSignal()?.exerciseName || ('performanceComparison.title' | translate) }}</p>
       
       <div *ngIf="allHistoricalLogs().length > 0; else noHistory" class="mt-2">
-        <label for="log-select" class="text-sm text-gray-500 dark:text-gray-400">COMPARING TO</label>
+        <label for="log-select" class="text-sm text-gray-500 dark:text-gray-400">{{ 'performanceComparison.comparingTo' | translate }}</label>
         <select id="log-select" [value]="selectedLogId" (change)="onComparisonLogChange($event)" class="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-1.5 mt-1">
           <ng-container *ngIf="comparisonMode() === 'exercise'">
-            <optgroup label="From This Routine" *ngIf="sameRoutineLogs().length > 0">
+            <optgroup [label]="'performanceComparison.fromThisRoutine' | translate" *ngIf="sameRoutineLogs().length > 0">
               <option *ngFor="let log of sameRoutineLogs()" [value]="log.id">
                 {{ log.date | date:'fullDate' }}
               </option>
             </optgroup>
-            <optgroup label="From Other Workouts" *ngIf="otherRoutineLogs().length > 0">
+            <optgroup [label]="'performanceComparison.fromOtherWorkouts' | translate" *ngIf="otherRoutineLogs().length > 0">
                <option *ngFor="let log of otherRoutineLogs()" [value]="log.id">
                 {{ log.date | date:'fullDate' }}
               </option>
@@ -28,7 +28,7 @@
         </select>
       </div>
       <ng-template #noHistory>
-        <p class="text-sm text-gray-500 dark:text-gray-400">PREVIOUS SESSION</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400">{{ 'performanceComparison.previousSession' | translate }}</p>
       </ng-template>
     </div>
 
@@ -37,20 +37,20 @@
       @case ('exercise') {
         <!-- Summary Table -->
         <div class="grid grid-cols-[2fr_1.5fr_1.5fr] gap-px bg-gray-300 dark:bg-gray-700 border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden mb-6">
-          <div class="p-2 text-center font-bold text-xs text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800">Metric</div>
-          <div class="p-2 text-center font-bold text-xs text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800">Today</div>
-          <div class="p-2 text-center font-bold text-xs text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800">Previous</div>
+          <div class="p-2 text-center font-bold text-xs text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800">{{ 'performanceComparison.metric' | translate }}</div>
+          <div class="p-2 text-center font-bold text-xs text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800">{{ 'performanceComparison.today' | translate }}</div>
+          <div class="p-2 text-center font-bold text-xs text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800">{{ 'performanceComparison.previous' | translate }}</div>
           <ng-container *ngTemplateOutlet="summaryRows; context: {$implicit: data}"></ng-container>
         </div>
 
         <!-- Sets Detail Table -->
         <div class="grid grid-cols-[auto_1fr_1fr] gap-px bg-gray-300 dark:bg-gray-700 border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden">
-          <div class="p-2 text-center font-bold text-xs text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800">Set</div>
-          <div class="p-2 text-center font-bold text-xs text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 min-w-[120px]">Today</div>
+          <div class="p-2 text-center font-bold text-xs text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800">{{ 'performanceComparison.set' | translate }}</div>
+          <div class="p-2 text-center font-bold text-xs text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 min-w-[120px]">{{ 'performanceComparison.today' | translate }}</div>
           <div class="p-2 text-center font-bold text-xs text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 min-w-[120px] flex items-center justify-center">
-            <span>Previous</span>
+            <span>{{ 'performanceComparison.previous' | translate }}</span>
             <button *ngIf="data.previousLog" type="button" (click)="goToPreviousLogDetail(data.previousLog.id)"
-                    title="Go to previous log"
+                    [title]="'performanceComparison.goToPreviousLog' | translate"
                     class="ml-1 px-1 flex justify-center items-center w-fit bg-primary-light/80 hover:bg-primary-light text-white dark:bg-primary/80 dark:hover:bg-primary font-semibold rounded-md shadow-sm text-lg">
               <app-icon name="right-arrow" class="w-5 h-5"></app-icon>
             </button>
@@ -65,7 +65,7 @@
                   <app-icon name="clock" class="w-3 h-3 inline-block mr-1"></app-icon>
                   {{ row.todaySet.timestamp | date:'HH:mm:ss' }}
                 </div>
-                <span *ngIf="(row.todaySet.repsAchieved || 0) > 0" class="text-green-600 dark:text-green-400">{{ row.todaySet.repsAchieved }} reps</span>
+                <span *ngIf="(row.todaySet.repsAchieved || 0) > 0" class="text-green-600 dark:text-green-400">{{ row.todaySet.repsAchieved }} {{ 'performanceComparison.units.reps' | translate }}</span>
                 <span *ngIf="row.todaySet.weightUsed != null && row.todaySet.weightUsed > 0" class="text-yellow-600 dark:text-yellow-400">@ {{ row.todaySet.weightUsed | weightUnit:'1.0-2' }}</span>
                 <span *ngIf="(row.todaySet.durationPerformed || 0) > 0" class="text-purple-600 dark:text-purple-400">{{ formatDuration(row.todaySet.durationPerformed!) }}</span>
                 <span *ngIf="(row.todaySet.distanceAchieved || 0) > 0" class="text-cyan-600 dark:text-cyan-400">{{ row.todaySet.distanceAchieved | number:'1.0-2' }} {{ unitService.getDistanceMeasureUnitSuffix() }}</span>
@@ -78,36 +78,36 @@
                    <app-icon name="clock" class="w-3 h-3 inline-block mr-1"></app-icon>
                    {{ row.previousSet.timestamp | date:'HH:mm:ss' }}
                 </div>
-                <span *ngIf="(row.previousSet.repsAchieved || 0) > 0" class="text-green-600 dark:text-green-400">{{ row.previousSet.repsAchieved }} reps</span>
+                <span *ngIf="(row.previousSet.repsAchieved || 0) > 0" class="text-green-600 dark:text-green-400">{{ row.previousSet.repsAchieved }} {{ 'performanceComparison.units.reps' | translate }}</span>
                 <span *ngIf="row.previousSet.weightUsed != null && row.previousSet.weightUsed > 0" class="text-yellow-600 dark:text-yellow-400">@ {{ row.previousSet.weightUsed | weightUnit:'1.0-2' }}</span>
                 <span *ngIf="(row.previousSet.durationPerformed || 0) > 0" class="text-purple-600 dark:text-purple-400">{{ formatDuration(row.previousSet.durationPerformed!) }}</span>
                 <span *ngIf="(row.previousSet.distanceAchieved || 0) > 0" class="text-cyan-600 dark:text-cyan-400">{{ row.previousSet.distanceAchieved | number:'1.0-2' }} {{ unitService.getDistanceMeasureUnitSuffix() }}</span>
               </ng-container>
             </div>
-            <ng-template #noSetData><span class="p-2 flex items-center justify-center bg-white dark:bg-gray-800 text-gray-500">-</span></ng-template>
+            <ng-template #noSetData><span class="p-2 flex items-center justify-center bg-white dark:bg-gray-800 text-gray-500">{{ 'performanceComparison.card.noSetData' | translate }}</span></ng-template>
           </ng-container>
         </div>
       }
 
       @case ('routine') {
         <!-- Overall Summary Table -->
-        <h3 class="text-md font-bold text-gray-800 dark:text-gray-300 mb-2 border-b border-gray-200 dark:border-gray-700 pb-2">Overall Summary</h3>
+        <h3 class="text-md font-bold text-gray-800 dark:text-gray-300 mb-2 border-b border-gray-200 dark:border-gray-700 pb-2">{{ 'performanceComparison.summary.title' | translate }}</h3>
         <div class="grid grid-cols-[2fr_1.5fr_1.5fr] gap-px bg-gray-300 dark:bg-gray-700 border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden mb-6">
-          <div class="p-2 text-center font-bold text-xs text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800">Metric</div>
-          <div class="p-2 text-center font-bold text-xs text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800">Today</div>
-          <div class="p-2 text-center font-bold text-xs text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800">Previous</div>
+          <div class="p-2 text-center font-bold text-xs text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800">{{ 'performanceComparison.metric' | translate }}</div>
+          <div class="p-2 text-center font-bold text-xs text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800">{{ 'performanceComparison.today' | translate }}</div>
+          <div class="p-2 text-center font-bold text-xs text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800">{{ 'performanceComparison.previous' | translate }}</div>
           <ng-container *ngTemplateOutlet="summaryRows; context: {$implicit: data}"></ng-container>
         </div>
 
         <!-- Per-Exercise Breakdown -->
-        <h3 class="text-md font-bold text-gray-800 dark:text-gray-300 mb-2 mt-8 border-b border-gray-200 dark:border-gray-700 pb-2">Per-Exercise Breakdown</h3>
+        <h3 class="text-md font-bold text-gray-800 dark:text-gray-300 mb-2 mt-8 border-b border-gray-200 dark:border-gray-700 pb-2">{{ 'performanceComparison.summary.breakdownTitle' | translate }}</h3>
         <div class="space-y-4">
             <div *ngFor="let ex of exerciseComparisonRows()" class="bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700">
                 <p class="font-semibold text-primary dark:text-primary-light mb-2">{{ex.exerciseName}}</p>
                 <div class="grid grid-cols-[2fr_1.5fr_1.5fr] gap-px bg-gray-300 dark:bg-gray-700 border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden">
-                    <div class="p-2 text-center font-bold text-xs text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800">Metric</div>
-                    <div class="p-2 text-center font-bold text-xs text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800">Today</div>
-                    <div class="p-2 text-center font-bold text-xs text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800">Previous</div>
+                    <div class="p-2 text-center font-bold text-xs text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800">{{ 'performanceComparison.metric' | translate }}</div>
+                    <div class="p-2 text-center font-bold text-xs text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800">{{ 'performanceComparison.today' | translate }}</div>
+                    <div class="p-2 text-center font-bold text-xs text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800">{{ 'performanceComparison.previous' | translate }}</div>
                     <ng-container *ngTemplateOutlet="summaryRows; context: {$implicit: { currentSummary: ex.currentSummary, previousSummary: ex.previousSummary, comparison: ex.comparison, previousLog: data.previousLog } }"></ng-container>
                 </div>
             </div>
@@ -116,7 +116,7 @@
     }
 
     <div *ngIf="!data.previousLog" class="mt-6 text-center text-sm text-gray-500">
-      No previous performance found for this routine.
+      {{ 'performanceComparison.noPreviousPerformance' | translate }}
     </div>
   </div>
 </ng-container>
@@ -145,9 +145,9 @@
 
 <!-- Fallback Templates -->
 <ng-template #loading>
-    <div class="p-8 text-center text-gray-400">Loading comparison...</div>
+    <div class="p-8 text-center text-gray-400">{{ 'performanceComparison.loading' | translate }}</div>
 </ng-template>
 
 <ng-template #noData>
-    <div class="p-8 text-center text-gray-400">Could not load comparison data.</div>
+    <div class="p-8 text-center text-gray-400">{{ 'performanceComparison.noData' | translate }}</div>
 </ng-template>

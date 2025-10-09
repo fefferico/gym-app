@@ -1,16 +1,16 @@
 <div class="container mx-auto text-gray-800 dark:text-gray-200">
     <!-- Header with Add Button -->
     <header class="flex justify-between items-center pb-4 border-b border-gray-200 dark:border-gray-700 mb-4">
-        <h1 class="text-2xl font-bold">Measurement History</h1>
+        <h1 class="text-2xl font-bold">{{ 'measurementHistory.title' | translate }}</h1>
         <button (click)="openAddEntryModal()"
             class="px-4 py-2 bg-primary hover:bg-primary-dark text-white font-semibold rounded-md shadow-sm transition-colors inline-flex items-center text-sm">
             <app-icon name="plus-circle"></app-icon>
-            ADD PAST ENTRY
+            {{ 'measurementHistory.addPastEntry' | translate }}
         </button>
     </header>
 
     <section class="bg-white dark:bg-gray-800 p-4 rounded-md shadow-md mb-6">
-        <h3 class="font-semibold mb-2">Side-by-Side Comparison</h3>
+        <h3 class="font-semibold mb-2">{{ 'measurementHistory.comparisonTitle' | translate }}</h3>
         <div class="flex flex-col sm:flex-row gap-4 items-center">
 
             <!--
@@ -18,7 +18,7 @@
         -->
             <select (change)="onCompareFromChange($event)"
                 class="flex-1 p-2 border dark:border-gray-600 rounded-md dark:bg-gray-700">
-                <option value="">-- Select Start Date --</option>
+                <option value="">{{ 'measurementHistory.selectStartDate' | translate }}</option>
                 <option *ngFor="let entry of measurementHistory" [value]="entry.date">{{entry.date | date:'mediumDate'}}
                 </option>
             </select>
@@ -28,7 +28,7 @@
         -->
             <select (change)="onCompareToChange($event)"
                 class="flex-1 p-2 border dark:border-gray-600 rounded-md dark:bg-gray-700">
-                <option value="">-- Select End Date --</option>
+                <option value="">{{ 'measurementHistory.selectEndDate' | translate }}</option>
                 <option *ngFor="let entry of measurementHistory" [value]="entry.date">{{entry.date | date:'mediumDate'}}
                 </option>
             </select>
@@ -38,7 +38,7 @@
                 [disabled]="!compareFromDate || !compareToDate"
                 class="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-md disabled:opacity-50 flex items-center">
                 <app-icon name="magnifier" class="h-6 w-6 mr-1" [strokeWidth]="2"></app-icon>
-                COMPARE
+                {{ 'measurementHistory.compare' | translate }}
             </button>
         </div>
     </section>
@@ -46,7 +46,7 @@
     <div *ngIf="measurementHistory.length > 0; else noData">
         <!-- Chart Section with Goal Line -->
         <section class="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-md shadow-md mb-6">
-            <h2 class="text-xl font-semibold mb-4">Progress Chart</h2>
+            <h2 class="text-xl font-semibold mb-4">{{ 'measurementHistory.chartTitle' | translate }}</h2>
             <div class="mb-4">
                 <select (change)="updateChart($event)"
                     class="p-2 border dark:border-gray-600 rounded-md dark:bg-gray-700">
@@ -63,7 +63,7 @@
 
         <!-- History List with Notes & Image Zoom -->
         <section class="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-md shadow-md">
-            <h2 class="text-xl font-semibold mb-4">Log History</h2>
+            <h2 class="text-xl font-semibold mb-4">{{ 'measurementHistory.logHistoryTitle' | translate }}</h2>
             <div *ngFor="let entry of measurementHistory" class="border-b dark:border-gray-700 py-4 last:border-b-0">
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-start">
                     <!-- Left Column: Date, Photo, and DELETE BUTTON -->
@@ -73,16 +73,16 @@
                             alt="Progress photo"
                             class="w-24 h-24 object-cover rounded-md shadow-lg cursor-pointer hover:opacity-80 transition-opacity">
                         <label class="cursor-pointer text-sm text-primary dark:text-primary-dark hover:underline mt-2">
-                            {{ entry.photoUrl ? 'Change Photo' : 'Add Photo' }}
+                            {{ (entry.photoUrl ? 'measurementHistory.changePhoto' : 'measurementHistory.addPhoto') | translate }}
                             <input type="file" accept="image/*" (change)="uploadPhoto($event, entry.date)"
                                 class="hidden">
                         </label>
                         <div>
-                            <button (click)="confirmDeleteEntry(entry.date)" title="Delete Entry"
+                            <button (click)="confirmDeleteEntry(entry.date)" [title]="'measurementHistory.deleteEntry' | translate"
                                 class="p-1 rounded-full text-gray-400 hover:bg-red-100 hover:text-red-500 dark:hover:bg-red-900/50 transition-colors">
                                 <app-icon name="trash" class="w-4 h-4"></app-icon>
                             </button>
-                            <button (click)="editEntry(entry.date)" title="Edit Entry"
+                            <button (click)="editEntry(entry.date)" [title]="'measurementHistory.editEntry' | translate"
                                 class="p-1 rounded-full text-gray-400 hover:bg-red-100 hover:text-red-500 dark:hover:bg-red-900/50 transition-colors">
                                 <app-icon name="edit" class="w-4 h-4"></app-icon>
                             </button>
@@ -90,18 +90,18 @@
                     </div>
                     <!-- Middle Column: Measurements -->
                     <div class="text-sm grid grid-cols-2 gap-x-4 gap-y-1">
-                        <p><strong>Weight:</strong> {{ entry.weight || 'N/A' }} {{unitsService.getBodyWeightUnitSuffix()}}</p>
-                        <p><strong>Chest:</strong> {{ entry.chest || 'N/A' }} {{unitsService.getBodyMeasureUnitSuffix()}}</p>
-                        <p><strong>Waist:</strong> {{ entry.waist || 'N/A' }} {{unitsService.getBodyMeasureUnitSuffix()}}</p>
-                        <p><strong>Hips:</strong> {{ entry.hips || 'N/A' }} {{unitsService.getBodyMeasureUnitSuffix()}}</p>
-                        <p><strong>Neck:</strong> {{ entry.neck || 'N/A' }} {{unitsService.getBodyMeasureUnitSuffix()}}</p>
-                        <p><strong>R. Arm:</strong> {{ entry.rightArm || 'N/A' }} {{unitsService.getBodyMeasureUnitSuffix()}}</p>
+                        <p><strong>{{ 'measurementHistory.weight' | translate }}</strong> {{ entry.weight || 'N/A' }} {{unitsService.getBodyWeightUnitSuffix()}}</p>
+                        <p><strong>{{ 'measurementHistory.chest' | translate }}</strong> {{ entry.chest || 'N/A' }} {{unitsService.getBodyMeasureUnitSuffix()}}</p>
+                        <p><strong>{{ 'measurementHistory.waist' | translate }}</strong> {{ entry.waist || 'N/A' }} {{unitsService.getBodyMeasureUnitSuffix()}}</p>
+                        <p><strong>{{ 'measurementHistory.hips' | translate }}</strong> {{ entry.hips || 'N/A' }} {{unitsService.getBodyMeasureUnitSuffix()}}</p>
+                        <p><strong>{{ 'measurementHistory.neck' | translate }}</strong> {{ entry.neck || 'N/A' }} {{unitsService.getBodyMeasureUnitSuffix()}}</p>
+                        <p><strong>{{ 'measurementHistory.rightArm' | translate }}</strong> {{ entry.rightArm || 'N/A' }} {{unitsService.getBodyMeasureUnitSuffix()}}</p>
                     </div>
                     <!-- Right Column: Notes -->
                     <div>
-                        <label class="font-semibold text-sm">Notes:</label>
+                        <label class="font-semibold text-sm">{{ 'measurementHistory.notes' | translate }}:</label>
                         <textarea [value]="entry.notes || ''" (input)="updateNotes(entry.date, $event)"
-                            placeholder="Add notes..."
+                            [placeholder]="'measurementHistory.notesPlaceholder' | translate"
                             class="w-full p-2 mt-1 border rounded-md dark:bg-gray-700 dark:border-gray-600 h-24"></textarea>
                     </div>
                 </div>
@@ -110,8 +110,8 @@
     </div>
     <ng-template #noData>
         <div class="text-center bg-white dark:bg-gray-800 p-10 rounded-md shadow-md">
-            <p class="text-lg">No measurement history found.</p>
-            <p class="text-gray-500 dark:text-gray-400 mt-2">Go to your profile settings to add your first entry!</p>
+            <p class="text-lg">{{ 'measurementHistory.noDataTitle' | translate }}</p>
+            <p class="text-gray-500 dark:text-gray-400 mt-2">{{ 'measurementHistory.noDataMessage' | translate }}</p>
         </div>
     </ng-template>
 </div>
@@ -127,60 +127,54 @@
 <div *ngIf="isAddEntryModalOpen"
     class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4 text-gray-800 dark:text-gray-200 backdrop-blur-sm animate-fade-in">
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md">
-        <h2 class="text-xl font-bold mb-4">Add Measurement Entry</h2>
+        <h2 class="text-xl font-bold mb-4">{{ 'measurementHistory.addEntryModal.title' | translate }}</h2>
         <form [formGroup]="entryForm" (ngSubmit)="saveEntry()">
-            <label for="date" class="block text-xs font-medium text-gray-600 dark:text-gray-400">Date</label>
+            <label for="date" class="block text-xs font-medium text-gray-600 dark:text-gray-400">{{ 'measurementHistory.addEntryModal.dateLabel' | translate }}</label>
             <input type="date" formControlName="date" id="date"
                 class="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:border-gray-600">
             <!-- Add inputs for weight, waist, neck, etc. from entryForm -->
             <div class="grid grid-cols-2 gap-4 mb-4">
                 <div>
-                    <label for="weight" class="block text-xs font-medium text-gray-600 dark:text-gray-400">Target
-                        Weight ({{unitsService.getBodyWeightUnitSuffix()}})</label>
-                    <input type="number" formControlName="weight" id="weight" placeholder="{{'Weight ' +(unitsService.getBodyWeightUnitSuffix())}}"
+                    <label for="weight" class="block text-xs font-medium text-gray-600 dark:text-gray-400">{{ 'measurementHistory.addEntryModal.weightLabel' | translate:{unit: unitsService.getBodyWeightUnitSuffix()} }}</label>
+                    <input type="number" formControlName="weight" id="weight" [placeholder]="'Weight ' +(unitsService.getBodyWeightUnitSuffix())"
                         class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200 text-lg">
                 </div>
                 <!-- Add all other measurement inputs here -->
                 <div>
-                    <label for="chest" class="block text-xs font-medium text-gray-600 dark:text-gray-400">Chest
-                        ({{unitsService.getBodyMeasureUnitSuffix()}})</label>
-                    <input type="number" formControlName="chest" id="chest" placeholder="{{'Chest ' +(unitsService.getBodyMeasureUnitSuffix())}}"
+                    <label for="chest" class="block text-xs font-medium text-gray-600 dark:text-gray-400">{{ 'measurementHistory.addEntryModal.chestLabel' | translate:{unit: unitsService.getBodyMeasureUnitSuffix()} }}</label>
+                    <input type="number" formControlName="chest" id="chest" [placeholder]="'Chest ' +(unitsService.getBodyMeasureUnitSuffix())"
                         class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200 text-lg">
                 </div>
                 <div>
-                    <label for="waist" class="block text-xs font-medium text-gray-600 dark:text-gray-400">Waist
-                        ({{unitsService.getBodyMeasureUnitSuffix()}})</label>
-                    <input type="number" formControlName="waist" id="waist" placeholder="{{'Waist ' +(unitsService.getBodyMeasureUnitSuffix())}}"
+                    <label for="waist" class="block text-xs font-medium text-gray-600 dark:text-gray-400">{{ 'measurementHistory.addEntryModal.waistLabel' | translate:{unit: unitsService.getBodyMeasureUnitSuffix()} }}</label>
+                    <input type="number" formControlName="waist" id="waist" [placeholder]="'Waist ' +(unitsService.getBodyMeasureUnitSuffix())"
                         class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200 text-lg">
                 </div>
                 <div>
-                    <label for="hips" class="block text-xs font-medium text-gray-600 dark:text-gray-400">Hips
-                        ({{unitsService.getBodyMeasureUnitSuffix()}})</label>
-                    <input type="number" formControlName="hips" id="hips" placeholder="{{'Hips ' +(unitsService.getBodyMeasureUnitSuffix())}}"
+                    <label for="hips" class="block text-xs font-medium text-gray-600 dark:text-gray-400">{{ 'measurementHistory.addEntryModal.hipsLabel' | translate:{unit: unitsService.getBodyMeasureUnitSuffix()} }}</label>
+                    <input type="number" formControlName="hips" id="hips" [placeholder]="'Hips ' +(unitsService.getBodyMeasureUnitSuffix())"
                         class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200 text-lg">
                 </div>
                 <div>
-                    <label for="neck" class="block text-xs font-medium text-gray-600 dark:text-gray-400">Neck
-                        ({{unitsService.getBodyMeasureUnitSuffix()}})</label>
-                    <input type="number" formControlName="neck" id="neck" placeholder="{{'Neck ' +(unitsService.getBodyMeasureUnitSuffix())}}"
+                    <label for="neck" class="block text-xs font-medium text-gray-600 dark:text-gray-400">{{ 'measurementHistory.addEntryModal.neckLabel' | translate:{unit: unitsService.getBodyMeasureUnitSuffix()} }}</label>
+                    <input type="number" formControlName="neck" id="neck" [placeholder]="'Neck ' +(unitsService.getBodyMeasureUnitSuffix())"
                         class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200 text-lg">
                 </div>
                 <div>
-                    <label for="rightArm" class="block text-xs font-medium text-gray-600 dark:text-gray-400">Right Arm
-                        ({{unitsService.getBodyMeasureUnitSuffix()}})</label>
-                    <input type="number" formControlName="rightArm" id="rightArm" placeholder="{{'Right Arm ' +(unitsService.getBodyMeasureUnitSuffix())}}"
+                    <label for="rightArm" class="block text-xs font-medium text-gray-600 dark:text-gray-400">{{ 'measurementHistory.addEntryModal.rightArmLabel' | translate:{unit: unitsService.getBodyMeasureUnitSuffix()} }}</label>
+                    <input type="number" formControlName="rightArm" id="rightArm" [placeholder]="'Right Arm ' +(unitsService.getBodyMeasureUnitSuffix())"
                         class="mt-1 block w-full sm:w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:text-gray-200 text-lg">
                 </div>
             </div>
-            <textarea formControlName="notes" placeholder="Notes..."
+            <textarea formControlName="notes" [placeholder]="'measurementHistory.addEntryModal.notesPlaceholder' | translate"
                 class="w-full p-2 border rounded mb-4 h-24 dark:bg-gray-700 dark:border-gray-600"></textarea>
             <div class="flex justify-end gap-4 text-white">
                 <button type="button" (click)="isAddEntryModalOpen = false" class="px-4 py-2 rounded flex items-center">
                     <app-icon name="cancel" class="h-6 w-6 text-white"></app-icon>
-                    CANCEL</button>
+                    {{ 'measurementHistory.addEntryModal.cancel' | translate }}</button>
                 <button type="submit" [disabled]="entryForm.invalid"
                     class="px-4 py-2 bg-primary text-white rounded disabled:opacity-50 flex items-center">
-                    <app-icon name="save" class="h-7 w-7 mr-1"></app-icon>SAVE</button>
+                    <app-icon name="save" class="h-7 w-7 mr-1"></app-icon>{{ 'measurementHistory.addEntryModal.save' | translate }}</button>
             </div>
         </form>
     </div>
@@ -195,7 +189,7 @@
         <!-- Header with NEW TOGGLE BUTTON -->
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
             <div class="flex items-center justify-between w-full sm:w-auto mb-2 sm:mb-0">
-                <h2 class="text-xl sm:text-2xl font-bold mb-2 sm:mb-0">Side-by-Side Comparison</h2>
+                <h2 class="text-xl sm:text-2xl font-bold mb-2 sm:mb-0">{{ 'measurementHistory.comparisonModal.title' | translate }}</h2>
                 <!-- Close Button -->
                 <button (click)="comparisonData = null"
                     class="text-gray-500 hover:text-gray-800 dark:hover:text-gray-200">
@@ -207,8 +201,8 @@
                 <button (click)="toggleComparisonMode()"
                     class="px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors flex items-center">
                     <app-icon name="change" class="w-4 h-4 mr-1"></app-icon>
-                    <span *ngIf="comparisonMode === 'slider'">Side-by-Side View</span>
-                    <span *ngIf="comparisonMode === 'side-by-side'">Slider View</span>
+                    <span *ngIf="comparisonMode === 'slider'">{{ 'measurementHistory.comparisonModal.sideBySideView' | translate }}</span>
+                    <span *ngIf="comparisonMode === 'side-by-side'">{{ 'measurementHistory.comparisonModal.sliderView' | translate }}</span>
                 </button>
             </div>
         </div>
@@ -229,7 +223,7 @@
 
         <!-- CONDITIONAL VIEW: Slider -->
         <div *ngIf="comparisonMode === 'slider'" class="mb-6">
-            <h3 class="font-semibold text-center mb-2">Image Comparison Slider</h3>
+            <h3 class="font-semibold text-center mb-2">{{ 'measurementHistory.comparisonModal.sliderTitle' | translate }}</h3>
             <div
                 class="relative w-full aspect-[4/3] rounded-md overflow-hidden select-none bg-gray-200 dark:bg-gray-700">
                 <!-- ... entire slider block from previous step remains here ... -->
@@ -239,7 +233,7 @@
                         class="w-full h-full object-cover max-w-none">
                     <span
                         class="absolute top-2 left-2 bg-black/50 text-white text-xs font-bold py-1 px-2 rounded-full z-10">
-                        BEFORE: {{ comparisonData.from.date | date:'dd-MM-yy':'UTC' }}
+                        {{ 'measurementHistory.comparisonModal.before' | translate:{date: (comparisonData.from.date | date:'dd-MM-yy':'UTC')} }}
                     </span>
                 </div>
                 <!-- LAYER 2: Top Image ("After") Container -->
@@ -249,7 +243,7 @@
                         class="w-full h-full object-cover max-w-none">
                     <span
                         class="absolute top-2 right-2 bg-black/50 text-white text-xs font-bold py-1 px-2 rounded-full z-10">
-                        AFTER: {{ comparisonData.to.date | date:'dd-MM-yy':'UTC' }}
+                        {{ 'measurementHistory.comparisonModal.after' | translate:{date: (comparisonData.to.date | date:'dd-MM-yy':'UTC')} }}
                     </span>
                 </div>
                 <!-- LAYER 3: Slider Handle -->
@@ -276,12 +270,12 @@
                 <thead
                     class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 rounded-lg">
                     <tr>
-                        <th scope="col" class="px-2 py-3 rounded-l-lg">Metric</th>
+                        <th scope="col" class="px-2 py-3 rounded-l-lg">{{ 'measurementHistory.comparisonModal.metric' | translate }}</th>
                         <th scope="col" class="px-2 py-3 text-center">{{ comparisonData.from.date | date:'shortDate' }}
                         </th>
                         <th scope="col" class="px-2 py-3 text-center">{{ comparisonData.to.date | date:'shortDate' }}
                         </th>
-                        <th scope="col" class="px-2 py-3 text-center rounded-r-lg">Change</th>
+                        <th scope="col" class="px-2 py-3 text-center rounded-r-lg">{{ 'measurementHistory.comparisonModal.change' | translate }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -315,7 +309,7 @@
             <button (click)="comparisonData = null"
                 class="px-5 py-2.5 rounded-lg bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-700 text-sm font-medium flex items-center">
                 <app-icon name="cancel"></app-icon>
-                CLOSE</button>
+                {{ 'measurementHistory.comparisonModal.close' | translate }}</button>
         </div>
     </div>
 </div>

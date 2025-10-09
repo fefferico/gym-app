@@ -109,26 +109,26 @@ export class BarbellCalculatorService {
 
   private barbells: Barbell[] = [
     // Standard Olympic Barbells with IWF specs
-    { name: 'Men\'s Olympic Bar', weight: 20, unit: 'kg', sleeveCm: 41.5 },
-    { name: 'Men\'s Olympic Bar', weight: 44, unit: 'lb', sleeveInch: 16.3 },
-    { name: 'Women\'s Olympic Bar', weight: 15, unit: 'kg', sleeveCm: 32 },
-    { name: 'Women\'s Olympic Bar', weight: 33, unit: 'lb', sleeveInch: 12.6 },
+    { name: 'barbellData.barbells.mensOlympic', weight: 20, unit: 'kg', sleeveCm: 41.5 },
+    { name: 'barbellData.barbells.mensOlympic', weight: 44, unit: 'lb', sleeveInch: 16.3 },
+    { name: 'barbellData.barbells.womensOlympic', weight: 15, unit: 'kg', sleeveCm: 32 },
+    { name: 'barbellData.barbells.womensOlympic', weight: 33, unit: 'lb', sleeveInch: 12.6 },
 
     // A common non-competition "gym" bar
-    { name: 'Standard Gym Bar', weight: 20, unit: 'kg', sleeveCm: 40 },
-    { name: 'Standard Gym Bar', weight: 44, unit: 'lb', sleeveInch: 15.75 },
+    { name: 'barbellData.barbells.standardGym', weight: 20, unit: 'kg', sleeveCm: 40 },
+    { name: 'barbellData.barbells.standardGym', weight: 44, unit: 'lb', sleeveInch: 15.75 },
 
     // Specialty Bars (sleeves are typically shorter)
-    { name: 'EZ Curl Bar', weight: 10, unit: 'kg', sleeveCm: 17 },
-    { name: 'EZ Curl Bar', weight: 22, unit: 'lb', sleeveInch: 6.7 },
-    { name: 'Tricep Bar', weight: 10, unit: 'kg', sleeveCm: 17 },
-    { name: 'Tricep Bar', weight: 22, unit: 'lb', sleeveInch: 6.7 },
-    { name: 'Trap/Hex Bar', weight: 25, unit: 'kg', sleeveCm: 25 },
-    { name: 'Trap/Hex Bar', weight: 55, unit: 'lb', sleeveInch: 9.8 },
+    { name: 'barbellData.barbells.ezCurl', weight: 10, unit: 'kg', sleeveCm: 17 },
+    { name: 'barbellData.barbells.ezCurl', weight: 22, unit: 'lb', sleeveInch: 6.7 },
+    { name: 'barbellData.barbells.tricep', weight: 10, unit: 'kg', sleeveCm: 17 },
+    { name: 'barbellData.barbells.tricep', weight: 22, unit: 'lb', sleeveInch: 6.7 },
+    { name: 'barbellData.barbells.trapHex', weight: 25, unit: 'kg', sleeveCm: 25 },
+    { name: 'barbellData.barbells.trapHex', weight: 55, unit: 'lb', sleeveInch: 9.8 },
     // New barbell data
     {
       isOlympic: true,
-      name: 'Olympic Bar 120cm',
+      name: 'barbellData.barbells.olympic120',
       lengthCm: 120,
       weight: 7.4,
       unit: 'kg',
@@ -137,7 +137,7 @@ export class BarbellCalculatorService {
     },
     {
       isOlympic: true,
-      name: 'Olympic Bar 152cm',
+      name: 'barbellData.barbells.olympic152',
       lengthCm: 152,
       weight: 11.3,
       unit: 'kg',
@@ -146,7 +146,7 @@ export class BarbellCalculatorService {
     },
     {
       isOlympic: true,
-      name: 'Olympic Bar 182cm',
+      name: 'barbellData.barbells.olympic182',
       lengthCm: 182,
       weight: 13,
       unit: 'kg',
@@ -155,7 +155,7 @@ export class BarbellCalculatorService {
     },
     {
       isOlympic: true,
-      name: 'Olympic Bar 186cm',
+      name: 'barbellData.barbells.olympic186',
       lengthCm: 186,
       weight: 14,
       unit: 'kg',
@@ -164,7 +164,7 @@ export class BarbellCalculatorService {
     },
     {
       isOlympic: true,
-      name: 'Olympic Bar 219cm',
+      name: 'barbellData.barbells.olympic219',
       lengthCm: 219,
       weight: 20,
       unit: 'kg',
@@ -174,7 +174,7 @@ export class BarbellCalculatorService {
     // New barbell data - LB versions
     {
       isOlympic: true,
-      name: 'Olympic Bar 47.24in', // Changed name for clarity in lb version
+      name: 'barbellData.barbells.olympic47in', // Changed name for clarity in lb version
       lengthInch: 47.24,
       weight: 16.31,
       unit: 'lb',
@@ -183,7 +183,7 @@ export class BarbellCalculatorService {
     },
     {
       isOlympic: true,
-      name: 'Olympic Bar 59.84in',
+      name: 'barbellData.barbells.olympic60in',
       lengthInch: 59.84,
       weight: 24.91,
       unit: 'lb',
@@ -192,7 +192,7 @@ export class BarbellCalculatorService {
     },
     {
       isOlympic: true,
-      name: 'Olympic Bar 71.65in',
+      name: 'barbellData.barbells.olympic72in',
       lengthInch: 71.65,
       weight: 28.66,
       unit: 'lb',
@@ -201,7 +201,7 @@ export class BarbellCalculatorService {
     },
     {
       isOlympic: true,
-      name: 'Olympic Bar 73.23in',
+      name: 'barbellData.barbells.olympic73in',
       lengthInch: 73.23,
       weight: 30.86,
       unit: 'lb',
@@ -210,7 +210,7 @@ export class BarbellCalculatorService {
     },
     {
       isOlympic: true,
-      name: 'Olympic Bar 86.22in',
+      name: 'barbellData.barbells.olympic86in',
       lengthInch: 86.22,
       weight: 44.09,
       unit: 'lb',
@@ -222,14 +222,14 @@ export class BarbellCalculatorService {
   ];
 
   private collars: Collar[] = [
-    { name: 'No Collars', weight: 0, unit: 'kg' },
-    { name: 'No Collars', weight: 0, unit: 'lb' },
-    { name: 'Spring Clips', weight: 0.5, unit: 'kg' },
-    { name: "Spring Clips", "weight": 1.1, "unit": "lb" },
-    { name: 'Lock-Jaw / Pro Collars', weight: 1, unit: 'kg' },
-    { name: "Lock-Jaw / Pro Collars", "weight": 2.2, "unit": "lb" },
-    { name: 'Competition Collars', weight: 5, unit: 'kg' },
-    { name: "Competition Collars", "weight": 11, "unit": "lb" }
+    { name: 'barbellData.collars.none', weight: 0, unit: 'kg' },
+    { name: 'barbellData.collars.none', weight: 0, unit: 'lb' },
+    { name: 'barbellData.collars.spring', weight: 0.5, unit: 'kg' },
+    { name: "barbellData.collars.spring", "weight": 1.1, "unit": "lb" },
+    { name: 'barbellData.collars.lockjaw', weight: 1, unit: 'kg' },
+    { name: "barbellData.collars.lockjaw", "weight": 2.2, "unit": "lb" },
+    { name: 'barbellData.collars.competition', weight: 5, unit: 'kg' },
+    { name: "barbellData.collars.competition", "weight": 11, "unit": "lb" }
   ];
 
   constructor() { }
