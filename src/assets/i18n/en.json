@@ -200,6 +200,7 @@
       "english": "English",
       "spanish": "Spanish",
       "italian": "Italian",
+      "german": "German",
       "french": "French"
     }
   },
@@ -256,5 +257,45 @@
   "spinners": {
     "exporting": "Exporting data...",
     "importing": "Importing data..."
+  },
+
+
+  "todaysWorkout": {
+    "previousDay": "Previous Day",
+    "nextDay": "Next Day",
+    "started": "Started:",
+    "jumpToToday": "Jump to Today",
+    "checkingSchedule": "Checking your schedule...",
+    "scheduled": "Scheduled:",
+    "loggedUnscheduled": "Logged (Unscheduled):",
+    "program": "Program:",
+    "currentWeek": "Current Week:",
+    "workoutCompleted": "Workout Completed!",
+    "details": "DETAILS",
+    "sessionSkipped": "Session Skipped",
+    "logIt": "Log it",
+    "ifYouHavent": ", if you haven't already",
+    "start": "START",
+    "restDay": "Rest Day",
+    "noWorkoutPlanned": "No workout planned in your program for this day",
+    "loggedToday": "Logged today:",
+    "loggedOnThisDay": "Logged on this day:",
+    "feelFreeTo": "Feel free to ",
+    "pickAnotherRoutine": "pick any other routine",
+    "ifYouPrefer": ", if you'd prefer",
+    "orPickOne": "Or, pick one from below:",
+    "pickOne": "Pick one from below:",
+    "estimatedTime": "Est: ~{{duration}} min",
+    "latest": "Latest: ",
+    "noRoutinesAvailable": "No routines available",
+    "noProgramActive": "No Program Active",
+    "activateProgramPrompt": "Activate a program to see your future schedule",
+    "managePrograms": "MANAGE PROGRAMS",
+    "noWorkoutsLogged": "No workouts logged yet",
+    "youCan": "You can ",
+    "setActiveProgram": "set an active program",
+    "or": " or ",
+    "browseRoutines": "browser the available routines",
+    "viewProgramDetailsTooltip": "Click to navigate to program details"
   }
 }

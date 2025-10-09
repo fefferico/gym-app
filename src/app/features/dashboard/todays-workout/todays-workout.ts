@@ -5,29 +5,29 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { TrainingProgramService } from '../../../core/services/training-program.service';
 import { Routine } from '../../../core/models/workout.model';
-import { ProgramDayInfo, ScheduledRoutineDay, TrainingProgram } from '../../../core/models/training-program.model';
+import {  ScheduledRoutineDay, TrainingProgram } from '../../../core/models/training-program.model';
 import { EnrichedWorkoutLog, WorkoutLog } from '../../../core/models/workout-log.model';
 import { WorkoutService } from '../../../core/services/workout.service';
-import { catchError, map, Observable, of, Subject, switchMap, takeUntil, tap, combineLatest, ObservedValueOf, take, forkJoin, firstValueFrom } from 'rxjs';
+import { map, Observable, of, Subject, switchMap, takeUntil, tap, combineLatest, take, forkJoin } from 'rxjs';
 import Hammer from 'hammerjs';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { TrackingService } from '../../../core/services/tracking.service';
-import { startOfDay, endOfDay, parseISO } from 'date-fns';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { v4 as uuidv4 } from 'uuid';
-import { PressDirective } from '../../../shared/directives/press.directive';
 import { PressScrollDirective } from '../../../shared/directives/press-scroll.directive';
 import { TooltipDirective } from '../../../shared/directives/tooltip.directive';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { PremiumFeature, SubscriptionService } from '../../../core/services/subscription.service';
 import { MillisecondsDatePipe } from '../../../shared/pipes/milliseconds-date.pipe';
+import { TranslateModule } from '@ngx-translate/core';
+import { parseISO } from 'date-fns';
 
 export type SlideAnimationState = 'center' | 'exitToLeft' | 'exitToRight' | 'enterFromLeft' | 'enterFromRight';
 
 @Component({
   selector: 'app-todays-workout',
   standalone: true,
-  imports: [CommonModule, DatePipe, PressScrollDirective, TooltipDirective, IconComponent, MillisecondsDatePipe],
+  imports: [CommonModule, DatePipe, PressScrollDirective, TooltipDirective, IconComponent, MillisecondsDatePipe, TranslateModule],
   templateUrl: './todays-workout.html',
   styleUrls: ['./todays-workout.scss'],
   animations: [

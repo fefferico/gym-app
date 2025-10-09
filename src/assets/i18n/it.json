@@ -182,7 +182,7 @@
       "wipMessage": "Messaggio WIP",
       "menuMode": "Modalità Menu",
       "menuModes": {
-        "dropdown": "Dropdown",
+        "dropdown": "Tendina",
         "compact": "Compatto",
         "modal": "Modale"
       }
@@ -191,6 +191,7 @@
       "english": "Inglese",
       "spanish": "Spagnolo",
       "italian": "Italiano",
+      "german": "Tedesco",
       "french": "Francese"
     }
   },
@@ -248,5 +249,44 @@
   "spinners": {
     "exporting": "Esportazione dati in corso...",
     "importing": "Importazione dati in corso..."
+  },
+
+  "todaysWorkout": {
+    "previousDay": "Giorno Precedente",
+    "nextDay": "Giorno Successivo",
+    "started": "Iniziato:",
+    "jumpToToday": "Vai a Oggi",
+    "checkingSchedule": "Controllo il tuo programma...",
+    "scheduled": "Previsto:",
+    "loggedUnscheduled": "Registrato (Non previsto):",
+    "program": "Programma:",
+    "currentWeek": "Settimana Corrente:",
+    "workoutCompleted": "Allenamento Completato!",
+    "details": "DETTAGLI",
+    "sessionSkipped": "Sessione Saltata",
+    "logIt": "Registralo",
+    "ifYouHavent": ", se non l'hai già fatto",
+    "start": "INIZIA",
+    "restDay": "Giorno di Riposo",
+    "noWorkoutPlanned": "Nessun allenamento previsto dal tuo programma per oggi",
+    "loggedToday": "Registrati oggi:",
+    "loggedOnThisDay": "Registrati in questo giorno:",
+    "feelFreeTo": "Sentiti libero di ",
+    "pickAnotherRoutine": "scegliere un'altra scheda",
+    "ifYouPrefer": ", se preferisci",
+    "orPickOne": "Oppure, scegline una qui sotto:",
+    "pickOne": "Scegline una qui sotto:",
+    "estimatedTime": "Stima: ~{{duration}} min",
+    "latest": "Recente: ",
+    "noRoutinesAvailable": "Nessuna scheda disponibile",
+    "noProgramActive": "Nessun Programma Attivo",
+    "activateProgramPrompt": "Attiva un programma per vedere la tua pianificazione futura",
+    "managePrograms": "GESTISCI PROGRAMMI",
+    "noWorkoutsLogged": "Nessun allenamento ancora registrato",
+    "youCan": "Puoi ",
+    "setActiveProgram": "impostare un programma attivo",
+    "or": " o ",
+    "browseRoutines": "sfogliare le schede disponibili",
+    "viewProgramDetailsTooltip": "Clicca per andare ai dettagli del programma"
   }
 }

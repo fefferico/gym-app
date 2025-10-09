@@ -37,10 +37,9 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   userName = computed(() => this.userProfileService.username() || this.translate.instant('user.defaultName'));
 
-
   // Signal to hold information about a paused/active workout
   pausedWorkoutInfo = signal<PausedWorkoutState | null>(null);
-  pausedRoutineName = signal<string>('New session'); // Default name
+  pausedRoutineName = signal<string>(this.translate.instant('pausedWorkout.defaultRoutineName')); // Default name
   pausedProgramName = signal<string>(''); // Default name
 
   private subscriptions = new Subscription(); // To manage subscriptions
@@ -56,10 +55,10 @@ export class HomeComponent implements OnInit, OnDestroy {
         // Fallback if sessionRoutine.name is not directly available in PausedWorkoutState
         this.workoutService.getRoutineById(pausedInfo.routineId).subscribe(routine => {
           if (routine) this.pausedRoutineName.set(routine.name);
-          else this.pausedRoutineName.set('your workout');
+          else this.pausedRoutineName.set(this.translate.instant('pausedWorkout.fallbackRoutineName'));
         })
       } else {
-        this.pausedRoutineName.set('your workout');
+        this.pausedRoutineName.set(this.translate.instant('pausedWorkout.fallbackRoutineName'));
       }
     });
     this.userProfileService.showWipDisclaimer();
@@ -110,7 +109,7 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.workoutService.navigateToPlayer('', { queryParams: { resume: 'true' } });
       }
     } else {
-      this.toastService.warning("No paused workout found to resume", 3000);
+      this.toastService.warning(this.translate.instant('pausedWorkout.noPausedWorkoutFound'), 3000);
     }
   }
 
@@ -118,13 +117,13 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.workoutService.vibrate();
 
     const buttons: AlertButton[] = [
-      { text: 'Cancel', role: 'cancel', data: false, icon: 'cancel' },
-      { text: 'Discard', role: 'confirm', data: true, cssClass: 'bg-red-500 hover:bg-red-600 text-white', icon: 'trash' },
+      { text: this.translate.instant('common.cancel'), role: 'cancel', data: false, icon: 'cancel' },
+      { text: this.translate.instant('common.discard'), role: 'confirm', data: true, cssClass: 'bg-red-500 hover:bg-red-600 text-white', icon: 'trash' },
     ];
 
     const confirm = await this.alertService.showConfirmationDialog(
-      'Discard Paused Workout?',
-      'Are you sure you want to discard this paused workout session? This action cannot be undone.',
+      this.translate.instant('pausedWorkout.discardPromptTitle'),
+      this.translate.instant('pausedWorkout.discardPromptMessage'),
       buttons
     );
     if (confirm && confirm.data) {
@@ -144,18 +143,23 @@ export class HomeComponent implements OnInit, OnDestroy {
     const pausedInfo = this.pausedWorkoutInfo();
     if (pausedInfo) {
       this.workoutService.vibrate();
-      const routineName = pausedInfo.sessionRoutine?.name || 'Ad-hoc Workout';
+      const routineName = pausedInfo.sessionRoutine?.name || this.translate.instant('pausedWorkout.adHocWorkout');
       const exercisesAvailable = pausedInfo.sessionRoutine && pausedInfo.sessionRoutine.exercises ? pausedInfo.sessionRoutine.exercises.length : 0;
       const exercisesDone = pausedInfo.currentWorkoutLogExercises?.length || 0;
       const setsDone = pausedInfo.currentWorkoutLogExercises?.reduce((acc, ex) => acc + ex.sets.length, 0);
       const targetSets = pausedInfo.originalWorkoutExercises && pausedInfo.originalWorkoutExercises['exercises'] ? pausedInfo.originalWorkoutExercises['exercises'].reduce((acc: number, ex: WorkoutExercise) => acc + ex.sets.length, 0) : null;
       const timeElapsed = new Date(pausedInfo.sessionTimerElapsedSecondsBeforePause * 1000).toISOString().slice(11, 19);
+      const targetSetsInfo = targetSets ? ` out of ${targetSets}` : '';
 
       this.alertService.showAlert(
-        `Paused: ${routineName}`,
-        `You have executed ${exercisesDone} of ${exercisesAvailable} exercises, with ${setsDone} set(s) logged` + (targetSets ? ` out of ${targetSets}` : '') + `.
-         Elapsed time: ${timeElapsed}.
-         Resume the workout to continue it.`
+        this.translate.instant('pausedWorkout.summaryTitle', { routineName: routineName }),
+        this.translate.instant('pausedWorkout.summaryMessage', {
+          exercisesDone: exercisesDone,
+          exercisesAvailable: exercisesAvailable,
+          setsDone: setsDone,
+          targetSetsInfo: targetSetsInfo,
+          timeElapsed: timeElapsed
+        })
       );
     }
   }

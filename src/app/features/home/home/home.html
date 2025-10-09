@@ -2,10 +2,11 @@
 <div class="container mx-auto p-2 md:p-6 space-y-3">
   <header class="mb-1 p-2">
     <h1 class="text-3xl md:text-4xl font-bold text-gray-800 dark:text-gray-100">
-      Welcome Back, <span class="text-primary dark:text-primary-light">{{ userName() }}</span>!
+      {{ 'home.welcomeBack' | translate:{ name: '' } }}<span class="text-primary dark:text-primary-light">{{
+        userName() }}</span>!
     </h1>
     <p class="text-md text-gray-600 dark:text-gray-400 text-left mt-1">
-      Ready to crush your goals today?
+      {{ 'home.readyMessage' | translate }}
     </p>
   </header>
 
@@ -18,18 +19,21 @@
         <app-icon name="alert-filled" class="w-10 h-10 sm:w-12 sm:h-12 text-yellow-500 dark:text-yellow-400"></app-icon>
         <!-- Removed 'flex-grow' and 'sm:text-left' to allow the text to be centered -->
         <div class="text-center sm:text-left py-2 sm:px-8">
-          <h2 class="text-lg sm:text-xl font-semibold text-yellow-700 dark:text-yellow-200"> You have a workout in
-            progress! </h2>
-          <p class="text-m text-yellow-600 dark:text-yellow-300 mt-1"> Routine: <strong class="font-medium"> {{
+          <h2 class="text-lg sm:text-xl font-semibold text-yellow-700 dark:text-yellow-200"> {{ 'pausedWorkout.inProgress'
+            | translate }} </h2>
+          <p class="text-m text-yellow-600 dark:text-yellow-300 mt-1"> {{ 'pausedWorkout.routineLabel' | translate }}
+            <strong class="font-medium"> {{
               pausedRoutineName() }} </strong></p>
           <div *ngIf="pausedProgramName()" class="flex justify-center sm:justify-start">
-            <p class="my-2 text-xs font-semibold text-white bg-primary rounded-md p-1 flex-shrink w-fit"> Program:
+            <p class="my-2 text-xs font-semibold text-white bg-primary rounded-md p-1 flex-shrink w-fit"> {{
+              'pausedWorkout.programLabel' | translate }}
               <strong class="font-medium"> {{ pausedProgramName() }} </strong>
             </p>
           </div>
-          <p class="text-sm text-yellow-500 dark:text-yellow-400 mt-0.5"> Logged on the: {{ pausedInfo.workoutDate |
+          <p class="text-sm text-yellow-500 dark:text-yellow-400 mt-0.5"> {{ 'pausedWorkout.loggedOn' | translate }} {{
+            pausedInfo.workoutDate |
             date:'dd-MM-yyyy':'UTC' }} </p>
-          <p class="text-sm text-yellow-500 dark:text-yellow-400 mt-0.5"> Paused at: {{
+          <p class="text-sm text-yellow-500 dark:text-yellow-400 mt-0.5"> {{ 'pausedWorkout.pausedAt' | translate }} {{
             ((pausedInfo?.sessionTimerElapsedSecondsBeforePause || pausedInfo?.tabataTimeRemainingOnPause || 0) * 1000)
             | date:'HH:mm:ss':'UTC' }} </p>
         </div>
@@ -39,19 +43,19 @@
           class="flex justify-center items-center w-full sm:w-auto px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-md shadow-sm text-lg disabled:opacity-50 disabled:cursor-not-allowed">
           <app-icon name="play" class="w-6 h-6">
           </app-icon>
-          <span class="ml-1"> RESUME WORKOUT </span>
+          <span class="ml-1"> {{ 'pausedWorkout.resumeButton' | translate }} </span>
         </button>
         <button (click)="viewPausedSummary()"
           class="flex justify-center items-center w-full sm:w-auto px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md shadow-sm text-lg disabled:opacity-50 disabled:cursor-not-allowed">
           <app-icon name="eye" class="w-6 h-6">
           </app-icon>
-          <span class="ml-1"> DETAILS </span>
+          <span class="ml-1"> {{ 'pausedWorkout.detailsButton' | translate }} </span>
         </button>
         <button (click)="discardPausedWorkout()"
           class="flex justify-center items-center w-full sm:w-auto px-6 py-3 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-md shadow-sm text-lg disabled:opacity-50 disabled:cursor-not-allowed">
           <app-icon name="trash" class="w-6 h-6">
           </app-icon>
-          <span class="ml-1"> DISCARD </span>
+          <span class="ml-1"> {{ 'pausedWorkout.discardButton' | translate }} </span>
         </button>
       </div>
     </div>
@@ -64,17 +68,19 @@
 
   <!-- Quick Actions / Navigation Section (Example) -->
   <section>
-    <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-3">Quick Actions</h2>
+    <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-3">{{ 'home.quickActionsTitle' | translate }}
+    </h2>
     <div class="grid grid-cols-2 lg:grid-cols-3 gap-4">
       <button (click)="startNewSession()"
         class="flex items-start block p-3 bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow transform hover:-translate-y-1 dark:hover:bg-gray-600 hover:bg-gray-200">
         <div class="flex flex-col items-start text-center">
           <div class="flex items-center mb-2 text-left">
             <app-icon name="play" class="w-14 h-14 mr-2 text-primary"></app-icon>
-            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Start a new session</h3>
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">{{ 'quickActions.startNewSessionTitle' |
+              translate }}</h3>
           </div>
-          <p class="pl-2 text-md text-gray-600 dark:text-gray-400 text-left">Start a brand new session and refine it as
-            you do it</p>
+          <p class="pl-2 text-md text-gray-600 dark:text-gray-400 text-left">{{
+            'quickActions.startNewSessionDescription' | translate }}</p>
         </div>
       </button>
 
@@ -86,15 +92,16 @@
         <div class="flex flex-col items-start text-center">
           <div class="flex items-center mb-2">
             <app-icon name="clipboard-list" class="w-14 h-14 text-teal-500 dark:text-teal-400 mr-2"></app-icon>
-            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 text-left">Log an Activity</h3>
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 text-left">{{ 'quickActions.logActivityTitle'
+              | translate }}</h3>
           </div>
           <p *ngIf="!subscriptionService.isPremium()"
             class="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full bg-yellow-400 text-yellow-900 flex items-center">
             <app-icon name="crown" class="h-5 w-5 mr-1"></app-icon>
-            PREMIUM
+            {{ 'common.premium' | translate }}
           </p>
-          <p class="pl-2 text-md text-gray-600 dark:text-gray-400 text-left">Record other activities like hiking,
-            football, or yoga</p>
+          <p class="pl-2 text-md text-gray-600 dark:text-gray-400 text-left">{{ 'quickActions.logActivityDescription' |
+            translate }}</p>
         </div>
       </button>
       <!-- ========================================================== -->
@@ -106,9 +113,11 @@
         <div class="flex flex-col items-start text-center">
           <div class="flex items-center mb-2">
             <app-icon name="routines" class="w-14 h-14 text-blue-500 dark:text-blue-400 mr-2"></app-icon>
-            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 text-left">My Routines</h3>
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 text-left">{{ 'quickActions.myRoutinesTitle'
+              | translate }}</h3>
           </div>
-          <p class="pl-2 text-md text-gray-600 dark:text-gray-400 text-left">View, create, or edit your workout routines
+          <p class="pl-2 text-md text-gray-600 dark:text-gray-400 text-left">{{ 'quickActions.myRoutinesDescription' |
+            translate }}
           </p>
         </div>
       </button>
@@ -118,14 +127,16 @@
         <div class="flex flex-col items-start text-center">
           <div class="flex items-center mb-2">
             <app-icon name="calendar" class="w-14 h-14 text-green-500 dark:text-green-400 mr-2"></app-icon>
-            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 text-left">Training Programs</h3>
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 text-left">{{
+              'quickActions.trainingProgramsTitle' | translate }}</h3>
           </div>
           <p *ngIf="!subscriptionService.isPremium()"
             class="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full bg-yellow-400 text-yellow-900 flex items-center">
             <app-icon name="crown" class="h-5 w-5 mr-1"></app-icon>
-            PREMIUM
+            {{ 'common.premium' | translate }}
           </p>
-          <p class="pl-2 text-md text-gray-600 dark:text-gray-400 text-left">Manage your long-term training schedules
+          <p class="pl-2 text-md text-gray-600 dark:text-gray-400 text-left">{{
+            'quickActions.trainingProgramsDescription' | translate }}
           </p>
         </div>
       </button>
@@ -135,9 +146,11 @@
         <div class="flex flex-col items-start text-center">
           <div class="flex items-center mb-2">
             <app-icon name="clock" class="w-14 h-14  text-purple-500 dark:text-purple-400 mr-2"></app-icon>
-            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 text-left">Workout History</h3>
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 text-left">{{
+              'quickActions.workoutHistoryTitle' | translate }}</h3>
           </div>
-          <p class="pl-2 text-md text-gray-600 dark:text-gray-400 text-left">Review your past workout logs and progress
+          <p class="pl-2 text-md text-gray-600 dark:text-gray-400 text-left">{{
+            'quickActions.workoutHistoryDescription' | translate }}
           </p>
         </div>
       </button>
@@ -147,9 +160,11 @@
         <div class="flex flex-col items-start text-center">
           <div class="flex items-center mb-2">
             <app-icon name="profile" class="w-14 h-14 text-orange-500 dark:text-orange-400 mr-2"></app-icon>
-            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 text-left">Profile & Settings</h3>
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 text-left">{{
+              'quickActions.profileAndSettingsTitle' | translate }}</h3>
           </div>
-          <p class="pl-2 text-md text-gray-600 dark:text-gray-400 text-left">Manage your data and app preferences</p>
+          <p class="pl-2 text-md text-gray-600 dark:text-gray-400 text-left">{{
+            'quickActions.profileAndSettingsDescription' | translate }}</p>
         </div>
       </button>
       <button (click)="navigateToPersonalGym()"
@@ -157,15 +172,16 @@
         <div class="flex flex-col items-start text-center">
           <div class="flex items-center mb-2">
             <app-icon name="dumbbell" class="w-14 h-14 text-indigo-500 dark:text-indigo-400 mr-2"></app-icon>
-            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 text-left">Personal Gym</h3>
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 text-left">{{
+              'quickActions.personalGymTitle' | translate }}</h3>
           </div>
           <p *ngIf="!subscriptionService.isPremium()"
             class="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full bg-yellow-400 text-yellow-900 flex items-center">
             <app-icon name="crown" class="h-5 w-5 mr-1"></app-icon>
-            PREMIUM
+            {{ 'common.premium' | translate }}
           </p>
-          <p class="pl-2 text-md text-gray-600 dark:text-gray-400 text-left">Manage your available workout equipment and
-            accessories</p>
+          <p class="pl-2 text-md text-gray-600 dark:text-gray-400 text-left">{{
+            'quickActions.personalGymDescription' | translate }}</p>
         </div>
       </button>
       <button (click)="openCalculatorModal()"
@@ -173,10 +189,11 @@
         <div class="flex flex-col items-start text-center">
           <div class="flex items-center mb-2">
             <app-icon name="calc" class="w-14 h-14 mr-2 text-primary"></app-icon>
-            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 text-left">Weight toolkit</h3>
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 text-left">{{
+              'quickActions.weightToolkitTitle' | translate }}</h3>
           </div>
-          <p class="pl-2 text-md text-gray-600 dark:text-gray-400 text-left">An all-in-one lifting toolkit. Instantly
-            calculate plate math, percentages, 1RM, RPE, and official powerlifting scores
+          <p class="pl-2 text-md text-gray-600 dark:text-gray-400 text-left">{{
+            'quickActions.weightToolkitDescription' | translate }}
           </p>
         </div>
       </button>
@@ -190,7 +207,7 @@
 
 
   <footer>
-    <label class="text-white dark:text-gray-100">AppVersion: {{getVersion()}}</label>
+    <label class="text-white dark:text-gray-100">{{ 'home.appVersion' | translate }} {{getVersion()}}</label>
   </footer>
 </div>
 
