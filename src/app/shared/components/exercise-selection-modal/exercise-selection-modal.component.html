@@ -18,7 +18,8 @@
         <!-- Filter and Sort Accordion Section -->
         <div class="px-4 pt-4 flex-shrink-0">
             <div class="flex justify-between items-center">
-                <h4 class="font-semibold text-gray-700 dark:text-gray-200">Filters & Sorting</h4>
+                <h4 class="font-semibold text-gray-700 dark:text-gray-200">{{ 'exerciseSelectionModal.filtersTitle' |
+                    translate }}</h4>
                 <!-- MODIFIED: This is now just one button -->
                 <button (click)="toggleFilterAccordion()"
                     class="rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none transition-all duration-300 ease-in-out">
@@ -33,20 +34,21 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <!-- Category -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{
+                            'exerciseSelectionModal.categoryLabel' | translate }}</label>
                         <select (change)="onCategoryChange($event)" [value]="selectedCategory() || ''"
                             class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-gray-200">
-                            <option value="">All Categories</option>
+                            <option value="">{{ 'exerciseSelectionModal.allCategories' | translate }}</option>
                             <option *ngFor="let cat of categories$ | async" [value]="cat">{{ cat | titlecase }}</option>
                         </select>
                     </div>
                     <!-- Muscle Group -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Muscle
-                            Group</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{
+                            'exerciseSelectionModal.muscleGroupLabel' | translate }}</label>
                         <select (change)="onMuscleGroupChange($event)" [value]="selectedMuscleGroup() || ''"
                             class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-gray-200">
-                            <option value="">All Muscles</option>
+                            <option value="">{{ 'exerciseSelectionModal.allMuscles' | translate }}</option>
                             <option *ngFor="let muscle of primaryMuscleGroups$ | async" [value]="muscle">{{ muscle |
                                 titlecase }}</option>
                         </select>
@@ -58,8 +60,8 @@
                 <div class="text-center">
                     <!-- Main Search Bar (visible in default view) -->
                     <div *ngIf="!isShowingSimilarView()">
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 text-left">Search
-                            Name</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 text-left">{{
+                            'exerciseSelectionModal.searchLabel' | translate }}</label>
                         <input #exerciseSearchFied type="text" [placeholder]="searchPlaceholder()"
                             [(ngModel)]="searchTerm" (keydown.enter)="onSearchEnter()"
                             class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-gray-200" />
@@ -68,32 +70,34 @@
                     <!-- "Show Similar" button (conditionally rendered) -->
                     <button *ngIf="showSimilarButton() && !isShowingSimilarView()" (click)="onFindSimilar()"
                         class="justify-center inline-flex items-center mt-2 px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700">
-                        OR SHOW SIMILAR EXERCISES
+                        {{ 'exerciseSelectionModal.showSimilar' | translate }}
                     </button>
 
                     <!-- "Back to Search" button (visible in 'similar' view) -->
                     <button *ngIf="isShowingSimilarView()" (click)="onBackToSearch()"
                         class="justify-center inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md shadow-sm text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                         <app-icon name="back" class="w-5 h-5 mr-2"></app-icon>
-                        SHOW ALL
+                        {{ 'exerciseSelectionModal.backToSearch' | translate }}
                     </button>
                 </div>
                 <!-- =================== END OF CORRECTION =================== -->
 
                 <!-- Sort By -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sort By</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{
+                        'exerciseSelectionModal.sortByLabel' | translate }}</label>
                     <select (change)="onSortModeChange($event)" [value]="sortMode()"
                         class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-gray-200">
-                        <option value="alpha">Alphabetical</option>
-                        <option value="lastUsed">Last Used</option>
-                        <option value="frequency">Most Used</option>
+                        <option value="alpha">{{ 'exerciseSelectionModal.sort.alpha' | translate }}</option>
+                        <option value="lastUsed">{{ 'exerciseSelectionModal.sort.lastUsed' | translate }}</option>
+                        <option value="frequency">{{ 'exerciseSelectionModal.sort.frequency' | translate }}</option>
                     </select>
                 </div>
                 <!-- Clear Button -->
                 <div class="text-right">
                     <button (click)="clearFilters()"
-                        class="text-sm text-blue-600 hover:underline dark:text-blue-400">Clear Filters</button>
+                        class="text-sm text-blue-600 hover:underline dark:text-blue-400">{{
+                        'exerciseSelectionModal.clearFilters' | translate }}</button>
                 </div>
             </div>
         </div>
@@ -125,20 +129,21 @@
                             <span *ngIf="item.isCustom || item.lastUsedAt || item.usageCount != null"
                                 class="block text-xs text-gray-500 dark:text-gray-400 italic">
                                 [
-                                <ng-container *ngIf="item.isCustom">Custom</ng-container>
+                                <ng-container *ngIf="item.isCustom">{{ 'exerciseSelectionModal.custom' | translate
+                                    }}</ng-container>
 
                                 <!-- Separator 1 -->
                                 <ng-container *ngIf="item.isCustom && (item.usageCount != null || item.lastUsedAt)"> |
                                 </ng-container>
 
-                                <ng-container *ngIf="item.usageCount != null">Count: {{ item.usageCount
-                                    }}</ng-container>
+                                <ng-container *ngIf="item.usageCount != null">{{ 'exerciseSelectionModal.count' |
+                                    translate:{count: item.usageCount} }}</ng-container>
 
                                 <!-- Separator 2 -->
                                 <ng-container *ngIf="item.usageCount != null && item.lastUsedAt"> | </ng-container>
 
-                                <ng-container *ngIf="item.lastUsedAt">Last used: {{ item.lastUsedAt |
-                                    date:'dd-MM-yy':'UTC' }}</ng-container>
+                                <ng-container *ngIf="item.lastUsedAt">{{ 'exerciseSelectionModal.lastUsed' |
+                                    translate:{date: (item.lastUsedAt | date:'dd-MM-yy':'UTC')} }}</ng-container>
                                 ]
                             </span>
                         </div>
@@ -147,14 +152,15 @@
                     </li>
                 </ng-container>
                 <li *ngIf="processedExercises().length === 0" class="text-gray-500 dark:text-gray-400 text-center p-4">
-                    {{ isShowingSimilarView() ? 'No similar exercises found.' : 'No exercises match your filters.' }}
+                    {{ (isShowingSimilarView() ? 'exerciseSelectionModal.noSimilar' :
+                    'exerciseSelectionModal.noMatches') | translate }}
                 </li>
             </ul>
         </div>
         <div *ngIf="showCreateCustomLink()" class="py-3 border-t border-gray-200 dark:border-gray-600 text-center">
             <button type="button" (click)="onCreateCustom()"
                 class="text-sm text-primary dark:text-primary-light hover:underline">
-                Or, create a new custom exercise entry...
+                {{ 'exerciseSelectionModal.createCustom' | translate }}
             </button>
         </div>
 
@@ -164,7 +170,7 @@
             <button type="button" (click)="onClose()"
                 class="mt-3 inline-flex w-full justify-center items-center rounded-md bg-white dark:bg-gray-600 px-3 py-2 text-xl font-semibold text-gray-900 dark:text-gray-200 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-500 hover:bg-gray-50 dark:hover:bg-gray-500 sm:mt-0 sm:w-auto">
                 <app-icon name="cancel" class="w-6 h-6 mr-1"></app-icon>
-                CANCEL
+                {{ 'exerciseSelectionModal.cancel' | translate }}
             </button>
         </div>
     </div>

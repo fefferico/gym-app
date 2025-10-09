@@ -9,6 +9,7 @@ import { combineLatest, Observable, Subscription } from 'rxjs';
 import { ToastService } from '../../../core/services/toast.service';
 import { TrackingService } from '../../../core/services/tracking.service';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 // +++ NEW: Type definition for the list, which can now contain headers +++
 type ListItem = Exercise | { isHeader: true; label: string };
@@ -17,13 +18,14 @@ type ListItem = Exercise | { isHeader: true; label: string };
     selector: 'app-exercise-selection-modal',
     standalone: true,
     // +++ Added AsyncPipe for the new filter dropdowns +++
-    imports: [CommonModule, FormsModule, TitleCasePipe, DatePipe, IconComponent, AsyncPipe],
+    imports: [CommonModule, FormsModule, TitleCasePipe, DatePipe, IconComponent, AsyncPipe, TranslateModule],
     templateUrl: './exercise-selection-modal.component.html',
 })
 export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges {
     private exerciseService = inject(ExerciseService);
     private trackingService = inject(TrackingService);
     private toastService = inject(ToastService);
+    private translate = inject(TranslateService);
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes['isOpen'] && changes['isOpen'].currentValue) {
@@ -174,10 +176,10 @@ export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges
         let currentGroupLabel = '';
 
         const getGroupLabel = (count: number): string => {
-            if (count >= 30) return '30+ Times';
-            if (count >= 10) return '< 30 Times';
-            if (count >= 5) return '< 10 Times';
-            return '< 5 Times';
+            if (count >= 30) return this.translate.instant('exerciseSelectionModal.frequencyGroups.gt30');
+            if (count >= 10) return this.translate.instant('exerciseSelectionModal.frequencyGroups.lt30');
+            if (count >= 5) return this.translate.instant('exerciseSelectionModal.frequencyGroups.lt10');
+            return this.translate.instant('exerciseSelectionModal.frequencyGroups.lt5');
         };
 
         for (const exercise of exercises) {
@@ -258,7 +260,7 @@ export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges
         this.searchTerm.set('');
         this.sortMode.set('alpha');
         if (showToast) {
-            this.toastService.info('Filters cleared');
+            this.toastService.info(this.translate.instant('exerciseSelectionModal.toasts.filtersCleared'));
         }
     }
 }

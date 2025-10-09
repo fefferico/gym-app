@@ -10,6 +10,7 @@ import { IconComponent, IconLayer } from '../icon/icon.component';
 // +++ 1. Import the AlertService and the AlertButton model +++
 import { AlertService } from '../../../core/services/alert.service';
 import { AlertButton } from '../../../core/models/alert.model';
+import { TranslateModule } from '@ngx-translate/core';
 
 
 // ... (animations can remain unchanged) ...
@@ -53,7 +54,7 @@ export const compactBarAnimation = trigger('compactBar', [
 @Component({
   selector: 'app-action-menu',
   standalone: true,
-  imports: [CommonModule, IconComponent],
+  imports: [CommonModule, IconComponent, TranslateModule],
   templateUrl: './action-menu.html',
   animations: [dropdownMenuAnimation, compactBarAnimation, modalOverlayAnimation, modalContentAnimation],
   changeDetection: ChangeDetectionStrategy.OnPush,

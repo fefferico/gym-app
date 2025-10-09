@@ -24,8 +24,10 @@ import {
   format, parseISO, startOfMonth, endOfMonth, eachDayOfInterval,
   isSameDay, subMonths, isToday, startOfWeek,
   isSameMonth, // Ensure isSameMonth is imported
-  addDays
+  addDays,
+  Locale
 } from 'date-fns';
+import { it, es, fr, enUS, de } from 'date-fns/locale';
 import Hammer from 'hammerjs';
 import { SpinnerService } from '../../../core/services/spinner.service';
 import { ActionMenuComponent } from '../../../shared/components/action-menu/action-menu';
@@ -43,10 +45,12 @@ import { MenuMode } from '../../../core/models/app-settings.model';
 import { createFromBtn, deleteBtn, editBtn, routineBtn, viewBtn } from '../../../core/services/buttons-data';
 import { FabAction, FabMenuComponent } from '../../../shared/components/fab-menu/fab-menu.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { LanguageService } from '../../../core/services/language.service';
 
 
 interface CalendarMonth {
   monthName: string;
+  monthDate: Date;
   year: number;
   days: HistoryCalendarDay[];
   spacers: any[]; // Used to align the first day of the month
@@ -208,6 +212,15 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
   private spinnerService = inject(SpinnerService);
   private trainingProgramService = inject(TrainingProgramService);
   private translate = inject(TranslateService);
+  private languageService = inject(LanguageService);
+
+  private dateFnsLocales: { [key: string]: Locale } = {
+    en: enUS,
+    it: it,
+    es: es,
+    fr: fr,
+    de: de
+  };
 
   selectedDayItems = signal<EnrichedHistoryListItem[]>([]);
   protected allHistoryItems = signal<EnrichedHistoryListItem[]>([]);
@@ -692,10 +705,12 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
     return isSameMonth(date1, date2);
   }
 
-  getHistoryWeekDayNames(): string[] {
-    const start = startOfWeek(new Date(), { weekStartsOn: this.weekStartsOn });
-    return eachDayOfInterval({ start, end: addDays(start, 6) }).map(d => format(d, 'EE'));
-  }
+  getHistoryWeekDayNames = computed(() => {
+    const currentLang = this.languageService.currentLang();
+    const locale = this.dateFnsLocales[currentLang] || enUS;
+    const start = startOfWeek(new Date(), { weekStartsOn: this.weekStartsOn, locale });
+    return eachDayOfInterval({ start, end: addDays(start, 6) }).map(d => format(d, 'EE', { locale }));
+  });
 
   toggleFilterAccordion(): void { this.isFilterAccordionOpen.update(isOpen => !isOpen); }
   resetFilters(): void {
@@ -1093,13 +1108,14 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
 
       newMonths.push({
         monthName: format(targetDate, 'LLLL'),
+        monthDate: targetDate, // +++ ADD this line
         year: targetDate.getFullYear(),
         spacers: Array(effectiveStartOfWeek).fill(0),
         days: daysInMonth.map(date => {
           const logsOnThisDay = allLogs.filter(log => isSameDay(parseISO(log.date), date));
           return {
             date: date,
-            isCurrentMonth: true, // All days belong to their month
+            isCurrentMonth: true,
             isToday: isToday(date),
             hasLog: logsOnThisDay.length > 0,
             logCount: logsOnThisDay.length,
@@ -1109,7 +1125,7 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     this.historyCalendarMonths.update(existingMonths => [...existingMonths, ...newMonths]);
-    this.currentCalendarDate = subMonths(startDate, numberOfMonths); // Update the date for the next load
+    this.currentCalendarDate = subMonths(startDate, numberOfMonths);
     this.historyCalendarLoading.set(false);
   }
 

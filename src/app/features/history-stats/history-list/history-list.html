@@ -310,7 +310,7 @@
           <div *ngFor="let month of historyCalendarMonths()" class="month-container mb-8 px-2">
             <!-- Month Header -->
             <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4 text-center">
-              {{ month.monthName | titlecase }} {{ month.year }}
+              {{ month.monthDate | date:'LLLL y' }}
             </h2>
 
             <!-- Grid for the days of the week headers -->

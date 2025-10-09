@@ -44,7 +44,7 @@
                             </ng-container>
                             <!-- +++ END: CONDITIONAL ICON RENDERING +++ -->
 
-                            {{ item.label }}
+                            <span>{{ item.label ? (item.label | translate) : '' }}</span>
                         </button>
                     </ng-container>
                 </div>

@@ -11,11 +11,11 @@
       </button>
       <div class="text-center">
         <h1 class="text-lg font-bold text-gray-800 dark:text-gray-100 truncate max-w-xs">
-          {{ routine()?.name || 'Workout' }}
+          {{ routine()?.name || ('compactPlayer.defaultWorkoutName' | translate) }}
         </h1>
         <div class="flex-col text-xl font-mono font-semibold text-primary dark:text-primary-light tracking-wider">
           {{ sessionTimerDisplay() }}
-          <p>{{ sessionState() === 'paused' ? '[PAUSED]':''}}</p>
+          <p>{{ sessionState() === 'paused' ? ('compactPlayer.paused' | translate):''}}</p>
         </div>
       </div>
       <!-- MODIFIED: Container for Pause/Resume and Notes buttons -->
@@ -43,8 +43,8 @@
 
     <!-- Workout Progress Bar -->
     <div class="w-full mt-2">
-      <span class="flex justify-center text-primary-light font-mono">Overall
-        progress</span>
+      <span class="flex justify-center text-primary-light font-mono">{{ 'compactPlayer.overallProgress' | translate
+        }}</span>
       <div class="progress-bar-container w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 relative">
         <div class="progress-bar bg-primary h-3 rounded-full" [style.width.%]="workoutProgress()"></div>
         <span class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white">
@@ -76,7 +76,7 @@
             'bg-teal-500 dark:bg-teal-600': isEmom(exIndex),
             'bg-primary dark:bg-primary-dark': !isEmom(exIndex)
           }">
-            {{ isEmom(exIndex) ? 'EMOM' : 'SUPERSET'}}
+            {{ (isEmom(exIndex) ? 'compactPlayer.emom' : 'compactPlayer.superset') | translate}}
           </div>
 
           <!-- Exercise Header -->
@@ -97,14 +97,16 @@
               </div>
               <div class="px-5 flex items-center text-black dark:text-gray-400 text-sm"
                 *ngIf="expandedExerciseIndex() !== exIndex">
-                {{ isSuperSet(exIndex) ? 'Rounds' : 'Sets' }}: {{ getExerciseTotalLoggedSets(exIndex) + '/' +
+                {{ (isSuperSet(exIndex) ? 'compactPlayer.rounds' : 'compactPlayer.sets') | translate }}: {{
+                getExerciseTotalLoggedSets(exIndex) + '/' +
                 getExerciseTotalSets(exIndex)}}
               </div>
             </div>
             <!-- Exercise Notes Textarea -->
             <div *ngIf="expandedExerciseNotes() === (exIndex)" class="flex py-2 w-full">
               <textarea [ngModel]="getInitialExerciseNoteInputValue(exIndex)"
-                (change)="updateExerciseNotes(exIndex, $event)" placeholder="Notes for this exercise..."
+                (change)="updateExerciseNotes(exIndex, $event)"
+                [placeholder]="'compactPlayer.notesPlaceholder' | translate"
                 class="w-full text-xs bg-inherit dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded-md p-1.5 focus:ring-primary-dark focus:border-primary-dark dark:text-gray-200"></textarea>
             </div>
 
@@ -112,7 +114,8 @@
             <div class="absolute top-2 right-2 z-60">
               <div class="relative">
                 <div class="flex">
-                  <button (click)="toggleExerciseNotes(exIndex, $event)" [title]="'Toggle notes for exercise'"
+                  <button (click)="toggleExerciseNotes(exIndex, $event)"
+                    [title]="'compactPlayer.toggleNotes' | translate"
                     class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center p-2">
                     <app-icon name="clipboard-list" class="h-6 w-6"></app-icon>
                   </button>
@@ -166,8 +169,9 @@
                       <!-- Placeholder text for expanded view -->
                       <div class="flex-1 text-xs text-black dark:text-gray-300"
                         *ngIf="isSetExpanded(exIndex, setIndex)">
-                        Log{{ isSetCompleted(exIndex, setIndex)?'ged':''}} performance:
-                        <p *ngIf="isSetCompleted(exIndex, setIndex)" class="italic font-bold">Mark as undone to edit</p>
+                        {{ 'compactPlayer.logPerformance' | translate }}{{ isSetCompleted(exIndex, setIndex)?'ged':''}}:
+                        <p *ngIf="isSetCompleted(exIndex, setIndex)" class="italic font-bold">{{
+                          'compactPlayer.markAsUndone' | translate }}</p>
                       </div>
 
                       <!-- Actions -->
@@ -261,7 +265,7 @@
                               (click)="promptAddField(exIndex, setIndex); $event.stopPropagation()"
                               class="flex items-center justify-center w-full h-full p-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-md text-gray-400 hover:bg-gray-200/50 dark:hover:bg-gray-700/50 transition-colors">
                               <app-icon name="plus-circle" class="h-5 w-5 mr-2"></app-icon>
-                              <span class="text-sm font-semibold">Add Metric</span>
+                              <span class="text-sm font-semibold">{{ 'compactPlayer.addMetric' | translate }}</span>
                             </button>
                           </div>
                         </ng-container>
@@ -272,7 +276,8 @@
                             <div *ngIf="visibleFields.includes('weight')">
                               <label
                                 class="flex items-center justify-center text-xs font-medium text-gray-500 dark:text-gray-300 pb-1">
-                                Weight ({{ unitsService.getWeightUnitSuffix() }})
+                                {{ 'compactPlayer.weightLabel' | translate:{unit:
+                                unitsService.getWeightUnitSuffix()} }}
                               </label>
                               <input type="number" [ngModel]="getInitialInputValue(exIndex, setIndex, 'weight')"
                                 (change)="updateSetData(exIndex, setIndex, 0, 'weight', $event)"
@@ -286,7 +291,7 @@
                             <div *ngIf="visibleFields.includes('reps')">
                               <label
                                 class="flex items-center justify-center text-xs font-medium text-gray-500 dark:text-gray-300 pb-1">
-                                Reps
+                                {{ 'compactPlayer.repsLabel' | translate }}
                               </label>
                               <input type="number" [ngModel]="getInitialInputValue(exIndex, setIndex, 'reps')"
                                 (change)="updateSetData(exIndex, setIndex, 0, 'reps', $event)"
@@ -299,7 +304,7 @@
                             <div *ngIf="visibleFields.includes('distance')">
                               <label
                                 class="flex items-center justify-center text-xs font-medium text-gray-500 dark:text-gray-300 pb-1">
-                                Distance
+                                {{ 'compactPlayer.distanceLabel' | translate }}
                               </label>
                               <input type="number" [ngModel]="getInitialInputValue(exIndex, setIndex, 'distance')"
                                 (change)="updateSetData(exIndex, setIndex, 0, 'distance', $event)"
@@ -312,12 +317,12 @@
                             <div *ngIf="visibleFields.includes('duration')">
                               <label
                                 class="flex items-center justify-center text-xs font-medium text-gray-500 dark:text-gray-300 pb-1">
-                                Time
+                                {{ 'compactPlayer.timeLabel' | translate }}
                               </label>
                               <input type="text" [ngModel]="getInitialInputValue(exIndex, setIndex, 'duration')"
                                 (change)="updateSetData(exIndex, setIndex, 0, 'duration', $event)"
                                 class="w-full p-1 text-center bg-gray-100 dark:bg-gray-700 rounded-md text-black dark:text-gray-200"
-                                placeholder="mm:ss">
+                                [placeholder]="'compactPlayer.timePlaceholder' | translate">
                               <div *ngIf="getSetTargetDisplay(set, exIndex, setIndex, 'duration') as target"
                                 class="target-class text-xs"><span class="flex items-center justify-center"><app-icon
                                     name="target" class="h-3 w-3 mr-0.5"></app-icon>{{ formatSecondsToTime(target)
@@ -339,7 +344,7 @@
                       <div *ngIf="expandedSetNotes() === (exIndex + '-' + setIndex)" class="px-2 pb-1">
                         <textarea [ngModel]="getInitialInputValue(exIndex, setIndex, 'notes')"
                           (change)="updateSetData(exIndex, setIndex, 0, 'notes', $event)"
-                          placeholder="Notes for this set..."
+                          [placeholder]="'compactPlayer.setNotesPlaceholder' | translate"
                           class="w-full text-xs bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded-md p-1.5 focus:ring-primary-dark focus:border-primary-dark dark:text-gray-200"></textarea>
                       </div>
                     </div>
@@ -350,15 +355,15 @@
                 </ng-container>
                 <!-- Col 2: Set +/- Buttons STANDAR SET -->
                 <div class="flex items-center justify-center gap-x-2">
-                  <label class="text-black dark:text-gray-100">Set</label>
+                  <label class="text-black dark:text-gray-100">{{ 'compactPlayer.setLabel' | translate }}</label>
                   <button type="button" (click)="removeSet(exIndex, -1)"
                     class="p-1.5 rounded-full bg-red-200 hover:bg-red-300 text-red-700 disabled:opacity-50 flex items-center"
-                    aria-label="Remove Last Set">
+                    [aria-label]="'compactPlayer.removeLastSet' | translate">
                     <app-icon name="minus-circle" class="h-6 w-6"></app-icon>
                   </button>
                   <button type="button" (click)="addSet(exIndex, 'standard'); $event.stopPropagation()"
                     class="p-1.5 rounded-full bg-green-200 hover:bg-green-300 text-green-700 flex items-center"
-                    aria-label="Add Set">
+                    [aria-label]="'compactPlayer.addSet' | translate">
                     <app-icon name="plus-circle" class="h-6 w-6"></app-icon>
                   </button>
                 </div>
@@ -375,18 +380,19 @@
                       <div class="flex items-start gap-2">
                         <!-- <app-icon name="chevron-down" class="h-5 w-5 transition-transform duration-200 flex-shrink-0"
                           [class.rotate-180]="isRoundExpanded(exIndex, roundIndex)"></app-icon> -->
-                        <h4 class="text-sm font-bold text-gray-700 dark:text-gray-100">Round {{ roundIndex + 1 }}</h4>
+                        <h4 class="text-sm font-bold text-gray-700 dark:text-gray-100">{{ 'compactPlayer.roundHeader' |
+                          translate:{number: roundIndex + 1} }}</h4>
                         <div *ngIf="!isRoundExpanded(exIndex, roundIndex)">
                           <div (click)="$event.stopPropagation()">
                             <ng-container *ngIf="!isRoundCompleted(exIndex, roundIndex)">
                               <span *ngIf="roundIndex === findFirstIncompleteRoundIndex(exIndex)"
                                 class="inline-flex items-center gap-1 rounded-full bg-yellow-100 dark:bg-yellow-900/70 px-2 py-1 text-xs font-medium text-yellow-800 dark:text-yellow-300 animate-pulse">
                                 <app-icon name="target" class="h-4 w-4"></app-icon>
-                                Next up
+                                {{ 'compactPlayer.nextUp' | translate }}
                               </span>
                               <span *ngIf="roundIndex !== findFirstIncompleteRoundIndex(exIndex)"
                                 class="inline-flex items-center gap-1 rounded-full bg-gray-200 dark:bg-gray-700 px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-400">
-                                Pending
+                                {{ 'compactPlayer.pending' | translate }}
                               </span>
                             </ng-container>
                           </div>
@@ -398,7 +404,8 @@
                         <!-- +++ NEW BUTTON/STATUS ELEMENT +++ -->
 
                         <!-- ROUND NOTES BUTTON -->
-                        <button (click)="toggleSetNotes(exIndex, roundIndex, $event)" [title]="'Toggle notes for round'"
+                        <button (click)="toggleSetNotes(exIndex, roundIndex, $event)"
+                          [title]="'compactPlayer.toggleNotes' | translate"
                           class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center p-2">
                           <app-icon name="clipboard-list" class="h-6 w-6"></app-icon>
                         </button>
@@ -434,14 +441,15 @@
                     <div *ngIf="expandedSetNotes() === (exIndex + '-' + roundIndex)" class="px-2 pb-1">
                       <textarea [ngModel]="getInitialInputValue(exIndex, roundIndex, 'notes')"
                         (change)="updateSetData(exIndex, roundIndex, 0, 'notes', $event)"
-                        placeholder="Notes for this round..."
+                        [placeholder]="'compactPlayer.roundNotesPlaceholder' | translate"
                         class="w-full text-xs bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded-md p-1.5 focus:ring-primary-dark focus:border-primary-dark dark:text-gray-200"></textarea>
                     </div>
 
                     <!-- Collapsible Round Body -->
                     <ng-container *ngIf="isRoundExpanded(exIndex, roundIndex)">
                       <div *ngIf="isRoundCompleted(exIndex, roundIndex)"
-                        class="flex items-start text-xs text-white italic font-bold">Mark as undone to edit</div>
+                        class="flex items-start text-xs text-white italic font-bold">{{ 'compactPlayer.markAsUndone' |
+                        translate }}</div>
 
 
 
@@ -485,7 +493,8 @@
                                   <!-- Weight Input -->
                                   <div *ngIf="cols['weight']">
                                     <label
-                                      class="block text-xs font-medium text-gray-500 dark:text-gray-400 text-center pb-1">Weight</label>
+                                      class="block text-xs font-medium text-gray-500 dark:text-gray-400 text-center pb-1">{{
+                                      'compactPlayer.weightLabel' | translate }}</label>
                                     <input type="number"
                                       [ngModel]="getInitialInputValue(ssOriginalIndex, roundIndex, 'weight')"
                                       [disabled]="isRoundCompleted(exIndex, roundIndex)"
@@ -501,7 +510,8 @@
                                   <!-- Reps Input -->
                                   <div *ngIf="cols['reps']">
                                     <label
-                                      class="block text-xs font-medium text-gray-500 dark:text-gray-400 text-center pb-1">Reps</label>
+                                      class="block text-xs font-medium text-gray-500 dark:text-gray-400 text-center pb-1">{{
+                                      'compactPlayer.repsLabel' | translate }}</label>
                                     <input type="number"
                                       [ngModel]="getInitialInputValue(ssOriginalIndex, roundIndex, 'reps')"
                                       [disabled]="isRoundCompleted(exIndex, roundIndex)"
@@ -517,7 +527,8 @@
                                   <!-- Distance Input -->
                                   <div *ngIf="cols['distance']">
                                     <label
-                                      class="block text-xs font-medium text-gray-500 dark:text-gray-400 text-center pb-1">Distance</label>
+                                      class="block text-xs font-medium text-gray-500 dark:text-gray-400 text-center pb-1">{{
+                                      'compactPlayer.distanceLabel' | translate }}</label>
                                     <input type="number"
                                       [ngModel]="getInitialInputValue(ssOriginalIndex, roundIndex, 'distance')"
                                       [disabled]="isRoundCompleted(exIndex, roundIndex)"
@@ -533,13 +544,14 @@
                                   <!-- Duration Input -->
                                   <div *ngIf="cols['duration']">
                                     <label
-                                      class="block text-xs font-medium text-gray-500 dark:text-gray-400 text-center pb-1">Time</label>
+                                      class="block text-xs font-medium text-gray-500 dark:text-gray-400 text-center pb-1">{{
+                                      'compactPlayer.timeLabel' | translate }}</label>
                                     <input type="text"
                                       [ngModel]="getInitialInputValue(ssOriginalIndex, roundIndex, 'duration')"
                                       [disabled]="isRoundCompleted(exIndex, roundIndex)"
                                       (change)="updateSetData(ssOriginalIndex, roundIndex, roundIndex, 'duration', $event)"
                                       class="w-full text-md text-center bg-gray-100 dark:bg-gray-700 border-gray-300 rounded-md p-1 text-gray-700 dark:text-white"
-                                      placeholder="mm:ss">
+                                      [placeholder]="'compactPlayer.timePlaceholder' | translate">
                                     <div
                                       *ngIf="getSetTargetDisplay(ssExercise.sets[roundIndex], ssOriginalIndex, roundIndex, 'duration') as target"
                                       class="target-class text-xs"><span
@@ -574,15 +586,15 @@
                 </ng-container>
                 <!-- Col 2: Set +/- Buttons SUPER SET -->
                 <div class="flex items-center justify-center gap-x-2">
-                  <label class="text-black dark:text-gray-100">Round</label>
+                  <label class="text-black dark:text-gray-100">{{ 'compactPlayer.roundLabel' | translate }}</label>
                   <button type="button" (click)="removeSet(exIndex, -1)"
                     class="p-1.5 rounded-full bg-red-200 hover:bg-red-300 text-red-700 disabled:opacity-50 flex items-center"
-                    aria-label="Remove Last Set">
+                    [aria-label]="'compactPlayer.removeLastSet' | translate">
                     <app-icon name="minus-circle" class="h-6 w-6"></app-icon>
                   </button>
                   <button type="button" (click)="addSet(exIndex, 'standard'); $event.stopPropagation()"
                     class="p-1.5 rounded-full bg-green-200 hover:bg-green-300 text-green-700 flex items-center"
-                    aria-label="Add Set">
+                    [aria-label]="'compactPlayer.addSet' | translate">
                     <app-icon name="plus-circle" class="h-6 w-6"></app-icon>
                   </button>
                 </div>
@@ -598,19 +610,21 @@
 
     <ng-template #loading>
       <div class="text-center py-10">
-        <p class="text-gray-500">Loading workout...</p>
+        <p class="text-gray-500">{{ 'compactPlayer.loading' | translate }}</p>
       </div>
     </ng-template>
   </main>
   <div class="flex flex-col items-center"
     *ngIf="!routine() || (routine() !== null && routine() !== undefined && (!routine()?.exercises || routine()?.exercises?.length === 0))">
     <h2 class="text-2xl font-semibold text-gray-700 dark:text-gray-200">
-      {{ sessionState() === 'error' ? 'Error Loading Workout' : (currentWorkoutLog().exercises?.length === 0 ?
-      (routineId === '-1' ? 'Workout to be started' : 'Workout Ended') : 'Workout Complete!') }}
+      {{ sessionState() === 'error' ? ('compactPlayer.errorLoading' | translate) : (currentWorkoutLog().exercises?.length
+      === 0 ?
+      (routineId === '-1' ? ('compactPlayer.workoutStarted' | translate) : ('compactPlayer.workoutEnded' | translate)) :
+      ('compactPlayer.workoutComplete' | translate)) }}
     </h2>
     <p class="text-gray-600 dark:text-gray-400 mt-2" *ngIf="sessionState() !== 'error'">
-      {{ currentWorkoutLog().exercises?.length === 0 ? 'No sets logged yet' : 'All planned sets are done. Well
-      done!' }}
+      {{ currentWorkoutLog().exercises?.length === 0 ? ('compactPlayer.noSetsLogged' | translate) :
+      ('compactPlayer.allSetsDone' | translate) }}
     </p>
   </div>
   <!-- Footer with Action Buttons -->
@@ -621,31 +635,31 @@
       <button (click)="openAddExerciseModal()"
         class="flex items-center justify-center space-x-2 bg-blue-500 text-white font-semibold py-2 px-4 rounded-full shadow-lg hover:bg-blue-600 transition-colors">
         <app-icon name="plus-circle" class="h-6 w-6"></app-icon>
-        <span>ADD EXERCISE</span>
+        <span>{{ 'compactPlayer.addExercise' | translate }}</span>
       </button>
 
       <button (click)="finishWorkout()"
         [disabled]="!this.currentWorkoutLog() || !this.currentWorkoutLog().exercises || this.currentWorkoutLog().exercises?.length === 0"
         class="flex items-center justify-center space-x-2 bg-green-500 text-white font-semibold py-2 px-4 rounded-full shadow-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
         <app-icon name="done" class="h-6 w-6"></app-icon>
-        <span>FINISH</span>
+        <span>{{ 'compactPlayer.finish' | translate }}</span>
       </button>
 
     </div>
   </div>
 
   <app-exercise-selection-modal [isOpen]="isAddExerciseModalOpen()" [(searchTerm)]="modalSearchTerm"
-    title="ADD EXERCISE TO SESSION" [exercises]="availableExercises" [showCreateCustomLink]="true"
-    itemIconName="plus-circle" itemIconClass="text-primary dark:text-primary-light"
+    [title]="'compactPlayer.addExerciseTitle' | translate" [exercises]="availableExercises"
+    [showCreateCustomLink]="true" itemIconName="plus-circle" itemIconClass="text-primary dark:text-primary-light"
     (exerciseSelected)="selectExerciseToAddFromModal($event)" (createCustomClicked)="handleTrulyCustomExerciseEntry()"
     (close)="closeAddExerciseModal()">
   </app-exercise-selection-modal>
 
   <app-exercise-selection-modal [isOpen]="isSwitchExerciseModalOpen()" [(searchTerm)]="modalSearchTerm"
-    [title]="isShowingSimilarInSwitchModal() ? 'SIMILAR EXERCISES' : 'SWITCH EXERCISE'"
-    [exercises]="exercisesForSwitchModal()" searchPlaceholder="Search for a replacement..." [showSimilarButton]="true"
-    [isShowingSimilarView]="isShowingSimilarInSwitchModal()" itemIconName="change" itemIconClass="text-green-500"
-    (exerciseSelected)="handleExerciseSwitch($event)"
+    [title]="(isShowingSimilarInSwitchModal() ? 'compactPlayer.similarExercisesTitle' : 'compactPlayer.switchExerciseTitle') | translate"
+    [exercises]="exercisesForSwitchModal()" [searchPlaceholder]="'compactPlayer.searchPlaceholder' | translate"
+    [showSimilarButton]="true" [isShowingSimilarView]="isShowingSimilarInSwitchModal()" itemIconName="change"
+    itemIconClass="text-green-500" (exerciseSelected)="handleExerciseSwitch($event)"
     (findSimilarClicked)="findAndShowSimilarExercises(exerciseToSwitchIndex())"
     (backToSearchClicked)="onBackToSearchFromSimilar()" (close)="closeSwitchExerciseModal()">
   </app-exercise-selection-modal>
@@ -663,7 +677,8 @@
       <header class="p-5 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center flex-shrink-0">
         <div class="flex items-center gap-3">
           <app-icon name="chart" class="h-7 w-7 text-primary dark:text-primary-light"></app-icon>
-          <h3 class="text-xl font-semibold text-gray-800 dark:text-gray-100">Performance Insights</h3>
+          <h3 class="text-xl font-semibold text-gray-800 dark:text-gray-100">{{ 'compactPlayer.insights.title' |
+            translate }}</h3>
         </div>
         <button (click)="closePerformanceInsightsModal()"
           class="p-1.5 rounded-full text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700/70 focus:outline-none transition-colors">
@@ -676,7 +691,8 @@
           dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors rounded-t-lg">
             <span class="flex items-center gap-2">
               <app-icon name="clipboard-list" class="h-6 w-6"></app-icon>
-              <span>Completed Sets in this Session ({{ data.completedSetsInSession.length }})</span>
+              <span>{{ 'compactPlayer.insights.completedSets' | translate:{count:
+                data.completedSetsInSession.length} }}</span>
             </span>
             <app-icon name="chevron-down" class="h-5 w-5 transform transition-transform duration-200"
               [ngClass]="{'rotate-180': showCompletedSetsForExerciseInfo()}"></app-icon>
@@ -686,23 +702,27 @@
             <div *ngFor="let setLog of data.completedSetsInSession; let i = index"
               class="text-xs p-2 bg-white dark:bg-gray-700 rounded-md shadow-sm border border-gray-200 dark:border-gray-600">
               <p class="font-semibold text-gray-700 dark:text-gray-200 mb-1">
-                Set #{{ i + 1 }}:
+                {{ 'compactPlayer.setLabel' | translate }} #{{ i + 1 }}:
               </p>
               <div class="grid grid-cols-2 gap-x-2 gap-y-1 text-gray-600 dark:text-gray-300">
-                <span *ngIf="setLog.repsAchieved">Reps: <strong class="dark:text-gray-100">{{ setLog.repsAchieved
+                <span *ngIf="setLog.repsAchieved">{{ 'compactPlayer.repsLabel' | translate }}: <strong
+                    class="dark:text-gray-100">{{ setLog.repsAchieved
                     }}</strong></span>
-                <span *ngIf="setLog.weightUsed != null">Weight: <strong class="dark:text-gray-100">{{ setLog.weightUsed
+                <span *ngIf="setLog.weightUsed != null">{{ 'compactPlayer.weightLabel' | translate:{unit: ''} }}: <strong
+                    class="dark:text-gray-100">{{ setLog.weightUsed
                     |
                     weightUnit }}</strong></span>
-                <span *ngIf="setLog.distanceAchieved">Distance: <strong class="dark:text-gray-100">{{
+                <span *ngIf="setLog.distanceAchieved">{{ 'compactPlayer.distanceLabel' | translate }}: <strong
+                    class="dark:text-gray-100">{{
                     setLog.distanceAchieved }} km</strong></span>
-                <span *ngIf="setLog.durationPerformed">Time: <strong class="dark:text-gray-100">{{
+                <span *ngIf="setLog.durationPerformed">{{ 'compactPlayer.timeLabel' | translate }}: <strong
+                    class="dark:text-gray-100">{{
                     formatSecondsToTime(setLog.durationPerformed) }}</strong></span>
               </div>
             </div>
             <div *ngIf="data.completedSetsInSession.length === 0"
               class="p-3 text-xs text-center text-gray-500 dark:text-gray-400">
-              No sets completed yet for this exercise in this workout.
+              {{ 'compactPlayer.insights.noSetsCompleted' | translate }}
             </div>
           </div>
         </div>
@@ -710,37 +730,43 @@
           <div class="p-3 text-sm font-medium text-gray-700 dark:text-gray-300">
             <span class="flex items-center gap-2">
               <app-icon name="calendar-page" class="h-6 w-6"></app-icon>
-              <span>Last Performance ({{ data.lastPerformance?.lastPerformedDate | date:'shortDate' }})</span>
+              <span>{{ 'compactPlayer.insights.lastPerformance' | translate:{date: (data.lastPerformance?.lastPerformedDate
+                | date:'shortDate')} }}</span>
             </span>
           </div>
           <div *ngIf="data.lastPerformance as lastPerf"
             class="bg-gray-50 dark:bg-gray-700/30 p-3 border-t border-gray-200 dark:border-gray-700/80 space-y-3 max-h-48 overflow-y-auto rounded-b-lg">
             <div *ngFor="let setLog of lastPerf.sets; let i = index"
               class="text-xs p-2 bg-white dark:bg-gray-700 rounded-md shadow-sm border border-gray-200 dark:border-gray-600">
-              <p class="font-semibold text-gray-700 dark:text-gray-200 mb-1">Set #{{ i + 1 }}:</p>
+              <p class="font-semibold text-gray-700 dark:text-gray-200 mb-1">{{ 'compactPlayer.setLabel' | translate }}
+                #{{ i + 1 }}:</p>
               <div class="grid grid-cols-2 gap-x-2 gap-y-1 text-gray-600 dark:text-gray-300">
-                <span *ngIf="setLog.repsAchieved">Reps: <strong class="dark:text-gray-100">{{ setLog.repsAchieved
+                <span *ngIf="setLog.repsAchieved">{{ 'compactPlayer.repsLabel' | translate }}: <strong
+                    class="dark:text-gray-100">{{ setLog.repsAchieved
                     }}</strong></span>
-                <span *ngIf="setLog.weightUsed != null">Weight: <strong class="dark:text-gray-100">{{ setLog.weightUsed
+                <span *ngIf="setLog.weightUsed != null">{{ 'compactPlayer.weightLabel' | translate:{unit: ''} }}: <strong
+                    class="dark:text-gray-100">{{ setLog.weightUsed
                     |
                     weightUnit }}</strong></span>
-                <span *ngIf="setLog.distanceAchieved">Distance: <strong class="dark:text-gray-100">{{
+                <span *ngIf="setLog.distanceAchieved">{{ 'compactPlayer.distanceLabel' | translate }}: <strong
+                    class="dark:text-gray-100">{{
                     setLog.distanceAchieved }} km</strong></span>
-                <span *ngIf="setLog.durationPerformed">Time: <strong class="dark:text-gray-100">{{
+                <span *ngIf="setLog.durationPerformed">{{ 'compactPlayer.timeLabel' | translate }}: <strong
+                    class="dark:text-gray-100">{{
                     formatSecondsToTime(setLog.durationPerformed) }}</strong></span>
               </div>
             </div>
           </div>
           <div *ngIf="!data.lastPerformance"
             class="p-3 text-xs text-center text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-700/80 rounded-b-lg">
-            No previous performance recorded for this exercise.
+            {{ 'compactPlayer.insights.noPreviousPerformance' | translate }}
           </div>
         </div>
         <div class="rounded-md border border-gray-200 dark:border-gray-700/80">
           <div class="p-3 text-sm font-medium text-gray-700 dark:text-gray-300">
             <span class="flex items-center gap-2">
               <app-icon name="pb" class="h-6 w-6 text-yellow-500"></app-icon>
-              <span>Personal Bests</span>
+              <span>{{ 'compactPlayer.insights.personalBests' | translate }}</span>
             </span>
           </div>
           <div *ngIf="data.personalBests.length > 0"
@@ -749,12 +775,13 @@
               class="text-xs p-2 bg-white dark:bg-gray-700 rounded-md shadow-sm border border-gray-200 dark:border-gray-600">
               <p class="font-semibold text-gray-700 dark:text-gray-200">{{ pb.pbType }}</p>
               <p class="text-lg font-bold text-primary dark:text-primary-light">{{ formatPbValue(pb) }}</p>
-              <p class="text-2xs text-gray-500 dark:text-gray-400">on {{ pb.timestamp | date:'shortDate' }}</p>
+              <p class="text-2xs text-gray-500 dark:text-gray-400">{{ 'compactPlayer.insights.onDate' |
+                translate:{date: (pb.timestamp | date:'shortDate')} }}</p>
             </div>
           </div>
           <div *ngIf="data.personalBests.length === 0"
             class="p-3 text-xs text-center text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-700/80 rounded-b-lg">
-            No personal bests recorded for this exercise yet.
+            {{ 'compactPlayer.insights.noPBs' | translate }}
           </div>
         </div>
       </div>
@@ -763,7 +790,7 @@
         <button (click)="closePerformanceInsightsModal()"
           class="inline-flex items-center bg-primary hover:bg-primary-dark focus:ring-4 focus:ring-primary-focus text-white font-semibold py-2.5 px-6 rounded-md text-sm transition-colors shadow-md hover:shadow-lg">
           <app-icon name="done" class="h-7 w-7 mr-1"></app-icon>
-          DONE
+          {{ 'compactPlayer.insights.done' | translate }}
         </button>
       </footer>
     </div>

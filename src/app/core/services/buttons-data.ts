@@ -1,8 +1,10 @@
+// buttons-data.ts
+
 import { IconLayer } from "../../shared/components/icon/icon.component";
 import { ActionMenuItem } from "../models/action-menu.model";
 
 export const pauseSessionBtn = {
-    label: 'Pause',
+    label: 'actionButtons.pause',
     actionKey: 'pause',
     iconName: `pause`,
     iconClass: 'w-8 h-8 mr-2',
@@ -10,7 +12,7 @@ export const pauseSessionBtn = {
 } as ActionMenuItem;
 
 export const addExerciseBtn = {
-    label: 'Add Exercise',
+    label: 'actionButtons.addExercise',
     actionKey: 'addExercise',
     iconName: `plus-circle`,
     iconClass: 'w-8 h-8 mr-2',
@@ -18,7 +20,7 @@ export const addExerciseBtn = {
 } as ActionMenuItem;
 
 export const jumpToExerciseBtn = {
-    label: 'Jump to exercise',
+    label: 'actionButtons.jumpToExercise',
     actionKey: 'jumpToExercise',
     iconName: `dumbbell`,
     iconClass: 'w-8 h-8 mr-2',
@@ -26,7 +28,7 @@ export const jumpToExerciseBtn = {
 } as ActionMenuItem;
 
 export const switchExerciseBtn = {
-    label: 'Switch',
+    label: 'actionButtons.switch',
     actionKey: 'switchExercise',
     iconName: [
         // Layer 1: Base icon (fills the container)
@@ -55,7 +57,7 @@ export const switchExerciseBtn = {
 } as ActionMenuItem;
 
 export const openSessionPerformanceInsightsBtn = {
-    label: 'Session insight',
+    label: 'actionButtons.sessionInsight',
     actionKey: 'insights',
     iconName: `chart`,
     iconClass: 'w-8 h-8 mr-2',
@@ -63,7 +65,7 @@ export const openSessionPerformanceInsightsBtn = {
 } as ActionMenuItem;
 
 export const openExercisePerformanceInsightsBtn = {
-    label: 'Exercise insights',
+    label: 'actionButtons.exerciseInsights',
     actionKey: 'exerciseInsights',
     iconName: `schedule`,
     iconClass: 'w-8 h-8 mr-2',
@@ -71,7 +73,7 @@ export const openExercisePerformanceInsightsBtn = {
 } as ActionMenuItem;
 
 export const quitWorkoutBtn = {
-    label: 'Exit',
+    label: 'actionButtons.exit',
     actionKey: 'exit',
     iconName: `exit-door`,
     iconClass: 'w-8 h-8 mr-2',
@@ -79,7 +81,7 @@ export const quitWorkoutBtn = {
 } as ActionMenuItem;
 
 export const addWarmupSetBtn = {
-    label: 'Warmup set',
+    label: 'actionButtons.warmupSet',
     actionKey: 'add_warmup_set',
     iconName: [
         { name: 'flame' },
@@ -100,7 +102,7 @@ export const addWarmupSetBtn = {
 } as ActionMenuItem;
 
 export const skipCurrentSetBtn = {
-    label: 'Skip set',
+    label: 'actionButtons.skipSet',
     actionKey: 'skipSet',
     iconName: `skip`,
     iconClass: 'w-8 h-8 mr-2',
@@ -108,7 +110,7 @@ export const skipCurrentSetBtn = {
 } as ActionMenuItem;
 
 export const skipCurrentExerciseBtn = {
-    label: 'Skip exercise',
+    label: 'actionButtons.skipExercise',
     actionKey: 'skipExercise',
     iconName: `skip`,
     iconClass: 'w-8 h-8 mr-2',
@@ -116,7 +118,7 @@ export const skipCurrentExerciseBtn = {
 } as ActionMenuItem;
 
 export const markAsDoLaterBtn = {
-    label: 'Do later',
+    label: 'actionButtons.doLater',
     actionKey: 'later',
     iconName: `clock`,
     iconClass: 'w-8 h-8 mr-2',
@@ -124,7 +126,7 @@ export const markAsDoLaterBtn = {
 } as ActionMenuItem;
 
 export const finishEarlyBtn = {
-    label: 'Finish early',
+    label: 'actionButtons.finishEarly',
     actionKey: 'finish',
     iconName: `done`,
     iconClass: 'w-8 h-8 mr-2',
@@ -132,7 +134,7 @@ export const finishEarlyBtn = {
 } as ActionMenuItem;
 
 export const createSuperSetBtn = {
-    label: 'Create Superset',
+    label: 'actionButtons.createSuperset',
     actionKey: 'create_superset',
     iconName: [
         { name: 'link' },
@@ -152,7 +154,7 @@ export const createSuperSetBtn = {
 } as ActionMenuItem
 
 export const addToSuperSetBtn = {
-    label: 'Add to Superset',
+    label: 'actionButtons.addToSuperset',
     actionKey: 'add_to_superset', // Assumes this might trigger a different UI flow
     iconName: 'link',
     buttonClass: ' hover:bg-primary ',
@@ -160,7 +162,7 @@ export const addToSuperSetBtn = {
 }
 
 export const removeFromSuperSetBtn = {
-    label: 'Remove from Superset',
+    label: 'actionButtons.removeFromSuperset',
     actionKey: 'remove_from_superset',
     iconName: [
         { name: 'unlink' },
@@ -181,7 +183,7 @@ export const removeFromSuperSetBtn = {
 }
 
 export const removeExerciseBtn = {
-    label: 'Remove Exercise',
+    label: 'actionButtons.removeExercise',
     actionKey: 'remove',
     iconName: 'trash',
     buttonClass: ' hover:bg-red-800 ',
@@ -189,7 +191,7 @@ export const removeExerciseBtn = {
 }
 
 export const addSetToExerciseBtn = {
-    label: 'Add Set', actionKey: 'add_set',
+    label: 'actionButtons.addSet', actionKey: 'add_set',
     iconName: [
         { name: 'dumbbell' },
         {
@@ -209,7 +211,7 @@ export const addSetToExerciseBtn = {
 }
 
 export const removeSetFromExerciseBtn = {
-    label: 'Remove Set', actionKey: 'remove_set',
+    label: 'actionButtons.removeSet', actionKey: 'remove_set',
     iconName: [
         { name: 'dumbbell' },
         {
@@ -229,7 +231,7 @@ export const removeSetFromExerciseBtn = {
 }
 
 export const addRoundToExerciseBtn = {
-    label: 'Add Round', actionKey: 'add_round',
+    label: 'actionButtons.addRound', actionKey: 'add_round',
     iconName: [
         { name: 'dumbbell' },
         {
@@ -249,7 +251,7 @@ export const addRoundToExerciseBtn = {
 }
 
 export const removeRoundFromExerciseBtn = {
-    label: 'Remove Round', actionKey: 'remove_round',
+    label: 'actionButtons.removeRound', actionKey: 'remove_round',
     iconName: [
         { name: 'dumbbell' },
         {
@@ -269,7 +271,7 @@ export const removeRoundFromExerciseBtn = {
 }
 
 export const resumeSessionBtn = {
-    label: 'Resume',
+    label: 'actionButtons.resume',
     actionKey: 'play',
     iconName: 'play',
     buttonClass: ' bg-yellow-800 ',
@@ -277,7 +279,7 @@ export const resumeSessionBtn = {
 }
 
 export const sessionNotesBtn = {
-    label: 'Session notes',
+    label: 'actionButtons.sessionNotes',
     actionKey: 'session_notes',
     iconName: 'clipboard-list',
     buttonClass: ' hover:bg-green-600 ',
@@ -285,7 +287,7 @@ export const sessionNotesBtn = {
 }
 
 export const hideBtn = {
-    label: 'HIDE',
+    label: 'actionButtons.hide',
     actionKey: 'hide',
     iconName: `eye-off`,
     iconClass: 'w-8 h-8 mr-2', // Adjusted for consistency if needed,
@@ -293,7 +295,7 @@ export const hideBtn = {
 }
 
 export const unhideBtn = {
-    label: 'UNHIDE',
+    label: 'actionButtons.unhide',
     actionKey: 'unhide',
     iconName: `eye`,
     iconClass: 'w-8 h-8 mr-2', // Adjusted for consistency if needed,
@@ -302,7 +304,7 @@ export const unhideBtn = {
 
 
 export const favouriteBtn = {
-    label: 'MARK',
+    label: 'actionButtons.markFavourite',
     actionKey: 'markAsFavourite',
     iconName: `favourite`,
     iconClass: 'w-8 h-8 mr-2', // Adjusted for consistency if needed,
@@ -310,7 +312,7 @@ export const favouriteBtn = {
 }
 
 export const unmarkFavouriteBtn = {
-    label: 'UNMARK',
+    label: 'actionButtons.unmarkFavourite',
     actionKey: 'unmarkAsFavourite',
     iconName: `unmark`,
     iconClass: 'w-8 h-8', // Adjusted for consistency if needed,
@@ -318,7 +320,7 @@ export const unmarkFavouriteBtn = {
 }
 
 export const historyBtn = {
-    label: 'LOGS',
+    label: 'actionButtons.logs',
     actionKey: 'history',
     iconName: `clock`,
     iconClass: 'w-8 h-8 mr-2', // Adjusted for consistency if needed,
@@ -326,7 +328,7 @@ export const historyBtn = {
 }
 
 export const viewBtn = {
-    label: 'VIEW',
+    label: 'actionButtons.view',
     actionKey: 'view',
     iconName: `eye`,
     iconClass: 'w-8 h-8 mr-2', // Adjusted for consistency if needed,
@@ -334,7 +336,7 @@ export const viewBtn = {
 }
 
 export const startBtn = {
-    label: 'START',
+    label: 'actionButtons.start',
     actionKey: 'start',
     iconName: `play`,
     iconClass: 'w-8 h-8 mr-2',
@@ -342,7 +344,7 @@ export const startBtn = {
 }
 
 export const editBtn = {
-    label: 'EDIT',
+    label: 'actionButtons.edit',
     actionKey: 'edit',
     iconName: `edit`,
     iconClass: 'w-8 h-8 mr-2',
@@ -350,7 +352,7 @@ export const editBtn = {
 }
 
 export const cloneBtn = {
-    label: 'COPY',
+    label: 'actionButtons.copy',
     actionKey: 'clone',
     iconName: `copy`,
     iconClass: 'w-8 h-8 mr-2',
@@ -359,7 +361,7 @@ export const cloneBtn = {
 
 
 export const deleteBtn = {
-    label: 'DELETE',
+    label: 'actionButtons.delete',
     actionKey: 'delete',
     iconName: `trash`,
     iconClass: 'w-8 h-8 mr-2',
@@ -369,7 +371,7 @@ export const deleteBtn = {
 
 export const createFromBtn =
 {
-    label: 'CREATE ROUTINE',
+    label: 'actionButtons.createRoutine',
     actionKey: 'create_routine',
     iconName: `create-folder`,
     iconClass: 'w-8 h-8 mr-2',
@@ -378,7 +380,7 @@ export const createFromBtn =
 
 
 export const routineBtn = {
-    label: 'ROUTINE',
+    label: 'actionButtons.routine',
     actionKey: 'routine',
     iconName: `routines`,
     iconClass: 'w-8 h-8 mr-2',
@@ -386,7 +388,7 @@ export const routineBtn = {
 }
 
 export const calculatorBtn = {
-    label: 'Weight toolkit',
+    label: 'actionButtons.weightToolkit',
     actionKey: 'weight_toolkit',
     iconName: `calc`,
     iconClass: 'w-8 h-8 mr-2',
@@ -423,7 +425,7 @@ export const trainingProgramPremiumBtn = {
 } as ActionMenuItem;
 
 export const colorBtn = {
-    label: 'COLOR',
+    label: 'actionButtons.color',
     actionKey: 'color',
     iconName: `color`,
     iconClass: 'w-8 h-8 mr-2',

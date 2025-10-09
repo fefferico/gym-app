@@ -145,7 +145,7 @@
                     <div
                       class="flex flex-col sm:flex-row justify-center items-center space-y-2 sm:space-y-0 sm:space-x-4 pt-4">
                       <button (click)="viewRoutineDetails(workoutInfo.routine.id)"
-                        class="flex-1 bg-sky-500 hover:bg-sky-600 text-white font-semibold py-2.5 px-4 rounded-md shadow-sm flex items-center justify-center text-m w-full sm:max-w-[200px]">
+                        class="flex-1 bg-sky-500 hover:bg-sky-600 text-white font-semibold py-2.5 px-4 rounded-md shadow-sm flex items-center justify-center text-m w-full sm:min-w-[200px]">
                         <app-icon name="eye" class="w-6 h-6">
                         </app-icon>
                         <span class="ml-1">
@@ -182,11 +182,11 @@
                       <!-- UPDATED: Pass the scheduledDayInfo.id to the start function -->
                       <button
                         (click)="startProgramWorkout(workoutInfo.routine.id, workoutInfo.scheduledDayInfo.programId, workoutInfo.scheduledDayInfo.id, $event)"
-                        class="flex justify-center items-center w-full sm:max-w-[200px] px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-md shadow-sm text-lg disabled:opacity-50 disabled:cursor-not-allowed">
+                        class="flex justify-center items-center w-full sm:min-w-[200px] px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-md shadow-sm text-lg disabled:opacity-50 disabled:cursor-not-allowed">
                         <app-icon name="play" class="w-6 h-6" [strokeWidth]="2.5"></app-icon>
                         {{ 'todaysWorkout.start' | translate }}</button>
                       <button (click)="viewRoutineDetails(workoutInfo.routine.id)"
-                        class="flex justify-center items-center w-full sm:max-w-[200px] px-6 py-3 bg-sky-500 hover:bg-sky-600 text-white font-semibold rounded-md shadow-sm text-lg disabled:opacity-50 disabled:cursor-not-allowed">
+                        class="flex justify-center items-center w-full sm:min-w-[200px] px-6 py-3 bg-sky-500 hover:bg-sky-600 text-white font-semibold rounded-md shadow-sm text-lg disabled:opacity-50 disabled:cursor-not-allowed">
                         <app-icon name="eye" class="w-6 h-6">
                         </app-icon>
                         <span class="ml-1">

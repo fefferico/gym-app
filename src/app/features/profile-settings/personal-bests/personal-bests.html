@@ -53,8 +53,7 @@
                     </select>
                 </div>
                 <div>
-                    <label for="categoryFilter"
-                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label for="categoryFilter" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         {{ 'personalBests.filters.byCategoryLabel' | translate }}
                     </label>
                     <select id="categoryFilter" #categoryFilterInput [value]="exerciseCategoryFilter()"
@@ -123,15 +122,14 @@
 
                     <div class="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400 mb-2">
                         <span>{{ pb.pbType }}</span>
-                        <span>{{ pb.timestamp | date:'shortDate' | date:'dd-MM-yy':'UTC'}}</span>
+                        <span>{{ pb.timestamp | date:'dd/MM/yy' }}</span>
                     </div>
 
                     <div *ngIf="pb.history && pb.history.length > 0"
                         class="mt-2 pt-1 border-t border-gray-200 dark:border-gray-600 text-xs text-gray-500 dark:text-gray-400">
                         <span class="font-medium">{{ 'personalBests.card.previous' | translate }}</span>
                         <span *ngFor="let prevPb of pb.history.slice(0,1); let isLast = last">
-                            {{ formatPbValue(prevPb, pb.pbType) }} ({{ prevPb.timestamp | date:'shortDate' |
-                            date:'dd-MM-yy':'UTC' }}){{ !isLast
+                            {{ formatPbValue(prevPb, pb.pbType) }} ({{ prevPb.timestamp | date:'dd/MM/yy' }}){{ !isLast
                             ? ', ' : '' }}
                         </span>
                         <span *ngIf="pb.history.length > 1"> ...</span>

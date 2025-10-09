@@ -48,6 +48,7 @@ import { mapExerciseTargetSetParamsToExerciseExecutedSetParams } from '../../../
 import { ProgressiveOverloadService } from '../../../core/services/progressive-overload.service.ts';
 import { BarbellCalculatorModalComponent } from '../../../shared/components/barbell-calculator-modal/barbell-calculator-modal.component';
 import { NgLetDirective } from '../../../shared/directives/ng-let.directive';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 // Interface for saving the paused state
 
@@ -80,7 +81,7 @@ export interface NextStepInfo {
   imports: [
     CommonModule, DatePipe, WeightUnitPipe, IconComponent,
     ExerciseSelectionModalComponent, FormsModule, ActionMenuComponent, FullScreenRestTimerComponent, NgLetDirective,
-    DragDropModule, BarbellCalculatorModalComponent
+    DragDropModule, BarbellCalculatorModalComponent, TranslateModule
   ],
   templateUrl: './compact-workout-player.component.html',
   styleUrls: ['./compact-workout-player.component.scss'],
@@ -104,6 +105,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   private platformId = inject(PLATFORM_ID);
   private injector = inject(Injector);
   protected unitService = inject(UnitsService);
+  private translate = inject(TranslateService);
 
   isAddToSupersetModalOpen = signal(false);
   exerciseToSupersetIndex = signal<number | null>(null);
@@ -172,8 +174,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
   isRestTimerVisible = signal(false);
   restDuration = signal(0);
-  restTimerMainText = signal('RESTING');
-  restTimerNextUpText = signal<string | null>(null);
+  restTimerMainText = signal(this.translate.instant('compactPlayer.rest'));
+  restTimerNextUpText = signal<string | null>(this.translate.instant('compactPlayer.loading'));
   // +++ NEW: Signal to hold detailed info for the next set for the rest timer screen
   restTimerNextSetDetails = signal<ExerciseTargetSetParams | null>(null);
 
@@ -362,12 +364,12 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
           if (effort >= 7) {
             adjustmentType = 'decrease';
-            dialogTitle = 'Last Workout Was Tough';
-            dialogMessage = 'Your last session felt challenging. Would you like to automatically reduce the intensity for today?';
+            dialogTitle = this.translate.instant('compactPlayer.alerts.toughWorkoutTitle');
+            dialogMessage = this.translate.instant('compactPlayer.alerts.toughWorkoutMessage');
           } else if (effort <= 4) {
             adjustmentType = 'increase';
-            dialogTitle = 'Last Workout Felt Light';
-            dialogMessage = 'Your last session felt light. Would you like to automatically increase the intensity for today?';
+            dialogTitle = this.translate.instant('compactPlayer.alerts.lightWorkoutTitle');
+            dialogMessage = this.translate.instant('compactPlayer.alerts.lightWorkoutMessage');
           }
 
           if (adjustmentType) {
@@ -377,14 +379,14 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
                 name: 'percentage', type: 'number', placeholder: 'e.g., 10', value: 10,
                 attributes: { min: '1', max: '50', step: '1' }
               }] as AlertInput[],
-              `Adjust by %`, 'NO, THANKS'
+              this.translate.instant('compactPlayer.alerts.adjustBy'), this.translate.instant('compactPlayer.alerts.noThanks')
             );
 
             if (prompt && prompt['percentage']) {
               const percentage = Number(prompt['percentage']);
               // Store the adjustment preference instead of applying it immediately
               this.intensityAdjustment = { direction: adjustmentType, percentage };
-              this.toastService.success(`Routine intensity will be adjusted by ${percentage}%`, 3000, "Intensity Adjusted");
+              this.toastService.success(this.translate.instant('compactPlayer.toasts.intensityAdjusted', { percent: percentage }), 3000, this.translate.instant('compactPlayer.toasts.intensityAdjustedTitle'));
             }
           }
         }
@@ -398,7 +400,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         this.startWorkout();
       } else {
         const emptyNewRoutine = {
-          name: "New session",
+          name: this.translate.instant('pausedWorkout.defaultRoutineName'),
           createdAt: new Date().toISOString(),
           goal: 'custom',
           exercises: [] as WorkoutExercise[],
@@ -703,20 +705,20 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   // +++ NEW: Method to open a prompt for session-level notes
   async editSessionNotes() {
     const result = await this.alertService.showPromptDialog(
-      'Session Notes',
-      'Add or edit notes for this entire workout session.',
+      this.translate.instant('compactPlayer.alerts.sessionNotesTitle'),
+      this.translate.instant('compactPlayer.alerts.sessionNotesMessage'),
       [{
         name: 'notes',
         type: 'text',
-        placeholder: `Insert notes here`,
+        placeholder: this.translate.instant('compactPlayer.alerts.sessionNotesPlaceholder'),
         value: this.currentWorkoutLog().notes ?? undefined,
         autofocus: this.currentWorkoutLog().notes ? false : true
       }] as AlertInput[],
-      'Save Notes',
-      'Cancel',
+      this.translate.instant('compactPlayer.alerts.saveNotes'),
+      this.translate.instant('common.cancel'),
       [{
         role: 'confirm',
-        text: 'Save notes',
+        text: this.translate.instant('compactPlayer.alerts.saveNotes'),
         icon: 'save',
         data: true
       } as AlertButton]
@@ -727,7 +729,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         log.notes = String(result['notes']) || '';
         return log;
       });
-      this.toastService.success("Session notes updated.");
+      this.toastService.success(this.translate.instant('compactPlayer.toasts.sessionNotesUpdated'));
     }
   }
 
@@ -867,19 +869,19 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const loggedExercisesForReport = (log.exercises || []).filter(ex => ex.sets.length > 0);
 
     if (loggedExercisesForReport.length === 0) {
-      this.toastService.info("No sets logged. Workout not saved.", 3000);
+      this.toastService.info(this.translate.instant('compactPlayer.toasts.noSetsLoggedError'), 3000);
       return;
     }
 
     // 1. Analyze completion to decide the prompt's tone (Finish vs. Finish Early)
     const analysis = this.analyzeWorkoutCompletion();
     const hasIncomplete = analysis.incompleteExercises.length > 0 || analysis.skippedExercises.length > 0;
-    const title = hasIncomplete ? "Finish Workout Early?" : "Finish Workout";
+    const title = hasIncomplete ? this.translate.instant('compactPlayer.alerts.finishEarlyTitle') : this.translate.instant('compactPlayer.alerts.finishTitle');
     let message = hasIncomplete
-      ? `You have ${analysis.skippedExercises.length} skipped and ${analysis.incompleteExercises.length} incomplete exercises. Finish anyway?`
-      : 'Are you sure you want to finish and save this workout?';
+      ? this.translate.instant('compactPlayer.alerts.finishEarlyMessage', { skipped: analysis.skippedExercises.length, incomplete: analysis.incompleteExercises.length })
+      : this.translate.instant('compactPlayer.alerts.finishMessage');
 
-    const confirmFinish = await this.alertService.showConfirm(title, message, 'Finish', 'Cancel');
+    const confirmFinish = await this.alertService.showConfirm(title, message, this.translate.instant('compactPlayer.alerts.finishButton'), this.translate.instant('common.cancel'));
     if (!confirmFinish?.data) {
       return; // User cancelled the initial finish prompt
     }
@@ -900,17 +902,17 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       const differences = this.comparePerformedToOriginal(loggedExercisesForReport, originalSnapshot.exercises);
       if (differences.majorDifference) {
         const choice = await this.alertService.showConfirmationDialog(
-          "Routine Structure Changed", "You made some changes to the routine. What would you like to do?",
+          this.translate.instant('compactPlayer.alerts.routineChangedTitle'), this.translate.instant('compactPlayer.alerts.routineChangedMessage'),
           [
-            { text: "Just Log This Session", role: "log", data: "log", cssClass: "bg-purple-600", icon: 'schedule' } as AlertButton,
-            { text: "Update Original Routine", role: "destructive", data: "update", cssClass: "bg-blue-600", icon: 'save' } as AlertButton,
-            { text: "Save as New Routine", role: "confirm", data: "new", cssClass: "bg-green-600", icon: 'create-folder' } as AlertButton,
+            { text: this.translate.instant('compactPlayer.alerts.logOnly'), role: "log", data: "log", cssClass: "bg-purple-600", icon: 'schedule' } as AlertButton,
+            { text: this.translate.instant('compactPlayer.alerts.updateOriginal'), role: "destructive", data: "update", cssClass: "bg-blue-600", icon: 'save' } as AlertButton,
+            { text: this.translate.instant('compactPlayer.alerts.saveAsNew'), role: "confirm", data: "new", cssClass: "bg-green-600", icon: 'create-folder' } as AlertButton,
           ],
           { listItems: differences.details }
         );
 
         if (choice?.data === 'new') {
-          const nameInput = await this.alertService.showPromptDialog("New Routine Name", "Enter a name:", [{ name: "newRoutineName", type: "text", value: newRoutineName, attributes: { required: true } }], "Save Routine");
+          const nameInput = await this.alertService.showPromptDialog(this.translate.instant('compactPlayer.alerts.newRoutineNameTitle'), this.translate.instant('compactPlayer.alerts.newRoutineNameMessage'), [{ name: "newRoutineName", type: "text", value: newRoutineName, attributes: { required: true } }], this.translate.instant('compactPlayer.alerts.saveRoutine'));
           if (nameInput && String(nameInput['newRoutineName']).trim()) {
             newRoutineName = String(nameInput['newRoutineName']).trim();
             logAsNewRoutine = true;
@@ -923,10 +925,10 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       }
     } else if (!isModifiableRoutine && loggedExercisesForReport.length > 0) { // Ad-hoc or routineId: -1
       const nameInput = await this.alertService.showPromptDialog(
-        "Save as New Routine", "Enter a name for this workout routine:",
+        this.translate.instant('compactPlayer.alerts.saveAdHocTitle'), this.translate.instant('compactPlayer.alerts.saveAdHocMessage'),
         [{ name: "newRoutineName", type: "text", value: newRoutineName, attributes: { required: true } }],
-        "Create Routine & Log", 'Just Log',
-        [{ text: "Just Log without Saving", role: "no_save", data: "cancel", cssClass: "bg-primary text-white", icon: 'schedule' } as AlertButton], false
+        this.translate.instant('compactPlayer.alerts.createAndLog'), this.translate.instant('compactPlayer.alerts.logOnly'),
+        [{ text: this.translate.instant('compactPlayer.alerts.logWithoutSaving'), role: "no_save", data: "cancel", cssClass: "bg-primary text-white", icon: 'schedule' } as AlertButton], false
       );
 
       if (nameInput && nameInput['newRoutineName'] && String(nameInput['newRoutineName']).trim()) {
@@ -940,7 +942,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     }
 
     if (!proceedToLog) {
-      this.toastService.info("Finish workout cancelled.", 3000);
+      this.toastService.info(this.translate.instant('compactPlayer.toasts.finishCancelled'), 3000);
       return;
     }
 
@@ -958,7 +960,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       const createdRoutine = this.workoutService.addRoutine(newRoutineDef);
       finalRoutineIdToLog = createdRoutine.id;
       finalRoutineNameForLog = createdRoutine.name;
-      this.toastService.success(`New routine "${createdRoutine.name}" created.`);
+      this.toastService.success(this.translate.instant('compactPlayer.toasts.newRoutineCreated', { name: createdRoutine.name }));
     }
 
     if (updateOriginalRoutineStructure && finalRoutineIdToLog) {
@@ -966,7 +968,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       if (routineToUpdate) {
         routineToUpdate.exercises = this.convertLoggedToWorkoutExercises(loggedExercisesForReport);
         this.workoutService.updateRoutine(routineToUpdate, true);
-        this.toastService.success(`Routine "${routineToUpdate.name}" has been updated.`);
+        this.toastService.success(this.translate.instant('compactPlayer.toasts.routineUpdated', { name: routineToUpdate.name }));
       }
     }
 
@@ -988,7 +990,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       if (savedLog.programId) {
         const isProgramCompleted = await this.trainingProgramService.checkAndHandleProgramCompletion(savedLog.programId, savedLog);
         if (isProgramCompleted) {
-          this.toastService.success(`Congrats! Program completed!`, 5000, "Program Finished", false);
+          this.toastService.success(this.translate.instant('compactPlayer.workoutComplete'), 5000, "Program Finished", false);
           this.router.navigate(['/training-programs/completed', savedLog.programId], { queryParams: { logId: savedLog.id } });
           return;
         }
@@ -998,7 +1000,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       });
 
     } else {
-      this.toastService.error("Could not save: missing start time.");
+      this.toastService.error(this.translate.instant('compactPlayer.toasts.saveError'));
     }
   }
 
@@ -1625,12 +1627,12 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
   async quitWorkout(): Promise<void> {
-    const confirmQuit = await this.alertService.showConfirm("Quit Workout", 'Quit workout? Unsaved progress (if not paused) will be lost');
+    const confirmQuit = await this.alertService.showConfirm(this.translate.instant('compactPlayer.alerts.quitTitle'), this.translate.instant('compactPlayer.alerts.quitMessage'));
     if (confirmQuit && confirmQuit.data) {
       this.isSessionConcluded = true;
       this.toggleMainSessionActionMenu(null);
       this.router.navigate(['/workout']);
-      this.toastService.info("Workout quit. No progress saved for this session", 4000);
+      this.toastService.info(this.translate.instant('compactPlayer.toasts.noSetsLoggedError'), 4000);
     }
   }
 
@@ -2111,7 +2113,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     this.timerSub?.unsubscribe();
     this.sessionState.set(SessionState.Paused);
     this.savePausedSessionState();
-    this.toastService.info("Workout Paused", 3000);
+    this.toastService.info(this.translate.instant('compactPlayer.toasts.workoutPaused'), 3000);
   }
 
   async resumeSession(): Promise<void> {
@@ -2119,7 +2121,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     this.workoutStartTime = Date.now();
     this.sessionState.set(SessionState.Playing);
     this.startSessionTimer();
-    this.toastService.info('Workout Resumed', 3000);
+    this.toastService.info(this.translate.instant('compactPlayer.toasts.workoutResumed'), 3000);
   }
 
   private savePausedSessionState(): void {
@@ -2222,10 +2224,10 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         return true;
       } else {
         const confirmation = await this.alertService.showConfirmationDialog(
-          "Resume Paused Workout?",
-          "You have a paused workout session. Would you like to resume it?",
-          [{ text: "Resume", role: "confirm", data: true, icon: 'play', cssClass: 'bg-green-600 hover:bg-green-700' },
-          { text: "Discard", role: "cancel", data: false, icon: 'trash', cssClass: "bg-red-600 hover:bg-red-800" }]
+          this.translate.instant('compactPlayer.alerts.pausedWorkoutTitle'),
+          this.translate.instant('compactPlayer.alerts.pausedWorkoutMessage'),
+          [{ text: this.translate.instant('compactPlayer.alerts.resume'), role: "confirm", data: true, icon: 'play', cssClass: 'bg-green-600 hover:bg-green-700' },
+          { text: this.translate.instant('compactPlayer.alerts.discard'), role: "cancel", data: false, icon: 'trash', cssClass: "bg-red-600 hover:bg-red-800" }]
         );
 
         if (confirmation?.data) {
@@ -2233,7 +2235,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
           return true;
         } else {
           this.workoutService.removePausedWorkout();
-          this.toastService.info('Paused session discarded', 3000);
+          this.toastService.info(this.translate.instant('compactPlayer.toasts.pausedDiscarded'), 3000);
           return false;
         }
       }
