@@ -1589,6 +1589,7 @@
   },
   "restTimer": {
     "nextUp": "Next Up",
+    "lastTime": "Last time",
     "skip": "Skip"
   },
   "barbellCalculator": {

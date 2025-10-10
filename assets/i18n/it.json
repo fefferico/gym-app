@@ -1585,6 +1585,7 @@
     },
     "restTimer": {
         "nextUp": "Prossimo",
+        "lastTime": "Serie precedente",
         "skip": "Salta"
     },
     "barbellCalculator": {
