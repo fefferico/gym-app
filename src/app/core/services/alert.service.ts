@@ -3,7 +3,7 @@ import { Injectable, ApplicationRef, createComponent, EnvironmentInjector, Compo
 import { isPlatformBrowser, PlatformLocation } from '@angular/common'; // Import isPlatformBrowser
 import { AlertComponent } from '../../shared/components/alert/alert.component';
 import { AlertButton, AlertOptions, AlertInput } from '../models/alert.model';
-import { Subscription } from 'rxjs';
+import { TranslateService } from '@ngx-translate/core'; // Import TranslateService
 
 // Define a reusable type for the alert result to keep the code clean and consistent.
 type AlertResult = { role: string, data?: any, values?: { [key: string]: string | number | boolean } };
@@ -13,11 +13,9 @@ type AlertResult = { role: string, data?: any, values?: { [key: string]: string 
 })
 export class AlertService {
     private alertComponentRef: ComponentRef<AlertComponent> | null = null;
-    private platformId = inject(PLATFORM_ID); // Inject PLATFORM_ID
-
-    // +++ 1. Inject the `PlatformLocation` service
+    private platformId = inject(PLATFORM_ID);
     private platformLocation = inject(PlatformLocation);
-    // +++ 2. Add a property to hold our back-button listener function
+    private translate = inject(TranslateService); // Inject TranslateService
     private backButtonListener: (() => void) | null = null;
 
     constructor(
@@ -35,9 +33,7 @@ export class AlertService {
         }
 
         return new Promise((resolve) => {
-            // +++ 3. Define the listener function and attach it
             this.backButtonListener = () => {
-                // When the user presses 'back', dismiss the alert with a 'backdrop' role.
                 this.dismiss({ role: 'backdrop' });
             };
             this.platformLocation.onPopState(this.backButtonListener);
@@ -67,17 +63,8 @@ export class AlertService {
             return;
         }
 
-        // +++ 4. CRUCIAL: Unregister the popstate listener to prevent memory leaks.
-        // This is the new way to clean up.
         if (this.backButtonListener) {
-            // The `onPopState` method returns a function to unregister the listener.
-            // However, the Angular team recommends just creating a new listener each time
-            // and managing its lifecycle manually as it's cleaner.
-            // We just need to ensure we don't have a lingering reference.
             this.backButtonListener = null;
-            // NOTE: Angular's `PlatformLocation` does not provide a direct `removeEventListener`
-            // for `onPopState`. The subscription is managed internally and tied to the
-            // component/service lifecycle. The most robust way is to re-assign our handler to null.
         }
 
         if (this.alertComponentRef) {
@@ -99,19 +86,20 @@ export class AlertService {
             this.alertComponentRef = null;
         }
     }
-    async showAlert(header: string, message: string, okText: string = 'OK'): Promise<void> {
+
+    async showAlert(header: string, message: string, okText?: string): Promise<void> {
         await this.present({
             header,
             message,
-            buttons: [{ text: okText, role: 'confirm' }]
+            buttons: [{ text: okText || this.translate.instant('alertService.buttons.ok'), role: 'confirm' }]
         });
     }
 
     async showConfirm(
         header: string,
         message: string,
-        okText: string = 'OK',
-        cancelText: string = 'Cancel'
+        okText?: string,
+        cancelText?: string
     ): Promise<{ role: 'confirm' | 'cancel', data?: any } | undefined> {
         const isDesktop = isPlatformBrowser(this.platformId) && !('ontouchstart' in window || navigator.maxTouchPoints > 0);
 
@@ -119,8 +107,8 @@ export class AlertService {
             header,
             message,
             buttons: [
-                { text: cancelText, role: 'cancel', data: false, icon: 'cancel', cssClass: ' bg-gray-400 hover:bg-gray-600 ' },
-                { text: okText, role: 'confirm', data: true, icon: 'done', iconClass: 'h-7 w-7' }
+                { text: cancelText || this.translate.instant('alertService.buttons.cancel'), role: 'cancel', data: false, icon: 'cancel', cssClass: ' bg-gray-400 hover:bg-gray-600 ' },
+                { text: okText || this.translate.instant('alertService.buttons.ok'), role: 'confirm', data: true, icon: 'done', iconClass: 'h-7 w-7' }
             ]
         });
 
@@ -135,9 +123,9 @@ export class AlertService {
             header: title,
             message: message,
             buttons: [
-                { text: 'Non fare nulla', role: 'cancel', cssClass: 'bg-gray-300 hover:bg-gray-500' } as AlertButton,
-                { text: 'Fai Qualcosa', role: 'custom', cssClass: 'bg-teal-500 hover:bg-teal-600', handler: () => { console.log('Handler custom exec'); }, data: { action: 'custom_action' } } as AlertButton,
-                { text: 'OK', role: 'confirm', data: 'ok_confirmed' } as AlertButton,
+                { text: this.translate.instant('alertService.buttons.doNothing'), role: 'cancel', cssClass: 'bg-gray-300 hover:bg-gray-500' } as AlertButton,
+                { text: this.translate.instant('alertService.buttons.doSomething'), role: 'custom', cssClass: 'bg-teal-500 hover:bg-teal-600', handler: () => { console.log('Handler custom exec'); }, data: { action: 'custom_action' } } as AlertButton,
+                { text: this.translate.instant('alertService.buttons.ok'), role: 'confirm', data: 'ok_confirmed' } as AlertButton,
             ],
             backdropDismiss: false
         });
@@ -146,7 +134,6 @@ export class AlertService {
         }
     }
 
-    // UPDATE 4: Updated the return type to use AlertResult
     async showConfirmationDialog(
         title: string,
         message: string,
@@ -162,8 +149,8 @@ export class AlertService {
             header: title,
             message: message,
             buttons: customButtons ? customButtons : [
-                { text: 'Cancel', role: 'cancel', data: false } as AlertButton,
-                { text: 'OK', role: 'confirm', data: true, autofocus: isDesktop } as AlertButton,
+                { text: this.translate.instant('alertService.buttons.cancel'), role: 'cancel', data: false } as AlertButton,
+                { text: this.translate.instant('alertService.buttons.ok'), role: 'confirm', data: true, autofocus: isDesktop } as AlertButton,
             ],
             listItems: extraOptions?.listItems,
             customButtonDivCssClass: extraOptions?.customButtonDivCssClass,
@@ -173,21 +160,23 @@ export class AlertService {
         return result;
     }
 
-    // UPDATE 5: Updated the return type to include boolean
     async showPromptDialog(
         header: string,
         message: string,
         inputs: AlertInput[],
-        okText: string = 'OK',
-        cancelText: string = 'Cancel',
+        okText?: string,
+        cancelText?: string,
         customButtons: AlertButton[] = [],
         isCancelVisible: boolean = true
     ): Promise<{ [key: string]: string | number | boolean } | null> {
 
-        const confirmFound = customButtons.some(btn => btn.role === 'confirm');
-        const finalBtns = confirmFound ? customButtons : [{ text: okText, role: 'confirm', data: true, icon: 'done' } as AlertButton, ...customButtons];
+        const finalOkText = okText || this.translate.instant('alertService.buttons.ok');
+        const finalCancelText = cancelText || this.translate.instant('alertService.buttons.cancel');
 
-        const cancelBtn = isCancelVisible ? { text: cancelText, role: 'cancel', data: false, icon: 'cancel', iconClass: 'h-4 w-4 mr-1' } as AlertButton : null;
+        const confirmFound = customButtons.some(btn => btn.role === 'confirm');
+        const finalBtns = confirmFound ? customButtons : [{ text: finalOkText, role: 'confirm', data: true, icon: 'done' } as AlertButton, ...customButtons];
+
+        const cancelBtn = isCancelVisible ? { text: finalCancelText, role: 'cancel', data: false, icon: 'cancel', iconClass: 'h-4 w-4 mr-1' } as AlertButton : null;
 
         let options = {
             header,
@@ -207,11 +196,10 @@ export class AlertService {
         if (result && result.role === 'confirm' && result.data === true) {
             return result.values || {};
         }
-        // return customButton role if it exists, otherwise return null
+
         if (result && result.role && result.role !== 'cancel') {
             return { role: result.role, data: result.data };
         } else {
-            // If no valid result, return null
             return null;
         }
     }

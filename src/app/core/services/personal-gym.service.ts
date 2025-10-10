@@ -9,6 +9,7 @@ import { ToastService } from './toast.service';
 import { AlertService } from './alert.service';
 import { PersonalGymEquipment } from '../models/personal-gym.model';
 import { Equipment } from '../models/equipment.model';
+import { TranslateService } from '@ngx-translate/core';
 
 @Injectable({
   providedIn: 'root'
@@ -17,6 +18,7 @@ export class PersonalGymService {
   private storageService = inject(StorageService);
   private toastService = inject(ToastService);
   private alertService = inject(AlertService);
+  private translate = inject(TranslateService);
 
   private readonly PERSONAL_GYM_STORAGE_KEY = 'fitTrackPro_personalGym';
 
@@ -88,7 +90,9 @@ export class PersonalGymService {
     const updatedItems = [...currentItems, newItem];
     this._saveToStorage(updatedItems);
 
-    this.toastService.success(`Added "${newItem.name}" to your gym!`, 3000, "Equipment Added");
+    const title = this.translate.instant('personalGymService.addSuccessTitle');
+    const message = this.translate.instant('personalGymService.addSuccessMessage', { name: newItem.name });
+    this.toastService.success(message, 3000, title);
     return newItem;
   }
 
@@ -104,9 +108,13 @@ export class PersonalGymService {
       const updatedItemsArray = [...currentItems];
       updatedItemsArray[index] = updatedEquipment;
       this._saveToStorage(updatedItemsArray);
-      this.toastService.success(`Updated "${updatedEquipment.name}" successfully!`, 3000, "Equipment Updated");
+      const title = this.translate.instant('personalGymService.updateSuccessTitle');
+      const message = this.translate.instant('personalGymService.updateSuccessMessage', { name: updatedEquipment.name });
+      this.toastService.success(message, 3000, title);
     } else {
-      this.toastService.error(`Could not find "${updatedEquipment.name}" to update.`, 0, "Update Failed");
+      const title = this.translate.instant('personalGymService.updateFailedTitle');
+      const message = this.translate.instant('personalGymService.updateFailedMessage', { name: updatedEquipment.name });
+      this.toastService.error(message, 0, title);
     }
   }
 
@@ -119,19 +127,24 @@ export class PersonalGymService {
     const itemToDelete = currentItems.find(item => item.id === equipmentId);
 
     if (!itemToDelete) {
-      this.toastService.error("Equipment not found.", 0, "Deletion Failed");
+      const title = this.translate.instant('personalGymService.deleteFailedTitle');
+      const message = this.translate.instant('personalGymService.deleteFailedMessage');
+      this.toastService.error(message, 0, title);
       return;
     }
 
-    const confirm = await this.alertService.showConfirm(
-      'Delete Equipment',
-      `Are you sure you want to delete "${itemToDelete.name}" from your gym? This cannot be undone.`
-    );
+    const confirmTitle = this.translate.instant('personalGymService.deleteConfirmTitle');
+    const confirmMessage = this.translate.instant('personalGymService.deleteConfirmMessage', { name: itemToDelete.name });
+
+    const confirm = await this.alertService.showConfirm(confirmTitle, confirmMessage);
+
 
     if (confirm && confirm.data) {
       const updatedItems = currentItems.filter(item => item.id !== equipmentId);
       this._saveToStorage(updatedItems);
-      this.toastService.info(`"${itemToDelete.name}" was deleted.`, 3000, 'Deleted');
+      const deletedTitle = this.translate.instant('personalGymService.deletedTitle');
+      const deletedMessage = this.translate.instant('personalGymService.deletedMessage', { name: itemToDelete.name });
+      this.toastService.info(deletedMessage, 3000, deletedTitle);
     }
   }
 
@@ -154,7 +167,9 @@ export class PersonalGymService {
   public mergeData(newEquipment: PersonalGymEquipment[]): void {
     if (!Array.isArray(newEquipment)) {
       console.error('PersonalGymService: Imported data for equipment is not an array.');
-      this.toastService.error('Import failed: Invalid personal gym data file.', 0, "Import Error");
+      const errorTitle = this.translate.instant('personalGymService.importErrorTitle');
+      const errorMessage = this.translate.instant('personalGymService.importFailed');
+      this.toastService.error(errorMessage, 0, errorTitle);
       return;
     }
 
@@ -183,11 +198,9 @@ export class PersonalGymService {
     const mergedEquipment = Array.from(equipmentMap.values());
     this._saveToStorage(mergedEquipment);
 
-    this.toastService.success(
-      `Gym import complete. ${updatedCount} items updated, ${addedCount} added.`,
-      6000,
-      "Personal Gym Merged"
-    );
+    const successTitle = this.translate.instant('personalGymService.mergeSuccessTitle');
+    const successMessage = this.translate.instant('personalGymService.mergeSuccessMessage', { updatedCount, addedCount });
+    this.toastService.success(successMessage, 6000, successTitle);
   }
 
   /**
@@ -196,56 +209,56 @@ export class PersonalGymService {
      * @param equipmentId The ID of the equipment to hide.
      * @returns An Observable of the updated equipment or undefined if not found.
      */
-    public hideEquipment(equipmentId: string): Observable<Equipment | undefined> {
-      const currentEquipments = this.equipmentSubject.getValue();
-      const equipmentIndex = currentEquipments.findIndex(ex => ex.id === equipmentId);
-  
-      if (equipmentIndex === -1) {
-        this.toastService.error('Failed to hide equipment: not found.', 0, "Error");
-        return of(undefined);
-      }
-  
-      const updatedEquipments = [...currentEquipments];
-      const equipmentToUpdate = { ...updatedEquipments[equipmentIndex], isHidden: true };
-      updatedEquipments[equipmentIndex] = equipmentToUpdate;
-  
-      this._saveToStorage(updatedEquipments);
-      this.toastService.info(`'${equipmentToUpdate.name}' is now hidden.`, 3000, "Hidden");
-      return of(equipmentToUpdate);
+  public hideEquipment(equipmentId: string): Observable<Equipment | undefined> {
+    const currentEquipments = this.equipmentSubject.getValue();
+    const equipmentIndex = currentEquipments.findIndex(ex => ex.id === equipmentId);
+
+    if (equipmentIndex === -1) {
+      this.toastService.error('Failed to hide equipment: not found.', 0, "Error");
+      return of(undefined);
     }
-  
-    /**
-     * Un-hides an equipment by setting its `isHidden` flag to false.
-     * The equipment will reappear in the main `equipment$` observable.
-     * @param equipmentId The ID of the equipment to make visible.
-     * @returns An Observable of the updated equipment or undefined if not found.
-     */
-    public unhideEquipment(equipmentId: string): Observable<Equipment | undefined> {
-      const currentEquipments = this.equipmentSubject.getValue();
-      const equipmentIndex = currentEquipments.findIndex(ex => ex.id === equipmentId);
-  
-      if (equipmentIndex === -1) {
-        this.toastService.error('Failed to un-hide equipment: not found.', 0, "Error");
-        return of(undefined);
-      }
-  
-      const updatedEquipments = [...currentEquipments];
-      const equipmentToUpdate = { ...updatedEquipments[equipmentIndex], isHidden: false };
-      updatedEquipments[equipmentIndex] = equipmentToUpdate;
-  
-      this._saveToStorage(updatedEquipments);
-      this.toastService.success(`'${equipmentToUpdate.name}' is now visible.`, 3000, "Visible");
-      return of(equipmentToUpdate);
+
+    const updatedEquipments = [...currentEquipments];
+    const equipmentToUpdate = { ...updatedEquipments[equipmentIndex], isHidden: true };
+    updatedEquipments[equipmentIndex] = equipmentToUpdate;
+
+    this._saveToStorage(updatedEquipments);
+    this.toastService.info(`'${equipmentToUpdate.name}' is now hidden.`, 3000, "Hidden");
+    return of(equipmentToUpdate);
+  }
+
+  /**
+   * Un-hides an equipment by setting its `isHidden` flag to false.
+   * The equipment will reappear in the main `equipment$` observable.
+   * @param equipmentId The ID of the equipment to make visible.
+   * @returns An Observable of the updated equipment or undefined if not found.
+   */
+  public unhideEquipment(equipmentId: string): Observable<Equipment | undefined> {
+    const currentEquipments = this.equipmentSubject.getValue();
+    const equipmentIndex = currentEquipments.findIndex(ex => ex.id === equipmentId);
+
+    if (equipmentIndex === -1) {
+      this.toastService.error('Failed to un-hide equipment: not found.', 0, "Error");
+      return of(undefined);
     }
-  
-    /**
-     * Returns an observable list of ONLY the exercises that are currently hidden.
-     * This is useful for a management page where a user can un-hide them.
-     * @returns An Observable emitting an array of hidden Exercise objects.
-     */
-    public getHiddenEquipments(): Observable<Equipment[]> {
-      return this.equipmentSubject.asObservable().pipe(
-        map(equipments => equipments.filter(eq => eq.isHidden))
-      );
-    }
+
+    const updatedEquipments = [...currentEquipments];
+    const equipmentToUpdate = { ...updatedEquipments[equipmentIndex], isHidden: false };
+    updatedEquipments[equipmentIndex] = equipmentToUpdate;
+
+    this._saveToStorage(updatedEquipments);
+    this.toastService.success(`'${equipmentToUpdate.name}' is now visible.`, 3000, "Visible");
+    return of(equipmentToUpdate);
+  }
+
+  /**
+   * Returns an observable list of ONLY the exercises that are currently hidden.
+   * This is useful for a management page where a user can un-hide them.
+   * @returns An Observable emitting an array of hidden Exercise objects.
+   */
+  public getHiddenEquipments(): Observable<Equipment[]> {
+    return this.equipmentSubject.asObservable().pipe(
+      map(equipments => equipments.filter(eq => eq.isHidden))
+    );
+  }
 }

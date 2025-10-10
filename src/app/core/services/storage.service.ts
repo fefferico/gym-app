@@ -2,6 +2,7 @@ import { Injectable, Inject, PLATFORM_ID, inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { AlertService } from './alert.service';
 import { PausedWorkoutState } from '../models/workout.model';
+import { TranslateService } from '@ngx-translate/core';
 
 @Injectable({
   providedIn: 'root',
@@ -9,6 +10,7 @@ import { PausedWorkoutState } from '../models/workout.model';
 export class StorageService {
   private isBrowser: boolean;
   private alertService = inject(AlertService);
+  private translate = inject(TranslateService);
 
   private readonly PAUSED_WORKOUT_KEY = 'fitTrackPro_pausedWorkoutState';
   private readonly PAUSED_STATE_VERSION = '1.2';
@@ -21,28 +23,16 @@ export class StorageService {
     }
   }
 
-  /**
-   * Saves an item to localStorage.
-   * @param key The key under which to store the value.
-   * @param value The value to store. Can be any JSON-serializable type.
-   */
   setItem<T>(key: string, value: T): void {
     if (this.isBrowser) {
       try {
         localStorage.setItem(key, JSON.stringify(value));
       } catch (e) {
         console.error(`Error saving item "${key}" to localStorage:`, e);
-        // Optionally, you could throw the error or handle it based on app requirements
-        // For example, if localStorage is full (QuotaExceededError)
       }
     }
   }
 
-  /**
-   * Retrieves an item from localStorage.
-   * @param key The key of the item to retrieve.
-   * @returns The retrieved item, or null if the key is not found or an error occurs.
-   */
   getItem<T>(key: string): T | null {
     if (this.isBrowser) {
       try {
@@ -56,10 +46,6 @@ export class StorageService {
     return null;
   }
 
-  /**
-   * Removes an item from localStorage.
-   * @param key The key of the item to remove.
-   */
   removeItem(key: string): void {
     if (this.isBrowser) {
       try {
@@ -70,11 +56,6 @@ export class StorageService {
     }
   }
 
-  /**
-   * Clears all items from localStorage managed by this application.
-   * Be cautious with this method if other parts of the domain use localStorage.
-   * A more targeted approach might be to remove specific known keys.
-   */
   clearAllApplicationData(knownKeys: string[]): void {
     if (this.isBrowser) {
       console.warn('Clearing specified application data from localStorage for keys:', knownKeys);
@@ -82,15 +63,12 @@ export class StorageService {
     }
   }
 
-  /**
-   * Clears all items from localStorage. USE WITH EXTREME CAUTION.
-   * This will remove data for the entire domain, not just your app.
-   */
   clearEntireLocalStorage_USE_WITH_CAUTION(): void {
     if (this.isBrowser) {
-      this.alertService.showConfirm("WARNING", "This will clear ALL data in localStorage for this domain, potentially affecting other applications or settings. Are you sure you want to proceed?").then((result) => {
+      const title = this.translate.instant('storageService.clearAllWarning.title');
+      const message = this.translate.instant('storageService.clearAllWarning.message');
+      this.alertService.showConfirm(title, message).then((result) => {
         if (result && (result.data)) {
-          // --- Import Data ---
           try {
             localStorage.clear();
             console.log('Entire localStorage has been cleared.');
@@ -110,7 +88,6 @@ export class StorageService {
     const pausedState = this.getItem<PausedWorkoutState>(this.PAUSED_WORKOUT_KEY);
     return pausedState !== null && pausedState.version !== null && pausedState.version === this.PAUSED_STATE_VERSION;
   }
-
 
   removePausedWorkout(): void {
     if (this.checkForPausedWorkout()) {

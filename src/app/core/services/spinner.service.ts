@@ -1,5 +1,6 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { TranslateService } from '@ngx-translate/core';
 
 @Injectable({
   providedIn: 'root'
@@ -8,45 +9,36 @@ export class SpinnerService {
   private loadingCount = 0;
   private isLoading = new BehaviorSubject<boolean>(false);
   private loadingMessage = new BehaviorSubject<string | null>(null);
-  private activeTimeoutId: ReturnType<typeof setTimeout> | null = null; // Added for managing timeout
+  private activeTimeoutId: ReturnType<typeof setTimeout> | null = null;
+  private translate = inject(TranslateService);
 
   public readonly loading$: Observable<boolean> = this.isLoading.asObservable();
   public readonly message$: Observable<string | null> = this.loadingMessage.asObservable();
 
   constructor() { }
 
-  /**
-   * Shows the spinner.
-   * @param message Optional message to display initially.
-   * @param timeout Optional duration in milliseconds. If provided along with timeoutMessage,
-   *                the spinner will display timeoutMessage after this duration.
-   * @param timeoutMessage Optional message to display after the timeout duration.
-   *                     Requires 'timeout' to be set.
-   */
-  show(message: string | null = null, timeout: number = 6000, timeoutMessage: string = 'Sembra che ci siano problemi di connessione...'): void {
+  show(message: string | null = null, timeout: number = 6000, timeoutMessageKey: string = 'spinnerService.timeoutMessage'): void {
     this.loadingCount++;
     if (this.loadingCount === 1) {
       this.isLoading.next(true);
     }
 
-    // Set the initial message
     this.loadingMessage.next(message);
 
-    // Clear any existing timeout before setting a new one
     if (this.activeTimeoutId) {
       clearTimeout(this.activeTimeoutId);
       this.activeTimeoutId = null;
     }
 
-    // If timeout and timeoutMessage are provided, set a new timeout
+    const timeoutMessage = this.translate.instant(timeoutMessageKey);
+
     if (typeof timeout === 'number' && timeout > 0 && typeof timeoutMessage === 'string') {
       this.activeTimeoutId = setTimeout(() => {
-        // Only update the message if the spinner is still considered loading
-        // (i.e., isLoading is true) and this timeout hasn't been cancelled.
         if (this.isLoading.value) {
-          this.loadingMessage.next(message + ' ('+timeoutMessage+')');
+          const currentMessage = message ? `${message} (${timeoutMessage})` : timeoutMessage;
+          this.loadingMessage.next(currentMessage);
         }
-        this.activeTimeoutId = null; // Clear the stored ID after execution or if cancelled
+        this.activeTimeoutId = null;
       }, timeout);
     }
   }
@@ -57,8 +49,7 @@ export class SpinnerService {
     }
     if (this.loadingCount === 0) {
       this.isLoading.next(false);
-      this.loadingMessage.next(null); // Clear message when spinner hides
-      // Clear any pending timeout
+      this.loadingMessage.next(null);
       if (this.activeTimeoutId) {
         clearTimeout(this.activeTimeoutId);
         this.activeTimeoutId = null;
@@ -69,8 +60,7 @@ export class SpinnerService {
   reset(): void {
     this.loadingCount = 0;
     this.isLoading.next(false);
-    this.loadingMessage.next(null); // Clear message on reset
-    // Clear any pending timeout
+    this.loadingMessage.next(null);
     if (this.activeTimeoutId) {
       clearTimeout(this.activeTimeoutId);
       this.activeTimeoutId = null;

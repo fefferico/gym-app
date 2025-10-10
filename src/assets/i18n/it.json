@@ -1868,6 +1868,336 @@
       "title": "Attività Unite"
     },
     "mergeInfo": "Nessun nuovo log attività da importare."
+  },
+
+  "alertService": {
+    "buttons": {
+      "ok": "OK",
+      "cancel": "Annulla",
+      "confirm": "Conferma",
+      "doSomething": "Esegui Azione",
+      "doNothing": "Nessuna Azione"
+    }
+  },
+  "barbellData": {
+    "barbells": {
+      "mensOlympic": "Bilanciere Olimpico Maschile",
+      "womensOlympic": "Bilanciere Olimpico Femminile",
+      "standardGym": "Bilanciere Standard da Palestra",
+      "ezCurl": "Bilanciere EZ-Curl",
+      "tricep": "Bilanciere per Tricipiti",
+      "trapHex": "Trap/Hex Bar",
+      "olympic120": "Bilanciere Olimpico (120cm)",
+      "olympic152": "Bilanciere Olimpico (152cm)",
+      "olympic182": "Bilanciere Olimpico (182cm)",
+      "olympic186": "Bilanciere Olimpico (186cm)",
+      "olympic219": "Bilanciere Olimpico (219cm)",
+      "olympic47in": "Bilanciere Olimpico (47in)",
+      "olympic60in": "Bilanciere Olimpico (60in)",
+      "olympic72in": "Bilanciere Olimpico (72in)",
+      "olympic73in": "Bilanciere Olimpico (73in)",
+      "olympic86in": "Bilanciere Olimpico (86in)"
+    },
+    "collars": {
+      "none": "Senza Ferma Dischi",
+      "spring": "Molle Ferma Dischi",
+      "lockjaw": "Collari Lock-Jaw",
+      "competition": "Collari da Competizione"
+    }
+  },
+  "dataConversionService": {
+    "spinner": {
+      "convertingWeight": "Conversione dati di peso...",
+      "convertingBodyWeight": "Conversione dati di peso corporeo...",
+      "convertingBodyMeasure": "Conversione dati misure corporee...",
+      "convertingMeasure": "Conversione dati di misurazione...",
+      "convertingDistance": "Conversione dati di distanza..."
+    },
+    "toast": {
+      "conversionCompleteTitle": "Conversione Completata",
+      "weightSuccess": "Tutti i dati di peso convertiti con successo!",
+      "bodyWeightSuccess": "Tutti i dati di peso corporeo convertiti con successo!",
+      "bodyMeasureSuccess": "Tutti i dati delle misure corporee convertiti con successo!",
+      "measureSuccess": "Tutti i dati di misurazione convertiti con successo!",
+      "distanceSuccess": "Tutti i dati di distanza convertiti con successo!"
+    }
+  },
+  "exerciseService": {
+    "unknownExercise": "Esercizio Sconosciuto",
+    "importErrorTitle": "Errore di Importazione",
+    "importFailed": "Importazione fallita: File dati esercizio non valido.",
+    "mergeSuccessTitle": "Esercizi Uniti",
+    "mergeSuccessMessage": "Importazione completa. {{updatedCount}} esercizi aggiornati, {{addedCount}} aggiunti.",
+    "hideErrorTitle": "Errore",
+    "hideFailed": "Impossibile nascondere l'esercizio: non trovato.",
+    "hiddenTitle": "Nascosto",
+    "hiddenMessage": "'{{name}}' è ora nascosto.",
+    "unhideFailed": "Impossibile mostrare l'esercizio: non trovato.",
+    "visibleTitle": "Visibile",
+    "visibleMessage": "'{{name}}' è ora visibile."
+  },
+  "personalGymService": {
+    "addSuccessTitle": "Attrezzatura Aggiunta",
+    "addSuccessMessage": "Aggiunto \"{{name}}\" alla tua palestra!",
+    "updateSuccessTitle": "Attrezzatura Aggiornata",
+    "updateSuccessMessage": "Aggiornato \"{{name}}\" con successo!",
+    "updateFailedTitle": "Aggiornamento Fallito",
+    "updateFailedMessage": "Impossibile trovare \"{{name}}\" da aggiornare.",
+    "deleteFailedTitle": "Eliminazione Fallita",
+    "deleteFailedMessage": "Attrezzatura non trovata.",
+    "deleteConfirmTitle": "Elimina Attrezzatura",
+    "deleteConfirmMessage": "Sei sicuro di voler eliminare \"{{name}}\" dalla tua palestra? Questa azione è irreversibile.",
+    "deletedTitle": "Eliminato",
+    "deletedMessage": "\"{{name}}\" è stato eliminato.",
+    "importErrorTitle": "Errore di Importazione",
+    "importFailed": "Importazione fallita: File dati palestra personale non valido.",
+    "mergeSuccessTitle": "Palestra Personale Unita",
+    "mergeSuccessMessage": "Importazione palestra completata. {{updatedCount}} articoli aggiornati, {{addedCount}} aggiunti.",
+    "hideErrorTitle": "Errore",
+    "hideFailed": "Impossibile nascondere l'attrezzatura: non trovata.",
+    "hiddenTitle": "Nascosto",
+    "hiddenMessage": "'{{name}}' è ora nascosto.",
+    "unhideFailed": "Impossibile mostrare l'attrezzatura: non trovata.",
+    "visibleTitle": "Visibile",
+    "visibleMessage": "'{{name}}' è ora visibile."
+  },
+  "spinnerService": {
+    "timeoutMessage": "Sembra ci siano problemi di connessione..."
+  },
+  "statsService": {
+    "weekOf": "Settimana del",
+    "weekPrefix": "S"
+  },
+  "equipment": {
+    "categories": {
+      "machines": "Macchine",
+      "functionalBodyweight": "Funzionale e Corpo Libero",
+      "accessories": "Accessori",
+      "cardio": "Cardio",
+      "freeWeights": "Pesi Liberi"
+    },
+    "names": {
+      "abdominalCrunchMachine": "Macchina per Crunch Addominale",
+      "abRollerCoaster": "Ab Roller Coaster",
+      "abWheel": "Ab Wheel"
+    }
+  },
+  "storageService": {
+    "clearAllWarning": {
+      "title": "ATTENZIONE",
+      "message": "Questo cancellerà TUTTI i dati in localStorage per questo dominio, influenzando potenzialmente altre applicazioni o impostazioni. Sei sicuro di voler procedere?"
+    }
+  },
+  "subscriptionService": {
+    "upgradeModal": {
+      "title": "Funzionalità Premium",
+      "message": "Questa funzionalità è disponibile per gli utenti Premium. Esegui l'upgrade ora per sbloccare questa e molte altre funzionalità!"
+    }
+  },
+  "trackingService": {
+    "clearLogsConfirm": {
+      "title": "Info",
+      "message": "SVILUPPO: Sei sicuro di voler eliminare TUTTI i log degli allenamenti? Questa azione è irreversibile.",
+      "success": "Tutti i log degli allenamenti sono stati cancellati!"
+    },
+    "recalcPbs": {
+      "title": "Ricalcolo dei Record Personali",
+      "message": "Tutti i tuoi record personali dell'intera cronologia degli allenamenti verranno ricalcolati: potrebbe volerci un momento.",
+      "noLogsTitle": "Info",
+      "noLogsMessage": "Non ci sono record personali da ricalcolare.",
+      "successTitle": "Successo",
+      "successMessage": "Tutti i record personali sono stati ricalcolati."
+    },
+    "clearPbsConfirm": {
+      "title": "Info",
+      "message": "SVILUPPO: Sei sicuro di voler eliminare TUTTI i record personali? Questa azione è irreversibile.",
+      "success": "Tutti i record personali sono stati cancellati!"
+    },
+    "import": {
+      "logsErrorTitle": "Errore di Importazione",
+      "logsErrorMessage": "Importazione fallita: File di log allenamento non valido.",
+      "logsSuccessTitle": "Log Uniti",
+      "logsSuccessMessage": "Log importati. {{updatedCount}} aggiornati, {{addedCount}} aggiunti.",
+      "pbsErrorTitle": "Errore di Importazione",
+      "pbsErrorMessage": "Importazione fallita: File dei record personali non valido.",
+      "pbsSuccessTitle": "Record Personali Uniti",
+      "pbsSuccessMessage": "Dati dei record personali uniti con successo."
+    },
+    "recalcAfterImport": {
+      "title": "Attendere Prego",
+      "message": "Ricalcolo dei record personali...",
+      "noLogsTitle": "Record Personali Ricalcolati",
+      "noLogsMessage": "Record personali cancellati poiché non ci sono log.",
+      "successTitle": "Record Personali Aggiornati",
+      "successMessage": "Record personali ricalcolati con successo!"
+    },
+    "deleteRoutine": {
+      "warningTitle": "Attenzione",
+      "noIdMessage": "Nessun ID routine fornito per cancellare i log",
+      "confirmTitle": "Conferma Eliminazione",
+      "confirmMessageSimple": "Sei sicuro di voler eliminare la routine \"{{routineName}}\"? Questa azione è irreversibile.",
+      "confirmMessageWithLogs": "Sei sicuro di voler eliminare la routine \"{{routineName}}\"? Ci sono {{count}} log di allenamento associati. Eliminando la routine verranno eliminati anche questi log. Questa azione è irreversibile.",
+      "successTitleSimple": "Info",
+      "successMessageSimple": "Routine \"{{routineName}}\" eliminata con successo!",
+      "successTitleWithLogs": "Successo",
+      "successMessageWithLogs": "{{count}} log di allenamento e la routine \"{{routineName}}\" sono stati eliminati"
+    },
+    "history": {
+      "backfillWaitTitle": "Attendere Prego",
+      "backfillWaitMessage": "Aggiornamento cronologia esercizi...",
+      "backfillSuccessTitle": "Aggiornamento Completato",
+      "backfillSuccessMessage": "La cronologia degli esercizi è stata aggiornata!",
+      "syncWaitTitle": "Attendere Prego",
+      "syncWaitMessage": "Sincronizzazione di tutta la cronologia...",
+      "syncNoHistoryMessage": "Nessuna cronologia da sincronizzare.",
+      "syncSuccessTitle": "Sincronizzazione Completata",
+      "syncSuccessMessage": "L'intera cronologia è stata sincronizzata!"
+    }
+  },
+  "trainingProgramService": {
+    "updateError": {
+      "title": "Errore di Aggiornamento",
+      "message": "Programma con ID {{id}} non trovato."
+    },
+    "deleteError": {
+      "title": "Errore di Eliminazione",
+      "message": "Programma non trovato"
+    },
+    "deleteConfirm": {
+      "title": "Elimina Programma",
+      "message": "Sei sicuro di voler eliminare il programma \"{{name}}\"? Questa azione è irreversibile.",
+      "cancelButton": "Annulla",
+      "deleteButton": "Elimina Programma"
+    },
+    "deleteSuccess": {
+      "title": "Programma Eliminato",
+      "message": "Programma \"{{name}}\" eliminato."
+    },
+    "importError": {
+      "title": "Errore di Importazione",
+      "message": "Importazione fallita: File dati programma non valido."
+    },
+    "importSuccess": {
+      "title": "Programmi Uniti",
+      "message": "Importazione completa. {{updatedCount}} programmi aggiornati, {{addedCount}} aggiunti."
+    },
+    "history": {
+      "removeErrorTitle": "Errore Rimozione Cronologia",
+      "removeSuccessTitle": "Cronologia Aggiornata",
+      "removeSuccessMessage": "Voce della cronologia rimossa."
+    },
+    "toggle": {
+      "notFound": "Programma non trovato.",
+      "alreadyActive": "\"{{name}}\" è già attivo."
+    },
+    "deactivate": {
+      "info": "Il programma \"{{name}}\" è stato disattivato."
+    },
+    "updateHistory": {
+      "programNotFound": "Programma non trovato.",
+      "entryNotFound": "Voce della cronologia non trovata.",
+      "success": "Cronologia programma aggiornata."
+    }
+  },
+  "userProfileService": {
+    "wipDisclaimer": {
+      "title": "Disclaimer Lavori in Corso",
+      "message": "DISCLAIMER: Questa è un'app basata su browser e in fase di sviluppo. Ciò significa che i tuoi dati di allenamento non verranno salvati quando chiudi il browser o cancelli i dati del browser. Assicurati di esportare regolarmente i tuoi dati e di importarli di nuovo quando torni all'app.",
+      "checkboxLabel": "Non mostrare più questo messaggio",
+      "okButton": "OK"
+    }
+  },
+  "units": {
+    "weight": {
+      "kg": "kg",
+      "lbs": "lbs"
+    },
+    "measure": {
+      "cm": "cm",
+      "in": "in"
+    },
+    "distance": {
+      "km": "km",
+      "mi": "mi"
+    }
+  },
+  "workoutService": {
+    "toasts": {
+      "updateErrorTitle": "Errore",
+      "updateErrorMessage": "Routine con id {{id}} non trovata per l'aggiornamento!",
+      "importErrorTitle": "Errore di Importazione",
+      "importFailed": "Importazione fallita: File dati routine non valido.",
+      "importSuccessTitle": "Routine Unite",
+      "importSuccessMessage": "Routine importate. {{updatedCount}} aggiornate, {{addedCount}} aggiunte.",
+      "pausedDiscarded": "Sessione di allenamento in pausa scartata.",
+      "superset": {
+        "minSelection": "Seleziona almeno due esercizi per creare un superset.",
+        "alreadyIn": "Questo esercizio è già in un superset.",
+        "noneExist": "Non esistono superset a cui aggiungere questo esercizio.",
+        "findError": "Impossibile trovare l'esercizio o il superset di destinazione.",
+        "addSuccess": "{{exerciseName}} aggiunto al superset.",
+        "logCleared": "Dati registrati per {{exerciseName}} cancellati.",
+        "dissolved": "Superset sciolto poiché rimane un solo esercizio.",
+        "removed": "{{exerciseName}} rimosso dal superset."
+      },
+      "enableAllSuccess": "Tutte le routine abilitate!"
+    },
+    "alerts": {
+      "editRunningTitle": "Info",
+      "editRunningMessage": "Non è possibile modificare una routine in esecuzione. Completala o scartala prima di modificarla.",
+      "clearAllTitle": "Info",
+      "clearAllMessage": "Sei sicuro di voler eliminare TUTTE le routine? Questo eliminerà TUTTE le routine (non solo i log) e l'azione è irreversibile.",
+      "clearAllSuccess": "Tutte le routine sono state cancellate!",
+      "clearExecutedTitle": "Info",
+      "clearExecutedMessage": "Sei sicuro di voler resettare la proprietà 'ultimaEsecuzione' di TUTTE le routine? Questa azione è irreversibile.",
+      "clearExecutedSuccess": "Tutti i log delle routine sono stati cancellati!",
+      "resume": {
+        "title": "Riprendere l'Allenamento in Pausa?",
+        "message": "Hai una sessione di allenamento in pausa. Vuoi riprenderla?",
+        "resumeButton": "Riprendi",
+        "discardButton": "Scarta"
+      },
+      "supersetCreatedTitle": "INFO",
+      "supersetCreatedMessage": "Superset creato con {{count}} esercizi e {{rounds}} round: i log esistenti sono stati cancellati e le serie standardizzate."
+    },
+    "prompts": {
+      "addExerciseTitle": "Aggiungi {{exerciseName}}",
+      "labels": {
+        "exerciseName": "Nome Esercizio",
+        "numSets": "Numero di Serie",
+        "rest": "Riposo tra le Serie (secondi)",
+        "targetDistance": "Distanza Obiettivo ({{unit}})",
+        "targetDuration": "Durata Obiettivo (secondi)",
+        "numReps": "Numero di Ripetizioni",
+        "targetWeight": "Peso Obiettivo ({{unit}})"
+      },
+      "createSuperset": {
+        "title": "Crea Superset",
+        "message": "Seleziona esercizi da collegare.",
+        "roundsLabel": "Numero di Round"
+      },
+      "addToSuperset": {
+        "title": "Aggiungi al Superset",
+        "message": "A quale superset per \"{{exerciseName}}\"?",
+        "groupLabel": "Superset: {{group}}",
+        "addButton": "Aggiungi"
+      },
+      "removeFromSuperset": {
+        "title": "Rimuovi dal Superset",
+        "message": "Rimuovere {{exerciseName}} da questo superset? Le sue serie registrate per questa sessione verranno cancellate."
+      }
+    },
+    "display": {
+      "weightNotApplicable": "N/A",
+      "bodyweight": "Corpo Libero",
+      "noAddedWeight": "Nessun Peso Aggiunto",
+      "userDefined": "Definito dall'Utente",
+      "unnamedExercise": "Esercizio senza nome",
+      "upTo": "Fino a"
+    },
+    "general": {
+      "cancel": "Annulla"
+    }
   }
 
 }

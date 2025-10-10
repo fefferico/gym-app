@@ -1863,5 +1863,334 @@
       "title": "Aktivitäten Zusammengeführt"
     },
     "mergeInfo": "Keine neuen Aktivitätsprotokolle zum Importieren."
+  },
+  "alertService": {
+    "buttons": {
+      "ok": "OK",
+      "cancel": "Abbrechen",
+      "confirm": "Bestätigen",
+      "doSomething": "Etwas tun",
+      "doNothing": "Nichts tun"
+    }
+  },
+  "barbellData": {
+    "barbells": {
+      "mensOlympic": "Olympische Langhantel für Herren",
+      "womensOlympic": "Olympische Langhantel für Damen",
+      "standardGym": "Standard-Langhantel",
+      "ezCurl": "EZ-Curl-Stange",
+      "tricep": "Trizepsstange",
+      "trapHex": "Trap-/Hex-Stange",
+      "olympic120": "Olympische Langhantel (120 cm)",
+      "olympic152": "Olympische Langhantel (152 cm)",
+      "olympic182": "Olympische Langhantel (182 cm)",
+      "olympic186": "Olympische Langhantel (186 cm)",
+      "olympic219": "Olympische Langhantel (219 cm)",
+      "olympic47in": "Olympische Langhantel (47 Zoll)",
+      "olympic60in": "Olympische Langhantel (60 Zoll)",
+      "olympic72in": "Olympische Langhantel (72 Zoll)",
+      "olympic73in": "Olympische Langhantel (73 Zoll)",
+      "olympic86in": "Olympische Langhantel (86 Zoll)"
+    },
+    "collars": {
+      "none": "Keine Verschlüsse",
+      "spring": "Federverschlüsse",
+      "lockjaw": "Lock-Jaw-Verschlüsse",
+      "competition": "Wettkampfverschlüsse"
+    }
+  },
+  "dataConversionService": {
+    "spinner": {
+      "convertingWeight": "Gewichtsdaten werden konvertiert...",
+      "convertingBodyWeight": "Körpergewichtsdaten werden konvertiert...",
+      "convertingBodyMeasure": "Körpermaßdaten werden konvertiert...",
+      "convertingMeasure": "Messdaten werden konvertiert...",
+      "convertingDistance": "Distanzdaten werden konvertiert..."
+    },
+    "toast": {
+      "conversionCompleteTitle": "Konvertierung abgeschlossen",
+      "weightSuccess": "Alle Gewichtsdaten erfolgreich konvertiert!",
+      "bodyWeightSuccess": "Alle Körpergewichtsdaten erfolgreich konvertiert!",
+      "bodyMeasureSuccess": "Alle Körpermaßdaten erfolgreich konvertiert!",
+      "measureSuccess": "Alle Messdaten erfolgreich konvertiert!",
+      "distanceSuccess": "Alle Distanzdaten erfolgreich konvertiert!"
+    }
+  },
+  "exerciseService": {
+    "unknownExercise": "Unbekannte Übung",
+    "importErrorTitle": "Importfehler",
+    "importFailed": "Import fehlgeschlagen: Ungültige Übungsdatendatei.",
+    "mergeSuccessTitle": "Übungen zusammengeführt",
+    "mergeSuccessMessage": "Import abgeschlossen. {{updatedCount}} Übungen aktualisiert, {{addedCount}} hinzugefügt.",
+    "hideErrorTitle": "Fehler",
+    "hideFailed": "Ausblenden der Übung fehlgeschlagen: nicht gefunden.",
+    "hiddenTitle": "Ausgeblendet",
+    "hiddenMessage": "'{{name}}' ist jetzt ausgeblendet.",
+    "unhideFailed": "Einblenden der Übung fehlgeschlagen: nicht gefunden.",
+    "visibleTitle": "Sichtbar",
+    "visibleMessage": "'{{name}}' ist jetzt sichtbar."
+  },
+  "personalGymService": {
+    "addSuccessTitle": "Gerät hinzugefügt",
+    "addSuccessMessage": "\"{{name}}\" wurde zu deinem Fitnessstudio hinzugefügt!",
+    "updateSuccessTitle": "Gerät aktualisiert",
+    "updateSuccessMessage": "\"{{name}}\" erfolgreich aktualisiert!",
+    "updateFailedTitle": "Aktualisierung fehlgeschlagen",
+    "updateFailedMessage": "\"{{name}}\" konnte zum Aktualisieren nicht gefunden werden.",
+    "deleteFailedTitle": "Löschen fehlgeschlagen",
+    "deleteFailedMessage": "Gerät nicht gefunden.",
+    "deleteConfirmTitle": "Gerät löschen",
+    "deleteConfirmMessage": "Bist du sicher, dass du \"{{name}}\" aus deinem Fitnessstudio löschen möchtest? Dies kann nicht rückgängig gemacht werden.",
+    "deletedTitle": "Gelöscht",
+    "deletedMessage": "\"{{name}}\" wurde gelöscht.",
+    "importErrorTitle": "Importfehler",
+    "importFailed": "Import fehlgeschlagen: Ungültige Fitnessstudio-Datendatei.",
+    "mergeSuccessTitle": "Persönliches Fitnessstudio zusammengeführt",
+    "mergeSuccessMessage": "Fitnessstudio-Import abgeschlossen. {{updatedCount}} Elemente aktualisiert, {{addedCount}} hinzugefügt.",
+    "hideErrorTitle": "Fehler",
+    "hideFailed": "Ausblenden des Geräts fehlgeschlagen: nicht gefunden.",
+    "hiddenTitle": "Ausgeblendet",
+    "hiddenMessage": "'{{name}}' ist jetzt ausgeblendet.",
+    "unhideFailed": "Einblenden des Geräts fehlgeschlagen: nicht gefunden.",
+    "visibleTitle": "Sichtbar",
+    "visibleMessage": "'{{name}}' ist jetzt sichtbar."
+  },
+  "spinnerService": {
+    "timeoutMessage": "Es scheint Verbindungsprobleme zu geben..."
+  },
+  "statsService": {
+    "weekOf": "Woche vom",
+    "weekPrefix": "W"
+  },
+  "equipment": {
+    "categories": {
+      "machines": "Maschinen",
+      "functionalBodyweight": "Funktionell & Körpergewicht",
+      "accessories": "Zubehör",
+      "cardio": "Cardio",
+      "freeWeights": "Freie Gewichte"
+    },
+    "names": {
+      "abdominalCrunchMachine": "Bauchmuskelmaschine",
+      "abRollerCoaster": "Ab Roller Coaster",
+      "abWheel": "Bauchroller"
+    }
+  },
+  "storageService": {
+    "clearAllWarning": {
+      "title": "WARNUNG",
+      "message": "Dies löscht ALLE Daten im localStorage für diese Domain, was möglicherweise andere Anwendungen oder Einstellungen beeinträchtigt. Bist du sicher, dass du fortfahren möchtest?"
+    }
+  },
+  "subscriptionService": {
+    "upgradeModal": {
+      "title": "Premium-Funktion",
+      "message": "Diese Funktion ist für Premium-Benutzer verfügbar. Jetzt upgraden, um diese und vieles mehr freizuschalten!"
+    }
+  },
+  "trackingService": {
+    "clearLogsConfirm": {
+      "title": "Info",
+      "message": "ENTWICKLUNG: Bist du sicher, dass du ALLE Trainingsprotokolle löschen möchtest? Dies kann nicht rückgängig gemacht werden.",
+      "success": "Alle Trainingsprotokolle gelöscht!"
+    },
+    "recalcPbs": {
+      "title": "Neuberechnung der PBs",
+      "message": "Alle deine persönlichen Bestleistungen aus deinem gesamten Trainingsverlauf werden jetzt neu berechnet: dies kann einen Moment dauern.",
+      "noLogsTitle": "Info",
+      "noLogsMessage": "Es gibt keine persönlichen Bestleistungen, die neu berechnet werden müssen.",
+      "successTitle": "Erfolg",
+      "successMessage": "Alle persönlichen Bestleistungen wurden neu berechnet."
+    },
+    "clearPbsConfirm": {
+      "title": "Info",
+      "message": "ENTWICKLUNG: Bist du sicher, dass du ALLE persönlichen Bestleistungen löschen möchtest? Dies kann nicht rückgängig gemacht werden.",
+      "success": "Alle persönlichen Bestleistungen gelöscht!"
+    },
+    "import": {
+      "logsErrorTitle": "Importfehler",
+      "logsErrorMessage": "Import fehlgeschlagen: Ungültige Trainingsprotokolldatei.",
+      "logsSuccessTitle": "Protokolle zusammengeführt",
+      "logsSuccessMessage": "Protokolle importiert. {{updatedCount}} aktualisiert, {{addedCount}} hinzugefügt.",
+      "pbsErrorTitle": "Importfehler",
+      "pbsErrorMessage": "Import fehlgeschlagen: Ungültige Datei mit persönlichen Bestleistungen.",
+      "pbsSuccessTitle": "PBs zusammengeführt",
+      "pbsSuccessMessage": "Daten der persönlichen Bestleistungen erfolgreich zusammengeführt."
+    },
+    "recalcAfterImport": {
+      "title": "Bitte warten",
+      "message": "Persönliche Bestleistungen werden neu berechnet...",
+      "noLogsTitle": "PBs neu berechnet",
+      "noLogsMessage": "Persönliche Bestleistungen gelöscht, da keine Protokolle vorhanden sind.",
+      "successTitle": "PBs aktualisiert",
+      "successMessage": "Persönliche Bestleistungen erfolgreich neu berechnet!"
+    },
+    "deleteRoutine": {
+      "warningTitle": "Warnung",
+      "noIdMessage": "Keine Routine-ID zum Löschen von Protokollen angegeben",
+      "confirmTitle": "Löschen bestätigen",
+      "confirmMessageSimple": "Bist du sicher, dass du die Routine \"{{routineName}}\" löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "confirmMessageWithLogs": "Bist du sicher, dass du die Routine \"{{routineName}}\" löschen möchtest? Es gibt {{count}} zugehörige(s) Trainingsprotokoll(e). Das Löschen der Routine löscht auch diese Protokolle. Diese Aktion kann nicht rückgängig gemacht werden.",
+      "successTitleSimple": "Info",
+      "successMessageSimple": "Routine \"{{routineName}}\" erfolgreich gelöscht!",
+      "successTitleWithLogs": "Erfolg",
+      "successMessageWithLogs": "{{count}} Trainingsprotokoll(e) und die Routine \"{{routineName}}\" wurden gelöscht."
+    },
+    "history": {
+      "backfillWaitTitle": "Bitte warten",
+      "backfillWaitMessage": "Trainingsverlauf wird aktualisiert...",
+      "backfillSuccessTitle": "Aktualisierung abgeschlossen",
+      "backfillSuccessMessage": "Trainingsverlauf wurde aktualisiert!",
+      "syncWaitTitle": "Bitte warten",
+      "syncWaitMessage": "Gesamter Verlauf wird synchronisiert...",
+      "syncNoHistoryMessage": "Kein Verlauf zum Synchronisieren vorhanden.",
+      "syncSuccessTitle": "Synchronisierung abgeschlossen",
+      "syncSuccessMessage": "Der vollständige Verlauf wurde synchronisiert!"
+    }
+  },
+  "trainingProgramService": {
+    "updateError": {
+      "title": "Aktualisierungsfehler",
+      "message": "Programm mit ID {{id}} nicht gefunden."
+    },
+    "deleteError": {
+      "title": "Löschfehler",
+      "message": "Programm nicht gefunden"
+    },
+    "deleteConfirm": {
+      "title": "Programm löschen",
+      "message": "Bist du sicher, dass du das Programm \"{{name}}\" löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "cancelButton": "Abbrechen",
+      "deleteButton": "Programm löschen"
+    },
+    "deleteSuccess": {
+      "title": "Programm gelöscht",
+      "message": "Programm \"{{name}}\" gelöscht."
+    },
+    "importError": {
+      "title": "Importfehler",
+      "message": "Import fehlgeschlagen: Ungültige Programmdaten-Datei."
+    },
+    "importSuccess": {
+      "title": "Programme zusammengeführt",
+      "message": "Import abgeschlossen. {{updatedCount}} Programme aktualisiert, {{addedCount}} hinzugefügt."
+    },
+    "history": {
+      "removeErrorTitle": "Fehler beim Entfernen des Verlaufs",
+      "removeSuccessTitle": "Verlauf aktualisiert",
+      "removeSuccessMessage": "Verlaufseintrag entfernt."
+    },
+    "toggle": {
+      "notFound": "Programm nicht gefunden.",
+      "alreadyActive": "\"{{name}}\" ist bereits aktiv."
+    },
+    "deactivate": {
+      "info": "Programm \"{{name}}\" wurde deaktiviert."
+    },
+    "updateHistory": {
+      "programNotFound": "Programm nicht gefunden.",
+      "entryNotFound": "Verlaufseintrag nicht gefunden.",
+      "success": "Programmverlauf aktualisiert."
+    }
+  },
+  "userProfileService": {
+    "wipDisclaimer": {
+      "title": "Haftungsausschluss für unfertige Version",
+      "message": "HAFTUNGSAUSSCHLUSS: Dies ist eine browserbasierte App in der Entwicklung. Das bedeutet, deine Trainingsdaten werden nicht gespeichert, wenn du den Browser schließt oder deine Browserdaten löschst. Stelle sicher, dass du deine Daten regelmäßig exportierst und beim erneuten Öffnen der App wieder importierst.",
+      "checkboxLabel": "Diese Nachricht nicht mehr anzeigen",
+      "okButton": "OK"
+    }
+  },
+  "units": {
+    "weight": {
+      "kg": "kg",
+      "lbs": "lbs"
+    },
+    "measure": {
+      "cm": "cm",
+      "in": "in"
+    },
+    "distance": {
+      "km": "km",
+      "mi": "mi"
+    }
+  },
+  "workoutService": {
+    "toasts": {
+      "updateErrorTitle": "Fehler",
+      "updateErrorMessage": "Routine mit ID {{id}} zur Aktualisierung nicht gefunden!",
+      "importErrorTitle": "Importfehler",
+      "importFailed": "Import fehlgeschlagen: Ungültige Routinedaten-Datei.",
+      "importSuccessTitle": "Routinen zusammengeführt",
+      "importSuccessMessage": "Routinen importiert. {{updatedCount}} aktualisiert, {{addedCount}} hinzugefügt.",
+      "pausedDiscarded": "Pausierte Trainingseinheit verworfen.",
+      "superset": {
+        "minSelection": "Bitte wähle mindestens zwei Übungen aus, um einen Supersatz zu erstellen.",
+        "alreadyIn": "Diese Übung ist bereits in einem Supersatz.",
+        "noneExist": "Es existieren keine Supersätze, um diese Übung hinzuzufügen.",
+        "findError": "Die Zielübung oder der Supersatz konnte nicht gefunden werden.",
+        "addSuccess": "{{exerciseName}} zum Supersatz hinzugefügt.",
+        "logCleared": "Protokollierte Daten für {{exerciseName}} wurden gelöscht.",
+        "dissolved": "Supersatz aufgelöst, da nur noch eine Übung übrig ist.",
+        "removed": "{{exerciseName}} aus dem Supersatz entfernt."
+      },
+      "enableAllSuccess": "Alle Routinen aktiviert!"
+    },
+    "alerts": {
+      "editRunningTitle": "Info",
+      "editRunningMessage": "Es ist nicht möglich, eine laufende Routine zu bearbeiten. Schließe sie ab oder verwerfe sie, bevor du sie bearbeitest.",
+      "clearAllTitle": "Info",
+      "clearAllMessage": "Bist du sicher, dass du ALLE Routinen löschen möchtest? Dies löscht ALLE Routinen (nicht nur die Protokolle) und kann nicht rückgängig gemacht werden.",
+      "clearAllSuccess": "Alle Routinen gelöscht!",
+      "clearExecutedTitle": "Info",
+      "clearExecutedMessage": "Bist du sicher, dass du die Eigenschaft 'zuletzt ausgeführt' ALLER Routinen zurücksetzen möchtest? Dies kann nicht rückgängig gemacht werden.",
+      "clearExecutedSuccess": "Alle Routinenprotokolle gelöscht!",
+      "resume": {
+        "title": "Pausiertes Training fortsetzen?",
+        "message": "Du hast eine pausierte Trainingseinheit. Möchtest du sie fortsetzen?",
+        "resumeButton": "Fortsetzen",
+        "discardButton": "Verwerfen"
+      },
+      "supersetCreatedTitle": "INFO",
+      "supersetCreatedMessage": "Supersatz mit {{count}} Übungen und {{rounds}} Runden erstellt: Bestehende Protokolle wurden gelöscht und Sätze standardisiert."
+    },
+    "prompts": {
+      "addExerciseTitle": "{{exerciseName}} hinzufügen",
+      "labels": {
+        "exerciseName": "Übungsname",
+        "numSets": "Anzahl der Sätze",
+        "rest": "Pause zwischen den Sätzen (Sekunden)",
+        "targetDistance": "Zieldistanz ({{unit}})",
+        "targetDuration": "Zieldauer (Sekunden)",
+        "numReps": "Anzahl der Wiederholungen",
+        "targetWeight": "Zielgewicht ({{unit}})"
+      },
+      "createSuperset": {
+        "title": "Supersatz erstellen",
+        "message": "Wähle Übungen aus, die miteinander verknüpft werden sollen.",
+        "roundsLabel": "Anzahl der Runden"
+      },
+      "addToSuperset": {
+        "title": "Zum Supersatz hinzufügen",
+        "message": "Welcher Supersatz für \"{{exerciseName}}\"?",
+        "groupLabel": "Supersatz: {{group}}",
+        "addButton": "Hinzufügen"
+      },
+      "removeFromSuperset": {
+        "title": "Aus Supersatz entfernen",
+        "message": "{{exerciseName}} aus diesem Supersatz entfernen? Die protokollierten Sätze für diese Einheit werden gelöscht."
+      }
+    },
+    "display": {
+      "weightNotApplicable": "N/A",
+      "bodyweight": "Körpergewicht",
+      "noAddedWeight": "Kein Zusatzgewicht",
+      "userDefined": "Benutzerdefiniert",
+      "unnamedExercise": "Unbenannte Übung",
+      "upTo": "Bis zu"
+    },
+    "general": {
+      "cancel": "Abbrechen"
+    }
   }
 }

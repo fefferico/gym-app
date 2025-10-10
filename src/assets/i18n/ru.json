@@ -1853,5 +1853,334 @@
       "title": "Действия Объединены"
     },
     "mergeInfo": "Нет новых записей o действиях для импорта."
+  },
+  "alertService": {
+    "buttons": {
+      "ok": "ОК",
+      "cancel": "Отмена",
+      "confirm": "Подтвердить",
+      "doSomething": "Выполнить",
+      "doNothing": "Ничего не делать"
+    }
+  },
+  "barbellData": {
+    "barbells": {
+      "mensOlympic": "Мужской олимпийский гриф",
+      "womensOlympic": "Женский олимпийский гриф",
+      "standardGym": "Стандартный гриф для зала",
+      "ezCurl": "EZ-гриф",
+      "tricep": "Гриф для трицепса",
+      "trapHex": "Трэп-гриф/Хекс-гриф",
+      "olympic120": "Олимпийский гриф (120 см)",
+      "olympic152": "Олимпийский гриф (152 см)",
+      "olympic182": "Олимпийский гриф (182 см)",
+      "olympic186": "Олимпийский гриф (186 см)",
+      "olympic219": "Олимпийский гриф (219 см)",
+      "olympic47in": "Олимпийский гриф (47 дюймов)",
+      "olympic60in": "Олимпийский гриф (60 дюймов)",
+      "olympic72in": "Олимпийский гриф (72 дюйма)",
+      "olympic73in": "Олимпийский гриф (73 дюйма)",
+      "olympic86in": "Олимпийский гриф (86 дюймов)"
+    },
+    "collars": {
+      "none": "Без замков",
+      "spring": "Пружинные замки",
+      "lockjaw": "Замки Lock-Jaw",
+      "competition": "Соревновательные замки"
+    }
+  },
+  "dataConversionService": {
+    "spinner": {
+      "convertingWeight": "Конвертация данных о весе...",
+      "convertingBodyWeight": "Конвертация данных о весе тела...",
+      "convertingBodyMeasure": "Конвертация данных об измерениях тела...",
+      "convertingMeasure": "Конвертация данных об измерениях...",
+      "convertingDistance": "Конвертация данных о расстоянии..."
+    },
+    "toast": {
+      "conversionCompleteTitle": "Конвертация завершена",
+      "weightSuccess": "Все данные о весе успешно конвертированы!",
+      "bodyWeightSuccess": "Все данные о весе тела успешно конвертированы!",
+      "bodyMeasureSuccess": "Все данные об измерениях тела успешно конвертированы!",
+      "measureSuccess": "Все данные об измерениях успешно конвертированы!",
+      "distanceSuccess": "Все данные о расстоянии успешно конвертированы!"
+    }
+  },
+  "exerciseService": {
+    "unknownExercise": "Неизвестное упражнение",
+    "importErrorTitle": "Ошибка импорта",
+    "importFailed": "Импорт не удался: неверный файл данных упражнений.",
+    "mergeSuccessTitle": "Упражнения объединены",
+    "mergeSuccessMessage": "Импорт завершен. {{updatedCount}} упражнений обновлено, {{addedCount}} добавлено.",
+    "hideErrorTitle": "Ошибка",
+    "hideFailed": "Не удалось скрыть упражнение: не найдено.",
+    "hiddenTitle": "Скрыто",
+    "hiddenMessage": "'{{name}}' теперь скрыто.",
+    "unhideFailed": "Не удалось показать упражнение: не найдено.",
+    "visibleTitle": "Видно",
+    "visibleMessage": "'{{name}}' теперь видно."
+  },
+  "personalGymService": {
+    "addSuccessTitle": "Оборудование добавлено",
+    "addSuccessMessage": "Добавлено \"{{name}}\" в ваш зал!",
+    "updateSuccessTitle": "Оборудование обновлено",
+    "updateSuccessMessage": "Успешно обновлено \"{{name}}\"!",
+    "updateFailedTitle": "Ошибка обновления",
+    "updateFailedMessage": "Не удалось найти \"{{name}}\" для обновления.",
+    "deleteFailedTitle": "Ошибка удаления",
+    "deleteFailedMessage": "Оборудование не найдено.",
+    "deleteConfirmTitle": "Удалить оборудование",
+    "deleteConfirmMessage": "Вы уверены, что хотите удалить \"{{name}}\" из вашего зала? Это действие нельзя будет отменить.",
+    "deletedTitle": "Удалено",
+    "deletedMessage": "\"{{name}}\" было удалено.",
+    "importErrorTitle": "Ошибка импорта",
+    "importFailed": "Импорт не удался: неверный файл данных личного зала.",
+    "mergeSuccessTitle": "Личный зал объединен",
+    "mergeSuccessMessage": "Импорт зала завершен. {{updatedCount}} элементов обновлено, {{addedCount}} добавлено.",
+    "hideErrorTitle": "Ошибка",
+    "hideFailed": "Не удалось скрыть оборудование: не найдено.",
+    "hiddenTitle": "Скрыто",
+    "hiddenMessage": "'{{name}}' теперь скрыто.",
+    "unhideFailed": "Не удалось показать оборудование: не найдено.",
+    "visibleTitle": "Видно",
+    "visibleMessage": "'{{name}}' теперь видно."
+  },
+  "spinnerService": {
+    "timeoutMessage": "Кажется, есть проблемы с подключением..."
+  },
+  "statsService": {
+    "weekOf": "Неделя",
+    "weekPrefix": "Н"
+  },
+  "equipment": {
+    "categories": {
+      "machines": "Тренажеры",
+      "functionalBodyweight": "Функциональные и с собственным весом",
+      "accessories": "Аксессуары",
+      "cardio": "Кардио",
+      "freeWeights": "Свободные веса"
+    },
+    "names": {
+      "abdominalCrunchMachine": "Тренажер для скручиваний на пресс",
+      "abRollerCoaster": "Тренажер Ab Roller Coaster",
+      "abWheel": "Ролик для пресса"
+    }
+  },
+  "storageService": {
+    "clearAllWarning": {
+      "title": "ВНИМАНИЕ",
+      "message": "Это приведет к удалению ВСЕХ данных в localStorage для этого домена, что может затронуть другие приложения или настройки. Вы уверены, что хотите продолжить?"
+    }
+  },
+  "subscriptionService": {
+    "upgradeModal": {
+      "title": "Премиум-функция",
+      "message": "Эта функция доступна для Премиум-пользователей. Обновитесь сейчас, чтобы разблокировать эту и многие другие возможности!"
+    }
+  },
+  "trackingService": {
+    "clearLogsConfirm": {
+      "title": "Информация",
+      "message": "РАЗРАБОТКА: Вы уверены, что хотите удалить ВСЕ журналы тренировок? Это действие нельзя будет отменить",
+      "success": "Все журналы тренировок удалены!"
+    },
+    "recalcPbs": {
+      "title": "Пересчет личных рекордов",
+      "message": "Все ваши личные рекорды из всей истории тренировок будут пересчитаны: это может занять некоторое время",
+      "noLogsTitle": "Информация",
+      "noLogsMessage": "Нет личных рекордов для пересчета.",
+      "successTitle": "Успех",
+      "successMessage": "Все личные рекорды были пересчитаны."
+    },
+    "clearPbsConfirm": {
+      "title": "Информация",
+      "message": "РАЗРАБОТКА: Вы уверены, что хотите удалить ВСЕ личные рекорды? Это действие нельзя будет отменить",
+      "success": "Все личные рекорды удалены!"
+    },
+    "import": {
+      "logsErrorTitle": "Ошибка импорта",
+      "logsErrorMessage": "Импорт не удался: неверный файл журнала тренировок.",
+      "logsSuccessTitle": "Журналы объединены",
+      "logsSuccessMessage": "Журналы импортированы. {{updatedCount}} обновлено, {{addedCount}} добавлено.",
+      "pbsErrorTitle": "Ошибка импорта",
+      "pbsErrorMessage": "Импорт не удался: неверный файл личных рекордов.",
+      "pbsSuccessTitle": "Личные рекорды объединены",
+      "pbsSuccessMessage": "Данные личных рекордов успешно объединены."
+    },
+    "recalcAfterImport": {
+      "title": "Пожалуйста, подождите",
+      "message": "Пересчет личных рекордов...",
+      "noLogsTitle": "Личные рекорды пересчитаны",
+      "noLogsMessage": "Личные рекорды удалены, так как нет журналов.",
+      "successTitle": "Личные рекорды обновлены",
+      "successMessage": "Личные рекорды успешно пересчитаны!"
+    },
+    "deleteRoutine": {
+      "warningTitle": "Предупреждение",
+      "noIdMessage": "Не предоставлен ID программы для удаления журналов",
+      "confirmTitle": "Подтвердить удаление",
+      "confirmMessageSimple": "Вы уверены, что хотите удалить программу \"{{routineName}}\"? Это действие нельзя будет отменить",
+      "confirmMessageWithLogs": "Вы уверены, что хотите удалить программу \"{{routineName}}\"? С ней связано {{count}} записей в журнале тренировок. Удаление программы также приведет к удалению этих записей. Это действие нельзя будет отменить.",
+      "successTitleSimple": "Информация",
+      "successMessageSimple": "Программа \"{{routineName}}\" успешно удалена!",
+      "successTitleWithLogs": "Успех",
+      "successMessageWithLogs": "{{count}} записей в журнале тренировок и программа \"{{routineName}}\" были удалены"
+    },
+    "history": {
+      "backfillWaitTitle": "Пожалуйста, подождите",
+      "backfillWaitMessage": "Обновление истории упражнений...",
+      "backfillSuccessTitle": "Обновление завершено",
+      "backfillSuccessMessage": "История упражнений обновлена!",
+      "syncWaitTitle": "Пожалуйста, подождите",
+      "syncWaitMessage": "Синхронизация всей истории...",
+      "syncNoHistoryMessage": "Нет истории для синхронизации.",
+      "syncSuccessTitle": "Синхронизация завершена",
+      "syncSuccessMessage": "Полная история синхронизирована!"
+    }
+  },
+  "trainingProgramService": {
+    "updateError": {
+      "title": "Ошибка обновления",
+      "message": "Программа с ID {{id}} не найдена."
+    },
+    "deleteError": {
+      "title": "Ошибка удаления",
+      "message": "Программа не найдена"
+    },
+    "deleteConfirm": {
+      "title": "Удалить программу",
+      "message": "Вы уверены, что хотите удалить программу \"{{name}}\"? Это действие нельзя будет отменить.",
+      "cancelButton": "Отмена",
+      "deleteButton": "Удалить программу"
+    },
+    "deleteSuccess": {
+      "title": "Программа удалена",
+      "message": "Программа \"{{name}}\" удалена."
+    },
+    "importError": {
+      "title": "Ошибка импорта",
+      "message": "Импорт не удался: неверный файл данных программы."
+    },
+    "importSuccess": {
+      "title": "Программы объединены",
+      "message": "Импорт завершен. {{updatedCount}} программ обновлено, {{addedCount}} добавлено."
+    },
+    "history": {
+      "removeErrorTitle": "Ошибка удаления истории",
+      "removeSuccessTitle": "История обновлена",
+      "removeSuccessMessage": "Запись в истории удалена."
+    },
+    "toggle": {
+      "notFound": "Программа не найдена.",
+      "alreadyActive": "\"{{name}}\" уже активна."
+    },
+    "deactivate": {
+      "info": "Программа \"{{name}}\" была деактивирована."
+    },
+    "updateHistory": {
+      "programNotFound": "Программа не найдена.",
+      "entryNotFound": "Запись в истории не найдена.",
+      "success": "История программы обновлена."
+    }
+  },
+  "userProfileService": {
+    "wipDisclaimer": {
+      "title": "Отказ от ответственности (в разработке)",
+      "message": "ОТКАЗ ОТ ОТВЕТСТВЕННОСТИ: Это приложение находится в разработке и работает в браузере. Это означает, что ваши данные о тренировках не будут сохранены при закрытии браузера или очистке его данных. Обязательно регулярно экспортируйте свои данные и импортируйте их снова, когда вернетесь в приложение.",
+      "checkboxLabel": "Больше не показывать это сообщение",
+      "okButton": "ОК"
+    }
+  },
+  "units": {
+    "weight": {
+      "kg": "кг",
+      "lbs": "фунты"
+    },
+    "measure": {
+      "cm": "см",
+      "in": "дюймы"
+    },
+    "distance": {
+      "km": "км",
+      "mi": "мили"
+    }
+  },
+  "workoutService": {
+    "toasts": {
+      "updateErrorTitle": "Ошибка",
+      "updateErrorMessage": "Программа с id {{id}} не найдена для обновления!",
+      "importErrorTitle": "Ошибка импорта",
+      "importFailed": "Импорт не удался: неверный файл данных программы.",
+      "importSuccessTitle": "Программы объединены",
+      "importSuccessMessage": "Программы импортированы. {{updatedCount}} обновлено, {{addedCount}} добавлено.",
+      "pausedDiscarded": "Приостановленная тренировка отменена.",
+      "superset": {
+        "minSelection": "Пожалуйста, выберите как минимум два упражнения для создания суперсета.",
+        "alreadyIn": "Это упражнение уже находится в суперсете.",
+        "noneExist": "Нет существующих суперсетов для добавления этого упражнения.",
+        "findError": "Не удалось найти целевое упражнение или суперсет.",
+        "addSuccess": "{{exerciseName}} добавлено в суперсет.",
+        "logCleared": "Записанные данные для {{exerciseName}} были очищены.",
+        "dissolved": "Суперсет расформирован, так как осталось только одно упражнение.",
+        "removed": "{{exerciseName}} удалено из суперсета."
+      },
+      "enableAllSuccess": "Все программы включены!"
+    },
+    "alerts": {
+      "editRunningTitle": "Информация",
+      "editRunningMessage": "Невозможно редактировать выполняемую программу. Завершите ее или отмените перед редактированием.",
+      "clearAllTitle": "Информация",
+      "clearAllMessage": "Вы уверены, что хотите удалить ВСЕ программы? Это приведет к удалению ВСЕХ программ (не только журналов) и не может быть отменено.",
+      "clearAllSuccess": "Все программы удалены!",
+      "clearExecutedTitle": "Информация",
+      "clearExecutedMessage": "Вы уверены, что хотите сбросить свойство 'lastPerformed' для ВСЕХ программ? Это действие нельзя будет отменить.",
+      "clearExecutedSuccess": "Все журналы программ очищены!",
+      "resume": {
+        "title": "Возобновить приостановленную тренировку?",
+        "message": "У вас есть приостановленная тренировка. Хотите возобновить ее?",
+        "resumeButton": "Возобновить",
+        "discardButton": "Отменить"
+      },
+      "supersetCreatedTitle": "ИНФОРМАЦИЯ",
+      "supersetCreatedMessage": "Суперсет создан с {{count}} упражнениями и {{rounds}} раундами: существующие журналы были очищены, а подходы стандартизированы."
+    },
+    "prompts": {
+      "addExerciseTitle": "Добавить {{exerciseName}}",
+      "labels": {
+        "exerciseName": "Название упражнения",
+        "numSets": "Количество подходов",
+        "rest": "Отдых между подходами (секунды)",
+        "targetDistance": "Целевое расстояние ({{unit}})",
+        "targetDuration": "Целевая продолжительность (секунды)",
+        "numReps": "Количество повторений",
+        "targetWeight": "Целевой вес ({{unit}})"
+      },
+      "createSuperset": {
+        "title": "Создать суперсет",
+        "message": "Выберите упражнения для объединения.",
+        "roundsLabel": "Количество раундов"
+      },
+      "addToSuperset": {
+        "title": "Добавить в суперсет",
+        "message": "В какой суперсет для \"{{exerciseName}}\"?",
+        "groupLabel": "Суперсет: {{group}}",
+        "addButton": "Добавить"
+      },
+      "removeFromSuperset": {
+        "title": "Удалить из суперсета",
+        "message": "Удалить {{exerciseName}} из этого суперсета? Его записанные подходы для этой сессии будут очищены."
+      }
+    },
+    "display": {
+      "weightNotApplicable": "Н/Д",
+      "bodyweight": "Собственный вес",
+      "noAddedWeight": "Без доп. веса",
+      "userDefined": "Задано пользователем",
+      "unnamedExercise": "Безымянное упражнение",
+      "upTo": "До"
+    },
+    "general": {
+      "cancel": "Отмена"
+    }
   }
 }

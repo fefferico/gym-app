@@ -17,6 +17,7 @@ import { UnitsService } from './units.service';
 import { AlertInput } from '../models/alert.model';
 import { Exercise } from '../models/exercise.model';
 import { SubscriptionService } from './subscription.service';
+import { TranslateService } from '@ngx-translate/core';
 
 @Injectable({
   providedIn: 'root',
@@ -26,7 +27,8 @@ export class WorkoutService {
   private appSettingsService = inject(AppSettingsService);
   private router = inject(Router);
   private alertService = inject(AlertService);
-  private unitsService = inject(UnitsService); // +++ ADDED
+  private unitsService = inject(UnitsService);
+  private translate = inject(TranslateService);
   protected subscriptionService = inject(SubscriptionService);
   private readonly ROUTINES_STORAGE_KEY = 'fitTrackPro_routines';
   private readonly PAUSED_WORKOUT_KEY = 'fitTrackPro_pausedWorkoutState';
@@ -206,7 +208,10 @@ export class WorkoutService {
       const pausedRoutine = this.isPausedSession() ? this.getPausedSession() : null;
       let alertResult = false;
       if (pausedRoutine && pausedRoutine.routineId && pausedRoutine.routineId === updatedRoutine.id) {
-        await this.alertService.showAlert("Info", "It's not possible to edit a running routine. Complete it or discard it before doing it.").then(() => {
+        await this.alertService.showAlert(
+            this.translate.instant('workoutService.alerts.editRunningTitle'), 
+            this.translate.instant('workoutService.alerts.editRunningMessage')
+        ).then(() => {
           alertResult = true;
           index = -1;
           return;
@@ -226,7 +231,11 @@ export class WorkoutService {
       console.log('Updated routine:', updatedRoutine);
       return updatedRoutine;
     }
-    this.toastService.error(`WorkoutService: Routine with id ${updatedRoutine.id} not found for update!`, 4000, "Error");
+    this.toastService.error(
+        this.translate.instant('workoutService.toasts.updateErrorMessage', { id: updatedRoutine.id }), 
+        4000, 
+        this.translate.instant('workoutService.toasts.updateErrorTitle')
+    );
     return undefined;
   }
 
@@ -356,8 +365,11 @@ export class WorkoutService {
   public mergeData(newRoutines: Routine[]): void {
     // 1. Basic validation
     if (!Array.isArray(newRoutines)) {
-      console.error('WorkoutService: Imported data for routines is not an array.');
-      this.toastService.error('Import failed: Invalid routine data file.', 0, "Import Error");
+      this.toastService.error(
+        this.translate.instant('workoutService.toasts.importFailed'), 
+        0, 
+        this.translate.instant('workoutService.toasts.importErrorTitle')
+      );
       return;
     }
 
@@ -398,19 +410,20 @@ export class WorkoutService {
     // 7. Provide user feedback
     console.log(`WorkoutService: Merged imported routines. Updated: ${updatedCount}, Added: ${addedCount}`);
     this.toastService.success(
-      `Routines imported. ${updatedCount} updated, ${addedCount} added.`,
+      this.translate.instant('workoutService.toasts.importSuccessMessage', { updatedCount, addedCount }),
       6000,
-      "Routines Merged"
+      this.translate.instant('workoutService.toasts.importSuccessTitle')
     );
   }
 
 
-  clearAllRoutines_DEV_ONLY(): Promise<void> { // Changed return type
-    return this.alertService.showConfirm("Info", "Are you sure you want to delete ALL routines? This will delete ALL the routines (not just the logs) and cannot be undone.")
-      .then(async (result) => { // Added async for await
+  clearAllRoutines_DEV_ONLY(): Promise<void> {
+    const title = this.translate.instant('workoutService.alerts.clearAllTitle');
+    return this.alertService.showConfirm(title, this.translate.instant('workoutService.alerts.clearAllMessage'))
+      .then(async (result) => {
         if (result && result.data) {
-          this.saveRoutinesToStorage([]); // Save an empty array
-          await this.alertService.showAlert("Info", "All routines cleared!"); // await this
+          this.saveRoutinesToStorage([]);
+          await this.alertService.showAlert(title, this.translate.instant('workoutService.alerts.clearAllSuccess'));
         }
       });
   }
@@ -632,7 +645,7 @@ export class WorkoutService {
     this.storageService.removeItem(this.PAUSED_WORKOUT_KEY);
     this._pausedWorkoutDiscarded.next();
     if (!showAlert) return;
-    this.toastService.info('Paused workout session discarded.');
+    this.toastService.info(this.translate.instant('workoutService.toasts.pausedDiscarded'));
   }
 
   savePausedWorkout(stateToSave: PausedWorkoutState): void {
@@ -661,9 +674,12 @@ export class WorkoutService {
         return pausedState;
       }
       const confirmation = await this.alertService.showConfirmationDialog(
-        "Resume Paused Workout?",
-        "You have a paused workout session. Would you like to resume it?",
-        [{ text: "Resume", role: "confirm", data: true, icon: 'play' }, { text: "Discard", role: "cancel", data: false, icon: 'trash' }]
+        this.translate.instant('workoutService.alerts.resume.title'),
+        this.translate.instant('workoutService.alerts.resume.message'),
+        [
+          { text: this.translate.instant('workoutService.alerts.resume.resumeButton'), role: "confirm", data: true, icon: 'play' }, 
+          { text: this.translate.instant('workoutService.alerts.resume.discardButton'), role: "cancel", data: false, icon: 'trash' }
+        ]
       );
       if (confirmation?.data) {
         return pausedState;
@@ -692,26 +708,26 @@ export class WorkoutService {
     const defaultSets = 3;
 
     const baseParams: AlertInput[] = [
-      { label: 'Exercise name', name: 'name', type: 'text', placeholder: 'Exercise name', value: selectedExercise.name, attributes: { required: true, disabled: true } },
-      { label: 'Number of Sets', name: 'numSets', type: 'number', placeholder: 'e.g., 3', value: defaultSets, attributes: { min: 1, required: true } },
-      { label: 'Rest Between Sets (seconds)', name: 'rest', type: 'number', placeholder: 'e.g., 60', value: defaultRest, attributes: { min: 1, required: true } }
+      { label: this.translate.instant('workoutService.prompts.labels.exerciseName'), name: 'name', type: 'text', value: selectedExercise.name, attributes: { disabled: true } },
+      { label: this.translate.instant('workoutService.prompts.labels.numSets'), name: 'numSets', type: 'number', value: defaultSets, attributes: { min: 1, required: true } },
+      { label: this.translate.instant('workoutService.prompts.labels.rest'), name: 'rest', type: 'number', value: defaultRest, attributes: { min: 1, required: true } }
     ];
 
     // Define the input fields for the alert prompt
     const exerciseParams: AlertInput[] = isCardioOnly
       ? [
-        ...baseParams,
-        { label: `Target Distance (${this.unitsService.getDistanceMeasureUnitSuffix()})`, name: 'distance', type: 'number', placeholder: 'e.g., 1', value: defaultDistance, attributes: { min: 0, required: true } },
-        { label: 'Target Duration (seconds)', name: 'duration', type: 'number', placeholder: 'e.g., 60', value: defaultDuration, attributes: { min: 0, required: true } },
-      ]
+          ...baseParams,
+          { label: this.translate.instant('workoutService.prompts.labels.targetDistance', { unit: this.unitsService.getDistanceMeasureUnitSuffix() }), name: 'distance', type: 'number', value: defaultDistance, attributes: { min: 0, required: true } },
+          { label: this.translate.instant('workoutService.prompts.labels.targetDuration'), name: 'duration', type: 'number', value: defaultDuration, attributes: { min: 0, required: true } },
+        ]
       : [
-        ...baseParams,
-        { label: 'Number of Reps', name: 'numReps', type: 'number', placeholder: 'e.g., 10', value: defaultReps, attributes: { min: 0, required: true } },
-        { label: `Target Weight (${this.unitsService.getWeightUnitSuffix()})`, name: 'weight', type: 'number', placeholder: 'e.g., 10', value: defaultWeight, attributes: { min: 0, required: true } },
-      ];
-
+          ...baseParams,
+          { label: this.translate.instant('workoutService.prompts.labels.numReps'), name: 'numReps', type: 'number', value: defaultReps, attributes: { min: 0, required: true } },
+          { label: this.translate.instant('workoutService.prompts.labels.targetWeight', { unit: this.unitsService.getWeightUnitSuffix() }), name: 'weight', type: 'number', value: defaultWeight, attributes: { min: 0, required: true } },
+        ];
+    
     const exerciseData = await this.alertService.showPromptDialog(
-      `Add ${selectedExercise.name}`,
+      this.translate.instant('workoutService.prompts.addExerciseTitle', { exerciseName: selectedExercise.name }),
       '',
       exerciseParams
     );
@@ -1078,7 +1094,7 @@ export class WorkoutService {
         return `${min}+`;
       }
       if (max != null) {
-        return `Up to ${max}`;
+        return `${this.translate.instant('workoutService.display.upTo')} ${max}`;
       }
     }
 
@@ -1093,33 +1109,22 @@ export class WorkoutService {
  * @returns A user-friendly string for the UI.
  */
   getWeightDisplay(set: ExerciseTargetSetParams, exercise: Exercise | WorkoutExercise): string {
-
-    // Case 1: Cardio or Stretching
     if (exercise.category === 'cardio' || exercise.category === 'stretching') {
-      return 'N/A';
+      return this.translate.instant('workoutService.display.weightNotApplicable');
     }
-
-    // Case 2: Bodyweight
     if (exercise.category === 'bodyweight/calisthenics') {
-      // If weight is explicitly added (e.g., weighted pull-up), show it.
       if (set.targetWeight != null && set.targetWeight > 0) {
         return `${set.targetWeight} ${this.unitsService.getWeightUnitSuffix()}`;
       }
-      return 'Bodyweight';
+      return this.translate.instant('workoutService.display.bodyweight');
     }
-
-    // Case 3: Weighted exercise with a specific target
     if (set.targetWeight != null && set.targetWeight > 0) {
       return `${set.targetWeight} ${this.unitsService.getWeightUnitSuffix()}`;
     }
-
-    // Case 4: Weighted exercise with zero weight target
     if (set.targetWeight === 0) {
-      return 'No Added Wt.'; // Or "Bar Only"
+      return this.translate.instant('workoutService.display.noAddedWeight');
     }
-
-    // Case 5: Weighted exercise with no target set (null/undefined)
-    return 'User Defined';
+    return this.translate.instant('workoutService.display.userDefined');
   }
 
 
@@ -1181,7 +1186,7 @@ export class WorkoutService {
   enableAllRoutines_DEV_ONLY(): void {
     const routines = this.getCurrentRoutines().map(routine => ({ ...routine, isDisabled: false }));
     this._saveRoutinesToStorage(routines);
-    this.toastService.success("All routines enabled!");
+    this.toastService.success(this.translate.instant('workoutService.toasts.enableAllSuccess'));
   }
 
   getSupersetSize(routine: Routine | null | undefined, index: number): number {
@@ -1191,7 +1196,7 @@ export class WorkoutService {
   }
 
   public exerciseNameDisplay(exercise: WorkoutExercise): string {
-    if (!exercise || !exercise.exerciseName) return 'Unnamed Exercise';
+    if (!exercise || !exercise.exerciseName) return this.translate.instant('workoutService.display.unnamedExercise');
 
     let tmpExerciseStringName = exercise.exerciseName.trim();
     if (/dumbbell/i.test(tmpExerciseStringName)) {

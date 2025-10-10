@@ -1,11 +1,12 @@
 // src/app/core/services/stats.service.ts
 import { Injectable, inject } from '@angular/core';
-import { WorkoutLog, LoggedWorkoutExercise, LoggedSet } from '../models/workout-log.model';
+import { WorkoutLog, LoggedSet } from '../models/workout-log.model';
 import { ExerciseService } from './exercise.service'; // Assuming Exercise model is separate
-import { parseISO, differenceInCalendarDays, isSameDay, subDays, getYear, getWeek, startOfWeek, format, subWeeks, addWeeks, differenceInWeeks, endOfWeek, isSameWeek, addDays } from 'date-fns'; // Add subWeeks, addWeeks, differenceInWeeks
+import { parseISO, subDays, startOfWeek, format, differenceInWeeks, endOfWeek, isSameWeek, addDays } from 'date-fns'; // Add subWeeks, addWeeks, differenceInWeeks
 import { Exercise } from '../models/exercise.model';
 import { take } from 'rxjs';
 import { ActivityLog } from '../models/activity-log.model';
+import { TranslateService } from '@ngx-translate/core';
 
 // Define interfaces for StatsService return types if not already global
 export interface WeeklySummary {
@@ -41,6 +42,7 @@ export interface StreakInfo {
 })
 export class StatsService {
   private exerciseService = inject(ExerciseService);
+  private translate = inject(TranslateService);
 
   constructor() { }
 
@@ -81,11 +83,13 @@ export class StatsService {
       weeklyData[weekKey].logs.push(log);
     });
 
+    const weekOfText = this.translate.instant('statsService.weekOf');
+
     return Object.entries(weeklyData)
       .map(([weekKey, data]) => {
         const totalVolume = this.calculateTotalVolumeForAllLogs(data.logs);
         return {
-          weekLabel: `Week of ${format(data.startDate, 'MMM d')}`,
+          weekLabel: `${weekOfText} ${format(data.startDate, 'MMM d')}`,
           workoutCount: data.logs.length,
           totalVolume: totalVolume,
           weekStartDate: data.startDate, // Return the full Date object
@@ -111,6 +115,7 @@ export class StatsService {
     }
 
     const weeklyData: { [weekKey: string]: { totalVolume: number, weekLabel: string } } = {};
+    const weekPrefix = this.translate.instant('statsService.weekPrefix');
 
     logs.forEach(log => {
       const logDate = parseISO(log.date);
@@ -121,7 +126,7 @@ export class StatsService {
         weeklyData[weekKey] = {
           totalVolume: 0,
           // Create a more readable label, e.g., "W29 '24"
-          weekLabel: `W${format(weekStartDate, 'w')} '${format(weekStartDate, 'yy')}`
+          weekLabel: `${weekPrefix}${format(weekStartDate, 'w')} '${format(weekStartDate, 'yy')}`
         };
       }
       weeklyData[weekKey].totalVolume += this.calculateTotalVolume(log);
@@ -211,7 +216,7 @@ export class StatsService {
 
     // Iterate backwards week by week
     for (let i = 0; i < 52 * 5; i++) { // Limit search to 5 years
-      const weekHasActivity = allActivityDates.some(logDate => 
+      const weekHasActivity = allActivityDates.some(logDate =>
         isSameWeek(logDate, currentWeekStart, { weekStartsOn: 1 })
       );
 
@@ -247,9 +252,9 @@ export class StatsService {
     if (allActivityDates.length < 2) return this.calculateCurrentWorkoutStreak(workoutLogs, activityLogs);
 
     // Get a unique, sorted list of all weeks that have any activity
-    const weeksWithActivities = Array.from(new Set(allActivityDates.map(logDate => 
-        format(startOfWeek(logDate, { weekStartsOn: 1 }), 'yyyy-MM-dd')
-      )))
+    const weeksWithActivities = Array.from(new Set(allActivityDates.map(logDate =>
+      format(startOfWeek(logDate, { weekStartsOn: 1 }), 'yyyy-MM-dd')
+    )))
       .map(dateStr => new Date(dateStr))
       .sort((a, b) => a.getTime() - b.getTime());
 
@@ -268,7 +273,7 @@ export class StatsService {
       } else {
         const prevWeek = weeksWithActivities[i - 1];
         const currentWeek = weeksWithActivities[i];
-        
+
         // Check if the current week is exactly one week after the previous one
         if (differenceInWeeks(currentWeek, prevWeek) === 1) {
           currentStreak++;

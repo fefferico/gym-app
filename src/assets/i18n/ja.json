@@ -1861,5 +1861,334 @@
       "title": "アクティビティがマージされました"
     },
     "mergeInfo": "インポートする新しいアクティビティログはありません。"
+  },
+  "alertService": {
+    "buttons": {
+      "ok": "OK",
+      "cancel": "キャンセル",
+      "confirm": "確認",
+      "doSomething": "実行",
+      "doNothing": "何もしない"
+    }
+  },
+  "barbellData": {
+    "barbells": {
+      "mensOlympic": "メンズオリンピックバーベル",
+      "womensOlympic": "レディースオリンピックバーベル",
+      "standardGym": "標準ジムバーベル",
+      "ezCurl": "EZカールバーベル",
+      "tricep": "トライセプスバーベル",
+      "trapHex": "トラップ/ヘックスバーベル",
+      "olympic120": "オリンピックバーベル (120cm)",
+      "olympic152": "オリンピックバーベル (152cm)",
+      "olympic182": "オリンピックバーベル (182cm)",
+      "olympic186": "オリンピックバーベル (186cm)",
+      "olympic219": "オリンピックバーベル (219cm)",
+      "olympic47in": "オリンピックバーベル (47in)",
+      "olympic60in": "オリンピックバーベル (60in)",
+      "olympic72in": "オリンピックバーベル (72in)",
+      "olympic73in": "オリンピックバーベル (73in)",
+      "olympic86in": "オリンピックバーベル (86in)"
+    },
+    "collars": {
+      "none": "カラーなし",
+      "spring": "スプリングカラー",
+      "lockjaw": "ロックジョーカラー",
+      "competition": "競技用カラー"
+    }
+  },
+  "dataConversionService": {
+    "spinner": {
+      "convertingWeight": "重量データを変換中...",
+      "convertingBodyWeight": "体重データを変換中...",
+      "convertingBodyMeasure": "身体測定データを変換中...",
+      "convertingMeasure": "測定データを変換中...",
+      "convertingDistance": "距離データを変換中..."
+    },
+    "toast": {
+      "conversionCompleteTitle": "変換完了",
+      "weightSuccess": "すべての重量データが正常に変換されました！",
+      "bodyWeightSuccess": "すべての体重データが正常に変換されました！",
+      "bodyMeasureSuccess": "すべての身体測定データが正常に変換されました！",
+      "measureSuccess": "すべての測定データが正常に変換されました！",
+      "distanceSuccess": "すべての距離データが正常に変換されました！"
+    }
+  },
+  "exerciseService": {
+    "unknownExercise": "不明なエクササイズ",
+    "importErrorTitle": "インポートエラー",
+    "importFailed": "インポート失敗：無効なエクササイズデータファイルです。",
+    "mergeSuccessTitle": "エクササイズのマージ完了",
+    "mergeSuccessMessage": "インポート完了。{{updatedCount}}個のエクササイズを更新し、{{addedCount}}個を追加しました。",
+    "hideErrorTitle": "エラー",
+    "hideFailed": "エクササイズの非表示に失敗しました：見つかりません。",
+    "hiddenTitle": "非表示",
+    "hiddenMessage": "'{{name}}' は非表示になりました。",
+    "unhideFailed": "エクササイズの再表示に失敗しました：見つかりません。",
+    "visibleTitle": "表示",
+    "visibleMessage": "'{{name}}' は表示されるようになりました。"
+  },
+  "personalGymService": {
+    "addSuccessTitle": "器具を追加しました",
+    "addSuccessMessage": "「{{name}}」をあなたのジムに追加しました！",
+    "updateSuccessTitle": "器具を更新しました",
+    "updateSuccessMessage": "「{{name}}」の更新に成功しました！",
+    "updateFailedTitle": "更新失敗",
+    "updateFailedMessage": "更新対象の「{{name}}」が見つかりませんでした。",
+    "deleteFailedTitle": "削除失敗",
+    "deleteFailedMessage": "器具が見つかりませんでした。",
+    "deleteConfirmTitle": "器具の削除",
+    "deleteConfirmMessage": "本当に「{{name}}」をジムから削除しますか？この操作は元に戻せません。",
+    "deletedTitle": "削除済み",
+    "deletedMessage": "「{{name}}」は削除されました。",
+    "importErrorTitle": "インポートエラー",
+    "importFailed": "インポート失敗：無効なパーソナルジムデータファイルです。",
+    "mergeSuccessTitle": "パーソナルジムのマージ完了",
+    "mergeSuccessMessage": "ジムのインポート完了。{{updatedCount}}個のアイテムを更新し、{{addedCount}}個を追加しました。",
+    "hideErrorTitle": "エラー",
+    "hideFailed": "器具の非表示に失敗しました：見つかりません。",
+    "hiddenTitle": "非表示",
+    "hiddenMessage": "'{{name}}' は非表示になりました。",
+    "unhideFailed": "器具の再表示に失敗しました：見つかりません。",
+    "visibleTitle": "表示",
+    "visibleMessage": "'{{name}}' は表示されるようになりました。"
+  },
+  "spinnerService": {
+    "timeoutMessage": "接続に問題があるようです..."
+  },
+  "statsService": {
+    "weekOf": "の週",
+    "weekPrefix": "第"
+  },
+  "equipment": {
+    "categories": {
+      "machines": "マシン",
+      "functionalBodyweight": "ファンクショナル＆自重",
+      "accessories": "アクセサリー",
+      "cardio": "有酸素運動",
+      "freeWeights": "フリーウェイト"
+    },
+    "names": {
+      "abdominalCrunchMachine": "アブドミナルクランチマシン",
+      "abRollerCoaster": "アブローラーコースター",
+      "abWheel": "アブホイール"
+    }
+  },
+  "storageService": {
+    "clearAllWarning": {
+      "title": "警告",
+      "message": "これにより、このドメインのすべてのデータがクリアされ、他のアプリケーションや設定に影響を与える可能性があります。続行しますか？"
+    }
+  },
+  "subscriptionService": {
+    "upgradeModal": {
+      "title": "プレミアム機能",
+      "message": "この機能はプレミアムユーザー向けです。今すぐアップグレードして、さらに多くの機能をご利用ください！"
+    }
+  },
+  "trackingService": {
+    "clearLogsConfirm": {
+      "title": "情報",
+      "message": "開発者向け：本当にすべてのワークアウトログを削除しますか？この操作は元に戻せません。",
+      "success": "すべてのワークアウトログが消去されました！"
+    },
+    "recalcPbs": {
+      "title": "自己ベスト再計算",
+      "message": "すべてのワークアウト履歴から自己ベストを再計算します。これには時間がかかる場合があります。",
+      "noLogsTitle": "情報",
+      "noLogsMessage": "再計算する自己ベストはありません。",
+      "successTitle": "成功",
+      "successMessage": "すべての自己ベストが再計算されました。"
+    },
+    "clearPbsConfirm": {
+      "title": "情報",
+      "message": "開発者向け：本当にすべての自己ベストを削除しますか？この操作は元に戻せません。",
+      "success": "すべての自己ベストが消去されました！"
+    },
+    "import": {
+      "logsErrorTitle": "インポートエラー",
+      "logsErrorMessage": "インポート失敗：無効なワークアウトログファイルです。",
+      "logsSuccessTitle": "ログのマージ完了",
+      "logsSuccessMessage": "ログをインポートしました。{{updatedCount}}個を更新し、{{addedCount}}個を追加しました。",
+      "pbsErrorTitle": "インポートエラー",
+      "pbsErrorMessage": "インポート失敗：無効な自己ベストファイルです。",
+      "pbsSuccessTitle": "自己ベストのマージ完了",
+      "pbsSuccessMessage": "自己ベストデータが正常にマージされました。"
+    },
+    "recalcAfterImport": {
+      "title": "お待ちください",
+      "message": "自己ベストを再計算中...",
+      "noLogsTitle": "自己ベスト再計算済み",
+      "noLogsMessage": "ログがないため、自己ベストはクリアされました。",
+      "successTitle": "自己ベスト更新済み",
+      "successMessage": "自己ベストが正常に再計算されました！"
+    },
+    "deleteRoutine": {
+      "warningTitle": "警告",
+      "noIdMessage": "ログを消去するためのルーティンIDが提供されていません。",
+      "confirmTitle": "削除の確認",
+      "confirmMessageSimple": "本当にルーティン「{{routineName}}」を削除しますか？この操作は元に戻せません。",
+      "confirmMessageWithLogs": "本当にルーティン「{{routineName}}」を削除しますか？関連するワークアウトログが{{count}}件あります。ルーティンを削除すると、これらのログも削除されます。この操作は元に戻せません。",
+      "successTitleSimple": "情報",
+      "successMessageSimple": "ルーティン「{{routineName}}」が正常に削除されました！",
+      "successTitleWithLogs": "成功",
+      "successMessageWithLogs": "{{count}}件のワークアウトログとルーティン「{{routineName}}」が削除されました。"
+    },
+    "history": {
+      "backfillWaitTitle": "お待ちください",
+      "backfillWaitMessage": "エクササイズ履歴を更新中...",
+      "backfillSuccessTitle": "更新完了",
+      "backfillSuccessMessage": "エクササイズ履歴が更新されました！",
+      "syncWaitTitle": "お待ちください",
+      "syncWaitMessage": "すべての履歴を同期中...",
+      "syncNoHistoryMessage": "同期する履歴はありません。",
+      "syncSuccessTitle": "同期完了",
+      "syncSuccessMessage": "すべての履歴が同期されました！"
+    }
+  },
+  "trainingProgramService": {
+    "updateError": {
+      "title": "更新エラー",
+      "message": "ID {{id}} のプログラムが見つかりません。"
+    },
+    "deleteError": {
+      "title": "削除エラー",
+      "message": "プログラムが見つかりません。"
+    },
+    "deleteConfirm": {
+      "title": "プログラムの削除",
+      "message": "本当にプログラム「{{name}}」を削除しますか？この操作は元に戻せません。",
+      "cancelButton": "キャンセル",
+      "deleteButton": "プログラムを削除"
+    },
+    "deleteSuccess": {
+      "title": "プログラム削除済み",
+      "message": "プログラム「{{name}}」を削除しました。"
+    },
+    "importError": {
+      "title": "インポートエラー",
+      "message": "インポート失敗：無効なプログラムデータファイルです。"
+    },
+    "importSuccess": {
+      "title": "プログラムのマージ完了",
+      "message": "インポート完了。{{updatedCount}}個のプログラムを更新し、{{addedCount}}個を追加しました。"
+    },
+    "history": {
+      "removeErrorTitle": "履歴の削除エラー",
+      "removeSuccessTitle": "履歴更新済み",
+      "removeSuccessMessage": "履歴エントリを削除しました。"
+    },
+    "toggle": {
+      "notFound": "プログラムが見つかりません。",
+      "alreadyActive": "「{{name}}」はすでにアクティブです。"
+    },
+    "deactivate": {
+      "info": "プログラム「{{name}}」は非アクティブ化されました。"
+    },
+    "updateHistory": {
+      "programNotFound": "プログラムが見つかりません。",
+      "entryNotFound": "履歴エントリが見つかりません。",
+      "success": "プログラム履歴を更新しました。"
+    }
+  },
+  "userProfileService": {
+    "wipDisclaimer": {
+      "title": "開発中の免責事項",
+      "message": "免責事項：これは開発中のブラウザベースのアプリです。ブラウザを閉じるか、ブラウザのデータを消去すると、ワークアウトデータは保存されません。定期的にデータをエクスポートし、アプリに戻った際に再度インポートするようにしてください。",
+      "checkboxLabel": "このメッセージを再表示しない",
+      "okButton": "OK"
+    }
+  },
+  "units": {
+    "weight": {
+      "kg": "kg",
+      "lbs": "lbs"
+    },
+    "measure": {
+      "cm": "cm",
+      "in": "in"
+    },
+    "distance": {
+      "km": "km",
+      "mi": "mi"
+    }
+  },
+  "workoutService": {
+    "toasts": {
+      "updateErrorTitle": "エラー",
+      "updateErrorMessage": "ID {{id}} のルーティンが更新のために見つかりません！",
+      "importErrorTitle": "インポートエラー",
+      "importFailed": "インポート失敗：無効なルーティンデータファイルです。",
+      "importSuccessTitle": "ルーティンのマージ完了",
+      "importSuccessMessage": "ルーティンをインポートしました。{{updatedCount}}個を更新し、{{addedCount}}個を追加しました。",
+      "pausedDiscarded": "一時停止中のワークアウトセッションを破棄しました。",
+      "superset": {
+        "minSelection": "スーパーセットを作成するには、少なくとも2つのエクササイズを選択してください。",
+        "alreadyIn": "このエクササイズはすでにスーパーセットに含まれています。",
+        "noneExist": "このエクササイズを追加できるスーパーセットはありません。",
+        "findError": "対象のエクササイズまたはスーパーセットが見つかりませんでした。",
+        "addSuccess": "{{exerciseName}}をスーパーセットに追加しました。",
+        "logCleared": "{{exerciseName}}のログデータをクリアしました。",
+        "dissolved": "エクササイズが1つだけになったため、スーパーセットは解消されました。",
+        "removed": "{{exerciseName}}をスーパーセットから削除しました。"
+      },
+      "enableAllSuccess": "すべてのルーティンが有効になりました！"
+    },
+    "alerts": {
+      "editRunningTitle": "情報",
+      "editRunningMessage": "実行中のルーティンは編集できません。編集する前に完了または破棄してください。",
+      "clearAllTitle": "情報",
+      "clearAllMessage": "本当にすべてのルーティンを削除しますか？これにより（ログだけでなく）すべてのルーティンが削除され、元に戻すことはできません。",
+      "clearAllSuccess": "すべてのルーティンが消去されました！",
+      "clearExecutedTitle": "情報",
+      "clearExecutedMessage": "本当にすべてのルーティンの「最終実行日」プロパティをリセットしますか？この操作は元に戻せません。",
+      "clearExecutedSuccess": "すべてのルーティンログがクリアされました！",
+      "resume": {
+        "title": "一時停止中のワークアウトを再開しますか？",
+        "message": "一時停止中のワークアウトセッションがあります。再開しますか？",
+        "resumeButton": "再開",
+        "discardButton": "破棄"
+      },
+      "supersetCreatedTitle": "情報",
+      "supersetCreatedMessage": "{{count}}個のエクササイズと{{rounds}}ラウンドのスーパーセットが作成されました。既存のログはクリアされ、セットが標準化されました。"
+    },
+    "prompts": {
+      "addExerciseTitle": "{{exerciseName}}を追加",
+      "labels": {
+        "exerciseName": "エクササイズ名",
+        "numSets": "セット数",
+        "rest": "セット間の休憩（秒）",
+        "targetDistance": "目標距離（{{unit}}）",
+        "targetDuration": "目標時間（秒）",
+        "numReps": "レップ数",
+        "targetWeight": "目標重量（{{unit}}）"
+      },
+      "createSuperset": {
+        "title": "スーパーセットを作成",
+        "message": "連携させるエクササイズを選択してください。",
+        "roundsLabel": "ラウンド数"
+      },
+      "addToSuperset": {
+        "title": "スーパーセットに追加",
+        "message": "「{{exerciseName}}」をどのスーパーセットに追加しますか？",
+        "groupLabel": "スーパーセット：{{group}}",
+        "addButton": "追加"
+      },
+      "removeFromSuperset": {
+        "title": "スーパーセットから削除",
+        "message": "このスーパーセットから{{exerciseName}}を削除しますか？このセッションのログセットはクリアされます。"
+      }
+    },
+    "display": {
+      "weightNotApplicable": "該当なし",
+      "bodyweight": "自重",
+      "noAddedWeight": "追加重量なし",
+      "userDefined": "ユーザー定義",
+      "unnamedExercise": "名称未設定のエクササイズ",
+      "upTo": "最大"
+    },
+    "general": {
+      "cancel": "キャンセル"
+    }
   }
 }

@@ -9,6 +9,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { EXERCISES_DATA } from './exercises-data';
 import { WorkoutExercise } from '../models/workout.model';
 import { ToastService } from './toast.service';
+import { TranslateService } from '@ngx-translate/core';
 
 /**
  * Maps standardized muscle group names to the unique IDs of the paths in muscle-anatomy.svg.
@@ -47,6 +48,7 @@ export class ExerciseService {
   private storageService = inject(StorageService);
   private trackingService = inject(TrackingService);
   private toastService = inject(ToastService);
+  private translate = inject(TranslateService);
 
   private readonly EXERCISES_STORAGE_KEY = 'fitTrackPro_exercises';
   // private readonly EXERCISES_JSON_PATH = 'assets/data/exercises.json'; // Not used if EXERCISES_DATA is primary
@@ -490,7 +492,7 @@ export class ExerciseService {
   ): Partial<Exercise> {
     return {
       id: workoutExercise.exerciseId,
-      name: workoutExercise.exerciseName || 'Unknown Exercise',
+      name: workoutExercise.exerciseName || this.translate.instant('exerciseService.unknownExercise'),
       // All other Exercise properties will be undefined.
     };
   }
@@ -512,7 +514,9 @@ export class ExerciseService {
     // 1. Basic validation
     if (!Array.isArray(newExercises)) {
       console.error('ExerciseService: Imported data for exercises is not an array.');
-      this.toastService.error('Import failed: Invalid exercise data file.', 0, "Import Error"); // Added user feedback
+      const errorTitle = this.translate.instant('exerciseService.importErrorTitle');
+      const errorMessage = this.translate.instant('exerciseService.importFailed');
+      this.toastService.error(errorMessage, 0, errorTitle);
       return;
     }
 
@@ -555,11 +559,9 @@ export class ExerciseService {
 
     // 7. Provide user feedback
     console.log(`ExerciseService: Merged imported data. Updated: ${updatedCount}, Added: ${addedCount}`);
-    this.toastService.success(
-      `Import complete. ${updatedCount} exercises updated, ${addedCount} added.`,
-      6000,
-      "Exercises Merged"
-    );
+    const successTitle = this.translate.instant('exerciseService.mergeSuccessTitle');
+    const successMessage = this.translate.instant('exerciseService.mergeSuccessMessage', { updatedCount, addedCount });
+    this.toastService.success(successMessage, 6000, successTitle);
     // +++ END of new merge logic +++
   }
 
@@ -631,7 +633,9 @@ export class ExerciseService {
     const exerciseIndex = currentExercises.findIndex(ex => ex.id === exerciseId);
 
     if (exerciseIndex === -1) {
-      this.toastService.error('Failed to hide exercise: not found.', 0, "Error");
+      const errorTitle = this.translate.instant('exerciseService.hideErrorTitle');
+      const errorMessage = this.translate.instant('exerciseService.hideFailed');
+      this.toastService.error(errorMessage, 0, errorTitle);
       return of(undefined);
     }
 
@@ -640,7 +644,9 @@ export class ExerciseService {
     updatedExercises[exerciseIndex] = exerciseToUpdate;
 
     this._saveExercisesToStorage(updatedExercises);
-    this.toastService.info(`'${exerciseToUpdate.name}' is now hidden.`, 3000, "Hidden");
+    const infoTitle = this.translate.instant('exerciseService.hiddenTitle');
+    const infoMessage = this.translate.instant('exerciseService.hiddenMessage', { name: exerciseToUpdate.name });
+    this.toastService.info(infoMessage, 3000, infoTitle);
     return of(exerciseToUpdate);
   }
 
@@ -655,7 +661,9 @@ export class ExerciseService {
     const exerciseIndex = currentExercises.findIndex(ex => ex.id === exerciseId);
 
     if (exerciseIndex === -1) {
-      this.toastService.error('Failed to un-hide exercise: not found.', 0, "Error");
+      const errorTitle = this.translate.instant('exerciseService.hideErrorTitle');
+      const errorMessage = this.translate.instant('exerciseService.unhideFailed');
+      this.toastService.error(errorMessage, 0, errorTitle);
       return of(undefined);
     }
 
@@ -664,7 +672,9 @@ export class ExerciseService {
     updatedExercises[exerciseIndex] = exerciseToUpdate;
 
     this._saveExercisesToStorage(updatedExercises);
-    this.toastService.success(`'${exerciseToUpdate.name}' is now visible.`, 3000, "Visible");
+    const successTitle = this.translate.instant('exerciseService.visibleTitle');
+    const successMessage = this.translate.instant('exerciseService.visibleMessage', { name: exerciseToUpdate.name });
+    this.toastService.success(successMessage, 3000, successTitle);
     return of(exerciseToUpdate);
   }
 

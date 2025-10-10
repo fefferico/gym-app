@@ -1699,33 +1699,6 @@
     }
   },
 
-  "barbellData": {
-    "barbells": {
-      "mensOlympic": "Men's Olympic Bar",
-      "womensOlympic": "Women's Olympic Bar",
-      "standardGym": "Standard Gym Bar",
-      "ezCurl": "EZ Curl Bar",
-      "tricep": "Tricep Bar",
-      "trapHex": "Trap/Hex Bar",
-      "olympic120": "Olympic Bar 120cm",
-      "olympic152": "Olympic Bar 152cm",
-      "olympic182": "Olympic Bar 182cm",
-      "olympic186": "Olympic Bar 186cm",
-      "olympic219": "Olympic Bar 219cm",
-      "olympic47in": "Olympic Bar 47.24in",
-      "olympic60in": "Olympic Bar 59.84in",
-      "olympic72in": "Olympic Bar 71.65in",
-      "olympic73in": "Olympic Bar 73.23in",
-      "olympic86in": "Olympic Bar 86.22in"
-    },
-    "collars": {
-      "none": "No Collars",
-      "spring": "Spring Clips",
-      "lockjaw": "Lock-Jaw / Pro Collars",
-      "competition": "Competition Collars"
-    }
-  },
-
   "logActivity": {
     "logTitle": "Log an Activity",
     "editTitle": "Edit Activity Log",
@@ -1763,7 +1736,6 @@
       "invalidFormTitle": "Invalid Form"
     }
   },
-
   "activityLogDetails": {
     "duration": "Duration",
     "intensity": "Intensity",
@@ -1783,7 +1755,6 @@
       "deleteButton": "Delete"
     }
   },
-
   "pbTrend": {
     "title": "{{exercise}} - {{pbType}}",
     "defaultTitle": "PB Trend",
@@ -1820,7 +1791,6 @@
       "value": "Value"
     }
   },
-
   "sessionOverview": {
     "title": "Session Overview",
     "doneButton": "DONE"
@@ -1853,7 +1823,6 @@
       }
     }
   },
-
   "activityService": {
     "logSuccess": {
       "message": "Logged \"{{activityName}}\" successfully!",
@@ -1872,6 +1841,340 @@
       "title": "Activities Merged"
     },
     "mergeInfo": "No new activity logs to import."
+  },
+
+
+
+
+
+  "alertService": {
+    "buttons": {
+      "ok": "OK",
+      "cancel": "Cancel",
+      "confirm": "Confirm",
+      "doSomething": "Do Something",
+      "doNothing": "Do Nothing"
+    }
+  },
+  "barbellData": {
+    "barbells": {
+      "mensOlympic": "Men's Olympic Barbell",
+      "womensOlympic": "Women's Olympic Barbell",
+      "standardGym": "Standard Gym Barbell",
+      "ezCurl": "EZ-Curl Barbell",
+      "tricep": "Tricep Barbell",
+      "trapHex": "Trap/Hex Barbell",
+      "olympic120": "Olympic Barbell (120cm)",
+      "olympic152": "Olympic Barbell (152cm)",
+      "olympic182": "Olympic Barbell (182cm)",
+      "olympic186": "Olympic Barbell (186cm)",
+      "olympic219": "Olympic Barbell (219cm)",
+      "olympic47in": "Olympic Barbell (47in)",
+      "olympic60in": "Olympic Barbell (60in)",
+      "olympic72in": "Olympic Barbell (72in)",
+      "olympic73in": "Olympic Barbell (73in)",
+      "olympic86in": "Olympic Barbell (86in)"
+    },
+    "collars": {
+      "none": "No Collars",
+      "spring": "Spring Collars",
+      "lockjaw": "Lock-Jaw Collars",
+      "competition": "Competition Collars"
+    }
+  },
+  "dataConversionService": {
+    "spinner": {
+      "convertingWeight": "Converting weight data...",
+      "convertingBodyWeight": "Converting body weight data...",
+      "convertingBodyMeasure": "Converting body measurement data...",
+      "convertingMeasure": "Converting measurement data...",
+      "convertingDistance": "Converting distance data..."
+    },
+    "toast": {
+      "conversionCompleteTitle": "Conversion Complete",
+      "weightSuccess": "All weight data converted successfully!",
+      "bodyWeightSuccess": "All body weight data converted successfully!",
+      "bodyMeasureSuccess": "All body measurement data converted successfully!",
+      "measureSuccess": "All measurement data converted successfully!",
+      "distanceSuccess": "All distance data converted successfully!"
+    }
+  },
+  "exerciseService": {
+    "unknownExercise": "Unknown Exercise",
+    "importErrorTitle": "Import Error",
+    "importFailed": "Import failed: Invalid exercise data file.",
+    "mergeSuccessTitle": "Exercises Merged",
+    "mergeSuccessMessage": "Import complete. {{updatedCount}} exercises updated, {{addedCount}} added.",
+    "hideErrorTitle": "Error",
+    "hideFailed": "Failed to hide exercise: not found.",
+    "hiddenTitle": "Hidden",
+    "hiddenMessage": "'{{name}}' is now hidden.",
+    "unhideFailed": "Failed to un-hide exercise: not found.",
+    "visibleTitle": "Visible",
+    "visibleMessage": "'{{name}}' is now visible."
+  },
+  "personalGymService": {
+    "addSuccessTitle": "Equipment Added",
+    "addSuccessMessage": "Added \"{{name}}\" to your gym!",
+    "updateSuccessTitle": "Equipment Updated",
+    "updateSuccessMessage": "Updated \"{{name}}\" successfully!",
+    "updateFailedTitle": "Update Failed",
+    "updateFailedMessage": "Could not find \"{{name}}\" to update.",
+    "deleteFailedTitle": "Deletion Failed",
+    "deleteFailedMessage": "Equipment not found.",
+    "deleteConfirmTitle": "Delete Equipment",
+    "deleteConfirmMessage": "Are you sure you want to delete \"{{name}}\" from your gym? This cannot be undone.",
+    "deletedTitle": "Deleted",
+    "deletedMessage": "\"{{name}}\" was deleted.",
+    "importErrorTitle": "Import Error",
+    "importFailed": "Import failed: Invalid personal gym data file.",
+    "mergeSuccessTitle": "Personal Gym Merged",
+    "mergeSuccessMessage": "Gym import complete. {{updatedCount}} items updated, {{addedCount}} added.",
+    "hideErrorTitle": "Error",
+    "hideFailed": "Failed to hide equipment: not found.",
+    "hiddenTitle": "Hidden",
+    "hiddenMessage": "'{{name}}' is now hidden.",
+    "unhideFailed": "Failed to un-hide equipment: not found.",
+    "visibleTitle": "Visible",
+    "visibleMessage": "'{{name}}' is now visible."
+  },
+  "spinnerService": {
+    "timeoutMessage": "It seems there are connection issues..."
+  },
+  "statsService": {
+    "weekOf": "Week of",
+    "weekPrefix": "W"
+  },
+  "equipment": {
+    "categories": {
+      "machines": "Machines",
+      "functionalBodyweight": "Functional & Bodyweight",
+      "accessories": "Accessories",
+      "cardio": "Cardio",
+      "freeWeights": "Free Weights"
+    },
+    "names": {
+      "abdominalCrunchMachine": "Abdominal Crunch Machine",
+      "abRollerCoaster": "Ab Roller Coaster",
+      "abWheel": "Ab Wheel"
+    }
+  },
+  "storageService": {
+    "clearAllWarning": {
+      "title": "WARNING",
+      "message": "This will clear ALL data in localStorage for this domain, potentially affecting other applications or settings. Are you sure you want to proceed?"
+    }
+  },
+  "subscriptionService": {
+    "upgradeModal": {
+      "title": "Premium Feature",
+      "message": "This feature is available for Premium users. Upgrade now to unlock this and much more!"
+    }
+  },
+  "trackingService": {
+    "clearLogsConfirm": {
+      "title": "Info",
+      "message": "DEVELOPMENT: Are you sure you want to delete ALL workout logs? This cannot be undone",
+      "success": "All workout logs cleared!"
+    },
+    "recalcPbs": {
+      "title": "PBs Recalculation",
+      "message": "All your personal bests from your entire workout history will be now recalculated: this may take a moment",
+      "noLogsTitle": "Info",
+      "noLogsMessage": "There are no personal bests to be recalculated.",
+      "successTitle": "Success",
+      "successMessage": "All personal bests have been recalculated."
+    },
+    "clearPbsConfirm": {
+      "title": "Info",
+      "message": "DEVELOPMENT: Are you sure you want to delete ALL personal bests? This cannot be undone",
+      "success": "All personal bests cleared!"
+    },
+    "import": {
+      "logsErrorTitle": "Import Error",
+      "logsErrorMessage": "Import failed: Invalid workout log file.",
+      "logsSuccessTitle": "Logs Merged",
+      "logsSuccessMessage": "Logs imported. {{updatedCount}} updated, {{addedCount}} added.",
+      "pbsErrorTitle": "Import Error",
+      "pbsErrorMessage": "Import failed: Invalid personal bests file.",
+      "pbsSuccessTitle": "PBs Merged",
+      "pbsSuccessMessage": "Personal bests data merged successfully."
+    },
+    "recalcAfterImport": {
+      "title": "Please Wait",
+      "message": "Recalculating personal bests...",
+      "noLogsTitle": "PBs Recalculated",
+      "noLogsMessage": "Personal bests cleared as there are no logs.",
+      "successTitle": "PBs Updated",
+      "successMessage": "Personal bests successfully recalculated!"
+    },
+    "deleteRoutine": {
+      "warningTitle": "Warning",
+      "noIdMessage": "No routine ID provided to clear logs",
+      "confirmTitle": "Confirm Deletion",
+      "confirmMessageSimple": "Are you sure you want to delete the routine \"{{routineName}}\"? This action cannot be undone",
+      "confirmMessageWithLogs": "Are you sure you want to delete the routine \"{{routineName}}\"? There are {{count}} workout log(s) associated with it. Deleting the routine will also delete these logs. This action cannot be undone.",
+      "successTitleSimple": "Info",
+      "successMessageSimple": "Routine \"{{routineName}}\" deleted successfully!",
+      "successTitleWithLogs": "Success",
+      "successMessageWithLogs": "{{count}} workout log(s) and the routine \"{{routineName}}\" have been deleted"
+    },
+    "history": {
+      "backfillWaitTitle": "Please Wait",
+      "backfillWaitMessage": "Updating exercise history...",
+      "backfillSuccessTitle": "Update Complete",
+      "backfillSuccessMessage": "Exercise history has been updated!",
+      "syncWaitTitle": "Please Wait",
+      "syncWaitMessage": "Syncing all history...",
+      "syncNoHistoryMessage": "No history to sync.",
+      "syncSuccessTitle": "Sync Complete",
+      "syncSuccessMessage": "Full history has been synced!"
+    }
+  },
+  "trainingProgramService": {
+    "updateError": {
+      "title": "Update Error",
+      "message": "Program with ID {{id}} not found."
+    },
+    "deleteError": {
+      "title": "Delete Error",
+      "message": "Program not found"
+    },
+    "deleteConfirm": {
+      "title": "Delete Program",
+      "message": "Are you sure you want to delete the program \"{{name}}\"? This action cannot be undone.",
+      "cancelButton": "Cancel",
+      "deleteButton": "Delete Program"
+    },
+    "deleteSuccess": {
+      "title": "Program Deleted",
+      "message": "Program \"{{name}}\" deleted."
+    },
+    "importError": {
+      "title": "Import Error",
+      "message": "Import failed: Invalid program data file."
+    },
+    "importSuccess": {
+      "title": "Programs Merged",
+      "message": "Import complete. {{updatedCount}} programs updated, {{addedCount}} added."
+    },
+    "history": {
+      "removeErrorTitle": "Remove History Error",
+      "removeSuccessTitle": "History Updated",
+      "removeSuccessMessage": "History entry removed."
+    },
+    "toggle": {
+      "notFound": "Program not found.",
+      "alreadyActive": "\"{{name}}\" is already active."
+    },
+    "deactivate": {
+      "info": "Program \"{{name}}\" has been deactivated."
+    },
+    "updateHistory": {
+      "programNotFound": "Program not found.",
+      "entryNotFound": "History entry not found.",
+      "success": "Program history updated."
+    }
+  },
+  "userProfileService": {
+    "wipDisclaimer": {
+      "title": "Work-in-Progress Disclaimer",
+      "message": "DISCLAIMER: This is a work-in-progress, browser-based app. This means your workout data won't be saved when you close the browser or clear your browser data. Be sure to regularly export your data and import it again when you return to the app.",
+      "checkboxLabel": "Don't show this message again",
+      "okButton": "OK"
+    }
+  },
+  "units": {
+    "weight": {
+      "kg": "kg",
+      "lbs": "lbs"
+    },
+    "measure": {
+      "cm": "cm",
+      "in": "in"
+    },
+    "distance": {
+      "km": "km",
+      "mi": "mi"
+    }
+  },
+  "workoutService": {
+    "toasts": {
+      "updateErrorTitle": "Error",
+      "updateErrorMessage": "Routine with id {{id}} not found for update!",
+      "importErrorTitle": "Import Error",
+      "importFailed": "Import failed: Invalid routine data file.",
+      "importSuccessTitle": "Routines Merged",
+      "importSuccessMessage": "Routines imported. {{updatedCount}} updated, {{addedCount}} added.",
+      "pausedDiscarded": "Paused workout session discarded.",
+      "superset": {
+        "minSelection": "Please select at least two exercises to create a superset.",
+        "alreadyIn": "This exercise is already in a superset.",
+        "noneExist": "No supersets exist to add this exercise to.",
+        "findError": "Could not find the target exercise or superset.",
+        "addSuccess": "{{exerciseName}} added to the superset.",
+        "logCleared": "Logged data for {{exerciseName}} was cleared.",
+        "dissolved": "Superset dissolved as only one exercise remains.",
+        "removed": "{{exerciseName}} removed from superset."
+      },
+      "enableAllSuccess": "All routines enabled!"
+    },
+    "alerts": {
+      "editRunningTitle": "Info",
+      "editRunningMessage": "It's not possible to edit a running routine. Complete it or discard it before doing it.",
+      "clearAllTitle": "Info",
+      "clearAllMessage": "Are you sure you want to delete ALL routines? This will delete ALL the routines (not just the logs) and cannot be undone.",
+      "clearAllSuccess": "All routines cleared!",
+      "clearExecutedTitle": "Info",
+      "clearExecutedMessage": "Are you sure you want to reset the 'lastPerformed' property of ALL routines? This cannot be undone.",
+      "clearExecutedSuccess": "All routines logs cleared!",
+      "resume": {
+        "title": "Resume Paused Workout?",
+        "message": "You have a paused workout session. Would you like to resume it?",
+        "resumeButton": "Resume",
+        "discardButton": "Discard"
+      },
+      "supersetCreatedTitle": "INFO",
+      "supersetCreatedMessage": "Superset created with {{count}} exercises and {{rounds}} rounds: existing logs were cleared and sets standardized."
+    },
+    "prompts": {
+      "addExerciseTitle": "Add {{exerciseName}}",
+      "labels": {
+        "exerciseName": "Exercise name",
+        "numSets": "Number of Sets",
+        "rest": "Rest Between Sets (seconds)",
+        "targetDistance": "Target Distance ({{unit}})",
+        "targetDuration": "Target Duration (seconds)",
+        "numReps": "Number of Reps",
+        "targetWeight": "Target Weight ({{unit}})"
+      },
+      "createSuperset": {
+        "title": "Create Superset",
+        "message": "Select exercises to link together.",
+        "roundsLabel": "Number of Rounds"
+      },
+      "addToSuperset": {
+        "title": "Add to Superset",
+        "message": "Which superset for \"{{exerciseName}}\"?",
+        "groupLabel": "Superset: {{group}}",
+        "addButton": "Add"
+      },
+      "removeFromSuperset": {
+        "title": "Remove from Superset",
+        "message": "Remove {{exerciseName}} from this superset? Its logged sets for this session will be cleared."
+      }
+    },
+    "display": {
+      "weightNotApplicable": "N/A",
+      "bodyweight": "Bodyweight",
+      "noAddedWeight": "No Added Wt.",
+      "userDefined": "User Defined",
+      "unnamedExercise": "Unnamed Exercise",
+      "upTo": "Up to"
+    },
+    "general": {
+      "cancel": "Cancel"
+    }
   }
 
 }

@@ -1862,5 +1862,334 @@
       "title": "تم دمج الأنشطة"
     },
     "mergeInfo": "لا توجد سجلات أنشطة جديدة للاستيراد."
+  },
+  "alertService": {
+    "buttons": {
+      "ok": "موافق",
+      "cancel": "إلغاء",
+      "confirm": "تأكيد",
+      "doSomething": "القيام بشيء ما",
+      "doNothing": "عدم القيام بشيء"
+    }
+  },
+  "barbellData": {
+    "barbells": {
+      "mensOlympic": "بار أولمبي للرجال",
+      "womensOlympic": "بار أولمبي للسيدات",
+      "standardGym": "بار النادي الرياضي العادي",
+      "ezCurl": "بار EZ-Curl",
+      "tricep": "بار الترايسبس",
+      "trapHex": "بار سداسي/تراب",
+      "olympic120": "بار أولمبي (120 سم)",
+      "olympic152": "بار أولمبي (152 سم)",
+      "olympic182": "بار أولمبي (182 سم)",
+      "olympic186": "بار أولمبي (186 سم)",
+      "olympic219": "بار أولمبي (219 سم)",
+      "olympic47in": "بار أولمبي (47 بوصة)",
+      "olympic60in": "بار أولمبي (60 بوصة)",
+      "olympic72in": "بار أولمبي (72 بوصة)",
+      "olympic73in": "بار أولمبي (73 بوصة)",
+      "olympic86in": "بار أولمبي (86 بوصة)"
+    },
+    "collars": {
+      "none": "بدون أطواق",
+      "spring": "أطواق زنبركية",
+      "lockjaw": "أطواق Lock-Jaw",
+      "competition": "أطواق المنافسات"
+    }
+  },
+  "dataConversionService": {
+    "spinner": {
+      "convertingWeight": "جاري تحويل بيانات الوزن...",
+      "convertingBodyWeight": "جاري تحويل بيانات وزن الجسم...",
+      "convertingBodyMeasure": "جاري تحويل بيانات قياسات الجسم...",
+      "convertingMeasure": "جاري تحويل بيانات القياسات...",
+      "convertingDistance": "جاري تحويل بيانات المسافة..."
+    },
+    "toast": {
+      "conversionCompleteTitle": "اكتمل التحويل",
+      "weightSuccess": "تم تحويل جميع بيانات الوزن بنجاح!",
+      "bodyWeightSuccess": "تم تحويل جميع بيانات وزن الجسم بنجاح!",
+      "bodyMeasureSuccess": "تم تحويل جميع بيانات قياسات الجسم بنجاح!",
+      "measureSuccess": "تم تحويل جميع بيانات القياسات بنجاح!",
+      "distanceSuccess": "تم تحويل جميع بيانات المسافة بنجاح!"
+    }
+  },
+  "exerciseService": {
+    "unknownExercise": "تمرين غير معروف",
+    "importErrorTitle": "خطأ في الاستيراد",
+    "importFailed": "فشل الاستيراد: ملف بيانات التمرين غير صالح.",
+    "mergeSuccessTitle": "تم دمج التمارين",
+    "mergeSuccessMessage": "اكتمل الاستيراد. تم تحديث {{updatedCount}} تمرين، وتمت إضافة {{addedCount}} تمرين.",
+    "hideErrorTitle": "خطأ",
+    "hideFailed": "فشل إخفاء التمرين: غير موجود.",
+    "hiddenTitle": "مخفي",
+    "hiddenMessage": "'{{name}}' مخفي الآن.",
+    "unhideFailed": "فشل إظهار التمرين: غير موجود.",
+    "visibleTitle": "مرئي",
+    "visibleMessage": "'{{name}}' مرئي الآن."
+  },
+  "personalGymService": {
+    "addSuccessTitle": "تمت إضافة المعدات",
+    "addSuccessMessage": "تمت إضافة \"{{name}}\" إلى صالة الألعاب الرياضية الخاصة بك!",
+    "updateSuccessTitle": "تم تحديث المعدات",
+    "updateSuccessMessage": "تم تحديث \"{{name}}\" بنجاح!",
+    "updateFailedTitle": "فشل التحديث",
+    "updateFailedMessage": "تعذر العثور على \"{{name}}\" للتحديث.",
+    "deleteFailedTitle": "فشل الحذف",
+    "deleteFailedMessage": "المعدات غير موجودة.",
+    "deleteConfirmTitle": "حذف المعدات",
+    "deleteConfirmMessage": "هل أنت متأكد من رغبتك في حذف \"{{name}}\" من صالة الألعاب الرياضية الخاصة بك؟ لا يمكن التراجع عن هذا الإجراء.",
+    "deletedTitle": "تم الحذف",
+    "deletedMessage": "تم حذف \"{{name}}\".",
+    "importErrorTitle": "خطأ في الاستيراد",
+    "importFailed": "فشل الاستيراد: ملف بيانات صالة الألعاب الرياضية الشخصية غير صالح.",
+    "mergeSuccessTitle": "تم دمج صالة الألعاب الرياضية الشخصية",
+    "mergeSuccessMessage": "اكتمل استيراد الصالة الرياضية. تم تحديث {{updatedCount}} عنصر، وتمت إضافة {{addedCount}} عنصر.",
+    "hideErrorTitle": "خطأ",
+    "hideFailed": "فشل إخفاء المعدات: غير موجودة.",
+    "hiddenTitle": "مخفي",
+    "hiddenMessage": "'{{name}}' مخفي الآن.",
+    "unhideFailed": "فشل إظهار المعدات: غير موجودة.",
+    "visibleTitle": "مرئي",
+    "visibleMessage": "'{{name}}' مرئي الآن."
+  },
+  "spinnerService": {
+    "timeoutMessage": "يبدو أن هناك مشاكل في الاتصال..."
+  },
+  "statsService": {
+    "weekOf": "أسبوع من",
+    "weekPrefix": "أ"
+  },
+  "equipment": {
+    "categories": {
+      "machines": "الأجهزة",
+      "functionalBodyweight": "تمارين وظيفية ووزن الجسم",
+      "accessories": "إكسسوارات",
+      "cardio": "كارديو",
+      "freeWeights": "أوزان حرة"
+    },
+    "names": {
+      "abdominalCrunchMachine": "جهاز تمارين البطن",
+      "abRollerCoaster": "جهاز Ab Roller Coaster",
+      "abWheel": "عجلة البطن"
+    }
+  },
+  "storageService": {
+    "clearAllWarning": {
+      "title": "تحذير",
+      "message": "سيؤدي هذا إلى مسح جميع البيانات في التخزين المحلي لهذا النطاق، مما قد يؤثر على التطبيقات أو الإعدادات الأخرى. هل أنت متأكد من رغبتك في المتابعة؟"
+    }
+  },
+  "subscriptionService": {
+    "upgradeModal": {
+      "title": "ميزة بريميوم",
+      "message": "هذه الميزة متاحة لمستخدمي بريميوم. قم بالترقية الآن لفتح هذه الميزة وأكثر من ذلك بكثير!"
+    }
+  },
+  "trackingService": {
+    "clearLogsConfirm": {
+      "title": "معلومات",
+      "message": "للمطورين: هل أنت متأكد من رغبتك في حذف جميع سجلات التمارين؟ لا يمكن التراجع عن هذا الإجراء.",
+      "success": "تم مسح جميع سجلات التمارين!"
+    },
+    "recalcPbs": {
+      "title": "إعادة حساب الأرقام القياسية الشخصية",
+      "message": "سيتم الآن إعادة حساب جميع أرقامك القياسية الشخصية من سجل التمارين بالكامل: قد يستغرق هذا بعض الوقت.",
+      "noLogsTitle": "معلومات",
+      "noLogsMessage": "لا توجد أرقام قياسية شخصية لإعادة حسابها.",
+      "successTitle": "نجاح",
+      "successMessage": "تمت إعادة حساب جميع الأرقام القياسية الشخصية."
+    },
+    "clearPbsConfirm": {
+      "title": "معلومات",
+      "message": "للمطورين: هل أنت متأكد من رغبتك في حذف جميع الأرقام القياسية الشخصية؟ لا يمكن التراجع عن هذا الإجراء.",
+      "success": "تم مسح جميع الأرقام القياسية الشخصية!"
+    },
+    "import": {
+      "logsErrorTitle": "خطأ في الاستيراد",
+      "logsErrorMessage": "فشل الاستيراد: ملف سجلات التمارين غير صالح.",
+      "logsSuccessTitle": "تم دمج السجلات",
+      "logsSuccessMessage": "تم استيراد السجلات. تم تحديث {{updatedCount}}، وتمت إضافة {{addedCount}}.",
+      "pbsErrorTitle": "خطأ في الاستيراد",
+      "pbsErrorMessage": "فشل الاستيراد: ملف الأرقام القياسية الشخصية غير صالح.",
+      "pbsSuccessTitle": "تم دمج الأرقام القياسية الشخصية",
+      "pbsSuccessMessage": "تم دمج بيانات الأرقام القياسية الشخصية بنجاح."
+    },
+    "recalcAfterImport": {
+      "title": "يرجى الانتظار",
+      "message": "جاري إعادة حساب الأرقام القياسية الشخصية...",
+      "noLogsTitle": "تمت إعادة حساب الأرقام القياسية الشخصية",
+      "noLogsMessage": "تم مسح الأرقام القياسية الشخصية لعدم وجود سجلات.",
+      "successTitle": "تم تحديث الأرقام القياسية الشخصية",
+      "successMessage": "تمت إعادة حساب الأرقام القياسية الشخصية بنجاح!"
+    },
+    "deleteRoutine": {
+      "warningTitle": "تحذير",
+      "noIdMessage": "لم يتم توفير معرّف روتين لمسح السجلات.",
+      "confirmTitle": "تأكيد الحذف",
+      "confirmMessageSimple": "هل أنت متأكد من رغبتك في حذف الروتين \"{{routineName}}\"؟ لا يمكن التراجع عن هذا الإجراء.",
+      "confirmMessageWithLogs": "هل أنت متأكد من رغبتك في حذف الروتين \"{{routineName}}\"؟ هناك {{count}} سجل (سجلات) تمارين مرتبطة به. سيؤدي حذف الروتين إلى حذف هذه السجلات أيضًا. لا يمكن التراجع عن هذا الإجراء.",
+      "successTitleSimple": "معلومات",
+      "successMessageSimple": "تم حذف الروتين \"{{routineName}}\" بنجاح!",
+      "successTitleWithLogs": "نجاح",
+      "successMessageWithLogs": "تم حذف {{count}} سجل (سجلات) تمارين والروتين \"{{routineName}}\"."
+    },
+    "history": {
+      "backfillWaitTitle": "يرجى الانتظار",
+      "backfillWaitMessage": "جاري تحديث سجل التمارين...",
+      "backfillSuccessTitle": "اكتمل التحديث",
+      "backfillSuccessMessage": "تم تحديث سجل التمارين!",
+      "syncWaitTitle": "يرجى الانتظار",
+      "syncWaitMessage": "جاري مزامنة كل السجل...",
+      "syncNoHistoryMessage": "لا يوجد سجل للمزامنة.",
+      "syncSuccessTitle": "اكتملت المزامنة",
+      "syncSuccessMessage": "تمت مزامنة السجل بالكامل!"
+    }
+  },
+  "trainingProgramService": {
+    "updateError": {
+      "title": "خطأ في التحديث",
+      "message": "البرنامج بالمعرّف {{id}} غير موجود."
+    },
+    "deleteError": {
+      "title": "خطأ في الحذف",
+      "message": "البرنامج غير موجود."
+    },
+    "deleteConfirm": {
+      "title": "حذف البرنامج",
+      "message": "هل أنت متأكد من رغبتك في حذف البرنامج \"{{name}}\"؟ لا يمكن التراجع عن هذا الإجراء.",
+      "cancelButton": "إلغاء",
+      "deleteButton": "حذف البرنامج"
+    },
+    "deleteSuccess": {
+      "title": "تم حذف البرنامج",
+      "message": "تم حذف البرنامج \"{{name}}\"."
+    },
+    "importError": {
+      "title": "خطأ في الاستيراد",
+      "message": "فشل الاستيراد: ملف بيانات البرنامج غير صالح."
+    },
+    "importSuccess": {
+      "title": "تم دمج البرامج",
+      "message": "اكتمل الاستيراد. تم تحديث {{updatedCount}} برنامج، وتمت إضافة {{addedCount}} برنامج."
+    },
+    "history": {
+      "removeErrorTitle": "خطأ في إزالة السجل",
+      "removeSuccessTitle": "تم تحديث السجل",
+      "removeSuccessMessage": "تمت إزالة إدخال السجل."
+    },
+    "toggle": {
+      "notFound": "البرنامج غير موجود.",
+      "alreadyActive": "\"{{name}}\" نشط بالفعل."
+    },
+    "deactivate": {
+      "info": "تم إلغاء تنشيط البرنامج \"{{name}}\"."
+    },
+    "updateHistory": {
+      "programNotFound": "البرنامج غير موجود.",
+      "entryNotFound": "إدخال السجل غير موجود.",
+      "success": "تم تحديث سجل البرنامج."
+    }
+  },
+  "userProfileService": {
+    "wipDisclaimer": {
+      "title": "إخلاء مسؤولية: عمل قيد التنفيذ",
+      "message": "إخلاء مسؤولية: هذا تطبيق قيد التنفيذ ويعمل على المتصفح. هذا يعني أن بيانات التمرين الخاصة بك لن يتم حفظها عند إغلاق المتصفح أو مسح بياناته. تأكد من تصدير بياناتك بانتظام واستيرادها مرة أخرى عند العودة إلى التطبيق.",
+      "checkboxLabel": "لا تظهر هذه الرسالة مرة أخرى",
+      "okButton": "موافق"
+    }
+  },
+  "units": {
+    "weight": {
+      "kg": "كجم",
+      "lbs": "رطل"
+    },
+    "measure": {
+      "cm": "سم",
+      "in": "بوصة"
+    },
+    "distance": {
+      "km": "كم",
+      "mi": "ميل"
+    }
+  },
+  "workoutService": {
+    "toasts": {
+      "updateErrorTitle": "خطأ",
+      "updateErrorMessage": "الروتين بالمعرّف {{id}} غير موجود للتحديث!",
+      "importErrorTitle": "خطأ في الاستيراد",
+      "importFailed": "فشل الاستيراد: ملف بيانات الروتين غير صالح.",
+      "importSuccessTitle": "تم دمج الإجراءات الروتينية",
+      "importSuccessMessage": "تم استيراد الإجراءات الروتينية. تم تحديث {{updatedCount}}، وتمت إضافة {{addedCount}}.",
+      "pausedDiscarded": "تم تجاهل جلسة التمرين الموقوفة مؤقتًا.",
+      "superset": {
+        "minSelection": "يرجى تحديد تمرينين على الأقل لإنشاء مجموعة سوبر.",
+        "alreadyIn": "هذا التمرين موجود بالفعل في مجموعة سوبر.",
+        "noneExist": "لا توجد مجموعات سوبر لإضافة هذا التمرين إليها.",
+        "findError": "تعذر العثور على التمرين أو المجموعة السوبر المستهدفة.",
+        "addSuccess": "تمت إضافة {{exerciseName}} إلى المجموعة السوبر.",
+        "logCleared": "تم مسح البيانات المسجلة لـ {{exerciseName}}.",
+        "dissolved": "تم حل المجموعة السوبر حيث لم يتبق سوى تمرين واحد.",
+        "removed": "تمت إزالة {{exerciseName}} من المجموعة السوبر."
+      },
+      "enableAllSuccess": "تم تمكين جميع الإجراءات الروتينية!"
+    },
+    "alerts": {
+      "editRunningTitle": "معلومات",
+      "editRunningMessage": "لا يمكن تعديل روتين قيد التشغيل. أكمله أو تجاهله قبل القيام بذلك.",
+      "clearAllTitle": "معلومات",
+      "clearAllMessage": "هل أنت متأكد من رغبتك في حذف جميع الإجراءات الروتينية؟ سيؤدي هذا إلى حذف جميع الإجراءات الروتينية (وليس فقط السجلات) ولا يمكن التراجع عنه.",
+      "clearAllSuccess": "تم مسح جميع الإجراءات الروتينية!",
+      "clearExecutedTitle": "معلومات",
+      "clearExecutedMessage": "هل أنت متأكد من رغبتك في إعادة تعيين خاصية 'lastPerformed' لجميع الإجراءات الروتينية؟ لا يمكن التراجع عن هذا.",
+      "clearExecutedSuccess": "تم مسح جميع سجلات الإجراءات الروتينية!",
+      "resume": {
+        "title": "استئناف التمرين الموقوف مؤقتًا؟",
+        "message": "لديك جلسة تمرين موقوفة مؤقتًا. هل ترغب في استئنافها؟",
+        "resumeButton": "استئناف",
+        "discardButton": "تجاهل"
+      },
+      "supersetCreatedTitle": "معلومات",
+      "supersetCreatedMessage": "تم إنشاء مجموعة سوبر بـ {{count}} تمارين و {{rounds}} جولات: تم مسح السجلات الموجودة وتوحيد المجموعات."
+    },
+    "prompts": {
+      "addExerciseTitle": "إضافة {{exerciseName}}",
+      "labels": {
+        "exerciseName": "اسم التمرين",
+        "numSets": "عدد المجموعات",
+        "rest": "الراحة بين المجموعات (بالثواني)",
+        "targetDistance": "المسافة المستهدفة ({{unit}})",
+        "targetDuration": "المدة المستهدفة (بالثواني)",
+        "numReps": "عدد التكرارات",
+        "targetWeight": "الوزن المستهدف ({{unit}})"
+      },
+      "createSuperset": {
+        "title": "إنشاء مجموعة سوبر",
+        "message": "حدد التمارين لربطها معًا.",
+        "roundsLabel": "عدد الجولات"
+      },
+      "addToSuperset": {
+        "title": "إضافة إلى المجموعة السوبر",
+        "message": "أي مجموعة سوبر لـ \"{{exerciseName}}\"؟",
+        "groupLabel": "المجموعة السوبر: {{group}}",
+        "addButton": "إضافة"
+      },
+      "removeFromSuperset": {
+        "title": "إزالة من المجموعة السوبر",
+        "message": "إزالة {{exerciseName}} من هذه المجموعة السوبر؟ سيتم مسح مجموعاتها المسجلة لهذه الجلسة."
+      }
+    },
+    "display": {
+      "weightNotApplicable": "غير قابل للتطبيق",
+      "bodyweight": "وزن الجسم",
+      "noAddedWeight": "بدون وزن إضافي",
+      "userDefined": "معرف من قبل المستخدم",
+      "unnamedExercise": "تمرين غير مسمى",
+      "upTo": "تصل إلى"
+    },
+    "general": {
+      "cancel": "إلغاء"
+    }
   }
 }

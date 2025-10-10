@@ -6,6 +6,7 @@ import { map } from 'rxjs/operators';
 import { Gender, MeasurementEntry, UserMeasurements, UserProfile } from '../models/user-profile.model';
 import { AlertService } from './alert.service';
 import { format, startOfDay } from 'date-fns';
+import { TranslateService } from '@ngx-translate/core';
 
 @Injectable({
   providedIn: 'root'
@@ -13,6 +14,7 @@ import { format, startOfDay } from 'date-fns';
 export class UserProfileService {
   private storageService = inject(StorageService);
   private alertService = inject(AlertService);
+  private translate = inject(TranslateService);
   private readonly USER_PROFILE_KEY = 'fitTrackPro_userProfile';
   private readonly IS_WIP = true;
 
@@ -52,20 +54,20 @@ export class UserProfileService {
     if (this.IS_WIP && !this.getHideWipDisclaimer()) {
       // if (this.IS_WIP) {
       const result = await this.alertService.present({
-        header: 'Work-in-Progress Disclaimer',
-        message: `DISCLAIMER: This is a work-in-progress, browser-based app. This means your workout data won't be saved when you close the browser or clear your browser data. Be sure to regularly export your data and import it again when you return to the app.`,
+        header: this.translate.instant('userProfileService.wipDisclaimer.title'),
+        message: this.translate.instant('userProfileService.wipDisclaimer.message'),
         backdropDismiss: false,
         inputs: [
           {
             type: 'checkbox',
             name: 'hideDisclaimer',
-            label: `Don't show this message again`,
+            label: this.translate.instant('userProfileService.wipDisclaimer.checkboxLabel'),
             value: false
           }
         ],
         buttons: [
           {
-            text: 'OK',
+            text: this.translate.instant('userProfileService.wipDisclaimer.okButton'),
             role: 'confirm'
           }
         ]
@@ -158,7 +160,7 @@ export class UserProfileService {
     const currentProfile = this.getProfile() || {};
     const history = currentProfile.measurementHistory || [];
 
-    if (!entry.date){
+    if (!entry.date) {
       entry.date = format(startOfDay(new Date()), 'yyyy-MM-dd'); // Default to today if no date provided
     }
     const entryIndex = history.findIndex(e => e.date === entry.date);
@@ -250,10 +252,10 @@ export class UserProfileService {
     if (profile.measurementHistory && profile.measurementHistory.length > 0) {
       // Ensure measurementHistory is sorted by date
       profile.measurementHistory.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-      profile.measurements = {...profile.measurements, ...profile.measurementHistory[profile.measurementHistory.length - 1] };
+      profile.measurements = { ...profile.measurements, ...profile.measurementHistory[profile.measurementHistory.length - 1] };
     }
 
-    
+
     // Ensure measurementHistory is always sorted when saved
     if (updatedProfile.measurementHistory) {
       updatedProfile.measurementHistory.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
@@ -296,7 +298,7 @@ export class UserProfileService {
     const historyMap = new Map<string, MeasurementEntry>();
     localHistory.forEach(entry => historyMap.set(entry.date, entry));
     importedHistory.forEach(entry => historyMap.set(entry.date, entry));
-    
+
     const mergedHistory = Array.from(historyMap.values());
 
     // Construct the fully merged profile
@@ -306,14 +308,14 @@ export class UserProfileService {
       gender: importedProfile.gender ?? localProfile.gender,
       height: importedProfile.height ?? localProfile.height,
       hideWipDisclaimer: importedProfile.hideWipDisclaimer ?? localProfile.hideWipDisclaimer,
-      
+
       // Overwrite local goals with imported goals if they exist
       measurementGoals: { ...localProfile.measurementGoals, ...importedProfile.measurementGoals },
 
       // Use the merged and sorted history
       measurementHistory: mergedHistory,
     };
-    
+
     // Save the final merged profile
     this.saveProfile(mergedProfile);
   }

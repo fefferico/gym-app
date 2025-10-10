@@ -16,6 +16,7 @@ import { isSameDay, getDay, eachDayOfInterval, parseISO, differenceInDays, start
 import { PROGRAMS_DATA } from './programs-data';
 import { WorkoutLog } from '../models/workout-log.model';
 import { TrackingService } from './tracking.service';
+import { TranslateService } from '@ngx-translate/core';
 
 @Injectable({
   providedIn: 'root'
@@ -27,6 +28,7 @@ export class TrainingProgramService {
   private toastService = inject(ToastService);
   // private trackingService = inject(TrackingService);
   private injector = inject(Injector);
+  private translate = inject(TranslateService);
 
   private readonly PROGRAMS_STORAGE_KEY = 'fitTrackPro_trainingPrograms';
 
@@ -50,7 +52,7 @@ export class TrainingProgramService {
     const programsFromStorage = this._loadProgramsFromStorage();
 
     this.programsSubject = new BehaviorSubject<TrainingProgram[]>(programsFromStorage);
-    
+
     // --- THIS IS THE MODIFIED PART ---
     this.programs$ = this.programsSubject.asObservable().pipe(
       // Add the map operator to apply the sorting logic to every emission.
@@ -164,23 +166,31 @@ export class TrainingProgramService {
       // this.toastService.success(`Program "${programToSave.name}" updated.`, 3000, "Program Updated");
       return programToSave;
     }
-    this.toastService.error(`Program with ID ${updatedProgramData.id} not found.`, 0, "Update Error");
+    this.toastService.error(
+      this.translate.instant('trainingProgramService.updateError.message', { id: updatedProgramData.id }),
+      0,
+      this.translate.instant('trainingProgramService.updateError.title')
+    );
     return undefined;
   }
 
   async deleteProgram(programId: string): Promise<void> {
     const programToDelete = await firstValueFrom(this.getProgramById(programId).pipe(take(1)));
     if (!programToDelete) {
-      this.toastService.error("Program not found", 0, "Delete Error");
+      this.toastService.error(
+        this.translate.instant('trainingProgramService.deleteError.message'),
+        0,
+        this.translate.instant('trainingProgramService.deleteError.title')
+      );
       return;
     }
 
     const confirm = await this.alertService.showConfirmationDialog(
-      'Delete Program',
-      `Are you sure you want to delete the program "${programToDelete.name}"? This action cannot be undone.`,
+      this.translate.instant('trainingProgramService.deleteConfirm.title'),
+      this.translate.instant('trainingProgramService.deleteConfirm.message', { name: programToDelete.name }),
       [
-        { text: 'Cancel', role: 'cancel', data: false, cssClass: 'bg-gray-400 hover:bg-gray-600', icon: 'cancel', iconClass: 'w-4 h-4 mr-1' },
-        { text: 'Delete Program', role: 'confirm', data: true, cssClass: 'bg-primary hover:bg-primary-dark', icon: 'done' }
+        { text: this.translate.instant('trainingProgramService.deleteConfirm.cancelButton'), role: 'cancel', data: false, cssClass: 'bg-gray-400 hover:bg-gray-600', icon: 'cancel', iconClass: 'w-4 h-4 mr-1' },
+        { text: this.translate.instant('trainingProgramService.deleteConfirm.deleteButton'), role: 'confirm', data: true, cssClass: 'bg-primary hover:bg-primary-dark', icon: 'done' }
       ]
     );
 
@@ -188,7 +198,11 @@ export class TrainingProgramService {
       const currentPrograms = this.programsSubject.getValue();
       const updatedPrograms = currentPrograms.filter(p => p.id !== programId);
       this._saveProgramsToStorage(updatedPrograms);
-      this.toastService.info(`Program "${programToDelete.name}" deleted.`, 3000, "Program Deleted");
+      this.toastService.info(
+        this.translate.instant('trainingProgramService.deleteSuccess.message', { name: programToDelete.name }),
+        3000,
+        this.translate.instant('trainingProgramService.deleteSuccess.title')
+      );
     }
   }
 
@@ -226,8 +240,11 @@ export class TrainingProgramService {
 
   public mergeData(newPrograms: TrainingProgram[]): void {
     if (!Array.isArray(newPrograms)) {
-      console.error('TrainingProgramService: Imported data for programs is not an array.');
-      this.toastService.error('Import failed: Invalid program data file.', 0, "Import Error");
+      this.toastService.error(
+        this.translate.instant('trainingProgramService.importError.message'),
+        0,
+        this.translate.instant('trainingProgramService.importError.title')
+      );
       return;
     }
 
@@ -258,9 +275,9 @@ export class TrainingProgramService {
 
     console.log(`TrainingProgramService: Merged imported data. Updated: ${updatedCount}, Added: ${addedCount}`);
     this.toastService.success(
-      `Import complete. ${updatedCount} programs updated, ${addedCount} added.`,
+      this.translate.instant('trainingProgramService.importSuccess.message', { updatedCount, addedCount }),
       6000,
-      "Programs Merged"
+      this.translate.instant('trainingProgramService.importSuccess.title')
     );
   }
 
@@ -528,7 +545,11 @@ export class TrainingProgramService {
     const targetProgram = currentPrograms.find(p => p.id === programId);
 
     if (!targetProgram) {
-      this.toastService.error("Program not found", 0, "Remove History Error");
+      this.toastService.error(
+        this.translate.instant('trainingProgramService.history.programNotFound'),
+        0,
+        this.translate.instant('trainingProgramService.history.removeErrorTitle')
+      );
       return;
     }
 
@@ -555,7 +576,11 @@ export class TrainingProgramService {
     );
 
     this._saveProgramsToStorage(updatedPrograms);
-    this.toastService.success("History entry removed.", 3000, "History Updated");
+    this.toastService.success(
+      this.translate.instant('trainingProgramService.history.removeSuccessMessage'),
+      3000,
+      this.translate.instant('trainingProgramService.history.removeSuccessTitle')
+    );
   }
 
   // --- 3. MODIFIED: Refactor program completion logic ---
@@ -802,7 +827,7 @@ export class TrainingProgramService {
     const currentPrograms = this.programsSubject.getValue();
     const programIndex = currentPrograms.findIndex(p => p.id === programId);
     if (programIndex === -1) {
-      this.toastService.error("Program not found.");
+      this.toastService.error(this.translate.instant('trainingProgramService.deleteError.message'));
       return;
     }
 
@@ -813,7 +838,7 @@ export class TrainingProgramService {
 
     if (status === 'active') {
       if (activeEntryIndex > -1) {
-        this.toastService.info(`"${targetProgram.name}" is already active.`);
+        this.toastService.info(this.translate.instant('trainingProgramService.toggle.alreadyActive', { name: targetProgram.name }));
         return;
       }
       // Deactivate all other programs first
@@ -891,7 +916,7 @@ export class TrainingProgramService {
     targetProgram.isActive = false;
     currentPrograms[programIndex] = targetProgram;
     this._saveProgramsToStorage(currentPrograms);
-    this.toastService.info(`Program "${targetProgram.name}" has been deactivated.`);
+    this.toastService.info(this.translate.instant('trainingProgramService.deactivate.info', { name: targetProgram.name }));
   }
 
   /**
@@ -903,7 +928,7 @@ export class TrainingProgramService {
     const currentPrograms = this.programsSubject.getValue();
     const programIndex = currentPrograms.findIndex(p => p.id === programId);
     if (programIndex === -1) {
-      this.toastService.error("Program not found.");
+      this.toastService.error(this.translate.instant('trainingProgramService.history.programNotFound'));
       return;
     }
 
@@ -911,7 +936,7 @@ export class TrainingProgramService {
     const history = Array.isArray(targetProgram.history) ? [...targetProgram.history] : [];
     const entryIndex = history.findIndex(h => h.id === updatedEntry.id);
     if (entryIndex === -1) {
-      this.toastService.error("History entry not found.");
+      this.toastService.error(this.translate.instant('trainingProgramService.history.entryNotFound'));
       return;
     }
 
@@ -922,7 +947,7 @@ export class TrainingProgramService {
 
     currentPrograms[programIndex] = targetProgram;
     this._saveProgramsToStorage(currentPrograms);
-    this.toastService.success("Program history updated.");
+    this.toastService.success(this.translate.instant('trainingProgramService.updateHistory.success'));
   }
 
 

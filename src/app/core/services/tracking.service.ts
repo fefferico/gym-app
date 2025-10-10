@@ -15,6 +15,7 @@ import { ExerciseService } from './exercise.service';
 import { TrainingProgramService } from './training-program.service';
 import { PerceivedWorkoutInfo } from '../../features/workout-tracker/perceived-effort-modal.component';
 import { mapLegacyLoggedExercisesToCurrent } from '../models/workout-mapper';
+import { TranslateService } from '@ngx-translate/core';
 
 export interface ExercisePerformanceDataPoint {
   date: Date;
@@ -35,6 +36,7 @@ export class TrackingService {
   private injector = inject(Injector); // Inject the Injector
   private toastService = inject(ToastService);
   private trainingProgramService = inject(TrainingProgramService);
+  private translate = inject(TranslateService);
 
   private readonly WORKOUT_LOGS_STORAGE_KEY = 'fitTrackPro_workoutLogs';
   private readonly PERSONAL_BESTS_STORAGE_KEY = 'fitTrackPro_personalBests';
@@ -165,12 +167,16 @@ export class TrackingService {
   }
 
   clearAllWorkoutLogs_DEV_ONLY(): Promise<void> {
-    return this.alertService.showConfirm("Info", "DEVELOPMENT: Are you sure you want to delete ALL workout logs? This cannot be undone")
+    const title = this.translate.instant('trackingService.clearLogsConfirm.title');
+    const message = this.translate.instant('trackingService.clearLogsConfirm.message');
+
+    return this.alertService.showConfirm(title, message)
       .then(async (result) => {
         if (result && result.data) {
           this.saveWorkoutLogsToStorage([]);
-          await this.recalculateAllPersonalBests(); // Recalculate PBs (will clear them)
-          await this.alertService.showAlert("Info", "All workout logs cleared!");
+          await this.recalculateAllPersonalBests();
+          const successMessage = this.translate.instant('trackingService.clearLogsConfirm.success');
+          await this.alertService.showAlert(title, successMessage);
         }
       });
   }
@@ -344,8 +350,9 @@ export class TrackingService {
   }
 
   public async recalculateAllPersonalBests(): Promise<void> {
-    const conf = await this.alertService.showAlert("PBs Recalculation", "All your personal bests from your entire workout history will be now recalculated: this may take a moment");
-    // reset PBs
+    const title = this.translate.instant('trackingService.recalcPbs.title');
+    const message = this.translate.instant('trackingService.recalcPbs.message');
+    await this.alertService.showAlert(title, message);
     this.savePBsToStorage({});
 
     const allLogs = this.workoutLogsSubject.getValue();
@@ -353,7 +360,9 @@ export class TrackingService {
     const sortedLogs = [...allLogs].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
     if (!sortedLogs || sortedLogs.length === 0) {
-      this.alertService.showAlert('Info', 'There are no personal bests to be recalculated.');
+      const noLogsTitle = this.translate.instant('trackingService.recalcPbs.noLogsTitle');
+      const noLogsMessage = this.translate.instant('trackingService.recalcPbs.noLogsMessage');
+      this.alertService.showAlert(noLogsTitle, noLogsMessage);
       return Promise.resolve();
     }
 
@@ -419,7 +428,9 @@ export class TrackingService {
 
     this.savePBsToStorage(newPBsMaster);
     console.log('Personal Bests recalculated from all logs:', newPBsMaster);
-    this.alertService.showAlert('Success', 'All personal bests have been recalculated.');
+    const successTitle = this.translate.instant('trackingService.recalcPbs.successTitle');
+    const successMessage = this.translate.instant('trackingService.recalcPbs.successMessage');
+    this.alertService.showAlert(successTitle, successMessage);
   }
 
   getPersonalBestForExerciseByType(exerciseId: string, pbType: string): Observable<PersonalBestSet | null> {
@@ -500,8 +511,9 @@ export class TrackingService {
   public async replaceLogs(newLogs: any[]): Promise<void> { // Accept 'any' to handle legacy formats
     // 1. Basic validation
     if (!Array.isArray(newLogs)) {
-      console.error('TrackingService: Imported data for logs is not an array.');
-      this.toastService.error('Import failed: Invalid workout log file.', 0, "Import Error");
+      const errorTitle = this.translate.instant('trackingService.import.logsErrorTitle');
+      const errorMessage = this.translate.instant('trackingService.import.logsErrorMessage');
+      this.toastService.error(errorMessage, 0, errorTitle);
       return;
     }
 
@@ -558,11 +570,9 @@ export class TrackingService {
 
     // 7. Provide user feedback before the PB recalculation
     console.log(`TrackingService: Merged logs. Updated: ${updatedCount}, Added: ${addedCount}`);
-    this.toastService.success(
-      `Logs imported. ${updatedCount} updated, ${addedCount} added.`,
-      6000,
-      "Logs Merged"
-    );
+    const successTitle = this.translate.instant('trackingService.import.logsSuccessTitle');
+    const successMessage = this.translate.instant('trackingService.import.logsSuccessMessage', { updatedCount, addedCount });
+    this.toastService.success(successMessage, 6000, successTitle);
 
     // --- NEW: Trigger the backfill for lastUsedAt timestamps ---
     await this.backfillLastUsedExerciseTimestamps();
@@ -571,7 +581,9 @@ export class TrackingService {
     // 8. Recalculate all PBs from the newly merged history
     // We do this without a confirmation prompt as it's a necessary step after import.
     console.log('Recalculating personal bests after log import...');
-    this.toastService.info('Recalculating personal bests...', 2000, "Please Wait");
+    const recalcTitle = this.translate.instant('trackingService.recalcAfterImport.title');
+    const recalcMessage = this.translate.instant('trackingService.recalcAfterImport.message');
+    this.toastService.info(recalcMessage, 2000, recalcTitle);
 
     // Perform the recalculation (reusing the core logic of the public method)
     const allMergedLogs = this.workoutLogsSubject.getValue();
@@ -614,7 +626,9 @@ export class TrackingService {
 
     this.savePBsToStorage(newPBsMaster);
     console.log('Personal Bests recalculated from all merged logs.');
-    this.toastService.success('Personal bests successfully recalculated!', 3000, "PBs Updated");
+    const finalTitle = this.translate.instant('trackingService.recalcAfterImport.successTitle');
+    const finalMessage = this.translate.instant('trackingService.recalcAfterImport.successMessage');
+    this.toastService.success(finalMessage, 3000, finalTitle);
   }
 
   /**

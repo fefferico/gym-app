@@ -1,6 +1,7 @@
 // src/app/core/services/units.service.ts
-import { Injectable, signal } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import { StorageService } from './storage.service';
+import { TranslateService } from '@ngx-translate/core';
 
 export type WeightUnit = 'kg' | 'lbs';
 export type MeasureUnit = 'cm' | 'in';
@@ -24,6 +25,7 @@ export class UnitsService {
   currentDistanceMeasureUnit = signal<DistanceMeasureUnit>('km');
   currentBodyWeightUnit = signal<BodyWeightUnit>('kg');
   currentBodyMeasureUnit = signal<BodyMeasureUnit>('cm');
+  private translate = inject(TranslateService);
 
   constructor(private storageService: StorageService) {
     this._loadPreferences();
@@ -83,23 +85,29 @@ export class UnitsService {
   // --- Unit Labels for UI Display ---
 
   public getWeightUnitSuffix(): string {
-    return this.currentWeightUnit() === 'kg' ? 'kg' : 'lbs';
+    const key = this.currentWeightUnit() === 'kg' ? 'units.weight.kg' : 'units.weight.lbs';
+    return this.translate.instant(key);
   }
 
   public getMeasureUnitSuffix(): string {
-    return this.currentMeasureUnit() === 'cm' ? 'cm' : 'in';
+    const key = this.currentMeasureUnit() === 'cm' ? 'units.measure.cm' : 'units.measure.in';
+    return this.translate.instant(key);
   }
 
   public getDistanceMeasureUnitSuffix(): string {
-    return this.currentDistanceMeasureUnit() === 'km' ? 'km' : 'mi';
+    const key = this.currentDistanceMeasureUnit() === 'km' ? 'units.distance.km' : 'units.distance.mi';
+    return this.translate.instant(key);
   }
 
   public getBodyWeightUnitSuffix(): string {
-    return this.currentBodyWeightUnit() === 'kg' ? 'kg' : 'lbs';
+    const key = this.currentBodyWeightUnit() === 'kg' ? 'units.weight.kg' : 'units.weight.lbs';
+    return this.translate.instant(key);
   }
 
   public getBodyMeasureUnitSuffix(): string {
-    return this.currentBodyMeasureUnit() === 'cm' ? 'cm' : 'in';
+    const key = this.currentBodyMeasureUnit() === 'cm' ? 'units.measure.cm' : 'units.measure.in';
+    return this.translate.instant(key);
+
   }
 
 

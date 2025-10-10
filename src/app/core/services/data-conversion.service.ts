@@ -9,6 +9,7 @@ import { SpinnerService } from './spinner.service';
 import { ToastService } from './toast.service';
 import { ProgressiveOverloadService } from './progressive-overload.service.ts';
 import { UserMeasurements } from '../models/user-profile.model';
+import { TranslateService } from '@ngx-translate/core';
 
 @Injectable({
   providedIn: 'root'
@@ -22,6 +23,7 @@ export class DataConversionService {
   private progressiveOverloadService = inject(ProgressiveOverloadService);
   private spinnerService = inject(SpinnerService);
   private toastService = inject(ToastService);
+  private translate = inject(TranslateService);
 
   constructor() { }
 
@@ -31,7 +33,7 @@ export class DataConversionService {
    * @param toUnit The unit to convert to.
    */
   public async convertAllWeightData(fromUnit: WeightUnit, toUnit: WeightUnit): Promise<void> {
-    this.spinnerService.show('Converting weight data...');
+    this.spinnerService.show(this.translate.instant('dataConversionService.spinner.convertingWeight'));
 
     // 1. Workout Logs & PBs (Unchanged)
     const logs = this.trackingService.getDataForBackup();
@@ -90,7 +92,7 @@ export class DataConversionService {
           if (item.currentWeightKg != null) item.currentWeightKg = this.unitsService.convertWeight(item.currentWeightKg, fromUnit, toUnit);
           break;
         case 'Band':
-           // CORRECTED: Property is 'resistance' in the model
+          // CORRECTED: Property is 'resistance' in the model
           if (item.resistance != null) item.resistance = this.unitsService.convertWeight(item.resistance, fromUnit, toUnit);
           break;
         case 'Machine':
@@ -109,7 +111,9 @@ export class DataConversionService {
     }
 
     this.spinnerService.hide();
-    this.toastService.success('All weight data converted successfully!', 3000, "Conversion Complete");
+    const title = this.translate.instant('dataConversionService.toast.conversionCompleteTitle');
+    const message = this.translate.instant('dataConversionService.toast.weightSuccess');
+    this.toastService.success(message, 3000, title);
   }
 
   /**
@@ -118,7 +122,7 @@ export class DataConversionService {
    * @param toUnit The unit to convert to.
    */
   public async convertAllBodyWeightData(fromUnit: BodyWeightUnit, toUnit: BodyWeightUnit): Promise<void> {
-    this.spinnerService.show('Converting body weight data...');
+    this.spinnerService.show(this.translate.instant('dataConversionService.spinner.convertingBodyWeight'));
     const profile = this.userProfileService.getDataForBackup();
     if (profile) {
       if (profile.measurementHistory) {
@@ -134,7 +138,9 @@ export class DataConversionService {
       this.userProfileService.replaceData(profile);
     }
     this.spinnerService.hide();
-    this.toastService.success('All body weight data converted successfully!', 3000, "Conversion Complete");
+    const title = this.translate.instant('dataConversionService.toast.conversionCompleteTitle');
+    const message = this.translate.instant('dataConversionService.toast.bodyWeightSuccess');
+    this.toastService.success(message, 3000, title);
   }
 
   /**
@@ -143,12 +149,12 @@ export class DataConversionService {
    * @param toUnit The unit to convert to.
    */
   public async convertAllBodyMeasureData(fromUnit: BodyMeasureUnit, toUnit: BodyMeasureUnit): Promise<void> {
-    this.spinnerService.show('Converting body measurement data...');
+    this.spinnerService.show(this.translate.instant('dataConversionService.spinner.convertingBodyMeasure'));
     const profile = this.userProfileService.getDataForBackup();
     if (profile) {
       // CORRECTED: 'height' is the correct property, not 'height'
       const keysToConvert: (keyof Omit<UserMeasurements, 'weight'>)[] = ['height', 'chest', 'neck', 'waist', 'hips', 'rightArm'];
-      
+
       if (profile.measurementHistory) {
         profile.measurementHistory.forEach(entry => {
           keysToConvert.forEach(key => {
@@ -158,7 +164,7 @@ export class DataConversionService {
           });
         });
       }
-      
+
       if (profile.measurementGoals) {
         keysToConvert.forEach(key => {
           const goalKey = key as keyof typeof profile.measurementGoals;
@@ -171,7 +177,9 @@ export class DataConversionService {
       this.userProfileService.replaceData(profile);
     }
     this.spinnerService.hide();
-    this.toastService.success('All body measurement data converted successfully!', 3000, "Conversion Complete");
+    const title = this.translate.instant('dataConversionService.toast.conversionCompleteTitle');
+    const message = this.translate.instant('dataConversionService.toast.bodyMeasureSuccess');
+    this.toastService.success(message, 3000, title);
   }
 
   /**
@@ -181,7 +189,7 @@ export class DataConversionService {
    * @param toUnit The unit to convert to.
    */
   public async convertAllMeasureData(fromUnit: MeasureUnit, toUnit: MeasureUnit): Promise<void> {
-    this.spinnerService.show('Converting measurement data...');
+    this.spinnerService.show(this.translate.instant('dataConversionService.spinner.convertingMeasure'));
 
     // Convert Personal Gym Equipment
     const gymEquipment = this.personalGymService.getDataForBackup();
@@ -192,11 +200,13 @@ export class DataConversionService {
       }
     });
     this.personalGymService.mergeData(gymEquipment);
-    
+
     // Add other data conversions here if needed in the future
 
     this.spinnerService.hide();
-    this.toastService.success('All measurement data converted successfully!', 3000, "Conversion Complete");
+    const title = this.translate.instant('dataConversionService.toast.conversionCompleteTitle');
+    const message = this.translate.instant('dataConversionService.toast.measureSuccess');
+    this.toastService.success(message, 3000, title);
   }
 
   /**
@@ -206,7 +216,7 @@ export class DataConversionService {
    * @param toUnit The unit to convert to.
    */
   public async convertAllDistanceMeasureData(fromUnit: DistanceMeasureUnit, toUnit: DistanceMeasureUnit): Promise<void> {
-    this.spinnerService.show('Converting distance data...');
+    this.spinnerService.show(this.translate.instant('dataConversionService.spinner.convertingDistance'));
 
     // 1. Convert Workout Logs
     const logs = this.trackingService.getDataForBackup();
@@ -250,6 +260,8 @@ export class DataConversionService {
     }
 
     this.spinnerService.hide();
-    this.toastService.success('All distance data converted successfully!', 3000, "Conversion Complete");
+    const title = this.translate.instant('dataConversionService.toast.conversionCompleteTitle');
+    const message = this.translate.instant('dataConversionService.toast.distanceSuccess');
+    this.toastService.success(message, 3000, title);
   }
 }
