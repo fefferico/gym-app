@@ -1810,5 +1810,39 @@
       "duration": "时长（秒）",
       "value": "值"
     }
+  },
+
+  "sessionOverview": {
+    "title": "会话概览",
+    "doneButton": "完成"
+  },
+  "exerciseItem": {
+    "sets": "组",
+    "in": "在",
+    "rounds": "轮",
+    "round": "轮",
+    "reps": "次",
+    "table": {
+      "set": "组",
+      "planned": "计划",
+      "performed": "实际"
+    },
+    "status": {
+      "skipped": "已跳过",
+      "doLater": "稍后完成",
+      "completed": "已完成",
+      "inProgress": "进行中",
+      "pending": "待定"
+    },
+    "indicator": {
+      "title": {
+        "completed": "已完成",
+        "current": "当前",
+        "skipped": "已跳过",
+        "doLater": "稍后完成",
+        "pending": "待定"
+      }
+    }
   }
+
 }

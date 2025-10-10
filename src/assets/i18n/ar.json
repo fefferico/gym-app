@@ -1810,5 +1810,38 @@
             "duration": "المدة (ثوانٍ)",
             "value": "القيمة"
         }
+    },
+
+  "sessionOverview": {
+    "title": "نظرة عامة على الجلسة",
+    "doneButton": "تم"
+  },
+  "exerciseItem": {
+    "sets": "مجموعات",
+    "in": "في",
+    "rounds": "جولات",
+    "round": "جولة",
+    "reps": "تكرار",
+    "table": {
+      "set": "المجموعة",
+      "planned": "المخطط له",
+      "performed": "الأداء"
+    },
+    "status": {
+      "skipped": "تم تخطيه",
+      "doLater": "لاحقاً",
+      "completed": "مكتمل",
+      "inProgress": "قيد التنفيذ",
+      "pending": "قيد الانتظار"
+    },
+    "indicator": {
+      "title": {
+        "completed": "مكتمل",
+        "current": "الحالي",
+        "skipped": "تم تخطيه",
+        "doLater": "لاحقاً",
+        "pending": "قيد الانتظار"
+      }
     }
+  }
 }

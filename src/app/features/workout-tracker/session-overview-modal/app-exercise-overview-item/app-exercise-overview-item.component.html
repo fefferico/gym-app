@@ -4,11 +4,10 @@
         <h5 class="font-bold text-gray-800 dark:text-gray-100">{{ exercise.exerciseName }}</h5>
         <span class="text-xs font-semibold px-2 py-0.5 rounded-full" [ngClass]="status().class">{{ status().text }}</span>
     </div>
-    <!-- CORRECTED: Simplified and accurate display of set counts -->
     <p class="text-sm font-mono text-gray-500 dark:text-gray-400">
-        {{ getNumberOfLoggedSets(exercise.id) }} / {{ totalPlannedSets() }} sets
+        {{ getNumberOfLoggedSets(exercise.id) }} / {{ totalPlannedSets() }} {{ 'exerciseItem.sets' | translate }}
         <span *ngIf="roundInfo().totalRounds > 1">
-            in {{ roundInfo().totalRounds }} rounds
+            {{ 'exerciseItem.in' | translate }} {{ roundInfo().totalRounds }} {{ 'exerciseItem.rounds' | translate }}
         </span>
     </p>
 </div>
@@ -19,18 +18,17 @@
     <div *ngFor="let roundIndex of roundInfo().roundIndices">
         <!-- Conditionally show "Round X" header only if there are multiple rounds -->
         <h6 *ngIf="roundInfo().totalRounds > 1" class="text-xs font-bold mt-2 mb-1 pl-1 text-gray-600 dark:text-gray-400">
-            Round {{ roundIndex + 1 }}
+            {{ 'exerciseItem.round' | translate }} {{ roundIndex + 1 }}
         </h6>
         <div class="text-xs space-y-1">
-            <!-- Header Row (shows for every exercise's set list) -->
+            <!-- Header Row -->
             <div class="grid grid-cols-12 gap-2 font-bold text-gray-600 dark:text-gray-300 p-1.5 rounded bg-gray-200/60 dark:bg-gray-700">
-                <div class="col-span-1 text-center">Set</div>
-                <div class="col-span-5">Planned</div>
-                <div class="col-span-5">Performed</div>
+                <div class="col-span-1 text-center">{{ 'exerciseItem.table.set' | translate }}</div>
+                <div class="col-span-5">{{ 'exerciseItem.table.planned' | translate }}</div>
+                <div class="col-span-5">{{ 'exerciseItem.table.performed' | translate }}</div>
                 <div class="col-span-1 text-center"></div>
             </div>
             <!-- Data Rows -->
-            <!-- The inner loop now uses the getSetsForRound helper -->
             <div *ngFor="let set of getSetsForRound(roundIndex); let i = index" 
                  class="grid grid-cols-12 gap-2 items-center p-1.5 rounded"
                  [ngClass]="{
@@ -38,16 +36,13 @@
                     'bg-gray-100 dark:bg-gray-700/30': i % 2 !== 0
                  }">
 
-                <!-- The set/round number is now calculated conditionally -->
                 <div class="col-span-1 text-center font-semibold text-gray-700 dark:text-gray-300">{{ exercise.supersetId ? roundIndex + 1 : i + 1 }}</div>
                 
                 <div class="col-span-5 text-gray-800 dark:text-gray-200">{{ formatSet(set) }}</div>
                 
-                <!-- The roundIndex here is correct for looking up the log -->
                 <div class="col-span-5 font-semibold text-gray-900 dark:text-white">{{ formatSet(getLoggedSetFor(set.id, roundIndex), true) }}</div>
                 
                 <div class="col-span-1 flex justify-center">
-                    <!-- The setIndex argument is now passed conditionally -->
                     <span class="w-3 h-3 rounded-full" 
                           [ngClass]="getSetStatusIndicatorClass(set.id, roundIndex, exercise.supersetId ? roundIndex : i).class" 
                           [title]="getSetStatusIndicatorClass(set.id, roundIndex, exercise.supersetId ? roundIndex : i).title">

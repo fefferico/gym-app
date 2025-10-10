@@ -1819,6 +1819,39 @@
       "duration": "Duration (seconds)",
       "value": "Value"
     }
+  },
+
+  "sessionOverview": {
+    "title": "Session Overview",
+    "doneButton": "DONE"
+  },
+  "exerciseItem": {
+    "sets": "sets",
+    "in": "in",
+    "rounds": "rounds",
+    "round": "Round",
+    "reps": "reps",
+    "table": {
+      "set": "Set",
+      "planned": "Planned",
+      "performed": "Performed"
+    },
+    "status": {
+      "skipped": "Skipped",
+      "doLater": "Do Later",
+      "completed": "Completed",
+      "inProgress": "In Progress",
+      "pending": "Pending"
+    },
+    "indicator": {
+      "title": {
+        "completed": "Completed",
+        "current": "Current",
+        "skipped": "Skipped",
+        "doLater": "Do Later",
+        "pending": "Pending"
+      }
+    }
   }
 
 }

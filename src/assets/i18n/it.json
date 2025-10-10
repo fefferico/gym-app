@@ -1815,6 +1815,39 @@
       "duration": "Durata (secondi)",
       "value": "Valore"
     }
+  },
+
+  "sessionOverview": {
+    "title": "Riepilogo Sessione",
+    "doneButton": "FATTO"
+  },
+  "exerciseItem": {
+    "sets": "serie",
+    "in": "in",
+    "rounds": "round",
+    "round": "Round",
+    "reps": "rip",
+    "table": {
+      "set": "Serie",
+      "planned": "Pianificato",
+      "performed": "Eseguito"
+    },
+    "status": {
+      "skipped": "Saltato",
+      "doLater": "Fare Dopo",
+      "completed": "Completato",
+      "inProgress": "In Corso",
+      "pending": "In Attesa"
+    },
+    "indicator": {
+      "title": {
+        "completed": "Completato",
+        "current": "Attuale",
+        "skipped": "Saltato",
+        "doLater": "Fare Dopo",
+        "pending": "In Attesa"
+      }
+    }
   }
 
 }

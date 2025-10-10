@@ -1800,5 +1800,38 @@
       "duration": "Duración (segundos)",
       "value": "Valor"
     }
+  },
+
+  "sessionOverview": {
+    "title": "Resumen de la Sesión",
+    "doneButton": "HECHO"
+  },
+  "exerciseItem": {
+    "sets": "series",
+    "in": "en",
+    "rounds": "rondas",
+    "round": "Ronda",
+    "reps": "reps",
+    "table": {
+      "set": "Serie",
+      "planned": "Planeado",
+      "performed": "Realizado"
+    },
+    "status": {
+      "skipped": "Omitido",
+      "doLater": "Hacer Después",
+      "completed": "Completado",
+      "inProgress": "En Progreso",
+      "pending": "Pendiente"
+    },
+    "indicator": {
+      "title": {
+        "completed": "Completado",
+        "current": "Actual",
+        "skipped": "Omitido",
+        "doLater": "Hacer Después",
+        "pending": "Pendiente"
+      }
+    }
   }
 }

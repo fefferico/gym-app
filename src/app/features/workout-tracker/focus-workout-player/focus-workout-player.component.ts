@@ -123,12 +123,10 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
   editingTargetValue: number | string = '';
   routineId: string | null = null;
 
-  // +++ NEW: Method to open the modal +++
   openSessionOverviewModal(): void {
     this.isSessionOverviewVisible.set(true);
   }
 
-  // +++ NEW: Method to close the modal +++
   closeSessionOverviewModal(): void {
     this.isSessionOverviewVisible.set(false);
   }

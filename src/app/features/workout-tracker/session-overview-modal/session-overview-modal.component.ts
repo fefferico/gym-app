@@ -1,9 +1,10 @@
 import { Component, Input, Output, EventEmitter, computed, Signal } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { Routine, WorkoutExercise } from '../../../core/models/workout.model';
-import { LoggedWorkoutExercise } from '../../../core/models/workout-log.model';
+import { LoggedWorkoutExercise, WorkoutLog } from '../../../core/models/workout-log.model';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { ExerciseOverviewItemComponent } from './app-exercise-overview-item/app-exercise-overview-item.component';
+import { TranslateModule } from '@ngx-translate/core';
 // Define interfaces for the structured data this component will use
 interface StandardExerciseGroup {
   type: 'standard';
@@ -21,7 +22,7 @@ type DisplayGroup = StandardExerciseGroup | SupersetGroup;
 @Component({
   selector: 'app-session-overview-modal',
   standalone: true,
-  imports: [CommonModule, IconComponent, ExerciseOverviewItemComponent],
+  imports: [CommonModule, IconComponent, ExerciseOverviewItemComponent, TranslateModule],
   templateUrl: 'session-overview-modal.component.html'
 })
 export class SessionOverviewModalComponent {

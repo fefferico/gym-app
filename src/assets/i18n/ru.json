@@ -1795,10 +1795,43 @@
       "viewLog": "ЗАПИСЬ"
     },
     "yAxis": {
-      "weight": "Вес ({{unit}})",
+      "weight": "Bec ({{unit}})",
       "reps": "Повторения",
       "duration": "Продолжительность (секунд)",
       "value": "Значение"
+    }
+  },
+
+  "sessionOverview": {
+    "title": "Обзор Сессии",
+    "doneButton": "ГОТОВО"
+  },
+  "exerciseItem": {
+    "sets": "подходы",
+    "in": "в",
+    "rounds": "раундах",
+    "round": "Раунд",
+    "reps": "повт",
+    "table": {
+      "set": "Подход",
+      "planned": "План",
+      "performed": "Выполнено"
+    },
+    "status": {
+      "skipped": "Пропущено",
+      "doLater": "Отложить",
+      "completed": "Завершено",
+      "inProgress": "В Процессе",
+      "pending": "Ожидание"
+    },
+    "indicator": {
+      "title": {
+        "completed": "Завершено",
+        "current": "Текущий",
+        "skipped": "Пропущено",
+        "doLater": "Отложить",
+        "pending": "Ожидание"
+      }
     }
   }
 }

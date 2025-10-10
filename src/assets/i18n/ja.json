@@ -1810,5 +1810,38 @@
       "duration": "時間（秒）",
       "value": "値"
     }
+  },
+
+  "sessionOverview": {
+    "title": "セッション概要",
+    "doneButton": "完了"
+  },
+  "exerciseItem": {
+    "sets": "セット",
+    "in": "で",
+    "rounds": "ラウンド",
+    "round": "ラウンド",
+    "reps": "レップ",
+    "table": {
+      "set": "セット",
+      "planned": "予定",
+      "performed": "実行"
+    },
+    "status": {
+      "skipped": "スキップ",
+      "doLater": "後で実行",
+      "completed": "完了",
+      "inProgress": "進行中",
+      "pending": "保留中"
+    },
+    "indicator": {
+      "title": {
+        "completed": "完了",
+        "current": "現在",
+        "skipped": "スキップ",
+        "doLater": "後で実行",
+        "pending": "保留中"
+      }
+    }
   }
 }

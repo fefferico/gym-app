@@ -1810,5 +1810,38 @@
       "duration": "Durée (secondes)",
       "value": "Valeur"
     }
+  },
+
+  "sessionOverview": {
+    "title": "Aperçu de la Session",
+    "doneButton": "TERMINÉ"
+  },
+  "exerciseItem": {
+    "sets": "séries",
+    "in": "en",
+    "rounds": "tours",
+    "round": "Tour",
+    "reps": "réps",
+    "table": {
+      "set": "Série",
+      "planned": "Prévu",
+      "performed": "Effectué"
+    },
+    "status": {
+      "skipped": "Sauté",
+      "doLater": "À Faire Plus Tard",
+      "completed": "Terminé",
+      "inProgress": "En Cours",
+      "pending": "En Attente"
+    },
+    "indicator": {
+      "title": {
+        "completed": "Terminé",
+        "current": "Actuel",
+        "skipped": "Sauté",
+        "doLater": "À Faire Plus Tard",
+        "pending": "En Attente"
+      }
+    }
   }
 }

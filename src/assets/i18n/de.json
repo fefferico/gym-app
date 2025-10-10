@@ -1811,5 +1811,38 @@
             "duration": "Dauer (Sekunden)",
             "value": "Wert"
         }
+    },
+
+  "sessionOverview": {
+    "title": "Sitzungsübersicht",
+    "doneButton": "FERTIG"
+  },
+  "exerciseItem": {
+    "sets": "sätze",
+    "in": "in",
+    "rounds": "runden",
+    "round": "Runde",
+    "reps": "wdh",
+    "table": {
+      "set": "Satz",
+      "planned": "Geplant",
+      "performed": "Durchgeführt"
+    },
+    "status": {
+      "skipped": "Übersprungen",
+      "doLater": "Später Machen",
+      "completed": "Abgeschlossen",
+      "inProgress": "Im Gange",
+      "pending": "Ausstehend"
+    },
+    "indicator": {
+      "title": {
+        "completed": "Abgeschlossen",
+        "current": "Aktuell",
+        "skipped": "Übersprungen",
+        "doLater": "Später Machen",
+        "pending": "Ausstehend"
+      }
     }
+  }
 }

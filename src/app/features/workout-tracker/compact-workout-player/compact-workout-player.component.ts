@@ -49,6 +49,7 @@ import { ProgressiveOverloadService } from '../../../core/services/progressive-o
 import { BarbellCalculatorModalComponent } from '../../../shared/components/barbell-calculator-modal/barbell-calculator-modal.component';
 import { NgLetDirective } from '../../../shared/directives/ng-let.directive';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { SessionOverviewModalComponent } from '../session-overview-modal/session-overview-modal.component';
 
 // Interface for saving the paused state
 
@@ -81,7 +82,7 @@ export interface NextStepInfo {
   imports: [
     CommonModule, DatePipe, WeightUnitPipe, IconComponent,
     ExerciseSelectionModalComponent, FormsModule, ActionMenuComponent, FullScreenRestTimerComponent, NgLetDirective,
-    DragDropModule, BarbellCalculatorModalComponent, TranslateModule
+    DragDropModule, BarbellCalculatorModalComponent, TranslateModule, SessionOverviewModalComponent
   ],
   templateUrl: './compact-workout-player.component.html',
   styleUrls: ['./compact-workout-player.component.scss'],
@@ -198,6 +199,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   programId: string | null = null;
 
   currentWorkoutLog = signal<Partial<WorkoutLog>>({ exercises: [], notes: '' }); // +++ MODIFIED: Initialize notes
+  currentWorkoutLogExercises = computed(() => this.currentWorkoutLog()?.exercises ?? []);
 
   defaultExercises: Exercise[] = [];
   availableExercises: Exercise[] = [];
@@ -3622,7 +3624,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     }
     return exercise.sets.findIndex((round, roundIdx) => !this.isRoundCompleted(exIndex, roundIdx));
   }
-  
+
 
   /**
    * Determines the dynamic CSS classes for a superset round card.
@@ -3817,6 +3819,15 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     }
     const sessionStatePaused = sessioneState === 'paused' ? ' animate-pulse' : '';
     return !!routine.cardColor ? 'text-white' + sessionStatePaused : '' + sessionStatePaused;
+  }
+
+  isSessionOverviewVisible = signal(false);
+  openSessionOverviewModal(): void {
+    this.isSessionOverviewVisible.set(true);
+  }
+
+  closeSessionOverviewModal(): void {
+    this.isSessionOverviewVisible.set(false);
   }
 
 }
