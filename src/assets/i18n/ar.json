@@ -1843,5 +1843,24 @@
         "pending": "قيد الانتظار"
       }
     }
+  },
+  "activityService": {
+    "logSuccess": {
+      "message": "تم تسجيل \"{{activityName}}\" بنجاح!",
+      "title": "تم تسجيل النشاط"
+    },
+    "deleteSuccess": {
+      "message": "تم حذف سجل النشاط.",
+      "title": "تم الحذف"
+    },
+    "updateSuccess": {
+      "message": "تم تحديث \"{{activityName}}\" بنجاح!",
+      "title": "تم تحديث النشاط"
+    },
+    "mergeSuccess": {
+      "message": "تم استيراد {{count}} من سجلات الأنشطة الجديدة.",
+      "title": "تم دمج الأنشطة"
+    },
+    "mergeInfo": "لا توجد سجلات أنشطة جديدة للاستيراد."
   }
 }

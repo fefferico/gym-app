@@ -1848,6 +1848,26 @@
         "pending": "In Attesa"
       }
     }
+  },
+
+  "activityService": {
+    "logSuccess": {
+      "message": "Registrata \"{{activityName}}\" con successo!",
+      "title": "Attività Registrata"
+    },
+    "deleteSuccess": {
+      "message": "Log attività cancellato.",
+      "title": "Cancellato"
+    },
+    "updateSuccess": {
+      "message": "Aggiornata \"{{activityName}}\" con successo!",
+      "title": "Attività Aggiornata"
+    },
+    "mergeSuccess": {
+      "message": "{{count}} nuovi log attività importati.",
+      "title": "Attività Unite"
+    },
+    "mergeInfo": "Nessun nuovo log attività da importare."
   }
 
 }

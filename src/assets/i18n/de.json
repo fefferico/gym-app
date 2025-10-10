@@ -1844,5 +1844,24 @@
         "pending": "Ausstehend"
       }
     }
+  },
+  "activityService": {
+    "logSuccess": {
+      "message": "\"{{activityName}}\" erfolgreich protokolliert!",
+      "title": "Aktivität Protokolliert"
+    },
+    "deleteSuccess": {
+      "message": "Aktivitätsprotokoll gelöscht.",
+      "title": "Gelöscht"
+    },
+    "updateSuccess": {
+      "message": "\"{{activityName}}\" erfolgreich aktualisiert!",
+      "title": "Aktivität Aktualisiert"
+    },
+    "mergeSuccess": {
+      "message": "{{count}} neue Aktivitätsprotokolle importiert.",
+      "title": "Aktivitäten Zusammengeführt"
+    },
+    "mergeInfo": "Keine neuen Aktivitätsprotokolle zum Importieren."
   }
 }

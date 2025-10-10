@@ -1843,6 +1843,26 @@
         "pending": "待定"
       }
     }
+  },
+
+  "activityService": {
+    "logSuccess": {
+      "message": "成功记录 “{{activityName}}”！",
+      "title": "活动已记录"
+    },
+    "deleteSuccess": {
+      "message": "活动日志已删除。",
+      "title": "已删除"
+    },
+    "updateSuccess": {
+      "message": "成功更新 “{{activityName}}”！",
+      "title": "活动已更新"
+    },
+    "mergeSuccess": {
+      "message": "已导入 {{count}} 个新的活动日志。",
+      "title": "活动已合并"
+    },
+    "mergeInfo": "没有新的活动日志可供导入。"
   }
 
 }

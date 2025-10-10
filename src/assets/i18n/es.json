@@ -1833,5 +1833,25 @@
         "pending": "Pendiente"
       }
     }
+  },
+
+  "activityService": {
+    "logSuccess": {
+      "message": "¡\"{{activityName}}\" registrado con éxito!",
+      "title": "Actividad Registrada"
+    },
+    "deleteSuccess": {
+      "message": "Registro de actividad eliminado.",
+      "title": "Eliminado"
+    },
+    "updateSuccess": {
+      "message": "¡\"{{activityName}}\" actualizado con éxito!",
+      "title": "Actividad Actualizada"
+    },
+    "mergeSuccess": {
+      "message": "{{count}} nuevos registros de actividad importados.",
+      "title": "Actividades Fusionadas"
+    },
+    "mergeInfo": "No hay nuevos registros de actividad para importar."
   }
 }

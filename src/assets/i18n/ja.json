@@ -1811,7 +1811,6 @@
       "value": "値"
     }
   },
-
   "sessionOverview": {
     "title": "セッション概要",
     "doneButton": "完了"
@@ -1843,5 +1842,24 @@
         "pending": "保留中"
       }
     }
+  },
+  "activityService": {
+    "logSuccess": {
+      "message": "「{{activityName}}」を正常に記録しました！",
+      "title": "アクティビティが記録されました"
+    },
+    "deleteSuccess": {
+      "message": "アクティビティログを削除しました。",
+      "title": "削除済み"
+    },
+    "updateSuccess": {
+      "message": "「{{activityName}}」を正常に更新しました！",
+      "title": "アクティビティが更新されました"
+    },
+    "mergeSuccess": {
+      "message": "{{count}}件の新しいアクティビティログがインポートされました。",
+      "title": "アクティビティがマージされました"
+    },
+    "mergeInfo": "インポートする新しいアクティビティログはありません。"
   }
 }

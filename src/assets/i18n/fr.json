@@ -1843,5 +1843,24 @@
         "pending": "En Attente"
       }
     }
+  },
+  "activityService": {
+    "logSuccess": {
+      "message": "\"{{activityName}}\" enregistré avec succès !",
+      "title": "Activité Enregistrée"
+    },
+    "deleteSuccess": {
+      "message": "Journal d'activité supprimé.",
+      "title": "Supprimé"
+    },
+    "updateSuccess": {
+      "message": "\"{{activityName}}\" mis à jour avec succès !",
+      "title": "Activité Mise à Jour"
+    },
+    "mergeSuccess": {
+      "message": "{{count}} nouveaux journaux d'activité importés.",
+      "title": "Activités Fusionnées"
+    },
+    "mergeInfo": "Aucun nouveau journal d'activité à importer."
   }
 }

@@ -3,6 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
+import { TranslateService } from '@ngx-translate/core'; // Import TranslateService
 
 import { StorageService } from './storage.service';
 import { ToastService } from './toast.service';
@@ -16,6 +17,7 @@ import { ACTIVITIES_DATA } from './activities-data';
 export class ActivityService {
   private storageService = inject(StorageService);
   private toastService = inject(ToastService);
+  private translate = inject(TranslateService); // Inject TranslateService
 
   private readonly ACTIVITIES_LOGS_STORAGE_KEY = 'fitTrackPro_activityLogs';
 
@@ -57,7 +59,9 @@ export class ActivityService {
     const updatedLogs = [newLog, ...currentLogs];
     this._saveLogsToStorage(updatedLogs);
 
-    this.toastService.success(`Logged "${newLog.activityName}" successfully!`, 3000, "Activity Logged");
+    const message = this.translate.instant('activityService.logSuccess.message', { activityName: newLog.activityName });
+    const title = this.translate.instant('activityService.logSuccess.title');
+    this.toastService.success(message, 3000, title);
     return newLog;
   }
 
@@ -110,7 +114,10 @@ export class ActivityService {
     const currentLogs = this.activityLogsSubject.getValue();
     const updatedLogs = currentLogs.filter(log => log.id !== logId);
     this._saveLogsToStorage(updatedLogs);
-    this.toastService.info('Activity log deleted.', 3000, 'Deleted');
+
+    const message = this.translate.instant('activityService.deleteSuccess.message');
+    const title = this.translate.instant('activityService.deleteSuccess.title');
+    this.toastService.info(message, 3000, title);
   }
 
   /**
@@ -124,7 +131,10 @@ export class ActivityService {
       const updatedLogsArray = [...currentLogs];
       updatedLogsArray[index] = updatedLog;
       this._saveLogsToStorage(updatedLogsArray);
-      this.toastService.success(`Updated "${updatedLog.activityName}" successfully!`, 3000, "Activity Updated");
+
+      const message = this.translate.instant('activityService.updateSuccess.message', { activityName: updatedLog.activityName });
+      const title = this.translate.instant('activityService.updateSuccess.title');
+      this.toastService.success(message, 3000, title);
     }
   }
 
@@ -164,9 +174,13 @@ export class ActivityService {
     if (newLogsToAdd.length > 0) {
       const mergedLogs = [...currentLogs, ...newLogsToAdd];
       this._saveLogsToStorage(mergedLogs);
-      this.toastService.success(`${addedCount} new activity logs imported.`, 3000, "Activities Merged");
+
+      const message = this.translate.instant('activityService.mergeSuccess.message', { count: addedCount });
+      const title = this.translate.instant('activityService.mergeSuccess.title');
+      this.toastService.success(message, 3000, title);
     } else {
-      this.toastService.info("No new activity logs to import.", 2000);
+      const message = this.translate.instant('activityService.mergeInfo');
+      this.toastService.info(message, 2000);
     }
   }
 

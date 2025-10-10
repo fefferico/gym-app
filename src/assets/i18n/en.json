@@ -1852,6 +1852,26 @@
         "pending": "Pending"
       }
     }
+  },
+
+  "activityService": {
+    "logSuccess": {
+      "message": "Logged \"{{activityName}}\" successfully!",
+      "title": "Activity Logged"
+    },
+    "deleteSuccess": {
+      "message": "Activity log deleted.",
+      "title": "Deleted"
+    },
+    "updateSuccess": {
+      "message": "Updated \"{{activityName}}\" successfully!",
+      "title": "Activity Updated"
+    },
+    "mergeSuccess": {
+      "message": "{{count}} new activity logs imported.",
+      "title": "Activities Merged"
+    },
+    "mergeInfo": "No new activity logs to import."
   }
 
 }
