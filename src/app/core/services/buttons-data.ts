@@ -315,7 +315,7 @@ export const unmarkFavouriteBtn = {
     label: 'actionButtons.unmarkFavourite',
     actionKey: 'unmarkAsFavourite',
     iconName: `unmark`,
-    iconClass: 'w-8 h-8', // Adjusted for consistency if needed,
+    iconClass: 'w-8 h-8 mr-2', // Adjusted for consistency if needed,
     buttonClass: ' hover:bg-primary truncate',
 }
 

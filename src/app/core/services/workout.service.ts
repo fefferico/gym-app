@@ -814,7 +814,7 @@ export class WorkoutService {
       label: exer.exerciseName,
       name: String(exer.originalIndex),
       type: 'checkbox',
-      checked: exer.originalIndex === exIndex, // Pre-check the initiating exercise
+      value: exer.originalIndex === exIndex, // Pre-check the initiating exercise
     }));
 
     exerciseInputs.push({

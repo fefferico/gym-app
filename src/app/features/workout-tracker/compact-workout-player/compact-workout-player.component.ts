@@ -1824,7 +1824,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       let detailsLine = '';
       if (historicalSet) {
         const weight = this.weightUnitPipe.transform(historicalSet.weightUsed);
-        detailsLine = `Last time: ${weight} x ${historicalSet.repsAchieved} reps`;
+        detailsLine = `${this.translate.instant('restTimer.lastTime')}: ${weight} x ${historicalSet.repsAchieved} reps`;
       } else {
         // +++ MODIFIED: Pass all required indices to the formatting function +++
         detailsLine = this.formatSetTargetForDisplay(plannedSet, exercise, nextExIndex, nextSetIndex);
@@ -2514,7 +2514,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
    * @param exIndex The index of the exercise.
    * @returns The index of the first incomplete set, or -1 if all are complete.
    */
-  private findFirstIncompleteSetIndex(exIndex: number): number {
+  protected findFirstIncompleteSetIndex(exIndex: number): number {
     const exercise = this.routine()?.exercises[exIndex];
     if (!exercise) {
       return -1; // Should not happen in normal flow
@@ -2543,7 +2543,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     if (isFocused) {
       return {
         'rounded-lg shadow-md transition-all duration-300': true,
-        'ring-2 ring-yellow-400 dark:ring-yellow-500 z-10': true, // Focus style
+        'relative ring-2 ring-yellow-400 dark:ring-yellow-500 z-10': true, // Focus style
         'bg-white dark:bg-gray-800': true // Default background when focused
       };
     }
@@ -3141,6 +3141,23 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       const originalSet = this.originalRoutineSnapshot()?.exercises[exIndex]?.sets[setIndex];
       const targetSetValues: ExerciseTargetExecutionSetParams = mapExerciseTargetSetParamsToExerciseExecutedSetParams(set);
 
+      const timerState = this.setTimerState()[key];
+      // retrieve actual duration from timer if available considering target
+      // Calculate actual duration performed if timerState and targetSetValues are available
+      const actualDurationPerformed =
+        (!!targetSetValues?.targetDuration && timerState?.remainingTime !== undefined)
+          ? targetSetValues.targetDuration - timerState.remainingTime
+          : userInputs.actualDuration ?? set.targetDuration ?? 0;
+
+      // check if it was a timed set with an active timer, and stop it
+      if (timerState && (timerState.status === 'running' || timerState.status === 'paused')) {
+        this.setTimerSub?.unsubscribe();
+        this.setTimerState.update(states => {
+          delete states[key];
+          return { ...states };
+        });
+      }
+
       // Create the log entry by prioritizing user input, then falling back to the planned target
       const newLoggedSet: LoggedSet = {
         id: uuidv4(),
@@ -3152,7 +3169,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         // Performed values: Prioritize user input. If none, fall back to the planned target for the set.
         repsAchieved: userInputs.repsAchieved ?? set.targetReps ?? 0,
         weightUsed: userInputs.weightUsed ?? set.targetWeight ?? 0,
-        durationPerformed: userInputs.actualDuration ?? set.targetDuration ?? 0,
+        durationPerformed: actualDurationPerformed,
         distanceAchieved: userInputs.actualDistance ?? set.targetDistance ?? 0,
         notes: userInputs.notes ?? set.notes,
 
@@ -3605,6 +3622,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     }
     return exercise.sets.findIndex((round, roundIdx) => !this.isRoundCompleted(exIndex, roundIdx));
   }
+  
 
   /**
    * Determines the dynamic CSS classes for a superset round card.

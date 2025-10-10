@@ -34,13 +34,13 @@
                             <!-- Case 1: Complex icon using <app-icon> component -->
                             <ng-container *ngIf="isComplexIcon(item)">
                                 <app-icon [name]="getIconNameForComponent(item)"
-                                    [class]="item.iconClass || 'w-5 h-5 mr-3'"></app-icon>
+                                    [class]="item.iconClass || 'w-5 h-5 mr-3'" class="flex-shrink-0"></app-icon>
                             </ng-container>
 
                             <!-- Case 2: Simple icon using innerHTML (backward compatibility) -->
                             <ng-container *ngIf="!isComplexIcon(item)">
                                 <span *ngIf="getIconHtml(item) as iconHtml" [innerHTML]="iconHtml"
-                                    [ngClass]="item.iconClass || 'w-5 h-5 mr-3'"></span>
+                                    [ngClass]="(item.iconClass || 'w-5 h-5 mr-3') + ' flex-shrink-0'"></span>
                             </ng-container>
                             <!-- +++ END: CONDITIONAL ICON RENDERING +++ -->
 
