@@ -1810,5 +1810,386 @@
       "duration": "Durée (secondes)",
       "value": "Valeur"
     }
+  },
+
+  "sessionOverview": {
+    "title": "Aperçu de la Session",
+    "doneButton": "TERMINÉ"
+  },
+  "exerciseItem": {
+    "sets": "séries",
+    "in": "en",
+    "rounds": "tours",
+    "round": "Tour",
+    "reps": "réps",
+    "table": {
+      "set": "Série",
+      "planned": "Prévu",
+      "performed": "Effectué"
+    },
+    "status": {
+      "skipped": "Sauté",
+      "doLater": "À Faire Plus Tard",
+      "completed": "Terminé",
+      "inProgress": "En Cours",
+      "pending": "En Attente"
+    },
+    "indicator": {
+      "title": {
+        "completed": "Terminé",
+        "current": "Actuel",
+        "skipped": "Sauté",
+        "doLater": "À Faire Plus Tard",
+        "pending": "En Attente"
+      }
+    }
+  },
+  "activityService": {
+    "logSuccess": {
+      "message": "\"{{activityName}}\" enregistré avec succès !",
+      "title": "Activité Enregistrée"
+    },
+    "deleteSuccess": {
+      "message": "Journal d'activité supprimé.",
+      "title": "Supprimé"
+    },
+    "updateSuccess": {
+      "message": "\"{{activityName}}\" mis à jour avec succès !",
+      "title": "Activité Mise à Jour"
+    },
+    "mergeSuccess": {
+      "message": "{{count}} nouveaux journaux d'activité importés.",
+      "title": "Activités Fusionnées"
+    },
+    "mergeInfo": "Aucun nouveau journal d'activité à importer."
+  },
+  "alertService": {
+    "buttons": {
+      "ok": "OK",
+      "cancel": "Annuler",
+      "confirm": "Confirmer",
+      "doSomething": "Effectuer une action",
+      "doNothing": "Ne rien faire"
+    }
+  },
+  "barbellData": {
+    "barbells": {
+      "mensOlympic": "Barre Olympique pour Hommes",
+      "womensOlympic": "Barre Olympique pour Femmes",
+      "standardGym": "Barre de Gym Standard",
+      "ezCurl": "Barre EZ-Curl",
+      "tricep": "Barre Triceps",
+      "trapHex": "Barre Trap/Hex",
+      "olympic120": "Barre Olympique (120cm)",
+      "olympic152": "Barre Olympique (152cm)",
+      "olympic182": "Barre Olympique (182cm)",
+      "olympic186": "Barre Olympique (186cm)",
+      "olympic219": "Barre Olympique (219cm)",
+      "olympic47in": "Barre Olympique (47po)",
+      "olympic60in": "Barre Olympique (60po)",
+      "olympic72in": "Barre Olympique (72po)",
+      "olympic73in": "Barre Olympique (73po)",
+      "olympic86in": "Barre Olympique (86po)"
+    },
+    "collars": {
+      "none": "Sans Bloque-disques",
+      "spring": "Bloque-disques à Ressort",
+      "lockjaw": "Bloque-disques Lock-Jaw",
+      "competition": "Bloque-disques de Compétition"
+    }
+  },
+  "dataConversionService": {
+    "spinner": {
+      "convertingWeight": "Conversion des données de poids...",
+      "convertingBodyWeight": "Conversion des données de poids corporel...",
+      "convertingBodyMeasure": "Conversion des données de mensurations...",
+      "convertingMeasure": "Conversion des données de mesure...",
+      "convertingDistance": "Conversion des données de distance..."
+    },
+    "toast": {
+      "conversionCompleteTitle": "Conversion Terminée",
+      "weightSuccess": "Toutes les données de poids ont été converties avec succès !",
+      "bodyWeightSuccess": "Toutes les données de poids corporel ont été converties avec succès !",
+      "bodyMeasureSuccess": "Toutes les données de mensurations ont été converties avec succès !",
+      "measureSuccess": "Toutes les données de mesure ont été converties avec succès !",
+      "distanceSuccess": "Toutes les données de distance ont été converties avec succès !"
+    }
+  },
+  "exerciseService": {
+    "unknownExercise": "Exercice Inconnu",
+    "importErrorTitle": "Erreur d'Importation",
+    "importFailed": "Échec de l'importation : Fichier de données d'exercices invalide.",
+    "mergeSuccessTitle": "Exercices Fusionnés",
+    "mergeSuccessMessage": "Importation terminée. {{updatedCount}} exercices mis à jour, {{addedCount}} ajoutés.",
+    "hideErrorTitle": "Erreur",
+    "hideFailed": "Échec pour masquer l'exercice : non trouvé.",
+    "hiddenTitle": "Masqué",
+    "hiddenMessage": "'{{name}}' est maintenant masqué.",
+    "unhideFailed": "Échec pour afficher l'exercice : non trouvé.",
+    "visibleTitle": "Visible",
+    "visibleMessage": "'{{name}}' est maintenant visible."
+  },
+  "personalGymService": {
+    "addSuccessTitle": "Équipement Ajouté",
+    "addSuccessMessage": "\"{{name}}\" a été ajouté à votre salle de sport !",
+    "updateSuccessTitle": "Équipement Mis à Jour",
+    "updateSuccessMessage": "\"{{name}}\" a été mis à jour avec succès !",
+    "updateFailedTitle": "Échec de la Mise à Jour",
+    "updateFailedMessage": "Impossible de trouver \"{{name}}\" pour la mise à jour.",
+    "deleteFailedTitle": "Échec de la Suppression",
+    "deleteFailedMessage": "Équipement non trouvé.",
+    "deleteConfirmTitle": "Supprimer l'Équipement",
+    "deleteConfirmMessage": "Êtes-vous sûr de vouloir supprimer \"{{name}}\" de votre salle de sport ? Cette action est irréversible.",
+    "deletedTitle": "Supprimé",
+    "deletedMessage": "\"{{name}}\" a été supprimé.",
+    "importErrorTitle": "Erreur d'Importation",
+    "importFailed": "Échec de l'importation : Fichier de données de salle de sport personnelle invalide.",
+    "mergeSuccessTitle": "Salle de Sport Personnelle Fusionnée",
+    "mergeSuccessMessage": "Importation de la salle de sport terminée. {{updatedCount}} articles mis à jour, {{addedCount}} ajoutés.",
+    "hideErrorTitle": "Erreur",
+    "hideFailed": "Échec pour masquer l'équipement : non trouvé.",
+    "hiddenTitle": "Masqué",
+    "hiddenMessage": "'{{name}}' est maintenant masqué.",
+    "unhideFailed": "Échec pour afficher l'équipement : non trouvé.",
+    "visibleTitle": "Visible",
+    "visibleMessage": "'{{name}}' est maintenant visible."
+  },
+  "spinnerService": {
+    "timeoutMessage": "Il semble y avoir des problèmes de connexion..."
+  },
+  "statsService": {
+    "weekOf": "Semaine du",
+    "weekPrefix": "S"
+  },
+  "equipment": {
+    "categories": {
+      "machines": "Machines",
+      "functionalBodyweight": "Fonctionnel & Poids du corps",
+      "accessories": "Accessoires",
+      "cardio": "Cardio",
+      "freeWeights": "Poids Libres"
+    },
+    "names": {
+      "abdominalCrunchMachine": "Machine à Crunch Abdominal",
+      "abRollerCoaster": "Ab Roller Coaster",
+      "abWheel": "Roue Abdominale (Ab Wheel)"
+    }
+  },
+  "storageService": {
+    "clearAllWarning": {
+      "title": "AVERTISSEMENT",
+      "message": "Ceci effacera TOUTES les données du stockage local pour ce domaine, ce qui pourrait affecter d'autres applications ou paramètres. Êtes-vous sûr de vouloir continuer ?"
+    }
+  },
+  "subscriptionService": {
+    "upgradeModal": {
+      "title": "Fonctionnalité Premium",
+      "message": "Cette fonctionnalité est disponible pour les utilisateurs Premium. Passez à la version supérieure maintenant pour débloquer ceci et bien plus encore !"
+    }
+  },
+  "trackingService": {
+    "clearLogsConfirm": {
+      "title": "Info",
+      "message": "DÉVELOPPEMENT : Êtes-vous sûr de vouloir supprimer TOUS les journaux d'entraînement ? Cette action est irréversible.",
+      "success": "Tous les journaux d'entraînement ont été effacés !"
+    },
+    "recalcPbs": {
+      "title": "Recalcul des Records Personnels",
+      "message": "Tous vos records personnels de l'ensemble de votre historique d'entraînement vont maintenant être recalculés : cela peut prendre un moment.",
+      "noLogsTitle": "Info",
+      "noLogsMessage": "Il n'y a aucun record personnel à recalculer.",
+      "successTitle": "Succès",
+      "successMessage": "Tous les records personnels ont été recalculés."
+    },
+    "clearPbsConfirm": {
+      "title": "Info",
+      "message": "DÉVELOPPEMENT : Êtes-vous sûr de vouloir supprimer TOUS les records personnels ? Cette action est irréversible.",
+      "success": "Tous les records personnels ont été effacés !"
+    },
+    "import": {
+      "logsErrorTitle": "Erreur d'Importation",
+      "logsErrorMessage": "Échec de l'importation : Fichier de journal d'entraînement invalide.",
+      "logsSuccessTitle": "Journaux Fusionnés",
+      "logsSuccessMessage": "Journaux importés. {{updatedCount}} mis à jour, {{addedCount}} ajoutés.",
+      "pbsErrorTitle": "Erreur d'Importation",
+      "pbsErrorMessage": "Échec de l'importation : Fichier de records personnels invalide.",
+      "pbsSuccessTitle": "Records Personnels Fusionnés",
+      "pbsSuccessMessage": "Les données des records personnels ont été fusionnées avec succès."
+    },
+    "recalcAfterImport": {
+      "title": "Veuillez Patienter",
+      "message": "Recalcul des records personnels en cours...",
+      "noLogsTitle": "Records Personnels Recalculés",
+      "noLogsMessage": "Records personnels effacés car il n'y a pas de journaux.",
+      "successTitle": "Records Personnels Mis à Jour",
+      "successMessage": "Les records personnels ont été recalculés avec succès !"
+    },
+    "deleteRoutine": {
+      "warningTitle": "Avertissement",
+      "noIdMessage": "Aucun ID de routine fourni pour effacer les journaux.",
+      "confirmTitle": "Confirmer la Suppression",
+      "confirmMessageSimple": "Êtes-vous sûr de vouloir supprimer la routine \"{{routineName}}\" ? Cette action est irréversible.",
+      "confirmMessageWithLogs": "Êtes-vous sûr de vouloir supprimer la routine \"{{routineName}}\" ? Il y a {{count}} journal(aux) d'entraînement associé(s). La suppression de la routine supprimera également ces journaux. Cette action est irréversible.",
+      "successTitleSimple": "Info",
+      "successMessageSimple": "La routine \"{{routineName}}\" a été supprimée avec succès !",
+      "successTitleWithLogs": "Succès",
+      "successMessageWithLogs": "{{count}} journal(aux) d'entraînement et la routine \"{{routineName}}\" ont été supprimés."
+    },
+    "history": {
+      "backfillWaitTitle": "Veuillez Patienter",
+      "backfillWaitMessage": "Mise à jour de l'historique des exercices...",
+      "backfillSuccessTitle": "Mise à Jour Terminée",
+      "backfillSuccessMessage": "L'historique des exercices a été mis à jour !",
+      "syncWaitTitle": "Veuillez Patienter",
+      "syncWaitMessage": "Synchronisation de tout l'historique...",
+      "syncNoHistoryMessage": "Aucun historique à synchroniser.",
+      "syncSuccessTitle": "Synchronisation Terminée",
+      "syncSuccessMessage": "L'historique complet a été synchronisé !"
+    }
+  },
+  "trainingProgramService": {
+    "updateError": {
+      "title": "Erreur de Mise à Jour",
+      "message": "Programme avec l'ID {{id}} non trouvé."
+    },
+    "deleteError": {
+      "title": "Erreur de Suppression",
+      "message": "Programme non trouvé."
+    },
+    "deleteConfirm": {
+      "title": "Supprimer le Programme",
+      "message": "Êtes-vous sûr de vouloir supprimer le programme \"{{name}}\" ? Cette action est irréversible.",
+      "cancelButton": "Annuler",
+      "deleteButton": "Supprimer le Programme"
+    },
+    "deleteSuccess": {
+      "title": "Programme Supprimé",
+      "message": "Le programme \"{{name}}\" a été supprimé."
+    },
+    "importError": {
+      "title": "Erreur d'Importation",
+      "message": "Échec de l'importation : Fichier de données de programme invalide."
+    },
+    "importSuccess": {
+      "title": "Programmes Fusionnés",
+      "message": "Importation terminée. {{updatedCount}} programmes mis à jour, {{addedCount}} ajoutés."
+    },
+    "history": {
+      "removeErrorTitle": "Erreur de Suppression de l'Historique",
+      "removeSuccessTitle": "Historique Mis à Jour",
+      "removeSuccessMessage": "Entrée de l'historique supprimée."
+    },
+    "toggle": {
+      "notFound": "Programme non trouvé.",
+      "alreadyActive": "\"{{name}}\" est déjà actif."
+    },
+    "deactivate": {
+      "info": "Le programme \"{{name}}\" a été désactivé."
+    },
+    "updateHistory": {
+      "programNotFound": "Programme non trouvé.",
+      "entryNotFound": "Entrée de l'historique non trouvée.",
+      "success": "L'historique du programme a été mis à jour."
+    }
+  },
+  "userProfileService": {
+    "wipDisclaimer": {
+      "title": "Avis de Travail en Cours",
+      "message": "AVIS : Ceci est une application en cours de développement, basée sur un navigateur. Cela signifie que vos données d'entraînement ne seront pas sauvegardées lorsque vous fermerez le navigateur ou effacerez vos données de navigation. Assurez-vous d'exporter régulièrement vos données et de les réimporter lorsque vous revenez sur l'application.",
+      "checkboxLabel": "Ne plus afficher ce message",
+      "okButton": "OK"
+    }
+  },
+  "units": {
+    "weight": {
+      "kg": "kg",
+      "lbs": "lbs"
+    },
+    "measure": {
+      "cm": "cm",
+      "in": "po"
+    },
+    "distance": {
+      "km": "km",
+      "mi": "mi"
+    }
+  },
+  "workoutService": {
+    "toasts": {
+      "updateErrorTitle": "Erreur",
+      "updateErrorMessage": "Routine avec l'id {{id}} non trouvée pour la mise à jour !",
+      "importErrorTitle": "Erreur d'Importation",
+      "importFailed": "Échec de l'importation : Fichier de données de routine invalide.",
+      "importSuccessTitle": "Routines Fusionnées",
+      "importSuccessMessage": "Routines importées. {{updatedCount}} mises à jour, {{addedCount}} ajoutées.",
+      "pausedDiscarded": "Session d'entraînement en pause annulée.",
+      "superset": {
+        "minSelection": "Veuillez sélectionner au moins deux exercices pour créer un superset.",
+        "alreadyIn": "Cet exercice est déjà dans un superset.",
+        "noneExist": "Il n'existe aucun superset auquel ajouter cet exercice.",
+        "findError": "Impossible de trouver l'exercice ou le superset cible.",
+        "addSuccess": "{{exerciseName}} a été ajouté au superset.",
+        "logCleared": "Les données enregistrées pour {{exerciseName}} ont été effacées.",
+        "dissolved": "Superset dissous car il ne reste qu'un seul exercice.",
+        "removed": "{{exerciseName}} a été retiré du superset."
+      },
+      "enableAllSuccess": "Toutes les routines sont activées !"
+    },
+    "alerts": {
+      "editRunningTitle": "Info",
+      "editRunningMessage": "Il n'est pas possible de modifier une routine en cours. Terminez-la ou annulez-la avant de le faire.",
+      "clearAllTitle": "Info",
+      "clearAllMessage": "Êtes-vous sûr de vouloir supprimer TOUTES les routines ? Cela supprimera TOUTES les routines (pas seulement les journaux) et est irréversible.",
+      "clearAllSuccess": "Toutes les routines ont été effacées !",
+      "clearExecutedTitle": "Info",
+      "clearExecutedMessage": "Êtes-vous sûr de vouloir réinitialiser la propriété 'dernière exécution' de TOUTES les routines ? Cette action est irréversible.",
+      "clearExecutedSuccess": "Tous les journaux des routines ont été effacés !",
+      "resume": {
+        "title": "Reprendre l'entraînement en pause ?",
+        "message": "Vous avez une session d'entraînement en pause. Souhaitez-vous la reprendre ?",
+        "resumeButton": "Reprendre",
+        "discardButton": "Annuler"
+      },
+      "supersetCreatedTitle": "INFO",
+      "supersetCreatedMessage": "Superset créé avec {{count}} exercices et {{rounds}} tours : les journaux existants ont été effacés et les séries standardisées."
+    },
+    "prompts": {
+      "addExerciseTitle": "Ajouter {{exerciseName}}",
+      "labels": {
+        "exerciseName": "Nom de l'exercice",
+        "numSets": "Nombre de Séries",
+        "rest": "Repos entre les Séries (secondes)",
+        "targetDistance": "Distance Cible ({{unit}})",
+        "targetDuration": "Durée Cible (secondes)",
+        "numReps": "Nombre de Répétitions",
+        "targetWeight": "Poids Cible ({{unit}})"
+      },
+      "createSuperset": {
+        "title": "Créer un Superset",
+        "message": "Sélectionnez les exercices à lier.",
+        "roundsLabel": "Nombre de Tours"
+      },
+      "addToSuperset": {
+        "title": "Ajouter au Superset",
+        "message": "Quel superset pour \"{{exerciseName}}\" ?",
+        "groupLabel": "Superset : {{group}}",
+        "addButton": "Ajouter"
+      },
+      "removeFromSuperset": {
+        "title": "Retirer du Superset",
+        "message": "Retirer {{exerciseName}} de ce superset ? Ses séries enregistrées pour cette session seront effacées."
+      }
+    },
+    "display": {
+      "weightNotApplicable": "N/A",
+      "bodyweight": "Poids du corps",
+      "noAddedWeight": "Sans Poids Ajouté",
+      "userDefined": "Défini par l'utilisateur",
+      "unnamedExercise": "Exercice sans nom",
+      "upTo": "Jusqu'à"
+    },
+    "general": {
+      "cancel": "Annuler"
+    }
   }
 }

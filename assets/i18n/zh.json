@@ -1810,5 +1810,388 @@
       "duration": "时长（秒）",
       "value": "值"
     }
+  },
+
+  "sessionOverview": {
+    "title": "会话概览",
+    "doneButton": "完成"
+  },
+  "exerciseItem": {
+    "sets": "组",
+    "in": "在",
+    "rounds": "轮",
+    "round": "轮",
+    "reps": "次",
+    "table": {
+      "set": "组",
+      "planned": "计划",
+      "performed": "实际"
+    },
+    "status": {
+      "skipped": "已跳过",
+      "doLater": "稍后完成",
+      "completed": "已完成",
+      "inProgress": "进行中",
+      "pending": "待定"
+    },
+    "indicator": {
+      "title": {
+        "completed": "已完成",
+        "current": "当前",
+        "skipped": "已跳过",
+        "doLater": "稍后完成",
+        "pending": "待定"
+      }
+    }
+  },
+
+  "activityService": {
+    "logSuccess": {
+      "message": "成功记录 “{{activityName}}”！",
+      "title": "活动已记录"
+    },
+    "deleteSuccess": {
+      "message": "活动日志已删除。",
+      "title": "已删除"
+    },
+    "updateSuccess": {
+      "message": "成功更新 “{{activityName}}”！",
+      "title": "活动已更新"
+    },
+    "mergeSuccess": {
+      "message": "已导入 {{count}} 个新的活动日志。",
+      "title": "活动已合并"
+    },
+    "mergeInfo": "没有新的活动日志可供导入。"
+  },
+  "alertService": {
+    "buttons": {
+      "ok": "确定",
+      "cancel": "取消",
+      "confirm": "确认",
+      "doSomething": "执行操作",
+      "doNothing": "不做任何操作"
+    }
+  },
+  "barbellData": {
+    "barbells": {
+      "mensOlympic": "男子奥林匹克杠铃",
+      "womensOlympic": "女子奥林匹克杠铃",
+      "standardGym": "标准健身房杠铃",
+      "ezCurl": "EZ-Curl 曲杆杠铃",
+      "tricep": "三头肌训练杠铃",
+      "trapHex": "六角杠铃",
+      "olympic120": "奥林匹克杠铃 (120厘米)",
+      "olympic152": "奥林匹克杠铃 (152厘米)",
+      "olympic182": "奥林匹克杠铃 (182厘米)",
+      "olympic186": "奥林匹克杠铃 (186厘米)",
+      "olympic219": "奥林匹克杠铃 (219厘米)",
+      "olympic47in": "奥林匹克杠铃 (47英寸)",
+      "olympic60in": "奥林匹克杠铃 (60英寸)",
+      "olympic72in": "奥林匹克杠铃 (72英寸)",
+      "olympic73in": "奥林匹克杠铃 (73英寸)",
+      "olympic86in": "奥林匹克杠铃 (86英寸)"
+    },
+    "collars": {
+      "none": "无卡扣",
+      "spring": "弹簧夹",
+      "lockjaw": "锁颚式卡扣",
+      "competition": "比赛专用卡扣"
+    }
+  },
+  "dataConversionService": {
+    "spinner": {
+      "convertingWeight": "正在转换重量数据...",
+      "convertingBodyWeight": "正在转换体重数据...",
+      "convertingBodyMeasure": "正在转换身体测量数据...",
+      "convertingMeasure": "正在转换测量数据...",
+      "convertingDistance": "正在转换距离数据..."
+    },
+    "toast": {
+      "conversionCompleteTitle": "转换完成",
+      "weightSuccess": "所有重量数据转换成功！",
+      "bodyWeightSuccess": "所有体重数据转换成功！",
+      "bodyMeasureSuccess": "所有身体测量数据转换成功！",
+      "measureSuccess": "所有测量数据转换成功！",
+      "distanceSuccess": "所有距离数据转换成功！"
+    }
+  },
+  "exerciseService": {
+    "unknownExercise": "未知训练",
+    "importErrorTitle": "导入错误",
+    "importFailed": "导入失败：无效的训练数据文件。",
+    "mergeSuccessTitle": "训练已合并",
+    "mergeSuccessMessage": "导入完成。{{updatedCount}} 个训练已更新，{{addedCount}} 个已添加。",
+    "hideErrorTitle": "错误",
+    "hideFailed": "隐藏训练失败：未找到。",
+    "hiddenTitle": "已隐藏",
+    "hiddenMessage": "'{{name}}' 现已隐藏。",
+    "unhideFailed": "取消隐藏训练失败：未找到。",
+    "visibleTitle": "可见",
+    "visibleMessage": "'{{name}}' 现已可见。"
+  },
+  "personalGymService": {
+    "addSuccessTitle": "已添加器材",
+    "addSuccessMessage": "已将 “{{name}}” 添加到您的健身房！",
+    "updateSuccessTitle": "器材已更新",
+    "updateSuccessMessage": "“{{name}}” 更新成功！",
+    "updateFailedTitle": "更新失败",
+    "updateFailedMessage": "找不到 “{{name}}” 进行更新。",
+    "deleteFailedTitle": "删除失败",
+    "deleteFailedMessage": "未找到器材。",
+    "deleteConfirmTitle": "删除器材",
+    "deleteConfirmMessage": "您确定要从您的健身房中删除 “{{name}}” 吗？此操作无法撤销。",
+    "deletedTitle": "已删除",
+    "deletedMessage": "“{{name}}” 已被删除。",
+    "importErrorTitle": "导入错误",
+    "importFailed": "导入失败：无效的个人健身房数据文件。",
+    "mergeSuccessTitle": "个人健身房已合并",
+    "mergeSuccessMessage": "健身房导入完成。{{updatedCount}} 个项目已更新，{{addedCount}} 个已添加。",
+    "hideErrorTitle": "错误",
+    "hideFailed": "隐藏器材失败：未找到。",
+    "hiddenTitle": "已隐藏",
+    "hiddenMessage": "'{{name}}' 现已隐藏。",
+    "unhideFailed": "取消隐藏器材失败：未找到。",
+    "visibleTitle": "可见",
+    "visibleMessage": "'{{name}}' 现已可见。"
+  },
+  "spinnerService": {
+    "timeoutMessage": "似乎存在连接问题..."
+  },
+  "statsService": {
+    "weekOf": "周",
+    "weekPrefix": "W"
+  },
+  "equipment": {
+    "categories": {
+      "machines": "器械",
+      "functionalBodyweight": "功能性与自重训练",
+      "accessories": "配件",
+      "cardio": "有氧运动",
+      "freeWeights": "自由重量"
+    },
+    "names": {
+      "abdominalCrunchMachine": "腹部卷腹机",
+      "abRollerCoaster": "腹部过山车",
+      "abWheel": "健腹轮"
+    }
+  },
+  "storageService": {
+    "clearAllWarning": {
+      "title": "警告",
+      "message": "这将清除此域在 localStorage 中的所有数据，可能会影响其他应用程序或设置。您确定要继续吗？"
+    }
+  },
+  "subscriptionService": {
+    "upgradeModal": {
+      "title": "高级功能",
+      "message": "此功能适用于高级用户。立即升级以解锁此功能及更多精彩内容！"
+    }
+  },
+  "trackingService": {
+    "clearLogsConfirm": {
+      "title": "信息",
+      "message": "开发：您确定要删除所有锻炼日志吗？此操作无法撤销。",
+      "success": "所有锻炼日志已清除！"
+    },
+    "recalcPbs": {
+      "title": "重新计算个人最佳纪录",
+      "message": "将重新计算您整个锻炼历史中的所有个人最佳纪录：这可能需要一些时间。",
+      "noLogsTitle": "信息",
+      "noLogsMessage": "没有可重新计算的个人最佳纪录。",
+      "successTitle": "成功",
+      "successMessage": "所有个人最佳纪录已重新计算。"
+    },
+    "clearPbsConfirm": {
+      "title": "信息",
+      "message": "开发：您确定要删除所有个人最佳纪录吗？此操作无法撤销。",
+      "success": "所有个人最佳纪录已清除！"
+    },
+    "import": {
+      "logsErrorTitle": "导入错误",
+      "logsErrorMessage": "导入失败：无效的锻炼日志文件。",
+      "logsSuccessTitle": "日志已合并",
+      "logsSuccessMessage": "日志导入完成。{{updatedCount}} 个已更新，{{addedCount}} 个已添加。",
+      "pbsErrorTitle": "导入错误",
+      "pbsErrorMessage": "导入失败：无效的个人最佳纪录文件。",
+      "pbsSuccessTitle": "个人最佳纪录已合并",
+      "pbsSuccessMessage": "个人最佳纪录数据合并成功。"
+    },
+    "recalcAfterImport": {
+      "title": "请稍候",
+      "message": "正在重新计算个人最佳纪录...",
+      "noLogsTitle": "个人最佳纪录已重新计算",
+      "noLogsMessage": "由于没有日志，个人最佳纪录已清除。",
+      "successTitle": "个人最佳纪录已更新",
+      "successMessage": "个人最佳纪录重新计算成功！"
+    },
+    "deleteRoutine": {
+      "warningTitle": "警告",
+      "noIdMessage": "未提供用于清除日志的训练计划 ID。",
+      "confirmTitle": "确认删除",
+      "confirmMessageSimple": "您确定要删除训练计划 “{{routineName}}” 吗？此操作无法撤销。",
+      "confirmMessageWithLogs": "您确定要删除训练计划 “{{routineName}}” 吗？有 {{count}} 条与之关联的锻炼日志。删除该训练计划将同时删除这些日志。此操作无法撤销。",
+      "successTitleSimple": "信息",
+      "successMessageSimple": "训练计划 “{{routineName}}” 删除成功！",
+      "successTitleWithLogs": "成功",
+      "successMessageWithLogs": "{{count}} 条锻炼日志和训练计划 “{{routineName}}” 已被删除。"
+    },
+    "history": {
+      "backfillWaitTitle": "请稍候",
+      "backfillWaitMessage": "正在更新训练历史...",
+      "backfillSuccessTitle": "更新完成",
+      "backfillSuccessMessage": "训练历史已更新！",
+      "syncWaitTitle": "请稍候",
+      "syncWaitMessage": "正在同步所有历史记录...",
+      "syncNoHistoryMessage": "没有要同步的历史记录。",
+      "syncSuccessTitle": "同步完成",
+      "syncSuccessMessage": "完整历史记录已同步！"
+    }
+  },
+  "trainingProgramService": {
+    "updateError": {
+      "title": "更新错误",
+      "message": "未找到 ID 为 {{id}} 的计划。"
+    },
+    "deleteError": {
+      "title": "删除错误",
+      "message": "未找到计划。"
+    },
+    "deleteConfirm": {
+      "title": "删除计划",
+      "message": "您确定要删除计划 “{{name}}” 吗？此操作无法撤销。",
+      "cancelButton": "取消",
+      "deleteButton": "删除计划"
+    },
+    "deleteSuccess": {
+      "title": "计划已删除",
+      "message": "计划 “{{name}}” 已删除。"
+    },
+    "importError": {
+      "title": "导入错误",
+      "message": "导入失败：无效的计划数据文件。"
+    },
+    "importSuccess": {
+      "title": "计划已合并",
+      "message": "导入完成。{{updatedCount}} 个计划已更新，{{addedCount}} 个已添加。"
+    },
+    "history": {
+      "removeErrorTitle": "移除历史记录错误",
+      "removeSuccessTitle": "历史记录已更新",
+      "removeSuccessMessage": "历史记录条目已移除。"
+    },
+    "toggle": {
+      "notFound": "未找到计划。",
+      "alreadyActive": "“{{name}}” 已激活。"
+    },
+    "deactivate": {
+      "info": "计划 “{{name}}” 已停用。"
+    },
+    "updateHistory": {
+      "programNotFound": "未找到计划。",
+      "entryNotFound": "未找到历史记录条目。",
+      "success": "计划历史记录已更新。"
+    }
+  },
+  "userProfileService": {
+    "wipDisclaimer": {
+      "title": "开发中版本免责声明",
+      "message": "免责声明：这是一个开发中的、基于浏览器的应用程序。这意味着当您关闭浏览器或清除浏览器数据时，您的锻炼数据将不会被保存。请务必定期导出您的数据，并在返回应用程序时重新导入。",
+      "checkboxLabel": "不再显示此消息",
+      "okButton": "确定"
+    }
+  },
+  "units": {
+    "weight": {
+      "kg": "公斤",
+      "lbs": "磅"
+    },
+    "measure": {
+      "cm": "厘米",
+      "in": "英寸"
+    },
+    "distance": {
+      "km": "公里",
+      "mi": "英里"
+    }
+  },
+  "workoutService": {
+    "toasts": {
+      "updateErrorTitle": "错误",
+      "updateErrorMessage": "未找到 ID 为 {{id}} 的训练计划进行更新！",
+      "importErrorTitle": "导入错误",
+      "importFailed": "导入失败：无效的训练计划数据文件。",
+      "importSuccessTitle": "训练计划已合并",
+      "importSuccessMessage": "训练计划导入完成。{{updatedCount}} 个已更新，{{addedCount}} 个已添加。",
+      "pausedDiscarded": "已丢弃暂停的锻炼会话。",
+      "superset": {
+        "minSelection": "请至少选择两个训练来创建超级组。",
+        "alreadyIn": "此训练已在超级组中。",
+        "noneExist": "不存在可添加此训练的超级组。",
+        "findError": "找不到目标训练或超级组。",
+        "addSuccess": "{{exerciseName}} 已添加到超级组。",
+        "logCleared": "{{exerciseName}} 的记录数据已清除。",
+        "dissolved": "由于只剩下一个训练，超级组已解散。",
+        "removed": "{{exerciseName}} 已从超级组中移除。"
+      },
+      "enableAllSuccess": "所有训练计划已启用！"
+    },
+    "alerts": {
+      "editRunningTitle": "信息",
+      "editRunningMessage": "无法编辑正在进行的训练计划。请在编辑前完成或丢弃它。",
+      "clearAllTitle": "信息",
+      "clearAllMessage": "您确定要删除所有训练计划吗？这将删除所有训练计划（而不仅仅是日志），并且无法撤销。",
+      "clearAllSuccess": "所有训练计划已清除！",
+      "clearExecutedTitle": "信息",
+      "clearExecutedMessage": "您确定要重置所有训练计划的“上次执行”属性吗？此操作无法撤销。",
+      "clearExecutedSuccess": "所有训练计划日志已清除！",
+      "resume": {
+        "title": "恢复暂停的锻炼？",
+        "message": "您有一个暂停的锻炼会话。您想恢复它吗？",
+        "resumeButton": "恢复",
+        "discardButton": "丢弃"
+      },
+      "supersetCreatedTitle": "信息",
+      "supersetCreatedMessage": "已创建包含 {{count}} 个训练和 {{rounds}} 轮的超级组：现有日志已清除，组数已标准化。"
+    },
+    "prompts": {
+      "addExerciseTitle": "添加 {{exerciseName}}",
+      "labels": {
+        "exerciseName": "训练名称",
+        "numSets": "组数",
+        "rest": "组间休息（秒）",
+        "targetDistance": "目标距离（{{unit}}）",
+        "targetDuration": "目标时长（秒）",
+        "numReps": "次数",
+        "targetWeight": "目标重量（{{unit}}）"
+      },
+      "createSuperset": {
+        "title": "创建超级组",
+        "message": "选择要链接在一起的训练。",
+        "roundsLabel": "轮数"
+      },
+      "addToSuperset": {
+        "title": "添加到超级组",
+        "message": "将 “{{exerciseName}}” 添加到哪个超级组？",
+        "groupLabel": "超级组：{{group}}",
+        "addButton": "添加"
+      },
+      "removeFromSuperset": {
+        "title": "从超级组中移除",
+        "message": "从该超级组中移除 {{exerciseName}}？其在此会话中记录的组数将被清除。"
+      }
+    },
+    "display": {
+      "weightNotApplicable": "不适用",
+      "bodyweight": "自重",
+      "noAddedWeight": "无额外负重",
+      "userDefined": "用户自定义",
+      "unnamedExercise": "未命名训练",
+      "upTo": "最多"
+    },
+    "general": {
+      "cancel": "取消"
+    }
   }
+
 }

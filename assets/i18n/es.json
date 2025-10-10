@@ -1800,5 +1800,385 @@
       "duration": "Duración (segundos)",
       "value": "Valor"
     }
+  },
+  "sessionOverview": {
+    "title": "Resumen de la Sesión",
+    "doneButton": "HECHO"
+  },
+  "exerciseItem": {
+    "sets": "series",
+    "in": "en",
+    "rounds": "rondas",
+    "round": "Ronda",
+    "reps": "reps",
+    "table": {
+      "set": "Serie",
+      "planned": "Planeado",
+      "performed": "Realizado"
+    },
+    "status": {
+      "skipped": "Omitido",
+      "doLater": "Hacer Después",
+      "completed": "Completado",
+      "inProgress": "En Progreso",
+      "pending": "Pendiente"
+    },
+    "indicator": {
+      "title": {
+        "completed": "Completado",
+        "current": "Actual",
+        "skipped": "Omitido",
+        "doLater": "Hacer Después",
+        "pending": "Pendiente"
+      }
+    }
+  },
+  "activityService": {
+    "logSuccess": {
+      "message": "¡\"{{activityName}}\" registrado con éxito!",
+      "title": "Actividad Registrada"
+    },
+    "deleteSuccess": {
+      "message": "Registro de actividad eliminado.",
+      "title": "Eliminado"
+    },
+    "updateSuccess": {
+      "message": "¡\"{{activityName}}\" actualizado con éxito!",
+      "title": "Actividad Actualizada"
+    },
+    "mergeSuccess": {
+      "message": "{{count}} nuevos registros de actividad importados.",
+      "title": "Actividades Fusionadas"
+    },
+    "mergeInfo": "No hay nuevos registros de actividad para importar."
+  },
+  "alertService": {
+    "buttons": {
+      "ok": "Aceptar",
+      "cancel": "Cancelar",
+      "confirm": "Confirmar",
+      "doSomething": "Hacer algo",
+      "doNothing": "No hacer nada"
+    }
+  },
+  "barbellData": {
+    "barbells": {
+      "mensOlympic": "Barra Olímpica para Hombres",
+      "womensOlympic": "Barra Olímpica para Mujeres",
+      "standardGym": "Barra de Gimnasio Estándar",
+      "ezCurl": "Barra EZ",
+      "tricep": "Barra para Tríceps",
+      "trapHex": "Barra Trap o Hexagonal",
+      "olympic120": "Barra Olímpica (120cm)",
+      "olympic152": "Barra Olímpica (152cm)",
+      "olympic182": "Barra Olímpica (182cm)",
+      "olympic186": "Barra Olímpica (186cm)",
+      "olympic219": "Barra Olímpica (219cm)",
+      "olympic47in": "Barra Olímpica (47in)",
+      "olympic60in": "Barra Olímpica (60in)",
+      "olympic72in": "Barra Olímpica (72in)",
+      "olympic73in": "Barra Olímpica (73in)",
+      "olympic86in": "Barra Olímpica (86in)"
+    },
+    "collars": {
+      "none": "Sin Seguros",
+      "spring": "Seguros de Resorte",
+      "lockjaw": "Seguros de Tipo Lock-Jaw",
+      "competition": "Seguros de Competición"
+    }
+  },
+  "dataConversionService": {
+    "spinner": {
+      "convertingWeight": "Convirtiendo datos de peso...",
+      "convertingBodyWeight": "Convirtiendo datos de peso corporal...",
+      "convertingBodyMeasure": "Convirtiendo datos de medidas corporales...",
+      "convertingMeasure": "Convirtiendo datos de medidas...",
+      "convertingDistance": "Convirtiendo datos de distancia..."
+    },
+    "toast": {
+      "conversionCompleteTitle": "Conversión Completada",
+      "weightSuccess": "¡Todos los datos de peso se han convertido correctamente!",
+      "bodyWeightSuccess": "¡Todos los datos de peso corporal se han convertido correctamente!",
+      "bodyMeasureSuccess": "¡Todos los datos de medidas corporales se han convertido correctamente!",
+      "measureSuccess": "¡Todos los datos de medidas se han convertido correctamente!",
+      "distanceSuccess": "¡Todos los datos de distancia se han convertido correctamente!"
+    }
+  },
+  "exerciseService": {
+    "unknownExercise": "Ejercicio Desconocido",
+    "importErrorTitle": "Error de Importación",
+    "importFailed": "Importación fallida: Archivo de datos de ejercicios no válido.",
+    "mergeSuccessTitle": "Ejercicios Fusionados",
+    "mergeSuccessMessage": "Importación completa. {{updatedCount}} ejercicios actualizados, {{addedCount}} añadidos.",
+    "hideErrorTitle": "Error",
+    "hideFailed": "No se pudo ocultar el ejercicio: no encontrado.",
+    "hiddenTitle": "Oculto",
+    "hiddenMessage": "'{{name}}' ahora está oculto.",
+    "unhideFailed": "No se pudo mostrar el ejercicio: no encontrado.",
+    "visibleTitle": "Visible",
+    "visibleMessage": "'{{name}}' ahora está visible."
+  },
+  "personalGymService": {
+    "addSuccessTitle": "Equipo Añadido",
+    "addSuccessMessage": "¡\"{{name}}\" ha sido añadido a tu gimnasio!",
+    "updateSuccessTitle": "Equipo Actualizado",
+    "updateSuccessMessage": "¡\"{{name}}\" actualizado correctamente!",
+    "updateFailedTitle": "Error al Actualizar",
+    "updateFailedMessage": "No se pudo encontrar \"{{name}}\" para actualizar.",
+    "deleteFailedTitle": "Error al Eliminar",
+    "deleteFailedMessage": "Equipo no encontrado.",
+    "deleteConfirmTitle": "Eliminar Equipo",
+    "deleteConfirmMessage": "¿Estás seguro de que quieres eliminar \"{{name}}\" de tu gimnasio? Esta acción no se puede deshacer.",
+    "deletedTitle": "Eliminado",
+    "deletedMessage": "\"{{name}}\" fue eliminado.",
+    "importErrorTitle": "Error de Importación",
+    "importFailed": "Importación fallida: Archivo de datos de gimnasio personal no válido.",
+    "mergeSuccessTitle": "Gimnasio Personal Fusionado",
+    "mergeSuccessMessage": "Importación de gimnasio completa. {{updatedCount}} elementos actualizados, {{addedCount}} añadidos.",
+    "hideErrorTitle": "Error",
+    "hideFailed": "No se pudo ocultar el equipo: no encontrado.",
+    "hiddenTitle": "Oculto",
+    "hiddenMessage": "'{{name}}' ahora está oculto.",
+    "unhideFailed": "No se pudo mostrar el equipo: no encontrado.",
+    "visibleTitle": "Visible",
+    "visibleMessage": "'{{name}}' ahora está visible."
+  },
+  "spinnerService": {
+    "timeoutMessage": "Parece que hay problemas de conexión..."
+  },
+  "statsService": {
+    "weekOf": "Semana del",
+    "weekPrefix": "S"
+  },
+  "equipment": {
+    "categories": {
+      "machines": "Máquinas",
+      "functionalBodyweight": "Funcional y Peso Corporal",
+      "accessories": "Accesorios",
+      "cardio": "Cardio",
+      "freeWeights": "Pesos Libres"
+    },
+    "names": {
+      "abdominalCrunchMachine": "Máquina de Abdominales",
+      "abRollerCoaster": "Ab Roller Coaster",
+      "abWheel": "Rueda Abdominal"
+    }
+  },
+  "storageService": {
+    "clearAllWarning": {
+      "title": "ADVERTENCIA",
+      "message": "Esto borrará TODOS los datos en localStorage para este dominio, lo que podría afectar a otras aplicaciones o configuraciones. ¿Estás seguro de que quieres continuar?"
+    }
+  },
+  "subscriptionService": {
+    "upgradeModal": {
+      "title": "Función Premium",
+      "message": "Esta función está disponible para usuarios Premium. ¡Actualiza ahora para desbloquear esto y mucho más!"
+    }
+  },
+  "trackingService": {
+    "clearLogsConfirm": {
+      "title": "Información",
+      "message": "DESARROLLO: ¿Estás seguro de que quieres eliminar TODOS los registros de entrenamiento? Esta acción no se puede deshacer.",
+      "success": "¡Todos los registros de entrenamiento han sido eliminados!"
+    },
+    "recalcPbs": {
+      "title": "Recálculo de Récords Personales",
+      "message": "Se recalcularán todos tus récords personales de todo tu historial de entrenamiento: esto puede tardar un momento.",
+      "noLogsTitle": "Información",
+      "noLogsMessage": "No hay récords personales para recalcular.",
+      "successTitle": "Éxito",
+      "successMessage": "Todos los récords personales han sido recalculados."
+    },
+    "clearPbsConfirm": {
+      "title": "Información",
+      "message": "DESARROLLO: ¿Estás seguro de que quieres eliminar TODOS los récords personales? Esta acción no se puede deshacer.",
+      "success": "¡Todos los récords personales han sido eliminados!"
+    },
+    "import": {
+      "logsErrorTitle": "Error de Importación",
+      "logsErrorMessage": "Importación fallida: Archivo de registro de entrenamiento no válido.",
+      "logsSuccessTitle": "Registros Fusionados",
+      "logsSuccessMessage": "Registros importados. {{updatedCount}} actualizados, {{addedCount}} añadidos.",
+      "pbsErrorTitle": "Error de Importación",
+      "pbsErrorMessage": "Importación fallida: Archivo de récords personales no válido.",
+      "pbsSuccessTitle": "Récords Personales Fusionados",
+      "pbsSuccessMessage": "Los datos de récords personales se han fusionado correctamente."
+    },
+    "recalcAfterImport": {
+      "title": "Por Favor, Espera",
+      "message": "Recalculando récords personales...",
+      "noLogsTitle": "Récords Personales Recalculados",
+      "noLogsMessage": "Récords personales eliminados ya que no hay registros.",
+      "successTitle": "Récords Personales Actualizados",
+      "successMessage": "¡Los récords personales se han recalculado correctamente!"
+    },
+    "deleteRoutine": {
+      "warningTitle": "Advertencia",
+      "noIdMessage": "No se proporcionó ID de rutina para borrar los registros.",
+      "confirmTitle": "Confirmar Eliminación",
+      "confirmMessageSimple": "¿Estás seguro de que quieres eliminar la rutina \"{{routineName}}\"? Esta acción no se puede deshacer.",
+      "confirmMessageWithLogs": "¿Estás seguro de que quieres eliminar la rutina \"{{routineName}}\"? Hay {{count}} registro(s) de entrenamiento asociados. Eliminar la rutina también eliminará estos registros. Esta acción no se puede deshacer.",
+      "successTitleSimple": "Información",
+      "successMessageSimple": "¡La rutina \"{{routineName}}\" se ha eliminado correctamente!",
+      "successTitleWithLogs": "Éxito",
+      "successMessageWithLogs": "{{count}} registro(s) de entrenamiento y la rutina \"{{routineName}}\" han sido eliminados."
+    },
+    "history": {
+      "backfillWaitTitle": "Por Favor, Espera",
+      "backfillWaitMessage": "Actualizando historial de ejercicios...",
+      "backfillSuccessTitle": "Actualización Completada",
+      "backfillSuccessMessage": "¡El historial de ejercicios ha sido actualizado!",
+      "syncWaitTitle": "Por Favor, Espera",
+      "syncWaitMessage": "Sincronizando todo el historial...",
+      "syncNoHistoryMessage": "No hay historial para sincronizar.",
+      "syncSuccessTitle": "Sincronización Completada",
+      "syncSuccessMessage": "¡El historial completo ha sido sincronizado!"
+    }
+  },
+  "trainingProgramService": {
+    "updateError": {
+      "title": "Error de Actualización",
+      "message": "No se encontró el programa con ID {{id}}."
+    },
+    "deleteError": {
+      "title": "Error de Eliminación",
+      "message": "Programa no encontrado."
+    },
+    "deleteConfirm": {
+      "title": "Eliminar Programa",
+      "message": "¿Estás seguro de que quieres eliminar el programa \"{{name}}\"? Esta acción no se puede deshacer.",
+      "cancelButton": "Cancelar",
+      "deleteButton": "Eliminar Programa"
+    },
+    "deleteSuccess": {
+      "title": "Programa Eliminado",
+      "message": "El programa \"{{name}}\" ha sido eliminado."
+    },
+    "importError": {
+      "title": "Error de Importación",
+      "message": "Importación fallida: Archivo de datos de programa no válido."
+    },
+    "importSuccess": {
+      "title": "Programas Fusionados",
+      "message": "Importación completa. {{updatedCount}} programas actualizados, {{addedCount}} añadidos."
+    },
+    "history": {
+      "removeErrorTitle": "Error al Eliminar del Historial",
+      "removeSuccessTitle": "Historial Actualizado",
+      "removeSuccessMessage": "Entrada del historial eliminada."
+    },
+    "toggle": {
+      "notFound": "Programa no encontrado.",
+      "alreadyActive": "\"{{name}}\" ya está activo."
+    },
+    "deactivate": {
+      "info": "El programa \"{{name}}\" ha sido desactivado."
+    },
+    "updateHistory": {
+      "programNotFound": "Programa no encontrado.",
+      "entryNotFound": "Entrada del historial no encontrada.",
+      "success": "Historial del programa actualizado."
+    }
+  },
+  "userProfileService": {
+    "wipDisclaimer": {
+      "title": "Aviso de Trabajo en Progreso",
+      "message": "AVISO: Esta es una aplicación en desarrollo y basada en el navegador. Esto significa que tus datos de entrenamiento no se guardarán cuando cierres el navegador o borres los datos de tu navegador. Asegúrate de exportar tus datos regularmente e importarlos de nuevo cuando vuelvas a la aplicación.",
+      "checkboxLabel": "No mostrar este mensaje de nuevo",
+      "okButton": "Aceptar"
+    }
+  },
+  "units": {
+    "weight": {
+      "kg": "kg",
+      "lbs": "lbs"
+    },
+    "measure": {
+      "cm": "cm",
+      "in": "pulg"
+    },
+    "distance": {
+      "km": "km",
+      "mi": "mi"
+    }
+  },
+  "workoutService": {
+    "toasts": {
+      "updateErrorTitle": "Error",
+      "updateErrorMessage": "¡No se encontró la rutina con id {{id}} para actualizar!",
+      "importErrorTitle": "Error de Importación",
+      "importFailed": "Importación fallida: Archivo de datos de rutina no válido.",
+      "importSuccessTitle": "Rutinas Fusionadas",
+      "importSuccessMessage": "Rutinas importadas. {{updatedCount}} actualizadas, {{addedCount}} añadidas.",
+      "pausedDiscarded": "Sesión de entrenamiento en pausa descartada.",
+      "superset": {
+        "minSelection": "Por favor, selecciona al menos dos ejercicios para crear una superserie.",
+        "alreadyIn": "Este ejercicio ya está en una superserie.",
+        "noneExist": "No existen superseries a las que añadir este ejercicio.",
+        "findError": "No se pudo encontrar el ejercicio o la superserie de destino.",
+        "addSuccess": "{{exerciseName}} añadido a la superserie.",
+        "logCleared": "Se borraron los datos registrados para {{exerciseName}}.",
+        "dissolved": "Superserie disuelta ya que solo queda un ejercicio.",
+        "removed": "{{exerciseName}} eliminado de la superserie."
+      },
+      "enableAllSuccess": "¡Todas las rutinas han sido activadas!"
+    },
+    "alerts": {
+      "editRunningTitle": "Información",
+      "editRunningMessage": "No es posible editar una rutina en curso. Complétala o descártala antes de hacerlo.",
+      "clearAllTitle": "Información",
+      "clearAllMessage": "¿Estás seguro de que quieres eliminar TODAS las rutinas? Esto eliminará TODAS las rutinas (no solo los registros) y no se puede deshacer.",
+      "clearAllSuccess": "¡Todas las rutinas han sido eliminadas!",
+      "clearExecutedTitle": "Información",
+      "clearExecutedMessage": "¿Estás seguro de que quieres restablecer la propiedad 'última realización' de TODAS las rutinas? Esta acción no se puede deshacer.",
+      "clearExecutedSuccess": "¡Registros de todas las rutinas eliminados!",
+      "resume": {
+        "title": "¿Reanudar Entrenamiento en Pausa?",
+        "message": "Tienes una sesión de entrenamiento en pausa. ¿Te gustaría reanudarla?",
+        "resumeButton": "Reanudar",
+        "discardButton": "Descartar"
+      },
+      "supersetCreatedTitle": "INFORMACIÓN",
+      "supersetCreatedMessage": "Superserie creada con {{count}} ejercicios y {{rounds}} rondas: los registros existentes fueron borrados y las series estandarizadas."
+    },
+    "prompts": {
+      "addExerciseTitle": "Añadir {{exerciseName}}",
+      "labels": {
+        "exerciseName": "Nombre del ejercicio",
+        "numSets": "Número de Series",
+        "rest": "Descanso Entre Series (segundos)",
+        "targetDistance": "Distancia Objetivo ({{unit}})",
+        "targetDuration": "Duración Objetivo (segundos)",
+        "numReps": "Número de Repeticiones",
+        "targetWeight": "Peso Objetivo ({{unit}})"
+      },
+      "createSuperset": {
+        "title": "Crear Superserie",
+        "message": "Selecciona ejercicios para vincularlos.",
+        "roundsLabel": "Número de Rondas"
+      },
+      "addToSuperset": {
+        "title": "Añadir a Superserie",
+        "message": "¿A qué superserie para \"{{exerciseName}}\"?",
+        "groupLabel": "Superserie: {{group}}",
+        "addButton": "Añadir"
+      },
+      "removeFromSuperset": {
+        "title": "Eliminar de la Superserie",
+        "message": "¿Eliminar {{exerciseName}} de esta superserie? Sus series registradas para esta sesión serán eliminadas."
+      }
+    },
+    "display": {
+      "weightNotApplicable": "N/A",
+      "bodyweight": "Peso Corporal",
+      "noAddedWeight": "Sin Peso Añadido",
+      "userDefined": "Definido por el Usuario",
+      "unnamedExercise": "Ejercicio sin Nombre",
+      "upTo": "Hasta"
+    },
+    "general": {
+      "cancel": "Cancelar"
+    }
   }
 }
