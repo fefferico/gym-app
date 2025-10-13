@@ -40,8 +40,8 @@
         "startNewSessionDescription": "Inizia una sessione da zero e definiscila mentre ti alleni",
         "logActivityTitle": "Registra un'Attività",
         "logActivityDescription": "Registra altre attività come trekking, calcio o yoga",
-        "myRoutinesTitle": "Le mie Schede",
-        "myRoutinesDescription": "Visualizza, crea o modifica le tue routine di allenamento",
+        "myRoutinesTitle": "Le mie schede",
+        "myRoutinesDescription": "Visualizza, crea o modifica le tue schede di allenamento",
         "trainingProgramsTitle": "Programmi di Allenamento",
         "trainingProgramsDescription": "Gestisci le tue schede di allenamento a lungo termine",
         "workoutHistoryTitle": "Cronologia Allenamenti",
@@ -294,7 +294,7 @@
         "viewProgramDetailsTooltip": "Clicca per andare ai dettagli del programma"
     },
     "routineList": {
-        "title": "Le Mie Schede",
+        "title": "Le mie schede",
         "toggleFilters": "Mostra/Nascondi Filtri",
         "filters": {
             "title": "Filtra Schede",
@@ -1049,7 +1049,8 @@
             "remove": "Rimuovi Esercizio",
             "fillWithLast": "Riempi con i dati dell'ultima performance",
             "makeEmom": "Crea EMOM",
-            "switch": "Sostituisci esercizio"
+            "switch": "Sostituisci esercizio",
+            "toggleNotes": "Note esercizio"
         },
         "set": {
             "set": "Serie",
