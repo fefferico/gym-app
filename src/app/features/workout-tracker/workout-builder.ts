@@ -78,6 +78,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
   @ViewChildren('setRepsInput') setRepsInputs!: QueryList<ElementRef<HTMLInputElement>>;
   @ViewChildren('expandedSetElement') expandedSetElements!: QueryList<ElementRef<HTMLDivElement>>;
+  @ViewChildren('expandedExerciseCard') expandedExerciseCard!: QueryList<ElementRef<HTMLDivElement>>;
   @ViewChild('exerciseSearchFied') myExerciseInput!: ElementRef;
 
   isAllExpandedInViewMode = signal(false);
@@ -104,12 +105,10 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   private initialProgramIterationIdForLogEdit: string | null | undefined = undefined; // For log edit mode
   private initialProgramScheduledIdForLogEdit: string | null | undefined = undefined; // For log edit mode
 
-  isCompactView: boolean = true;
-
   private subscriptions = new Subscription();
 
   expandedSetPath = signal<{ exerciseIndex: number, setIndex: number } | null>(null);
-  expandedSetPaths: { exerciseIndex: number, setIndex: number }[] = [];
+  expandedExercisePath = signal<{ exerciseIndex: number } | null>(null);
 
   lastLogForCurrentRoutine = computed(() => {
     const currentRoutine = this.routine();
@@ -573,7 +572,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     if (filteredList.length === 1) {
       // If so, select that exercise
       const singleExercise = filteredList[0];
-      this.selectExerciseFromLibrary(singleExercise);
+      this.selectExercisesFromLibrary([singleExercise]);
     }
     // If there are 0 or more than 1 results, pressing Enter does nothing,
     // which is the desired behavior.
@@ -1162,7 +1161,21 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     return setFG;
   }
 
-  private scrollIntoVie(): void {
+  private scrollExpandedExerciseIntoView(): void {
+    const path = this.expandedSetPath();
+    if (path) {
+      const exerciseElem = this.expandedSetElements.get(path.exerciseIndex)?.nativeElement;
+      if (exerciseElem) {
+        // add a few pixels of offset from the top
+        const offset = 50;
+        const elementPosition = exerciseElem.getBoundingClientRect().top + window.pageYOffset;
+        const offsetPosition = elementPosition - offset;
+        window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+      }
+    }
+  }
+
+  private scrollIntoView(): void {
     // scroll the new exercise into view
     setTimeout(() => {
       // Get the last exercise FormGroup and try to scroll its DOM element into view if available
@@ -1194,44 +1207,52 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     const inputElement = event.target as HTMLInputElement;
     this.modalSearchTerm.set(inputElement.value);
   }
-  selectExerciseFromLibrary(exerciseFromLibrary: Exercise): void {
-    const isCardio = this.isExerciseCardioOnly(exerciseFromLibrary.id);
-    const baseSet = {
-      id: this.workoutService.generateExerciseSetId(),
-      type: 'standard',
-      targetReps: isCardio ? 0 : 8,
-      targetweight: 0,
-      restAfterSet: 60,
-      targetDuration: isCardio ? 60 : undefined,
-      targetDistance: isCardio ? 1 : undefined,
-      tempo: '',
-      notes: ''
-    } as ExerciseTargetSetParams;
+  selectExercisesFromLibrary(selectedExercises: Exercise[]): void {
+    selectedExercises.forEach(exerciseFromLibrary => {
 
-    const workoutExercise: WorkoutExercise = {
-      id: this.workoutService.generateWorkoutExerciseId(),
-      exerciseId: exerciseFromLibrary.id,
-      exerciseName: exerciseFromLibrary.name,
-      sets: [baseSet],
-      type: 'standard',
-      supersetId: null,
-      supersetOrder: null,
-    };
+      const isCardio = this.isExerciseCardioOnly(exerciseFromLibrary.id);
+      const baseSet = {
+        id: this.workoutService.generateExerciseSetId(),
+        type: 'standard',
+        targetReps: isCardio ? 0 : 8,
+        targetWeight: 10,
+        restAfterSet: 60,
+        targetDuration: isCardio ? 60 : undefined,
+        targetDistance: isCardio ? 1 : undefined,
+        tempo: '',
+        notes: ''
+      } as ExerciseTargetSetParams;
 
-    let newExerciseFormGroup: FormGroup;
-    if (this.mode === 'routineBuilder') {
-      newExerciseFormGroup = this.createExerciseFormGroup(workoutExercise, true, false);
-      this.addRepsListener(newExerciseFormGroup);
-      this.addDurationListener(newExerciseFormGroup);
-      this.exercisesFormArray.push(newExerciseFormGroup);
-      this.toggleSetExpansion(this.exercisesFormArray.length - 1, 0);
-    } else {
-      newExerciseFormGroup = this.createExerciseFormGroup(workoutExercise, false, true);
-      this.exercisesFormArray.push(newExerciseFormGroup);
-    }
+      const workoutExercise: WorkoutExercise = {
+        id: this.workoutService.generateWorkoutExerciseId(),
+        exerciseId: exerciseFromLibrary.id,
+        exerciseName: exerciseFromLibrary.name,
+        sets: [baseSet],
+        type: 'standard',
+        supersetId: null,
+        supersetOrder: null,
+      };
+
+      let newExerciseFormGroup: FormGroup;
+      if (this.mode === 'routineBuilder') {
+        newExerciseFormGroup = this.createExerciseFormGroup(workoutExercise, true, false);
+        this.addRepsListener(newExerciseFormGroup);
+        this.addDurationListener(newExerciseFormGroup);
+        this.exercisesFormArray.push(newExerciseFormGroup);
+        this.toggleSetExpansion(this.exercisesFormArray.length - 1, 0);
+      } else {
+        newExerciseFormGroup = this.createExerciseFormGroup(workoutExercise, false, true);
+        this.exercisesFormArray.push(newExerciseFormGroup);
+      }
+
+      // Optionally, only expand the last one added
+      if (selectedExercises.indexOf(exerciseFromLibrary) === selectedExercises.length - 1) {
+        this.toggleSetExpansion(this.exercisesFormArray.length - 1, 0);
+      }
+    });
 
     this.closeExerciseSelectionModal();
-    this.updateCurrentRoutine(workoutExercise);
+    this.updateCurrentRoutine();
   }
 
   ngAfterViewInit(): void {
@@ -1337,14 +1358,14 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   toggleSetExpansion(exerciseIndex: number, setIndex: number, event?: Event): void {
-    this.isAllExpandedInViewMode.set(false); // <-- ADD THIS LINE
     event?.stopPropagation();
 
+    // Vibrate for haptic feedback
     if (navigator.vibrate) {
-      navigator.vibrate(50); // Use a distinct vibration for long press if desired, e.g., [100, 50, 100]
+      navigator.vibrate(50);
     }
 
-    // If the event is from a checkbox (superset selection), do not expand/collapse set
+    // Ignore clicks on interactive form elements within the header
     if (
       event &&
       (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement || event.target instanceof HTMLSelectElement)
@@ -1352,39 +1373,30 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       return;
     }
 
-    if (this.expandedSetPath() !== null && this.expandedSetPath()?.exerciseIndex === exerciseIndex
-      && this.expandedSetPath()?.setIndex === setIndex) {
-      return;
-    }
-
-    if (this.isViewMode && !(this.expandedSetPath()?.exerciseIndex === exerciseIndex && this.expandedSetPath()?.setIndex === setIndex)) {
-      this.expandedSetPath.set({ exerciseIndex, setIndex }); // Allow expanding in view mode
-      this.isCompactView = false;
-      return;
-    } else if (this.isViewMode) {
-      this.expandedSetPath.set(null); return;
-    } // For edit/new modes:
     const currentPath = this.expandedSetPath();
-    if (currentPath?.exerciseIndex === exerciseIndex && currentPath?.setIndex === setIndex) {
-      return;
-      // this.expandedSetPath.set(null);
-      // if (!this.isCompactView) {
-      //   return;
-      // }
+    const isThisSetCurrentlyExpanded = currentPath?.exerciseIndex === exerciseIndex && currentPath?.setIndex === setIndex;
+
+    // --- START OF THE FIX ---
+    if (isThisSetCurrentlyExpanded) {
+      // If the clicked set is already open, collapse it by setting the path to null.
+      this.expandedSetPath.set(null);
     } else {
+      // If no set is open, or a different set is open, expand the clicked set.
       this.expandedSetPath.set({ exerciseIndex, setIndex });
-      this.isCompactView = false;
+
+      // The rest of the logic to auto-focus an input remains the same.
       this.cdr.detectChanges();
       setTimeout(() => {
-        const expandedElem = this.expandedSetElements.first?.nativeElement;
+        const expandedElem = this.expandedSetElements.find((_, i) => i === setIndex)?.nativeElement;
         if (expandedElem) {
           const input = expandedElem.querySelector('input[type="text"], input[type="number"]') as HTMLInputElement | null;
           if (input) {
-            input.focus();
+            // input.focus();
           }
         }
       }, 50);
     }
+    // --- END OF THE FIX ---
   }
 
 
@@ -1403,7 +1415,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     // If the click was anywhere else, proceed with the original collapse logic.
     this.isAllExpandedInViewMode.set(false);
     this.expandedSetPath.set(null);
-    this.isCompactView = collapseAll;
     event?.stopPropagation();
   }
 
@@ -1427,6 +1438,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
   toggleExerciseSelectionForSuperset(index: number, event: Event): void {
     if (this.isViewMode) return;
+    event?.stopPropagation();
     const checkbox = event.target as HTMLInputElement;
     this.selectedExerciseIndicesForSuperset.update(currentSelected => {
       let newSelected: number[];
@@ -1437,11 +1449,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       }
       return newSelected.sort((a, b) => a - b);
     });
-
-    // fix for compact view
-    if (this.isCompactView) {
-
-    }
   }
 
   canGroupSelectedExercises(): boolean {
@@ -1737,8 +1744,10 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     this.toastService.info("Superset ungrouped", 3000, "Ungrouped");
   }
 
-  removeExercise(exerciseIndex: number): void {
+  removeExercise(exerciseIndex: number, event?: Event): void {
     if (this.isViewMode) return;
+    event?.stopPropagation();
+
     const exerciseControl = this.exercisesFormArray.at(exerciseIndex) as FormGroup;
     const removedSupersetId = exerciseControl.get('supersetId')?.value;
     this.exercisesFormArray.removeAt(exerciseIndex);
@@ -2554,6 +2563,11 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     });
 
     let stringResult = displayValues.join(', ');
+
+    if (displayValues.every(val => val === displayValues[0])) {
+      return 'x ' + displayValues[0];
+    }
+
     if (stringResult.length > 15) {
       stringResult = stringResult.substring(0, 15) + '...';
     }
@@ -2865,15 +2879,34 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     this.notesModalsData.set(notes);
   }
 
+  public expandExerciseCard(exIndex: number, event?: Event): void {
+    event?.stopPropagation();
+
+    if (exIndex < 0 || exIndex >= this.exercisesFormArray.length) {
+      this.expandedExercisePath.set(null);
+      this.expandedSetPath.set(null);
+      return; // Invalid index
+    }
+
+    const expandedExIndex = this.expandedExercisePath();
+    if (expandedExIndex?.exerciseIndex === exIndex) {
+      // If the clicked exercise is already expanded, collapse it
+      this.expandedExercisePath.set(null);
+      this.expandedSetPath.set(null);
+    } else {
+      if (expandedExIndex && expandedExIndex !== null && expandedExIndex.exerciseIndex === exIndex) {
+        this.expandedExercisePath.set(null);
+        this.expandedSetPath.set(null);
+      } else {
+        this.expandedExercisePath.set({ exerciseIndex: exIndex });
+        this.scrollExpandedExerciseIntoView();
+      }
+    }
+  }
+
   // Add this new public method to the class
   public shouldShowExpandedExercise(exIndex: number): boolean {
-    if (this.isCompactView) {
-      return false;
-    }
-    if (this.isAllExpandedInViewMode()) {
-      return true;
-    }
-    const currentPath = this.expandedSetPath();
+    const currentPath = this.expandedExercisePath();
     return currentPath?.exerciseIndex === exIndex;
   }
 
@@ -3090,7 +3123,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   protected setLabelClass(exerciseControl: AbstractControl): string {
-    const standardCardClass = 'text-white text-md font-bold rounded-md shadow-lg z-10 p-1 w-fit';
+    const standardCardClass = 'flex text-white text-md font-bold rounded-md shadow-lg z-10 p-1 w-full bg-primary';
     if (exerciseControl.get('supersetType')?.value == 'emom') {
       return standardCardClass + ' bg-teal-400 text-white';
     } else if (exerciseControl.get('supersetType')?.value !== 'emom') {
@@ -3118,8 +3151,10 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   * This creates a "superset" of size 1 and flattens multiple sets into one.
   * @param exerciseControl The form group for the exercise to convert.
   */
-  async convertToSingleExerciseEmom(exerciseControl: AbstractControl): Promise<void> {
+  async convertToSingleExerciseEmom(exerciseControl: AbstractControl, event?: Event): Promise<void> {
     if (this.isViewMode || !(exerciseControl instanceof FormGroup)) return;
+
+    event?.stopPropagation();
 
     const emomInputs: AlertInput[] = [
       { name: 'emomTime', type: 'number', label: 'Time per Round (s)', value: '60', attributes: { min: '10', required: true } },
@@ -3327,8 +3362,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   activeExerciseActionMenu = signal<number | null>(null);
 
   // --- 2. Add methods to control the new action menu ---
-  isExerciseActionMenuVisible(index: number): boolean {
-    return this.activeExerciseActionMenu() === index;
+  isExerciseActionMenuVisible(exIndex: number): boolean {
+    return this.activeExerciseActionMenu() === exIndex;
   }
 
   toggleExerciseActionMenu(index: number, event: Event): void {
@@ -3418,9 +3453,14 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       case 'make_emom':
         this.convertToSingleExerciseEmom(exerciseControl);
         break;
-      // +++ NEW CASE +++
       case 'switchExercise':
         this.openSwitchExerciseModal(exIndex);
+        break;
+      case 'fill_latest':
+        this.fillWithLatestPerformanceData(exIndex);
+        break;
+      case 'remove':
+        this.removeExercise(exIndex);
         break;
     }
     this.closeExerciseActionMenu();
@@ -3439,6 +3479,18 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         iconName: 'ungroup',
       });
     } else {
+      items.push({
+        label: this.translate.instant('workoutBuilder.exercise.remove'),
+        buttonClass: 'bg-red-400 text-white hover:bg-red-600',
+        actionKey: 'remove',
+        iconName: 'trash',
+      });
+      items.push({
+        label: this.translate.instant('workoutBuilder.exercise.fillWithLast'),
+        buttonClass: 'bg-green-400 text-white hover:bg-green-600',
+        actionKey: 'fill_latest',
+        iconName: 'task',
+      });
       items.push({
         label: 'Make EMOM',
         buttonClass: 'bg-teal-400 text-white hover:bg-teal-600',
@@ -3463,7 +3515,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
    * Opens the exercise selection modal in "switch" mode.
    * @param exIndex The index of the exercise in the form array to be switched.
    */
-  openSwitchExerciseModal(exIndex: number): void {
+  openSwitchExerciseModal(exIndex: number, event?: Event): void {
+    event?.stopPropagation();
     this.exerciseToSwitchIndex.set(exIndex);
     // Initially populate the modal with all available exercises for searching
     this.exercisesForSwitchModal.set(this.availableExercises);
@@ -3550,7 +3603,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
      */
   expandAllSets(): void {
     if (!this.isViewMode) return;
-    this.isCompactView = false;
     this.expandedSetPath.set(null); // Clear any single expanded set
     this.isAllExpandedInViewMode.set(true); // Set the global flag
   }
@@ -3561,7 +3613,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
    */
   collapseAllSets(): void {
     if (!this.isViewMode) return;
-    this.isCompactView = true;
     this.expandedSetPath.set(null);
     this.isAllExpandedInViewMode.set(false);
   }
@@ -3595,11 +3646,12 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   * current sets in the form with that data.
   * @param exIndex The index of the exercise in the exercisesFormArray.
   */
-  async fillWithLatestPerformanceData(exIndex: number): Promise<void> {
+  async fillWithLatestPerformanceData(exIndex: number, event?: Event): Promise<void> {
     if (this.isViewMode) {
       this.toastService.info("Cannot modify data in view mode.", 3000);
       return;
     }
+    event?.stopPropagation();
 
     const exerciseControl = this.exercisesFormArray.at(exIndex) as FormGroup;
     if (!exerciseControl) {
@@ -3825,4 +3877,72 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   // --- END: ADD NEW PROPERTY ---
 
   private previousGoalValue: Routine['goal'] | null = null;
+
+
+  /**
+   * Checks if all sets for an exercise are uniform (same reps and weight).
+   * If they are, it returns the uniform values. Otherwise, it returns null.
+   * @param exerciseControl The FormGroup for the exercise.
+   * @returns An object with uniform reps and weight, or null.
+   */
+  public getUniformSetValues(exerciseControl: AbstractControl): { reps: string, weight: string | null } | null {
+    const setsFormArray = this.getSetsFormArray(exerciseControl);
+    if (!setsFormArray || setsFormArray.length === 0) {
+      return null;
+    }
+
+    const isWeighted = this.checkIfWeightedExercise(exerciseControl);
+    const firstSet = setsFormArray.at(0) as FormGroup;
+
+    // Get the reference values from the first set
+    const referenceReps = this.getSetDisplayValue(firstSet, 'reps');
+    const referenceWeight = isWeighted ? this.getSetDisplayValue(firstSet, 'weight') : null;
+
+    // Check if all subsequent sets match the first one
+    const allUniform = setsFormArray.controls.every(setControl => {
+      const currentReps = this.getSetDisplayValue(setControl, 'reps');
+      if (currentReps !== referenceReps) return false;
+
+      if (isWeighted) {
+        const currentWeight = this.getSetDisplayValue(setControl, 'weight');
+        if (currentWeight !== referenceWeight) return false;
+      }
+      return true;
+    });
+
+    // Return the uniform values only if they are consistent and not empty
+    if (allUniform && referenceReps && referenceReps !== '-') {
+      return { reps: referenceReps, weight: referenceWeight };
+    }
+
+    return null;
+  }
+
+  initRoutineFromForm(): void {
+    if (!this.routine()) {
+      this.routine.set(this.mapFormToRoutine(this.builderForm.getRawValue()));
+    }
+  }
+
+  promptRemoveField(exIndex: number, setIndex: number): void {
+    this.initRoutineFromForm();
+    const routine = this.routine();
+    if (!routine) return;
+    this.workoutService.promptRemoveField(routine, exIndex, setIndex);
+  }
+
+  getFieldsForSet(exIndex: number, setIndex: number): { visible: string[], hidden: string[] } {
+    this.initRoutineFromForm();
+    const routine = this.routine();
+    if (!routine) return { visible: [], hidden: [] };
+    return this.workoutService.getFieldsForSet(routine, exIndex, setIndex);
+  }
+
+  promptAddField(exIndex: number, setIndex: number): void {
+    this.initRoutineFromForm();
+    const routine = this.routine();
+    if (!routine) return;
+    this.workoutService.promptAddField(routine, exIndex, setIndex);
+  }
+
 }

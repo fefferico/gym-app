@@ -3340,7 +3340,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   */
   public async promptRemoveField(exIndex: number, setIndex: number): Promise<void> {
     const cols = this.getVisibleSetColumns(exIndex, setIndex);
-    const removableFields = Object.keys(cols).filter(key => cols[key as keyof typeof cols] && this.canRemoveField(exIndex, setIndex, key));
+    const removableFields = Object.keys(cols).filter(key => cols[key as keyof typeof cols]);
 
     if (removableFields.length === 0) {
       this.toastService.info("No fields can be removed from this set.");

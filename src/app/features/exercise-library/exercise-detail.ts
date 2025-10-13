@@ -1,7 +1,7 @@
 import { Component, inject, Input, OnInit, signal, OnDestroy, PLATFORM_ID, OnChanges, SimpleChanges, computed, ElementRef } from '@angular/core'; // Added OnDestroy
 import { CommonModule, TitleCasePipe, DatePipe, isPlatformBrowser, DecimalPipe } from '@angular/common'; // Added DatePipe
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { Observable, of, Subscription, forkJoin, map, take, tap } from 'rxjs'; // Added Subscription, forkJoin
+import { Observable, of, Subscription, forkJoin, map, take, tap, switchMap } from 'rxjs'; // Added Subscription, forkJoin
 import { Exercise } from '../../core/models/exercise.model';
 import { ExerciseService } from '../../core/services/exercise.service';
 import { TrackingService, ExercisePerformanceDataPoint } from '../../core/services/tracking.service'; // Import new type
@@ -20,6 +20,7 @@ import { MuscleHighlight } from '../../core/services/muscle-map.service';
 import { MuscleMapComponent } from '../../shared/components/muscle-map/muscle-map.component';
 import { WeightUnitPipe } from '../../shared/pipes/weight-unit-pipe';
 import { animate, group, query, style, transition, trigger } from '@angular/animations';
+import { TranslateService } from '@ngx-translate/core';
 
 type RepRecord = {
   reps: number;
@@ -86,11 +87,12 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
 
   private decimalPipe = inject(DecimalPipe);
   private route = inject(ActivatedRoute);
-  private router = inject(Router); // Inject Router if you want to navigate from chart clicks
+  private router = inject(Router); 
   private exerciseService = inject(ExerciseService);
-  protected trackingService = inject(TrackingService); // Inject TrackingService
-  private alertService = inject(AlertService); // Inject AlertService
-  unitService = inject(UnitsService); // Inject AlertService
+  protected trackingService = inject(TrackingService);
+  private alertService = inject(AlertService); 
+  unitService = inject(UnitsService); 
+  private translate = inject(TranslateService);
 
   // Using a signal for the exercise data
   exercise = signal<Exercise | undefined | null>(undefined);
@@ -106,8 +108,8 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
   progressChartView: [number, number] = [700, 300]; // Default view size
   progressChartColorScheme = 'cool';
   // progressChartColorScheme = { domain: ['#06b6d4'] }; // Example: Using your primary color
-  progressChartXAxisLabel = 'Date';
-  progressChartYAxisLabel = `Max Weight Lifted (${this.unitService.getWeightUnitSuffix()})`;
+  progressChartXAxisLabel = this.translate.instant('exerciseDetail.charts.xAxisLabel');
+  progressChartYAxisLabel = this.translate.instant('exerciseDetail.charts.yAxisLabel', { unit: this.unitService.getWeightUnitSuffix() });
   progressChartShowXAxis = true;
   progressChartShowYAxis = true;
   progressChartGradient = false;
@@ -258,26 +260,38 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
     forkJoin({
       baseExercise: this.exerciseService.getExerciseById(exerciseId).pipe(take(1)),
       pbs: this.trackingService.getAllPersonalBestsForExercise(exerciseId).pipe(take(1)),
-      history: this.trackingService.getLogsForExercise(exerciseId).pipe(take(1)) // <-- Fetch history
-    }).subscribe(({ baseExercise, pbs, history }) => {
-      this.exercise.set(baseExercise || null);
+      history: this.trackingService.getLogsForExercise(exerciseId).pipe(take(1))
+    }).pipe(
+      // Use switchMap to chain the translation observable
+      switchMap(({ baseExercise, pbs, history }) => {
+        if (!baseExercise) {
+          // If no base exercise, just pass the other data through with a null exercise
+          return of({ translatedExercise: null, pbs, history });
+        }
+        // If we have a base exercise, call the translation service
+        return this.exerciseService.getTranslatedExercise(baseExercise).pipe(
+          // Use map to combine the translated exercise with the other data
+          map(translatedExercise => ({ translatedExercise, pbs, history }))
+        );
+      })
+    ).subscribe(({ translatedExercise, pbs, history }) => {
+      // The `subscribe` block now receives the fully translated exercise
+      this.exercise.set(translatedExercise || null);
       this.currentImageIndex.set(0);
 
       const sortedPBs = pbs.sort((a, b) => (b.weightUsed ?? 0) - (a.weightUsed ?? 0) || a.pbType.localeCompare(b.pbType));
       this.exercisePBs.set(sortedPBs);
 
-      this.exerciseHistory.set(history); // <-- Set history signal
+      this.exerciseHistory.set(history);
 
-      if (baseExercise) {
+      if (translatedExercise) {
         this.muscleDataForMap = {
-          primary: [baseExercise.primaryMuscleGroup],
-          secondary: baseExercise.muscleGroups.filter(m => m !== baseExercise.primaryMuscleGroup)
+          primary: [translatedExercise.primaryMuscleGroup],
+          secondary: translatedExercise.muscleGroups.filter(m => m !== translatedExercise.primaryMuscleGroup)
         };
       }
 
-      // --- START: NEW CHART DATA PREPARATION ---
-      this.prepareChartData(history, baseExercise?.name || 'Progress');
-      // --- END: NEW CHART DATA PREPARATION ---
+      this.prepareChartData(history, translatedExercise?.name || 'Progress');
 
     }, error => {
       console.error("Error loading exercise details page data:", error);
@@ -305,41 +319,38 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
   async confirmDeleteExercise(exerciseToDelete: Exercise): Promise<void> {
     if (!exerciseToDelete) return;
 
-    // Step 1: Check if the exercise is used in any workout logs.
-    // This requires TrackingService to have a method like isExerciseUsedInLogs(exerciseId): Observable<boolean>
-    // For simplicity now, let's assume we always show a detailed warning.
-    // A more advanced check would involve:
-    // const isUsed = await firstValueFrom(this.trackingService.isExerciseUsedInLogs(exerciseToDelete.id));
-
     const customBtns: AlertButton[] = [{
-      text: 'Cancel',
+      text: this.translate.instant('exerciseDetail.general.cancel'),
       role: 'cancel',
       data: false,
-      cssClass: 'bg-gray-300 hover:bg-gray-500' // Example custom class
+      cssClass: 'bg-gray-300 hover:bg-gray-500'
     } as AlertButton,
     {
-      text: 'Delete Exercise',
+      text: this.translate.instant('exerciseDetail.general.delete'),
       role: 'confirm',
       data: true,
       cssClass: 'button-danger'
     } as AlertButton];
 
     const confirmation = await this.alertService.showConfirmationDialog(
-      'Confirm Deletion',
-      `Are you sure you want to delete the exercise "${exerciseToDelete.name}"? 
-      If this exercise is part of any past workout logs, it will be removed from those logs. 
-      If a log becomes empty as a result, the entire log might be deleted. This action cannot be undone.`,
+      this.translate.instant('exerciseDetail.delete.confirmTitle'),
+      this.translate.instant('exerciseDetail.delete.confirmMessage', { name: exerciseToDelete.name }),
       customBtns
     );
 
     if (confirmation && confirmation.data === true) {
       try {
         await this.exerciseService.deleteExercise(exerciseToDelete.id);
-        this.alertService.showAlert('Success', `Exercise "${exerciseToDelete.name}" deleted successfully`);
+        this.alertService.showAlert(
+          this.translate.instant('exerciseDetail.delete.successTitle'), 
+          this.translate.instant('exerciseDetail.delete.successMessage', { name: exerciseToDelete.name })
+        );
         this.router.navigate(['/library']);
       } catch (error) {
-        console.error('Error deleting exercise:', error);
-        this.alertService.showAlert('Error', `Failed to delete exercise: ${(error as Error).message || 'Unknown error'}`);
+        this.alertService.showAlert(
+          this.translate.instant('exerciseDetail.delete.errorTitle'), 
+          this.translate.instant('exerciseDetail.delete.errorMessage', { error: (error as Error).message || 'Unknown error' })
+        );
       }
     }
   }
@@ -355,7 +366,7 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
     const deleteBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-red-600 flex items-center text-sm hover:text-gray-100 hover:animate-pulse';
 
     const editButton = {
-      label: 'EDIT',
+      label: this.translate.instant('exerciseDetail.actions.edit'),
       actionKey: 'edit',
       iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>`,
       iconClass: 'w-8 h-8 mr-2',
@@ -364,7 +375,7 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
     };
 
     const deleteButton = {
-      label: 'DELETE',
+      label: this.translate.instant('exerciseDetail.actions.delete'),
       actionKey: 'delete',
       iconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.58.177-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5Zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5Z" clip-rule="evenodd" /></svg>`,
       iconClass: 'w-8 h-8 mr-2',
@@ -433,15 +444,15 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
     if (ex?.category === 'cardio') {
       const maxDist = pbs.find(p => p.pbType === 'Max Distance');
       const maxDur = pbs.find(p => p.pbType === 'Max Duration');
-      if (maxDist) records.push({ label: 'Max distance', value: this.decimalPipe.transform(maxDist.distanceAchieved, '1.0-2') ?? '0', unit: this.unitService.getDistanceMeasureUnitSuffix() });
-      if (maxDur) records.push({ label: 'Max duration', value: this.formatDurationForRecord(maxDur.durationPerformed), unit: '' });
+      if (maxDist) records.push({ label: this.translate.instant('exerciseDetail.records.maxDistance'), value: this.decimalPipe.transform(maxDist.distanceAchieved, '1.0-2') ?? '0', unit: this.unitService.getDistanceMeasureUnitSuffix() });
+      if (maxDur) records.push({ label: this.translate.instant('exerciseDetail.records.maxDuration'), value: this.formatDurationForRecord(maxDur.durationPerformed), unit: '' });
     } else {
       const est1RM = pbs.find(p => p.pbType === '1RM (Estimated)');
       const maxVol = pbs.find(p => p.pbType === 'Max Volume');
       const maxWeight = pbs.find(p => p.pbType === 'Heaviest Lifted');
-      if (est1RM) records.push({ label: '1RM estimated', value: this.decimalPipe.transform(est1RM.weightUsed, '1.0-1') ?? '0', unit: 'kg' });
-      if (maxVol) records.push({ label: 'Max volume', value: this.decimalPipe.transform(maxVol.volume, '1.0-1') ?? '0', unit: 'kg' });
-      if (maxWeight) records.push({ label: 'Max weight', value: this.decimalPipe.transform(maxWeight.weightUsed, '1.0-1') ?? '0', unit: 'kg' });
+      if (est1RM) records.push({ label: this.translate.instant('exerciseDetail.records.est1rm'), value: this.decimalPipe.transform(est1RM.weightUsed, '1.0-1') ?? '0', unit: 'kg' });
+      if (maxVol) records.push({ label: this.translate.instant('exerciseDetail.records.maxVolume'), value: this.decimalPipe.transform(maxVol.volume, '1.0-1') ?? '0', unit: 'kg' });
+      if (maxWeight) records.push({ label: this.translate.instant('exerciseDetail.records.maxWeight'), value: this.decimalPipe.transform(maxWeight.weightUsed, '1.0-1') ?? '0', unit: 'kg' });
     }
 
     return records;
@@ -546,12 +557,12 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
 
     // Set the appropriate chart signals
     if (isCardio) {
-      this.maxDurationChartData.set([{ name: "Max Duration (s)", series: maxDurationSeries }]);
-      this.maxDistanceChartData.set([{ name: `Max Distance (${this.unitService.getDistanceMeasureUnitSuffix()})`, series: maxDistanceSeries }]);
+      this.maxDurationChartData.set([{ name: this.translate.instant('exerciseDetail.charts.maxDurationSeries'), series: maxDurationSeries }]);
+      this.maxDistanceChartData.set([{ name: this.translate.instant('exerciseDetail.charts.maxDistanceSeries', { unit: this.unitService.getDistanceMeasureUnitSuffix() }), series: maxDistanceSeries }]);
     } else {
-      this.est1rmChartData.set([{ name: seriesName, series: est1rmSeries }]);
-      this.maxWeightChartData.set([{ name: seriesName, series: maxWeightSeries }]);
-      this.totalVolumeChartData.set([{ name: seriesName, series: totalVolumeSeries }]);
+      this.est1rmChartData.set([{ name: this.translate.instant('exerciseDetail.charts.est1rmSeries'), series: est1rmSeries }]);
+      this.maxWeightChartData.set([{ name: this.translate.instant('exerciseDetail.charts.maxWeightSeries'), series: maxWeightSeries }]);
+      this.totalVolumeChartData.set([{ name: this.translate.instant('exerciseDetail.charts.totalVolumeSeries'), series: totalVolumeSeries }]);
     }
   }
   // --- END: NEW CHART DATA PREPARATION ---
@@ -637,14 +648,14 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
     if (set.weightUsed != null && set.weightUsed > 0) {
       parts.push(`${this.decimalPipe.transform(set.weightUsed, '1.0-2')} ${this.unitService.getWeightUnitSuffix()}`);
     } else if ((set.weightUsed === 0 || set.weightUsed === null) && set.repsAchieved > 0) {
-      parts.push('Bodyweight');
+      parts.push(this.translate.instant('exerciseDetail.historyDisplay.bodyweight'));
     }
 
-    if (set.repsAchieved > 0) parts.push(`${set.repsAchieved} reps`);
+    if (set.repsAchieved > 0) parts.push(`${set.repsAchieved} ${this.translate.instant('exerciseDetail.historyDisplay.reps')}`);
     if (set.distanceAchieved && set.distanceAchieved > 0) parts.push(`${this.decimalPipe.transform(set.distanceAchieved, '1.0-2')} ${this.unitService.getDistanceMeasureUnitSuffix()}`);
     if (set.durationPerformed && set.durationPerformed > 0) parts.push(this.formatDurationForRecord(set.durationPerformed));
 
-    return parts.length > 0 ? parts.join(' x ') : 'Set data not recorded';
+    return parts.length > 0 ? parts.join(' x ') : this.translate.instant('exerciseDetail.historyDisplay.noData');
   }
 
   /**

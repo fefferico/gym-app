@@ -250,7 +250,7 @@ export class ExerciseService {
     const updatedExercises = currentExercises.map(ex => {
       if (uniqueExerciseIds.includes(ex.id)) {
         exercisesWereUpdated = true;
-        return { ...ex, lastUsedAt: now, lastUsedLogId: ex.lastUsedLogId};
+        return { ...ex, lastUsedAt: now, lastUsedLogId: ex.lastUsedLogId };
       }
       return ex;
     });
@@ -689,14 +689,14 @@ export class ExerciseService {
     );
   }
 
-   /**
-  * --- REWRITTEN for Full Synchronization ---
-  * Clears the `lastUsedAt` and `lastUsedLogId` for ALL exercises, then updates
-  * only the exercises present in the provided map. This ensures exercises
-  * that are no longer used have their timestamps correctly removed.
-  * @param lastUsedMap A Map where the key is the exerciseId and the value contains the new timestamp and logId.
-  */
-  public async batchUpdateLastUsedTimestamps(lastUsedMap: Map<string, {lastUsedTimestamp: string, lastUsedLogId: string}>): Promise<void> {
+  /**
+ * --- REWRITTEN for Full Synchronization ---
+ * Clears the `lastUsedAt` and `lastUsedLogId` for ALL exercises, then updates
+ * only the exercises present in the provided map. This ensures exercises
+ * that are no longer used have their timestamps correctly removed.
+ * @param lastUsedMap A Map where the key is the exerciseId and the value contains the new timestamp and logId.
+ */
+  public async batchUpdateLastUsedTimestamps(lastUsedMap: Map<string, { lastUsedTimestamp: string, lastUsedLogId: string }>): Promise<void> {
     const currentExercises = this.exercisesSubject.getValue();
     let exercisesWereUpdated = false;
 
@@ -723,7 +723,7 @@ export class ExerciseService {
           needsUpdate = true;
         }
       }
-      
+
       if (needsUpdate) {
         exercisesWereUpdated = true;
       }
@@ -782,6 +782,49 @@ export class ExerciseService {
         return Array.from(equipments).sort();
       }),
       take(1) // Ensure the observable completes after emitting the list once
+    );
+  }
+
+  /**
+   * Takes a base exercise object and returns an Observable of the same exercise
+   * with its text properties (name, description, notes) translated to the current language.
+   * If a translation is not found for a property, it gracefully falls back to the
+   * original (English) text from the base object.
+   *
+   * @param exercise The base Exercise object with default (English) text.
+   * @returns An Observable that emits a single, translated Exercise object.
+   */
+  public getTranslatedExercise(exercise: Exercise): Observable<Exercise> {
+    if (!exercise || !exercise.id) {
+      return of(exercise); // Return the original object if it's invalid
+    }
+
+    // 1. Define the keys for the properties we want to translate.
+    const translationKeys = [
+      `exercises.${exercise.id}.name`,
+      `exercises.${exercise.id}.description`,
+      `exercises.${exercise.id}.notes`
+    ];
+
+    // 2. Use the translate service to get all translations in one batch.
+    return this.translate.get(translationKeys).pipe(
+      map(translations => {
+        // 3. Create a new exercise object with the translated values.
+        const translatedExercise: Exercise = {
+          ...exercise,
+          name: translations[translationKeys[0]] !== translationKeys[0]
+            ? translations[translationKeys[0]]
+            : exercise.name,
+          description: translations[translationKeys[1]] !== translationKeys[1]
+            ? translations[translationKeys[1]]
+            : exercise.description,
+          notes: translations[translationKeys[2]] !== translationKeys[2]
+            ? translations[translationKeys[2]]
+            : exercise.notes,
+        };
+
+        return translatedExercise;
+      })
     );
   }
 

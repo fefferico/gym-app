@@ -40,7 +40,7 @@
         "startNewSessionDescription": "Inizia una sessione da zero e definiscila mentre ti alleni",
         "logActivityTitle": "Registra un'Attività",
         "logActivityDescription": "Registra altre attività come trekking, calcio o yoga",
-        "myRoutinesTitle": "Le Mie Routine",
+        "myRoutinesTitle": "Le mie Schede",
         "myRoutinesDescription": "Visualizza, crea o modifica le tue routine di allenamento",
         "trainingProgramsTitle": "Programmi di Allenamento",
         "trainingProgramsDescription": "Gestisci le tue schede di allenamento a lungo termine",
@@ -665,7 +665,7 @@
             "trendError": "Impossibile mostrare l'andamento: ID esercizio o tipo di record mancante."
         },
         "units": {
-            "reps": "rip",
+            "reps": "rep",
             "seconds": "s"
         }
     },
@@ -731,7 +731,7 @@
         "markAsUndone": "Segna come non fatto per modificare",
         "addMetric": "Aggiungi Metrica",
         "weightLabel": "Peso ({{unit}})",
-        "repsLabel": "Rip",
+        "repsLabel": "Rep",
         "distanceLabel": "Distanza",
         "timeLabel": "Tempo",
         "timePlaceholder": "mm:ss",
@@ -1044,8 +1044,8 @@
             "unknown": "Esercizio Sconosciuto",
             "dragToReorder": "Trascina per riordinare",
             "selectForSuperset": "Seleziona l'esercizio per il Superset",
-            "notesLabel": "Note Esercizio (Opzionale)",
-            "loggedNotesLabel": "Note per questo Esercizio Registrato (Opzionale)",
+            "notesLabel": "Note Esercizio",
+            "loggedNotesLabel": "Note per questo Esercizio Registrato",
             "remove": "Rimuovi Esercizio",
             "fillWithLast": "Riempi con i dati dell'ultima performance",
             "makeEmom": "Crea EMOM",
@@ -1053,16 +1053,17 @@
         },
         "set": {
             "set": "Serie",
+            "totalSets": "Serie totali",
             "round": "Turno",
             "header": "#",
             "type": "Tipo",
-            "repsAchieved": "Rip Effett.",
-            "reps": "Rip",
+            "repsAchieved": "Rep Effett.",
+            "reps": "Rep",
             "weightUsed": "Peso Usato",
             "weight": "Peso",
             "distance": "Distanza",
             "timePerformed": "Tempo Effett.",
-            "time": "Tempo",
+            "time": "Durata",
             "notes": "Note",
             "tempo": "Tempo",
             "rest": "Recupero",
@@ -1071,7 +1072,7 @@
             "useSingle": "Usa Singolo",
             "useRange": "Usa Intervallo",
             "rangeError": "Il valore massimo deve essere maggiore o uguale al minimo.",
-            "repsPlaceholder": "Rip",
+            "repsPlaceholder": "Rep",
             "weightPlaceholder": "Peso",
             "distancePlaceholder": "Distanza",
             "durationPlaceholder": "Sec",
@@ -1189,7 +1190,7 @@
             "setSupersetRoundsMessage": "Quanti turni (serie) dovrebbe avere questo superset?",
             "setExerciseTargetsTitle": "Imposta Target Esercizio",
             "setExerciseTargetsMessage": "Inserisci le ripetizioni e il peso target per ogni serie del gruppo.",
-            "repsLabel": "Rip",
+            "repsLabel": "Rep",
             "weightLabel": "Peso ({{unit}})",
             "removeFieldTitle": "Rimuovi Campo da Esercizio",
             "removeFieldMessage": "Quale metrica vuoi rimuovere da questa serie di questo esercizio?",
@@ -1278,7 +1279,7 @@
         },
         "card": {
             "set": "Serie",
-            "reps": "Rip",
+            "reps": "Rep",
             "weight": "Peso",
             "distance": "Distanza",
             "time": "Tempo (s)",
@@ -1302,7 +1303,7 @@
             "noPBs": "Nessun record personale ancora registrato per questo esercizio.",
             "onDate": "il {{date}}",
             "done": "FATTO",
-            "repsLabel": "Rip",
+            "repsLabel": "Rep",
             "weightLabel": "Peso",
             "distanceLabel": "Distanza",
             "timeLabel": "Tempo"
@@ -1333,7 +1334,7 @@
             "totalDistance": "Distanza Totale"
         },
         "units": {
-            "reps": "rip"
+            "reps": "rep"
         }
     },
     "workoutSummary": {
@@ -1362,7 +1363,7 @@
             "effortSaveFailed": "Salvataggio sforzo percepito fallito:"
         },
         "units": {
-            "reps": "rip",
+            "reps": "rep",
             "seconds": "s"
         }
     },
@@ -1636,7 +1637,7 @@
             "epley": "Formula di Epley:",
             "brzycki": "Formula di Brzycki:",
             "projectionsTitle": "Proiezioni Massimali (basate su Epley)",
-            "repsHeader": "Rip",
+            "repsHeader": "Rep",
             "weightHeader": "Peso",
             "emptyState": "Inserisci un peso e un numero di ripetizioni validi."
         },
@@ -1805,7 +1806,7 @@
     "history": {
       "title": "Cronologia Record Personali",
       "dateHeader": "Data",
-      "repsHeader": "Rip",
+      "repsHeader": "Rep",
       "logHeader": "Log",
       "viewLog": "LOG"
     },
@@ -1826,7 +1827,7 @@
     "in": "in",
     "rounds": "round",
     "round": "Round",
-    "reps": "rip",
+    "reps": "rep",
     "table": {
       "set": "Serie",
       "planned": "Pianificato",

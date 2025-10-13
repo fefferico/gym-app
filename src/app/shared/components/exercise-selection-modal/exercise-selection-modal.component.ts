@@ -1,5 +1,5 @@
 // src/app/shared/components/exercise-selection-modal/exercise-selection-modal.component.ts
-import { Component, computed, inject, input, model, Output, ViewChild, ElementRef, AfterViewInit, EventEmitter, OnChanges, SimpleChanges, signal, effect } from '@angular/core';
+import { Component, computed, inject, input, model, Output, ViewChild, ElementRef, AfterViewInit, EventEmitter, OnChanges, SimpleChanges, signal, effect, Inject, DOCUMENT } from '@angular/core';
 import { CommonModule, TitleCasePipe, DatePipe, AsyncPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Exercise } from '../../../core/models/exercise.model';
@@ -27,6 +27,19 @@ export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges
     private toastService = inject(ToastService);
     private translate = inject(TranslateService);
 
+    isMultiSelect = input<boolean>(false); // <-- NEW INPUT
+
+    // --- OUTPUTS ---
+    @Output() exerciseSelected = new EventEmitter<Exercise>(); // For single-select mode
+    @Output() exercisesSelected = new EventEmitter<Exercise[]>(); // <-- NEW OUTPUT for multi-select
+    // ... existing outputs
+
+    // --- STATE SIGNALS ---
+    selectedExerciseIds = signal<string[]>([]); // <-- NEW SIGNAL to track selections
+
+    // Computed signal for the selection counter in the UI
+    selectionCount = computed(() => this.selectedExerciseIds().length);
+
     ngOnChanges(changes: SimpleChanges): void {
         if (changes['isOpen'] && changes['isOpen'].currentValue) {
             this.checkForInputFocus();
@@ -47,7 +60,7 @@ export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges
     @ViewChild('scrollContainer') private scrollContainer!: ElementRef<HTMLDivElement>;
 
 
-    constructor() {
+    constructor(@Inject(DOCUMENT) private document: Document) {
         // This effect runs whenever the `exercises` input OR the `usageCounts` change.
         effect(() => {
             const exercisesFromInput = this.exercises(); // Dependency 1: The input signal
@@ -58,7 +71,7 @@ export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges
                 ...ex,
                 usageCount: usageMap.get(ex.id) || 0
             }));
-            
+
             this.enrichedExercises.set(exercisesWithData);
         });
 
@@ -68,9 +81,23 @@ export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges
             if (this.scrollContainer?.nativeElement) {
                 this.scrollContainer.nativeElement.scrollTop = 0;
             }
-            if (this.sortMode() === 'lastUsed'){
+            if (this.sortMode() === 'lastUsed') {
                 this.isFilterAccordionOpen.set(false);
             }
+        });
+
+        effect(() => {
+            if (this.isOpen()) {
+                this.document.body.classList.add('overflow-hidden');
+            } else {
+                this.document.body.classList.remove('overflow-hidden');
+            }
+        });
+
+        effect((onCleanup) => {
+            onCleanup(() => {
+                this.document.body.classList.remove('overflow-hidden');
+            });
         });
     }
 
@@ -89,7 +116,6 @@ export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges
 
     // --- Outputs: (Unchanged) ---
     @Output() close = new EventEmitter<void>();
-    @Output() exerciseSelected = new EventEmitter<Exercise>();
     @Output() findSimilarClicked = new EventEmitter<void>();
     @Output() createCustomClicked = new EventEmitter<void>();
     @Output() backToSearchClicked = new EventEmitter<void>();
@@ -201,18 +227,70 @@ export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges
         return !(item as { isHeader: true }).isHeader;
     }
 
-    // --- Event Handlers ---
+    /**
+     * Handles what happens when a list item is clicked.
+     * In single-select mode, it emits and closes.
+     * In multi-select mode, it toggles the selection.
+     */
     onExerciseClicked(exercise: Exercise): void {
-        this.exerciseSelected.emit(exercise);
+        if (this.isMultiSelect()) {
+            this.toggleSelection(exercise);
+        } else {
+            this.exerciseSelected.emit(exercise);
+            this.onClose();
+        }
+    }
+
+    /**
+    * Toggles an exercise's selection state in the selectedExerciseIds signal.
+    */
+    toggleSelection(exercise: Exercise): void {
+        const currentIds = this.selectedExerciseIds();
+        if (currentIds.includes(exercise.id)) {
+            // If already selected, remove it
+            this.selectedExerciseIds.set(currentIds.filter(id => id !== exercise.id));
+        } else {
+            // If not selected, add it
+            this.selectedExerciseIds.set([...currentIds, exercise.id]);
+        }
+    }
+
+    /**
+     * Checks if an exercise is currently selected. Used to bind the checkbox state.
+     */
+    isSelected(exercise: Exercise): boolean {
+        return this.selectedExerciseIds().includes(exercise.id);
+    }
+
+    /**
+     * Gathers all selected exercises, emits them, and closes the modal.
+     * Triggered by the new "Add Selected" button.
+     */
+    confirmSelection(): void {
+        const selectedIds = this.selectedExerciseIds();
+        if (selectedIds.length === 0) {
+            this.toastService.info(this.translate.instant('exerciseSelectionModal.toasts.noSelection'));
+            return;
+        }
+
+        const allExercises = this.enrichedExercises();
+        const selectedExercises = allExercises.filter(ex => selectedIds.includes(ex.id));
+
+        this.exercisesSelected.emit(selectedExercises);
         this.onClose();
     }
 
+
+    /**
+     * Overrides the default close action to also clear the selection state.
+     */
     onClose(): void {
         this.isOpen.set(false);
+        this.selectedExerciseIds.set([]); // Reset selection on close
         this.close.emit();
     }
 
-    onFindSimilar(): void { this.findSimilarClicked.emit(); this.isFilterAccordionOpen.set(false);}
+    onFindSimilar(): void { this.findSimilarClicked.emit(); this.isFilterAccordionOpen.set(false); }
     onCreateCustom(): void { this.createCustomClicked.emit(); }
     onBackToSearch(): void { this.backToSearchClicked.emit(); }
 
@@ -254,11 +332,15 @@ export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges
         this.sortMode.set(mode);
     }
 
+    /**
+     * Overrides the clear filters action to also clear selections.
+     */
     clearFilters(showToast: boolean = true): void {
         this.selectedCategory.set(null);
         this.selectedMuscleGroup.set(null);
         this.searchTerm.set('');
         this.sortMode.set('alpha');
+        this.selectedExerciseIds.set([]); // Reset selection
         if (showToast) {
             this.toastService.info(this.translate.instant('exerciseSelectionModal.toasts.filtersCleared'));
         }

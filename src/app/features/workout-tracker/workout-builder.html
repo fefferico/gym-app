@@ -32,8 +32,7 @@
 
     </header>
 
-    <form [formGroup]="builderForm" (ngSubmit)="onSubmit()"
-        class="space-y-6 mb-6 p-1 rounded-md shadow-xl overflow-hidden min-h-screen">
+    <form [formGroup]="builderForm" class="space-y-6 mb-6 p-1 rounded-md shadow-xl overflow-hidden min-h-screen">
         <section class="space-y-2 p-2 rounded-md shadow-sm dark:shadow-none text-gray-700 dark:text-gray-200">
             <!-- ROUTINE BUILDER FIELDS -->
             <ng-container *ngIf="mode === 'routineBuilder'">
@@ -43,13 +42,16 @@
                         class="block text-xl font-black text-gray-700 dark:text-gray-200">{{builderForm.get('name')?.value}}</label>
                 </div>
                 <div *ngIf="isEditableMode()" class="text-gray-700 dark:text-gray-200">
-                    <label for="routineName" class="block text-m font-medium">{{ 'workoutBuilder.routineBuilder.nameLabel' | translate }}</label>
-                    <input type="text" id="routineName" formControlName="name" [placeholder]="'workoutBuilder.routineBuilder.namePlaceholder' | translate"
+                    <label for="routineName" class="block text-m font-medium">{{
+                        'workoutBuilder.routineBuilder.nameLabel' | translate }}</label>
+                    <input type="text" id="routineName" formControlName="name"
+                        [placeholder]="'workoutBuilder.routineBuilder.namePlaceholder' | translate"
                         class="mt-1 block w-full p-2 border rounded-md shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-600 dark:border-gray-500"
                         [ngClass]="{'border-red-500 dark:border-red-400': builderForm.get('name')?.invalid && builderForm.get('name')?.touched, 'border-gray-300 dark:border-gray-500': !(builderForm.get('name')?.invalid && builderForm.get('name')?.touched) }">
                     <div *ngIf="builderForm.get('name')?.invalid && (builderForm.get('name')?.dirty || builderForm.get('name')?.touched)"
                         class="text-red-500 dark:text-red-400 text-xs mt-1">
-                        <span *ngIf="builderForm.get('name')?.errors?.['required']">{{ 'workoutBuilder.routineBuilder.nameRequired' | translate }}</span>
+                        <span *ngIf="builderForm.get('name')?.errors?.['required']">{{
+                            'workoutBuilder.routineBuilder.nameRequired' | translate }}</span>
                     </div>
                 </div>
                 <!-- DESCRIPTION -->
@@ -59,8 +61,8 @@
                     </p>
                 </div>
                 <div *ngIf="isEditableMode()">
-                    <label for="description"
-                        class="block text-m font-medium text-gray-700 dark:text-gray-300">{{ 'workoutBuilder.routineBuilder.descriptionLabel' | translate }}</label>
+                    <label for="description" class="block text-m font-medium text-gray-700 dark:text-gray-300">{{
+                        'workoutBuilder.routineBuilder.descriptionLabel' | translate }}</label>
                     <textarea id="description" formControlName="description" rows="3"
                         [placeholder]="'workoutBuilder.routineBuilder.descriptionPlaceholder' | translate"
                         class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200"></textarea>
@@ -72,7 +74,8 @@
                         {{ builderForm.get('goal')?.value?.toUpperCase() || ''}}</label>
                 </div>
                 <div *ngIf="isEditableMode()" class="text-gray-700 dark:text-gray-200">
-                    <label for="goal" class="block text-m font-medium text-gray-700 dark:text-gray-300">{{ 'workoutBuilder.routineBuilder.goalLabel' | translate }}</label>
+                    <label for="goal" class="block text-m font-medium text-gray-700 dark:text-gray-300">{{
+                        'workoutBuilder.routineBuilder.goalLabel' | translate }}</label>
                     <select id="goal" formControlName="goal"
                         class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200">
                         <option value="">{{ 'workoutBuilder.routineBuilder.goalPlaceholder' | translate }}</option>
@@ -85,7 +88,8 @@
                 <!-- PRIMARY CATEGORY -->
                 <div *ngIf="isViewMode && builderForm.get('primaryCategory')?.value">
                     <label class="block text-m text-gray-700 dark:text-gray-300">
-                        <span class="font-medium">{{ 'workoutBuilder.routineBuilder.primaryCategoryLabel' | translate }}: </span>
+                        <span class="font-medium">{{ 'workoutBuilder.routineBuilder.primaryCategoryLabel' | translate
+                            }}: </span>
                         {{ builderForm.get('primaryCategory')?.value }}
                     </label>
                 </div>
@@ -95,7 +99,8 @@
                     </label>
                     <select id="primaryCategory" formControlName="primaryCategory"
                         class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 text-gray-700 dark:text-gray-200">
-                        <option value="">{{ 'workoutBuilder.routineBuilder.primaryCategoryPlaceholder' | translate }}</option>
+                        <option value="">{{ 'workoutBuilder.routineBuilder.primaryCategoryPlaceholder' | translate }}
+                        </option>
                         <option *ngFor="let cat of primaryCategories" [value]="cat.value">{{ cat.label }}</option>
                     </select>
                 </div>
@@ -103,7 +108,8 @@
                 <!-- SECONDARY CATEGORY -->
                 <div *ngIf="isViewMode && builderForm.get('secondaryCategory')?.value">
                     <label class="block text-m text-gray-700 dark:text-gray-300">
-                        <span class="font-medium">{{ 'workoutBuilder.routineBuilder.secondaryCategoryLabel' | translate }}: </span>
+                        <span class="font-medium">{{ 'workoutBuilder.routineBuilder.secondaryCategoryLabel' | translate
+                            }}: </span>
                         {{ builderForm.get('secondaryCategory')?.value }}
                     </label>
                 </div>
@@ -119,7 +125,8 @@
                 <!-- TAGS -->
                 <div *ngIf="isViewMode && builderForm.get('tags')?.value" class="mt-2">
                     <div class="flex items-center gap-2 flex-wrap">
-                        <label class="block text-m font-medium text-gray-700 dark:text-gray-200">{{ 'workoutBuilder.routineBuilder.tagsLabel' | translate }}: </label>
+                        <label class="block text-m font-medium text-gray-700 dark:text-gray-200">{{
+                            'workoutBuilder.routineBuilder.tagsLabel' | translate }}: </label>
                         <span *ngFor="let tag of builderForm.get('tags')?.value.split(',')"
                             class="bg-gray-200 text-gray-700 dark:bg-gray-600 text-gray-700 dark:text-gray-200 text-xs font-semibold px-2 py-1 rounded-full">
                             {{ tag.trim() }}
@@ -130,7 +137,8 @@
                     <label for="tags" class="block text-m font-medium text-gray-700 dark:text-gray-200">
                         {{ 'workoutBuilder.routineBuilder.tagsLabel' | translate }}
                     </label>
-                    <input type="text" id="tags" formControlName="tags" [placeholder]="'workoutBuilder.routineBuilder.tagsPlaceholder' | translate"
+                    <input type="text" id="tags" formControlName="tags"
+                        [placeholder]="'workoutBuilder.routineBuilder.tagsPlaceholder' | translate"
                         class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 text-gray-700 dark:text-gray-200">
                 </div>
 
@@ -145,7 +153,8 @@
 
                     <!-- Display "Last Duration" -->
                     <div *ngIf="lastLog.duration" class="text-sm text-gray-500 dark:text-gray-300 flex gap-1">
-                        <span class="font-medium">{{ 'workoutBuilder.routineBuilder.lastDuration' | translate }}</span> {{ lastLog.duration }} min
+                        <span class="font-medium">{{ 'workoutBuilder.routineBuilder.lastDuration' | translate }}</span>
+                        {{ lastLog.duration }} min
                     </div>
                 </ng-container>
 
@@ -160,7 +169,8 @@
                 <!-- Estimated Duration (this part is unchanged) -->
                 <div>
                     <div *ngIf="routine() && getRoutineDuration() > 0" class="text-m text-gray-500 dark:text-gray-300">
-                        <span class="font-medium">{{ 'workoutBuilder.routineBuilder.estimatedDuration' | translate }}</span> ~{{ getRoutineDuration() }} min
+                        <span class="font-medium">{{ 'workoutBuilder.routineBuilder.estimatedDuration' | translate
+                            }}</span> ~{{ getRoutineDuration() }} min
                     </div>
                 </div>
 
@@ -177,48 +187,53 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                        <label for="workoutDate"
-                            class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ 'workoutBuilder.logEntry.dateLabel' | translate }}</label>
+                        <label for="workoutDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                            'workoutBuilder.logEntry.dateLabel' | translate }}</label>
                         <input type="date" id="workoutDate" formControlName="workoutDate"
                             class="mt-1 block w-full p-2 border rounded-md shadow-sm dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200"
                             [ngClass]="{'border-red-500 dark:border-red-400': builderForm.get('workoutDate')?.invalid && builderForm.get('workoutDate')?.touched, 'border-gray-300 dark:border-gray-500': !(builderForm.get('workoutDate')?.invalid && builderForm.get('workoutDate')?.touched) }">
                         <div *ngIf="builderForm.get('workoutDate')?.invalid && (builderForm.get('workoutDate')?.dirty || builderForm.get('workoutDate')?.touched)"
                             class="text-red-500 dark:text-red-400 text-xs mt-1">
-                            <span *ngIf="builderForm.get('workoutDate')?.errors?.['required']">{{ 'workoutBuilder.logEntry.dateRequired' | translate }}</span>
+                            <span *ngIf="builderForm.get('workoutDate')?.errors?.['required']">{{
+                                'workoutBuilder.logEntry.dateRequired' | translate }}</span>
                         </div>
                     </div>
                     <div>
-                        <label for="startTime" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ 'workoutBuilder.logEntry.startTimeLabel' | translate }}</label>
+                        <label for="startTime" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                            'workoutBuilder.logEntry.startTimeLabel' | translate }}</label>
                         <input type="time" id="startTime" formControlName="startTime"
                             class="mt-1 block w-full p-2 border rounded-md shadow-sm dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200"
                             [ngClass]="{'border-red-500 dark:border-red-400': builderForm.get('startTime')?.invalid && builderForm.get('startTime')?.touched, 'border-gray-300 dark:border-gray-500': !(builderForm.get('startTime')?.invalid && builderForm.get('startTime')?.touched) }">
                         <div *ngIf="builderForm.get('startTime')?.invalid && (builderForm.get('startTime')?.dirty || builderForm.get('startTime')?.touched)"
                             class="text-red-500 dark:text-red-400 text-xs mt-1">
-                            <span *ngIf="builderForm.get('startTime')?.errors?.['required']">{{ 'workoutBuilder.logEntry.startTimeRequired' | translate }}</span>
+                            <span *ngIf="builderForm.get('startTime')?.errors?.['required']">{{
+                                'workoutBuilder.logEntry.startTimeRequired' | translate }}</span>
                         </div>
                     </div>
                     <div>
-                        <label for="endTime" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ 'workoutBuilder.logEntry.endTimeLabel' | translate }}</label>
+                        <label for="endTime" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                            'workoutBuilder.logEntry.endTimeLabel' | translate }}</label>
                         <input type="time" id="endTime" formControlName="endTime"
                             class="mt-1 block w-full p-2 border rounded-md shadow-sm dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200"
                             [ngClass]="{'border-red-500 dark:border-red-400': builderForm.get('endTime')?.invalid && builderForm.get('endTime')?.touched, 'border-gray-300 dark:border-gray-500': !(builderForm.get('endTime')?.invalid && builderForm.get('endTime')?.touched) }"
                             (change)="handleEndTimeChange()">
                         <div *ngIf="builderForm.get('endTime')?.invalid && (builderForm.get('endTime')?.dirty || builderForm.get('endTime')?.touched)"
                             class="text-red-500 dark:text-red-400 text-xs mt-1">
-                            <span *ngIf="builderForm.get('endTime')?.errors?.['required']">{{ 'workoutBuilder.logEntry.endTimeRequired' | translate }}</span>
+                            <span *ngIf="builderForm.get('endTime')?.errors?.['required']">{{
+                                'workoutBuilder.logEntry.endTimeRequired' | translate }}</span>
                         </div>
                     </div>
                 </div>
                 <div>
-                    <label for="logWorkoutName"
-                        class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ 'workoutBuilder.logEntry.titleLabel' | translate }}</label>
+                    <label for="logWorkoutName" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                        'workoutBuilder.logEntry.titleLabel' | translate }}</label>
                     <input type="text" id="logWorkoutName" formControlName="name"
                         [placeholder]="'workoutBuilder.logEntry.titlePlaceholder' | translate"
                         class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200">
                 </div>
                 <div>
-                    <label for="routineIdForLog"
-                        class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ 'workoutBuilder.logEntry.basedOnRoutineLabel' | translate }}</label>
+                    <label for="routineIdForLog" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                        'workoutBuilder.logEntry.basedOnRoutineLabel' | translate }}</label>
                     <select id="routineIdForLog" formControlName="routineIdForLog"
                         [disabled]="builderForm.get('programIdForLog')?.value"
                         class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200 disabled:opacity-50 disabled:cursor-not-allowed">
@@ -227,8 +242,8 @@
                     </select>
                 </div>
                 <div>
-                    <label for="programIdForLog"
-                        class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ 'workoutBuilder.logEntry.basedOnProgramLabel' | translate }}</label>
+                    <label for="programIdForLog" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                        'workoutBuilder.logEntry.basedOnProgramLabel' | translate }}</label>
                     <select id="programIdForLog" formControlName="programIdForLog"
                         class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200">
                         <option value="">{{ 'workoutBuilder.logEntry.adHocProgramOption' | translate }}</option>
@@ -238,9 +253,10 @@
                 </div>
                 <!-- START: Updated Iteration and Scheduled Day ID fields -->
                 <div *ngIf="initialProgramIdForLogEdit">
-                    <label for="iterationIdForLog"
-                        class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ 'workoutBuilder.logEntry.iterationLabel' | translate }}</label>
-                    <span *ngIf="isEditableMode" class="text-xs text-red-500 dark:text-primary-light">{{ 'workoutBuilder.logEntry.iterationWarning' | translate }}</span>
+                    <label for="iterationIdForLog" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                        'workoutBuilder.logEntry.iterationLabel' | translate }}</label>
+                    <span *ngIf="isEditableMode" class="text-xs text-red-500 dark:text-primary-light">{{
+                        'workoutBuilder.logEntry.iterationWarning' | translate }}</span>
                     <select id="iterationIdForLog" formControlName="iterationIdForLog"
                         [disabled]="!builderForm.get('programIdForLog')?.value || availableIterationIds.length === 0"
                         class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200 disabled:opacity-50 disabled:cursor-not-allowed">
@@ -251,21 +267,25 @@
                 </div>
                 <div *ngIf="initialProgramIdForLogEdit">
                     <label for="scheduledDayIdForLog"
-                        class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ 'workoutBuilder.logEntry.scheduledDayLabel' | translate }}
-                    </label><span *ngIf="isEditableMode" class="text-xs text-red-500 dark:text-primary-light">{{ 'workoutBuilder.logEntry.scheduledDayWarning' | translate }}</span>
+                        class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                        'workoutBuilder.logEntry.scheduledDayLabel' | translate }}
+                    </label><span *ngIf="isEditableMode" class="text-xs text-red-500 dark:text-primary-light">{{
+                        'workoutBuilder.logEntry.scheduledDayWarning' | translate }}</span>
                     <select id="scheduledDayIdForLog" formControlName="scheduledDayIdForLog"
                         [disabled]="!builderForm.get('programIdForLog')?.value || availableScheduledDayIds.length === 0"
                         class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200 disabled:opacity-50 disabled:cursor-not-allowed">
                         <option value="">{{ 'workoutBuilder.logEntry.scheduledDayPlaceholder' | translate }}</option>
                         <option *ngFor="let scheduledId of availableScheduledDayInfos" [value]="scheduledId.id">{{
-                            scheduledId.weekNumber ? ('workoutBuilder.logEntry.weekLabel' | translate:{week: scheduledId.weekNumber}) : '' }} - {{ scheduledId.dayName
-                            ? ('workoutBuilder.logEntry.dayLabel' | translate:{day: scheduledId.dayName}) : ''}}</option>
+                            scheduledId.weekNumber ? ('workoutBuilder.logEntry.weekLabel' | translate:{week:
+                            scheduledId.weekNumber}) : '' }} - {{ scheduledId.dayName
+                            ? ('workoutBuilder.logEntry.dayLabel' | translate:{day: scheduledId.dayName}) : ''}}
+                        </option>
                     </select>
                 </div>
                 <!-- END: Updated fields -->
                 <div>
-                    <label for="overallNotesLog"
-                        class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ 'workoutBuilder.logEntry.notesLabel' | translate }}</label>
+                    <label for="overallNotesLog" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{
+                        'workoutBuilder.logEntry.notesLabel' | translate }}</label>
                     <textarea id="overallNotesLog" formControlName="overallNotesLog" rows="2"
                         class="mt-1 block w-full p-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200"></textarea>
                 </div>
@@ -277,7 +297,7 @@
                 (cdkDropListDropped)="onExerciseDrop($event)" [cdkDropListDisabled]="!isEditableMode()"
                 formArrayName="exercises" class="exercise-list-container">
                 <ng-container *ngFor="let exerciseControl of exercisesFormArray.controls; let exIndex = index;">
-                    <div class="relative group exercise-card-wrapper"
+                    <div class="relative group exercise-card-wrapper" #expandedExerciseCard
                         [style.zIndex]="isExerciseActionMenuVisible(exIndex) ? 50 : 'auto'"
                         [ngClass]="getExerciseCardClass(exerciseControl, exIndex)">
                         <div *ngIf="(isEditableMode()) && selectedExerciseIndicesForSuperset().length >= 2 && exIndex === firstSelectedExerciseIndexForSuperset"
@@ -285,21 +305,22 @@
                             <button *ngIf="!canUngroupSelectedExercises()" type="button"
                                 (click)="groupSelectedAsSuperset()" [disabled]="isViewMode"
                                 class="bg-green-600 hover:bg-green-700 text-white text-xs font-semibold py-1.5 px-3 rounded-lg shadow-lg">
-                                {{ 'workoutBuilder.superset.groupButton' | translate:{count: selectedExerciseIndicesForSuperset().length} }}
+                                {{ 'workoutBuilder.superset.groupButton' | translate:{count:
+                                selectedExerciseIndicesForSuperset().length} }}
                             </button>
                             <button *ngIf="canUngroupSelectedExercises()" type="button"
                                 (click)="ungroupSuperset(exIndex)" [disabled]="isViewMode"
                                 class="bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold py-1.5 px-3 rounded-lg shadow-lg">
-                                {{ 'workoutBuilder.superset.ungroupButton' | translate:{count: selectedExerciseIndicesForSuperset().length} }}
+                                {{ 'workoutBuilder.superset.ungroupButton' | translate:{count:
+                                selectedExerciseIndicesForSuperset().length} }}
                             </button>
                         </div>
 
                         <div cdkDrag [cdkDragDisabled]="!isEditableMode() || isSetExpanded(exIndex, 0)" appLongPressDrag
                             [longPressEnabled]="isEditableMode() && !isSetExpanded(exIndex, 0)" [longPressDelay]="150"
-                            longPressClass="is-long-pressing" [cdkDragData]="exerciseControl" [formGroupName]="exIndex"
-                            [cdkDragStartDelay]="110" class="transition-all"
-                            (click)="toggleSetExpansion(exIndex,0, $event)" appClickOutside
-                            (clickOutside)="collapseExpandedSet(false,$event)"
+                            longPressClass="is-long-pressing" [cdkDragData]="exerciseControl" [cdkDragStartDelay]="110"
+                            class="transition-all" [formGroupName]="exIndex"
+                            (click)="expandExerciseCard(exIndex, $event)"
                             [title]="isEditableMode() ? ('workoutBuilder.exercise.dragToReorder' | translate) : ''">
 
                             <div class="exercise-item-content">
@@ -320,7 +341,8 @@
 
                                     <!-- CHECKBOX (if applicable) -->
                                     <input *ngIf="(isEditableMode() || isNewMode) && !isViewMode" type="checkbox"
-                                        [title]="'workoutBuilder.exercise.selectForSuperset' | translate" [id]="'superset-select-' + exIndex"
+                                        [title]="'workoutBuilder.exercise.selectForSuperset' | translate"
+                                        [id]="'superset-select-' + exIndex"
                                         (change)="toggleExerciseSelectionForSuperset(exIndex, $event)"
                                         [checked]="selectedExerciseIndicesForSuperset().includes(exIndex)"
                                         class="h-6 w-6 text-orange-600 border-gray-300 dark:border-gray-600 rounded-md focus:ring-orange-500 flex-shrink-0 disabled:opacity-50"
@@ -331,9 +353,9 @@
                                         <!-- COMPACT: Show SETS SUMMARY if in compact view -->
                                         <div *ngIf="!shouldShowExpandedExercise(exIndex) && getSetsFormArray(exerciseControl).controls.length > 0"
                                             class="flex items-center text-s text-gray-500 dark:text-gray-400 mt-0.5 gap-4 pl-2">
-                                            <img [src]="getIconPath(exerciseControl.get('exerciseId')?.value) | async"
-                                                alt="Exercise Icon" class="w-6 h-6 sm:w-8 sm:h-8 object-contain">
-                                            <div class="min-w-0"> <!-- Added min-w-0 for truncation -->
+                                            <!-- <img [src]="getIconPath(exerciseControl.get('exerciseId')?.value) | async"
+                                                alt="Exercise Icon" class="w-6 h-6 sm:w-8 sm:h-8 object-contain"> -->
+                                            <div class="min-w-0">
                                                 <div class="flex">
                                                     <h3 class="font-semibold text-gray-800 dark:text-gray-100 truncate text-lg"
                                                         [title]="exerciseControl.get('exerciseName')?.value">
@@ -348,92 +370,74 @@
                                                         [appTooltip]="exerciseInfoTooltipString"></app-icon>
                                                 </div>
                                                 <div class="text-md text-gray-500 dark:text-gray-400 truncate">
-                                                    <p
-                                                        *ngIf="exerciseControl?.get('sets')?.value?.length >= 1 && checkIfTimedExercise(exerciseControl) && getSetDurationDisplay(exerciseControl)">
-                                                        {{ 'workoutBuilder.set.time' | translate }} (s):
-                                                        {{ getSetDurationDisplay(exerciseControl) }}
-                                                    </p>
-                                                    <!-- Show info about sets only if !isEmomExercise -->
-                                                    <p
-                                                        *ngIf="exerciseControl?.get('sets')?.value && exerciseControl?.get('sets')?.value.length >= 1">
-                                                        {{ !isEmomExercise(exerciseControl) ? ('workoutBuilder.set.set' | translate) + ': ' +
-                                                        exerciseControl?.get('sets')?.value.length : '' }}
-                                                        {{
-                                                        !isExerciseCardioOnlyCtrl(exerciseControl) &&
-                                                        getSetReps(exerciseControl)
-                                                        ? '( ' + ('workoutBuilder.set.reps' | translate) + ': ' + getSetReps(exerciseControl) + ' )'
-                                                        : ''
-                                                        }}
-                                                    </p>
-                                                    <p
-                                                        *ngIf="exerciseControl?.get('sets')?.value && exerciseControl?.get('sets')?.value.length >= 1 && checkIfWeightedExercise(exerciseControl)">
-                                                        {{ 'workoutBuilder.set.weight' | translate }}
-                                                        ({{unitService.getWeightUnitSuffix()}}):
-                                                        {{getSetWeightsUsed(exerciseControl)}}
-                                                    </p>
-                                                    <p
-                                                        *ngIf="isExerciseCardioOnlyCtrl(exerciseControl) && getSetDistanceDisplay(exerciseControl)">
-                                                        {{ 'workoutBuilder.set.distance' | translate }} ({{unitService.getDistanceMeasureUnitSuffix()}}):
-                                                        {{getSetDistanceDisplay(exerciseControl)}}
-                                                    </p>
+                                                    <ng-container
+                                                        *ngIf="getUniformSetValues(exerciseControl) as uniformValues; else detailedSetView">
+                                                        <!-- UNIFORM VIEW: Shows when all sets have the same reps/weight -->
+                                                        <p>
+                                                            <span>{{ !isEmomExercise(exerciseControl) ?
+                                                                ('workoutBuilder.set.set' | translate) + ': ' +
+                                                                exerciseControl.get('sets')?.value?.length : ''
+                                                                }}</span>
+                                                            <!-- Case 1: Weighted Exercise (e.g., 3 sets (10 x 50kg)) -->
+                                                            <span *ngIf="uniformValues.weight !== null">
+                                                                ( {{ uniformValues.reps }} x {{ uniformValues.weight }}
+                                                                {{ unitService.getWeightUnitSuffix() }} )
+                                                            </span>
+                                                            <!-- Case 2: Bodyweight Exercise (e.g., 3 sets (Reps: 15)) -->
+                                                            <span *ngIf="uniformValues.weight === null">
+                                                                ( {{ 'workoutBuilder.set.reps' | translate }}: {{
+                                                                uniformValues.reps }} )
+                                                            </span>
+                                                        </p>
+                                                    </ng-container>
+
+                                                    <!-- DETAILED VIEW: The original display for non-uniform sets -->
+                                                    <ng-template #detailedSetView>
+                                                        <p *ngIf="exerciseControl?.get('sets')?.value?.length >= 1">
+                                                            {{ !isEmomExercise(exerciseControl) ?
+                                                            ('workoutBuilder.set.set' | translate) + ': ' +
+                                                            exerciseControl?.get('sets')?.value.length : '' }}
+                                                            {{
+                                                            !isExerciseCardioOnlyCtrl(exerciseControl) &&
+                                                            getSetReps(exerciseControl)
+                                                            ? '( ' + ('workoutBuilder.set.reps' | translate) + ': ' +
+                                                            getSetReps(exerciseControl) + ' )'
+                                                            : ''
+                                                            }}
+                                                        </p>
+                                                        <p
+                                                            *ngIf="exerciseControl?.get('sets')?.value && exerciseControl?.get('sets')?.value.length >= 1 && checkIfWeightedExercise(exerciseControl)">
+                                                            {{ 'workoutBuilder.set.weight' | translate }}
+                                                            ({{unitService.getWeightUnitSuffix()}}):
+                                                            {{getSetWeightsUsed(exerciseControl)}}
+                                                        </p>
+                                                        <p
+                                                            *ngIf="isExerciseCardioOnlyCtrl(exerciseControl) && getSetDistanceDisplay(exerciseControl)">
+                                                            {{ 'workoutBuilder.set.distance' | translate }}
+                                                            ({{unitService.getDistanceMeasureUnitSuffix()}}):
+                                                            {{getSetDistanceDisplay(exerciseControl)}}
+                                                        </p>
+                                                    </ng-template>
+
                                                 </div>
 
                                             </div>
                                         </div>
                                     </div>
-                                    <!-- COMPACT: Minimal actions for compact view (e.g., small remove icon) -->
-                                    <div *ngIf="!shouldShowExpandedExercise(exIndex) && !isViewMode"
-                                        class="flex ml-auto pr-2">
-                                        <!-- ml-auto to push to the right -->
-                                        <button type="button"
-                                            (click)="removeExercise(exIndex); $event.stopPropagation()"
-                                            [title]="'workoutBuilder.exercise.remove' | translate"
-                                            class="flex items-center p-1 hover:text-red-700 dark:hover:text-red-300 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30 disabled:opacity-50 bg-red-500 text-white">
-                                            <app-icon name="trash" class="h-5 w-5"></app-icon>
-                                        </button>
-                                        <ng-container *ngIf="!isSuperSet(exIndex)">
-                                            <button type="button" (click)="openSwitchExerciseModal(exIndex)"
-                                                [title]="'workoutBuilder.exercise.switch' | translate"
-                                                class="mx-1 flex items-center p-1 rounded-full bg-purple-400 hover:bg-purple-600 disabled:opacity-50 text-white">
-                                                <app-icon name="change" class="h-5 w-5"></app-icon>
-                                            </button>
-                                        </ng-container>
-                                    </div>
-                                    <div *ngIf="!isViewMode && shouldShowExpandedExercise(exIndex)"
-                                        class="w-full flex justify-end pr-2 mt-2">
-                                        <button type="button" (click)="removeExercise(exIndex)" [title]="'workoutBuilder.exercise.remove' | translate"
-                                            class="mx-1 flex items-center p-1 rounded-full hover:bg-red-600 disabled:opacity-50 bg-red-500 text-white">
-                                            <app-icon name="trash" class="h-5 w-5"></app-icon>
-                                        </button>
-                                        <button type="button" (click)="fillWithLatestPerformanceData(exIndex)"
-                                            [title]="'workoutBuilder.exercise.fillWithLast' | translate"
-                                            class="mx-1 flex items-center p-1 rounded-full hover:bg-green-600 disabled:opacity-50 bg-green-500 text-white">
-                                            <app-icon name="task" class="h-5 w-5"></app-icon>
-                                        </button>
-                                        <ng-container *ngIf="!isSuperSet(exIndex)">
-                                            <button type="button" (click)="convertToSingleExerciseEmom(exerciseControl)"
-                                                [title]="'workoutBuilder.exercise.makeEmom' | translate"
-                                                class="mx-1 flex items-center p-1 rounded-full bg-teal-400 hover:bg-teal-600 disabled:opacity-50 text-white">
-                                                <app-icon name="clock" class="h-5 w-5"></app-icon>
-                                            </button>
-                                            <button type="button" (click)="openSwitchExerciseModal(exIndex)"
-                                                [title]="'workoutBuilder.exercise.switch' | translate"
-                                                class="mx-1 flex items-center p-1 rounded-full bg-purple-400 hover:bg-purple-600 disabled:opacity-50 text-white">
-                                                <app-icon name="change" class="h-5 w-5"></app-icon>
-                                            </button>
-                                        </ng-container>
-                                    </div>
                                 </div>
                                 <!-- EXPANDED CONTENT AREA -->
                                 <div *ngIf="shouldShowExpandedExercise(exIndex)" class="p-2">
                                     <div class="flex flex-col sm:flex-row justify-between items-start pb-2 pt-1 px-1 sm:pt-0 rounded-md bg-gray-100 dark:bg-gray-800"
+                                        (click)="expandExerciseCard(exIndex, $event)"
                                         [ngClass]="{'rounded-b-none': !isEditableMode()}">
                                         <div class="flex-grow">
                                             <!-- Superset info remains on its own line if visible, which is correct -->
                                             <span *ngIf="exerciseControl.get('supersetId')?.value"
                                                 class="text-xs font-mono block mb-1"
                                                 [ngClass]="standarSuperSetOrEmomClass(exerciseControl, true)">
-                                                {{ 'workoutBuilder.superset.exerciseLabel' | translate:{order: (exerciseControl.get('supersetOrder')?.value ?? 0) + 1, total: getSupersetSize(exIndex)} }}
+                                                {{ 'workoutBuilder.superset.exerciseLabel' | translate:{order:
+                                                (exerciseControl.get('supersetOrder')?.value ?? 0) + 1, total:
+                                                getSupersetSize(exIndex)} }}
                                             </span>
 
                                             <div class="flex items-center">
@@ -447,7 +451,8 @@
 
                                                 <!-- The Title Text: Now wrapped in its own h3 tag -->
                                                 <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">
-                                                    {{ exerciseControl.get('exerciseName')?.value || ('workoutBuilder.exercise.selectPlaceholder' | translate)
+                                                    {{ exerciseControl.get('exerciseName')?.value ||
+                                                    ('workoutBuilder.exercise.selectPlaceholder' | translate)
                                                     }}
                                                 </h3>
                                                 <app-icon name="info"
@@ -499,7 +504,8 @@
                                                 <!-- Col 1: Type Label -->
                                                 <div class="flex items-center">
                                                     <span
-                                                        class="text-sm font-semibold text-gray-700 dark:text-gray-300">{{ 'workoutBuilder.set.type' | translate }}:</span>
+                                                        class="text-sm font-semibold text-gray-700 dark:text-gray-300">{{
+                                                        'workoutBuilder.set.type' | translate }}:</span>
                                                 </div>
 
                                                 <!-- Col 2: Type Value & Change Button -->
@@ -519,7 +525,8 @@
                                                 <div *ngIf="exerciseControl.get('supersetType')?.value === 'emom'"
                                                     class="col-span-2 flex items-center gap-x-2">
                                                     <label [for]="'emomTime-' + exIndex"
-                                                        class="text-sm font-semibold text-gray-700 dark:text-gray-300 flex-shrink-0">{{ 'workoutBuilder.set.time' | translate }}
+                                                        class="text-sm font-semibold text-gray-700 dark:text-gray-300 flex-shrink-0">{{
+                                                        'workoutBuilder.set.time' | translate }}
                                                         (s):</label>
                                                     <input type="number" [id]="'emomTime-' + exIndex"
                                                         formControlName="emomTimeSeconds" min="10"
@@ -533,7 +540,8 @@
                                     <div *ngIf="builderForm.get('notes')?.value || isEditableMode()">
                                         <label [for]="'exerciseNotes-' + exIndex"
                                             class="block text-s font-medium text-gray-600 dark:text-gray-400 mb-0.5">
-                                            {{ (mode === 'routineBuilder' ? 'workoutBuilder.exercise.notesLabel' : 'workoutBuilder.exercise.loggedNotesLabel') | translate }}
+                                            {{ (mode === 'routineBuilder' ? 'workoutBuilder.exercise.notesLabel' :
+                                            'workoutBuilder.exercise.loggedNotesLabel') | translate }}
                                         </label>
                                         <textarea [id]="'exerciseNotes-' + exIndex" formControlName="notes" rows="1"
                                             appAutoGrow
@@ -543,10 +551,9 @@
 
                                     <!-- Sets Section (Headers, Collapsed Sets, Expanded Set Form) -->
                                     <!-- EXPANDED Only VIEW MODE - START -->
-                                    <div *ngIf="!isCompactView && isViewMode"
-                                    class="gap-x-2 gap-y-2 px-2 py-2 bg-white rounded-md rounded-t-none dark:bg-gray-800 text-gray-900 dark:text-white "
-                                    [ngClass]="getGridColsForExercise(exerciseControl)"
-                                        >
+                                    <div *ngIf="shouldShowExpandedExercise(exIndex) && isViewMode"
+                                        class="gap-x-2 gap-y-2 px-2 py-2 bg-white rounded-md rounded-t-none dark:bg-gray-800 text-gray-900 dark:text-white "
+                                        [ngClass]="getGridColsForExercise(exerciseControl)">
 
                                         <!-- === GRID HEADER === -->
                                         <div
@@ -625,7 +632,8 @@
                                             </div>
 
                                             <!-- Notes Data Cell -->
-                                            <div *ngIf="checkIfNotesIsVisible(set)" class="flex items-center justify-center">
+                                            <div *ngIf="checkIfNotesIsVisible(set)"
+                                                class="flex items-center justify-center">
                                                 <ng-container *ngIf="set.notes; else noNotes">
                                                     <div (click)="showNotesModal(set.notes)" class="cursor-pointer">
                                                         <app-icon name="clipboard-list"
@@ -647,81 +655,72 @@
                                     <!-- EXPANDED Only VIEW MODE - END -->
 
                                     <!-- EXPANDED Only EDIT MODE - START -->
-                                    <div *ngIf="!isCompactView && isEditableMode()" class="space-y-1">
+                                    <div *ngIf="shouldShowExpandedExercise(exIndex) && isEditableMode()"
+                                        class="space-y-1">
                                         <!-- START: Control Panel for Standard Exercises -->
                                         <div *ngIf="!exerciseControl.get('supersetId')?.value"
                                             class="py-2 px-1 rounded-lg grid grid-cols-2 gap-x-3 gap-y-2">
 
                                             <!-- Col 1: Sets Count -->
                                             <div class="flex items-center gap-x-2">
-                                                <span
-                                                    class="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                                                    {{ 'workoutBuilder.set.set' | translate }}:
+                                                <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                                    {{ 'workoutBuilder.set.totalSets' | translate }}:
                                                 </span>
                                                 <strong class="text-lg text-gray-900 dark:text-white">{{
                                                     getSetsFormArray(exerciseControl).length }}</strong>
-                                            </div>
-
-                                            <!-- Col 2: Set +/- Buttons -->
-                                            <div class="flex items-center justify-end gap-x-2">
-                                                <button type="button" (click)="removeLastSet(exerciseControl, $event)"
-                                                    [disabled]="getSetsFormArray(exerciseControl).length <= 1"
-                                                    class="p-1.5 rounded-full bg-red-200 hover:bg-red-300 text-red-700 disabled:opacity-50 flex items-center"
-                                                    [aria-label]="'workoutBuilder.set.removeLastSet' | translate">
-                                                    <app-icon name="minus-circle" class="h-6 w-6"></app-icon>
-                                                </button>
-                                                <button type="button"
-                                                    (click)="addSet(exerciseControl, exIndex); $event.stopPropagation()"
-                                                    class="p-1.5 rounded-full bg-green-200 hover:bg-green-300 text-green-700 flex items-center"
-                                                    [aria-label]="'workoutBuilder.set.addSet' | translate">
-                                                    <app-icon name="plus-circle" class="h-6 w-6"></app-icon>
-                                                </button>
                                             </div>
                                         </div>
                                         <!-- END: Control Panel for Standard Exercises -->
 
                                         <div formArrayName="sets" class="space-y-1.5">
                                             <!-- Set Headers -->
-                                            <div *ngIf="getSetsFormArray(exerciseControl).controls.length > 0 && (expandedSetPath()?.exerciseIndex !== exIndex)"
+                                            <!-- <div *ngIf="getSetsFormArray(exerciseControl).controls.length > 0 && (expandedSetPath()?.exerciseIndex !== exIndex)" -->
+                                            <div *ngIf="getSetsFormArray(exerciseControl).controls.length > 0"
                                                 class="grid grid-cols-12 gap-x-1 py-1 px-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 border-b dark:border-gray-600">
-                                                <div class="col-span-1 text-center">{{ 'workoutBuilder.set.header' | translate }}</div>
-                                                <div class="col-span-2 text-center truncate">{{ 'workoutBuilder.set.type' | translate }}</div>
-                                                <div class="col-span-2 text-center">{{ mode === 'manualLogEntry' ? ('workoutBuilder.set.repsAchieved' | translate) :
+                                                <div class="col-span-1 text-center">{{ 'workoutBuilder.set.header' |
+                                                    translate }}</div>
+                                                <!-- <div class="col-span-2 text-center truncate">{{
+                                                    'workoutBuilder.set.type' | translate }}</div> -->
+                                                <div class="col-span-2 text-center">{{ mode === 'manualLogEntry' ?
+                                                    ('workoutBuilder.set.repsAchieved' | translate) :
                                                     ('workoutBuilder.set.reps' | translate) }}</div>
                                                 <div class="col-span-2 text-center truncate">{{ mode ===
                                                     'manualLogEntry' ?
                                                     ('workoutBuilder.set.weightUsed' | translate) :
-                                                    ('workoutBuilder.set.weight' | translate) }} ({{unitService.getWeightUnitSuffix()}})
+                                                    ('workoutBuilder.set.weight' | translate) }}
+                                                    ({{unitService.getWeightUnitSuffix()}})
                                                 </div>
-                                                <div class="col-span-1 text-center">{{ mode === 'manualLogEntry' ? ('workoutBuilder.set.timePerformed' | translate) :
+                                                <div class="col-span-1 text-center">{{ mode === 'manualLogEntry' ?
+                                                    ('workoutBuilder.set.timePerformed' | translate) :
                                                     ('workoutBuilder.set.time' | translate) }}</div>
                                                 <div class="col-span-2 text-center">{{ mode === 'routineBuilder' ?
                                                     ('workoutBuilder.set.rest' | translate) :
                                                     ('workoutBuilder.set.notes' | translate)}}</div>
-                                                <div class="col-span-1 text-center">{{ mode === 'routineBuilder' ?
+                                                <!-- <div class="col-span-1 text-center">{{ mode === 'routineBuilder' ?
                                                     ('workoutBuilder.set.tempo' | translate) :
-                                                    ''}}</div>
-                                                <div class="col-span-1"></div> <!-- Action column -->
+                                                    ''}}</div> -->
+                                                <div class="col-span-4"></div> <!-- Action column -->
                                             </div>
 
                                             <!-- Loop through sets for collapsed or expanded display -->
                                             <div *ngFor="let setControl of getSetsFormArray(exerciseControl).controls; let setIndex = index"
-                                                [formGroupName]="setIndex">
+                                                #setElement [formGroupName]="setIndex">
                                                 <!-- Collapsed Set View -->
                                                 <div *ngIf="!isSetExpanded(exIndex, setIndex)"
                                                     (click)="toggleSetExpansion(exIndex, setIndex, $event)"
                                                     class="grid grid-cols-12 gap-x-1 items-center py-1.5 px-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800/60 cursor-pointer border dark:border-gray-700 dark:text-white"
                                                     [ngClass]="{
-                                                    'bg-gray-50 dark:bg-gray-700/50 text-gray-800 dark:text-gray-200': !['warmup', 'dropset', 'failure', 'amrap', 'myorep', 'restpause'].includes(setControl.get('type')?.value ?? '') && !isViewMode,
-                                                    'cursor-default': isViewMode
-                                                } ">
-                                                    <div class="col-span-1 text-s text-center font-medium">{{ setIndex +
+                                                        'bg-gray-50 dark:bg-gray-700/50 text-gray-800 dark:text-gray-200': !['warmup', 'dropset', 'failure', 'amrap', 'myorep', 'restpause'].includes(setControl.get('type')?.value ?? ''),
+                                                    } ">
+                                                    <div class="col-span-1 text-s text-center font-medium">#{{ setIndex
+                                                        +
                                                         1
                                                         }}</div>
-                                                    <div class="col-span-2 text-xs text-center truncate"
+                                                    <!-- <div class="col-span-2 text-xs text-center truncate"
                                                         [title]="setControl.get('type')?.value | titlecase">{{
-                                                        (setControl.get('type')?.value | titlecase) || ('workoutBuilder.setTypes.standard' | translate) }}
-                                                    </div>
+                                                        (setControl.get('type')?.value | titlecase) ||
+                                                        ('workoutBuilder.setTypes.standard' | translate) }}
+                                                    </div> -->
                                                     <div class="col-span-2 text-s text-center">
                                                         <ng-container *ngIf="mode === 'routineBuilder'">{{
                                                             getSetDisplayValue(setControl, 'reps') }}</ng-container>
@@ -751,13 +750,12 @@
                                                         <ng-container *ngIf="mode === 'manualLogEntry'">{{
                                                             setControl.get('notes')?.value || '-' }}</ng-container>
                                                     </div>
-                                                    <div class="col-span-1 text-s text-center truncate"
+                                                    <!-- <div class="col-span-1 text-s text-center truncate"
                                                         [title]="setControl.get('tempo')?.value">
                                                         <ng-container *ngIf="mode === 'routineBuilder'">{{
                                                             setControl.get('tempo')?.value || '-' }}</ng-container>
-                                                    </div>
-                                                    <div *ngIf="!isViewMode"
-                                                        class="col-span-1 flex items-center justify-end">
+                                                    </div> -->
+                                                    <div class="col-span-4 flex items-center justify-end">
                                                         <button type="button"
                                                             (click)="removeSet(exerciseControl, exIndex, setIndex); $event.stopPropagation()"
                                                             [title]="isEmomExercise(exerciseControl) ? ('workoutBuilder.set.removeRound' | translate) : ('workoutBuilder.set.removeSet' | translate)"
@@ -765,23 +763,45 @@
                                                             <app-icon name="cancel" class="h-4 w-4"></app-icon>
                                                         </button>
                                                     </div>
-                                                    <div *ngIf="isViewMode" class="col-span-1"></div>
                                                 </div>
 
                                                 <!-- Expanded Set Form -->
                                                 <div #expandedSetElement *ngIf="isSetExpanded(exIndex, setIndex)"
                                                     class="p-1 rounded-md shadow-inner space-y-2 border-yellow-400 ring-2 ring-yellow-400 dark:ring-yellow-500 z-10"
                                                     [ngClass]="{
-                                                    'bg-gray-100 dark:bg-gray-800/50': !['warmup', 'dropset', 'failure', 'amrap', 'myorep', 'restpause'].includes(setControl.get('type')?.value ?? '')
-                                                }">
+                                                            'bg-gray-100 dark:bg-gray-800/50': !['warmup', 'dropset', 'failure', 'amrap', 'myorep', 'restpause'].includes(setControl.get('type')?.value ?? '')
+                                                        }">
+                                                    <div (click)="toggleSetExpansion(exIndex, setIndex, $event)"
+                                                        [ngClass]="setLabelClass(exerciseControl)">
+                                                        #{{setIndex+1}} {{isSuperSet(exIndex) ?
+                                                        ('workoutBuilder.set.round' |
+                                                        translate):('workoutBuilder.set.set' | translate)}}
+
+                                                    </div>
+                                                    <div
+                                                        class="flex items-center justify-center gap-1 dark:bg-gray-600 w-fit rounded-full">
+                                                        <!-- Remove metric button -->
+                                                        <button
+                                                            (click)="promptRemoveField(exIndex, setIndex); $event.stopPropagation()"
+                                                            class="flex items-center gap-1 text-xs font-semibold text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-1 rounded-full hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors">
+                                                            <app-icon name="minus-circle" class="h-5 w-5"></app-icon>
+                                                        </button>
+                                                        <!-- ADD metric -->
+                                                        <button
+                                                            *ngIf="getFieldsForSet(exIndex, setIndex).hidden.length > 0"
+                                                            (click)="promptAddField(exIndex, setIndex); $event.stopPropagation()"
+                                                            class="flex items-center gap-1 text-xs font-semibold text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 p-1 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors">
+                                                            <app-icon name="plus-circle" class="h-5 w-5"></app-icon>
+                                                        </button>
+                                                    </div>
                                                     <div
                                                         class="grid grid-cols-2 sm:grid-cols-3 gap-x-3 gap-y-2 items-end">
                                                         <div class="col-span-full sm:col-span-1">
-                                                            <p [ngClass]="setLabelClass(exerciseControl)">
-                                                                #{{setIndex+1}} {{isSuperSet(exIndex) ? ('workoutBuilder.set.round' | translate):('workoutBuilder.set.set' | translate)}}
-                                                            </p>
+                                                            <!-- <p [ngClass]="setLabelClass(exerciseControl)"> -->
+
                                                             <label [for]="'setType-exp-' + exIndex + '-' + setIndex"
-                                                                class="block text-s font-medium text-gray-600 dark:text-gray-400">{{ 'workoutBuilder.set.type' | translate }}</label>
+                                                                class="block text-s font-medium text-gray-600 dark:text-gray-400">{{
+                                                                'workoutBuilder.set.type' | translate }}</label>
                                                             <select [id]="'setType-exp-' + exIndex + '-' + setIndex"
                                                                 formControlName="type" [disabled]="isViewMode"
                                                                 class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
@@ -793,14 +813,16 @@
                                                         <div *ngIf="!isExerciseCardioOnlyCtrl(exerciseControl)">
                                                             <label [for]="'reps-exp-' + exIndex + '-' + setIndex"
                                                                 class="flex items-center justify-between text-s font-medium text-gray-600 dark:text-gray-400">
-                                                                <span>{{ 'workoutBuilder.set.reps' | translate }} {{ mode === 'manualLogEntry' ? ('(Achieved)') :
+                                                                <span>{{ 'workoutBuilder.set.reps' | translate }} {{
+                                                                    mode === 'manualLogEntry' ? ('(Achieved)') :
                                                                     ''}}</span>
                                                                 <!-- SWITCH BUTTON -->
                                                                 <button *ngIf="mode === 'routineBuilder'" type="button"
                                                                     (click)="toggleRepsMode(setControl,$event)"
                                                                     [title]="'workoutBuilder.set.toggleRange' | translate"
                                                                     class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold p-0.5 rounded">
-                                                                    {{ (isRangeMode(setControl, 'reps') ? 'workoutBuilder.set.useSingle' :
+                                                                    {{ (isRangeMode(setControl, 'reps') ?
+                                                                    'workoutBuilder.set.useSingle' :
                                                                     'workoutBuilder.set.useRange') | translate }}
                                                                 </button>
                                                             </label>
@@ -824,19 +846,22 @@
                                                                     </div>
                                                                     <div *ngIf="setControl.get('targetRepsMax')?.hasError('min') && setControl.get('targetRepsMax')?.touched"
                                                                         class="text-red-500 dark:text-red-400 text-xs mt-1">
-                                                                        {{ 'workoutBuilder.set.rangeError' | translate }}
+                                                                        {{ 'workoutBuilder.set.rangeError' | translate
+                                                                        }}
                                                                     </div>
                                                                 </div>
                                                                 <!-- Single Value Input -->
                                                                 <input *ngIf="!isRangeMode(setControl, 'reps')"
                                                                     type="number" formControlName="targetReps" min="0"
-                                                                    [placeholder]="'workoutBuilder.set.repsPlaceholder' | translate" [readonly]="isViewMode"
+                                                                    [placeholder]="'workoutBuilder.set.repsPlaceholder' | translate"
+                                                                    [readonly]="isViewMode"
                                                                     class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
                                                             </ng-container>
                                                             <!-- LOG ENTRY - SINGLE REPS ACHIEVED -->
                                                             <input *ngIf="mode === 'manualLogEntry'" type="number"
                                                                 [id]="'reps-exp-' + exIndex + '-' + setIndex"
-                                                                formControlName="repsAchieved" [placeholder]="'workoutBuilder.set.repsPlaceholder' | translate"
+                                                                formControlName="repsAchieved"
+                                                                [placeholder]="'workoutBuilder.set.repsPlaceholder' | translate"
                                                                 [readonly]="isViewMode"
                                                                 class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
                                                         </div>
@@ -845,14 +870,16 @@
                                                         <div>
                                                             <label [for]="'weight-exp-' + exIndex + '-' + setIndex"
                                                                 class="flex items-center justify-between text-s font-medium text-gray-600 dark:text-gray-400">
-                                                                <span>{{ 'workoutBuilder.set.weight' | translate }} {{ mode === 'manualLogEntry' ? '(Used)' :
+                                                                <span>{{ 'workoutBuilder.set.weight' | translate }} {{
+                                                                    mode === 'manualLogEntry' ? '(Used)' :
                                                                     ''}}</span>
                                                                 <!-- SWITCH BUTTON -->
                                                                 <button *ngIf="mode === 'routineBuilder'" type="button"
                                                                     (click)="toggleWeightMode(setControl,$event)"
                                                                     [title]="'workoutBuilder.set.toggleRange' | translate"
                                                                     class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold p-0.5 rounded">
-                                                                    {{ (isRangeMode(setControl, 'weight') ? 'workoutBuilder.set.useSingle' :
+                                                                    {{ (isRangeMode(setControl, 'weight') ?
+                                                                    'workoutBuilder.set.useSingle' :
                                                                     'workoutBuilder.set.useRange') | translate }}
                                                                 </button>
                                                             </label>
@@ -876,19 +903,22 @@
                                                                     </div>
                                                                     <div *ngIf="setControl.get('targetWeightMax')?.hasError('min') && setControl.get('targetWeightMax')?.touched"
                                                                         class="text-red-500 dark:text-red-400 text-xs mt-1">
-                                                                        {{ 'workoutBuilder.set.rangeError' | translate }}
+                                                                        {{ 'workoutBuilder.set.rangeError' | translate
+                                                                        }}
                                                                     </div>
                                                                 </div>
                                                                 <!-- Single Value Input -->
                                                                 <input *ngIf="!isRangeMode(setControl, 'weight')"
                                                                     type="number" formControlName="targetWeight" min="0"
-                                                                    [placeholder]="'workoutBuilder.set.weightPlaceholder' | translate" [readonly]="isViewMode"
+                                                                    [placeholder]="'workoutBuilder.set.weightPlaceholder' | translate"
+                                                                    [readonly]="isViewMode"
                                                                     class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
                                                             </ng-container>
                                                             <!-- LOG ENTRY - SINGLE WEIGHT ACHIEVED -->
                                                             <input *ngIf="mode === 'manualLogEntry'" type="number"
                                                                 [id]="'weight-exp-' + exIndex + '-' + setIndex"
-                                                                formControlName="weightUsed" [placeholder]="'workoutBuilder.set.weightPlaceholder' | translate"
+                                                                formControlName="weightUsed"
+                                                                [placeholder]="'workoutBuilder.set.weightPlaceholder' | translate"
                                                                 [readonly]="isViewMode"
                                                                 class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
                                                         </div>
@@ -902,7 +932,9 @@
                                                                     (click)="toggleDistanceMode(setControl,$event)"
                                                                     [title]="'workoutBuilder.set.toggleRange' | translate"
                                                                     class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold p-0.5 rounded">
-                                                                    {{ (isRangeMode(setControl, 'distance') ? 'workoutBuilder.set.useSingle' : 'workoutBuilder.set.useRange') | translate }}
+                                                                    {{ (isRangeMode(setControl, 'distance') ?
+                                                                    'workoutBuilder.set.useSingle' :
+                                                                    'workoutBuilder.set.useRange') | translate }}
                                                                 </button>
                                                             </label>
                                                             <!-- ROUTINE BUILDER - DISTANCE -->
@@ -924,7 +956,8 @@
                                                                 </div>
                                                                 <input *ngIf="!isRangeMode(setControl, 'distance')"
                                                                     type="number" formControlName="targetDistance"
-                                                                    min="0" [placeholder]="'workoutBuilder.set.distancePlaceholder' | translate"
+                                                                    min="0"
+                                                                    [placeholder]="'workoutBuilder.set.distancePlaceholder' | translate"
                                                                     [readonly]="isViewMode"
                                                                     class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
                                                             </ng-container>
@@ -932,7 +965,8 @@
                                                             <input *ngIf="mode === 'manualLogEntry'" type="number"
                                                                 [id]="'distance-exp-' + exIndex + '-' + setIndex"
                                                                 formControlName="distanceAchieved"
-                                                                [placeholder]="'workoutBuilder.set.distancePlaceholder' | translate" [readonly]="isViewMode"
+                                                                [placeholder]="'workoutBuilder.set.distancePlaceholder' | translate"
+                                                                [readonly]="isViewMode"
                                                                 class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
                                                         </div>
 
@@ -941,7 +975,8 @@
                                                         <div *ngIf="!isEmomExercise(exerciseControl)">
                                                             <label [for]="'duration-exp-' + exIndex + '-' + setIndex"
                                                                 class="flex items-center justify-between text-s font-medium text-gray-600 dark:text-gray-400">
-                                                                <span>{{ 'workoutBuilder.set.time' | translate }} (s) {{ mode === 'manualLogEntry' ?
+                                                                <span>{{ 'workoutBuilder.set.time' | translate }} (s) {{
+                                                                    mode === 'manualLogEntry' ?
                                                                     ('(Performed)')
                                                                     : ''}}</span>
                                                                 <!-- SWITCH BUTTON -->
@@ -949,7 +984,8 @@
                                                                     (click)="toggleDurationMode(setControl,$event)"
                                                                     [title]="'workoutBuilder.set.toggleRange' | translate"
                                                                     class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold p-0.5 rounded">
-                                                                    {{ (isRangeMode(setControl, 'duration') ? 'workoutBuilder.set.useSingle' :
+                                                                    {{ (isRangeMode(setControl, 'duration') ?
+                                                                    'workoutBuilder.set.useSingle' :
                                                                     'workoutBuilder.set.useRange') | translate }}
                                                                 </button>
                                                             </label>
@@ -973,19 +1009,23 @@
                                                                     </div>
                                                                     <div *ngIf="setControl.get('targetDurationMax')?.hasError('min') && setControl.get('targetDurationMax')?.touched"
                                                                         class="text-red-500 dark:text-red-400 text-xs mt-1">
-                                                                        {{ 'workoutBuilder.set.rangeError' | translate }}
+                                                                        {{ 'workoutBuilder.set.rangeError' | translate
+                                                                        }}
                                                                     </div>
                                                                 </div>
                                                                 <!-- Single Value Input -->
                                                                 <input *ngIf="!isRangeMode(setControl, 'duration')"
                                                                     type="number" formControlName="targetDuration"
-                                                                    min="0" [placeholder]="'workoutBuilder.set.durationPlaceholder' | translate" [readonly]="isViewMode"
+                                                                    min="0"
+                                                                    [placeholder]="'workoutBuilder.set.durationPlaceholder' | translate"
+                                                                    [readonly]="isViewMode"
                                                                     class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
                                                             </ng-container>
                                                             <!-- LOG ENTRY - SINGLE DURATION PERFORMED -->
                                                             <input *ngIf="mode === 'manualLogEntry'" type="number"
                                                                 [id]="'duration-exp-' + exIndex + '-' + setIndex"
-                                                                formControlName="durationPerformed" [placeholder]="'workoutBuilder.set.durationPlaceholder' | translate"
+                                                                formControlName="durationPerformed"
+                                                                [placeholder]="'workoutBuilder.set.durationPlaceholder' | translate"
                                                                 [readonly]="isViewMode"
                                                                 class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
                                                         </div>
@@ -993,31 +1033,37 @@
                                                         <!-- Other inputs for tempo, rest, notes -->
                                                         <div *ngIf="setControl.get('tempo')?.value || isEditableMode()">
                                                             <label [for]="'tempo-exp-' + exIndex + '-' + setIndex"
-                                                                class="block text-s font-medium text-gray-600 dark:text-gray-400">{{ 'workoutBuilder.set.tempo' | translate }}</label>
+                                                                class="block text-s font-medium text-gray-600 dark:text-gray-400">{{
+                                                                'workoutBuilder.set.tempo' | translate }}</label>
                                                             <input type="text"
                                                                 [id]="'tempo-exp-' + exIndex + '-' + setIndex"
-                                                                formControlName="tempo" [placeholder]="'workoutBuilder.set.tempoPlaceholder' | translate"
+                                                                formControlName="tempo"
+                                                                [placeholder]="'workoutBuilder.set.tempoPlaceholder' | translate"
                                                                 [readonly]="isViewMode"
                                                                 class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
                                                         </div>
                                                         <div>
                                                             <label [for]="'rest-exp-' + exIndex + '-' + setIndex"
-                                                                class="block text-s font-medium text-gray-600 dark:text-gray-400">{{ 'workoutBuilder.set.rest' | translate }}
+                                                                class="block text-s font-medium text-gray-600 dark:text-gray-400">{{
+                                                                'workoutBuilder.set.rest' | translate }}
                                                                 (s) {{ mode === 'manualLogEntry' ? '(Done)' :
                                                                 ''}}</label>
                                                             <input type="number"
                                                                 [id]="'rest-exp-' + exIndex + '-' + setIndex"
-                                                                formControlName="restAfterSet" [placeholder]="'workoutBuilder.set.restPlaceholder' | translate"
+                                                                formControlName="restAfterSet"
+                                                                [placeholder]="'workoutBuilder.set.restPlaceholder' | translate"
                                                                 [readonly]="isViewMode"
                                                                 class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
                                                         </div>
                                                         <div class="col-span-full"
                                                             *ngIf="(setControl.get('notes')?.value || isEditableMode())">
                                                             <label [for]="'setNotes-exp-' + exIndex + '-' + setIndex"
-                                                                class="block text-s font-medium text-gray-600 dark:text-gray-400">{{ 'workoutBuilder.set.notes' | translate }}</label>
+                                                                class="block text-s font-medium text-gray-600 dark:text-gray-400">{{
+                                                                'workoutBuilder.set.notes' | translate }}</label>
                                                             <input type="text"
                                                                 [id]="'setNotes-exp-' + exIndex + '-' + setIndex"
-                                                                formControlName="notes" [placeholder]="'workoutBuilder.set.notesPlaceholder' | translate"
+                                                                formControlName="notes"
+                                                                [placeholder]="'workoutBuilder.set.notesPlaceholder' | translate"
                                                                 [readonly]="isViewMode"
                                                                 class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
                                                         </div>
@@ -1031,13 +1077,52 @@
                                                         </button>
                                                     </div>
                                                 </div>
+
                                             </div>
+                                        </div>
+                                        <!-- Col 2: Set +/- Buttons -->
+                                        <div class="flex items-center justify-center gap-x-2 py-1">
+                                            <label class="dark:text-gray-200">{{'workoutBuilder.set.set' |
+                                                translate}}:</label>
+                                            <button type="button" (click)="removeLastSet(exerciseControl, $event)"
+                                                [disabled]="getSetsFormArray(exerciseControl).length <= 1"
+                                                class="p-1.5 rounded-full bg-red-200 hover:bg-red-300 text-red-700 disabled:opacity-50 flex items-center"
+                                                [aria-label]="'workoutBuilder.set.removeLastSet' | translate">
+                                                <app-icon name="minus-circle" class="h-6 w-6"></app-icon>
+                                            </button>
+                                            <button type="button"
+                                                (click)="addSet(exerciseControl, exIndex); $event.stopPropagation()"
+                                                class="p-1.5 rounded-full bg-green-200 hover:bg-green-300 text-green-700 flex items-center"
+                                                [aria-label]="'workoutBuilder.set.addSet' | translate">
+                                                <app-icon name="plus-circle" class="h-6 w-6"></app-icon>
+                                            </button>
                                         </div>
                                     </div>
                                     <!-- EXPANDED Only EDIT MODE - END -->
-                                </div> <!-- End of *ngIf="!isCompactView" -->
+                                </div>
                             </div>
+                            <!-- ACTION MENU CONTAINER (MOVED OUTSIDE the clickable cdkDrag div) -->
+                            
                         </div>
+                        <div class="absolute top-1 right-1 z-20">
+                                <!-- Expanded View Actions (Delete, Fill, EMOM, Switch, More Actions Menu) -->
+                                <div *ngIf="isEditableMode()"
+                                    class="flex items-center space-x-1">
+                                    <!-- The "More Actions" Menu Itself -->
+                                    <div class="relative" #exerciseActionMenuContainer>
+                                        <button (click)="toggleExerciseActionMenu(exIndex, $event)"
+                                            class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center">
+                                            <app-icon name="menu-action" class="h-10 w-10"></app-icon>
+                                        </button>
+                                        <app-action-menu *ngIf="isExerciseActionMenuVisible(exIndex)"
+                                            displayMode="dropdown" [items]="getExerciseActionMenuItems(exerciseControl)"
+                                            [isVisible]="isExerciseActionMenuVisible(exIndex)"
+                                            (itemClick)="handleExerciseActionMenuItemClick($event, exIndex, exerciseControl)"
+                                            (closeMenu)="closeExerciseActionMenu()">
+                                        </app-action-menu>
+                                    </div>
+                                </div>
+                            </div>
                     </div>
                 </ng-container>
             </div>
@@ -1102,20 +1187,21 @@
     </form>
 
     <app-exercise-selection-modal [isOpen]="isExerciseModalOpen" [(searchTerm)]="modalSearchTerm"
+        [isMultiSelect]="true"
         [title]="'workoutBuilder.modal.addTitle' | translate" [exercises]="availableExercises"
-        [showCreateCustomLink]="true" itemIconName="plus-circle"
-        itemIconClass="text-primary dark:text-primary-light"
-        (exerciseSelected)="selectExerciseFromLibrary($event)" (createCustomClicked)="handleTrulyCustomExerciseEntry()"
+        [showCreateCustomLink]="true" itemIconName="plus-circle" itemIconClass="text-primary dark:text-primary-light"
+        (exercisesSelected)="selectExercisesFromLibrary($event)" 
+        (createCustomClicked)="handleTrulyCustomExerciseEntry()"
         (close)="closeExerciseSelectionModal()">
     </app-exercise-selection-modal>
 
     <app-exercise-selection-modal [isOpen]="isSwitchExerciseModalOpen()" [(searchTerm)]="modalSearchTerm"
         [title]="(isShowingSimilarInSwitchModal() ? 'workoutBuilder.modal.similarTitle' : 'workoutBuilder.modal.switchTitle') | translate"
-        [exercises]="exercisesForSwitchModal()" [searchPlaceholder]="'workoutBuilder.modal.searchPlaceholder' | translate"
-        [showSimilarButton]="true" [isShowingSimilarView]="isShowingSimilarInSwitchModal()" itemIconName="change"
-        itemIconClass="text-green-500" (exerciseSelected)="handleExerciseSwitch($event)"
-        (findSimilarClicked)="findAndShowSimilarExercises()" (backToSearchClicked)="onBackToSearchFromSimilar()"
-        (close)="closeSwitchExerciseModal()">
+        [exercises]="exercisesForSwitchModal()"
+        [searchPlaceholder]="'workoutBuilder.modal.searchPlaceholder' | translate" [showSimilarButton]="true"
+        [isShowingSimilarView]="isShowingSimilarInSwitchModal()" itemIconName="change" itemIconClass="text-green-500"
+        (exerciseSelected)="handleExerciseSwitch($event)" (findSimilarClicked)="findAndShowSimilarExercises()"
+        (backToSearchClicked)="onBackToSearchFromSimilar()" (close)="closeSwitchExerciseModal()">
     </app-exercise-selection-modal>
 
     <!-- NOTES MODAL -->

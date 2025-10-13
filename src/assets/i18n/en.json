@@ -1057,6 +1057,7 @@
     },
     "set": {
       "set": "Set",
+      "totalSets": "Total sets",
       "round": "Round",
       "header": "#",
       "type": "Type",
@@ -2174,6 +2175,53 @@
     },
     "general": {
       "cancel": "Cancel"
+    }
+  },
+
+  "exerciseDetail": {
+    "tabs": {
+      "description": "Description",
+      "history": "History",
+      "graphs": "Graphs",
+      "records": "Records"
+    },
+    "charts": {
+      "xAxisLabel": "Date",
+      "yAxisLabel": "Max Weight Lifted ({{unit}})",
+      "est1rmSeries": "Est. 1RM",
+      "maxWeightSeries": "Max Weight",
+      "totalVolumeSeries": "Total Volume",
+      "maxDurationSeries": "Max Duration (s)",
+      "maxDistanceSeries": "Max Distance ({{unit}})"
+    },
+    "delete": {
+      "confirmTitle": "Confirm Deletion",
+      "confirmMessage": "Are you sure you want to delete the exercise \"{{name}}\"? If this exercise is part of any past workout logs, it will be removed from those logs. If a log becomes empty as a result, the entire log might be deleted. This action cannot be undone.",
+      "successTitle": "Success",
+      "successMessage": "Exercise \"{{name}}\" deleted successfully",
+      "errorTitle": "Error",
+      "errorMessage": "Failed to delete exercise: {{error}}"
+    },
+    "actions": {
+      "edit": "EDIT",
+      "delete": "DELETE"
+    },
+    "records": {
+      "maxDistance": "Max distance",
+      "maxDuration": "Max duration",
+      "est1rm": "1RM estimated",
+      "maxVolume": "Max volume",
+      "maxWeight": "Max weight"
+    },
+    "historyDisplay": {
+      "bodyweight": "Bodyweight",
+      "noData": "Set data not recorded",
+      "reps": "reps"
+    },
+    "general": {
+      "cancel": "Cancel",
+      "delete": "Delete Exercise",
+      "notApplicable": "N/A"
     }
   }
 
