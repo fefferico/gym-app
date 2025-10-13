@@ -84,6 +84,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   @ViewChild('exerciseSearchFied') myExerciseInput!: ElementRef;
 
   isAllExpandedInViewMode = signal(false);
+  expandedExerciseNotes = signal<number | null>(null);
 
   exerciseInfoTooltipString = this.translate.instant('workoutBuilder.exerciseInfoTooltip');
   lastRoutineDuration: number = 0;
@@ -2926,9 +2927,12 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
     const expandedExIndex = this.expandedExercisePath();
     if (expandedExIndex?.exerciseIndex === exIndex) {
+      // If the clicked exercise is already expanded, collapse it and its notes
       this.expandedExercisePath.set(null);
       this.expandedSetPath.set(null);
+      this.expandedExerciseNotes.set(null); // <-- ADD THIS LINE
     } else {
+      // Expand the clicked exercise
       this.expandedExercisePath.set({ exerciseIndex: exIndex });
       this.scrollExpandedExerciseIntoView();
     }
@@ -3185,6 +3189,9 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     if (this.isViewMode || !(exerciseControl instanceof FormGroup)) return;
 
     event?.stopPropagation();
+
+    const exIndex = this.getExerciseIndexByControl(exerciseControl);
+    this.expandExerciseCardIfNeeded(exIndex);
 
     const emomInputs: AlertInput[] = [
       { name: 'emomTime', type: 'number', label: 'Time per Round (s)', value: '60', attributes: { min: '10', required: true } },
@@ -3488,6 +3495,9 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       case 'fill_latest':
         this.fillWithLatestPerformanceData(exIndex);
         break;
+      case 'toggle_notes':
+        this.toggleExerciseNotes(exIndex);
+        break;
       case 'remove':
         this.removeExercise(exIndex);
         break;
@@ -3519,6 +3529,12 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         buttonClass: 'bg-green-500 text-white hover:bg-green-700 text-left',
         actionKey: 'fill_latest',
         iconName: 'task',
+      });
+      items.push({
+        label: this.translate.instant('workoutBuilder.exercise.toggleNotes'),
+        buttonClass: 'bg-yellow-500 text-gray-500 hover:bg-yellow-700 rounded-full focus:outline-none flex items-center p-2 transition-colors',
+        actionKey: 'toggle_notes',
+        iconName: 'clipboard-list',
       });
       items.push({
         label: 'Make EMOM',
@@ -3680,6 +3696,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       return;
     }
     event?.stopPropagation();
+    
+    this.expandExerciseCardIfNeeded(exIndex);
 
     const exerciseControl = this.exercisesFormArray.at(exIndex) as FormGroup;
     if (!exerciseControl) {
@@ -4008,6 +4026,70 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     const finalCount = Math.max(2, columnCount);
 
     return `grid-cols-${finalCount}`;
+  }
+
+   /**
+   * Toggles the visibility of the exercise notes textarea for a given exercise.
+   * @param exIndex The index of the exercise.
+   * @param event The mouse event, used to stop propagation.
+   */
+  toggleExerciseNotes(exIndex: number, event?: Event): void {
+    event?.stopPropagation(); // Prevents the main card from collapsing
+    this.expandedExerciseNotes.update(current => (current === exIndex ? null : exIndex));
+    this.expandExerciseCardIfNeeded(exIndex);
+
+    // focus on text area
+    setTimeout(() => {
+      const textArea = document.getElementById(`exerciseNotes-${exIndex}`);
+      textArea?.focus();
+    }, 300);
+  }
+
+  private expandExerciseCardIfNeeded(exIndex: number): void {
+    if (!this.expandedExercisePath() || this.expandedExercisePath()?.exerciseIndex !== exIndex) {
+      this.expandExerciseCard(exIndex);
+    }
+  }
+
+   /**
+   * Generates the complete, dynamic CSS class string for the collapsed set row.
+   * This includes both the grid layout and the background color.
+   * @param exerciseControl The FormGroup for the exercise.
+   * @param setControl The FormGroup for the specific set.
+   * @returns A string of Tailwind CSS classes like 'grid grid-cols-5 bg-gray-50 dark:bg-gray-700/50'.
+   */
+  public getCollapsedSetRowClass(exIndex: number, setIndex: number): string {
+    const visibleCols = this.getVisibleColumnsForExercise(exIndex);
+    
+    // --- 1. Calculate Grid Class ---
+    let columnCount = 2; // Base for Set # and Actions
+    if (visibleCols['reps']) columnCount++;
+    if (visibleCols['weight']) columnCount++;
+    if (visibleCols['distance']) columnCount++;
+    if (visibleCols['duration']) columnCount++;
+    columnCount++; // For Rest/Notes
+    const gridClass = `grid-cols-${Math.max(2, columnCount)}`;
+
+    // --- 2. Determine Background Color Class ---
+    const exerciseControl = this.exercisesFormArray.at(exIndex);
+    const setsFormArray = this.getSetsFormArray(exerciseControl);
+    const setControl = setsFormArray.at(setIndex);
+    if (!(setControl instanceof FormGroup)) {
+      return `grid ${gridClass} bg-white dark:bg-gray-800`; // Fallback if not a FormGroup
+    }
+    const setType = setControl.get('type')?.value;
+    let bgClass = 'bg-white dark:bg-gray-800'; // Default background
+
+    if (setType === 'standard') {
+      bgClass = 'bg-gray-50 dark:bg-gray-700/50';
+    } else if (setType === 'warmup') {
+      // Note: your original code had 'dark:bg-gray-blue/50'. Assuming you meant 'blue'.
+      bgClass = 'bg-blue-50 dark:bg-blue-900/40'; 
+    }
+    // ... you can add other else-if for other set types like 'dropset' etc.
+
+    // --- 3. Combine and return the full string ---
+    return `grid ${gridClass} ${bgClass}`;
   }
     
 

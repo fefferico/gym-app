@@ -1049,7 +1049,8 @@
             "remove": "Rimuovi Esercizio",
             "fillWithLast": "Riempi con i dati dell'ultima performance",
             "makeEmom": "Crea EMOM",
-            "switch": "Sostituisci esercizio"
+            "switch": "Sostituisci esercizio",
+            "toggleNotes": "Note esercizio"
         },
         "set": {
             "set": "Serie",

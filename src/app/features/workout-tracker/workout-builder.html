@@ -544,17 +544,16 @@
                                     </div>
 
                                     <!-- Exercise Notes -->
-                                    <div *ngIf="builderForm.get('notes')?.value || isEditableMode()">
-                                        <label [for]="'exerciseNotes-' + exIndex"
-                                            class="block text-s font-medium text-gray-600 dark:text-gray-400 mb-0.5">
-                                            {{ (mode === 'routineBuilder' ? 'workoutBuilder.exercise.notesLabel' :
-                                            'workoutBuilder.exercise.loggedNotesLabel') | translate }}
-                                        </label>
-                                        <textarea [id]="'exerciseNotes-' + exIndex" formControlName="notes" rows="1"
-                                            appAutoGrow
-                                            class="mt-0.5 mb-2 block w-full p-1.5 text-sm border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200"
-                                            [readonly]="isViewMode"></textarea>
-                                    </div>
+                                    <div *ngIf="expandedExerciseNotes() === exIndex">
+    <label [for]="'exerciseNotes-' + exIndex"
+        class="block text-s font-medium text-gray-600 dark:text-gray-400 mb-0.5">
+        {{ (mode === 'routineBuilder' ? 'workoutBuilder.exercise.notesLabel' : 'workoutBuilder.exercise.loggedNotesLabel') | translate }}
+    </label>
+    <textarea [id]="'exerciseNotes-' + exIndex" formControlName="notes" rows="1"
+        appAutoGrow
+        class="mt-0.5 mb-2 block w-full p-1.5 text-sm border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200"
+        [readonly]="isViewMode"></textarea>
+</div>
 
                                     <!-- Sets Section (Headers, Collapsed Sets, Expanded Set Form) -->
                                     <!-- EXPANDED Only VIEW MODE - START -->
@@ -727,8 +726,10 @@
                                                         *ngLet="getVisibleColumnsForExercise(exIndex) as visibleCols">
                                                         <div (click)="toggleSetExpansion(exIndex, setIndex, $event)"
                                                             class="flex items-center gap-x-3 py-1.5 px-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800/60 cursor-pointer border dark:border-gray-700 dark:text-white"
-                                                            [ngClass]="[getGridClassForExercise(exIndex), { 'bg-gray-50 dark:bg-gray-700/50': setControl.get('type')?.value === 'standard' }]"
-                                                            [ngClass]="{ 'bg-gray-50 dark:bg-gray-700/50': setControl.get('type')?.value === 'standard' }">
+                                                            [ngClass]="[getGridClassForExercise(exIndex)]"
+                                                            [ngClass]="{ 'bg-gray-50 dark:bg-gray-700/50': setControl.get('type')?.value === 'standard',
+                                                                 'bg-blue-50 dark:bg-blue-700/50': setControl.get('type')?.value === 'warmup' 
+                                                             }">
 
                                                             <!-- Set Number (Fixed Width, Non-Shrinking) -->
                                                             <div
@@ -1162,7 +1163,7 @@
                                             </div>
                                         </div>
                                         <!-- Col 2: Set +/- SETS Buttons -->
-                                        <div class="flex items-center justify-center mt-2">
+                                        <div class="flex items-center justify-center pt-2">
                                             <div
                                                 class="flex w-fit items-center justify-center gap-1 bg-gray-200 dark:bg-gray-900/50 p-1 rounded-full">
                                                 <label

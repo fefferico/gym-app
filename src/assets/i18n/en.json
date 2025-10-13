@@ -1053,7 +1053,8 @@
       "remove": "Remove Exercise",
       "fillWithLast": "Fill with latest performance data",
       "makeEmom": "Make EMOM",
-      "switch": "Switch exercise"
+      "switch": "Switch exercise",
+      "toggleNotes": "Toggle exercise notes"
     },
     "set": {
       "set": "Set",
