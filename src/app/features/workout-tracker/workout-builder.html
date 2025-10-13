@@ -298,7 +298,8 @@
                 (cdkDropListDropped)="onExerciseDrop($event)" [cdkDropListDisabled]="!isEditableMode()"
                 formArrayName="exercises" class="exercise-list-container">
                 <ng-container *ngFor="let exerciseControl of exercisesFormArray.controls; let exIndex = index;">
-                    <div class="relative group exercise-card-wrapper" #expandedExerciseCard appClickOutside (clickOutside)="closeExerciseActionMenu()"
+                    <div class="relative group exercise-card-wrapper" #expandedExerciseCard appClickOutside
+                        (clickOutside)="closeExerciseActionMenu()"
                         [style.zIndex]="isExerciseActionMenuVisible(exIndex) ? 50 : 'auto'"
                         [ngClass]="getExerciseCardClass(exerciseControl, exIndex)">
                         <div *ngIf="(isEditableMode()) && selectedExerciseIndicesForSuperset().length >= 2 && exIndex === firstSelectedExerciseIndexForSuperset"
@@ -680,38 +681,43 @@
 
                                         <div formArrayName="sets" class="space-y-1.5">
                                             <!-- Set Headers -->
-                                            <!-- <div *ngIf="getSetsFormArray(exerciseControl).controls.length > 0 && (expandedSetPath()?.exerciseIndex !== exIndex)" -->
                                             <ng-container *ngLet="getVisibleColumnsForExercise(exIndex) as visibleCols">
+                                                <div class="flex items-center gap-x-3 py-1 px-2 text-xs font-medium text-gray-500 dark:text-gray-400 border-b dark:border-gray-600"
+                                                    [ngClass]="getGridClassForExercise(exIndex)">
+                                                    <!-- Header for Set # -->
+                                                    <div class="flex-shrink-0 w-8 text-center">{{
+                                                        'workoutBuilder.set.header' | translate }}</div>
 
-                                                <div *ngIf="getSetsFormArray(exerciseControl).controls.length > 0"
-                                                    class="grid grid-cols-12 gap-x-1 py-1 px-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 border-b dark:border-gray-600">
-                                                    <div class="col-span-1 text-center">{{ 'workoutBuilder.set.header' |
-                                                        translate }}</div>
-                                                    <div *ngIf="visibleCols['reps']" class="col-span-2 text-center">{{
-                                                        mode === 'manualLogEntry' ? ('workoutBuilder.set.repsAchieved' |
-                                                        translate) : ('workoutBuilder.set.reps' | translate) }}</div>
-                                                    <div *ngIf="visibleCols['weight']"
-                                                        class="col-span-2 text-center truncate">{{ mode ===
-                                                        'manualLogEntry' ? ('workoutBuilder.set.weightUsed' | translate)
-                                                        : ('workoutBuilder.set.weight' | translate) }}
-                                                        ({{unitService.getWeightUnitSuffix()}})</div>
-                                                    <div *ngIf="visibleCols['distance']"
-                                                        class="col-span-2 text-center truncate">{{
-                                                        'workoutBuilder.set.distance' | translate }}
-                                                        ({{unitService.getDistanceMeasureUnitSuffix()}})</div>
-                                                    <div *ngIf="visibleCols['duration']" class="col-span-1 text-center">
-                                                        {{ mode === 'manualLogEntry' ?
-                                                        ('workoutBuilder.set.timePerformed' | translate) :
-                                                        ('workoutBuilder.set.time' | translate) }}</div>
-                                                    <div class="col-span-2 text-center">
-                                                        {{ mode === 'manualLogEntry' ?
-                                                        ('workoutBuilder.set.rest' | translate) :
-                                                        ('workoutBuilder.set.rest' | translate) }}</div>
-                                                    <div class="flex-grow"></div> <!-- Flexible spacer -->
-                                                    <div class="col-span-1"></div> <!-- Action column -->
+                                                    <!-- Middle Container for Dynamic Headers -->
+                                                    <div class="flex-grow min-w-0">
+                                                        <div class="flex items-center justify-start gap-x-4">
+                                                            <div *ngIf="visibleCols['reps']" class="w-16 text-center">{{
+                                                                mode === 'manualLogEntry' ?
+                                                                ('workoutBuilder.set.repsAchieved' | translate) :
+                                                                ('workoutBuilder.set.reps' | translate) }}</div>
+                                                            <div *ngIf="visibleCols['weight']"
+                                                                class="w-20 text-center truncate">{{ mode ===
+                                                                'manualLogEntry' ? ('workoutBuilder.set.weightUsed' |
+                                                                translate) : ('workoutBuilder.set.weight' | translate)
+                                                                }}</div>
+                                                            <div *ngIf="visibleCols['distance']"
+                                                                class="w-20 text-center truncate">{{
+                                                                'workoutBuilder.set.distance' | translate }}</div>
+                                                            <div *ngIf="visibleCols['duration']"
+                                                                class="w-16 text-center">{{ mode === 'manualLogEntry' ?
+                                                                ('workoutBuilder.set.timePerformed' | translate) :
+                                                                ('workoutBuilder.set.time' | translate) }}</div>
+                                                            <div class="w-24 text-center truncate">{{ mode ===
+                                                                'routineBuilder' ? ('workoutBuilder.set.rest' |
+                                                                translate) : ('workoutBuilder.set.notes' | translate)}}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Placeholder for Action Button Column -->
+                                                    <div class="flex-shrink-0 w-6"></div>
                                                 </div>
                                             </ng-container>
-
                                             <!-- Loop through sets for collapsed or expanded display -->
                                             <div *ngFor="let setControl of getSetsFormArray(exerciseControl).controls; let setIndex = index"
                                                 #setElement [formGroupName]="setIndex">
@@ -719,64 +725,66 @@
                                                 <div *ngIf="!isSetExpanded(exIndex, setIndex)">
                                                     <ng-container
                                                         *ngLet="getVisibleColumnsForExercise(exIndex) as visibleCols">
-
                                                         <div (click)="toggleSetExpansion(exIndex, setIndex, $event)"
-                                                            class="grid grid-cols-12 gap-x-1 items-center py-1.5 px-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800/60 cursor-pointer border dark:border-gray-700 dark:text-white"
-                                                            [ngClass]="{ 
-                                                                'bg-gray-50 dark:bg-gray-700/50': setControl.get('type')?.value === 'standard',
-                                                                'bg-blue-50 dark:bg-blue-700/50': setControl.get('type')?.value === 'warmup' 
-                                                                }">
-                                                            <div class="col-span-1 text-s text-center font-medium">#{{
-                                                                setIndex
-                                                                +
-                                                                1
-                                                                }}</div>
-                                                            <div *ngIf="visibleCols['reps']"
-                                                                class="col-span-2 text-s text-center">
-                                                                {{ mode === 'routineBuilder' ?
-                                                                getSetDisplayValue(setControl, 'reps') :
-                                                                (setControl.get('repsAchieved')?.value ?? '-') }}
-                                                            </div>
-                                                            <div *ngIf="visibleCols['weight']"
-                                                                class="col-span-2 text-s text-center">
-                                                                {{ (setControl.get(mode === 'manualLogEntry' ?
-                                                                'weightUsed' : 'targetWeight')?.value) |
-                                                                weightUnit:'1.0-2' }}
-                                                            </div>
-                                                            <div *ngIf="visibleCols['distance']"
-                                                                class="col-span-2 text-s text-center">
-                                                                {{ (setControl.get(mode === 'manualLogEntry' ?
-                                                                'distanceAchieved' : 'targetDistance')?.value) ?? '-' }}
-                                                            </div>
-                                                            <div *ngIf="visibleCols['duration']"
-                                                                class="col-span-1 text-s text-center">
-                                                                {{ mode === 'routineBuilder' ?
-                                                                (getSetDisplayValue(setControl, 'duration') ?
-                                                                getSetDisplayValue(setControl, 'duration') + 's' : '-')
-                                                                : ((setControl.get('durationPerformed')?.value) ?
-                                                                (setControl.get('durationPerformed')?.value + 's') :
-                                                                '-') }}
-                                                            </div>
-                                                            <div class="col-span-2 text-s text-center truncate"
-                                                                [title]="mode === 'routineBuilder' ? (setControl.get('restAfterSet')?.value + 's') : setControl.get('notes')?.value">
-                                                                <ng-container *ngIf="mode === 'routineBuilder'">{{
-                                                                    setControl.get('restAfterSet')?.value
-                                                                    }}s</ng-container>
-                                                                <ng-container *ngIf="mode === 'manualLogEntry'">{{
-                                                                    setControl.get('notes')?.value || '-'
-                                                                    }}</ng-container>
-                                                            </div>
-                                                            <div class="flex-grow"></div> <!-- Flexible Spacer -->
+                                                            class="flex items-center gap-x-3 py-1.5 px-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800/60 cursor-pointer border dark:border-gray-700 dark:text-white"
+                                                            [ngClass]="[getGridClassForExercise(exIndex), { 'bg-gray-50 dark:bg-gray-700/50': setControl.get('type')?.value === 'standard' }]"
+                                                            [ngClass]="{ 'bg-gray-50 dark:bg-gray-700/50': setControl.get('type')?.value === 'standard' }">
 
-                                                            <div class="col-span-1 flex items-center justify-end">
+                                                            <!-- Set Number (Fixed Width, Non-Shrinking) -->
+                                                            <div
+                                                                class="flex-shrink-0 w-8 text-s text-center font-medium">
+                                                                #{{ setIndex + 1 }}</div>
+
+                                                            <!-- Middle Container that Grows -->
+                                                            <div class="flex-grow min-w-0">
+                                                                <div class="flex items-center justify-start gap-x-4">
+                                                                    <div *ngIf="visibleCols['reps']"
+                                                                        class="w-16 text-s text-center truncate">
+                                                                        {{ mode === 'routineBuilder' ?
+                                                                        getSetDisplayValue(setControl, 'reps') :
+                                                                        (setControl.get('repsAchieved')?.value ?? '-')
+                                                                        }}
+                                                                    </div>
+                                                                    <div *ngIf="visibleCols['weight']"
+                                                                        class="w-20 text-s text-center truncate">
+                                                                        {{ (setControl.get(mode === 'manualLogEntry' ?
+                                                                        'weightUsed' : 'targetWeight')?.value) |
+                                                                        weightUnit:'1.0-2' }}
+                                                                    </div>
+                                                                    <div *ngIf="visibleCols['distance']"
+                                                                        class="w-20 text-s text-center truncate">
+                                                                        {{ (setControl.get(mode === 'manualLogEntry' ?
+                                                                        'distanceAchieved' : 'targetDistance')?.value)
+                                                                        ?? '-' }}
+                                                                    </div>
+                                                                    <div *ngIf="visibleCols['duration']"
+                                                                        class="w-16 text-s text-center truncate">
+                                                                        {{ mode === 'routineBuilder' ?
+                                                                        (getSetDisplayValue(setControl, 'duration') ?
+                                                                        getSetDisplayValue(setControl, 'duration') + 's'
+                                                                        : '-') :
+                                                                        ((setControl.get('durationPerformed')?.value) ?
+                                                                        (setControl.get('durationPerformed')?.value +
+                                                                        's') : '-') }}
+                                                                    </div>
+                                                                    <div class="w-24 text-s text-center truncate"
+                                                                        [title]="mode === 'routineBuilder' ? (setControl.get('restAfterSet')?.value + 's') : setControl.get('notes')?.value">
+                                                                        {{ mode === 'routineBuilder' ?
+                                                                        (setControl.get('restAfterSet')?.value + 's') :
+                                                                        (setControl.get('notes')?.value || '-') }}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            <!-- Remove Button (Fixed Width, Non-Shrinking, Pushed to the Right) -->
+                                                            <div class="flex-shrink-0">
                                                                 <button type="button"
                                                                     (click)="removeSet(exerciseControl, exIndex, setIndex, $event)"
                                                                     [title]="'workoutBuilder.set.removeSet' | translate"
-                                                                    class="flex items-center text-red-500 ...">
+                                                                    class="flex items-center text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 p-0.5 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30">
                                                                     <app-icon name="cancel" class="h-4 w-4"></app-icon>
                                                                 </button>
                                                             </div>
-
                                                         </div>
                                                     </ng-container>
                                                 </div>

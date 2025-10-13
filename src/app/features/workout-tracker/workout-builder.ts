@@ -3503,33 +3503,33 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     if (isSuperset) {
       items.push({
         label: 'Ungroup',
-        buttonClass: 'bg-purple-400 text-white hover:bg-purple-600',
+        buttonClass: 'bg-purple-500 text-white hover:bg-purple-700',
         actionKey: 'ungroup',
         iconName: 'ungroup',
       });
     } else {
       items.push({
         label: this.translate.instant('workoutBuilder.exercise.remove'),
-        buttonClass: 'bg-red-400 text-white hover:bg-red-600',
+        buttonClass: 'bg-red-500 text-white hover:bg-red-700',
         actionKey: 'remove',
         iconName: 'trash',
       });
       items.push({
         label: this.translate.instant('workoutBuilder.exercise.fillWithLast'),
-        buttonClass: 'bg-green-400 text-white hover:bg-green-600 text-left',
+        buttonClass: 'bg-green-500 text-white hover:bg-green-700 text-left',
         actionKey: 'fill_latest',
         iconName: 'task',
       });
       items.push({
         label: 'Make EMOM',
-        buttonClass: 'bg-teal-400 text-white hover:bg-teal-600',
+        buttonClass: 'bg-teal-500 text-white hover:bg-teal-700',
         actionKey: 'make_emom',
         iconName: 'clock',
       });
       // Add the "Switch Exercise" option only for non-superset exercises
       items.push({
         label: 'Switch Exercise',
-        buttonClass: 'bg-blue-400 text-white hover:bg-blue-600',
+        buttonClass: 'bg-blue-500 text-white hover:bg-blue-700',
         actionKey: 'switchExercise',
         iconName: 'change', // Assuming you have a 'change' icon
       });
@@ -3983,6 +3983,31 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     const routine = this.liveFormAsRoutine();
     if (!routine) return {};
     return this.workoutService.getVisibleExerciseColumns(routine, exIndex);
+  }
+
+  /**
+   * Generates the dynamic Tailwind CSS grid-template-columns class based on the
+   * number of visible columns for a given exercise.
+   * @param exerciseControl The FormGroup for the exercise.
+   * @returns A string like 'grid-cols-4' or 'grid-cols-5'.
+   */
+  public getGridClassForExercise(exIndex: number): string {
+    const visibleCols = this.getVisibleColumnsForExercise(exIndex);
+    
+    // Start with a base count for the static columns: Set # and Actions
+    let columnCount = 2; 
+    
+    if (visibleCols['reps']) columnCount++;
+    if (visibleCols['weight']) columnCount++;
+    if (visibleCols['distance']) columnCount++;
+    if (visibleCols['duration']) columnCount++;
+    // The "Rest/Notes" column is always present, so we don't need to check for it.
+    columnCount++; // Add one for the Rest/Notes column
+
+    // Use a failsafe in case something goes wrong
+    const finalCount = Math.max(2, columnCount);
+
+    return `grid-cols-${finalCount}`;
   }
     
 
