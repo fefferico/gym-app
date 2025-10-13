@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy, signal, computed, ElementRef, QueryList, ViewChildren, AfterViewInit, ChangeDetectorRef, PLATFORM_ID, Input, HostListener, ViewChild, effect, AfterViewChecked } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal, computed, ElementRef, QueryList, ViewChildren, AfterViewInit, ChangeDetectorRef, PLATFORM_ID, Input, HostListener, ViewChild, effect, AfterViewChecked, Signal } from '@angular/core';
 import { CommonModule, DecimalPipe, isPlatformBrowser, TitleCasePipe } from '@angular/common'; // Added TitleCasePipe
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray, AbstractControl, FormsModule, FormControl, ValidatorFn, ValidationErrors } from '@angular/forms';
@@ -43,6 +43,8 @@ import { MenuMode } from '../../core/models/app-settings.model';
 import { FabAction, FabMenuComponent } from '../../shared/components/fab-menu/fab-menu.component';
 import { colorBtn } from '../../core/services/buttons-data';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { NgLetDirective } from '../../shared/directives/ng-let.directive';
 
 type BuilderMode = 'routineBuilder' | 'manualLogEntry';
 
@@ -53,7 +55,7 @@ type BuilderMode = 'routineBuilder' | 'manualLogEntry';
     FormsModule, DragDropModule, WeightUnitPipe, TitleCasePipe,
     LongPressDragDirective, AutoGrowDirective, ActionMenuComponent,
     ModalComponent, ClickOutsideDirective,
-    ExerciseDetailComponent, IconComponent, TooltipDirective, ExerciseSelectionModalComponent, MillisecondsDatePipe, FabMenuComponent, TranslateModule],
+    ExerciseDetailComponent, IconComponent, TooltipDirective, ExerciseSelectionModalComponent, MillisecondsDatePipe, FabMenuComponent, TranslateModule, NgLetDirective],
   templateUrl: './workout-builder.html',
   styleUrl: './workout-builder.scss',
   providers: [DecimalPipe]
@@ -86,7 +88,9 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   exerciseInfoTooltipString = this.translate.instant('workoutBuilder.exerciseInfoTooltip');
   lastRoutineDuration: number = 0;
 
-  routine = signal<Routine | undefined>(undefined);
+  liveFormAsRoutine: Signal<Routine | undefined>;
+    private loadedRoutine = signal<Routine | undefined>(undefined);
+
   lastLoggedRoutineInfo = signal<{ [id: string]: { duration: number, name: string, startTime: number | null } }>({});
   builderForm!: FormGroup;
   mode: BuilderMode = 'routineBuilder';
@@ -111,7 +115,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   expandedExercisePath = signal<{ exerciseIndex: number } | null>(null);
 
   lastLogForCurrentRoutine = computed(() => {
-    const currentRoutine = this.routine();
+    const currentRoutine = this.liveFormAsRoutine();
     const allLogsInfo = this.lastLoggedRoutineInfo();
 
     // Guard clauses for when data is not yet available
@@ -198,6 +202,12 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       scheduledDayIdForLog: [''], // For selecting base program iteration in manualLogEntry
       exercises: this.fb.array([]), // Validated based on mode/goal
     });
+
+    const formValue$ = this.builderForm.valueChanges.pipe(
+      startWith(this.builderForm.getRawValue()),
+      map(formValue => this.mapFormToRoutine(formValue))
+    );
+    this.liveFormAsRoutine = toSignal(formValue$, { initialValue: undefined });
   }
 
   ngOnInit(): void {
@@ -266,10 +276,13 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
           if (this.mode === 'routineBuilder' && this.currentLogId && this.isNewMode) {
             this.prefillRoutineFormFromLog(loadedData as WorkoutLog);
           } else if (this.mode === 'routineBuilder') {
-            this.routine.set(loadedData as Routine);
+                        // Set our new signal with the initial data
+                        this.loadedRoutine.set(loadedData as Routine);
             this.patchFormWithRoutineData(loadedData as Routine);
           } else if (this.mode === 'manualLogEntry' && this.isEditMode && this.currentLogId) {
             this.patchFormWithLogData(loadedData as WorkoutLog);
+                        // For a log, we can derive the initial routine state from the form immediately
+                        this.loadedRoutine.set(this.mapFormToRoutine(this.builderForm.getRawValue()));
           } else if (this.mode === 'manualLogEntry' && this.isNewMode && this.currentRoutineId) {
             this.prefillLogFormFromRoutine(loadedData as Routine);
           }
@@ -812,12 +825,12 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       secondaryCategory: routine.secondaryCategory,
       tags: routine.tags?.join(', ') || '', // Convert array to comma-separated string
       // --- END: ADD NEW PATCH VALUES ---
-    }, { emitEvent: false });
+    });
     this.updateSanitizedDescription(routine.description || '');
-    this.exercisesFormArray.clear({ emitEvent: false });
+    this.exercisesFormArray.clear();
     routine.exercises.forEach(exerciseData => {
       const newExerciseFormGroup = this.createExerciseFormGroup(exerciseData, true, false);
-      this.exercisesFormArray.push(newExerciseFormGroup, { emitEvent: false });
+      this.exercisesFormArray.push(newExerciseFormGroup);
       this.addRepsListener(newExerciseFormGroup);
       this.addDurationListener(newExerciseFormGroup);
     });
@@ -845,7 +858,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       programIdForLog: log.programId || '',
       iterationIdForLog: log.iterationId || '',
       scheduledDayIdForLog: log.scheduledDayId || '',
-    }, { emitEvent: false });
+    });
 
     // START: Manually trigger population of dropdowns for existing log
     if (log.programId) {
@@ -855,17 +868,16 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     }
     // END: Manual trigger
 
-    this.exercisesFormArray.clear({ emitEvent: false });
+    this.exercisesFormArray.clear();
     log.exercises.forEach(loggedEx => {
       // Use this helper to create exercise groups with superset info
       const exerciseFormGroup = this.createExerciseFormGroupFromLoggedExercise(loggedEx);
-      this.exercisesFormArray.push(exerciseFormGroup, { emitEvent: false });
+      this.exercisesFormArray.push(exerciseFormGroup);
     });
 
     this.toggleFormState(false);
     this.expandedSetPath.set(null);
     this.builderForm.markAsPristine();
-    this.routine.set(this.mapFormToRoutine(this.builderForm.getRawValue()));
   }
 
   // +++ NEW: Helper to create exercise group FROM LOG data +++
@@ -1252,7 +1264,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     });
 
     this.closeExerciseSelectionModal();
-    this.updateCurrentRoutine();
   }
 
   ngAfterViewInit(): void {
@@ -1346,6 +1357,11 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       // Standard behavior for non-superset exercises
       const setsArray = this.getSetsFormArray(exerciseControl);
       setsArray.removeAt(setIndex);
+
+      if (setsArray.length === 0) {
+        // If no sets remain, add a default one to avoid empty state
+        this.exercisesFormArray.removeAt(exerciseIndex);
+      }
     }
 
     // Collapse UI if the currently expanded set was the one removed.
@@ -1719,7 +1735,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     this.toastService.success(successMessage, 4000, "Success");
     this.expandedSetPath.set(null);
     this.toggleSetExpansion(selectedIndices[0], 0);
-    this.routine.set(this.mapFormToRoutine(this.builderForm.getRawValue()));
   }
 
   ungroupSuperset(exerciseIndex: number): void {
@@ -1757,7 +1772,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     }
     this.toastService.info("Exercise removed", 2000);
     this.expandedSetPath.set(null); // Collapse if an exercise is removed
-    this.updateCurrentRoutine();
   }
   errorMessage = signal<string | null>(null);
 
@@ -1867,7 +1881,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         } else {
           // Await the async service call
           // color handling
-          const currentRoutineColor: string | undefined = this.routine() ? this.routine()?.cardColor : '';
+          const currentRoutineColor: string | undefined = this.liveFormAsRoutine() ? this.liveFormAsRoutine()?.cardColor : '';
           routinePayload.cardColor = currentRoutineColor;
 
           const tmpResult = await this.workoutService.updateRoutine(routinePayload);
@@ -1877,9 +1891,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
             return;
           }
         }
-
-        // Now, correctly update the component's signal with the saved data
-        this.routine.set(savedRoutine);
 
         this.toastService.success(`Routine ${this.isNewMode ? 'created' : 'updated'}!`, 4000, "Success");
 
@@ -2052,7 +2063,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   getSupersetSize(index: number): number {
-    return this.workoutService.getSupersetSize(this.routine(), index);
+    return this.workoutService.getSupersetSize(this.liveFormAsRoutine(), index);
   }
 
   getExerciseCardClass(exerciseControl: AbstractControl, exIndex: number): { [klass: string]: boolean } {
@@ -2203,7 +2214,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       this.toggleSetExpansion(this.exercisesFormArray.length - 1, 0);
       this.addRepsListener(newExerciseFormGroup);
       this.addDurationListener(newExerciseFormGroup);
-      this.updateCurrentRoutine(workoutExercise);
     } else {
       if (!result) {
         return
@@ -2213,25 +2223,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     }
   }
 
-  // update current routine after adding a new exercise
-  private updateCurrentRoutine(exercise?: WorkoutExercise): void {
-    if (!this.routine()) {
-      this.routine.set(this.mapFormToRoutine(this.builderForm.getRawValue()));
-    }
-    if (exercise) {
-      const updatedRoutine: Routine = {
-        ...this.routine()!,
-        exercises: [...this.routine()!.exercises, exercise]
-      };
-      this.routine.set(updatedRoutine);
-    } else {
-      this.routine.set(this.mapFormToRoutine(this.builderForm.getRawValue()));
-    }
-  }
-
-
   getRoutineDuration(): number {
-    if (this.routine()) {
+    if (this.liveFormAsRoutine()) {
       return this.workoutService.getEstimatedRoutineDuration(this.mapFormToRoutine(this.builderForm.getRawValue()));
     } else {
       return 0;
@@ -2259,7 +2252,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
 
   private mapFormToRoutine(formValue: any): Routine {
-    const currentRoutine = this.routine();
+    const initialRoutine = this.loadedRoutine();
 
     // Convert comma-separated tags string into a clean string array
     const tagsValue = formValue.tags || '';
@@ -2309,16 +2302,19 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
           type: exInput.type,
         };
       }),
-      isFavourite: currentRoutine?.isFavourite,
-      isHidden: currentRoutine?.isHidden,
-      lastPerformed: currentRoutine?.lastPerformed,
+      isFavourite: initialRoutine?.isFavourite,
+      isHidden: initialRoutine?.isHidden,
+      lastPerformed: initialRoutine?.lastPerformed,
       isDisabled: false,
+      cardColor: initialRoutine?.cardColor || undefined,
+      createdAt: initialRoutine?.createdAt || new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
     return valueObj;
   }
 
   isSuperSet(index: number): boolean {
-    const exercises = this.routine()?.exercises;
+    const exercises = this.liveFormAsRoutine()?.exercises;
     if (!exercises) return false;
     const ex = exercises[index];
     if (!ex?.supersetId) return false;
@@ -2431,7 +2427,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
   handleActionMenuItemClick(event: { actionKey: string, data?: any }, originalMouseEvent?: MouseEvent): void {
     // originalMouseEvent.stopPropagation(); // Stop original event that opened the menu
-    const routineId = this.routine()?.id;
+    const routineId = this.liveFormAsRoutine()?.id;
     if (!routineId) return;
 
     switch (event.actionKey) {
@@ -2499,7 +2495,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   async cloneAndEditRoutine(routineId: string, event?: MouseEvent): Promise<void> {
-    const originalRoutine = this.routine();
+    const originalRoutine = this.liveFormAsRoutine();
     if (!originalRoutine) {
       this.toastService.error("Routine not found for cloning", 0, "Error");
       return;
@@ -2819,7 +2815,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     }
 
     // Find the exercise in the local routine data.
-    const exerciseInRoutine = this.routine()?.exercises.find(ex => ex.exerciseId === exerciseId);
+    const exerciseInRoutine = this.liveFormAsRoutine()?.exercises.find((ex: any) => ex.exerciseId === exerciseId);
 
     if (exerciseInRoutine) {
       // If found, get the full exercise details from the service.
@@ -3192,7 +3188,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     // this.builderForm.controls['exercises'].get(exerciseControl.get('id')?.value)?.setValue(exerciseControl.value);
 
     // this.toastService.success(`EMOM created for ${numberOfSets} rounds!`, 4000, "Success");
-    this.routine.set(this.mapFormToRoutine(this.builderForm.getRawValue()));
   }
 
   protected isEmomExercise(exerciseControl: AbstractControl): boolean {
@@ -3594,7 +3589,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
     this.toastService.success(`Switched '${oldExerciseName}' to '${newExercise.name}'.`);
     this.closeSwitchExerciseModal();
-    this.routine.set(this.mapFormToRoutine(this.builderForm.getRawValue()));
   }
 
   /**
@@ -3787,7 +3781,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
   async openColorPicker(): Promise<void> {
     // Note: Adjust how you get the 'routine' object based on the component
-    const routine = this.routine();
+    const routine = this.liveFormAsRoutine();
     if (!routine) return;
 
     // This part remains the same
@@ -3830,11 +3824,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
       const savedRoutine = await this.workoutService.updateRoutine(routine);
 
-      // In workout-builder, remember to update the signal if you use it there
-      if (this.routine) {
-        this.routine.set(savedRoutine);
-      }
-
       this.toastService.success(`Color updated for "${routine.name}"`);
     }
   }
@@ -3844,10 +3833,10 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   protected getCardTitleTextColor(): string {
-    if (!this.routine() || this.routine() === undefined) {
+    if (!this.liveFormAsRoutine() || this.liveFormAsRoutine() === undefined) {
       return '';
     }
-    const routine = this.routine();
+    const routine = this.liveFormAsRoutine();
     if (routine === undefined) {
       return '';
     }
@@ -3918,31 +3907,49 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     return null;
   }
 
-  initRoutineFromForm(): void {
-    if (!this.routine()) {
-      this.routine.set(this.mapFormToRoutine(this.builderForm.getRawValue()));
+    public async promptRemoveField(exIndex: number, setIndex: number): Promise<void> {
+        const currentRoutine = this.liveFormAsRoutine();
+        if (!currentRoutine) return;
+    
+        const updatedRoutine = await this.workoutService.promptRemoveField(currentRoutine, exIndex, setIndex);
+        
+        if (updatedRoutine) {
+            this.exercisesFormArray.at(exIndex).patchValue(updatedRoutine.exercises[exIndex]);
+        }
     }
-  }
-
-  promptRemoveField(exIndex: number, setIndex: number): void {
-    this.initRoutineFromForm();
-    const routine = this.routine();
-    if (!routine) return;
-    this.workoutService.promptRemoveField(routine, exIndex, setIndex);
-  }
 
   getFieldsForSet(exIndex: number, setIndex: number): { visible: string[], hidden: string[] } {
-    this.initRoutineFromForm();
-    const routine = this.routine();
-    if (!routine) return { visible: [], hidden: [] };
+        const routine = this.liveFormAsRoutine(); 
+    if (!routine) return { visible: [], hidden: ['weight', 'reps', 'distance', 'duration', 'tempo'] }; 
     return this.workoutService.getFieldsForSet(routine, exIndex, setIndex);
   }
 
-  promptAddField(exIndex: number, setIndex: number): void {
-    this.initRoutineFromForm();
-    const routine = this.routine();
-    if (!routine) return;
-    this.workoutService.promptAddField(routine, exIndex, setIndex);
+    public async promptAddField(exIndex: number, setIndex: number): Promise<void> {
+        // Reads the computed signal at the time of the click event.
+        const currentRoutine = this.liveFormAsRoutine();
+        if (!currentRoutine) return;
+    
+        const updatedRoutine = await this.workoutService.promptAddField(currentRoutine, exIndex, setIndex);
+    
+        if (updatedRoutine) {
+            // Patching the form will automatically update the `liveFormAsRoutine` signal,
+            // which in turn updates our `liveFormAsRoutine` computed signal.
+            this.exercisesFormArray.at(exIndex).patchValue(updatedRoutine.exercises[exIndex]);
+        }
+    }
+
+
+  /**
+   * Checks all sets within an exercise to determine which data columns should be visible in the UI.
+   * A column is considered visible if at least one set has a target value for that metric.
+   * @param exerciseControl The FormGroup for the exercise.
+   * @returns An object with boolean flags for each potential column (reps, weight, etc.).
+   */
+  public getVisibleColumnsForExercise(exIndex: number): { [key: string]: boolean } {
+    const routine = this.liveFormAsRoutine();
+    if (!routine) return {};
+    return this.workoutService.getVisibleExerciseColumns(routine, exIndex);
   }
+    
 
 }

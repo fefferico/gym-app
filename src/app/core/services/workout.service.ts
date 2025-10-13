@@ -18,6 +18,7 @@ import { AlertButton, AlertInput } from '../models/alert.model';
 import { Exercise } from '../models/exercise.model';
 import { SubscriptionService } from './subscription.service';
 import { TranslateService } from '@ngx-translate/core';
+import { uploadPixelDataToTexture } from '@tensorflow/tfjs-backend-webgl/dist/gpgpu_util';
 
 @Injectable({
   providedIn: 'root',
@@ -209,8 +210,8 @@ export class WorkoutService {
       let alertResult = false;
       if (pausedRoutine && pausedRoutine.routineId && pausedRoutine.routineId === updatedRoutine.id) {
         await this.alertService.showAlert(
-            this.translate.instant('workoutService.alerts.editRunningTitle'), 
-            this.translate.instant('workoutService.alerts.editRunningMessage')
+          this.translate.instant('workoutService.alerts.editRunningTitle'),
+          this.translate.instant('workoutService.alerts.editRunningMessage')
         ).then(() => {
           alertResult = true;
           index = -1;
@@ -232,9 +233,9 @@ export class WorkoutService {
       return updatedRoutine;
     }
     this.toastService.error(
-        this.translate.instant('workoutService.toasts.updateErrorMessage', { id: updatedRoutine.id }), 
-        4000, 
-        this.translate.instant('workoutService.toasts.updateErrorTitle')
+      this.translate.instant('workoutService.toasts.updateErrorMessage', { id: updatedRoutine.id }),
+      4000,
+      this.translate.instant('workoutService.toasts.updateErrorTitle')
     );
     return undefined;
   }
@@ -366,8 +367,8 @@ export class WorkoutService {
     // 1. Basic validation
     if (!Array.isArray(newRoutines)) {
       this.toastService.error(
-        this.translate.instant('workoutService.toasts.importFailed'), 
-        0, 
+        this.translate.instant('workoutService.toasts.importFailed'),
+        0,
         this.translate.instant('workoutService.toasts.importErrorTitle')
       );
       return;
@@ -677,7 +678,7 @@ export class WorkoutService {
         this.translate.instant('workoutService.alerts.resume.title'),
         this.translate.instant('workoutService.alerts.resume.message'),
         [
-          { text: this.translate.instant('workoutService.alerts.resume.resumeButton'), role: "confirm", data: true, icon: 'play' }, 
+          { text: this.translate.instant('workoutService.alerts.resume.resumeButton'), role: "confirm", data: true, icon: 'play' },
           { text: this.translate.instant('workoutService.alerts.resume.discardButton'), role: "cancel", data: false, icon: 'trash' }
         ]
       );
@@ -716,16 +717,16 @@ export class WorkoutService {
     // Define the input fields for the alert prompt
     const exerciseParams: AlertInput[] = isCardioOnly
       ? [
-          ...baseParams,
-          { label: this.translate.instant('workoutService.prompts.labels.targetDistance', { unit: this.unitsService.getDistanceMeasureUnitSuffix() }), name: 'distance', type: 'number', value: defaultDistance, attributes: { min: 0, required: true } },
-          { label: this.translate.instant('workoutService.prompts.labels.targetDuration'), name: 'duration', type: 'number', value: defaultDuration, attributes: { min: 0, required: true } },
-        ]
+        ...baseParams,
+        { label: this.translate.instant('workoutService.prompts.labels.targetDistance', { unit: this.unitsService.getDistanceMeasureUnitSuffix() }), name: 'distance', type: 'number', value: defaultDistance, attributes: { min: 0, required: true } },
+        { label: this.translate.instant('workoutService.prompts.labels.targetDuration'), name: 'duration', type: 'number', value: defaultDuration, attributes: { min: 0, required: true } },
+      ]
       : [
-          ...baseParams,
-          { label: this.translate.instant('workoutService.prompts.labels.numReps'), name: 'numReps', type: 'number', value: defaultReps, attributes: { min: 0, required: true } },
-          { label: this.translate.instant('workoutService.prompts.labels.targetWeight', { unit: this.unitsService.getWeightUnitSuffix() }), name: 'weight', type: 'number', value: defaultWeight, attributes: { min: 0, required: true } },
-        ];
-    
+        ...baseParams,
+        { label: this.translate.instant('workoutService.prompts.labels.numReps'), name: 'numReps', type: 'number', value: defaultReps, attributes: { min: 0, required: true } },
+        { label: this.translate.instant('workoutService.prompts.labels.targetWeight', { unit: this.unitsService.getWeightUnitSuffix() }), name: 'weight', type: 'number', value: defaultWeight, attributes: { min: 0, required: true } },
+      ];
+
     const exerciseData = await this.alertService.showPromptDialog(
       this.translate.instant('workoutService.prompts.addExerciseTitle', { exerciseName: selectedExercise.name }),
       '',
@@ -1216,21 +1217,39 @@ export class WorkoutService {
     return tmpExerciseStringName;
   }
 
-  private addFieldToSet(routine: Routine,exIndex: number, setIndex: number, fieldToAdd: string, targetValue: number): Routine {
-      if (!routine) return routine;
-      const set = routine.exercises[exIndex].sets[setIndex];
-      // Initialize with a non-zero value to ensure it's displayed
-      switch (fieldToAdd) {
-        case 'weight': set.targetWeight = targetValue; break;
-        case 'reps': set.targetReps = targetValue; break;
-        case 'distance': set.targetDistance = targetValue; break;
-        case 'duration': set.targetDuration = targetValue; break;
-      }
-      this.toastService.success(`${fieldToAdd.toUpperCase()} field added to set #${setIndex + 1}.`);
-      return { ...routine };
+  private addFieldToSet(routine: Routine, exIndex: number, setIndex: number, fieldToAdd: string, targetValue: number): Routine {
+    if (!routine) return routine;
+    const set = routine.exercises[exIndex].sets[setIndex];
+    // Initialize with a non-zero value to ensure it's displayed
+    switch (fieldToAdd) {
+      case 'weight': set.targetWeight = targetValue; break;
+      case 'reps': set.targetReps = targetValue; break;
+      case 'distance': set.targetDistance = targetValue; break;
+      case 'duration': set.targetDuration = targetValue; break;
+      case 'tempo': set.tempo = String(targetValue); break;
+    }
+    this.toastService.success(`${fieldToAdd.toUpperCase()} field added to set #${setIndex + 1}.`);
+    return { ...routine };
   }
 
-  public getVisibleSetColumns(routine: Routine,exIndex: number, setIndex: number): { [key: string]: boolean } {
+  public getVisibleExerciseColumns(routine: Routine, exIndex: number): { [key: string]: boolean } {
+    const exercise = routine.exercises[exIndex];
+
+    if (!exercise || exercise.sets?.length === 0) {
+      // Fallback for safety, though it should always find a set.
+      return { weight: false, reps: false, distance: false, duration: false };
+    }
+
+    return {
+      weight: exercise.sets.some(set => (set.targetWeight ?? 0) > 0 || (set.targetWeightMin ?? 0) > 0),
+      reps: exercise.sets.some(set => (set.targetReps ?? 0) > 0 || (set.targetRepsMin ?? 0) > 0),
+      distance: exercise.sets.some(set => (set.targetDistance ?? 0) > 0 || (set.targetDistanceMin ?? 0) > 0),
+      duration: exercise.sets.some(set => (set.targetDuration ?? 0) > 0 || (set.targetDurationMin ?? 0) > 0),
+      tempo: exercise.sets.some(set => !!set.tempo && set.tempo.trim().length > 0)
+    };
+  }
+
+    public getVisibleSetColumns(routine: Routine, exIndex: number, setIndex: number): { [key: string]: boolean } {
     const exercise = routine.exercises[exIndex];
     const set = exercise?.sets[setIndex];
 
@@ -1244,88 +1263,93 @@ export class WorkoutService {
       reps: (set.targetReps ?? 0) > 0 || (set.targetRepsMin ?? 0) > 0,
       distance: (set.targetDistance ?? 0) > 0 || (set.targetDistanceMin ?? 0) > 0,
       duration: (set.targetDuration ?? 0) > 0 || (set.targetDurationMin ?? 0) > 0,
+      tempo: !!set.tempo && set.tempo.trim().length > 0
     };
   }
 
-  public async promptAddField(routine: Routine, exIndex: number, setIndex: number): Promise<void> {
-      const cols = this.getVisibleSetColumns(routine,exIndex, setIndex);
-      const hiddenFields = Object.keys(cols).filter(key => !cols[key as keyof typeof cols]);
-  
-      if (hiddenFields.length === 0) return;
-  
-      // --- Step 1: Ask WHICH field to add ---
-      const buttons: AlertButton[] = hiddenFields.map(field => ({
-        text: field.charAt(0).toUpperCase() + field.slice(1),
-        role: 'add',
-        data: field,
-        icon: field === 'duration' ? 'hourglass' : field === 'reps' ? 'repeat' : field
-      }));
-  
-      buttons.push({ text: 'Cancel', role: 'cancel', data: null, icon: 'cancel' });
-  
-      const choice = await this.alertService.showConfirmationDialog(
-        'Add Field to Set',
-        'Which metric would you like to add to all sets of this exercise?',
-        buttons,
-        { showCloseButton: true }
-      );
-  
-      if (!choice || choice.role === 'cancel' || !choice.data) {
-        return; // User cancelled the first prompt
-      }
-  
-      const fieldToAdd = choice.data;
-  
-      // --- Step 2: Ask for the VALUE of the chosen field ---
-      let inputLabel = `Target ${fieldToAdd.charAt(0).toUpperCase() + fieldToAdd.slice(1)}`;
-      if (fieldToAdd === 'weight') {
-        inputLabel += ` (${this.unitsService.getWeightUnitSuffix()})`;
-      } else if (fieldToAdd === 'duration') {
-        inputLabel += ' (s)';
-      } else if (fieldToAdd === 'distance') {
-        inputLabel += ` (${this.unitsService.getDistanceMeasureUnitSuffix()})`
-      }
-  
-      let placeholderValueToAdd = 0;
-      switch (fieldToAdd) {
-        case 'weight':
-          placeholderValueToAdd = 5;
-          break;
-        case 'reps':
-          placeholderValueToAdd = 8;
-          break;
-        case 'duration':
-          placeholderValueToAdd = 60;
-          break;
-        case 'distance':
-          placeholderValueToAdd = 1;
-          break;
-  
-        default:
-          break;
-      }
-  
-      const valueResult = await this.alertService.showPromptDialog(
-        `Set Target ${fieldToAdd.charAt(0).toUpperCase() + fieldToAdd.slice(1)}`,
-        `Enter the target value you want to apply to the current set for this exercise.`,
-        [{ name: 'targetValue', type: 'number', label: inputLabel, value: placeholderValueToAdd, attributes: { min: '0', required: true } }] as AlertInput[],
-        'Apply Target'
-      );
-  
-      if (valueResult && valueResult['targetValue'] !== null && valueResult['targetValue'] !== undefined) {
-        const targetValue = Number(valueResult['targetValue']);
-        if (!isNaN(targetValue) && targetValue >= 0) {
-          // --- Step 3: Call the updated method with the new value ---
-          this.addFieldToSet(routine, exIndex, setIndex, fieldToAdd, targetValue ? targetValue : 1);
-          this.toastService.success(`${fieldToAdd.toUpperCase()} field added to the set.`);
-        } else {
-          this.toastService.error("Invalid value provided.");
-        }
-      }
+  public async promptAddField(routine: Routine, exIndex: number, setIndex: number): Promise<Routine | null> {
+    const cols = this.getVisibleSetColumns(routine, exIndex, setIndex);
+    const hiddenFields = Object.keys(cols).filter(key => !cols[key as keyof typeof cols]);
+
+    if (hiddenFields.length === 0) return routine;
+
+    // --- Step 1: Ask WHICH field to add ---
+    const buttons: AlertButton[] = hiddenFields.map(field => ({
+      text: field.charAt(0).toUpperCase() + field.slice(1),
+      role: 'add',
+      data: field,
+      icon: field === 'duration' ? 'hourglass' : field 
+    }));
+
+    buttons.push({ text: 'Cancel', role: 'cancel', data: null, icon: 'cancel' });
+
+    const choice = await this.alertService.showConfirmationDialog(
+      'Add Field to Set',
+      'Which metric would you like to add to all sets of this exercise?',
+      buttons,
+      { showCloseButton: true }
+    );
+
+    if (!choice || choice.role === 'cancel' || !choice.data) {
+      return null; // User cancelled the first prompt
     }
 
-      public getFieldsForSet(routine: Routine, exIndex: number, setIndex: number): { visible: string[], hidden: string[] } {
-    const allFields = ['weight', 'reps', 'distance', 'duration'];
+    const fieldToAdd = choice.data;
+
+    // --- Step 2: Ask for the VALUE of the chosen field ---
+    let inputLabel = `Target ${fieldToAdd.charAt(0).toUpperCase() + fieldToAdd.slice(1)}`;
+    if (fieldToAdd === 'weight') {
+      inputLabel += ` (${this.unitsService.getWeightUnitSuffix()})`;
+    } else if (fieldToAdd === 'duration') {
+      inputLabel += ' (s)';
+    } else if (fieldToAdd === 'distance') {
+      inputLabel += ` (${this.unitsService.getDistanceMeasureUnitSuffix()})`
+    }
+
+    let placeholderValueToAdd = 0;
+    switch (fieldToAdd) {
+      case 'weight':
+        placeholderValueToAdd = 5;
+        break;
+      case 'reps':
+        placeholderValueToAdd = 8;
+        break;
+      case 'duration':
+        placeholderValueToAdd = 60;
+        break;
+      case 'distance':
+        placeholderValueToAdd = 1;
+        break;
+
+      default:
+        break;
+    }
+
+    const valueResult = await this.alertService.showPromptDialog(
+      `Set Target ${fieldToAdd.charAt(0).toUpperCase() + fieldToAdd.slice(1)}`,
+      `Enter the target value you want to apply to the current set for this exercise.`,
+      [{ name: 'targetValue', type: 'number', label: inputLabel, value: placeholderValueToAdd, attributes: { min: '0', required: true } }] as AlertInput[],
+      'Apply Target'
+    );
+
+    let updatedRoutine = JSON.parse(JSON.stringify(routine)) as Routine;
+
+
+    if (valueResult && valueResult['targetValue'] !== null && valueResult['targetValue'] !== undefined) {
+      const targetValue = Number(valueResult['targetValue']);
+      if (!isNaN(targetValue) && targetValue >= 0) {
+        // --- Step 3: Call the updated method with the new value ---
+        updatedRoutine = this.addFieldToSet(routine, exIndex, setIndex, fieldToAdd, targetValue ? targetValue : 1);
+        this.toastService.success(`${fieldToAdd.toUpperCase()} field added to the set.`);
+      } else {
+        this.toastService.error("Invalid value provided.");
+      }
+    }
+    return updatedRoutine;
+  }
+
+  public getFieldsForSet(routine: Routine, exIndex: number, setIndex: number): { visible: string[], hidden: string[] } {
+    const allFields = ['weight', 'reps', 'distance', 'duration', 'tempo'];
     // As requested, this now uses the exercise-wide visibility check.
     const visibleCols = this.getVisibleSetColumns(routine, exIndex, setIndex);
 
@@ -1335,66 +1359,72 @@ export class WorkoutService {
     return { visible, hidden };
   }
 
-    public async promptRemoveField(routine: Routine, exIndex: number, setIndex: number): Promise<void> {
-        const cols = this.getVisibleSetColumns(routine,exIndex, setIndex);
-        const removableFields = Object.keys(cols).filter(key => cols[key as keyof typeof cols]);
-    
-        if (removableFields.length === 0) {
-          this.toastService.info("No fields can be removed from this set.");
-          return;
-        };
-    
-        const buttons: AlertButton[] = removableFields.map(field => ({
-          text: field.charAt(0).toUpperCase() + field.slice(1),
-          role: 'remove',
-          data: field,
-          icon: field === 'duration' ? 'hourglass' : field === 'reps' ? 'repeat' : field,
-          cssClass: 'bg-red-500 hover:bg-red-600'
-        }));
-    
-        // --- START OF CORRECTION ---
-        // Add a dedicated "Cancel" button to the array.
-        buttons.push({
-          text: 'Cancel',
-          role: 'cancel',
-          data: null,
-          icon: 'cancel'
-        });
-        // --- END OF CORRECTION ---
-    
-        const choice = await this.alertService.showConfirmationDialog(
-          'Remove Field from Exercise',
-          'Which metric would you like to remove from this set of this exercise?',
-          buttons,
-          // --- START OF CORRECTION ---
-          // Pass the option to show the corner 'X' close button.
-          { showCloseButton: true }
-          // --- END OF CORRECTION ---
-        );
-    
-        // Only proceed if the user made a choice and didn't cancel.
-        if (choice && choice.role !== 'cancel' && choice.data) {
-          this.removeMetricFromSet(routine, exIndex, setIndex, choice.data);
-        }
-      }
+  public async promptRemoveField(routine: Routine, exIndex: number, setIndex: number): Promise<Routine | null> {
+    const cols = this.getVisibleSetColumns(routine, exIndex, setIndex);
+    const removableFields = Object.keys(cols).filter(key => cols[key as keyof typeof cols]);
 
-      public removeMetricFromSet(routine: Routine, exIndex: number, setIndex: number, fieldToRemove: string): Routine {
+    if (removableFields.length === 0) {
+      this.toastService.info("No fields can be removed from this set.");
+      return routine;
+    };
+
+    const buttons: AlertButton[] = removableFields.map(field => ({
+      text: field.charAt(0).toUpperCase() + field.slice(1),
+      role: 'remove',
+      data: field,
+      icon: field === 'duration' ? 'hourglass' : field ,
+      cssClass: 'bg-red-500 hover:bg-red-600'
+    }));
+
+    // --- START OF CORRECTION ---
+    // Add a dedicated "Cancel" button to the array.
+    buttons.push({
+      text: 'Cancel',
+      role: 'cancel',
+      data: null,
+      icon: 'cancel'
+    });
+    // --- END OF CORRECTION ---
+
+    const choice = await this.alertService.showConfirmationDialog(
+      'Remove Field from Exercise',
+      'Which metric would you like to remove from this set of this exercise?',
+      buttons,
+      // --- START OF CORRECTION ---
+      // Pass the option to show the corner 'X' close button.
+      { showCloseButton: true }
+      // --- END OF CORRECTION ---
+    );
+
+    let updatedRoutine = JSON.parse(JSON.stringify(routine)) as Routine;
+
+    if (!choice || !choice.data) return null; // User cancelled
+
+    // Only proceed if the user made a choice and didn't cancel.
+    if (choice && choice.role !== 'cancel' && choice.data) {
+      updatedRoutine = this.removeMetricFromSet(routine, exIndex, setIndex, choice.data);
+    }
+    return updatedRoutine;
+  }
+
+  public removeMetricFromSet(routine: Routine, exIndex: number, setIndex: number, fieldToRemove: string): Routine {
     const exercise = routine.exercises[exIndex];
     const set = exercise.sets[setIndex];
     const plannedSetId = set.id;
 
     // 1. Update the routine signal to remove the target from the specific set
-      const setToUpdate = routine.exercises[exIndex].sets[setIndex];
-      switch (fieldToRemove) {
-        case 'weight': setToUpdate.targetWeight = undefined; break;
-        case 'reps': setToUpdate.targetReps = undefined; break;
-        case 'distance': setToUpdate.targetDistance = undefined; break;
-        case 'duration': setToUpdate.targetDuration = undefined; break;
-      }
-      const newRotuine = { ...routine };
+    const setToUpdate = routine.exercises[exIndex].sets[setIndex];
+    switch (fieldToRemove) {
+      case 'weight': setToUpdate.targetWeight = undefined; break;
+      case 'reps': setToUpdate.targetReps = undefined; break;
+      case 'distance': setToUpdate.targetDistance = undefined; break;
+      case 'duration': setToUpdate.targetDuration = undefined; break;
+      case 'tempo': setToUpdate.tempo = undefined; break;
+    }
+    const newRotuine = { ...routine };
 
 
-    this.toastService.info(`'${fieldToRemove}' field removed from set #${setIndex + 1}.`);
+    this.toastService.info(`'${fieldToRemove.toUpperCase()}' field removed from set #${setIndex + 1}.`);
     return newRotuine;
   }
 
