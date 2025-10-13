@@ -19,11 +19,13 @@
         <app-icon name="alert-filled" class="w-10 h-10 sm:w-12 sm:h-12 text-yellow-500 dark:text-yellow-400"></app-icon>
         <!-- Removed 'flex-grow' and 'sm:text-left' to allow the text to be centered -->
         <div class="text-center sm:text-left py-2 sm:px-8">
-          <h2 class="text-lg sm:text-xl font-semibold text-yellow-700 dark:text-yellow-200"> {{ 'pausedWorkout.inProgress'
+          <h2 class="text-lg sm:text-xl font-semibold text-yellow-700 dark:text-yellow-200"> {{
+            'pausedWorkout.inProgress'
             | translate }} </h2>
           <p class="text-m text-yellow-600 dark:text-yellow-300 mt-1"> {{ 'pausedWorkout.routineLabel' | translate }}
             <strong class="font-medium"> {{
-              pausedRoutineName() }} </strong></p>
+              pausedRoutineName() }} </strong>
+          </p>
           <div *ngIf="pausedProgramName()" class="flex justify-center sm:justify-start">
             <p class="my-2 text-xs font-semibold text-white bg-primary rounded-md p-1 flex-shrink w-fit"> {{
               'pausedWorkout.programLabel' | translate }}
@@ -84,15 +86,30 @@
         </div>
       </button>
 
-      <!-- ========================================================== -->
-      <!-- START: Add This New Button Here                            -->
-      <!-- ========================================================== -->
+
+
+      <button (click)="navigateToRoutines()"
+        class="flex items-start block p-3 bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow transform hover:-translate-y-1 dark:hover:bg-gray-600 hover:bg-gray-200">
+        <div class="flex flex-col items-start text-center">
+          <div class="flex items-center mb-2">
+            <app-icon name="routines" class="w-14 h-14 text-blue-500 dark:text-blue-400 mr-2"></app-icon>
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 text-left">{{
+              'quickActions.myRoutinesTitle'
+              | translate }}</h3>
+          </div>
+          <p class="pl-2 text-md text-gray-600 dark:text-gray-400 text-left">{{ 'quickActions.myRoutinesDescription' |
+            translate }}
+          </p>
+        </div>
+      </button>
+
       <button (click)="navigateToLogActivity()"
         class="flex items-start block p-3 bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow transform hover:-translate-y-1 dark:hover:bg-gray-600 hover:bg-gray-200">
         <div class="flex flex-col items-start text-center">
           <div class="flex items-center mb-2">
             <app-icon name="clipboard-list" class="w-14 h-14 text-teal-500 dark:text-teal-400 mr-2"></app-icon>
-            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 text-left">{{ 'quickActions.logActivityTitle'
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 text-left">{{
+              'quickActions.logActivityTitle'
               | translate }}</h3>
           </div>
           <p *ngIf="!subscriptionService.isPremium()"
@@ -102,23 +119,6 @@
           </p>
           <p class="pl-2 text-md text-gray-600 dark:text-gray-400 text-left">{{ 'quickActions.logActivityDescription' |
             translate }}</p>
-        </div>
-      </button>
-      <!-- ========================================================== -->
-      <!-- END: New Button Snippet                                    -->
-      <!-- ========================================================== -->
-
-      <button (click)="navigateToRoutines()"
-        class="flex items-start block p-3 bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow transform hover:-translate-y-1 dark:hover:bg-gray-600 hover:bg-gray-200">
-        <div class="flex flex-col items-start text-center">
-          <div class="flex items-center mb-2">
-            <app-icon name="routines" class="w-14 h-14 text-blue-500 dark:text-blue-400 mr-2"></app-icon>
-            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 text-left">{{ 'quickActions.myRoutinesTitle'
-              | translate }}</h3>
-          </div>
-          <p class="pl-2 text-md text-gray-600 dark:text-gray-400 text-left">{{ 'quickActions.myRoutinesDescription' |
-            translate }}
-          </p>
         </div>
       </button>
 

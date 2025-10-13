@@ -18,7 +18,6 @@ import { AlertButton, AlertInput } from '../models/alert.model';
 import { Exercise } from '../models/exercise.model';
 import { SubscriptionService } from './subscription.service';
 import { TranslateService } from '@ngx-translate/core';
-import { uploadPixelDataToTexture } from '@tensorflow/tfjs-backend-webgl/dist/gpgpu_util';
 
 @Injectable({
   providedIn: 'root',

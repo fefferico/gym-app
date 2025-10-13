@@ -1187,6 +1187,24 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     }
   }
 
+  private scrollExpandedSetIntoView(): void {
+    const path = this.expandedSetPath();
+    if (path) {
+      const exerciseElem = this.expandedSetElements.get(path.exerciseIndex)?.nativeElement;
+      if (exerciseElem) {
+        const setElems = exerciseElem.querySelectorAll('.set-item');
+        const setElem = setElems[path.setIndex] as HTMLElement | undefined;
+        if (setElem) {
+          // add a few pixels of offset from the top
+          const offset = 120;
+          const elementPosition = setElem.getBoundingClientRect().top + window.pageYOffset;
+          const offsetPosition = elementPosition - offset;
+          window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+        }
+      }
+    }
+  }
+
   private scrollIntoView(): void {
     // scroll the new exercise into view
     setTimeout(() => {
@@ -1374,6 +1392,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   toggleSetExpansion(exerciseIndex: number, setIndex: number, event?: Event): void {
+    this.closeExerciseActionMenu();
     event?.stopPropagation();
 
     // Vibrate for haptic feedback
@@ -1403,13 +1422,14 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       // The rest of the logic to auto-focus an input remains the same.
       this.cdr.detectChanges();
       setTimeout(() => {
+        this.scrollExpandedSetIntoView();
         const expandedElem = this.expandedSetElements.find((_, i) => i === setIndex)?.nativeElement;
-        if (expandedElem) {
-          const input = expandedElem.querySelector('input[type="text"], input[type="number"]') as HTMLInputElement | null;
-          if (input) {
-            // input.focus();
-          }
-        }
+        // if (expandedElem) {
+        //   const input = expandedElem.querySelector('input[type="text"], input[type="number"]') as HTMLInputElement | null;
+        //   if (input) {
+        //     // input.focus();
+        //   }
+        // }
       }, 50);
     }
     // --- END OF THE FIX ---
@@ -2876,6 +2896,26 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   public expandExerciseCard(exIndex: number, event?: Event): void {
+    this.closeExerciseActionMenu();
+    // --- START OF THE FIX ---
+    if (event) {
+      const target = event.target as HTMLElement;
+
+      // 1. If the click originated on an interactive form element, do nothing.
+      const ignoredTagNames = ['INPUT', 'TEXTAREA', 'SELECT'];
+      if (ignoredTagNames.includes(target.tagName)) {
+        return;
+      }
+
+      // 2. If the click was on ANY element inside a button (like an <app-icon>), also do nothing.
+      // This is a very robust way to ignore all button clicks within the card.
+      if (target.closest('button')) {
+        return;
+      }
+    }
+    // --- END OF THE FIX ---
+
+    // If the guards above did not return, proceed with the original expansion logic.
     event?.stopPropagation();
 
     if (exIndex < 0 || exIndex >= this.exercisesFormArray.length) {
@@ -2886,17 +2926,11 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
     const expandedExIndex = this.expandedExercisePath();
     if (expandedExIndex?.exerciseIndex === exIndex) {
-      // If the clicked exercise is already expanded, collapse it
       this.expandedExercisePath.set(null);
       this.expandedSetPath.set(null);
     } else {
-      if (expandedExIndex && expandedExIndex !== null && expandedExIndex.exerciseIndex === exIndex) {
-        this.expandedExercisePath.set(null);
-        this.expandedSetPath.set(null);
-      } else {
-        this.expandedExercisePath.set({ exerciseIndex: exIndex });
-        this.scrollExpandedExerciseIntoView();
-      }
+      this.expandedExercisePath.set({ exerciseIndex: exIndex });
+      this.scrollExpandedExerciseIntoView();
     }
   }
 
@@ -3119,7 +3153,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   protected setLabelClass(exerciseControl: AbstractControl): string {
-    const standardCardClass = 'flex text-white text-md font-bold rounded-md shadow-lg z-10 p-1 w-full bg-primary';
+    const standardCardClass = 'flex text-white text-md font-bold rounded-md shadow-lg z-10 p-1 w-full bg-primary justify-between';
     if (exerciseControl.get('supersetType')?.value == 'emom') {
       return standardCardClass + ' bg-teal-400 text-white';
     } else if (exerciseControl.get('supersetType')?.value !== 'emom') {
@@ -3482,7 +3516,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       });
       items.push({
         label: this.translate.instant('workoutBuilder.exercise.fillWithLast'),
-        buttonClass: 'bg-green-400 text-white hover:bg-green-600',
+        buttonClass: 'bg-green-400 text-white hover:bg-green-600 text-left',
         actionKey: 'fill_latest',
         iconName: 'task',
       });

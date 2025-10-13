@@ -298,7 +298,7 @@
                 (cdkDropListDropped)="onExerciseDrop($event)" [cdkDropListDisabled]="!isEditableMode()"
                 formArrayName="exercises" class="exercise-list-container">
                 <ng-container *ngFor="let exerciseControl of exercisesFormArray.controls; let exIndex = index;">
-                    <div class="relative group exercise-card-wrapper" #expandedExerciseCard
+                    <div class="relative group exercise-card-wrapper" #expandedExerciseCard appClickOutside (clickOutside)="closeExerciseActionMenu()"
                         [style.zIndex]="isExerciseActionMenuVisible(exIndex) ? 50 : 'auto'"
                         [ngClass]="getExerciseCardClass(exerciseControl, exIndex)">
                         <div *ngIf="(isEditableMode()) && selectedExerciseIndicesForSuperset().length >= 2 && exIndex === firstSelectedExerciseIndexForSuperset"
@@ -317,10 +317,12 @@
                             </button>
                         </div>
 
-                        <div cdkDrag [cdkDragDisabled]="!isEditableMode() || isSetExpanded(exIndex, 0)" appLongPressDrag
-                            [longPressEnabled]="isEditableMode() && !isSetExpanded(exIndex, 0)" [longPressDelay]="150"
-                            longPressClass="is-long-pressing" [cdkDragData]="exerciseControl" [cdkDragStartDelay]="110"
-                            class="transition-all" [formGroupName]="exIndex"
+                        <div cdkDrag [cdkDragDisabled]="!isEditableMode() || shouldShowExpandedExercise(exIndex)"
+                            appLongPressDrag
+                            [dragHandleSelector]="shouldShowExpandedExercise(exIndex) ? '[data-drag-handle]' : undefined"
+                            [longPressEnabled]="isEditableMode() && !shouldShowExpandedExercise(exIndex)"
+                            [longPressDelay]="150" longPressClass="is-long-pressing" [cdkDragData]="exerciseControl"
+                            [cdkDragStartDelay]="110" class="transition-all" [formGroupName]="exIndex"
                             (click)="expandExerciseCard(exIndex, $event)"
                             [title]="isEditableMode() ? ('workoutBuilder.exercise.dragToReorder' | translate) : ''">
 
@@ -334,14 +336,17 @@
                                 <!-- COMPACT VIEW / HEADER AREA -->
                                 <div class="flex items-center space-x-1 pt-1">
                                     <!-- DRAG HANDLE ICON (Now just a visual cue) -->
-                                    <div *ngIf="isEditableMode()"
+                                    <div *ngIf="isEditableMode() && !shouldShowExpandedExercise(exIndex)"
+                                        data-drag-handle
                                         class="p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 flex-shrink-0 flex item-center cursor-move rounded-md"
                                         [title]="'workoutBuilder.exercise.dragToReorder' | translate">
                                         <app-icon name="reorder"></app-icon>
                                     </div>
 
                                     <!-- CHECKBOX (if applicable) -->
-                                    <input *ngIf="(isEditableMode() || isNewMode) && !isViewMode" type="checkbox"
+                                    <input
+                                        *ngIf="(isEditableMode() || isNewMode) && !isViewMode && !shouldShowExpandedExercise(exIndex)"
+                                        type="checkbox"
                                         [title]="'workoutBuilder.exercise.selectForSuperset' | translate"
                                         [id]="'superset-select-' + exIndex"
                                         (change)="toggleExerciseSelectionForSuperset(exIndex, $event)"
@@ -676,8 +681,7 @@
                                         <div formArrayName="sets" class="space-y-1.5">
                                             <!-- Set Headers -->
                                             <!-- <div *ngIf="getSetsFormArray(exerciseControl).controls.length > 0 && (expandedSetPath()?.exerciseIndex !== exIndex)" -->
-                                            <ng-container
-                                                *ngLet="getVisibleColumnsForExercise(exIndex) as visibleCols">
+                                            <ng-container *ngLet="getVisibleColumnsForExercise(exIndex) as visibleCols">
 
                                                 <div *ngIf="getSetsFormArray(exerciseControl).controls.length > 0"
                                                     class="grid grid-cols-12 gap-x-1 py-1 px-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 border-b dark:border-gray-600">
@@ -703,7 +707,7 @@
                                                         {{ mode === 'manualLogEntry' ?
                                                         ('workoutBuilder.set.rest' | translate) :
                                                         ('workoutBuilder.set.rest' | translate) }}</div>
-                                                        <div class="flex-grow"></div> <!-- Flexible spacer -->
+                                                    <div class="flex-grow"></div> <!-- Flexible spacer -->
                                                     <div class="col-span-1"></div> <!-- Action column -->
                                                 </div>
                                             </ng-container>
@@ -718,24 +722,41 @@
 
                                                         <div (click)="toggleSetExpansion(exIndex, setIndex, $event)"
                                                             class="grid grid-cols-12 gap-x-1 items-center py-1.5 px-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800/60 cursor-pointer border dark:border-gray-700 dark:text-white"
-                                                            [ngClass]="{ 'bg-gray-50 dark:bg-gray-700/50': setControl.get('type')?.value === 'standard' }">
+                                                            [ngClass]="{ 
+                                                                'bg-gray-50 dark:bg-gray-700/50': setControl.get('type')?.value === 'standard',
+                                                                'bg-blue-50 dark:bg-blue-700/50': setControl.get('type')?.value === 'warmup' 
+                                                                }">
                                                             <div class="col-span-1 text-s text-center font-medium">#{{
                                                                 setIndex
                                                                 +
                                                                 1
                                                                 }}</div>
-                                                            <div *ngIf="visibleCols['reps']" class="col-span-2 text-s text-center">
-                            {{ mode === 'routineBuilder' ? getSetDisplayValue(setControl, 'reps') : (setControl.get('repsAchieved')?.value ?? '-') }}
-                        </div>
-                        <div *ngIf="visibleCols['weight']" class="col-span-2 text-s text-center">
-                            {{ (setControl.get(mode === 'manualLogEntry' ? 'weightUsed' : 'targetWeight')?.value) | weightUnit:'1.0-2' }}
-                        </div>
-                        <div *ngIf="visibleCols['distance']" class="col-span-2 text-s text-center">
-                            {{ (setControl.get(mode === 'manualLogEntry' ? 'distanceAchieved' : 'targetDistance')?.value) ?? '-' }}
-                        </div>
-                        <div *ngIf="visibleCols['duration']" class="col-span-1 text-s text-center">
-                            {{ mode === 'routineBuilder' ? (getSetDisplayValue(setControl, 'duration') ? getSetDisplayValue(setControl, 'duration') + 's' : '-') : ((setControl.get('durationPerformed')?.value) ? (setControl.get('durationPerformed')?.value + 's') : '-') }}
-                        </div>
+                                                            <div *ngIf="visibleCols['reps']"
+                                                                class="col-span-2 text-s text-center">
+                                                                {{ mode === 'routineBuilder' ?
+                                                                getSetDisplayValue(setControl, 'reps') :
+                                                                (setControl.get('repsAchieved')?.value ?? '-') }}
+                                                            </div>
+                                                            <div *ngIf="visibleCols['weight']"
+                                                                class="col-span-2 text-s text-center">
+                                                                {{ (setControl.get(mode === 'manualLogEntry' ?
+                                                                'weightUsed' : 'targetWeight')?.value) |
+                                                                weightUnit:'1.0-2' }}
+                                                            </div>
+                                                            <div *ngIf="visibleCols['distance']"
+                                                                class="col-span-2 text-s text-center">
+                                                                {{ (setControl.get(mode === 'manualLogEntry' ?
+                                                                'distanceAchieved' : 'targetDistance')?.value) ?? '-' }}
+                                                            </div>
+                                                            <div *ngIf="visibleCols['duration']"
+                                                                class="col-span-1 text-s text-center">
+                                                                {{ mode === 'routineBuilder' ?
+                                                                (getSetDisplayValue(setControl, 'duration') ?
+                                                                getSetDisplayValue(setControl, 'duration') + 's' : '-')
+                                                                : ((setControl.get('durationPerformed')?.value) ?
+                                                                (setControl.get('durationPerformed')?.value + 's') :
+                                                                '-') }}
+                                                            </div>
                                                             <div class="col-span-2 text-s text-center truncate"
                                                                 [title]="mode === 'routineBuilder' ? (setControl.get('restAfterSet')?.value + 's') : setControl.get('notes')?.value">
                                                                 <ng-container *ngIf="mode === 'routineBuilder'">{{
@@ -747,11 +768,14 @@
                                                             </div>
                                                             <div class="flex-grow"></div> <!-- Flexible Spacer -->
 
-                        <div class="col-span-1 flex items-center justify-end">
-                            <button type="button" (click)="removeSet(exerciseControl, exIndex, setIndex, $event)" [title]="'workoutBuilder.set.removeSet' | translate" class="flex items-center text-red-500 ...">
-                                <app-icon name="cancel" class="h-4 w-4"></app-icon>
-                            </button>
-                        </div>
+                                                            <div class="col-span-1 flex items-center justify-end">
+                                                                <button type="button"
+                                                                    (click)="removeSet(exerciseControl, exIndex, setIndex, $event)"
+                                                                    [title]="'workoutBuilder.set.removeSet' | translate"
+                                                                    class="flex items-center text-red-500 ...">
+                                                                    <app-icon name="cancel" class="h-4 w-4"></app-icon>
+                                                                </button>
+                                                            </div>
 
                                                         </div>
                                                     </ng-container>
@@ -760,34 +784,50 @@
 
                                                 <!-- Expanded Set Form -->
                                                 <div #expandedSetElement *ngIf="isSetExpanded(exIndex, setIndex)"
-                                                    class="p-1 rounded-md shadow-inner space-y-2 border-yellow-400 ring-2 ring-yellow-400 dark:ring-yellow-500 z-10"
+                                                    class="p-1 rounded-md shadow-inner space-y-2 border-gray-400 ring-2 dark:ring-gray-500 z-10"
                                                     [ngClass]="{
-                                                            'bg-gray-100 dark:bg-gray-800/50': !['warmup', 'dropset', 'failure', 'amrap', 'myorep', 'restpause'].includes(setControl.get('type')?.value ?? '')
+                                                            'bg-gray-100 dark:bg-gray-800/50': !['warmup', 'dropset', 'failure', 'amrap', 'myorep', 'restpause'].includes(setControl.get('type')?.value ?? ''),
+                                                            'bg-blue-100 dark:bg-blue-800/50': setControl.get('type')?.value === 'warmup',
                                                         }">
                                                     <div (click)="toggleSetExpansion(exIndex, setIndex, $event)"
                                                         [ngClass]="setLabelClass(exerciseControl)">
                                                         #{{setIndex+1}} {{isSuperSet(exIndex) ?
                                                         ('workoutBuilder.set.round' |
                                                         translate):('workoutBuilder.set.set' | translate)}}
-
+                                                        <div class="flex items-center justify-end">
+                                                            <div *ngIf="isEditableMode()"
+                                                                class="flex w-fit items-center justify-center gap-1 bg-gray-200 dark:bg-gray-900/50 p-1 rounded-full">
+                                                                <!-- Remove metric button -->
+                                                                <button type="button"
+                                                                    (click)="removeSet(exerciseControl, exIndex, setIndex, $event)"
+                                                                    [title]="'workoutBuilder.set.removeSet' | translate"
+                                                                    class="flex items-center text-red-500 ...">
+                                                                    <app-icon name="cancel" class="h-4 w-4"></app-icon>
+                                                                </button>
+                                                            </div>
+                                                        </div>
                                                     </div>
-                                                    <div *ngIf="isEditableMode()"
-                                                        class="flex items-center justify-center gap-1 bg-gray-200 dark:bg-gray-900/50 p-1 rounded-full">
-                                                        <!-- Remove metric button -->
-                                                        <label
-                                                            class="flex items-center justify-between text-s font-medium text-gray-600 dark:text-gray-400">Metriche:</label>
-                                                        <button
-                                                            (click)="promptRemoveField(exIndex, setIndex); $event.stopPropagation()"
-                                                            class="flex items-center gap-1 text-xs font-semibold text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-1 rounded-full hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors">
-                                                            <app-icon name="minus-circle" class="h-5 w-5"></app-icon>
-                                                        </button>
-                                                        <!-- ADD metric -->
-                                                        <button
-                                                            *ngIf="getFieldsForSet(exIndex, setIndex).hidden.length > 0"
-                                                            (click)="promptAddField(exIndex, setIndex); $event.stopPropagation()"
-                                                            class="flex items-center gap-1 text-xs font-semibold text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 p-1 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors">
-                                                            <app-icon name="plus-circle" class="h-5 w-5"></app-icon>
-                                                        </button>
+                                                    <div class="flex items-center justify-center">
+                                                        <div *ngIf="isEditableMode()"
+                                                            class="flex w-fit items-center justify-center gap-1 bg-gray-200 dark:bg-gray-900/50 p-1 rounded-full">
+                                                            <!-- Remove metric button -->
+                                                            <label
+                                                                class="flex items-center justify-between text-s font-medium text-gray-600 dark:text-gray-400">Metriche:</label>
+                                                            <button
+                                                                (click)="promptRemoveField(exIndex, setIndex); $event.stopPropagation()"
+                                                                class="p-1.5 rounded-full bg-red-200 hover:bg-red-300 text-red-700 disabled:opacity-50 flex items-center">
+                                                                <app-icon name="minus-circle"
+                                                                    class="h-5 w-5"></app-icon>
+                                                            </button>
+                                                            <!-- ADD metric -->
+                                                            <button
+                                                                *ngIf="getFieldsForSet(exIndex, setIndex).hidden.length > 0"
+                                                                (click)="promptAddField(exIndex, setIndex); $event.stopPropagation()"
+                                                                class="p-1.5 rounded-full bg-blue-200 hover:bg-blue-300 text-blue-700 disabled:opacity-50 flex items-center">
+                                                                <app-icon name="plus-circle" class="h-5 w-5"></app-icon>
+                                                            </button>
+                                                        </div>
+
                                                     </div>
                                                     <div
                                                         class="grid grid-cols-2 sm:grid-cols-3 gap-x-3 gap-y-2 items-end">
@@ -1113,22 +1153,27 @@
 
                                             </div>
                                         </div>
-                                        <!-- Col 2: Set +/- Buttons -->
-                                        <div class="flex items-center justify-center gap-x-2 py-1">
-                                            <label class="dark:text-gray-200">{{'workoutBuilder.set.set' |
-                                                translate}}:</label>
-                                            <button type="button" (click)="removeLastSet(exerciseControl, $event)"
-                                                [disabled]="getSetsFormArray(exerciseControl).length <= 1"
-                                                class="p-1.5 rounded-full bg-red-200 hover:bg-red-300 text-red-700 disabled:opacity-50 flex items-center"
-                                                [aria-label]="'workoutBuilder.set.removeLastSet' | translate">
-                                                <app-icon name="minus-circle" class="h-6 w-6"></app-icon>
-                                            </button>
-                                            <button type="button"
-                                                (click)="addSet(exerciseControl, exIndex); $event.stopPropagation()"
-                                                class="p-1.5 rounded-full bg-green-200 hover:bg-green-300 text-green-700 flex items-center"
-                                                [aria-label]="'workoutBuilder.set.addSet' | translate">
-                                                <app-icon name="plus-circle" class="h-6 w-6"></app-icon>
-                                            </button>
+                                        <!-- Col 2: Set +/- SETS Buttons -->
+                                        <div class="flex items-center justify-center mt-2">
+                                            <div
+                                                class="flex w-fit items-center justify-center gap-1 bg-gray-200 dark:bg-gray-900/50 p-1 rounded-full">
+                                                <label
+                                                    class="flex items-center justify-between text-s font-medium text-gray-600 dark:text-gray-400">{{'workoutBuilder.set.set'
+                                                    |
+                                                    translate}}:</label>
+                                                <button type="button" (click)="removeLastSet(exerciseControl, $event)"
+                                                    [disabled]="getSetsFormArray(exerciseControl).length <= 1"
+                                                    class="p-1.5 rounded-full bg-red-200 hover:bg-red-300 text-red-700 disabled:opacity-50 flex items-center"
+                                                    [aria-label]="'workoutBuilder.set.removeLastSet' | translate">
+                                                    <app-icon name="minus-circle" class="h-6 w-6"></app-icon>
+                                                </button>
+                                                <button type="button"
+                                                    (click)="addSet(exerciseControl, exIndex); $event.stopPropagation()"
+                                                    class="p-1.5 rounded-full bg-green-200 hover:bg-green-300 text-green-700 flex items-center"
+                                                    [aria-label]="'workoutBuilder.set.addSet' | translate">
+                                                    <app-icon name="plus-circle" class="h-6 w-6"></app-icon>
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                     <!-- EXPANDED Only EDIT MODE - END -->

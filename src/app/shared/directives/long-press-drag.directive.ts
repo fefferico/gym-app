@@ -10,6 +10,8 @@ export class LongPressDragDirective implements OnInit, OnDestroy {
   @Input() longPressEnabled = true;
   @Input() longPressDelay = 300;
   @Input() longPressClass = 'is-long-pressing';
+  @Input() dragHandleSelector?: string;
+  @Input() classTargetSelector?: string;
 
   @Output() longPress = new EventEmitter<void>();
 
@@ -44,23 +46,42 @@ export class LongPressDragDirective implements OnInit, OnDestroy {
   }
 
   onMouseDown(event: MouseEvent): void {
-    if (!this.longPressEnabled) return;
-    // We can safely call preventDefault on mouse events.
-    // event.preventDefault();
+    if (!this.longPressEnabled || event.button !== 0) return;
+
+    // --- ALIGNMENT LOGIC ---
+    // If a handle selector is defined, check if the press started on the handle.
+    if (this.dragHandleSelector) {
+      if (!(event.target as HTMLElement).closest(this.dragHandleSelector)) {
+        // If the press did NOT start on the handle, ignore it and do nothing.
+        return;
+      }
+    }
+    // --- END ALIGNMENT ---
+    
+    // If the check passes (or no handle is defined), start the timer.
     this.startTimer();
   }
 
   onTouchStart(event: TouchEvent): void {
     if (!this.longPressEnabled) return;
-    // This is now guaranteed to be safe because the listener is not passive.
-    // event.preventDefault();
+    
+    // --- ALIGNMENT LOGIC ---
+    // Same check for touch events.
+    if (this.dragHandleSelector) {
+      if (!(event.target as HTMLElement).closest(this.dragHandleSelector)) {
+        return;
+      }
+    }
+    // --- END ALIGNMENT ---
+    
     this.startTimer();
   }
 
-  private startTimer(): void {
+private startTimer(): void {
     this.isPressing = true;
     this.timer = setTimeout(() => {
       if (this.isPressing) {
+        // SIMPLIFIED: Always add class to the host element
         this.renderer.addClass(this.el.nativeElement, this.longPressClass);
         this.longPress.emit();
       }

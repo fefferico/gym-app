@@ -8,12 +8,20 @@
 
 // This is our custom class, added by the independent directive.
 // This style will be applied when the long press is successful.
-.is-long-pressing {
-  transform: scale(1.03);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.25);
-  border-color: #e0460d;
-  border-width: 2px;
+:host ::ng-deep .is-long-pressing {
+  // 1. The "pop" and "lift" effect
+  // transform: scale(1.03);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.25); // The outer shadow for depth
   z-index: 1000;
+
+  // 2. The "border" effect that STAYS INSIDE
+  // We add the inset shadow to the existing outer shadow
+  box-shadow: inset 0 0 0 2px #e0460d, 0 5px 15px rgba(0, 0, 0, 0.25);
+  border-radius: 5px;
+  
+  // Remove the problematic outline and border
+  // outline: none;
+  // border-color: transparent; // Or whatever makes sense
 }
 
 /* When an item is being dragged, its original spot gets this placeholder */
