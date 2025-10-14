@@ -1237,9 +1237,9 @@
     "save_log_changes": "SAVE LOG CHANGES",
     "start": "START",
     "log": "LOG",
-    "undo": "Deshacer",
-    "redo": "Rehacer",
-    "restore": "Restaurar Original"
+    "undo": "UNDO",
+    "redo": "REVERT",
+    "restore": "RESTORE ORIGINAL"
   },
   "logDetail": {
     "title": "Personal Bests",
@@ -2238,6 +2238,14 @@
       "delete": "Delete Exercise",
       "notApplicable": "N/A"
     }
+  },
+  "navigation": {
+    "home": "HOME",
+    "routines": "ROUTINES",
+    "history": "HISTORY",
+    "programs": "PROGRAMS",
+    "stats": "STATS",
+    "profile": "PROFILE"
   }
 
 }

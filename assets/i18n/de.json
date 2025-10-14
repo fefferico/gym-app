@@ -2195,5 +2195,13 @@
     "general": {
       "cancel": "Abbrechen"
     }
+  },
+  "navigation": {
+    "home": "HOME",
+    "routines": "ROUTINEN",
+    "history": "VERLAUF",
+    "programs": "PROGRAMME",
+    "stats": "STATISTIK",
+    "profile": "PROFIL"
   }
 }

@@ -2185,5 +2185,13 @@
     "general": {
       "cancel": "Отмена"
     }
+  },
+  "navigation": {
+    "home": "ГЛАВНАЯ",
+    "routines": "ПРОГРАММЫ",
+    "history": "ИСТОРИЯ",
+    "programs": "ПЛАНЫ",
+    "stats": "СТАТИСТИКА",
+    "profile": "ПРОФИЛЬ"
   }
 }

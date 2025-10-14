@@ -2195,6 +2195,14 @@
     "general": {
       "cancel": "取消"
     }
+  },
+  "navigation": {
+    "home": "首页",
+    "routines": "训练计划",
+    "history": "历史记录",
+    "programs": "课程",
+    "stats": "统计数据",
+    "profile": "个人资料"
   }
 
 }

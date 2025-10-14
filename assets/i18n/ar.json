@@ -2194,5 +2194,13 @@
     "general": {
       "cancel": "إلغاء"
     }
+  },
+  "navigation": {
+    "home": "الرئيسية",
+    "routines": "التمارين",
+    "history": "السجل",
+    "programs": "البرامج",
+    "stats": "الإحصائيات",
+    "profile": "الملف الشخصي"
   }
 }
