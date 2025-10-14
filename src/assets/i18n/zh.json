@@ -2203,6 +2203,35 @@
     "programs": "课程",
     "stats": "统计数据",
     "profile": "个人资料"
+  },
+  "generateWorkoutModal": {
+    "title": "生成训练",
+    "durationLabel": "持续时间",
+    "durationUnit": "分钟",
+    "goalLabel": "目标",
+    "goals": {
+      "hypertrophy": "增肌 (纬度)",
+      "strength": "力量",
+      "endurance": "耐力"
+    },
+    "splitLabel": "训练分化",
+    "splits": {
+      "fullBody": "全身",
+      "upperLower": "上/下半身",
+      "ppl": "推/拉/腿"
+    },
+    "targetMusclesLabel": "目标肌肉 (可选)",
+    "avoidMusclesLabel": "避开肌肉 (可选)",
+    "equipmentLabel": "设备",
+    "usePersonalGymLabel": "使用我的个人设备",
+    "noPersonalGym": "未找到个人设备。请在您的个人资料中添加设备。",
+    "excludeEquipmentLabel": "排除设备 (可选)",
+    "searchPlaceholder": "搜索设备...",
+    "excludedListLabel": "已排除的设备",
+    "fab": {
+      "detailed": "生成自定义训练",
+      "quick": "给我惊喜！"
+    }
   }
 
 }

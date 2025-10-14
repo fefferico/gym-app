@@ -2203,5 +2203,34 @@
     "programs": "PROGRAMME",
     "stats": "STATISTIK",
     "profile": "PROFIL"
+  },
+  "generateWorkoutModal": {
+    "title": "Training generieren",
+    "durationLabel": "Dauer",
+    "durationUnit": "Min.",
+    "goalLabel": "Ziel",
+    "goals": {
+      "hypertrophy": "Hypertrophie (Größe)",
+      "strength": "Stärke",
+      "endurance": "Ausdauer"
+    },
+    "splitLabel": "Trainingsaufteilung",
+    "splits": {
+      "fullBody": "Ganzkörper",
+      "upperLower": "Oberkörper / Unterkörper",
+      "ppl": "Drücken / Ziehen / Beine"
+    },
+    "targetMusclesLabel": "Zielmuskeln (Optional)",
+    "avoidMusclesLabel": "Zu vermeidende Muskeln (Optional)",
+    "equipmentLabel": "Ausrüstung",
+    "usePersonalGymLabel": "Meine persönliche Ausrüstung verwenden",
+    "noPersonalGym": "Keine persönliche Ausrüstung gefunden. Bitte fügen Sie Ausrüstung zu Ihrem Profil hinzu.",
+    "excludeEquipmentLabel": "Ausrüstung ausschließen (Optional)",
+    "searchPlaceholder": "Ausrüstung suchen...",
+    "excludedListLabel": "Ausgeschlossene Ausrüstung",
+    "fab": {
+      "detailed": "BENUTZERDEFINIERTES TRAINING GENERIEREN",
+      "quick": "ÜBERRASCH MICH!"
+    }
   }
 }

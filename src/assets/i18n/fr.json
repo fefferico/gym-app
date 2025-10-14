@@ -2202,5 +2202,35 @@
     "programs": "PROGRAMMES",
     "stats": "STATS",
     "profile": "PROFIL"
+  },
+
+  "generateWorkoutModal": {
+    "title": "Générer un entraînement",
+    "durationLabel": "Durée",
+    "durationUnit": "min",
+    "goalLabel": "Objectif",
+    "goals": {
+      "hypertrophy": "Hypertrophie (Volume)",
+      "strength": "Force",
+      "endurance": "Endurance"
+    },
+    "splitLabel": "Répartition de l'entraînement",
+    "splits": {
+      "fullBody": "Corps entier",
+      "upperLower": "Haut / Bas du corps",
+      "ppl": "Pousser / Tirer / Jambes"
+    },
+    "targetMusclesLabel": "Muscles cibles (Optionnel)",
+    "avoidMusclesLabel": "Muscles à éviter (Optionnel)",
+    "equipmentLabel": "Équipement",
+    "usePersonalGymLabel": "Utiliser mon équipement personnel",
+    "noPersonalGym": "Aucun équipement personnel trouvé. Veuillez ajouter de l'équipement à votre profil.",
+    "excludeEquipmentLabel": "Exclure l'équipement (Optionnel)",
+    "searchPlaceholder": "Rechercher un équipement...",
+    "excludedListLabel": "Équipement exclu",
+    "fab": {
+      "detailed": "GÉNÉRER UN ENTRAÎNEMENT PERSONNALISÉ",
+      "quick": "SURPRENEZ-MOI !"
+    }
   }
 }

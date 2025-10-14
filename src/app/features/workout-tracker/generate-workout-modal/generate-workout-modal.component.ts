@@ -1,5 +1,5 @@
 // src/app/features/workout-routines/routine-list/generate-workout-modal/generate-workout-modal.component.ts
-import { Component, computed, EventEmitter, inject, Input, OnChanges, OnInit, Output, Signal, signal, SimpleChanges } from '@angular/core';
+import { Component, computed, EventEmitter, inject, Input, OnChanges, OnInit, Output, signal, SimpleChanges, effect, Inject, DOCUMENT } from '@angular/core';
 import { CommonModule, TitleCasePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
@@ -9,11 +9,12 @@ import { ExerciseService } from '../../../core/services/exercise.service';
 import { Equipment } from '../../../core/models/equipment.model';
 import { PersonalGymService } from '../../../core/services/personal-gym.service';
 import { FabAction, FabMenuComponent } from '../../../shared/components/fab-menu/fab-menu.component';
+import { TranslateModule } from '@ngx-translate/core'; // +++ IMPORT TRANSLATE MODULE
 
 @Component({
     selector: 'app-generate-workout-modal',
     standalone: true,
-    imports: [CommonModule, IconComponent, FormsModule, TitleCasePipe, FabMenuComponent],
+    imports: [CommonModule, IconComponent, FormsModule, TitleCasePipe, FabMenuComponent, TranslateModule], // +++ ADD TRANSLATE MODULE
     templateUrl: './generate-workout-modal.component.html',
 })
 export class GenerateWorkoutModalComponent implements OnInit, OnChanges {
@@ -24,16 +25,33 @@ export class GenerateWorkoutModalComponent implements OnInit, OnChanges {
     private exerciseService = inject(ExerciseService);
     private personalGymService = inject(PersonalGymService);
 
+    // --- START: SCROLL LOCK LOGIC ---
+    constructor(@Inject(DOCUMENT) private document: Document) {
+        effect(() => {
+            if (this.isOpen) {
+                this.document.body.classList.add('overflow-hidden');
+            } else {
+                this.document.body.classList.remove('overflow-hidden');
+            }
+        });
+        effect((onCleanup) => {
+            onCleanup(() => {
+                this.document.body.classList.remove('overflow-hidden');
+            });
+        });
+    }
+    // --- END: SCROLL LOCK LOGIC ---
+
     allMuscleGroups = signal<string[]>([]);
     allAvailableEquipment = signal<string[]>([]);
     allPersonalGymEquipment = signal<string[]>([]);
     equipmentSearchTerm = signal<string>('');
-    excludeEquipmentSearchTerm = signal<string>(''); // NEW
+    excludeEquipmentSearchTerm = signal<string>('');
 
     filteredAvailableEquipment = computed(() => {
         const term = this.equipmentSearchTerm().toLowerCase().trim();
         if (!term) {
-            return []; // Return an empty array if there's no search term to avoid showing a long list
+            return [];
         }
         return this.allAvailableEquipment().filter(eq =>
             eq.toLowerCase().includes(term) && !this.options.equipment.includes(eq)
@@ -65,8 +83,8 @@ export class GenerateWorkoutModalComponent implements OnInit, OnChanges {
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes['isOpen'] && changes['isOpen'].currentValue === true) {
-            this.resetOptions(); // Reset options when the modal is opened
-            this.updateEquipmentFromPersonalGym(); // Ensure equipment is populated on open
+            this.resetOptions();
+            this.updateEquipmentFromPersonalGym();
         }
     }
 
@@ -82,11 +100,9 @@ export class GenerateWorkoutModalComponent implements OnInit, OnChanges {
 
     generateQuick() {
         this.generate.emit('quick');
-        // The modal no longer closes itself; the parent will handle it.
     }
 
     generateDetailed() {
-        // We emit a copy of the options object
         this.generate.emit({ ...this.options });
     }
 
@@ -109,7 +125,7 @@ export class GenerateWorkoutModalComponent implements OnInit, OnChanges {
         if (!this.options.equipment.includes(equipment)) {
             this.options.equipment.push(equipment);
         }
-        this.equipmentSearchTerm.set(''); // Clear search input after selection
+        this.equipmentSearchTerm.set('');
     }
 
     removeEquipment(equipment: string) {
@@ -119,30 +135,24 @@ export class GenerateWorkoutModalComponent implements OnInit, OnChanges {
         }
     }
 
-
-    // Handles clicking on a personal gym equipment item
     toggleExcludePersonalGymEquipment(equipment: string) {
         const index = this.options.excludeEquipment.indexOf(equipment.toLowerCase());
         if (index > -1) {
-            // If it's already excluded, remove it from the exclusion list (re-enabling it)
             this.options.excludeEquipment.splice(index, 1);
         } else {
-            // If it's not excluded, add it to the exclusion list
-            // add the equipment to the exclusion list, not jsut the equipment name
             this.options.excludeEquipment.push(equipment.toLowerCase());
         }
         this.updateEquipmentFromPersonalGym();
     }
 
-    filteredAvailableEquipmentToExclude = computed(() => { // NEW
+    filteredAvailableEquipmentToExclude = computed(() => {
         const term = this.excludeEquipmentSearchTerm().toLowerCase().trim();
         if (!term) {
             return [];
         }
         const allEq = this.allAvailableEquipment();
-        const personalGymEq = this.allPersonalGymEquipment(); // Get personal gym eq
+        const personalGymEq = this.allPersonalGymEquipment();
 
-        // Filter from either all available or personal gym equipment based on 'usePersonalGym'
         const sourceList = this.options.usePersonalGym ? personalGymEq : allEq;
 
         return sourceList.filter(eq =>
@@ -165,26 +175,21 @@ export class GenerateWorkoutModalComponent implements OnInit, OnChanges {
         }
     }
 
-    // Define the actions for the FAB menu
     public fabActions: FabAction[] = [
         {
             actionKey: 'generate_detailed',
-            label: 'GENERATE CUSTOM WORKOUT',
+            label: 'generateWorkoutModal.fab.detailed', // <-- MODIFIED FOR TRANSLATION
             iconName: 'magic-wand',
             cssClass: 'bg-primary'
         },
         {
             actionKey: 'generate_quick',
-            label: 'SURPRISE ME!',
+            label: 'generateWorkoutModal.fab.quick', // <-- MODIFIED FOR TRANSLATION
             iconName: 'random',
             cssClass: 'bg-green-500'
         }
     ];
 
-    /**
-     * Handles the click event from the FAB menu.
-     * @param actionKey The key of the action that was clicked.
-     */
     public handleFabAction(actionKey: string): void {
         if (actionKey === 'generate_quick') {
             this.generateQuick();
@@ -194,27 +199,19 @@ export class GenerateWorkoutModalComponent implements OnInit, OnChanges {
     }
 
     onUsePersonalGymChange() {
-        this.options.excludeEquipment = []; // Clear exclusions when toggling
+        this.options.excludeEquipment = [];
         this.equipmentSearchTerm.set('');
-        // +++ MODIFIED: This now correctly populates or clears the equipment list
         this.updateEquipmentFromPersonalGym();
     }
 
-    /**
-     * --- START: NEW HELPER FUNCTION ---
-     * Populates the `options.equipment` array based on the user's personal gym
-     * and their exclusion choices. This is the central logic for this feature.
-     */
     private updateEquipmentFromPersonalGym(): void {
         if (this.options.usePersonalGym) {
             const personalEquipment = this.allPersonalGymEquipment();
             const excludedEquipment = this.options.excludeEquipment;
-            // The final list is the personal equipment MINUS the excluded items.
             this.options.equipment = personalEquipment.filter(
                 eq => !excludedEquipment.includes(eq.toLowerCase())
             );
         } else {
-            // When not using personal gym, the equipment list is managed manually, so it should be empty.
             this.options.equipment = [];
         }
     }

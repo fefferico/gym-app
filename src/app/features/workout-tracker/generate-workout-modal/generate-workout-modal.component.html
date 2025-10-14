@@ -1,14 +1,13 @@
-<div *ngIf="isOpen" class="fixed inset-0 backdrop-blur-md flex items-center justify-center p-4 z-[100]"
-    (click)="close.emit()">
-    <div class="bg-white dark:bg-gray-700 rounded-xl shadow-2xl w-full max-w-2xl max-h-[95vh] flex flex-col transform"
-        (click)="$event.stopPropagation()">
+<div *ngIf="isOpen" class="fixed inset-0 z-[100] flex flex-col bg-gray-100 dark:bg-gray-800" (click)="close.emit()">
+    <div class="w-full h-full flex flex-col" (click)="$event.stopPropagation()">
 
         <!-- Header -->
         <header
-            class="px-5 py-1 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center flex-shrink-0">
+            class="px-5 py-2 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center flex-shrink-0 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
             <div class="flex items-center gap-3">
                 <app-icon name="magic-wand" class="h-7 w-7 text-primary dark:text-primary-light"></app-icon>
-                <h3 class="text-xl font-semibold text-gray-800 dark:text-gray-100">Generate Workout</h3>
+                <h3 class="text-xl font-semibold text-gray-800 dark:text-gray-100">{{ 'generateWorkoutModal.title' |
+                    translate }}</h3>
             </div>
             <button (click)="close.emit()" class="p-1.5 rounded-full text-gray-500 hover:text-gray-700">
                 <app-icon name="cancel" class="h-6 w-6"></app-icon>
@@ -16,40 +15,47 @@
         </header>
 
         <!-- Main Content (Scrollable) -->
-        <div class="px-6 py-2 overflow-y-auto flex-grow bg-gray-50 dark:bg-gray-900 pb-24 rounded-md">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+        <div class="overflow-y-auto flex-grow p-4 sm:p-6 pb-24">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6 max-w-4xl mx-auto">
                 <!-- Duration -->
                 <div>
-                    <label class="block text-sm font-medium dark:text-gray-100">Duration: <strong>{{ options.duration }}
-                            min</strong></label>
+                    <label class="block text-sm font-medium dark:text-gray-100">{{ 'generateWorkoutModal.durationLabel'
+                        | translate }}: <strong>{{ options.duration }} {{ 'generateWorkoutModal.durationUnit' |
+                            translate }}</strong></label>
                     <input type="range" [(ngModel)]="options.duration" min="15" max="120" step="5"
                         class="w-full h-2 rounded-md appearance-none cursor-pointer">
                 </div>
 
                 <!-- Goal -->
                 <div>
-                    <label class="block text-sm font-medium dark:text-gray-100">Goal</label>
-                    <select [(ngModel)]="options.goal" class="block w-full p-2 border rounded-md">
-                        <option value="hypertrophy">Hypertrophy (Size)</option>
-                        <option value="strength">Strength</option>
-                        <option value="muscular endurance">Endurance</option>
+                    <label class="block text-sm font-medium dark:text-gray-100">{{ 'generateWorkoutModal.goalLabel' |
+                        translate }}</label>
+                    <select [(ngModel)]="options.goal"
+                        class="block w-full p-2 border rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200">
+                        <option value="hypertrophy">{{ 'generateWorkoutModal.goals.hypertrophy' | translate }}</option>
+                        <option value="strength">{{ 'generateWorkoutModal.goals.strength' | translate }}</option>
+                        <option value="muscular endurance">{{ 'generateWorkoutModal.goals.endurance' | translate }}
+                        </option>
                     </select>
                 </div>
 
                 <!-- Split -->
                 <div class="md:col-span-2">
-                    <label class="block text-sm font-medium dark:text-gray-100">Training Split</label>
-                    <select [(ngModel)]="options.split" class="block w-full p-2 border rounded-md">
-                        <option value="full-body">Full Body</option>
-                        <option value="upper-lower">Upper / Lower</option>
-                        <option value="push-pull-legs">Push / Pull / Legs</option>
+                    <label class="block text-sm font-medium dark:text-gray-100">{{ 'generateWorkoutModal.splitLabel' |
+                        translate }}</label>
+                    <select [(ngModel)]="options.split"
+                        class="block w-full p-2 border rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200">
+                        <option value="full-body">{{ 'generateWorkoutModal.splits.fullBody' | translate }}</option>
+                        <option value="upper-lower">{{ 'generateWorkoutModal.splits.upperLower' | translate }}</option>
+                        <option value="push-pull-legs">{{ 'generateWorkoutModal.splits.ppl' | translate }}</option>
                     </select>
                 </div>
 
                 <!-- Target Muscles -->
-                <div class="text-black dark:text-gray-200">
-                    <label class="block text-sm font-medium">Target Muscles (Optional)</label>
-                    <div class="max-h-32 overflow-y-auto p-2 border rounded-md">
+                <div class="dark:text-gray-200">
+                    <label class="block text-sm font-medium">{{ 'generateWorkoutModal.targetMusclesLabel' | translate
+                        }}</label>
+                    <div class="max-h-32 overflow-y-auto p-2 border rounded-md dark:border-gray-600">
                         <div *ngFor="let muscle of allMuscleGroups()">
                             <label class="flex items-center gap-2">
                                 <input type="checkbox" [value]="muscle" (change)="toggleMuscle('target', muscle)"
@@ -62,9 +68,10 @@
                 </div>
 
                 <!-- Avoid Muscles -->
-                <div class="text-black dark:text-gray-200">
-                    <label class="block text-sm font-medium dark:text-gray-100">Avoid Muscles (Optional)</label>
-                    <div class="max-h-32 overflow-y-auto p-2 border rounded-md">
+                <div class="dark:text-gray-200">
+                    <label class="block text-sm font-medium dark:text-gray-100">{{
+                        'generateWorkoutModal.avoidMusclesLabel' | translate }}</label>
+                    <div class="max-h-32 overflow-y-auto p-2 border rounded-md dark:border-gray-600">
                         <div *ngFor="let muscle of allMuscleGroups()">
                             <label class="flex items-center gap-2">
                                 <input type="checkbox" [value]="muscle" (change)="toggleMuscle('avoid', muscle)"
@@ -77,29 +84,31 @@
                 </div>
 
                 <!-- Equipment -->
-                <div class="md:col-span-2 text-black dark:text-gray-200">
-                    <label class="block text-sm font-medium dark:text-gray-100">Equipment</label>
-                    <label class="flex items-center gap-2 mb-2">
+                <div class="md:col-span-2 dark:text-gray-200">
+                    <label class="block text-sm font-medium dark:text-gray-100">{{ 'generateWorkoutModal.equipmentLabel'
+                        | translate }}</label>
+                    <label class="flex items-center gap-2 my-2">
                         <input type="checkbox" [(ngModel)]="options.usePersonalGym" (change)="onUsePersonalGymChange()">
-                        Use My Personal Gym Equipment
+                        {{ 'generateWorkoutModal.usePersonalGymLabel' | translate }}
                     </label>
+
+                    <!-- Personal Gym View -->
                     <div *ngIf="options.usePersonalGym" class="p-2 border rounded-md bg-gray-100 dark:bg-gray-800">
                         <p *ngIf="allPersonalGymEquipment().length === 0"
-                            class="text-sm italic text-gray-500 dark:text-gray-400">
-                            No personal gym equipment found. Please add equipment to your profile.
-                        </p>
+                            class="text-sm italic text-gray-500 dark:text-gray-400">{{
+                            'generateWorkoutModal.noPersonalGym' | translate }}</p>
                         <div class="flex flex-wrap gap-2">
-                            <!-- Each item is now a button to toggle exclusion -->
                             <button type="button" *ngFor="let eq of allPersonalGymEquipment()"
                                 (click)="toggleExcludePersonalGymEquipment(eq)" [ngClass]="{
-                                    'bg-blue-100 text-white dark:bg-blue-700': !options.excludeEquipment.includes(eq.toLowerCase()),
-                                    'bg-gray-300 text-gray-600 dark:bg-gray-600 dark:text-gray-300 line-through': options.excludeEquipment.includes(eq.toLowerCase())
-                                }" class="px-3 py-1.5 text-xs font-semibold rounded-full transition-colors">
+                                'bg-blue-500 text-white dark:bg-blue-700': !options.excludeEquipment.includes(eq.toLowerCase()),
+                                'bg-gray-300 text-gray-600 dark:bg-gray-600 dark:text-gray-300 line-through': options.excludeEquipment.includes(eq.toLowerCase())
+                            }" class="px-3 py-1.5 text-xs font-semibold rounded-full transition-colors">
                                 {{ eq | titlecase }}
                             </button>
                         </div>
                     </div>
-                    <!-- +++ START: MODIFIED SECTION FOR SEARCHABLE EQUIPMENT +++ -->
+
+                    <!-- Manual Equipment View -->
                     <div *ngIf="!options.usePersonalGym; else usePersonalGymSection"
                         class="md:col-span-2 text-black dark:text-gray-200 relative">
                         <label class="block text-sm font-medium dark:text-gray-100 my-1">Exclude Equipment
@@ -141,7 +150,6 @@
                             </div>
                         </div>
                     </div>
-                    <!-- +++ END: MODIFIED SECTION +++ -->
                 </div>
                 <ng-template #usePersonalGymSection class="md:col-span-2 text-black dark:text-gray-200 relative">
                     <label class="block text-sm font-medium dark:text-gray-100 my-1">Exclude personal gym equipment
@@ -179,9 +187,24 @@
         </div>
 
         <!-- FAB Menu for actions -->
-        <app-fab-menu [actions]="fabActions" (actionClicked)="handleFabAction($event)" [checkForPausedSession]="false"
-            [scrollToTopDisabled]="true" [scrollToBottomDisabled]="true" [customBottomPositioning]="2">
-        </app-fab-menu>
+        <!-- <app-fab-menu [actions]="fabActions" (actionClicked)="handleFabAction($event)" [checkForPausedSession]="false"
+            [scrollToTopDisabled]="true" [scrollToBottomDisabled]="true" [customBottomPositioning]="2"></app-fab-menu> -->
+
+        <footer class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex-shrink-0 bg-white dark:bg-gray-700">
+            <div class="flex flex-col sm:flex-row sm:justify-end sm:space-x-4 space-y-3 sm:space-y-0">
+                <!-- Secondary Action: Surprise Me -->
+                <button (click)="generateQuick()" type="button"
+                    class="w-full sm:w-auto inline-flex justify-center items-center px-4 py-2 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-green-600 hover:bg-green-700">
+                    <app-icon name="random" class="h-5 w-5 mr-2"></app-icon>
+                    {{ 'generateWorkoutModal.fab.quick' | translate }}
+                </button>
+                <!-- Primary Action: Generate Custom -->
+                <button (click)="generateDetailed()" type="button"
+                    class="w-full sm:w-auto inline-flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-500 hover:bg-purple-700">
+                    <app-icon name="magic-wand" class="h-5 w-5 mr-2"></app-icon>
+                    {{ 'generateWorkoutModal.fab.detailed' | translate }}
+                </button>
+            </div>
+        </footer>
     </div>
 </div>
-<ng-template *ngIf="true" class="bottom-15"></ng-template>

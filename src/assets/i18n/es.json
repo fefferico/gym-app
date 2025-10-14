@@ -2191,5 +2191,34 @@
     "programs": "PROGRAMAS",
     "stats": "ESTADÍSTICAS",
     "profile": "PERFIL"
+  },
+  "generateWorkoutModal": {
+    "title": "Generar Entrenamiento",
+    "durationLabel": "Duración",
+    "durationUnit": "min",
+    "goalLabel": "Objetivo",
+    "goals": {
+      "hypertrophy": "Hipertrofia (Tamaño)",
+      "strength": "Fuerza",
+      "endurance": "Resistencia"
+    },
+    "splitLabel": "División de Entrenamiento",
+    "splits": {
+      "fullBody": "Cuerpo Completo",
+      "upperLower": "Superior / Inferior",
+      "ppl": "Empuje / Tirón / Piernas"
+    },
+    "targetMusclesLabel": "Músculos Objetivo (Opcional)",
+    "avoidMusclesLabel": "Músculos a Evitar (Opcional)",
+    "equipmentLabel": "Equipo",
+    "usePersonalGymLabel": "Usar mi Equipo Personal",
+    "noPersonalGym": "No se encontró equipo personal. Por favor, añada equipo a su perfil.",
+    "excludeEquipmentLabel": "Excluir Equipo (Opcional)",
+    "searchPlaceholder": "Buscar equipo...",
+    "excludedListLabel": "Equipo Excluido",
+    "fab": {
+      "detailed": "GENERAR ENTRENAMIENTO PERSONALIZADO",
+      "quick": "¡SORPRÉNDEME!"
+    }
   }
 }

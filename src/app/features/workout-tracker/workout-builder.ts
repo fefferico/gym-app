@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy, signal, computed, ElementRef, QueryList, ViewChildren, AfterViewInit, ChangeDetectorRef, PLATFORM_ID, Input, HostListener, ViewChild, effect, AfterViewChecked, Signal } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal, computed, ElementRef, QueryList, ViewChildren, AfterViewInit, ChangeDetectorRef, PLATFORM_ID, Input, HostListener, ViewChild, effect, AfterViewChecked, Signal, NgZone } from '@angular/core';
 import { CommonModule, DecimalPipe, isPlatformBrowser, TitleCasePipe } from '@angular/common'; // Added TitleCasePipe
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray, AbstractControl, FormsModule, FormControl, ValidatorFn, ValidationErrors } from '@angular/forms';
@@ -23,19 +23,15 @@ import { TrackingService } from '../../core/services/tracking.service'; // For m
 import { AlertButton, AlertInput } from '../../core/models/alert.model';
 import { LongPressDragDirective } from '../../shared/directives/long-press-drag.directive';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { merge } from 'hammerjs';
 import { AutoGrowDirective } from '../../shared/directives/auto-grow.directive';
 import { ActionMenuComponent } from '../../shared/components/action-menu/action-menu';
 import { ActionMenuItem } from '../../core/models/action-menu.model';
-import { IsWeightedPipe } from '../../shared/pipes/is-weighted-pipe';
 import { ModalComponent } from '../../shared/components/modal/modal.component';
 import { ClickOutsideDirective } from '../../shared/directives/click-outside.directive';
 import { ExerciseDetailComponent } from '../exercise-library/exercise-detail';
 import { ScheduledRoutineDay, TrainingProgram } from '../../core/models/training-program.model';
 import { TrainingProgramService } from '../../core/services/training-program.service';
-import { PressDirective } from '../../shared/directives/press.directive';
 import { IconComponent } from '../../shared/components/icon/icon.component';
-import { TooltipDirective } from '../../shared/directives/tooltip.directive';
 import { ExerciseSelectionModalComponent } from '../../shared/components/exercise-selection-modal/exercise-selection-modal.component';
 import { MillisecondsDatePipe } from '../../shared/pipes/milliseconds-date.pipe';
 import { AppSettingsService } from '../../core/services/app-settings.service';
@@ -58,7 +54,7 @@ type BuilderMode = 'routineBuilder' | 'manualLogEntry';
     FormsModule, DragDropModule, WeightUnitPipe, TitleCasePipe,
     LongPressDragDirective, AutoGrowDirective, ActionMenuComponent,
     ModalComponent, ClickOutsideDirective,
-    ExerciseDetailComponent, IconComponent, TooltipDirective, ExerciseSelectionModalComponent, MillisecondsDatePipe, FabMenuComponent, TranslateModule, NgLetDirective,
+    ExerciseDetailComponent, IconComponent, ExerciseSelectionModalComponent, MillisecondsDatePipe, FabMenuComponent, TranslateModule, NgLetDirective,
     GenerateWorkoutModalComponent],
   templateUrl: './workout-builder.html',
   styleUrl: './workout-builder.scss',
@@ -77,12 +73,12 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   protected toastService = inject(ToastService);
   private trackingService = inject(TrackingService);
   private cdr = inject(ChangeDetectorRef);
+  private ngZone = inject(NgZone);
   private platformId = inject(PLATFORM_ID);
   private appSettingsService = inject(AppSettingsService);
   private translate = inject(TranslateService);
   private workoutGeneratorService = inject(WorkoutGeneratorService);
   private subscriptionService = inject(SubscriptionService);
-
 
   @ViewChildren('setRepsInput') setRepsInputs!: QueryList<ElementRef<HTMLInputElement>>;
   @ViewChildren('expandedSetElement') expandedSetElements!: QueryList<ElementRef<HTMLDivElement>>;
@@ -182,6 +178,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     );
   });
   selectedExerciseIndicesForSuperset = signal<number[]>([]);
+  selectedExerciseIndicesForMultipleRemoval = signal<number[]>([]);
 
   private sanitizer = inject(DomSanitizer);
   public sanitizedDescription: SafeHtml = '';
@@ -1551,6 +1548,52 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
   get f() { return this.builderForm.controls; } // Use builderForm
 
+  toggleExerciseSelection(exIndex: number, event: Event): void {
+    if (this.isViewMode) return;
+    event?.stopPropagation();
+    this.toggleExerciseSelectionForMultipleRemoval(exIndex, event);
+    this.toggleExerciseSelectionForSuperset(exIndex, event);
+  }
+
+  toggleExerciseSelectionForMultipleRemoval(index: number, event: Event): void {
+    if (this.isViewMode) return;
+    event?.stopPropagation();
+    const checkbox = event.target as HTMLInputElement;
+    this.selectedExerciseIndicesForMultipleRemoval.update(currentSelected => {
+      let newSelected: number[];
+      if (checkbox.checked) {
+        newSelected = currentSelected.includes(index) ? currentSelected : [...currentSelected, index];
+      } else {
+        newSelected = currentSelected.filter(i => i !== index);
+      }
+      return newSelected.sort((a, b) => a - b);
+    });
+  }
+
+  removeSelectedExercises(): void {
+    if (this.isViewMode) return;
+    const selectedIndices = this.selectedExerciseIndicesForMultipleRemoval().sort((a, b) => b - a);
+    selectedIndices.forEach(index => {
+      if (index >= 0 && index < this.exercisesFormArray.length) {
+        const exerciseControl = this.exercisesFormArray.at(index);
+        const supersetId = exerciseControl.get('supersetId')?.value;
+        if (supersetId) {
+          // If part of a superset, remove all exercises in that superset
+          this.exercisesFormArray.controls = this.exercisesFormArray.controls.filter(ctrl => {
+            const fg = ctrl as FormGroup;
+            return fg.get('supersetId')?.value !== supersetId;
+          });
+        } else {
+          this.exercisesFormArray.removeAt(index);
+        }
+      }
+    });
+    this.selectedExerciseIndicesForMultipleRemoval.set([]);
+    this.selectedExerciseIndicesForSuperset.set([]);
+    this.recalculateSupersetOrders();
+    this.expandedSetPath.set(null); // Collapse any expanded set after removal
+  }
+
   toggleExerciseSelectionForSuperset(index: number, event: Event): void {
     if (this.isViewMode) return;
     event?.stopPropagation();
@@ -1566,17 +1609,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     });
   }
 
-  canGroupSelectedExercises(): boolean {
-    const selectedIndices = this.selectedExerciseIndicesForSuperset();
-    if (selectedIndices.length < 2) return false;
-    const firstSelectedSupersetId = (this.exercisesFormArray.at(selectedIndices[0]) as FormGroup).get('supersetId')?.value;
-    for (let i = 1; i < selectedIndices.length; i++) {
-      const currentIndex = selectedIndices[i];
-      const currentSupersetId = (this.exercisesFormArray.at(currentIndex) as FormGroup).get('supersetId')?.value;
-      if (firstSelectedSupersetId && currentSupersetId && firstSelectedSupersetId !== currentSupersetId) return false;
-      if (!firstSelectedSupersetId && currentSupersetId) return false;
-    }
-    return true;
+  canRemoveSelectedExercises(): boolean {
+    return this.selectedExerciseIndicesForMultipleRemoval().length > 0 && !this.isViewMode;
   }
 
   canUngroupSelectedExercises(): boolean {
@@ -2167,8 +2201,11 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
   getExerciseCardClass(exerciseControl: AbstractControl, exIndex: number): { [klass: string]: boolean } {
     // --- 1. Determine State ---
+    const supersetId = exerciseControl.get('supersetId')?.value;
     const isEmom = exerciseControl.get('supersetType')?.value === 'emom';
-    const isStandardSuperset = !!exerciseControl.get('supersetId')?.value && !isEmom;
+    const isStandardSuperset = !!supersetId && !isEmom; // Explicitly not EMOM
+    const isSupersetMember = !!supersetId; // Is it part of ANY group?
+
     const isSelected = this.selectedExerciseIndicesForSuperset().includes(exIndex);
     const sets = exerciseControl.get('sets')?.value || [];
     const isWarmup = sets.length > 0 && sets.every((set: any) => set.type === 'warmup');
@@ -2184,28 +2221,25 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
     // --- 2. Apply Logic Based on Exercise Type ---
     if (isEmom) {
-
-
       classes = {
-        'border-teal-500 dark:border-teal-400': true,
+        'border-teal-500 dark:border-teal-400 border-r-2 border-l-2': true,
         'bg-teal-50 dark:bg-teal-900/10': !isSelected,
         'bg-teal-100 dark:bg-teal-800/50': isSelected,
         'rounded-md border-4': isSingle,
         'mb-2': isSingle || isLast,
         'mt-4': isSingle || isFirst,
-        'rounded-t-md border-x-4 border-t-4': isFirst && !isSingle,
-        'border-x-4': true,
-        'rounded-b-md border-b-4': isLast || isSingle,
+        'rounded-t-md border-x-2 border-t-2': isFirst && !isSingle,
+        'border-x-2': !isFirst, // <-- Always apply for non-master EMOM exercises
+        'rounded-b-md border-b-2': isLast || isSingle,
       };
-
     } else if (isStandardSuperset) {
       classes = {
-        'border-primary': true,
+        'border-primary border-r-2 border-l-2': true,
         'bg-orange-100 dark:bg-orange-900/10': !isSelected,
         'bg-orange-200 dark:bg-orange-800/50': isSelected,
-        'rounded-t-md border-x-4 border-t-4 mt-4': isFirst,
-        'border-x-4': true,
-        'rounded-b-md border-b-4 mb-2': isLast,
+        'rounded-t-md border-x-2 border-t-2 mt-2': isFirst,
+        'border-x-2': !isFirst, // <-- ALWAYS apply for non-master superset exercises
+        'rounded-b-md border-b-2 mb-2': isLast,
       };
 
     } else {
@@ -2328,6 +2362,10 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     } else {
       return 0;
     }
+  }
+
+  getTotalExerciseCount(): number {
+    return this.exercisesFormArray.length;
   }
 
   //   /**
@@ -3006,15 +3044,15 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     const supersetId = clickedExercise.get('supersetId')?.value;
 
     let masterIndexToExpand = exIndex;
-    if (supersetId) {
-      const firstIndex = this.exercisesFormArray.controls.findIndex(c =>
-        (c as FormGroup).get('supersetId')?.value === supersetId &&
-        (c as FormGroup).get('supersetOrder')?.value === 0
-      );
-      if (firstIndex !== -1) {
-        masterIndexToExpand = firstIndex;
-      }
-    }
+    // if (supersetId) {
+    //   const firstIndex = this.exercisesFormArray.controls.findIndex(c =>
+    //     (c as FormGroup).get('supersetId')?.value === supersetId &&
+    //     (c as FormGroup).get('supersetOrder')?.value === 0
+    //   );
+    //   if (firstIndex !== -1) {
+    //     masterIndexToExpand = firstIndex;
+    //   }
+    // }
 
     const expandedExIndex = this.expandedExercisePath();
     if (expandedExIndex?.exerciseIndex === masterIndexToExpand) {
@@ -3162,12 +3200,18 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       emomTime = null; // Clear EMOM time when switching back to standard
     }
 
-    // Sync the properties across all exercises in the superset group
-    this.syncSupersetProperties(supersetId, newType, emomTime);
-    this.toastService.success(`Superset converted to ${newType.toUpperCase()}`, 3000, "Type Changed");
+    this.ngZone.run(() => {
+      this.syncSupersetProperties(supersetId, newType, emomTime);
 
-    this.expandedSetPath.set(null);
-    this.toggleSetExpansion(this.getExerciseIndexByControl(exerciseControl), 0);
+      this.toastService.success(`Superset converted to ${newType.toUpperCase()}`, 3000, "Type Changed");
+
+      // We still need to manage the expansion state
+      this.expandedSetPath.set(null);
+      this.toggleSetExpansion(this.getExerciseIndexByControl(exerciseControl), 0);
+
+      // An extra detectChanges here can help ensure everything is synchronized
+      this.cdr.detectChanges();
+    });
   }
 
   private getExerciseIndexByControl(exerciseControl: AbstractControl): number {
@@ -3182,9 +3226,14 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         exerciseFg.patchValue({
           supersetType: type,
           emomTimeSeconds: emomTime
-        }, { emitEvent: false }); // Use emitEvent: false to prevent circular updates
+        }, { emitEvent: false }); // The silent update remains
       }
     });
+
+    // --- THIS IS THE FIX ---
+    // After all silent updates are complete, we manually trigger change detection.
+    // This forces Angular to re-evaluate the [ngClass] bindings for all cards.
+    this.cdr.detectChanges();
   }
 
   /**
@@ -3220,13 +3269,16 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   public isLastInSuperset(index: number): boolean {
     const currentEx = this.exercisesFormArray.at(index) as FormGroup;
     const supersetId = currentEx?.get('supersetId')?.value;
-    const supersetSize = currentEx?.get('sets')?.value?.length;
+    const supersetSize = this.exercisesFormArray.controls.filter(c =>
+      (c as FormGroup).get('supersetId')?.value === supersetId
+    ).length;
+    const supersetOrder = currentEx?.get('supersetOrder')?.value;
 
-    if (!supersetId || supersetSize == null) {
+    if (!supersetId || supersetSize == null || supersetOrder == null) {
       return false;
     }
     // It's the last if its order is one less than the total size
-    return currentEx.get('supersetOrder')?.value === supersetSize - 1;
+    return supersetOrder === (supersetSize - 1);
   }
 
   /**
@@ -3723,11 +3775,11 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         //   iconName: 'trash',
         // });
         items.push({
-        label: 'Ungroup',
-        buttonClass: 'bg-purple-500 text-white hover:bg-purple-700',
-        actionKey: 'ungroup',
-        iconName: 'ungroup',
-      });
+          label: 'Ungroup',
+          buttonClass: 'bg-purple-500 text-white hover:bg-purple-700',
+          actionKey: 'ungroup',
+          iconName: 'ungroup',
+        });
       }
     } else {
       items.push({
@@ -4244,12 +4296,16 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     // Start with a base count for the static columns: Set # and Actions
     let columnCount = 2;
 
+
+
     if (visibleCols['reps']) columnCount++;
     if (visibleCols['weight']) columnCount++;
     if (visibleCols['distance']) columnCount++;
     if (visibleCols['duration']) columnCount++;
     // The "Rest/Notes" column is always present, so we don't need to check for it.
-    columnCount++; // Add one for the Rest/Notes column
+    if (!this.isEmomExerciseByIndex(exIndex)) {
+      columnCount + 2; // Add one for the Rest/Notes column
+    }
 
     // Use a failsafe in case something goes wrong
     const finalCount = Math.max(2, columnCount);
@@ -4469,5 +4525,30 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
    */
   private openWorkoutGenerator(): void {
     this.isGeneratorModalOpen.set(true);
+  }
+
+  /**
+   * Checks if the superset group that a given exercise belongs to is currently expanded.
+   * This is the key to hiding all compact views in an expanded superset.
+   * @param exIndex The index of the exercise to check.
+   */
+  public isPartOfExpandedSuperset(exIndex: number): boolean {
+    const exerciseControl = this.exercisesFormArray.at(exIndex) as FormGroup;
+    const supersetId = exerciseControl?.get('supersetId')?.value;
+
+    // If it's not in a superset, this check is not applicable.
+    if (!supersetId) {
+      return false;
+    }
+
+    // Find the index of the first exercise (the "master" card) in this superset group.
+    const firstInGroupIndex = this.exercisesFormArray.controls.findIndex(ctrl =>
+      (ctrl as FormGroup).get('supersetId')?.value === supersetId &&
+      (ctrl as FormGroup).get('supersetOrder')?.value === 0
+    );
+
+    // The group is expanded if the globally expanded exercise path points to the master card of this group.
+    const expandedPath = this.expandedExercisePath();
+    return expandedPath?.exerciseIndex === firstInGroupIndex;
   }
 }
