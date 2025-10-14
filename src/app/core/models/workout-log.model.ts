@@ -40,6 +40,7 @@ export interface LoggedSet {
   type: 'standard' | 'warmup' | 'amrap' | 'dropset' | 'failure' | 'myorep' | 'restpause' | 'custom' | 'superset' | string; // More flexible
   rpe?: number; // Optional: User's perceived exertion for this set (RPE 1-10)
   workoutLogId?: string; // ID of the WorkoutLog this set belongs to
+  fieldOrder?: string[]; // Order of fields as per user preference
 }
 
 // Describes a group of sets performed together as a "round" (e.g., in a circuit or superset)

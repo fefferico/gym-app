@@ -74,7 +74,7 @@ export class TooltipDirective implements OnDestroy {
     }, 20); // Small delay to ensure the browser registers the initial state
   }
 
-  private removeTooltip(): void {
+  public removeTooltip(): void {
     if (!this.tooltipElement) {
       return;
     }

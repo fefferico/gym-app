@@ -373,8 +373,7 @@
                                                         *ngIf="exerciseControl.get('exerciseId')?.value" width="20"
                                                         height="20" viewBox="0 0 20 20"
                                                         xmlns="http://www.w3.org/2000/svg"
-                                                        (click)="openModal(exerciseControl.value, $event)"
-                                                        [appTooltip]="exerciseInfoTooltipString"></app-icon>
+                                                        (click)="openModal(exerciseControl.value, $event)"></app-icon>
                                                 </div>
                                                 <div class="text-md text-gray-500 dark:text-gray-400 truncate">
                                                     <ng-container
@@ -466,8 +465,7 @@
                                                     class="h-4 w-4 text-gray-400 dark:text-gray-300 cursor-help"
                                                     *ngIf="exerciseControl.get('exerciseId')?.value" width="20"
                                                     height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"
-                                                    (click)="openModal(exerciseControl.value, $event)"
-                                                    [appTooltip]="exerciseInfoTooltipString"></app-icon>
+                                                    (click)="openModal(exerciseControl.value, $event)"></app-icon>
                                             </div>
                                         </div>
 
@@ -545,15 +543,16 @@
 
                                     <!-- Exercise Notes -->
                                     <div *ngIf="expandedExerciseNotes() === exIndex">
-    <label [for]="'exerciseNotes-' + exIndex"
-        class="block text-s font-medium text-gray-600 dark:text-gray-400 mb-0.5">
-        {{ (mode === 'routineBuilder' ? 'workoutBuilder.exercise.notesLabel' : 'workoutBuilder.exercise.loggedNotesLabel') | translate }}
-    </label>
-    <textarea [id]="'exerciseNotes-' + exIndex" formControlName="notes" rows="1"
-        appAutoGrow
-        class="mt-0.5 mb-2 block w-full p-1.5 text-sm border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200"
-        [readonly]="isViewMode"></textarea>
-</div>
+                                        <label [for]="'exerciseNotes-' + exIndex"
+                                            class="block text-s font-medium text-gray-600 dark:text-gray-400 mb-0.5">
+                                            {{ (mode === 'routineBuilder' ? 'workoutBuilder.exercise.notesLabel' :
+                                            'workoutBuilder.exercise.loggedNotesLabel') | translate }}
+                                        </label>
+                                        <textarea [id]="'exerciseNotes-' + exIndex" formControlName="notes" rows="1"
+                                            appAutoGrow
+                                            class="mt-0.5 mb-2 block w-full p-1.5 text-sm border-gray-300 dark:border-gray-500 rounded-md shadow-sm dark:bg-gray-600 dark:text-gray-200"
+                                            [readonly]="isViewMode"></textarea>
+                                    </div>
 
                                     <!-- Sets Section (Headers, Collapsed Sets, Expanded Set Form) -->
                                     <!-- EXPANDED Only VIEW MODE - START -->
@@ -726,8 +725,7 @@
                                                         *ngLet="getVisibleColumnsForExercise(exIndex) as visibleCols">
                                                         <div (click)="toggleSetExpansion(exIndex, setIndex, $event)"
                                                             class="flex items-center gap-x-3 py-1.5 px-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800/60 cursor-pointer border dark:border-gray-700 dark:text-white"
-                                                            [ngClass]="[getGridClassForExercise(exIndex)]"
-                                                            [ngClass]="{ 'bg-gray-50 dark:bg-gray-700/50': setControl.get('type')?.value === 'standard',
+                                                            [ngClass]="[getGridClassForExercise(exIndex)]" [ngClass]="{ 'bg-gray-50 dark:bg-gray-700/50': setControl.get('type')?.value === 'standard',
                                                                  'bg-blue-50 dark:bg-blue-700/50': setControl.get('type')?.value === 'warmup' 
                                                              }">
 
@@ -853,307 +851,43 @@
                                                                     [value]="typeOpt.value">{{ typeOpt.label }}</option>
                                                             </select>
                                                         </div>
-                                                        <ng-container
-                                                            *ngLet="getFieldsForSet(exIndex, setIndex).visible as visibleFields">
+                                                        <!-- =================== START OF DYNAMIC FIELD RENDERING =================== -->
+<!-- Get the fieldOrder array from the form control -->
+<ng-container *ngIf="setControl.get('fieldOrder')?.value as fieldOrder">
+    
+    <!-- Loop through the fieldOrder array which dictates the rendering order -->
+    <ng-container *ngFor="let field of fieldOrder">
+        <!-- Use ng-container with ngSwitch to render the correct template for each field -->
+        <ng-container [ngSwitch]="field">
+            <div *ngSwitchCase="'reps'">
+                <ng-container [ngTemplateOutlet]="repsInputTemplate" [ngTemplateOutletContext]="{ setControl: setControl, exIndex: exIndex, setIndex: setIndex }"></ng-container>
+            </div>
+            <div *ngSwitchCase="'weight'">
+                <ng-container [ngTemplateOutlet]="weightInputTemplate" [ngTemplateOutletContext]="{ setControl: setControl, exIndex: exIndex, setIndex: setIndex }"></ng-container>
+            </div>
+            <div *ngSwitchCase="'distance'">
+                <ng-container [ngTemplateOutlet]="distanceInputTemplate" [ngTemplateOutletContext]="{ setControl: setControl, exIndex: exIndex, setIndex: setIndex }"></ng-container>
+            </div>
+            <div *ngSwitchCase="'duration'">
+                <ng-container *ngIf="!isEmomExercise(exerciseControl)">
+                     <ng-container [ngTemplateOutlet]="durationInputTemplate" [ngTemplateOutletContext]="{ setControl: setControl, exIndex: exIndex, setIndex: setIndex }"></ng-container>
+                </ng-container>
+            </div>
+            <div *ngSwitchCase="'tempo'">
+                <ng-container [ngTemplateOutlet]="tempoInputTemplate" [ngTemplateOutletContext]="{ setControl: setControl, exIndex: exIndex, setIndex: setIndex }"></ng-container>
+            </div>
+        </ng-container>
+    </ng-container>
 
-                                                            <!-- Reps Input: Conditional for ranges vs single value -->
-                                                            <div
-                                                                *ngIf="!isExerciseCardioOnlyCtrl(exerciseControl) && visibleFields.includes('reps')">
-                                                                <label [for]="'reps-exp-' + exIndex + '-' + setIndex"
-                                                                    class="flex items-center justify-between text-s font-medium text-gray-600 dark:text-gray-400">
-                                                                    <span>{{ 'workoutBuilder.set.reps' | translate }} {{
-                                                                        mode === 'manualLogEntry' ? ('(Achieved)') :
-                                                                        ''}}</span>
-                                                                    <!-- SWITCH BUTTON -->
-                                                                    <button *ngIf="mode === 'routineBuilder'"
-                                                                        type="button"
-                                                                        (click)="toggleRepsMode(setControl,$event)"
-                                                                        [title]="'workoutBuilder.set.toggleRange' | translate"
-                                                                        class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold p-0.5 rounded">
-                                                                        {{ (isRangeMode(setControl, 'reps') ?
-                                                                        'workoutBuilder.set.useSingle' :
-                                                                        'workoutBuilder.set.useRange') | translate }}
-                                                                    </button>
-                                                                </label>
-                                                                <!-- ROUTINE BUILDER - REPS -->
-                                                                <ng-container *ngIf="mode === 'routineBuilder'">
-                                                                    <!-- Range Inputs -->
-                                                                    <div *ngIf="isRangeMode(setControl, 'reps')"
-                                                                        class="mt-0.5">
-                                                                        <div class="flex items-center space-x-1.5">
-                                                                            <input type="number"
-                                                                                formControlName="targetRepsMin" min="0"
-                                                                                placeholder="Min"
-                                                                                [readonly]="isViewMode"
-                                                                                class="w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
-                                                                            <span
-                                                                                class="text-gray-500 dark:text-gray-400 font-bold">-</span>
-                                                                            <input type="number"
-                                                                                formControlName="targetRepsMax" min="0"
-                                                                                placeholder="Max"
-                                                                                [readonly]="isViewMode"
-                                                                                class="w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed"
-                                                                                [ngClass]="{'border-red-500 dark:border-red-400': setControl.get('targetRepsMax')?.hasError('min')}">
-                                                                        </div>
-                                                                        <div *ngIf="setControl.get('targetRepsMax')?.hasError('min') && setControl.get('targetRepsMax')?.touched"
-                                                                            class="text-red-500 dark:text-red-400 text-xs mt-1">
-                                                                            {{ 'workoutBuilder.set.rangeError' |
-                                                                            translate
-                                                                            }}
-                                                                        </div>
-                                                                    </div>
-                                                                    <!-- Single Value Input -->
-                                                                    <input *ngIf="!isRangeMode(setControl, 'reps')"
-                                                                        type="number" formControlName="targetReps"
-                                                                        min="0"
-                                                                        [placeholder]="'workoutBuilder.set.repsPlaceholder' | translate"
-                                                                        [readonly]="isViewMode"
-                                                                        class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
-                                                                </ng-container>
-                                                                <!-- LOG ENTRY - SINGLE REPS ACHIEVED -->
-                                                                <input *ngIf="mode === 'manualLogEntry'" type="number"
-                                                                    [id]="'reps-exp-' + exIndex + '-' + setIndex"
-                                                                    formControlName="repsAchieved"
-                                                                    [placeholder]="'workoutBuilder.set.repsPlaceholder' | translate"
-                                                                    [readonly]="isViewMode"
-                                                                    class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
-                                                            </div>
-
-                                                            <!-- Weight Input -->
-                                                            <div *ngIf="visibleFields.includes('weight')">
-                                                                <label [for]="'weight-exp-' + exIndex + '-' + setIndex"
-                                                                    class="flex items-center justify-between text-s font-medium text-gray-600 dark:text-gray-400">
-                                                                    <span>{{ 'workoutBuilder.set.weight' | translate }}
-                                                                        {{
-                                                                        mode === 'manualLogEntry' ? '(Used)' :
-                                                                        ''}}
-                                                                        ({{unitService.getWeightUnitSuffix()}})</span>
-                                                                    <!-- SWITCH BUTTON -->
-                                                                    <button *ngIf="mode === 'routineBuilder'"
-                                                                        type="button"
-                                                                        (click)="toggleWeightMode(setControl,$event)"
-                                                                        [title]="'workoutBuilder.set.toggleRange' | translate"
-                                                                        class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold p-0.5 rounded">
-                                                                        {{ (isRangeMode(setControl, 'weight') ?
-                                                                        'workoutBuilder.set.useSingle' :
-                                                                        'workoutBuilder.set.useRange') | translate }}
-                                                                    </button>
-                                                                </label>
-                                                                <!-- ROUTINE BUILDER - WEIGHT -->
-                                                                <ng-container *ngIf="mode === 'routineBuilder'">
-                                                                    <!-- Range Inputs -->
-                                                                    <div *ngIf="isRangeMode(setControl, 'weight')"
-                                                                        class="mt-0.5">
-                                                                        <div class="flex items-center space-x-1.5">
-                                                                            <input type="number"
-                                                                                formControlName="targetWeightMin"
-                                                                                min="0" placeholder="Min"
-                                                                                [readonly]="isViewMode"
-                                                                                class="w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
-                                                                            <span
-                                                                                class="text-gray-500 dark:text-gray-400 font-bold">-</span>
-                                                                            <input type="number"
-                                                                                formControlName="targetWeightMax"
-                                                                                min="0" placeholder="Max"
-                                                                                [readonly]="isViewMode"
-                                                                                class="w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed"
-                                                                                [ngClass]="{'border-red-500 dark:border-red-400': setControl.get('targetWeightMax')?.hasError('min')}">
-                                                                        </div>
-                                                                        <div *ngIf="setControl.get('targetWeightMax')?.hasError('min') && setControl.get('targetWeightMax')?.touched"
-                                                                            class="text-red-500 dark:text-red-400 text-xs mt-1">
-                                                                            {{ 'workoutBuilder.set.rangeError' |
-                                                                            translate
-                                                                            }}
-                                                                        </div>
-                                                                    </div>
-                                                                    <!-- Single Value Input -->
-                                                                    <input *ngIf="!isRangeMode(setControl, 'weight')"
-                                                                        type="number" formControlName="targetWeight"
-                                                                        min="0"
-                                                                        [placeholder]="'workoutBuilder.set.weightPlaceholder' | translate"
-                                                                        [readonly]="isViewMode"
-                                                                        class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
-                                                                </ng-container>
-                                                                <!-- LOG ENTRY - SINGLE WEIGHT ACHIEVED -->
-                                                                <input *ngIf="mode === 'manualLogEntry'" type="number"
-                                                                    [id]="'weight-exp-' + exIndex + '-' + setIndex"
-                                                                    formControlName="weightUsed"
-                                                                    [placeholder]="'workoutBuilder.set.weightPlaceholder' | translate"
-                                                                    [readonly]="isViewMode"
-                                                                    class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
-                                                            </div>
-
-                                                            <div *ngIf="visibleFields.includes('distance')">
-                                                                <label
-                                                                    [for]="'distance-exp-' + exIndex + '-' + setIndex"
-                                                                    class="flex items-center justify-between text-s font-medium text-gray-600 dark:text-gray-400">
-                                                                    <span>{{ 'workoutBuilder.set.distance' | translate
-                                                                        }}
-                                                                        ({{unitService.getDistanceMeasureUnitSuffix()}})</span>
-                                                                    <button *ngIf="mode === 'routineBuilder'"
-                                                                        type="button"
-                                                                        (click)="toggleDistanceMode(setControl,$event)"
-                                                                        [title]="'workoutBuilder.set.toggleRange' | translate"
-                                                                        class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold p-0.5 rounded">
-                                                                        {{ (isRangeMode(setControl, 'distance') ?
-                                                                        'workoutBuilder.set.useSingle' :
-                                                                        'workoutBuilder.set.useRange') | translate }}
-                                                                    </button>
-                                                                </label>
-                                                                <!-- ROUTINE BUILDER - DISTANCE -->
-                                                                <ng-container *ngIf="mode === 'routineBuilder'">
-                                                                    <div *ngIf="isRangeMode(setControl, 'distance')"
-                                                                        class="mt-0.5">
-                                                                        <div class="flex items-center space-x-1.5">
-                                                                            <input type="number"
-                                                                                formControlName="targetDistanceMin"
-                                                                                min="0" placeholder="Min"
-                                                                                [readonly]="isViewMode"
-                                                                                class="w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
-                                                                            <span
-                                                                                class="text-gray-500 dark:text-gray-400 font-bold">-</span>
-                                                                            <input type="number"
-                                                                                formControlName="targetDistanceMax"
-                                                                                min="0" placeholder="Max"
-                                                                                [readonly]="isViewMode"
-                                                                                class="w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
-                                                                        </div>
-                                                                    </div>
-                                                                    <input *ngIf="!isRangeMode(setControl, 'distance')"
-                                                                        type="number" formControlName="targetDistance"
-                                                                        min="0"
-                                                                        [placeholder]="'workoutBuilder.set.distancePlaceholder' | translate"
-                                                                        [readonly]="isViewMode"
-                                                                        class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
-                                                                </ng-container>
-                                                                <!-- LOG ENTRY - SINGLE DISTANCE ACHIEVED -->
-                                                                <input *ngIf="mode === 'manualLogEntry'" type="number"
-                                                                    [id]="'distance-exp-' + exIndex + '-' + setIndex"
-                                                                    formControlName="distanceAchieved"
-                                                                    [placeholder]="'workoutBuilder.set.distancePlaceholder' | translate"
-                                                                    [readonly]="isViewMode"
-                                                                    class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
-                                                            </div>
-
-                                                            <!-- Duration Input: Conditional for ranges vs single value -->
-                                                            <!-- Duration Input: VISIBLE only if NOT EMOM -->
-                                                            <div
-                                                                *ngIf="!isEmomExercise(exerciseControl) && visibleFields.includes('duration')">
-                                                                <label
-                                                                    [for]="'duration-exp-' + exIndex + '-' + setIndex"
-                                                                    class="flex items-center justify-between text-s font-medium text-gray-600 dark:text-gray-400">
-                                                                    <span>{{ 'workoutBuilder.set.time' | translate }}
-                                                                        (s) {{
-                                                                        mode === 'manualLogEntry' ?
-                                                                        ('(Performed)')
-                                                                        : ''}}</span>
-                                                                    <!-- SWITCH BUTTON -->
-                                                                    <button *ngIf="mode === 'routineBuilder'"
-                                                                        type="button"
-                                                                        (click)="toggleDurationMode(setControl,$event)"
-                                                                        [title]="'workoutBuilder.set.toggleRange' | translate"
-                                                                        class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold p-0.5 rounded">
-                                                                        {{ (isRangeMode(setControl, 'duration') ?
-                                                                        'workoutBuilder.set.useSingle' :
-                                                                        'workoutBuilder.set.useRange') | translate }}
-                                                                    </button>
-                                                                </label>
-                                                                <!-- ROUTINE BUILDER - DURATION -->
-                                                                <ng-container *ngIf="mode === 'routineBuilder'">
-                                                                    <!-- Range Inputs -->
-                                                                    <div *ngIf="isRangeMode(setControl, 'duration')"
-                                                                        class="mt-0.5">
-                                                                        <div class="flex items-center space-x-1.5">
-                                                                            <input type="number"
-                                                                                formControlName="targetDurationMin"
-                                                                                min="0" placeholder="Min"
-                                                                                [readonly]="isViewMode"
-                                                                                class="w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
-                                                                            <span
-                                                                                class="text-gray-500 dark:text-gray-400 font-bold">-</span>
-                                                                            <input type="number"
-                                                                                formControlName="targetDurationMax"
-                                                                                min="0" placeholder="Max"
-                                                                                [readonly]="isViewMode"
-                                                                                class="w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed"
-                                                                                [ngClass]="{'border-red-500 dark:border-red-400': setControl.get('targetDurationMax')?.hasError('min')}">
-                                                                        </div>
-                                                                        <div *ngIf="setControl.get('targetDurationMax')?.hasError('min') && setControl.get('targetDurationMax')?.touched"
-                                                                            class="text-red-500 dark:text-red-400 text-xs mt-1">
-                                                                            {{ 'workoutBuilder.set.rangeError' |
-                                                                            translate
-                                                                            }}
-                                                                        </div>
-                                                                    </div>
-                                                                    <!-- Single Value Input -->
-                                                                    <input *ngIf="!isRangeMode(setControl, 'duration')"
-                                                                        type="number" formControlName="targetDuration"
-                                                                        min="0"
-                                                                        [placeholder]="'workoutBuilder.set.durationPlaceholder' | translate"
-                                                                        [readonly]="isViewMode"
-                                                                        class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
-                                                                </ng-container>
-                                                                <!-- LOG ENTRY - SINGLE DURATION PERFORMED -->
-                                                                <input *ngIf="mode === 'manualLogEntry'" type="number"
-                                                                    [id]="'duration-exp-' + exIndex + '-' + setIndex"
-                                                                    formControlName="durationPerformed"
-                                                                    [placeholder]="'workoutBuilder.set.durationPlaceholder' | translate"
-                                                                    [readonly]="isViewMode"
-                                                                    class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
-                                                            </div>
-
-                                                            <!-- Other inputs for tempo, rest, notes -->
-                                                            <div *ngIf="visibleFields.includes('tempo')">
-                                                                <label [for]="'tempo-exp-' + exIndex + '-' + setIndex"
-                                                                    class="block text-s font-medium text-gray-600 dark:text-gray-400">{{
-                                                                    'workoutBuilder.set.tempo' | translate }}</label>
-                                                                <input type="text"
-                                                                    [id]="'tempo-exp-' + exIndex + '-' + setIndex"
-                                                                    formControlName="tempo"
-                                                                    [placeholder]="'workoutBuilder.set.tempoPlaceholder' | translate"
-                                                                    [readonly]="isViewMode"
-                                                                    class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
-                                                            </div>
-                                                            <div>
-                                                                <label [for]="'rest-exp-' + exIndex + '-' + setIndex"
-                                                                    class="block text-s font-medium text-gray-600 dark:text-gray-400">{{
-                                                                    'workoutBuilder.set.rest' | translate }}
-                                                                    (s) {{ mode === 'manualLogEntry' ? '(Done)' :
-                                                                    ''}}</label>
-                                                                <input type="number"
-                                                                    [id]="'rest-exp-' + exIndex + '-' + setIndex"
-                                                                    formControlName="restAfterSet"
-                                                                    [placeholder]="'workoutBuilder.set.restPlaceholder' | translate"
-                                                                    [readonly]="isViewMode"
-                                                                    class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
-                                                            </div>
-                                                            <!-- GHOST ADD METRIC BUTTON -->
-                                                            <div *ngIf="getFieldsForSet(exIndex, setIndex).visible.length % 2 !== 1 && getFieldsForSet(exIndex, setIndex).hidden.length > 0"
-                                                                class="flex items-center justify-center h-full">
-                                                                <button
-                                                                    (click)="promptAddField(exIndex, setIndex); $event.stopPropagation()"
-                                                                    class="flex items-center justify-center w-full p-2 h-16 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-md text-gray-400 hover:bg-gray-200/50 dark:hover:bg-gray-700/50 transition-colors">
-                                                                    <app-icon name="plus-circle"
-                                                                        class="h-6 w-6"></app-icon>
-                                                                </button>
-                                                            </div>
-                                                            <div class="col-span-full"
-                                                                *ngIf="(setControl.get('notes')?.value || isEditableMode())">
-                                                                <label
-                                                                    [for]="'setNotes-exp-' + exIndex + '-' + setIndex"
-                                                                    class="block text-s font-medium text-gray-600 dark:text-gray-400">{{
-                                                                    'workoutBuilder.set.notes' | translate }}</label>
-                                                                <input type="text"
-                                                                    [id]="'setNotes-exp-' + exIndex + '-' + setIndex"
-                                                                    formControlName="notes"
-                                                                    [placeholder]="'workoutBuilder.set.notesPlaceholder' | translate"
-                                                                    [readonly]="isViewMode"
-                                                                    class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
-                                                            </div>
-
-                                                            <!-- "Add GHOST Field" Button for 1 or 3 fields -->
-
-                                                        </ng-container>
+    <!-- GHOST BUTTON LOGIC -->
+    <!-- Renders in the next available grid slot if there are fields left to add -->
+    <div *ngIf="fieldOrder.length < 4 && isEditableMode()" class="flex items-center justify-center h-full">
+        <button (click)="promptAddField(exIndex, setIndex); $event.stopPropagation()" class="flex items-center justify-center w-full p-2 h-16 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-md text-gray-400 hover:bg-gray-200/50 dark:hover:bg-gray-700/50 transition-colors">
+            <app-icon name="plus-circle" class="h-6 w-6"></app-icon>
+        </button>
+    </div>
+</ng-container>
+<!-- =================== END OF DYNAMIC FIELD RENDERING =================== -->
 
 
 
@@ -1163,7 +897,7 @@
                                             </div>
                                         </div>
                                         <!-- Col 2: Set +/- SETS Buttons -->
-                                        <div class="flex items-center justify-center pt-2">
+                                        <div *ngIf="!isSuperSet(exIndex)" class="flex items-center justify-center pt-2">
                                             <div
                                                 class="flex w-fit items-center justify-center gap-1 bg-gray-200 dark:bg-gray-900/50 p-1 rounded-full">
                                                 <label
@@ -1310,3 +1044,206 @@
 
 <app-fab-menu [actions]="fabMenuItems" [checkForPausedSession]="false" [scrollToBottomDisabled]="true"
     [scrollToTopDisabled]="true" (actionClicked)="onFabAction($event)"></app-fab-menu>
+
+
+<!-- =================================================================== -->
+<!-- NG-TEMPLATES for Reusable Set Inputs (Place at the end of the file) -->
+<!-- =================================================================== -->
+
+<!-- REPS INPUT TEMPLATE -->
+<ng-template #repsInputTemplate let-setControl="setControl" let-exIndex="exIndex" let-setIndex="setIndex">
+    <div [formGroup]="setControl">
+        <label [for]="'reps-exp-' + exIndex + '-' + setIndex"
+            class="flex items-center justify-between text-s font-medium text-gray-600 dark:text-gray-400">
+            <span>{{ 'workoutBuilder.set.reps' | translate }} {{ mode === 'manualLogEntry' ? ('(Achieved)') :
+                ''}}</span>
+            <button *ngIf="mode === 'routineBuilder'" type="button" (click)="toggleRepsMode(setControl, $event)"
+                [title]="'workoutBuilder.set.toggleRange' | translate"
+                class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold p-0.5 rounded">
+                {{ (isRangeMode(setControl, 'reps') ? 'workoutBuilder.set.useSingle' : 'workoutBuilder.set.useRange') |
+                translate }}
+            </button>
+        </label>
+        <!-- ROUTINE BUILDER - REPS -->
+        <ng-container *ngIf="mode === 'routineBuilder'">
+            <div *ngIf="isRangeMode(setControl, 'reps')" class="mt-0.5">
+                <div class="flex items-center space-x-1.5">
+                    <input type="number" formControlName="targetRepsMin" min="0" placeholder="Min"
+                        [readonly]="isViewMode"
+                        class="w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
+                    <span class="text-gray-500 dark:text-gray-400 font-bold">-</span>
+                    <input type="number" formControlName="targetRepsMax" min="0" placeholder="Max"
+                        [readonly]="isViewMode"
+                        class="w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed"
+                        [ngClass]="{'border-red-500 dark:border-red-400': setControl.get('targetRepsMax')?.hasError('min')}">
+                </div>
+                <div *ngIf="setControl.get('targetRepsMax')?.hasError('min') && setControl.get('targetRepsMax')?.touched"
+                    class="text-red-500 dark:text-red-400 text-xs mt-1">
+                    {{ 'workoutBuilder.set.rangeError' | translate }}
+                </div>
+            </div>
+            <input *ngIf="!isRangeMode(setControl, 'reps')" type="number" formControlName="targetReps" min="0"
+                [placeholder]="'workoutBuilder.set.repsPlaceholder' | translate" [readonly]="isViewMode"
+                class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
+        </ng-container>
+        <!-- LOG ENTRY - SINGLE REPS ACHIEVED -->
+        <input *ngIf="mode === 'manualLogEntry'" type="number" [id]="'reps-exp-' + exIndex + '-' + setIndex"
+            formControlName="repsAchieved" [placeholder]="'workoutBuilder.set.repsPlaceholder' | translate"
+            [readonly]="isViewMode"
+            class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
+    </div>
+</ng-template>
+
+
+<!-- WEIGHT INPUT TEMPLATE -->
+<ng-template #weightInputTemplate let-setControl="setControl" let-exIndex="exIndex" let-setIndex="setIndex">
+    <div [formGroup]="setControl">
+        <label [for]="'weight-exp-' + exIndex + '-' + setIndex"
+            class="flex items-center justify-between text-s font-medium text-gray-600 dark:text-gray-400">
+            <span>{{ 'workoutBuilder.set.weight' | translate }} {{ mode === 'manualLogEntry' ? '(Used)' : ''}}
+                ({{unitService.getWeightUnitSuffix()}})</span>
+            <button *ngIf="mode === 'routineBuilder'" type="button" (click)="toggleWeightMode(setControl, $event)"
+                [title]="'workoutBuilder.set.toggleRange' | translate"
+                class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold p-0.5 rounded">
+                {{ (isRangeMode(setControl, 'weight') ? 'workoutBuilder.set.useSingle' : 'workoutBuilder.set.useRange')
+                |
+                translate }}
+            </button>
+        </label>
+        <!-- ROUTINE BUILDER - WEIGHT -->
+        <ng-container *ngIf="mode === 'routineBuilder'">
+            <div *ngIf="isRangeMode(setControl, 'weight')" class="mt-0.5">
+                <div class="flex items-center space-x-1.5">
+                    <input type="number" formControlName="targetWeightMin" min="0" placeholder="Min"
+                        [readonly]="isViewMode"
+                        class="w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
+                    <span class="text-gray-500 dark:text-gray-400 font-bold">-</span>
+                    <input type="number" formControlName="targetWeightMax" min="0" placeholder="Max"
+                        [readonly]="isViewMode"
+                        class="w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed"
+                        [ngClass]="{'border-red-500 dark:border-red-400': setControl.get('targetWeightMax')?.hasError('min')}">
+                </div>
+                <div *ngIf="setControl.get('targetWeightMax')?.hasError('min') && setControl.get('targetWeightMax')?.touched"
+                    class="text-red-500 dark:text-red-400 text-xs mt-1">
+                    {{ 'workoutBuilder.set.rangeError' | translate }}
+                </div>
+            </div>
+            <input *ngIf="!isRangeMode(setControl, 'weight')" type="number" formControlName="targetWeight" min="0"
+                [placeholder]="'workoutBuilder.set.weightPlaceholder' | translate" [readonly]="isViewMode"
+                class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
+        </ng-container>
+        <!-- LOG ENTRY - SINGLE WEIGHT ACHIEVED -->
+        <input *ngIf="mode === 'manualLogEntry'" type="number" [id]="'weight-exp-' + exIndex + '-' + setIndex"
+            formControlName="weightUsed" [placeholder]="'workoutBuilder.set.weightPlaceholder' | translate"
+            [readonly]="isViewMode"
+            class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
+    </div>
+</ng-template>
+
+
+<!-- DISTANCE INPUT TEMPLATE -->
+<ng-template #distanceInputTemplate let-setControl="setControl" let-exIndex="exIndex" let-setIndex="setIndex">
+    <div [formGroup]="setControl">
+        <label [for]="'distance-exp-' + exIndex + '-' + setIndex"
+            class="flex items-center justify-between text-s font-medium text-gray-600 dark:text-gray-400">
+            <span>{{ 'workoutBuilder.set.distance' | translate }}
+                ({{unitService.getDistanceMeasureUnitSuffix()}})</span>
+            <button *ngIf="mode === 'routineBuilder'" type="button" (click)="toggleDistanceMode(setControl, $event)"
+                [title]="'workoutBuilder.set.toggleRange' | translate"
+                class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold p-0.5 rounded">
+                {{ (isRangeMode(setControl, 'distance') ? 'workoutBuilder.set.useSingle' :
+                'workoutBuilder.set.useRange') |
+                translate }}
+            </button>
+        </label>
+        <!-- ROUTINE BUILDER - DISTANCE -->
+        <ng-container *ngIf="mode === 'routineBuilder'">
+            <div *ngIf="isRangeMode(setControl, 'distance')" class="mt-0.5">
+                <div class="flex items-center space-x-1.5">
+                    <input type="number" formControlName="targetDistanceMin" min="0" placeholder="Min"
+                        [readonly]="isViewMode"
+                        class="w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
+                    <span class="text-gray-500 dark:text-gray-400 font-bold">-</span>
+                    <input type="number" formControlName="targetDistanceMax" min="0" placeholder="Max"
+                        [readonly]="isViewMode"
+                        class="w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
+                </div>
+            </div>
+            <input *ngIf="!isRangeMode(setControl, 'distance')" type="number" formControlName="targetDistance" min="0"
+                [placeholder]="'workoutBuilder.set.distancePlaceholder' | translate" [readonly]="isViewMode"
+                class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
+        </ng-container>
+        <!-- LOG ENTRY - SINGLE DISTANCE ACHIEVED -->
+        <input *ngIf="mode === 'manualLogEntry'" type="number" [id]="'distance-exp-' + exIndex + '-' + setIndex"
+            formControlName="distanceAchieved" [placeholder]="'workoutBuilder.set.distancePlaceholder' | translate"
+            [readonly]="isViewMode"
+            class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
+    </div>
+</ng-template>
+
+
+<!-- DURATION INPUT TEMPLATE -->
+<ng-template #durationInputTemplate let-setControl="setControl" let-exIndex="exIndex" let-setIndex="setIndex">
+    <div [formGroup]="setControl">
+        <label [for]="'duration-exp-' + exIndex + '-' + setIndex"
+            class="flex items-center justify-between text-s font-medium text-gray-600 dark:text-gray-400">
+            <span>{{ 'workoutBuilder.set.time' | translate }} (s) {{ mode === 'manualLogEntry' ? '(Performed)' :
+                ''}}</span>
+            <button *ngIf="mode === 'routineBuilder'" type="button" (click)="toggleDurationMode(setControl, $event)"
+                [title]="'workoutBuilder.set.toggleRange' | translate"
+                class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold p-0.5 rounded">
+                {{ (isRangeMode(setControl, 'duration') ? 'workoutBuilder.set.useSingle' :
+                'workoutBuilder.set.useRange') |
+                translate }}
+            </button>
+        </label>
+        <!-- ROUTINE BUILDER - DURATION -->
+        <ng-container *ngIf="mode === 'routineBuilder'">
+            <div *ngIf="isRangeMode(setControl, 'duration')" class="mt-0.5">
+                <div class="flex items-center space-x-1.5">
+                    <input type="number" formControlName="targetDurationMin" min="0" placeholder="Min"
+                        [readonly]="isViewMode"
+                        class="w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
+                    <span class="text-gray-500 dark:text-gray-400 font-bold">-</span>
+                    <input type="number" formControlName="targetDurationMax" min="0" placeholder="Max"
+                        [readonly]="isViewMode"
+                        class="w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed"
+                        [ngClass]="{'border-red-500 dark:border-red-400': setControl.get('targetDurationMax')?.hasError('min')}">
+                </div>
+                <div *ngIf="setControl.get('targetDurationMax')?.hasError('min') && setControl.get('targetDurationMax')?.touched"
+                    class="text-red-500 dark:text-red-400 text-xs mt-1">
+                    {{ 'workoutBuilder.set.rangeError' | translate }}
+                </div>
+            </div>
+            <input *ngIf="!isRangeMode(setControl, 'duration')" type="number" formControlName="targetDuration" min="0"
+                [placeholder]="'workoutBuilder.set.durationPlaceholder' | translate" [readonly]="isViewMode"
+                class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
+        </ng-container>
+        <!-- LOG ENTRY - SINGLE DURATION PERFORMED -->
+        <input *ngIf="mode === 'manualLogEntry'" type="number" [id]="'duration-exp-' + exIndex + '-' + setIndex"
+            formControlName="durationPerformed" [placeholder]="'workoutBuilder.set.durationPlaceholder' | translate"
+            [readonly]="isViewMode"
+            class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
+    </div>
+</ng-template>
+
+<!-- TEMPO INPUT TEMPLATE -->
+<ng-template #tempoInputTemplate let-setControl="setControl" let-exIndex="exIndex" let-setIndex="setIndex">
+    <div [formGroup]="setControl">
+        <label [for]="'tempo-exp-' + exIndex + '-' + setIndex"
+            class="flex items-center justify-between text-s font-medium text-gray-600 dark:text-gray-400">
+            <span>{{ 'workoutBuilder.set.tempo' | translate }}</span>
+        </label>
+        <!-- ROUTINE BUILDER - TEMPO -->
+        <ng-container *ngIf="mode === 'routineBuilder'">
+            <input type="text" formControlName="targetTempo"
+                [placeholder]="'workoutBuilder.set.tempoPlaceholder' | translate" [readonly]="isViewMode"
+                class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
+        </ng-container>
+        <!-- LOG ENTRY - SINGLE TEMPO -->
+        <input *ngIf="mode === 'manualLogEntry'" type="text" [id]="'tempo-exp-' + exIndex + '-' + setIndex"
+            formControlName="targetTempo" [placeholder]="'workoutBuilder.set.tempoPlaceholder' | translate"
+            [readonly]="isViewMode"
+            class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
+    </div>
+</ng-template>

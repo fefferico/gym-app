@@ -1219,7 +1219,10 @@
     "save_log": "保存记录",
     "save_log_changes": "保存记录更改",
     "start": "开始",
-    "log": "记录"
+    "log": "记录",
+    "undo": "撤销",
+    "redo": "重做",
+    "restore": "恢复原版"
   },
   "logDetail": {
     "title": "个人最佳纪录",

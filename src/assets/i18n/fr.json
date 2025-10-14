@@ -1075,7 +1075,7 @@
       "weightPlaceholder": "Poids",
       "distancePlaceholder": "Distance",
       "durationPlaceholder": "Secs",
-      "tempoPlaceholder": "ex. 2010",
+      "tempoPlaceholder": "ex. 2-0-1-0",
       "restPlaceholder": "Repos",
       "notesPlaceholder": "ex. Bonne forme",
       "collapse": "Réduire la série"
@@ -1219,7 +1219,10 @@
     "save_log": "SAUVEGARDER ENREGISTREMENT",
     "save_log_changes": "SAUVEGARDER LES MODIFICATIONS",
     "start": "COMMENCER",
-    "log": "ENREGISTRER"
+    "log": "ENREGISTRER",
+    "undo": "Annuler",
+    "redo": "Rétablir",
+    "restore": "Restaurer l'Original"
   },
   "logDetail": {
     "title": "Records Personnels",

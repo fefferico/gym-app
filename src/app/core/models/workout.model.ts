@@ -5,7 +5,7 @@ import { LastPerformanceSummary, LoggedSet, LoggedWorkoutExercise } from "./work
 
 export interface ExerciseTargetSetParams {
   id: string;
-  tempo?: string;
+  targetTempo?: string;
   restAfterSet: number; // For the set *within* an exercise. For supersets, this might be 0 for intermediate exercises.
   notes?: string;
   type: 'standard' | 'warmup' | 'amrap' | 'dropset' | 'failure' | 'myorep' | 'restpause' | 'custom' | 'superset' | 'tabata' | string; // More flexible
@@ -29,6 +29,7 @@ export interface ExerciseTargetSetParams {
   targetRepsMax?: number | null;
   dropToWeight?: number | null; // For 'dropset'
   amrapTimeLimit?: number | null; // For AMRAP if it's time-bound rather than rep-bound
+  fieldOrder?: string[];
 }
 
 export interface ExerciseCurrentExecutionSetParams {

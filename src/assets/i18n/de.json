@@ -1075,7 +1075,7 @@
             "weightPlaceholder": "Gewicht",
             "distancePlaceholder": "Distanz",
             "durationPlaceholder": "Sek",
-            "tempoPlaceholder": "z.B. 2010",
+            "tempoPlaceholder": "z.B. 2-0-1-0",
             "restPlaceholder": "Pause",
             "notesPlaceholder": "z.B. Gute Form",
             "collapse": "Satz einklappen"
@@ -1220,7 +1220,10 @@
         "save_log": "PROTOKOLL SPEICHERN",
         "save_log_changes": "PROTOKOLLÄNDERUNGEN SPEICHERN",
         "start": "START",
-        "log": "PROTOKOLLIEREN"
+        "log": "PROTOKOLLIEREN",
+        "undo": "Rückgängig",
+    "redo": "Wiederholen",
+    "restore": "Original Wiederherstellen"
     },
     "logDetail": {
         "title": "Persönliche Bestleistungen",

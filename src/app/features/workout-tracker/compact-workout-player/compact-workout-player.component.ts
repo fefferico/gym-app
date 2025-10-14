@@ -2686,7 +2686,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
             targetReps: loggedSet.repsAchieved, // Corrected mapping
             targetWeight: loggedSet.weightUsed, // Corrected mapping
             targetDuration: loggedSet.durationPerformed, // Corrected mapping
-            tempo: originalPlannedSet?.tempo || '1',
+            tempo: originalPlannedSet?.targetTempo || '1',
             restAfterSet: originalPlannedSet?.restAfterSet || 60,
             notes: loggedSet.notes,
             type: loggedSet.type as any,

@@ -3,7 +3,7 @@ import { CommonModule, DecimalPipe, isPlatformBrowser, TitleCasePipe } from '@an
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray, AbstractControl, FormsModule, FormControl, ValidatorFn, ValidationErrors } from '@angular/forms';
 import { Subscription, of, firstValueFrom, Observable, from } from 'rxjs';
-import { switchMap, tap, take, distinctUntilChanged, map, mergeMap, startWith, debounceTime, filter, mergeAll } from 'rxjs/operators';
+import { switchMap, tap, take, distinctUntilChanged, map, mergeMap, startWith, debounceTime, filter, mergeAll, pairwise } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
 import { format, parseISO, isValid as isValidDate, set } from 'date-fns';
 
@@ -90,7 +90,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   lastRoutineDuration: number = 0;
 
   liveFormAsRoutine: Signal<Routine | undefined>;
-    private loadedRoutine = signal<Routine | undefined>(undefined);
+  private loadedRoutine = signal<Routine | undefined>(undefined);
 
   lastLoggedRoutineInfo = signal<{ [id: string]: { duration: number, name: string, startTime: number | null } }>({});
   builderForm!: FormGroup;
@@ -180,6 +180,14 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   private sanitizer = inject(DomSanitizer);
   public sanitizedDescription: SafeHtml = '';
 
+  private previousFormState: any = null;
+
+  /**
+  * Defines the canonical, fixed order in which metric fields should be displayed.
+  * The template will iterate over this array and only show the fields that are currently visible.
+  */
+  readonly defaultMetricFieldOrder = ['reps', 'weight', 'distance', 'duration'];
+
   constructor() {
     this.builderForm = this.fb.group({
       name: [''], // Validated based on mode
@@ -209,6 +217,37 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       map(formValue => this.mapFormToRoutine(formValue))
     );
     this.liveFormAsRoutine = toSignal(formValue$, { initialValue: undefined });
+
+    this.builderForm.valueChanges.pipe(
+      // Use pairwise to get both the previous and current value
+      debounceTime(500),
+      startWith(this.builderForm.getRawValue()), // Emit initial value to start the stream
+      pairwise()
+    ).subscribe(([previousValue, currentValue]) => {
+      if (this.isUndoingOrRedoing) {
+        this.isUndoingOrRedoing = false; // Reset flag
+        return;
+      }
+
+      // When a new change is made, it invalidates any "redo" states
+      if (this.historyIndex < this.history.length - 1) {
+        this.history = this.history.slice(0, this.historyIndex + 1);
+      }
+
+      // Add the new state to the history
+      this.history.push(JSON.parse(JSON.stringify(currentValue)));
+      this.historyIndex++;
+
+      // Enforce the maximum history size
+      if (this.history.length > this.MAX_HISTORY_SIZE) {
+        this.history.shift(); // Remove the oldest state
+        this.historyIndex--;
+      }
+
+      // Update the state of our control signals
+      this.updateHistorySignals();
+      this.refreshFabMenuItems();
+    });
   }
 
   ngOnInit(): void {
@@ -274,16 +313,22 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       }),
       tap(loadedData => { // data can be Routine, WorkoutLog, or null
         if (loadedData) {
+          if (this.isEditMode) {
+            // For both routine and log editing, capture the initial state
+            this.originalStateSnapshot = JSON.parse(JSON.stringify(loadedData));
+            this.canRestore.set(true);
+          }
+
           if (this.mode === 'routineBuilder' && this.currentLogId && this.isNewMode) {
             this.prefillRoutineFormFromLog(loadedData as WorkoutLog);
           } else if (this.mode === 'routineBuilder') {
-                        // Set our new signal with the initial data
-                        this.loadedRoutine.set(loadedData as Routine);
+            // Set our new signal with the initial data
+            this.loadedRoutine.set(loadedData as Routine);
             this.patchFormWithRoutineData(loadedData as Routine);
           } else if (this.mode === 'manualLogEntry' && this.isEditMode && this.currentLogId) {
             this.patchFormWithLogData(loadedData as WorkoutLog);
-                        // For a log, we can derive the initial routine state from the form immediately
-                        this.loadedRoutine.set(this.mapFormToRoutine(this.builderForm.getRawValue()));
+            // For a log, we can derive the initial routine state from the form immediately
+            this.loadedRoutine.set(this.mapFormToRoutine(this.builderForm.getRawValue()));
           } else if (this.mode === 'manualLogEntry' && this.isNewMode && this.currentRoutineId) {
             this.prefillLogFormFromRoutine(loadedData as Routine);
           }
@@ -961,7 +1006,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         restAfterSet: loggedSet.targetRestAfterSet ?? 60, // Use original target rest, or default
         type: loggedSet.type,
         notes: loggedSet.notes,
-        tempo: loggedSet.targetTempo,
+        targetTempo: loggedSet.targetTempo,
       };
       // Return a FormGroup for the set
       return this.createSetFormGroup(newSetParams, false); // forLogging = false
@@ -1063,18 +1108,20 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
   // isRepsRangeMode, isWeightRangeMode, isDurationRangeMode
   private createSetFormGroup(setData?: ExerciseTargetSetParams | LoggedSet, forLogging: boolean = false): FormGroup {
-    let targetTargetReps, targetWeighValue, targetDurationValue, notesValue, typeValue, tempoValue, restValue;
+    let targetRepsValue, targetWeighValue, targetDurationValue, notesValue, typeValue, tempoValue, restValue;
     let targetRepsMinValue, targetRepsMaxValue, targetDurationMinValue, targetDurationMaxValue, targetWeightMinValue, targetWeightMaxValue; // For ranges
     let targetDistanceValue, targetDistanceMinValue, targetDistanceMaxValue;
     let id = uuidv4();
     let plannedSetIdValue;
     let timestampValue = new Date().toISOString(); // Default for new sets being logged
+    let fieldOrderValue: string[] | undefined;
 
     if (setData) {
       id = setData.id || id; // Keep original set ID if from template or editing logged set
+      fieldOrderValue = setData.fieldOrder;
       if ('repsAchieved' in setData) { // It's a LoggedSet
         const loggedS = setData as LoggedSet;
-        targetTargetReps = loggedS.repsAchieved;
+        targetRepsValue = loggedS.repsAchieved;
         targetWeighValue = loggedS.weightUsed;
         targetDurationValue = loggedS.durationPerformed;
         targetDistanceValue = loggedS.distanceAchieved;
@@ -1086,7 +1133,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         restValue = loggedS.restAfterSetUsed;
       } else { // It's ExerciseSetParams from routine template
         const plannedS = setData as ExerciseTargetSetParams;
-        targetTargetReps = plannedS.targetReps;
+        targetRepsValue = plannedS.targetReps;
         targetRepsMinValue = plannedS.targetRepsMin;
         targetRepsMaxValue = plannedS.targetRepsMax;
         targetWeighValue = plannedS.targetWeight;
@@ -1100,30 +1147,49 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         targetDistanceMaxValue = plannedS.targetDistanceMax;
         notesValue = plannedS.notes;
         typeValue = plannedS.type || 'standard';
-        tempoValue = plannedS.tempo;
+        tempoValue = plannedS.targetTempo;
         restValue = plannedS.restAfterSet;
         plannedSetIdValue = plannedS.id; // This is the template set ID
       }
     } else { // New blank set
-      targetTargetReps = null;
-      targetWeighValue = null;
-      targetDurationValue = null;
       notesValue = '';
       typeValue = 'standard';
-      tempoValue = ''; restValue = 60;
-      targetDistanceValue = null;
+      tempoValue = '';
+      restValue = 60;
+      // For a brand new set, default to reps and weight
+      fieldOrderValue = ['reps', 'weight'];
+      targetRepsValue = 8;
+      targetWeighValue = 10;
     }
+
+    // =================== START OF THE FIX ===================
+    if (!fieldOrderValue && setData) {
+      // If fieldOrder is missing BUT we have setData (i.e., loading an old routine), calculate it.
+
+      // 1. Create a mock structure that `getVisibleExerciseColumns` can understand.
+      // It only needs an object with a `sets` array containing our current `setData`.
+      const mockRoutineForHelper = { exercises: [{ sets: [setData] }] } as Routine;
+
+      // 2. Call the service method. We use index 0 because our mock structure only has one exercise.
+      const visibleCols = this.workoutService.getVisibleExerciseColumns(mockRoutineForHelper, 0);
+
+      // 3. Filter the canonical order by which columns are visible to create the initial order.
+      fieldOrderValue = this.defaultMetricFieldOrder.filter(field => visibleCols[field]);
+    }
+    // =================== END OF THE FIX ===================
 
     const formGroupConfig: { [key: string]: any } = {
       id: [id],
       type: [typeValue, Validators.required],
       notes: [notesValue || ''],
+      fieldOrder: [fieldOrderValue || []]
     };
+
 
     if (forLogging) {
       // repsAchieved is required only if both weightUsed and durationPerformed are null
       formGroupConfig['repsAchieved'] = [
-        targetTargetReps ?? null,
+        targetRepsValue ?? null,
         [
           (control: AbstractControl) => {
             const parent = control.parent;
@@ -1146,7 +1212,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       formGroupConfig['tempo'] = [tempoValue];
       formGroupConfig['restAfterSet'] = [restValue];
     } else { // For routine builder (planning mode)
-      formGroupConfig['targetReps'] = [targetTargetReps ?? null, [Validators.min(0)]];
+      formGroupConfig['targetReps'] = [targetRepsValue ?? null, [Validators.min(0)]];
       formGroupConfig['targetRepsMin'] = [targetRepsMinValue ?? null, [Validators.min(0)]];
       formGroupConfig['targetRepsMax'] = [targetRepsMaxValue ?? null, [Validators.min(0)]];
 
@@ -1164,7 +1230,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       formGroupConfig['targetDistanceMin'] = [targetDistanceMinValue ?? null, [Validators.min(0)]];
       formGroupConfig['targetDistanceMax'] = [targetDistanceMaxValue ?? null, [Validators.min(0)]];
 
-      formGroupConfig['tempo'] = [tempoValue || ''];
+      formGroupConfig['targetTempo'] = [tempoValue || ''];
       formGroupConfig['restAfterSet'] = [restValue ?? 60, [Validators.required, Validators.min(0)]];
     }
     const groupOptions = forLogging ? {} : { validators: this.createRangeValidator() };
@@ -1250,7 +1316,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         restAfterSet: 60,
         targetDuration: isCardio ? 60 : undefined,
         targetDistance: isCardio ? 1 : undefined,
-        tempo: '',
+        targetTempo: '',
         notes: ''
       } as ExerciseTargetSetParams;
 
@@ -2276,10 +2342,18 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     const initialRoutine = this.loadedRoutine();
 
     // Convert comma-separated tags string into a clean string array
-    const tagsValue = formValue.tags || '';
-    const tagsArray = tagsValue.split(',')
-      .map((tag: string) => tag.trim())
-      .filter((tag: string) => tag.length > 0);
+    const tagsValue = formValue.tags;
+    let tagsArray: string[] = [];
+
+    // Check if tagsValue is a string (from user input) or already an array (from a restored state)
+    if (typeof tagsValue === 'string') {
+        tagsArray = tagsValue.split(',')
+            .map((tag: string) => tag.trim())
+            .filter((tag: string) => tag.length > 0);
+    } else if (Array.isArray(tagsValue)) {
+        // If it's already an array, just use it directly.
+        tagsArray = tagsValue;
+    }
 
     const valueObj: Routine = {
       id: this.currentRoutineId || uuidv4(),
@@ -3438,6 +3512,31 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         isPremium: false
       }
       ];
+
+      if (this.canRestore()) {
+        this.fabMenuItems.unshift({
+          label: 'fab.restore',
+          actionKey: 'restore',
+          iconName: 'restore',
+          cssClass: 'bg-red-500 focus:ring-red-400',
+        });
+      }
+      if (this.canRedo()) {
+        this.fabMenuItems.unshift({
+          label: 'fab.redo',
+          actionKey: 'redo',
+          iconName: 'redo',
+          cssClass: 'bg-blue-500 focus:ring-blue-400',
+        });
+      }
+      if (this.canUndo()) {
+        this.fabMenuItems.unshift({
+          label: 'fab.undo',
+          actionKey: 'undo',
+          iconName: 'undo',
+          cssClass: 'bg-yellow-500 focus:ring-yellow-400',
+        });
+      }
     } else {
       this.fabMenuItems = [
         {
@@ -3449,7 +3548,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         }
       ];
     }
-
   }
 
   onFabAction(actionKey: string): void {
@@ -3463,6 +3561,9 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       case 'start':
         this.startCurrentWorkout();
         break;
+      case 'undo': this.undoLastChange(); break;
+      case 'redo': this.redoLastChange(); break;
+      case 'restore': this.restoreOriginal(); break;
     }
   }
 
@@ -3478,9 +3579,6 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   // This signal will hold the list of exercises (either all or similar) for the modal
   exercisesForSwitchModal = signal<Exercise[]>([]);
 
-  // ... (constructor and all existing methods are unchanged up to the action menu handlers)
-
-  // +++ NEW: Handler for the "Switch Exercise" menu item +++
   handleExerciseActionMenuItemClick(event: { actionKey: string }, exIndex: number, exerciseControl: AbstractControl): void {
     switch (event.actionKey) {
       case 'ungroup':
@@ -3696,7 +3794,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       return;
     }
     event?.stopPropagation();
-    
+
     this.expandExerciseCardIfNeeded(exIndex);
 
     const exerciseControl = this.exercisesFormArray.at(exIndex) as FormGroup;
@@ -3959,36 +4057,53 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     return null;
   }
 
-    public async promptRemoveField(exIndex: number, setIndex: number): Promise<void> {
-        const currentRoutine = this.liveFormAsRoutine();
-        if (!currentRoutine) return;
+public async promptRemoveField(exIndex: number, setIndex: number): Promise<void> {
+    const currentRoutine = this.liveFormAsRoutine();
+    if (!currentRoutine) return;
+
+    const updatedRoutine = await this.workoutService.promptRemoveField(currentRoutine, exIndex, setIndex);
     
-        const updatedRoutine = await this.workoutService.promptRemoveField(currentRoutine, exIndex, setIndex);
+    if (updatedRoutine) {
+        // Get the updated set data (with the field removed) from the routine returned by the service
+        const updatedSetData = updatedRoutine.exercises[exIndex].sets[setIndex];
         
-        if (updatedRoutine) {
-            this.exercisesFormArray.at(exIndex).patchValue(updatedRoutine.exercises[exIndex]);
-        }
+        // Get the FormArray for the sets of the specific exercise
+        const setsFormArray = this.getSetsFormArray(this.exercisesFormArray.at(exIndex));
+        
+        // Create a brand new FormGroup based on this updated data structure
+        const newSetFormGroup = this.createSetFormGroup(updatedSetData, this.mode === 'manualLogEntry');
+        
+        // Replace the old FormGroup at the specified index with the new one
+        setsFormArray.setControl(setIndex, newSetFormGroup);
     }
+}
 
   getFieldsForSet(exIndex: number, setIndex: number): { visible: string[], hidden: string[] } {
-        const routine = this.liveFormAsRoutine(); 
-    if (!routine) return { visible: [], hidden: ['weight', 'reps', 'distance', 'duration', 'tempo'] }; 
+    const routine = this.liveFormAsRoutine();
+    if (!routine) return { visible: [], hidden: ['weight', 'reps', 'distance', 'duration', 'tempo'] };
     return this.workoutService.getFieldsForSet(routine, exIndex, setIndex);
   }
 
-    public async promptAddField(exIndex: number, setIndex: number): Promise<void> {
-        // Reads the computed signal at the time of the click event.
-        const currentRoutine = this.liveFormAsRoutine();
-        if (!currentRoutine) return;
-    
-        const updatedRoutine = await this.workoutService.promptAddField(currentRoutine, exIndex, setIndex);
-    
-        if (updatedRoutine) {
-            // Patching the form will automatically update the `liveFormAsRoutine` signal,
-            // which in turn updates our `liveFormAsRoutine` computed signal.
-            this.exercisesFormArray.at(exIndex).patchValue(updatedRoutine.exercises[exIndex]);
-        }
+public async promptAddField(exIndex: number, setIndex: number): Promise<void> {
+    const currentRoutine = this.liveFormAsRoutine();
+    if (!currentRoutine) return;
+
+    const updatedRoutine = await this.workoutService.promptAddField(currentRoutine, exIndex, setIndex);
+
+    if (updatedRoutine) {
+        // Get the updated set data from the routine returned by the service
+        const updatedSetData = updatedRoutine.exercises[exIndex].sets[setIndex];
+        
+        // Get the FormArray for the sets of the specific exercise
+        const setsFormArray = this.getSetsFormArray(this.exercisesFormArray.at(exIndex));
+        
+        // Create a brand new FormGroup for the set
+        const newSetFormGroup = this.createSetFormGroup(updatedSetData, this.mode === 'manualLogEntry');
+        
+        // Replace the old FormGroup with the new one
+        setsFormArray.setControl(setIndex, newSetFormGroup);
     }
+}
 
 
   /**
@@ -4011,10 +4126,10 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
    */
   public getGridClassForExercise(exIndex: number): string {
     const visibleCols = this.getVisibleColumnsForExercise(exIndex);
-    
+
     // Start with a base count for the static columns: Set # and Actions
-    let columnCount = 2; 
-    
+    let columnCount = 2;
+
     if (visibleCols['reps']) columnCount++;
     if (visibleCols['weight']) columnCount++;
     if (visibleCols['distance']) columnCount++;
@@ -4028,11 +4143,11 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     return `grid-cols-${finalCount}`;
   }
 
-   /**
-   * Toggles the visibility of the exercise notes textarea for a given exercise.
-   * @param exIndex The index of the exercise.
-   * @param event The mouse event, used to stop propagation.
-   */
+  /**
+  * Toggles the visibility of the exercise notes textarea for a given exercise.
+  * @param exIndex The index of the exercise.
+  * @param event The mouse event, used to stop propagation.
+  */
   toggleExerciseNotes(exIndex: number, event?: Event): void {
     event?.stopPropagation(); // Prevents the main card from collapsing
     this.expandedExerciseNotes.update(current => (current === exIndex ? null : exIndex));
@@ -4051,16 +4166,16 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     }
   }
 
-   /**
-   * Generates the complete, dynamic CSS class string for the collapsed set row.
-   * This includes both the grid layout and the background color.
-   * @param exerciseControl The FormGroup for the exercise.
-   * @param setControl The FormGroup for the specific set.
-   * @returns A string of Tailwind CSS classes like 'grid grid-cols-5 bg-gray-50 dark:bg-gray-700/50'.
-   */
+  /**
+  * Generates the complete, dynamic CSS class string for the collapsed set row.
+  * This includes both the grid layout and the background color.
+  * @param exerciseControl The FormGroup for the exercise.
+  * @param setControl The FormGroup for the specific set.
+  * @returns A string of Tailwind CSS classes like 'grid grid-cols-5 bg-gray-50 dark:bg-gray-700/50'.
+  */
   public getCollapsedSetRowClass(exIndex: number, setIndex: number): string {
     const visibleCols = this.getVisibleColumnsForExercise(exIndex);
-    
+
     // --- 1. Calculate Grid Class ---
     let columnCount = 2; // Base for Set # and Actions
     if (visibleCols['reps']) columnCount++;
@@ -4084,13 +4199,100 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       bgClass = 'bg-gray-50 dark:bg-gray-700/50';
     } else if (setType === 'warmup') {
       // Note: your original code had 'dark:bg-gray-blue/50'. Assuming you meant 'blue'.
-      bgClass = 'bg-blue-50 dark:bg-blue-900/40'; 
+      bgClass = 'bg-blue-50 dark:bg-blue-900/40';
     }
     // ... you can add other else-if for other set types like 'dropset' etc.
 
     // --- 3. Combine and return the full string ---
     return `grid ${gridClass} ${bgClass}`;
   }
-    
 
+
+  // +++ NEW: Undo Method +++
+  /**
+   * Reverts the form to its last known state.
+   */
+  public undoLastChange(): void {
+    if (!this.canUndo()) return;
+
+    this.isUndoingOrRedoing = true; // Set flag to prevent subscription from firing
+    this.historyIndex--;
+    const stateToRestore = this.history[this.historyIndex];
+    this.restoreFormState(stateToRestore);
+    this.toastService.info("Undo successful.");
+    this.updateHistorySignals();
+    this.refreshFabMenuItems(); // Update FAB menu items
+  }
+
+  // +++ NEW: Redo Method +++
+  public redoLastChange(): void {
+    if (!this.canRedo()) return;
+
+    this.isUndoingOrRedoing = true; // Set flag
+    this.historyIndex++;
+    const stateToRestore = this.history[this.historyIndex];
+    this.restoreFormState(stateToRestore);
+    this.toastService.info("Redo successful.");
+    this.updateHistorySignals();
+    this.refreshFabMenuItems(); // Update FAB menu items
+  }
+
+  // +++ NEW: Restore Method +++
+  public async restoreOriginal(): Promise<void> {
+    if (!this.canRestore() || !this.originalStateSnapshot) return;
+
+    const confirm = await this.alertService.showConfirm(
+      "Restore Original",
+      "Are you sure you want to discard all changes and restore the routine to its original state?",
+      "Restore"
+    );
+
+    if (confirm && confirm.data) {
+      this.isUndoingOrRedoing = true; // Use the same flag to prevent history pollution
+      this.restoreFormState(this.originalStateSnapshot);
+      
+      // After restoring, clear the undo/redo history as it's no longer valid
+      this.history = [JSON.parse(JSON.stringify(this.originalStateSnapshot))];
+      this.historyIndex = 0;
+      
+      this.toastService.success("Routine has been restored to its original state.");
+      this.updateHistorySignals();
+    }
+    this.refreshFabMenuItems(); // Update FAB menu items
+  }
+
+  // +++ NEW: Centralized helper to apply a state to the form +++
+  private restoreFormState(state: any): void {
+    if (!state) return;
+
+    // Rebuild the FormArrays correctly
+    this.exercisesFormArray.clear({ emitEvent: false });
+    const exercises = state.exercises || [];
+    exercises.forEach((exerciseData: any) => {
+      const exerciseGroup = this.createExerciseFormGroup(exerciseData, true, this.mode === 'manualLogEntry');
+      this.exercisesFormArray.push(exerciseGroup, { emitEvent: false });
+    });
+
+    // Patch the rest of the form. This will trigger valueChanges, but our flag will catch it.
+    this.builderForm.patchValue(state);
+  }
+
+  private history: any[] = [];
+  private historyIndex = -1;
+  private readonly MAX_HISTORY_SIZE = 20;
+  private isUndoingOrRedoing = false; // Flag to prevent feedback loops
+
+  // Signals to control the button states in the UI
+  canUndo = signal<boolean>(false);
+  canRedo = signal<boolean>(false);
+  canRestore = signal<boolean>(false);
+
+  // This will store the pristine, initial state of the routine when editing
+  private originalStateSnapshot: any = null;
+
+// +++ NEW: Helper to update button states +++
+  private updateHistorySignals(): void {
+    this.canUndo.set(this.historyIndex > 0);
+    this.canRedo.set(this.historyIndex < this.history.length - 1);
+  }
 }

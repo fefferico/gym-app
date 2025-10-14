@@ -591,7 +591,7 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
             targetReps: activeInfo.setData.targetReps,
             targetWeight: activeInfo.setData.targetWeight,
             targetDuration: activeInfo.setData.targetDuration,
-            targetTempo: activeInfo.setData.tempo,
+            targetTempo: activeInfo.setData.targetTempo,
             targetRestAfterSet: activeInfo.setData.restAfterSet,
             notes: formValues.setNotes?.trim() || undefined,
             timestamp: new Date().toISOString(),
@@ -1705,7 +1705,7 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
                         reps: loggedSet.targetReps ?? loggedSet.repsAchieved, // Prefer saving targets
                         weight: loggedSet.targetWeight ?? loggedSet.weightUsed,
                         duration: loggedSet.targetDuration ?? loggedSet.durationPerformed,
-                        tempo: loggedSet.targetTempo || originalPlannedSet?.tempo,
+                        tempo: loggedSet.targetTempo || originalPlannedSet?.targetTempo,
                         restAfterSet: originalPlannedSet?.restAfterSet || 60, // Prefer planned rest
                         notes: loggedSet.notes, // Persist individual logged set notes if saving structure
                         type: loggedSet.type as 'standard' | 'warmup' | 'amrap' | 'custom' | string,
@@ -1727,7 +1727,7 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
             targetReps: exerciseSet && exerciseSet.targetReps ? exerciseSet.repsAchieved : 1,
             targetWeight: exerciseSet && exerciseSet.weightUsed ? exerciseSet.weightUsed : 1,
             targetDuration: exerciseSet && exerciseSet.targetDuration ? exerciseSet.targetDuration : 0,
-            tempo: '1',
+            targetTempo: '1',
             restAfterSet: superSetOrder !== null && superSetOrder !== undefined && exercise && exercise.sets.length && superSetOrder < exercise.sets.length - 1 ? 0 : this.getLastExerciseOfSuperset(supersetId, loggedExercises).restAfterSet,
             notes: exerciseSet && exerciseSet.notes ? exerciseSet.notes : '',
             type: exerciseSet && exerciseSet.type ? 'superset' : 'standard',
@@ -1742,7 +1742,7 @@ export class TabataPlayerComponent implements OnInit, OnDestroy {
             targetReps: exerciseSet && exerciseSet.targetReps ? exerciseSet.targetReps : 1,
             targetWeight: exerciseSet && exerciseSet.targetWeight ? exerciseSet.targetWeight : 1,
             targetDuration: exerciseSet && exerciseSet.targetDuration ? exerciseSet.targetDuration : 1,
-            tempo: '1',
+            targetTempo: '1',
             restAfterSet: exerciseSet && exerciseSet.targetRestAfterSet ? exerciseSet.targetRestAfterSet : 60,
             notes: exerciseSet && exerciseSet.notes ? exerciseSet.notes : '',
             type: exerciseSet && exerciseSet.type ? 'superset' : 'standard',

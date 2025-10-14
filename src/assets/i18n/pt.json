@@ -1075,7 +1075,7 @@
       "weightPlaceholder": "Peso",
       "distancePlaceholder": "Distância",
       "durationPlaceholder": "Segs",
-      "tempoPlaceholder": "ex. 2010",
+      "tempoPlaceholder": "ex. 2-0-1-0",
       "restPlaceholder": "Descanso",
       "notesPlaceholder": "ex. Boa forma",
       "collapse": "Recolher série"
@@ -1219,7 +1219,10 @@
     "save_log": "SALVAR REGISTRO",
     "save_log_changes": "SALVAR ALTERAÇÕES DO REGISTRO",
     "start": "INICIAR",
-    "log": "REGISTRAR"
+    "log": "REGISTRAR",
+    "undo": "Desfazer",
+    "redo": "Refazer",
+    "restore": "Restaurar Original"
   },
   "logDetail": {
     "title": "Recordes Pessoais",

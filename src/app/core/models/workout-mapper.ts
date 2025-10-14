@@ -190,6 +190,6 @@ export function mapExerciseTargetSetParamsToExerciseExecutedSetParams(exerciseTa
         targetDurationMin: exerciseTargetSetParams.targetDurationMin || 0,
         targetDurationMax: exerciseTargetSetParams.targetDurationMax || 0,
         notes: exerciseTargetSetParams.notes || '',
-        tempo: exerciseTargetSetParams.tempo
+        tempo: exerciseTargetSetParams.targetTempo
     } as ExerciseTargetExecutionSetParams;
 }
