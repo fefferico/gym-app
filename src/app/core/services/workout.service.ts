@@ -1295,11 +1295,26 @@ public async promptAddField(routine: Routine, exIndex: number, setIndex: number)
         return null;
     }
 
+    const isSuperSet = !!routine.exercises[exIndex].supersetId;
+    let filteredHidden;
+    if (isSuperSet) {
+      // check that superset exercise must have only "reps" and "weight" as metrics, let the user add/remove them but nothing else
+      const allowedFields = ['weight', 'reps'];
+
+      // remove any disallowed fields from the hidden list
+      filteredHidden = hidden.filter(field => allowedFields.includes(field));
+      if (filteredHidden.every(field => !allowedFields.includes(field))) {
+        this.toastService.info("Only 'Weight' and 'Reps' can be added to sets within a superset.");
+        return null;
+      }
+    }
+
     // --- Step 1: Ask WHICH field to add ---
-    const buttons: AlertButton[] = hidden.map(field => ({
+    const availableMetrics = filteredHidden ? filteredHidden : hidden;
+    const buttons: AlertButton[] = availableMetrics.map(field => ({
         text: field.charAt(0).toUpperCase() + field.slice(1),
         role: 'add', data: field,
-        icon: field === 'duration' ? 'hourglass' : field === 'reps' ? 'repeat' : field
+        icon: field === 'duration' ? 'hourglass' : field
     }));
     buttons.push({ text: this.translate.instant('common.cancel'), role: 'cancel', data: null, icon: 'cancel' });
 

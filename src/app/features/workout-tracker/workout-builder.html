@@ -328,8 +328,7 @@
                             [title]="isEditableMode() && !shouldShowExpandedExercise(exIndex)? ('workoutBuilder.exercise.dragToReorder' | translate) : ''">
 
                             <div class="exercise-item-content">
-                                <div *ngIf="!isSetExpanded(exIndex, 0) && exerciseControl.get('supersetId')?.value && getSetsFormArray(exerciseControl).controls.length > 0 
-                                        && exerciseControl.get('supersetOrder')?.value === 0"
+                                <div *ngIf="isSuperSet(exIndex) && isFirstInSuperset(exIndex)"
                                     class="px-2 text-md font-medium mt-0.5"
                                     [ngClass]="standarSuperSetOrEmomClass(exerciseControl, false)">
                                     {{ standarSuperSetOrEmomLabel(exerciseControl) }}
@@ -864,24 +863,27 @@
                                                                     <div *ngSwitchCase="'reps'">
                                                                         <ng-container
                                                                             [ngTemplateOutlet]="repsInputTemplate"
-                                                                            [ngTemplateOutletContext]="{ setControl: setControl, exIndex: exIndex, setIndex: setIndex }"></ng-container>
+                                                                            [ngTemplateOutletContext]="{exerciseControl: exerciseControl, setControl: setControl, exIndex: exIndex, setIndex: setIndex }"></ng-container>
                                                                     </div>
                                                                     <div *ngSwitchCase="'weight'">
                                                                         <ng-container
                                                                             [ngTemplateOutlet]="weightInputTemplate"
-                                                                            [ngTemplateOutletContext]="{ setControl: setControl, exIndex: exIndex, setIndex: setIndex }"></ng-container>
+                                                                            [ngTemplateOutletContext]="{exerciseControl: exerciseControl, setControl: setControl, exIndex: exIndex, setIndex: setIndex }"></ng-container>
                                                                     </div>
                                                                     <div *ngSwitchCase="'distance'">
                                                                         <ng-container
-                                                                            [ngTemplateOutlet]="distanceInputTemplate"
-                                                                            [ngTemplateOutletContext]="{ setControl: setControl, exIndex: exIndex, setIndex: setIndex }"></ng-container>
+                                                                            *ngIf="!isEmomExercise(exerciseControl)">
+                                                                            <ng-container
+                                                                                [ngTemplateOutlet]="distanceInputTemplate"
+                                                                                [ngTemplateOutletContext]="{exerciseControl: exerciseControl, setControl: setControl, exIndex: exIndex, setIndex: setIndex }"></ng-container>
+                                                                        </ng-container>
                                                                     </div>
                                                                     <div *ngSwitchCase="'duration'">
                                                                         <ng-container
                                                                             *ngIf="!isEmomExercise(exerciseControl)">
                                                                             <ng-container
                                                                                 [ngTemplateOutlet]="durationInputTemplate"
-                                                                                [ngTemplateOutletContext]="{ setControl: setControl, exIndex: exIndex, setIndex: setIndex }"></ng-container>
+                                                                                [ngTemplateOutletContext]="{exerciseControl: exerciseControl, setControl: setControl, exIndex: exIndex, setIndex: setIndex }"></ng-container>
                                                                         </ng-container>
                                                                     </div>
                                                                     <div *ngSwitchCase="'tempo'">
@@ -944,7 +946,8 @@
                         </div>
                         <div class="absolute top-1 right-1 z-20" [ngClass]="{ 'top-3': isSuperSet(exIndex) }">
                             <!-- Expanded View Actions (Delete, Fill, EMOM, Switch, More Actions Menu) -->
-                            <div *ngIf="isEditableMode()" class="flex items-center space-x-1">
+                            <div *ngIf="isEditableMode()&& (!isSuperSet(exIndex) || (isSuperSet(exIndex) && isFirstInSuperset(exIndex)))"
+                                class="flex items-center space-x-1">
                                 <!-- The "More Actions" Menu Itself -->
                                 <div class="relative" #exerciseActionMenuContainer>
                                     <button (click)="toggleExerciseActionMenu(exIndex, $event)"
@@ -1014,11 +1017,13 @@
             </button>
 
             <!-- WORKOUT GENERATOR -->
-            <button *ngIf="isGeneratedRoutine()" type="button" (click)="regenerateWorkout()"
-                class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 min-w-[220px]">
-                <app-icon name="random" class="h-5 w-5 mr-2"></app-icon>
-                REGENERATE WORKOUT
-            </button>
+            <div *ngIf="isGeneratedRoutine()">
+                <button *ngIf="isGeneratedRoutine()" type="button" (click)="regenerateWorkout()"
+                    class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 min-w-[220px]">
+                    <app-icon name="random" class="h-5 w-5 mr-2"></app-icon>
+                    REGENERATE WORKOUT
+                </button>
+            </div>
 
         </div>
     </form>

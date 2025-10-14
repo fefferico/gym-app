@@ -2987,16 +2987,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     // --- START OF THE FIX ---
     if (event) {
       const target = event.target as HTMLElement;
-
-      // 1. If the click originated on an interactive form element, do nothing.
-      const ignoredTagNames = ['INPUT', 'TEXTAREA', 'SELECT'];
-      if (ignoredTagNames.includes(target.tagName)) {
-        return;
-      }
-
-      // 2. If the click was on ANY element inside a button (like an <app-icon>), also do nothing.
-      // This is a very robust way to ignore all button clicks within the card.
-      if (target.closest('button')) {
+      if (target.closest('button') || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)) {
         return;
       }
     }
@@ -3011,17 +3002,46 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       return; // Invalid index
     }
 
+    const clickedExercise = this.exercisesFormArray.at(exIndex) as FormGroup;
+    const supersetId = clickedExercise.get('supersetId')?.value;
+
+    let masterIndexToExpand = exIndex;
+    if (supersetId) {
+      const firstIndex = this.exercisesFormArray.controls.findIndex(c =>
+        (c as FormGroup).get('supersetId')?.value === supersetId &&
+        (c as FormGroup).get('supersetOrder')?.value === 0
+      );
+      if (firstIndex !== -1) {
+        masterIndexToExpand = firstIndex;
+      }
+    }
+
     const expandedExIndex = this.expandedExercisePath();
-    if (expandedExIndex?.exerciseIndex === exIndex) {
+    if (expandedExIndex?.exerciseIndex === masterIndexToExpand) {
       // If the clicked exercise is already expanded, collapse it and its notes
       this.expandedExercisePath.set(null);
       this.expandedSetPath.set(null);
       this.expandedExerciseNotes.set(null); // <-- ADD THIS LINE
     } else {
       // Expand the clicked exercise
-      this.expandedExercisePath.set({ exerciseIndex: exIndex });
+      this.expandedExercisePath.set({ exerciseIndex: masterIndexToExpand });
       this.scrollExpandedExerciseIntoView();
     }
+  }
+
+  /**
+   * Retrieves the specific set's FormGroup for a given exercise and round index.
+   * This is a crucial helper for the round-based superset rendering in the template.
+   * @param exerciseControl The FormGroup of the exercise, passed as AbstractControl from the template.
+   * @param roundIndex The index of the round (which corresponds to the set index).
+   * @returns The FormGroup for that specific set.
+   */
+  public getSetControl(exerciseControl: AbstractControl, roundIndex: number): FormGroup {
+    // --- THIS IS THE FIX ---
+    // We cast the control to a FormGroup here, inside the component's logic,
+    // instead of in the template.
+    const exerciseFg = exerciseControl as FormGroup;
+    return (exerciseFg.get('sets') as FormArray).at(roundIndex) as FormGroup;
   }
 
   // Add this new public method to the class
@@ -3183,6 +3203,16 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   /**
+   * Gets the number of rounds for a superset as an array of indices for easy looping.
+   * @param index The index of an exercise within the superset.
+   */
+  getNumberOfRoundsAsArray(index: number): number[] {
+    const exerciseControl = this.exercisesFormArray.at(index) as FormGroup;
+    const numRounds = (exerciseControl.get('sets') as FormArray)?.length || 0;
+    return Array.from({ length: numRounds }, (_, i) => i);
+  }
+
+  /**
    * Checks if the exercise at a given index is the last in its superset group.
    * @param index The index of the exercise in the exercisesFormArray.
    * @returns True if the exercise is the last in a superset.
@@ -3211,6 +3241,14 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     }
     // True if it's part of a superset but not the first or last element
     return !this.isFirstInSuperset(index) && !this.isLastInSuperset(index);
+  }
+
+  /**
+   * Finds the original index of an exercise control within the main exercisesFormArray.
+   * @param control The exercise FormGroup to find.
+   */
+  getIndexOfExercise(control: AbstractControl): number {
+    return this.exercisesFormArray.controls.indexOf(control);
   }
 
   /**
@@ -3317,8 +3355,17 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     // this.toastService.success(`EMOM created for ${numberOfSets} rounds!`, 4000, "Success");
   }
 
+  protected isEmomExerciseByIndex(exIndex: number): boolean {
+    const exercise = this.exercisesFormArray.at(exIndex) as FormGroup;
+    return this.isEmom(exercise);
+  }
+
   protected isEmomExercise(exerciseControl: AbstractControl): boolean {
-    return exerciseControl.get('supersetType')?.value === 'emom';
+    const exIndex = this.getExerciseIndexByControl(exerciseControl);
+    const exercise = this.exercisesFormArray.at(exIndex) as FormGroup;
+    const isEmom = this.isEmom(exercise);
+
+    return exerciseControl.get('supersetType')?.value === 'emom' || isEmom;
   }
 
   protected isStandardSupersetExercise(exerciseControl: AbstractControl): boolean {
@@ -3664,19 +3711,24 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     const items: ActionMenuItem[] = [];
     const isSuperset = !!exerciseControl.get('supersetId')?.value;
 
+    const exIndex = this.getExerciseIndexByControl(exerciseControl);
+    const isFirstInSuperset = this.isFirstInSuperset(exIndex);
+
     if (isSuperset) {
-      items.push({
+      if (isFirstInSuperset) {
+        // items.push({
+        //   label: this.translate.instant('workoutBuilder.exercise.remove'),
+        //   buttonClass: 'bg-red-500 text-white hover:bg-red-700',
+        //   actionKey: 'remove',
+        //   iconName: 'trash',
+        // });
+        items.push({
         label: 'Ungroup',
         buttonClass: 'bg-purple-500 text-white hover:bg-purple-700',
         actionKey: 'ungroup',
         iconName: 'ungroup',
       });
-      items.push({
-        label: this.translate.instant('workoutBuilder.exercise.remove'),
-        buttonClass: 'bg-red-500 text-white hover:bg-red-700',
-        actionKey: 'remove',
-        iconName: 'trash',
-      });
+      }
     } else {
       items.push({
         label: this.translate.instant('workoutBuilder.exercise.remove'),
