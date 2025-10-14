@@ -456,7 +456,8 @@
                                                         }">
 
                                                 <!-- The Title Text: Now wrapped in its own h3 tag -->
-                                                <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 max-exercise-length">
+                                                <h3
+                                                    class="text-lg font-semibold text-gray-800 dark:text-gray-100 max-exercise-length">
                                                     {{ exerciseControl.get('exerciseName')?.value ||
                                                     ('workoutBuilder.exercise.selectPlaceholder' | translate)
                                                     }}
@@ -470,7 +471,7 @@
                                         </div>
 
                                         <div
-                                            class="flex flex-col items-end space-y-2 flex-shrink-0 w-full sm:w-auto mt-2 sm:mt-0">
+                                            class="flex flex-col items-end space-y-2 flex-shrink-0 w-full sm:w-auto mt-2 sm:mt-0" [ngClass]="{'mr-6': isSuperSet(exIndex)}">
 
                                             <!-- +++ START: NEW UNIFIED CONTROL PANEL +++ -->
                                             <div *ngIf="isEditableMode() && exerciseControl.get('supersetId')?.value && exerciseControl.get('supersetOrder')?.value === 0"
@@ -852,42 +853,58 @@
                                                             </select>
                                                         </div>
                                                         <!-- =================== START OF DYNAMIC FIELD RENDERING =================== -->
-<!-- Get the fieldOrder array from the form control -->
-<ng-container *ngIf="setControl.get('fieldOrder')?.value as fieldOrder">
-    
-    <!-- Loop through the fieldOrder array which dictates the rendering order -->
-    <ng-container *ngFor="let field of fieldOrder">
-        <!-- Use ng-container with ngSwitch to render the correct template for each field -->
-        <ng-container [ngSwitch]="field">
-            <div *ngSwitchCase="'reps'">
-                <ng-container [ngTemplateOutlet]="repsInputTemplate" [ngTemplateOutletContext]="{ setControl: setControl, exIndex: exIndex, setIndex: setIndex }"></ng-container>
-            </div>
-            <div *ngSwitchCase="'weight'">
-                <ng-container [ngTemplateOutlet]="weightInputTemplate" [ngTemplateOutletContext]="{ setControl: setControl, exIndex: exIndex, setIndex: setIndex }"></ng-container>
-            </div>
-            <div *ngSwitchCase="'distance'">
-                <ng-container [ngTemplateOutlet]="distanceInputTemplate" [ngTemplateOutletContext]="{ setControl: setControl, exIndex: exIndex, setIndex: setIndex }"></ng-container>
-            </div>
-            <div *ngSwitchCase="'duration'">
-                <ng-container *ngIf="!isEmomExercise(exerciseControl)">
-                     <ng-container [ngTemplateOutlet]="durationInputTemplate" [ngTemplateOutletContext]="{ setControl: setControl, exIndex: exIndex, setIndex: setIndex }"></ng-container>
-                </ng-container>
-            </div>
-            <div *ngSwitchCase="'tempo'">
-                <ng-container [ngTemplateOutlet]="tempoInputTemplate" [ngTemplateOutletContext]="{ setControl: setControl, exIndex: exIndex, setIndex: setIndex }"></ng-container>
-            </div>
-        </ng-container>
-    </ng-container>
+                                                        <!-- Get the fieldOrder array from the form control -->
+                                                        <ng-container
+                                                            *ngIf="setControl.get('fieldOrder')?.value as fieldOrder">
 
-    <!-- GHOST BUTTON LOGIC -->
-    <!-- Renders in the next available grid slot if there are fields left to add -->
-    <div *ngIf="fieldOrder.length < 4 && isEditableMode()" class="flex items-center justify-center h-full">
-        <button (click)="promptAddField(exIndex, setIndex); $event.stopPropagation()" class="flex items-center justify-center w-full p-2 h-16 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-md text-gray-400 hover:bg-gray-200/50 dark:hover:bg-gray-700/50 transition-colors">
-            <app-icon name="plus-circle" class="h-6 w-6"></app-icon>
-        </button>
-    </div>
-</ng-container>
-<!-- =================== END OF DYNAMIC FIELD RENDERING =================== -->
+                                                            <!-- Loop through the fieldOrder array which dictates the rendering order -->
+                                                            <ng-container *ngFor="let field of fieldOrder">
+                                                                <!-- Use ng-container with ngSwitch to render the correct template for each field -->
+                                                                <ng-container [ngSwitch]="field">
+                                                                    <div *ngSwitchCase="'reps'">
+                                                                        <ng-container
+                                                                            [ngTemplateOutlet]="repsInputTemplate"
+                                                                            [ngTemplateOutletContext]="{ setControl: setControl, exIndex: exIndex, setIndex: setIndex }"></ng-container>
+                                                                    </div>
+                                                                    <div *ngSwitchCase="'weight'">
+                                                                        <ng-container
+                                                                            [ngTemplateOutlet]="weightInputTemplate"
+                                                                            [ngTemplateOutletContext]="{ setControl: setControl, exIndex: exIndex, setIndex: setIndex }"></ng-container>
+                                                                    </div>
+                                                                    <div *ngSwitchCase="'distance'">
+                                                                        <ng-container
+                                                                            [ngTemplateOutlet]="distanceInputTemplate"
+                                                                            [ngTemplateOutletContext]="{ setControl: setControl, exIndex: exIndex, setIndex: setIndex }"></ng-container>
+                                                                    </div>
+                                                                    <div *ngSwitchCase="'duration'">
+                                                                        <ng-container
+                                                                            *ngIf="!isEmomExercise(exerciseControl)">
+                                                                            <ng-container
+                                                                                [ngTemplateOutlet]="durationInputTemplate"
+                                                                                [ngTemplateOutletContext]="{ setControl: setControl, exIndex: exIndex, setIndex: setIndex }"></ng-container>
+                                                                        </ng-container>
+                                                                    </div>
+                                                                    <div *ngSwitchCase="'tempo'">
+                                                                        <ng-container
+                                                                            [ngTemplateOutlet]="tempoInputTemplate"
+                                                                            [ngTemplateOutletContext]="{ setControl: setControl, exIndex: exIndex, setIndex: setIndex }"></ng-container>
+                                                                    </div>
+                                                                </ng-container>
+                                                            </ng-container>
+
+                                                            <!-- GHOST BUTTON LOGIC -->
+                                                            <!-- Renders in the next available grid slot if there are fields left to add -->
+                                                            <div *ngIf="fieldOrder.length < 4 && isEditableMode()"
+                                                                class="flex items-center justify-center h-full">
+                                                                <button
+                                                                    (click)="promptAddField(exIndex, setIndex); $event.stopPropagation()"
+                                                                    class="flex items-center justify-center w-full p-2 h-16 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-md text-gray-400 hover:bg-gray-200/50 dark:hover:bg-gray-700/50 transition-colors">
+                                                                    <app-icon name="plus-circle"
+                                                                        class="h-6 w-6"></app-icon>
+                                                                </button>
+                                                            </div>
+                                                        </ng-container>
+                                                        <!-- =================== END OF DYNAMIC FIELD RENDERING =================== -->
 
 
 
@@ -925,7 +942,7 @@
                             <!-- ACTION MENU CONTAINER (MOVED OUTSIDE the clickable cdkDrag div) -->
 
                         </div>
-                        <div class="absolute top-1 right-1 z-20">
+                        <div class="absolute top-1 right-1 z-20" [ngClass]="{ 'top-3': isSuperSet(exIndex) }">
                             <!-- Expanded View Actions (Delete, Fill, EMOM, Switch, More Actions Menu) -->
                             <div *ngIf="isEditableMode()" class="flex items-center space-x-1">
                                 <!-- The "More Actions" Menu Itself -->
@@ -977,17 +994,10 @@
 
         <div *ngIf="!isViewMode" class="py-2 px-1 flex-col gap-2 flex items-center">
 
-            <!-- Button 1: CANCEL -->
-            <!-- <button type="button" [routerLink]="mode === 'routineBuilder' ? '/workout' : '/history/list'"
-                style="min-width: 180px"
-                class="flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-m font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-500">
-                <app-icon name="cancel" class="h-5 w-5 mr-1"></app-icon>
-                CANCEL
-            </button> -->
             <div *ngIf="mode !== 'manualLogEntry' && (builderForm.get('goal')?.value !== 'rest')"
                 class="text-center text-gray-500 dark:text-gray-400 border border-dashed dark:border-gray-700 rounded-md mt-4">
                 <button type="button" style="min-width: 180px" (click)="openExerciseSelectionModal()"
-                    class="flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-800 disabled:opacity-50">
+                    class="flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-800 disabled:opacity-50 min-w-[220px] ">
                     <app-icon name="plus-circle" class="h-6 w-6 mr-1"></app-icon>
                     <!-- Button Text -->
                     {{ 'workoutBuilder.addExerciseButton' | translate }}
@@ -996,12 +1006,21 @@
 
             <!-- Button 2: SUBMIT -->
             <button type="button" [disabled]="isFormInvalid()" (click)="onSubmit()" style="min-width: 180px"
-                class="flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark disabled:opacity-50">
+                class="min-w-[220px] flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark disabled:opacity-50">
                 <app-icon name="save" class="h-6 w-6 mr-1"></app-icon>
                 <!-- Button Text -->
                 {{ (mode === 'routineBuilder' ? 'workoutBuilder.routineBuilder.saveButton' : (isNewMode ?
                 'workoutBuilder.logEntry.logButton' : 'workoutBuilder.logEntry.saveLogButton')) | translate }}
             </button>
+
+            <!-- WORKOUT GENERATOR -->
+            <div *ngIf="isGeneratedRoutine()" class="p-2 text-center">
+                <button type="button" (click)="regenerateWorkout()"
+                    class="min-w-[220px] inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
+                    <app-icon name="random" class="h-5 w-5 mr-2"></app-icon>
+                    REGENERATE WORKOUT
+                </button>
+            </div>
 
         </div>
     </form>
@@ -1038,7 +1057,8 @@
 
 </app-modal>
 
-<app-modal [forceFullScreen]="true" *ngIf="exerciseDetailsId" [(isOpen)]="isSimpleModalOpen" [modalTitle]="exerciseDetailsName">
+<app-modal [forceFullScreen]="true" *ngIf="exerciseDetailsId" [(isOpen)]="isSimpleModalOpen"
+    [modalTitle]="exerciseDetailsName">
     <app-exercise-detail [id]="exerciseDetailsId" [isModal]="true"></app-exercise-detail>
 </app-modal>
 
@@ -1247,3 +1267,7 @@
             class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
     </div>
 </ng-template>
+
+<app-generate-workout-modal [isOpen]="isGeneratorModalOpen()" (close)="isGeneratorModalOpen.set(false)"
+    (generate)="handleWorkoutGeneration($event)">
+</app-generate-workout-modal>

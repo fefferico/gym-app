@@ -1222,9 +1222,11 @@
         "save_log_changes": "SALVA MODIFICHE",
         "start": "INIZIA",
         "log": "LOG",
-        "undo": "Annulla",
-    "redo": "Ripristina",
-    "restore": "Ripristina Originale"
+        "undo": "ANNULLA",
+    "redo": "RIPRISTINA",
+    "restore": "RIPRISTINA ORIGINALE",
+            "start_new_session": "INIZIA NUOVA SESSIONE (SCHEDA VUOTA)",
+            "generate": "GENERA SCHEDA"
     },
     "logDetail": {
         "title": "Dettaglio Allenamento",

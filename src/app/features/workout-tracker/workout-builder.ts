@@ -45,6 +45,9 @@ import { colorBtn } from '../../core/services/buttons-data';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NgLetDirective } from '../../shared/directives/ng-let.directive';
+import { GenerateWorkoutModalComponent } from './generate-workout-modal/generate-workout-modal.component';
+import { WorkoutGenerationOptions, WorkoutGeneratorService } from '../../core/services/workout-generator.service';
+import { PremiumFeature, SubscriptionService } from '../../core/services/subscription.service';
 
 type BuilderMode = 'routineBuilder' | 'manualLogEntry';
 
@@ -55,7 +58,8 @@ type BuilderMode = 'routineBuilder' | 'manualLogEntry';
     FormsModule, DragDropModule, WeightUnitPipe, TitleCasePipe,
     LongPressDragDirective, AutoGrowDirective, ActionMenuComponent,
     ModalComponent, ClickOutsideDirective,
-    ExerciseDetailComponent, IconComponent, TooltipDirective, ExerciseSelectionModalComponent, MillisecondsDatePipe, FabMenuComponent, TranslateModule, NgLetDirective],
+    ExerciseDetailComponent, IconComponent, TooltipDirective, ExerciseSelectionModalComponent, MillisecondsDatePipe, FabMenuComponent, TranslateModule, NgLetDirective,
+    GenerateWorkoutModalComponent],
   templateUrl: './workout-builder.html',
   styleUrl: './workout-builder.scss',
   providers: [DecimalPipe]
@@ -76,6 +80,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   private platformId = inject(PLATFORM_ID);
   private appSettingsService = inject(AppSettingsService);
   private translate = inject(TranslateService);
+  private workoutGeneratorService = inject(WorkoutGeneratorService);
+  private subscriptionService = inject(SubscriptionService);
 
 
   @ViewChildren('setRepsInput') setRepsInputs!: QueryList<ElementRef<HTMLInputElement>>;
@@ -188,6 +194,11 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   */
   readonly defaultMetricFieldOrder = ['reps', 'weight', 'distance', 'duration'];
 
+  // Add new signals to manage the generator's state
+  isGeneratorModalOpen = signal(false);
+  isGeneratedRoutine = signal(false);
+  lastGenerationOptions = signal<WorkoutGenerationOptions | null>(null);
+
   constructor() {
     this.builderForm = this.fb.group({
       name: [''], // Validated based on mode
@@ -268,6 +279,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
     this.routeSub = this.route.data.pipe(
       switchMap(data => {
+        this.isGeneratedRoutine.set(false);
         this.mode = data['mode'] as BuilderMode || 'routineBuilder';
         this.isNewMode = data['isNew'] === true; // True if creating new (Routine or Log)
         console.log(`Builder ngOnInit: Mode=${this.mode}, isNewMode=${this.isNewMode}`);
@@ -2347,12 +2359,12 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
     // Check if tagsValue is a string (from user input) or already an array (from a restored state)
     if (typeof tagsValue === 'string') {
-        tagsArray = tagsValue.split(',')
-            .map((tag: string) => tag.trim())
-            .filter((tag: string) => tag.length > 0);
+      tagsArray = tagsValue.split(',')
+        .map((tag: string) => tag.trim())
+        .filter((tag: string) => tag.length > 0);
     } else if (Array.isArray(tagsValue)) {
-        // If it's already an array, just use it directly.
-        tagsArray = tagsValue;
+      // If it's already an array, just use it directly.
+      tagsArray = tagsValue;
     }
 
     const valueObj: Routine = {
@@ -3537,6 +3549,29 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
           cssClass: 'bg-yellow-500 focus:ring-yellow-400',
         });
       }
+
+      // if (this.isGeneratedRoutine()) {
+      //   // If the current routine was generated, show a "Regenerate" button
+      //   this.fabMenuItems.unshift({
+      //     label: 'fab.regenerate',
+      //     actionKey: 'regenerate_workout',
+      //     iconName: 'random',
+      //     cssClass: 'bg-purple-500 focus:ring-purple-400',
+      //   });
+      // } else 
+      // if (this.isNewMode) {
+      // Otherwise, if creating a new routine, show the "Generate" button
+
+      if (this.subscriptionService.canAccess(PremiumFeature.WORKOUT_GENERATOR)) {
+        this.fabMenuItems.unshift({
+          label: 'fab.generate',
+          actionKey: 'generate_workout',
+          iconName: 'magic-wand',
+          cssClass: 'bg-purple-500 focus:ring-purple-400',
+          isPremium: true
+        });
+      }
+      // }
     } else {
       this.fabMenuItems = [
         {
@@ -3564,9 +3599,30 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       case 'undo': this.undoLastChange(); break;
       case 'redo': this.redoLastChange(); break;
       case 'restore': this.restoreOriginal(); break;
+      case 'generate_workout':
+        this.openWorkoutGenerator();
+        break;
+      case 'regenerate_workout':
+        this.regenerateWorkout();
+        break;
     }
   }
 
+
+  /**
+     * NEW: Directly regenerates the workout using the last known options,
+     * or triggers a new 'quick' generation if no options are stored.
+     */
+  async regenerateWorkout(): Promise<void> {
+    const lastOptions = this.lastGenerationOptions();
+    if (lastOptions) {
+      // If we have stored options, use them for regeneration
+      await this.handleWorkoutGeneration(lastOptions);
+    } else {
+      // If the last generation was 'quick' or there are no options, do another quick one
+      await this.handleWorkoutGeneration('quick');
+    }
+  }
 
 
 
@@ -3614,6 +3670,12 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         buttonClass: 'bg-purple-500 text-white hover:bg-purple-700',
         actionKey: 'ungroup',
         iconName: 'ungroup',
+      });
+      items.push({
+        label: this.translate.instant('workoutBuilder.exercise.remove'),
+        buttonClass: 'bg-red-500 text-white hover:bg-red-700',
+        actionKey: 'remove',
+        iconName: 'trash',
       });
     } else {
       items.push({
@@ -4057,26 +4119,26 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     return null;
   }
 
-public async promptRemoveField(exIndex: number, setIndex: number): Promise<void> {
+  public async promptRemoveField(exIndex: number, setIndex: number): Promise<void> {
     const currentRoutine = this.liveFormAsRoutine();
     if (!currentRoutine) return;
 
     const updatedRoutine = await this.workoutService.promptRemoveField(currentRoutine, exIndex, setIndex);
-    
+
     if (updatedRoutine) {
-        // Get the updated set data (with the field removed) from the routine returned by the service
-        const updatedSetData = updatedRoutine.exercises[exIndex].sets[setIndex];
-        
-        // Get the FormArray for the sets of the specific exercise
-        const setsFormArray = this.getSetsFormArray(this.exercisesFormArray.at(exIndex));
-        
-        // Create a brand new FormGroup based on this updated data structure
-        const newSetFormGroup = this.createSetFormGroup(updatedSetData, this.mode === 'manualLogEntry');
-        
-        // Replace the old FormGroup at the specified index with the new one
-        setsFormArray.setControl(setIndex, newSetFormGroup);
+      // Get the updated set data (with the field removed) from the routine returned by the service
+      const updatedSetData = updatedRoutine.exercises[exIndex].sets[setIndex];
+
+      // Get the FormArray for the sets of the specific exercise
+      const setsFormArray = this.getSetsFormArray(this.exercisesFormArray.at(exIndex));
+
+      // Create a brand new FormGroup based on this updated data structure
+      const newSetFormGroup = this.createSetFormGroup(updatedSetData, this.mode === 'manualLogEntry');
+
+      // Replace the old FormGroup at the specified index with the new one
+      setsFormArray.setControl(setIndex, newSetFormGroup);
     }
-}
+  }
 
   getFieldsForSet(exIndex: number, setIndex: number): { visible: string[], hidden: string[] } {
     const routine = this.liveFormAsRoutine();
@@ -4084,26 +4146,26 @@ public async promptRemoveField(exIndex: number, setIndex: number): Promise<void>
     return this.workoutService.getFieldsForSet(routine, exIndex, setIndex);
   }
 
-public async promptAddField(exIndex: number, setIndex: number): Promise<void> {
+  public async promptAddField(exIndex: number, setIndex: number): Promise<void> {
     const currentRoutine = this.liveFormAsRoutine();
     if (!currentRoutine) return;
 
     const updatedRoutine = await this.workoutService.promptAddField(currentRoutine, exIndex, setIndex);
 
     if (updatedRoutine) {
-        // Get the updated set data from the routine returned by the service
-        const updatedSetData = updatedRoutine.exercises[exIndex].sets[setIndex];
-        
-        // Get the FormArray for the sets of the specific exercise
-        const setsFormArray = this.getSetsFormArray(this.exercisesFormArray.at(exIndex));
-        
-        // Create a brand new FormGroup for the set
-        const newSetFormGroup = this.createSetFormGroup(updatedSetData, this.mode === 'manualLogEntry');
-        
-        // Replace the old FormGroup with the new one
-        setsFormArray.setControl(setIndex, newSetFormGroup);
+      // Get the updated set data from the routine returned by the service
+      const updatedSetData = updatedRoutine.exercises[exIndex].sets[setIndex];
+
+      // Get the FormArray for the sets of the specific exercise
+      const setsFormArray = this.getSetsFormArray(this.exercisesFormArray.at(exIndex));
+
+      // Create a brand new FormGroup for the set
+      const newSetFormGroup = this.createSetFormGroup(updatedSetData, this.mode === 'manualLogEntry');
+
+      // Replace the old FormGroup with the new one
+      setsFormArray.setControl(setIndex, newSetFormGroup);
     }
-}
+  }
 
 
   /**
@@ -4250,11 +4312,11 @@ public async promptAddField(exIndex: number, setIndex: number): Promise<void> {
     if (confirm && confirm.data) {
       this.isUndoingOrRedoing = true; // Use the same flag to prevent history pollution
       this.restoreFormState(this.originalStateSnapshot);
-      
+
       // After restoring, clear the undo/redo history as it's no longer valid
       this.history = [JSON.parse(JSON.stringify(this.originalStateSnapshot))];
       this.historyIndex = 0;
-      
+
       this.toastService.success("Routine has been restored to its original state.");
       this.updateHistorySignals();
     }
@@ -4290,9 +4352,70 @@ public async promptAddField(exIndex: number, setIndex: number): Promise<void> {
   // This will store the pristine, initial state of the routine when editing
   private originalStateSnapshot: any = null;
 
-// +++ NEW: Helper to update button states +++
+  // +++ NEW: Helper to update button states +++
   private updateHistorySignals(): void {
     this.canUndo.set(this.historyIndex > 0);
     this.canRedo.set(this.historyIndex < this.history.length - 1);
+  }
+
+  /**
+     * Handles the output from the generation modal, generates the workout,
+     * and patches the form with the result.
+     */
+  async handleWorkoutGeneration(options: WorkoutGenerationOptions | 'quick'): Promise<void> {
+    this.isGeneratorModalOpen.set(false);
+    this.spinnerService.show('Generating your workout...');
+
+    let generatedRoutine: Routine | null = null;
+    try {
+      // --- THIS IS THE CORRECTED LINE ---
+      // Removed the unnecessary `firstValueFrom()` wrapper.
+      if (options === 'quick') {
+        // For a quick workout, we don't have detailed options to save for a retry,
+        // so we'll just re-run the quick generator if they retry.
+        this.lastGenerationOptions.set(null); // Mark as quick
+        generatedRoutine = await this.workoutGeneratorService.generateQuickWorkout();
+      } else {
+        generatedRoutine = await this.workoutGeneratorService.generateWorkout(options);
+
+      }
+
+      // --- END OF CORRECTION ---
+
+      if (!generatedRoutine) {
+        // Handle the case where the generator returns null (e.g., no exercises found)
+        this.errorMessage.set("Could not generate a workout with the selected options. Please try different criteria.");
+        this.isGeneratedRoutine.set(false);
+        this.lastGenerationOptions.set(null);
+        return; // Stop execution
+      }
+
+      if (options !== 'quick') {
+        this.lastGenerationOptions.set(options);
+      } else {
+        this.lastGenerationOptions.set(null); // No options to save for quick generate
+      }
+
+      // Patch the main builder form with the new routine data
+      this.patchFormWithRoutineData(generatedRoutine);
+      this.builderForm.markAsDirty();
+
+      // Set the flag to true so the UI can show the "Regenerate" button
+      this.isGeneratedRoutine.set(true);
+      this.toastService.success("Workout generated successfully!");
+
+    } catch (error: any) {
+      this.errorMessage.set(error.message || "An unknown error occurred during workout generation.");
+    } finally {
+      this.spinnerService.hide();
+      this.refreshFabMenuItems(); // Refresh the FAB menu
+    }
+  }
+
+  /**
+   * Opens the workout generator modal.
+   */
+  private openWorkoutGenerator(): void {
+    this.isGeneratorModalOpen.set(true);
   }
 }
