@@ -932,7 +932,7 @@
         "lastUsed": "Ultimo uso: {{date}}",
         "noSimilar": "Nessun esercizio simile trovato.",
         "noMatches": "Nessun esercizio corrisponde ai tuoi filtri.",
-        "createCustom": "Oppure, crea una nuova voce per un esercizio personalizzato...",
+        "createCustom": "CREA UN ESERCIZIO PERSONALIZZATO...",
         "cancel": "ANNULLA",
         "frequencyGroups": {
             "gt30": "30+ Volte",
