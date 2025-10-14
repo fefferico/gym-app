@@ -315,20 +315,23 @@
                             <!-- The 'flex' class ensures they are on a single line. -->
                             <!-- The 'space-x-2' adds a gap between them. Adjust as needed (e.g., space-x-4). -->
                             <!-- The 'left-1/2 -translate-x-1/2' on this div centers the entire group of buttons. -->
-                        
-                            <button *ngIf="canRemoveSelectedExercises()" type="button" (click)="removeSelectedExercises()"
+
+                            <button *ngIf="canRemoveSelectedExercises()" type="button"
+                                (click)="removeSelectedExercises()"
                                 class="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold py-1.5 px-3 rounded-lg shadow-lg min-w-[100px]">
                                 {{ 'workoutBuilder.superset.removeExercisesButton' | translate:{count:
                                 selectedExerciseIndicesForMultipleRemoval().length} }}
                             </button>
-                        
+
                             <!-- Only one of these two buttons will ever be displayed at a time -->
-                            <button *ngIf="!canUngroupSelectedExercises()" type="button" (click)="groupSelectedAsSuperset()"
+                            <button *ngIf="!canUngroupSelectedExercises()" type="button"
+                                (click)="groupSelectedAsSuperset()"
                                 class="bg-green-600 hover:bg-green-700 text-white text-xs font-semibold py-1.5 px-3 rounded-lg shadow-lg min-w-[100px]">
                                 {{ 'workoutBuilder.superset.groupButton' | translate:{count:
                                 selectedExerciseIndicesForSuperset().length} }}
                             </button>
-                            <button *ngIf="canUngroupSelectedExercises()" type="button" (click)="ungroupSuperset(exIndex)"
+                            <button *ngIf="canUngroupSelectedExercises()" type="button"
+                                (click)="ungroupSuperset(exIndex)"
                                 class="bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold py-1.5 px-3 rounded-lg shadow-lg min-w-[100px]">
                                 {{ 'workoutBuilder.superset.ungroupButton' | translate:{count:
                                 selectedExerciseIndicesForSuperset().length} }}
@@ -344,9 +347,10 @@
                             (click)="expandExerciseCard(exIndex, $event)"
                             [title]="isEditableMode() && !shouldShowExpandedExercise(exIndex)? ('workoutBuilder.exercise.dragToReorder' | translate) : ''">
 
-                            <div #superSetControlPanel_Info *ngIf="isEditableMode() && isSuperSet(exIndex) && isFirstInSuperset(exIndex)"
+                            <div #superSetControlPanel_Info
+                                *ngIf="isEditableMode() && isSuperSet(exIndex) && isFirstInSuperset(exIndex)"
                                 class="flex flex-col items-end space-y-2 flex-shrink-0 w-full sm:w-auto">
-                            
+
                                 <!-- +++ START: NEW UNIFIED CONTROL PANEL +++ -->
                                 <div class="py-2 px-1 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-sm w-full">
                                     <!-- Col 1: Round Management -->
@@ -357,12 +361,13 @@
                                         <strong class="text-lg text-gray-900 dark:text-white">{{
                                             getSetsFormArray(exerciseControl).length }}</strong>
                                     </div>
-                            
+
                                     <!-- Col 1: Type Label -->
                                     <div class="flex items-center justify-start">
                                         <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">{{
                                             'workoutBuilder.set.type' | translate }}: </span>
-                                            <strong class="text-sm" [ngClass]="standarSuperSetOrEmomClass(exerciseControl, true)">
+                                        <strong class="text-sm"
+                                            [ngClass]="standarSuperSetOrEmomClass(exerciseControl, true)">
                                             {{ (exerciseControl.get('supersetType')?.value || 'standard') |
                                             titlecase }}
                                         </strong>
@@ -371,28 +376,28 @@
                                             {{ 'workoutBuilder.changeType' | translate }}
                                         </button>
                                     </div>
-                            
+
                                     <!-- EMOM Time Input (Full Width) -->
-                                    <div *ngIf="exerciseControl.get('supersetType')?.value === 'emom'" class="col-span-2 flex items-center gap-x-2">
+                                    <div *ngIf="exerciseControl.get('supersetType')?.value === 'emom'"
+                                        class="col-span-2 flex items-center gap-x-2">
                                         <label [for]="'emomTime-' + exIndex"
                                             class="text-sm font-semibold text-gray-700 dark:text-gray-300 flex-shrink-0">{{
                                             'workoutBuilder.set.time' | translate }}
                                             (s):</label>
-                                        <input type="number" [id]="'emomTime-' + exIndex" formControlName="emomTimeSeconds" min="10"
+                                        <input type="number" [id]="'emomTime-' + exIndex"
+                                            formControlName="emomTimeSeconds" min="10"
                                             class="w-full p-1 text-m border-gray-300 dark:border-gray-500 rounded-md focus:ring-primary dark:bg-gray-600 dark:text-gray-200 text-right">
                                     </div>
                                 </div>
                             </div>
 
                             <div class="exercise-item-content">
-                                <div *ngIf="isFirstInSuperset(exIndex)"
-                                    class="px-2 text-md font-medium mt-0.5"
+                                <div *ngIf="isFirstInSuperset(exIndex)" class="px-2 text-md font-medium mt-0.5"
                                     [ngClass]="standarSuperSetOrEmomClass(exerciseControl, false)">
                                     {{ standarSuperSetOrEmomLabel(exerciseControl) }}
                                 </div>
                                 <!-- COMPACT VIEW / HEADER AREA -->
-                                <div 
-                                    class="flex items-center space-x-1 pt-1">
+                                <div class="flex items-center space-x-1 pt-1">
                                     <!-- DRAG HANDLE ICON (Now just a visual cue) -->
                                     <div *ngIf="isEditableMode() && !shouldShowExpandedExercise(exIndex)"
                                         data-drag-handle
@@ -409,8 +414,7 @@
                                         [id]="'superset-select-' + exIndex"
                                         (change)="toggleExerciseSelection(exIndex, $event)"
                                         [checked]="selectedExerciseIndicesForSuperset().includes(exIndex)"
-                                        class="h-6 w-6 text-orange-600 border-gray-300 dark:border-gray-600 rounded-md focus:ring-orange-500 flex-shrink-0 disabled:opacity-50"
-                                        >
+                                        class="h-6 w-6 text-orange-600 border-gray-300 dark:border-gray-600 rounded-md focus:ring-orange-500 flex-shrink-0 disabled:opacity-50">
                                     <!-- EXERCISE NAME & SUPERSET INFO / SETS SUMMARY FOR COMPACT -->
                                     <div *ngIf="!shouldShowExpandedExercise(exIndex)"
                                         class="flex-grow min-w-0 py-2 px-0">
@@ -437,8 +441,10 @@
                                                         *ngIf="getUniformSetValues(exerciseControl) as uniformValues; else detailedSetView">
                                                         <!-- UNIFORM VIEW: Shows when all sets have the same reps/weight -->
                                                         <p>
-                                                            <span>{{ (!isSuperSet(exIndex) ? ('workoutBuilder.set.set' | translate) + ': ' : 
-                                                            ('workoutBuilder.superset.rounds' | translate) + ':') + ' ' +
+                                                            <span>{{ (!isSuperSet(exIndex) ? ('workoutBuilder.set.set' |
+                                                                translate) + ': ' :
+                                                                ('workoutBuilder.superset.rounds' | translate) + ':') +
+                                                                ' ' +
                                                                 exerciseControl.get('sets')?.value?.length
                                                                 }}</span>
                                                             <!-- Case 1: Weighted Exercise (e.g., 3 sets (10 x 50kg)) -->
@@ -651,7 +657,7 @@
                                         class="space-y-1">
                                         <!-- START: Control Panel for Standard Exercises -->
                                         <div *ngIf="!exerciseControl.get('supersetId')?.value"
-                                            class="py-2 px-1 rounded-lg grid grid-cols-2 gap-x-3 gap-y-2">
+                                            class="flex-col py-2 px-1 flex gap-y-2">
 
                                             <!-- Col 1: Sets Count -->
                                             <div class="flex items-center gap-x-2">
@@ -660,6 +666,90 @@
                                                 </span>
                                                 <strong class="text-lg text-gray-900 dark:text-white">{{
                                                     getSetsFormArray(exerciseControl).length }}</strong>
+                                            </div>
+
+                                            <!-- +++ START: NEW COLLAPSIBLE "SET ALL" PANEL +++ -->
+                                            <div *ngIf="isEditableMode()" class="px-2 pt-2">
+                                                <!-- Toggle Button -->
+                                                <button (click)="toggleSetAllPanel(exIndex, $event)"
+                                                    class="w-full flex justify-between items-center p-2 text-sm font-semibold text-gray-600 dark:text-gray-300 bg-gray-200 dark:bg-gray-700/60 rounded-md hover:bg-gray-300 dark:hover:bg-gray-700">
+                                                    <span>Set Values for All Sets</span>
+                                                    <app-icon name="chevron-down"
+                                                        class="h-5 w-5 transition-transform duration-200"
+                                                        [class.rotate-180]="expandedSetAllPanel() === exIndex"></app-icon>
+                                                </button>
+
+                                                <!-- Collapsible Content -->
+                                                <div class="overflow-hidden transition-all duration-300 ease-in-out"
+                                                    [style.maxHeight]="expandedSetAllPanel() === exIndex ? '500px' : '0px'">
+                                                    <div
+                                                        class="p-4 border border-t-0 border-gray-200 dark:border-gray-700 rounded-b-md bg-white dark:bg-gray-800">
+                                                        <div class="grid grid-cols-2 gap-4">
+
+                                                            <!-- Reps Input -->
+                                                            <div *ngIf="getVisibleColumnsForExercise(exIndex)['reps']">
+                                                                <label
+                                                                    class="block text-xs font-medium text-gray-500 dark:text-gray-200">Reps</label>
+                                                                <input type="number" [(ngModel)]="repsToSetForAll"
+                                                                    [ngModelOptions]="{standalone: true}"
+                                                                    class="mt-1 w-full p-1.5 text-sm border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200">
+                                                            </div>
+
+                                                            <!-- Weight Input -->
+                                                            <div
+                                                                *ngIf="getVisibleColumnsForExercise(exIndex)['weight']">
+                                                                <label
+                                                                    class="block text-xs font-medium text-gray-500 dark:text-gray-200">Weight
+                                                                    ({{ unitService.getWeightUnitSuffix() }})</label>
+                                                                <input type="number" [(ngModel)]="weightToSetForAll"
+                                                                    [ngModelOptions]="{standalone: true}"
+                                                                    class="mt-1 w-full p-1.5 text-sm border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200">
+                                                            </div>
+
+                                                            <!-- Duration Input -->
+                                                            <div
+                                                                *ngIf="getVisibleColumnsForExercise(exIndex)['duration']">
+                                                                <label
+                                                                    class="block text-xs font-medium text-gray-500 dark:text-gray-200">Duration
+                                                                    (s)</label>
+                                                                <input type="number" [(ngModel)]="durationToSetForAll"
+                                                                    [ngModelOptions]="{standalone: true}"
+                                                                    class="mt-1 w-full p-1.5 text-sm border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200">
+                                                            </div>
+
+                                                            <!-- Distance Input -->
+                                                            <div
+                                                                *ngIf="getVisibleColumnsForExercise(exIndex)['distance']">
+                                                                <label
+                                                                    class="block text-xs font-medium text-gray-500 dark:text-gray-200">Distance
+                                                                    ({{ unitService.getDistanceMeasureUnitSuffix()
+                                                                    }})</label>
+                                                                <input type="number" [(ngModel)]="distanceToSetForAll"
+                                                                    [ngModelOptions]="{standalone: true}"
+                                                                    class="mt-1 w-full p-1.5 text-sm border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200">
+                                                            </div>
+
+                                                            <!-- Rest Input (Only for Routine Builder) -->
+                                                            <div *ngIf="mode === 'routineBuilder'">
+                                                                <label
+                                                                    class="block text-xs font-medium text-gray-500 dark:text-gray-200">Rest
+                                                                    (s)</label>
+                                                                <input type="number" [(ngModel)]="restToSetForAll"
+                                                                    [ngModelOptions]="{standalone: true}"
+                                                                    class="mt-1 w-full p-1.5 text-sm border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200">
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Apply Button -->
+                                                        <div class="mt-4 text-right">
+                                                            <button (click)="applyToAllSets(exIndex)"
+                                                                [disabled]="repsToSetForAll() === null && weightToSetForAll() === null && durationToSetForAll() === null && distanceToSetForAll() === null && restToSetForAll() === null"
+                                                                class="px-4 py-2 bg-primary text-white text-sm font-semibold rounded-md shadow-sm hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed">
+                                                                Apply to All
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                         <!-- END: Control Panel for Standard Exercises -->
@@ -929,14 +1019,15 @@
                                 </div>
                             </div>
 
-                                    <!-- Col 2: Round +/- Buttons -->
+                            <!-- Col 2: Round +/- Buttons -->
 
                             <div #superSetControlPanel_rounds class="flex items-center justify-center py-2"
                                 *ngIf="isEditableMode() && isSuperSet(exIndex) && isLastInSuperset(exIndex)">
-                                <div class="flex w-fit items-center justify-center gap-1 bg-gray-200 dark:bg-gray-900/50 p-1 rounded-full">
+                                <div
+                                    class="flex w-fit items-center justify-center gap-1 bg-gray-200 dark:bg-gray-900/50 p-1 rounded-full">
                                     <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                                            {{ 'workoutBuilder.superset.rounds' | translate }}:
-                                        </span>
+                                        {{ 'workoutBuilder.superset.rounds' | translate }}:
+                                    </span>
                                     <button type="button" (click)="removeRoundFromSuperset(exerciseControl, $event)"
                                         [disabled]="getSetsFormArray(exerciseControl).length <= 1"
                                         class="p-1.5 rounded-full bg-red-200 hover:bg-red-300 text-red-700 disabled:opacity-50 flex items-center"
@@ -949,8 +1040,8 @@
                                         <app-icon name="plus-circle" class="h-6 w-6"></app-icon>
                                     </button>
                                 </div>
-                            
-                            
+
+
                             </div>
                         </div>
                         <div class="absolute top-1 right-1 z-20" [ngClass]="{ 'top-3': isSuperSet(exIndex) }">
@@ -972,7 +1063,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                     </div>
                 </ng-container>
             </div>

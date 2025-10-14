@@ -4551,4 +4551,101 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     const expandedPath = this.expandedExercisePath();
     return expandedPath?.exerciseIndex === firstInGroupIndex;
   }
+
+
+
+    // Add this getter to resolve the error
+    private baseExercise(): Exercise | undefined {
+      // Assuming you have a way to get the currently selected exerciseId, e.g. this.selectedExerciseId
+      // Replace 'this.selectedExerciseId' with the actual property or logic you use to track the selected exercise
+      const selectedExerciseId = this.exercisesFormArray.length > 0
+        ? (this.exercisesFormArray.at(0) as FormGroup).get('exerciseId')?.value
+        : undefined;
+      return this.availableExercises.find(e => e.id === selectedExerciseId);
+    }
+
+          isBodyweight = computed<boolean>(() => this.baseExercise()?.category === 'bodyweight/calisthenics');
+    isCardio = computed<boolean>(() => this.baseExercise()?.category === 'cardio');
+  
+    
+    // Tracks which exercise's "Set All" panel is currently expanded.
+  expandedSetAllPanel = signal<number | null>(null);
+
+  // Signals to hold the temporary values from the "Set All" input fields.
+  repsToSetForAll = signal<number | null>(null);
+  weightToSetForAll = signal<number | null>(null);
+  durationToSetForAll = signal<number | null>(null);
+  distanceToSetForAll = signal<number | null>(null);
+  restToSetForAll = signal<number | null>(null);
+
+  
+  /**
+   * Toggles the visibility of the "Set All" collapsible panel for a given exercise.
+   * @param exIndex The index of the exercise.
+   * @param event The mouse event to stop it from propagating and collapsing the card.
+   */
+  toggleSetAllPanel(exIndex: number, event: Event): void {
+    event.stopPropagation();
+    this.expandedSetAllPanel.update(current => (current === exIndex ? null : exIndex));
+  }
+
+  /**
+   * Applies the values entered in the "Set All" panel to every set of a specific exercise.
+   * @param exIndex The index of the exercise in the form array.
+   */
+  applyToAllSets(exIndex: number): void {
+    const exerciseControl = this.exercisesFormArray.at(exIndex) as FormGroup;
+    const setsArray = this.getSetsFormArray(exerciseControl);
+    const patchData: { [key: string]: any } = {};
+
+    // Build the patch object only with the fields that have been filled in
+    if (this.repsToSetForAll() !== null) {
+      const field = this.mode === 'manualLogEntry' ? 'repsAchieved' : 'targetReps';
+      patchData[field] = this.repsToSetForAll();
+      if (this.mode === 'routineBuilder') { // Clear range values if setting a single value
+        patchData['targetRepsMin'] = null;
+        patchData['targetRepsMax'] = null;
+      }
+    }
+    if (this.weightToSetForAll() !== null) {
+      const field = this.mode === 'manualLogEntry' ? 'weightUsed' : 'targetWeight';
+      patchData[field] = this.weightToSetForAll();
+    }
+    if (this.durationToSetForAll() !== null) {
+      const field = this.mode === 'manualLogEntry' ? 'durationPerformed' : 'targetDuration';
+      patchData[field] = this.durationToSetForAll();
+    }
+    if (this.distanceToSetForAll() !== null) {
+      const field = this.mode === 'manualLogEntry' ? 'distanceAchieved' : 'targetDistance';
+      patchData[field] = this.distanceToSetForAll();
+    }
+    if (this.restToSetForAll() !== null) {
+      // Rest is only a planned value, so it only applies to routineBuilder mode
+      if (this.mode === 'routineBuilder') {
+        patchData['restAfterSet'] = this.restToSetForAll();
+      }
+    }
+
+    // If no values were entered, do nothing
+    if (Object.keys(patchData).length === 0) {
+      this.toastService.info("No values entered to apply.");
+      return;
+    }
+
+    // Apply the patch to every set
+    setsArray.controls.forEach(setControl => {
+      setControl.patchValue(patchData);
+    });
+
+    // Reset the input fields and collapse the panel
+    this.repsToSetForAll.set(null);
+    this.weightToSetForAll.set(null);
+    this.durationToSetForAll.set(null);
+    this.distanceToSetForAll.set(null);
+    this.restToSetForAll.set(null);
+    this.expandedSetAllPanel.set(null);
+
+    this.toastService.success(`Applied values to all ${setsArray.length} sets.`);
+  }
+
 }
