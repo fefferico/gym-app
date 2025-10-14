@@ -2193,5 +2193,34 @@
     "programs": "ПЛАНЫ",
     "stats": "СТАТИСТИКА",
     "profile": "ПРОФИЛЬ"
+  },
+  "generateWorkoutModal": {
+    "title": "Создать тренировку",
+    "durationLabel": "Продолжительность",
+    "durationUnit": "мин",
+    "goalLabel": "Цель",
+    "goals": {
+      "hypertrophy": "Гипертрофия (Объем)",
+      "strength": "Сила",
+      "endurance": "Выносливость"
+    },
+    "splitLabel": "Сплит тренировок",
+    "splits": {
+      "fullBody": "Все тело",
+      "upperLower": "Верх / Низ",
+      "ppl": "Тяни / Толкай / Ноги"
+    },
+    "targetMusclesLabel": "Целевые мышцы (необязательно)",
+    "avoidMusclesLabel": "Избегать мышцы (необязательно)",
+    "equipmentLabel": "Оборудование",
+    "usePersonalGymLabel": "Использовать мое оборудование",
+    "noPersonalGym": "Личное оборудование не найдено. Пожалуйста, добавьте оборудование в свой профиль.",
+    "excludeEquipmentLabel": "Исключить оборудование (необязательно)",
+    "searchPlaceholder": "Поиск оборудования...",
+    "excludedListLabel": "Исключенное оборудование",
+    "fab": {
+      "detailed": "СОЗДАТЬ ИНДИВИДУАЛЬНУЮ ТРЕНИРОВКУ",
+      "quick": "УДИВИ МЕНЯ!"
+    }
   }
 }

@@ -2202,5 +2202,34 @@
     "programs": "PROGRAMAS",
     "stats": "ESTATÍSTICAS",
     "profile": "PERFIL"
+  },
+  "generateWorkoutModal": {
+    "title": "Gerar Treino",
+    "durationLabel": "Duração",
+    "durationUnit": "min",
+    "goalLabel": "Objetivo",
+    "goals": {
+      "hypertrophy": "Hipertrofia (Tamanho)",
+      "strength": "Força",
+      "endurance": "Resistência"
+    },
+    "splitLabel": "Divisão do Treino",
+    "splits": {
+      "fullBody": "Corpo Inteiro",
+      "upperLower": "Superior / Inferior",
+      "ppl": "Empurrar / Puxar / Pernas"
+    },
+    "targetMusclesLabel": "Músculos Alvo (Opcional)",
+    "avoidMusclesLabel": "Evitar Músculos (Opcional)",
+    "equipmentLabel": "Equipamento",
+    "usePersonalGymLabel": "Usar Meu Equipamento Pessoal",
+    "noPersonalGym": "Nenhum equipamento pessoal encontrado. Por favor, adicione equipamento ao seu perfil.",
+    "excludeEquipmentLabel": "Excluir Equipamento (Opcional)",
+    "searchPlaceholder": "Pesquisar equipamento...",
+    "excludedListLabel": "Equipamento Excluído",
+    "fab": {
+      "detailed": "GERAR TREINO PERSONALIZADO",
+      "quick": "SURPREENDA-ME!"
+    }
   }
 }

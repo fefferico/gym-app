@@ -994,6 +994,7 @@
             "lastPerformed": "Ultima volta",
             "notPerformed": "Mai eseguita",
             "estimatedDuration": "Durata stimata",
+            "totExercises": "Tot. esercizi",
             "lastDuration": "Ultima durata",
             "saveButton": "SALVA SCHEDA"
         },
@@ -1028,6 +1029,7 @@
         },
         "changeType": "Cambia",
         "superset": {
+            "removeExercisesButton": "Rimuovi esercizi",
             "groupButton": "Raggruppa in Superset ({{count}})",
             "ungroupButton": "Separa Superset ({{count}})",
             "exerciseLabel": "Esercizio del Superset [{{order}} di {{total}}]",
@@ -2213,6 +2215,36 @@
     "programs": "PROGRAMMI",
     "stats": "STATISTICHE",
     "profile": "PROFILO"
+  },
+
+  "generateWorkoutModal": {
+    "title": "Genera Allenamento",
+    "durationLabel": "Durata",
+    "durationUnit": "min",
+    "goalLabel": "Obiettivo",
+    "goals": {
+      "hypertrophy": "Ipertrofia (Massa)",
+      "strength": "Forza",
+      "endurance": "Resistenza"
+    },
+    "splitLabel": "Suddivisione Allenamento",
+    "splits": {
+      "fullBody": "Corpo Intero",
+      "upperLower": "Parte Superiore / Inferiore",
+      "ppl": "Spinta / Tirata / Gambe"
+    },
+    "targetMusclesLabel": "Muscoli Target (Opzionale)",
+    "avoidMusclesLabel": "Muscoli da Evitare (Opzionale)",
+    "equipmentLabel": "Attrezzatura",
+    "usePersonalGymLabel": "Usa la Mia Attrezzatura Personale",
+    "noPersonalGym": "Nessuna attrezzatura trovata nella tua palestra. Aggiungi attrezzatura al tuo profilo.",
+    "excludeEquipmentLabel": "Escludi Attrezzatura (Opzionale)",
+    "searchPlaceholder": "Cerca attrezzatura...",
+    "excludedListLabel": "Attrezzatura Esclusa",
+    "fab": {
+      "detailed": "GENERA ALLENAMENTO PERSONALIZZATO",
+      "quick": "SORPRENDIMI!"
+    }
   }
 
 }

@@ -2202,5 +2202,34 @@
     "programs": "البرامج",
     "stats": "الإحصائيات",
     "profile": "الملف الشخصي"
+  },
+  "generateWorkoutModal": {
+    "title": "إنشاء تمرين",
+    "durationLabel": "المدة",
+    "durationUnit": "دقيقة",
+    "goalLabel": "الهدف",
+    "goals": {
+      "hypertrophy": "تضخيم (حجم)",
+      "strength": "قوة",
+      "endurance": "تحمل"
+    },
+    "splitLabel": "تقسيم التمرين",
+    "splits": {
+      "fullBody": "كامل الجسم",
+      "upperLower": "علوي / سفلي",
+      "ppl": "دفع / سحب / أرجل"
+    },
+    "targetMusclesLabel": "العضلات المستهدفة (اختياري)",
+    "avoidMusclesLabel": "تجنب العضلات (اختياري)",
+    "equipmentLabel": "المعدات",
+    "usePersonalGymLabel": "استخدام معداتي الشخصية",
+    "noPersonalGym": "لم يتم العثور على معدات شخصية. الرجاء إضافة معدات إلى ملفك الشخصي.",
+    "excludeEquipmentLabel": "استبعاد المعدات (اختياري)",
+    "searchPlaceholder": "ابحث عن معدات...",
+    "excludedListLabel": "المعدات المستبعدة",
+    "fab": {
+      "detailed": "إنشاء تمرين مخصص",
+      "quick": "فاجئني!"
+    }
   }
 }

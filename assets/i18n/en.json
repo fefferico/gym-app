@@ -998,6 +998,7 @@
       "lastPerformed": "Last",
       "notPerformed": "Not performed yet",
       "estimatedDuration": "Est. duration",
+      "totExercises": "Tot. exercises",
       "lastDuration": "Last duration",
       "saveButton": "SAVE ROUTINE"
     },
@@ -1032,6 +1033,7 @@
     },
     "changeType": "Change",
     "superset": {
+      "removeExercisesButton": "Remove exercises",
       "groupButton": "Group Superset ({{count}})",
       "ungroupButton": "Ungroup Superset ({{count}})",
       "exerciseLabel": "Superset exercise [{{order}} of {{total}}]",
@@ -2246,6 +2248,35 @@
     "programs": "PROGRAMS",
     "stats": "STATS",
     "profile": "PROFILE"
-  }
+  },
 
+  "generateWorkoutModal": {
+    "title": "Generate Workout",
+    "durationLabel": "Duration",
+    "durationUnit": "min",
+    "goalLabel": "Goal",
+    "goals": {
+      "hypertrophy": "Hypertrophy (Size)",
+      "strength": "Strength",
+      "endurance": "Endurance"
+    },
+    "splitLabel": "Training Split",
+    "splits": {
+      "fullBody": "Full Body",
+      "upperLower": "Upper / Lower",
+      "ppl": "Push / Pull / Legs"
+    },
+    "targetMusclesLabel": "Target Muscles (Optional)",
+    "avoidMusclesLabel": "Avoid Muscles (Optional)",
+    "equipmentLabel": "Equipment",
+    "usePersonalGymLabel": "Use My Personal Gym Equipment",
+    "noPersonalGym": "No personal gym equipment found. Please add equipment to your profile.",
+    "excludeEquipmentLabel": "Exclude Equipment (Optional)",
+    "searchPlaceholder": "Search equipment...",
+    "excludedListLabel": "Excluded Equipment",
+    "fab": {
+      "detailed": "GENERATE CUSTOM WORKOUT",
+      "quick": "SURPRISE ME!"
+    }
+}
 }

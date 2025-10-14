@@ -2201,5 +2201,34 @@
     "programs": "プログラム",
     "stats": "統計",
     "profile": "プロフィール"
+  },
+  "generateWorkoutModal": {
+    "title": "トレーニングを生成",
+    "durationLabel": "期間",
+    "durationUnit": "分",
+    "goalLabel": "目標",
+    "goals": {
+      "hypertrophy": "筋肥大（サイズ）",
+      "strength": "筋力",
+      "endurance": "持久力"
+    },
+    "splitLabel": "トレーニング分割",
+    "splits": {
+      "fullBody": "全身",
+      "upperLower": "上半身/下半身",
+      "ppl": "プッシュ/プル/レッグ"
+    },
+    "targetMusclesLabel": "ターゲットの筋肉（任意）",
+    "avoidMusclesLabel": "避ける筋肉（任意）",
+    "equipmentLabel": "器具",
+    "usePersonalGymLabel": "私の個人ジムの器具を使用する",
+    "noPersonalGym": "個人ジムの器具が見つかりません。プロフィールに器具を追加してください。",
+    "excludeEquipmentLabel": "器具を除外（任意）",
+    "searchPlaceholder": "器具を検索...",
+    "excludedListLabel": "除外された器具",
+    "fab": {
+      "detailed": "カスタムトレーニングを生成",
+      "quick": "おまかせ！"
+    }
   }
 }
