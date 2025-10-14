@@ -1209,7 +1209,10 @@
     "save_log": "GUARDAR REGISTRO",
     "save_log_changes": "GUARDAR CAMBIOS DEL REGISTRO",
     "start": "EMPEZAR",
-    "log": "REGISTRAR"
+    "log": "REGISTRAR",
+    "undo": "DESHACER",
+    "redo": "REHACER",
+    "restore": "RESTAURAR ORIGINAL"
   },
   "logDetail": {
     "title": "Récords Personales",
@@ -2180,5 +2183,13 @@
     "general": {
       "cancel": "Cancelar"
     }
+  },
+  "navigation": {
+    "home": "INICIO",
+    "routines": "RUTINAS",
+    "history": "HISTORIAL",
+    "programs": "PROGRAMAS",
+    "stats": "ESTADÍSTICAS",
+    "profile": "PERFIL"
   }
 }

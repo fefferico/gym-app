@@ -1,41 +1,37 @@
 <div
   *ngIf="isOpen()"
   [@modalAnimation]="animationState"
-  class="modal-container fixed inset-0 z-[1000] flex items-center justify-center bg-black bg-opacity-60"
+  class="modal-container fixed inset-0 z-[1000] flex bg-black bg-opacity-60"
+  [ngClass]="{
+    'items-center justify-center': size() !== 'fullscreen' && !forceFullScreen()
+  }"
   (click)="closeModal()">
   <!--
-    Tailwind classes used:
-    - fixed inset-0: Full screen coverage
-    - z-[1000]: High z-index (Tailwind's arbitrary value syntax)
-    - flex items-center justify-center: Center the dialog
-    - bg-black bg-opacity-60: Backdrop color
+    MODIFIED:
+    - Centering is now disabled if `forceFullScreen()` is true.
   -->
 
   <div
     [@dialogAnimation]="animationState"
-    class="modal-dialog mx-2 bg-white dark:bg-gray-800 rounded-md shadow-xl
-           min-w-[300px] w-full max-w-lg md:max-w-xl lg:max-w-2xl
-           max-h-[90vh] flex flex-col overflow-hidden"
+    class="modal-dialog bg-white dark:bg-gray-800 shadow-xl flex flex-col overflow-hidden"
+    [ngClass]="{
+      'rounded-md mx-2 min-w-[300px] w-full max-h-[90vh]': size() !== 'fullscreen' && !forceFullScreen(),
+      'max-w-sm': size() === 'sm' && !forceFullScreen(),
+      'max-w-md': size() === 'md' && !forceFullScreen(),
+      'max-w-lg': size() === 'lg' && !forceFullScreen(),
+      'max-w-2xl': size() === 'xl' && !forceFullScreen(),
+      'w-screen h-screen rounded-none': size() === 'fullscreen' || forceFullScreen()
+    }"
     (click)="onDialogClick($event)">
     <!--
-      Tailwind classes used:
-      - bg-white dark:bg-gray-800: Background with dark mode
-      - rounded-md shadow-xl: Styling
-      - min-w-[300px] w-full max-w-lg/md/lg: Responsive width. Adjust as needed.
-      - max-h-[90vh]: Max height to prevent overflowing viewport
-      - flex flex-col: Allows header/body/footer to stack and body to grow
-      - overflow-hidden: Works with internal overflow-y: auto on body if needed
+      MODIFIED:
+      - Standard modal styles are now also disabled if `forceFullScreen()` is true.
+      - Fullscreen styles are applied if `size()` is 'fullscreen' OR `forceFullScreen()` is true.
     -->
 
     <div
       *ngIf="modalTitle() || true"
-      class="modal-header flex items-center justify-between ml-1 p-1 md:p-1 border-gray-200 dark:border-gray-700">
-      <!--
-        Tailwind classes used:
-        - flex items-center justify-between: Layout
-        - p-4 md:p-5: Padding
-        - border-b border-gray-200 dark:border-gray-700: Separator
-      -->
+      class="modal-header flex items-center justify-between ml-1 p-1 md:p-1 border-gray-200 dark:border-gray-700 flex-shrink-0">
       <h3 *ngIf="modalTitle()" class="text-xl font-semibold text-gray-900 dark:text-white">
         {{ modalTitle() }}
       </h3>
@@ -53,26 +49,10 @@
     </div>
 
     <div class="modal-body p-1 md:p-1 space-y-4 overflow-y-auto flex-grow custom-scrollbar">
-      <!--
-        Tailwind classes used:
-        - p-4 md:p-5: Padding
-        - space-y-4: Spacing for direct children (if any common pattern)
-        - overflow-y-auto: Scroll for overflowing content
-        - flex-grow: Allows body to take available space
-      -->
-      <ng-content></ng-content> <!-- Main content projection slot -->
+      <ng-content></ng-content>
     </div>
 
-    <div class="modal-footer flex items-center p-4 md:p-5 border-t border-gray-200 dark:border-gray-700 rounded-b">
-      <!--
-        Tailwind classes used:
-        - flex items-center: Layout
-        - p-4 md:p-5: Padding
-        - border-t border-gray-200 dark:border-gray-700: Separator
-        - rounded-b: If you want bottom corners rounded with the dialog
-      -->
-      <!-- Optional: Named slot for footer content like action buttons -->
-      <!-- The :empty CSS rule will hide this if no content is projected -->
+    <div class="modal-footer flex items-center p-4 md:p-5 border-t border-gray-200 dark:border-gray-700 rounded-b flex-shrink-0">
       <ng-content select="[modal-footer]"></ng-content>
     </div>
   </div>

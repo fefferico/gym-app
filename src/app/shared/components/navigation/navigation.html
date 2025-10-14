@@ -1,5 +1,3 @@
-<!-- In navigation.html -->
-
 <!-- The <nav> element no longer needs positioning classes -->
 <nav class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg rounded-t-md">
   <div class="container mx-auto flex justify-around items-center h-16 overflow-x-auto">
@@ -13,7 +11,7 @@
       }">
 
       <!-- MODIFIED: Replaced <svg> with conditional <app-icon> logic -->
-      <ng-container *ngIf="item.label === 'PROGRAMS' && !subscriptionService.isPremium(); else defaultIcon">
+      <ng-container *ngIf="item.label === 'navigation.programs' && !subscriptionService.isPremium(); else defaultIcon">
         <!-- Layered Icon for Free Tier Programs Tab -->
         <app-icon [name]="[
             { name: 'calendar' },
@@ -43,7 +41,7 @@
       </ng-template>
 
       <span *ngIf="isLinkActive(item)" class="text-xs transition-opacity duration-300 font-medium">
-        {{ item.label }}
+        {{ item.label | translate }}
       </span>
 
     </a>

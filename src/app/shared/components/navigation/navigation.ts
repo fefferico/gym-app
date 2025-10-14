@@ -1,5 +1,3 @@
-// navigation.ts
-
 import { Component, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -7,6 +5,7 @@ import { Router } from '@angular/router'; // Ensure Router is imported
 import { PressDirective } from '../../directives/press.directive';
 import { IconComponent } from '../icon/icon.component';
 import { PremiumFeature, SubscriptionService } from '../../../core/services/subscription.service';
+import { TranslateModule } from '@ngx-translate/core';
 
 interface NavItem {
   path: string;
@@ -20,7 +19,7 @@ interface NavItem {
 @Component({
   selector: 'app-navigation',
   standalone: true,
-  imports: [RouterLink, CommonModule, PressDirective, IconComponent],
+  imports: [RouterLink, CommonModule, PressDirective, IconComponent, TranslateModule],
   templateUrl: './navigation.html',
   styleUrls: ['./navigation.scss']
 })
@@ -42,12 +41,12 @@ export class NavigationComponent {
   trainingProgramsPath = '/training-programs';
 
   navItems: NavItem[] = [
-    { path: '/home', label: 'HOME', iconName: 'home', exact: true },
-    { path: this.routinesPath, label: 'ROUTINES', iconName: 'routines', exact: false },
-    { path: this.historyPath, label: 'HISTORY', iconName: 'clock', exact: false },
-    { path: this.trainingProgramsPath, label: 'PROGRAMS', iconName: 'calendar', exact: false, premiumFeature: PremiumFeature.TRAINING_PROGRAMS },
-    { path: this.statsPath, label: 'STATS', iconName: 'stats-new', exact: true },
-    { path: this.profilePath, label: 'PROFILE', iconName: 'profile', exact: true },
+    { path: '/home', label: 'navigation.home', iconName: 'home', exact: true },
+    { path: this.routinesPath, label: 'navigation.routines', iconName: 'routines', exact: false },
+    { path: this.historyPath, label: 'navigation.history', iconName: 'clock', exact: false },
+    { path: this.trainingProgramsPath, label: 'navigation.programs', iconName: 'calendar', exact: false, premiumFeature: PremiumFeature.TRAINING_PROGRAMS },
+    { path: this.statsPath, label: 'navigation.stats', iconName: 'stats-new', exact: true },
+    { path: this.profilePath, label: 'navigation.profile', iconName: 'profile', exact: true },
   ];
 
   /**

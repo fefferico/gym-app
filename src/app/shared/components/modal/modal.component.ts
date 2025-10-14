@@ -1,4 +1,4 @@
-import { Component, model, output, ElementRef, HostListener, ViewEncapsulation, inject, input } from '@angular/core';
+import { Component, model, output, ElementRef, HostListener, ViewEncapsulation, inject, input, effect, Inject, DOCUMENT } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { trigger, state, style, transition, animate } from '@angular/animations'; // Import Angular Animations
 
@@ -45,6 +45,36 @@ export class ModalComponent {
     isOpen = model<boolean>(false);
     modalTitle = input<string | undefined>();
     closed = output<void>();
+
+    /**
+     * Determines the size of the modal.
+     * Can be 'sm', 'md', 'lg', 'xl', or 'fullscreen'.
+     */
+    size = input<'sm' | 'md' | 'lg' | 'xl' | 'fullscreen'>('lg');
+    forceFullScreen = input<boolean>(false);
+
+    constructor(@Inject(DOCUMENT) private document: Document) {
+        // --- START: NEW LOGIC TO PREVENT BACKGROUND SCROLL ---
+        effect(() => {
+            if (this.isOpen()) {
+                // When the modal is open, add the class to the body to hide scrollbars.
+                this.document.body.classList.add('overflow-hidden');
+            } else {
+                // When the modal is closed, remove the class.
+                this.document.body.classList.remove('overflow-hidden');
+            }
+
+            // The onCleanup function ensures that if the component is ever destroyed
+            // while the modal is open, the class is removed, preventing a stuck page.
+
+        });
+        effect((onCleanup) => {
+            onCleanup(() => {
+                this.document.body.classList.remove('overflow-hidden');
+            });
+        });
+        // --- END: NEW LOGIC ---
+    }
 
     get animationState() {
         return this.isOpen() ? 'open' : 'closed';

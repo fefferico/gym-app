@@ -2193,5 +2193,13 @@
     "general": {
       "cancel": "キャンセル"
     }
+  },
+  "navigation": {
+    "home": "ホーム",
+    "routines": "ルーティン",
+    "history": "履歴",
+    "programs": "プログラム",
+    "stats": "統計",
+    "profile": "プロフィール"
   }
 }

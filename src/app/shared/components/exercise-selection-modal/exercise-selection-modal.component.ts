@@ -1,4 +1,3 @@
-// src/app/shared/components/exercise-selection-modal/exercise-selection-modal.component.ts
 import { Component, computed, inject, input, model, Output, ViewChild, ElementRef, AfterViewInit, EventEmitter, OnChanges, SimpleChanges, signal, effect, Inject, DOCUMENT } from '@angular/core';
 import { CommonModule, TitleCasePipe, DatePipe, AsyncPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';

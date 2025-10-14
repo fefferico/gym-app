@@ -146,7 +146,7 @@
             "exportButton": "ESPORTA DATI",
             "importTitle": "Ripristino dei tuoi dati",
             "importDescription": "Importa da un file di backup JSON.",
-            "syncTitle": "Dati e Cronologia",
+            "syncTitle": "Dati e Storico",
             "syncDescription": "Ricalcola statistiche e record.",
             "syncButton": "SINCRONIZZA CRONOLOGIA",
             "resetTitle": "Azzera Tutti i Dati",
@@ -340,8 +340,8 @@
         "loading": "Caricamento schede...",
         "fab": {
             "create": "CREA NUOVA SCHEDA",
-            "start": "INIZIA NUOVA SESSIONE",
-            "generate": "GENERA ALLENAMENTO CASUALE"
+            "start": "INIZIA NUOVA SESSIONE (SCHEDA VUOTA)",
+            "generate": "GENERA SCHEDA"
         },
         "toasts": {
             "showingHidden": "Mostrando le schede nascoste",
@@ -387,14 +387,14 @@
         }
     },
     "historyList": {
-        "title": "Cronologia",
+        "title": "Storico",
         "toggleFilters": "Mostra/Nascondi Filtri",
         "view": {
             "list": "ELENCO",
             "calendar": "CALENDARIO"
         },
         "filters": {
-            "title": "Filtra Cronologia",
+            "title": "Filtra Storico",
             "fromDate": "Dal",
             "toDate": "Al",
             "routineName": "Nome Scheda",
@@ -1248,7 +1248,7 @@
         "loading": "Caricamento dettagli allenamento...",
         "notFoundTitle": "Registrazione Allenamento Non Trovata",
         "notFoundMessage": "La registrazione dell'allenamento che stai cercando non esiste",
-        "backToHistory": "Torna alla Cronologia",
+        "backToHistory": "Torna allo Cronologia",
         "comparisonModal": {
             "exerciseTitle": "Confronto Esercizio",
             "routineTitle": "Confronto Scheda",
@@ -1360,7 +1360,7 @@
         "notFound": {
             "title": "Registrazione Allenamento Non Trovata",
             "message": "La registrazione dell'allenamento che stai cercando non esiste",
-            "backToHistory": "Torna alla Cronologia"
+            "backToHistory": "Torna allo Storico"
         },
         "toasts": {
             "effortSaved": "Sforzo percepito salvato con successo!",
@@ -1443,7 +1443,7 @@
             "searchPlaceholder": "Cerca schede...",
             "noMatches": "Nessuna scheda corrisponde alla tua ricerca",
             "noRoutines": "Nessuna scheda disponibile. Crea prima qualche scheda!",
-            "historyTitle": "Cronologia Programma",
+            "historyTitle": "Storico Programma",
             "historyTable": {
                 "start": "Inizio",
                 "end": "Fine",
@@ -1808,7 +1808,7 @@
       "averageLine": "Media: {{value}}"
     },
     "history": {
-      "title": "Cronologia Record Personali",
+      "title": "Storico Record Personali",
       "dateHeader": "Data",
       "repsHeader": "Rep",
       "logHeader": "Log",
@@ -2087,8 +2087,8 @@
       "message": "Importazione completa. {{updatedCount}} programmi aggiornati, {{addedCount}} aggiunti."
     },
     "history": {
-      "removeErrorTitle": "Errore Rimozione Cronologia",
-      "removeSuccessTitle": "Cronologia Aggiornata",
+      "removeErrorTitle": "Errore Rimozione Storico",
+      "removeSuccessTitle": "Storico Aggiornato",
       "removeSuccessMessage": "Voce della cronologia rimossa."
     },
     "toggle": {
@@ -2203,6 +2203,14 @@
     "general": {
       "cancel": "Annulla"
     }
+  },
+  "navigation": {
+    "home": "HOME",
+    "routines": "SCHEDE",
+    "history": "STORICO",
+    "programs": "PROGRAMMI",
+    "stats": "STATISTICHE",
+    "profile": "PROFILO"
   }
 
 }

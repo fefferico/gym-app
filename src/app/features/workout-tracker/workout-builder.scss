@@ -94,3 +94,22 @@ body.dark .cdk-drag-preview {
 .superset-spacing {
   margin-top: 0 !important;
 }
+
+// _variables.scss (or wherever you define your breakpoints)
+$breakpoint-md: 768px; // Matching Tailwind's default 'md' breakpoint
+
+// _mixins.scss (optional, for reusable media query mixins)
+@mixin md-up {
+  @media (min-width: #{$breakpoint-md}) {
+    @content;
+  }
+}
+
+// your-component.scss (or your main SCSS file)
+.max-exercise-length {
+  max-width: 250px; // Default for mobile
+
+  @include md-up {
+    max-width: 100%; // For medium screens and up
+  }
+}

@@ -2194,5 +2194,13 @@
     "general": {
       "cancel": "Cancelar"
     }
+  },
+  "navigation": {
+    "home": "INÍCIO",
+    "routines": "ROTINAS",
+    "history": "HISTÓRICO",
+    "programs": "PROGRAMAS",
+    "stats": "ESTATÍSTICAS",
+    "profile": "PERFIL"
   }
 }

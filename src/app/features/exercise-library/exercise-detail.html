@@ -1,4 +1,6 @@
-<ng-container *ngIf="exercise() as ex; else loadingOrNotFound">
+<ng-container *ngIf="exercise() as ex; else loadingOrNotFound"
+  class="{{ isModal ? 'fixed inset-0 z-[70] flex flex-col bg-white dark:bg-gray-800 transition-opacity' : '' }}"
+  >
   <header class="flex items-center justify-between p-2">
     <div *ngIf="!isModal" class="flex justify-between items-center">
       <button [routerLink]="'/library'"

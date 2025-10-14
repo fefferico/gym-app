@@ -1,8 +1,8 @@
 <div *ngIf="isOpen()"
-    class="fixed inset-0 bg-gray-700 bg-opacity-75 transition-opacity overflow-y-auto h-full w-full z-[70] flex items-center justify-center p-4 backdrop-blur-sm">
+    class="fixed inset-0 z-[70] flex flex-col bg-white dark:bg-gray-800 transition-opacity">
 
     <div (clickOutside)="onClose()"
-        class="relative transform overflow-hidden rounded-md bg-white dark:bg-gray-700 text-left shadow-xl transition-all sm:my-8 w-full flex flex-col max-h-[100vh] max-w-[100vw]">
+        class="relative flex flex-col w-full h-full overflow-hidden text-left transition-all">
 
         <!-- Header -->
         <div class="px-5 py-2 flex-shrink-0 border-b border-gray-200 dark:border-gray-600">
@@ -103,7 +103,7 @@
         <!-- +++ END: Filter Section +++ -->
 
         <!-- Scrollable Exercise List -->
-        <div #scrollContainer class="h-80 px-4 sm:px-6 py-2 overflow-y-auto custom-scrollbar">
+        <div #scrollContainer class="flex-grow min-h-0 px-4 sm:px-6 py-2 overflow-y-auto custom-scrollbar">
             <ul class="space-y-1">
                 <ng-container *ngFor="let item of processedExercises(); let odd = odd">
                     <!-- Case 1: Item is an Alphabetical Header -->
@@ -164,7 +164,7 @@
                 </li>
             </ul>
         </div>
-        <div *ngIf="showCreateCustomLink()" class="py-3 border-t border-gray-200 dark:border-gray-600 text-center">
+        <div *ngIf="showCreateCustomLink()" class="py-3 border-t border-gray-200 dark:border-gray-600 text-center flex-shrink-0">
             <button type="button" (click)="onCreateCustom()"
                 class="text-sm text-primary dark:text-primary-light hover:underline">
                 {{ 'exerciseSelectionModal.createCustom' | translate }}

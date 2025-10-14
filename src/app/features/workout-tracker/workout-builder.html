@@ -325,7 +325,7 @@
                             [longPressDelay]="150" longPressClass="is-long-pressing" [cdkDragData]="exerciseControl"
                             [cdkDragStartDelay]="110" class="transition-all" [formGroupName]="exIndex"
                             (click)="expandExerciseCard(exIndex, $event)"
-                            [title]="isEditableMode() ? ('workoutBuilder.exercise.dragToReorder' | translate) : ''">
+                            [title]="isEditableMode() && !shouldShowExpandedExercise(exIndex)? ('workoutBuilder.exercise.dragToReorder' | translate) : ''">
 
                             <div class="exercise-item-content">
                                 <div *ngIf="!isSetExpanded(exIndex, 0) && exerciseControl.get('supersetId')?.value && getSetsFormArray(exerciseControl).controls.length > 0 
@@ -364,7 +364,7 @@
                                                 alt="Exercise Icon" class="w-6 h-6 sm:w-8 sm:h-8 object-contain"> -->
                                             <div class="min-w-0">
                                                 <div class="flex">
-                                                    <h3 class="font-semibold text-gray-800 dark:text-gray-100 truncate text-lg"
+                                                    <h3 class="font-semibold text-gray-800 dark:text-gray-100 text-wrap text-lg max-exercise-length"
                                                         [title]="exerciseControl.get('exerciseName')?.value">
                                                         {{ exerciseControl.get('exerciseName')?.value }}
                                                     </h3>
@@ -456,7 +456,7 @@
                                                         }">
 
                                                 <!-- The Title Text: Now wrapped in its own h3 tag -->
-                                                <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">
+                                                <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 max-exercise-length">
                                                     {{ exerciseControl.get('exerciseName')?.value ||
                                                     ('workoutBuilder.exercise.selectPlaceholder' | translate)
                                                     }}
@@ -1038,7 +1038,7 @@
 
 </app-modal>
 
-<app-modal *ngIf="exerciseDetailsId" [(isOpen)]="isSimpleModalOpen" [modalTitle]="exerciseDetailsName">
+<app-modal [forceFullScreen]="true" *ngIf="exerciseDetailsId" [(isOpen)]="isSimpleModalOpen" [modalTitle]="exerciseDetailsName">
     <app-exercise-detail [id]="exerciseDetailsId" [isModal]="true"></app-exercise-detail>
 </app-modal>
 

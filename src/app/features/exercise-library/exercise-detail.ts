@@ -1,4 +1,4 @@
-import { Component, inject, Input, OnInit, signal, OnDestroy, PLATFORM_ID, OnChanges, SimpleChanges, computed, ElementRef } from '@angular/core'; // Added OnDestroy
+import { Component, inject, Input, OnInit, signal, OnDestroy, PLATFORM_ID, OnChanges, SimpleChanges, computed, ElementRef, Output, EventEmitter, effect, Inject, DOCUMENT } from '@angular/core'; // Added OnDestroy
 import { CommonModule, TitleCasePipe, DatePipe, isPlatformBrowser, DecimalPipe } from '@angular/common'; // Added DatePipe
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Observable, of, Subscription, forkJoin, map, take, tap, switchMap } from 'rxjs'; // Added Subscription, forkJoin
@@ -120,6 +120,8 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
 
   @Input() id?: string; // For route parameter binding
   @Input() isModal?: boolean = false; // For route parameter binding
+  @Output() close = new EventEmitter<void>();
+
   private exerciseIdForLoad: string | null = null;
 
   private platformId = inject(PLATFORM_ID); // Inject PLATFORM_ID
@@ -137,6 +139,23 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
   maxDurationChartData = signal<ChartSeries[]>([]);
   maxDistanceChartData = signal<ChartSeries[]>([]);
   // --- END: ADD/UPDATE SIGNALS ---
+
+  constructor(@Inject(DOCUMENT) private document: Document) {
+    effect(() => {
+      // When this component is acting as a modal and is visible, prevent body scrolling.
+      if (this.isModal) {
+        this.document.body.classList.add('overflow-hidden');
+      }
+
+      // The cleanup function for the effect. It runs when the component is destroyed.
+    });
+
+    effect((onCleanup) => {
+            onCleanup(() => {
+                this.document.body.classList.remove('overflow-hidden');
+            });
+        });
+  }
 
   // This hook is called whenever an @Input() property changes.
   ngOnChanges(changes: SimpleChanges): void {
@@ -190,6 +209,10 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
     ).subscribe();
   }
 
+  public onCloseModal(): void {
+    this.close.emit();
+  }
+  
   private resetComponentState(): void {
     this.exercise.set(undefined);
     this.exercisePBs.set([]);
@@ -415,7 +438,7 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
     this.activeRoutineIdActions.set(null); // Close the menu
   }
 
-  // Your existing toggleActions, areActionsVisible, viewRoutineDetails, etc. methods
+  // Your existing toggleActions, areActionsVisible, etc. methods
   // The toggleActions will now just control a signal like `activeRoutineIdActions`
   // which is used to show/hide the <app-action-menu>
   activeRoutineIdActions = signal<string | null>(null); // Store ID of routine whose actions are open
@@ -452,7 +475,7 @@ export class ExerciseDetailComponent implements OnInit, OnDestroy, OnChanges {
       const maxWeight = pbs.find(p => p.pbType === 'Heaviest Lifted');
       if (est1RM) records.push({ label: this.translate.instant('exerciseDetail.records.est1rm'), value: this.decimalPipe.transform(est1RM.weightUsed, '1.0-1') ?? '0', unit: 'kg' });
       if (maxVol) records.push({ label: this.translate.instant('exerciseDetail.records.maxVolume'), value: this.decimalPipe.transform(maxVol.volume, '1.0-1') ?? '0', unit: 'kg' });
-      if (maxWeight) records.push({ label: this.translate.instant('exerciseDetail.records.maxWeight'), value: this.decimalPipe.transform(maxWeight.weightUsed, '1.0-1') ?? '0', unit: 'kg' });
+      if (maxWeight) records.push({ label: this.translate.instant('exerciseDetail.records.maxWeight'), value: this.decimalPipe.transform(maxWeight.weightUsed, '1.od-1') ?? '0', unit: 'kg' });
     }
 
     return records;
