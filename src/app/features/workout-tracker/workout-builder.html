@@ -1157,8 +1157,13 @@
     <app-exercise-detail [id]="exerciseDetailsId" [isModal]="true"></app-exercise-detail>
 </app-modal>
 
-<app-fab-menu [actions]="fabMenuItems" [checkForPausedSession]="false" [scrollToBottomDisabled]="true"
-    [scrollToTopDisabled]="true" (actionClicked)="onFabAction($event)"></app-fab-menu>
+<app-fab-menu 
+    [actions]="fabMenuItems" 
+    [checkForPausedSession]="false" 
+    [scrollToBottomDisabled]="true"
+    [scrollToTopDisabled]="true" 
+    (actionClicked)="onFabAction($event)">
+</app-fab-menu>
 
 
 <!-- =================================================================== -->

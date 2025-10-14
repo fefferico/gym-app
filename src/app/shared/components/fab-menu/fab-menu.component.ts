@@ -1,6 +1,6 @@
 // src/app/shared/components/fab-menu/fab-menu.component.ts
 
-import { Component, EventEmitter, HostListener, inject, Input, OnDestroy, OnInit, Output, PLATFORM_ID, signal } from '@angular/core';
+import { Component, EventEmitter, HostListener, inject, input, Input, model, OnDestroy, OnInit, Output, PLATFORM_ID, signal } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { trigger, style, animate, transition } from '@angular/animations';
 import { Subscription } from 'rxjs';
@@ -70,10 +70,11 @@ export class FabMenuComponent implements OnInit, OnDestroy {
   @Input() customBottomPositioning: number | undefined = undefined;
 
   // --- Component State (Unchanged) ---
-  isFabActionsOpen = signal(false);
+  isFabActionsOpen = model<boolean>(false);
   showBackToTopButton = signal(false);
   showBackToBottomButton = signal(false);
   isPausedSession = signal(false);
+  showBackdrop = input<boolean>(true);
 
   // --- Lifecycle Hooks (Unchanged) ---
   ngOnInit(): void {

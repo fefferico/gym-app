@@ -4554,21 +4554,21 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
 
 
-    // Add this getter to resolve the error
-    private baseExercise(): Exercise | undefined {
-      // Assuming you have a way to get the currently selected exerciseId, e.g. this.selectedExerciseId
-      // Replace 'this.selectedExerciseId' with the actual property or logic you use to track the selected exercise
-      const selectedExerciseId = this.exercisesFormArray.length > 0
-        ? (this.exercisesFormArray.at(0) as FormGroup).get('exerciseId')?.value
-        : undefined;
-      return this.availableExercises.find(e => e.id === selectedExerciseId);
-    }
+  // Add this getter to resolve the error
+  private baseExercise(): Exercise | undefined {
+    // Assuming you have a way to get the currently selected exerciseId, e.g. this.selectedExerciseId
+    // Replace 'this.selectedExerciseId' with the actual property or logic you use to track the selected exercise
+    const selectedExerciseId = this.exercisesFormArray.length > 0
+      ? (this.exercisesFormArray.at(0) as FormGroup).get('exerciseId')?.value
+      : undefined;
+    return this.availableExercises.find(e => e.id === selectedExerciseId);
+  }
 
-          isBodyweight = computed<boolean>(() => this.baseExercise()?.category === 'bodyweight/calisthenics');
-    isCardio = computed<boolean>(() => this.baseExercise()?.category === 'cardio');
-  
-    
-    // Tracks which exercise's "Set All" panel is currently expanded.
+  isBodyweight = computed<boolean>(() => this.baseExercise()?.category === 'bodyweight/calisthenics');
+  isCardio = computed<boolean>(() => this.baseExercise()?.category === 'cardio');
+
+
+  // Tracks which exercise's "Set All" panel is currently expanded.
   expandedSetAllPanel = signal<number | null>(null);
 
   // Signals to hold the temporary values from the "Set All" input fields.
@@ -4578,7 +4578,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   distanceToSetForAll = signal<number | null>(null);
   restToSetForAll = signal<number | null>(null);
 
-  
+
   /**
    * Toggles the visibility of the "Set All" collapsible panel for a given exercise.
    * @param exIndex The index of the exercise.
@@ -4647,5 +4647,4 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
     this.toastService.success(`Applied values to all ${setsArray.length} sets.`);
   }
-
 }
