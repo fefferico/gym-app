@@ -1219,7 +1219,10 @@
     "save_log": "ログを保存",
     "save_log_changes": "ログの変更を保存",
     "start": "開始",
-    "log": "記録"
+    "log": "記録",
+    "undo": "元に戻す",
+    "redo": "やり直し",
+    "restore": "オリジナルに戻す"
   },
   "logDetail": {
     "title": "自己ベスト",

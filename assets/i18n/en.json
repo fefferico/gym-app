@@ -1081,7 +1081,7 @@
       "weightPlaceholder": "Weight",
       "distancePlaceholder": "Distance",
       "durationPlaceholder": "Secs",
-      "tempoPlaceholder": "e.g. 2010",
+      "tempoPlaceholder": "e.g. 2-0-1-0",
       "restPlaceholder": "Rest",
       "notesPlaceholder": "e.g. Good form",
       "collapse": "Collapse set"
@@ -1212,6 +1212,17 @@
       "ungroup": "Ungroup",
       "makeEmom": "Make EMOM",
       "switch": "Switch Exercise"
+    },
+    "prompts": {
+      "addField": {
+        "title": "Add Field to Set",
+        "message": "Which metric would you like to add to Set #{{setNumber}}?"
+      },
+      "setTarget": {
+        "title": "Set Target {{field}}",
+        "message": "Enter the target value for this set.",
+        "applyButton": "Apply Target"
+      }
     }
   },
   "fab": {
@@ -1225,7 +1236,10 @@
     "save_log": "SAVE LOG",
     "save_log_changes": "SAVE LOG CHANGES",
     "start": "START",
-    "log": "LOG"
+    "log": "LOG",
+    "undo": "Deshacer",
+    "redo": "Rehacer",
+    "restore": "Restaurar Original"
   },
   "logDetail": {
     "title": "Personal Bests",

@@ -1077,7 +1077,7 @@
             "weightPlaceholder": "Peso",
             "distancePlaceholder": "Distanza",
             "durationPlaceholder": "Sec",
-            "tempoPlaceholder": "es. 2010",
+            "tempoPlaceholder": "es. 2-0-1-0",
             "restPlaceholder": "Recupero",
             "notesPlaceholder": "es. Buona forma",
             "collapse": "Comprimi serie"
@@ -1221,7 +1221,10 @@
         "save_log": "SALVA SESSIONE",
         "save_log_changes": "SALVA MODIFICHE",
         "start": "INIZIA",
-        "log": "LOG"
+        "log": "LOG",
+        "undo": "Annulla",
+    "redo": "Ripristina",
+    "restore": "Ripristina Originale"
     },
     "logDetail": {
         "title": "Dettaglio Allenamento",
