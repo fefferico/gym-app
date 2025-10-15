@@ -8,13 +8,12 @@ import { WorkoutGenerationOptions } from '../../../core/services/workout-generat
 import { ExerciseService } from '../../../core/services/exercise.service';
 import { Equipment } from '../../../core/models/equipment.model';
 import { PersonalGymService } from '../../../core/services/personal-gym.service';
-import { FabAction, FabMenuComponent } from '../../../shared/components/fab-menu/fab-menu.component';
 import { TranslateModule } from '@ngx-translate/core'; // +++ IMPORT TRANSLATE MODULE
 
 @Component({
     selector: 'app-generate-workout-modal',
     standalone: true,
-    imports: [CommonModule, IconComponent, FormsModule, TitleCasePipe, FabMenuComponent, TranslateModule], // +++ ADD TRANSLATE MODULE
+    imports: [CommonModule, IconComponent, FormsModule, TitleCasePipe, TranslateModule], // +++ ADD TRANSLATE MODULE
     templateUrl: './generate-workout-modal.component.html',
 })
 export class GenerateWorkoutModalComponent implements OnInit, OnChanges {
@@ -172,29 +171,6 @@ export class GenerateWorkoutModalComponent implements OnInit, OnChanges {
         const index = this.options.excludeEquipment.indexOf(equipment);
         if (index > -1) {
             this.options.excludeEquipment.splice(index, 1);
-        }
-    }
-
-    public fabActions: FabAction[] = [
-        {
-            actionKey: 'generate_detailed',
-            label: 'generateWorkoutModal.fab.detailed', // <-- MODIFIED FOR TRANSLATION
-            iconName: 'magic-wand',
-            cssClass: 'bg-primary'
-        },
-        {
-            actionKey: 'generate_quick',
-            label: 'generateWorkoutModal.fab.quick', // <-- MODIFIED FOR TRANSLATION
-            iconName: 'random',
-            cssClass: 'bg-green-500'
-        }
-    ];
-
-    public handleFabAction(actionKey: string): void {
-        if (actionKey === 'generate_quick') {
-            this.generateQuick();
-        } else if (actionKey === 'generate_detailed') {
-            this.generateDetailed();
         }
     }
 

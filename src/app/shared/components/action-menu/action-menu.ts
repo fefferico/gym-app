@@ -2,7 +2,7 @@
 import { Component, Input, Output, EventEmitter, HostListener, ElementRef, ChangeDetectionStrategy, inject, OnChanges, SimpleChanges, OnDestroy, signal, PLATFORM_ID, ViewChildren, QueryList, ChangeDetectorRef, runInInjectionContext, afterNextRender, Injector } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { animate, state, style, transition, trigger } from '@angular/animations';
+import { animate, query, stagger, state, style, transition, trigger } from '@angular/animations';
 import { ActionMenuItem } from '../../../core/models/action-menu.model';
 import { IconRegistryService } from '../../../core/services/icon-registry.service';
 import { MenuMode } from '../../../core/models/app-settings.model';
@@ -13,7 +13,6 @@ import { AlertButton } from '../../../core/models/alert.model';
 import { TranslateModule } from '@ngx-translate/core';
 
 
-// ... (animations can remain unchanged) ...
 export const modalOverlayAnimation = trigger('modalOverlay', [
   transition(':enter', [
     style({ opacity: 0 }),
@@ -32,26 +31,45 @@ export const modalContentAnimation = trigger('modalContent', [
     animate('150ms ease-in', style({ transform: 'translateY(100%)' })),
   ]),
 ]);
-export const dropdownMenuAnimation = trigger('dropdownMenu', [
-  // State for 'preparing' and 'closed' is invisible
-  state('closed, preparing', style({
-    opacity: 0,
-    transform: 'scale(0.95) translateY(-10px)'
-  })),
-  // State for 'open' is visible
-  state('open', style({
-    opacity: 1,
-    transform: 'scale(1) translateY(0)'
-  })),
-  // Transition from preparing to open for a smooth fade-in
-  transition('preparing => open', [
-    animate('100ms ease-out')
-  ]),
-  // Transition back to closed
-  transition('* => closed', [
-    animate('75ms ease-in')
-  ])
-]);
+export const dropdownMenuAnimation = trigger('listAnimation', [
+      // Transition for opening DOWNWARDS (default)
+      transition(':enter', [
+        query('.action-item, .menu-divider', [
+          style({ opacity: 0, transform: 'translateY(-15px)' })
+        ], { optional: true }),
+        query('.action-item, .menu-divider', stagger('30ms', [
+          animate('180ms ease-out', style({ opacity: 1, transform: 'translateY(0)' }))
+        ]), { optional: true })
+      ]),
+      
+      // Transition for opening UPWARDS
+      transition('void => from-bottom', [
+         query('.action-item, .menu-divider', [
+          style({ opacity: 0, transform: 'translateY(15px)' }), // Start from BELOW
+        ], { optional: true }),
+        query('.action-item, .menu-divider', stagger('30ms', [
+          animate('180ms ease-out', style({ opacity: 1, transform: 'translateY(0)' }))
+        ]), { optional: true })
+      ]),
+
+      // --- THIS IS THE FIX ---
+      // We create two explicit leave transitions. One for each direction.
+      // This prevents the generic ':leave' from interfering with the 'from-bottom' enter animation.
+
+      // Transition for closing UPWARDS (when it was opened downwards)
+      transition('open => void', [
+        query('.action-item, .menu-divider', stagger('-30ms', [ // Stagger in reverse for closing
+          animate('150ms ease-in', style({ opacity: 0, transform: 'translateY(-15px)' }))
+        ]), { optional: true })
+      ]),
+
+      // Transition for closing DOWNWARDS (when it was opened upwards)
+      transition('from-bottom => void', [
+        query('.action-item, .menu-divider', stagger('-30ms', [ // Stagger in reverse
+          animate('150ms ease-in', style({ opacity: 0, transform: 'translateY(15px)' }))
+        ]), { optional: true })
+      ])
+    ]);
 export const compactBarAnimation = trigger('compactBar', [
   transition(':enter', [
     style({ opacity: 0 }),
@@ -67,7 +85,8 @@ export const compactBarAnimation = trigger('compactBar', [
   standalone: true,
   imports: [CommonModule, IconComponent, TranslateModule],
   templateUrl: './action-menu.html',
-  animations: [dropdownMenuAnimation, compactBarAnimation, modalOverlayAnimation, modalContentAnimation],
+  animations: [compactBarAnimation, modalOverlayAnimation, modalContentAnimation, dropdownMenuAnimation
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ActionMenuComponent implements OnChanges, OnDestroy {
@@ -81,30 +100,49 @@ export class ActionMenuComponent implements OnChanges, OnDestroy {
   // +++ 2. Inject the AlertService +++
   private alertService = inject(AlertService);
   protected menuState = signal<'closed' | 'preparing' | 'open'>('closed');
+  animationState = signal<'default' | 'from-bottom'>('default');
 
   @Input() items: ActionMenuItem[] = [];
   @Input() displayMode: MenuMode = 'dropdown';
   @Input() modalTitle: string = 'Actions';
 
+  // We use a private variable to hold the actual state.
+  private _isVisible = false;
+  
+  // This setter is the single source of truth for controlling the menu.
   @Input()
   set isVisible(value: boolean) {
-    if (value) {
-      // 1. When parent wants to show, move to 'preparing' state.
-      // This adds the menu to the DOM but keeps it invisible.
-      this.menuState.set('preparing');
+    if (value === this._isVisible) {
+      return; // Do nothing if the state hasn't changed.
+    }
+    this._isVisible = value;
 
-      // 2. Defer the calculation. This gives the DOM time to render the invisible menu.
-      setTimeout(() => {
-        this.calculateDropdownPosition();
-        // 3. After calculation, move to 'open' state to trigger the fade-in animation.
-        this.menuState.set('open');
-      }, 0);
+    if (value) {
+      // If we are opening the menu...
+      if (this.displayMode === 'modal') {
+        // ...and it's a modal, present the alert.
+        setTimeout(() => this.presentAsAlert(), 0);
+      } else if (this.displayMode === 'dropdown') {
+        // ...and it's a dropdown, use the robust "prepare, then show" pattern.
+        // Use `afterNextRender` to ensure the DOM is ready for measurement.
+        runInInjectionContext(this.injector, () => {
+          afterNextRender(() => {
+            this.calculateDropdownPosition(); // Calculate position while it's still invisible.
+            this.cdr.detectChanges(); // Apply the new position.
+          });
+        });
+      }
+      // Add keydown listener when opening.
+      document.addEventListener('keydown', this._boundOnEnterKey);
     } else {
-      // When parent wants to hide, just go to 'closed'.
-      this.menuState.set('closed');
+      // If we are closing the menu, clean up the listener.
+      document.removeEventListener('keydown', this._boundOnEnterKey);
     }
   }
 
+  get isVisible(): boolean {
+    return this._isVisible;
+  }
 
   // --- No longer needed for modal, but kept for dropdown ---
   alignmentClass = signal('origin-top-right right-0');
@@ -130,9 +168,9 @@ export class ActionMenuComponent implements OnChanges, OnDestroy {
           setTimeout(() => this.presentAsAlert(), 0);
 
         }
-        if (this.displayMode === 'dropdown') {
-          setTimeout(() => this.calculateDropdownPosition(), 0);
-        }
+        // if (this.displayMode === 'dropdown') {
+        //   setTimeout(() => this.calculateDropdownPosition(), 0);
+        // }
       }
 
       // Keep existing listener logic for other modes
@@ -179,24 +217,24 @@ export class ActionMenuComponent implements OnChanges, OnDestroy {
 
     // Vertical alignment
     let verticalClass = 'top-full mt-2'; // Default: below anchor
-    const offset = 8; // Corresponding to 'mt-2' or 'mb-2'
-
-    // Calculate available space below, considering the main nav height
-    const spaceBelowConsideringNav = viewportHeight - anchorRect.bottom - mainNavHeight;
+    this.animationState.set('default'); // Default animation is from top-down
+    
+    const offset = 8;
+    const spaceBelowConsideringNav = window.innerHeight - anchorRect.bottom - mainNavHeight;
     const hasSpaceBelow = (dropdownHeight + offset) <= spaceBelowConsideringNav;
-
-    // Calculate available space above
     const hasSpaceAbove = (anchorRect.top - dropdownHeight - offset) >= 0;
 
     if (!hasSpaceBelow && hasSpaceAbove) {
-      verticalClass = 'bottom-full mb-2'; // If no space below (even with nav), but space above
+      verticalClass = 'bottom-full mb-2'; // Switch position to above
+      this.animationState.set('from-bottom'); // Switch animation to from-bottom-up
     } else if (!hasSpaceBelow && !hasSpaceAbove) {
-      // If no space above or below, choose the direction with more space
-      // Comparing actual space, not just boolean flags
-      const spaceBelow = viewportHeight - anchorRect.bottom - mainNavHeight; // Adjusted space below
+      const spaceBelow = window.innerHeight - anchorRect.bottom - mainNavHeight;
       const spaceAbove = anchorRect.top;
-
-      verticalClass = spaceBelow >= spaceAbove ? 'top-full mt-2' : 'bottom-full mb-2';
+      
+      if (spaceAbove > spaceBelow) {
+          verticalClass = 'bottom-full mb-2';
+          this.animationState.set('from-bottom');
+      }
     }
 
     this.alignmentClass.set(`${horizontalClass} ${verticalClass}`);

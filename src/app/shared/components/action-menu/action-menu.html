@@ -1,39 +1,45 @@
 <!-- src/app/shared/components/action-menu/action-menu.component.html -->
 <ng-container [ngSwitch]="displayMode">
-     <div *ngSwitchCase="'dropdown'">
+    <div *ngSwitchCase="'dropdown'">
         <!--
-          ========================================================================
-          THE FIX IS HERE:
-          1. `*ngIf` now uses the `menuState()` signal, so the element exists in the DOM
-             during the 'preparing' state.
-          2. The animation trigger `[@dropdownMenu]` is also bound to `menuState()`.
-          3. A conditional class `[class.opacity-0]` is added to ensure the element
-             is fully invisible during the 'preparing' state before the animation starts.
-          ========================================================================
+          The outer panel no longer has the animation trigger.
+          It is only responsible for positioning and overall visibility.
         -->
-        <div *ngIf="menuState() !== 'closed'"
-            [@dropdownMenu]="menuState()"
+        <div *ngIf="isVisible"
             class="dropdown-panel absolute mt-2 w-max max-w-[90vw] rounded-lg shadow-lg bg-gray-100 dark:bg-gray-800 ring-1 ring-black ring-opacity-5 z-[60] border border-gray-300 dark:border-gray-600 flex flex-col max-h-[80vh] overflow-hidden"
-            [ngClass]="[alignmentClass(), menuState() === 'preparing' ? 'opacity-0' : '']">
+            [ngClass]="alignmentClass()">
 
-            <div class="overflow-y-auto p-1 custom-scrollbar">
-                <div class="grid gap-2" [ngClass]="gridClass || 'flex flex-col gap-1'">
-                    <ng-container *ngFor="let item of items">
-                        <div *ngIf="item.isDivider" class="w-full h-px my-1 bg-gray-200 dark:bg-gray-600 col-span-full"></div>
-                        
-                        <!-- The button no longer needs any special width styling -->
+            <div class="overflow-y-auto p-2 custom-scrollbar">
+                <!--
+                  ========================================================================
+                  THE FIX IS HERE:
+                  1. `[@listAnimation]`: The animation trigger is now on this grid container.
+                     When this `div` enters the DOM (because `isVisible` is true), the `:enter`
+                     transition will fire.
+                  2. `.action-item` and `.menu-divider`: These classes are added to the children
+                     so the `query()` in the animation can find them.
+                  ========================================================================
+                -->
+                <div class="grid gap-2" [@listAnimation]="animationState()"
+                    [ngClass]="gridClass || 'flex flex-col gap-1'"> <ng-container *ngFor="let item of items">
+                        <div *ngIf="item.isDivider"
+                            class="menu-divider w-full h-px my-1 bg-gray-200 dark:bg-gray-600 col-span-full"></div>
+
                         <button *ngIf="!item.isDivider" type="button" (click)="onItemClicked($event, item)"
                             [ngClass]="defaultDropdownButtonClass + ' ' + item.buttonClass"
-                            class="transition-colors duration-150 ease-in-out">
+                            class="action-item transition-colors duration-150 ease-in-out">
 
                             <ng-container *ngIf="isComplexIcon(item)">
-                                <app-icon [name]="getIconNameForComponent(item)" [class]="item.iconClass || 'w-5 h-5 mr-2'" class="flex-shrink-0"></app-icon>
+                                <app-icon [name]="getIconNameForComponent(item)"
+                                    [class]="item.iconClass || 'w-5 h-5 mr-2'" class="flex-shrink-0"></app-icon>
                             </ng-container>
                             <ng-container *ngIf="!isComplexIcon(item)">
-                                <span *ngIf="getIconHtml(item) as iconHtml" [innerHTML]="iconHtml" [ngClass]="(item.iconClass || 'w-5 h-5 mr-2') + ' flex-shrink-0'"></span>
+                                <span *ngIf="getIconHtml(item) as iconHtml" [innerHTML]="iconHtml"
+                                    [ngClass]="(item.iconClass || 'w-5 h-5 mr-2') + ' flex-shrink-0'"></span>
                             </ng-container>
-                            
-                            <span class="whitespace-normal text-left flex-grow">{{ item.label ? (item.label | translate) : '' }}</span>
+
+                            <span class="whitespace-normal text-left flex-grow">{{ item.label ? (item.label | translate)
+                                : '' }}</span>
                         </button>
                     </ng-container>
                 </div>
