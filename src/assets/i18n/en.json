@@ -738,6 +738,7 @@
     "repsLabel": "Reps",
     "distanceLabel": "Distance",
     "timeLabel": "Time",
+    "tempoLabel": "Tempo",
     "timePlaceholder": "mm:ss",
     "setNotesPlaceholder": "Notes for this set...",
     "roundNotesPlaceholder": "Notes for this round...",

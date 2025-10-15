@@ -39,7 +39,6 @@ import { TrainingProgramService } from '../../../core/services/training-program.
 import { StorageService } from '../../../core/services/storage.service';
 import { MenuMode, PlayerMode } from '../../../core/models/app-settings.model';
 import { AppSettingsService } from '../../../core/services/app-settings.service';
-import { FullScreenRestTimerComponent } from '../../../shared/components/full-screen-rest-timer/full-screen-rest-timer';
 import { TrainingProgram } from '../../../core/models/training-program.model';
 import { AlertButton, AlertInput } from '../../../core/models/alert.model';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
@@ -50,6 +49,8 @@ import { BarbellCalculatorModalComponent } from '../../../shared/components/barb
 import { NgLetDirective } from '../../../shared/directives/ng-let.directive';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { SessionOverviewModalComponent } from '../session-overview-modal/session-overview-modal.component';
+import { FullScreenRestTimerComponent } from '../../../shared/components/full-screen-rest-timer/full-screen-rest-timer';
+import { AudioService } from '../../../core/services/audio.service';
 
 // Interface for saving the paused state
 
@@ -86,7 +87,7 @@ export interface NextStepInfo {
   ],
   templateUrl: './compact-workout-player.component.html',
   styleUrls: ['./compact-workout-player.component.scss'],
-  providers: [DecimalPipe, WeightUnitPipe],
+  providers: [DecimalPipe, WeightUnitPipe, AudioService],
 })
 export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
@@ -244,8 +245,13 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   @ViewChildren('exerciseCard') exerciseCards!: QueryList<ElementRef>;
   @ViewChild('header') header!: ElementRef; // Get the header element
 
+  private audioService = inject(AudioService);
+  private lastBeepSecond: number | null = null;
+
   // The constructor is now empty or can be removed if not used for anything else.
-  constructor() { }
+  constructor() {
+    // Preload the audio file when the component is created.
+  }
 
 
 
@@ -2052,6 +2058,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
   handleRestTimerFinished(): void {
+    this.playEndSound();
+
     this.isRestTimerVisible.set(false);
     // this.toastService.success("Rest complete!", 2000);
     this.updateLogWithRestTime(this.restDuration()); // Update log with full rest duration
@@ -2709,7 +2717,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   * @param field The specific target field to display ('reps', 'weight', etc.).
   * @returns A formatted string like "8-12", "60+", "10".
   */
-  public getSetTargetDisplay(set: ExerciseTargetSetParams, exIndex: number, setIndex: number, field: 'reps' | 'duration' | 'weight' | 'distance'): string {
+  public getSetTargetDisplay(set: ExerciseTargetSetParams, exIndex: number, setIndex: number, field: 'reps' | 'duration' | 'weight' | 'distance' | 'tempo'): string {
     let setForDisplay: ExerciseTargetSetParams;
 
     // For the first set/round of an exercise, we always use the pre-filled values.
@@ -2829,8 +2837,29 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     }
   }
 
+  private playCountdownSound(currentRemaining: number): void {
+    if (
+      this.appSettingsService.enableTimerCountdownSound() &&
+      currentRemaining <= this.appSettingsService.countdownSoundSeconds() &&
+      currentRemaining !== this.lastBeepSecond
+    ) {
+      this.audioService.playSound('countdown');
+      this.lastBeepSecond = currentRemaining;
+    }
+  }
+
+  private playEndSound(): void {
+    if (
+      this.appSettingsService.enableTimerCountdownSound()
+    ) {
+      this.audioService.playSound('end');
+      this.lastBeepSecond = null;
+    }
+  }
+
   // +++ NEW: Starts or resumes the EMOM timer for a specific round +++
   private startEmomTimer(exIndex: number, roundIndex: number, key: string): void {
+    this.lastBeepSecond = null;
     const firstExercise = this.routine()!.exercises[exIndex];
     const duration = firstExercise.emomTimeSeconds ?? 60;
 
@@ -2847,6 +2876,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     this.emomTimerSub = timer(0, 1000).subscribe(() => {
       const currentRemaining = this.emomState()[key]?.remainingTime;
       if (currentRemaining > 0) {
+        this.playCountdownSound(currentRemaining);
+
         this.emomState.update(states => {
           states[key].remainingTime--;
           return { ...states };
@@ -2859,6 +2890,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         const nextRoundIndex = roundIndex + 1;
         const hasNextRound = nextRoundIndex < firstExercise.sets.length;
 
+        this.playEndSound();
         if (hasNextRound) {
           // 1. Expand the next round and collapse the one we just finished
           this.expandedRounds.update(currentSet => {
@@ -3004,7 +3036,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
  * 2. If the user has typed something for this set, it shows their input.
  * 3. Otherwise, it shows the planned target value as the default.
  */
-  getInitialInputValue(exIndex: number, setIndex: number, field: 'reps' | 'weight' | 'distance' | 'duration' | 'notes'): string {
+  getInitialInputValue(exIndex: number, setIndex: number, field: 'reps' | 'weight' | 'distance' | 'duration' | 'notes' | 'tempo'): string {
     const routine = this.routine();
     if (!routine) return '';
 
@@ -3020,6 +3052,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         case 'weight': return (loggedSet.weightUsed ?? '').toString();
         case 'distance': return (loggedSet.distanceAchieved ?? '').toString();
         case 'duration': return this.formatSecondsToTime(loggedSet.durationPerformed);
+        case 'tempo': return (loggedSet.tempoUsed ?? '-').toString();
         case 'notes': return loggedSet.notes ?? '';
       }
     }
@@ -3056,7 +3089,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
    * If the 'duration' field is changed for a set with an active timer, it now
    * automatically stops the old timer and starts a new one with the new value.
    */
-  updateSetData(exIndex: number, setIndex: number, roundIndex: number, field: 'reps' | 'weight' | 'distance' | 'duration' | 'notes', event: Event): void {
+  updateSetData(exIndex: number, setIndex: number, roundIndex: number, field: 'reps' | 'weight' | 'distance' | 'duration' | 'notes' | 'tempo', event: Event): void {
     const value = (event.target as HTMLInputElement).value;
     const key = `${exIndex}-${setIndex}`;
 
@@ -3073,6 +3106,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         case 'distance': newInputs[key].actualDistance = parseFloat(value) || undefined; break;
         case 'duration': newInputs[key].actualDuration = this.parseTimeToSeconds(value); break;
         case 'notes': newInputs[key].notes = value; break;
+        case 'tempo': newInputs[key].tempo = value === '' ? undefined : value; break;
       }
       return newInputs;
     });
@@ -3146,10 +3180,28 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       const timerState = this.setTimerState()[key];
       // retrieve actual duration from timer if available considering target
       // Calculate actual duration performed if timerState and targetSetValues are available
-      const actualDurationPerformed =
-        (!!targetSetValues?.targetDuration && timerState?.remainingTime !== undefined)
-          ? targetSetValues.targetDuration - timerState.remainingTime
-          : userInputs.actualDuration ?? set.targetDuration ?? 0;
+      let actualDurationPerformed: number | null = null;
+      const userDefinedDuration = userInputs.actualDuration;
+
+      // PRIORITY 1: If a timer was ACTIVELY running or paused when the set was completed.
+      // This captures the elapsed time accurately.
+      if (timerState && timerState.remainingTime) {
+        if (userDefinedDuration !== undefined && userDefinedDuration !== null) {
+          actualDurationPerformed = userDefinedDuration - timerState.remainingTime;
+        } else {
+          actualDurationPerformed = (targetSetValues.targetDuration ?? 0) - timerState.remainingTime;
+        }
+      } else {
+        // PRIORITY 2: If no timer was active, check for a manual user input.
+        if (userDefinedDuration !== undefined && userDefinedDuration !== null) {
+          actualDurationPerformed = userDefinedDuration;
+        }
+      }
+      
+
+      if (!actualDurationPerformed || actualDurationPerformed <= 0) {
+          actualDurationPerformed = userDefinedDuration ?? targetSetValues.targetDuration ?? 0;
+        }
 
       // check if it was a timed set with an active timer, and stop it
       if (timerState && (timerState.status === 'running' || timerState.status === 'paused')) {
@@ -3241,7 +3293,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   /**
    * UPDATED: Determines visible/hidden fields based on the state of the entire exercise.
    */
-  public getFieldsForSet(exIndex: number, setIndex: number): { visible: string[], hidden: string[] } {
+  public getFieldsForSetOld(exIndex: number, setIndex: number): { visible: string[], hidden: string[] } {
     const allFields = ['weight', 'reps', 'distance', 'duration'];
     // As requested, this now uses the exercise-wide visibility check.
     const visibleCols = this.getVisibleSetColumns(exIndex, setIndex);
@@ -3252,17 +3304,30 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return { visible, hidden };
   }
 
+  public getFieldsForSet(exIndex: number, setIndex: number): { visible: string[], hidden: string[] } {
+    const routine = this.routine();
+    if (!routine) return { visible: [], hidden: ['weight', 'reps', 'distance', 'duration'] };
+    // Delegate to the existing service method
+    return this.workoutService.getFieldsForSet(routine, exIndex, setIndex);
+  }
+
   /**
    * Determines if the "Add Field" button should be shown for a specific set.
    * @param exIndex The index of the exercise.
    * @param setIndex The index of the set.
    * @returns True if the button should be visible.
    */
-  public canAddField(exIndex: number, setIndex: number): boolean {
+  public canAddFieldOld(exIndex: number, setIndex: number): boolean {
     // if (this.isSuperSet(exIndex)) return false;
     const cols = this.getVisibleSetColumns(exIndex, setIndex);
     const visibleCount = Object.values(cols).filter(v => v).length;
     return visibleCount === 1 || visibleCount === 3;
+  }
+
+    public canAddField(exIndex: number, setIndex: number): boolean {
+    const fields = this.getFieldsForSet(exIndex, setIndex);
+    // Show the button if there are fields that can be added and we are not at the max of 4.
+    return fields.hidden.length > 0 && fields.visible.length < 4;
   }
 
   isFalsyOrZero(value: number | null | undefined): boolean {
@@ -3320,7 +3385,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   * @param setIndex The index of the set.
   * @returns True if at least one field can be removed.
   */
-  public canRemoveAnyField(exIndex: number, setIndex: number): boolean {
+  public canRemoveAnyFieldOld(exIndex: number, setIndex: number): boolean {
     // if (this.isSuperSet(exIndex)) return false;
     const cols = this.getVisibleSetColumns(exIndex, setIndex);
     const visibleFields = Object.keys(cols).filter(key => cols[key as keyof typeof cols]);
@@ -3328,6 +3393,12 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     // Check if any of the visible fields are removable according to the existing logic.
     // Given the current canRemoveField logic is `return true`, this will be true if any fields are visible.
     return visibleFields.some(field => this.canRemoveField(exIndex, setIndex, field));
+  }
+
+    public canRemoveAnyField(exIndex: number, setIndex: number): boolean {
+    const fields = this.getFieldsForSet(exIndex, setIndex);
+    // Show the button if there is more than one metric to choose from.
+    return fields.visible.length > 1;
   }
 
   /**
@@ -3338,7 +3409,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   * Shows a prompt asking the user which field they want to remove from the set.
   * Includes a 'Cancel' button and the corner close button.
   */
-  public async promptRemoveField(exIndex: number, setIndex: number): Promise<void> {
+  public async promptRemoveFieldOld(exIndex: number, setIndex: number): Promise<void> {
     const cols = this.getVisibleSetColumns(exIndex, setIndex);
     const removableFields = Object.keys(cols).filter(key => cols[key as keyof typeof cols]);
 
@@ -3381,6 +3452,19 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     }
   }
 
+  public async promptRemoveField(exIndex: number, setIndex: number): Promise<void> {
+    const currentRoutine = this.routine();
+    if (!currentRoutine) return;
+
+    // The service handles the UI and returns the updated routine state
+    const updatedRoutine = await this.workoutService.promptRemoveField(currentRoutine, exIndex, setIndex);
+
+    if (updatedRoutine) {
+      // Update the main routine signal to trigger a re-render
+      this.routine.set(updatedRoutine);
+    }
+  }
+
   /**
    * Shows a prompt asking the user which field they want to add to the set.
    */
@@ -3393,7 +3477,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
    * --- CORRECTED & ENHANCED ---
    * Shows a prompt asking which field to add, then a second prompt for the target value.
    */
-  public async promptAddField(exIndex: number, setIndex: number): Promise<void> {
+  public async promptAddFieldOld(exIndex: number, setIndex: number): Promise<void> {
     const cols = this.getVisibleSetColumns(exIndex, setIndex);
     const hiddenFields = Object.keys(cols).filter(key => !cols[key as keyof typeof cols]);
 
@@ -3467,6 +3551,20 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       } else {
         this.toastService.error("Invalid value provided.");
       }
+    }
+  }
+
+  public async promptAddField(exIndex: number, setIndex: number): Promise<void> {
+    const currentRoutine = this.routine();
+    if (!currentRoutine) return;
+
+    // The service handles the UI and returns the updated routine state
+    const updatedRoutine = await this.workoutService.promptAddField(currentRoutine, exIndex, setIndex);
+
+    if (updatedRoutine) {
+      // Update the main routine signal to trigger a re-render
+      this.routine.set(updatedRoutine);
+      this.toastService.success("Field added to set.");
     }
   }
 
@@ -3574,6 +3672,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const reps = loggedSet?.repsAchieved ?? plannedSet.targetReps;
     const distance = loggedSet?.distanceAchieved ?? plannedSet.targetDistance;
     const duration = loggedSet?.durationPerformed ?? plannedSet.targetDuration;
+    const tempo = loggedSet?.targetTempo ?? plannedSet.targetTempo; 
 
     if (weight !== undefined && weight !== null && weight > 0) {
       parts.push(`${this.weightUnitPipe.transform(weight)}`);
@@ -3591,6 +3690,10 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
     if (duration !== undefined && duration !== null && duration > 0) {
       parts.push(this.formatSecondsToTime(duration));
+    }
+
+    if (tempo) {
+      parts.push(`T: ${tempo}`);
     }
 
     if (parts.length === 0) return 'Tap to log...';
@@ -3727,6 +3830,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
    * respecting any user input.
    */
   private startSetTimer(exIndex: number, setIndex: number, key: string): void {
+    this.lastBeepSecond = null;
     // Get the state object, which correctly prioritizes user input for its `remainingTime`.
     const state = this.getSetTimerState(exIndex, setIndex);
     const duration = state.remainingTime;
@@ -3746,12 +3850,14 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     this.setTimerSub = timer(0, 1000).subscribe(() => {
       const currentRemaining = this.setTimerState()[key]?.remainingTime;
       if (currentRemaining > 0) {
+        this.playCountdownSound(currentRemaining);
         this.setTimerState.update(states => {
           states[key].remainingTime--;
           return { ...states };
         });
       } else {
         this.setTimerSub?.unsubscribe();
+
         const exercise = this.routine()!.exercises[exIndex];
         const set = exercise.sets[setIndex];
         if (!this.isSetCompleted(exIndex, setIndex)) {
@@ -3762,6 +3868,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
           delete states[key];
           return { ...states };
         });
+        this.playEndSound();
       }
     });
   }

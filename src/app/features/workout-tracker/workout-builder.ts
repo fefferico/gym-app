@@ -530,7 +530,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
           }
         }
         this.exercisesFormArray.updateValueAndValidity();
-    });
+      });
     this.subscriptions.add(goalSub);
 
     const descSub = this.builderForm.get('description')?.valueChanges.subscribe(value => {
@@ -1476,10 +1476,10 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
   showUndoWithToast(msg: string) {
     this.toastService.showWithAction(
-      msg, 
+      msg,
       "Undo", // Button Label
       () => this.undoLastChange(), // Callback function
-      'info', 
+      'info',
       "Action Completed"
     );
   }
@@ -4594,6 +4594,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   durationToSetForAll = signal<number | null>(null);
   distanceToSetForAll = signal<number | null>(null);
   restToSetForAll = signal<number | null>(null);
+  tempoToSetForAll = signal<string | null>(null);
 
 
   /**
@@ -4643,6 +4644,10 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       }
     }
 
+    if (this.tempoToSetForAll() !== null && this.tempoToSetForAll()!.trim() !== '') {
+      patchData['targetTempo'] = this.tempoToSetForAll();
+    }
+
     // If no values were entered, do nothing
     if (Object.keys(patchData).length === 0) {
       this.toastService.info("No values entered to apply.");
@@ -4661,6 +4666,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     this.distanceToSetForAll.set(null);
     this.restToSetForAll.set(null);
     this.expandedSetAllPanel.set(null);
+    this.tempoToSetForAll.set(null);
 
     this.toastService.success(`Applied values to all ${setsArray.length} sets.`);
   }

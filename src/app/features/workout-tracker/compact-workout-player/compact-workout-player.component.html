@@ -166,16 +166,16 @@
                         {{ getSetSummary(exIndex, setIndex) }}
 
                         <ng-container *ngIf="!isSetCompleted(exIndex, setIndex)">
-                              <span *ngIf="setIndex === findFirstIncompleteSetIndex(exIndex)"
-                                class="inline-flex items-center gap-1 rounded-full bg-yellow-100 dark:bg-yellow-900/70 px-2 py-1 text-xs font-medium text-yellow-800 dark:text-yellow-300 animate-pulse">
-                                <app-icon name="target" class="h-4 w-4"></app-icon>
-                                {{ 'compactPlayer.nextUp' | translate }}
-                              </span>
-                              <span *ngIf="setIndex !== findFirstIncompleteSetIndex(exIndex)"
-                                class="inline-flex items-center gap-1 rounded-full bg-gray-200 dark:bg-gray-700 px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-400">
-                                {{ 'compactPlayer.pending' | translate }}
-                              </span>
-                            </ng-container>
+                          <span *ngIf="setIndex === findFirstIncompleteSetIndex(exIndex)"
+                            class="inline-flex items-center gap-1 rounded-full bg-yellow-100 dark:bg-yellow-900/70 px-2 py-1 text-xs font-medium text-yellow-800 dark:text-yellow-300 animate-pulse">
+                            <app-icon name="target" class="h-4 w-4"></app-icon>
+                            {{ 'compactPlayer.nextUp' | translate }}
+                          </span>
+                          <span *ngIf="setIndex !== findFirstIncompleteSetIndex(exIndex)"
+                            class="inline-flex items-center gap-1 rounded-full bg-gray-200 dark:bg-gray-700 px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-400">
+                            {{ 'compactPlayer.pending' | translate }}
+                          </span>
+                        </ng-container>
 
                       </div>
 
@@ -190,9 +190,8 @@
                       <!-- Actions -->
                       <div *ngIf="isSetExpanded(exIndex,setIndex)"
                         class="flex-shrink-0 flex flex-col items-center justify-center gap-1">
-                        <div *ngIf="!isSetCompleted(exIndex, setIndex)" class="flex items-center"
-                          >
-                        <!-- <div *ngIf="!isSetCompleted(exIndex, setIndex)" class="flex items-center"
+                        <div *ngIf="!isSetCompleted(exIndex, setIndex)" class="flex items-center">
+                          <!-- <div *ngIf="!isSetCompleted(exIndex, setIndex)" class="flex items-center"
                           [ngClass]="{'disabled-div': isTimedSet(exIndex, setIndex) && getSetTimerState(exIndex, setIndex).status === 'running'}"
                           > -->
                           <div class="flex items-center justify-center gap-1">
@@ -258,9 +257,9 @@
                           [style.width.%]="(((performanceInputValues()[exIndex + '-' + setIndex]?.actualDuration ?? set.targetDuration) || 1) - getSetTimerState(exIndex, setIndex).remainingTime) / ((performanceInputValues()[exIndex + '-' + setIndex]?.actualDuration ?? set.targetDuration) || 1) * 100">
                         </div>
                       </div>
-                      
+
                       <app-icon name="hourglass" class="h-4 w-4 text-teal-500 ml-2" [strokeWidth]="2.5"></app-icon>
-                      <button 
+                      <button
                         (click)="toggleSetCompletion(exercise, set, exIndex, setIndex, 0); $event.stopPropagation()"
                         [disabled]="!isSetDataValid(exIndex, setIndex)"
                         class="ml-2 px-2 h-10 w-10 rounded-full flex items-center justify-center transition-all duration-200 ease-in-out transform active:scale-90 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none"
@@ -273,91 +272,43 @@
 
                       <!-- Inputs Grid -->
                       <div class="flex-1 grid grid-cols-2 gap-x-4 gap-y-2 px-1 py-1">
-                      <!-- <div class="flex-1 grid grid-cols-2 gap-x-4 gap-y-2 px-1 py-1" [ngClass]="{'disabled-div-lower-opacity': isSetCompleted(exIndex, setIndex),
-                          'disabled-div': isTimedSet(exIndex, setIndex) && getSetTimerState(exIndex, setIndex).status === 'running'
-                        }"> -->
+                        <ng-container *ngIf="getFieldsForSet(exIndex, setIndex).visible as visibleFields">
+                          <!-- Loop through the visible fields in their defined order -->
+                          <ng-container
+                            *ngFor="let field of (workoutService.getSetFieldOrder(routine()!, exIndex, setIndex) || visibleFields)">
+                            <ng-container [ngSwitch]="field">
+                              <div *ngSwitchCase="'reps'">
+                                <ng-container [ngTemplateOutlet]="repsInputTemplate"
+                                  [ngTemplateOutletContext]="{ exIndex: exIndex, setIndex: setIndex, set: set }"></ng-container>
+                              </div>
+                              <div *ngSwitchCase="'weight'">
+                                <ng-container [ngTemplateOutlet]="weightInputTemplate"
+                                  [ngTemplateOutletContext]="{ exIndex: exIndex, setIndex: setIndex, set: set }"></ng-container>
+                              </div>
+                              <div *ngSwitchCase="'distance'">
+                                <ng-container [ngTemplateOutlet]="distanceInputTemplate"
+                                  [ngTemplateOutletContext]="{ exIndex: exIndex, setIndex: setIndex, set: set }"></ng-container>
+                              </div>
+                              <div *ngSwitchCase="'duration'">
+                                <ng-container [ngTemplateOutlet]="durationInputTemplate"
+                                  [ngTemplateOutletContext]="{ exIndex: exIndex, setIndex: setIndex, set: set }"></ng-container>
+                              </div>
+                              <div *ngSwitchCase="'tempo'">
+                                <ng-container [ngTemplateOutlet]="tempoInputTemplate"
+                                  [ngTemplateOutletContext]="{ exIndex: exIndex, setIndex: setIndex, set: set }"></ng-container>
+                              </div>
+                            </ng-container>
+                          </ng-container>
 
-                        <!-- Case for ZERO visible fields -->
-                        <ng-container *ngIf="getFieldsForSet(exIndex, setIndex).visible.length === 0">
-                          <div class="col-span-2">
-                            <button *ngIf="!isSetCompleted(exIndex, setIndex)"
-                              (click)="promptAddField(exIndex, setIndex); $event.stopPropagation()"
-                              class="flex items-center justify-center w-full h-full p-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-md text-gray-400 hover:bg-gray-200/50 dark:hover:bg-gray-700/50 transition-colors">
-                              <app-icon name="plus-circle" class="h-5 w-5 mr-2"></app-icon>
-                              <span class="text-sm font-semibold">{{ 'compactPlayer.addMetric' | translate }}</span>
+                          <!-- "Add GHOST Field" Button -->
+                          <div *ngIf="!isSetCompleted(exIndex,setIndex) && canAddField(exIndex, setIndex)"
+                            class="flex items-center justify-center h-full">
+                            <button (click)="promptAddField(exIndex, setIndex); $event.stopPropagation()"
+                              class="flex items-center justify-center w-full p-2 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-md text-gray-400 hover:bg-gray-200/50 dark:hover:bg-gray-700/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                              <app-icon name="plus-circle" class="h-5 w-5"></app-icon>
                             </button>
                           </div>
                         </ng-container>
-
-                        <ng-container *ngIf="getFieldsForSet(exIndex, setIndex).visible.length > 0">
-                          <ng-container *ngIf="getFieldsForSet(exIndex, setIndex).visible as visibleFields">
-                            <!-- Weight Input -->
-                            <div *ngIf="visibleFields.includes('weight')">
-                              <label
-                                class="flex items-center justify-center text-xs font-medium text-gray-500 dark:text-gray-300 pb-1">
-                                {{ 'compactPlayer.weightLabel' | translate:{unit:
-                                unitsService.getWeightUnitSuffix()} }}
-                              </label>
-                              <input type="number" [ngModel]="getInitialInputValue(exIndex, setIndex, 'weight')"
-                                (change)="updateSetData(exIndex, setIndex, 0, 'weight', $event)"
-                                class="w-full p-1 text-center bg-gray-100 dark:bg-gray-700 rounded-md text-black dark:text-gray-200">
-                              <div *ngIf="getSetTargetDisplay(set, exIndex, setIndex, 'weight') as target"
-                                class="target-class text-xs"><span class="flex items-center justify-center"><app-icon
-                                    name="target" class="h-3 w-3 mr-0.5"></app-icon>{{ target
-                                  }}{{unitsService.getWeightUnitSuffix()}}</span></div>
-                            </div>
-                            <!-- Reps Input -->
-                            <div *ngIf="visibleFields.includes('reps')">
-                              <label
-                                class="flex items-center justify-center text-xs font-medium text-gray-500 dark:text-gray-300 pb-1">
-                                {{ 'compactPlayer.repsLabel' | translate }}
-                              </label>
-                              <input type="number" [ngModel]="getInitialInputValue(exIndex, setIndex, 'reps')"
-                                (change)="updateSetData(exIndex, setIndex, 0, 'reps', $event)"
-                                class="w-full p-1 text-center bg-gray-100 dark:bg-gray-700 rounded-md text-black dark:text-gray-200">
-                              <div *ngIf="getSetTargetDisplay(set, exIndex, setIndex, 'reps') as target"
-                                class="target-class text-xs"><span class="flex items-center justify-center"><app-icon
-                                    name="target" class="h-3 w-3 mr-0.5"></app-icon>x{{ target }}</span></div>
-                            </div>
-                            <!-- Distance Input -->
-                            <div *ngIf="visibleFields.includes('distance')">
-                              <label
-                                class="flex items-center justify-center text-xs font-medium text-gray-500 dark:text-gray-300 pb-1">
-                                {{ 'compactPlayer.distanceLabel' | translate }}
-                              </label>
-                              <input type="number" [ngModel]="getInitialInputValue(exIndex, setIndex, 'distance')"
-                                (change)="updateSetData(exIndex, setIndex, 0, 'distance', $event)"
-                                class="w-full p-1 text-center bg-gray-100 dark:bg-gray-700 rounded-md text-black dark:text-gray-200">
-                              <div *ngIf="getSetTargetDisplay(set, exIndex, setIndex, 'distance') as target"
-                                class="target-class text-xs"><span class="flex items-center justify-center"><app-icon
-                                    name="target" class="h-3 w-3 mr-0.5"></app-icon>{{ target }} km</span></div>
-                            </div>
-                            <!-- Duration Input -->
-                            <div *ngIf="visibleFields.includes('duration')">
-                              <label
-                                class="flex items-center justify-center text-xs font-medium text-gray-500 dark:text-gray-300 pb-1">
-                                {{ 'compactPlayer.timeLabel' | translate }}
-                              </label>
-                              <input type="text" [ngModel]="getInitialInputValue(exIndex, setIndex, 'duration')"
-                                (change)="updateSetData(exIndex, setIndex, 0, 'duration', $event)"
-                                class="w-full p-1 text-center bg-gray-100 dark:bg-gray-700 rounded-md text-black dark:text-gray-200"
-                                [placeholder]="'compactPlayer.timePlaceholder' | translate">
-                              <div *ngIf="getSetTargetDisplay(set, exIndex, setIndex, 'duration') as target"
-                                class="target-class text-xs"><span class="flex items-center justify-center"><app-icon
-                                    name="target" class="h-3 w-3 mr-0.5"></app-icon>{{ formatSecondsToTime(target)
-                                  }}</span></div>
-                            </div>
-                          </ng-container>
-                        </ng-container>
-
-                        <!-- "Add GHOST Field" Button for 1 or 3 fields -->
-                        <div *ngIf="canAddField(exIndex, setIndex)" class="flex items-center justify-center h-full">
-                          <button [disabled]="isSetCompleted(exIndex, setIndex)"
-                            (click)="promptAddField(exIndex, setIndex); $event.stopPropagation()"
-                            class="flex items-center justify-center w-full p-2 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-md text-gray-400 hover:bg-gray-200/50 dark:hover:bg-gray-700/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                            <app-icon name="plus-circle" class="h-5 w-5"></app-icon>
-                          </button>
-                        </div>
                       </div>
                       <!-- Set Notes Textarea (if visible) -->
                       <div *ngIf="expandedSetNotes() === (exIndex + '-' + setIndex)" class="px-2 pb-1">
@@ -636,7 +587,8 @@
   <div class="flex flex-col items-center"
     *ngIf="!routine() || (routine() !== null && routine() !== undefined && (!routine()?.exercises || routine()?.exercises?.length === 0))">
     <h2 class="text-2xl font-semibold text-gray-700 dark:text-gray-200">
-      {{ sessionState() === 'error' ? ('compactPlayer.errorLoading' | translate) : (currentWorkoutLog().exercises?.length
+      {{ sessionState() === 'error' ? ('compactPlayer.errorLoading' | translate) :
+      (currentWorkoutLog().exercises?.length
       === 0 ?
       (routineId === '-1' ? ('compactPlayer.workoutStarted' | translate) : ('compactPlayer.workoutEnded' | translate)) :
       ('compactPlayer.workoutComplete' | translate)) }}
@@ -727,8 +679,8 @@
                 <span *ngIf="setLog.repsAchieved">{{ 'compactPlayer.repsLabel' | translate }}: <strong
                     class="dark:text-gray-100">{{ setLog.repsAchieved
                     }}</strong></span>
-                <span *ngIf="setLog.weightUsed != null">{{ 'compactPlayer.weightLabel' | translate:{unit: ''} }}: <strong
-                    class="dark:text-gray-100">{{ setLog.weightUsed
+                <span *ngIf="setLog.weightUsed != null">{{ 'compactPlayer.weightLabel' | translate:{unit: ''} }}:
+                  <strong class="dark:text-gray-100">{{ setLog.weightUsed
                     |
                     weightUnit }}</strong></span>
                 <span *ngIf="setLog.distanceAchieved">{{ 'compactPlayer.distanceLabel' | translate }}: <strong
@@ -749,7 +701,8 @@
           <div class="p-3 text-sm font-medium text-gray-700 dark:text-gray-300">
             <span class="flex items-center gap-2">
               <app-icon name="calendar-page" class="h-6 w-6"></app-icon>
-              <span>{{ 'compactPlayer.insights.lastPerformance' | translate:{date: (data.lastPerformance?.lastPerformedDate
+              <span>{{ 'compactPlayer.insights.lastPerformance' | translate:{date:
+                (data.lastPerformance?.lastPerformedDate
                 | date:'shortDate')} }}</span>
             </span>
           </div>
@@ -763,8 +716,8 @@
                 <span *ngIf="setLog.repsAchieved">{{ 'compactPlayer.repsLabel' | translate }}: <strong
                     class="dark:text-gray-100">{{ setLog.repsAchieved
                     }}</strong></span>
-                <span *ngIf="setLog.weightUsed != null">{{ 'compactPlayer.weightLabel' | translate:{unit: ''} }}: <strong
-                    class="dark:text-gray-100">{{ setLog.weightUsed
+                <span *ngIf="setLog.weightUsed != null">{{ 'compactPlayer.weightLabel' | translate:{unit: ''} }}:
+                  <strong class="dark:text-gray-100">{{ setLog.weightUsed
                     |
                     weightUnit }}</strong></span>
                 <span *ngIf="setLog.distanceAchieved">{{ 'compactPlayer.distanceLabel' | translate }}: <strong
@@ -820,12 +773,102 @@
   <app-barbell-calculator-modal (close)="closeCalculatorModal()"></app-barbell-calculator-modal>
 </div>
 
- <app-session-overview-modal
-    [isOpen]="isSessionOverviewVisible()"
-    [routineSignal]="routine"
-    [loggedExercisesSignal]="currentWorkoutLogExercises"
-    [activeExerciseId]="routine()?.exercises?.[expandedExerciseIndex() ?? -1]?.id"
-    [activeSetIndex]="findFirstIncompleteSetIndex(expandedExerciseIndex() ?? -1)"
-    [activeBlockRound]="isSupersetStart(expandedExerciseIndex() ?? -1) ? findFirstIncompleteRoundIndex(expandedExerciseIndex() ?? -1) : -1"
-    (close)="closeSessionOverviewModal()">
-  </app-session-overview-modal>
+<app-session-overview-modal [isOpen]="isSessionOverviewVisible()" [routineSignal]="routine"
+  [loggedExercisesSignal]="currentWorkoutLogExercises"
+  [activeExerciseId]="routine()?.exercises?.[expandedExerciseIndex() ?? -1]?.id"
+  [activeSetIndex]="findFirstIncompleteSetIndex(expandedExerciseIndex() ?? -1)"
+  [activeBlockRound]="isSupersetStart(expandedExerciseIndex() ?? -1) ? findFirstIncompleteRoundIndex(expandedExerciseIndex() ?? -1) : -1"
+  (close)="closeSessionOverviewModal()">
+</app-session-overview-modal>
+
+
+<!-- =================================================================== -->
+<!-- NG-TEMPLATES for Reusable Set Inputs -->
+<!-- =================================================================== -->
+
+<!-- REPS INPUT TEMPLATE -->
+<ng-template #repsInputTemplate let-exIndex="exIndex" let-setIndex="setIndex" let-set="set">
+  <div>
+    <label class="flex items-center justify-center text-xs font-medium text-gray-500 dark:text-gray-300 pb-1">
+      {{ 'compactPlayer.repsLabel' | translate }}
+    </label>
+    <input type="number" [ngModel]="getInitialInputValue(exIndex, setIndex, 'reps')"
+      (change)="updateSetData(exIndex, setIndex, 0, 'reps', $event)"
+      class="w-full p-1 text-center bg-gray-100 dark:bg-gray-700 rounded-md text-black dark:text-gray-200">
+    <div *ngIf="getSetTargetDisplay(set, exIndex, setIndex, 'reps') as target" class="target-class text-xs">
+      <span class="flex items-center justify-center">
+        <app-icon name="target" class="h-3 w-3 mr-0.5"></app-icon>x{{ target }}
+      </span>
+    </div>
+  </div>
+</ng-template>
+
+<!-- WEIGHT INPUT TEMPLATE -->
+<ng-template #weightInputTemplate let-exIndex="exIndex" let-setIndex="setIndex" let-set="set">
+  <div>
+    <label class="flex items-center justify-center text-xs font-medium text-gray-500 dark:text-gray-300 pb-1">
+      {{ 'compactPlayer.weightLabel' | translate:{unit: unitsService.getWeightUnitSuffix()} }}
+    </label>
+    <input type="number" [ngModel]="getInitialInputValue(exIndex, setIndex, 'weight')"
+      (change)="updateSetData(exIndex, setIndex, 0, 'weight', $event)"
+      class="w-full p-1 text-center bg-gray-100 dark:bg-gray-700 rounded-md text-black dark:text-gray-200">
+    <div *ngIf="getSetTargetDisplay(set, exIndex, setIndex, 'weight') as target" class="target-class text-xs">
+      <span class="flex items-center justify-center">
+        <app-icon name="target" class="h-3 w-3 mr-0.5"></app-icon>{{ target }}{{ unitsService.getWeightUnitSuffix() }}
+      </span>
+    </div>
+  </div>
+</ng-template>
+
+<!-- DISTANCE INPUT TEMPLATE -->
+<ng-template #distanceInputTemplate let-exIndex="exIndex" let-setIndex="setIndex" let-set="set">
+  <div>
+    <label class="flex items-center justify-center text-xs font-medium text-gray-500 dark:text-gray-300 pb-1">
+      {{ 'compactPlayer.distanceLabel' | translate }}
+    </label>
+    <input type="number" [ngModel]="getInitialInputValue(exIndex, setIndex, 'distance')"
+      (change)="updateSetData(exIndex, setIndex, 0, 'distance', $event)"
+      class="w-full p-1 text-center bg-gray-100 dark:bg-gray-700 rounded-md text-black dark:text-gray-200">
+    <div *ngIf="getSetTargetDisplay(set, exIndex, setIndex, 'distance') as target" class="target-class text-xs">
+      <span class="flex items-center justify-center">
+        <app-icon name="target" class="h-3 w-3 mr-0.5"></app-icon>{{ target }} {{
+        unitsService.getDistanceMeasureUnitSuffix() }}
+      </span>
+    </div>
+  </div>
+</ng-template>
+
+<!-- DURATION INPUT TEMPLATE -->
+<ng-template #durationInputTemplate let-exIndex="exIndex" let-setIndex="setIndex" let-set="set">
+  <div>
+    <label class="flex items-center justify-center text-xs font-medium text-gray-500 dark:text-gray-300 pb-1">
+      {{ 'compactPlayer.timeLabel' | translate }}
+    </label>
+    <input type="text" [ngModel]="getInitialInputValue(exIndex, setIndex, 'duration')"
+      (change)="updateSetData(exIndex, setIndex, 0, 'duration', $event)"
+      class="w-full p-1 text-center bg-gray-100 dark:bg-gray-700 rounded-md text-black dark:text-gray-200"
+      [placeholder]="'compactPlayer.timePlaceholder' | translate">
+    <div *ngIf="getSetTargetDisplay(set, exIndex, setIndex, 'duration') as target" class="target-class text-xs">
+      <span class="flex items-center justify-center">
+        <app-icon name="target" class="h-3 w-3 mr-0.5"></app-icon>{{ formatSecondsToTime(target) }}
+      </span>
+    </div>
+  </div>
+</ng-template>
+
+<!-- TEMPO INPUT TEMPLATE -->
+<ng-template #tempoInputTemplate let-exIndex="exIndex" let-setIndex="setIndex" let-set="set">
+  <div>
+    <label class="flex items-center justify-center text-xs font-medium text-gray-500 dark:text-gray-300 pb-1">
+      {{ 'compactPlayer.tempoLabel' | translate }}
+    </label>
+    <input type="text" [ngModel]="getInitialInputValue(exIndex, setIndex, 'tempo')"
+      (change)="updateSetData(exIndex, setIndex, 0, 'tempo', $event)" placeholder="e.g. 4010"
+      class="w-full p-1 text-center bg-gray-100 dark:bg-gray-700 rounded-md text-black dark:text-gray-200">
+    <div *ngIf="getSetTargetDisplay(set, exIndex, setIndex, 'tempo') as target" class="target-class text-xs">
+      <span class="flex items-center justify-center">
+        <app-icon name="target" class="h-3 w-3 mr-0.5"></app-icon>{{ target }}
+      </span>
+    </div>
+  </div>
+</ng-template>
