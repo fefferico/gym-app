@@ -1110,11 +1110,11 @@ export class WorkoutService {
  * @param exercise The base exercise definition.
  * @returns A user-friendly string for the UI.
  */
-  getWeightDisplay(set: ExerciseTargetSetParams, exercise: Exercise | WorkoutExercise): string {
-    if (exercise.category === 'cardio' || exercise.category === 'stretching') {
+  getWeightDisplay(set: ExerciseTargetSetParams | LoggedSet, exercise: Exercise | WorkoutExercise): string {
+    if (exercise?.category === 'cardio' || exercise?.category === 'stretching') {
       return this.translate.instant('workoutService.display.weightNotApplicable');
     }
-    if (exercise.category === 'bodyweight/calisthenics') {
+    if (exercise?.category === 'bodyweight/calisthenics') {
       if (set.targetWeight != null && set.targetWeight > 0) {
         return `${set.targetWeight} ${this.unitsService.getWeightUnitSuffix()}`;
       }

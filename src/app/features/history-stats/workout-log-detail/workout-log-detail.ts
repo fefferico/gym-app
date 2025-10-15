@@ -91,7 +91,7 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   protected trackingService = inject(TrackingService);
   private exerciseService = inject(ExerciseService);
-  private workoutService = inject(WorkoutService);
+  protected workoutService = inject(WorkoutService);
   protected unitService = inject(UnitsService);
   private alertService = inject(AlertService);
   private spinnerService = inject(SpinnerService);
@@ -456,33 +456,33 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
     switch (type) {
       case 'reps':
         const performedReps = set.repsAchieved;
-        if (isDifferent(performedReps ?? 0, set.targetRepsMin, set.targetReps)) {
+        // if (isDifferent(performedReps ?? 0, set.targetRepsMin, set.targetReps)) {
           modalData = { metric: 'Reps', targetValue: createTargetDisplay(set.targetRepsMin, set.targetRepsMax, set.targetReps), performedValue: `${performedReps ?? '-'}` };
-        }
+        // }
         break;
       case 'duration':
         const performedDuration = set.durationPerformed;
-        if (isDifferent(performedDuration ?? 0, set.targetDurationMin, set.targetDuration)) {
+        // if (isDifferent(performedDuration ?? 0, set.targetDurationMin, set.targetDuration)) {
           modalData = { metric: 'Duration', targetValue: createTargetDisplay(set.targetDurationMin, set.targetDurationMax, set.targetDuration, ' s'), performedValue: `${performedDuration ?? '-'} s` };
-        }
+        // }
         break;
       case 'weight':
         const performedWeight = set.weightUsed;
-        if ((performedWeight ?? 0) < (set.targetWeight ?? 0)) {
+        // if ((performedWeight ?? 0) < (set.targetWeight ?? 0)) {
           modalData = { metric: 'Weight', targetValue: `${set.targetWeight ?? '-'} ${unitLabel}`, performedValue: `${performedWeight ?? '-'} ${unitLabel}` };
-        }
+        // }
         break;
       case 'rest':
         const performedRest = set.restAfterSetUsed;
-        if ((performedRest ?? 0) < (set.targetRestAfterSet ?? 0)) {
-          modalData = { metric: 'Rest', targetValue: `${set.targetRestAfterSet ?? '-'} s`, performedValue: `${performedRest ?? '-'} s` };
-        }
+        // if ((performedRest ?? 0) < (set.targetRestAfterSet ?? 0)) {
+          modalData = { metric: 'Rest', targetValue: `${set.targetRestAfterSet ?? '-'} s`, performedValue: `${performedRest ?? '0'} s` };
+        // }
         break;
       case 'distance':
         const performedDistance = set.distanceAchieved;
-        if (isDifferent(performedDistance ?? 0, set.targetDistanceMin, set.targetDistance)) {
+        // if (isDifferent(performedDistance ?? 0, set.targetDistanceMin, set.targetDistance)) {
           modalData = { metric: 'Distance', targetValue: createTargetDisplay(set.targetDistanceMin, set.targetDistanceMax, set.targetDistance, ` ${distUnitLabel}`), performedValue: `${performedDistance ?? '-'} ${distUnitLabel}` };
-        }
+        // }
         break;
     }
     if (modalData) this.comparisonModalData.set(modalData);

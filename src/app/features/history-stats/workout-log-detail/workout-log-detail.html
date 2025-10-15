@@ -276,36 +276,29 @@
                     </div>
                     <!-- Reps -->
                     <div *ngIf="hasPerformedReps(item)"><strong [ngClass]="checkTextClass(set, 'reps')"
-                        [class.cursor-pointer]="isTargetDifferent(set, 'reps')"
-                        [class.hover:underline]="isTargetDifferent(set, 'reps')"
+                        [class.cursor-pointer]="true"
                         (click)="showComparisonModal(set, 'reps')">{{ set.repsAchieved || '-' }}</strong></div>
 
                     <!-- Weight -->
                     <div *ngIf="checkIfWeightedExercise(item)"><strong [ngClass]="checkTextClass(set, 'weight')"
-                        [class.cursor-pointer]="isTargetDifferent(set, 'weight')"
-                        [class.hover:underline]="isTargetDifferent(set, 'weight')"
-                        (click)="showComparisonModal(set, 'weight')">{{ set.weightUsed != null ? (set.weightUsed + ' ' +
-                        unitService.getWeightUnitSuffix()) : '-' }}</strong></div>
+                        [class.cursor-pointer]="true"
+                        (click)="showComparisonModal(set, 'weight')">{{ item.baseExercise !== null && item.baseExercise !== undefined ? workoutService.getWeightDisplay(set, item.baseExercise) : '' }}</strong></div>
 
                     <!-- Distance +++ -->
                     <div *ngIf="hasPerformedDistanceSets(item)">
                       <strong [ngClass]="checkTextClass(set, 'distance')"
-                        [class.cursor-pointer]="isTargetDifferent(set, 'distance')"
-                        [class.hover:underline]="isTargetDifferent(set, 'distance')"
-                        (click)="showComparisonModal(set, 'distance')">{{ set.distanceAchieved ?? '-' }} {{
-                        set.distanceAchieved ? unitService.getDistanceMeasureUnitSuffix() : '' }}</strong>
+                        [class.cursor-pointer]="true"
+                        (click)="showComparisonModal(set, 'distance')">{{ set.distanceAchieved ?? '-' }}</strong>
                     </div>
 
                     <!-- Time -->
                     <div *ngIf="hasPerformedTimedSets(item)"><strong [ngClass]="checkTextClass(set, 'duration')"
-                        [class.cursor-pointer]="isTargetDifferent(set, 'duration')"
-                        [class.hover:underline]="isTargetDifferent(set, 'duration')"
+                        [class.cursor-pointer]="true"
                         (click)="showComparisonModal(set, 'duration')">{{ set.durationPerformed ?? '-' }}</strong></div>
 
                     <!-- Rest -->
                     <div><strong [ngClass]="checkTextClass(set, 'rest')"
-                        [class.cursor-pointer]="isTargetDifferent(set, 'rest')"
-                        [class.hover:underline]="isTargetDifferent(set, 'rest')"
+                        [class.cursor-pointer]="true"
                         (click)="showComparisonModal(set, 'rest')">{{ set.restAfterSetUsed ?? '-' }}</strong></div>
 
                     <!-- Notes -->
@@ -400,9 +393,9 @@
 
           <!-- Success Icon -->
           <app-icon *ngIf="getComparisonStatus(data.performedValue, data.targetValue) === 'success'"
-            name="check-circle" class="w-7 h-7 text-green-500"></app-icon>
+            name="done" class="w-7 h-7 text-green-500"></app-icon>
           <!-- Failure Icon -->
-          <app-icon *ngIf="getComparisonStatus(data.performedValue, data.targetValue) === 'failure'" name="x-circle"
+          <app-icon *ngIf="getComparisonStatus(data.performedValue, data.targetValue) === 'failure'" name="test_fail"
             class="w-7 h-7 text-red-500"></app-icon>
         </div>
       </div>
