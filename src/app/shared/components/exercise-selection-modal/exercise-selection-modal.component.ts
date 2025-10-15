@@ -26,7 +26,8 @@ export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges
     private toastService = inject(ToastService);
     private translate = inject(TranslateService);
 
-    isMultiSelect = input<boolean>(false); // <-- NEW INPUT
+    isMultiSelect = input<boolean>(false);
+    isFocusInputOnStart = input<boolean>(false);
 
     // --- OUTPUTS ---
     @Output() exerciseSelected = new EventEmitter<Exercise>(); // For single-select mode
@@ -301,7 +302,7 @@ export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges
     }
 
     ngAfterViewInit(): void {
-        if (this.isOpen()) {
+        if (this.isOpen() && this.isFocusInputOnStart()) {
             this.checkForInputFocus();
         }
     }

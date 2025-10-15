@@ -942,7 +942,8 @@
         },
         "toasts": {
             "filtersCleared": "Filtri puliti"
-        }
+        },
+    "addSelected": "Aggiungi selezionato/i"
     },
     "workoutBuilder": {
         "exerciseInfoTooltip": "Dettagli esercizio e progressione",

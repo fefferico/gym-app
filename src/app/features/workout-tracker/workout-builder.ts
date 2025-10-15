@@ -446,85 +446,90 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       // END: Added subscription
     }
 
-    this.previousGoalValue = this.builderForm.get('goal')?.value;
-    const goalSub = this.builderForm.get('goal')?.valueChanges.subscribe(async goalValue => {
-      if (this.previousGoalValue !== goalValue && goalValue !== 'tabata') {
-        this.previousGoalValue = goalValue;
-      }
-      if (this.mode === 'routineBuilder' && goalValue === 'rest') {
-        while (this.exercisesFormArray.length) this.exercisesFormArray.removeAt(0);
-        this.exercisesFormArray.clearValidators();
-      }
-      // --- NEW/MODIFIED: Tabata and Post-Tabata Logic ---
-      const exercises = this.exercisesFormArray.controls as FormGroup[];
-      // --- START OF CORRECTION ---
-      if (this.mode === 'routineBuilder' && goalValue === 'tabata') {
+    const goalSub = this.builderForm.get('goal')?.valueChanges
+      .pipe(distinctUntilChanged())
+      .subscribe(async (goalValue: any) => {
+        if (this.previousGoalValue && this.previousGoalValue === 'tabata') {
+          return;
+        }
+
+        if (this.previousGoalValue !== goalValue && goalValue !== 'tabata') {
+          this.previousGoalValue = goalValue;
+        }
+        if (this.mode === 'routineBuilder' && goalValue === 'rest') {
+          while (this.exercisesFormArray.length) this.exercisesFormArray.removeAt(0);
+          this.exercisesFormArray.clearValidators();
+        }
+        // --- NEW/MODIFIED: Tabata and Post-Tabata Logic ---
         const exercises = this.exercisesFormArray.controls as FormGroup[];
-        if (exercises.length < 2) {
-          this.toastService.warning('Tabata routines require at least 2 exercises. Please add more exercises first.', 5000);
-          this.builderForm.get('goal')?.setValue(this.previousGoalValue, { emitEvent: false });
-          return;
-        }
-
-        const confirm = await this.alertService.showConfirm(
-          'Convert to Tabata?',
-          'This will convert all exercises into a single superset. Each round will be set to 20 seconds of work and 10 seconds of rest. Are you sure?',
-          'Convert',
-          'Cancel'
-        );
-
-        if (!confirm || !confirm.data) {
-          // User cancelled, so revert the change and stop processing
-          this.builderForm.get('goal')?.setValue(this.previousGoalValue, { emitEvent: false });
-          return;
-        }
-
-        // User confirmed, now proceed with the conversion
-        const newSupersetId = uuidv4();
-        exercises.forEach((exerciseControl, index) => {
-          const setsArray = exerciseControl.get('sets') as FormArray;
-          // Standardize to a single set which represents the work interval
-          while (setsArray.length > 1) {
-            setsArray.removeAt(1);
+        // --- START OF CORRECTION ---
+        if (this.mode === 'routineBuilder' && goalValue === 'tabata') {
+          const exercises = this.exercisesFormArray.controls as FormGroup[];
+          if (exercises.length < 2) {
+            this.toastService.warning('Tabata routines require at least 2 exercises. Please add more exercises first.', 5000);
+            this.builderForm.get('goal')?.setValue(this.previousGoalValue, { emitEvent: false });
+            return;
           }
-          if (setsArray.length === 0) {
-            const defaultSet: ExerciseTargetSetParams = {
-              id: uuidv4(), type: 'standard', restAfterSet: 10, targetDuration: 20
-            };
-            setsArray.push(this.createSetFormGroup(defaultSet, false));
+
+          const confirm = await this.alertService.showConfirm(
+            'Convert to Tabata?',
+            'This will convert all exercises into a single superset. Each round will be set to 20 seconds of work and 10 seconds of rest. Are you sure?',
+            'Convert',
+            'Cancel'
+          );
+
+          if (!confirm || !confirm.data) {
+            // User cancelled, so revert the change and stop processing
+            this.builderForm.get('goal')?.setValue(this.previousGoalValue, { emitEvent: false });
+            return;
           }
-          // Enforce Tabata timings
-          setsArray.at(0).patchValue({
-            targetDuration: 20,
-            restAfterSet: 10,
-            targetReps: null, targetRepsMin: null, targetRepsMax: null,
-            targetWeight: null, targetWeightMin: null, targetWeightMax: null,
-            targetDistance: null, targetDistanceMin: null, targetDistanceMax: null,
-          }, { emitEvent: false });
 
-          exerciseControl.patchValue({
-            supersetId: newSupersetId,
-            supersetOrder: index,
-            supersetType: 'standard', // Tabata is a type of standard superset in this structure
-            type: 'superset'
-          }, { emitEvent: false });
-        });
-        this.toastService.info("Routine converted to Tabata format.");
+          // User confirmed, now proceed with the conversion
+          const newSupersetId = uuidv4();
+          exercises.forEach((exerciseControl, index) => {
+            const setsArray = exerciseControl.get('sets') as FormArray;
+            // Standardize to a single set which represents the work interval
+            while (setsArray.length > 1) {
+              setsArray.removeAt(1);
+            }
+            if (setsArray.length === 0) {
+              const defaultSet: ExerciseTargetSetParams = {
+                id: uuidv4(), type: 'standard', restAfterSet: 10, targetDuration: 20
+              };
+              setsArray.push(this.createSetFormGroup(defaultSet, false));
+            }
+            // Enforce Tabata timings
+            setsArray.at(0).patchValue({
+              targetDuration: 20,
+              restAfterSet: 10,
+              targetReps: null, targetRepsMin: null, targetRepsMax: null,
+              targetWeight: null, targetWeightMin: null, targetWeightMax: null,
+              targetDistance: null, targetDistanceMin: null, targetDistanceMax: null,
+            }, { emitEvent: false });
 
-      } else if (this.mode === 'routineBuilder' && this.builderForm.get('goal')?.value !== 'tabata') {
-        const firstExercise = this.exercisesFormArray.at(0) as FormGroup;
-        if (firstExercise && firstExercise.get('supersetId')?.value && firstExercise.get('sets')?.value?.length === this.exercisesFormArray.length) {
-          this.exercisesFormArray.controls.forEach(exerciseControl => {
-            (exerciseControl as FormGroup).patchValue({
-              supersetId: null,
-              supersetOrder: null,
-              type: 'standard'
+            exerciseControl.patchValue({
+              supersetId: newSupersetId,
+              supersetOrder: index,
+              supersetType: 'standard', // Tabata is a type of standard superset in this structure
+              type: 'superset'
             }, { emitEvent: false });
           });
-          this.toastService.info("Tabata grouping removed.", 3000);
+          this.toastService.info("Routine converted to Tabata format.");
+
+        } else if (this.mode === 'routineBuilder' && this.builderForm.get('goal')?.value !== 'tabata') {
+          const firstExercise = this.exercisesFormArray.at(0) as FormGroup;
+          if (firstExercise && firstExercise.get('supersetId')?.value && firstExercise.get('sets')?.value?.length === this.exercisesFormArray.length) {
+            this.exercisesFormArray.controls.forEach(exerciseControl => {
+              (exerciseControl as FormGroup).patchValue({
+                supersetId: null,
+                supersetOrder: null,
+                type: 'standard'
+              }, { emitEvent: false });
+            });
+            this.toastService.info("Tabata grouping removed.", 3000);
+          }
         }
-      }
-      this.exercisesFormArray.updateValueAndValidity();
+        this.exercisesFormArray.updateValueAndValidity();
     });
     this.subscriptions.add(goalSub);
 
@@ -1379,6 +1384,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         }
       }
     });
+    this.previousGoalValue = this.builderForm.get('goal')?.value;
   }
 
   addSet(exerciseControl: AbstractControl, exerciseIndex: number): void {
@@ -1465,6 +1471,17 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     } else if (currentExpanded && currentExpanded.exerciseIndex === exerciseIndex && currentExpanded.setIndex > setIndex) {
       this.expandedSetPath.set({ exerciseIndex, setIndex: currentExpanded.setIndex - 1 });
     }
+    this.showUndoWithToast("Set/Round removed");
+  }
+
+  showUndoWithToast(msg: string) {
+    this.toastService.showWithAction(
+      msg, 
+      "Undo", // Button Label
+      () => this.undoLastChange(), // Callback function
+      'info', 
+      "Action Completed"
+    );
   }
 
   toggleSetExpansion(exerciseIndex: number, setIndex: number, event?: Event): void {
@@ -1903,8 +1920,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     if (removedSupersetId) {
       this.recalculateSupersetOrders();
     }
-    this.toastService.info("Exercise removed", 2000);
     this.expandedSetPath.set(null); // Collapse if an exercise is removed
+    this.showUndoWithToast("Exercise removed");
   }
   errorMessage = signal<string | null>(null);
 

@@ -352,7 +352,7 @@
                                 class="flex flex-col items-end space-y-2 flex-shrink-0 w-full sm:w-auto">
 
                                 <!-- +++ START: NEW UNIFIED CONTROL PANEL +++ -->
-                                <div class="py-2 px-1 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-sm w-full">
+                                <div class="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-sm w-full">
                                     <!-- Col 1: Round Management -->
                                     <div class="flex items-center gap-x-2">
                                         <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">
@@ -366,13 +366,14 @@
                                     <div class="flex items-center justify-start">
                                         <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">{{
                                             'workoutBuilder.set.type' | translate }}: </span>
-                                        <strong class="text-sm"
+                                        <strong class="text-sm ml-1"
                                             [ngClass]="standarSuperSetOrEmomClass(exerciseControl, true)">
                                             {{ (exerciseControl.get('supersetType')?.value || 'standard') |
                                             titlecase }}
                                         </strong>
                                         <button type="button" (click)="changeSupersetType(exerciseControl)"
-                                            class="ml-2 text-xs font-semibold text-blue-600 hover:underline dark:text-blue-400">
+                                            class="flex items-center ml-2 text-xs font-semibold text-white hover:underline bg-blue-300 hover:bg-blue-500 rounded-md p-1">
+                                             <app-icon name="change" class="h-5 w-5 mr-1"></app-icon>
                                             {{ 'workoutBuilder.changeType' | translate }}
                                         </button>
                                     </div>

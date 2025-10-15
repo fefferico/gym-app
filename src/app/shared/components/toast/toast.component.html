@@ -15,6 +15,12 @@
     <div class="flex-grow">
       <h5 *ngIf="toast.title" class="font-bold text-m mb-0.5">{{ toast.title }}</h5>
       <p class="text-m">{{ toast.message }}</p>
+      <div *ngIf="toast.action" class="mt-2">
+        <button type="button" (click)="toast.action.action()"
+                class="px-3 py-1 text-sm font-semibold bg-white/20 rounded-md hover:bg-white/30 focus:outline-none focus:ring-2 focus:ring-white/50">
+          {{ toast.action.label }}
+        </button>
+      </div>
     </div>
 
     <!-- Close Button -->
