@@ -20,7 +20,6 @@ import { Gender, MeasurementEntry, UserMeasurements, UserProfile } from '../../.
 import { TrainingProgramService } from '../../../core/services/training-program.service';
 import { UserProfileService } from '../../../core/services/user-profile.service';
 import { ExerciseService } from '../../../core/services/exercise.service';
-import { PressDirective } from '../../../shared/directives/press.directive';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { ProgressiveOverloadService, ProgressiveOverloadSettings, ProgressiveOverloadStrategy } from '../../../core/services/progressive-overload.service.ts';
 import { AlertButton, AlertInput } from '../../../core/models/alert.model';
@@ -34,12 +33,11 @@ import { SubscriptionService, PremiumFeature } from '../../../core/services/subs
 import { ActivityService } from '../../../core/services/activity.service';
 import { LanguageService } from '../../../core/services/language.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { ru } from 'date-fns/locale';
 
 @Component({
   selector: 'app-profile-settings',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, PressDirective, IconComponent, TooltipDirective, TranslateModule],
+  imports: [CommonModule, ReactiveFormsModule, IconComponent, TooltipDirective, TranslateModule],
   templateUrl: './profile-settings.html',
   styleUrl: './profile-settings.scss',
 })

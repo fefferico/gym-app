@@ -9,7 +9,7 @@ import { MenuMode } from '../../../core/models/app-settings.model';
 import { IconComponent, IconLayer } from '../icon/icon.component';
 import { AlertService } from '../../../core/services/alert.service';
 import { AlertButton } from '../../../core/models/alert.model';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 export const modalOverlayAnimation = trigger('modalOverlay', [
   transition(':enter', [
@@ -93,6 +93,7 @@ export class ActionMenuComponent implements OnChanges, OnDestroy {
   private injector = inject(Injector);
   private iconRegistry = inject(IconRegistryService);
   private alertService = inject(AlertService);
+  private translateService = inject(TranslateService);
   
   protected menuState = signal<'closed' | 'preparing' | 'open'>('closed');
   animationState = signal<'open' | 'from-bottom' | 'void'>('void');
@@ -253,7 +254,7 @@ export class ActionMenuComponent implements OnChanges, OnDestroy {
     const alertButtons: AlertButton[] = this.items
       .filter(item => !item.isDivider)
       .map(item => ({
-        text: item.label || '',
+        text: item.label ? this.translateService.instant(item.label) : '',
         role: item.actionKey || '',
         icon: item.iconName,
         iconClass: item.iconClass,
