@@ -42,7 +42,9 @@ export class ExerciseSelectionModalComponent implements AfterViewInit, OnChanges
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes['isOpen'] && changes['isOpen'].currentValue) {
-            this.checkForInputFocus();
+            if (this.isFocusInputOnStart()){
+                this.checkForInputFocus();
+            }
             // When the modal opens, reset filters to default
             this.clearFilters(false);
         }
