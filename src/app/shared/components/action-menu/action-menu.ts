@@ -7,11 +7,9 @@ import { ActionMenuItem } from '../../../core/models/action-menu.model';
 import { IconRegistryService } from '../../../core/services/icon-registry.service';
 import { MenuMode } from '../../../core/models/app-settings.model';
 import { IconComponent, IconLayer } from '../icon/icon.component';
-// +++ 1. Import the AlertService and the AlertButton model +++
 import { AlertService } from '../../../core/services/alert.service';
 import { AlertButton } from '../../../core/models/alert.model';
 import { TranslateModule } from '@ngx-translate/core';
-
 
 export const modalOverlayAnimation = trigger('modalOverlay', [
   transition(':enter', [
@@ -22,6 +20,7 @@ export const modalOverlayAnimation = trigger('modalOverlay', [
     animate('150ms ease-in', style({ opacity: 0 })),
   ]),
 ]);
+
 export const modalContentAnimation = trigger('modalContent', [
   transition(':enter', [
     style({ transform: 'translateY(100%)' }),
@@ -31,45 +30,43 @@ export const modalContentAnimation = trigger('modalContent', [
     animate('150ms ease-in', style({ transform: 'translateY(100%)' })),
   ]),
 ]);
+
 export const dropdownMenuAnimation = trigger('listAnimation', [
-      // Transition for opening DOWNWARDS (default)
-      transition(':enter', [
-        query('.action-item, .menu-divider', [
-          style({ opacity: 0, transform: 'translateY(-15px)' })
-        ], { optional: true }),
-        query('.action-item, .menu-divider', stagger('30ms', [
-          animate('180ms ease-out', style({ opacity: 1, transform: 'translateY(0)' }))
-        ]), { optional: true })
-      ]),
-      
-      // Transition for opening UPWARDS
-      transition('void => from-bottom', [
-         query('.action-item, .menu-divider', [
-          style({ opacity: 0, transform: 'translateY(15px)' }), // Start from BELOW
-        ], { optional: true }),
-        query('.action-item, .menu-divider', stagger('30ms', [
-          animate('180ms ease-out', style({ opacity: 1, transform: 'translateY(0)' }))
-        ]), { optional: true })
-      ]),
+  // Opening downwards (default)
+  transition('void => open', [
+    query('.action-item, .menu-divider', [
+      style({ opacity: 0, transform: 'translateY(-15px)' })
+    ], { optional: true }),
+    query('.action-item, .menu-divider', stagger('30ms', [
+      animate('180ms ease-out', style({ opacity: 1, transform: 'translateY(0)' }))
+    ]), { optional: true })
+  ]),
+  
+  // Opening upwards
+  transition('void => from-bottom', [
+    query('.action-item, .menu-divider', [
+      style({ opacity: 0, transform: 'translateY(15px)' })
+    ], { optional: true }),
+    query('.action-item, .menu-divider', stagger('30ms', [
+      animate('180ms ease-out', style({ opacity: 1, transform: 'translateY(0)' }))
+    ]), { optional: true })
+  ]),
 
-      // --- THIS IS THE FIX ---
-      // We create two explicit leave transitions. One for each direction.
-      // This prevents the generic ':leave' from interfering with the 'from-bottom' enter animation.
+  // Closing downwards (reverse of opening downwards)
+  transition('open => void', [
+    query('.action-item, .menu-divider', stagger('-30ms', [
+      animate('150ms ease-in', style({ opacity: 0, transform: 'translateY(-15px)' }))
+    ]), { optional: true })
+  ]),
 
-      // Transition for closing UPWARDS (when it was opened downwards)
-      transition('open => void', [
-        query('.action-item, .menu-divider', stagger('-30ms', [ // Stagger in reverse for closing
-          animate('150ms ease-in', style({ opacity: 0, transform: 'translateY(-15px)' }))
-        ]), { optional: true })
-      ]),
+  // Closing upwards (reverse of opening upwards)
+  transition('from-bottom => void', [
+    query('.action-item, .menu-divider', stagger('-30ms', [
+      animate('150ms ease-in', style({ opacity: 0, transform: 'translateY(15px)' }))
+    ]), { optional: true })
+  ])
+]);
 
-      // Transition for closing DOWNWARDS (when it was opened upwards)
-      transition('from-bottom => void', [
-        query('.action-item, .menu-divider', stagger('-30ms', [ // Stagger in reverse
-          animate('150ms ease-in', style({ opacity: 0, transform: 'translateY(15px)' }))
-        ]), { optional: true })
-      ])
-    ]);
 export const compactBarAnimation = trigger('compactBar', [
   transition(':enter', [
     style({ opacity: 0 }),
@@ -85,8 +82,7 @@ export const compactBarAnimation = trigger('compactBar', [
   standalone: true,
   imports: [CommonModule, IconComponent, TranslateModule],
   templateUrl: './action-menu.html',
-  animations: [compactBarAnimation, modalOverlayAnimation, modalContentAnimation, dropdownMenuAnimation
-  ],
+  animations: [compactBarAnimation, modalOverlayAnimation, modalContentAnimation, dropdownMenuAnimation],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ActionMenuComponent implements OnChanges, OnDestroy {
@@ -95,48 +91,46 @@ export class ActionMenuComponent implements OnChanges, OnDestroy {
   private platformId = inject(PLATFORM_ID);
   private cdr = inject(ChangeDetectorRef);
   private injector = inject(Injector);
-
   private iconRegistry = inject(IconRegistryService);
-  // +++ 2. Inject the AlertService +++
   private alertService = inject(AlertService);
+  
   protected menuState = signal<'closed' | 'preparing' | 'open'>('closed');
-  animationState = signal<'default' | 'from-bottom'>('default');
+  animationState = signal<'open' | 'from-bottom' | 'void'>('void');
+  private isClosing = false;
 
   @Input() items: ActionMenuItem[] = [];
   @Input() displayMode: MenuMode = 'dropdown';
   @Input() modalTitle: string = 'Actions';
 
-  // We use a private variable to hold the actual state.
   private _isVisible = false;
   
-  // This setter is the single source of truth for controlling the menu.
   @Input()
   set isVisible(value: boolean) {
     if (value === this._isVisible) {
-      return; // Do nothing if the state hasn't changed.
+      return;
     }
     this._isVisible = value;
 
     if (value) {
-      // If we are opening the menu...
+      this.isClosing = false;
       if (this.displayMode === 'modal') {
-        // ...and it's a modal, present the alert.
         setTimeout(() => this.presentAsAlert(), 0);
       } else if (this.displayMode === 'dropdown') {
-        // ...and it's a dropdown, use the robust "prepare, then show" pattern.
-        // Use `afterNextRender` to ensure the DOM is ready for measurement.
         runInInjectionContext(this.injector, () => {
           afterNextRender(() => {
-            this.calculateDropdownPosition(); // Calculate position while it's still invisible.
-            this.cdr.detectChanges(); // Apply the new position.
+            this.calculateDropdownPosition();
+            this.cdr.detectChanges();
           });
         });
       }
-      // Add keydown listener when opening.
       document.addEventListener('keydown', this._boundOnEnterKey);
     } else {
-      // If we are closing the menu, clean up the listener.
-      document.removeEventListener('keydown', this._boundOnEnterKey);
+      // When closing, trigger animation and wait before cleanup
+      if (this.displayMode === 'dropdown' && !this.isClosing) {
+        this.startClosingAnimation();
+      } else {
+        document.removeEventListener('keydown', this._boundOnEnterKey);
+      }
     }
   }
 
@@ -144,10 +138,15 @@ export class ActionMenuComponent implements OnChanges, OnDestroy {
     return this._isVisible;
   }
 
-  // --- No longer needed for modal, but kept for dropdown ---
+  // Track if menu should be visible in DOM (even during closing animation)
+  get shouldRenderInDom(): boolean {
+    return this._isVisible || this.isClosing;
+  }
+
   alignmentClass = signal('origin-top-right right-0');
 
-  defaultDropdownButtonClass: string = 'flex items-center w-full rounded-md px-3 py-2 text-sm font-medium text-black dark:text-white hover:text-white'; @Input() compactBarClass: string = 'flex gap-2 grid grid-cols-2 justify-center items-center z-20 rounded-b-lg p-2';
+  defaultDropdownButtonClass: string = 'flex items-center w-full rounded-md px-3 py-2 text-sm font-medium text-black dark:text-white hover:text-white';
+  @Input() compactBarClass: string = 'flex gap-2 grid grid-cols-2 justify-center items-center z-20 rounded-b-lg p-2';
   defaultCompactButtonClass: string = 'flex items-center w-full rounded-md px-3 py-2 text-sm font-medium text-black dark:text-white hover:text-white';
   @Input() gridClass: string = '';
   @Input() customButtonDivCssClass: string = 'grid grid-cols-2';
@@ -161,25 +160,32 @@ export class ActionMenuComponent implements OnChanges, OnDestroy {
     if (changes['isVisible']) {
       const isVisible = changes['isVisible'].currentValue;
 
-      // +++ 3. Intercept the visibility change for modal mode +++
       if (isVisible) {
         if (this.displayMode === 'modal') {
-          // Use a timeout to avoid any potential expression-changed-after-checked errors
           setTimeout(() => this.presentAsAlert(), 0);
-
         }
-        // if (this.displayMode === 'dropdown') {
-        //   setTimeout(() => this.calculateDropdownPosition(), 0);
-        // }
       }
 
-      // Keep existing listener logic for other modes
       if (isVisible && this.displayMode !== 'modal') {
         document.addEventListener('keydown', this._boundOnEnterKey);
       } else {
         document.removeEventListener('keydown', this._boundOnEnterKey);
       }
     }
+  }
+
+  private startClosingAnimation(): void {
+    this.isClosing = true;
+    // Set animation state to void to trigger leave animation
+    this.animationState.set('void');
+    this.cdr.detectChanges();
+    
+    // Wait for animation to complete before cleanup
+    setTimeout(() => {
+      this.isClosing = false;
+      document.removeEventListener('keydown', this._boundOnEnterKey);
+      this.cdr.detectChanges();
+    }, 200); // Match the longest animation duration
   }
 
   private calculateDropdownPosition(): void {
@@ -196,7 +202,6 @@ export class ActionMenuComponent implements OnChanges, OnDestroy {
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
 
-    // Get --main-nav-height from CSS
     const rootStyles = getComputedStyle(document.documentElement);
     const mainNavHeight = parseInt(rootStyles.getPropertyValue('--main-nav-height'), 10) || 0;
 
@@ -216,8 +221,8 @@ export class ActionMenuComponent implements OnChanges, OnDestroy {
     }
 
     // Vertical alignment
-    let verticalClass = 'top-full mt-2'; // Default: below anchor
-    this.animationState.set('default'); // Default animation is from top-down
+    let verticalClass = 'top-full mt-2';
+    this.animationState.set('open'); // Default: top-to-bottom animation
     
     const offset = 8;
     const spaceBelowConsideringNav = window.innerHeight - anchorRect.bottom - mainNavHeight;
@@ -225,15 +230,15 @@ export class ActionMenuComponent implements OnChanges, OnDestroy {
     const hasSpaceAbove = (anchorRect.top - dropdownHeight - offset) >= 0;
 
     if (!hasSpaceBelow && hasSpaceAbove) {
-      verticalClass = 'bottom-full mb-2'; // Switch position to above
-      this.animationState.set('from-bottom'); // Switch animation to from-bottom-up
+      verticalClass = 'bottom-full mb-2';
+      this.animationState.set('from-bottom'); // Bottom-to-top animation
     } else if (!hasSpaceBelow && !hasSpaceAbove) {
       const spaceBelow = window.innerHeight - anchorRect.bottom - mainNavHeight;
       const spaceAbove = anchorRect.top;
       
       if (spaceAbove > spaceBelow) {
-          verticalClass = 'bottom-full mb-2';
-          this.animationState.set('from-bottom');
+        verticalClass = 'bottom-full mb-2';
+        this.animationState.set('from-bottom');
       }
     }
 
@@ -244,31 +249,26 @@ export class ActionMenuComponent implements OnChanges, OnDestroy {
     document.removeEventListener('keydown', this._boundOnEnterKey);
   }
 
-  // +++ 4. Add the new method to present the alert +++
   private async presentAsAlert(): Promise<void> {
-    // Transform ActionMenuItem[] to AlertButton[]
     const alertButtons: AlertButton[] = this.items
       .filter(item => !item.isDivider)
       .map(item => ({
         text: item.label || '',
-        role: item.actionKey || '', // Use the actionKey as the unique identifier
+        role: item.actionKey || '',
         icon: item.iconName,
         iconClass: item.iconClass,
         cssClass: `${item.buttonClass || ''}`,
-        overrideCssClass: item.overrideCssButtonClass ? item.overrideCssButtonClass : ``, // Ensure buttons are styled nicely
+        overrideCssClass: item.overrideCssButtonClass ? item.overrideCssButtonClass : ``,
         data: item.data
       } as AlertButton));
 
-    // Use the AlertService to present the options
     const result = await this.alertService.present({
       header: this.modalTitle,
       buttons: alertButtons,
       backdropDismiss: true,
       customButtonDivCssClass: this.customButtonDivCssClass ? this.customButtonDivCssClass : 'grid grid-cols-2',
-      // The AlertComponent itself is responsible for the full-screen/bottom-sheet styling
     });
 
-    // Process the result from the alert
     if (result && result.role !== 'backdrop' && result.role !== 'cancel') {
       this.itemClick.emit({
         actionKey: result.role,
@@ -276,10 +276,8 @@ export class ActionMenuComponent implements OnChanges, OnDestroy {
       });
     }
 
-    // CRITICAL: Always emit closeMenu to reset the parent component's state
     this.closeMenu.emit();
   }
-
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
@@ -311,13 +309,8 @@ export class ActionMenuComponent implements OnChanges, OnDestroy {
     }
   }
 
-  /**
-     * Renders a simple icon from a string name or a raw SVG.
-     * This method is kept for backward compatibility.
-     */
   getIconHtml(button: ActionMenuItem): SafeHtml | null {
     let svgString: string | null = null;
-    // Only process if iconName is a simple string
     if (typeof button.iconName === 'string') {
       svgString = this.iconRegistry.getIconString(button.iconName);
     } else if (button.iconSvg) {
@@ -329,17 +322,11 @@ export class ActionMenuComponent implements OnChanges, OnDestroy {
   showLabelInCompact(item: ActionMenuItem): boolean {
     return !!item.label;
   }
-  /**
-   * +++ 3. NEW HELPER: Determines if an icon should be rendered using the <app-icon> component.
-   * This is true if iconName is an object or an array (which are both of type 'object').
-   */
+
   isComplexIcon(item: ActionMenuItem): boolean {
     return typeof item.iconName === 'object' && item.iconName !== null;
   }
 
-  /**
-   * Helper to cast the iconName for the <app-icon> component's [name] binding.
-   */
   getIconNameForComponent(item: ActionMenuItem): IconLayer | (string | IconLayer)[] {
     return item.iconName as IconLayer | (string | IconLayer)[];
   }
