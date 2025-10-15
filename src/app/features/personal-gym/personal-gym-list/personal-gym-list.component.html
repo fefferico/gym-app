@@ -1,40 +1,46 @@
-<!-- src/app/features/personal-gym/personal-gym-list/personal-gym-list.component.html -->
 <div class="container mx-auto p-2 sm:p-4">
-  <header class="flex justify-between items-center pb-4 border-b dark:border-gray-700 mb-4">
-    <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">My Personal Gym</h1>
-    <button (click)="navigateToForm()"
-      class="flex items-center bg-primary hover:bg-primary-dark text-white font-semibold py-2 px-4 rounded-md shadow-sm">
-      <app-icon name="plus-circle" class="w-6 h-6 mr-1"></app-icon>
-      Add Equipment
+  <header class="flex justify-between items-center pb-2">
+    <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">{{ 'personalGym.list.title' | translate }}</h1>
+    <button (click)="toggleFiltersVisibility()" type="button"
+      class="rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-light transition-all duration-300 ease-in-out">
+      <app-icon name="filter" class="w-10 h-10 transition-transform duration-300"
+        [class.rotate-180]="filtersVisible() === true"></app-icon>
     </button>
   </header>
 
-  <!-- Filters Section -->
-  <section class="mb-6 p-4 bg-white dark:bg-gray-700 rounded-md shadow">
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <input type="text" id="search-term" placeholder="Search by name or brand..." [value]="searchTerm()"
-        (input)="onSearchChange($event)"
-        class="block w-full p-2 border rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200">
+  <!-- 
+    NEW: Collapsible container for the filters.
+    This div wraps the original filter section and controls its visibility and animation.
+  -->
+  <div class="overflow-hidden transition-all duration-500 ease-in-out"
+    [style.maxHeight]="filtersVisible() ? '1000px' : '0px'" [class.mb-6]="filtersVisible()">
+    <!-- The original filter section is now inside the collapsible div -->
+    <section class="p-4 bg-white dark:bg-gray-700 rounded-md shadow-md border dark:border-gray-600 mt-2">
+      <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4">{{ 'routineList.filters.title' | translate }}</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <input type="text" id="search-term" [placeholder]="'personalGym.list.searchPlaceholder' | translate" [value]="searchTerm()"
+          (input)="onSearchChange($event)"
+          class="block w-full p-2 border rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200">
 
-      <select id="category-filter" (change)="onCategoryChange($event)" [value]="selectedCategory() || ''"
-        class="block w-full p-2 border rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200">
-        <option value="">All Categories</option>
-        <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
-      </select>
+        <select id="category-filter" (change)="onCategoryChange($event)" [value]="selectedCategory() || ''"
+          class="block w-full p-2 border rounded-md dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200">
+          <option value="">{{ 'personalGym.list.allCategories' | translate }}</option>
+          <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+        </select>
 
-      <button (click)="clearFilters()"
-        class="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500 inline-flex items-center justify-center">
-        <app-icon name="trash" class="h-6 w-6 mr-1"></app-icon>
-        Clear Filters
-      </button>
-    </div>
-  </section>
+        <button (click)="clearFilters()"
+          class="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500 inline-flex items-center justify-center">
+          <app-icon name="trash" class="h-6 w-6 mr-1"></app-icon>
+          {{ 'personalGym.list.clearFilters' | translate }}
+        </button>
+      </div>
+    </section>
+  </div>
 
   <!-- Equipment List -->
   <div *ngIf="allEquipment().length > 0; else noEquipmentState">
     <div *ngIf="filteredEquipment().length > 0; else noFilterResultsState"
       class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
-
       <div *ngFor="let item of filteredEquipment(); trackBy: trackById" (click)="navigateToForm(item.id)"
         class="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-xl transition-shadow cursor-pointer p-4 flex flex-col justify-between relative">
         <div>
@@ -43,32 +49,28 @@
             {{ isCustom(item) ? item.customCategoryName : item.category }}
           </p>
           <div class="text-sm text-gray-600 dark:text-gray-300 mt-2">
-            <p><strong>Quantity:</strong> {{ item.quantity }}</p>
+            <p><strong>{{ 'personalGym.list.quantity' | translate }}:</strong> {{ item.quantity }}</p>
 
-            <!-- Using the type guard functions in the template -->
             <div *ngIf="isFixedWeight(item)">
-              <p><strong>Weight:</strong> {{ item.weight }} {{unitService.getWeightUnitSuffix()}}</p>
-            </div>
-
-            <div *ngIf="isAdjustableWeight(item)">
-              <p><strong>Range:</strong> {{ item.minweight }} - {{ item.maxweight }}
+              <p><strong>{{ 'personalGym.list.weight' | translate }}:</strong> {{ item.weight }}
                 {{unitService.getWeightUnitSuffix()}}</p>
             </div>
-
+            <div *ngIf="isAdjustableWeight(item)">
+              <p><strong>{{ 'personalGym.list.range' | translate }}:</strong> {{ item.minweight }} - {{ item.maxweight
+                }} {{unitService.getWeightUnitSuffix()}}</p>
+            </div>
             <div *ngIf="isWeightPlate(item)">
-              <p><strong>Weight:</strong> {{ item.weight }} {{unitService.getWeightUnitSuffix()}}</p>
+              <p><strong>{{ 'personalGym.list.weight' | translate }}:</strong> {{ item.weight }}
+                {{unitService.getWeightUnitSuffix()}}</p>
             </div>
-
             <div *ngIf="isBand(item)">
-              <p><strong>Type:</strong> {{ item.bandType }}</p>
+              <p><strong>{{ 'personalGym.list.type' | translate }}:</strong> {{ item.bandType }}</p>
             </div>
-
             <div *ngIf="isCustom(item)">
               <div *ngFor="let prop of item.properties">
                 <p><strong>{{ prop.key }}:</strong> {{ prop.value }}</p>
               </div>
             </div>
-
           </div>
         </div>
 
@@ -100,12 +102,13 @@
   <!-- Template for when no equipment exists at all -->
   <ng-template #noEquipmentState>
     <div class="text-center py-12 px-6 bg-white dark:bg-gray-700 rounded-md shadow-md justify-center">
-      <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-300">Your Gym is Empty!</h3>
-      <p class="text-gray-500 dark:text-gray-400 mt-2 mb-6">Start by adding the first piece of your equipment.</p>
+      <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-300">{{ 'personalGym.list.noEquipmentTitle' |
+        translate }}</h3>
+      <p class="text-gray-500 dark:text-gray-400 mt-2 mb-6">{{ 'personalGym.list.noEquipmentMessage' | translate }}</p>
       <button (click)="navigateToForm()"
         class="bg-primary hover:bg-primary-dark text-white font-semibold py-2 px-6 rounded-md inline-flex items-center">
         <app-icon name="plus-circle" class="w-6 h-6 mr-1"></app-icon>
-        Add First Item
+        {{ 'personalGym.list.addFirstItem' | translate }}
       </button>
     </div>
   </ng-template>
@@ -113,74 +116,11 @@
   <!-- Template for when filters yield no results -->
   <ng-template #noFilterResultsState>
     <div class="text-center py-12 px-6 bg-white dark:bg-gray-700 rounded-md shadow-md">
-      <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-300">No Matches Found</h3>
-      <p class="text-gray-500 dark:text-gray-400 mt-2">Try adjusting your filters to find your equipment.</p>
+      <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-300">{{ 'personalGym.list.noMatchTitle' | translate
+        }}</h3>
+      <p class="text-gray-500 dark:text-gray-400 mt-2">{{ 'personalGym.list.noMatchMessage' | translate }}</p>
     </div>
   </ng-template>
 </div>
 
-
-
-
-<!-- ========================================================== -->
-<!-- NEW: Main Floating Button Container (Bottom Right) -->
-<!-- This container holds both the Back to Top and the FAB group -->
-<!-- ========================================================== -->
-<div class="fixed bottom-20 right-6 z-40 flex flex-col items-center gap-4">
-
-  <!-- 1. "Back to Top" Button -->
-  <!-- It's now inside the container, so we remove its individual `fixed` positioning. -->
-  <!-- It will appear only when the condition is met, stacked on top due to flex-col. -->
-  <button *ngIf="showBackToTopButton()" appPress (shortPress)="scrollToTop()" type="button"
-    class="bg-primary dark:bg-primary text-white rounded-full p-3 shadow-lg hover:bg-primary-dark dark:hover:bg-primary-light focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-focus dark:focus:ring-offset-gray-900 transition-opacity animate-fade-in">
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"
-      class="w-6 h-6">
-      <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
-    </svg>
-    <span class="sr-only">Back to Top</span>
-  </button>
-
-
-  <!-- 2. Floating Action Button Group -->
-  <!-- We remove its `fixed` positioning and place it here. -->
-  <!-- `flex-col-reverse` ensures its own actions expand upwards. -->
-  <div class="flex flex-col-reverse items-center gap-4" (mouseenter)="handleFabMouseEnter()"
-    (mouseleave)="handleFabMouseLeave()">
-
-    <!-- Main FAB (The "Plus" button) -->
-    <button appPress (shortPress)="handleFabClick()" type="button"
-      class="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-xl transition-all duration-300 hover:bg-primary-dark hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary-focus focus:ring-offset-2 dark:ring-offset-gray-900">
-      <!-- Icon rotates to an "X" when open -->
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 transition-transform duration-300"
-        [class.rotate-45]="isFabActionsOpen()" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-      </svg>
-      <span class="sr-only">Open creation menu</span>
-    </button>
-
-    <!-- Action Buttons Container (Appears when FAB is open) -->
-    <div *ngIf="isFabActionsOpen()" @fabSlideUp class="flex flex-col items-center gap-4">
-
-      <!-- Action 1: Create Routine -->
-      <div class="group relative flex items-center">
-        <span
-          class="absolute right-full md:hidden whitespace-nowrap rounded-md bg-blue-500 px-3 py-2 text-sm font-semibold text-white group-hover:block"
-          style="margin-right: -10px;">
-          CREATE EQUIPMENT
-        </span>
-        <button (click)="navigateToForm()" type="button"
-          class="flex h-14 w-14 items-center justify-center rounded-full bg-blue-500 text-white shadow-lg transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 dark:ring-offset-gray-900">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-7 w-7">
-            <path
-              d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
-          </svg>
-          <span class="sr-only">CREATE EQUIPMENT</span>
-        </button>
-      </div>
-    </div>
-  </div>
-
-</div>
-<!-- ========================================================== -->
-<!-- END: Main Floating Button Container -->
-<!-- ========================================================== -->
+<app-fab-menu [actions]="fabMenuItems" (actionClicked)="onFabAction($event)"></app-fab-menu>

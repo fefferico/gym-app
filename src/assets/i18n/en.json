@@ -690,7 +690,13 @@
       "resetButton": "RESET PBs",
       "resetTooltip": "Reset all PBs",
       "showingResult": "Showing {{count}} PBs",
-      "showingResultOf": "Showing {{count}} of {{total}} PBs"
+      "showingResultOf": "Showing {{count}} of {{total}} PBs",
+      "sortByLabel": "Sort By",
+      "sort": {
+        "latest": "Latest Achieved",
+        "exerciseName": "Exercise Name (A-Z)",
+        "pbType": "Best Record Type"
+      }
     },
     "card": {
       "previous": "Prev",
@@ -2280,5 +2286,94 @@
       "detailed": "GENERATE CUSTOM WORKOUT",
       "quick": "SURPRISE ME!"
     }
-}
+},
+  "personalGym": {
+    "list": {
+      "title": "My Personal Gym",
+      "addEquipment": "Add Equipment",
+      "searchPlaceholder": "Search by name or brand...",
+      "allCategories": "All Categories",
+      "clearFilters": "Clear Filters",
+      "quantity": "Quantity",
+      "weight": "Weight",
+      "range": "Range",
+      "type": "Type",
+      "noEquipmentTitle": "Your Gym is Empty!",
+      "noEquipmentMessage": "Start by adding the first piece of your equipment.",
+      "addFirstItem": "Add First Item",
+      "noMatchTitle": "No Matches Found",
+      "noMatchMessage": "Try adjusting your filters to find your equipment.",
+      "backToTop": "Back to Top",
+      "createEquipment": "CREATE EQUIPMENT"
+    },
+    "form": {
+      "addTitle": "Add New Equipment",
+      "editTitle": "Edit Equipment",
+      "categoryLabel": "Category",
+      "categoryPlaceholder": "-- Select a Category --",
+      "nameLabel": "Equipment Name",
+      "namePlaceholder": "e.g., Competition Kettlebell",
+      "quantityLabel": "Quantity",
+      "brandLabel": "Brand (Optional)",
+      "weightTypeLabel": "Weight Type",
+      "weightTypes": {
+        "fixed": "Fixed",
+        "adjustable": "Adjustable"
+      },
+      "weightLabel": "Weight",
+      "minWeightLabel": "Min",
+      "maxWeightLabel": "Max",
+      "stepLabel": "Step",
+      "isOlympicLabel": "Is Olympic Plate?",
+      "colorLabel": "Color",
+      "colorAutomatic": "(Automatic)",
+      "colorCustom": "(Custom)",
+      "barWeightLabel": "Bar Weight",
+      "barTypeLabel": "Bar Type",
+      "barTypes": {
+        "olympic": "Olympic",
+        "standard": "Standard",
+        "ezCurl": "EZ-Curl",
+        "hex": "Hex",
+        "swiss": "Swiss",
+        "custom": "Custom"
+      },
+      "bandTypeLabel": "Band Type",
+      "bandTypes": {
+        "loop": "Loop",
+        "miniLoop": "Mini-Loop",
+        "handled": "Handled",
+        "therapy": "Therapy"
+      },
+      "resistanceLevelLabel": "Resistance Level",
+      "resistanceLevels": {
+        "extraLight": "Extra-Light",
+        "light": "Light",
+        "medium": "Medium",
+        "heavy": "Heavy",
+        "extraHeavy": "Extra-Heavy"
+      },
+      "resistanceLabel": "Resistance (Optional)",
+      "lengthLabel": "Length (Optional)",
+      "loadTypeLabel": "Load Type",
+      "machineLoadTypes": {
+        "stack": "Stack",
+        "plateLoaded": "Plate-Loaded",
+        "bodyweight": "Bodyweight"
+      },
+      "maxLoadLabel": "Max Load (Optional)",
+      "customTypeLabel": "Custom Type Name",
+      "customTypePlaceholder": "e.g., Sledgehammer",
+      "customPropsLabel": "Custom Properties",
+      "propKeyPlaceholder": "Property (e.g., Weight)",
+      "propValuePlaceholder": "Value (e.g., 10kg)",
+      "addProperty": "+ Add Property",
+      "notesLabel": "Notes (Optional)",
+      "saveChanges": "SAVE CHANGES",
+      "addToGym": "ADD TO GYM",
+      "toasts": {
+        "invalidForm": "Please fill out all required fields."
+      }
+    }
+  }
 }

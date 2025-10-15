@@ -29,6 +29,74 @@ export const EXERCISES_DATA = [
     iconName: 'fitness_center',
   },
   {
+    "id": "machine-hip-abduction",
+    "name": "Machine Hip Abduction",
+    "description": "An isolation exercise that targets the outer thigh and glute muscles, specifically the gluteus medius and minimus, by pushing the legs apart against resistance.",
+    "category": "machine",
+    "muscleGroups": ["Glutes (Medius/Minimus)", "Tensor Fasciae Latae"],
+    "primaryMuscleGroup": "Abductors",
+    "equipmentNeeded": ["Abductor Machine"],
+    "imageUrls": [
+      "exercises/machine-hip-abduction_1.jpg",
+      "exercises/machine-hip-abduction_2.jpg"
+    ],
+    "videoUrl": "https://www.youtube.com/watch?v=0_zG_i_tP0U",
+    "notes": "Sit with your back firmly against the pad. Place your outer thighs against the machine's pads. Focus on a controlled movement, pushing outwards and slowly returning to the start. Avoid using momentum.",
+    "equipment": "Machine",
+    "iconName": "fitness_center"
+  },
+  {
+    "id": "machine-hip-adduction",
+    "name": "Machine Hip Adduction",
+    "description": "An isolation exercise that targets the inner thigh muscles by squeezing the legs together against resistance.",
+    "category": "machine",
+    "muscleGroups": ["Adductor Magnus", "Adductor Longus", "Adductor Brevis", "Pectineus", "Gracilis"],
+    "primaryMuscleGroup": "Adductors",
+    "equipmentNeeded": ["Adductor Machine"],
+    "imageUrls": [
+      "exercises/machine-hip-adduction_1.jpg",
+      "exercises/machine-hip-adduction_2.jpg"
+    ],
+    "videoUrl": "https://www.youtube.com/watch?v=3w-b3e_k-wI",
+    "notes": "Sit upright and place your inner thighs against the machine's pads. Squeeze your legs together, pausing at the peak of the contraction. Control the movement as you return to the starting position.",
+    "equipment": "Machine",
+    "iconName": "fitness_center"
+  },
+  {
+    "id": "machine-pec-deck-fly",
+    "name": "Pec Deck Fly",
+    "description": "An isolation exercise for the chest performed on a pec deck or butterfly machine, which emphasizes chest adduction (bringing the arms toward the center of the body).",
+    "category": "machine",
+    "muscleGroups": ["Chest (Sternal)", "Shoulders (Anterior)"],
+    "primaryMuscleGroup": "Chest",
+    "equipmentNeeded": ["Pec Deck Machine"],
+    "imageUrls": [
+      "exercises/machine-pec-deck-fly_1.jpg",
+      "exercises/machine-pec-deck-fly_2.jpg"
+    ],
+    "videoUrl": "https://www.youtube.com/watch?v=Z57-d_4wflc",
+    "notes": "Adjust the seat so the handles are at chest level. Keep your back flat against the pad and your shoulders down. Focus on squeezing your chest muscles to bring the handles together.",
+    "equipment": "Machine",
+    "iconName": "fitness_center"
+  },
+  {
+    "id": "machine-chest-press",
+    "name": "Machine Chest Press",
+    "description": "A compound upper-body exercise that targets the pectoralis major, anterior deltoids, and triceps. It provides a stable alternative to free-weight bench pressing.",
+    "category": "machine",
+    "muscleGroups": ["Chest", "Shoulders (Anterior)", "Triceps"],
+    "primaryMuscleGroup": "Chest",
+    "equipmentNeeded": ["Chest Press Machine"],
+    "imageUrls": [
+      "exercises/machine-chest-press_1.jpg",
+      "exercises/machine-chest-press_2.jpg"
+    ],
+    "videoUrl": "https://www.youtube.com/watch?v=x-J3x6_J8-c",
+    "notes": "Adjust the seat height so that the handles are aligned with the middle of your chest. Keep your feet flat on the floor and your back pressed against the seat. Exhale as you press, and inhale as you return to the starting position.",
+    "equipment": "Machine",
+    "iconName": "fitness_center"
+  },
+  {
     id: 'dumbbell-incline-bench-press',
     name: 'Dumbbell Incline Bench Press',
     description: 'A compound upper body exercise that targets the upper chest, shoulders, and triceps using dumbbells on an incline bench, allowing for a greater range of motion.',

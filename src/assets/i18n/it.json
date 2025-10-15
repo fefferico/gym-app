@@ -44,7 +44,7 @@
         "myRoutinesDescription": "Visualizza, crea o modifica le tue schede di allenamento",
         "trainingProgramsTitle": "Programmi di Allenamento",
         "trainingProgramsDescription": "Gestisci le tue schede di allenamento a lungo termine",
-        "workoutHistoryTitle": "Cronologia Allenamenti",
+        "workoutHistoryTitle": "Storico Allenamenti",
         "workoutHistoryDescription": "Rivedi i tuoi allenamenti passati e i tuoi progressi",
         "profileAndSettingsTitle": "Profilo e Impostazioni",
         "profileAndSettingsDescription": "Gestisci i tuoi dati e le preferenze dell'app",
@@ -638,7 +638,13 @@
             "resetButton": "AZZERA RECORD",
             "resetTooltip": "Azzera tutti i Record",
             "showingResult": "Mostrando {{count}} Record",
-            "showingResultOf": "Mostrando {{count}} di {{total}} Record"
+            "showingResultOf": "Mostrando {{count}} di {{total}} Record",
+            "sortByLabel": "Ordina per",
+            "sort": {
+              "latest": "Più recente",
+              "exerciseName": "Nome dell'esercizio (A-Z)",
+              "pbType": "Tipo di record"
+            }
         },
         "card": {
             "previous": "Prec",
@@ -2247,6 +2253,95 @@
       "detailed": "GENERA ALLENAMENTO PERSONALIZZATO",
       "quick": "SORPRENDIMI!"
     }
-  }
+  },
 
+  "personalGym": {
+    "list": {
+      "title": "La Mia Palestra",
+      "addEquipment": "Aggiungi Attrezzatura",
+      "searchPlaceholder": "Cerca per nome o marca...",
+      "allCategories": "Tutte le Categorie",
+      "clearFilters": "Pulisci Filtri",
+      "quantity": "Quantità",
+      "weight": "Peso",
+      "range": "Intervallo",
+      "type": "Tipo",
+      "noEquipmentTitle": "La Tua Palestra è Vuota!",
+      "noEquipmentMessage": "Inizia aggiungendo il tuo primo attrezzo.",
+      "addFirstItem": "Aggiungi il Primo",
+      "noMatchTitle": "Nessun Risultato",
+      "noMatchMessage": "Prova a modificare i filtri per trovare la tua attrezzatura.",
+      "backToTop": "Torna Su",
+      "createEquipment": "CREA ATTREZZO"
+    },
+    "form": {
+      "addTitle": "Aggiungi Nuova Attrezzatura",
+      "editTitle": "Modifica Attrezzatura",
+      "categoryLabel": "Categoria",
+      "categoryPlaceholder": "-- Seleziona una Categoria --",
+      "nameLabel": "Nome Attrezzatura",
+      "namePlaceholder": "es. Kettlebell da Competizione",
+      "quantityLabel": "Quantità",
+      "brandLabel": "Marca (Opzionale)",
+      "weightTypeLabel": "Tipo di Peso",
+      "weightTypes": {
+        "fixed": "Fisso",
+        "adjustable": "Regolabile"
+      },
+      "weightLabel": "Peso",
+      "minWeightLabel": "Min",
+      "maxWeightLabel": "Max",
+      "stepLabel": "Incremento",
+      "isOlympicLabel": "È un Disco Olimpico?",
+      "colorLabel": "Colore",
+      "colorAutomatic": "(Automatico)",
+      "colorCustom": "(Personalizzato)",
+      "barWeightLabel": "Peso Barra",
+      "barTypeLabel": "Tipo di Barra",
+      "barTypes": {
+        "olympic": "Olimpica",
+        "standard": "Standard",
+        "ezCurl": "EZ-Curl",
+        "hex": "Trap Bar",
+        "swiss": "Swiss Bar",
+        "custom": "Personalizzata"
+      },
+      "bandTypeLabel": "Tipo di Elastico",
+      "bandTypes": {
+        "loop": "Loop",
+        "miniLoop": "Mini-Loop",
+        "handled": "Con Maniglie",
+        "therapy": "Terapeutico"
+      },
+      "resistanceLevelLabel": "Livello di Resistenza",
+      "resistanceLevels": {
+        "extraLight": "Extra Leggera",
+        "light": "Leggera",
+        "medium": "Media",
+        "heavy": "Pesante",
+        "extraHeavy": "Extra Pesante"
+      },
+      "resistanceLabel": "Resistenza (Opzionale)",
+      "lengthLabel": "Lunghezza (Opzionale)",
+      "loadTypeLabel": "Tipo di Carico",
+      "machineLoadTypes": {
+        "stack": "Pacco Pesi",
+        "plateLoaded": "A Carico Libero",
+        "bodyweight": "A Corpo Libero"
+      },
+      "maxLoadLabel": "Carico Massimo (Opzionale)",
+      "customTypeLabel": "Nome Tipo Personalizzato",
+      "customTypePlaceholder": "es. Mazza",
+      "customPropsLabel": "Proprietà Personalizzate",
+      "propKeyPlaceholder": "Proprietà (es. Peso)",
+      "propValuePlaceholder": "Valore (es. 10kg)",
+      "addProperty": "+ Aggiungi Proprietà",
+      "notesLabel": "Note (Opzionale)",
+      "saveChanges": "SALVA MODIFICHE",
+      "addToGym": "AGGIUNGI ALLA PALESTRA",
+      "toasts": {
+        "invalidForm": "Compila tutti i campi obbligatori."
+      }
+    }
+  }
 }

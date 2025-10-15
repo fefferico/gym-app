@@ -76,6 +76,7 @@ export class PersonalBestsComponent implements OnInit {
   exerciseNameFilter = signal<string>('');
   pbTypeFilter = signal<string>('');
   exerciseCategoryFilter = signal<string>('');
+  sortBy = signal<'latest' | 'exerciseName' | 'pbType'>('latest');
 
   // Instantiate DecimalPipe for use in formatPbValue
   private decimalPipe = new DecimalPipe('en-US');
@@ -128,9 +129,10 @@ export class PersonalBestsComponent implements OnInit {
     const nameFilter = this.exerciseNameFilter().toLowerCase().trim();
     const categoryFilter = this.exerciseCategoryFilter();
     const typeFilter = this.pbTypeFilter();
+    const sort = this.sortBy();
 
     if (!nameFilter && !categoryFilter && !typeFilter) {
-      return this.sortPBs(combinedList);
+    return this.sortPBs(combinedList, sort);
     }
 
     // Only filter on fields that have a filter value set
@@ -141,7 +143,7 @@ export class PersonalBestsComponent implements OnInit {
       return true;
     });
 
-    return this.sortPBs(filteredList);
+    return this.sortPBs(filteredList, sort);
   });
 
   hasActiveFilters = computed<boolean>(() => {
@@ -176,6 +178,8 @@ export class PersonalBestsComponent implements OnInit {
   resetFilters(): void {
     this.exerciseNameFilter.set('');
     this.exerciseCategoryFilter.set('');
+    this.pbTypeFilter.set('');
+    this.sortBy.set('latest');
   }
 
   resetFiltersAndShow(): void {
@@ -194,24 +198,33 @@ export class PersonalBestsComponent implements OnInit {
     return 100;
   }
 
-  private sortPBs(list: DisplayPersonalBest[]): DisplayPersonalBest[] {
-    return [...list].sort((a, b) => {
-      const nameCompare = a.exerciseName.localeCompare(b.exerciseName);
-      if (nameCompare !== 0) return nameCompare;
-      const orderA = this.getPbTypeSortOrder(a.pbType);
-      const orderB = this.getPbTypeSortOrder(b.pbType);
-      if (orderA !== orderB) return orderA - orderB;
-      if (a.weightUsed !== undefined && b.weightUsed !== undefined) {
-        return (b.weightUsed ?? 0) - (a.weightUsed ?? 0);
-      }
-      if (a.repsAchieved !== undefined && b.repsAchieved !== undefined && a.pbType.includes('Max Reps')) {
-        return (b.repsAchieved ?? 0) - (a.repsAchieved ?? 0);
-      }
-      if (a.durationPerformed !== undefined && b.durationPerformed !== undefined && a.pbType.includes('Max Duration')) {
-        return (b.durationPerformed ?? 0) - (a.durationPerformed ?? 0);
-      }
-      return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(); // Fallback to date sort
-    });
+  private sortPBs(list: DisplayPersonalBest[], sortBy: 'latest' | 'exerciseName' | 'pbType'): DisplayPersonalBest[] {
+    const sortedList = [...list]; // Create a mutable copy
+
+    switch (sortBy) {
+      case 'exerciseName':
+        sortedList.sort((a, b) => {
+          const nameCompare = a.exerciseName.localeCompare(b.exerciseName);
+          if (nameCompare !== 0) return nameCompare;
+          return this.getPbTypeSortOrder(a.pbType) - this.getPbTypeSortOrder(b.pbType);
+        });
+        break;
+      
+      case 'pbType':
+        sortedList.sort((a, b) => {
+          const orderA = this.getPbTypeSortOrder(a.pbType);
+          const orderB = this.getPbTypeSortOrder(b.pbType);
+          if (orderA !== orderB) return orderA - orderB;
+          return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+        });
+        break;
+
+      case 'latest':
+      default:
+        sortedList.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+        break;
+    }
+    return sortedList;
   }
 
   // Updated formatPbValue method

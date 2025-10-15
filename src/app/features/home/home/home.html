@@ -76,9 +76,9 @@
       <button (click)="startNewSession()"
         class="flex items-start block p-3 bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow transform hover:-translate-y-1 dark:hover:bg-gray-600 hover:bg-gray-200">
         <div class="flex flex-col items-start text-center">
-          <div class="flex items-center mb-2 text-left">
+          <div class="flex items-center py-2 text-left">
             <app-icon name="play" class="w-14 h-14 mr-2 text-primary"></app-icon>
-            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">{{ 'quickActions.startNewSessionTitle' |
+            <h3 class="text-md font-semibold text-gray-800 dark:text-gray-100 text-left">{{ 'quickActions.startNewSessionTitle' |
               translate }}</h3>
           </div>
           <p class="pl-2 text-md text-gray-600 dark:text-gray-400 text-left">{{
@@ -91,9 +91,9 @@
       <button (click)="navigateToRoutines()"
         class="flex items-start block p-3 bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow transform hover:-translate-y-1 dark:hover:bg-gray-600 hover:bg-gray-200">
         <div class="flex flex-col items-start text-center">
-          <div class="flex items-center mb-2">
+          <div class="flex items-center py-2">
             <app-icon name="routines" class="w-14 h-14 text-blue-500 dark:text-blue-400 mr-2"></app-icon>
-            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 text-left">{{
+            <h3 class="text-md font-semibold text-gray-800 dark:text-gray-100 text-left">{{
               'quickActions.myRoutinesTitle'
               | translate }}</h3>
           </div>
@@ -106,9 +106,9 @@
       <button (click)="navigateToLogActivity()"
         class="flex items-start block p-3 bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow transform hover:-translate-y-1 dark:hover:bg-gray-600 hover:bg-gray-200">
         <div class="flex flex-col items-start text-center">
-          <div class="flex items-center mb-2">
+          <div class="flex items-center py-2">
             <app-icon name="clipboard-list" class="w-14 h-14 text-teal-500 dark:text-teal-400 mr-2"></app-icon>
-            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 text-left">{{
+            <h3 class="text-md font-semibold text-gray-800 dark:text-gray-100 text-left">{{
               'quickActions.logActivityTitle'
               | translate }}</h3>
           </div>
@@ -125,9 +125,9 @@
       <button (click)="navigateToPrograms()"
         class="flex items-start block p-3 bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow transform hover:-translate-y-1 dark:hover:bg-gray-600 hover:bg-gray-200">
         <div class="flex flex-col items-start text-center">
-          <div class="flex items-center mb-2">
+          <div class="flex items-center py-2">
             <app-icon name="calendar" class="w-14 h-14 text-green-500 dark:text-green-400 mr-2"></app-icon>
-            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 text-left">{{
+            <h3 class="text-md font-semibold text-gray-800 dark:text-gray-100 text-left">{{
               'quickActions.trainingProgramsTitle' | translate }}</h3>
           </div>
           <p *ngIf="!subscriptionService.isPremium()"
@@ -144,9 +144,9 @@
       <button (click)="navigateToHistory()"
         class="flex items-start block p-3 bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow transform hover:-translate-y-1 dark:hover:bg-gray-600 hover:bg-gray-200">
         <div class="flex flex-col items-start text-center">
-          <div class="flex items-center mb-2">
+          <div class="flex items-center py-2">
             <app-icon name="clock" class="w-14 h-14  text-purple-500 dark:text-purple-400 mr-2"></app-icon>
-            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 text-left">{{
+            <h3 class="text-md font-semibold text-gray-800 dark:text-gray-100 text-left">{{
               'quickActions.workoutHistoryTitle' | translate }}</h3>
           </div>
           <p class="pl-2 text-md text-gray-600 dark:text-gray-400 text-left">{{
@@ -158,9 +158,9 @@
       <button (click)="navigateToProfile()"
         class="flex items-start block p-3 bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow transform hover:-translate-y-1 dark:hover:bg-gray-600 hover:bg-gray-200">
         <div class="flex flex-col items-start text-center">
-          <div class="flex items-center mb-2">
+          <div class="flex items-center py-2">
             <app-icon name="profile" class="w-14 h-14 text-orange-500 dark:text-orange-400 mr-2"></app-icon>
-            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 text-left">{{
+            <h3 class="text-md font-semibold text-gray-800 dark:text-gray-100 text-left">{{
               'quickActions.profileAndSettingsTitle' | translate }}</h3>
           </div>
           <p class="pl-2 text-md text-gray-600 dark:text-gray-400 text-left">{{
@@ -170,9 +170,9 @@
       <button (click)="navigateToPersonalGym()"
         class="flex items-start block p-3 bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow transform hover:-translate-y-1 dark:hover:bg-gray-600 hover:bg-gray-200">
         <div class="flex flex-col items-start text-center">
-          <div class="flex items-center mb-2">
+          <div class="flex items-center py-2">
             <app-icon name="dumbbell" class="w-14 h-14 text-indigo-500 dark:text-indigo-400 mr-2"></app-icon>
-            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 text-left">{{
+            <h3 class="text-md font-semibold text-gray-800 dark:text-gray-100 text-left">{{
               'quickActions.personalGymTitle' | translate }}</h3>
           </div>
           <p *ngIf="!subscriptionService.isPremium()"
@@ -187,9 +187,9 @@
       <button (click)="openCalculatorModal()"
         class="flex items-start block p-3 bg-white dark:bg-gray-700 rounded-md shadow-md hover:shadow-lg transition-shadow transform hover:-translate-y-1 dark:hover:bg-gray-600 hover:bg-gray-200">
         <div class="flex flex-col items-start text-center">
-          <div class="flex items-center mb-2">
+          <div class="flex items-center py-2">
             <app-icon name="calc" class="w-14 h-14 mr-2 text-primary"></app-icon>
-            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 text-left">{{
+            <h3 class="text-md font-semibold text-gray-800 dark:text-gray-100 text-left">{{
               'quickActions.weightToolkitTitle' | translate }}</h3>
           </div>
           <p class="pl-2 text-md text-gray-600 dark:text-gray-400 text-left">{{

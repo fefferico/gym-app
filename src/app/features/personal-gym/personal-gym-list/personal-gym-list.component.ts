@@ -22,11 +22,13 @@ import { MenuMode } from '../../../core/models/app-settings.model';
 import { ActionMenuItem } from '../../../core/models/action-menu.model';
 import { deleteBtn, editBtn, hideBtn, unhideBtn, viewBtn } from '../../../core/services/buttons-data';
 import { AppSettingsService } from '../../../core/services/app-settings.service';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { FabAction, FabMenuComponent } from '../../../shared/components/fab-menu/fab-menu.component';
 
 @Component({
   selector: 'app-personal-gym-list',
   standalone: true,
-  imports: [CommonModule, IconComponent, ActionMenuComponent],
+  imports: [CommonModule, IconComponent, ActionMenuComponent, TranslateModule, FabMenuComponent],
   templateUrl: './personal-gym-list.component.html',
   animations: [
     trigger('fabSlideUp', [
@@ -84,6 +86,7 @@ export class PersonalGymListComponent implements OnInit {
   private platformId = inject(PLATFORM_ID);
   private appSettingsService = inject(AppSettingsService);
   allEquipment = signal<PersonalGymEquipment[]>([]);
+  private translate = inject(TranslateService);
 
   menuModeDropdown: boolean = false;
   menuModeCompact: boolean = false;
@@ -196,31 +199,6 @@ export class PersonalGymListComponent implements OnInit {
     }
   }
 
-  isFabActionsOpen = signal(false);
-  isTouchDevice = false;
-  handleFabClick(): void {
-    this.isFabActionsOpen.update(v => !v);
-  }
-
-  handleFabMouseEnter(): void {
-    if (!this.isTouchDevice) {
-      this.isFabActionsOpen.set(true);
-    }
-  }
-
-  handleFabMouseLeave(): void {
-    if (!this.isTouchDevice) {
-      this.isFabActionsOpen.set(false);
-    }
-  }
-
-  showBackToTopButton = signal<boolean>(false);
-  @HostListener('window:scroll', [])
-  onWindowScroll(): void {
-    const verticalOffset = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
-    this.showBackToTopButton.set(verticalOffset > 400);
-  }
-
   activeEquipmentIdActions = signal<string | null>(null);
   toggleActions(equipmentId: string, event: MouseEvent): void {
     event.stopPropagation();
@@ -311,6 +289,30 @@ export class PersonalGymListComponent implements OnInit {
   unhideEquipment(equipmentId: string): void {
     this.personalGymService.unhideEquipment(equipmentId).subscribe();
     this.activeEquipmentIdActions.set(null);
+  }
+
+  fabMenuItems: FabAction[] = [
+    {
+      actionKey: 'add_equipment',
+      label: 'personalGym.list.createEquipment', // Using translation key
+      iconName: 'plus-circle', // A suitable icon for adding
+      cssClass: 'bg-primary'
+    }
+  ];
+
+  /**
+   * Handles the action emitted from the reusable FAB menu component.
+   * @param actionKey The unique key of the clicked action.
+   */
+  onFabAction(actionKey: string): void {
+    if (actionKey === 'add_equipment') {
+      this.navigateToForm();
+    }
+  }
+
+    filtersVisible = signal(false);
+toggleFiltersVisibility(): void {
+    this.filtersVisible.update(visible => !visible);
   }
 
 }

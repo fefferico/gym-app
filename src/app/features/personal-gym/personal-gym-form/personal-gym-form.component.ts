@@ -17,11 +17,12 @@ import {
 } from '../../../core/models/personal-gym.model';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { UnitsService } from '../../../core/services/units.service';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-personal-gym-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, IconComponent, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, IconComponent, RouterLink, TranslateModule],
   templateUrl: './personal-gym-form.component.html',
 })
 export class PersonalGymFormComponent implements OnInit, OnDestroy {
@@ -31,12 +32,17 @@ export class PersonalGymFormComponent implements OnInit, OnDestroy {
   private personalGymService = inject(PersonalGymService);
   private toastService = inject(ToastService);
   unitService = inject(UnitsService);
+    private translate = inject(TranslateService);
 
   equipmentForm!: FormGroup;
   isEditMode = signal(false);
   editingEquipmentId: string | null = null;
 
-  pageTitle = computed(() => this.isEditMode() ? 'Edit Equipment' : 'Add New Equipment');
+pageTitle = computed(() => 
+    this.isEditMode() 
+      ? this.translate.instant('personalGym.form.editTitle') 
+      : this.translate.instant('personalGym.form.addTitle')
+  );
 
   private subscriptions = new Subscription();
 
@@ -220,7 +226,7 @@ export class PersonalGymFormComponent implements OnInit, OnDestroy {
 
   onSubmit(): void {
     if (this.equipmentForm.invalid) {
-      this.toastService.error('Please fill out all required fields.', 0, 'Invalid Form');
+      this.toastService.error(this.translate.instant('personalGym.form.toasts.invalidForm'), 0, 'Invalid Form');
       this.equipmentForm.markAllAsTouched();
       return;
     }
@@ -228,10 +234,7 @@ export class PersonalGymFormComponent implements OnInit, OnDestroy {
     const formValue = this.equipmentForm.getRawValue();
 
     if (this.isEditMode() && this.editingEquipmentId) {
-      const updatedEquipment: PersonalGymEquipment = {
-        ...formValue,
-        id: this.editingEquipmentId,
-      };
+      const updatedEquipment: PersonalGymEquipment = { ...formValue, id: this.editingEquipmentId };
       this.personalGymService.updateEquipment(updatedEquipment);
     } else {
       this.personalGymService.addEquipment(formValue as Omit<PersonalGymEquipment, 'id'>);
