@@ -46,6 +46,7 @@ import { createFromBtn, deleteBtn, editBtn, routineBtn, viewBtn } from '../../..
 import { FabAction, FabMenuComponent } from '../../../shared/components/fab-menu/fab-menu.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageService } from '../../../core/services/language.service';
+import { ColorsService } from '../../../core/services/colors.service';
 
 
 interface CalendarMonth {
@@ -213,6 +214,7 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
   private trainingProgramService = inject(TrainingProgramService);
   private translate = inject(TranslateService);
   private languageService = inject(LanguageService);
+  protected colorsService = inject(ColorsService);
 
   private dateFnsLocales: { [key: string]: Locale } = {
     en: enUS,

@@ -221,7 +221,7 @@
                         'text-white': !!routine.cardColor
                     }" [ngStyle]="{'background-color': routine.cardColor ? routine.cardColor : null}"
                     class="rounded-md shadow-md hover:shadow-lg transition-shadow duration-200 relative group transform hover:-translate-y-1 text-left border hover-dark-border-card hover-light-border-card"
-                    [style.zIndex]="areActionsVisible(routine.id) ? 40 : 'auto'">
+                    [style.zIndex]="areActionsVisible(routine.id) ? 50 : 'auto'">
 
                     <div class="p-3 h-full" [ngClass]="{'text-primary dark:text-primary-light': !routine.cardColor}">
                         <!-- 
@@ -249,6 +249,7 @@
                                 <app-action-menu
                                     *ngIf="areActionsVisible(routine.id) && menuModeDropdown && !routine.isDisabled"
                                     displayMode="dropdown" [gridClass]="' grid grid-cols-2 '"
+                                    [borderColor]="colorsService.getTailwindColorClass(routine.cardColor)"
                                     [items]="getRoutineDropdownActionItems(routine.id, 'dropdown')"
                                     [isVisible]="areActionsVisible(routine.id)"
                                     (itemClick)="handleActionMenuItemClick($event)" (closeMenu)="onCloseActionMenu()">

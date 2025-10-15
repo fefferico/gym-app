@@ -3,8 +3,12 @@
     <div *ngSwitchCase="'dropdown'">
         <!-- Use shouldRenderInDom to keep menu in DOM during closing animation -->
         <div *ngIf="shouldRenderInDom"
-            class="dropdown-panel absolute mt-2 w-max max-w-[90vw] rounded-lg shadow-lg bg-gray-100 dark:bg-gray-800 ring-1 ring-black ring-opacity-5 z-[60] border border-gray-300 dark:border-gray-600 flex flex-col max-h-[80vh] overflow-hidden"
+            class="dropdown-panel absolute mt-2 w-max max-w-[90vw] rounded-lg shadow-lg bg-gray-100 dark:bg-gray-800 ring-1 ring-black ring-opacity-5 z-[60] border flex flex-col max-h-[80vh]"
             [ngClass]="alignmentClass()">
+
+            <!-- ⬇️ Add this triangle (horn) -->
+    <div class="dropdown-caret absolute w-6 h-6 bg-gray-100 dark:bg-gray-800 rotate-45 z-[-1] rounded-md"
+         [ngClass]="caretClass()"></div>
 
             <div class="overflow-y-auto p-2 custom-scrollbar">
                 <!-- Animation trigger with proper state binding -->
@@ -82,3 +86,6 @@
 <div class="hidden scale-120"></div>
 <div class="hidden scale-125"></div>
 <div class="hidden scale-110"></div>
+<div class="hidden border-3"></div>
+<div class="hidden border-4"></div>
+<div class="hidden border-5"></div>

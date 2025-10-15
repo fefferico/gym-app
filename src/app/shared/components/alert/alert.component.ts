@@ -92,7 +92,11 @@ export class AlertComponent implements OnInit {
 
     // If no "confirm" button or it wasn't found in the DOM, focus the first available button
     if (this.allButtons.first) {
-      this.allButtons.first.nativeElement.focus();
+      if (this.options && this.options.buttons && this.options.buttons[0] && this.options.buttons[0].autofocus === false){
+        //
+      } else {
+        this.allButtons.first.nativeElement.focus();
+      }
     }
   }
 

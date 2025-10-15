@@ -32,6 +32,7 @@ import { GeneratedWorkoutSummaryComponent } from './generated-workout-summary/ge
 import { WorkoutGenerationOptions, WorkoutGeneratorService } from '../../core/services/workout-generator.service';
 import { FabAction, FabMenuComponent } from '../../shared/components/fab-menu/fab-menu.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { ColorsService } from '../../core/services/colors.service';
 
 @Component({
   selector: 'app-routine-list',
@@ -93,6 +94,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
   private workoutGeneratorService = inject(WorkoutGeneratorService);
   protected subscriptionService = inject(SubscriptionService);
   private translate = inject(TranslateService);
+  protected colorsService = inject(ColorsService);
 
   private sanitizer = inject(DomSanitizer);
   public sanitizedDescription: SafeHtml = '';
@@ -670,12 +672,6 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     return this.exerciseService.getIconPath(iconName);
   }
 
-  private cardColors = [
-    '#7f1d1d', '#86198f', '#4a044e', '#1e1b4b', '#1e3a8a', '#064e3b', '#14532d',
-    '#b91c1c', '#c026d3', '#701a75', '#312e81', '#2563eb', '#047857', '#15803d',
-    '#f97316', '#ca8a04', '#4d7c0f', '#0f766e', '#0369a1', '#1d4ed8', '#5b21b6'
-  ];
-
   getRoutineDropdownActionItems(routineId: string, mode: MenuMode): ActionMenuItem[] {
     const currentRoutine = this.allRoutinesForList().find(routine => routine.id === routineId);
 
@@ -1144,7 +1140,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     if (!routine) return;
 
     // This part remains the same
-    const colorButtons: AlertButton[] = this.cardColors.map(color => ({
+    const colorButtons: AlertButton[] = this.colorsService.getCardColors().map(color => ({
       text: '',
       role: 'confirm',
       data: color,

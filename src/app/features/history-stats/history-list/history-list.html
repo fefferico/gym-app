@@ -204,6 +204,7 @@
                     </button>
                     <app-action-menu *ngIf="areActionsVisible(item.id) && (menuModeDropdown || menuModeModal)"
                       [modalTitle]="''" class="action-menu-container"
+                      [borderColor]="colorsService.getTailwindColorClass(item.cardColor)"
                       [displayMode]="menuModeDropdown ? 'dropdown' : 'modal'" [gridClass]="' grid grid-cols-2 '"
                       [items]="getLogDropdownActionItems(item.id, menuModeDropdown ? 'dropdown' : 'modal')"
                       [isVisible]="areActionsVisible(item.id)" (itemClick)="handleActionMenuItemClick($event)"
@@ -253,15 +254,15 @@
                         class="font-medium">{{ 'historyList.card.notes' | translate }}</span> {{ item.notes }}</p>
                   </div>
                 </div>
-                <!-- Action Menu for Workouts -->
+                <!-- Action Menu for Acitities -->
                 <div class="absolute top-2 right-2 z-50">
                   <div class="relative">
                     <button (click)="toggleActions(item.id, $event)"
                       class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center">
                       <app-icon name="menu-action" class="h-10 w-10"></app-icon>
                     </button>
-                    <app-action-menu *ngIf="areActionsVisible(item.id) && (menuModeDropdown || menuModeModal)"
-                      class="action-menu-container" [displayMode]="menuModeDropdown ? 'dropdown' : 'modal'"
+                    <app-action-menu *ngIf="areActionsVisible(item.id) && (menuModeDropdown || menuModeModal)" class="action-menu-container"
+                      [displayMode]="menuModeDropdown ? 'dropdown' : 'modal'"
                       [items]="getActivityLogDropdownActionItems(item.id, menuModeDropdown ? 'dropdown' : 'modal')"
                       [isVisible]="areActionsVisible(item.id)" (itemClick)="handleActionMenuItemClick($event)"
                       (closeMenu)="onCloseActionMenu()">

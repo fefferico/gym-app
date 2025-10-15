@@ -41,7 +41,7 @@ export const dropdownMenuAnimation = trigger('listAnimation', [
       animate('180ms ease-out', style({ opacity: 1, transform: 'translateY(0)' }))
     ]), { optional: true })
   ]),
-  
+
   // Opening upwards
   transition('void => from-bottom', [
     query('.action-item, .menu-divider', [
@@ -94,7 +94,7 @@ export class ActionMenuComponent implements OnChanges, OnDestroy {
   private iconRegistry = inject(IconRegistryService);
   private alertService = inject(AlertService);
   private translateService = inject(TranslateService);
-  
+
   protected menuState = signal<'closed' | 'preparing' | 'open'>('closed');
   animationState = signal<'open' | 'from-bottom' | 'void'>('void');
   private isClosing = false;
@@ -102,9 +102,13 @@ export class ActionMenuComponent implements OnChanges, OnDestroy {
   @Input() items: ActionMenuItem[] = [];
   @Input() displayMode: MenuMode = 'dropdown';
   @Input() modalTitle: string = 'Actions';
+  @Input() borderColor: string = '';
+  defaultBorderColor: string = 'border-gray-300 dark:border-gray-600';
+  customBorderWidth: string = 'border-4';
+  defaultBorderWidth: string = 'border-3';
 
   private _isVisible = false;
-  
+
   @Input()
   set isVisible(value: boolean) {
     if (value === this._isVisible) {
@@ -180,7 +184,7 @@ export class ActionMenuComponent implements OnChanges, OnDestroy {
     // Set animation state to void to trigger leave animation
     this.animationState.set('void');
     this.cdr.detectChanges();
-    
+
     // Wait for animation to complete before cleanup
     setTimeout(() => {
       this.isClosing = false;
@@ -224,7 +228,7 @@ export class ActionMenuComponent implements OnChanges, OnDestroy {
     // Vertical alignment
     let verticalClass = 'top-full mt-2';
     this.animationState.set('open'); // Default: top-to-bottom animation
-    
+
     const offset = 8;
     const spaceBelowConsideringNav = window.innerHeight - anchorRect.bottom - mainNavHeight;
     const hasSpaceBelow = (dropdownHeight + offset) <= spaceBelowConsideringNav;
@@ -236,21 +240,28 @@ export class ActionMenuComponent implements OnChanges, OnDestroy {
     } else if (!hasSpaceBelow && !hasSpaceAbove) {
       const spaceBelow = window.innerHeight - anchorRect.bottom - mainNavHeight;
       const spaceAbove = anchorRect.top;
-      
+
       if (spaceAbove > spaceBelow) {
         verticalClass = 'bottom-full mb-2';
         this.animationState.set('from-bottom');
       }
     }
 
-    this.alignmentClass.set(`${horizontalClass} ${verticalClass}`);
+    if (this.borderColor) {
+      this.alignmentClass.set(`${horizontalClass} ${verticalClass} ${this.customBorderWidth} ${this.borderColor}`);
+    } else {
+      this.alignmentClass.set(`${horizontalClass} ${verticalClass} ${this.defaultBorderWidth} ${this.defaultBorderColor}`);
+    }
   }
 
   ngOnDestroy(): void {
     document.removeEventListener('keydown', this._boundOnEnterKey);
   }
 
+  private defaultActionModalCssClass = 'justify-start'
   private async presentAsAlert(): Promise<void> {
+    const isDesktop = isPlatformBrowser(this.platformId) && !('ontouchstart' in window || navigator.maxTouchPoints > 0);
+
     const alertButtons: AlertButton[] = this.items
       .filter(item => !item.isDivider)
       .map(item => ({
@@ -259,8 +270,9 @@ export class ActionMenuComponent implements OnChanges, OnDestroy {
         icon: item.iconName,
         iconClass: item.iconClass,
         cssClass: `${item.buttonClass || ''}`,
-        overrideCssClass: item.overrideCssButtonClass ? item.overrideCssButtonClass : ``,
-        data: item.data
+        overrideCssClass: item.overrideCssButtonClass ? item.overrideCssButtonClass.replace('justify-center', this.defaultActionModalCssClass) : ``,
+        data: item.data,
+        autofocus: isDesktop ? true : false
       } as AlertButton));
 
     const result = await this.alertService.present({
@@ -330,5 +342,21 @@ export class ActionMenuComponent implements OnChanges, OnDestroy {
 
   getIconNameForComponent(item: ActionMenuItem): IconLayer | (string | IconLayer)[] {
     return item.iconName as IconLayer | (string | IconLayer)[];
+  }
+
+  caretClass(): string {
+    const align = this.alignmentClass();
+
+    if (align.includes('bottom-full')) {
+      // Menu opens upward
+      return align.includes('right-0')
+        ? 'bottom-[-6px] right-2'
+        : 'bottom-[-6px] left-2';
+    } else {
+      // Menu opens downward
+      return align.includes('right-0')
+        ? 'top-[-6px] right-2'
+        : 'top-[-6px] left-2';
+    }
   }
 }
