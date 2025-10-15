@@ -1,5 +1,5 @@
 // src/app/features/profile-settings/personal-bests.component.ts
-import { Component, inject, OnInit, signal, computed, PLATFORM_ID, HostListener } from '@angular/core';
+import { Component, inject, OnInit, signal, computed, PLATFORM_ID } from '@angular/core';
 import { CommonModule, DatePipe, TitleCasePipe, DecimalPipe, isPlatformBrowser } from '@angular/common'; // Ensure DecimalPipe is imported
 import { Router, RouterLink } from '@angular/router';
 import { Observable, combineLatest, of } from 'rxjs';
@@ -19,6 +19,7 @@ import { PressDirective } from '../../../shared/directives/press.directive';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { WorkoutService } from '../../../core/services/workout.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { FabAction, FabMenuComponent } from '../../../shared/components/fab-menu/fab-menu.component';
 
 
 // Interface to combine PB data with Exercise details
@@ -31,7 +32,7 @@ interface DisplayPersonalBest extends PersonalBestSet {
 @Component({
   selector: 'app-personal-bests',
   standalone: true,
-  imports: [CommonModule, RouterLink, DatePipe, TitleCasePipe, PressDirective, IconComponent, TranslateModule], // Add DecimalPipe to imports if not already
+  imports: [CommonModule, RouterLink, DatePipe, TitleCasePipe, PressDirective, IconComponent, TranslateModule, FabMenuComponent], // Add DecimalPipe to imports if not already
   templateUrl: './personal-bests.html',
   styleUrl: './personal-bests.scss',
   animations: [
@@ -312,22 +313,6 @@ export class PersonalBestsComponent implements OnInit {
     console.log(`Requesting trend for Exercise ID: ${exerciseId}, PB Type: ${pbType}`);
   }
 
+    fabMenuItems: FabAction[] = [];
 
-  showBackToTopButton = signal<boolean>(false);
-  @HostListener('window:scroll', [])
-  onWindowScroll(): void {
-    // Check if the user has scrolled down more than a certain amount (e.g., 400 pixels)
-    // You can adjust this value to your liking.
-    const verticalOffset = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
-    this.showBackToTopButton.set(verticalOffset > 400);
-  }
-
-  scrollToTop(): void {
-    if (isPlatformBrowser(this.platformId)) {
-      window.scrollTo({
-        top: 0,
-        behavior: 'smooth' // For a smooth scrolling animation
-      });
-    }
-  }
 }

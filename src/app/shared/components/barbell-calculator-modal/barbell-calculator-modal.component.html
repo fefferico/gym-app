@@ -1,5 +1,5 @@
 <!-- +++ MODIFIED: Added touch events for swipe navigation +++ -->
-<div class="modal-overlay" (click)="onClose()">
+<div class="modal-overlay overflow-hidden" (click)="onClose()">
     <div class="calculator-modal" (click)="$event.stopPropagation()" (touchstart)="onSwipeStart($event)"
         (touchmove)="onSwipeMove($event)" (touchend)="onSwipeEnd($event)">
 

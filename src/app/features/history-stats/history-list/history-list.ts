@@ -245,23 +245,6 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
     value: 'list', params: { enterTransform: 'translateX(100%)', leaveTransform: 'translateX(-100%)' }
   });
 
-  showBackToTopButton = signal<boolean>(false);
-  @HostListener('window:scroll', [])
-  onWindowScroll(): void {
-    if (isPlatformBrowser(this.platformId)) {
-      this.showBackToTopButton.set(window.pageYOffset > 400);
-
-      // +++ NEW: Infinite Scroll Logic +++
-      // If the user has scrolled to the bottom of the page and we're in calendar view...
-      if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 50) {
-        if (this.currentHistoryView() === 'calendar' && !this.historyCalendarLoading()) {
-          // ...load the next month.
-          this.loadNextCalendarMonth();
-        }
-      }
-    }
-  }
-
   historyCalendarLoading = signal(false);
   weekStartsOn: 0 | 1 = 1;
   readonly todayForCalendar = new Date(); // Property to hold today's date for the template
@@ -826,17 +809,6 @@ export class HistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
       this.navigateToLogWorkout();
     }
   }
-
-
-  scrollToTop(): void {
-    if (isPlatformBrowser(this.platformId)) {
-      window.scrollTo({
-        top: 0,
-        behavior: 'smooth' // For a smooth scrolling animation
-      });
-    }
-  }
-
 
   getLogDropdownActionItems(logId: string, mode: MenuMode): ActionMenuItem[] {
     const defaultBtnClass = 'rounded text-left p-4 font-medium text-gray-600 dark:text-gray-300 hover:bg-primary flex items-center hover:text-white dark:hover:text-gray-100 dark:hover:text-white';

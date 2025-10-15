@@ -3,8 +3,7 @@
   <div class="container mx-auto flex justify-around items-center h-16 overflow-x-auto">
 
     <!-- The rest of your HTML remains exactly the same -->
-    <a *ngFor="let item of navItems" appPress (shortPress)="onNavigate(item)" (longPress)="onLongPress(item)"
-      (pressRelease)="onPressRelease(item)" [routerLink]="item.premiumFeature ? null : item.path"
+    <a *ngFor="let item of navItems" (click)="onNavigate(item)" [routerLink]="item.premiumFeature ? null : item.path"
       class="flex w-full flex-col items-center justify-center text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary-light cursor-pointer transition-colors p-1 w-16 max-w-[64px]"
       [ngClass]="{'hover:scale-125': !isLinkActive(item),
         'text-primary dark:text-primary-light': isLinkActive(item)

@@ -2,7 +2,6 @@ import { Component, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router'; // Ensure Router is imported
-import { PressDirective } from '../../directives/press.directive';
 import { IconComponent } from '../icon/icon.component';
 import { PremiumFeature, SubscriptionService } from '../../../core/services/subscription.service';
 import { TranslateModule } from '@ngx-translate/core';
@@ -19,7 +18,7 @@ interface NavItem {
 @Component({
   selector: 'app-navigation',
   standalone: true,
-  imports: [RouterLink, CommonModule, PressDirective, IconComponent, TranslateModule],
+  imports: [RouterLink, CommonModule, IconComponent, TranslateModule],
   templateUrl: './navigation.html',
   styleUrls: ['./navigation.scss']
 })
@@ -120,24 +119,5 @@ export class NavigationComponent {
       // User does not have access, show the upgrade modal.
       this.subscriptionService.showUpgradeModal();
     }
-  }
-
-  /**
-   * Handles the long press event on a navigation item.
-   */
-  onLongPress(item: NavItem): void {
-    // You can add any custom logic for a long press here.
-    // For example, showing a tooltip or a context menu.
-    // console.log('Long pressed:', item.label);
-  }
-
-  /**
-   * Handles the press release event on a navigation item.
-   */
-  onPressRelease(item: NavItem): void {
-    // Scroll to the top of the component (or page)
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    // You can add any custom logic for the press release here.
-    // console.log('Press released on:', item.label);
   }
 }

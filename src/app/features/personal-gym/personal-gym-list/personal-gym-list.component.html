@@ -41,7 +41,7 @@
   <div *ngIf="allEquipment().length > 0; else noEquipmentState">
     <div *ngIf="filteredEquipment().length > 0; else noFilterResultsState"
       class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      <div *ngFor="let item of filteredEquipment(); trackBy: trackById" (click)="navigateToForm(item.id)"
+      <div *ngFor="let item of filteredEquipment(); trackBy: trackById" (click)="toggleActions(item.id, $event)"
         class="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-xl transition-shadow cursor-pointer p-4 flex flex-col justify-between relative">
         <div>
           <h2 class="text-lg font-bold text-primary dark:text-primary-light">{{ item.name }}</h2>
@@ -83,7 +83,6 @@
             </button>
             <app-action-menu *ngIf="areActionsVisible(item.id) && (menuModeDropdown || menuModeModal)" [modalTitle]="''"
               class="action-menu-container" [displayMode]="menuModeDropdown ? 'dropdown' : 'modal'"
-              [gridClass]="' grid grid-cols-2 '"
               [items]="getGymActionItems(item.id, menuModeDropdown ? 'dropdown' : 'modal')"
               [isVisible]="areActionsVisible(item.id)" (itemClick)="handleActionMenuItemClick($event)"
               (closeMenu)="onCloseActionMenu()">

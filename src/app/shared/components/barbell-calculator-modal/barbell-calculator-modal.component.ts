@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, computed, signal, Output, EventEmitter, effect, OnDestroy } from '@angular/core';
+import { Component, OnInit, inject, computed, signal, Output, EventEmitter, effect, OnDestroy, Inject, DOCUMENT } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Barbell, BarbellCalculatorService, PlateLoadout, Collar, Plate } from '../../../core/services/barbell-calculator.service';
@@ -246,7 +246,7 @@ export class BarbellCalculatorModalComponent implements OnInit, OnDestroy {
     return bar.weight + collar.weight + platesWeight;
   });
 
-  constructor() {
+  constructor(@Inject(DOCUMENT) private document: Document) {
     effect(() => {
       const currentTarget = this.targetWeight();
       const maxWeight = this.maxPossibleWeight();
@@ -256,6 +256,12 @@ export class BarbellCalculatorModalComponent implements OnInit, OnDestroy {
         this.targetWeight.set(maxWeight);
         this.calculateFromTargetWeight();
       }
+    });
+
+    effect((onCleanup) => {
+      onCleanup(() => {
+        this.document.body.classList.remove('overflow-hidden');
+      });
     });
   }
 
@@ -490,7 +496,7 @@ export class BarbellCalculatorModalComponent implements OnInit, OnDestroy {
       return '#FFFFFF'; // Default dark text for uncolored plates
     }
     // List of dark background colors that need light text for contrast
-    const darkColors = ['#D32F2F', '#FF0000', '#1976D2', '#424242', '#111111', '#000000FF', '#0000FF' ,'#43A047'];
+    const darkColors = ['#D32F2F', '#FF0000', '#1976D2', '#424242', '#111111', '#000000FF', '#0000FF', '#43A047'];
 
     if (darkColors.includes(plateColor.toUpperCase())) {
       return '#FFFFFF'; // Return white text for dark plates

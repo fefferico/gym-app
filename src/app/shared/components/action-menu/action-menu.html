@@ -1,50 +1,39 @@
 <!-- src/app/shared/components/action-menu/action-menu.component.html -->
 <ng-container [ngSwitch]="displayMode">
-    <div *ngSwitchCase="'dropdown'">
+     <div *ngSwitchCase="'dropdown'">
         <!--
-              ========================================================================
-              THE FIX IS HERE:
-              1. flex flex-col      - Lays out the inner content vertically.
-              2. max-h-[75vh]       - Sets a maximum height for the dropdown panel. 
-                                       (Adjust 75vh, 60vh, etc., to your preference).
-              3. overflow-hidden    - Required for rounded corners to apply correctly on a scrolling container.
-              ========================================================================
-            -->
-        <div *ngIf="isVisible" [@dropdownMenu] [ngClass]="dropdownMenuClass"
-            class="flex flex-col max-h-[80vh] overflow-hidden">
+          ========================================================================
+          THE FIX IS HERE:
+          1. `*ngIf` now uses the `menuState()` signal, so the element exists in the DOM
+             during the 'preparing' state.
+          2. The animation trigger `[@dropdownMenu]` is also bound to `menuState()`.
+          3. A conditional class `[class.opacity-0]` is added to ensure the element
+             is fully invisible during the 'preparing' state before the animation starts.
+          ========================================================================
+        -->
+        <div *ngIf="menuState() !== 'closed'"
+            [@dropdownMenu]="menuState()"
+            class="dropdown-panel absolute mt-2 w-max max-w-[90vw] rounded-lg shadow-lg bg-gray-100 dark:bg-gray-800 ring-1 ring-black ring-opacity-5 z-[60] border border-gray-300 dark:border-gray-600 flex flex-col max-h-[80vh] overflow-hidden"
+            [ngClass]="[alignmentClass(), menuState() === 'preparing' ? 'opacity-0' : '']">
 
-            <!-- 
-                  ========================================================================
-                  THE FIX IS HERE:
-                  1. overflow-y-auto  - Makes THIS specific div scrollable if its content overflows.
-                  2. p-1              - Padding is moved from the outer container to this inner one.
-                  ========================================================================
-                -->
             <div class="overflow-y-auto p-1 custom-scrollbar">
-                <div class="{{'flex flex-col gap-y-1' + ' ' + gridClass}}">
+                <div class="grid gap-2" [ngClass]="gridClass || 'flex flex-col gap-1'">
                     <ng-container *ngFor="let item of items">
-                        <div *ngIf="item.isDivider"
-                            class="my-0.5 sm:my-1 border-t border-gray-200 dark:border-gray-600">
-                        </div>
+                        <div *ngIf="item.isDivider" class="w-full h-px my-1 bg-gray-200 dark:bg-gray-600 col-span-full"></div>
+                        
+                        <!-- The button no longer needs any special width styling -->
                         <button *ngIf="!item.isDivider" type="button" (click)="onItemClicked($event, item)"
                             [ngClass]="defaultDropdownButtonClass + ' ' + item.buttonClass"
                             class="transition-colors duration-150 ease-in-out">
 
-                            <!-- +++ START: CONDITIONAL ICON RENDERING +++ -->
-                            <!-- Case 1: Complex icon using <app-icon> component -->
                             <ng-container *ngIf="isComplexIcon(item)">
-                                <app-icon [name]="getIconNameForComponent(item)"
-                                    [class]="item.iconClass || 'w-5 h-5 mr-3'" class="flex-shrink-0"></app-icon>
+                                <app-icon [name]="getIconNameForComponent(item)" [class]="item.iconClass || 'w-5 h-5 mr-2'" class="flex-shrink-0"></app-icon>
                             </ng-container>
-
-                            <!-- Case 2: Simple icon using innerHTML (backward compatibility) -->
                             <ng-container *ngIf="!isComplexIcon(item)">
-                                <span *ngIf="getIconHtml(item) as iconHtml" [innerHTML]="iconHtml"
-                                    [ngClass]="(item.iconClass || 'w-5 h-5 mr-3') + ' flex-shrink-0'"></span>
+                                <span *ngIf="getIconHtml(item) as iconHtml" [innerHTML]="iconHtml" [ngClass]="(item.iconClass || 'w-5 h-5 mr-2') + ' flex-shrink-0'"></span>
                             </ng-container>
-                            <!-- +++ END: CONDITIONAL ICON RENDERING +++ -->
-
-                            <span>{{ item.label ? (item.label | translate) : '' }}</span>
+                            
+                            <span class="whitespace-normal text-left flex-grow">{{ item.label ? (item.label | translate) : '' }}</span>
                         </button>
                     </ng-container>
                 </div>

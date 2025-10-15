@@ -1,6 +1,6 @@
 // src/app/shared/components/action-menu/action-menu.component.ts
-import { Component, Input, Output, EventEmitter, HostListener, ElementRef, ChangeDetectionStrategy, inject, OnChanges, SimpleChanges, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, Input, Output, EventEmitter, HostListener, ElementRef, ChangeDetectionStrategy, inject, OnChanges, SimpleChanges, OnDestroy, signal, PLATFORM_ID, ViewChildren, QueryList, ChangeDetectorRef, runInInjectionContext, afterNextRender, Injector } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { ActionMenuItem } from '../../../core/models/action-menu.model';
@@ -33,13 +33,24 @@ export const modalContentAnimation = trigger('modalContent', [
   ]),
 ]);
 export const dropdownMenuAnimation = trigger('dropdownMenu', [
-  transition(':enter', [
-    style({ opacity: 0, transform: 'scale(0.95) translateY(-10px)' }),
-    animate('100ms ease-out', style({ opacity: 1, transform: 'scale(1) translateY(0)' })),
+  // State for 'preparing' and 'closed' is invisible
+  state('closed, preparing', style({
+    opacity: 0,
+    transform: 'scale(0.95) translateY(-10px)'
+  })),
+  // State for 'open' is visible
+  state('open', style({
+    opacity: 1,
+    transform: 'scale(1) translateY(0)'
+  })),
+  // Transition from preparing to open for a smooth fade-in
+  transition('preparing => open', [
+    animate('100ms ease-out')
   ]),
-  transition(':leave', [
-    animate('75ms ease-in', style({ opacity: 0, transform: 'scale(0.95) translateY(-10px)' })),
-  ]),
+  // Transition back to closed
+  transition('* => closed', [
+    animate('75ms ease-in')
+  ])
 ]);
 export const compactBarAnimation = trigger('compactBar', [
   transition(':enter', [
@@ -62,18 +73,43 @@ export const compactBarAnimation = trigger('compactBar', [
 export class ActionMenuComponent implements OnChanges, OnDestroy {
   private sanitizer = inject(DomSanitizer);
   private elRef = inject(ElementRef);
+  private platformId = inject(PLATFORM_ID);
+  private cdr = inject(ChangeDetectorRef);
+  private injector = inject(Injector);
+
   private iconRegistry = inject(IconRegistryService);
   // +++ 2. Inject the AlertService +++
   private alertService = inject(AlertService);
+  protected menuState = signal<'closed' | 'preparing' | 'open'>('closed');
 
   @Input() items: ActionMenuItem[] = [];
-  @Input() isVisible: boolean = false;
   @Input() displayMode: MenuMode = 'dropdown';
   @Input() modalTitle: string = 'Actions';
 
+  @Input()
+  set isVisible(value: boolean) {
+    if (value) {
+      // 1. When parent wants to show, move to 'preparing' state.
+      // This adds the menu to the DOM but keeps it invisible.
+      this.menuState.set('preparing');
+
+      // 2. Defer the calculation. This gives the DOM time to render the invisible menu.
+      setTimeout(() => {
+        this.calculateDropdownPosition();
+        // 3. After calculation, move to 'open' state to trigger the fade-in animation.
+        this.menuState.set('open');
+      }, 0);
+    } else {
+      // When parent wants to hide, just go to 'closed'.
+      this.menuState.set('closed');
+    }
+  }
+
+
   // --- No longer needed for modal, but kept for dropdown ---
-  @Input() dropdownMenuClass: string = 'origin-top-right absolute right-0 top-full mt-2 rounded-lg shadow-lg bg-gray-100 dark:bg-gray-800 ring-1 ring-black ring-opacity-5 p-1 z-[60] border border-gray-300 border-2 min-w-[250px] max-w-xs overflow-hidden';
-  defaultDropdownButtonClass: string = 'flex items-center w-full rounded-md px-3 py-2 text-sm font-medium text-black dark:text-white hover:text-white';  @Input() compactBarClass: string = 'flex gap-2 grid grid-cols-2 justify-center items-center z-20 rounded-b-lg p-2';
+  alignmentClass = signal('origin-top-right right-0');
+
+  defaultDropdownButtonClass: string = 'flex items-center w-full rounded-md px-3 py-2 text-sm font-medium text-black dark:text-white hover:text-white'; @Input() compactBarClass: string = 'flex gap-2 grid grid-cols-2 justify-center items-center z-20 rounded-b-lg p-2';
   defaultCompactButtonClass: string = 'flex items-center w-full rounded-md px-3 py-2 text-sm font-medium text-black dark:text-white hover:text-white';
   @Input() gridClass: string = '';
   @Input() customButtonDivCssClass: string = 'grid grid-cols-2';
@@ -88,9 +124,15 @@ export class ActionMenuComponent implements OnChanges, OnDestroy {
       const isVisible = changes['isVisible'].currentValue;
 
       // +++ 3. Intercept the visibility change for modal mode +++
-      if (isVisible && this.displayMode === 'modal') {
-        // Use a timeout to avoid any potential expression-changed-after-checked errors
-        setTimeout(() => this.presentAsAlert(), 0);
+      if (isVisible) {
+        if (this.displayMode === 'modal') {
+          // Use a timeout to avoid any potential expression-changed-after-checked errors
+          setTimeout(() => this.presentAsAlert(), 0);
+
+        }
+        if (this.displayMode === 'dropdown') {
+          setTimeout(() => this.calculateDropdownPosition(), 0);
+        }
       }
 
       // Keep existing listener logic for other modes
@@ -100,6 +142,64 @@ export class ActionMenuComponent implements OnChanges, OnDestroy {
         document.removeEventListener('keydown', this._boundOnEnterKey);
       }
     }
+  }
+
+  private calculateDropdownPosition(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
+    const dropdownElement = this.elRef.nativeElement.querySelector('.dropdown-panel');
+    const anchorElement = this.elRef.nativeElement.parentElement;
+
+    if (!dropdownElement || !anchorElement) return;
+
+    const anchorRect = anchorElement.getBoundingClientRect();
+    const dropdownWidth = dropdownElement.offsetWidth;
+    const dropdownHeight = dropdownElement.offsetHeight;
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    // Get --main-nav-height from CSS
+    const rootStyles = getComputedStyle(document.documentElement);
+    const mainNavHeight = parseInt(rootStyles.getPropertyValue('--main-nav-height'), 10) || 0;
+
+    // Horizontal alignment
+    const hasSpaceOnRight = (anchorRect.left + dropdownWidth) <= viewportWidth;
+    const hasSpaceOnLeft = (anchorRect.right - dropdownWidth) >= 0;
+
+    let horizontalClass = '';
+    if (hasSpaceOnLeft) {
+      horizontalClass = 'right-0 origin-top-right';
+    } else if (hasSpaceOnRight) {
+      horizontalClass = 'left-0 origin-top-left';
+    } else {
+      const spaceOnRight = viewportWidth - anchorRect.left;
+      const spaceOnLeft = anchorRect.right;
+      horizontalClass = spaceOnRight >= spaceOnLeft ? 'left-0 origin-top-left' : 'right-0 origin-top-right';
+    }
+
+    // Vertical alignment
+    let verticalClass = 'top-full mt-2'; // Default: below anchor
+    const offset = 8; // Corresponding to 'mt-2' or 'mb-2'
+
+    // Calculate available space below, considering the main nav height
+    const spaceBelowConsideringNav = viewportHeight - anchorRect.bottom - mainNavHeight;
+    const hasSpaceBelow = (dropdownHeight + offset) <= spaceBelowConsideringNav;
+
+    // Calculate available space above
+    const hasSpaceAbove = (anchorRect.top - dropdownHeight - offset) >= 0;
+
+    if (!hasSpaceBelow && hasSpaceAbove) {
+      verticalClass = 'bottom-full mb-2'; // If no space below (even with nav), but space above
+    } else if (!hasSpaceBelow && !hasSpaceAbove) {
+      // If no space above or below, choose the direction with more space
+      // Comparing actual space, not just boolean flags
+      const spaceBelow = viewportHeight - anchorRect.bottom - mainNavHeight; // Adjusted space below
+      const spaceAbove = anchorRect.top;
+
+      verticalClass = spaceBelow >= spaceAbove ? 'top-full mt-2' : 'bottom-full mb-2';
+    }
+
+    this.alignmentClass.set(`${horizontalClass} ${verticalClass}`);
   }
 
   ngOnDestroy(): void {
@@ -173,10 +273,10 @@ export class ActionMenuComponent implements OnChanges, OnDestroy {
     }
   }
 
-/**
-   * Renders a simple icon from a string name or a raw SVG.
-   * This method is kept for backward compatibility.
-   */
+  /**
+     * Renders a simple icon from a string name or a raw SVG.
+     * This method is kept for backward compatibility.
+     */
   getIconHtml(button: ActionMenuItem): SafeHtml | null {
     let svgString: string | null = null;
     // Only process if iconName is a simple string
@@ -198,7 +298,7 @@ export class ActionMenuComponent implements OnChanges, OnDestroy {
   isComplexIcon(item: ActionMenuItem): boolean {
     return typeof item.iconName === 'object' && item.iconName !== null;
   }
-  
+
   /**
    * Helper to cast the iconName for the <app-icon> component's [name] binding.
    */

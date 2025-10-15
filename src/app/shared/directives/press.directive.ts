@@ -1,11 +1,11 @@
 // press.directive.ts - FINAL VERSION
 
-import { Directive, ElementRef, EventEmitter, HostListener, Input, Output, Renderer2 } from '@angular/core';
+import { Directive, ElementRef, EventEmitter, HostListener, Input, OnDestroy, OnInit, Output, Renderer2 } from '@angular/core';
 
 @Directive({
   selector: '[appPress]'
 })
-export class PressDirective {
+export class PressDirective implements OnDestroy, OnInit {
   @Input() pressDisabled: boolean = false;
   @Output() shortPress = new EventEmitter<Event>();
   @Output() longPress = new EventEmitter<Event>();
@@ -13,54 +13,77 @@ export class PressDirective {
 
   private timeoutId: any;
   private isLongPress = false;
+  private unlistenFunctions: (() => void)[] = [];
 
   constructor(private el: ElementRef, private renderer: Renderer2) { }
 
-  @HostListener('mousedown')
-  @HostListener('touchstart', ['$event'])
-  onPressStart(event?: Event): void {
-    if (this.pressDisabled) {
-      return; // Do nothing if the directive is disabled
-    }
-    // Prevent context menu on mobile
-    event?.preventDefault();
+  ngOnInit(): void {
+    // --- THIS IS THE FIX ---
+
+    // For mouse, Renderer2 is fine.
+    this.unlistenFunctions.push(
+      this.renderer.listen(this.el.nativeElement, 'mousedown', this.onPressStart.bind(this))
+    );
+
+    // For touch, we use the native method to explicitly set passive: false.
+    // The redundant and problematic renderer.listen for 'touchstart' has been REMOVED.
+    this.el.nativeElement.addEventListener('touchstart', this.onPressStart.bind(this), { passive: false });
+
+
+    // End Events (mouseup, touchend, etc.) are non-blocking, so Renderer2 is fine.
+    const endEvents = ['mouseup', 'mouseleave', 'touchend', 'touchcancel'];
+    endEvents.forEach(event => {
+      this.unlistenFunctions.push(
+        this.renderer.listen(this.el.nativeElement, event, this.onPressEnd.bind(this))
+      );
+    });
+  }
+
+  ngOnDestroy(): void {
+    // Clean up all the listeners when the directive is destroyed
+    this.unlistenFunctions.forEach(unlisten => unlisten());
+    // Also explicitly remove the manually added touchstart listener to prevent memory leaks
+    this.el.nativeElement.removeEventListener('touchstart', this.onPressStart.bind(this));
+  }
+
+  onPressStart(event: Event): void {
+    if (this.pressDisabled) return;
+
+    // We still need this to prevent the context menu on a long press on mobile
+    event.preventDefault();
 
     this.isLongPress = false;
-
     this.renderer.addClass(this.el.nativeElement, 'is-pressed');
     if (navigator.vibrate) {
-      navigator.vibrate(50); // Vibrate for 50 milliseconds
+      navigator.vibrate(50);
     }
 
     this.timeoutId = setTimeout(() => {
       this.isLongPress = true;
-      this.longPress.emit();
+      this.longPress.emit(event);
     }, 500);
   }
 
-    @HostListener('mouseup', ['$event'])
-    // @HostListener('mouseleave', ['$event'])
-    @HostListener('touchend', ['$event'])
-    @HostListener('touchcancel', ['$event'])
-    onPressEnd(event?: Event): void { 
+  onPressEnd(event: Event): void {
     clearTimeout(this.timeoutId);
     this.renderer.removeClass(this.el.nativeElement, 'is-pressed');
-    // Check if the event is a mouseleave event
-    // Angular HostListener does not pass event by default for mouseup/mouseleave
-    // So, to detect mouseleave, you need to add ['$event'] to HostListener and accept event param
 
+    // Remove the class from any element in the unlikely case it gets stuck
     document.querySelectorAll('.is-pressed').forEach(el => {
-      el.classList.remove('is-pressed');
+      this.renderer.removeClass(el, 'is-pressed');
     });
-    if (event?.type === 'mouseleave') {
-      return;
+
+    if (event.type === 'mouseleave' || event.type === 'touchcancel') {
+      // If the user's finger/mouse leaves the button, we cancel the press
+      // but still fire the release event.
+    } else {
+      // Only emit shortPress if it was a valid release on the button
+      // and a longPress hasn't already been fired.
+      if (!this.isLongPress) {
+        this.shortPress.emit(event);
+      }
     }
 
-    // Only emit shortPress if a longPress hasn't already been fired.
-    if (!this.isLongPress) {
-      this.shortPress.emit(event);
-    }
-    
     // ALWAYS emit that the press has been released.
     this.pressRelease.emit(event);
   }

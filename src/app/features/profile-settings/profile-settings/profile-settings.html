@@ -19,7 +19,7 @@
                         'settings.subscription.upgradeMessage') | translate }}
                     </p>
                 </div>
-                <button appPress (shortPress)="handleUpgradeClick()"
+                <button (click)="handleUpgradeClick()"
                     class="px-4 py-2 bg-white text-primary-dark font-semibold rounded-md shadow-md hover:bg-gray-200 transition-colors">
                     {{ (subscriptionService.isPremium() ? 'settings.subscription.manageButton' :
                     'settings.subscription.upgradeButton') | translate }}
@@ -548,10 +548,10 @@
                              'left-1 right-1/2': unitsService.currentWeightUnit() === 'kg',
                              'left-1/2 right-1': unitsService.currentWeightUnit() === 'lbs'
                          }"></div>
-                            <button type="button" appPress (shortPress)="selectWeightUnit('kg')"
+                            <button type="button" (click)="selectWeightUnit('kg')"
                                 class="relative z-10 flex-1 px-4 py-2 text-sm font-bold text-center transition-colors duration-300"
                                 [ngClass]="{'text-white': unitsService.currentWeightUnit() === 'kg', 'text-gray-700 dark:text-gray-300': unitsService.currentWeightUnit() !== 'kg'}">kg</button>
-                            <button type="button" appPress (shortPress)="selectWeightUnit('lbs')"
+                            <button type="button" (click)="selectWeightUnit('lbs')"
                                 class="relative z-10 flex-1 px-4 py-2 text-sm font-bold text-center transition-colors duration-300"
                                 [ngClass]="{'text-white': unitsService.currentWeightUnit() === 'lbs', 'text-gray-700 dark:text-gray-300': unitsService.currentWeightUnit() !== 'lbs'}">lbs</button>
                         </div>
@@ -566,10 +566,10 @@
                              'left-1 right-1/2': unitsService.currentMeasureUnit() === 'cm',
                              'left-1/2 right-1': unitsService.currentMeasureUnit() === 'in'
                          }"></div>
-                            <button type="button" appPress (shortPress)="selectMeasureUnit('cm')"
+                            <button type="button" (click)="selectMeasureUnit('cm')"
                                 class="relative z-10 flex-1 px-4 py-2 text-sm font-bold text-center transition-colors duration-300"
                                 [ngClass]="{'text-white': unitsService.currentMeasureUnit() === 'cm', 'text-gray-700 dark:text-gray-300': unitsService.currentMeasureUnit() !== 'cm'}">cm</button>
-                            <button type="button" appPress (shortPress)="selectMeasureUnit('in')"
+                            <button type="button" (click)="selectMeasureUnit('in')"
                                 class="relative z-10 flex-1 px-4 py-2 text-sm font-bold text-center transition-colors duration-300"
                                 [ngClass]="{'text-white': unitsService.currentMeasureUnit() === 'in', 'text-gray-700 dark:text-gray-300': unitsService.currentMeasureUnit() !== 'in'}">in</button>
                         </div>
@@ -584,10 +584,10 @@
                              'left-1 right-1/2': unitsService.currentDistanceMeasureUnit() === 'km',
                              'left-1/2 right-1': unitsService.currentDistanceMeasureUnit() === 'mi'
                          }"></div>
-                            <button type="button" appPress (shortPress)="selectDistanceMeasureUnit('km')"
+                            <button type="button" (click)="selectDistanceMeasureUnit('km')"
                                 class="relative z-10 flex-1 px-4 py-2 text-sm font-bold text-center transition-colors duration-300"
                                 [ngClass]="{'text-white': unitsService.currentDistanceMeasureUnit() === 'km', 'text-gray-700 dark:text-gray-300': unitsService.currentDistanceMeasureUnit() !== 'km'}">km</button>
-                            <button type="button" appPress (shortPress)="selectDistanceMeasureUnit('mi')"
+                            <button type="button" (click)="selectDistanceMeasureUnit('mi')"
                                 class="relative z-10 flex-1 px-4 py-2 text-sm font-bold text-center transition-colors duration-300"
                                 [ngClass]="{'text-white': unitsService.currentDistanceMeasureUnit() === 'mi', 'text-gray-700 dark:text-gray-300': unitsService.currentDistanceMeasureUnit() !== 'mi'}">mi</button>
                         </div>
@@ -602,10 +602,10 @@
                              'left-1 right-1/2': unitsService.currentBodyWeightUnit() === 'kg',
                              'left-1/2 right-1': unitsService.currentBodyWeightUnit() === 'lbs'
                          }"></div>
-                            <button type="button" appPress (shortPress)="selectBodyWeightUnit('kg')"
+                            <button type="button" (click)="selectBodyWeightUnit('kg')"
                                 class="relative z-10 flex-1 px-4 py-2 text-sm font-bold text-center transition-colors duration-300"
                                 [ngClass]="{'text-white': unitsService.currentBodyWeightUnit() === 'kg', 'text-gray-700 dark:text-gray-300': unitsService.currentBodyWeightUnit() !== 'kg'}">kg</button>
-                            <button type="button" appPress (shortPress)="selectBodyWeightUnit('lbs')"
+                            <button type="button" (click)="selectBodyWeightUnit('lbs')"
                                 class="relative z-10 flex-1 px-4 py-2 text-sm font-bold text-center transition-colors duration-300"
                                 [ngClass]="{'text-white': unitsService.currentBodyWeightUnit() === 'lbs', 'text-gray-700 dark:text-gray-300': unitsService.currentBodyWeightUnit() !== 'lbs'}">lbs</button>
                         </div>
@@ -620,10 +620,10 @@
                              'left-1 right-1/2': unitsService.currentBodyMeasureUnit() === 'cm',
                              'left-1/2 right-1': unitsService.currentBodyMeasureUnit() === 'in'
                          }"></div>
-                            <button type="button" appPress (shortPress)="selectBodyMeasureUnit('cm')"
+                            <button type="button" (click)="selectBodyMeasureUnit('cm')"
                                 class="relative z-10 flex-1 px-4 py-2 text-sm font-bold text-center transition-colors duration-300"
                                 [ngClass]="{'text-white': unitsService.currentBodyMeasureUnit() === 'cm', 'text-gray-700 dark:text-gray-300': unitsService.currentBodyMeasureUnit() !== 'cm'}">cm</button>
-                            <button type="button" appPress (shortPress)="selectBodyMeasureUnit('in')"
+                            <button type="button" (click)="selectBodyMeasureUnit('in')"
                                 class="relative z-10 flex-1 px-4 py-2 text-sm font-bold text-center transition-colors duration-300"
                                 [ngClass]="{'text-white': unitsService.currentBodyMeasureUnit() === 'in', 'text-gray-700 dark:text-gray-300': unitsService.currentBodyMeasureUnit() !== 'in'}">in</button>
                         </div>
@@ -676,15 +676,15 @@
                                         'translate-x-full': appSettingsService.menuMode() === 'compact',
                                         'translate-x-[195%]': appSettingsService.menuMode() === 'modal'
                                     }"></div>
-                            <button appPress (shortPress)="selectMenuMode('dropdown')"
+                            <button (click)="selectMenuMode('dropdown')"
                                 class="relative z-10 px-3 py-1.5 text-xs font-semibold transition-colors duration-300"
                                 [ngClass]="{'text-white': appSettingsService.menuMode() === 'dropdown', 'text-gray-700 dark:text-gray-300': appSettingsService.menuMode() !== 'dropdown'}">{{
                                 'settings.general.menuModes.dropdown' | translate }}</button>
-                            <button appPress (shortPress)="selectMenuMode('compact')"
+                            <button (click)="selectMenuMode('compact')"
                                 class="relative z-10 px-3 py-1.5 text-xs font-semibold transition-colors duration-300"
                                 [ngClass]="{'text-white': appSettingsService.menuMode() === 'compact', 'text-gray-700 dark:text-gray-300': appSettingsService.menuMode() !== 'compact'}">{{
                                 'settings.general.menuModes.compact' | translate }}</button>
-                            <button appPress (shortPress)="selectMenuMode('modal')"
+                            <button (click)="selectMenuMode('modal')"
                                 class="relative z-10 px-3 py-1.5 text-xs font-semibold transition-colors duration-300"
                                 [ngClass]="{'text-white': appSettingsService.menuMode() === 'modal', 'text-gray-700 dark:text-gray-300': appSettingsService.menuMode() !== 'modal'}">{{
                                 'settings.general.menuModes.modal' | translate }}</button>

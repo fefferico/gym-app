@@ -1483,4 +1483,17 @@ export class WorkoutService {
     return null;
   }
 
+
+  /**
+   * --- NEW METHOD for Ghost Loading ---
+   * Synchronously returns the first 'n' routines from the current list.
+   * This is used for a fast initial render in components.
+   * @param count The number of initial routines to return.
+   * @returns An array of routines.
+   */
+  public getInitialRoutines(count: number): Routine[] {
+    const allRoutines = this.routinesSubject.getValue();
+    return allRoutines.slice(0, count);
+  }
+
 }

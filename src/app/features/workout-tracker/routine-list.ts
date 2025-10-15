@@ -102,15 +102,6 @@ export class RoutineListComponent implements OnInit, OnDestroy {
   private routinesSubscription: Subscription | undefined;
   private exercisesSubscription: Subscription | undefined;
 
-  showBackToTopButton = signal<boolean>(false);
-  @HostListener('window:scroll', [])
-  onWindowScroll(): void {
-    // Check if the user has scrolled down more than a certain amount (e.g., 400 pixels)
-    // You can adjust this value to your liking.
-    const verticalOffset = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
-    this.showBackToTopButton.set(verticalOffset > 400);
-  }
-
   @ViewChildren('workoutGeneratorModal') workoutGeneratorModal!: GenerateWorkoutModalComponent;
 
   // Signals for menu and accordion
@@ -127,9 +118,60 @@ export class RoutineListComponent implements OnInit, OnDestroy {
   selectedRoutineMuscleGroup = signal<string | null>(null);
 
   // Signals for filter dropdown options
-  uniqueRoutineGoals = signal<string[]>([]);
-  uniqueRoutineEquipments = signal<string[]>([]);
-  uniqueRoutineMuscleGroups = signal<string[]>([]);
+  uniqueRoutineGoals = computed<string[]>(() => {
+    const routines = this.allRoutinesForList();
+    const goals = new Set<string>();
+    routines.forEach(r => { if (r.goal) goals.add(r.goal) });
+    return Array.from(goals).sort();
+  });
+
+  uniqueRoutineMuscleGroups = computed<string[]>(() => {
+    const routines = this.allRoutinesForList();
+    const muscles = new Set<string>();
+    routines.forEach(r => r.exercises.forEach(ex => {
+      const fullEx = this.allExercisesMap.get(ex.exerciseId);
+      if (fullEx?.primaryMuscleGroup) muscles.add(fullEx.primaryMuscleGroup);
+    }));
+    return Array.from(muscles).sort();
+  });
+
+  uniqueRoutineEquipments = computed<string[]>(() => {
+    const routines = this.allRoutinesForList();
+    const equipments = new Set<string>();
+    routines.forEach(r => r.exercises.forEach(ex => {
+      const fullEx = this.allExercisesMap.get(ex.exerciseId);
+      fullEx?.equipmentNeeded?.forEach(eq => equipments.add(eq.split(' (')[0].trim()));
+    }));
+    return Array.from(equipments).sort();
+  });
+
+  uniquePrimaryCategories = computed<string[]>(() => {
+    const routines = this.allRoutinesForList();
+    const categories = new Set<string>();
+    routines.forEach(r => { if (r.primaryCategory) categories.add(r.primaryCategory) });
+    return Array.from(categories).sort();
+  });
+  
+  uniqueRoutineColors = computed<string[]>(() => {
+    const routines = this.allRoutinesForList();
+    const colors = new Set<string>();
+    routines.forEach(r => { if (r.cardColor) colors.add(r.cardColor) });
+    return Array.from(colors).sort();
+  });
+  
+  maxDuration = computed<number>(() => {
+    const routines = this.allRoutinesForList();
+    if (routines.length === 0) return 120;
+    const max = routines.reduce((max, r) => {
+      const duration = this.getRoutineDuration(r);
+      return duration > max ? duration : max;
+    }, 0);
+    const newMax = Math.min(Math.ceil(max / 10) * 10, 180);
+    return newMax > 0 ? newMax : 120;
+  });
+  
+
+
   private allExercisesMap = new Map<string, Exercise>(); // To store exercises for quick lookup
 
   personalGymEquipment = signal<string[]>([]);
@@ -138,7 +180,6 @@ export class RoutineListComponent implements OnInit, OnDestroy {
   private readonly PAUSED_WORKOUT_KEY = 'fitTrackPro_pausedWorkoutState';
 
 
-  maxDuration = signal<number>(120); // A default max, will be updated dynamically
   selectedMaxDuration = signal<number>(120); // The current value of the slider
   showHiddenRoutines = signal<boolean>(false);
   showFavouriteRoutinesOnly = signal<boolean>(false);
@@ -283,8 +324,20 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     // Fetch all exercises first to build the map
     this.exercisesSubscription = this.exerciseService.getExercises().subscribe(exercises => {
       exercises.forEach(ex => this.allExercisesMap.set(ex.id, ex));
-      // Once exercises are loaded, then load routines and populate filters
-      this.loadRoutinesAndPopulateFilters();
+      // --- START: GHOST LOADING IMPLEMENTATION ---
+
+      // 1. Get the initial batch of routines synchronously for an instant render.
+      const initialRoutines = this.workoutService.getInitialRoutines(10);
+      this.allRoutinesForList.set(initialRoutines);
+      
+      // We no longer populate filters here, computed signals handle it.
+      // But we still populate the last logged info for the initial batch.
+      this.populateLastRoutineLoggedInfo(initialRoutines);
+
+      // 3. Subscribe to the full list to silently load the rest in the background.
+      this._subscribeToFullRoutineList();
+      
+      // --- END: GHOST LOADING IMPLEMENTATION ---
     });
 
     // This observable is for the template's async pipe if needed for loading states, before filtering kicks in.
@@ -292,97 +345,17 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     this.refreshFabMenuItems();
   }
 
-  private async loadRoutinesAndPopulateFilters(): Promise<void> {
-    this.routinesSubscription = this.workoutService.routines$.subscribe(async routines => {
-      this.allRoutinesForList.set(routines);
-      this.populateRoutineFilterOptions(routines);
-      await this.populateLastRoutineLoggedInfo(routines);
+  /**
+   * --- RENAMED & REFACTORED from loadRoutinesAndPopulateFilters ---
+   * Subscribes to the full routine list. When the full list arrives, it updates
+   * the signal and re-populates filters and other dependent data.
+   */
+  private _subscribeToFullRoutineList(): void {
+    this.routinesSubscription = this.workoutService.routines$.subscribe(async fullRoutines => {
+      // Just update the main signal. Computed signals will do the rest.
+      this.allRoutinesForList.set(fullRoutines);
+      await this.populateLastRoutineLoggedInfo(fullRoutines);
     });
-  }
-
-  private populateRoutineFilterOptions(routines: Routine[]): void {
-    if (!routines || routines.length === 0) {
-      this.maxDuration.set(120); // Reset to default if no routines
-      this.uniqueRoutineColors.set([]);
-      this.uniquePrimaryCategories.set([]); // Clear categories
-      return;
-    };
-
-    const goals = new Set<string>();
-    const muscles = new Set<string>();
-    const equipments = new Set<string>();
-    const colors = new Set<string>();
-    const categories = new Set<string>();
-    let maxCalculatedDuration = 0;
-
-    routines.forEach(routine => {
-      // Calculate duration for each routine
-      if (routine.cardColor) {
-        colors.add(routine.cardColor);
-      }
-      this.uniquePrimaryCategories.set(Array.from(categories).sort());
-      this.uniqueRoutineColors.set(Array.from(colors).sort());
-
-      const duration = this.getRoutineDuration(routine);
-      if (duration > maxCalculatedDuration) {
-        maxCalculatedDuration = duration;
-      }
-
-      if (routine.goal) {
-        goals.add(routine.goal);
-      }
-
-      if (routine.primaryCategory) {
-        categories.add(routine.primaryCategory);
-      }
-
-      routine.exercises.forEach(exDetail => {
-        const fullExercise = this.allExercisesMap.get(exDetail.exerciseId);
-        if (fullExercise?.primaryMuscleGroup) {
-          muscles.add(fullExercise.primaryMuscleGroup);
-        }
-
-        // EQUIPMENTS
-        if (fullExercise?.equipmentNeeded) {
-          fullExercise.equipmentNeeded.forEach(equip => {
-            // remove noise from equipment string
-            // and reduce any KB-relates exercise to just 'Kettlebell'
-            const altIndex = equip.indexOf(' (alternative)');
-            const optIndex = equip.indexOf(' (optional)');
-            const dbIndex = equip.indexOf('Dumbbells');
-            const dbsIndex = equip.indexOf('Dumbbell(s)');
-            const kbIndex = equip.indexOf('Kettlebells');
-            const kbsIndex = equip.indexOf('Kettlebell(s)');
-            if (altIndex >= 0) {
-              equip = equip.substring(0, altIndex);
-            }
-            if (optIndex >= 0) {
-              equip = equip.substring(0, optIndex);
-            }
-            if (kbsIndex >= 0 || kbIndex >= 0) {
-              equip = 'Kettlebell';
-            }
-            if (dbIndex >= 0 || dbsIndex >= 0) {
-              equip = 'Dumbbell';
-            }
-            equipments.add(equip);
-          });
-        } else if (fullExercise?.equipment) {
-          equipments.add(fullExercise.equipment);
-        }
-      });
-    });
-    const sortedEquipment = Array.from(equipments).sort();
-
-    // Set the max for the slider, with a sensible ceiling (e.g., 180 mins)
-    const newMax = Math.min(Math.ceil(maxCalculatedDuration / 10) * 10, 180); // Round up to nearest 10
-    this.maxDuration.set(newMax > 0 ? newMax : 120);
-    this.selectedMaxDuration.set(newMax > 0 ? newMax : 120); // Also reset the selected value
-
-    this.uniqueRoutineGoals.set(Array.from(goals).sort());
-    this.uniqueRoutineMuscleGroups.set(Array.from(muscles).sort());
-    this.uniqueRoutineEquipments.set(sortedEquipment);
-    this.personalGymEquipment.set(sortedEquipment);
   }
 
   // --- Filter Methods ---
@@ -581,7 +554,6 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     if (hiddenRoutine) {
       hiddenRoutine.isHidden = true;
       this.workoutService.updateRoutine(hiddenRoutine);
-      this.loadRoutinesAndPopulateFilters();
     }
   }
 
@@ -601,7 +573,6 @@ export class RoutineListComponent implements OnInit, OnDestroy {
       }
       hiddenRoutine.isHidden = false;
       this.workoutService.updateRoutine(hiddenRoutine);
-      this.loadRoutinesAndPopulateFilters();
       this.toastService.success(this.translate.instant('routineList.toasts.unhidden', { name: hiddenRoutine.name }))
     }
   }
@@ -612,7 +583,6 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     if (favouriteRoutine) {
       favouriteRoutine.isFavourite = true;
       this.workoutService.updateRoutine(favouriteRoutine);
-      this.loadRoutinesAndPopulateFilters();
       this.toastService.info(this.translate.instant('routineList.toasts.addedToFavourites', { name: favouriteRoutine.name }))
     }
   }
@@ -633,7 +603,6 @@ export class RoutineListComponent implements OnInit, OnDestroy {
       }
       favouriteRoutine.isFavourite = false;
       this.workoutService.updateRoutine(favouriteRoutine);
-      this.loadRoutinesAndPopulateFilters();
       this.toastService.info(this.translate.instant('routineList.toasts.removedFromFavourites', { name: favouriteRoutine.name }))
     }
   }
@@ -1222,7 +1191,6 @@ export class RoutineListComponent implements OnInit, OnDestroy {
   }
 
   selectedColorFilter = signal<string | null>(null);
-  uniqueRoutineColors = signal<string[]>([]);
   isColorFilterOpen = signal(false); // Controls the dropdown visibility
   @ViewChild('colorFilterContainer') colorFilterContainer!: ElementRef;
 
@@ -1254,7 +1222,6 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     this.selectedColorFilter.set(target.value || null);
   }
 
-  uniquePrimaryCategories = signal<string[]>([]);
   selectedPrimaryCategory = signal<string | null>(null);
   selectPrimaryCategory(category: string | null, event?: Event): void {
     event?.stopPropagation();
