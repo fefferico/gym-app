@@ -1094,7 +1094,9 @@
       "tempoPlaceholder": "e.g. 2-0-1-0",
       "restPlaceholder": "Rest",
       "notesPlaceholder": "e.g. Good form",
-      "collapse": "Collapse set"
+      "collapse": "Collapse set",
+      "removeSet":"Remove Set",
+      "metrics": "Metrics"
     },
     "restDayMessage": "This is a rest day routine. No exercises are needed",
     "addExerciseButton": "ADD EXERCISE",
@@ -1453,6 +1455,7 @@
     },
     "weeks": {
       "title": "Weekly Schedule",
+      "weekLabel": "Week #",
       "addWeek": "ADD WEEK",
       "weekNamePlaceholder": "e.g., Week 1: Volume",
       "removeWeek": "REMOVE WEEK",

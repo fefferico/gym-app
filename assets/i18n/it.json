@@ -1090,7 +1090,9 @@
       "tempoPlaceholder": "es. 2-0-1-0",
       "restPlaceholder": "Recupero",
       "notesPlaceholder": "es. Buona forma",
-      "collapse": "Comprimi serie"
+      "collapse": "Comprimi serie",
+      "removeSet":"Rimuovi Serie",
+      "metrics": "Metriche"
     },
     "restDayMessage": "Questa è una scheda di riposo. Non sono necessari esercizi",
     "addExerciseButton": "AGGIUNGI ESERCIZIO",
