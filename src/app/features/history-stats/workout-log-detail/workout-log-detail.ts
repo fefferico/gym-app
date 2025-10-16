@@ -27,6 +27,7 @@ import { MenuMode } from '../../../core/models/app-settings.model';
 import { PerformanceComparisonModalComponent } from './performance-comparison-modal/performance-comparison-modal.component';
 import { FabAction, FabMenuComponent } from '../../../shared/components/fab-menu/fab-menu.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { WorkoutExercise } from '../../../core/models/workout.model';
 
 export interface DisplayLoggedExercise extends LoggedWorkoutExercise {
   baseExercise?: Exercise | null;
@@ -852,6 +853,17 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
         // This case is unlikely to be hit with the current logic but serves as a fallback.
         return 'text-gray-800 dark:text-gray-100';
     }
+  }
+
+  getWeightDisplay(item: DisplayItem, set: LoggedSet): string {
+    if (this.isStandardExercise(item) && item.baseExercise) {
+      return this.workoutService.getWeightDisplay(set, item.baseExercise);
+    } else {
+      if (set){
+        return this.workoutService.getWeightDisplay(set, {...item} as unknown as WorkoutExercise);
+      }
+    }
+    return '';
   }
 
   ngOnDestroy(): void {

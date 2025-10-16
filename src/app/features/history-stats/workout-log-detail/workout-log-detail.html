@@ -284,7 +284,7 @@
                     <!-- Weight -->
                     <div *ngIf="checkIfWeightedExercise(item)"><strong [ngClass]="checkTextClass(set, 'weight')"
                         [class.cursor-pointer]="true"
-                        (click)="showComparisonModal(set, 'weight')">{{ item.baseExercise !== null && item.baseExercise !== undefined ? workoutService.getWeightDisplay(set, item.baseExercise) : '' }}</strong></div>
+                        (click)="showComparisonModal(set, 'weight')">{{ getWeightDisplay(item, set) }}</strong></div>
 
                     <!-- Distance +++ -->
                     <div *ngIf="hasPerformedDistanceSets(item)">

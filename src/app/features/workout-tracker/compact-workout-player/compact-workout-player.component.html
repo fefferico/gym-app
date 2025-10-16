@@ -333,16 +333,16 @@
                 <!-- Col 2: Set +/- Buttons STANDAR SET -->
                  <div class="flex items-center justify-center">
                   <div class="flex w-fit items-center justify-center gap-1 bg-gray-200 dark:bg-gray-900/50 p-1 px-2 rounded-full">
-                  <label class="text-black dark:text-gray-100">{{ 'compactPlayer.setLabel' | translate }}</label>
+                  <label class="flex items-center justify-between text-s font-medium text-gray-600 dark:text-gray-400">{{ 'compactPlayer.setLabel' | translate }}:</label>
                   <button type="button" (click)="removeSet(exIndex, -1)"
-                    class="p-1.5 rounded-full bg-red-200 hover:bg-red-300 text-red-700 disabled:opacity-50 flex items-center"
+                    class="flex items-center gap-1 text-xs font-semibold text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-1 rounded-full hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors"
                     [aria-label]="'compactPlayer.removeLastSet' | translate">
-                    <app-icon name="minus-circle" class="h-6 w-6"></app-icon>
+                    <app-icon name="minus-circle" class="h-5 w-5"></app-icon>
                   </button>
                   <button type="button" (click)="addSet(exIndex, 'standard'); $event.stopPropagation()"
-                    class="p-1.5 rounded-full bg-green-200 hover:bg-green-300 text-green-700 flex items-center"
+                    class="flex items-center gap-1 text-xs font-semibold text-green-500 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 p-1 rounded-full hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors"
                     [aria-label]="'compactPlayer.addSet' | translate">
-                    <app-icon name="plus-circle" class="h-6 w-6"></app-icon>
+                    <app-icon name="plus-circle" class="h-5 w-5"></app-icon>
                   </button>
                 </div>
                  </div>
@@ -498,7 +498,7 @@
                                       (change)="updateSetData(ssOriginalIndex, roundIndex, roundIndex, 'reps', $event)"
                                       class="w-full text-md text-center bg-gray-100 dark:bg-gray-700 border-gray-300 rounded-md p-1 text-gray-700 dark:text-white">
                                     <div
-                                      *ngIf="getSetTargetDisplay(ssExercise.sets[roundIndex], ssOriginalIndex, roundIndex, 'reps') as target"
+                                      *ngIf="getSetTargetDisplay(ssOriginalIndex, roundIndex, 'reps') as target"
                                       class="target-class text-xs"><span
                                         class="flex items-center justify-center"><app-icon name="target"
                                           class="h-3 w-3 mr-0.5"></app-icon>{{ target
@@ -515,7 +515,7 @@
                                       (change)="updateSetData(ssOriginalIndex, roundIndex, roundIndex, 'distance', $event)"
                                       class="w-full text-md text-center bg-gray-100 dark:bg-gray-700 border-gray-300 rounded-md p-1 text-gray-700 dark:text-white">
                                     <div
-                                      *ngIf="getSetTargetDisplay(ssExercise.sets[roundIndex], ssOriginalIndex, roundIndex, 'distance') as target"
+                                      *ngIf="getSetTargetDisplay(ssOriginalIndex, roundIndex, 'distance') as target"
                                       class="target-class text-xs"><span
                                         class="flex items-center justify-center"><app-icon name="target"
                                           class="h-3 w-3 mr-0.5"></app-icon>{{ target
@@ -533,7 +533,7 @@
                                       class="w-full text-md text-center bg-gray-100 dark:bg-gray-700 border-gray-300 rounded-md p-1 text-gray-700 dark:text-white"
                                       [placeholder]="'compactPlayer.timePlaceholder' | translate">
                                     <div
-                                      *ngIf="getSetTargetDisplay(ssExercise.sets[roundIndex], ssOriginalIndex, roundIndex, 'duration') as target"
+                                      *ngIf="getSetTargetDisplay(ssOriginalIndex, roundIndex, 'duration') as target"
                                       class="target-class text-xs"><span
                                         class="flex items-center justify-center"><app-icon name="target"
                                           class="h-3 w-3 mr-0.5"></app-icon>{{ target
@@ -570,12 +570,12 @@
                   <button type="button" (click)="removeSet(exIndex, -1)"
                     class="p-1.5 rounded-full bg-red-200 hover:bg-red-300 text-red-700 disabled:opacity-50 flex items-center"
                     [aria-label]="'compactPlayer.removeLastSet' | translate">
-                    <app-icon name="minus-circle" class="h-6 w-6"></app-icon>
+                    <app-icon name="minus-circle" class="h-5 w-5"></app-icon>
                   </button>
                   <button type="button" (click)="addSet(exIndex, 'standard'); $event.stopPropagation()"
                     class="p-1.5 rounded-full bg-green-200 hover:bg-green-300 text-green-700 flex items-center"
                     [aria-label]="'compactPlayer.addSet' | translate">
-                    <app-icon name="plus-circle" class="h-6 w-6"></app-icon>
+                    <app-icon name="plus-circle" class="h-5 w-5"></app-icon>
                   </button>
                 </div>
               </ng-container>
@@ -808,7 +808,7 @@
     <input type="number" [ngModel]="getInitialInputValue(exIndex, setIndex, 'reps')"
       (change)="updateSetData(exIndex, setIndex, 0, 'reps', $event)"
       class="w-full p-1 text-center bg-gray-100 dark:bg-gray-700 rounded-md text-black dark:text-gray-200">
-    <div *ngIf="getSetTargetDisplay(set, exIndex, setIndex, 'reps') as target" class="target-class text-xs">
+    <div *ngIf="getSetTargetDisplay(exIndex, setIndex, 'reps') as target" class="target-class text-xs">
       <span class="flex items-center justify-center">
         <app-icon name="target" class="h-3 w-3 mr-0.5"></app-icon>x{{ target }}
       </span>
@@ -828,7 +828,7 @@
     <input type="number" [ngModel]="getInitialInputValue(exIndex, setIndex, 'weight')"
       (change)="updateSetData(exIndex, setIndex, 0, 'weight', $event)"
       class="w-full p-1 text-center bg-gray-100 dark:bg-gray-700 rounded-md text-black dark:text-gray-200">
-    <div *ngIf="getSetTargetDisplay(set, exIndex, setIndex, 'weight') as target" class="target-class text-xs">
+    <div *ngIf="getSetTargetDisplay(exIndex, setIndex, 'weight') as target" class="target-class text-xs">
       <span class="flex items-center justify-center">
         <app-icon name="target" class="h-3 w-3 mr-0.5"></app-icon>{{ target }}{{ unitsService.getWeightUnitSuffix() }}
       </span>
@@ -848,7 +848,7 @@
     <input type="number" [ngModel]="getInitialInputValue(exIndex, setIndex, 'distance')"
       (change)="updateSetData(exIndex, setIndex, 0, 'distance', $event)"
       class="w-full p-1 text-center bg-gray-100 dark:bg-gray-700 rounded-md text-black dark:text-gray-200">
-    <div *ngIf="getSetTargetDisplay(set, exIndex, setIndex, 'distance') as target" class="target-class text-xs">
+    <div *ngIf="getSetTargetDisplay(exIndex, setIndex, 'distance') as target" class="target-class text-xs">
       <span class="flex items-center justify-center">
         <app-icon name="target" class="h-3 w-3 mr-0.5"></app-icon>{{ target }} {{
         unitsService.getDistanceMeasureUnitSuffix() }}
@@ -870,7 +870,7 @@
       (change)="updateSetData(exIndex, setIndex, 0, 'duration', $event)"
       class="w-full p-1 text-center bg-gray-100 dark:bg-gray-700 rounded-md text-black dark:text-gray-200"
       [placeholder]="'compactPlayer.timePlaceholder' | translate">
-    <div *ngIf="getSetTargetDisplay(set, exIndex, setIndex, 'duration') as target" class="target-class text-xs">
+    <div *ngIf="getSetTargetDisplay(exIndex, setIndex, 'duration') as target" class="target-class text-xs">
       <span class="flex items-center justify-center">
         <app-icon name="target" class="h-3 w-3 mr-0.5"></app-icon>{{ formatSecondsToTime(target) }}
       </span>
@@ -890,7 +890,7 @@
     <input type="text" [ngModel]="getInitialInputValue(exIndex, setIndex, 'tempo')"
       (change)="updateSetData(exIndex, setIndex, 0, 'tempo', $event)" placeholder="e.g. 4010"
       class="w-full p-1 text-center bg-gray-100 dark:bg-gray-700 rounded-md text-black dark:text-gray-200">
-    <div *ngIf="getSetTargetDisplay(set, exIndex, setIndex, 'tempo') as target" class="target-class text-xs">
+    <div *ngIf="getSetTargetDisplay(exIndex, setIndex, 'tempo') as target" class="target-class text-xs">
       <span class="flex items-center justify-center">
         <app-icon name="target" class="h-3 w-3 mr-0.5"></app-icon>{{ target }}
       </span>

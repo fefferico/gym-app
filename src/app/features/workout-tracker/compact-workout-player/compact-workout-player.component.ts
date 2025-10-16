@@ -547,6 +547,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       exercises: [],
       notes: '', // +++ NEW: Initialize notes field
     });
+
+    this._prefillPerformanceInputs();
     this.startSessionTimer();
 
     if (this.routine()) {
@@ -2255,6 +2257,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     this.scheduledDay.set(state.scheduledDayId ?? undefined);
     this.routine.set(state.sessionRoutine);
 
+    this._prefillPerformanceInputs();
     this.sessionTimerElapsedSecondsBeforePause = state.sessionTimerElapsedSecondsBeforePause;
     const loggedExercises = state.currentWorkoutLogExercises;
 
@@ -2777,43 +2780,26 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     });
   }
 
-  /**
-  * --- UPDATED ---
-  * Generates a display string for a set's planned target.
-  * For subsequent sets OR rounds, this method dynamically calculates a progressive 
-  * overload suggestion based on the performance of the previous set/round in this session.
-  *
-  * @param set The ExerciseSetParams object from the routine plan.
-  * @param exIndex The index of the exercise.
-  * @param setIndex The index of the set (which is also the roundIndex for supersets).
-  * @param field The specific target field to display ('reps', 'weight', etc.).
-  * @returns A formatted string like "8-12", "60+", "10".
-  */
-  public getSetTargetDisplay(set: ExerciseTargetSetParams, exIndex: number, setIndex: number, field: 'reps' | 'duration' | 'weight' | 'distance' | 'tempo'): string {
-    let setForDisplay: ExerciseTargetSetParams;
 
-    // For the first set/round of an exercise, we always use the pre-filled values.
-    // The progressive overload suggestion logic applies from the second set/round onwards.
-    if (setIndex === 0) {
-      setForDisplay = set;
-    } else {
-      // For subsequent sets (Set 2, 3... or Round 2, 3...), get the performance of the PREVIOUS one.
-      // Note: For supersets, getLoggedSet requires the roundIndex as the third parameter.
-      const roundIndexForLog = this.isSuperSet(exIndex) ? setIndex - 1 : 0;
-      const previousLoggedSet = this.getLoggedSet(exIndex, setIndex - 1, roundIndexForLog);
+/**
+   * --- OPTIMIZED ---
+   * Generates a display string for a set's planned target.
+   * It now reads from the pre-calculated `suggestedRoutine` signal, making it
+   * extremely fast and safe to call from the template.
+   */
+  public getSetTargetDisplay(exIndex: number, setIndex: number, field: 'reps' | 'duration' | 'weight' | 'distance' | 'tempo'): string {
+    // 1. Get the pre-calculated routine with all suggestions already applied.
+    const routineWithSuggestions = this.suggestedRoutine();
+    const setForDisplay = routineWithSuggestions?.exercises[exIndex]?.sets[setIndex];
 
-      if (previousLoggedSet) {
-        // If the previous set/round was logged, ask the service for a suggestion for the CURRENT one.
-        setForDisplay = this.workoutService.suggestNextSetParameters(previousLoggedSet, set);
-      } else {
-        // If the previous one was skipped, there's no data for a suggestion, so use the planned values.
-        setForDisplay = set;
-      }
+    if (!setForDisplay) {
+      return ''; // Failsafe
     }
 
-    // Finally, use the workoutService's formatting helper with the determined set data.
+    // 2. Simply format the value from the pre-calculated set object. No heavy logic here.
     return this.workoutService.getSetTargetDisplay(setForDisplay, field);
   }
+
 
   /**
    * Attempts to lock the screen orientation to portrait mode.
@@ -3058,9 +3044,14 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return exercisesInGroup.map(ex => ex.exerciseName).join(' / ');
   }
 
+/**
+   * --- OPTIMIZED ---
+   * Formats the display string for the "Next Up" section of the rest timer.
+   * It also reads from the efficient `suggestedRoutine` signal.
+   */
   private formatSetTargetForDisplay(set: ExerciseTargetSetParams, exercise: WorkoutExercise, exIndex: number, setIndex: number): string {
-    // Get the original, unmodified set data from the snapshot. Fall back to the current set if needed.
-    const setForDisplay = this.originalRoutineSnapshot()?.exercises[exIndex]?.sets[setIndex] || set;
+    // Get the pre-calculated set from the suggestedRoutine signal
+    const setForDisplay = this.suggestedRoutine()?.exercises[exIndex]?.sets[setIndex] || set;
 
     if (this.isCardio(exercise)) {
       const distance = setForDisplay.targetDistance ?? 0;
@@ -3070,8 +3061,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       if (duration > 0) parts.push(this.formatSecondsToTime(duration));
       return parts.length > 0 ? `Target: ${parts.join(' for ')}` : 'No target set';
     } else {
-      // Use the original set data to get the display values for reps and weight
-      const repsDisplay = this.getSetTargetDisplay(setForDisplay, exIndex, setIndex, 'reps');
+      // Use the pre-calculated set to get the display values for reps and weight
+      const repsDisplay = this.workoutService.getSetTargetDisplay(setForDisplay, 'reps');
       const weightDisplay = this.workoutService.getWeightDisplay(setForDisplay, exercise);
 
       return repsDisplay ? `Target: ${weightDisplay} x ${repsDisplay} reps` : 'No target set';
@@ -3102,7 +3093,8 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
   performanceInputValues = signal<{ [key: string]: Partial<ExerciseCurrentExecutionSetParams> }>({});
- /**
+ 
+  /**
    * Determines the initial value for an input field.
    * 1. If the set is already logged, it shows the logged value.
    * 2. If the user has typed something for this set, it shows their input.
@@ -3137,7 +3129,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         case 'weight': if (userInputs.weightUsed !== undefined) return userInputs.weightUsed.toString(); break;
         case 'distance': if (userInputs.actualDistance !== undefined) return userInputs.actualDistance.toString(); break;
         case 'duration': if (userInputs.actualDuration !== undefined) return this.formatSecondsToTime(userInputs.actualDuration); break;
-        case 'tempo': if (userInputs.tempoUsed !== undefined) return this.formatSecondsToTime(userInputs.tempoUsed); break;
+        case 'tempo': if (userInputs.tempoUsed !== undefined) return userInputs.tempoUsed; break;
         case 'notes': if (userInputs.notes !== undefined) return userInputs.notes; break;
       }
     }
@@ -3342,7 +3334,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         durationPerformed: actualDurationPerformed,
         distanceAchieved: userInputs.actualDistance ?? set.targetDistance ?? 0,
         notes: userInputs.notes ?? set.notes,
-
+        tempoUsed: userInputs.tempoUsed ?? set.targetTempo,
         timestamp: new Date().toISOString(),
         // Target values: Always come from the original, static snapshot
         targetRestAfterSet: originalSet?.restAfterSet || targetSetValues?.targetRestAfterSet || 0,
@@ -3461,7 +3453,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return fields.visible.length > 1;
   }
 
-  public async promptRemoveField(exIndex: number, setIndex: number): Promise<void> {
+public async promptRemoveField(exIndex: number, setIndex: number): Promise<void> {
     const currentRoutine = this.routine();
     if (!currentRoutine) return;
 
@@ -3469,8 +3461,14 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const updatedRoutine = await this.workoutService.promptRemoveField(currentRoutine, exIndex, setIndex);
 
     if (updatedRoutine) {
-      // Update the main routine signal to trigger a re-render
+      // =================== START OF SNIPPET (Part 1) ===================
+      // 1. Update the main routine signal to trigger a re-render
       this.routine.set({ ...updatedRoutine });
+
+      // 2. THE FIX: Immediately re-synchronize the input values signal
+      //    with the new state of the routine.
+      this._prefillPerformanceInputs();
+      // =================== END OF SNIPPET (Part 1) ===================
     }
   }
 
@@ -3483,8 +3481,15 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const updatedRoutine = await this.workoutService.promptAddField(currentRoutine, exIndex, setIndex);
 
     if (updatedRoutine) {
-      // Update the main routine signal to trigger a re-render
+      // =================== START OF SNIPPET (Part 2) ===================
+      // 1. Update the main routine signal to trigger a re-render
       this.routine.set(updatedRoutine);
+
+      // 2. THE FIX: Immediately re-synchronize the input values signal
+      //    with the new state of the routine.
+      this._prefillPerformanceInputs();
+      // =================== END OF SNIPPET (Part 2) ===================
+
       this.toastService.success("Field added to set.");
     }
   }
@@ -3839,5 +3844,101 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   closeSessionOverviewModal(): void {
     this.isSessionOverviewVisible.set(false);
   }
+
+  /**
+   * Pre-populates the `performanceInputValues` signal with the initial planned
+   * values for every set in the routine. This ensures that if a user logs a
+   * set without interacting with the inputs, the planned targets are logged correctly.
+   */
+  private _prefillPerformanceInputs(): void {
+    const routine = this.routine();
+    if (!routine) return;
+
+    const initialValues: { [key: string]: Partial<ExerciseCurrentExecutionSetParams> } = {};
+
+    routine.exercises.forEach((exercise, exIndex) => {
+      exercise.sets.forEach((plannedSet, setIndex) => {
+        const key = `${exIndex}-${setIndex}`;
+        const setValues: Partial<ExerciseCurrentExecutionSetParams> = {};
+
+        // Reps
+        if (plannedSet.targetRepsMin != null && plannedSet.targetRepsMax != null) {
+          setValues.repsAchieved = Math.floor((plannedSet.targetRepsMin + plannedSet.targetRepsMax) / 2);
+        } else {
+          setValues.repsAchieved = plannedSet.targetReps ?? undefined;
+        }
+
+        // Weight
+        if (plannedSet.targetWeightMin != null && plannedSet.targetWeightMax != null) {
+          setValues.weightUsed = Math.floor((plannedSet.targetWeightMin + plannedSet.targetWeightMax) / 2);
+        } else {
+          setValues.weightUsed = plannedSet.targetWeight ?? undefined;
+        }
+
+        // Distance
+        if (plannedSet.targetDistanceMin != null && plannedSet.targetDistanceMax != null) {
+          setValues.actualDistance = Math.floor((plannedSet.targetDistanceMin + plannedSet.targetDistanceMax) / 2);
+        } else {
+          setValues.actualDistance = plannedSet.targetDistance ?? undefined;
+        }
+
+        // Duration
+        if (plannedSet.targetDurationMin != null && plannedSet.targetDurationMax != null) {
+          setValues.actualDuration = Math.floor((plannedSet.targetDurationMin + plannedSet.targetDurationMax) / 2);
+        } else {
+          setValues.actualDuration = plannedSet.targetDuration ?? undefined;
+        }
+
+        // Notes & Tempo
+        setValues.notes = plannedSet.notes ?? undefined;
+        setValues.tempoUsed = plannedSet.targetTempo ?? undefined;
+
+        initialValues[key] = setValues;
+      });
+    });
+
+    this.performanceInputValues.set(initialValues);
+  }
+
+    /**
+   * A computed signal that creates a "display-ready" version of the routine.
+   * It pre-calculates the progressive overload suggestions for every set that needs one.
+   * This is highly efficient because it only re-runs when the routine or the log changes.
+   */
+  suggestedRoutine = computed<Routine | null | undefined>(() => {
+    const routine = this.routine();
+    const log = this.currentWorkoutLog(); // Dependency on the log is crucial
+
+    if (!routine) {
+      return routine; // Return null or undefined if no routine is loaded
+    }
+
+    // Create a new routine object to avoid mutating the original signal's value
+    const newRoutine: Routine = {
+      ...routine,
+      exercises: routine.exercises.map((exercise, exIndex) => ({
+        ...exercise,
+        sets: exercise.sets.map((set, setIndex) => {
+          // This is the core logic from your old getSetTargetDisplay method
+          if (setIndex === 0) {
+            return set; // First set always uses the planned values
+          }
+
+          const roundIndexForLog = this.isSuperSet(exIndex) ? setIndex - 1 : 0;
+          const previousLoggedSet = this.getLoggedSet(exIndex, setIndex - 1, roundIndexForLog);
+
+          if (previousLoggedSet) {
+            // If the previous set was logged, return the suggested parameters for the current set
+            return this.workoutService.suggestNextSetParameters(previousLoggedSet, set);
+          } else {
+            // Otherwise, return the original planned set
+            return set;
+          }
+        })
+      }))
+    };
+
+    return newRoutine;
+  });
 
 }
