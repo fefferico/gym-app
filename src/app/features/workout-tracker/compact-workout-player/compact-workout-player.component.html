@@ -187,27 +187,10 @@
                           'compactPlayer.markAsUndone' | translate }}</p>
                       </div>
 
-                      <!-- Actions -->
+                      <!-- Set actions - STANDARD SET -->
                       <div *ngIf="isSetExpanded(exIndex,setIndex)"
                         class="flex-shrink-0 flex flex-col items-center justify-center gap-1">
                         <div *ngIf="!isSetCompleted(exIndex, setIndex)" class="flex items-center">
-                          <!-- <div *ngIf="!isSetCompleted(exIndex, setIndex)" class="flex items-center"
-                          [ngClass]="{'disabled-div': isTimedSet(exIndex, setIndex) && getSetTimerState(exIndex, setIndex).status === 'running'}"
-                          > -->
-                          <div class="flex items-center justify-center gap-1">
-                            <!-- Remove metric button -->
-                            <button *ngIf="canRemoveAnyField(exIndex, setIndex)"
-                              (click)="promptRemoveField(exIndex, setIndex); $event.stopPropagation()"
-                              class="flex items-center gap-1 text-xs font-semibold text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-1 rounded-full hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors">
-                              <app-icon name="minus-circle" class="h-5 w-5"></app-icon>
-                            </button>
-                            <!-- ADD metric -->
-                            <button *ngIf="getFieldsForSet(exIndex, setIndex).hidden.length > 0"
-                              (click)="promptAddField(exIndex, setIndex); $event.stopPropagation()"
-                              class="flex items-center gap-1 text-xs font-semibold text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 p-1 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors">
-                              <app-icon name="plus-circle" class="h-5 w-5"></app-icon>
-                            </button>
-                          </div>
                           <button (click)="toggleSetNotes(exIndex, setIndex, $event)"
                             class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center"><app-icon
                               name="clipboard-list"
@@ -270,6 +253,29 @@
 
                     <div *ngIf="isSetExpanded(exIndex, setIndex)" class="border-t border-white dark:border-gray-600/50">
 
+                      <!-- Set ADD/REMOVE METRICS - STANDARD SET -->
+                      <div *ngIf="isSetExpanded(exIndex,setIndex)"
+                        class="flex-shrink-0 flex flex-col items-center justify-center gap-1">
+                        <div *ngIf="!isSetCompleted(exIndex, setIndex)" class="flex items-center">
+                          <div class="flex w-fit items-center justify-center gap-1 bg-gray-200 dark:bg-gray-900/50 p-1 px-2 rounded-full mt-1">
+                            <label class="flex items-center justify-between text-s font-medium text-gray-600 dark:text-gray-400">{{
+                                                                'workoutBuilder.set.metrics' | translate }}:</label>
+                            <!-- Remove metric button -->
+                            <button *ngIf="canRemoveAnyField(exIndex, setIndex)"
+                              (click)="promptRemoveField(exIndex, setIndex); $event.stopPropagation()"
+                              class="flex items-center gap-1 text-xs font-semibold text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-1 rounded-full hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors">
+                              <app-icon name="minus-circle" class="h-5 w-5"></app-icon>
+                            </button>
+                            <!-- ADD metric -->
+                            <button *ngIf="getFieldsForSet(exIndex, setIndex).hidden.length > 0"
+                              (click)="promptAddField(exIndex, setIndex); $event.stopPropagation()"
+                              class="flex items-center gap-1 text-xs font-semibold text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 p-1 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors">
+                              <app-icon name="plus-circle" class="h-5 w-5"></app-icon>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
                       <!-- Inputs Grid -->
                       <div class="flex-1 grid grid-cols-2 gap-x-4 gap-y-2 px-1 py-1">
                         <ng-container *ngIf="getFieldsForSet(exIndex, setIndex).visible as visibleFields">
@@ -300,8 +306,9 @@
                             </ng-container>
                           </ng-container>
 
-                          <!-- "Add GHOST Field" Button -->
-                          <div *ngIf="!isSetCompleted(exIndex,setIndex) && canAddField(exIndex, setIndex)"
+                          <!-- "Add GHOST Field" Button - STANDARD SET -->
+                          <div
+                            *ngIf="!isSetCompleted(exIndex,setIndex) && canAddField(exIndex, setIndex) && getFieldsForSet(exIndex, setIndex).visible.length%2===1"
                             class="flex items-center justify-center h-full">
                             <button (click)="promptAddField(exIndex, setIndex); $event.stopPropagation()"
                               class="flex items-center justify-center w-full p-2 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-md text-gray-400 hover:bg-gray-200/50 dark:hover:bg-gray-700/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
@@ -324,7 +331,8 @@
 
                 </ng-container>
                 <!-- Col 2: Set +/- Buttons STANDAR SET -->
-                <div class="flex items-center justify-center gap-x-2">
+                 <div class="flex items-center justify-center">
+                  <div class="flex w-fit items-center justify-center gap-1 bg-gray-200 dark:bg-gray-900/50 p-1 px-2 rounded-full">
                   <label class="text-black dark:text-gray-100">{{ 'compactPlayer.setLabel' | translate }}</label>
                   <button type="button" (click)="removeSet(exIndex, -1)"
                     class="p-1.5 rounded-full bg-red-200 hover:bg-red-300 text-red-700 disabled:opacity-50 flex items-center"
@@ -337,6 +345,8 @@
                     <app-icon name="plus-circle" class="h-6 w-6"></app-icon>
                   </button>
                 </div>
+                 </div>
+                
               </ng-container>
 
               <!-- CASE 2: Superset (uses a similar card logic for each exercise within the round) -->
@@ -789,9 +799,12 @@
 <!-- REPS INPUT TEMPLATE -->
 <ng-template #repsInputTemplate let-exIndex="exIndex" let-setIndex="setIndex" let-set="set">
   <div>
-    <label class="flex items-center justify-center text-xs font-medium text-gray-500 dark:text-gray-300 pb-1">
-      {{ 'compactPlayer.repsLabel' | translate }}
-    </label>
+    <div class="flex items-center justify-center text-gray-500 dark:text-gray-300 ">
+      <app-icon name="reps" class="h-4 w-4 mr-1"></app-icon>
+      <label class="text-xs font-medium pb-1">
+        {{ 'compactPlayer.repsLabel' | translate }}
+      </label>
+    </div>
     <input type="number" [ngModel]="getInitialInputValue(exIndex, setIndex, 'reps')"
       (change)="updateSetData(exIndex, setIndex, 0, 'reps', $event)"
       class="w-full p-1 text-center bg-gray-100 dark:bg-gray-700 rounded-md text-black dark:text-gray-200">
@@ -806,9 +819,12 @@
 <!-- WEIGHT INPUT TEMPLATE -->
 <ng-template #weightInputTemplate let-exIndex="exIndex" let-setIndex="setIndex" let-set="set">
   <div>
-    <label class="flex items-center justify-center text-xs font-medium text-gray-500 dark:text-gray-300 pb-1">
-      {{ 'compactPlayer.weightLabel' | translate:{unit: unitsService.getWeightUnitSuffix()} }}
-    </label>
+    <div class="flex items-center justify-center text-gray-500 dark:text-gray-300 ">
+      <app-icon name="weight" class="h-4 w-4 mr-1"></app-icon>
+      <label class="text-xs font-medium pb-1">
+        {{ 'compactPlayer.weightLabel' | translate:{unit: unitsService.getWeightUnitSuffix()} }}
+      </label>
+    </div>
     <input type="number" [ngModel]="getInitialInputValue(exIndex, setIndex, 'weight')"
       (change)="updateSetData(exIndex, setIndex, 0, 'weight', $event)"
       class="w-full p-1 text-center bg-gray-100 dark:bg-gray-700 rounded-md text-black dark:text-gray-200">
@@ -823,9 +839,12 @@
 <!-- DISTANCE INPUT TEMPLATE -->
 <ng-template #distanceInputTemplate let-exIndex="exIndex" let-setIndex="setIndex" let-set="set">
   <div>
-    <label class="flex items-center justify-center text-xs font-medium text-gray-500 dark:text-gray-300 pb-1">
-      {{ 'compactPlayer.distanceLabel' | translate }}
-    </label>
+    <div class="flex items-center justify-center text-gray-500 dark:text-gray-300 ">
+      <app-icon name="distance" class="h-4 w-4 mr-1"></app-icon>
+      <label class="text-xs font-medium pb-1">
+        {{ 'compactPlayer.distanceLabel' | translate }}
+      </label>
+    </div>
     <input type="number" [ngModel]="getInitialInputValue(exIndex, setIndex, 'distance')"
       (change)="updateSetData(exIndex, setIndex, 0, 'distance', $event)"
       class="w-full p-1 text-center bg-gray-100 dark:bg-gray-700 rounded-md text-black dark:text-gray-200">
@@ -841,9 +860,12 @@
 <!-- DURATION INPUT TEMPLATE -->
 <ng-template #durationInputTemplate let-exIndex="exIndex" let-setIndex="setIndex" let-set="set">
   <div>
-    <label class="flex items-center justify-center text-xs font-medium text-gray-500 dark:text-gray-300 pb-1">
-      {{ 'compactPlayer.timeLabel' | translate }}
-    </label>
+    <div class="flex items-center justify-center text-gray-500 dark:text-gray-300 ">
+      <app-icon name="hourglass" class="h-4 w-4 mr-1"></app-icon>
+      <label class="text-xs font-medium pb-1">
+        {{ 'compactPlayer.timeLabel' | translate }}
+      </label>
+    </div>
     <input type="text" [ngModel]="getInitialInputValue(exIndex, setIndex, 'duration')"
       (change)="updateSetData(exIndex, setIndex, 0, 'duration', $event)"
       class="w-full p-1 text-center bg-gray-100 dark:bg-gray-700 rounded-md text-black dark:text-gray-200"
@@ -859,9 +881,12 @@
 <!-- TEMPO INPUT TEMPLATE -->
 <ng-template #tempoInputTemplate let-exIndex="exIndex" let-setIndex="setIndex" let-set="set">
   <div>
-    <label class="flex items-center justify-center text-xs font-medium text-gray-500 dark:text-gray-300 pb-1">
-      {{ 'compactPlayer.tempoLabel' | translate }}
-    </label>
+    <div class="flex items-center justify-center text-gray-500 dark:text-gray-300 ">
+      <app-icon name="tempo" class="h-4 w-4 mr-1"></app-icon>
+      <label class="text-xs font-medium pb-1">
+        {{ 'compactPlayer.tempoLabel' | translate }}
+      </label>
+    </div>
     <input type="text" [ngModel]="getInitialInputValue(exIndex, setIndex, 'tempo')"
       (change)="updateSetData(exIndex, setIndex, 0, 'tempo', $event)" placeholder="e.g. 4010"
       class="w-full p-1 text-center bg-gray-100 dark:bg-gray-700 rounded-md text-black dark:text-gray-200">

@@ -669,6 +669,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
               case 'weight': setLog.weightUsed = parseFloat(value) || undefined; break;
               case 'distance': setLog.distanceAchieved = parseFloat(value) || 0; break;
               case 'time': setLog.durationPerformed = this.parseTimeToSeconds(value); break;
+              case 'tempo': setLog.tempoUsed = String(value); break;
               case 'notes': setLog.notes = value; break;
             }
           }
@@ -755,12 +756,51 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return parts.length === 2 ? parts[0] * 60 + parts[1] : parts[0];
   }
 
-  formatSecondsToTime(totalSeconds: number | string | undefined): string {
-    if (totalSeconds == null || totalSeconds == '') return '';
-    if (typeof totalSeconds === 'string') { totalSeconds = Number(totalSeconds) };
-    const mins = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
-    const secs = String(totalSeconds % 60).padStart(2, '0');
+  /**
+     * Formats a single numeric value of seconds into a "mm:ss" string.
+     * @param seconds The number of seconds to format.
+     * @returns The formatted time string, or an empty string if the input is invalid.
+     */
+  private _formatSingleSecondValue(seconds: number | string): string {
+    const numericValue = Number(seconds);
+    // Return empty if the value is not a valid number
+    if (isNaN(numericValue)) {
+      return '';
+    }
+
+    const mins = String(Math.floor(numericValue / 60)).padStart(2, '0');
+    const secs = String(numericValue % 60).padStart(2, '0');
     return `${mins}:${secs}`;
+  }
+
+  /**
+   * Formats a total number of seconds into a "mm:ss" time string.
+   * It can also handle a string representing a range (e.g., "60-90"),
+   * which it will format as "01:00-01:30".
+   *
+   * @param totalSeconds The total seconds as a number, a string, or a range string.
+   * @returns The formatted time string.
+   */
+  formatSecondsToTime(totalSeconds: number | string | undefined): string {
+    // 1. Handle null, undefined, or empty string inputs
+    if (totalSeconds == null || totalSeconds === '') {
+      return '';
+    }
+
+    // 2. Check if the input is a range string (e.g., "60-90")
+    if (typeof totalSeconds === 'string' && totalSeconds.includes('-')) {
+      const [minSeconds, maxSeconds] = totalSeconds.split('-');
+
+      // Format both parts of the range individually using the helper
+      const formattedMin = this._formatSingleSecondValue(minSeconds);
+      const formattedMax = this._formatSingleSecondValue(maxSeconds);
+
+      // Return the combined formatted range
+      return `${formattedMin}-${formattedMax}`;
+    }
+
+    // 3. If it's not a range, format it as a single value using the helper
+    return this._formatSingleSecondValue(totalSeconds);
   }
 
   toggleExerciseExpansion(index: number): void {
@@ -1083,7 +1123,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
       const exercisesInGroup = this.getSupersetExercises(triggerExercise.supersetId);
 
-      exercisesInGroup.forEach(groupEx => {
+      exercisesInGroup.forEach((groupEx, index) => {
         const lastSet = groupEx.sets.length > 0 ? groupEx.sets[groupEx.sets.length - 1] : null;
 
         const newSet: ExerciseTargetSetParams = {
@@ -1094,10 +1134,25 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
         // Conditionally copy properties only if they existed on the last set
         if (lastSet) {
-          if (lastSet.targetReps !== undefined && lastSet.targetReps !== null) newSet.targetReps = lastSet.targetReps;
-          if (lastSet.targetWeight !== undefined && lastSet.targetWeight !== null) newSet.targetWeight = lastSet.targetWeight;
-          if (lastSet.targetDistance !== undefined && lastSet.targetDistance !== null) newSet.targetDistance = lastSet.targetDistance;
-          if (lastSet.targetDuration !== undefined && lastSet.targetDuration !== null) newSet.targetDuration = lastSet.targetDuration;
+
+          const key = `${exIndex}-${index}`;
+
+          if (!this.performanceInputValues()[key]){
+            this.fillPerformanceInputIfUndefined(exIndex, index);
+          }
+
+          const userInputs = this.performanceInputValues()[key];
+
+          const weight = userInputs.weightUsed ?? lastSet.targetWeight ?? undefined;
+          const reps = userInputs.repsAchieved ?? lastSet.targetReps ?? undefined;
+          const distance = userInputs.actualDistance ?? lastSet.targetDistance ?? undefined;
+          const duration = userInputs.actualDuration ?? lastSet.targetDuration ?? undefined;
+          const tempo = userInputs.tempoUsed ?? lastSet.targetTempo ?? undefined;
+          if (weight) newSet.targetReps = weight;
+          if (reps) newSet.targetWeight = reps;
+          if (distance) newSet.targetDistance = distance;
+          if (duration) newSet.targetDuration = duration;
+          if (tempo) newSet.targetTempo = tempo;
         } else {
           // Failsafe: if an exercise in a superset has no sets, give it a default structure
           newSet.targetReps = 8;
@@ -1130,10 +1185,27 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       } else { // It's a 'standard' set
         if (lastSet) {
           // Copy properties from the last set only if they exist
-          if (lastSet.targetReps !== undefined && lastSet.targetReps !== null) newSet.targetReps = lastSet.targetReps;
-          if (lastSet.targetWeight !== undefined && lastSet.targetWeight !== null) newSet.targetWeight = lastSet.targetWeight;
-          if (lastSet.targetDistance !== undefined && lastSet.targetDistance !== null) newSet.targetDistance = lastSet.targetDistance;
-          if (lastSet.targetDuration !== undefined && lastSet.targetDuration !== null) newSet.targetDuration = lastSet.targetDuration;
+          const setIndex = triggerExercise.sets.length - 1;
+          const key = `${exIndex}-${setIndex}`;
+
+          if (!this.performanceInputValues()[key]) {
+            this.fillPerformanceInputIfUndefined(exIndex, setIndex);
+          }
+
+          const userInputs = this.performanceInputValues()[key];
+
+          
+
+          const weight = userInputs.weightUsed ?? lastSet.targetWeight ?? undefined;
+          const reps = userInputs.repsAchieved ?? lastSet.targetReps ?? undefined;
+          const distance = userInputs.actualDistance ?? lastSet.targetDistance ?? undefined;
+          const duration = userInputs.actualDuration ?? lastSet.targetDuration ?? undefined;
+          const tempo = userInputs.tempoUsed ?? lastSet.targetTempo ?? undefined;
+          if (weight) newSet.targetReps = weight;
+          if (reps) newSet.targetWeight = reps;
+          if (distance) newSet.targetDistance = distance;
+          if (duration) newSet.targetDuration = duration;
+          if (tempo) newSet.targetTempo = tempo;
         } else {
           // This is the very first set for this exercise, create a default structure
           newSet.targetWeight = 10;
@@ -3030,12 +3102,13 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   }
 
   performanceInputValues = signal<{ [key: string]: Partial<ExerciseCurrentExecutionSetParams> }>({});
-  /**
- * Determines the initial value for an input field.
- * 1. If the set is already logged, it shows the logged value.
- * 2. If the user has typed something for this set, it shows their input.
- * 3. Otherwise, it shows the planned target value as the default.
- */
+ /**
+   * Determines the initial value for an input field.
+   * 1. If the set is already logged, it shows the logged value.
+   * 2. If the user has typed something for this set, it shows their input.
+   * 3. If a range is defined (e.g., 8-12 reps), it shows the middle value.
+   * 4. Otherwise, it shows the planned single target value as the default.
+   */
   getInitialInputValue(exIndex: number, setIndex: number, field: 'reps' | 'weight' | 'distance' | 'duration' | 'notes' | 'tempo'): string {
     const routine = this.routine();
     if (!routine) return '';
@@ -3064,20 +3137,63 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         case 'weight': if (userInputs.weightUsed !== undefined) return userInputs.weightUsed.toString(); break;
         case 'distance': if (userInputs.actualDistance !== undefined) return userInputs.actualDistance.toString(); break;
         case 'duration': if (userInputs.actualDuration !== undefined) return this.formatSecondsToTime(userInputs.actualDuration); break;
+        case 'tempo': if (userInputs.tempoUsed !== undefined) return this.formatSecondsToTime(userInputs.tempoUsed); break;
         case 'notes': if (userInputs.notes !== undefined) return userInputs.notes; break;
       }
     }
 
-    // PRIORITY 3: Fall back to the original planned target value.
+    // =================== START OF SNIPPET ===================
+    // PRIORITY 3 & 4: Fall back to the original planned target value, now with range handling.
     switch (field) {
-      case 'reps': return (plannedSet.targetReps ?? '').toString();
-      case 'weight': return (plannedSet.targetWeight ?? '').toString();
-      case 'distance': return (plannedSet.targetDistance ?? '').toString();
-      case 'duration': return this.formatSecondsToTime(plannedSet.targetDuration ?? 0);
-      case 'notes': return plannedSet.notes ?? '';
-    }
+      case 'reps':
+        // Check if a range is defined for reps
+        if (plannedSet.targetRepsMin != null && plannedSet.targetRepsMax != null) {
+            const midValue = Math.floor((plannedSet.targetRepsMin + plannedSet.targetRepsMax) / 2);
+            return midValue.toString();
+        }
+        // Fallback to the single target value
+        return (plannedSet.targetReps ?? '').toString();
 
-    return '';
+      case 'weight':
+        // Check if a range is defined for weight
+        if (plannedSet.targetWeightMin != null && plannedSet.targetWeightMax != null) {
+            const midValue = Math.floor((plannedSet.targetWeightMin + plannedSet.targetWeightMax) / 2);
+            return midValue.toString();
+        }
+        // Fallback to the single target value
+        return (plannedSet.targetWeight ?? '').toString();
+
+      case 'distance':
+        // Check if a range is defined for distance
+        if (plannedSet.targetDistanceMin != null && plannedSet.targetDistanceMax != null) {
+            const midValue = Math.floor((plannedSet.targetDistanceMin + plannedSet.targetDistanceMax) / 2);
+            return midValue.toString();
+        }
+        // Fallback to the single target value
+        return (plannedSet.targetDistance ?? '').toString();
+
+      case 'duration':
+        // Check if a range is defined for duration
+        if (plannedSet.targetDurationMin != null && plannedSet.targetDurationMax != null) {
+            const midValue = Math.floor((plannedSet.targetDurationMin + plannedSet.targetDurationMax) / 2);
+            return this.formatSecondsToTime(midValue);
+        }
+        // Fallback to the single target value
+        return this.formatSecondsToTime(plannedSet.targetDuration ?? 0);
+
+      case 'notes':
+        // Notes field does not have a range
+        return plannedSet.notes ?? '';
+        
+      case 'tempo':
+        // Tempo does not have a range
+        return plannedSet.targetTempo ?? '';
+
+      default:
+        // Add a default case for safety
+        return '';
+    }
+    // =================== END OF SNIPPET ===================
   }
 
   /**
@@ -3106,7 +3222,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         case 'distance': newInputs[key].actualDistance = parseFloat(value) || undefined; break;
         case 'duration': newInputs[key].actualDuration = this.parseTimeToSeconds(value); break;
         case 'notes': newInputs[key].notes = value; break;
-        case 'tempo': newInputs[key].tempo = value === '' ? undefined : value; break;
+        case 'tempo': newInputs[key].tempoUsed = value === '' ? undefined : value; break;
       }
       return newInputs;
     });
@@ -3197,11 +3313,11 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
           actualDurationPerformed = userDefinedDuration;
         }
       }
-      
+
 
       if (!actualDurationPerformed || actualDurationPerformed <= 0) {
-          actualDurationPerformed = userDefinedDuration ?? targetSetValues.targetDuration ?? 0;
-        }
+        actualDurationPerformed = userDefinedDuration ?? targetSetValues.targetDuration ?? 0;
+      }
 
       // check if it was a timed set with an active timer, and stop it
       if (timerState && (timerState.status === 'running' || timerState.status === 'paused')) {
@@ -3234,6 +3350,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         targetWeight: originalSet?.targetWeight || targetSetValues?.targetWeight || 0,
         targetDuration: originalSet?.targetDuration || targetSetValues?.targetDuration || 0,
         targetDistance: originalSet?.targetDistance || targetSetValues?.targetDistance || 0,
+        workoutLogId: uuidv4(), // to differ from Simple set
       };
       exerciseLog.sets.push(newLoggedSet);
 
@@ -3265,6 +3382,26 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     }
   }
 
+  fillPerformanceInputIfUndefined(exIndex: number, setIndex: number): void {
+     const key = `${exIndex}-${setIndex}`;
+    const userInputs = this.performanceInputValues()[key];
+    if (userInputs) {return};
+
+    const weight = this.getInitialInputValue(exIndex,setIndex,'weight') ? Number(this.getInitialInputValue(exIndex,setIndex,'weight')) : undefined;
+    const reps = this.getInitialInputValue(exIndex,setIndex,'reps') ? Number(this.getInitialInputValue(exIndex,setIndex,'reps')) : undefined;
+    const distance = this.getInitialInputValue(exIndex,setIndex,'distance') ? Number(this.getInitialInputValue(exIndex,setIndex,'distance')) : undefined;
+    const duration = this.getInitialInputValue(exIndex,setIndex,'duration') ? Number(this.getInitialInputValue(exIndex,setIndex,'duration')) : undefined;
+    const tempo = this.getInitialInputValue(exIndex,setIndex,'tempo') ? String(this.getInitialInputValue(exIndex,setIndex,'tempo')) : undefined;
+
+    this.performanceInputValues()[key] = {
+      'weightUsed': weight,
+      'repsAchieved': reps,
+      'actualDistance': distance,
+      'actualDuration': duration,
+      'tempoUsed': tempo,
+    }
+  }
+
   /**
    * CORRECTED: Checks all sets for an exercise to determine which data columns should be visible.
    * A column is now only considered visible if at least one set has a target value GREATER THAN 0
@@ -3290,82 +3427,21 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     };
   }
 
-  /**
-   * UPDATED: Determines visible/hidden fields based on the state of the entire exercise.
-   */
-  public getFieldsForSetOld(exIndex: number, setIndex: number): { visible: string[], hidden: string[] } {
-    const allFields = ['weight', 'reps', 'distance', 'duration'];
-    // As requested, this now uses the exercise-wide visibility check.
-    const visibleCols = this.getVisibleSetColumns(exIndex, setIndex);
-
-    const visible = allFields.filter(field => visibleCols[field as keyof typeof visibleCols]);
-    const hidden = allFields.filter(field => !visible.includes(field));
-
-    return { visible, hidden };
-  }
-
   public getFieldsForSet(exIndex: number, setIndex: number): { visible: string[], hidden: string[] } {
     const routine = this.routine();
-    if (!routine) return { visible: [], hidden: ['weight', 'reps', 'distance', 'duration'] };
+    if (!routine) return this.workoutService.defaultHiddenFields();
     // Delegate to the existing service method
     return this.workoutService.getFieldsForSet(routine, exIndex, setIndex);
   }
 
-  /**
-   * Determines if the "Add Field" button should be shown for a specific set.
-   * @param exIndex The index of the exercise.
-   * @param setIndex The index of the set.
-   * @returns True if the button should be visible.
-   */
-  public canAddFieldOld(exIndex: number, setIndex: number): boolean {
-    // if (this.isSuperSet(exIndex)) return false;
-    const cols = this.getVisibleSetColumns(exIndex, setIndex);
-    const visibleCount = Object.values(cols).filter(v => v).length;
-    return visibleCount === 1 || visibleCount === 3;
-  }
-
-    public canAddField(exIndex: number, setIndex: number): boolean {
+  public canAddField(exIndex: number, setIndex: number): boolean {
     const fields = this.getFieldsForSet(exIndex, setIndex);
     // Show the button if there are fields that can be added and we are not at the max of 4.
-    return fields.hidden.length > 0 && fields.visible.length < 4;
+    return fields.hidden.length > 0 && fields.visible.length < this.workoutService.getDefaultFields().length;
   }
 
   isFalsyOrZero(value: number | null | undefined): boolean {
     return value === undefined || value === null || value === 0;
-  }
-
-  /**
-   * Checks if a dynamically added field can be removed by comparing it to the original routine.
-   * @param exIndex The index of the exercise.
-   * @param setIndex The index of the set.
-   * @param field The field key ('weight', 'reps', etc.) to check.
-   * @returns True if the field is removable.
-   */
-  public canRemoveField(exIndex: number, setIndex: number, field: string): boolean {
-    return true;
-    // const originalSet = this.originalRoutineSnapshot()?.exercises[exIndex]?.sets[setIndex];
-    // if (!originalSet) return false; // If there's no original, nothing is "dynamically added"
-
-    // switch (field) {
-    //   case 'weight': {
-    //     const targetSetWeight = originalSet.targetWeight || originalSet.targetDistanceMin;
-    //     return this.isFalsyOrZero(targetSetWeight);
-    //   }
-    //   case 'reps': {
-    //     const targetSetReps = originalSet.targetReps || originalSet.targetRepsMin;
-    //     return this.isFalsyOrZero(targetSetReps);
-    //   }
-    //   case 'distance': {
-    //     const targetSetDistance = originalSet.targetDistance || originalSet.targetDistanceMin;
-    //     return this.isFalsyOrZero(targetSetDistance);
-    //   }
-    //   case 'duration': {
-    //     const targetSetDuration = originalSet.targetDuration || originalSet.targetDurationMin;
-    //     return this.isFalsyOrZero(targetSetDuration);
-    //   }
-    //   default:
-    //     return false;
-    // }
   }
 
   /**
@@ -3379,77 +3455,10 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     return visibleCount === 2;
   }
 
-  /**
-  * Checks if any of the currently visible fields for a set are eligible for removal.
-  * @param exIndex The index of the exercise.
-  * @param setIndex The index of the set.
-  * @returns True if at least one field can be removed.
-  */
-  public canRemoveAnyFieldOld(exIndex: number, setIndex: number): boolean {
-    // if (this.isSuperSet(exIndex)) return false;
-    const cols = this.getVisibleSetColumns(exIndex, setIndex);
-    const visibleFields = Object.keys(cols).filter(key => cols[key as keyof typeof cols]);
-
-    // Check if any of the visible fields are removable according to the existing logic.
-    // Given the current canRemoveField logic is `return true`, this will be true if any fields are visible.
-    return visibleFields.some(field => this.canRemoveField(exIndex, setIndex, field));
-  }
-
-    public canRemoveAnyField(exIndex: number, setIndex: number): boolean {
+  public canRemoveAnyField(exIndex: number, setIndex: number): boolean {
     const fields = this.getFieldsForSet(exIndex, setIndex);
     // Show the button if there is more than one metric to choose from.
     return fields.visible.length > 1;
-  }
-
-  /**
-   * Shows a prompt asking the user which field they want to remove from the set.
-   */
-  /**
-  * --- CORRECTED ---
-  * Shows a prompt asking the user which field they want to remove from the set.
-  * Includes a 'Cancel' button and the corner close button.
-  */
-  public async promptRemoveFieldOld(exIndex: number, setIndex: number): Promise<void> {
-    const cols = this.getVisibleSetColumns(exIndex, setIndex);
-    const removableFields = Object.keys(cols).filter(key => cols[key as keyof typeof cols]);
-
-    if (removableFields.length === 0) {
-      this.toastService.info("No fields can be removed from this set.");
-      return;
-    };
-
-    const buttons: AlertButton[] = removableFields.map(field => ({
-      text: field.charAt(0).toUpperCase() + field.slice(1),
-      role: 'remove',
-      data: field,
-      icon: field === 'duration' ? 'hourglass' : field === 'reps' ? 'repeat' : field,
-      cssClass: 'bg-red-500 hover:bg-red-600'
-    }));
-
-    // --- START OF CORRECTION ---
-    // Add a dedicated "Cancel" button to the array.
-    buttons.push({
-      text: 'Cancel',
-      role: 'cancel',
-      data: null,
-      icon: 'cancel'
-    });
-    // --- END OF CORRECTION ---
-
-    const choice = await this.alertService.showConfirmationDialog(
-      'Remove Field from Exercise',
-      'Which metric would you like to remove from this set of this exercise?',
-      buttons,
-      // --- START OF CORRECTION ---
-      // Pass the option to show the corner 'X' close button.
-      { showCloseButton: true }
-      // --- END OF CORRECTION ---
-    );
-
-    // Only proceed if the user made a choice and didn't cancel.
-    if (choice && choice.role !== 'cancel' && choice.data) {
-      this.removeMetricFromSet(exIndex, setIndex, choice.data);
-    }
   }
 
   public async promptRemoveField(exIndex: number, setIndex: number): Promise<void> {
@@ -3461,98 +3470,10 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
     if (updatedRoutine) {
       // Update the main routine signal to trigger a re-render
-      this.routine.set(updatedRoutine);
+      this.routine.set({ ...updatedRoutine });
     }
   }
 
-  /**
-   * Shows a prompt asking the user which field they want to add to the set.
-   */
-  /**
-   * --- CORRECTED ---
-   * Shows a prompt asking the user which field they want to add to the set.
-   * Includes a 'Cancel' button and the corner close button.
-   */
-  /**
-   * --- CORRECTED & ENHANCED ---
-   * Shows a prompt asking which field to add, then a second prompt for the target value.
-   */
-  public async promptAddFieldOld(exIndex: number, setIndex: number): Promise<void> {
-    const cols = this.getVisibleSetColumns(exIndex, setIndex);
-    const hiddenFields = Object.keys(cols).filter(key => !cols[key as keyof typeof cols]);
-
-    if (hiddenFields.length === 0) return;
-
-    // --- Step 1: Ask WHICH field to add ---
-    const buttons: AlertButton[] = hiddenFields.map(field => ({
-      text: field.charAt(0).toUpperCase() + field.slice(1),
-      role: 'add',
-      data: field,
-      icon: field === 'duration' ? 'hourglass' : field === 'reps' ? 'repeat' : field
-    }));
-
-    buttons.push({ text: 'Cancel', role: 'cancel', data: null, icon: 'cancel' });
-
-    const choice = await this.alertService.showConfirmationDialog(
-      'Add Field to Set',
-      'Which metric would you like to add to all sets of this exercise?',
-      buttons,
-      { showCloseButton: true }
-    );
-
-    if (!choice || choice.role === 'cancel' || !choice.data) {
-      return; // User cancelled the first prompt
-    }
-
-    const fieldToAdd = choice.data;
-
-    // --- Step 2: Ask for the VALUE of the chosen field ---
-    let inputLabel = `Target ${fieldToAdd.charAt(0).toUpperCase() + fieldToAdd.slice(1)}`;
-    if (fieldToAdd === 'weight') {
-      inputLabel += ` (${this.unitsService.getWeightUnitSuffix()})`;
-    } else if (fieldToAdd === 'duration') {
-      inputLabel += ' (s)';
-    } else if (fieldToAdd === 'distance') {
-      inputLabel += ` (${this.unitsService.getDistanceMeasureUnitSuffix()})`
-    }
-
-    let placeholderValueToAdd = 0;
-    switch (fieldToAdd) {
-      case 'weight':
-        placeholderValueToAdd = 5;
-        break;
-      case 'reps':
-        placeholderValueToAdd = 8;
-        break;
-      case 'duration':
-        placeholderValueToAdd = 60;
-        break;
-      case 'distance':
-        placeholderValueToAdd = 1;
-        break;
-
-      default:
-        break;
-    }
-
-    const valueResult = await this.alertService.showPromptDialog(
-      `Set Target ${fieldToAdd.charAt(0).toUpperCase() + fieldToAdd.slice(1)}`,
-      `Enter the target value you want to apply to the current set for this exercise.`,
-      [{ name: 'targetValue', type: 'number', label: inputLabel, value: placeholderValueToAdd, attributes: { min: '0', required: true } }] as AlertInput[],
-      'Apply Target'
-    );
-
-    if (valueResult && valueResult['targetValue'] !== null && valueResult['targetValue'] !== undefined) {
-      const targetValue = Number(valueResult['targetValue']);
-      if (!isNaN(targetValue) && targetValue >= 0) {
-        // --- Step 3: Call the updated method with the new value ---
-        this.addFieldToSet(exIndex, setIndex, fieldToAdd, targetValue ? targetValue : 1);
-        this.toastService.success(`${fieldToAdd.toUpperCase()} field added to the set.`);
-      } else {
-        this.toastService.error("Invalid value provided.");
-      }
-    }
-  }
 
   public async promptAddField(exIndex: number, setIndex: number): Promise<void> {
     const currentRoutine = this.routine();
@@ -3566,24 +3487,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       this.routine.set(updatedRoutine);
       this.toastService.success("Field added to set.");
     }
-  }
-
-  /**
-   */
-  private addFieldToSet(exIndex: number, setIndex: number, fieldToAdd: string, targetValue: number): void {
-    this.routine.update(r => {
-      if (!r) return r;
-      const set = r.exercises[exIndex].sets[setIndex];
-      // Initialize with a non-zero value to ensure it's displayed
-      switch (fieldToAdd) {
-        case 'weight': set.targetWeight = targetValue; break;
-        case 'reps': set.targetReps = targetValue; break;
-        case 'distance': set.targetDistance = targetValue; break;
-        case 'duration': set.targetDuration = targetValue; break;
-      }
-      this.toastService.success(`${fieldToAdd.toUpperCase()} field added to set #${setIndex + 1}.`);
-      return { ...r };
-    });
   }
 
   /**
@@ -3672,7 +3575,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const reps = loggedSet?.repsAchieved ?? plannedSet.targetReps;
     const distance = loggedSet?.distanceAchieved ?? plannedSet.targetDistance;
     const duration = loggedSet?.durationPerformed ?? plannedSet.targetDuration;
-    const tempo = loggedSet?.targetTempo ?? plannedSet.targetTempo; 
+    const tempo = loggedSet?.targetTempo ?? plannedSet.targetTempo;
 
     if (weight !== undefined && weight !== null && weight > 0) {
       parts.push(`${this.weightUnitPipe.transform(weight)}`);

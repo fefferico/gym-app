@@ -1095,7 +1095,8 @@
       "restPlaceholder": "Rest",
       "notesPlaceholder": "e.g. Good form",
       "collapse": "Collapse set",
-      "removeSet":"Remove Set"
+      "removeSet":"Remove Set",
+      "metrics": "Metrics"
     },
     "restDayMessage": "This is a rest day routine. No exercises are needed",
     "addExerciseButton": "ADD EXERCISE",

@@ -1054,6 +1054,9 @@ export class WorkoutService {
     }
 
     if (field === 'tempo') {
+      if (this.isLoggedSet(set)){
+        return set.tempoUsed || '-';
+      } 
       return set.targetTempo || '-';
     }
 
@@ -1456,8 +1459,16 @@ export class WorkoutService {
     return updatedRoutine;
   }
 
+  public defaultHiddenFields(): any {
+    return { visible: [], hidden: this.getDefaultFields() };
+  }
+
+  public getDefaultFields(): string[]{
+    return ['weight', 'reps', 'distance', 'duration', 'tempo'];
+  }
+
   public getFieldsForSet(routine: Routine, exIndex: number, setIndex: number): { visible: string[], hidden: string[] } {
-    const allFields = ['weight', 'reps', 'distance', 'duration', 'tempo'];
+    const allFields = this.getDefaultFields();
     // As requested, this now uses the exercise-wide visibility check.
     const visibleCols = this.getVisibleSetColumns(routine, exIndex, setIndex);
 
@@ -1521,6 +1532,8 @@ export class WorkoutService {
     setToUpdate[`target${fieldToRemove.charAt(0).toUpperCase() + fieldToRemove.slice(1)}`] = undefined;
     setToUpdate[`target${fieldToRemove.charAt(0).toUpperCase() + fieldToRemove.slice(1)}Min`] = undefined;
     setToUpdate[`target${fieldToRemove.charAt(0).toUpperCase() + fieldToRemove.slice(1)}Max`] = undefined;
+    setToUpdate[`${fieldToRemove}Used`] = undefined;
+    setToUpdate[`${fieldToRemove}Achieved`] = undefined;
 
     // 2. Also remove the field from the order array
     if (setToUpdate.fieldOrder) {
@@ -1575,12 +1588,128 @@ export class WorkoutService {
    */
   public isLoggedSet(set: any): set is LoggedSet {
     // A LoggedSet will have performance fields. We check for the existence of these keys.
-    return set && (
+    return set && set.workoutLogId && (
       typeof set.repsAchieved !== 'undefined' ||
       typeof set.weightUsed !== 'undefined' ||
       typeof set.durationPerformed !== 'undefined' ||
-      typeof set.distanceAchieved !== 'undefined'
+      typeof set.distanceAchieved !== 'undefined' ||
+      typeof set.tempoUsed !== 'undefined'
     );
+  }
+
+  /**
+ * Gets a display-ready value for a specific field from a set object.
+ * This method intelligently handles both LoggedSet (performance) and 
+ * ExerciseTargetSetParams (planning) types.
+ *
+ * @param exSet The set object, which can be either logged or planned.
+ * @param field The metric to retrieve ('weight', 'reps', etc.).
+ * @returns A formatted string for display.
+ */
+public getSetFieldValue(exSet: ExerciseTargetSetParams | LoggedSet, field: 'weight' | 'reps' | 'distance' | 'duration' | 'tempo'): string {
+    if (!exSet) {
+        return '-';
+    }
+
+    // --- Smart Handling Starts Here ---
+
+    // CASE 1: The set is a LOGGED set, so we display the actual performance values.
+    if (this.isLoggedSet(exSet)) {
+        switch (field) {
+            case 'reps':     return (exSet.repsAchieved ?? '-').toString();
+            case 'weight':   return exSet.weightUsed != null ? exSet.weightUsed.toString() : '-';
+            case 'distance': return (exSet.distanceAchieved ?? '-').toString();
+            case 'duration': return this.formatSecondsToTime(exSet.durationPerformed);
+            case 'tempo':    return exSet.tempoUsed || '-';
+            default:         return '-';
+        }
+    } 
+    // CASE 2: The set is a PLANNED set, so we display the target values, handling ranges.
+    else {
+        const plannedSet = exSet as ExerciseTargetSetParams; // Safe to cast here
+        switch (field) {
+            case 'reps':
+                if (plannedSet.targetRepsMin != null && plannedSet.targetRepsMax != null) {
+                    const midValue = Math.floor((plannedSet.targetRepsMin + plannedSet.targetRepsMax) / 2);
+                    return midValue.toString();
+                }
+                return (plannedSet.targetReps ?? '-').toString();
+
+            case 'weight':
+                if (plannedSet.targetWeightMin != null && plannedSet.targetWeightMax != null) {
+                    const midValue = Math.floor((plannedSet.targetWeightMin + plannedSet.targetWeightMax) / 2);
+                    return midValue.toString();
+                }
+                return (plannedSet.targetWeight ?? '-').toString();
+
+            case 'distance':
+                if (plannedSet.targetDistanceMin != null && plannedSet.targetDistanceMax != null) {
+                    const midValue = Math.floor((plannedSet.targetDistanceMin + plannedSet.targetDistanceMax) / 2);
+                    return midValue.toString();
+                }
+                return (plannedSet.targetDistance ?? '-').toString();
+
+            case 'duration':
+                if (plannedSet.targetDurationMin != null && plannedSet.targetDurationMax != null) {
+                    const midValue = Math.floor((plannedSet.targetDurationMin + plannedSet.targetDurationMax) / 2);
+                    return this.formatSecondsToTime(midValue);
+                }
+                return this.formatSecondsToTime(plannedSet.targetDuration ?? undefined);
+
+            case 'tempo':
+                return plannedSet.targetTempo || '-';
+
+            default:
+                return '-';
+        }
+    }
+}
+
+  /**
+     * Formats a single numeric value of seconds into a "mm:ss" string.
+     * @param seconds The number of seconds to format.
+     * @returns The formatted time string, or an empty string if the input is invalid.
+     */
+  private _formatSingleSecondValue(seconds: number | string): string {
+    const numericValue = Number(seconds);
+    // Return empty if the value is not a valid number
+    if (isNaN(numericValue)) {
+      return '';
+    }
+
+    const mins = String(Math.floor(numericValue / 60)).padStart(2, '0');
+    const secs = String(numericValue % 60).padStart(2, '0');
+    return `${mins}:${secs}`;
+  }
+
+  /**
+   * Formats a total number of seconds into a "mm:ss" time string.
+   * It can also handle a string representing a range (e.g., "60-90"),
+   * which it will format as "01:00-01:30".
+   *
+   * @param totalSeconds The total seconds as a number, a string, or a range string.
+   * @returns The formatted time string.
+   */
+  formatSecondsToTime(totalSeconds: number | string | undefined): string {
+    // 1. Handle null, undefined, or empty string inputs
+    if (totalSeconds == null || totalSeconds === '') {
+      return '';
+    }
+
+    // 2. Check if the input is a range string (e.g., "60-90")
+    if (typeof totalSeconds === 'string' && totalSeconds.includes('-')) {
+      const [minSeconds, maxSeconds] = totalSeconds.split('-');
+
+      // Format both parts of the range individually using the helper
+      const formattedMin = this._formatSingleSecondValue(minSeconds);
+      const formattedMax = this._formatSingleSecondValue(maxSeconds);
+
+      // Return the combined formatted range
+      return `${formattedMin}-${formattedMax}`;
+    }
+
+    // 3. If it's not a range, format it as a single value using the helper
+    return this._formatSingleSecondValue(totalSeconds);
   }
 
 }

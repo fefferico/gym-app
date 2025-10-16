@@ -898,7 +898,8 @@
                                                             class="flex w-fit items-center justify-center gap-1 bg-gray-200 dark:bg-gray-900/50 p-1 rounded-full">
                                                             <!-- Remove metric button -->
                                                             <label
-                                                                class="flex items-center justify-between text-s font-medium text-gray-600 dark:text-gray-400">Metriche:</label>
+                                                                class="flex items-center justify-between text-s font-medium text-gray-600 dark:text-gray-400">{{
+                                                                'workoutBuilder.set.metrics' | translate }}:</label>
                                                             <button
                                                                 (click)="promptRemoveField(exIndex, setIndex); $event.stopPropagation()"
                                                                 class="p-1.5 rounded-full bg-red-200 hover:bg-red-300 text-red-700 disabled:opacity-50 flex items-center">

@@ -8,6 +8,8 @@ import { LoggedSet, LoggedWorkoutExercise } from "../../../../core/models/workou
 import { WeightUnitPipe } from "../../../../shared/pipes/weight-unit-pipe";
 import { TranslateService } from '@ngx-translate/core'; // Assuming ngx-translate
 import { TranslateModule } from '@ngx-translate/core'; // Import TranslateModule
+import { WorkoutService } from "../../../../core/services/workout.service";
+import { UnitsService } from "../../../../core/services/units.service";
 
 @Component({
     selector: 'app-exercise-overview-item',
@@ -25,7 +27,9 @@ export class ExerciseOverviewItemComponent {
 
     constructor(
         private weightUnitPipe: WeightUnitPipe,
-        private translate: TranslateService
+        private translate: TranslateService,
+        private workoutService: WorkoutService,
+        private unitsService: UnitsService,
     ) {}
 
     isCurrent = computed<boolean>(() => {
@@ -110,21 +114,22 @@ export class ExerciseOverviewItemComponent {
     formatSet(set: ExerciseTargetSetParams | LoggedSet | undefined, isPerformed = false): string {
         if (!set) return isPerformed ? '—' : 'N/A';
     
-        let weight: number | null | undefined;
-        let reps: number | undefined;
+        let weight: string | null | undefined;
+        let reps: string | undefined;
+
+        const weightReal = this.workoutService.getSetFieldValue(set, 'weight');
+        const repsReal = this.workoutService.getSetFieldValue(set, 'reps');
+        const distanceReal = this.workoutService.getSetFieldValue(set, 'distance');
+        const durationReal = this.workoutService.getSetFieldValue(set, 'duration');
+        const tempoReal = this.workoutService.getSetFieldValue(set, 'tempo');
     
-        if ('repsAchieved' in set) {
-          weight = set.weightUsed;
-          reps = set.repsAchieved;
-        } else {
-          weight = set.targetWeight;
-          reps = set.targetReps || 0;
-        }
+        weight = weightReal;
+        reps = repsReal;
         
         let parts = [];
         const repsText = this.translate.instant('exerciseItem.reps');
         if (weight != null && reps != null) {
-            parts.push(`${this.weightUnitPipe.transform(weight)} x ${reps} ${repsText}`);
+            parts.push(`${weight}${this.unitsService.getWeightUnitSuffix()} x ${reps} ${repsText}`);
         } else if (reps != null) {
             parts.push(`${reps} ${repsText}`);
         }

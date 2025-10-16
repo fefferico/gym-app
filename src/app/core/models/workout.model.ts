@@ -34,7 +34,7 @@ export interface ExerciseTargetSetParams {
 
 export interface ExerciseCurrentExecutionSetParams {
   id: string;
-  tempo?: string;
+  tempoUsed?: string;
   notes?: string;
   type: 'standard' | 'warmup' | 'amrap' | 'dropset' | 'failure' | 'myorep' | 'restpause' | 'custom' | 'superset' | 'tabata' | string; // More flexible
   restAfterSet: number; // For the set *within* an exercise. For supersets, this might be 0 for intermediate exercises.
