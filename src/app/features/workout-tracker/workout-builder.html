@@ -892,6 +892,7 @@
                                                             </div>
                                                         </div>
                                                     </div>
+                                                    <!-- ADD/REMOVE METRICS BUTTONS -->
                                                     <div class="flex items-center justify-center">
                                                         <div *ngIf="isEditableMode()"
                                                             class="flex w-fit items-center justify-center gap-1 bg-gray-200 dark:bg-gray-900/50 p-1 rounded-full">
@@ -949,16 +950,14 @@
                                                                             [ngTemplateOutletContext]="{exerciseControl: exerciseControl, setControl: setControl, exIndex: exIndex, setIndex: setIndex }"></ng-container>
                                                                     </div>
                                                                     <div *ngSwitchCase="'distance'">
-                                                                        <ng-container
-                                                                            *ngIf="!isEmomExercise(exerciseControl)">
+                                                                        <ng-container>
                                                                             <ng-container
                                                                                 [ngTemplateOutlet]="distanceInputTemplate"
                                                                                 [ngTemplateOutletContext]="{exerciseControl: exerciseControl, setControl: setControl, exIndex: exIndex, setIndex: setIndex }"></ng-container>
                                                                         </ng-container>
                                                                     </div>
                                                                     <div *ngSwitchCase="'duration'">
-                                                                        <ng-container
-                                                                            *ngIf="!isEmomExercise(exerciseControl)">
+                                                                        <ng-container>
                                                                             <ng-container
                                                                                 [ngTemplateOutlet]="durationInputTemplate"
                                                                                 [ngTemplateOutletContext]="{exerciseControl: exerciseControl, setControl: setControl, exIndex: exIndex, setIndex: setIndex }"></ng-container>
@@ -1203,7 +1202,7 @@
                     {{ 'workoutBuilder.set.rangeError' | translate }}
                 </div>
             </div>
-            <input *ngIf="!isRangeMode(setControl, 'reps')" type="number" formControlName="targetReps" min="0"
+            <input *ngIf="!isRangeMode(setControl, 'reps')" type="number" formControlName="targetReps" min="1"
                 [placeholder]="'workoutBuilder.set.repsPlaceholder' | translate" [readonly]="isViewMode"
                 class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
         </ng-container>
@@ -1249,7 +1248,7 @@
                     {{ 'workoutBuilder.set.rangeError' | translate }}
                 </div>
             </div>
-            <input *ngIf="!isRangeMode(setControl, 'weight')" type="number" formControlName="targetWeight" min="0"
+            <input *ngIf="!isRangeMode(setControl, 'weight')" type="number" formControlName="targetWeight" min="0.1"
                 [placeholder]="'workoutBuilder.set.weightPlaceholder' | translate" [readonly]="isViewMode"
                 class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
         </ng-container>
@@ -1336,7 +1335,7 @@
                     {{ 'workoutBuilder.set.rangeError' | translate }}
                 </div>
             </div>
-            <input *ngIf="!isRangeMode(setControl, 'duration')" type="number" formControlName="targetDuration" min="0"
+            <input *ngIf="!isRangeMode(setControl, 'duration')" type="number" formControlName="targetDuration" min="1"
                 [placeholder]="'workoutBuilder.set.durationPlaceholder' | translate" [readonly]="isViewMode"
                 class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
         </ng-container>

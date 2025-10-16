@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { LoggedWorkoutExercise, LoggedSet } from './workout-log.model';
 import { WorkoutExercise, ExerciseTargetSetParams, ExerciseTargetExecutionSetParams } from './workout.model';
+import { log } from 'console';
 
 /**
  * Maps an array of logged exercises back into a routine snapshot format.
@@ -192,4 +193,120 @@ export function mapExerciseTargetSetParamsToExerciseExecutedSetParams(exerciseTa
         notes: exerciseTargetSetParams.notes || '',
         tempo: exerciseTargetSetParams.targetTempo
     } as ExerciseTargetExecutionSetParams;
+}
+
+/**
+ * Maps a single WorkoutExercise (from a plan) to a LoggedWorkoutExercise.
+ * This is used to create the initial structure of a single workout log entry when
+ * an exercise is started or added mid-session.
+ * The `sets` array will be empty, ready to be populated as the user completes them.
+ *
+ * @param planExercise The WorkoutExercise object from a Routine.
+ * @returns A LoggedWorkoutExercise representing the initial state of the log for that exercise.
+ */
+export function mapWorkoutExerciseToLoggedWorkoutExercise(
+    planExercise: WorkoutExercise
+): LoggedWorkoutExercise {
+    const loggedExercise: LoggedWorkoutExercise = {
+        // Use the routine's exercise instance ID to link this log entry back to the specific
+        // instance in the plan. This is useful if the same exercise appears multiple times.
+        id: planExercise.id,
+
+        // The canonical ID of the base exercise, used for long-term tracking.
+        exerciseId: planExercise.exerciseId,
+        exerciseName: planExercise.exerciseName || 'Unnamed Exercise',
+
+        // CRITICAL: The log starts with zero completed sets.
+        // This array will be filled as the user performs and logs each set.
+        sets: [],
+
+        notes: planExercise.notes,
+        type: planExercise.type,
+
+        // Directly map all superset properties from the plan to the log structure.
+        supersetId: planExercise.supersetId || null,
+        supersetOrder: planExercise.supersetOrder ?? null,
+    };
+
+    return loggedExercise;
+}
+
+/**
+ * Maps a single LoggedWorkoutExercise back to a WorkoutExercise format.
+ * This is useful for creating a new routine based on a completed workout,
+ * where the actual performance becomes the target for the new plan.
+ *
+ * @param loggedExercise The logged exercise data.
+ * @returns A WorkoutExercise object ready to be included in a new Routine.
+ */
+export function mapLoggedWorkoutExerciseToWorkoutExercise(
+    loggedExercise: LoggedWorkoutExercise
+): WorkoutExercise {
+
+    // Map each logged set to a new planned set (ExerciseTargetSetParams).
+    const mappedSets: ExerciseTargetSetParams[] = loggedExercise.sets.map((loggedSet): ExerciseTargetSetParams => mapLoggedSetToExerciseTargetSetParams(loggedSet));
+
+    // Construct the new WorkoutExercise for the routine.
+    const newWorkoutExercise: WorkoutExercise = {
+        id: uuidv4(), // This new instance within a routine gets its own unique ID.
+        exerciseId: loggedExercise.exerciseId,
+        exerciseName: loggedExercise.exerciseName,
+        sets: mappedSets,
+        notes: loggedExercise.notes,
+        type: loggedExercise.type,
+
+        // Carry over the superset structure information.
+        supersetId: loggedExercise.supersetId || null,
+        supersetOrder: loggedExercise.supersetOrder ?? null,
+
+        // These properties are specific to the routine's structure and are not present in the log.
+        // They are initialized to null and can be configured later if needed.
+        supersetType: null,
+        emomTimeSeconds: null,
+    };
+
+    return newWorkoutExercise;
+}
+
+/**
+ * Maps a single LoggedSet back to an ExerciseTargetSetParams format.
+ * This function is key for converting workout history into a new, editable routine plan.
+ *
+ * @param loggedSet The logged set data representing actual performance.
+ * @returns An ExerciseTargetSetParams object for a new routine.
+ */
+export function mapLoggedSetToExerciseTargetSetParams(loggedSet: LoggedSet): ExerciseTargetSetParams {
+    return {
+        id: uuidv4(), // A new plan requires a new unique ID for the set.
+
+        // --- Core Mapping Logic ---
+        // The user's actual performance becomes the target for the new plan.
+        targetReps: loggedSet.repsAchieved,
+        targetWeight: loggedSet.weightUsed,
+        targetDuration: loggedSet.durationPerformed,
+        targetDistance: loggedSet.distanceAchieved,
+        targetRpe: loggedSet.rpe,
+            targetTempo: loggedSet.tempoUsed,
+
+        // Set other optional target values to null as they are not explicitly tracked
+        // in the single performance log entry. These can be refined in the routine editor.
+        targetRepsMin: null,
+        targetRepsMax: null,
+        targetWeightMin: null,
+        targetWeightMax: null,
+        targetDurationMin: null,
+        targetDurationMax: null,
+        targetDistanceMin: null,
+        targetDistanceMax: null,
+        dropToWeight: null,
+        amrapTimeLimit: null,
+
+        // Map other relevant properties directly.
+        notes: loggedSet.notes,
+        type: loggedSet.type,
+        fieldOrder: loggedSet.fieldOrder,
+
+        // Use the actual rest time used, with fallbacks to the original target or a default value.
+        restAfterSet: loggedSet.restAfterSetUsed ?? loggedSet.targetRestAfterSet ?? 60,
+    };
 }

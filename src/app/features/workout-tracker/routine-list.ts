@@ -932,7 +932,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
       target.value = muscle;
       this.clearFilters();
       this.onRoutineMuscleGroupChange(event);
-      this.toastService.info(this.translate.instant('Filtered routines by muscle \'{{muscle}}\'', { muscle: muscle }));
+      this.toastService.info(this.translate.instant('Filtered routines by muscle {{muscle}}', { muscle: muscle }));
     }
   }
 

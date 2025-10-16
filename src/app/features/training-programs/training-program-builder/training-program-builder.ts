@@ -422,7 +422,7 @@ exerciseInfoTooltipString = this.translate.instant('workoutBuilder.exerciseInfoT
         const weekGroup = this.fb.group({
             id: [week?.id || uuidv4()],
             weekNumber: [week?.weekNumber ?? this.weeksFormArray.length + 1],
-            name: [week?.name ?? `${this.translate.instant('programBuilder.weeks.weekLabel')} ${this.weeksFormArray.length + 1}`, Validators.required],
+            name: [week?.name ?? `${this.translate.instant('programBuilder.weeks.weekLabel')}${this.weeksFormArray.length + 1}`, Validators.required],
             schedule: this.fb.array([])
         });
 

@@ -240,6 +240,7 @@
                       [ngClass]="{'rotate-180': item.isExpanded}"></app-icon>
                   </div>
                 </button>
+                <!-- ROW HEADER -->
                 <div *ngIf="item.isExpanded" class="grid gap-x-4 gap-y-2 p-4 bg-white dark:bg-gray-800"
                   [ngClass]="getGridColsClass(item)">
                   <div class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">{{ 'logDetail.card.set' |
@@ -262,6 +263,7 @@
                   <div *ngIf="hasNotes(item)" class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400">{{
                     'logDetail.card.notes' | translate }}
                   </div>
+                  <!-- SET ROWS -->
                   <ng-container *ngFor="let set of item.sets; let i = index; let last = last">
                     <div class="font-medium text-gray-900 dark:text-white flex items-center space-x-2">
                       <span

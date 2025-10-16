@@ -505,6 +505,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
               targetReps: null, targetRepsMin: null, targetRepsMax: null,
               targetWeight: null, targetWeightMin: null, targetWeightMax: null,
               targetDistance: null, targetDistanceMin: null, targetDistanceMax: null,
+              targetTempo: null
             }, { emitEvent: false });
 
             exerciseControl.patchValue({
@@ -1017,10 +1018,10 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         targetWeight: loggedSet.weightUsed ?? null,
         targetDuration: loggedSet.durationPerformed,
         targetDistance: loggedSet.distanceAchieved,
+        targetTempo: loggedSet.targetTempo,
         restAfterSet: loggedSet.targetRestAfterSet ?? 60, // Use original target rest, or default
         type: loggedSet.type,
         notes: loggedSet.notes,
-        targetTempo: loggedSet.targetTempo,
       };
       // Return a FormGroup for the set
       return this.createSetFormGroup(newSetParams, false); // forLogging = false
@@ -1122,58 +1123,73 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
   // isRepsRangeMode, isWeightRangeMode, isDurationRangeMode
   private createSetFormGroup(setData?: ExerciseTargetSetParams | LoggedSet, forLogging: boolean = false): FormGroup {
-    let targetRepsValue, targetWeighValue, targetDurationValue, notesValue, typeValue, tempoValue, restValue;
-    let targetRepsMinValue, targetRepsMaxValue, targetDurationMinValue, targetDurationMaxValue, targetWeightMinValue, targetWeightMaxValue; // For ranges
-    let targetDistanceValue, targetDistanceMinValue, targetDistanceMaxValue;
+     // 1. Initialize all local variables with defaults for a "new blank set".
+    // This handles the case where `setData` is null from the beginning.
     let id = uuidv4();
-    let plannedSetIdValue;
-    let timestampValue = new Date().toISOString(); // Default for new sets being logged
-    let fieldOrderValue: string[] | undefined;
+    let fieldOrderValue: string[] | undefined = ['reps', 'weight'];
+    let notesValue = '';
+    let typeValue = 'standard';
+    let tempoValue = '';
+    let restValue: number | null | undefined = 60;
+    let plannedSetIdValue: string | undefined;
+    let timestampValue = new Date().toISOString();
 
+    // Performance & single-target metrics
+    let targetRepsValue: number | null | undefined = 8;
+    let targetWeighValue: number | null | undefined = 10;
+    let targetDurationValue: number | null | undefined;
+    let targetDistanceValue: number | null | undefined;
+
+    // Range-target metrics (default to null)
+    let targetRepsMinValue: number | null | undefined = null;
+    let targetRepsMaxValue: number | null | undefined = null;
+    let targetWeightMinValue: number | null | undefined = null;
+    let targetWeightMaxValue: number | null | undefined = null;
+    let targetDurationMinValue: number | null | undefined = null;
+    let targetDurationMaxValue: number | null | undefined = null;
+    let targetDistanceMinValue: number | null | undefined = null;
+    let targetDistanceMaxValue: number | null | undefined = null;
+
+    // 2. If an existing set is provided, overwrite the defaults.
     if (setData) {
-      id = setData.id || id; // Keep original set ID if from template or editing logged set
-      fieldOrderValue = setData.fieldOrder;
-      if ('repsAchieved' in setData) { // It's a LoggedSet
-        const loggedS = setData as LoggedSet;
-        targetRepsValue = loggedS.repsAchieved;
-        targetWeighValue = loggedS.weightUsed;
-        targetDurationValue = loggedS.durationPerformed;
-        targetDistanceValue = loggedS.distanceAchieved;
-        notesValue = loggedS.notes;
-        typeValue = loggedS.type || 'standard'; // Use logged type, default to standard
-        plannedSetIdValue = loggedS.plannedSetId;
-        timestampValue = loggedS.timestamp; // Preserve original timestamp for logged sets
-        tempoValue = loggedS.targetTempo || '';
-        restValue = loggedS.restAfterSetUsed;
-      } else { // It's ExerciseSetParams from routine template
-        const plannedS = setData as ExerciseTargetSetParams;
-        targetRepsValue = plannedS.targetReps;
-        targetRepsMinValue = plannedS.targetRepsMin;
-        targetRepsMaxValue = plannedS.targetRepsMax;
-        targetWeighValue = plannedS.targetWeight;
-        targetWeightMinValue = plannedS.targetWeightMin;
-        targetWeightMaxValue = plannedS.targetWeightMax;
-        targetDurationValue = plannedS.targetDuration;
-        targetDurationMinValue = plannedS.targetDurationMin;
-        targetDurationMaxValue = plannedS.targetDurationMax;
-        targetDistanceValue = plannedS.targetDistance;
-        targetDistanceMinValue = plannedS.targetDistanceMin;
-        targetDistanceMaxValue = plannedS.targetDistanceMax;
-        notesValue = plannedS.notes;
-        typeValue = plannedS.type || 'standard';
-        tempoValue = plannedS.targetTempo;
-        restValue = plannedS.restAfterSet;
-        plannedSetIdValue = plannedS.id; // This is the template set ID
-      }
-    } else { // New blank set
-      notesValue = '';
-      typeValue = 'standard';
-      tempoValue = '';
-      restValue = 60;
-      // For a brand new set, default to reps and weight
-      fieldOrderValue = ['reps', 'weight'];
-      targetRepsValue = 8;
-      targetWeighValue = 10;
+        // Overwrite common properties that exist on both types
+        id = setData.id || id;
+        fieldOrderValue = setData.fieldOrder;
+        notesValue = setData.notes || '';
+        typeValue = setData.type || 'standard';
+        tempoValue = 'targetTempo' in setData ? (setData.targetTempo || '') : '';
+
+        // Overwrite specific properties based on the object type
+        if (this.workoutService.isLoggedSet(setData)) {
+            // It's a LoggedSet: map performance fields
+            targetRepsValue = setData.repsAchieved;
+            targetWeighValue = setData.weightUsed;
+            targetDurationValue = setData.durationPerformed;
+            targetDistanceValue = setData.distanceAchieved;
+            restValue = setData.restAfterSetUsed;
+            plannedSetIdValue = setData.plannedSetId;
+            timestampValue = setData.timestamp;
+        } else {
+            // It's ExerciseTargetSetParams: map planned fields and ranges
+            targetRepsValue = setData.targetReps;
+            targetRepsMinValue = setData.targetRepsMin;
+            targetRepsMaxValue = setData.targetRepsMax;
+            
+            targetWeighValue = setData.targetWeight;
+            targetWeightMinValue = setData.targetWeightMin;
+            targetWeightMaxValue = setData.targetWeightMax;
+            
+            targetDurationValue = setData.targetDuration;
+            targetDurationMinValue = setData.targetDurationMin;
+            targetDurationMaxValue = setData.targetDurationMax;
+
+            targetDistanceValue = setData.targetDistance;
+            targetDistanceMinValue = setData.targetDistanceMin;
+            targetDistanceMaxValue = setData.targetDistanceMax;
+
+            restValue = setData.restAfterSet;
+            plannedSetIdValue = setData.id; // The template set's ID is the planned ID
+        }
     }
 
     // =================== START OF THE FIX ===================
@@ -1435,43 +1451,111 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     }
   }
 
-  removeSet(exerciseControl: AbstractControl, exerciseIndex: number, setIndex: number, event?: MouseEvent): void {
+  /**
+   * Removes a set or round.
+   * - If it's the last round of a superset, it prompts to remove the entire exercise from the group.
+   * - If it's the last set of a standard exercise, it prompts to remove the exercise.
+   * - Otherwise, it removes the set/round as expected.
+   */
+  async removeSet(exerciseControl: AbstractControl, exerciseIndex: number, setIndex: number, event?: MouseEvent): Promise<void> {
     event?.stopPropagation();
     if (this.isViewMode) return;
 
     const supersetId = exerciseControl.get('supersetId')?.value;
+    const setsArray = this.getSetsFormArray(exerciseControl);
+    let actionTaken = false;
 
-    // If part of a superset, remove the set at the same index from all sibling exercises.
+    // --- CASE 1: It's part of a superset ---
     if (supersetId) {
-      this.exercisesFormArray.controls.forEach((ctrl, idx) => {
-        const fg = ctrl as FormGroup;
-        if (fg.get('supersetId')?.value === supersetId) {
-          const setsArray = this.getSetsFormArray(fg);
-          // Ensure we don't try to remove a set that doesn't exist
-          if (setIndex < setsArray.length) {
-            setsArray.removeAt(setIndex);
-          }
-        }
-      });
-    } else {
-      // Standard behavior for non-superset exercises
-      const setsArray = this.getSetsFormArray(exerciseControl);
-      setsArray.removeAt(setIndex);
+      // Check if it's the last round for this exercise group
+      if (setsArray.length === 1) {
+        const confirm = await this.alertService.showConfirm(
+          'Remove Last Round?',
+          'This will remove the exercise from the superset. Are you sure?',
+          'Remove Exercise',
+          'Cancel'
+        );
 
-      if (setsArray.length === 0) {
-        // If no sets remain, add a default one to avoid empty state
-        this.exercisesFormArray.removeAt(exerciseIndex);
+        if (confirm && confirm.data) {
+          // User confirmed: remove the entire exercise
+          this.exercisesFormArray.removeAt(exerciseIndex);
+          actionTaken = true;
+
+          // Now, check if the remaining superset is still valid
+          const remainingGroup = this.exercisesFormArray.controls
+            .filter(c => (c as FormGroup).get('supersetId')?.value === supersetId);
+
+          const isEmom = remainingGroup[0]?.get('supersetType')?.value === 'emom';
+
+          // A standard superset needs at least 2 exercises. An EMOM can have 1.
+          if (remainingGroup.length < 2 && !isEmom) {
+            // Ungroup the single remaining exercise
+            if (remainingGroup.length === 1) {
+              (remainingGroup[0] as FormGroup).patchValue({ supersetId: null, supersetOrder: null, type: 'standard' });
+              this.toastService.info("Superset ungrouped.", 2000);
+            }
+          } else if (remainingGroup.length > 0) {
+            // If the group is still valid, just fix the ordering
+            this.recalculateSupersetOrders();
+          }
+          this.showUndoWithToast("Exercise removed from superset");
+        } else {
+          return; // User cancelled
+        }
+      } else {
+        // It's a superset, but not the last round. Remove this round from all sibling exercises.
+        this.exercisesFormArray.controls.forEach((ctrl) => {
+          if ((ctrl as FormGroup).get('supersetId')?.value === supersetId) {
+            const currentSets = this.getSetsFormArray(ctrl);
+            if (setIndex < currentSets.length) {
+              currentSets.removeAt(setIndex);
+            }
+          }
+        });
+        actionTaken = true;
+        this.showUndoWithToast("Round removed");
+      }
+    }
+    // --- CASE 2: It's a standard, non-superset exercise ---
+    else {
+      if (setsArray.length === 1) {
+        const confirm = await this.alertService.showConfirm(
+          'Remove Last Set?',
+          'This is the last set. This will remove the entire exercise. Continue?',
+          'Remove Exercise',
+          'Cancel'
+        );
+        if (confirm && confirm.data) {
+          this.exercisesFormArray.removeAt(exerciseIndex);
+          actionTaken = true;
+          this.showUndoWithToast("Exercise removed");
+        } else {
+          return; // User cancelled
+        }
+      } else {
+        // Standard behavior: more than one set exists, just remove one.
+        setsArray.removeAt(setIndex);
+        actionTaken = true;
+        this.showUndoWithToast("Set removed");
       }
     }
 
-    // Collapse UI if the currently expanded set was the one removed.
-    const currentExpanded = this.expandedSetPath();
-    if (currentExpanded && currentExpanded.exerciseIndex === exerciseIndex && currentExpanded.setIndex === setIndex) {
-      this.expandedSetPath.set(null);
-    } else if (currentExpanded && currentExpanded.exerciseIndex === exerciseIndex && currentExpanded.setIndex > setIndex) {
-      this.expandedSetPath.set({ exerciseIndex, setIndex: currentExpanded.setIndex - 1 });
+    // --- UI Cleanup: only run if an action was taken ---
+    if (actionTaken) {
+      const currentExpanded = this.expandedSetPath();
+      // Collapse the UI if the currently expanded set was the one removed.
+      if (currentExpanded && currentExpanded.exerciseIndex === exerciseIndex && currentExpanded.setIndex === setIndex) {
+        this.expandedSetPath.set(null);
+      }
+      // Adjust expansion index if a set *before* the expanded one was removed.
+      else if (currentExpanded && currentExpanded.exerciseIndex === exerciseIndex && currentExpanded.setIndex > setIndex) {
+        this.expandedSetPath.set({ exerciseIndex, setIndex: currentExpanded.setIndex - 1 });
+      }
+       // Adjust expansion index if an entire exercise *before* the expanded one was removed.
+      else if (currentExpanded && currentExpanded.exerciseIndex > exerciseIndex) {
+        this.expandedSetPath.set({ exerciseIndex: currentExpanded.exerciseIndex - 1, setIndex: currentExpanded.setIndex });
+      }
     }
-    this.showUndoWithToast("Set/Round removed");
   }
 
   showUndoWithToast(msg: string) {
@@ -1854,26 +1938,31 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         ? this.unitService.convertWeight(targetWeightRaw, 'kg', this.unitService.currentWeightUnit())
         : null;
 
+      let restForThisExercise = 0; // Default rest is 0
+
+
+      // For standard supersets, only the LAST exercise in a round gets rest.
+      if (supersetType === 'standard') {
+        const isLastExerciseInGroup = (orderInSuperset === supersetSize - 1);
+        if (isLastExerciseInGroup) {
+          restForThisExercise = 60; // This is the rest BETWEEN rounds.
+        }
+      }
+      // For EMOMs, restForThisExercise remains 0, as rest is implicit.
+
       const templateSetData: ExerciseTargetSetParams = {
         id: uuidv4(),
         type: 'superset',
         targetReps: targetReps,
         targetWeight: targetWeightKg,
-        restAfterSet: 60
+        restAfterSet: restForThisExercise // Apply the correctly determined rest value
       };
 
       setsArray.clear();
 
       for (let i = 0; i < numberOfSets; i++) {
-        if (isEmom) {
-          templateSetData.restAfterSet = 0;
-        }
-
+        // Each new set for this exercise will now inherit the correct rest value.
         const newSet = this.createSetFormGroup(templateSetData, false);
-        const restValue = (orderInSuperset < supersetSize - 1) ? 0 : 60;
-        if (!isEmom) {
-          newSet.get('restAfterSet')?.setValue(restValue);
-        }
         setsArray.push(newSet);
       }
     });
@@ -2455,6 +2544,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
             targetDistance: setInput.targetDistance ?? null,
             targetDistanceMin: setInput.targetDistanceMin ?? null,
             targetDistanceMax: setInput.targetDistanceMax ?? null,
+            targetTempo: setInput.targetTempo ?? null,
           } as ExerciseTargetSetParams)),
           supersetId: exInput.supersetId || null,
           supersetOrder: isSuperset ? exInput.supersetOrder : null,
@@ -3235,21 +3325,47 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     return this.exercisesFormArray.controls.findIndex(ctrl => ctrl === exerciseControl);
   }
 
-  // +++ NEW HELPER: To sync properties across a superset group +++
+  /**
+   * Synchronizes properties across all exercises in a superset group.
+   * This now also enforces the correct rest logic for all sets when the type changes.
+   * - Standard Supersets: Rest is applied only to the last exercise in the group.
+   * - EMOMs: Rest is always 0 for all exercises.
+   *
+   * @param supersetId The ID of the superset group to update.
+   * @param type The new type for the superset ('standard' or 'emom').
+   * @param emomTime The EMOM time in seconds, or null if not an EMOM.
+   */
   private syncSupersetProperties(supersetId: string, type: 'standard' | 'emom', emomTime: number | null): void {
-    this.exercisesFormArray.controls.forEach(control => {
+    // Find all exercises belonging to this superset group
+    const exercisesInGroup = this.exercisesFormArray.controls
+      .filter(ctrl => (ctrl as FormGroup).get('supersetId')?.value === supersetId);
+
+    exercisesInGroup.forEach(control => {
       const exerciseFg = control as FormGroup;
-      if (exerciseFg.get('supersetId')?.value === supersetId) {
-        exerciseFg.patchValue({
-          supersetType: type,
-          emomTimeSeconds: emomTime
-        }, { emitEvent: false }); // The silent update remains
+      const exIndex = this.getExerciseIndexByControl(exerciseFg);
+
+      // 1. Update the top-level superset properties for the exercise
+      exerciseFg.patchValue({
+        supersetType: type,
+        emomTimeSeconds: emomTime
+      }, { emitEvent: false });
+
+      // 2. Determine the correct rest value based on the new type and exercise position
+      let correctRestValue = 0; // Default to 0 (correct for EMOMs and non-last exercises in standard supersets)
+      if (type === 'standard' && this.isLastInSuperset(exIndex)) {
+        correctRestValue = 60; // Default rest time for the end of a standard superset round
       }
+
+      // 3. Apply the correct rest value to EVERY set within this exercise
+      const setsArray = this.getSetsFormArray(exerciseFg);
+      setsArray.controls.forEach(setControl => {
+        setControl.patchValue({
+          restAfterSet: correctRestValue
+        }, { emitEvent: false }); // Use silent update inside the loop
+      });
     });
 
-    // --- THIS IS THE FIX ---
-    // After all silent updates are complete, we manually trigger change detection.
-    // This forces Angular to re-evaluate the [ngClass] bindings for all cards.
+    // After all silent updates are complete, trigger a single change detection to update the UI.
     this.cdr.detectChanges();
   }
 
@@ -3461,6 +3577,10 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         const setsArray = this.getSetsFormArray(fg);
         // Use our existing helper to create a new set, intelligently copying the last one
         const newSet = this.createSyncedSet(setsArray, ctrl);
+
+        const correctRest = this._getCorrectRestForSupersetExercise(fg);
+        newSet.get('restAfterSet')?.setValue(correctRest, { emitEvent: false });
+
         setsArray.push(newSet);
       }
     });
@@ -3955,7 +4075,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     // Only remove if there is more than one set
     if (setsArray.length > 1) {
       setsArray.removeAt(setsArray.length - 1);
-      this.toastService.info("Set removed.", 2000);
+        this.showUndoWithToast("Set removed");
     }
 
     // Collapse UI if the currently expanded set was the one removed.
@@ -4024,10 +4144,14 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
             patchData['repsAchieved'] = historicalSet.repsAchieved;
             patchData['weightUsed'] = weightInCurrentUnit;
             patchData['durationPerformed'] = historicalSet.durationPerformed;
+            patchData['distanceAchieved'] = historicalSet.distanceAchieved;
+            patchData['tempoUsed'] = historicalSet.tempoUsed;
           } else { // 'routineBuilder' mode
             patchData['targetReps'] = historicalSet.repsAchieved;
             patchData['targetWeight'] = weightInCurrentUnit;
             patchData['targetDuration'] = historicalSet.durationPerformed;
+            patchData['targetDistance'] = historicalSet.distanceAchieved;
+            patchData['targetTempo'] = historicalSet.tempoUsed;
           }
 
           // Patch the form group for the individual set
@@ -4669,5 +4793,38 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     this.tempoToSetForAll.set(null);
 
     this.toastService.success(`Applied values to all ${setsArray.length} sets.`);
+  }
+
+
+   /**
+   * Determines the correct rest time for an exercise based on its superset type and position.
+   * - EMOMs always have 0 rest.
+   * - Standard supersets only have rest on the final exercise of the group.
+   * @param exerciseControl The FormGroup of the exercise to check.
+   * @returns The correct rest time in seconds (e.g., 60 or 0).
+   */
+  private _getCorrectRestForSupersetExercise(exerciseControl: AbstractControl): number {
+    if (!(exerciseControl instanceof FormGroup)) {
+      return 0; // Safety default
+    }
+
+    const supersetType = exerciseControl.get('supersetType')?.value;
+    const supersetId = exerciseControl.get('supersetId')?.value;
+
+    // If it's an EMOM or not part of a superset, rest is always 0.
+    if (supersetType === 'emom' || !supersetId) {
+      return 0;
+    }
+
+    // For standard supersets, check if it's the last exercise in the group.
+    if (supersetType === 'standard') {
+      const exIndex = this.getExerciseIndexByControl(exerciseControl);
+      if (this.isLastInSuperset(exIndex)) {
+        return 60; // Default rest time for the end of a round
+      }
+    }
+
+    // Default for non-last exercises in a standard superset.
+    return 0;
   }
 }

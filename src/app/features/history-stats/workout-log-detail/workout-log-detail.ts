@@ -792,29 +792,55 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
     this.exerciseDetailsName = '';
   }
   /**
-    * Determines the status of the performed value compared to the target.
-    * Ensures values are treated as numbers before comparison.
-    * @returns 'success' if performed is greater than or equal to target, 'failure' otherwise.
-    */
+   * Compares a performed value against a target value and returns a status.
+   * - 'success' if performed >= target, or if the target is not a valid number.
+   * - 'failure' if performed < target.
+   *
+   * @param performed The actual value achieved (e.g., reps, weight).
+   * @param target The target value to compare against.
+   * @returns A status string: 'success' or 'failure'.
+   */
   getComparisonStatus(performed: number | string, target: number | string): 'success' | 'failure' {
-    // Convert both values to numbers using parseFloat before comparing.
-    const performedValue = parseFloat(String(performed));
+    // Convert the target value to a number.
     const targetValue = parseFloat(String(target));
+
+    // If the target is not a valid number (e.g., NaN, null, undefined),
+    // there's no benchmark to fail against, so we return 'success'.
+    if (isNaN(targetValue)) {
+      return 'success';
+    }
+
+    // If the target is valid, convert the performed value and compare.
+    const performedValue = parseFloat(String(performed));
 
     // Now the comparison is safely done with numbers.
+    // If performedValue is NaN, the comparison will be false, correctly leading to 'failure'.
     return performedValue >= targetValue ? 'success' : 'failure';
   }
-
   /**
-   * Returns the appropriate Tailwind CSS class based on the comparison status.
-   * Ensures values are treated as numbers before comparison.
-   * @returns A string of CSS classes.
+   * Compares a performed value against a target value and returns a Tailwind CSS color class.
+   * - 'success' (green) if performed >= target, or if the target is not a valid number.
+   * - 'failure' (red) if performed < target.
+   *
+   * @param performed The actual value achieved (e.g., reps, weight).
+   * @param target The target value to compare against.
+   * @returns A string containing the appropriate CSS class.
    */
   getComparisonClass(performed: number | string, target: number | string): string {
-    // Convert both values to numbers using parseFloat.
-    const performedValue = parseFloat(String(performed));
+    // Convert the target value to a number.
     const targetValue = parseFloat(String(target));
 
+    // If the target is not a valid number (e.g., NaN, null, undefined),
+    // there's no benchmark to compare against, so we consider it a success.
+    if (isNaN(targetValue)) {
+      return 'text-green-500';
+    }
+
+    // If the target is valid, convert the performed value and compare.
+    const performedValue = parseFloat(String(performed));
+
+    // If performedValue itself is not a number, the comparison will result in `false`,
+    // correctly returning the 'failure' class.
     const status = performedValue >= targetValue ? 'success' : 'failure';
 
     switch (status) {
@@ -823,6 +849,7 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
       case 'failure':
         return 'text-red-500 dark:text-red-400';
       default:
+        // This case is unlikely to be hit with the current logic but serves as a fallback.
         return 'text-gray-800 dark:text-gray-100';
     }
   }

@@ -18,6 +18,7 @@ import { AlertButton, AlertInput } from '../models/alert.model';
 import { Exercise } from '../models/exercise.model';
 import { SubscriptionService } from './subscription.service';
 import { TranslateService } from '@ngx-translate/core';
+import { mapLoggedSetToExerciseTargetSetParams, mapLoggedWorkoutExerciseToWorkoutExercise, mapWorkoutExerciseToLoggedWorkoutExercise } from '../models/workout-mapper';
 
 @Injectable({
   providedIn: 'root',
@@ -1105,27 +1106,56 @@ export class WorkoutService {
   }
 
   /**
- * Gets the display string for a set's target weight.
- * @param set The set parameters.
- * @param exercise The base exercise definition.
- * @returns A user-friendly string for the UI.
- */
+   * Determines the appropriate weight string to display for a set.
+   * It prioritizes the actual performed weight ('weightUsed') from a LoggedSet
+   * but falls back to the 'targetWeight' for planned sets. It also handles
+   * special display cases for different exercise categories.
+   *
+   * @param set The set data, which can be either a planned set or a logged set.
+   * @param exercise The exercise context to determine the category.
+   * @returns A formatted string for display (e.g., "100 kg", "Bodyweight", "N/A").
+   */
   getWeightDisplay(set: ExerciseTargetSetParams | LoggedSet, exercise: Exercise | WorkoutExercise): string {
+    // The 'set' object could be a LoggedSet, which has a 'weightUsed' property.
+    // We check for this property to determine which value to prioritize.
+    const performedWeight = (set as any).weightUsed;
+
+    // Use the performed weight if it's a valid number (not null/undefined).
+    // Otherwise, fall back to the target weight from the plan.
+    const displayWeight = (performedWeight != null) ? performedWeight : set.targetWeight;
+
+    // --- The rest of the display logic now uses the prioritized 'displayWeight' ---
+
+    // 1. Handle categories where weight is not applicable.
     if (exercise?.category === 'cardio' || exercise?.category === 'stretching') {
+      if (displayWeight != null && displayWeight > 0) {
+        return `${displayWeight} ${this.unitsService.getWeightUnitSuffix()}`;
+      }
       return this.translate.instant('workoutService.display.weightNotApplicable');
     }
+
+    // 2. Handle bodyweight/calisthenics exercises.
     if (exercise?.category === 'bodyweight/calisthenics') {
-      if (set.targetWeight != null && set.targetWeight > 0) {
-        return `${set.targetWeight} ${this.unitsService.getWeightUnitSuffix()}`;
+      // If additional weight was used or targeted, display it.
+      if (displayWeight != null && displayWeight > 0) {
+        return `${displayWeight} ${this.unitsService.getWeightUnitSuffix()}`;
       }
+      // Otherwise, the display should just indicate "Bodyweight".
       return this.translate.instant('workoutService.display.bodyweight');
     }
-    if (set.targetWeight != null && set.targetWeight > 0) {
-      return `${set.targetWeight} ${this.unitsService.getWeightUnitSuffix()}`;
+
+    // 3. Handle all other exercises (e.g., strength training).
+    // If a specific weight value exists and is positive, display it with units.
+    if (displayWeight != null && displayWeight > 0) {
+      return `${displayWeight} ${this.unitsService.getWeightUnitSuffix()}`;
     }
-    if (set.targetWeight === 0) {
+
+    // If the weight is explicitly zero, it implies no *added* weight.
+    if (displayWeight === 0) {
       return this.translate.instant('workoutService.display.noAddedWeight');
     }
+
+    // 4. Fallback for cases where weight is not set (null/undefined).
     return this.translate.instant('workoutService.display.userDefined');
   }
 
@@ -1224,7 +1254,7 @@ export class WorkoutService {
  */
   private addFieldToSet(routine: Routine, exIndex: number, setIndex: number, fieldToAdd: string, targetValue: any): Routine {
     const updatedRoutine = JSON.parse(JSON.stringify(routine)) as Routine;
-    const setToUpdate = updatedRoutine.exercises[exIndex].sets[setIndex];
+    const setToUpdate = updatedRoutine.exercises[exIndex].sets[setIndex] as any;
 
     if (!setToUpdate.fieldOrder) {
       const { visible } = this.getFieldsForSet(routine, exIndex, setIndex);
@@ -1239,11 +1269,31 @@ export class WorkoutService {
     const numberValue = (fieldToAdd !== 'tempo' && fieldToAdd !== 'notes') ? Number(targetValue) : null;
 
     switch (fieldToAdd) {
-      case 'weight': setToUpdate.targetWeight = numberValue; break;
-      case 'reps': setToUpdate.targetReps = numberValue; break;
-      case 'distance': setToUpdate.targetDistance = numberValue; break;
-      case 'duration': setToUpdate.targetDuration = numberValue; break;
-      case 'tempo': setToUpdate.targetTempo = stringValue; break;
+      case 'weight': {
+        setToUpdate.targetWeight = numberValue;
+        setToUpdate.weightUsed = numberValue;
+        break;
+      }
+      case 'reps': {
+        setToUpdate.targetReps = numberValue;
+        setToUpdate.repsAchieved = numberValue;
+        break;
+      }
+      case 'distance': {
+        setToUpdate.targetDistance = numberValue;
+        setToUpdate.distanceAchieved = numberValue;
+        break;
+      }
+      case 'duration': {
+        setToUpdate.targetDuration = numberValue;
+        setToUpdate.durationPerformed = numberValue;
+        break;
+      }
+      case 'tempo': {
+        setToUpdate.targetTempo = stringValue;
+        setToUpdate.tempoUsed = stringValue;
+        break;
+      }
     }
 
     return updatedRoutine;
@@ -1254,16 +1304,21 @@ export class WorkoutService {
 
     if (!exercise || exercise.sets?.length === 0) {
       // Fallback for safety, though it should always find a set.
-      return { weight: false, reps: false, distance: false, duration: false };
+      return { weight: false, reps: false, distance: false, duration: false, tempo: false };
     }
 
-    return {
-      weight: exercise.sets.some(set => (set.targetWeight ?? 0) > 0 || (set.targetWeightMin ?? 0) > 0),
-      reps: exercise.sets.some(set => (set.targetReps ?? 0) > 0 || (set.targetRepsMin ?? 0) > 0),
-      distance: exercise.sets.some(set => (set.targetDistance ?? 0) > 0 || (set.targetDistanceMin ?? 0) > 0),
-      duration: exercise.sets.some(set => (set.targetDuration ?? 0) > 0 || (set.targetDurationMin ?? 0) > 0),
-      tempo: exercise.sets.some(set => !!set.targetTempo && set.targetTempo.trim().length > 0)
+    const wkEx = { ...exercise } as WorkoutExercise;
+    const wkExFromLog = { ...mapLoggedWorkoutExerciseToWorkoutExercise(exercise as any) } as WorkoutExercise;
+
+    const visibleExerciseFieldsObj = {
+      weight: wkEx.sets.some(set => (set.targetWeight ?? 0) > 0 || (set.targetWeightMin ?? 0) > 0) || wkExFromLog.sets.some(set => (set.targetWeight ?? 0) > 0) || !!(wkEx.sets.some(set => set.fieldOrder && set.fieldOrder.includes('weight')) || wkExFromLog.sets.some(set => set.fieldOrder && set.fieldOrder.includes('weight'))),
+      reps: wkEx.sets.some(set => (set.targetReps ?? 0) > 0 || (set.targetRepsMin ?? 0) > 0) || wkExFromLog.sets.some(set => (set.targetReps ?? 0) > 0) || !!(wkEx.sets.some(set => set.fieldOrder && set.fieldOrder.includes('reps')) || wkExFromLog.sets.some(set => set.fieldOrder && set.fieldOrder.includes('reps'))),
+      distance: wkEx.sets.some(set => (set.targetDistance ?? 0) > 0 || (set.targetDistanceMin ?? 0) > 0) || wkExFromLog.sets.some(set => (set.targetDistance ?? 0) > 0) || !!(wkEx.sets.some(set => set.fieldOrder && set.fieldOrder.includes('distance')) || wkExFromLog.sets.some(set => set.fieldOrder && set.fieldOrder.includes('distance'))),
+      duration: wkEx.sets.some(set => (set.targetDuration ?? 0) > 0 || (set.targetDurationMin ?? 0) > 0) || wkExFromLog.sets.some(set => (set.targetDuration ?? 0) > 0) || !!(wkEx.sets.some(set => set.fieldOrder && set.fieldOrder.includes('duration')) || wkExFromLog.sets.some(set => set.fieldOrder && set.fieldOrder.includes('duration'))),
+      tempo: wkEx.sets.some(set => !!set.targetTempo && set.targetTempo.trim().length > 0) || wkExFromLog.sets.some(set => !!set.targetTempo && set.targetTempo.trim().length > 0) || !!(wkEx.sets.some(set => set.fieldOrder && set.fieldOrder.includes('tempo')) || wkExFromLog.sets.some(set => set.fieldOrder && set.fieldOrder.includes('tempo'))),
     };
+
+    return visibleExerciseFieldsObj;
   }
 
   public getVisibleSetColumns(routine: Routine, exIndex: number, setIndex: number): { [key: string]: boolean } {
@@ -1272,16 +1327,32 @@ export class WorkoutService {
 
     if (!set) {
       // Fallback for safety, though it should always find a set.
-      return { weight: false, reps: false, distance: false, duration: false };
+      return { weight: false, reps: false, distance: false, duration: false, tempo: false };
     }
 
-    return {
-      weight: (set.targetWeight ?? 0) > 0 || (set.targetWeightMin ?? 0) > 0,
-      reps: (set.targetReps ?? 0) > 0 || (set.targetRepsMin ?? 0) > 0,
-      distance: (set.targetDistance ?? 0) > 0 || (set.targetDistanceMin ?? 0) > 0,
-      duration: (set.targetDuration ?? 0) > 0 || (set.targetDurationMin ?? 0) > 0,
-      tempo: !!set.targetTempo && set.targetTempo.trim().length > 0
-    };
+    // --- The Smart Implementation: Use the type guard ---
+    let visibleSetFieldsObj;
+    if (this.isLoggedSet(set)) {
+      // It's a LoggedSet, so we check the performance fields.
+      visibleSetFieldsObj = {
+        weight: !!((set.weightUsed ?? 0) > 0 || set.fieldOrder?.includes('weight')),
+        reps: !!((set.repsAchieved ?? 0) > 0 || set.fieldOrder?.includes('reps')),
+        distance: !!((set.distanceAchieved ?? 0) > 0 || set.fieldOrder?.includes('distance')),
+        duration: !!((set.durationPerformed ?? 0) > 0 || set.fieldOrder?.includes('duration')),
+        tempo: !!(set.targetTempo?.trim() || set.fieldOrder?.includes('tempo'))
+      };
+    } else {
+      // It's an ExerciseTargetSetParams, so we check the target fields.
+      const plannedSet = set as ExerciseTargetSetParams; // We can now safely cast it.
+      visibleSetFieldsObj = {
+        weight: !!((plannedSet.targetWeight ?? 0) > 0 || (plannedSet.targetWeightMin ?? 0) > 0 || plannedSet.fieldOrder?.includes('weight')),
+        reps: !!((plannedSet.targetReps ?? 0) > 0 || (plannedSet.targetRepsMin ?? 0) > 0 || plannedSet.fieldOrder?.includes('reps')),
+        distance: !!((plannedSet.targetDistance ?? 0) > 0 || (plannedSet.targetDistanceMin ?? 0) > 0 || plannedSet.fieldOrder?.includes('distance')),
+        duration: !!((plannedSet.targetDuration ?? 0) > 0 || (plannedSet.targetDurationMin ?? 0) > 0 || plannedSet.fieldOrder?.includes('duration')),
+        tempo: !!(plannedSet.targetTempo?.trim() || plannedSet.fieldOrder?.includes('tempo'))
+      };
+    }
+    return visibleSetFieldsObj;
   }
 
   /**
@@ -1494,6 +1565,22 @@ export class WorkoutService {
   public getInitialRoutines(count: number): Routine[] {
     const allRoutines = this.routinesSubject.getValue();
     return allRoutines.slice(0, count);
+  }
+
+  /**
+   * Checks if an object has the structure of a LoggedSet by looking for
+   * performance-specific properties. This is a "type guard".
+   * @param set The object to check.
+   * @returns True if the object is a LoggedSet.
+   */
+  public isLoggedSet(set: any): set is LoggedSet {
+    // A LoggedSet will have performance fields. We check for the existence of these keys.
+    return set && (
+      typeof set.repsAchieved !== 'undefined' ||
+      typeof set.weightUsed !== 'undefined' ||
+      typeof set.durationPerformed !== 'undefined' ||
+      typeof set.distanceAchieved !== 'undefined'
+    );
   }
 
 }
