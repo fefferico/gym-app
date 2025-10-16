@@ -15,7 +15,6 @@ import { trigger, style, animate, transition } from '@angular/animations';
   templateUrl: './alert.component.html',
   styleUrls: ['./alert.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  // =================== START OF CORRECTION ===================
   animations: [
     trigger('modalOverlay', [
       transition(':enter', [
@@ -39,7 +38,6 @@ import { trigger, style, animate, transition } from '@angular/animations';
       ]),
     ]),
   ]
-  // =================== END OF CORRECTION ===================
 })
 export class AlertComponent implements OnInit {
   @Input() options: AlertOptions | null = null;
@@ -54,6 +52,27 @@ export class AlertComponent implements OnInit {
 
   private toastService = inject(ToastService);
   private platformId = inject(PLATFORM_ID); // Inject PLATFORM_ID
+
+  // =================== START OF CORRECTION ===================
+  /**
+   * Determines the vertical alignment of the modal.
+   * On mobile devices with input fields, it aligns the modal to the top
+   * to prevent the on-screen keyboard from hiding it.
+   */
+  get alignmentClass(): string {
+    if (isPlatformBrowser(this.platformId)) {
+        const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        const hasInputs = this.options?.inputs && this.options.inputs.length > 0;
+
+        if (isMobile && hasInputs) {
+            // On mobile with inputs, align to the top and add padding.
+            return 'items-start pt-12';
+        }
+    }
+    // By default, or on desktop, center the modal vertically.
+    return 'items-center';
+  }
+  // =================== END OF CORRECTION ===================
 
   ngOnInit(): void {
     if (this.options?.inputs) {
@@ -242,7 +261,6 @@ export class AlertComponent implements OnInit {
     return classes;
   }
 
-  // --- START: ADD THIS NEW METHOD ---
   /**
    * Handles the click event for the optional close button in the corner.
    * Stops the event from propagating to the backdrop and dismisses the alert
@@ -253,5 +271,4 @@ export class AlertComponent implements OnInit {
     event.stopPropagation(); // Prevent the backdrop click from also firing.
     this.dismissWith({ role: 'cancel' });
   }
-  // --- END: ADD THIS NEW METHOD ---
 }

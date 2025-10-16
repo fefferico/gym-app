@@ -818,6 +818,12 @@ export class RoutineListComponent implements OnInit, OnDestroy {
 
   toggleActions(routineId: string, event: MouseEvent): void {
     event.stopPropagation();
+    
+    if (!this.subscriptionService.isPremium()) {
+      this.subscriptionService.showUpgradeModal('You have reached the maximum number of custom routines available to Free Tier users. Upgrade now to unlock the possibility to create endless routines and much more!');
+      return;
+    }
+
     this.activeRoutineIdActions.update(current => (current === routineId ? null : routineId));
   }
 

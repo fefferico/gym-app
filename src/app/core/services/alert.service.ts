@@ -32,6 +32,9 @@ export class AlertService {
             this.dismiss(undefined);
         }
 
+        const isDesktop = isPlatformBrowser(this.platformId) && !('ontouchstart' in window || navigator.maxTouchPoints > 0);
+
+
         return new Promise((resolve) => {
             this.backButtonListener = () => {
                 this.dismiss({ role: 'backdrop' });
@@ -101,6 +104,7 @@ export class AlertService {
         okText?: string,
         cancelText?: string
     ): Promise<{ role: 'confirm' | 'cancel', data?: any } | undefined> {
+
         const isDesktop = isPlatformBrowser(this.platformId) && !('ontouchstart' in window || navigator.maxTouchPoints > 0);
 
         const result = await this.present({
@@ -119,6 +123,8 @@ export class AlertService {
     }
 
     async showCustomAlert(title: string, message: string) {
+        const isDesktop = isPlatformBrowser(this.platformId) && !('ontouchstart' in window || navigator.maxTouchPoints > 0);
+
         const result = await this.present({
             header: title,
             message: message,
@@ -169,6 +175,7 @@ export class AlertService {
         customButtons: AlertButton[] = [],
         isCancelVisible: boolean = true
     ): Promise<{ [key: string]: string | number | boolean } | null> {
+        const isDesktop = isPlatformBrowser(this.platformId) && !('ontouchstart' in window || navigator.maxTouchPoints > 0);
 
         const finalOkText = okText || this.translate.instant('alertService.buttons.ok');
         const finalCancelText = cancelText || this.translate.instant('alertService.buttons.cancel');

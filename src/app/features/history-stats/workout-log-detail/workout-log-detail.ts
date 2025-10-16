@@ -457,31 +457,31 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
       case 'reps':
         const performedReps = set.repsAchieved;
         // if (isDifferent(performedReps ?? 0, set.targetRepsMin, set.targetReps)) {
-          modalData = { metric: 'Reps', targetValue: createTargetDisplay(set.targetRepsMin, set.targetRepsMax, set.targetReps), performedValue: `${performedReps ?? '-'}` };
+        modalData = { metric: 'Reps', targetValue: createTargetDisplay(set.targetRepsMin, set.targetRepsMax, set.targetReps), performedValue: `${performedReps ?? '-'}` };
         // }
         break;
       case 'duration':
         const performedDuration = set.durationPerformed;
         // if (isDifferent(performedDuration ?? 0, set.targetDurationMin, set.targetDuration)) {
-          modalData = { metric: 'Duration', targetValue: createTargetDisplay(set.targetDurationMin, set.targetDurationMax, set.targetDuration, ' s'), performedValue: `${performedDuration ?? '-'} s` };
+        modalData = { metric: 'Duration', targetValue: createTargetDisplay(set.targetDurationMin, set.targetDurationMax, set.targetDuration, ' s'), performedValue: `${performedDuration ?? '-'} s` };
         // }
         break;
       case 'weight':
         const performedWeight = set.weightUsed;
         // if ((performedWeight ?? 0) < (set.targetWeight ?? 0)) {
-          modalData = { metric: 'Weight', targetValue: `${set.targetWeight ?? '-'} ${unitLabel}`, performedValue: `${performedWeight ?? '-'} ${unitLabel}` };
+        modalData = { metric: 'Weight', targetValue: `${set.targetWeight ?? '-'} ${unitLabel}`, performedValue: `${performedWeight ?? '-'} ${unitLabel}` };
         // }
         break;
       case 'rest':
         const performedRest = set.restAfterSetUsed;
         // if ((performedRest ?? 0) < (set.targetRestAfterSet ?? 0)) {
-          modalData = { metric: 'Rest', targetValue: `${set.targetRestAfterSet ?? '-'} s`, performedValue: `${performedRest ?? '0'} s` };
+        modalData = { metric: 'Rest', targetValue: `${set.targetRestAfterSet ?? '-'} s`, performedValue: `${performedRest ?? '0'} s` };
         // }
         break;
       case 'distance':
         const performedDistance = set.distanceAchieved;
         // if (isDifferent(performedDistance ?? 0, set.targetDistanceMin, set.targetDistance)) {
-          modalData = { metric: 'Distance', targetValue: createTargetDisplay(set.targetDistanceMin, set.targetDistanceMax, set.targetDistance, ` ${distUnitLabel}`), performedValue: `${performedDistance ?? '-'} ${distUnitLabel}` };
+        modalData = { metric: 'Distance', targetValue: createTargetDisplay(set.targetDistanceMin, set.targetDistanceMax, set.targetDistance, ` ${distUnitLabel}`), performedValue: `${performedDistance ?? '-'} ${distUnitLabel}` };
         // }
         break;
     }
@@ -561,11 +561,31 @@ export class WorkoutLogDetailComponent implements OnInit, OnDestroy {
     const defaultBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-primary flex items-center text-sm hover:text-white dark:hover:text-gray-100';
     const deleteBtnClass = 'rounded text-left px-3 py-1.5 sm:px-4 sm:py-2 font-medium text-gray-600 dark:text-gray-300 hover:bg-red-600 flex items-center text-sm hover:text-gray-100 hover:animate-pulse';
     return [
-      { label: this.translate.instant('logDetail.actions.summary'), actionKey: 'view', iconName: 'eye', buttonClass: `${mode === 'dropdown' ? 'w-full ' : ''}${defaultBtnClass}`, data: { routineId } },
-      { label: this.translate.instant('logDetail.actions.edit'), actionKey: 'edit', iconName: 'edit', buttonClass: `${mode === 'dropdown' ? 'w-full ' : ''}${defaultBtnClass}`, data: { routineId } },
-      { label: this.translate.instant('logDetail.actions.routine'), actionKey: 'routine', iconName: 'routines', buttonClass: `${mode === 'dropdown' ? 'w-full ' : ''}${defaultBtnClass}`, data: { routineId } },
+      {
+        label: this.translate.instant('logDetail.actions.summary'), actionKey: 'view', iconName: 'eye',
+        iconClass: 'w-8 h-8 mr-2',
+        buttonClass: `${mode === 'dropdown' ? 'w-full ' : ''}${defaultBtnClass}`,
+        data: { routineId }
+      },
+      {
+        label: this.translate.instant('logDetail.actions.edit'), actionKey: 'edit', iconName: 'edit',
+        iconClass: 'w-8 h-8 mr-2',
+        buttonClass: `${mode === 'dropdown' ? 'w-full ' : ''}${defaultBtnClass}`,
+        data: { routineId }
+      },
+      {
+        label: this.translate.instant('logDetail.actions.routine'), actionKey: 'routine', iconName: 'routines',
+        iconClass: 'w-8 h-8 mr-2',
+        buttonClass: `${mode === 'dropdown' ? 'w-full ' : ''}${defaultBtnClass}`,
+        data: { routineId }
+      },
       { isDivider: true },
-      { label: this.translate.instant('logDetail.actions.delete'), actionKey: 'delete', iconName: 'trash', buttonClass: `${mode === 'dropdown' ? 'w-full ' : ''}${deleteBtnClass}`, data: { routineId } }
+      {
+        label: this.translate.instant('logDetail.actions.delete'), actionKey: 'delete', iconName: 'trash',
+        iconClass: 'w-8 h-8 mr-2',
+        buttonClass: `${mode === 'dropdown' ? 'w-full ' : ''}${deleteBtnClass}`,
+        data: { routineId }
+      }
     ];
   }
 
