@@ -4818,4 +4818,8 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     // Default for non-last exercises in a standard superset.
     return 0;
   }
+
+  isDraggingEnabled(exIndex: number): boolean {
+    return this.isEditableMode() && !this.shouldShowExpandedExercise(exIndex) && !this.isSuperSet(exIndex);
+  }
 }

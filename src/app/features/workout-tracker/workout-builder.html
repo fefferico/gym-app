@@ -338,7 +338,7 @@
                             </button>
                         </div>
 
-                        <div cdkDrag [cdkDragDisabled]="!isEditableMode() || shouldShowExpandedExercise(exIndex) || (!shouldShowExpandedExercise(exIndex) && isSuperSet(exIndex))"
+                        <div cdkDrag [cdkDragDisabled]="!isDraggingEnabled(exIndex)"
                             appLongPressDrag
                             [dragHandleSelector]="shouldShowExpandedExercise(exIndex) ? '[data-drag-handle]' : undefined"
                             [longPressEnabled]="isEditableMode() && !shouldShowExpandedExercise(exIndex)"
@@ -400,7 +400,7 @@
                                 <!-- COMPACT VIEW / HEADER AREA -->
                                 <div class="flex items-center space-x-1 pt-1 px-1">
                                     <!-- DRAG HANDLE ICON (Now just a visual cue) -->
-                                    <div *ngIf="isEditableMode() && !shouldShowExpandedExercise(exIndex) && !isSuperSet(exIndex)"
+                                    <div *ngIf="isDraggingEnabled(exIndex)"
                                         data-drag-handle
                                         class="p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 flex-shrink-0 flex item-center cursor-move rounded-md"
                                         [title]="'workoutBuilder.exercise.dragToReorder' | translate">
