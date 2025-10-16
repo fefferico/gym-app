@@ -153,14 +153,14 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     routines.forEach(r => { if (r.primaryCategory) categories.add(r.primaryCategory) });
     return Array.from(categories).sort();
   });
-  
+
   uniqueRoutineColors = computed<string[]>(() => {
     const routines = this.allRoutinesForList();
     const colors = new Set<string>();
     routines.forEach(r => { if (r.cardColor) colors.add(r.cardColor) });
     return Array.from(colors).sort();
   });
-  
+
   maxDuration = computed<number>(() => {
     const routines = this.allRoutinesForList();
     if (routines.length === 0) return 120;
@@ -171,7 +171,7 @@ export class RoutineListComponent implements OnInit, OnDestroy {
     const newMax = Math.min(Math.ceil(max / 10) * 10, 180);
     return newMax > 0 ? newMax : 120;
   });
-  
+
 
 
   private allExercisesMap = new Map<string, Exercise>(); // To store exercises for quick lookup
@@ -331,14 +331,14 @@ export class RoutineListComponent implements OnInit, OnDestroy {
       // 1. Get the initial batch of routines synchronously for an instant render.
       const initialRoutines = this.workoutService.getInitialRoutines(10);
       this.allRoutinesForList.set(initialRoutines);
-      
+
       // We no longer populate filters here, computed signals handle it.
       // But we still populate the last logged info for the initial batch.
       this.populateLastRoutineLoggedInfo(initialRoutines);
 
       // 3. Subscribe to the full list to silently load the rest in the background.
       this._subscribeToFullRoutineList();
-      
+
       // --- END: GHOST LOADING IMPLEMENTATION ---
     });
 
@@ -818,8 +818,9 @@ export class RoutineListComponent implements OnInit, OnDestroy {
 
   toggleActions(routineId: string, event: MouseEvent): void {
     event.stopPropagation();
-    
-    if (!this.subscriptionService.isPremium()) {
+
+    const totalRoutines = this.allRoutinesForList() ? this.allRoutinesForList().length : 0;
+    if (!this.subscriptionService.canAccess(PremiumFeature.UNLIMITED_ROUTINES, totalRoutines)) {
       this.subscriptionService.showUpgradeModal('You have reached the maximum number of custom routines available to Free Tier users. Upgrade now to unlock the possibility to create endless routines and much more!');
       return;
     }

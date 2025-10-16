@@ -246,7 +246,7 @@ export class BarbellCalculatorModalComponent implements OnInit, OnDestroy {
     return bar.weight + collar.weight + platesWeight;
   });
 
-  constructor(@Inject(DOCUMENT) private document: Document) {
+constructor(@Inject(DOCUMENT) private document: Document) {
     effect(() => {
       const currentTarget = this.targetWeight();
       const maxWeight = this.maxPossibleWeight();
@@ -259,6 +259,7 @@ export class BarbellCalculatorModalComponent implements OnInit, OnDestroy {
     });
 
     effect((onCleanup) => {
+      this.document.body.classList.add('overflow-hidden');
       onCleanup(() => {
         this.document.body.classList.remove('overflow-hidden');
       });
