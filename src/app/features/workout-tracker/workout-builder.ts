@@ -1673,26 +1673,17 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
   removeSelectedExercises(): void {
     if (this.isViewMode) return;
+
     const selectedIndices = this.selectedExerciseIndicesForMultipleRemoval().sort((a, b) => b - a);
+
     selectedIndices.forEach(index => {
-      if (index >= 0 && index < this.exercisesFormArray.length) {
-        const exerciseControl = this.exercisesFormArray.at(index);
-        const supersetId = exerciseControl.get('supersetId')?.value;
-        if (supersetId) {
-          // If part of a superset, remove all exercises in that superset
-          this.exercisesFormArray.controls = this.exercisesFormArray.controls.filter(ctrl => {
-            const fg = ctrl as FormGroup;
-            return fg.get('supersetId')?.value !== supersetId;
-          });
-        } else {
-          this.exercisesFormArray.removeAt(index);
-        }
-      }
+      this.exercisesFormArray.removeAt(index);
     });
+
     this.selectedExerciseIndicesForMultipleRemoval.set([]);
-    this.selectedExerciseIndicesForSuperset.set([]);
+    this.selectedExerciseIndicesForSuperset.set([]); // Also clear the superset selection for consistency.
     this.recalculateSupersetOrders();
-    this.expandedSetPath.set(null); // Collapse any expanded set after removal
+    this.expandedSetPath.set(null);
   }
 
   toggleExerciseSelectionForSuperset(index: number, event: Event): void {
