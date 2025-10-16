@@ -1364,6 +1364,9 @@
     },
     "units": {
       "reps": "reps"
+    },
+    "card": {
+      "noSetData": "-"
     }
   },
   "workoutSummary": {
