@@ -44,14 +44,14 @@ import { AppSettingsService } from '../../../core/services/app-settings.service'
 import { TrainingProgram } from '../../../core/models/training-program.model';
 import { AlertButton, AlertInput } from '../../../core/models/alert.model';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
-import { addExerciseBtn, addRoundToExerciseBtn, addSetToExerciseBtn, addToSuperSetBtn, addWarmupSetBtn, calculatorBtn, createSuperSetBtn, openSessionPerformanceInsightsBtn, pauseSessionBtn, quitWorkoutBtn, removeExerciseBtn, removeFromSuperSetBtn, removeRoundFromExerciseBtn, removeSetFromExerciseBtn, resumeSessionBtn, sessionNotesBtn, switchExerciseBtn } from '../../../core/services/buttons-data';
+import { addExerciseBtn, addRoundToExerciseBtn, addSetToExerciseBtn, addToSuperSetBtn, addWarmupSetBtn, calculatorBtn, createSuperSetBtn, openSessionPerformanceInsightsBtn, pauseSessionBtn, quitWorkoutBtn, removeExerciseBtn, removeFromSuperSetBtn, removeRoundFromExerciseBtn, removeSetFromExerciseBtn, resumeSessionBtn, sessionNotesBtn, switchExerciseBtn, timerBtn } from '../../../core/services/buttons-data';
 import { mapExerciseTargetSetParamsToExerciseExecutedSetParams } from '../../../core/models/workout-mapper';
 import { ProgressiveOverloadService } from '../../../core/services/progressive-overload.service.ts';
 import { BarbellCalculatorModalComponent } from '../../../shared/components/barbell-calculator-modal/barbell-calculator-modal.component';
 import { NgLetDirective } from '../../../shared/directives/ng-let.directive';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { SessionOverviewModalComponent } from '../session-overview-modal/session-overview-modal.component';
-import { FullScreenRestTimerComponent } from '../../../shared/components/full-screen-rest-timer/full-screen-rest-timer';
+import { FullScreenRestTimerComponent, TIMER_MODES } from '../../../shared/components/full-screen-rest-timer/full-screen-rest-timer';
 import { AUDIO_TYPES, AudioService } from '../../../core/services/audio.service';
 import { se } from 'date-fns/locale';
 import { PressDirective } from '../../../shared/directives/press.directive';
@@ -1698,7 +1698,6 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const isPaused = this.sessionState() === 'paused';
     const hasExercises = (this.routine()?.exercises?.length ?? 0) > 0;
     const commonModalButtonClass = this.menuButtonBaseClass(); // Use the new computed property
-
     const addExerciseDisabledClass = (isPaused || !hasExercises ? 'disabled ' : '');
 
     const barbellCalculatorBtn = {
@@ -1715,6 +1714,11 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       {
         ...sessionNotesBtn,
         overrideCssButtonClass: sessionNotesBtn.buttonClass + commonModalButtonClass
+      },
+      {
+        ...timerBtn,
+        label: this.translate.instant('compactPlayer.rest'),
+        overrideCssButtonClass: timerBtn.buttonClass + commonModalButtonClass
       },
       {
         ...addExerciseBtn,
@@ -1744,6 +1748,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       case 'session_notes': this.editSessionNotes(); break;
       case 'addExercise': this.openAddExerciseModal(); break;
       case 'exit': this.quitWorkout(); break;
+      case 'timer': this.openManualRestTimer(); break;
     }
   }
 
@@ -1881,6 +1886,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
   // +++ MODIFIED: This method now also sets the next set's details for the rest timer UI
   private async startRestPeriod(duration: number, completedExIndex: number, completedSetIndex: number): Promise<void> {
     this.playerSubState.set(PlayerSubState.Resting);
+    this.restTimerMode.set(TIMER_MODES.timer);
     this.restDuration.set(duration);
     this.restTimerMainText.set('RESTING');
     this.restTimerNextUpText.set('Loading next set...');
@@ -2170,21 +2176,30 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
 
   handleRestTimerFinished(): void {
     this.playEndSound();
-
     this.isRestTimerVisible.set(false);
-    // this.toastService.success("Rest complete!", 2000);
-    this.updateLogWithRestTime(this.restDuration()); // Update log with full rest duration
+
+    if (this.isManualRestActive && this.restTimerMode() === 'timer') {
+      this.isManualRestActive = false;
+      return;
+    }
+
+    // Standard post-set logic
+    this.updateLogWithRestTime(this.restDuration());
     this.handleAutoExpandNextExercise();
-    // this.autoCollapsePreviousSets();
   }
 
   handleRestTimerSkipped(timeSkipped: number): void {
     this.isRestTimerVisible.set(false);
-    // this.toastService.info("Rest skipped", 1500);
+
+    if (this.isManualRestActive && this.restTimerMode() === 'timer') {
+      this.isManualRestActive = false;
+      return;
+    }
+
+    // Standard post-set logic
     const actualRest = Math.ceil(this.restDuration() - timeSkipped);
-    this.updateLogWithRestTime(actualRest); // Update log with actual rest taken
+    this.updateLogWithRestTime(actualRest);
     this.handleAutoExpandNextExercise();
-    // this.autoCollapsePreviousSets();
     this.playerSubState.set(PlayerSubState.PerformingSet);
     this.audioService.playSound(AUDIO_TYPES.end);
   }
@@ -3376,7 +3391,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         this.lastLoggedSetForRestUpdate = this.getLoggedSet(exIndex, setIndex, roundIndex) ?? null;
         this.startRestPeriod(set.restAfterSet, exIndex, setIndex);
       } else {
-        setTimeout(() => { this.handleAutoExpandNextExercise(); }, 700);
+        setTimeout(() => { this.handleAutoExpandNextExercise(); }, 800);
         // this.autoCollapsePreviousSets();
       }
     }
@@ -4056,4 +4071,75 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       return newInputs;
     });
   }
+
+
+  private isManualRestActive = false;
+  restTimerMode = signal<TIMER_MODES>(TIMER_MODES.timer);
+
+  async openManualRestTimer(): Promise<void> {
+    // First, close the menu it was triggered from.
+    // this.toggleMainSessionActionMenu(null);
+
+    // Step 1: Ask the user which type of timer they want.
+    const choice = await this.alertService.showConfirmationDialog(
+      this.translate.instant('compactPlayer.alerts.chooseTimerTitle'),
+      this.translate.instant('compactPlayer.alerts.chooseTimerMessage'),
+      [
+        { text: this.translate.instant('compactPlayer.actions.countdown'), role: 'confirm', data: TIMER_MODES.timer, icon: 'duration' },
+        { text: this.translate.instant('compactPlayer.actions.stopwatch'), role: 'confirm', data: TIMER_MODES.stopwatch, icon: 'stopwatch' }
+      ]
+    );
+
+    if (!choice || !choice.data) {
+      return; // User cancelled the selection
+    }
+
+    // Step 2: Branch logic based on the user's choice.
+    if (choice.data === TIMER_MODES.timer) {
+      // User chose COUNTDOWN, so we prompt for a duration.
+      const result = await this.alertService.showPromptDialog(
+        this.translate.instant('compactPlayer.alerts.manualRestTitle'),
+        this.translate.instant('compactPlayer.alerts.manualRestMessage'),
+        [{
+          name: 'duration',
+          type: 'number',
+          placeholder: 'Seconds',
+          value: 60,
+          attributes: { min: '1', required: true }
+        }] as AlertInput[],
+        this.translate.instant('compactPlayer.alerts.startRest'),
+        this.translate.instant('common.cancel')
+      );
+
+      if (result && result['duration']) {
+        const duration = Number(result['duration']);
+        if (duration > 0) {
+          this.isManualRestActive = true;
+          this.restTimerMode.set(TIMER_MODES.timer); // Set mode to countdown
+          this.restDuration.set(duration);
+          this.restTimerMainText.set(this.translate.instant('compactPlayer.manualRest'));
+          this.restTimerNextUpText.set(this.translate.instant('compactPlayer.takeABreak'));
+          this.isRestTimerVisible.set(true);
+        }
+      }
+    } else if (choice.data === TIMER_MODES.stopwatch) {
+      // User chose STOPWATCH, so we start it immediately.
+      this.isManualRestActive = true;
+      this.restTimerMode.set(TIMER_MODES.stopwatch); // Set mode to stopwatch
+      this.restTimerMainText.set(this.translate.instant('compactPlayer.manualRest'));
+      this.restTimerNextUpText.set(this.translate.instant('compactPlayer.takeABreak'));
+      this.isRestTimerVisible.set(true);
+    }
+  }
+
+  handleStopwatchStopped(): void {
+    this.isRestTimerVisible.set(false);
+
+    if (this.isManualRestActive) {
+      this.isManualRestActive = false;
+      // Optional: You could show a toast here like "Rest complete: 1:30"
+    }
+  }
+
+
 }

@@ -286,6 +286,14 @@ export const sessionNotesBtn = {
     iconClass: 'w-8 h-8 mr-2'
 }
 
+export const timerBtn = {
+    label: 'actionButtons.sessionNotes',
+    actionKey: 'timer',
+    iconName: 'stopwatch',
+    buttonClass: ' hover:bg-cyan-600 ',
+    iconClass: 'w-8 h-8 mr-2'
+}
+
 export const hideBtn = {
     label: 'actionButtons.hide',
     actionKey: 'hide',

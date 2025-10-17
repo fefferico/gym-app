@@ -724,6 +724,8 @@
     }
   },
   "compactPlayer": {
+    "takeABreak": "Prenditi una pausa",
+    "manualRest": "Pausa",
     "defaultWorkoutName": "Allenamento",
     "paused": "[IN PAUSA]",
     "overallProgress": "Progresso totale",
@@ -864,7 +866,12 @@
       "addFieldMessage": "Quale metrica vuoi aggiungere a tutte le serie di questo esercizio?",
       "setTargetTitle": "Imposta Target {{field}}",
       "setTargetMessage": "Inserisci il valore target che vuoi applicare alla serie corrente per questo esercizio.",
-      "applyTarget": "Applica Target"
+      "applyTarget": "Applica Target",
+      "startRest": "Inizia pausa",
+      "manualRestMessage": "Imposta i secondi di pausa",
+      "manualRestTitle": "Timer pausa personalizzato",
+      "chooseTimerMessage": "Scegli il tipo di timer",
+      "chooseTimerTitle": "Tipo di timer"
     },
     "actions": {
       "pause": "PAUSA SESSIONE",
@@ -872,7 +879,9 @@
       "notes": "NOTE SESSIONE",
       "addExercise": "AGGIUNGI ESERCIZIO",
       "toolkit": "TOOLKIT PESI",
-      "quit": "ABBANDONA ALLENAMENTO"
+      "quit": "ABBANDONA ALLENAMENTO",
+      "countdown": "CONTO ALLA ROVESCIA",
+      "stopwatch": "CRONOMETRO"
     }
   },
   "actionButtons": {
@@ -1608,7 +1617,11 @@
   "restTimer": {
     "nextUp": "Prossimo",
     "lastTime": "Serie precedente",
-    "skip": "Salta"
+    "skip": "Salta",
+    "switchToStopwatch": "Passa al cronometro",
+    "switchToTimer": "Passa al timer",
+    "elapsed": "Tempo trascorso",
+    "stop": "Ferma"
   },
   "barbellCalculator": {
     "nav": {

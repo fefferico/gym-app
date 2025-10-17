@@ -121,7 +121,7 @@
                   </button>
                   <button (click)="toggleActionMenu(exIndex, $event)"
                     class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full focus:outline-none flex items-center">
-                    <app-icon name="menu-action" class="h-10 w-10"></app-icon>
+                    <app-icon name="menu-action" class="h-8 w-8"></app-icon>
                   </button>
                 </div>
                 <app-action-menu [isVisible]="activeActionMenuIndex() === exIndex && getMenuMode()  !== 'compact'"
@@ -655,10 +655,18 @@
     (backToSearchClicked)="onBackToSearchFromSimilar()" (close)="closeSwitchExerciseModal()">
   </app-exercise-selection-modal>
 
-  <app-full-screen-rest-timer [isVisible]="isRestTimerVisible()" [mainTimer]="sessionTimerDisplay"
-    [durationSeconds]="restDuration()" [mainText]="restTimerMainText()" [nextUpText]="restTimerNextUpText()"
-    (timerFinished)="handleRestTimerFinished()" (timerSkipped)="handleRestTimerSkipped($event)">
-  </app-full-screen-rest-timer>
+<app-full-screen-rest-timer 
+  [isVisible]="isRestTimerVisible()" 
+  [mode]="restTimerMode()"
+  [mainTimer]="sessionTimerDisplay()"
+  [durationSeconds]="restDuration()" 
+  [mainText]="restTimerMainText()" 
+  [nextUpText]="restTimerNextUpText()"
+  (timerFinished)="handleRestTimerFinished()" 
+  (timerSkipped)="handleRestTimerSkipped($event)"
+  (stopwatchStopped)="handleStopwatchStopped()"
+  (modeChanged)="restTimerMode.set($event)">
+</app-full-screen-rest-timer>
 
   <!-- Performance Insights Modal -->
   <div *ngIf="isPerformanceInsightsModalOpen()" style="z-index: 100"
