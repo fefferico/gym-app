@@ -4,7 +4,7 @@ import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { Subscription, of, timer, firstValueFrom, interval, Subject, combineLatest, lastValueFrom } from 'rxjs';
 import { switchMap, tap, map, take, filter, takeUntil } from 'rxjs/operators';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { ActiveSetInfo, ExerciseTargetSetParams, PausedWorkoutState, PlayerSubState, Routine, SessionState, TimedSetState, WorkoutExercise } from '../../../core/models/workout.model';
+import { ActiveSetInfo, ExerciseTargetSetParams, METRIC, PausedWorkoutState, PlayerSubState, Routine, SessionState, TimedSetState, WorkoutExercise } from '../../../core/models/workout.model';
 import { Exercise } from '../../../core/models/exercise.model';
 import { LastPerformanceSummary, LoggedSet, LoggedWorkoutExercise, PersonalBestSet, WorkoutLog } from '../../../core/models/workout-log.model';
 import { FormatSecondsPipe } from '../../../shared/pipes/format-seconds-pipe';
@@ -3479,7 +3479,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       exercisesInBlock.forEach(ex => {
         const setForRound = ex.sets[nextRound - 1];
         if (setForRound) {
-          const reps = this.getSetTargetDisplay(setForRound, 'reps');
+          const reps = this.getSetTargetDisplay(setForRound, this.metricEnum.reps);
           const weightDisplay = this.workoutService.getWeightDisplay(setForRound, ex);
 
           header += `<br><span class="text-sm opacity-80">- ${this.workoutService.exerciseNameDisplay(ex)}: ${reps}</span>`;
@@ -3507,7 +3507,7 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
       const weight = this.weightUnitPipe.transform(historicalSetPerformance.weightUsed);
       detailsLine = `Last time: ${weight} x ${historicalSetPerformance.repsAchieved} reps`;
     } else {
-      const repsDisplay = this.getSetTargetDisplay(setData, 'reps');
+      const repsDisplay = this.getSetTargetDisplay(setData, this.metricEnum.reps);
       const weightDisplay = this.workoutService.getWeightDisplay(setData, exerciseData);
       detailsLine = `Target: ${weightDisplay} x ${repsDisplay} reps`;
     }
@@ -4703,15 +4703,15 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
   * @param field The field to display ('reps' or 'duration' or 'weight).
   * @returns A formatted string like "8-12" or "60+", or an empty string if no range is set.
   */
-  public getSetTargetDisplay(set: ExerciseTargetSetParams, field: 'reps' | 'duration' | 'weight' | 'distance'): string {
+  public getSetTargetDisplay(set: ExerciseTargetSetParams, field: METRIC): string {
     // if EMOM returns string like "10 @ 5kg"
     if (this.activeSetInfo()?.supersetId && this.activeSetInfo()?.superSetType === 'emom') {
       const weightPart = set.targetWeight ? ` @ ${set.targetWeight}kg` : '';
       const exercise = this.activeSetInfo()?.exerciseData;
       if (exercise) {
-        return `${this.workoutService.getSetTargetDisplay(set, 'reps')} @ ${this.workoutService.getWeightDisplay(set, exercise) || ''}`;
+        return `${this.workoutService.getSetTargetDisplay(set, field)} @ ${this.workoutService.getWeightDisplay(set, exercise) || ''}`;
       } else {
-        return `${this.workoutService.getSetTargetDisplay(set, 'reps')} ${weightPart}`;
+        return `${this.workoutService.getSetTargetDisplay(set, field)} ${weightPart}`;
       }
     } else {
       return this.workoutService.getSetTargetDisplay(set, field);
@@ -4867,4 +4867,6 @@ export class FocusPlayerComponent implements OnInit, OnDestroy {
   closeCalculatorModal(): void {
     this.isCalculatorModalVisible = false;
   }
+
+  protected metricEnum = METRIC;
 }

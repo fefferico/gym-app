@@ -303,6 +303,10 @@
                                 <ng-container [ngTemplateOutlet]="tempoInputTemplate"
                                   [ngTemplateOutletContext]="{ exIndex: exIndex, setIndex: setIndex, set: set }"></ng-container>
                               </div>
+                              <div *ngSwitchCase="'rest'">
+                                <ng-container [ngTemplateOutlet]="restInputTemplate"
+                                  [ngTemplateOutletContext]="{ exIndex: exIndex, setIndex: setIndex, set: set }"></ng-container>
+                              </div>
                             </ng-container>
                           </ng-container>
 
@@ -319,8 +323,8 @@
                       </div>
                       <!-- Set Notes Textarea (if visible) -->
                       <div *ngIf="expandedSetNotes() === (exIndex + '-' + setIndex)" class="px-2 pb-1">
-                        <textarea [ngModel]="getInitialInputValue(exIndex, setIndex, 'notes')"
-                          (change)="updateSetData(exIndex, setIndex, 0, 'notes', $event)"
+                        <textarea [ngModel]="getInitialInputValue(exIndex, setIndex, metricEnum.notes)"
+                          (change)="updateSetData(exIndex, setIndex, 0, metricEnum.notes, $event)"
                           [placeholder]="'compactPlayer.setNotesPlaceholder' | translate"
                           class="w-full text-xs bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded-md p-1.5 focus:ring-primary-dark focus:border-primary-dark dark:text-gray-200"></textarea>
                       </div>
@@ -419,8 +423,8 @@
                     </div>
                     <!-- Set Notes Textarea (if visible) -->
                     <div *ngIf="expandedSetNotes() === (exIndex + '-' + roundIndex)" class="px-2 pb-1">
-                      <textarea [ngModel]="getInitialInputValue(exIndex, roundIndex, 'notes')"
-                        (change)="updateSetData(exIndex, roundIndex, 0, 'notes', $event)"
+                      <textarea [ngModel]="getInitialInputValue(exIndex, roundIndex, metricEnum.notes)"
+                        (change)="updateSetData(exIndex, roundIndex, 0,metricEnum.notes, $event)"
                         [placeholder]="'compactPlayer.roundNotesPlaceholder' | translate"
                         class="w-full text-xs bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded-md p-1.5 focus:ring-primary-dark focus:border-primary-dark dark:text-gray-200"></textarea>
                     </div>
@@ -476,9 +480,9 @@
                                       class="block text-xs font-medium text-gray-500 dark:text-gray-400 text-center pb-1">{{
                                       'compactPlayer.weightLabel' | translate }}</label>
                                     <input type="number"
-                                      [ngModel]="getInitialInputValue(ssOriginalIndex, roundIndex, 'weight')"
+                                      [ngModel]="getInitialInputValue(ssOriginalIndex, roundIndex, metricEnum.weight)"
                                       [disabled]="isRoundCompleted(exIndex, roundIndex)"
-                                      (change)="updateSetData(ssOriginalIndex, roundIndex, roundIndex, 'weight', $event)"
+                                      (change)="updateSetData(ssOriginalIndex, roundIndex, roundIndex, metricEnum.weight, $event)"
                                       class="w-full text-md text-center bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md p-1 text-gray-700 dark:text-white">
                                     <div
                                       *ngIf="workoutService.getWeightDisplay(ssExercise.sets[roundIndex], ssExercise) as target"
@@ -493,12 +497,12 @@
                                       class="block text-xs font-medium text-gray-500 dark:text-gray-400 text-center pb-1">{{
                                       'compactPlayer.repsLabel' | translate }}</label>
                                     <input type="number"
-                                      [ngModel]="getInitialInputValue(ssOriginalIndex, roundIndex, 'reps')"
+                                      [ngModel]="getInitialInputValue(ssOriginalIndex, roundIndex, metricEnum.reps)"
                                       [disabled]="isRoundCompleted(exIndex, roundIndex)"
-                                      (change)="updateSetData(ssOriginalIndex, roundIndex, roundIndex, 'reps', $event)"
+                                      (change)="updateSetData(ssOriginalIndex, roundIndex, roundIndex, metricEnum.reps, $event)"
                                       class="w-full text-md text-center bg-gray-100 dark:bg-gray-700 border-gray-300 rounded-md p-1 text-gray-700 dark:text-white">
                                     <div
-                                      *ngIf="getSetTargetDisplay(ssOriginalIndex, roundIndex, 'reps') as target"
+                                      *ngIf="getSetTargetDisplay(ssOriginalIndex, roundIndex, metricEnum.reps) as target"
                                       class="target-class text-xs"><span
                                         class="flex items-center justify-center"><app-icon name="target"
                                           class="h-3 w-3 mr-0.5"></app-icon>{{ target
@@ -510,12 +514,12 @@
                                       class="block text-xs font-medium text-gray-500 dark:text-gray-400 text-center pb-1">{{
                                       'compactPlayer.distanceLabel' | translate }}</label>
                                     <input type="number"
-                                      [ngModel]="getInitialInputValue(ssOriginalIndex, roundIndex, 'distance')"
+                                      [ngModel]="getInitialInputValue(ssOriginalIndex, roundIndex, metricEnum.distance)"
                                       [disabled]="isRoundCompleted(exIndex, roundIndex)"
-                                      (change)="updateSetData(ssOriginalIndex, roundIndex, roundIndex, 'distance', $event)"
+                                      (change)="updateSetData(ssOriginalIndex, roundIndex, roundIndex, metricEnum.distance, $event)"
                                       class="w-full text-md text-center bg-gray-100 dark:bg-gray-700 border-gray-300 rounded-md p-1 text-gray-700 dark:text-white">
                                     <div
-                                      *ngIf="getSetTargetDisplay(ssOriginalIndex, roundIndex, 'distance') as target"
+                                      *ngIf="getSetTargetDisplay(ssOriginalIndex, roundIndex, metricEnum.distance) as target"
                                       class="target-class text-xs"><span
                                         class="flex items-center justify-center"><app-icon name="target"
                                           class="h-3 w-3 mr-0.5"></app-icon>{{ target
@@ -527,13 +531,13 @@
                                       class="block text-xs font-medium text-gray-500 dark:text-gray-400 text-center pb-1">{{
                                       'compactPlayer.timeLabel' | translate }}</label>
                                     <input type="text"
-                                      [ngModel]="getInitialInputValue(ssOriginalIndex, roundIndex, 'duration')"
+                                      [ngModel]="getInitialInputValue(ssOriginalIndex, roundIndex, metricEnum.duration)"
                                       [disabled]="isRoundCompleted(exIndex, roundIndex)"
-                                      (change)="updateSetData(ssOriginalIndex, roundIndex, roundIndex, 'duration', $event)"
+                                      (change)="updateSetData(ssOriginalIndex, roundIndex, roundIndex, metricEnum.duration, $event)"
                                       class="w-full text-md text-center bg-gray-100 dark:bg-gray-700 border-gray-300 rounded-md p-1 text-gray-700 dark:text-white"
                                       [placeholder]="'compactPlayer.timePlaceholder' | translate">
                                     <div
-                                      *ngIf="getSetTargetDisplay(ssOriginalIndex, roundIndex, 'duration') as target"
+                                      *ngIf="getSetTargetDisplay(ssOriginalIndex, roundIndex, metricEnum.duration) as target"
                                       class="target-class text-xs"><span
                                         class="flex items-center justify-center"><app-icon name="target"
                                           class="h-3 w-3 mr-0.5"></app-icon>{{ target
@@ -805,10 +809,10 @@
         {{ 'compactPlayer.repsLabel' | translate }}
       </label>
     </div>
-    <input type="number" [ngModel]="getInitialInputValue(exIndex, setIndex, 'reps')"
-      (change)="updateSetData(exIndex, setIndex, 0, 'reps', $event)"
+    <input type="number" [ngModel]="getInitialInputValue(exIndex, setIndex, metricEnum.reps)"
+      (change)="updateSetData(exIndex, setIndex, 0, metricEnum.reps, $event)"
       class="w-full p-1 text-center bg-gray-100 dark:bg-gray-700 rounded-md text-black dark:text-gray-200">
-    <div *ngIf="getSetTargetDisplay(exIndex, setIndex, 'reps') as target" class="target-class text-xs">
+    <div *ngIf="getSetTargetDisplay(exIndex, setIndex, metricEnum.reps) as target" class="target-class text-xs">
       <span class="flex items-center justify-center">
         <app-icon name="target" class="h-3 w-3 mr-0.5"></app-icon>x{{ target }}
       </span>
@@ -825,10 +829,10 @@
         {{ 'compactPlayer.weightLabel' | translate:{unit: unitsService.getWeightUnitSuffix()} }}
       </label>
     </div>
-    <input type="number" [ngModel]="getInitialInputValue(exIndex, setIndex, 'weight')"
-      (change)="updateSetData(exIndex, setIndex, 0, 'weight', $event)"
+    <input type="number" [ngModel]="getInitialInputValue(exIndex, setIndex, metricEnum.weight)"
+      (change)="updateSetData(exIndex, setIndex, 0, metricEnum.weight, $event)"
       class="w-full p-1 text-center bg-gray-100 dark:bg-gray-700 rounded-md text-black dark:text-gray-200">
-    <div *ngIf="getSetTargetDisplay(exIndex, setIndex, 'weight') as target" class="target-class text-xs">
+    <div *ngIf="getSetTargetDisplay(exIndex, setIndex, metricEnum.weight) as target" class="target-class text-xs">
       <span class="flex items-center justify-center">
         <app-icon name="target" class="h-3 w-3 mr-0.5"></app-icon>{{ target }}{{ unitsService.getWeightUnitSuffix() }}
       </span>
@@ -845,10 +849,10 @@
         {{ 'compactPlayer.distanceLabel' | translate }}
       </label>
     </div>
-    <input type="number" [ngModel]="getInitialInputValue(exIndex, setIndex, 'distance')"
-      (change)="updateSetData(exIndex, setIndex, 0, 'distance', $event)"
+    <input type="number" [ngModel]="getInitialInputValue(exIndex, setIndex, metricEnum.distance)"
+      (change)="updateSetData(exIndex, setIndex, 0, metricEnum.distance, $event)"
       class="w-full p-1 text-center bg-gray-100 dark:bg-gray-700 rounded-md text-black dark:text-gray-200">
-    <div *ngIf="getSetTargetDisplay(exIndex, setIndex, 'distance') as target" class="target-class text-xs">
+    <div *ngIf="getSetTargetDisplay(exIndex, setIndex, metricEnum.distance) as target" class="target-class text-xs">
       <span class="flex items-center justify-center">
         <app-icon name="target" class="h-3 w-3 mr-0.5"></app-icon>{{ target }} {{
         unitsService.getDistanceMeasureUnitSuffix() }}
@@ -866,11 +870,11 @@
         {{ 'compactPlayer.timeLabel' | translate }}
       </label>
     </div>
-    <input type="text" [ngModel]="getInitialInputValue(exIndex, setIndex, 'duration')"
-      (change)="updateSetData(exIndex, setIndex, 0, 'duration', $event)"
+    <input type="text" [ngModel]="getInitialInputValue(exIndex, setIndex, metricEnum.duration)"
+      (change)="updateSetData(exIndex, setIndex, 0, metricEnum.duration, $event)"
       class="w-full p-1 text-center bg-gray-100 dark:bg-gray-700 rounded-md text-black dark:text-gray-200"
       [placeholder]="'compactPlayer.timePlaceholder' | translate">
-    <div *ngIf="getSetTargetDisplay(exIndex, setIndex, 'duration') as target" class="target-class text-xs">
+    <div *ngIf="getSetTargetDisplay(exIndex, setIndex, metricEnum.duration) as target" class="target-class text-xs">
       <span class="flex items-center justify-center">
         <app-icon name="target" class="h-3 w-3 mr-0.5"></app-icon>{{ formatSecondsToTime(target) }}
       </span>
@@ -887,12 +891,33 @@
         {{ 'compactPlayer.tempoLabel' | translate }}
       </label>
     </div>
-    <input type="text" [ngModel]="getInitialInputValue(exIndex, setIndex, 'tempo')"
-      (change)="updateSetData(exIndex, setIndex, 0, 'tempo', $event)" placeholder="e.g. 4010"
+    <input type="text" [ngModel]="getInitialInputValue(exIndex, setIndex, metricEnum.tempo)"
+      (change)="updateSetData(exIndex, setIndex, 0, metricEnum.tempo, $event)" placeholder="e.g. 4010"
       class="w-full p-1 text-center bg-gray-100 dark:bg-gray-700 rounded-md text-black dark:text-gray-200">
-    <div *ngIf="getSetTargetDisplay(exIndex, setIndex, 'tempo') as target" class="target-class text-xs">
+    <div *ngIf="getSetTargetDisplay(exIndex, setIndex, metricEnum.tempo) as target" class="target-class text-xs">
       <span class="flex items-center justify-center">
         <app-icon name="target" class="h-3 w-3 mr-0.5"></app-icon>{{ target }}
+      </span>
+    </div>
+  </div>
+</ng-template>
+
+<!-- REST INPUT TEMPLATE -->
+<ng-template #restInputTemplate let-exIndex="exIndex" let-setIndex="setIndex" let-set="set">
+  <div>
+    <div class="flex items-center justify-center text-gray-500 dark:text-gray-300 ">
+      <app-icon name="rest" class="h-4 w-4 mr-1"></app-icon>
+      <label class="text-xs font-medium pb-1">
+        {{ 'compactPlayer.rest' | translate }}
+      </label>
+    </div>
+    <input type="text" [ngModel]="getInitialInputValue(exIndex, setIndex, metricEnum.rest)"
+      (change)="updateSetData(exIndex, setIndex, 0, metricEnum.rest, $event)"
+      class="w-full p-1 text-center bg-gray-100 dark:bg-gray-700 rounded-md text-black dark:text-gray-200"
+      [placeholder]="'compactPlayer.rest' | translate">
+    <div *ngIf="getSetTargetDisplay(exIndex, setIndex, metricEnum.rest) as target" class="target-class text-xs">
+      <span class="flex items-center justify-center">
+        <app-icon name="target" class="h-3 w-3 mr-0.5"></app-icon>{{ formatSecondsToTime(target) }}
       </span>
     </div>
   </div>

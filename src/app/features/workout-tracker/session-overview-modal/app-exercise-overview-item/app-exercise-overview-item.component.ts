@@ -3,7 +3,7 @@
 import { Component, computed, Input, Signal } from "@angular/core";
 import { IconComponent } from "../../../../shared/components/icon/icon.component";
 import { CommonModule } from "@angular/common";
-import { ExerciseTargetSetParams, WorkoutExercise } from "../../../../core/models/workout.model";
+import { ExerciseTargetSetParams, METRIC, WorkoutExercise } from "../../../../core/models/workout.model";
 import { LoggedSet, LoggedWorkoutExercise } from "../../../../core/models/workout-log.model";
 import { WeightUnitPipe } from "../../../../shared/pipes/weight-unit-pipe";
 import { TranslateService } from '@ngx-translate/core'; // Assuming ngx-translate
@@ -117,11 +117,11 @@ export class ExerciseOverviewItemComponent {
         let weight: string | null | undefined;
         let reps: string | undefined;
 
-        const weightReal = this.workoutService.getSetFieldValue(set, 'weight');
-        const repsReal = this.workoutService.getSetFieldValue(set, 'reps');
-        const distanceReal = this.workoutService.getSetFieldValue(set, 'distance');
-        const durationReal = this.workoutService.getSetFieldValue(set, 'duration');
-        const tempoReal = this.workoutService.getSetFieldValue(set, 'tempo');
+        const weightReal = this.workoutService.getSetFieldValue(set, METRIC.weight);
+        const repsReal = this.workoutService.getSetFieldValue(set, METRIC.reps);
+        const distanceReal = this.workoutService.getSetFieldValue(set, METRIC.distance);
+        const durationReal = this.workoutService.getSetFieldValue(set, METRIC.duration);
+        const tempoReal = this.workoutService.getSetFieldValue(set, METRIC.tempo);
     
         weight = weightReal;
         reps = repsReal;

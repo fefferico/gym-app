@@ -2,7 +2,7 @@
 
 import { Component, computed, effect, EventEmitter, inject, Input, OnChanges, OnInit, Output, Signal, signal, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ExerciseTargetSetParams, WorkoutExercise } from '../../../../core/models/workout.model';
+import { ExerciseTargetSetParams, METRIC, WorkoutExercise } from '../../../../core/models/workout.model';
 import { WorkoutService } from '../../../../core/services/workout.service';
 import { UnitsService } from '../../../../core/services/units.service';
 import { ExerciseService } from '../../../../core/services/exercise.service';
@@ -115,9 +115,10 @@ export class GeneratedExerciseItemComponent implements OnInit {
 
     formatSet(set: ExerciseTargetSetParams): string {
         // ... (this method remains the same as the last version, it's already correct)
-        const repsText = this.workoutService.getSetTargetDisplay(set, 'reps');
-        const weightText = this.workoutService.getSetTargetDisplay(set, 'weight');
-        const durationText = this.workoutService.getSetTargetDisplay(set, 'duration');
+        const repsText = this.workoutService.getSetTargetDisplay(set, METRIC.reps);
+        const weightText = this.workoutService.getSetTargetDisplay(set, METRIC.weight);
+        const durationText = this.workoutService.getSetTargetDisplay(set, METRIC.duration);
+        const distanceText = this.workoutService.getSetTargetDisplay(set, METRIC.distance);
 
         if (durationText && set.targetDuration) {
             return `${durationText}s`;

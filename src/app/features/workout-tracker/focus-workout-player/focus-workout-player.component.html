@@ -120,7 +120,7 @@
                         getExerciseDisplayName(exercise) }}</span>
                       <span class="text-lg font-bold text-primary dark:text-primary-light flex-shrink-0">
                         <!-- Display the target from the correct set for the current round -->
-                        {{ getSetTargetDisplay(setForThisRound, 'reps') }}
+                        {{ getSetTargetDisplay(setForThisRound, metricEnum.reps) }}
                       </span>
                     </div>
                   </ng-container>
@@ -143,7 +143,7 @@
                   <!-- This now correctly displays the set for the CURRENT round -->
                   <ng-container *ngIf="exercise.sets[currentBlockRound() - 1] as currentRoundSet">
                     <span class="font-semibold text-gray-600 dark:text-gray-300 flex-shrink-0">
-                      {{ getSetTargetDisplay(currentRoundSet, 'reps') }} Reps
+                      {{ getSetTargetDisplay(currentRoundSet, metricEnum.reps) }} Reps
                     </span>
                   </ng-container>
                 </div>
@@ -249,7 +249,7 @@
                 *ngIf="csf['actualReps'] && activeSet.setData.targetReps !== undefined && activeSetInfo()?.baseExerciseInfo?.category !== 'cardio'">
                 <label
                   class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider text-center mb-1">Reps
-                  <span *ngIf="getSetTargetDisplay(activeSet.setData, 'reps') as target" class="normal-case">
+                  <span *ngIf="getSetTargetDisplay(activeSet.setData, metricEnum.reps) as target" class="normal-case">
                     (Target: {{ target }})
                   </span>
                 </label>
@@ -278,7 +278,7 @@
               <div *ngIf="activeSet.setData.targetDuration">
                 <label for="timedSetDisplay"
                   class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider text-center">
-                  Time <span *ngIf="getSetTargetDisplay(activeSet.setData, 'duration') as target" class="normal-case">
+                  Time <span *ngIf="getSetTargetDisplay(activeSet.setData, metricEnum.duration) as target" class="normal-case">
                     (Target: {{ target }}s)
                   </span>
                 </label>

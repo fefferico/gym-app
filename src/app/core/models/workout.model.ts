@@ -14,6 +14,9 @@ export interface ExerciseTargetSetParams {
   _uiActualWeight?: number;
   _uiActualDuration?: number;
   // Add other specific fields if a type implies them, e.g.:
+  targetRest?: number | null;
+  targetRestMin?: number | null;
+  targetRestMax?: number | null;
   targetRpe?: number | null; // Could be useful for 'failure' sets
   targetWeight?: number | null;
   targetWeightMin?: number | null;
@@ -29,7 +32,7 @@ export interface ExerciseTargetSetParams {
   targetRepsMax?: number | null;
   dropToWeight?: number | null; // For 'dropset'
   amrapTimeLimit?: number | null; // For AMRAP if it's time-bound rather than rep-bound
-  fieldOrder?: string[];
+  fieldOrder?: METRIC[];
 }
 
 export interface ExerciseCurrentExecutionSetParams {
@@ -105,6 +108,16 @@ export interface WorkoutExercise {
   sessionStatus?: 'pending' | 'skipped' | 'do_later' | 'completed' | 'started'; // For in-session tracking
   type: 'standard' | 'warmup' | 'amrap' | 'dropset' | 'failure' | 'myorep' | 'restpause' | 'custom' | 'superset' | string; // More flexible
   category?: ExerciseCategory;
+}
+
+export enum METRIC {
+  weight = "weight",
+  reps = "reps",
+  duration = "duration",
+  distance = "distance",
+  tempo = "tempo",
+  rest = "rest",
+  notes = "notes",
 }
 
 export interface Routine {

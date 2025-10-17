@@ -301,7 +301,7 @@
             </ng-container>
         </section>
 
-        <section *ngIf="mode === 'manualLogEntry' || builderForm.get('goal')?.value !== 'rest'">
+        <section *ngIf="mode === 'manualLogEntry' || builderForm.get('goal')?.value !== metricEnum.rest">
             <div *ngIf="exercisesFormArray.length>0" cdkDropList [cdkDropListData]="exercisesFormArray.controls"
                 (cdkDropListDropped)="onExerciseDrop($event)" [cdkDropListDisabled]="!isEditableMode()"
                 formArrayName="exercises" class="exercise-list-container">
@@ -338,8 +338,7 @@
                             </button>
                         </div>
 
-                        <div cdkDrag [cdkDragDisabled]="!isDraggingEnabled(exIndex)"
-                            appLongPressDrag
+                        <div cdkDrag [cdkDragDisabled]="!isDraggingEnabled(exIndex)" appLongPressDrag
                             [dragHandleSelector]="shouldShowExpandedExercise(exIndex) ? '[data-drag-handle]' : undefined"
                             [longPressEnabled]="isEditableMode() && !shouldShowExpandedExercise(exIndex)"
                             [longPressDelay]="150" longPressClass="is-long-pressing" [cdkDragData]="exerciseControl"
@@ -373,7 +372,7 @@
                                         </strong>
                                         <button type="button" (click)="changeSupersetType(exerciseControl)"
                                             class="flex items-center ml-2 text-xs font-semibold text-white hover:underline bg-blue-300 hover:bg-blue-500 rounded-md p-1">
-                                             <app-icon name="change" class="h-5 w-5 mr-1"></app-icon>
+                                            <app-icon name="change" class="h-5 w-5 mr-1"></app-icon>
                                             {{ 'workoutBuilder.changeType' | translate }}
                                         </button>
                                     </div>
@@ -400,8 +399,7 @@
                                 <!-- COMPACT VIEW / HEADER AREA -->
                                 <div class="flex items-center space-x-1 pt-1 px-1">
                                     <!-- DRAG HANDLE ICON (Now just a visual cue) -->
-                                    <div *ngIf="isDraggingEnabled(exIndex)"
-                                        data-drag-handle
+                                    <div *ngIf="isDraggingEnabled(exIndex)" data-drag-handle
                                         class="p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 flex-shrink-0 flex item-center cursor-move rounded-md"
                                         [title]="'workoutBuilder.exercise.dragToReorder' | translate">
                                         <app-icon name="reorder"></app-icon>
@@ -580,7 +578,7 @@
                                             {{ 'workoutBuilder.set.time' | translate }} (s)</div>
 
                                         <!-- Rest Header -->
-                                        <div
+                                        <div *ngIf="checkIfRestIsVisible(exerciseControl) && !isEmom(exerciseControl)"
                                             class="font-bold text-xs uppercase text-gray-500 dark:text-gray-400 text-center">
                                             {{ 'workoutBuilder.set.rest' | translate }} (s)</div>
 
@@ -600,34 +598,42 @@
                                             <!-- Reps Data Cell -->
                                             <div *ngIf="checkIfRepsIsVisible(set)"
                                                 class="flex items-center justify-center">
-                                                <strong>{{ getSetTargetDisplay(set, 'reps') || '-' }}</strong>
+                                                <strong>{{ getSetTargetDisplay(set, metricEnum.reps) || '-' }}</strong>
                                             </div>
 
                                             <!-- Weight Data Cell -->
                                             <div *ngIf="checkIfWeightIsVisible(set)"
                                                 class="flex items-center justify-center">
-                                                <strong>{{ getSetTargetDisplay(set, 'weight') || '-' }}{{
-                                                    getSetTargetDisplay(set, 'weight') !== '-' ? (' ' +
+                                                <strong>{{ getSetTargetDisplay(set, metricEnum.weight) || '-' }}{{
+                                                    getSetTargetDisplay(set, metricEnum.weight) !== '-' ? (' ' +
                                                     unitService.getWeightUnitSuffix()) : '' }}</strong>
                                             </div>
 
                                             <!-- Distance Data Cell -->
                                             <div *ngIf="checkIfDistanceIsVisible(set)"
                                                 class="flex items-center justify-center">
-                                                <strong>{{ getSetTargetDisplay(set, 'distance') || '-' }}{{
-                                                    getSetTargetDisplay(set, 'distance') !== '-' ? (' ' +
+                                                <strong>{{ getSetTargetDisplay(set, metricEnum.distance) || '-' }}{{
+                                                    getSetTargetDisplay(set, metricEnum.distance) !== '-' ? (' ' +
                                                     unitService.getDistanceMeasureUnitSuffix()) : '' }}</strong>
                                             </div>
 
-                                            <!-- Time Data Cell -->
+                                            <!-- Duration Data Cell -->
                                             <div *ngIf="checkIfDurationIsVisible(set) && !isEmom(exerciseControl)"
                                                 class="flex items-center justify-center">
-                                                <strong>{{ getSetTargetDisplay(set, 'duration') || '-' }}</strong>
+                                                <strong>{{ getSetTargetDisplay(set, metricEnum.duration) || '-'
+                                                    }}</strong>
                                             </div>
 
                                             <!-- Rest Data Cell -->
-                                            <div class="flex items-center justify-center">
-                                                <strong>{{ set.restAfterSet || '-' }}</strong>
+                                            <div *ngIf="checkIfRestIsVisible(set) && !isEmom(exerciseControl)"
+                                                class="flex items-center justify-center">
+                                                <strong>{{ getSetTargetDisplay(set, metricEnum.rest) || '-'
+                                                    }}</strong>
+                                            </div>
+
+                                            <div *ngIf="checkIfRestIsVisible(set) && !isEmom(exerciseControl)"
+                                                class="flex items-center justify-center">
+                                                <strong>{{ getSetTargetDisplay(set, metricEnum.rest) || '-' }}</strong>
                                             </div>
 
                                             <!-- Notes Data Cell -->
@@ -688,7 +694,7 @@
                                                         <div class="grid grid-cols-2 gap-4">
 
                                                             <!-- Reps Input -->
-                                                            <div *ngIf="getVisibleColumnsForExercise(exIndex)['reps']">
+                                                            <div *ngIf="getVisibleColumnsForExercise(exIndex)[metricEnum.reps]">
                                                                 <label
                                                                     class="block text-xs font-medium text-gray-500 dark:text-gray-200">Reps</label>
                                                                 <input type="number" [(ngModel)]="repsToSetForAll"
@@ -698,7 +704,7 @@
 
                                                             <!-- Weight Input -->
                                                             <div
-                                                                *ngIf="getVisibleColumnsForExercise(exIndex)['weight']">
+                                                                *ngIf="getVisibleColumnsForExercise(exIndex)[metricEnum.weight]">
                                                                 <label
                                                                     class="block text-xs font-medium text-gray-500 dark:text-gray-200">Weight
                                                                     ({{ unitService.getWeightUnitSuffix() }})</label>
@@ -709,7 +715,7 @@
 
                                                             <!-- Duration Input -->
                                                             <div
-                                                                *ngIf="getVisibleColumnsForExercise(exIndex)['duration']">
+                                                                *ngIf="getVisibleColumnsForExercise(exIndex)[metricEnum.duration]">
                                                                 <label
                                                                     class="block text-xs font-medium text-gray-500 dark:text-gray-200">Duration
                                                                     (s)</label>
@@ -720,7 +726,7 @@
 
                                                             <!-- Distance Input -->
                                                             <div
-                                                                *ngIf="getVisibleColumnsForExercise(exIndex)['distance']">
+                                                                *ngIf="getVisibleColumnsForExercise(exIndex)[metricEnum.distance]">
                                                                 <label
                                                                     class="block text-xs font-medium text-gray-500 dark:text-gray-200">Distance
                                                                     ({{ unitService.getDistanceMeasureUnitSuffix()
@@ -730,8 +736,9 @@
                                                                     class="mt-1 w-full p-1.5 text-sm border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200">
                                                             </div>
 
-                                                            <!-- Rest Input (Only for Routine Builder) -->
-                                                            <div *ngIf="mode === 'routineBuilder'">
+                                                            <!-- Rest Input -->
+<div
+                                                                *ngIf="getVisibleColumnsForExercise(exIndex)[metricEnum.rest]">
                                                                 <label
                                                                     class="block text-xs font-medium text-gray-500 dark:text-gray-200">Rest
                                                                     (s)</label>
@@ -767,26 +774,26 @@
                                                     <!-- Middle Container for Dynamic Headers -->
                                                     <div class="flex-grow min-w-0">
                                                         <div class="flex items-center justify-start gap-x-4">
-                                                            <div *ngIf="visibleCols['reps']" class="w-16 text-center">{{
+                                                            <div *ngIf="visibleCols[metricEnum.reps]" class="w-16 text-center">{{
                                                                 mode === 'manualLogEntry' ?
                                                                 ('workoutBuilder.set.repsAchieved' | translate) :
                                                                 ('workoutBuilder.set.reps' | translate) }}</div>
-                                                            <div *ngIf="visibleCols['weight']"
+                                                            <div *ngIf="visibleCols[metricEnum.weight]"
                                                                 class="w-20 text-center truncate">{{ mode ===
                                                                 'manualLogEntry' ? ('workoutBuilder.set.weightUsed' |
                                                                 translate) : ('workoutBuilder.set.weight' | translate)
                                                                 }}</div>
-                                                            <div *ngIf="visibleCols['distance']"
+                                                            <div *ngIf="visibleCols[metricEnum.distance]"
                                                                 class="w-20 text-center truncate">{{
                                                                 'workoutBuilder.set.distance' | translate }}</div>
-                                                            <div *ngIf="visibleCols['duration']"
+                                                            <div *ngIf="visibleCols[metricEnum.duration]"
                                                                 class="w-16 text-center">{{ mode === 'manualLogEntry' ?
                                                                 ('workoutBuilder.set.timePerformed' | translate) :
                                                                 ('workoutBuilder.set.time' | translate) }}</div>
-                                                            <div class="w-24 text-center truncate">{{ mode ===
-                                                                'routineBuilder' ? ('workoutBuilder.set.rest' |
-                                                                translate) : ('workoutBuilder.set.notes' | translate)}}
-                                                            </div>
+                                                            <div *ngIf="visibleCols[metricEnum.rest]"
+                                                                class="w-24 text-center">{{ mode === 'manualLogEntry' ?
+                                                                ('workoutBuilder.set.rest' | translate) :
+                                                                ('workoutBuilder.set.rest' | translate) }}</div>
                                                         </div>
                                                     </div>
 
@@ -815,40 +822,54 @@
                                                             <!-- Middle Container that Grows -->
                                                             <div class="flex-grow min-w-0">
                                                                 <div class="flex items-center justify-start gap-x-4">
-                                                                    <div *ngIf="visibleCols['reps']"
+                                                                    <div *ngIf="visibleCols[metricEnum.reps]"
                                                                         class="w-16 text-s text-center truncate">
                                                                         {{ mode === 'routineBuilder' ?
-                                                                        getSetDisplayValue(setControl, 'reps') :
+                                                                        getSetDisplayValue(setControl, metricEnum.reps) :
                                                                         (setControl.get('repsAchieved')?.value ?? '-')
                                                                         }}
                                                                     </div>
-                                                                    <div *ngIf="visibleCols['weight']"
+                                                                    <div *ngIf="visibleCols[metricEnum.weight]"
                                                                         class="w-20 text-s text-center truncate">
                                                                         {{ (setControl.get(mode === 'manualLogEntry' ?
                                                                         'weightUsed' : 'targetWeight')?.value) |
                                                                         weightUnit:'1.0-2' }}
                                                                     </div>
-                                                                    <div *ngIf="visibleCols['distance']"
+                                                                    <div *ngIf="visibleCols[metricEnum.distance]"
                                                                         class="w-20 text-s text-center truncate">
                                                                         {{ (setControl.get(mode === 'manualLogEntry' ?
                                                                         'distanceAchieved' : 'targetDistance')?.value)
                                                                         ?? '-' }}
                                                                     </div>
-                                                                    <div *ngIf="visibleCols['duration']"
+                                                                    <div id="duration" *ngIf="visibleCols[metricEnum.duration]"
                                                                         class="w-16 text-s text-center truncate">
                                                                         {{ mode === 'routineBuilder' ?
-                                                                        (getSetDisplayValue(setControl, 'duration') ?
-                                                                        getSetDisplayValue(setControl, 'duration') + 's'
+                                                                        (getSetDisplayValue(setControl, metricEnum.duration) ?
+                                                                        getSetDisplayValue(setControl, metricEnum.duration) + 's'
                                                                         : '-') :
                                                                         ((setControl.get('durationPerformed')?.value) ?
                                                                         (setControl.get('durationPerformed')?.value +
                                                                         's') : '-') }}
                                                                     </div>
-                                                                    <div class="w-24 text-s text-center truncate"
-                                                                        [title]="mode === 'routineBuilder' ? (setControl.get('restAfterSet')?.value + 's') : setControl.get('notes')?.value">
+                                                                    <div id="rest" *ngIf="visibleCols[metricEnum.rest]"
+                                                                        class="w-24 text-s text-center truncate">
                                                                         {{ mode === 'routineBuilder' ?
-                                                                        (setControl.get('restAfterSet')?.value + 's') :
-                                                                        (setControl.get('notes')?.value || '-') }}
+                                                                        (getSetDisplayValue(setControl, metricEnum.rest) ?
+                                                                        getSetDisplayValue(setControl, metricEnum.rest) + 's'
+                                                                        : '-') :
+                                                                        ((setControl.get('restAfterSet')?.value) ?
+                                                                        (setControl.get('restAfterSet')?.value +
+                                                                        's') : '-') }}
+                                                                    </div>
+                                                                    <div id="notes" *ngIf="visibleCols[metricEnum.notes]"
+                                                                        class="w-16 text-s text-center truncate">
+                                                                        {{ mode === 'routineBuilder' ?
+                                                                        (getSetDisplayValue(setControl, metricEnum.notes) ?
+                                                                        getSetDisplayValue(setControl, metricEnum.notes) + 's'
+                                                                        : '-') :
+                                                                        ((setControl.get('notes')?.value) ?
+                                                                        (setControl.get('notes')?.value +
+                                                                        's') : '-') }}
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -881,7 +902,7 @@
                                                         translate):('workoutBuilder.set.set' | translate)}}
                                                         <div class="flex items-center justify-end">
                                                             <div *ngIf="isEditableMode()"
-                                                                class="flex w-fit items-center justify-center gap-1">
+                                                                class="flex w-fit items-center justify-center gap-1 bg-gray-200 dark:bg-gray-900/70 py-1 px-2 rounded-full">
                                                                 <!-- Remove metric button -->
                                                                 <button type="button"
                                                                     (click)="removeSet(exerciseControl, exIndex, setIndex, $event)"
@@ -895,7 +916,7 @@
                                                     <!-- ADD/REMOVE METRICS BUTTONS -->
                                                     <div class="flex items-center justify-center">
                                                         <div *ngIf="isEditableMode()"
-                                                            class="flex w-fit items-center justify-center gap-1">
+                                                            class="flex w-fit items-center justify-center gap-1 bg-gray-200 dark:bg-gray-900/70 py-1 px-2 rounded-full">
                                                             <!-- Remove metric button -->
                                                             <label
                                                                 class="flex items-center justify-between text-s font-medium text-gray-600 dark:text-gray-400">{{
@@ -919,8 +940,6 @@
                                                     <div
                                                         class="grid grid-cols-2 sm:grid-cols-3 gap-x-3 gap-y-2 items-end">
                                                         <div class="col-span-full sm:col-span-1">
-                                                            <!-- <p [ngClass]="setLabelClass(exerciseControl)"> -->
-
                                                             <label [for]="'setType-exp-' + exIndex + '-' + setIndex"
                                                                 class="block text-s font-medium text-gray-600 dark:text-gray-400">{{
                                                                 'workoutBuilder.set.type' | translate }}</label>
@@ -940,33 +959,38 @@
                                                             <ng-container *ngFor="let field of fieldOrder">
                                                                 <!-- Use ng-container with ngSwitch to render the correct template for each field -->
                                                                 <ng-container [ngSwitch]="field">
-                                                                    <div *ngSwitchCase="'reps'">
+                                                                    <div *ngSwitchCase="metricEnum.reps">
                                                                         <ng-container
                                                                             [ngTemplateOutlet]="repsInputTemplate"
                                                                             [ngTemplateOutletContext]="{exerciseControl: exerciseControl, setControl: setControl, exIndex: exIndex, setIndex: setIndex }"></ng-container>
                                                                     </div>
-                                                                    <div *ngSwitchCase="'weight'">
+                                                                    <div *ngSwitchCase="metricEnum.weight">
                                                                         <ng-container
                                                                             [ngTemplateOutlet]="weightInputTemplate"
                                                                             [ngTemplateOutletContext]="{exerciseControl: exerciseControl, setControl: setControl, exIndex: exIndex, setIndex: setIndex }"></ng-container>
                                                                     </div>
-                                                                    <div *ngSwitchCase="'distance'">
+                                                                    <div *ngSwitchCase="metricEnum.distance">
                                                                         <ng-container>
                                                                             <ng-container
                                                                                 [ngTemplateOutlet]="distanceInputTemplate"
                                                                                 [ngTemplateOutletContext]="{exerciseControl: exerciseControl, setControl: setControl, exIndex: exIndex, setIndex: setIndex }"></ng-container>
                                                                         </ng-container>
                                                                     </div>
-                                                                    <div *ngSwitchCase="'duration'">
+                                                                    <div *ngSwitchCase="metricEnum.duration">
                                                                         <ng-container>
                                                                             <ng-container
                                                                                 [ngTemplateOutlet]="durationInputTemplate"
                                                                                 [ngTemplateOutletContext]="{exerciseControl: exerciseControl, setControl: setControl, exIndex: exIndex, setIndex: setIndex }"></ng-container>
                                                                         </ng-container>
                                                                     </div>
-                                                                    <div *ngSwitchCase="'tempo'">
+                                                                    <div *ngSwitchCase="metricEnum.tempo">
                                                                         <ng-container
                                                                             [ngTemplateOutlet]="tempoInputTemplate"
+                                                                            [ngTemplateOutletContext]="{ setControl: setControl, exIndex: exIndex, setIndex: setIndex }"></ng-container>
+                                                                    </div>
+                                                                    <div *ngSwitchCase="metricEnum.rest">
+                                                                        <ng-container
+                                                                            [ngTemplateOutlet]="restInputTemplate"
                                                                             [ngTemplateOutletContext]="{ setControl: setControl, exIndex: exIndex, setIndex: setIndex }"></ng-container>
                                                                     </div>
                                                                 </ng-container>
@@ -974,7 +998,7 @@
 
                                                             <!-- GHOST BUTTON LOGIC -->
                                                             <!-- Renders in the next available grid slot if there are fields left to add -->
-                                                            <div *ngIf="fieldOrder.length < 4 && isEditableMode() && !isSuperSet(exIndex)"
+                                                            <div *ngIf="isGhostFieldVisible(fieldOrder, exIndex)"
                                                                 class="flex items-center justify-center h-full">
                                                                 <button
                                                                     (click)="promptAddField(exIndex, setIndex); $event.stopPropagation()"
@@ -996,7 +1020,7 @@
                                         <!-- Col 2: Set +/- SETS Buttons -->
                                         <div *ngIf="!isSuperSet(exIndex)" class="flex items-center justify-center py-2">
                                             <div
-                                                class="flex w-fit items-center justify-center gap-1 bg-gray-200 dark:bg-gray-900/50 py-1 px-2 rounded-full">
+                                                class="flex w-fit items-center justify-center gap-1 bg-gray-200 dark:bg-gray-900/70 py-1 px-2 rounded-full">
                                                 <label
                                                     class="flex items-center justify-between text-s font-medium text-gray-600 dark:text-gray-400">{{'workoutBuilder.set.set'
                                                     |
@@ -1024,8 +1048,7 @@
 
                             <div #superSetControlPanel_rounds class="flex items-center justify-center py-2"
                                 *ngIf="isEditableMode() && isSuperSet(exIndex) && isLastInSuperset(exIndex)">
-                                <div
-                                    class="flex w-fit items-center justify-center gap-1">
+                                <div class="flex w-fit items-center justify-center gap-1 bg-gray-200 dark:bg-gray-900/70 py-1 px-2 rounded-full">
                                     <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">
                                         {{ 'workoutBuilder.superset.rounds' | translate }}:
                                     </span>
@@ -1083,14 +1106,14 @@
             </div>
         </section>
 
-        <section *ngIf="builderForm.get('goal')?.value === 'rest'"
+        <section *ngIf="builderForm.get('goal')?.value === metricEnum.rest"
             class="p-4 bg-blue-50 dark:bg-blue-900/30 rounded-md text-center">
             <p class="text-m text-blue-700 dark:text-blue-300">{{ 'workoutBuilder.restDayMessage' | translate }}</p>
         </section>
 
         <div *ngIf="!isViewMode" class="py-2 px-1 flex-col gap-2 flex items-center">
 
-            <div *ngIf="mode !== 'manualLogEntry' && (builderForm.get('goal')?.value !== 'rest')"
+            <div *ngIf="mode !== 'manualLogEntry' && (builderForm.get('goal')?.value !== metricEnum.rest)"
                 class="text-center text-gray-500 dark:text-gray-400 border border-dashed dark:border-gray-700 rounded-md mt-4">
                 <button type="button" (click)="openExerciseSelectionModal()"
                     class="flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-800 disabled:opacity-50 min-w-[220px] ">
@@ -1158,12 +1181,8 @@
     <app-exercise-detail [id]="exerciseDetailsId" [isModal]="true"></app-exercise-detail>
 </app-modal>
 
-<app-fab-menu 
-    [actions]="fabMenuItems" 
-    [checkForPausedSession]="false" 
-    [scrollToBottomDisabled]="true"
-    [scrollToTopDisabled]="true" 
-    (actionClicked)="onFabAction($event)">
+<app-fab-menu [actions]="fabMenuItems" [checkForPausedSession]="false" [scrollToBottomDisabled]="true"
+    [scrollToTopDisabled]="true" (actionClicked)="onFabAction($event)">
 </app-fab-menu>
 
 
@@ -1181,13 +1200,13 @@
             <button *ngIf="mode === 'routineBuilder'" type="button" (click)="toggleRepsMode(setControl, $event)"
                 [title]="'workoutBuilder.set.toggleRange' | translate"
                 class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold p-0.5 rounded">
-                {{ (isRangeMode(setControl, 'reps') ? 'workoutBuilder.set.useSingle' : 'workoutBuilder.set.useRange') |
+                {{ (isRangeMode(setControl, metricEnum.reps) ? 'workoutBuilder.set.useSingle' : 'workoutBuilder.set.useRange') |
                 translate }}
             </button>
         </label>
         <!-- ROUTINE BUILDER - REPS -->
         <ng-container *ngIf="mode === 'routineBuilder'">
-            <div *ngIf="isRangeMode(setControl, 'reps')" class="mt-0.5">
+            <div *ngIf="isRangeMode(setControl, metricEnum.reps)" class="mt-0.5">
                 <div class="flex items-center space-x-1.5">
                     <input type="number" formControlName="targetRepsMin" min="0" placeholder="Min"
                         [readonly]="isViewMode"
@@ -1203,7 +1222,7 @@
                     {{ 'workoutBuilder.set.rangeError' | translate }}
                 </div>
             </div>
-            <input *ngIf="!isRangeMode(setControl, 'reps')" type="number" formControlName="targetReps" min="1"
+            <input *ngIf="!isRangeMode(setControl, metricEnum.reps)" type="number" formControlName="targetReps" min="1"
                 [placeholder]="'workoutBuilder.set.repsPlaceholder' | translate" [readonly]="isViewMode"
                 class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
         </ng-container>
@@ -1226,14 +1245,14 @@
             <button *ngIf="mode === 'routineBuilder'" type="button" (click)="toggleWeightMode(setControl, $event)"
                 [title]="'workoutBuilder.set.toggleRange' | translate"
                 class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold p-0.5 rounded">
-                {{ (isRangeMode(setControl, 'weight') ? 'workoutBuilder.set.useSingle' : 'workoutBuilder.set.useRange')
+                {{ (isRangeMode(setControl, metricEnum.weight) ? 'workoutBuilder.set.useSingle' : 'workoutBuilder.set.useRange')
                 |
                 translate }}
             </button>
         </label>
         <!-- ROUTINE BUILDER - WEIGHT -->
         <ng-container *ngIf="mode === 'routineBuilder'">
-            <div *ngIf="isRangeMode(setControl, 'weight')" class="mt-0.5">
+            <div *ngIf="isRangeMode(setControl, metricEnum.weight)" class="mt-0.5">
                 <div class="flex items-center space-x-1.5">
                     <input type="number" formControlName="targetWeightMin" min="0" placeholder="Min"
                         [readonly]="isViewMode"
@@ -1249,7 +1268,7 @@
                     {{ 'workoutBuilder.set.rangeError' | translate }}
                 </div>
             </div>
-            <input *ngIf="!isRangeMode(setControl, 'weight')" type="number" formControlName="targetWeight" min="0.1"
+            <input *ngIf="!isRangeMode(setControl, metricEnum.weight)" type="number" formControlName="targetWeight" min="0.1"
                 [placeholder]="'workoutBuilder.set.weightPlaceholder' | translate" [readonly]="isViewMode"
                 class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
         </ng-container>
@@ -1272,14 +1291,14 @@
             <button *ngIf="mode === 'routineBuilder'" type="button" (click)="toggleDistanceMode(setControl, $event)"
                 [title]="'workoutBuilder.set.toggleRange' | translate"
                 class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold p-0.5 rounded">
-                {{ (isRangeMode(setControl, 'distance') ? 'workoutBuilder.set.useSingle' :
+                {{ (isRangeMode(setControl, metricEnum.distance) ? 'workoutBuilder.set.useSingle' :
                 'workoutBuilder.set.useRange') |
                 translate }}
             </button>
         </label>
         <!-- ROUTINE BUILDER - DISTANCE -->
         <ng-container *ngIf="mode === 'routineBuilder'">
-            <div *ngIf="isRangeMode(setControl, 'distance')" class="mt-0.5">
+            <div *ngIf="isRangeMode(setControl, metricEnum.distance)" class="mt-0.5">
                 <div class="flex items-center space-x-1.5">
                     <input type="number" formControlName="targetDistanceMin" min="0" placeholder="Min"
                         [readonly]="isViewMode"
@@ -1290,7 +1309,7 @@
                         class="w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
                 </div>
             </div>
-            <input *ngIf="!isRangeMode(setControl, 'distance')" type="number" formControlName="targetDistance" min="0"
+            <input *ngIf="!isRangeMode(setControl, metricEnum.distance)" type="number" formControlName="targetDistance" min="0"
                 [placeholder]="'workoutBuilder.set.distancePlaceholder' | translate" [readonly]="isViewMode"
                 class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
         </ng-container>
@@ -1313,14 +1332,14 @@
             <button *ngIf="mode === 'routineBuilder'" type="button" (click)="toggleDurationMode(setControl, $event)"
                 [title]="'workoutBuilder.set.toggleRange' | translate"
                 class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold p-0.5 rounded">
-                {{ (isRangeMode(setControl, 'duration') ? 'workoutBuilder.set.useSingle' :
+                {{ (isRangeMode(setControl, metricEnum.duration) ? 'workoutBuilder.set.useSingle' :
                 'workoutBuilder.set.useRange') |
                 translate }}
             </button>
         </label>
         <!-- ROUTINE BUILDER - DURATION -->
         <ng-container *ngIf="mode === 'routineBuilder'">
-            <div *ngIf="isRangeMode(setControl, 'duration')" class="mt-0.5">
+            <div *ngIf="isRangeMode(setControl, metricEnum.duration)" class="mt-0.5">
                 <div class="flex items-center space-x-1.5">
                     <input type="number" formControlName="targetDurationMin" min="0" placeholder="Min"
                         [readonly]="isViewMode"
@@ -1336,7 +1355,7 @@
                     {{ 'workoutBuilder.set.rangeError' | translate }}
                 </div>
             </div>
-            <input *ngIf="!isRangeMode(setControl, 'duration')" type="number" formControlName="targetDuration" min="1"
+            <input *ngIf="!isRangeMode(setControl, metricEnum.duration)" type="number" formControlName="targetDuration" min="1"
                 [placeholder]="'workoutBuilder.set.durationPlaceholder' | translate" [readonly]="isViewMode"
                 class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
         </ng-container>
@@ -1364,6 +1383,51 @@
         <!-- LOG ENTRY - SINGLE TEMPO -->
         <input *ngIf="mode === 'manualLogEntry'" type="text" [id]="'tempo-exp-' + exIndex + '-' + setIndex"
             formControlName="targetTempo" [placeholder]="'workoutBuilder.set.tempoPlaceholder' | translate"
+            [readonly]="isViewMode"
+            class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
+    </div>
+</ng-template>
+
+<!-- REST INPUT TEMPLATE -->
+<ng-template #restInputTemplate let-setControl="setControl" let-exIndex="exIndex" let-setIndex="setIndex">
+    <div [formGroup]="setControl">
+        <label [for]="'rest-exp-' + exIndex + '-' + setIndex"
+            class="flex items-center justify-between text-s font-medium text-gray-600 dark:text-gray-400">
+            <span>{{ 'workoutBuilder.set.rest' | translate }} (s) {{ mode === 'manualLogEntry' ? '(Performed)' :
+                ''}}</span>
+            <button *ngIf="mode === 'routineBuilder'" type="button" (click)="toggleDurationMode(setControl, $event)"
+                [title]="'workoutBuilder.set.toggleRange' | translate"
+                class="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold p-0.5 rounded">
+                {{ (isRangeMode(setControl, metricEnum.rest) ? 'workoutBuilder.set.useSingle' :
+                'workoutBuilder.set.useRange') |
+                translate }}
+            </button>
+        </label>
+        <!-- ROUTINE BUILDER - REST -->
+        <ng-container *ngIf="mode === 'routineBuilder'">
+            <div *ngIf="isRangeMode(setControl, metricEnum.rest)" class="mt-0.5">
+                <div class="flex items-center space-x-1.5">
+                    <input type="number" formControlName="targetRestMin" min="0" placeholder="Min"
+                        [readonly]="isViewMode"
+                        class="w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
+                    <span class="text-gray-500 dark:text-gray-400 font-bold">-</span>
+                    <input type="number" formControlName="targetRestMax" min="0" placeholder="Max"
+                        [readonly]="isViewMode"
+                        class="w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed"
+                        [ngClass]="{'border-red-500 dark:border-red-400': setControl.get('targetRestMax')?.hasError('min')}">
+                </div>
+                <div *ngIf="setControl.get('targetRestMax')?.hasError('min') && setControl.get('targetRestMax')?.touched"
+                    class="text-red-500 dark:text-red-400 text-xs mt-1">
+                    {{ 'workoutBuilder.set.rangeError' | translate }}
+                </div>
+            </div>
+            <input *ngIf="!isRangeMode(setControl, metricEnum.rest)" type="number" formControlName="restAfterSet" min="1"
+                [placeholder]="'workoutBuilder.set.rest' | translate" [readonly]="isViewMode"
+                class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
+        </ng-container>
+        <!-- LOG ENTRY - SINGLE REST PERFORMED -->
+        <input *ngIf="mode === 'manualLogEntry'" type="number" [id]="'rest-exp-' + exIndex + '-' + setIndex"
+            formControlName="restAfterSet" [placeholder]="'workoutBuilder.set.rest' | translate"
             [readonly]="isViewMode"
             class="mt-0.5 w-full p-1.5 text-m border-gray-300 dark:border-gray-500 rounded-md dark:bg-gray-600 dark:text-gray-200 disabled:opacity-70 disabled:cursor-not-allowed">
     </div>

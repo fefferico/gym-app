@@ -12,6 +12,7 @@ import {
   PausedWorkoutState,
   ExerciseTargetExecutionSetParams,
   ExerciseCurrentExecutionSetParams,
+  METRIC,
 } from '../../../core/models/workout.model';
 import { Exercise } from '../../../core/models/exercise.model';
 import { WorkoutService } from '../../../core/services/workout.service';
@@ -51,6 +52,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { SessionOverviewModalComponent } from '../session-overview-modal/session-overview-modal.component';
 import { FullScreenRestTimerComponent } from '../../../shared/components/full-screen-rest-timer/full-screen-rest-timer';
 import { AudioService } from '../../../core/services/audio.service';
+import { se } from 'date-fns/locale';
 
 // Interface for saving the paused state
 
@@ -2787,7 +2789,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
    * It now reads from the pre-calculated `suggestedRoutine` signal, making it
    * extremely fast and safe to call from the template.
    */
-  public getSetTargetDisplay(exIndex: number, setIndex: number, field: 'reps' | 'duration' | 'weight' | 'distance' | 'tempo'): string {
+  public getSetTargetDisplay(exIndex: number, setIndex: number, field: METRIC): string {
     // 1. Get the pre-calculated routine with all suggestions already applied.
     const routineWithSuggestions = this.suggestedRoutine();
     const setForDisplay = routineWithSuggestions?.exercises[exIndex]?.sets[setIndex];
@@ -3062,7 +3064,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       return parts.length > 0 ? `Target: ${parts.join(' for ')}` : 'No target set';
     } else {
       // Use the pre-calculated set to get the display values for reps and weight
-      const repsDisplay = this.workoutService.getSetTargetDisplay(setForDisplay, 'reps');
+      const repsDisplay = this.workoutService.getSetTargetDisplay(setForDisplay, METRIC.reps);
       const weightDisplay = this.workoutService.getWeightDisplay(setForDisplay, exercise);
 
       return repsDisplay ? `Target: ${weightDisplay} x ${repsDisplay} reps` : 'No target set';
@@ -3101,7 +3103,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
    * 3. If a range is defined (e.g., 8-12 reps), it shows the middle value.
    * 4. Otherwise, it shows the planned single target value as the default.
    */
-  getInitialInputValue(exIndex: number, setIndex: number, field: 'reps' | 'weight' | 'distance' | 'duration' | 'notes' | 'tempo'): string {
+  getInitialInputValue(exIndex: number, setIndex: number, field: METRIC): string {
     const routine = this.routine();
     if (!routine) return '';
 
@@ -3197,7 +3199,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
    * If the 'duration' field is changed for a set with an active timer, it now
    * automatically stops the old timer and starts a new one with the new value.
    */
-  updateSetData(exIndex: number, setIndex: number, roundIndex: number, field: 'reps' | 'weight' | 'distance' | 'duration' | 'notes' | 'tempo', event: Event): void {
+  updateSetData(exIndex: number, setIndex: number, roundIndex: number, field: METRIC, event: Event): void {
     const value = (event.target as HTMLInputElement).value;
     const key = `${exIndex}-${setIndex}`;
 
@@ -3255,6 +3257,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const key = `${exIndex}-${setIndex}`;
 
     if (wasCompleted) {
+      this.audioService.playSound("untoggle");
       // Un-logging logic is now updated to restore values to the input state
       if (exerciseLog) {
         const setIndexInLog = exerciseLog.sets.findIndex(s => s.plannedSetId === targetLoggedSetId);
@@ -3275,6 +3278,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         }
       }
     } else {
+      this.audioService.playSound("correct");
       // Logging logic
       if (!exerciseLog) {
         exerciseLog = { id: exercise.id, exerciseId: exercise.exerciseId, exerciseName: exercise.exerciseName!, sets: [], type: exercise.type || 'standard', supersetId: exercise.supersetId, supersetOrder: exercise.supersetOrder, supersetType: exercise.supersetType };
@@ -3342,7 +3346,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
         targetWeight: originalSet?.targetWeight || targetSetValues?.targetWeight || 0,
         targetDuration: originalSet?.targetDuration || targetSetValues?.targetDuration || 0,
         targetDistance: originalSet?.targetDistance || targetSetValues?.targetDistance || 0,
-        workoutLogId: uuidv4(), // to differ from Simple set
+        workoutLogId: uuidv4(), // to differ from Simple set,
       };
       exerciseLog.sets.push(newLoggedSet);
 
@@ -3379,11 +3383,12 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const userInputs = this.performanceInputValues()[key];
     if (userInputs) {return};
 
-    const weight = this.getInitialInputValue(exIndex,setIndex,'weight') ? Number(this.getInitialInputValue(exIndex,setIndex,'weight')) : undefined;
-    const reps = this.getInitialInputValue(exIndex,setIndex,'reps') ? Number(this.getInitialInputValue(exIndex,setIndex,'reps')) : undefined;
-    const distance = this.getInitialInputValue(exIndex,setIndex,'distance') ? Number(this.getInitialInputValue(exIndex,setIndex,'distance')) : undefined;
-    const duration = this.getInitialInputValue(exIndex,setIndex,'duration') ? Number(this.getInitialInputValue(exIndex,setIndex,'duration')) : undefined;
-    const tempo = this.getInitialInputValue(exIndex,setIndex,'tempo') ? String(this.getInitialInputValue(exIndex,setIndex,'tempo')) : undefined;
+    const weight = this.getInitialInputValue(exIndex,setIndex,METRIC.weight) ? Number(this.getInitialInputValue(exIndex,setIndex,METRIC.weight)) : undefined;
+    const reps = this.getInitialInputValue(exIndex,setIndex,METRIC.reps) ? Number(this.getInitialInputValue(exIndex,setIndex,METRIC.reps)) : undefined;
+    const distance = this.getInitialInputValue(exIndex,setIndex,METRIC.distance) ? Number(this.getInitialInputValue(exIndex,setIndex,METRIC.distance)) : undefined;
+    const duration = this.getInitialInputValue(exIndex,setIndex,METRIC.duration) ? Number(this.getInitialInputValue(exIndex,setIndex,METRIC.duration)) : undefined;
+    const tempo = this.getInitialInputValue(exIndex,setIndex,METRIC.tempo) ? String(this.getInitialInputValue(exIndex,setIndex,METRIC.tempo)) : undefined;
+    const rest = this.getInitialInputValue(exIndex,setIndex,METRIC.rest) ? Number(this.getInitialInputValue(exIndex,setIndex,METRIC.rest)) : undefined;
 
     this.performanceInputValues()[key] = {
       'weightUsed': weight,
@@ -3391,6 +3396,7 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
       'actualDistance': distance,
       'actualDuration': duration,
       'tempoUsed': tempo,
+      'restAfterSet': rest,
     }
   }
 
@@ -3406,17 +3412,14 @@ export class CompactWorkoutPlayerComponent implements OnInit, OnDestroy {
     const exercise = this.routine()?.exercises[exIndex];
     const set = exercise?.sets[setIndex];
 
-    if (!set) {
+    const routine = this.routine();
+
+    if (!set || !routine) {
       // Fallback for safety, though it should always find a set.
-      return { weight: false, reps: false, distance: false, duration: false };
+      return { [METRIC.weight]: false, [METRIC.reps]: false, [METRIC.distance]: false, [METRIC.duration]: false, [METRIC.rest]: false };
     }
 
-    return {
-      weight: (set.targetWeight ?? 0) > 0 || (set.targetWeightMin ?? 0) > 0,
-      reps: (set.targetReps ?? 0) > 0 || (set.targetRepsMin ?? 0) > 0,
-      distance: (set.targetDistance ?? 0) > 0 || (set.targetDistanceMin ?? 0) > 0,
-      duration: (set.targetDuration ?? 0) > 0 || (set.targetDurationMin ?? 0) > 0,
-    };
+    return this.workoutService.getVisibleSetColumns(routine,exIndex, setIndex);
   }
 
   public getFieldsForSet(exIndex: number, setIndex: number): { visible: string[], hidden: string[] } {
@@ -3889,6 +3892,13 @@ public async promptRemoveField(exIndex: number, setIndex: number): Promise<void>
           setValues.actualDuration = plannedSet.targetDuration ?? undefined;
         }
 
+        // Rest
+        if (plannedSet.restAfterSet != null) {
+          setValues.restAfterSet = plannedSet.restAfterSet;
+        } else {
+          setValues.restAfterSet = plannedSet.restAfterSet ?? undefined;
+        }
+
         // Notes & Tempo
         setValues.notes = plannedSet.notes ?? undefined;
         setValues.tempoUsed = plannedSet.targetTempo ?? undefined;
@@ -3940,5 +3950,7 @@ public async promptRemoveField(exIndex: number, setIndex: number): Promise<void>
 
     return newRoutine;
   });
+
+  protected metricEnum = METRIC;
 
 }

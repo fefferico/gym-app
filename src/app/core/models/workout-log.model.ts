@@ -1,6 +1,7 @@
 // src/app/core/models/workout-log.model.ts
 
 import { PerceivedWorkoutInfo } from "../../features/workout-tracker/perceived-effort-modal.component";
+import { METRIC } from "./workout.model";
 
 // Describes a single set that was actually performed and logged.
 export interface LoggedSet {
@@ -19,6 +20,9 @@ export interface LoggedSet {
 
   // Target values (copied from the planned set in the routine at the time of performance)
   // These are useful for seeing if targets were met/exceeded.
+  targetRest?: number | null;
+  targetRestMin?: number | null;
+  targetRestMax?: number | null;
   targetReps?: number | null;
   targetRepsMin?: number | null;
   targetRepsMax?: number | null;
@@ -40,7 +44,7 @@ export interface LoggedSet {
   type: 'standard' | 'warmup' | 'amrap' | 'dropset' | 'failure' | 'myorep' | 'restpause' | 'custom' | 'superset' | string; // More flexible
   rpe?: number; // Optional: User's perceived exertion for this set (RPE 1-10)
   workoutLogId?: string; // ID of the WorkoutLog this set belongs to
-  fieldOrder?: string[]; // Order of fields as per user preference
+  fieldOrder?: METRIC[]; // Order of fields as per user preference
 }
 
 // Describes a group of sets performed together as a "round" (e.g., in a circuit or superset)

@@ -9,7 +9,7 @@ import { format, parseISO, isValid as isValidDate, set } from 'date-fns';
 
 import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 
-import { Routine, ExerciseTargetSetParams, WorkoutExercise } from '../../core/models/workout.model';
+import { Routine, ExerciseTargetSetParams, WorkoutExercise, METRIC } from '../../core/models/workout.model';
 import { Exercise } from '../../core/models/exercise.model';
 import { WorkoutLog, LoggedWorkoutExercise, LoggedSet, EnrichedWorkoutLog } from '../../core/models/workout-log.model'; // For manual log
 import { WorkoutService } from '../../core/services/workout.service';
@@ -150,7 +150,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     { value: 'balance & coordination', label: this.translate.instant('workoutBuilder.goals.balance') }, { value: 'skill acquisition', label: this.translate.instant('workoutBuilder.goals.skill') },
     { value: 'rehabilitation / injury prevention', label: this.translate.instant('workoutBuilder.goals.rehabilitation') }, { value: 'mental health / stress relief', label: this.translate.instant('workoutBuilder.goals.mentalHealth') },
     { value: 'general health & longevity', label: this.translate.instant('workoutBuilder.goals.generalHealth') }, { value: 'sport-specific performance', label: this.translate.instant('workoutBuilder.goals.sportSpecific') },
-    { value: 'maintenance', label: this.translate.instant('workoutBuilder.goals.maintenance') }, { value: 'rest', label: this.translate.instant('workoutBuilder.goals.rest') }, { value: 'custom', label: this.translate.instant('workoutBuilder.goals.custom') }
+    { value: 'maintenance', label: this.translate.instant('workoutBuilder.goals.maintenance') }, { value: METRIC.rest, label: this.translate.instant('workoutBuilder.goals.rest') }, { value: 'custom', label: this.translate.instant('workoutBuilder.goals.custom') }
   ];
 
   isExerciseModalOpen = false;
@@ -189,7 +189,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   * Defines the canonical, fixed order in which metric fields should be displayed.
   * The template will iterate over this array and only show the fields that are currently visible.
   */
-  readonly defaultMetricFieldOrder = ['reps', 'weight', 'distance', 'duration'];
+  readonly defaultMetricFieldOrder = [METRIC.reps, METRIC.weight, METRIC.distance, METRIC.duration, METRIC.rest];
 
   // Add new signals to manage the generator's state
   isGeneratorModalOpen = signal(false);
@@ -456,7 +456,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         if (this.previousGoalValue !== goalValue && goalValue !== 'tabata') {
           this.previousGoalValue = goalValue;
         }
-        if (this.mode === 'routineBuilder' && goalValue === 'rest') {
+        if (this.mode === 'routineBuilder' && goalValue === METRIC.rest) {
           while (this.exercisesFormArray.length) this.exercisesFormArray.removeAt(0);
           this.exercisesFormArray.clearValidators();
         }
@@ -1123,10 +1123,10 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
   // isRepsRangeMode, isWeightRangeMode, isDurationRangeMode
   private createSetFormGroup(setData?: ExerciseTargetSetParams | LoggedSet, forLogging: boolean = false): FormGroup {
-     // 1. Initialize all local variables with defaults for a "new blank set".
+    // 1. Initialize all local variables with defaults for a "new blank set".
     // This handles the case where `setData` is null from the beginning.
     let id = uuidv4();
-    let fieldOrderValue: string[] | undefined = ['reps', 'weight'];
+    let fieldOrderValue: string[] | undefined = [this.metricEnum.reps, this.metricEnum.weight];
     let notesValue = '';
     let typeValue = 'standard';
     let tempoValue = '';
@@ -1152,61 +1152,75 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
     // 2. If an existing set is provided, overwrite the defaults.
     if (setData) {
-        // Overwrite common properties that exist on both types
-        id = setData.id || id;
-        fieldOrderValue = setData.fieldOrder;
-        notesValue = setData.notes || '';
-        typeValue = setData.type || 'standard';
-        tempoValue = 'targetTempo' in setData ? (setData.targetTempo || '') : '';
+      // Overwrite common properties that exist on both types
+      id = setData.id || id;
+      fieldOrderValue = setData.fieldOrder;
+      notesValue = setData.notes || '';
+      typeValue = setData.type || 'standard';
+      tempoValue = 'targetTempo' in setData ? (setData.targetTempo || '') : '';
 
-        // Overwrite specific properties based on the object type
-        if (this.workoutService.isLoggedSet(setData)) {
-            // It's a LoggedSet: map performance fields
-            targetRepsValue = setData.repsAchieved;
-            targetWeighValue = setData.weightUsed;
-            targetDurationValue = setData.durationPerformed;
-            targetDistanceValue = setData.distanceAchieved;
-            restValue = setData.restAfterSetUsed;
-            plannedSetIdValue = setData.plannedSetId;
-            timestampValue = setData.timestamp;
-        } else {
-            // It's ExerciseTargetSetParams: map planned fields and ranges
-            targetRepsValue = setData.targetReps;
-            targetRepsMinValue = setData.targetRepsMin;
-            targetRepsMaxValue = setData.targetRepsMax;
-            
-            targetWeighValue = setData.targetWeight;
-            targetWeightMinValue = setData.targetWeightMin;
-            targetWeightMaxValue = setData.targetWeightMax;
-            
-            targetDurationValue = setData.targetDuration;
-            targetDurationMinValue = setData.targetDurationMin;
-            targetDurationMaxValue = setData.targetDurationMax;
+      // Overwrite specific properties based on the object type
+      if (this.workoutService.isLoggedSet(setData)) {
+        // It's a LoggedSet: map performance fields
+        targetRepsValue = setData.repsAchieved;
+        targetWeighValue = setData.weightUsed;
+        targetDurationValue = setData.durationPerformed;
+        targetDistanceValue = setData.distanceAchieved;
+        restValue = setData.restAfterSetUsed;
+        plannedSetIdValue = setData.plannedSetId;
+        timestampValue = setData.timestamp;
+      } else {
+        // It's ExerciseTargetSetParams: map planned fields and ranges
 
-            targetDistanceValue = setData.targetDistance;
-            targetDistanceMinValue = setData.targetDistanceMin;
-            targetDistanceMaxValue = setData.targetDistanceMax;
-
-            restValue = setData.restAfterSet;
-            plannedSetIdValue = setData.id; // The template set's ID is the planned ID
+        if (setData.fieldOrder && setData.fieldOrder.find(field => field && field === METRIC.reps)) {
+          targetRepsValue = setData.targetReps;
+          targetRepsMinValue = setData.targetRepsMin;
+          targetRepsMaxValue = setData.targetRepsMax;
         }
+
+        if (setData.fieldOrder && setData.fieldOrder.find(field => field && field === METRIC.weight)) {
+          targetWeighValue = setData.targetWeight;
+          targetWeightMinValue = setData.targetWeightMin;
+          targetWeightMaxValue = setData.targetWeightMax;
+
+        }
+
+        if (setData.fieldOrder && setData.fieldOrder.find(field => field && field === METRIC.duration)) {
+          targetDurationValue = setData.targetDuration;
+          targetDurationMinValue = setData.targetDurationMin;
+          targetDurationMaxValue = setData.targetDurationMax;
+
+        }
+
+        if (setData.fieldOrder && setData.fieldOrder.find(field => field && field === METRIC.distance)) {
+          targetDistanceValue = setData.targetDistance;
+          targetDistanceMinValue = setData.targetDistanceMin;
+          targetDistanceMaxValue = setData.targetDistanceMax;
+
+        }
+
+        if (setData.fieldOrder && setData.fieldOrder.find(field => field && field === METRIC.rest)) {
+          restValue = setData.restAfterSet;
+        }
+
+        plannedSetIdValue = setData.id; // The template set's ID is the planned ID
+      }
     }
 
-    // =================== START OF THE FIX ===================
     if (!fieldOrderValue && setData) {
-      // If fieldOrder is missing BUT we have setData (i.e., loading an old routine), calculate it.
-
-      // 1. Create a mock structure that `getVisibleExerciseColumns` can understand.
-      // It only needs an object with a `sets` array containing our current `setData`.
       const mockRoutineForHelper = { exercises: [{ sets: [setData] }] } as Routine;
-
-      // 2. Call the service method. We use index 0 because our mock structure only has one exercise.
       const visibleCols = this.workoutService.getVisibleExerciseColumns(mockRoutineForHelper, 0);
-
-      // 3. Filter the canonical order by which columns are visible to create the initial order.
       fieldOrderValue = this.defaultMetricFieldOrder.filter(field => visibleCols[field]);
     }
-    // =================== END OF THE FIX ===================
+
+    const setDataBk = { ...setData } as any;
+    if (!forLogging && fieldOrderValue && !fieldOrderValue.includes(METRIC.rest) && setDataBk && setDataBk.restAfterSet) {
+      fieldOrderValue.push(METRIC.rest);
+
+      if (setDataBk.restAfterSet) {
+        restValue = setDataBk.restAfterSet;
+      }
+    }
 
     const formGroupConfig: { [key: string]: any } = {
       id: [id],
@@ -1242,26 +1256,61 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       formGroupConfig['tempo'] = [tempoValue];
       formGroupConfig['restAfterSet'] = [restValue];
     } else { // For routine builder (planning mode)
-      formGroupConfig['targetReps'] = [targetRepsValue ?? null, [Validators.min(0)]];
-      formGroupConfig['targetRepsMin'] = [targetRepsMinValue ?? null, [Validators.min(0)]];
-      formGroupConfig['targetRepsMax'] = [targetRepsMaxValue ?? null, [Validators.min(0)]];
 
-      // =================== START: FIXED SNIPPET ===================
-      formGroupConfig['targetWeight'] = [targetWeighValue != null ? this.unitService.convertWeight(targetWeighValue, 'kg', this.unitService.currentWeightUnit()) : null, [Validators.min(0)]];
-      formGroupConfig['targetWeightMin'] = [targetWeightMinValue != null ? this.unitService.convertWeight(targetWeightMinValue, 'kg', this.unitService.currentWeightUnit()) : null, [Validators.min(0)]];
-      formGroupConfig['targetWeightMax'] = [targetWeightMaxValue != null ? this.unitService.convertWeight(targetWeightMaxValue, 'kg', this.unitService.currentWeightUnit()) : null, [Validators.min(0)]];
-      // =================== END: FIXED SNIPPET ===================
+      if (setDataBk.fieldOrder && setDataBk.fieldOrder.find((field: METRIC) => field && field === METRIC.reps)) {
+        formGroupConfig['targetReps'] = [targetRepsValue ?? null, [Validators.min(0)]];
+        formGroupConfig['targetRepsMin'] = [targetRepsMinValue ?? null, [Validators.min(0)]];
+        formGroupConfig['targetRepsMax'] = [targetRepsMaxValue ?? null, [Validators.min(0)]];
+      } else if (setDataBk.targetReps){
+        formGroupConfig['targetReps'] = [targetRepsValue ?? null, [Validators.min(0)]];
+        formGroupConfig['targetRepsMin'] = [targetRepsMinValue ?? null, [Validators.min(0)]];
+        formGroupConfig['targetRepsMax'] = [targetRepsMaxValue ?? null, [Validators.min(0)]];
+      }
 
-      formGroupConfig['targetDuration'] = [targetDurationValue ?? null, [Validators.min(0)]];
-      formGroupConfig['targetDurationMin'] = [targetDurationMinValue ?? null, [Validators.min(0)]];
-      formGroupConfig['targetDurationMax'] = [targetDurationMaxValue ?? null, [Validators.min(0)]];
+      if (setDataBk.fieldOrder && setDataBk.fieldOrder.find((field: METRIC) => field && field === METRIC.weight)) {
+        formGroupConfig['targetWeight'] = [targetWeighValue != null ? this.unitService.convertWeight(targetWeighValue, 'kg', this.unitService.currentWeightUnit()) : null, [Validators.min(0)]];
+        formGroupConfig['targetWeightMin'] = [targetWeightMinValue != null ? this.unitService.convertWeight(targetWeightMinValue, 'kg', this.unitService.currentWeightUnit()) : null, [Validators.min(0)]];
+        formGroupConfig['targetWeightMax'] = [targetWeightMaxValue != null ? this.unitService.convertWeight(targetWeightMaxValue, 'kg', this.unitService.currentWeightUnit()) : null, [Validators.min(0)]];
+      } else if (setDataBk.targetWeight){
+        formGroupConfig['targetWeight'] = [targetWeighValue != null ? this.unitService.convertWeight(targetWeighValue, 'kg', this.unitService.currentWeightUnit()) : null, [Validators.min(0)]];
+        formGroupConfig['targetWeightMin'] = [targetWeightMinValue != null ? this.unitService.convertWeight(targetWeightMinValue, 'kg', this.unitService.currentWeightUnit()) : null, [Validators.min(0)]];
+        formGroupConfig['targetWeightMax'] = [targetWeightMaxValue != null ? this.unitService.convertWeight(targetWeightMaxValue, 'kg', this.unitService.currentWeightUnit()) : null, [Validators.min(0)]];
+      }
 
-      formGroupConfig['targetDistance'] = [targetDistanceValue ?? null, [Validators.min(0)]];
-      formGroupConfig['targetDistanceMin'] = [targetDistanceMinValue ?? null, [Validators.min(0)]];
-      formGroupConfig['targetDistanceMax'] = [targetDistanceMaxValue ?? null, [Validators.min(0)]];
+      if (setDataBk.fieldOrder && setDataBk.fieldOrder.find((field: METRIC) => field && field === METRIC.duration)) {
+        formGroupConfig['targetDuration'] = [targetDurationValue ?? null, [Validators.min(0)]];
+        formGroupConfig['targetDurationMin'] = [targetDurationMinValue ?? null, [Validators.min(0)]];
+        formGroupConfig['targetDurationMax'] = [targetDurationMaxValue ?? null, [Validators.min(0)]];
+      } else if (setDataBk.targetDuration){
+        formGroupConfig['targetDuration'] = [targetDurationValue ?? null, [Validators.min(0)]];
+        formGroupConfig['targetDurationMin'] = [targetDurationMinValue ?? null, [Validators.min(0)]];
+        formGroupConfig['targetDurationMax'] = [targetDurationMaxValue ?? null, [Validators.min(0)]];
+      }
 
-      formGroupConfig['targetTempo'] = [tempoValue || ''];
-      formGroupConfig['restAfterSet'] = [restValue ?? 60, [Validators.required, Validators.min(0)]];
+
+      if (setDataBk.fieldOrder && setDataBk.fieldOrder.find((field: METRIC) => field && field === METRIC.distance)) {
+        formGroupConfig['targetDistance'] = [targetDistanceValue ?? null, [Validators.min(0)]];
+        formGroupConfig['targetDistanceMin'] = [targetDistanceMinValue ?? null, [Validators.min(0)]];
+        formGroupConfig['targetDistanceMax'] = [targetDistanceMaxValue ?? null, [Validators.min(0)]];
+      } else if (setDataBk.targetDistance){
+        formGroupConfig['targetDistance'] = [targetDistanceValue ?? null, [Validators.min(0)]];
+        formGroupConfig['targetDistanceMin'] = [targetDistanceMinValue ?? null, [Validators.min(0)]];
+        formGroupConfig['targetDistanceMax'] = [targetDistanceMaxValue ?? null, [Validators.min(0)]];
+      }
+
+
+      if (setDataBk.fieldOrder && setDataBk.fieldOrder.find((field: METRIC) => field && field === METRIC.reps)) {
+        formGroupConfig['targetTempo'] = [tempoValue || ''];
+      } else if (setDataBk.targetTempo){
+        formGroupConfig['targetTempo'] = [tempoValue || ''];
+      }
+
+      if (setDataBk.fieldOrder && setDataBk.fieldOrder.find((field: METRIC) => field && field === METRIC.rest)) {
+        formGroupConfig['restAfterSet'] = [restValue ?? 60, [Validators.required, Validators.min(0)]];
+      } else if (setDataBk.restAfterSet){
+        formGroupConfig['restAfterSet'] = [restValue ?? 60, [Validators.required, Validators.min(0)]];
+      }
+
     }
     const groupOptions = forLogging ? {} : { validators: this.createRangeValidator() };
 
@@ -1551,7 +1600,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       else if (currentExpanded && currentExpanded.exerciseIndex === exerciseIndex && currentExpanded.setIndex > setIndex) {
         this.expandedSetPath.set({ exerciseIndex, setIndex: currentExpanded.setIndex - 1 });
       }
-       // Adjust expansion index if an entire exercise *before* the expanded one was removed.
+      // Adjust expansion index if an entire exercise *before* the expanded one was removed.
       else if (currentExpanded && currentExpanded.exerciseIndex > exerciseIndex) {
         this.expandedSetPath.set({ exerciseIndex: currentExpanded.exerciseIndex - 1, setIndex: currentExpanded.setIndex });
       }
@@ -2054,7 +2103,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     }
     // --- END: TABATA VALIDATION BLOCK ---
 
-    const isRestGoalRoutine = this.mode === 'routineBuilder' && this.builderForm.get('goal')?.value === 'rest';
+    const isRestGoalRoutine = this.mode === 'routineBuilder' && this.builderForm.get('goal')?.value === METRIC.rest;
 
     if ((this.mode === 'routineBuilder' && (this.builderForm.get('name')?.invalid || this.builderForm.get('goal')?.invalid)) ||
       (this.mode === 'manualLogEntry' && (this.builderForm.get('workoutDate')?.invalid || this.builderForm.get('startTime')?.invalid || this.builderForm.get('endTime')?.invalid
@@ -2514,7 +2563,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       tags: tagsArray,
       // --- END: ADD NEW MAPPED PROPERTIES ---
 
-      exercises: (formValue.goal === 'rest') ? [] : formValue.exercises.map((exInput: any) => {
+      exercises: (formValue.goal === METRIC.rest) ? [] : formValue.exercises.map((exInput: any) => {
         const isSuperset = !!exInput.supersetId;
         return {
           id: exInput.id || uuidv4(),
@@ -2798,7 +2847,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         targetRepsMin: new FormControl(set.targetRepsMin),
         targetRepsMax: new FormControl(set.targetRepsMax),
         repsAchieved: new FormControl(set.weightUsed)
-      }), 'reps');
+      }), METRIC.reps);
     });
 
     let stringResult = displayValues.join(', ');
@@ -2941,7 +2990,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
    * @param field The field to check ('reps' or 'duration').
    * @returns True if the set is configured for a range, otherwise false.
    */
-  isRangeMode(setControl: AbstractControl, field: 'reps' | 'duration' | 'weight' | 'distance', event?: Event): boolean {
+  isRangeMode(setControl: AbstractControl, field: METRIC, event?: Event): boolean {
     event?.stopPropagation();
 
     if (!(setControl instanceof FormGroup)) return false;
@@ -2974,7 +3023,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
       // Map over each set's form control to get its individual display string (e.g., "30-60").
       const displayValues = setsFormArray.controls.map(setControl =>
-        this.getSetDisplayValue(setControl, 'duration')
+        this.getSetDisplayValue(setControl, this.metricEnum.duration)
       );
 
       // Filter out any sets that might not have a duration value to keep the output clean.
@@ -2991,15 +3040,18 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   * @param field The field to display ('reps' or 'duration').
   * @returns A formatted string for display in the collapsed view.
   */
-  getSetDisplayValue(setControl: AbstractControl, field: 'reps' | 'duration' | 'weight' | 'distance'): string {
+  getSetDisplayValue(setControl: AbstractControl, field: METRIC): string {
     if (!setControl) return '-';
 
     const firstUpperCaseField = field ? String(field).charAt(0).toUpperCase() + String(field).slice(1) : '';
 
     const min = setControl.get(`target${firstUpperCaseField}Min`)?.value;
     const max = setControl.get(`target${firstUpperCaseField}Max`)?.value;
-    const single = setControl.get(`target${firstUpperCaseField}`)?.value;
+    let single = setControl.get(`target${firstUpperCaseField}`)?.value;
 
+    if (field === METRIC.rest) {
+      single = setControl.get(`${field}AfterSet`)?.value;
+    }
     const isRange = min != null || max != null;
 
     if (isRange) {
@@ -3013,6 +3065,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         return `Up to ${max}`;
       }
     }
+
 
     return single ?? '-';
   }
@@ -3031,7 +3084,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
         targetWeightMin: new FormControl(set.targetWeightMin),
         targetWeightMax: new FormControl(set.targetWeightMax),
         weightUsed: new FormControl(set.weightUsed)
-      }), 'weight');
+      }), this.metricEnum.weight);
     });
 
     let stringResult = displayValues.join(', ');
@@ -3082,7 +3135,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   // This function is now fast, synchronous, and safe to call from a template.
-  checkTextClass(set: LoggedSet, type: 'reps' | 'duration' | 'weight' | 'distance'): string {
+  checkTextClass(set: LoggedSet, type: METRIC): string {
     if (!set) {
       return 'text-gray-700 dark:text-gray-300';
     }
@@ -3091,13 +3144,13 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     let targetValue = 0;
 
     // Determine which properties to compare based on the 'type'
-    if (type === 'reps') {
+    if (type === METRIC.reps) {
       performedValue = set.repsAchieved ?? 0;
       targetValue = set.targetReps ?? 0;
-    } else if (type === 'duration') {
+    } else if (type === METRIC.duration) {
       performedValue = set.durationPerformed ?? 0;
       targetValue = set.targetDuration ?? 0;
-    } else if (type === 'weight') {
+    } else if (type === METRIC.weight) {
       performedValue = set.weightUsed ?? 0;
       targetValue = set.targetWeight ?? 0;
     }
@@ -3251,7 +3304,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   isFormInvalid(): boolean {
-    return this.builderForm.invalid || (this.exercisesFormArray.length === 0 && !(this.mode === 'routineBuilder' && this.builderForm.get('goal')?.value === 'rest'))
+    return this.builderForm.invalid || (this.exercisesFormArray.length === 0 && !(this.mode === 'routineBuilder' && this.builderForm.get('goal')?.value === METRIC.rest))
   }
 
   /**
@@ -3260,7 +3313,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
    * @param field The field to display ('reps' or 'duration' or 'weight).
    * @returns A formatted string like "8-12" or "60+", or an empty string if no range is set.
    */
-  public getSetTargetDisplay(set: ExerciseTargetSetParams, field: 'reps' | 'duration' | 'weight' | 'distance'): string {
+  public getSetTargetDisplay(set: ExerciseTargetSetParams, field: METRIC): string {
     let stringResult = this.workoutService.getSetTargetDisplay(set, field);
 
     if (stringResult.length > 15) {
@@ -3314,6 +3367,50 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
   private getExerciseIndexByControl(exerciseControl: AbstractControl): number {
     return this.exercisesFormArray.controls.findIndex(ctrl => ctrl === exerciseControl);
+  }
+
+  /**
+     * Finds the numerical index of a given set's FormGroup within its parent 'sets' FormArray.
+     * @param setControl The AbstractControl for the set.
+     * @returns The index of the set, or -1 if not found.
+     */
+  private getSetIndexByControl(setControl: AbstractControl): number {
+    // A Form Control's 'parent' property gives you direct access to its containing FormGroup or FormArray.
+    const parentArray = setControl.parent as FormArray;
+
+    // If the control has a parent and that parent has a 'controls' array, find the index.
+    if (parentArray && parentArray.controls) {
+      return parentArray.controls.indexOf(setControl);
+    }
+
+    // Return -1 if the control is detached or something went wrong.
+    return -1;
+  }
+
+  /**
+   * Finds the full path (exercise index and set index) for a given set's FormGroup.
+   * This is useful when an action on a set needs to know which exercise it belongs to.
+   * @param setControl The AbstractControl for the set.
+   * @returns An object with { exerciseIndex, setIndex }, or null if not found.
+   */
+  private getSetPathByControl(setControl: AbstractControl): { exerciseIndex: number, setIndex: number } | null {
+    // 1. Get the direct parent (the 'sets' FormArray)
+    const setsArray = setControl.parent as FormArray;
+    if (!setsArray || !setsArray.controls) return null;
+
+    // 2. Find the set's own index within that array
+    const setIndex = setsArray.controls.indexOf(setControl);
+    if (setIndex === -1) return null;
+
+    // 3. Get the parent of the 'sets' FormArray (the exercise's FormGroup)
+    const exerciseGroup = setsArray.parent as FormGroup;
+    if (!exerciseGroup || !exerciseGroup.parent) return null;
+
+    // 4. Find the exercise's index within the main 'exercises' FormArray
+    const exerciseIndex = (exerciseGroup.parent as FormArray).controls.indexOf(exerciseGroup);
+    if (exerciseIndex === -1) return null;
+
+    return { exerciseIndex, setIndex };
   }
 
   /**
@@ -3659,6 +3756,18 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       }
     }
     return (control.targetDuration ?? 0) > 0 || (control.targetDurationMin ?? 0) > 0;
+  }
+  protected checkIfRestIsVisible(control: any): boolean {
+    if (!control) return false;
+    // Handle both AbstractControl and plain object
+    if (typeof control.get === 'function') {
+      if (typeof control.getRawValue === 'function' && control.getRawValue() && control.getRawValue()['sets']) {
+        return ((control.getRawValue()['sets'].some((innerControl: any) => innerControl['restAfterSet']) ?? 0) > 0);
+      } else {
+        return ((control.get('restAfterSet')?.value ?? 0) > 0);
+      }
+    }
+    return (control.restAfterSet ?? 0) > 0;
   }
   protected checkIfNotesIsVisible(control: any): boolean {
     if (!control) return false;
@@ -4066,7 +4175,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     // Only remove if there is more than one set
     if (setsArray.length > 1) {
       setsArray.removeAt(setsArray.length - 1);
-        this.showUndoWithToast("Set removed");
+      this.showUndoWithToast("Set removed");
     }
 
     // Collapse UI if the currently expanded set was the one removed.
@@ -4172,7 +4281,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
       return distances.length > 0 ? distances.join('-') : '';
     } else {
       const setsFormArray = this.getSetsFormArray(exerciseControl);
-      const displayValues = setsFormArray.controls.map(setControl => this.getSetDisplayValue(setControl, 'distance'));
+      const displayValues = setsFormArray.controls.map(setControl => this.getSetDisplayValue(setControl, METRIC.distance));
       const validDisplayValues = displayValues.filter(value => value && value !== '-');
       return validDisplayValues.join(', ');
     }
@@ -4332,16 +4441,16 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
     const firstSet = setsFormArray.at(0) as FormGroup;
 
     // Get the reference values from the first set
-    const referenceReps = this.getSetDisplayValue(firstSet, 'reps');
-    const referenceWeight = isWeighted ? this.getSetDisplayValue(firstSet, 'weight') : null;
+    const referenceReps = this.getSetDisplayValue(firstSet, METRIC.reps);
+    const referenceWeight = isWeighted ? this.getSetDisplayValue(firstSet, METRIC.weight) : null;
 
     // Check if all subsequent sets match the first one
     const allUniform = setsFormArray.controls.every(setControl => {
-      const currentReps = this.getSetDisplayValue(setControl, 'reps');
+      const currentReps = this.getSetDisplayValue(setControl, METRIC.reps);
       if (currentReps !== referenceReps) return false;
 
       if (isWeighted) {
-        const currentWeight = this.getSetDisplayValue(setControl, 'weight');
+        const currentWeight = this.getSetDisplayValue(setControl, METRIC.weight);
         if (currentWeight !== referenceWeight) return false;
       }
       return true;
@@ -4378,7 +4487,7 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
   getFieldsForSet(exIndex: number, setIndex: number): { visible: string[], hidden: string[] } {
     const routine = this.liveFormAsRoutine();
-    if (!routine) return { visible: [], hidden: ['weight', 'reps', 'distance', 'duration', 'tempo'] };
+    if (!routine) return this.workoutService.defaultHiddenFields();
     return this.workoutService.getFieldsForSet(routine, exIndex, setIndex);
   }
 
@@ -4430,13 +4539,14 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
 
 
-    if (visibleCols['reps']) columnCount++;
-    if (visibleCols['weight']) columnCount++;
-    if (visibleCols['distance']) columnCount++;
-    if (visibleCols['duration']) columnCount++;
+    if (visibleCols[METRIC.reps]) columnCount++;
+    if (visibleCols[METRIC.weight]) columnCount++;
+    if (visibleCols[METRIC.distance]) columnCount++;
+    if (visibleCols[METRIC.duration]) columnCount++;
+    if (visibleCols[METRIC.rest]) columnCount++;
     // The "Rest/Notes" column is always present, so we don't need to check for it.
     if (!this.isEmomExerciseByIndex(exIndex)) {
-      columnCount + 2; // Add one for the Rest/Notes column
+      columnCount + 1; // Add one for the Rest/Notes column
     }
 
     // Use a failsafe in case something goes wrong
@@ -4480,11 +4590,11 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
 
     // --- 1. Calculate Grid Class ---
     let columnCount = 2; // Base for Set # and Actions
-    if (visibleCols['reps']) columnCount++;
-    if (visibleCols['weight']) columnCount++;
-    if (visibleCols['distance']) columnCount++;
-    if (visibleCols['duration']) columnCount++;
-    columnCount++; // For Rest/Notes
+    if (visibleCols[METRIC.reps]) columnCount++;
+    if (visibleCols[METRIC.weight]) columnCount++;
+    if (visibleCols[METRIC.distance]) columnCount++;
+    if (visibleCols[METRIC.duration]) columnCount++;
+    if (visibleCols[METRIC.rest]) columnCount++;
     const gridClass = `grid-cols-${Math.max(2, columnCount)}`;
 
     // --- 2. Determine Background Color Class ---
@@ -4787,13 +4897,13 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
 
-   /**
-   * Determines the correct rest time for an exercise based on its superset type and position.
-   * - EMOMs always have 0 rest.
-   * - Standard supersets only have rest on the final exercise of the group.
-   * @param exerciseControl The FormGroup of the exercise to check.
-   * @returns The correct rest time in seconds (e.g., 60 or 0).
-   */
+  /**
+  * Determines the correct rest time for an exercise based on its superset type and position.
+  * - EMOMs always have 0 rest.
+  * - Standard supersets only have rest on the final exercise of the group.
+  * @param exerciseControl The FormGroup of the exercise to check.
+  * @returns The correct rest time in seconds (e.g., 60 or 0).
+  */
   private _getCorrectRestForSupersetExercise(exerciseControl: AbstractControl): number {
     if (!(exerciseControl instanceof FormGroup)) {
       return 0; // Safety default
@@ -4822,4 +4932,11 @@ export class WorkoutBuilderComponent implements OnInit, OnDestroy, AfterViewInit
   isDraggingEnabled(exIndex: number): boolean {
     return this.isEditableMode() && !this.shouldShowExpandedExercise(exIndex) && !this.isSuperSet(exIndex);
   }
+
+  protected metricEnum = METRIC;
+
+  protected isGhostFieldVisible(fieldOrder: METRIC[], exIndex: number): boolean {
+    return !!(this.isEditableMode() && !this.isSuperSet(exIndex) && fieldOrder && fieldOrder.length !== undefined && ((fieldOrder.length <= 1) || (fieldOrder.length > 2 && fieldOrder.length%2==1)));
+  }
+
 }
